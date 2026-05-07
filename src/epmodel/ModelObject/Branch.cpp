@@ -85,7 +85,7 @@ namespace epmodel {
                                             + std::to_string(groupIndex) + ".");
         }
 
-        if (!removeGroup && !model().getObjectByTypeAndName(iddType, *componentName, true)) {
+        if (!removeGroup && !model().getObjectByTypeAndName(iddType, *componentName)) {
           removeGroup = true;
           detail::addLoadWarning(context, "Branch '" + branch.nameString() + "' component '" + *componentName + "' (" + componentType.get()
                                             + ") references an object that could not be found in the model at extensible index "
@@ -146,7 +146,7 @@ namespace epmodel {
 
         try {
           const openstudio::IddObjectType iddType(*componentType);
-          if (auto component = model().getObjectByTypeAndName(iddType, *componentName, true)) {
+          if (auto component = model().getObjectByTypeAndName(iddType, *componentName)) {
             if (auto modelObject = component->optionalCast<openstudio::epmodel::ModelObject>()) {
               result.push_back(*modelObject);
             }

@@ -154,7 +154,7 @@ class UTILITIES_API Workspace
 
   /** Returns all the objects in this Workspace, excluding any version objects. If sorted, the
    *  objects are returned in the preferred order. */
-  std::vector<WorkspaceObject> objects(bool sorted = false, bool includeTransient = false) const;
+  std::vector<WorkspaceObject> objects(bool sorted = false) const;
 
   /** Returns the handles of all the objects in this Workspace, excluding those of any version
    *  objects. If sorted, the handles are returned in the preferred order. */
@@ -172,33 +172,32 @@ class UTILITIES_API Workspace
 
   /** Returns all objects named name (case insensitive). If exactMatch == false, will return
    *  all objects with name or name plus an integer suffix. */
-  std::vector<WorkspaceObject> getObjectsByName(const std::string& name, bool exactMatch = true, bool includeTransient = false) const;
+  std::vector<WorkspaceObject> getObjectsByName(const std::string& name, bool exactMatch = true) const;
 
   /** Returns all objects of type objectType (e.g. IddObjectType::Zone,
    *  IddObjectType("OS:Construction")). */
-  std::vector<WorkspaceObject> getObjectsByType(IddObjectType objectType, bool includeTransient = false) const;
+  std::vector<WorkspaceObject> getObjectsByType(IddObjectType objectType) const;
 
   /** Returns all objects with .iddObject() == objectType. */
-  std::vector<WorkspaceObject> getObjectsByType(const IddObject& objectType, bool includeTransient = false) const;
+  std::vector<WorkspaceObject> getObjectsByType(const IddObject& objectType) const;
 
   /** Returns the first object found of type objectType and named name (case insensitive,
    *  exact match). */
-  boost::optional<WorkspaceObject> getObjectByTypeAndName(IddObjectType objectType, const std::string& name, bool includeTransient = false) const;
+  boost::optional<WorkspaceObject> getObjectByTypeAndName(IddObjectType objectType, const std::string& name) const;
 
   /** Returns all objects named name or name plus an integer suffix (case insensitive). */
-  std::vector<WorkspaceObject> getObjectsByTypeAndName(IddObjectType objectType, const std::string& name, bool includeTransient = false) const;
+  std::vector<WorkspaceObject> getObjectsByTypeAndName(IddObjectType objectType, const std::string& name) const;
 
   /** Returns all objects in the reference list referenceName */
-  std::vector<WorkspaceObject> getObjectsByReference(const std::string& referenceName, bool includeTransient = false) const;
+  std::vector<WorkspaceObject> getObjectsByReference(const std::string& referenceName) const;
 
   /** Returns all objects in at least one of the reference lists in referenceNames. */
-  std::vector<WorkspaceObject> getObjectsByReference(const std::vector<std::string>& referenceNames, bool includeTransient = false) const;
+  std::vector<WorkspaceObject> getObjectsByReference(const std::vector<std::string>& referenceNames) const;
 
   /** Returns the first object found that is in at least one of the reference lists in
    *  referenceNames and named name (case insensitive, but exact match). Does not look for
    *  conflicts. */
-  boost::optional<WorkspaceObject> getObjectByNameAndReference(const std::string& name, const std::vector<std::string>& referenceNames,
-                                                               bool includeTransient = false) const;
+  boost::optional<WorkspaceObject> getObjectByNameAndReference(const std::string& name, const std::vector<std::string>& referenceNames) const;
 
   /** Overloaded functions that take in a std::string instead of an IddObjectType.
    *  They will internally create an IddObjectType (which may throw!) then forward to the overload method that takes IddObjectType

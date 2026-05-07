@@ -74,7 +74,7 @@ namespace epmodel {
 
         try {
           const auto iddType = openstudio::IddObjectType(*objectType);
-          if (auto object = model.getObjectByTypeAndName(iddType, *name, true)) {
+          if (auto object = model.getObjectByTypeAndName(iddType, *name)) {
             if (auto component = object->optionalCast<openstudio::epmodel::HVACComponent>()) {
               return *component;
             }

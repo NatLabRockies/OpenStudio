@@ -200,11 +200,11 @@ TEST_F(EPModelFixture, CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_RemoveCle
   ASSERT_TRUE(coil.addSpeed(speed1));
   ASSERT_TRUE(coil.addSpeed(speed2));
   ASSERT_EQ(2u, coil.speeds().size());
-  EXPECT_EQ(2u, model.getConcreteModelObjects<CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData>(true).size());
+  EXPECT_EQ(2u, model.getConcreteModelObjects<CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData>().size());
 
   coil.remove();
 
-  EXPECT_TRUE(model.getConcreteModelObjects<CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData>(true).empty());
+  EXPECT_TRUE(model.getConcreteModelObjects<CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData>().empty());
 }
 
 TEST_F(EPModelFixture, CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_ContainingHVACComponentTracksCompoundOwners) {
@@ -254,14 +254,14 @@ TEST_F(EPModelFixture, CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_AttachedS
   auto attachedSpeed = coil.speeds().front();
   const auto attachedHandle = attachedSpeed.handle();
 
-  EXPECT_EQ(2u, model.getConcreteModelObjects<CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData>(true).size());
+  EXPECT_EQ(2u, model.getConcreteModelObjects<CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData>().size());
 
   attachedSpeed.remove();
 
   ASSERT_EQ(1u, coil.speeds().size());
   EXPECT_EQ(speed2.handle(), coil.speeds().front().handle());
   EXPECT_EQ(1, coil.getInt(openstudio::Coil_WaterHeating_AirToWaterHeatPump_VariableSpeedFields::NumberofSpeeds).get());
-  const auto remainingSpeeds = model.getConcreteModelObjects<CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData>(true);
+  const auto remainingSpeeds = model.getConcreteModelObjects<CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData>();
   EXPECT_EQ(1u, remainingSpeeds.size());
   EXPECT_TRUE(std::none_of(remainingSpeeds.begin(), remainingSpeeds.end(), [&](const auto& speed) { return speed.handle() == attachedHandle; }));
 }

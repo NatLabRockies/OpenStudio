@@ -2273,7 +2273,7 @@ namespace epmodel {
         const auto originalSetpointNodeName = plantLoop.getString(openstudio::PlantLoopFields::LoopTemperatureSetpointNodeName);
         bool repairedByName = false;
         if (originalSetpointNodeName && !originalSetpointNodeName->empty()) {
-          for (const auto& candidate : model().getObjectsByName(*originalSetpointNodeName, true, true)) {
+          for (const auto& candidate : model().getObjectsByName(*originalSetpointNodeName, true)) {
             if (auto node = candidate.optionalCast<Node>()) {
               OS_ASSERT(setPointer(openstudio::PlantLoopFields::LoopTemperatureSetpointNodeName, node->handle(), false));
               detail::addLoadWarning(context, "Recovered Loop Temperature Setpoint Node for PlantLoop '" + loopName + "' by matching Node '"

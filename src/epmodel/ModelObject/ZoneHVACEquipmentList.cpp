@@ -186,7 +186,7 @@ namespace epmodel {
 
         try {
           const auto iddType = openstudio::IddObjectType(*objectType);
-          if (auto object = model.getObjectByTypeAndName(iddType, *name, true)) {
+          if (auto object = model.getObjectByTypeAndName(iddType, *name)) {
             if (auto modelObject = object->optionalCast<openstudio::epmodel::ModelObject>()) {
               return *modelObject;
             }
@@ -334,7 +334,7 @@ namespace epmodel {
 
         if (auto scheduleName = group.getString(fieldIndex, true)) {
           if (!scheduleName->empty()) {
-            for (const auto& candidate : model.getObjectsByName(*scheduleName, true, true)) {
+            for (const auto& candidate : model.getObjectsByName(*scheduleName, true)) {
               if (auto schedule = candidate.optionalCast<openstudio::epmodel::Schedule>()) {
                 return *schedule;
               }

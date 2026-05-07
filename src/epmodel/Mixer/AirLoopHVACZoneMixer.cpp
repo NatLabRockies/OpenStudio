@@ -120,7 +120,7 @@ namespace epmodel {
 
       auto name = getString(openstudio::AirLoopHVAC_ZoneMixerFields::OutletNodeName);
       if (name && !name->empty()) {
-        if (auto object = workspace().getObjectByTypeAndName(openstudio::IddObjectType::Node, *name, true)) {
+        if (auto object = workspace().getObjectByTypeAndName(openstudio::IddObjectType::Node, *name)) {
           return object->optionalCast<openstudio::epmodel::Node>();
         }
       }

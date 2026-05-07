@@ -245,7 +245,7 @@ namespace epmodel {
       // During ordinary API use we rely on a live pointer. During canonicalize
       // we repair raw imported rows by finding the named object and attaching
       // the pointer so later renames stay tracked.
-      for (const auto& candidate : model().getObjectsByName(*name, true, true)) {
+      for (const auto& candidate : model().getObjectsByName(*name, true)) {
         if (auto typedCandidate = candidate.optionalCast<openstudio::epmodel::ModelObject>()) {
           if (typedCandidate->iddObject().name() != *type) {
             continue;
@@ -361,7 +361,7 @@ namespace epmodel {
         return boost::none;
       }
 
-      for (const auto& candidate : model().getObjectsByName(*name, true, true)) {
+      for (const auto& candidate : model().getObjectsByName(*name, true)) {
         if (auto schedule = candidate.optionalCast<openstudio::epmodel::Schedule>()) {
           if (group->setPointer(ExtensibleFields::ControlSchemeScheduleName, schedule->handle(), false)) {
             return schedule;

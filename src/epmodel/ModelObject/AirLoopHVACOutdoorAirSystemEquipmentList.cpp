@@ -207,7 +207,7 @@ namespace epmodel {
         OS_ASSERT(workspaceGroup);
 
         if (!removeGroup) {
-          auto object = model().getObjectByTypeAndName(iddType, *componentName, true);
+          auto object = model().getObjectByTypeAndName(iddType, *componentName);
           auto component = object ? object->optionalCast<openstudio::epmodel::ModelObject>() : boost::none;
           if (!component) {
             removeGroup = true;

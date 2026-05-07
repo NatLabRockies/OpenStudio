@@ -27,7 +27,7 @@ namespace epmodel {
 
       auto name = getString(fieldIndex);
       if (name && !name->empty()) {
-        if (auto obj = workspace().getObjectByTypeAndName(T::iddObjectType(), *name, true)) {
+        if (auto obj = workspace().getObjectByTypeAndName(T::iddObjectType(), *name)) {
           if (auto typed = obj->template optionalCast<T>()) {
             setPointer(fieldIndex, typed->handle(), false);
             return *typed;
@@ -55,7 +55,7 @@ namespace epmodel {
       }
 
       if (!preferredName.empty()) {
-        if (auto obj = workspace().getObjectByTypeAndName(T::iddObjectType(), preferredName, true)) {
+        if (auto obj = workspace().getObjectByTypeAndName(T::iddObjectType(), preferredName)) {
           if (auto typed = obj->template optionalCast<T>()) {
             setPointer(fieldIndex, typed->handle(), false);
             return *typed;
@@ -65,7 +65,7 @@ namespace epmodel {
 
       auto name = getString(fieldIndex);
       if (name && !name->empty()) {
-        if (auto obj = workspace().getObjectByTypeAndName(T::iddObjectType(), *name, true)) {
+        if (auto obj = workspace().getObjectByTypeAndName(T::iddObjectType(), *name)) {
           if (auto typed = obj->template optionalCast<T>()) {
             setPointer(fieldIndex, typed->handle(), false);
             return *typed;

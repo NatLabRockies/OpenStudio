@@ -92,15 +92,15 @@ TEST_F(EPModelFixture, CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData_
   CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData speed(model);
   const auto speedHandle = speed.handle();
 
-  EXPECT_EQ(1u, model.getConcreteModelObjects<CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData>(true).size());
-  EXPECT_EQ(2u, model.getObjectsByType(openstudio::IddObjectType::Curve_Biquadratic, true).size());
-  EXPECT_EQ(1u, model.getObjectsByType(openstudio::IddObjectType::Curve_Cubic, true).size());
+  EXPECT_EQ(1u, model.getConcreteModelObjects<CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData>().size());
+  EXPECT_EQ(2u, model.getObjectsByType(openstudio::IddObjectType::Curve_Biquadratic).size());
+  EXPECT_EQ(1u, model.getObjectsByType(openstudio::IddObjectType::Curve_Cubic).size());
 
   speed.remove();
 
-  const auto remainingSpeeds = model.getConcreteModelObjects<CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData>(true);
+  const auto remainingSpeeds = model.getConcreteModelObjects<CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData>();
   EXPECT_TRUE(std::none_of(remainingSpeeds.begin(), remainingSpeeds.end(), [&](const auto& candidate) { return candidate.handle() == speedHandle; }));
   EXPECT_TRUE(remainingSpeeds.empty());
-  EXPECT_TRUE(model.getObjectsByType(openstudio::IddObjectType::Curve_Biquadratic, true).empty());
-  EXPECT_TRUE(model.getObjectsByType(openstudio::IddObjectType::Curve_Cubic, true).empty());
+  EXPECT_TRUE(model.getObjectsByType(openstudio::IddObjectType::Curve_Biquadratic).empty());
+  EXPECT_TRUE(model.getObjectsByType(openstudio::IddObjectType::Curve_Cubic).empty());
 }

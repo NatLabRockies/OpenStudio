@@ -297,7 +297,7 @@ namespace epmodel {
       }
 
       if (auto name = getString(openstudio::ZoneHVAC_Baseboard_RadiantConvective_WaterFields::DesignObject, true); name && !name->empty()) {
-        if (auto obj = workspace().getObjectByTypeAndName(IddObjectType::ZoneHVAC_Baseboard_RadiantConvective_Water_Design, *name, true)) {
+        if (auto obj = workspace().getObjectByTypeAndName(IddObjectType::ZoneHVAC_Baseboard_RadiantConvective_Water_Design, *name)) {
           if (auto typed = obj->optionalCast<ZoneHVACBaseboardRadiantConvectiveWaterDesign>()) {
             auto* self = const_cast<ZoneHVACBaseboardRadiantConvectiveWater_Impl*>(this);
             self->setPointer(openstudio::ZoneHVAC_Baseboard_RadiantConvective_WaterFields::DesignObject, typed->handle(), false);

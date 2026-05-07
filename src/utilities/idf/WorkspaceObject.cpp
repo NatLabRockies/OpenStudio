@@ -54,11 +54,11 @@ namespace detail {
         return boost::none;
       }
 
-      if (auto existingNode = workspace->getObjectByTypeAndName(openstudio::IddObjectType::Node, targetName, true)) {
+      if (auto existingNode = workspace->getObjectByTypeAndName(openstudio::IddObjectType::Node, targetName)) {
         return existingNode;
       }
 
-      if (auto existingNodeList = workspace->getObjectByTypeAndName(openstudio::IddObjectType::NodeList, targetName, true)) {
+      if (auto existingNodeList = workspace->getObjectByTypeAndName(openstudio::IddObjectType::NodeList, targetName)) {
         return existingNodeList;
       }
 

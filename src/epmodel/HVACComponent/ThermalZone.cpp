@@ -721,7 +721,7 @@ namespace epmodel {
             return true;
           }
 
-          if (auto zoneListObject = zone.model().getObjectByTypeAndName(openstudio::IddObjectType::ZoneList, *zoneOrListName, true)) {
+          if (auto zoneListObject = zone.model().getObjectByTypeAndName(openstudio::IddObjectType::ZoneList, *zoneOrListName)) {
             auto zoneListGroups = zoneListObject->extensibleGroups();
             for (const auto& group : zoneListGroups) {
               if (auto zoneListEntry = group.getString(openstudio::ZoneListExtensibleFields::ZoneName, true)) {
@@ -752,7 +752,7 @@ namespace epmodel {
           return true;
         }
 
-        if (auto zoneListObject = zone.model().getObjectByTypeAndName(openstudio::IddObjectType::ZoneList, *zoneOrSpaceName, true)) {
+        if (auto zoneListObject = zone.model().getObjectByTypeAndName(openstudio::IddObjectType::ZoneList, *zoneOrSpaceName)) {
           auto zoneListGroups = zoneListObject->extensibleGroups();
           for (const auto& group : zoneListGroups) {
             if (auto zoneListEntry = group.getString(openstudio::ZoneListExtensibleFields::ZoneName, true)) {
@@ -763,7 +763,7 @@ namespace epmodel {
           }
         }
 
-        if (auto spaceObject = zone.model().getObjectByTypeAndName(openstudio::IddObjectType::Space, *zoneOrSpaceName, true)) {
+        if (auto spaceObject = zone.model().getObjectByTypeAndName(openstudio::IddObjectType::Space, *zoneOrSpaceName)) {
           if (auto space = spaceObject->optionalCast<openstudio::epmodel::Space>()) {
             if (auto associatedZone = space->thermalZone()) {
               if (*associatedZone == zone) {
@@ -807,7 +807,7 @@ namespace epmodel {
           return boost::none;
         }
 
-        return zone.model().getObjectByTypeAndName(openstudio::IddObjectType::Daylighting_ReferencePoint, *referencePointName, true);
+        return zone.model().getObjectByTypeAndName(openstudio::IddObjectType::Daylighting_ReferencePoint, *referencePointName);
       }
 
       boost::optional<openstudio::WorkspaceObject> outputIlluminanceMapForZone(const ThermalZone& zone) {
@@ -1189,7 +1189,7 @@ namespace epmodel {
       }
 
       auto assigned = thermostat;
-      for (const auto& zoneControl : model().getObjectsByType(openstudio::IddObjectType::ZoneControl_Thermostat, true)) {
+      for (const auto& zoneControl : model().getObjectsByType(openstudio::IddObjectType::ZoneControl_Thermostat)) {
         if (auto target = zoneControl.getTarget(openstudio::ZoneControl_ThermostatFields::Control1Name)) {
           if ((*target == thermostat) && !zoneControlThermostatTargetsZone(zone, zoneControl)) {
             auto clonedObject = model().addObject(thermostat.clone());
@@ -1661,7 +1661,7 @@ namespace epmodel {
 
     boost::optional<openstudio::WorkspaceObject> ThermalZone_Impl::zoneControlThermostatObject() const {
       openstudio::epmodel::ThermalZone zone = getObject<openstudio::epmodel::ThermalZone>();
-      const auto zoneObjects = model().getObjectsByType(openstudio::IddObjectType::ZoneControl_Thermostat, true);
+      const auto zoneObjects = model().getObjectsByType(openstudio::IddObjectType::ZoneControl_Thermostat);
       for (const auto& object : zoneObjects) {
         if (zoneControlThermostatTargetsZone(zone, object)) {
           return object;
@@ -1686,7 +1686,7 @@ namespace epmodel {
 
     boost::optional<openstudio::WorkspaceObject> ThermalZone_Impl::zoneVentilationObject() const {
       const auto zone = getObject<openstudio::epmodel::ThermalZone>();
-      const auto objects = model().getObjectsByType(openstudio::IddObjectType::ZoneVentilation_DesignFlowRate, true);
+      const auto objects = model().getObjectsByType(openstudio::IddObjectType::ZoneVentilation_DesignFlowRate);
       for (const auto& object : objects) {
         if (zoneVentilationTargetsZone(zone, object)) {
           return object;

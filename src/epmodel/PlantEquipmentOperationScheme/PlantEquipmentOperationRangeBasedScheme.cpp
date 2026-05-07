@@ -45,7 +45,7 @@ namespace epmodel {
 
         const auto name = group.getString(LOADRANGEFIELDS_RANGEEQUIPMENTLISTNAME, true);
         if (name && !name->empty()) {
-          for (const auto& candidate : model.getObjectsByName(*name, true, true)) {
+          for (const auto& candidate : model.getObjectsByName(*name, true)) {
             if (auto list = candidate.optionalCast<openstudio::epmodel::PlantEquipmentList>()) {
               return *list;
             }

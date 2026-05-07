@@ -845,7 +845,7 @@ namespace epmodel {
       }
 
       if (auto name = getString(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::DesignObject, true); name && !name->empty()) {
-        if (auto obj = workspace().getObjectByTypeAndName(IddObjectType::ZoneHVAC_LowTemperatureRadiant_ConstantFlow_Design, *name, true)) {
+        if (auto obj = workspace().getObjectByTypeAndName(IddObjectType::ZoneHVAC_LowTemperatureRadiant_ConstantFlow_Design, *name)) {
           if (auto typed = obj->optionalCast<ZoneHVACLowTempRadiantConstFlowDesign>()) {
             auto* self = const_cast<ZoneHVACLowTempRadiantConstFlow_Impl*>(this);
             self->setPointer(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::DesignObject, typed->handle(), false);
@@ -898,7 +898,7 @@ namespace epmodel {
       if (const auto existingName =
             getString(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::SurfaceNameorRadiantSurfaceGroupName, true);
           existingName && !existingName->empty()) {
-        if (auto obj = workspace().getObjectByTypeAndName(IddObjectType::ZoneHVAC_LowTemperatureRadiant_SurfaceGroup, *existingName, true)) {
+        if (auto obj = workspace().getObjectByTypeAndName(IddObjectType::ZoneHVAC_LowTemperatureRadiant_SurfaceGroup, *existingName)) {
           if (auto typed = obj->optionalCast<ZoneHVACLowTemperatureRadiantSurfaceGroup>()) {
             OS_ASSERT(setPointer(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::SurfaceNameorRadiantSurfaceGroupName, typed->handle(),
                                  false));

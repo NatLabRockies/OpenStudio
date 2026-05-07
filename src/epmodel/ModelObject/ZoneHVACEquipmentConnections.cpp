@@ -83,7 +83,7 @@ namespace epmodel {
 
         if (auto nodeOrListName = connections.getString(field)) {
           if (!nodeOrListName->empty()) {
-            if (auto nodeList = connections.model().getObjectByTypeAndName(openstudio::IddObjectType::NodeList, *nodeOrListName, true)) {
+            if (auto nodeList = connections.model().getObjectByTypeAndName(openstudio::IddObjectType::NodeList, *nodeOrListName)) {
               if (auto castNodeList = nodeList->optionalCast<openstudio::epmodel::NodeList>()) {
                 if (!connections.getImpl<openstudio::epmodel::detail::ModelObject_Impl>()->setPointer(field, castNodeList->handle(), false)) {
                   return {};
@@ -215,7 +215,7 @@ namespace epmodel {
       } else {
         const auto zoneAirNodeName = zone->nameString() + " Demand Branch Node";
         const bool zoneAirNodeAlreadyExisted =
-          static_cast<bool>(model().getObjectByTypeAndName(openstudio::IddObjectType::Node, zoneAirNodeName, true));
+          static_cast<bool>(model().getObjectByTypeAndName(openstudio::IddObjectType::Node, zoneAirNodeName));
         auto zoneAirNode = model().getOrCreateTransientByName<openstudio::epmodel::Node>(zoneAirNodeName);
         if (!equipmentConnections.setPointer(openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneAirNodeName, zoneAirNode.handle())) {
           detail::addLoadError(context, "Failed to attach zone air node '" + zoneAirNode.nameString() + "' to ZoneHVAC:EquipmentConnections '"

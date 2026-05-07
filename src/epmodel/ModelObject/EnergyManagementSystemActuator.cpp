@@ -29,7 +29,7 @@ namespace epmodel {
     };
 
     boost::optional<ModelObject> modelObjectByExactName(const Model& model, const std::string& name) {
-      for (const auto& object : model.getObjectsByName(name, true, true)) {
+      for (const auto& object : model.getObjectsByName(name, true)) {
         if (auto impl = object.getImpl<detail::ModelObject_Impl>()) {
           return RehydratedModelObject(std::move(impl));
         }

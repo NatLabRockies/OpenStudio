@@ -326,17 +326,17 @@ TEST_F(EPModelFixture, AirLoopHVAC_RemoveRemovesCanonicalTopologyObjects) {
 
   airLoop.remove();
 
-  EXPECT_TRUE(model.getObjectsByType(AirLoopHVAC::iddObjectType(), true).empty());
-  EXPECT_TRUE(model.getObjectsByType(AirLoopHVACSupplyPath::iddObjectType(), true).empty());
-  EXPECT_TRUE(model.getObjectsByType(AirLoopHVACReturnPath::iddObjectType(), true).empty());
-  EXPECT_TRUE(model.getObjectsByType(AirLoopHVACZoneSplitter::iddObjectType(), true).empty());
-  EXPECT_TRUE(model.getObjectsByType(AirLoopHVACZoneMixer::iddObjectType(), true).empty());
-  EXPECT_TRUE(model.getObjectsByType(BranchList::iddObjectType(), true).empty());
-  EXPECT_TRUE(model.getObjectsByType(Branch::iddObjectType(), true).empty());
+  EXPECT_TRUE(model.getObjectsByType(AirLoopHVAC::iddObjectType()).empty());
+  EXPECT_TRUE(model.getObjectsByType(AirLoopHVACSupplyPath::iddObjectType()).empty());
+  EXPECT_TRUE(model.getObjectsByType(AirLoopHVACReturnPath::iddObjectType()).empty());
+  EXPECT_TRUE(model.getObjectsByType(AirLoopHVACZoneSplitter::iddObjectType()).empty());
+  EXPECT_TRUE(model.getObjectsByType(AirLoopHVACZoneMixer::iddObjectType()).empty());
+  EXPECT_TRUE(model.getObjectsByType(BranchList::iddObjectType()).empty());
+  EXPECT_TRUE(model.getObjectsByType(Branch::iddObjectType()).empty());
   EXPECT_FALSE(model.getObjectByTypeAndName(openstudio::IddObjectType::NodeList, supplyOutletNodeListName));
   EXPECT_FALSE(model.getObjectByTypeAndName(openstudio::IddObjectType::NodeList, demandInletNodeListName));
-  EXPECT_TRUE(model.getObjectsByType(FanConstantVolume::iddObjectType(), true).empty());
-  EXPECT_EQ(1u, model.getObjectsByType(ThermalZone::iddObjectType(), true).size());
+  EXPECT_TRUE(model.getObjectsByType(FanConstantVolume::iddObjectType()).empty());
+  EXPECT_EQ(1u, model.getObjectsByType(ThermalZone::iddObjectType()).size());
 }
 
 TEST_F(EPModelFixture, AirLoopHVACSupplyPath_DefaultConstructor) {

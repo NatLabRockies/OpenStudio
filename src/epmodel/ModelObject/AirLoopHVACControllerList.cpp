@@ -190,7 +190,7 @@ namespace epmodel {
           continue;
         }
 
-        auto controllerObject = model().getObjectByTypeAndName(iddType, *controllerName, true);
+        auto controllerObject = model().getObjectByTypeAndName(iddType, *controllerName);
         auto controller = controllerObject ? controllerObject->optionalCast<openstudio::epmodel::ModelObject>() : boost::none;
         if (!controller) {
           controllerList.eraseExtensibleGroup(groupIndex);

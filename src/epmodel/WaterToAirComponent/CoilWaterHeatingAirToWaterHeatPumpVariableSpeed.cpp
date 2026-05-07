@@ -269,7 +269,7 @@ namespace epmodel {
 
       boost::optional<CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData> transientSpeedDataByName(const Model& model,
                                                                                                          const std::string& name) {
-        for (const auto& speed : model.getConcreteModelObjects<CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData>(true)) {
+        for (const auto& speed : model.getConcreteModelObjects<CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData>()) {
           if (const auto speedName = speed.name()) {
             if (openstudio::istringEqual(*speedName, name)) {
               return speed;

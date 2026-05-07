@@ -206,7 +206,7 @@ namespace epmodel {
 
       if (auto scheduleName = getString(openstudio::SetpointManager_ScheduledFields::ScheduleName)) {
         if (!scheduleName->empty()) {
-          for (const auto& candidate : model().getObjectsByName(*scheduleName, true, true)) {
+          for (const auto& candidate : model().getObjectsByName(*scheduleName, true)) {
             if (auto schedule = candidate.optionalCast<openstudio::epmodel::Schedule>()) {
               OS_ASSERT(setPointer(openstudio::SetpointManager_ScheduledFields::ScheduleName, schedule->handle(), false));
               return;

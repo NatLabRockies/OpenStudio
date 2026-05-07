@@ -466,7 +466,7 @@ namespace epmodel {
       impl->resetHeatingControlTemperatureSchedule();
 
       const auto transientName = detail::transientHeatingCoilName(getObject<openstudio::epmodel::ZoneHVACLowTempRadiantVarFlow>());
-      if (auto object = workspace().getObjectByTypeAndName(IddObjectType::OS_Coil_Heating_LowTemperatureRadiant_VariableFlow, transientName, true)) {
+      if (auto object = workspace().getObjectByTypeAndName(IddObjectType::OS_Coil_Heating_LowTemperatureRadiant_VariableFlow, transientName)) {
         object->remove();
       }
     }
@@ -552,7 +552,7 @@ namespace epmodel {
       impl->resetCondensationControlDewpointOffset();
 
       const auto transientName = detail::transientCoolingCoilName(getObject<openstudio::epmodel::ZoneHVACLowTempRadiantVarFlow>());
-      if (auto object = workspace().getObjectByTypeAndName(IddObjectType::OS_Coil_Cooling_LowTemperatureRadiant_VariableFlow, transientName, true)) {
+      if (auto object = workspace().getObjectByTypeAndName(IddObjectType::OS_Coil_Cooling_LowTemperatureRadiant_VariableFlow, transientName)) {
         object->remove();
       }
     }
@@ -1198,7 +1198,7 @@ namespace epmodel {
       }
 
       if (auto name = getString(openstudio::ZoneHVAC_LowTemperatureRadiant_VariableFlowFields::DesignObject, true); name && !name->empty()) {
-        if (auto obj = workspace().getObjectByTypeAndName(IddObjectType::ZoneHVAC_LowTemperatureRadiant_VariableFlow_Design, *name, true)) {
+        if (auto obj = workspace().getObjectByTypeAndName(IddObjectType::ZoneHVAC_LowTemperatureRadiant_VariableFlow_Design, *name)) {
           if (auto typed = obj->optionalCast<ZoneHVACLowTempRadiantVarFlowDesign>()) {
             auto* self = const_cast<ZoneHVACLowTempRadiantVarFlow_Impl*>(this);
             self->setPointer(openstudio::ZoneHVAC_LowTemperatureRadiant_VariableFlowFields::DesignObject, typed->handle(), false);
@@ -1248,7 +1248,7 @@ namespace epmodel {
       if (const auto existingName =
             getString(openstudio::ZoneHVAC_LowTemperatureRadiant_VariableFlowFields::SurfaceNameorRadiantSurfaceGroupName, true);
           existingName && !existingName->empty()) {
-        if (auto obj = workspace().getObjectByTypeAndName(IddObjectType::ZoneHVAC_LowTemperatureRadiant_SurfaceGroup, *existingName, true)) {
+        if (auto obj = workspace().getObjectByTypeAndName(IddObjectType::ZoneHVAC_LowTemperatureRadiant_SurfaceGroup, *existingName)) {
           if (auto typed = obj->optionalCast<ZoneHVACLowTemperatureRadiantSurfaceGroup>()) {
             OS_ASSERT(setPointer(openstudio::ZoneHVAC_LowTemperatureRadiant_VariableFlowFields::SurfaceNameorRadiantSurfaceGroupName, typed->handle(),
                                  false));

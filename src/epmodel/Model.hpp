@@ -95,7 +95,7 @@ namespace epmodel {
         LOG_FREE_AND_THROW("openstudio.epmodel.Model", "Transient model objects require a non-empty name.");
       }
 
-      auto objects = this->getObjectsByType(T::iddObjectType(), true);
+      auto objects = this->getObjectsByType(T::iddObjectType());
       for (const auto& wo : objects) {
         if (auto existingName = wo.name()) {
           if (openstudio::istringEqual(*existingName, name)) {
@@ -153,7 +153,7 @@ namespace epmodel {
     /// Returns a model object of type T by exact name, if it exists.
     template <AnyModelObject T>
     boost::optional<T> getModelObjectByName(const std::string& name) const {
-      std::vector<WorkspaceObject> objects = this->getObjectsByName(name, true, true);
+      std::vector<WorkspaceObject> objects = this->getObjectsByName(name, true);
       for (const auto& wo : objects) {
         std::shared_ptr<typename T::ImplType> p = wo.getImpl<typename T::ImplType>();
         if (p) {
@@ -195,9 +195,9 @@ namespace epmodel {
     /// Returns all model objects of type T using T::iddObjectType() to speed up the search.
     /// This only works for concrete model objects.
     template <ConcreteModelObject T>
-    std::vector<T> getConcreteModelObjects(bool includeTransient = false) const {
+    std::vector<T> getConcreteModelObjects() const {
       std::vector<T> result;
-      std::vector<WorkspaceObject> objects = this->getObjectsByType(T::iddObjectType(), includeTransient);
+      std::vector<WorkspaceObject> objects = this->getObjectsByType(T::iddObjectType());
       result.reserve(objects.size());
       for (const auto& wo : objects) {
         std::shared_ptr<typename T::ImplType> p = wo.getImpl<typename T::ImplType>();
