@@ -137,19 +137,18 @@ namespace epmodel {
       return getOrCreateTransientByName<T>(generatedName);
     }
 
+    /// Returns a single model object of type T by handle, if it exists.
     template <AnyModelObject T>
-    std::vector<T> getModelObjects(bool sorted = false) const {
-      std::vector<T> result;
-      std::vector<WorkspaceObject> objects = this->objects(sorted);
-      result.reserve(objects.size());
-      for (const auto& wo : objects) {
-        std::shared_ptr<typename T::ImplType> p = wo.getImpl<typename T::ImplType>();
-        if (p) {
-          result.push_back(T(std::move(p)));
-        }
+    boost::optional<T> getModelObject(const Handle& handle) const {
+      if (auto wo = this->getObject(handle)) {
+        return wo->optionalCast<T>();
       }
-      return result;
+      return boost::none;
     }
+
+    // -------------------------------------------------------------------------
+    //  Get a single model object by name
+    // -------------------------------------------------------------------------
 
     /// Returns a model object of type T by exact name, if it exists.
     template <AnyModelObject T>
@@ -175,13 +174,22 @@ namespace epmodel {
       return boost::none;
     }
 
-    /// Returns a single model object of type T by handle, if it exists.
+    // -------------------------------------------------------------------------
+    //  Get model objects by type
+    // -------------------------------------------------------------------------
+
     template <AnyModelObject T>
-    boost::optional<T> getModelObject(const Handle& handle) const {
-      if (auto wo = this->getObject(handle)) {
-        return wo->optionalCast<T>();
+    std::vector<T> getModelObjects(bool sorted = false) const {
+      std::vector<T> result;
+      std::vector<WorkspaceObject> objects = this->objects(sorted);
+      result.reserve(objects.size());
+      for (const auto& wo : objects) {
+        std::shared_ptr<typename T::ImplType> p = wo.getImpl<typename T::ImplType>();
+        if (p) {
+          result.push_back(T(std::move(p)));
+        }
       }
-      return boost::none;
+      return result;
     }
 
     /// Returns all model objects of type T using T::iddObjectType() to speed up the search.
@@ -199,6 +207,10 @@ namespace epmodel {
       }
       return result;
     }
+
+    // -------------------------------------------------------------------------
+    // Get model objects by name matching
+    // -------------------------------------------------------------------------
 
     /** Returns all \link ModelObject ModelObjects \endlink of type T with given name. This method can
      *  be used with T as a concrete type (e.g. Zone) or as an abstract class (e.g. ParentObject).
@@ -235,16 +247,20 @@ namespace epmodel {
       return result;
     }
 
+    // -------------------------------------------------------------------------
+    // Get Unique Model Objects
+    // -------------------------------------------------------------------------
+
     /** Returns the unique ModelObject of type T, creates a one if none are found.
-   *
-   *  \todo Use of this template method requires knowledge of the size of the implementation object.
-   *  Therefore, to use model.getUniqueModelObject<Facility>() the user must include both
-   *  Facility.hpp and Facility_Impl.hpp. It may be better to instantiate each version of this
-   *  template method to avoid exposing the implementation objects, this is an open question.
-   *
-   *  Note that template specilizations are provided below for objects were there is a
-   *  performance gain to be had by caching the unique model object
-   *  eg: getUniqueModelObject<YearDescription>() */
+     *
+     *  \todo Use of this template method requires knowledge of the size of the implementation object.
+     *  Therefore, to use model.getUniqueModelObject<Facility>() the user must include both
+     *  Facility.hpp and Facility_Impl.hpp. It may be better to instantiate each version of this
+     *  template method to avoid exposing the implementation objects, this is an open question.
+     *
+     *  Note that template specilizations are provided below for objects were there is a
+     *  performance gain to be had by caching the unique model object
+     *  eg: getUniqueModelObject<YearDescription>() */
     template <UniqueModelObject T>
     T getUniqueModelObject() {
       // NOTE: all UniqueModelObjects are Concrete. Call getObjectsByType to avoid returning a huge vector
@@ -260,11 +276,11 @@ namespace epmodel {
     }
 
     /** Returns the unique ModelObject of type T if it is found.
-   *
-   *  \todo Use of this template method requires knowledge of the size of the implementation object.
-   *  Therefore, to use model.getOptionalUniqueModelObject<Facility>() the user must include both
-   *  Facility.hpp and Facility_Impl.hpp.  It may be better to instantiate each version of this
-   *  template method to avoid exposing the implementation objects, this is an open question. */
+     *
+     *  \todo Use of this template method requires knowledge of the size of the implementation object.
+     *  Therefore, to use model.getOptionalUniqueModelObject<Facility>() the user must include both
+     *  Facility.hpp and Facility_Impl.hpp.  It may be better to instantiate each version of this
+     *  template method to avoid exposing the implementation objects, this is an open question. */
     template <UniqueModelObject T>
     boost::optional<T> getOptionalUniqueModelObject() const {
       boost::optional<T> result;
