@@ -53,6 +53,8 @@ namespace epmodel {
       bool setAdjustScheduleforDaylightSavings(bool adjustScheduleforDaylightSavings);
       void resetAdjustScheduleforDaylightSavings();
 
+      bool setTimeSeries(const openstudio::TimeSeries& timeSeries);
+
       std::vector<std::string> columnSeparatorValues() const;
       std::vector<std::string> minutesperItemValues() const;
     };

@@ -51,8 +51,8 @@ namespace epmodel {
     // - Field Mapping: ScheduleTypeLimitsName and FileName are intentionally excluded in this scalar-only pass
     //   (relationship/file-path behavior is handled separately from scalar accessors).
     // - TODO(parity): Add relationship and path-translation parity APIs incrementally after scalar scaffold saturation.
-    std::string fileName() const;
-    bool setFileName(std::string fileName);
+    //std::string fileName() const;
+    //bool setFileName(std::string fileName);
     
     int columnNumber() const;
     bool setColumnNumber(int columnNumber);
@@ -86,6 +86,8 @@ namespace epmodel {
     void resetAdjustScheduleforDaylightSavings();
 
     static boost::optional<ScheduleFile> fromTimeSeries(const openstudio::TimeSeries& timeSeries, Model& model);
+
+    //bool setTimeSeries(const openstudio::TimeSeries& timeSeries);
 
    protected:
     using ImplType = detail::ScheduleFile_Impl;

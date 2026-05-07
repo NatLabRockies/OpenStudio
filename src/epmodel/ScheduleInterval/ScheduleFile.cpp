@@ -37,7 +37,7 @@ namespace epmodel {
     }
 
     bool ok = true;
-    ok &= setFileName(toString(filePath));
+    ok &= getImpl<detail::ScheduleFile_Impl>()->setFileName(toString(filePath));
     ok &= setColumnNumber(column);
     ok &= setRowstoSkipatTop(rowsToSkip);
     OS_ASSERT(ok);
@@ -57,13 +57,13 @@ namespace epmodel {
     return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), openstudio::Schedule_FileFields::MinutesperItem);
   }
 
-  std::string ScheduleFile::fileName() const {
-    return getImpl<detail::ScheduleFile_Impl>()->fileName();
-  }
+  // std::string ScheduleFile::fileName() const {
+  //   return getImpl<detail::ScheduleFile_Impl>()->fileName();
+  // }
   
-  bool ScheduleFile::setFileName(std::string fileName) {
-    return getImpl<detail::ScheduleFile_Impl>()->setFileName(fileName);
-  }
+  // bool ScheduleFile::setFileName(std::string fileName) {
+  //   return getImpl<detail::ScheduleFile_Impl>()->setFileName(fileName);
+  // }
 
   int ScheduleFile::columnNumber() const {
     return getImpl<detail::ScheduleFile_Impl>()->columnNumber();
@@ -168,9 +168,10 @@ namespace epmodel {
   boost::optional<ScheduleFile> ScheduleFile::fromTimeSeries(const openstudio::TimeSeries& timeSeries, Model& model) {
     boost::optional<ScheduleFile> result;
 
-    if (timeSeries.intervalLength()) {
-      //const std::string name = result.nameString();
-      const std::string name = "temp"; // FIXME: can we find out what the Schedule:File object's name is going to be?
+    boost::optional<openstudio::Time> intervalTime = timeSeries.intervalLength();
+    if (intervalTime) {
+      result = ScheduleFile(model);
+      const std::string name = result->nameString();
       openstudio::path filePath = toPath(name + ".csv");
 
       CSVFile csvFile;
@@ -178,9 +179,20 @@ namespace epmodel {
       csvFile.addColumn(timeSeries.values());
       csvFile.saveAs(filePath);
 
-      result = ScheduleFile(model, filePath);
+      if (!exists(filePath)) {
+        LOG_FREE(Warn, "openstudio.epmodel.Model", "Cannot find file \"" << filePath << "\"");
+      } else {
+        // make the path correct for this system
+        filePath = system_complete(filePath);
+      }
+
+      bool ok = true;
+      ok &= result->getImpl<detail::ScheduleFile_Impl>()->setFileName(toString(filePath));
+      ok &= result->getImpl<detail::ScheduleFile_Impl>()->setTimeSeries(timeSeries);
+      OS_ASSERT(ok);
     } else {
       // FIXME: deprecate ScheduleVariableInterval?
+      LOG_FREE(Warn, "openstudio.epmodel.Model", "Timeseries does not have an interval length defined, but ScheduleVariableInterval is deprecated");
     }
 
     return result;
@@ -192,6 +204,24 @@ namespace epmodel {
 namespace openstudio {
 namespace epmodel {
   namespace detail {
+
+    bool ScheduleFile_Impl::setTimeSeries(const openstudio::TimeSeries& timeSeries) {
+      boost::optional<openstudio::Time> intervalTime = timeSeries.intervalLength();
+      if (!intervalTime) {
+        return false;
+      }
+      
+      // TODO: bunch of stuff based on the timeseries
+      // borrow from non-epmodel ScheduleFixedInterval / ScheduleFile?
+      // placeholders below
+      bool ok = true;
+      ok &= this->setNumberofHoursofData(8760);
+      ok &= this->setColumnSeparator("Comma");
+      ok &= this->setInterpolatetoTimestep(true);
+      ok &= this->setMinutesperItem(60);
+      ok &= this->setAdjustScheduleforDaylightSavings(true);
+      return true;
+    }
 
     std::string ScheduleFile_Impl::fileName() const {
       const auto value = getString(openstudio::Schedule_FileFields::FileName, true);
