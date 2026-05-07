@@ -26,6 +26,8 @@ namespace epmodel {
   class EPMODEL_API EnvironmentalImpactFactors : public ModelObject
   {
    public:
+    static constexpr bool is_unique = true;  // This is a Unique ModelObject
+
     virtual ~EnvironmentalImpactFactors() override = default;
     EnvironmentalImpactFactors(const EnvironmentalImpactFactors& other) = default;
     EnvironmentalImpactFactors(EnvironmentalImpactFactors&& other) = default;

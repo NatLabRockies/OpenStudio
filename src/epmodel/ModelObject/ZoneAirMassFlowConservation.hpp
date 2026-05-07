@@ -25,6 +25,8 @@ namespace epmodel {
   class EPMODEL_API ZoneAirMassFlowConservation : public ModelObject
   {
    public:
+    static constexpr bool is_unique = true;  // This is a Unique ModelObject
+
     virtual ~ZoneAirMassFlowConservation() override = default;
     ZoneAirMassFlowConservation(const ZoneAirMassFlowConservation& other) = default;
     ZoneAirMassFlowConservation(ZoneAirMassFlowConservation&& other) = default;

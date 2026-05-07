@@ -25,6 +25,8 @@ namespace epmodel {
   class EPMODEL_API SimulationControl : public ParentObject
   {
    public:
+    static constexpr bool is_unique = true;  // This is a Unique ModelObject
+
     virtual ~SimulationControl() override = default;
     SimulationControl(const SimulationControl& other) = default;
     SimulationControl(SimulationControl&& other) = default;

@@ -25,6 +25,8 @@ namespace epmodel {
   class EPMODEL_API OutputConstructions : public ModelObject
   {
    public:
+    static constexpr bool is_unique = true;  // This is a Unique ModelObject
+
     virtual ~OutputConstructions() override = default;
     OutputConstructions(const OutputConstructions& other) = default;
     OutputConstructions(OutputConstructions&& other) = default;

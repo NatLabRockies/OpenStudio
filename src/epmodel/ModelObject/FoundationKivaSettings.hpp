@@ -24,6 +24,8 @@ namespace epmodel {
   class EPMODEL_API FoundationKivaSettings : public ModelObject
   {
    public:
+    static constexpr bool is_unique = true;  // This is a Unique ModelObject
+
     virtual ~FoundationKivaSettings() override = default;
     FoundationKivaSettings(const FoundationKivaSettings& other) = default;
     FoundationKivaSettings(FoundationKivaSettings&& other) = default;

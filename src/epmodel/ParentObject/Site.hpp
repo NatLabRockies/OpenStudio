@@ -27,6 +27,8 @@ namespace epmodel {
   class EPMODEL_API Site : public ParentObject
   {
    public:
+    static constexpr bool is_unique = true;  // This is a Unique ModelObject
+
     virtual ~Site() override = default;
     Site(const Site& other) = default;
     Site(Site&& other) = default;

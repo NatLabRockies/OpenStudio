@@ -26,6 +26,8 @@ namespace epmodel {
   class EPMODEL_API OutputControlTableStyle : public ModelObject
   {
    public:
+    static constexpr bool is_unique = true;  // This is a Unique ModelObject
+
     virtual ~OutputControlTableStyle() override = default;
     OutputControlTableStyle(const OutputControlTableStyle& other) = default;
     OutputControlTableStyle(OutputControlTableStyle&& other) = default;

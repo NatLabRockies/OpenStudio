@@ -29,6 +29,8 @@ namespace epmodel {
   class EPMODEL_API LifeCycleCostParameters : public ParentObject
   {
    public:
+    static constexpr bool is_unique = true;  // This is a Unique ModelObject
+
     virtual ~LifeCycleCostParameters() override = default;
     LifeCycleCostParameters(const LifeCycleCostParameters& other) = default;
     LifeCycleCostParameters(LifeCycleCostParameters&& other) = default;

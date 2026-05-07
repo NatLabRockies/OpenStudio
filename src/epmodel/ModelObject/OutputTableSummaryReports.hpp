@@ -25,6 +25,8 @@ namespace epmodel {
   class EPMODEL_API OutputTableSummaryReports : public ModelObject
   {
    public:
+    static constexpr bool is_unique = true;  // This is a Unique ModelObject
+
     virtual ~OutputTableSummaryReports() override = default;
     OutputTableSummaryReports(const OutputTableSummaryReports& other) = default;
     OutputTableSummaryReports(OutputTableSummaryReports&& other) = default;

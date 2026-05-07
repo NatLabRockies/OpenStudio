@@ -25,6 +25,8 @@ namespace epmodel {
   class EPMODEL_API OutputControlFiles : public ModelObject
   {
    public:
+    static constexpr bool is_unique = true;  // This is a Unique ModelObject
+
     virtual ~OutputControlFiles() override = default;
     OutputControlFiles(const OutputControlFiles& other) = default;
     OutputControlFiles(OutputControlFiles&& other) = default;

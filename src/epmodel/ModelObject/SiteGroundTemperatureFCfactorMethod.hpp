@@ -23,6 +23,8 @@ namespace epmodel {
   class EPMODEL_API SiteGroundTemperatureFCfactorMethod : public ModelObject
   {
    public:
+    static constexpr bool is_unique = true;  // This is a Unique ModelObject
+
     virtual ~SiteGroundTemperatureFCfactorMethod() override = default;
     SiteGroundTemperatureFCfactorMethod(const SiteGroundTemperatureFCfactorMethod& other) = default;
     SiteGroundTemperatureFCfactorMethod(SiteGroundTemperatureFCfactorMethod&& other) = default;

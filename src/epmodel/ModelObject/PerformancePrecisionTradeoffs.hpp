@@ -26,6 +26,8 @@ namespace epmodel {
   class EPMODEL_API PerformancePrecisionTradeoffs : public ModelObject
   {
    public:
+    static constexpr bool is_unique = true;  // This is a Unique ModelObject
+
     virtual ~PerformancePrecisionTradeoffs() override = default;
     PerformancePrecisionTradeoffs(const PerformancePrecisionTradeoffs& other) = default;
     PerformancePrecisionTradeoffs(PerformancePrecisionTradeoffs&& other) = default;

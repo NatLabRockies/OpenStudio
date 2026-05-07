@@ -23,6 +23,8 @@ namespace epmodel {
   class EPMODEL_API Timestep : public ModelObject
   {
    public:
+    static constexpr bool is_unique = true;  // This is a Unique ModelObject
+
     virtual ~Timestep() override = default;
     Timestep(const Timestep& other) = default;
     Timestep(Timestep&& other) = default;

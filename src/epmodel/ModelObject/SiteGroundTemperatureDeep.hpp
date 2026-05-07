@@ -23,6 +23,8 @@ namespace epmodel {
   class EPMODEL_API SiteGroundTemperatureDeep : public ModelObject
   {
    public:
+    static constexpr bool is_unique = true;  // This is a Unique ModelObject
+
     virtual ~SiteGroundTemperatureDeep() override = default;
     SiteGroundTemperatureDeep(const SiteGroundTemperatureDeep& other) = default;
     SiteGroundTemperatureDeep(SiteGroundTemperatureDeep&& other) = default;

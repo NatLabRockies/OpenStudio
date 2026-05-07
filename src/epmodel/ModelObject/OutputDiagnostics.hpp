@@ -25,6 +25,8 @@ namespace epmodel {
   class EPMODEL_API OutputDiagnostics : public ModelObject
   {
    public:
+    static constexpr bool is_unique = true;  // This is a Unique ModelObject
+
     virtual ~OutputDiagnostics() override = default;
     OutputDiagnostics(const OutputDiagnostics& other) = default;
     OutputDiagnostics(OutputDiagnostics&& other) = default;

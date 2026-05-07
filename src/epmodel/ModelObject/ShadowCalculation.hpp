@@ -26,6 +26,8 @@ namespace epmodel {
   class EPMODEL_API ShadowCalculation : public ModelObject
   {
    public:
+    static constexpr bool is_unique = true;  // This is a Unique ModelObject
+
     virtual ~ShadowCalculation() override = default;
     ShadowCalculation(const ShadowCalculation& other) = default;
     ShadowCalculation(ShadowCalculation&& other) = default;
