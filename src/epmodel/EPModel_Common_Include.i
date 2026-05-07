@@ -88,10 +88,7 @@
         }
         std::vector<_name> get##_name##sByName(const Model &t_model, const std::string &t_name, bool t_exactMatch) {
           #if _isConcrete
-            if (t_exactMatch){
-              return t_model.getModelObjectsByName<_name>(t_name, t_exactMatch);
-            }
-            return t_model.getConcreteModelObjectsByName<_name>(t_name);
+            return t_model.getConcreteModelObjectsByName<_name>(t_name, t_exactMatch);
           #else
             return t_model.getModelObjectsByName<_name>(t_name, t_exactMatch);
           #endif

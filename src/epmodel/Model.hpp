@@ -195,9 +195,12 @@ namespace epmodel {
     /// Returns all model objects of type T using T::iddObjectType() to speed up the search.
     /// This only works for concrete model objects.
     template <ConcreteModelObject T>
-    std::vector<T> getConcreteModelObjects() const {
+    std::vector<T> getConcreteModelObjects(bool sorted = false) const {
       std::vector<T> result;
       std::vector<WorkspaceObject> objects = this->getObjectsByType(T::iddObjectType());
+      if (sorted) {
+        objects = this->sort(objects);  // Call Workspace::sort
+      }
       result.reserve(objects.size());
       for (const auto& wo : objects) {
         std::shared_ptr<typename T::ImplType> p = wo.getImpl<typename T::ImplType>();
@@ -234,8 +237,15 @@ namespace epmodel {
     }
 
     template <ConcreteModelObject T>
-    std::vector<T> getConcreteModelObjectsByName(const std::string& name) const {
+    std::vector<T> getConcreteModelObjectsByName(const std::string& name, bool exactMatch = false) const {
       std::vector<T> result;
+      if (exactMatch) {
+        // Call the singular version directly
+        if (auto object = this->getConcreteModelObjectByName<T>(name)) {
+          result.push_back(*object);
+        }
+        return result;
+      }
       std::vector<WorkspaceObject> objects = this->getObjectsByTypeAndName(T::iddObjectType(), name);
       result.reserve(objects.size());
       for (auto& wo : objects) {
