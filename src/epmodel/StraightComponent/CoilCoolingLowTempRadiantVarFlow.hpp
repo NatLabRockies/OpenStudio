@@ -26,6 +26,8 @@ namespace epmodel {
   class EPMODEL_API CoilCoolingLowTempRadiantVarFlow : public StraightComponent
   {
    public:
+    static constexpr bool is_transient = true;  // This is a Transient ModelObject
+
     explicit CoilCoolingLowTempRadiantVarFlow(const Model& model);
 
     virtual ~CoilCoolingLowTempRadiantVarFlow() override = default;

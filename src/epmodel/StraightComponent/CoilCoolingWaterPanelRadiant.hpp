@@ -27,6 +27,8 @@ namespace epmodel {
   class EPMODEL_API CoilCoolingWaterPanelRadiant : public StraightComponent
   {
    public:
+    static constexpr bool is_transient = true;  // This is a Transient ModelObject
+
     explicit CoilCoolingWaterPanelRadiant(const Model& model);
 
     virtual ~CoilCoolingWaterPanelRadiant() override = default;

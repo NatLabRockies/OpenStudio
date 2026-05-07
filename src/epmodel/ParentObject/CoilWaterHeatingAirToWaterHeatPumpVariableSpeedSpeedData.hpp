@@ -24,6 +24,8 @@ namespace epmodel {
   class EPMODEL_API CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData : public ParentObject
   {
    public:
+    static constexpr bool is_transient = true;  // This is a Transient ModelObject
+
     // This wrapper preserves the canonical OpenStudio speed-data child object
     // for a family that EnergyPlus stores as extensible rows on the parent coil.
     // A detached transient speed-data object keeps its own OpenStudio-style

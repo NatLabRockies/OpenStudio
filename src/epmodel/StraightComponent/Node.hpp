@@ -28,6 +28,8 @@ namespace epmodel {
   class EPMODEL_API Node : public StraightComponent
   {
    public:
+    static constexpr bool is_transient = true;  // This is a Transient ModelObject
+
     virtual ~Node() = default;
     Node(const Node& other) = default;
     Node(Node&& other) = default;
