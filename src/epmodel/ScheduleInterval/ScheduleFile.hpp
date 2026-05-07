@@ -53,7 +53,7 @@ namespace epmodel {
     // - TODO(parity): Add relationship and path-translation parity APIs incrementally after scalar scaffold saturation.
     //std::string fileName() const;
     //bool setFileName(std::string fileName);
-    
+
     int columnNumber() const;
     bool setColumnNumber(int columnNumber);
 

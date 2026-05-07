@@ -27,7 +27,8 @@ namespace epmodel {
     OS_ASSERT(ok);
   }
 
-  ScheduleFile::ScheduleFile(const Model& model, openstudio::path& filePath, int column, int rowsToSkip) : Schedule(ScheduleFile::iddObjectType(), model) {
+  ScheduleFile::ScheduleFile(const Model& model, openstudio::path& filePath, int column, int rowsToSkip)
+    : Schedule(ScheduleFile::iddObjectType(), model) {
 
     if (!exists(filePath)) {
       LOG_FREE(Warn, "openstudio.epmodel.Model", "Cannot find file \"" << filePath << "\"");
@@ -60,7 +61,7 @@ namespace epmodel {
   // std::string ScheduleFile::fileName() const {
   //   return getImpl<detail::ScheduleFile_Impl>()->fileName();
   // }
-  
+
   // bool ScheduleFile::setFileName(std::string fileName) {
   //   return getImpl<detail::ScheduleFile_Impl>()->setFileName(fileName);
   // }
@@ -210,7 +211,7 @@ namespace epmodel {
       if (!intervalTime) {
         return false;
       }
-      
+
       // TODO: bunch of stuff based on the timeseries
       // borrow from non-epmodel ScheduleFixedInterval / ScheduleFile?
       // placeholders below
@@ -228,7 +229,7 @@ namespace epmodel {
       OS_ASSERT(value);
       return *value;
     }
-    
+
     bool ScheduleFile_Impl::setFileName(std::string fileName) {
       const bool result = setString(openstudio::Schedule_FileFields::FileName, fileName);
       OS_ASSERT(result);

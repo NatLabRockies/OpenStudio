@@ -84,12 +84,12 @@ TEST_F(EPModelFixture, ScheduleFile_fromTimeSeries_intervalLengthYes) {
   }
 
   TimeSeries timeSeries(startDate, intervalLength, values, "");
-  
+
   boost::optional<ScheduleFile> schedule = ScheduleFile::fromTimeSeries(timeSeries, model);
   ASSERT_TRUE(schedule);
   EXPECT_EQ("", schedule->fileName());
   EXPECT_EQ(1, schedule->columnNumber());
-  EXPECT_EQ(0, schedule->rowstoSkipatTop()); 
+  EXPECT_EQ(0, schedule->rowstoSkipatTop());
   ASSERT_TRUE(schedule->numberofHoursofData());
   EXPECT_EQ(8760, schedule->numberofHoursofData().get());
   EXPECT_EQ("Comma", schedule->columnSeparator());
@@ -111,7 +111,7 @@ TEST_F(EPModelFixture, ScheduleFile_fromTimeSeries_intervalLengthNo) {
   }
 
   TimeSeries timeSeries(dateTimes, values, "");
-  
+
   boost::optional<ScheduleFile> schedule = ScheduleFile::fromTimeSeries(timeSeries, model);
   ASSERT_FALSE(schedule);
 }
