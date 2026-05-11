@@ -29,8 +29,9 @@ namespace epmodel {
   class EPMODEL_API ScheduleFile : public Schedule
   {
    public:
-    explicit ScheduleFile(const Model& model);
-    explicit ScheduleFile(const Model& model, openstudio::path& filePath, int column = 1, int rowsToSkip = 0);
+    // explicit ScheduleFile(const ExternalFile& externalfile, int column = 1, int rowsToSkip = 0); // FIXME: how do we maintain this?
+    explicit ScheduleFile(const Model& model, int column = 1, int rowsToSkip = 0); // new ctor
+    explicit ScheduleFile(const Model& model, const openstudio::path& filePath, int column = 1, int rowsToSkip = 0); // old ctor
 
     virtual ~ScheduleFile() override = default;
     ScheduleFile(const ScheduleFile& other) = default;

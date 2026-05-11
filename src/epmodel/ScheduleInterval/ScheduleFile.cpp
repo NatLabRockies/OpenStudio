@@ -19,26 +19,30 @@
 namespace openstudio {
 namespace epmodel {
 
-  ScheduleFile::ScheduleFile(const Model& model) : Schedule(ScheduleFile::iddObjectType(), model) {
+  // ScheduleFile(const ExternalFile& externalfile, int column = 1, int rowsToSkip = 0) : Schedule(ScheduleFile::iddObjectType(), model) {}
+
+  ScheduleFile::ScheduleFile(const Model& model, int column, int rowsToSkip) : Schedule(ScheduleFile::iddObjectType(), model) {
     // Mirror preserved counterpart constructor behavior for required scalar fields.
     bool ok = true;
-    ok &= setColumnNumber(1);
-    ok &= setRowstoSkipatTop(0);
+    ok &= setColumnNumber(column);
+    ok &= setRowstoSkipatTop(rowsToSkip);
     OS_ASSERT(ok);
   }
 
-  ScheduleFile::ScheduleFile(const Model& model, openstudio::path& filePath, int column, int rowsToSkip)
+  ScheduleFile::ScheduleFile(const Model& model, const openstudio::path& filePath, int column, int rowsToSkip)
     : Schedule(ScheduleFile::iddObjectType(), model) {
 
+    openstudio::path p;
     if (!exists(filePath)) {
-      LOG_FREE(Warn, "openstudio.epmodel.Model", "Cannot find file \"" << filePath << "\"");
+      this->remove();
+      // LOG_AND_THROW("Cannot find file \"" << toString(filePath) << "\" for " << this->briefDescription());
     } else {
       // make the path correct for this system
-      filePath = system_complete(filePath);
+      p = system_complete(filePath);
     }
 
     bool ok = true;
-    ok &= getImpl<detail::ScheduleFile_Impl>()->setFileName(toString(filePath));
+    ok &= getImpl<detail::ScheduleFile_Impl>()->setFileName(toString(p));
     ok &= setColumnNumber(column);
     ok &= setRowstoSkipatTop(rowsToSkip);
     OS_ASSERT(ok);
@@ -171,7 +175,7 @@ namespace epmodel {
 
     boost::optional<openstudio::Time> intervalTime = timeSeries.intervalLength();
     if (intervalTime) {
-      result = ScheduleFile(model);
+      result = ScheduleFile(model, 2);
       const std::string name = result->nameString();
       openstudio::path filePath = toPath(name + ".csv");
 
@@ -180,15 +184,17 @@ namespace epmodel {
       csvFile.addColumn(timeSeries.values());
       csvFile.saveAs(filePath);
 
+      openstudio::path p;
       if (!exists(filePath)) {
-        LOG_FREE(Warn, "openstudio.epmodel.Model", "Cannot find file \"" << filePath << "\"");
+        result->remove();
+        // LOG_AND_THROW("Cannot find file \"" << toString(filePath) << "\" for " << briefDescription());
       } else {
         // make the path correct for this system
-        filePath = system_complete(filePath);
+        p = system_complete(filePath);
       }
 
       bool ok = true;
-      ok &= result->getImpl<detail::ScheduleFile_Impl>()->setFileName(toString(filePath));
+      ok &= result->getImpl<detail::ScheduleFile_Impl>()->setFileName(toString(p));
       ok &= result->getImpl<detail::ScheduleFile_Impl>()->setTimeSeries(timeSeries);
       OS_ASSERT(ok);
     } else {
