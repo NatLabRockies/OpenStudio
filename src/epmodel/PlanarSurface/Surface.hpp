@@ -41,6 +41,9 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     static std::vector<std::string> validSurfaceTypeValues();
+
+    /** Returns true if surfaceType is "Roof" or "Ceiling". */
+    static bool isCeilingLike(const std::string& surfaceType);
     static std::vector<std::string> validOutsideBoundaryConditionValues();
     static std::vector<std::string> validSunExposureValues();
     static std::vector<std::string> validWindExposureValues();

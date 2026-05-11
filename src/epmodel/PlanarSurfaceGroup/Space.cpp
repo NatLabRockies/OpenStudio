@@ -372,7 +372,7 @@ namespace epmodel {
             floorHeight += point.z();
             ++numFloor;
           }
-        } else if (istringEqual(surface.surfaceType(), "Roof") || istringEqual(surface.surfaceType(), "Ceiling")) {  // RoofCeiling
+        } else if (Surface::isCeilingLike(surface.surfaceType())) {
           for (const Point3d& point : surface.vertices()) {
             roofHeight += point.z();
             ++numRoof;

@@ -22,6 +22,7 @@ class Vector3d;
 
 namespace epmodel {
 
+  class ConstructionBase;
   class Space;
 
   namespace detail {
@@ -55,6 +56,10 @@ namespace epmodel {
 
     /// Sets the vertices.
     bool setVertices(const std::vector<Point3d>& vertices);
+
+    boost::optional<ConstructionBase> construction() const;
+    bool setConstruction(const ConstructionBase& construction);
+    void resetConstruction();
 
     //@}
     /** @name Queries */

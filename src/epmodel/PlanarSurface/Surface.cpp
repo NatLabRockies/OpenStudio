@@ -4,6 +4,8 @@
 ***********************************************************************************************************************/
 
 #include "PlanarSurface/Surface.hpp"
+#include "ConstructionBase/ConstructionBase.hpp"
+#include "ConstructionBase/ConstructionBase_Impl.hpp"
 #include "PlanarSurface/Surface_Impl.hpp"
 
 #include "Model.hpp"
@@ -41,6 +43,10 @@ namespace epmodel {
 
   std::vector<std::string> Surface::validSurfaceTypeValues() {
     return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), openstudio::BuildingSurface_DetailedFields::SurfaceType);
+  }
+
+  bool Surface::isCeilingLike(const std::string& surfaceType) {
+    return istringEqual(surfaceType, "Roof") || istringEqual(surfaceType, "Ceiling");
   }
 
   std::vector<std::string> Surface::validOutsideBoundaryConditionValues() {
@@ -422,6 +428,30 @@ namespace epmodel {
 
     std::vector<SubSurface> Surface_Impl::subSurfaces() const {
       return castVector<SubSurface>(getObject<openstudio::epmodel::Surface>().getSources(openstudio::epmodel::SubSurface::iddObjectType()));
+    }
+
+    boost::optional<ConstructionBase> Surface_Impl::construction() const {
+      auto result = getObject<openstudio::epmodel::Surface>().getModelObjectTarget<ConstructionBase>(
+        openstudio::BuildingSurface_DetailedFields::ConstructionName);
+      if (result) {
+        if (auto adjacent = adjacentSurface()) {
+          auto adjacentConstruction =
+            adjacent->getImpl<Surface_Impl>()->getObject<openstudio::epmodel::Surface>().getModelObjectTarget<ConstructionBase>(
+              openstudio::BuildingSurface_DetailedFields::ConstructionName);
+          if (adjacentConstruction && adjacentConstruction->handle() != result->handle()) {
+            LOG(Warn, "Surface '" << nameString() << "' and its adjacent surface '" << adjacent->nameString() << "' have different constructions.");
+          }
+        }
+      }
+      return result;
+    }
+
+    bool Surface_Impl::setConstruction(const ConstructionBase& construction) {
+      return setPointer(openstudio::BuildingSurface_DetailedFields::ConstructionName, construction.handle());
+    }
+
+    void Surface_Impl::resetConstruction() {
+      setString(openstudio::BuildingSurface_DetailedFields::ConstructionName, "");
     }
 
     bool Surface_Impl::setSpace(const Space& space) {
@@ -992,14 +1022,17 @@ namespace epmodel {
       // Be careful not to call clone as you will get duplicate sub surfaces
       Surface otherSurface(vertices, model);
       otherSurface.setName(this->nameString() + " Reversed");
-      // TODO: otherSurface.resetConstruction();  // this will use surface's construction on export, TODO: do something better
+      // otherSurface.resetConstruction();  // this will use surface's construction on export, TODO: do something better
+      if (auto c_ = this->construction()) {
+        otherSurface.setConstruction(*c_);
+      }
 
       std::string surfaceType = this->surfaceType();
-      if (surfaceType == "RoofCeiling") {
+      if (Surface::isCeilingLike(surfaceType)) {
         otherSurface.setSurfaceType("Floor");
-      } else if (surfaceType == "Floor") {
-        otherSurface.setSurfaceType("RoofCeiling");
-      } else if (surfaceType == "Wall") {
+      } else if (istringEqual(surfaceType, "Floor")) {
+        otherSurface.setSurfaceType("Ceiling");
+      } else if (istringEqual(surfaceType, "Wall")) {
         otherSurface.setSurfaceType("Wall");
       }
 
@@ -1014,6 +1047,9 @@ namespace epmodel {
         SubSurface otherSubSurface(vertices, model);
         otherSubSurface.setName(subSurface.nameString() + " Reversed");
         // otherSubSurface.resetConstruction();  // this will use sub surface's construction on export, TODO: do something better
+        if (auto c_ = subSurface.construction()) {
+          otherSubSurface.setConstruction(*c_);
+        }
         otherSubSurface.setSubSurfaceType(subSurface.subSurfaceType());
         otherSubSurface.setSurface(otherSurface);
         otherSubSurface.setAdjacentSubSurface(subSurface);

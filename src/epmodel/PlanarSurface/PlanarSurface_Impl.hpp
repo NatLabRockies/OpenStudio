@@ -13,12 +13,15 @@
 #include "../utilities/geometry/Point3d.hpp"
 #include "../utilities/geometry/Vector3d.hpp"
 
+#include <boost/optional.hpp>
+
 namespace openstudio {
 
 class Surface3d;
 
 namespace epmodel {
 
+  class ConstructionBase;
   class PlanarSurface;
   class Space;
 
@@ -44,6 +47,10 @@ namespace epmodel {
       /** @name Setters */
 
       virtual bool setVertices(const std::vector<Point3d>& vertices);
+
+      virtual boost::optional<ConstructionBase> construction() const = 0;
+      virtual bool setConstruction(const ConstructionBase& construction) = 0;
+      virtual void resetConstruction() = 0;
 
       //@}
       /** @name Queries */

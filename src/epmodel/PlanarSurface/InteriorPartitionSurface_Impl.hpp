@@ -11,6 +11,7 @@
 namespace openstudio {
 namespace epmodel {
 
+  class ConstructionBase;
   class Space;
 
   namespace detail {
@@ -23,6 +24,10 @@ namespace epmodel {
 
       virtual boost::optional<Space> space() const override;
       virtual bool subtractFromGrossArea() const override;
+
+      boost::optional<ConstructionBase> construction() const override;
+      bool setConstruction(const ConstructionBase& construction) override;
+      void resetConstruction() override;
 
       bool converttoInternalMass() const;
       bool isConverttoInternalMassDefaulted() const;

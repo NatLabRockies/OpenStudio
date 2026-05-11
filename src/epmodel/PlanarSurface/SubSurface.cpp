@@ -4,6 +4,8 @@
 ***********************************************************************************************************************/
 
 #include "PlanarSurface/SubSurface.hpp"
+#include "ConstructionBase/ConstructionBase.hpp"
+#include "ConstructionBase/ConstructionBase_Impl.hpp"
 #include "PlanarSurface/SubSurface_Impl.hpp"
 
 #include "Model.hpp"
@@ -257,6 +259,31 @@ namespace epmodel {
       return false;
     }
 
+    boost::optional<ConstructionBase> SubSurface_Impl::construction() const {
+      auto result = getObject<openstudio::epmodel::SubSurface>().getModelObjectTarget<ConstructionBase>(
+        openstudio::FenestrationSurface_DetailedFields::ConstructionName);
+      if (result) {
+        if (auto adjacent = adjacentSubSurface()) {
+          auto adjacentConstruction =
+            adjacent->getImpl<SubSurface_Impl>()->getObject<openstudio::epmodel::SubSurface>().getModelObjectTarget<ConstructionBase>(
+              openstudio::FenestrationSurface_DetailedFields::ConstructionName);
+          if (adjacentConstruction && adjacentConstruction->handle() != result->handle()) {
+            LOG(Warn,
+                "SubSurface '" << nameString() << "' and its adjacent sub surface '" << adjacent->nameString() << "' have different constructions.");
+          }
+        }
+      }
+      return result;
+    }
+
+    bool SubSurface_Impl::setConstruction(const ConstructionBase& construction) {
+      return setPointer(openstudio::FenestrationSurface_DetailedFields::ConstructionName, construction.handle());
+    }
+
+    void SubSurface_Impl::resetConstruction() {
+      setString(openstudio::FenestrationSurface_DetailedFields::ConstructionName, "");
+    }
+
     bool SubSurface_Impl::setViewFactortoGround(double viewFactortoGround) {
       return setDouble(openstudio::FenestrationSurface_DetailedFields::ViewFactortoGround, viewFactortoGround);
     }
@@ -370,8 +397,7 @@ namespace epmodel {
         }
       } else {
         std::string surfaceType = surface->surfaceType();
-        if (istringEqual("Roof", surfaceType) || istringEqual("Ceiling", surfaceType)  // RoofCeiling
-            || istringEqual("Floor", surfaceType)) {
+        if (Surface::isCeilingLike(surfaceType) || istringEqual("Floor", surfaceType)) {
           result = "Skylight";
         } else {
           double surfaceMinZ = std::numeric_limits<double>::max();

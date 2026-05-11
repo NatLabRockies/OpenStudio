@@ -13,6 +13,7 @@
 namespace openstudio {
 namespace epmodel {
 
+  class ConstructionBase;
   class Space;
   class SubSurface;
   class Surface;
@@ -27,6 +28,10 @@ namespace epmodel {
       virtual ~Surface_Impl() override = default;
 
       virtual bool setVertices(const std::vector<Point3d>& vertices) override;
+
+      boost::optional<ConstructionBase> construction() const override;
+      bool setConstruction(const ConstructionBase& construction) override;
+      void resetConstruction() override;
 
       std::string surfaceType() const;
       bool setSurfaceType(const std::string& surfaceType);

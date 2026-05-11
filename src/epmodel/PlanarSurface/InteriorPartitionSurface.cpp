@@ -5,6 +5,8 @@
 
 #include "PlanarSurface/InteriorPartitionSurface.hpp"
 #include "PlanarSurface/InteriorPartitionSurface_Impl.hpp"
+#include "ConstructionBase/ConstructionBase.hpp"
+#include "ConstructionBase/ConstructionBase_Impl.hpp"
 
 #include "Model.hpp"
 #include "PlanarSurfaceGroup/Space.hpp"
@@ -102,6 +104,19 @@ namespace epmodel {
 
     bool InteriorPartitionSurface_Impl::subtractFromGrossArea() const {
       return false;
+    }
+
+    boost::optional<ConstructionBase> InteriorPartitionSurface_Impl::construction() const {
+      return getObject<InteriorPartitionSurface>().getModelObjectTarget<ConstructionBase>(
+        openstudio::InternalMassFields::ConstructionName);
+    }
+
+    bool InteriorPartitionSurface_Impl::setConstruction(const ConstructionBase& construction) {
+      return setPointer(openstudio::InternalMassFields::ConstructionName, construction.handle());
+    }
+
+    void InteriorPartitionSurface_Impl::resetConstruction() {
+      setString(openstudio::InternalMassFields::ConstructionName, "");
     }
 
     bool InteriorPartitionSurface_Impl::converttoInternalMass() const {

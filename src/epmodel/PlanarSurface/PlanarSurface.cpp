@@ -5,6 +5,7 @@
 
 #include "PlanarSurface/PlanarSurface.hpp"
 #include "PlanarSurface/PlanarSurface_Impl.hpp"
+#include "ConstructionBase/ConstructionBase.hpp"
 
 #include "Model.hpp"
 #include "ModelObject.hpp"
@@ -43,6 +44,18 @@ namespace epmodel {
 
   bool PlanarSurface::setVertices(const std::vector<Point3d>& vertices) {
     return getImpl<detail::PlanarSurface_Impl>()->setVertices(vertices);
+  }
+
+  boost::optional<ConstructionBase> PlanarSurface::construction() const {
+    return getImpl<detail::PlanarSurface_Impl>()->construction();
+  }
+
+  bool PlanarSurface::setConstruction(const ConstructionBase& construction) {
+    return getImpl<detail::PlanarSurface_Impl>()->setConstruction(construction);
+  }
+
+  void PlanarSurface::resetConstruction() {
+    getImpl<detail::PlanarSurface_Impl>()->resetConstruction();
   }
 
   double PlanarSurface::grossArea() const {
