@@ -41,7 +41,9 @@
 #include "../StraightComponent/FanConstantVolume.hpp"
 #include "../StraightComponent/FanSystemModel.hpp"
 #include "../StraightComponent/FanVariableVolume.hpp"
+#include "../StraightComponent/CoilHeatingElectric.hpp"
 #include "../StraightComponent/Node.hpp"
+#include "../StraightComponent/Node_Impl.hpp"
 #include "../HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
 #include "../HVACComponent/ThermalZone.hpp"
 #include "../WaterToAirComponent/CoilCoolingWater.hpp"
@@ -58,10 +60,20 @@
 #include <utilities/idd/AirLoopHVAC_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/Sizing_System_FieldEnums.hxx>
+#include <fmt/format.h>
+#include <fmt/ranges.h>
 #include <algorithm>
 #include <set>
 
 using namespace openstudio::epmodel;
+
+std::string getObjectNames(const auto& comps) {
+  std::vector<std::string> names;
+  names.reserve(comps.size());
+  std::transform(comps.cbegin(), comps.cend(), std::back_inserter(names),
+                 [](const auto& obj) { return fmt::format("{}({})", obj.iddObject().type().valueDescription(), obj.nameString()); });
+  return fmt::format("{}", names);
+}
 
 namespace {
 
@@ -1328,4 +1340,73 @@ TEST_F(EPModelFixture, AirLoopHVAC_SyncSetpointManagerMixedAirFanNodes_Recognize
   ASSERT_TRUE(setpointManager.fanOutletNode());
   EXPECT_EQ(fanInletObject->cast<Node>(), *setpointManager.fanInletNode());
   EXPECT_EQ(fanOutletObject->cast<Node>(), *setpointManager.fanOutletNode());
+}
+
+TEST_F(EPModelFixture, AirLoopHVAC_AddToNode) {
+  Model model;
+  AirLoopHVAC a(model);
+
+  // Supply: o ----- o
+  // Demand: o --- Splitter --- o --- Mixer --- o
+  EXPECT_EQ(5u, model.getModelObjects<Node>().size());
+  EXPECT_EQ(2u, a.supplyComponents().size()) << getObjectNames(a.supplyComponents());  // o ----- o
+  EXPECT_EQ(2u, a.supplyComponents(openstudio::IddObjectType("Node")).size());
+  EXPECT_EQ(5u, a.demandComponents().size()) << getObjectNames(a.demandComponents());  // o --- Splitter --- o --- Mixer --- o
+  EXPECT_EQ(3u, a.demandComponents(openstudio::IddObjectType("Node")).size());
+  EXPECT_EQ(1u, a.demandComponents(openstudio::IddObjectType("AirLoopHVAC:ZoneSplitter")).size());
+  EXPECT_EQ(1u, a.demandComponents(openstudio::IddObjectType("AirLoopHVAC:ZoneMixer")).size());
+
+  // Add a fan to the supply outlet node
+  // Supply: o --- Fan --- o
+  FanVariableVolume fan(model);
+  auto supplyOutletNode = a.supplyOutletNode();
+  ASSERT_TRUE(fan.addToNode(supplyOutletNode));
+  EXPECT_EQ(5u, model.getModelObjects<Node>().size());
+  EXPECT_EQ(3u, a.supplyComponents().size()) << getObjectNames(a.supplyComponents());  // o --- Fan --- o
+  EXPECT_EQ(2u, a.supplyComponents(openstudio::IddObjectType("Node")).size());
+  {
+    auto comps = a.supplyComponents();
+    ASSERT_EQ(3u, comps.size());
+    EXPECT_EQ("Node", comps[0].iddObject().type().valueDescription());
+    EXPECT_EQ("Fan:VariableVolume", comps[1].iddObject().type().valueDescription());
+    EXPECT_EQ("Node", comps[2].iddObject().type().valueDescription());
+    EXPECT_EQ("Air Loop HVAC 1 Supply Inlet Node", comps[0].nameString());
+    EXPECT_EQ("Fan Variable Volume 1", comps[1].nameString());
+    EXPECT_EQ("Air Loop HVAC 1 Supply Outlet Node", comps[2].nameString());
+  }
+  // Demand side unchanged: o --- Splitter --- o --- Mixer --- o
+  EXPECT_EQ(5u, a.demandComponents().size()) << getObjectNames(a.demandComponents());  // o --- Splitter --- o --- Mixer --- o
+  EXPECT_EQ(3u, a.demandComponents(openstudio::IddObjectType("Node")).size());
+
+  // Add a coil to the supply inlet node
+  // Supply: o --- Coil --- o --- Fan --- o
+  // This is where the bug manifests: an intermediate node is be inserted between coil and fan
+  CoilHeatingElectric coil(model);
+  auto supplyInletNode = a.supplyInletNode();
+  ASSERT_TRUE(coil.addToNode(supplyInletNode));
+
+  // Demand side must remain unchanged: o --- Splitter --- o --- Mixer --- o
+  EXPECT_EQ(5u, a.demandComponents().size()) << getObjectNames(a.demandComponents());  // o --- Splitter --- o --- Mixer --- o
+  EXPECT_EQ(3u, a.demandComponents(openstudio::IddObjectType("Node")).size());
+  EXPECT_EQ(1u, a.demandComponents(openstudio::IddObjectType("AirLoopHVAC:ZoneSplitter")).size());
+  EXPECT_EQ(1u, a.demandComponents(openstudio::IddObjectType("AirLoopHVAC:ZoneMixer")).size());
+
+  // Supply: o --- Coil --- o --- Fan --- o  (3 nodes, 5 components total)
+  EXPECT_EQ(6u, model.getModelObjects<Node>().size());
+  EXPECT_EQ(5u, a.supplyComponents().size()) << getObjectNames(a.supplyComponents());  // o --- Coil --- o --- Fan --- o
+  EXPECT_EQ(3u, a.supplyComponents(openstudio::IddObjectType("Node")).size());
+  {
+    auto comps = a.supplyComponents();
+    ASSERT_EQ(5u, comps.size());
+    EXPECT_EQ("Node", comps[0].iddObject().type().valueDescription());
+    EXPECT_EQ("Coil:Heating:Electric", comps[1].iddObject().type().valueDescription());
+    EXPECT_EQ("Node", comps[2].iddObject().type().valueDescription());
+    EXPECT_EQ("Fan:VariableVolume", comps[3].iddObject().type().valueDescription());
+    EXPECT_EQ("Node", comps[4].iddObject().type().valueDescription());
+    EXPECT_EQ("Air Loop HVAC 1 Supply Inlet Node", comps[0].nameString());
+    EXPECT_EQ("Coil Heating Electric 1", comps[1].nameString());
+    EXPECT_EQ("Air Loop HVAC 1 Supply Inlet Node - Coil Heating Electric 1 Outlet", comps[2].nameString());
+    EXPECT_EQ("Fan Variable Volume 1", comps[3].nameString());
+    EXPECT_EQ("Air Loop HVAC 1 Supply Outlet Node", comps[4].nameString());
+  }
 }
