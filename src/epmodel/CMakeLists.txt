@@ -1746,6 +1746,9 @@ set(${target_name}_src
   scaffolds/SpaceHVACZoneReturnMixer.hpp
   scaffolds/SpaceHVACZoneReturnMixer_Impl.hpp
   scaffolds/SpaceHVACZoneReturnMixer.cpp
+  scaffolds/SpaceList.hpp
+  scaffolds/SpaceList_Impl.hpp
+  scaffolds/SpaceList.cpp
   scaffolds/SurfaceContaminantSourceAndSinkGenericBoundaryLayerDiffusion.hpp
   scaffolds/SurfaceContaminantSourceAndSinkGenericBoundaryLayerDiffusion_Impl.hpp
   scaffolds/SurfaceContaminantSourceAndSinkGenericBoundaryLayerDiffusion.cpp
