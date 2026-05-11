@@ -160,6 +160,10 @@ namespace epmodel {
     return getImpl<detail::Surface_Impl>()->subSurfaces();
   }
 
+  boost::optional<SubSurface> Surface::setWindowToWallRatio(double wwr, double desiredHeightOffset, bool heightOffsetFromFloor) {
+    return getImpl<detail::Surface_Impl>()->setWindowToWallRatio(wwr, desiredHeightOffset, heightOffsetFromFloor);
+  }
+
   boost::optional<Surface> Surface::adjacentSurface() const {
     return getImpl<detail::Surface_Impl>()->adjacentSurface();
   }
@@ -422,6 +426,106 @@ namespace epmodel {
 
     bool Surface_Impl::setSpace(const Space& space) {
       return setPointer(openstudio::BuildingSurface_DetailedFields::SpaceName, space.handle());
+    }
+
+    boost::optional<SubSurface> Surface_Impl::setWindowToWallRatio(double wwr, double desiredHeightOffset, bool heightOffsetFromFloor) {
+      // must be a wall
+      if (!istringEqual(surfaceType(), "Wall")) {
+        return boost::none;
+      }
+
+      // surface cannot have non-window sub surfaces
+      for (const SubSurface& subSurface : subSurfaces()) {
+        if (!istringEqual(subSurface.subSurfaceType(), "Window")) {
+          return boost::none;
+        }
+      }
+
+      double viewGlassToWallRatio = 0;
+      double daylightingGlassToWallRatio = 0;
+      double desiredViewGlassSillHeight = 0;
+      double desiredDaylightingGlassHeaderHeight = 0;
+      if (heightOffsetFromFloor) {
+        viewGlassToWallRatio = wwr;
+        desiredViewGlassSillHeight = desiredHeightOffset;
+      } else {
+        daylightingGlassToWallRatio = wwr;
+        desiredDaylightingGlassHeaderHeight = desiredHeightOffset;
+      }
+
+      std::vector<Point3d> viewVertices;
+      std::vector<Point3d> daylightingVertices;
+      std::vector<Point3d> exteriorShadingVertices;
+      std::vector<Point3d> interiorShelfVertices;
+      bool test = openstudio::applyViewAndDaylightingGlassRatios(viewGlassToWallRatio, daylightingGlassToWallRatio, desiredViewGlassSillHeight,
+                                                                 desiredDaylightingGlassHeaderHeight, 0.0, 0.0, vertices(), viewVertices,
+                                                                 daylightingVertices, exteriorShadingVertices, interiorShelfVertices);
+      if (!test) {
+        return boost::none;
+      }
+
+      // everything ok, remove all windows
+      for (SubSurface& subSurface : subSurfaces()) {
+        if (istringEqual(subSurface.subSurfaceType(), "Window")) {
+          subSurface.remove();
+        }
+      }
+
+      // add a new window
+      Model m = this->model();
+      auto thisSurface = getObject<openstudio::epmodel::Surface>();
+
+      boost::optional<SubSurface> result;
+      if (!viewVertices.empty()) {
+        SubSurface viewWindow(viewVertices, m);
+        viewWindow.setSurface(thisSurface);
+        result = viewWindow;
+      }
+
+      if (!daylightingVertices.empty()) {
+        SubSurface daylightingWindow(daylightingVertices, m);
+        daylightingWindow.setSurface(thisSurface);
+        if (!result) {
+          result = daylightingWindow;
+        }
+      }
+
+      // TODO: not dealing with shelfs and co here
+      // boost::optional<Space> space = this->space();
+      // boost::optional<DaylightingDeviceShelf> interiorShelf;
+      // if (!interiorShelfVertices.empty()) {
+      //   InteriorPartitionSurfaceGroup interiorGroup(model);
+      //   if (space) {
+      //     interiorGroup.setSpace(*space);
+      //   }
+
+      //   InteriorPartitionSurface interiorSurface(interiorShelfVertices, model);
+      //   interiorSurface.setInteriorPartitionSurfaceGroup(interiorGroup);
+
+      //   OS_ASSERT(daylightingWindow);
+      //   interiorShelf = DaylightingDeviceShelf(*daylightingWindow);
+      //   interiorShelf->setInsideShelf(interiorSurface);
+      // }
+
+      // if (!exteriorShadingVertices.empty()) {
+      //   ShadingSurfaceGroup shadingGroup(model);
+      //   if (space) {
+      //     shadingGroup.setSpace(*space);
+      //   }
+
+      //   OS_ASSERT(viewWindow);
+      //   shadingGroup.setShadedSubSurface(*viewWindow);
+
+      //   ShadingSurface shadingSurface(exteriorShadingVertices, model);
+      //   shadingSurface.setShadingSurfaceGroup(shadingGroup);
+
+      //   // EnergyPlus expects outside shelf to be on daylight window, we prefer to shade the view window so do not add this here
+      //   //if (interiorShelf){
+      //   //  interiorShelf->setOutsideShelf(shadingSurface);
+      //   //}
+      // }
+
+      return result;
     }
 
     boost::optional<Surface> Surface_Impl::adjacentSurface() const {

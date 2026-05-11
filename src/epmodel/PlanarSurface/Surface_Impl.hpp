@@ -65,6 +65,8 @@ namespace epmodel {
       virtual bool subtractFromGrossArea() const override;
       bool setSpace(const Space& space);
 
+      boost::optional<SubSurface> setWindowToWallRatio(double wwr, double desiredHeightOffset, bool heightOffsetFromFloor);
+
       boost::optional<Surface> adjacentSurface() const;
       bool setAdjacentSurface(Surface& surface);
       void resetAdjacentSurface();

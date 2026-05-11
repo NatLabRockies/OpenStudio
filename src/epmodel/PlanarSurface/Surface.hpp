@@ -89,6 +89,10 @@ namespace epmodel {
     /// Sets the parent Space.
     bool setSpace(const Space& space);
 
+    /** Sets the window-to-wall ratio. Replaces existing windows on this Wall surface.
+     *  Returns the new SubSurface if successful. */
+    boost::optional<SubSurface> setWindowToWallRatio(double wwr, double desiredHeightOffset = 0.762, bool heightOffsetFromFloor = true);
+
     /** Returns the adjacent Surface, if it exists. */
     boost::optional<Surface> adjacentSurface() const;
     /** Sets the adjacent Surface, will clear adjacent surface on other surface. */
