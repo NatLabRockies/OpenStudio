@@ -21,6 +21,7 @@ class Transformation;
 
 namespace epmodel {
 
+  class BuildingStory;
   class Model;
   class DesignSpecificationOutdoorAir;
   class Surface;
@@ -84,6 +85,9 @@ namespace epmodel {
     bool isFloorAreaAutocalculated() const;
     void autocalculateFloorArea();
     void resetFloorArea();
+
+    boost::optional<BuildingStory> buildingStory() const;
+    bool setBuildingStory(BuildingStory& buildingStory);
 
     boost::optional<ThermalZone> thermalZone() const;
     bool setThermalZone(const ThermalZone& thermalZone);

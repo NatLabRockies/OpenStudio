@@ -5,6 +5,7 @@
 
 #include "SpaceList.hpp"
 #include "SpaceList_Impl.hpp"
+#include "BuildingStory.hpp"
 
 #include "PlanarSurfaceGroup/Space.hpp"
 #include "PlanarSurfaceGroup/Space_Impl.hpp"
@@ -54,6 +55,11 @@ namespace epmodel {
         }
       }
       return result;
+    }
+
+    void SpaceList_Impl::doCanonicalize(LoadContext& /*context*/) {
+      auto thisList = getObject<SpaceList>();
+      BuildingStory::fromSpaceList(thisList);
     }
 
   }  // namespace detail

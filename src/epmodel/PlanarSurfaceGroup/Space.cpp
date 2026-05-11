@@ -15,6 +15,10 @@
 #include "PlanarSurface/SubSurface_Impl.hpp"
 #include "ResourceObject/DesignSpecificationOutdoorAir.hpp"
 #include "ResourceObject/DesignSpecificationOutdoorAir_Impl.hpp"
+#include "ModelObject/BuildingStory.hpp"
+#include "ModelObject/BuildingStory_Impl.hpp"
+#include "ModelObject/SpaceList.hpp"
+#include "ModelObject/SpaceList_Impl.hpp"
 #include "ModelObject/DesignSpecificationOutdoorAirSpaceList.hpp"
 #include "ModelObject/DesignSpecificationOutdoorAirSpaceList_Impl.hpp"
 #include "SizingZone.hpp"
@@ -205,6 +209,14 @@ namespace epmodel {
 
   void Space::resetFloorArea() {
     getImpl<detail::Space_Impl>()->resetFloorArea();
+  }
+
+  boost::optional<BuildingStory> Space::buildingStory() const {
+    return getImpl<detail::Space_Impl>()->buildingStory();
+  }
+
+  bool Space::setBuildingStory(BuildingStory& buildingStory) {
+    return getImpl<detail::Space_Impl>()->setBuildingStory(buildingStory);
   }
 
   boost::optional<ThermalZone> Space::thermalZone() const {
@@ -503,6 +515,20 @@ namespace epmodel {
 
     void Space_Impl::resetFloorArea() {
       OS_ASSERT(setString(openstudio::SpaceFields::FloorArea, ""));
+    }
+
+    boost::optional<BuildingStory> Space_Impl::buildingStory() const {
+      for (const WorkspaceObject& wo : getSources(IddObjectType::SpaceList)) {
+        auto spaceList = wo.cast<SpaceList>();
+        if (auto story = BuildingStory::fromSpaceList(spaceList)) {
+          return story;
+        }
+      }
+      return boost::none;
+    }
+
+    bool Space_Impl::setBuildingStory(BuildingStory& buildingStory) {
+      return buildingStory.addSpace(getObject<Space>());
     }
 
     boost::optional<openstudio::epmodel::ThermalZone> Space_Impl::thermalZone() const {

@@ -23,6 +23,8 @@ namespace epmodel {
 
       bool addSpace(const Space& space);
       std::vector<Space> spaces() const;
+
+      void doCanonicalize(LoadContext& context) override;
     };
 
   }  // namespace detail

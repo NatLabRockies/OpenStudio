@@ -358,6 +358,9 @@ set(${target_name}_src
   ModelObject/BranchList.hpp
   ModelObject/BranchList_Impl.hpp
   ModelObject/BranchList.cpp
+  ModelObject/BuildingStory.hpp
+  ModelObject/BuildingStory_Impl.hpp
+  ModelObject/BuildingStory.cpp
   ModelObject/CoilSystemCoolingDX.hpp
   ModelObject/CoilSystemCoolingDX_Impl.hpp
   ModelObject/CoilSystemCoolingDX.cpp
@@ -682,6 +685,9 @@ set(${target_name}_src
   ModelObject/SolarCollectorPerformancePhotovoltaicThermalSimple.hpp
   ModelObject/SolarCollectorPerformancePhotovoltaicThermalSimple_Impl.hpp
   ModelObject/SolarCollectorPerformancePhotovoltaicThermalSimple.cpp
+  ModelObject/SpaceList.hpp
+  ModelObject/SpaceList_Impl.hpp
+  ModelObject/SpaceList.cpp
   ModelObject/SurfaceControlMovableInsulation.hpp
   ModelObject/SurfaceControlMovableInsulation_Impl.hpp
   ModelObject/SurfaceControlMovableInsulation.cpp
@@ -1746,9 +1752,6 @@ set(${target_name}_src
   scaffolds/SpaceHVACZoneReturnMixer.hpp
   scaffolds/SpaceHVACZoneReturnMixer_Impl.hpp
   scaffolds/SpaceHVACZoneReturnMixer.cpp
-  scaffolds/SpaceList.hpp
-  scaffolds/SpaceList_Impl.hpp
-  scaffolds/SpaceList.cpp
   scaffolds/SurfaceContaminantSourceAndSinkGenericBoundaryLayerDiffusion.hpp
   scaffolds/SurfaceContaminantSourceAndSinkGenericBoundaryLayerDiffusion_Impl.hpp
   scaffolds/SurfaceContaminantSourceAndSinkGenericBoundaryLayerDiffusion.cpp
