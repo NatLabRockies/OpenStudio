@@ -12,14 +12,14 @@ using namespace openstudio::epmodel;
 
 TEST_F(EPModelFixture, Surface_DefaultConstructor) {
   Model model;
-  Surface surface(model);
+  Surface surface({{0, 0, 1}, {0, 0, 0}, {1, 0, 0}, {1, 0, 1}}, model);
   EXPECT_EQ(Surface::iddObjectType(), surface.iddObject().type());
   EXPECT_FALSE(surface.nameString().empty());
 }
 
 TEST_F(EPModelFixture, Surface_ScalarAccessors_RoundTrip) {
   Model model;
-  Surface surface(model);
+  Surface surface({{0, 0, 1}, {0, 0, 0}, {1, 0, 0}, {1, 0, 1}}, model);
 
   EXPECT_TRUE(surface.setSurfaceType("Wall"));
   EXPECT_EQ("Wall", surface.surfaceType());

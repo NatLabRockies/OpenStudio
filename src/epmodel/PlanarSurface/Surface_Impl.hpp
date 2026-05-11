@@ -6,17 +6,21 @@
 #ifndef EPMODEL_SURFACE_IMPL_HPP
 #define EPMODEL_SURFACE_IMPL_HPP
 
-#include "ModelObject_Impl.hpp"
+#include "PlanarSurface_Impl.hpp"
+
+#include <utilities/geometry/Point3d.hpp>
 
 namespace openstudio {
 namespace epmodel {
 
+  class Space;
+
   namespace detail {
 
-    class EPMODEL_API Surface_Impl : public ModelObject_Impl
+    class EPMODEL_API Surface_Impl : public PlanarSurface_Impl
     {
      public:
-      using ModelObject_Impl::ModelObject_Impl;
+      using PlanarSurface_Impl::PlanarSurface_Impl;
       virtual ~Surface_Impl() override = default;
 
       std::string surfaceType() const;
@@ -50,6 +54,10 @@ namespace epmodel {
       bool setNumberofVertices(double numberofVertices);
       void resetNumberofVertices();
       void autocalculateNumberofVertices();
+
+      virtual boost::optional<Space> space() const override;
+      virtual bool subtractFromGrossArea() const override;
+      bool setSpace(const Space& space);
     };
 
   }  // namespace detail

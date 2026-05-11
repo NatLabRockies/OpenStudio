@@ -9,6 +9,7 @@
 #include "Loop/AirLoopHVAC.hpp"
 #include "Loop/AirLoopHVAC_Impl.hpp"
 #include "Model.hpp"
+#include "PlanarSurface/Surface.hpp"
 #include "ResourceObject/DesignSpecificationOutdoorAir.hpp"
 #include "ResourceObject/DesignSpecificationOutdoorAir_Impl.hpp"
 #include "ModelObject/DesignSpecificationOutdoorAirSpaceList.hpp"
@@ -20,11 +21,14 @@
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
+#include <utilities/geometry/Geometry.hpp>
+#include <utilities/geometry/Vector3d.hpp>
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/Sizing_Zone_FieldEnums.hxx>
 #include <utilities/idd/Space_FieldEnums.hxx>
 
 #include <algorithm>
+#include <fmt/format.h>
 
 namespace openstudio {
 namespace epmodel {
@@ -40,6 +44,89 @@ namespace epmodel {
 
   IddObjectType Space::iddObjectType() {
     return IddObjectType::Space;
+  }
+
+  boost::optional<Space> Space::fromFloorPrint(const std::vector<Point3d>& floorPrint, double floorHeight, const Model& model,
+                                               const std::string& spaceName) {
+    if (floorHeight <= 0) {
+      LOG(Error, "Cannot create a space with floorHeight " << floorHeight << ".");
+      return boost::none;
+    }
+
+    unsigned numPoints = floorPrint.size();
+    if (numPoints < 3) {
+      LOG(Error, "Cannot create a space for floorPrint of size " << floorPrint.size() << ".");
+      return boost::none;
+    }
+
+    double z = floorPrint[0].z();
+    double tol = 0.000001;
+    for (const Point3d& point : floorPrint) {
+      if (std::abs(point.z() - z) > tol) {
+        LOG(Error, "Inconsistent z height in floorPrint.");
+        return boost::none;
+      }
+    }
+
+    std::vector<Point3d> reorderedFloorPrint;
+    reorderedFloorPrint.reserve(numPoints);
+    std::transform(floorPrint.cbegin(), floorPrint.cend(), std::back_inserter(reorderedFloorPrint),
+                   [&z](const auto& pt) { return Point3d{pt.x(), pt.y(), z}; });
+
+    boost::optional<Vector3d> outwardNormal = getOutwardNormal(reorderedFloorPrint);
+    if (!outwardNormal) {
+      LOG(Error, "Cannot compute outwardNormal for floorPrint.");
+      return boost::none;
+    }
+
+    if (outwardNormal->z() > -1 + tol) {
+      LOG(Error, "OutwardNormal of floorPrint must point down to create space.");
+      return boost::none;
+    }
+
+    Space space(model);
+    if (!spaceName.empty()) {
+      space.setName(spaceName);
+    }
+
+    // Floor
+    Surface floor(reorderedFloorPrint, model);
+    if (!spaceName.empty()) {
+      floor.setName(fmt::format("{} Floor", space.nameString()));
+    }
+    floor.setSpace(space);
+
+    double zCeiling = z + floorHeight;
+    std::vector<Point3d> points;
+    points.reserve(4);
+
+    // Walls
+    for (unsigned i = 1; i <= numPoints; ++i) {
+      points = {
+        {reorderedFloorPrint[i - 1].x(), reorderedFloorPrint[i - 1].y(), zCeiling},
+        {reorderedFloorPrint[i % numPoints].x(), reorderedFloorPrint[i % numPoints].y(), zCeiling},
+        {reorderedFloorPrint[i % numPoints].x(), reorderedFloorPrint[i % numPoints].y(), z},
+        {reorderedFloorPrint[i - 1].x(), reorderedFloorPrint[i - 1].y(), z},
+      };
+      Surface wall(points, model);
+      if (!spaceName.empty()) {
+        wall.setName(fmt::format("{} Wall {}", space.nameString(), i));
+      }
+      wall.setSpace(space);
+    }
+
+    // RoofCeiling
+    std::vector<Point3d> ceilingPoints;
+    ceilingPoints.reserve(numPoints);
+    std::transform(reorderedFloorPrint.crbegin(), reorderedFloorPrint.crend(), std::back_inserter(ceilingPoints),
+                   [zCeiling](const auto& pt) { return Point3d{pt.x(), pt.y(), zCeiling}; });
+    Surface roofCeiling(ceilingPoints, model);
+    if (!spaceName.empty()) {
+      roofCeiling.setName(fmt::format("{} RoofCeiling", space.nameString()));
+    }
+    roofCeiling.setSpace(space);
+
+    return space;
   }
 
   double Space::ceilingHeight() const {

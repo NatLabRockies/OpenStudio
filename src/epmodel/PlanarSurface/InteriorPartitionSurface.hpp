@@ -7,8 +7,9 @@
 #define EPMODEL_INTERIORPARTITIONSURFACE_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "PlanarSurface.hpp"
 
+#include <utilities/geometry/Point3d.hpp>
 #include <utilities/idd/IddEnums.hxx>
 
 #include <memory>
@@ -22,10 +23,10 @@ namespace epmodel {
     class InteriorPartitionSurface_Impl;
   }
 
-  class EPMODEL_API InteriorPartitionSurface : public ModelObject
+  class EPMODEL_API InteriorPartitionSurface : public PlanarSurface
   {
    public:
-    explicit InteriorPartitionSurface(const Model& model);
+    explicit InteriorPartitionSurface(const std::vector<Point3d>& vertices, const Model& model);
 
     virtual ~InteriorPartitionSurface() override = default;
     InteriorPartitionSurface(const InteriorPartitionSurface& other) = default;

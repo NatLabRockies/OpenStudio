@@ -8,18 +8,21 @@
 #include "EPModelFixture.hpp"
 #include "../PlanarSurface/SubSurface.hpp"
 
+#include <utilities/geometry/Point3d.hpp>
+
 using namespace openstudio::epmodel;
 
 TEST_F(EPModelFixture, SubSurface_DefaultConstructor) {
   Model model;
-  SubSurface subSurface(model);
+
+  SubSurface subSurface({{0, 0, 1}, {0, 0, 0}, {1, 0, 0}, {1, 0, 1}}, model);
   EXPECT_EQ(SubSurface::iddObjectType(), subSurface.iddObject().type());
   EXPECT_FALSE(subSurface.nameString().empty());
 }
 
 TEST_F(EPModelFixture, SubSurface_ScalarAccessors_RoundTrip) {
   Model model;
-  SubSurface subSurface(model);
+  SubSurface subSurface({{0, 0, 1}, {0, 0, 0}, {1, 0, 0}, {1, 0, 1}}, model);
 
   EXPECT_TRUE(subSurface.setSubSurfaceType("Window"));
   EXPECT_EQ("Window", subSurface.subSurfaceType());

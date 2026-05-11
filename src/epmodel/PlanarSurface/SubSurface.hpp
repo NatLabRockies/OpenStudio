@@ -7,7 +7,7 @@
 #define EPMODEL_SUBSURFACE_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "PlanarSurface.hpp"
 
 #include <utilities/idd/IddEnums.hxx>
 
@@ -18,15 +18,16 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class Surface;
 
   namespace detail {
     class SubSurface_Impl;
   }
 
-  class EPMODEL_API SubSurface : public ModelObject
+  class EPMODEL_API SubSurface : public PlanarSurface
   {
    public:
-    explicit SubSurface(const Model& model);
+    explicit SubSurface(const std::vector<Point3d>& vertices, const Model& model);
 
     virtual ~SubSurface() override = default;
     SubSurface(const SubSurface& other) = default;
@@ -72,6 +73,12 @@ namespace epmodel {
     bool setNumberofVertices(double numberofVertices);
     void resetNumberofVertices();
     void autocalculateNumberofVertices();
+
+    boost::optional<Surface> surface() const;
+    bool setSurface(const Surface& surface);
+
+    /** Assign default sub surface type based on vertices. */
+    void assignDefaultSubSurfaceType();
 
    protected:
     using ImplType = detail::SubSurface_Impl;

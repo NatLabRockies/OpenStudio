@@ -9,6 +9,7 @@
 #include "EPModelAPI.hpp"
 #include "ModelObject.hpp"
 
+#include "../utilities/geometry/Point3d.hpp"
 #include "../utilities/idd/IddEnums.hpp"
 
 #include <memory>
@@ -39,6 +40,9 @@ namespace epmodel {
     //   Zoned spaces write through ThermalZone -> Sizing:Zone -> DSOA:SpaceList.
     //   Unzoned spaces write to an orphan DSOA:SpaceList owned by the Model.
     explicit Space(const Model& model);
+
+    static boost::optional<Space> fromFloorPrint(const std::vector<Point3d>& floorPrint, double floorHeight, const Model& model,
+                                                 const std::string& spaceName = {});
 
     virtual ~Space() override = default;
     Space(const Space& other) = default;
@@ -90,6 +94,9 @@ namespace epmodel {
     friend class Model;
 
     explicit Space(std::shared_ptr<detail::Space_Impl> impl);
+
+   private:
+    REGISTER_LOGGER("openstudio.epmodel.Space");
   };
 
 }  // namespace epmodel

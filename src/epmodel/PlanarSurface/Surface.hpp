@@ -7,8 +7,9 @@
 #define EPMODEL_SURFACE_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "PlanarSurface.hpp"
 
+#include <utilities/geometry/Point3d.hpp>
 #include <utilities/idd/IddEnums.hxx>
 
 #include <memory>
@@ -18,15 +19,16 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class Space;
 
   namespace detail {
     class Surface_Impl;
   }
 
-  class EPMODEL_API Surface : public ModelObject
+  class EPMODEL_API Surface : public PlanarSurface
   {
    public:
-    explicit Surface(const Model& model);
+    explicit Surface(const std::vector<Point3d>& vertices, const Model& model);
 
     virtual ~Surface() override = default;
     Surface(const Surface& other) = default;
@@ -80,6 +82,8 @@ namespace epmodel {
     bool setNumberofVertices(double numberofVertices);
     void resetNumberofVertices();
     void autocalculateNumberofVertices();
+
+    bool setSpace(const Space& space);
 
    protected:
     using ImplType = detail::Surface_Impl;

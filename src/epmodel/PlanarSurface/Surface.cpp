@@ -7,20 +7,26 @@
 #include "PlanarSurface/Surface_Impl.hpp"
 
 #include "Model.hpp"
+#include "PlanarSurfaceGroup/Space.hpp"
+#include "PlanarSurfaceGroup/Space_Impl.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
+#include <utilities/geometry/Point3d.hpp>
 #include <utilities/idd/BuildingSurface_Detailed_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/IddFactory.hxx>
 #include <utilities/idd/IddObject.hpp>
+#include <utilities/idf/IdfExtensibleGroup.hpp>
 
 namespace openstudio {
 namespace epmodel {
 
-  Surface::Surface(const Model& model) : ModelObject(Surface::iddObjectType(), model) {}
+  Surface::Surface(const std::vector<Point3d>& vertices, const Model& model) : PlanarSurface(Surface::iddObjectType(), model) {
+    getImpl<detail::Surface_Impl>()->setVertices(vertices);
+  }
 
-  Surface::Surface(std::shared_ptr<detail::Surface_Impl> impl) : ModelObject(std::move(impl)) {}
+  Surface::Surface(std::shared_ptr<detail::Surface_Impl> impl) : PlanarSurface(std::move(impl)) {}
 
   IddObjectType Surface::iddObjectType() {
     return IddObjectType::BuildingSurface_Detailed;
@@ -145,6 +151,10 @@ namespace epmodel {
 
   void Surface::autocalculateNumberofVertices() {
     getImpl<detail::Surface_Impl>()->autocalculateNumberofVertices();
+  }
+
+  bool Surface::setSpace(const Space& space) {
+    return getImpl<detail::Surface_Impl>()->setSpace(space);
   }
 
 }  // namespace epmodel
@@ -282,6 +292,19 @@ namespace epmodel {
 
     void Surface_Impl::autocalculateNumberofVertices() {
       OS_ASSERT(setString(openstudio::BuildingSurface_DetailedFields::NumberofVertices, "Autocalculate"));
+    }
+
+    boost::optional<Space> Surface_Impl::space() const {
+      return getObject<openstudio::epmodel::Surface>().getModelObjectTarget<openstudio::epmodel::Space>(
+        openstudio::BuildingSurface_DetailedFields::SpaceName);
+    }
+
+    bool Surface_Impl::subtractFromGrossArea() const {
+      return false;
+    }
+
+    bool Surface_Impl::setSpace(const Space& space) {
+      return setPointer(openstudio::BuildingSurface_DetailedFields::SpaceName, space.handle());
     }
 
   }  // namespace detail

@@ -7,9 +7,13 @@
 #include "PlanarSurface/SubSurface_Impl.hpp"
 
 #include "Model.hpp"
+#include "PlanarSurface/Surface.hpp"
+#include "PlanarSurface/Surface_Impl.hpp"
+#include "PlanarSurfaceGroup/Space.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
+#include <utilities/geometry/Geometry.hpp>
 #include <utilities/idd/FenestrationSurface_Detailed_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/IddFactory.hxx>
@@ -18,9 +22,11 @@
 namespace openstudio {
 namespace epmodel {
 
-  SubSurface::SubSurface(const Model& model) : ModelObject(SubSurface::iddObjectType(), model) {}
+  SubSurface::SubSurface(const std::vector<Point3d>& vertices, const Model& model) : PlanarSurface(SubSurface::iddObjectType(), model) {
+    getImpl<detail::SubSurface_Impl>()->setVertices(vertices);
+  }
 
-  SubSurface::SubSurface(std::shared_ptr<detail::SubSurface_Impl> impl) : ModelObject(std::move(impl)) {}
+  SubSurface::SubSurface(std::shared_ptr<detail::SubSurface_Impl> impl) : PlanarSurface(std::move(impl)) {}
 
   IddObjectType SubSurface::iddObjectType() {
     return IddObjectType::FenestrationSurface_Detailed;
@@ -116,6 +122,19 @@ namespace epmodel {
 
   void SubSurface::autocalculateNumberofVertices() {
     getImpl<detail::SubSurface_Impl>()->autocalculateNumberofVertices();
+  }
+
+  boost::optional<Surface> SubSurface::surface() const {
+    return getImpl<detail::SubSurface_Impl>()->surface();
+  }
+
+  bool SubSurface::setSurface(const Surface& surface) {
+    return getImpl<detail::SubSurface_Impl>()->setSurface(surface);
+  }
+
+  /** Assign default sub surface type based on vertices. */
+  void SubSurface::assignDefaultSubSurfaceType() {
+    getImpl<detail::SubSurface_Impl>()->assignDefaultSubSurfaceType();
   }
 
 }  // namespace epmodel
@@ -233,6 +252,94 @@ namespace epmodel {
 
     void SubSurface_Impl::autocalculateNumberofVertices() {
       OS_ASSERT(setString(openstudio::FenestrationSurface_DetailedFields::NumberofVertices, "Autocalculate"));
+    }
+
+    boost::optional<Space> SubSurface_Impl::space() const {
+      if (boost::optional<Surface> surface = this->surface()) {
+        return surface->space();
+      }
+      return boost::none;
+    }
+
+    bool SubSurface_Impl::subtractFromGrossArea() const {
+      return true;
+    }
+
+    boost::optional<Surface> SubSurface_Impl::surface() const {
+      return getObject<SubSurface>().getModelObjectTarget<Surface>(openstudio::FenestrationSurface_DetailedFields::BuildingSurfaceName);
+    }
+
+    bool SubSurface_Impl::setSurface(const Surface& surface) {
+      bool emptySurface = isEmpty(openstudio::FenestrationSurface_DetailedFields::BuildingSurfaceName);
+      bool result = setPointer(openstudio::FenestrationSurface_DetailedFields::BuildingSurfaceName, surface.handle());
+      if (result && emptySurface && isSubSurfaceTypeDefaulted()) {
+        assignDefaultSubSurfaceType();
+      }
+      return result;
+    }
+
+    std::string SubSurface_Impl::defaultSubSurfaceType() const {
+      std::string result;
+
+      boost::optional<Surface> surface = this->surface();
+      if (!surface) {
+        double degTilt = radToDeg(this->tilt());
+        if (degTilt < 60) {
+          result = "Skylight";
+        } else if (degTilt < 179) {
+          result = "FixedWindow";
+        } else {
+          result = "Skylight";
+        }
+      } else {
+        std::string surfaceType = surface->surfaceType();
+        if (istringEqual("RoofCeiling", surfaceType) || istringEqual("Floor", surfaceType)) {
+          result = "Skylight";
+        } else {
+          double surfaceMinZ = std::numeric_limits<double>::max();
+          for (const Point3d& point : surface->vertices()) {
+            surfaceMinZ = std::min(surfaceMinZ, point.z());
+          }
+
+          double thisMinZ = std::numeric_limits<double>::max();
+          for (const Point3d& point : this->vertices()) {
+            thisMinZ = std::min(thisMinZ, point.z());
+          }
+
+          if (thisMinZ <= surfaceMinZ) {
+            bool isGlassDoor = false;
+
+            // DLM: this surface could have been initialized to FixedWindow and get its construction
+            // from the default construction set, this was the source of #1924
+            // TODO: missing ConstructionBase
+            // boost::optional<ConstructionBase> construction = this->construction();
+            // if (!this->isConstructionDefaulted() && construction && construction->isFenestration()) {
+            //   isGlassDoor = true;
+            // }
+
+            boost::optional<std::string> value = getString(openstudio::FenestrationSurface_DetailedFields::SurfaceType);
+            if (value && istringEqual("GlassDoor", *value)) {
+              isGlassDoor = true;
+            }
+
+            if (isGlassDoor) {
+              result = "GlassDoor";
+            } else {
+              result = "Door";
+            }
+          } else {
+            result = "FixedWindow";
+          }
+        }
+      }
+
+      return result;
+    }
+
+    void SubSurface_Impl::assignDefaultSubSurfaceType() {
+      std::string defaultSubSurfaceType = this->defaultSubSurfaceType();
+      bool test = setSubSurfaceType(defaultSubSurfaceType);
+      OS_ASSERT(test);
     }
 
   }  // namespace detail

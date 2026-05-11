@@ -50,6 +50,9 @@ namespace epmodel {
       bool setDesignSpecificationOutdoorAir(const openstudio::epmodel::DesignSpecificationOutdoorAir& designSpecificationOutdoorAir);
 
       void doCanonicalize(LoadContext& context) override;
+
+     private:
+      REGISTER_LOGGER("openstudio.epmodel.Space");
     };
 
   }  // namespace detail

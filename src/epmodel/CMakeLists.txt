@@ -859,6 +859,9 @@ set(${target_name}_src
   PhotovoltaicPerformance/PhotovoltaicPerformanceSimple_Impl.hpp
   PhotovoltaicPerformance/PhotovoltaicPerformanceSimple.cpp
 
+  PlanarSurface/PlanarSurface.hpp
+  PlanarSurface/PlanarSurface_Impl.hpp
+  PlanarSurface/PlanarSurface.cpp
   PlanarSurface/InteriorPartitionSurface.hpp
   PlanarSurface/InteriorPartitionSurface_Impl.hpp
   PlanarSurface/InteriorPartitionSurface.cpp
