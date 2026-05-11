@@ -49,8 +49,7 @@ TEST_F(EPModelFixture, Surface_ScalarAccessors_RoundTrip) {
   EXPECT_TRUE(surface.isViewFactortoGroundDefaulted());
 
   EXPECT_TRUE(surface.setNumberofVertices(4));
-  ASSERT_TRUE(surface.numberofVertices());
-  EXPECT_DOUBLE_EQ(4.0, *surface.numberofVertices());
+  EXPECT_EQ(4u, surface.numberofVertices());
   EXPECT_FALSE(surface.isNumberofVerticesAutocalculated());
   surface.autocalculateNumberofVertices();
   EXPECT_TRUE(surface.isNumberofVerticesAutocalculated());

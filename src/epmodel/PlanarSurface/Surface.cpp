@@ -121,7 +121,7 @@ namespace epmodel {
     getImpl<detail::Surface_Impl>()->autocalculateViewFactortoGround();
   }
 
-  boost::optional<double> Surface::numberofVertices() const {
+  unsigned int Surface::numberofVertices() const {
     return getImpl<detail::Surface_Impl>()->numberofVertices();
   }
 
@@ -239,8 +239,11 @@ namespace epmodel {
       OS_ASSERT(setString(openstudio::BuildingSurface_DetailedFields::ViewFactortoGround, "Autocalculate"));
     }
 
-    boost::optional<double> Surface_Impl::numberofVertices() const {
-      return getDouble(openstudio::BuildingSurface_DetailedFields::NumberofVertices, true);
+    unsigned int Surface_Impl::numberofVertices() const {
+      if (auto value = getInt(openstudio::BuildingSurface_DetailedFields::NumberofVertices, true)) {
+        return static_cast<unsigned int>(*value);
+      }
+      return static_cast<unsigned int>(vertices().size());
     }
 
     bool Surface_Impl::isNumberofVerticesDefaulted() const {

@@ -92,7 +92,7 @@ namespace epmodel {
     getImpl<detail::SubSurface_Impl>()->resetMultiplier();
   }
 
-  boost::optional<double> SubSurface::numberofVertices() const {
+  unsigned int SubSurface::numberofVertices() const {
     return getImpl<detail::SubSurface_Impl>()->numberofVertices();
   }
 
@@ -199,8 +199,11 @@ namespace epmodel {
       OS_ASSERT(setString(openstudio::FenestrationSurface_DetailedFields::Multiplier, ""));
     }
 
-    boost::optional<double> SubSurface_Impl::numberofVertices() const {
-      return getDouble(openstudio::FenestrationSurface_DetailedFields::NumberofVertices, true);
+    unsigned int SubSurface_Impl::numberofVertices() const {
+      if (auto value = getInt(openstudio::FenestrationSurface_DetailedFields::NumberofVertices, true)) {
+        return static_cast<unsigned int>(*value);
+      }
+      return static_cast<unsigned int>(vertices().size());
     }
 
     bool SubSurface_Impl::isNumberofVerticesDefaulted() const {

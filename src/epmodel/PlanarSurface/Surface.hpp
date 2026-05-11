@@ -74,7 +74,7 @@ namespace epmodel {
     void resetViewFactortoGround();
     void autocalculateViewFactortoGround();
 
-    boost::optional<double> numberofVertices() const;
+    unsigned int numberofVertices() const;
     bool isNumberofVerticesDefaulted() const;
     bool isNumberofVerticesAutocalculated() const;
     bool setNumberofVertices(unsigned int numberofVertices);
