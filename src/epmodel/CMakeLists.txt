@@ -872,6 +872,9 @@ set(${target_name}_src
   PlanarSurface/Surface_Impl.hpp
   PlanarSurface/Surface.cpp
 
+  PlanarSurfaceGroup/PlanarSurfaceGroup.hpp
+  PlanarSurfaceGroup/PlanarSurfaceGroup_Impl.hpp
+  PlanarSurfaceGroup/PlanarSurfaceGroup.cpp
   PlanarSurfaceGroup/Space.hpp
   PlanarSurfaceGroup/Space_Impl.hpp
   PlanarSurfaceGroup/Space.cpp
@@ -2776,6 +2779,10 @@ foreach(epmodel_swig_i IN LISTS ${target_name}_sub_swig_src)
   set(epmodel_parent_swig_targets OpenStudioEPModel)
 
   if(epmodel_swig_suffix STREQUAL "HVACComponent" OR epmodel_swig_suffix STREQUAL "Loop")
+    list(APPEND epmodel_parent_swig_targets OpenStudioEPModelParentObject)
+  endif()
+
+  if(epmodel_swig_suffix STREQUAL "PlanarSurface")
     list(APPEND epmodel_parent_swig_targets OpenStudioEPModelParentObject)
   endif()
 

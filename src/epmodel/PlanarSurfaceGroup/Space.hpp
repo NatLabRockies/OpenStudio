@@ -7,7 +7,7 @@
 #define EPMODEL_SPACE_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "PlanarSurfaceGroup/PlanarSurfaceGroup.hpp"
 
 #include "../utilities/geometry/Point3d.hpp"
 #include "../utilities/idd/IddEnums.hpp"
@@ -16,19 +16,21 @@
 
 namespace openstudio {
 
+class Polyhedron;
 class Transformation;
 
 namespace epmodel {
 
   class Model;
-  class ThermalZone;
   class DesignSpecificationOutdoorAir;
+  class Surface;
+  class ThermalZone;
 
   namespace detail {
     class Space_Impl;
   }
 
-  class EPMODEL_API Space : public ModelObject
+  class EPMODEL_API Space : public PlanarSurfaceGroup
   {
    public:
     // Schema Alignment Notes:
@@ -89,8 +91,20 @@ namespace epmodel {
     boost::optional<DesignSpecificationOutdoorAir> designSpecificationOutdoorAir() const;
     bool setDesignSpecificationOutdoorAir(const DesignSpecificationOutdoorAir& designSpecificationOutdoorAir);
 
-    // TODO: temporary, the Space object in E+ has no X,Y,Z origin and direction of relative North
-    Transformation transformation() const;
+    /// Returns all \link Surface Surfaces \endlink in this space.
+    std::vector<Surface> surfaces() const;
+
+    /** Unmatch any matched surfaces and sub surfaces in this space. */
+    void unmatchSurfaces();
+
+    /** Match surfaces and sub surfaces in this space with those in the other. */
+    void matchSurfaces(Space& other);
+
+    /** Intersect surfaces in this space with those in the other. */
+    void intersectSurfaces(Space& other);
+
+    Polyhedron polyhedron() const;
+    bool isEnclosedVolume() const;
 
    protected:
     using ImplType = detail::Space_Impl;
@@ -104,6 +118,12 @@ namespace epmodel {
    private:
     REGISTER_LOGGER("openstudio.epmodel.Space");
   };
+
+  /** Match surfaces and sub surfaces between all spaces in the vector. */
+  EPMODEL_API void matchSurfaces(std::vector<Space>& spaces);
+
+  /** Unmatch surfaces and sub surfaces for all spaces in the vector. */
+  EPMODEL_API void unmatchSurfaces(std::vector<Space>& spaces);
 
 }  // namespace epmodel
 }  // namespace openstudio

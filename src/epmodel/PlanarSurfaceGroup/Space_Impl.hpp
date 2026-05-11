@@ -6,23 +6,27 @@
 #ifndef EPMODEL_SPACE_IMPL_HPP
 #define EPMODEL_SPACE_IMPL_HPP
 
-#include "ModelObject_Impl.hpp"
+#include "PlanarSurfaceGroup/PlanarSurfaceGroup_Impl.hpp"
+#include "../PlanarSurface/Surface.hpp"
 
 namespace openstudio {
 
+class BoundingBox;
+class Polyhedron;
 class Transformation;
 
 namespace epmodel {
 
-  class ThermalZone;
   class DesignSpecificationOutdoorAir;
+  class Space;
+  class ThermalZone;
 
   namespace detail {
 
-    class EPMODEL_API Space_Impl : public ModelObject_Impl
+    class EPMODEL_API Space_Impl : public PlanarSurfaceGroup_Impl
     {
      public:
-      using ModelObject_Impl::ModelObject_Impl;
+      using PlanarSurfaceGroup_Impl::PlanarSurfaceGroup_Impl;
       virtual ~Space_Impl() override = default;
 
       double ceilingHeight() const;
@@ -54,10 +58,29 @@ namespace epmodel {
 
       void doCanonicalize(LoadContext& context) override;
 
-      Transformation transformation() const;
+      std::vector<Surface> surfaces() const;
+
+      void unmatchSurfaces();
+
+      void matchSurfaces(Space& other);
+
+      void intersectSurfaces(Space& other);
+
+      Polyhedron polyhedron() const;
+      bool isEnclosedVolume() const;
+
+      openstudio::Transformation transformation() const override;
+      openstudio::Transformation buildingTransformation() const override;
+      bool setTransformation(const openstudio::Transformation& transformation) override;
+      bool changeTransformation(const openstudio::Transformation& transformation) override;
+      openstudio::BoundingBox boundingBox() const override;
 
      private:
       REGISTER_LOGGER("openstudio.epmodel.Space");
+
+      mutable boost::optional<std::vector<Surface>> m_cachedNonConvexSurfaces;
+      mutable boost::optional<bool> m_cachedIsConvex;
+      mutable boost::optional<bool> m_cachedIsEnclosed;
     };
 
   }  // namespace detail

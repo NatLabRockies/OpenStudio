@@ -8,9 +8,9 @@
 %include <epmodel/EPModel_Common_Include.i>
 %import <epmodel/EPModel.i>
 
+EPMODELOBJECT_WRAP(ParentObject, <epmodel/ParentObject/ParentObject.hpp>, 0, 0)
 EPMODELOBJECT_WRAP(CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData, <epmodel/ParentObject/CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData.hpp>, 0, 1)
 EPMODELOBJECT_WRAP(AirflowNetworkSimulationControl, <epmodel/ParentObject/AirflowNetworkSimulationControl.hpp>, 1, 1)
-EPMODELOBJECT_WRAP(ParentObject, <epmodel/ParentObject/ParentObject.hpp>, 0, 0)
 EPMODELOBJECT_WRAP(ControllerOutdoorAir, <epmodel/ParentObject/ControllerOutdoorAir.hpp>, 0, 1)
 EPMODELOBJECT_WRAP(ZoneHVACEnergyRecoveryVentilatorController, <epmodel/ParentObject/ZoneHVACEnergyRecoveryVentilatorController.hpp>, 0, 1)
 EPMODELOBJECT_WRAP(ElectricLoadCenterDistribution, <epmodel/ParentObject/ElectricLoadCenterDistribution.hpp>, 0, 1)

@@ -9,6 +9,9 @@
 #include "Model.hpp"
 
 #include <utilities/core/Assert.hpp>
+#include <utilities/geometry/Geometry.hpp>
+#include <utilities/geometry/Transformation.hpp>
+#include <utilities/geometry/Vector3d.hpp>
 #include <utilities/idd/Building_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
 
@@ -39,6 +42,10 @@ namespace epmodel {
     getImpl<detail::Building_Impl>()->resetNorthAxis();
   }
 
+  Transformation Building::transformation() const {
+    return getImpl<detail::Building_Impl>()->transformation();
+  }
+
 }  // namespace epmodel
 }  // namespace openstudio
 
@@ -62,6 +69,11 @@ namespace epmodel {
 
     void Building_Impl::resetNorthAxis() {
       OS_ASSERT(setString(openstudio::BuildingFields::NorthAxis, ""));
+    }
+
+    Transformation Building_Impl::transformation() const {
+      // rotate negative amount around the z axis, EnergyPlus defines rotation clockwise
+      return Transformation::rotation(Vector3d(0, 0, 1), -degToRad(this->northAxis()));
     }
 
   }  // namespace detail
