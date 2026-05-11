@@ -544,6 +544,18 @@ namespace detail {
       return false;
     }
 
+    if (isNodeField(iddObject(), index) && !value.empty() && boost::regex_match(value, uuidInString())) {
+      // Node-type pointer field receiving a UUID handle string (e.g. from fieldsWithHandles()
+      // during insertExtensibleGroup group-shifting). Route through setPointer so the pointer
+      // is tracked in m_sourceData->pointers. Without this, the UUID lands in m_fields as a
+      // plain string and getTarget() later calls resolveOrCreateTransientNode() with it,
+      // finding no Node named "{UUID}" and creating a spurious one.
+      Handle handle = toUUID(value);
+      if (m_workspace->isMember(handle)) {
+        return setPointer(index, handle, checkValidity);
+      }
+    }
+
     // regular field -- name or data
     if ((iddObject().hasNameField()) && (index == iddObject().nameFieldIndex().get())) {
       return setName(value, checkValidity).has_value();
