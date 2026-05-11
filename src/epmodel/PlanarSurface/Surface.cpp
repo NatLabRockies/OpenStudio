@@ -740,25 +740,22 @@ namespace epmodel {
     }
 
     void Surface_Impl::assignDefaultBoundaryCondition(bool /*emitChangeSignals*/) {
+      // Call setString directly to avoid recursion through setOutsideBoundaryCondition.
+      // Callers of assignDefaultBoundaryCondition (resetAdjacentSurface,
+      // setOutsideBoundaryCondition) handle sun/wind exposure separately.
       if (this->adjacentSurface()) {
-        bool test = this->setOutsideBoundaryCondition("Surface");
-        OS_ASSERT(test);
+        OS_ASSERT(setString(openstudio::BuildingSurface_DetailedFields::OutsideBoundaryCondition, "Surface"));
         // TODO
         // } else if (this->surfacePropertyOtherSideCoefficients()) {
-        //   bool test = this->setOutsideBoundaryCondition("OtherSideCoefficients");
-        //   OS_ASSERT(test);
+        //   OS_ASSERT(setString(..., "OtherSideCoefficients"));
         // } else if (this->surfacePropertyOtherSideConditionsModel()) {
-        //   bool test = this->setOutsideBoundaryCondition("OtherSideConditionsModel");
-        //   OS_ASSERT(test);
+        //   OS_ASSERT(setString(..., "OtherSideConditionsModel"));
         // } else if (this->adjacentFoundation()) {
-        //   bool test = this->setOutsideBoundaryCondition("Foundation");
-        //   OS_ASSERT(test);
+        //   OS_ASSERT(setString(..., "Foundation"));
       } else if (istringEqual("Floor", this->surfaceType())) {
-        bool test = this->setOutsideBoundaryCondition("Ground");
-        OS_ASSERT(test);
+        OS_ASSERT(setString(openstudio::BuildingSurface_DetailedFields::OutsideBoundaryCondition, "Ground"));
       } else {
-        bool test = this->setOutsideBoundaryCondition("Outdoors");
-        OS_ASSERT(test);
+        OS_ASSERT(setString(openstudio::BuildingSurface_DetailedFields::OutsideBoundaryCondition, "Outdoors"));
       }
       // if (emitChangeSignals) { this->emitChangeSignals(); }
     }
