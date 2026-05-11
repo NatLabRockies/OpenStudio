@@ -10,14 +10,20 @@
 #include "PlanarSurface/Surface.hpp"
 #include "PlanarSurface/Surface_Impl.hpp"
 #include "PlanarSurfaceGroup/Space.hpp"
+#include "ResourceObject/WindowPropertyFrameAndDivider.hpp"
+#include "ResourceObject/WindowPropertyFrameAndDivider_Impl.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
+#include <utilities/geometry/BoundingBox.hpp>
 #include <utilities/geometry/Geometry.hpp>
+#include <utilities/geometry/Intersection.hpp>
+#include <utilities/geometry/Transformation.hpp>
 #include <utilities/idd/FenestrationSurface_Detailed_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/IddFactory.hxx>
 #include <utilities/idd/IddObject.hpp>
+#include <utilities/idf/WorkspaceObject.hpp>
 
 namespace openstudio {
 namespace epmodel {
@@ -116,6 +122,22 @@ namespace epmodel {
     getImpl<detail::SubSurface_Impl>()->autocalculateNumberofVertices();
   }
 
+  bool SubSurface::allowWindowPropertyFrameAndDivider() const {
+    return getImpl<detail::SubSurface_Impl>()->allowWindowPropertyFrameAndDivider();
+  }
+
+  boost::optional<WindowPropertyFrameAndDivider> SubSurface::windowPropertyFrameAndDivider() const {
+    return getImpl<detail::SubSurface_Impl>()->windowPropertyFrameAndDivider();
+  }
+
+  bool SubSurface::setWindowPropertyFrameAndDivider(const WindowPropertyFrameAndDivider& windowPropertyFrameAndDivider) {
+    return getImpl<detail::SubSurface_Impl>()->setWindowPropertyFrameAndDivider(windowPropertyFrameAndDivider);
+  }
+
+  void SubSurface::resetWindowPropertyFrameAndDivider() {
+    getImpl<detail::SubSurface_Impl>()->resetWindowPropertyFrameAndDivider();
+  }
+
   boost::optional<Surface> SubSurface::surface() const {
     return getImpl<detail::SubSurface_Impl>()->surface();
   }
@@ -124,9 +146,41 @@ namespace epmodel {
     return getImpl<detail::SubSurface_Impl>()->setSurface(surface);
   }
 
+  boost::optional<SubSurface> SubSurface::adjacentSubSurface() const {
+    return getImpl<detail::SubSurface_Impl>()->adjacentSubSurface();
+  }
+
+  bool SubSurface::setAdjacentSubSurface(SubSurface& subSurface) {
+    return getImpl<detail::SubSurface_Impl>()->setAdjacentSubSurface(subSurface);
+  }
+
+  void SubSurface::resetAdjacentSubSurface() {
+    getImpl<detail::SubSurface_Impl>()->resetAdjacentSubSurface();
+  }
+
   /** Assign default sub surface type based on vertices. */
   void SubSurface::assignDefaultSubSurfaceType() {
     getImpl<detail::SubSurface_Impl>()->assignDefaultSubSurfaceType();
+  }
+
+  std::string SubSurface::outsideBoundaryCondition() const {
+    return getImpl<detail::SubSurface_Impl>()->outsideBoundaryCondition();
+  }
+
+  double SubSurface::roughOpeningArea() const {
+    return getImpl<detail::SubSurface_Impl>()->roughOpeningArea();
+  }
+
+  std::vector<Point3d> SubSurface::roughOpeningVertices() const {
+    return getImpl<detail::SubSurface_Impl>()->roughOpeningVertices();
+  }
+
+  double SubSurface::frameArea() const {
+    return getImpl<detail::SubSurface_Impl>()->frameArea();
+  }
+
+  double SubSurface::dividerArea() const {
+    return getImpl<detail::SubSurface_Impl>()->dividerArea();
   }
 
 }  // namespace epmodel
@@ -135,6 +189,40 @@ namespace epmodel {
 namespace openstudio {
 namespace epmodel {
   namespace detail {
+
+    std::string remap_subSurfaceType(const std::string& subSurfaceType) {
+
+      // openstudio
+      // \key FixedWindow
+      // \key OperableWindow
+      // \key Door
+      // \key GlassDoor
+      // \key OverheadDoor
+      // \key Skylight
+      // \key TubularDaylightDome
+      // \key TubularDaylightDiffuser
+
+      // energyplus
+      // \key Window
+      // \key Door
+      // \key GlassDoor
+      // \key TubularDaylightDome
+      // \key TubularDaylightDiffuser
+
+      constexpr std::array<std::pair<const char*, const char*>, 8> os_to_ep{{
+        {"FixedWindow", "Window"},
+        {"OperableWindow", "Window"},
+        {"Door", "Door"},
+        {"GlassDoor", "GlassDoor"},
+        {"OverheadDoor", "Door"},
+        {"Skylight", "Window"},
+        {"TubularDaylightDome", "TubularDaylightDome"},
+        {"TubularDaylightDiffuser", "TubularDaylightDiffuser"},
+      }};
+      return {std::find_if(os_to_ep.cbegin(), os_to_ep.cend(), [&subSurfaceType](auto pair) {
+                return openstudio::istringEqual(subSurfaceType, pair.first);
+              })->second};
+    }
 
     std::string SubSurface_Impl::subSurfaceType() const {
       auto value = getString(openstudio::FenestrationSurface_DetailedFields::SurfaceType, true);
@@ -229,6 +317,20 @@ namespace epmodel {
       OS_ASSERT(setString(openstudio::FenestrationSurface_DetailedFields::NumberofVertices, "Autocalculate"));
     }
 
+    bool SubSurface_Impl::setVertices(const std::vector<Point3d>& vertices) {
+      bool result = PlanarSurface_Impl::setVertices(vertices);
+
+      if (isEmpty(openstudio::FenestrationSurface_DetailedFields::SurfaceType)) {
+        if (result) {
+          this->assignDefaultSubSurfaceType();
+        } else {
+          LOG(Error, "Cannot compute default SubSurface properties.");
+        }
+      }
+
+      return result;
+    }
+
     boost::optional<Space> SubSurface_Impl::space() const {
       if (boost::optional<Surface> surface = this->surface()) {
         return surface->space();
@@ -268,7 +370,8 @@ namespace epmodel {
         }
       } else {
         std::string surfaceType = surface->surfaceType();
-        if (istringEqual("RoofCeiling", surfaceType) || istringEqual("Floor", surfaceType)) {
+        if (istringEqual("Roof", surfaceType) || istringEqual("Ceiling", surfaceType)  // RoofCeiling
+            || istringEqual("Floor", surfaceType)) {
           result = "Skylight";
         } else {
           double surfaceMinZ = std::numeric_limits<double>::max();
@@ -308,13 +411,149 @@ namespace epmodel {
         }
       }
 
-      return result;
+      return remap_subSurfaceType(result);
     }
 
     void SubSurface_Impl::assignDefaultSubSurfaceType() {
       std::string defaultSubSurfaceType = this->defaultSubSurfaceType();
       bool test = setSubSurfaceType(defaultSubSurfaceType);
       OS_ASSERT(test);
+    }
+
+    bool SubSurface_Impl::allowWindowPropertyFrameAndDivider() const {
+      std::string type = subSurfaceType();
+      // return istringEqual("FixedWindow", type) || istringEqual("OperableWindow", type) || istringEqual("Skylight", type)
+      //        || istringEqual("GlassDoor", type);
+      return istringEqual("Window", type) || istringEqual("GlassDoor", type);
+    }
+
+    boost::optional<WindowPropertyFrameAndDivider> SubSurface_Impl::windowPropertyFrameAndDivider() const {
+      return getObject<SubSurface>().getModelObjectTarget<WindowPropertyFrameAndDivider>(
+        openstudio::FenestrationSurface_DetailedFields::FrameandDividerName);
+    }
+
+    bool SubSurface_Impl::setWindowPropertyFrameAndDivider(const WindowPropertyFrameAndDivider& windowPropertyFrameAndDivider) {
+      if (!allowWindowPropertyFrameAndDivider()) {
+        return false;
+      }
+      return setPointer(openstudio::FenestrationSurface_DetailedFields::FrameandDividerName, windowPropertyFrameAndDivider.handle());
+    }
+
+    void SubSurface_Impl::resetWindowPropertyFrameAndDivider() {
+      OS_ASSERT(setString(openstudio::FenestrationSurface_DetailedFields::FrameandDividerName, ""));
+    }
+
+    boost::optional<SubSurface> SubSurface_Impl::adjacentSubSurface() const {
+      return getObject<SubSurface>().getModelObjectTarget<SubSurface>(openstudio::FenestrationSurface_DetailedFields::OutsideBoundaryConditionObject);
+    }
+
+    bool SubSurface_Impl::setAdjacentSubSurface(SubSurface& subSurface) {
+      bool isSameSubSurface = (subSurface.handle() == getObject<SubSurface>().handle());
+
+      if (multiplier() != subSurface.multiplier()) {
+        return false;
+      }
+
+      boost::optional<Surface> thisSurface = surface();
+      boost::optional<Surface> otherSurface = subSurface.surface();
+      if (!thisSurface || !otherSurface) {
+        return false;
+      }
+
+      boost::optional<Surface> adjacentSurface = thisSurface->adjacentSurface();
+      if (!adjacentSurface || adjacentSurface->handle() != otherSurface->handle()) {
+        return false;
+      }
+
+      std::string thisType = subSurfaceType();
+      std::string otherType = subSurface.subSurfaceType();
+      if (thisType != otherType) {
+        if (thisType != defaultSubSurfaceType()) {
+          subSurface.setSubSurfaceType(thisType);
+        } else {
+          setSubSurfaceType(otherType);
+        }
+      }
+
+      resetAdjacentSubSurface();
+      if (!isSameSubSurface) {
+        subSurface.resetAdjacentSubSurface();
+      }
+
+      bool result = setPointer(openstudio::FenestrationSurface_DetailedFields::OutsideBoundaryConditionObject, subSurface.handle());
+      OS_ASSERT(result);
+      if (!isSameSubSurface) {
+        result = subSurface.getImpl<SubSurface_Impl>()->setPointer(openstudio::FenestrationSurface_DetailedFields::OutsideBoundaryConditionObject,
+                                                                   getObject<SubSurface>().handle());
+        OS_ASSERT(result);
+      }
+      return true;
+    }
+
+    void SubSurface_Impl::resetAdjacentSubSurface() {
+      OS_ASSERT(setString(openstudio::FenestrationSurface_DetailedFields::OutsideBoundaryConditionObject, ""));
+      for (WorkspaceObject& wo : getSources(IddObjectType::FenestrationSurface_Detailed)) {
+        OS_ASSERT(wo.setString(openstudio::FenestrationSurface_DetailedFields::OutsideBoundaryConditionObject, ""));
+      }
+    }
+
+    std::string SubSurface_Impl::outsideBoundaryCondition() const {
+      if (auto oSurface = surface()) {
+        return oSurface->outsideBoundaryCondition();
+      }
+      return {};
+    }
+
+    std::vector<Point3d> SubSurface_Impl::roughOpeningVertices() const {
+      if (auto frameAndDivider = windowPropertyFrameAndDivider()) {
+        double fw = frameAndDivider->frameWidth();
+        Transformation faceTransform = Transformation::alignFace(vertices());
+        std::vector<Point3d> faceVertices = faceTransform.inverse() * vertices();
+        auto offset = openstudio::buffer(faceVertices, fw, 0.01);
+        if (!offset) {
+          faceVertices = openstudio::reverse(faceVertices);
+          offset = openstudio::buffer(faceVertices, fw, 0.01);
+          if (!offset) {
+            return vertices();
+          }
+        }
+        return faceTransform * offset.get();
+      }
+      return vertices();
+    }
+
+    double SubSurface_Impl::roughOpeningArea() const {
+      if (auto area = openstudio::getArea(roughOpeningVertices())) {
+        return *area;
+      }
+      return grossArea();
+    }
+
+    double SubSurface_Impl::frameArea() const {
+      return roughOpeningArea() - grossArea();
+    }
+
+    double SubSurface_Impl::dividerArea() const {
+      double divArea = 0;
+      if (auto frameAndDivider = windowPropertyFrameAndDivider()) {
+        double dividerWidth = frameAndDivider->dividerWidth();
+        if (dividerWidth == 0) {
+          return divArea;
+        }
+        Transformation faceTransform = Transformation::alignFace(vertices());
+        std::vector<Point3d> faceVertices = faceTransform.inverse() * vertices();
+        BoundingBox bb;
+        bb.addPoints(faceVertices);
+        double numHorizDividers = frameAndDivider->numberOfHorizontalDividers();
+        if (numHorizDividers != 0 && bb.maxX().has_value() && bb.minX().has_value()) {
+          divArea += numHorizDividers * dividerWidth * (*bb.maxX() - *bb.minX());
+        }
+        double numVertDividers = frameAndDivider->numberOfVerticalDividers();
+        if (numVertDividers != 0 && bb.maxY().has_value() && bb.minY().has_value()) {
+          divArea += numVertDividers * dividerWidth * (*bb.maxY() - *bb.minY());
+        }
+      }
+      return divArea;
     }
 
   }  // namespace detail

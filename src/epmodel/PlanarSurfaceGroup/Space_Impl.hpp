@@ -9,6 +9,9 @@
 #include "ModelObject_Impl.hpp"
 
 namespace openstudio {
+
+class Transformation;
+
 namespace epmodel {
 
   class ThermalZone;
@@ -50,6 +53,8 @@ namespace epmodel {
       bool setDesignSpecificationOutdoorAir(const openstudio::epmodel::DesignSpecificationOutdoorAir& designSpecificationOutdoorAir);
 
       void doCanonicalize(LoadContext& context) override;
+
+      Transformation transformation() const;
 
      private:
       REGISTER_LOGGER("openstudio.epmodel.Space");

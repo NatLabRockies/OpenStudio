@@ -13,6 +13,8 @@ namespace epmodel {
 
   class Space;
   class Surface;
+  class SubSurface;
+  class WindowPropertyFrameAndDivider;
 
   namespace detail {
 
@@ -21,6 +23,8 @@ namespace epmodel {
      public:
       using PlanarSurface_Impl::PlanarSurface_Impl;
       virtual ~SubSurface_Impl() override = default;
+
+      virtual bool setVertices(const std::vector<Point3d>& vertices) override;
 
       std::string subSurfaceType() const;
       bool isSubSurfaceTypeDefaulted() const;
@@ -46,17 +50,39 @@ namespace epmodel {
       void resetNumberofVertices();
       void autocalculateNumberofVertices();
 
+      bool allowWindowPropertyFrameAndDivider() const;
+      boost::optional<WindowPropertyFrameAndDivider> windowPropertyFrameAndDivider() const;
+      bool setWindowPropertyFrameAndDivider(const WindowPropertyFrameAndDivider& windowPropertyFrameAndDivider);
+      void resetWindowPropertyFrameAndDivider();
+
       virtual boost::optional<Space> space() const override;
       virtual bool subtractFromGrossArea() const override;
 
       boost::optional<Surface> surface() const;
       bool setSurface(const Surface& surface);
 
+      /// get the adjacent subsurface
+      boost::optional<SubSurface> adjacentSubSurface() const;
+      bool setAdjacentSubSurface(SubSurface& subSurface);
+      void resetAdjacentSubSurface();
+
       /** Default sub surface type based on vertices. */
       std::string defaultSubSurfaceType() const;
-
       /** Assign default sub surface type based on vertices. */
       void assignDefaultSubSurfaceType();
+
+      std::string outsideBoundaryCondition() const;
+
+      double roughOpeningArea() const;
+
+      std::vector<Point3d> roughOpeningVertices() const;
+
+      double frameArea() const;
+
+      double dividerArea() const;
+
+     private:
+      REGISTER_LOGGER("openstudio.epmodel.SubSurface");
     };
 
   }  // namespace detail

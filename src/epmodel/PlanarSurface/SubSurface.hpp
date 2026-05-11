@@ -19,6 +19,7 @@ namespace epmodel {
 
   class Model;
   class Surface;
+  class WindowPropertyFrameAndDivider;
 
   namespace detail {
     class SubSurface_Impl;
@@ -72,11 +73,40 @@ namespace epmodel {
     void resetNumberofVertices();
     void autocalculateNumberofVertices();
 
+    bool allowWindowPropertyFrameAndDivider() const;
+    boost::optional<WindowPropertyFrameAndDivider> windowPropertyFrameAndDivider() const;
+    bool setWindowPropertyFrameAndDivider(const WindowPropertyFrameAndDivider& windowPropertyFrameAndDivider);
+    void resetWindowPropertyFrameAndDivider();
+
     boost::optional<Surface> surface() const;
     bool setSurface(const Surface& surface);
 
+    /// get the adjacent subsurface
+    boost::optional<SubSurface> adjacentSubSurface() const;
+
+    /// set the adjacent subsurface, will fail unless both sub surfaces are parented by surfaces
+    /// which are adjacent
+    bool setAdjacentSubSurface(SubSurface& subSurface);
+    /// reset the adjacent subsurface, will clear references on both this and adjacent sub surface
+    void resetAdjacentSubSurface();
+
     /** Assign default sub surface type based on vertices. */
     void assignDefaultSubSurfaceType();
+
+    /** Return the surface()'s outsideBoundaryCondition, or an empty string. */
+    std::string outsideBoundaryCondition() const;
+
+    /* Get the total area of the sub surface rough area which includes the frame */
+    double roughOpeningArea() const;
+
+    /* Get the rough opening vertices for the sub surface including the frame */
+    std::vector<Point3d> roughOpeningVertices() const;
+
+    // Gets the total area of the frame
+    double frameArea() const;
+
+    // Gets the total area of the divider
+    double dividerArea() const;
 
    protected:
     using ImplType = detail::SubSurface_Impl;

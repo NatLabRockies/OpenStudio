@@ -14,6 +14,9 @@ namespace openstudio {
 namespace epmodel {
 
   class Space;
+  class SubSurface;
+  class Surface;
+  class SurfaceIntersection;
 
   namespace detail {
 
@@ -22,6 +25,8 @@ namespace epmodel {
      public:
       using PlanarSurface_Impl::PlanarSurface_Impl;
       virtual ~Surface_Impl() override = default;
+
+      virtual bool setVertices(const std::vector<Point3d>& vertices) override;
 
       std::string surfaceType() const;
       bool setSurfaceType(const std::string& surfaceType);
@@ -53,9 +58,32 @@ namespace epmodel {
       void resetNumberofVertices();
       void autocalculateNumberofVertices();
 
+      // Helpers
+      std::vector<SubSurface> subSurfaces() const;
+
       virtual boost::optional<Space> space() const override;
       virtual bool subtractFromGrossArea() const override;
       bool setSpace(const Space& space);
+
+      boost::optional<Surface> adjacentSurface() const;
+      bool setAdjacentSurface(Surface& surface);
+      void resetAdjacentSurface();
+
+      bool intersect(Surface& otherSurface);
+      boost::optional<SurfaceIntersection> computeIntersection(Surface& otherSurface);
+
+      boost::optional<Surface> createAdjacentSurface(const Space& otherSpace);
+
+      bool isGroundSurface() const;
+      bool isPartOfEnvelope() const;
+
+      void assignDefaultSurfaceType(bool emitChangeSignals = true);
+      void assignDefaultBoundaryCondition(bool emitChangeSignals = true);
+      void assignDefaultSunExposure(bool emitChangeSignals = true);
+      void assignDefaultWindExposure(bool emitChangeSignals = true);
+
+     private:
+      REGISTER_LOGGER("openstudio.epmodel.Surface");
     };
 
   }  // namespace detail

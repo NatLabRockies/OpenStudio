@@ -30,6 +30,9 @@
 #include <algorithm>
 #include <fmt/format.h>
 
+// TODO: temporary
+#include <utilities/geometry/Transformation.hpp>
+
 namespace openstudio {
 namespace epmodel {
 
@@ -219,6 +222,11 @@ namespace epmodel {
 
   bool Space::setDesignSpecificationOutdoorAir(const DesignSpecificationOutdoorAir& designSpecificationOutdoorAir) {
     return getImpl<detail::Space_Impl>()->setDesignSpecificationOutdoorAir(designSpecificationOutdoorAir);
+  }
+
+  // TODO: temporary
+  Transformation Space::transformation() const {
+    return getImpl<detail::Space_Impl>()->transformation();
   }
 
 }  // namespace epmodel
@@ -437,6 +445,11 @@ namespace epmodel {
       removeSpaceFromAllListsExcept(thisSpace, targetList.handle());
       syncAllAirLoopCMVEntries(model());
       return true;
+    }
+
+    // TODO: temporary
+    Transformation Space_Impl::transformation() const {
+      return {};  // identity
     }
 
     void Space_Impl::doCanonicalize(LoadContext& context) {

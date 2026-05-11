@@ -15,6 +15,9 @@
 #include <memory>
 
 namespace openstudio {
+
+class Transformation;
+
 namespace epmodel {
 
   class Model;
@@ -85,6 +88,9 @@ namespace epmodel {
     void resetThermalZone();
     boost::optional<DesignSpecificationOutdoorAir> designSpecificationOutdoorAir() const;
     bool setDesignSpecificationOutdoorAir(const DesignSpecificationOutdoorAir& designSpecificationOutdoorAir);
+
+    // TODO: temporary, the Space object in E+ has no X,Y,Z origin and direction of relative North
+    Transformation transformation() const;
 
    protected:
     using ImplType = detail::Space_Impl;
