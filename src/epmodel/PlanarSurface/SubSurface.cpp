@@ -64,10 +64,6 @@ namespace epmodel {
     return getImpl<detail::SubSurface_Impl>()->isViewFactortoGroundAutocalculated();
   }
 
-  bool SubSurface::setViewFactortoGround(boost::optional<double> viewFactortoGround) {
-    return getImpl<detail::SubSurface_Impl>()->setViewFactortoGround(viewFactortoGround);
-  }
-
   bool SubSurface::setViewFactortoGround(double viewFactortoGround) {
     return getImpl<detail::SubSurface_Impl>()->setViewFactortoGround(viewFactortoGround);
   }
@@ -108,11 +104,7 @@ namespace epmodel {
     return getImpl<detail::SubSurface_Impl>()->isNumberofVerticesAutocalculated();
   }
 
-  bool SubSurface::setNumberofVertices(boost::optional<double> numberofVertices) {
-    return getImpl<detail::SubSurface_Impl>()->setNumberofVertices(numberofVertices);
-  }
-
-  bool SubSurface::setNumberofVertices(double numberofVertices) {
+  bool SubSurface::setNumberofVertices(unsigned int numberofVertices) {
     return getImpl<detail::SubSurface_Impl>()->setNumberofVertices(numberofVertices);
   }
 
@@ -177,16 +169,6 @@ namespace epmodel {
       return false;
     }
 
-    bool SubSurface_Impl::setViewFactortoGround(boost::optional<double> viewFactortoGround) {
-      bool result = false;
-      if (viewFactortoGround) {
-        result = setDouble(openstudio::FenestrationSurface_DetailedFields::ViewFactortoGround, viewFactortoGround.get());
-      } else {
-        result = setString(openstudio::FenestrationSurface_DetailedFields::ViewFactortoGround, "");
-      }
-      return result;
-    }
-
     bool SubSurface_Impl::setViewFactortoGround(double viewFactortoGround) {
       return setDouble(openstudio::FenestrationSurface_DetailedFields::ViewFactortoGround, viewFactortoGround);
     }
@@ -232,18 +214,8 @@ namespace epmodel {
       return false;
     }
 
-    bool SubSurface_Impl::setNumberofVertices(boost::optional<double> numberofVertices) {
-      bool result = false;
-      if (numberofVertices) {
-        result = setDouble(openstudio::FenestrationSurface_DetailedFields::NumberofVertices, numberofVertices.get());
-      } else {
-        result = setString(openstudio::FenestrationSurface_DetailedFields::NumberofVertices, "");
-      }
-      return result;
-    }
-
-    bool SubSurface_Impl::setNumberofVertices(double numberofVertices) {
-      return setDouble(openstudio::FenestrationSurface_DetailedFields::NumberofVertices, numberofVertices);
+    bool SubSurface_Impl::setNumberofVertices(unsigned int numberofVertices) {
+      return setInt(openstudio::FenestrationSurface_DetailedFields::NumberofVertices, numberofVertices);
     }
 
     void SubSurface_Impl::resetNumberofVertices() {

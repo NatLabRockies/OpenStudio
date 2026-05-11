@@ -36,7 +36,7 @@ TEST_F(EPModelFixture, SubSurface_ScalarAccessors_RoundTrip) {
   EXPECT_FALSE(subSurface.isViewFactortoGroundAutocalculated());
   subSurface.autocalculateViewFactortoGround();
   EXPECT_TRUE(subSurface.isViewFactortoGroundAutocalculated());
-  EXPECT_TRUE(subSurface.setViewFactortoGround(boost::optional<double>{}));
+  subSurface.resetViewFactortoGround();
   EXPECT_TRUE(subSurface.isViewFactortoGroundDefaulted());
 
   EXPECT_TRUE(subSurface.setMultiplier(1.25));
@@ -45,12 +45,12 @@ TEST_F(EPModelFixture, SubSurface_ScalarAccessors_RoundTrip) {
   subSurface.resetMultiplier();
   EXPECT_TRUE(subSurface.isMultiplierDefaulted());
 
-  EXPECT_TRUE(subSurface.setNumberofVertices(4.0));
+  EXPECT_TRUE(subSurface.setNumberofVertices(4));
   ASSERT_TRUE(subSurface.numberofVertices());
   EXPECT_DOUBLE_EQ(4.0, *subSurface.numberofVertices());
   EXPECT_FALSE(subSurface.isNumberofVerticesAutocalculated());
   subSurface.autocalculateNumberofVertices();
   EXPECT_TRUE(subSurface.isNumberofVerticesAutocalculated());
-  EXPECT_TRUE(subSurface.setNumberofVertices(boost::optional<double>{}));
+  subSurface.resetNumberofVertices();
   EXPECT_TRUE(subSurface.isNumberofVerticesDefaulted());
 }

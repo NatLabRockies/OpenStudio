@@ -109,10 +109,6 @@ namespace epmodel {
     return getImpl<detail::Surface_Impl>()->isViewFactortoGroundAutocalculated();
   }
 
-  bool Surface::setViewFactortoGround(boost::optional<double> viewFactortoGround) {
-    return getImpl<detail::Surface_Impl>()->setViewFactortoGround(viewFactortoGround);
-  }
-
   bool Surface::setViewFactortoGround(double viewFactortoGround) {
     return getImpl<detail::Surface_Impl>()->setViewFactortoGround(viewFactortoGround);
   }
@@ -137,11 +133,7 @@ namespace epmodel {
     return getImpl<detail::Surface_Impl>()->isNumberofVerticesAutocalculated();
   }
 
-  bool Surface::setNumberofVertices(boost::optional<double> numberofVertices) {
-    return getImpl<detail::Surface_Impl>()->setNumberofVertices(numberofVertices);
-  }
-
-  bool Surface::setNumberofVertices(double numberofVertices) {
+  bool Surface::setNumberofVertices(unsigned int numberofVertices) {
     return getImpl<detail::Surface_Impl>()->setNumberofVertices(numberofVertices);
   }
 
@@ -235,16 +227,6 @@ namespace epmodel {
       return false;
     }
 
-    bool Surface_Impl::setViewFactortoGround(boost::optional<double> viewFactortoGround) {
-      bool result = false;
-      if (viewFactortoGround) {
-        result = setDouble(openstudio::BuildingSurface_DetailedFields::ViewFactortoGround, viewFactortoGround.get());
-      } else {
-        result = setString(openstudio::BuildingSurface_DetailedFields::ViewFactortoGround, "");
-      }
-      return result;
-    }
-
     bool Surface_Impl::setViewFactortoGround(double viewFactortoGround) {
       return setDouble(openstudio::BuildingSurface_DetailedFields::ViewFactortoGround, viewFactortoGround);
     }
@@ -272,18 +254,8 @@ namespace epmodel {
       return false;
     }
 
-    bool Surface_Impl::setNumberofVertices(boost::optional<double> numberofVertices) {
-      bool result = false;
-      if (numberofVertices) {
-        result = setDouble(openstudio::BuildingSurface_DetailedFields::NumberofVertices, numberofVertices.get());
-      } else {
-        result = setString(openstudio::BuildingSurface_DetailedFields::NumberofVertices, "");
-      }
-      return result;
-    }
-
-    bool Surface_Impl::setNumberofVertices(double numberofVertices) {
-      return setDouble(openstudio::BuildingSurface_DetailedFields::NumberofVertices, numberofVertices);
+    bool Surface_Impl::setNumberofVertices(unsigned int numberofVertices) {
+      return setInt(openstudio::BuildingSurface_DetailedFields::NumberofVertices, numberofVertices);
     }
 
     void Surface_Impl::resetNumberofVertices() {

@@ -56,7 +56,6 @@ namespace epmodel {
     boost::optional<double> viewFactortoGround() const;
     bool isViewFactortoGroundDefaulted() const;
     bool isViewFactortoGroundAutocalculated() const;
-    bool setViewFactortoGround(boost::optional<double> viewFactortoGround);
     bool setViewFactortoGround(double viewFactortoGround);
     void resetViewFactortoGround();
     void autocalculateViewFactortoGround();
@@ -69,8 +68,7 @@ namespace epmodel {
     boost::optional<double> numberofVertices() const;
     bool isNumberofVerticesDefaulted() const;
     bool isNumberofVerticesAutocalculated() const;
-    bool setNumberofVertices(boost::optional<double> numberofVertices);
-    bool setNumberofVertices(double numberofVertices);
+    bool setNumberofVertices(unsigned int numberofVertices);
     void resetNumberofVertices();
     void autocalculateNumberofVertices();
 
