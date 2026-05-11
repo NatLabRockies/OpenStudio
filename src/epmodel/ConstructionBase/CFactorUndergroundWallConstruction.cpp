@@ -16,7 +16,7 @@ namespace openstudio {
 namespace epmodel {
 
   CFactorUndergroundWallConstruction::CFactorUndergroundWallConstruction(const Model& model, double cFactor, double height)
-    : ModelObject(CFactorUndergroundWallConstruction::iddObjectType(), model) {
+    : ConstructionBase(CFactorUndergroundWallConstruction::iddObjectType(), model) {
     const bool okCFactor = setCFactor(cFactor);
     OS_ASSERT(okCFactor);
     const bool okHeight = setHeight(height);
@@ -24,7 +24,7 @@ namespace epmodel {
   }
 
   CFactorUndergroundWallConstruction::CFactorUndergroundWallConstruction(std::shared_ptr<detail::CFactorUndergroundWallConstruction_Impl> impl)
-    : ModelObject(std::move(impl)) {}
+    : ConstructionBase(std::move(impl)) {}
 
   IddObjectType CFactorUndergroundWallConstruction::iddObjectType() {
     return IddObjectType::Construction_CfactorUndergroundWall;

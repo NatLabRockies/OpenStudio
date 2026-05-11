@@ -3,21 +3,21 @@
 *  See also https://openstudio.net/license
 ***********************************************************************************************************************/
 
-#ifndef EPMODEL_CONSTRUCTION_IMPL_HPP
-#define EPMODEL_CONSTRUCTION_IMPL_HPP
+#ifndef EPMODEL_CONSTRUCTIONBASE_IMPL_HPP
+#define EPMODEL_CONSTRUCTIONBASE_IMPL_HPP
 
-#include "LayeredConstruction/LayeredConstruction_Impl.hpp"
+#include "ResourceObject/ResourceObject_Impl.hpp"
 
 namespace openstudio {
 namespace epmodel {
 
   namespace detail {
 
-    class EPMODEL_API Construction_Impl : public LayeredConstruction_Impl
+    class EPMODEL_API ConstructionBase_Impl : public ResourceObject_Impl
     {
      public:
-      using LayeredConstruction_Impl::LayeredConstruction_Impl;
-      virtual ~Construction_Impl() override = default;
+      using ResourceObject_Impl::ResourceObject_Impl;
+      virtual ~ConstructionBase_Impl() override = default;
     };
 
   }  // namespace detail

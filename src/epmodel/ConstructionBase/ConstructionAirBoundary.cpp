@@ -17,12 +17,12 @@
 namespace openstudio {
 namespace epmodel {
 
-  ConstructionAirBoundary::ConstructionAirBoundary(const Model& model) : ModelObject(ConstructionAirBoundary::iddObjectType(), model) {
+  ConstructionAirBoundary::ConstructionAirBoundary(const Model& model) : ConstructionBase(ConstructionAirBoundary::iddObjectType(), model) {
     const bool ok = setSimpleMixingAirChangesPerHour(0.0);
     OS_ASSERT(ok);
   }
 
-  ConstructionAirBoundary::ConstructionAirBoundary(std::shared_ptr<detail::ConstructionAirBoundary_Impl> impl) : ModelObject(std::move(impl)) {}
+  ConstructionAirBoundary::ConstructionAirBoundary(std::shared_ptr<detail::ConstructionAirBoundary_Impl> impl) : ConstructionBase(std::move(impl)) {}
 
   IddObjectType ConstructionAirBoundary::iddObjectType() {
     return IddObjectType::Construction_AirBoundary;

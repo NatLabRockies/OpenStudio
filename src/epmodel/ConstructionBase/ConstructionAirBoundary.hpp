@@ -7,7 +7,7 @@
 #define EPMODEL_CONSTRUCTIONAIRBOUNDARY_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "ConstructionBase/ConstructionBase.hpp"
 
 #include <utilities/idd/IddEnums.hxx>
 
@@ -23,7 +23,7 @@ namespace epmodel {
     class ConstructionAirBoundary_Impl;
   }
 
-  class EPMODEL_API ConstructionAirBoundary : public ModelObject
+  class EPMODEL_API ConstructionAirBoundary : public ConstructionBase
   {
    public:
     explicit ConstructionAirBoundary(const Model& model);

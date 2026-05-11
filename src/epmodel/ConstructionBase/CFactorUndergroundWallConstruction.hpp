@@ -7,7 +7,7 @@
 #define EPMODEL_CFACTORUNDERGROUNDWALLCONSTRUCTION_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "ConstructionBase/ConstructionBase.hpp"
 
 #include <utilities/idd/IddEnums.hxx>
 
@@ -22,7 +22,7 @@ namespace epmodel {
     class CFactorUndergroundWallConstruction_Impl;
   }
 
-  class EPMODEL_API CFactorUndergroundWallConstruction : public ModelObject
+  class EPMODEL_API CFactorUndergroundWallConstruction : public ConstructionBase
   {
    public:
     explicit CFactorUndergroundWallConstruction(const Model& model, double cFactor = 0.1, double height = 0.1);

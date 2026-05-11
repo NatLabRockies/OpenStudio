@@ -66,6 +66,9 @@ set(${target_name}_src
   ConstructionBase/CFactorUndergroundWallConstruction.hpp
   ConstructionBase/CFactorUndergroundWallConstruction_Impl.hpp
   ConstructionBase/CFactorUndergroundWallConstruction.cpp
+  ConstructionBase/ConstructionBase.hpp
+  ConstructionBase/ConstructionBase_Impl.hpp
+  ConstructionBase/ConstructionBase.cpp
   ConstructionBase/ConstructionAirBoundary.hpp
   ConstructionBase/ConstructionAirBoundary_Impl.hpp
   ConstructionBase/ConstructionAirBoundary.cpp
@@ -226,6 +229,9 @@ set(${target_name}_src
   Inverter/ElectricLoadCenterInverterSimple_Impl.hpp
   Inverter/ElectricLoadCenterInverterSimple.cpp
 
+  LayeredConstruction/LayeredConstruction.hpp
+  LayeredConstruction/LayeredConstruction_Impl.hpp
+  LayeredConstruction/LayeredConstruction.cpp
   LayeredConstruction/Construction.hpp
   LayeredConstruction/Construction_Impl.hpp
   LayeredConstruction/Construction.cpp
