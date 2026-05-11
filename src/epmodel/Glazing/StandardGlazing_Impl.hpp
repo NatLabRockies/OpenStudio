@@ -6,7 +6,7 @@
 #ifndef EPMODEL_STANDARDGLAZING_IMPL_HPP
 #define EPMODEL_STANDARDGLAZING_IMPL_HPP
 
-#include "ModelObject_Impl.hpp"
+#include "Material/Material_Impl.hpp"
 
 #include <boost/optional.hpp>
 #include <string>
@@ -17,10 +17,10 @@ namespace epmodel {
 
   namespace detail {
 
-    class EPMODEL_API StandardGlazing_Impl : public ModelObject_Impl
+    class EPMODEL_API StandardGlazing_Impl : public Material_Impl
     {
      public:
-      using ModelObject_Impl::ModelObject_Impl;
+      using Material_Impl::Material_Impl;
       virtual ~StandardGlazing_Impl() override = default;
 
       std::string opticalDataType() const;

@@ -107,8 +107,7 @@ namespace epmodel {
     }
 
     boost::optional<ConstructionBase> InteriorPartitionSurface_Impl::construction() const {
-      return getObject<InteriorPartitionSurface>().getModelObjectTarget<ConstructionBase>(
-        openstudio::InternalMassFields::ConstructionName);
+      return getObject<InteriorPartitionSurface>().getModelObjectTarget<ConstructionBase>(openstudio::InternalMassFields::ConstructionName);
     }
 
     bool InteriorPartitionSurface_Impl::setConstruction(const ConstructionBase& construction) {

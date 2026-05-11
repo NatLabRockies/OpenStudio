@@ -15,13 +15,13 @@
 namespace openstudio {
 namespace epmodel {
 
-  AirGap::AirGap(const Model& model, double thermalResistance) : ModelObject(AirGap::iddObjectType(), model) {
+  AirGap::AirGap(const Model& model, double thermalResistance) : Material(AirGap::iddObjectType(), model) {
     OS_ASSERT(getImpl<detail::AirGap_Impl>());
     const bool ok = setThermalResistance(thermalResistance);
     OS_ASSERT(ok);
   }
 
-  AirGap::AirGap(std::shared_ptr<detail::AirGap_Impl> impl) : ModelObject(std::move(impl)) {}
+  AirGap::AirGap(std::shared_ptr<detail::AirGap_Impl> impl) : Material(std::move(impl)) {}
 
   IddObjectType AirGap::iddObjectType() {
     return IddObjectType::Material_AirGap;

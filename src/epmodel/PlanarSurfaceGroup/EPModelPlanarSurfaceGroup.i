@@ -7,6 +7,7 @@
 
 %include <epmodel/EPModel_Common_Include.i>
 %import <epmodel/EPModel.i>
+%import <epmodel/PlanarSurface/EPModelPlanarSurface.i>
 
 %{
   #include <utilities/geometry/BoundingBox.hpp>

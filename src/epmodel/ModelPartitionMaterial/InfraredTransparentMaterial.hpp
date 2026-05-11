@@ -7,7 +7,7 @@
 #define EPMODEL_INFRAREDTRANSPARENTMATERIAL_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "Material/Material.hpp"
 
 #include <utilities/idd/IddEnums.hxx>
 
@@ -22,7 +22,7 @@ namespace epmodel {
     class InfraredTransparentMaterial_Impl;
   }
 
-  class EPMODEL_API InfraredTransparentMaterial : public ModelObject
+  class EPMODEL_API InfraredTransparentMaterial : public Material
   {
    public:
     explicit InfraredTransparentMaterial(const Model& model);

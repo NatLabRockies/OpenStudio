@@ -7,7 +7,7 @@
 #define EPMODEL_STANDARDGLAZING_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "Material/Material.hpp"
 
 #include <boost/optional.hpp>
 #include <string>
@@ -22,7 +22,7 @@ namespace epmodel {
     class StandardGlazing_Impl;
   }
 
-  class EPMODEL_API StandardGlazing : public ModelObject
+  class EPMODEL_API StandardGlazing : public Material
   {
    public:
     explicit StandardGlazing(const Model& model, const std::string& opticalDataType = "SpectralAverage", double thickness = 0.1);

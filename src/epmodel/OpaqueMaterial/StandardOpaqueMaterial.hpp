@@ -7,7 +7,7 @@
 #define EPMODEL_STANDARDOPAQUEMATERIAL_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "Material/Material.hpp"
 
 #include <utilities/idd/IddEnums.hxx>
 
@@ -24,7 +24,7 @@ namespace epmodel {
     class StandardOpaqueMaterial_Impl;
   }
 
-  class EPMODEL_API StandardOpaqueMaterial : public ModelObject
+  class EPMODEL_API StandardOpaqueMaterial : public Material
   {
    public:
     explicit StandardOpaqueMaterial(const Model& model, const std::string& roughness = "Smooth", double thickness = 0.1, double conductivity = 0.1,

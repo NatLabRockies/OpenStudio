@@ -6,7 +6,7 @@
 #ifndef EPMODEL_REFRACTIONEXTINCTIONGLAZING_IMPL_HPP
 #define EPMODEL_REFRACTIONEXTINCTIONGLAZING_IMPL_HPP
 
-#include "ModelObject_Impl.hpp"
+#include "Material/Material_Impl.hpp"
 
 #include <string>
 
@@ -15,10 +15,10 @@ namespace epmodel {
 
   namespace detail {
 
-    class EPMODEL_API RefractionExtinctionGlazing_Impl : public ModelObject_Impl
+    class EPMODEL_API RefractionExtinctionGlazing_Impl : public Material_Impl
     {
      public:
-      using ModelObject_Impl::ModelObject_Impl;
+      using Material_Impl::Material_Impl;
       virtual ~RefractionExtinctionGlazing_Impl() override = default;
 
       double thickness() const;

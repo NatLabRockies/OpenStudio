@@ -17,7 +17,7 @@ namespace openstudio {
 namespace epmodel {
 
   MasslessOpaqueMaterial::MasslessOpaqueMaterial(const Model& model, const std::string& roughness, double thermalResistance)
-    : ModelObject(MasslessOpaqueMaterial::iddObjectType(), model) {
+    : Material(MasslessOpaqueMaterial::iddObjectType(), model) {
     OS_ASSERT(getImpl<detail::MasslessOpaqueMaterial_Impl>());
 
     bool ok = true;
@@ -27,7 +27,7 @@ namespace epmodel {
     OS_ASSERT(ok);
   }
 
-  MasslessOpaqueMaterial::MasslessOpaqueMaterial(std::shared_ptr<detail::MasslessOpaqueMaterial_Impl> impl) : ModelObject(std::move(impl)) {}
+  MasslessOpaqueMaterial::MasslessOpaqueMaterial(std::shared_ptr<detail::MasslessOpaqueMaterial_Impl> impl) : Material(std::move(impl)) {}
 
   IddObjectType MasslessOpaqueMaterial::iddObjectType() {
     return IddObjectType::Material_NoMass;

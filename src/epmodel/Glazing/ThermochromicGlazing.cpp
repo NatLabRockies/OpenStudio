@@ -14,11 +14,11 @@
 namespace openstudio {
 namespace epmodel {
 
-  ThermochromicGlazing::ThermochromicGlazing(const Model& model) : ModelObject(ThermochromicGlazing::iddObjectType(), model) {
+  ThermochromicGlazing::ThermochromicGlazing(const Model& model) : Material(ThermochromicGlazing::iddObjectType(), model) {
     OS_ASSERT(getImpl<detail::ThermochromicGlazing_Impl>());
   }
 
-  ThermochromicGlazing::ThermochromicGlazing(std::shared_ptr<detail::ThermochromicGlazing_Impl> impl) : ModelObject(std::move(impl)) {}
+  ThermochromicGlazing::ThermochromicGlazing(std::shared_ptr<detail::ThermochromicGlazing_Impl> impl) : Material(std::move(impl)) {}
 
   IddObjectType ThermochromicGlazing::iddObjectType() {
     return IddObjectType::WindowMaterial_GlazingGroup_Thermochromic;

@@ -6,17 +6,17 @@
 #ifndef EPMODEL_THERMOCHROMICGLAZING_IMPL_HPP
 #define EPMODEL_THERMOCHROMICGLAZING_IMPL_HPP
 
-#include "ModelObject_Impl.hpp"
+#include "Material/Material_Impl.hpp"
 
 namespace openstudio {
 namespace epmodel {
 
   namespace detail {
 
-    class EPMODEL_API ThermochromicGlazing_Impl : public ModelObject_Impl
+    class EPMODEL_API ThermochromicGlazing_Impl : public Material_Impl
     {
      public:
-      using ModelObject_Impl::ModelObject_Impl;
+      using Material_Impl::Material_Impl;
       virtual ~ThermochromicGlazing_Impl() override = default;
     };
 

@@ -7,7 +7,7 @@
 #define EPMODEL_MASSLESSOPAQUEMATERIAL_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "Material/Material.hpp"
 
 #include <utilities/idd/IddEnums.hxx>
 
@@ -24,7 +24,7 @@ namespace epmodel {
     class MasslessOpaqueMaterial_Impl;
   }
 
-  class EPMODEL_API MasslessOpaqueMaterial : public ModelObject
+  class EPMODEL_API MasslessOpaqueMaterial : public Material
   {
    public:
     explicit MasslessOpaqueMaterial(const Model& model, const std::string& roughness = "Smooth", double thermalResistance = 0.1);

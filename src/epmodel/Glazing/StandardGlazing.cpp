@@ -312,7 +312,7 @@ namespace epmodel {
   }  // namespace detail
 
   StandardGlazing::StandardGlazing(const Model& model, const std::string& opticalDataType, double thickness)
-    : ModelObject(StandardGlazing::iddObjectType(), model) {
+    : Material(StandardGlazing::iddObjectType(), model) {
     OS_ASSERT(getImpl<detail::StandardGlazing_Impl>());
 
     bool ok = true;
@@ -322,7 +322,7 @@ namespace epmodel {
     OS_ASSERT(ok);
   }
 
-  StandardGlazing::StandardGlazing(std::shared_ptr<detail::StandardGlazing_Impl> impl) : ModelObject(std::move(impl)) {}
+  StandardGlazing::StandardGlazing(std::shared_ptr<detail::StandardGlazing_Impl> impl) : Material(std::move(impl)) {}
 
   IddObjectType StandardGlazing::iddObjectType() {
     return IddObjectType::WindowMaterial_Glazing;

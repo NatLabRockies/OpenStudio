@@ -19,7 +19,7 @@ namespace epmodel {
 
   StandardOpaqueMaterial::StandardOpaqueMaterial(const Model& model, const std::string& roughness, double thickness, double conductivity,
                                                  double density, double specificHeat)
-    : ModelObject(StandardOpaqueMaterial::iddObjectType(), model) {
+    : Material(StandardOpaqueMaterial::iddObjectType(), model) {
     OS_ASSERT(getImpl<detail::StandardOpaqueMaterial_Impl>());
 
     bool ok = true;
@@ -35,7 +35,7 @@ namespace epmodel {
     OS_ASSERT(ok);
   }
 
-  StandardOpaqueMaterial::StandardOpaqueMaterial(std::shared_ptr<detail::StandardOpaqueMaterial_Impl> impl) : ModelObject(std::move(impl)) {}
+  StandardOpaqueMaterial::StandardOpaqueMaterial(std::shared_ptr<detail::StandardOpaqueMaterial_Impl> impl) : Material(std::move(impl)) {}
 
   IddObjectType StandardOpaqueMaterial::iddObjectType() {
     return IddObjectType::Material;

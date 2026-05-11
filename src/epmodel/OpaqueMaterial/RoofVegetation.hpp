@@ -7,7 +7,7 @@
 #define EPMODEL_ROOFVEGETATION_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "Material/Material.hpp"
 
 #include <utilities/idd/IddEnums.hxx>
 
@@ -24,7 +24,7 @@ namespace epmodel {
     class RoofVegetation_Impl;
   }
 
-  class EPMODEL_API RoofVegetation : public ModelObject
+  class EPMODEL_API RoofVegetation : public Material
   {
    public:
     explicit RoofVegetation(const Model& model, const std::string& roughness = "Smooth");

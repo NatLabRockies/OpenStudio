@@ -17,7 +17,7 @@
 namespace openstudio {
 namespace epmodel {
 
-  RoofVegetation::RoofVegetation(const Model& model, const std::string& roughness) : ModelObject(RoofVegetation::iddObjectType(), model) {
+  RoofVegetation::RoofVegetation(const Model& model, const std::string& roughness) : Material(RoofVegetation::iddObjectType(), model) {
     OS_ASSERT(getImpl<detail::RoofVegetation_Impl>());
 
     bool ok = true;
@@ -25,7 +25,7 @@ namespace epmodel {
     OS_ASSERT(ok);
   }
 
-  RoofVegetation::RoofVegetation(std::shared_ptr<detail::RoofVegetation_Impl> impl) : ModelObject(std::move(impl)) {}
+  RoofVegetation::RoofVegetation(std::shared_ptr<detail::RoofVegetation_Impl> impl) : Material(std::move(impl)) {}
 
   IddObjectType RoofVegetation::iddObjectType() {
     return IddObjectType::Material_RoofVegetation;

@@ -770,6 +770,10 @@ set(${target_name}_src
   ModelObject/ZonePropertyUserViewFactorsBySurfaceName_Impl.hpp
   ModelObject/ZonePropertyUserViewFactorsBySurfaceName.cpp
 
+  Material/Material.hpp
+  Material/Material_Impl.hpp
+  Material/Material.cpp
+
   ModelPartitionMaterial/InfraredTransparentMaterial.hpp
   ModelPartitionMaterial/InfraredTransparentMaterial_Impl.hpp
   ModelPartitionMaterial/InfraredTransparentMaterial.cpp
@@ -2722,6 +2726,8 @@ set(${target_name}_sub_swig_src
   Inverter/EPModelInverter.i
 
   LayeredConstruction/EPModelLayeredConstruction.i
+
+  Material/EPModelMaterial.i
 
   ModelObject/EPModelModelObject.i
 

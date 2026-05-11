@@ -7,7 +7,7 @@
 #define EPMODEL_AIRGAP_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "Material/Material.hpp"
 
 #include <utilities/idd/IddEnums.hxx>
 
@@ -22,7 +22,7 @@ namespace epmodel {
     class AirGap_Impl;
   }
 
-  class EPMODEL_API AirGap : public ModelObject
+  class EPMODEL_API AirGap : public Material
   {
    public:
     explicit AirGap(const Model& model, double thermalResistance = 0.1);
