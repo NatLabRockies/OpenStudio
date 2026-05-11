@@ -1405,7 +1405,7 @@ TEST_F(EPModelFixture, AirLoopHVAC_AddToNode) {
     EXPECT_EQ("Node", comps[4].iddObject().type().valueDescription());
     EXPECT_EQ("Air Loop HVAC 1 Supply Inlet Node", comps[0].nameString());
     EXPECT_EQ("Coil Heating Electric 1", comps[1].nameString());
-    EXPECT_EQ("Air Loop HVAC 1 Supply Inlet Node - Coil Heating Electric 1 Outlet", comps[2].nameString());
+    EXPECT_EQ("Coil Heating Electric 1 Outlet - Fan Variable Volume 1 Inlet", comps[2].nameString());
     EXPECT_EQ("Fan Variable Volume 1", comps[3].nameString());
     EXPECT_EQ("Air Loop HVAC 1 Supply Outlet Node", comps[4].nameString());
   }

@@ -341,7 +341,12 @@ namespace epmodel {
           }
 
           // Generate a new intermediate node name to preserve the existing node position.
-          const std::string newNodeName = *nodeName + " - " + thisName + " Outlet";
+          std::string newNodeName;
+          if (matchesInlet) {
+            newNodeName = thisName + " Outlet - " + components[i].nameString() + " Inlet";
+          } else {  // matchesOutlet
+            newNodeName = components[i].nameString() + " Outlet - " + thisName + " Inlet";
+          }
 
           // Insert the new component group before the downstream component (if inlet match),
           // otherwise after the upstream component (if outlet match).
@@ -357,12 +362,13 @@ namespace epmodel {
             newInletName = *nodeName;
             newOutletName = newNodeName;
           }
+          // This instantiates the new node already
           if (!branch->getImpl<openstudio::epmodel::detail::Branch_Impl>()->insertComponent(insertIndex, thisObject, newInletName, newOutletName)) {
             return false;
           }
 
-          auto newInletNode = model().getOrCreateTransientByName<openstudio::epmodel::Node>(newInletName);
-          auto newOutletNode = model().getOrCreateTransientByName<openstudio::epmodel::Node>(newOutletName);
+          auto newInletNode = model().getConcreteModelObjectByName<openstudio::epmodel::Node>(newInletName).get();
+          auto newOutletNode = model().getConcreteModelObjectByName<openstudio::epmodel::Node>(newOutletName).get();
           setPointer(inletPort(), newInletNode.handle(), false);
           setPointer(outletPort(), newOutletNode.handle(), false);
 

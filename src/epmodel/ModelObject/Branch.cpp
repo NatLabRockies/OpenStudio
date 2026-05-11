@@ -181,9 +181,6 @@ namespace epmodel {
       workspaceGroup->setPointer(BranchExtensibleFields::ComponentName, component.handle());
       workspaceGroup->setPointer(BranchExtensibleFields::ComponentInletNodeName, inletNode.handle());
       workspaceGroup->setPointer(BranchExtensibleFields::ComponentOutletNodeName, outletNode.handle());
-      group.setString(BranchExtensibleFields::ComponentName, component.nameString());
-      group.setString(BranchExtensibleFields::ComponentInletNodeName, inletNodeName);
-      group.setString(BranchExtensibleFields::ComponentOutletNodeName, outletNodeName);
       return true;
     }
 
