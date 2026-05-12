@@ -7,10 +7,15 @@
 #include "ScheduleDayHourly_Impl.hpp"
 
 #include "Model.hpp"
+#include "ResourceObject/ScheduleTypeLimits.hpp"
+#include "ResourceObject/ScheduleTypeLimits_Impl.hpp"
+#include "ScheduleBase/ScheduleDay.hpp"
+#include "ScheduleBase/ScheduleDay_Impl.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/Schedule_Day_Hourly_FieldEnums.hxx>
+#include <utilities/time/Time.hpp>
 
 namespace openstudio {
 namespace epmodel {
@@ -892,6 +897,57 @@ namespace epmodel {
 
     void ScheduleDayHourly_Impl::resetHour24() {
       OS_ASSERT(setString(openstudio::Schedule_Day_HourlyFields::Hour24, ""));
+    }
+
+    void ScheduleDayHourly_Impl::doCanonicalize(LoadContext& context) {
+      if (!context.repairEnabled()) {
+        detail::addLoadWarning(context,
+                               "Schedule:Day:Hourly '" + nameString() + "' cannot be converted to Schedule:Day:Interval without repair policy.");
+        return;
+      }
+
+      const std::string originalName = nameString();
+
+      // Read 24 hour values in order.
+      std::array<double, 24> hourValues{};
+      for (int i = 0; i < 24; ++i) {
+        const auto field = static_cast<unsigned>(openstudio::Schedule_Day_HourlyFields::Hour1) + i;
+        hourValues[i] = getDouble(field, true).value_or(0.0);
+      }
+
+      // Capture ScheduleTypeLimits reference before removal.
+      auto stl = getObject<ModelObject>().getModelObjectTarget<ScheduleTypeLimits>(openstudio::Schedule_Day_HourlyFields::ScheduleTypeLimitsName);
+
+      // Create the replacement Schedule:Day:Interval.
+      ScheduleDay replacement(model());
+      replacement.setInterpolatetoTimestep("No");  // This is was E+ does in ProcessScheduleInput
+      if (stl) {
+        replacement.setScheduleTypeLimits(*stl);
+      }
+      // A freshly constructed ScheduleDay has no extensible groups; add 24 hourly intervals.
+      for (int i = 0; i < 24; ++i) {
+        OS_ASSERT(replacement.addValue(openstudio::Time(0, i + 1, 0), hourValues[i]));
+      }
+
+      // Redirect every pointer field that references this object to the replacement.
+      auto thisWO = getObject<ModelObject>();
+      for (WorkspaceObject source : thisWO.sources()) {
+        for (unsigned fieldIdx = 0; fieldIdx < source.numFields(); ++fieldIdx) {
+          if (auto tgt = source.getTarget(fieldIdx)) {
+            if (tgt->handle() == thisWO.handle()) {
+              OS_ASSERT(source.setPointer(fieldIdx, replacement.handle()));
+            }
+          }
+        }
+      }
+
+      // Free the original name so the replacement can take it.
+      OS_ASSERT(thisWO.setName(originalName + "__hourly"));
+      OS_ASSERT(replacement.setName(originalName));
+
+      thisWO.remove();
+
+      detail::addLoadInfo(context, "Converted Schedule:Day:Hourly '" + originalName + "' to Schedule:Day:Interval.");
     }
 
   }  // namespace detail

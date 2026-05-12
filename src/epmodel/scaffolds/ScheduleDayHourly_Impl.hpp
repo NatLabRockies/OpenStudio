@@ -138,6 +138,8 @@ namespace epmodel {
       bool setHour24(double hour24);
       bool isHour24Defaulted() const;
       void resetHour24();
+
+      void doCanonicalize(LoadContext& context) override;
     };
 
   }  // namespace detail
