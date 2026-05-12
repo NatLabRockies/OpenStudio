@@ -26,9 +26,9 @@ namespace epmodel {
       using ResourceObject_Impl::ResourceObject_Impl;
       virtual ~ScheduleBase_Impl() override = default;
 
-      virtual boost::optional<ScheduleTypeLimits> scheduleTypeLimits() const = 0;
-      virtual bool setScheduleTypeLimits(const ScheduleTypeLimits& scheduleTypeLimits) = 0;
-      virtual bool resetScheduleTypeLimits() = 0;
+      boost::optional<ScheduleTypeLimits> scheduleTypeLimits() const;
+      bool setScheduleTypeLimits(const ScheduleTypeLimits& scheduleTypeLimits);
+      bool resetScheduleTypeLimits();
 
       virtual std::vector<double> values() const = 0;
 
@@ -36,6 +36,8 @@ namespace epmodel {
       virtual void ensureNoLeapDays() = 0;
 
      protected:
+      virtual boost::optional<unsigned> scheduleTypeLimitsFieldIndex() const = 0;
+
       virtual bool candidateIsCompatibleWithCurrentUse(const ScheduleTypeLimits& candidate) const = 0;
 
       virtual bool okToResetScheduleTypeLimits() const = 0;

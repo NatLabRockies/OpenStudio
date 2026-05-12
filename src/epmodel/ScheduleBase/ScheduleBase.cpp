@@ -38,6 +38,30 @@ namespace epmodel {
 
   namespace detail {
 
+    boost::optional<openstudio::epmodel::ScheduleTypeLimits> ScheduleBase_Impl::scheduleTypeLimits() const {
+      const auto fieldIndex = scheduleTypeLimitsFieldIndex();
+      if (!fieldIndex) {
+        return boost::none;
+      }
+      return getObject<ModelObject>().getModelObjectTarget<ScheduleTypeLimits>(*fieldIndex);
+    }
+
+    bool ScheduleBase_Impl::setScheduleTypeLimits(const openstudio::epmodel::ScheduleTypeLimits& scheduleTypeLimits) {
+      const auto fieldIndex = scheduleTypeLimitsFieldIndex();
+      if (!fieldIndex || scheduleTypeLimits.model() != model()) {
+        return false;
+      }
+      return setPointer(*fieldIndex, scheduleTypeLimits.handle(), false);
+    }
+
+    bool ScheduleBase_Impl::resetScheduleTypeLimits() {
+      const auto fieldIndex = scheduleTypeLimitsFieldIndex();
+      if (!fieldIndex) {
+        return false;
+      }
+      return setString(*fieldIndex, "", false);
+    }
+
     bool ScheduleBase_Impl::valuesAreWithinBounds() const {
       if (auto scheduleTypeLimits_ = this->scheduleTypeLimits()) {
         OptionalDouble minBound = scheduleTypeLimits_->lowerLimitValue();
