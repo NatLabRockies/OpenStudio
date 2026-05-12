@@ -8,8 +8,7 @@
 %include <epmodel/EPModel_Common_Include.i>
 %import <epmodel/EPModel.i>
 
-%include <epmodel/Schedule/Schedule.hpp>
-
+EPMODELOBJECT_WRAP(Schedule, <epmodel/Schedule/Schedule.hpp>, 0, 0)
 EPMODELOBJECT_WRAP(ExternalInterfaceFunctionalMockupUnitImportToSchedule, <epmodel/Schedule/ExternalInterfaceFunctionalMockupUnitImportToSchedule.hpp>, 0, 1)
 EPMODELOBJECT_WRAP(ExternalInterfaceFunctionalMockupUnitExportToSchedule, <epmodel/Schedule/ExternalInterfaceFunctionalMockupUnitExportToSchedule.hpp>, 0, 1)
 EPMODELOBJECT_WRAP(ExternalInterfaceSchedule, <epmodel/Schedule/ExternalInterfaceSchedule.hpp>, 0, 1)
