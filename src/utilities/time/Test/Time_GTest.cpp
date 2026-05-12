@@ -141,3 +141,79 @@ TEST(Time, DaysHoursMinutesSecondsConstructor) {
   EXPECT_EQ(testTime.minutes(), 1);
   EXPECT_EQ(testTime.seconds(), 1);
 }
+
+TEST(Time, FromUntilString_ValidFormats) {
+  // All prefix variants accepted by EnergyPlus: "Until:", "Until ", "until:", "until ", no prefix.
+  // Two-digit and single-digit hours.
+  struct TC
+  {
+    const char* input;
+    int h;
+    int m;
+  };
+  constexpr std::array cases{
+    TC{"Until: 12:00", 12, 0}, TC{"until: 12:01", 12, 1}, TC{"Until 12:02", 12, 2}, TC{"until 12:03", 12, 3}, TC{"12:04", 12, 4},
+    TC{"Until:12:05", 12, 5},  TC{"until:12:06", 12, 6},  TC{"Until12:07", 12, 7},  TC{"until12:08", 12, 8},  TC{"Until: 1:00", 1, 0},
+    TC{"until: 1:01", 1, 1},   TC{"Until 1:02", 1, 2},    TC{"until 1:03", 1, 3},   TC{"1:04", 1, 4},         TC{"Until:1:05", 1, 5},
+    TC{"until:1:06", 1, 6},    TC{"Until1:07", 1, 7},     TC{"until1:08", 1, 8},
+  };
+
+  for (const auto& [input, h, m] : cases) {
+    const Time t = Time::fromUntilString(input);
+    EXPECT_EQ(t.days(), 0) << "Input: " << input;
+    EXPECT_EQ(t.hours(), h) << "Input: " << input;
+    EXPECT_EQ(t.minutes(), m) << "Input: " << input;
+  }
+}
+
+TEST(Time, FromUntilString_SpecialTimes) {
+  // 24:00 — canonical end-of-day for E+ schedules
+  EXPECT_EQ(Time::fromUntilString("Until: 24:00").totalSeconds(), 24 * 60 * 60);
+
+  // 00:00 — valid Time (zero), though invalid as a schedule "Until" value in E+
+  EXPECT_EQ(Time::fromUntilString("Until: 00:00").totalSeconds(), 0);
+
+  // Single-digit hour and minute without zero-padding
+  const Time t = Time::fromUntilString("Until: 6:05");
+  EXPECT_EQ(t.hours(), 6);
+  EXPECT_EQ(t.minutes(), 5);
+}
+
+TEST(Time, FromUntilString_WeirdCases) {
+  // "HH:MM:SS" — the parser finds the first colon, so seconds are silently ignored
+  // and the string is parsed as HH:MM.
+  {
+    const Time t = Time::fromUntilString("Until: 23:56:00");
+    EXPECT_EQ(t.hours(), 23);
+    EXPECT_EQ(t.minutes(), 56);
+  }
+
+  // "24:01" — over 24 h, produces a valid Time but is invalid for E+ schedule use
+  {
+    const Time t = Time::fromUntilString("Until: 24:01");
+    EXPECT_EQ(t.totalSeconds(), (24 * 60 + 1) * 60);
+  }
+}
+
+TEST(Time, FromUntilString_Invalid) {
+  EXPECT_THROW(Time::fromUntilString(""), std::exception);
+  EXPECT_THROW(Time::fromUntilString("Until:"), std::exception);         // nothing after prefix
+  EXPECT_THROW(Time::fromUntilString("garbage"), std::exception);        // no colon at all
+  EXPECT_THROW(Time::fromUntilString("abc:def"), std::exception);        // non-numeric HH/MM
+  EXPECT_THROW(Time::fromUntilString("Until: abc:00"), std::exception);  // non-numeric HH
+}
+
+TEST(Time, ToUntilString) {
+  EXPECT_EQ(Time(0, 12, 0).toUntilString(), "Until: 12:00");
+  EXPECT_EQ(Time(0, 1, 5).toUntilString(), "Until: 01:05");  // zero-padded
+  EXPECT_EQ(Time(0, 0, 0).toUntilString(), "Until: 00:00");
+  EXPECT_EQ(Time(0, 24, 0).toUntilString(), "Until: 24:00");  // end-of-day
+  EXPECT_EQ(Time(0, 6, 30).toUntilString(), "Until: 06:30");
+}
+
+TEST(Time, UntilString_RoundTrip) {
+  for (const Time& t : {Time(0, 1, 0), Time(0, 6, 15), Time(0, 12, 30), Time(0, 23, 59), Time(0, 24, 0)}) {
+    const std::string s = t.toUntilString();
+    EXPECT_EQ(Time::fromUntilString(s), t) << "Round-trip failed for: " << s;
+  }
+}
