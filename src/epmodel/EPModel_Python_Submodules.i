@@ -18,6 +18,7 @@
     from openstudioepmodelspaceloadinstance import *
     from openstudioepmodelspaceload import *
     from openstudioepmodelmaterial import *
+    from openstudioepmodelfenestrationmaterial import *
     from openstudioepmodelopaquematerial import *
     from openstudioepmodelmodelpartitionmaterial import *
     from openstudioepmodelthermostat import *

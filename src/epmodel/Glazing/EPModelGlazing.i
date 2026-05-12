@@ -8,6 +8,7 @@
 %include <epmodel/EPModel_Common_Include.i>
 %import <epmodel/EPModel.i>
 %import <epmodel/Material/EPModelMaterial.i>
+%import <epmodel/FenestrationMaterial/EPModelFenestrationMaterial.i>
 
 EPMODELOBJECT_WRAP(RefractionExtinctionGlazing, <epmodel/Glazing/RefractionExtinctionGlazing.hpp>, 0, 1)
 EPMODELOBJECT_WRAP(ThermochromicGlazing, <epmodel/Glazing/ThermochromicGlazing.hpp>, 0, 1)

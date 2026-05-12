@@ -164,6 +164,10 @@ set(${target_name}_src
   ExteriorLoadInstance/ExteriorWaterEquipment_Impl.hpp
   ExteriorLoadInstance/ExteriorWaterEquipment.cpp
 
+  FenestrationMaterial/FenestrationMaterial.hpp
+  FenestrationMaterial/FenestrationMaterial_Impl.hpp
+  FenestrationMaterial/FenestrationMaterial.cpp
+
   GasLayer/Gas.hpp
   GasLayer/Gas_Impl.hpp
   GasLayer/Gas.cpp
@@ -2719,6 +2723,8 @@ set(${target_name}_sub_swig_src
   ElectricalStorage/EPModelElectricalStorage.i
 
   ExteriorLoadInstance/EPModelExteriorLoadInstance.i
+
+  FenestrationMaterial/EPModelFenestrationMaterial.i
 
   GasLayer/EPModelGasLayer.i
 
