@@ -20,6 +20,9 @@ namespace epmodel {
 
       double value() const;
       bool setValue(double value);
+
+     protected:
+      boost::optional<unsigned> scheduleTypeLimitsFieldIndex() const override;
     };
 
   }  // namespace detail

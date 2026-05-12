@@ -52,6 +52,9 @@ namespace epmodel {
 
       std::vector<std::string> columnSeparatorValues() const;
       std::vector<std::string> minutesperItemValues() const;
+
+     protected:
+      boost::optional<unsigned> scheduleTypeLimitsFieldIndex() const override;
     };
 
   }  // namespace detail

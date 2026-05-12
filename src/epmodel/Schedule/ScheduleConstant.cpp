@@ -40,6 +40,10 @@ namespace openstudio {
 namespace epmodel {
   namespace detail {
 
+    boost::optional<unsigned> ScheduleConstant_Impl::scheduleTypeLimitsFieldIndex() const {
+      return openstudio::Schedule_ConstantFields::ScheduleTypeLimitsName;
+    }
+
     double ScheduleConstant_Impl::value() const {
       const auto value = getDouble(openstudio::Schedule_ConstantFields::HourlyValue, true);
       OS_ASSERT(value);

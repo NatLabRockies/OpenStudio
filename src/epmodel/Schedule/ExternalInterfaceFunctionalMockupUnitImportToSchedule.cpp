@@ -60,6 +60,10 @@ namespace openstudio {
 namespace epmodel {
   namespace detail {
 
+    boost::optional<unsigned> ExternalInterfaceFunctionalMockupUnitImportToSchedule_Impl::scheduleTypeLimitsFieldIndex() const {
+      return openstudio::ExternalInterface_FunctionalMockupUnitImport_To_ScheduleFields::ScheduleTypeLimitsNames;
+    }
+
     // FMU instance name
     std::string ExternalInterfaceFunctionalMockupUnitImportToSchedule_Impl::fMUInstanceName() const {
       const auto value = getString(openstudio::ExternalInterface_FunctionalMockupUnitImport_To_ScheduleFields::FMUInstanceName, true);

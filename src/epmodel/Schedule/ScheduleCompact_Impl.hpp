@@ -24,6 +24,9 @@ namespace epmodel {
       bool isConstantValue() const;
       boost::optional<double> constantValue() const;
       //@}
+
+     protected:
+      boost::optional<unsigned> scheduleTypeLimitsFieldIndex() const override;
     };
 
   }  // namespace detail

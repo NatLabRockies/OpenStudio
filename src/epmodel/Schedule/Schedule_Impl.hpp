@@ -22,7 +22,7 @@ namespace epmodel {
       void ensureNoLeapDays() override;
 
      protected:
-      boost::optional<unsigned> scheduleTypeLimitsFieldIndex() const override;
+      virtual boost::optional<unsigned> scheduleTypeLimitsFieldIndex() const = 0;
       bool candidateIsCompatibleWithCurrentUse(const ScheduleTypeLimits& candidate) const override;
       bool okToResetScheduleTypeLimits() const override;
     };

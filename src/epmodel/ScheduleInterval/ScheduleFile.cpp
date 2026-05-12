@@ -146,6 +146,10 @@ namespace openstudio {
 namespace epmodel {
   namespace detail {
 
+    boost::optional<unsigned> ScheduleFile_Impl::scheduleTypeLimitsFieldIndex() const {
+      return openstudio::Schedule_FileFields::ScheduleTypeLimitsName;
+    }
+
     int ScheduleFile_Impl::columnNumber() const {
       const auto value = getInt(openstudio::Schedule_FileFields::ColumnNumber, true);
       OS_ASSERT(value);

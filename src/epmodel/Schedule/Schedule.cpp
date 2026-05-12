@@ -10,10 +10,6 @@
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/idd/IddEnums.hxx>
-#include <utilities/idd/Schedule_Compact_FieldEnums.hxx>
-#include <utilities/idd/Schedule_Constant_FieldEnums.hxx>
-#include <utilities/idd/Schedule_File_FieldEnums.hxx>
-#include <utilities/idd/Schedule_Year_FieldEnums.hxx>
 
 namespace openstudio {
 namespace epmodel {
@@ -27,21 +23,6 @@ namespace epmodel {
   }
 
   namespace detail {
-
-    boost::optional<unsigned> Schedule_Impl::scheduleTypeLimitsFieldIndex() const {
-      switch (iddObject().type().value()) {
-        case IddObjectType::Schedule_Constant:
-          return openstudio::Schedule_ConstantFields::ScheduleTypeLimitsName;
-        case IddObjectType::Schedule_Compact:
-          return openstudio::Schedule_CompactFields::ScheduleTypeLimitsName;
-        case IddObjectType::Schedule_Year:
-          return openstudio::Schedule_YearFields::ScheduleTypeLimitsName;
-        case IddObjectType::Schedule_File:
-          return openstudio::Schedule_FileFields::ScheduleTypeLimitsName;
-        default:
-          return boost::none;
-      }
-    }
 
     std::vector<double> Schedule_Impl::values() const {
       // TODO: implement
