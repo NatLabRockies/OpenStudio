@@ -108,6 +108,9 @@ namespace epmodel {
     // Gets the total area of the divider
     double dividerArea() const;
 
+    /** Returns true if this sub-surface is a skylight (type "Window" with tilt < 60deg or > 179deg). */
+    bool isSkylight() const;
+
    protected:
     using ImplType = detail::SubSurface_Impl;
 

@@ -185,11 +185,10 @@ namespace epmodel {
     return getImpl<detail::SubSurface_Impl>()->dividerArea();
   }
 
-}  // namespace epmodel
-}  // namespace openstudio
+  bool SubSurface::isSkylight() const {
+    return getImpl<detail::SubSurface_Impl>()->isSkylight();
+  }
 
-namespace openstudio {
-namespace epmodel {
   namespace detail {
 
     std::string remap_subSurfaceType(const std::string& subSurfaceType) {
@@ -580,6 +579,14 @@ namespace epmodel {
         }
       }
       return divArea;
+    }
+
+    bool SubSurface_Impl::isSkylight() const {
+      if (!openstudio::istringEqual(subSurfaceType(), "Window")) {
+        return false;
+      }
+      double degTilt = radToDeg(tilt());
+      return degTilt < 60.0 || degTilt > 179.0;
     }
 
   }  // namespace detail

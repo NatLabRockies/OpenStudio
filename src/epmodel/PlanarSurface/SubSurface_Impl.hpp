@@ -63,6 +63,8 @@ namespace epmodel {
       virtual boost::optional<Space> space() const override;
       virtual bool subtractFromGrossArea() const override;
 
+      bool isSkylight() const;
+
       boost::optional<Surface> surface() const;
       bool setSurface(const Surface& surface);
 
