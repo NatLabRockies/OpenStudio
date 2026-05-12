@@ -7,7 +7,7 @@
 #define EPMODEL_THERMOCHROMICGLAZING_HPP
 
 #include "EPModelAPI.hpp"
-#include "Material/Material.hpp"
+#include "Glazing/Glazing.hpp"
 
 namespace openstudio {
 namespace epmodel {
@@ -18,7 +18,7 @@ namespace epmodel {
     class ThermochromicGlazing_Impl;
   }
 
-  class EPMODEL_API ThermochromicGlazing : public Material
+  class EPMODEL_API ThermochromicGlazing : public Glazing
   {
    public:
     explicit ThermochromicGlazing(const Model& model);

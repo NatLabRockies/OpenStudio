@@ -165,7 +165,7 @@ namespace epmodel {
   RefractionExtinctionGlazing::RefractionExtinctionGlazing(const Model& model, double thickness, double solarIndexofRefraction,
                                                            double solarExtinctionCoefficient, double visibleIndexofRefraction,
                                                            double visibleExtinctionCoefficient)
-    : Material(RefractionExtinctionGlazing::iddObjectType(), model) {
+    : Glazing(RefractionExtinctionGlazing::iddObjectType(), model) {
     OS_ASSERT(getImpl<detail::RefractionExtinctionGlazing_Impl>());
 
     bool ok = true;
@@ -182,7 +182,7 @@ namespace epmodel {
   }
 
   RefractionExtinctionGlazing::RefractionExtinctionGlazing(std::shared_ptr<detail::RefractionExtinctionGlazing_Impl> impl)
-    : Material(std::move(impl)) {}
+    : Glazing(std::move(impl)) {}
 
   IddObjectType RefractionExtinctionGlazing::iddObjectType() {
     return IddObjectType::WindowMaterial_Glazing_RefractionExtinctionMethod;

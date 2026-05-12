@@ -16,7 +16,7 @@
 namespace openstudio {
 namespace epmodel {
 
-  GasMixture::GasMixture(const Model& model) : Material(GasMixture::iddObjectType(), model) {
+  GasMixture::GasMixture(const Model& model) : GasLayer(GasMixture::iddObjectType(), model) {
     OS_ASSERT(getImpl<detail::GasMixture_Impl>());
 
     bool ok = true;
@@ -182,7 +182,7 @@ namespace epmodel {
     getImpl<detail::GasMixture_Impl>()->resetGas4Fraction();
   }
 
-  GasMixture::GasMixture(std::shared_ptr<detail::GasMixture_Impl> impl) : Material(std::move(impl)) {}
+  GasMixture::GasMixture(std::shared_ptr<detail::GasMixture_Impl> impl) : GasLayer(std::move(impl)) {}
 
 }  // namespace epmodel
 }  // namespace openstudio

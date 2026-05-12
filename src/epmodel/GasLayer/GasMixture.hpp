@@ -7,7 +7,7 @@
 #define EPMODEL_GASMIXTURE_HPP
 
 #include "EPModelAPI.hpp"
-#include "Material/Material.hpp"
+#include "GasLayer/GasLayer.hpp"
 
 #include <memory>
 #include <string>
@@ -22,7 +22,7 @@ namespace epmodel {
     class GasMixture_Impl;
   }
 
-  class EPMODEL_API GasMixture : public Material
+  class EPMODEL_API GasMixture : public GasLayer
   {
    public:
     explicit GasMixture(const Model& model);

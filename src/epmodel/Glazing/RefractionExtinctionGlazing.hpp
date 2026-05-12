@@ -7,7 +7,7 @@
 #define EPMODEL_REFRACTIONEXTINCTIONGLAZING_HPP
 
 #include "EPModelAPI.hpp"
-#include "Material/Material.hpp"
+#include "Glazing/Glazing.hpp"
 
 namespace openstudio {
 namespace epmodel {
@@ -18,7 +18,7 @@ namespace epmodel {
     class RefractionExtinctionGlazing_Impl;
   }
 
-  class EPMODEL_API RefractionExtinctionGlazing : public Material
+  class EPMODEL_API RefractionExtinctionGlazing : public Glazing
   {
    public:
     explicit RefractionExtinctionGlazing(const Model& model, double thickness = 0.1, double solarIndexofRefraction = 1.1,

@@ -59,8 +59,7 @@ namespace epmodel {
 
   }  // namespace detail
 
-  SimpleGlazing::SimpleGlazing(const Model& model, double uFactor, double solarHeatGainCoefficient)
-    : Material(SimpleGlazing::iddObjectType(), model) {
+  SimpleGlazing::SimpleGlazing(const Model& model, double uFactor, double solarHeatGainCoefficient) : Glazing(SimpleGlazing::iddObjectType(), model) {
     OS_ASSERT(getImpl<detail::SimpleGlazing_Impl>());
 
     bool ok = true;
@@ -70,7 +69,7 @@ namespace epmodel {
     OS_ASSERT(ok);
   }
 
-  SimpleGlazing::SimpleGlazing(std::shared_ptr<detail::SimpleGlazing_Impl> impl) : Material(std::move(impl)) {}
+  SimpleGlazing::SimpleGlazing(std::shared_ptr<detail::SimpleGlazing_Impl> impl) : Glazing(std::move(impl)) {}
 
   IddObjectType SimpleGlazing::iddObjectType() {
     return {IddObjectType::WindowMaterial_SimpleGlazingSystem};

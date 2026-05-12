@@ -16,12 +16,12 @@
 namespace openstudio {
 namespace epmodel {
 
-  Gas::Gas(const Model& model) : Material(Gas::iddObjectType(), model) {
+  Gas::Gas(const Model& model) : GasLayer(Gas::iddObjectType(), model) {
     OS_ASSERT(setGasType("Air"));
     OS_ASSERT(setThickness(0.003));
   }
 
-  Gas::Gas(std::shared_ptr<detail::Gas_Impl> impl) : Material(std::move(impl)) {}
+  Gas::Gas(std::shared_ptr<detail::Gas_Impl> impl) : GasLayer(std::move(impl)) {}
 
   IddObjectType Gas::iddObjectType() {
     return IddObjectType::WindowMaterial_Gas;

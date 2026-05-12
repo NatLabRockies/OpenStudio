@@ -6,7 +6,7 @@
 #ifndef EPMODEL_GAS_IMPL_HPP
 #define EPMODEL_GAS_IMPL_HPP
 
-#include "Material/Material_Impl.hpp"
+#include "GasLayer/GasLayer_Impl.hpp"
 
 #include <string>
 
@@ -15,10 +15,10 @@ namespace epmodel {
 
   namespace detail {
 
-    class EPMODEL_API Gas_Impl : public Material_Impl
+    class EPMODEL_API Gas_Impl : public GasLayer_Impl
     {
      public:
-      using Material_Impl::Material_Impl;
+      using GasLayer_Impl::GasLayer_Impl;
       virtual ~Gas_Impl() override = default;
 
       std::string gasType() const;

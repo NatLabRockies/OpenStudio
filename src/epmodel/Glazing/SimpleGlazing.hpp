@@ -7,7 +7,7 @@
 #define EPMODEL_SIMPLEGLAZING_HPP
 
 #include "EPModelAPI.hpp"
-#include "Material/Material.hpp"
+#include "Glazing/Glazing.hpp"
 
 #include <boost/optional.hpp>
 
@@ -20,7 +20,7 @@ namespace epmodel {
     class SimpleGlazing_Impl;
   }
 
-  class EPMODEL_API SimpleGlazing : public Material
+  class EPMODEL_API SimpleGlazing : public Glazing
   {
    public:
     explicit SimpleGlazing(const Model& model, double uFactor = 0.1, double solarHeatGainCoefficient = 0.1);

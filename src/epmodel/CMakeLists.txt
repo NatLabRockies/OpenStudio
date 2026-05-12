@@ -168,6 +168,9 @@ set(${target_name}_src
   FenestrationMaterial/FenestrationMaterial_Impl.hpp
   FenestrationMaterial/FenestrationMaterial.cpp
 
+  GasLayer/GasLayer.hpp
+  GasLayer/GasLayer_Impl.hpp
+  GasLayer/GasLayer.cpp
   GasLayer/Gas.hpp
   GasLayer/Gas_Impl.hpp
   GasLayer/Gas.cpp
@@ -191,6 +194,9 @@ set(${target_name}_src
   Generator/GeneratorWindTurbine_Impl.hpp
   Generator/GeneratorWindTurbine.cpp
 
+  Glazing/Glazing.hpp
+  Glazing/Glazing_Impl.hpp
+  Glazing/Glazing.cpp
   Glazing/RefractionExtinctionGlazing.hpp
   Glazing/RefractionExtinctionGlazing_Impl.hpp
   Glazing/RefractionExtinctionGlazing.cpp

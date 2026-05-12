@@ -3,25 +3,15 @@
 *  See also https://openstudio.net/license
 ***********************************************************************************************************************/
 
-#ifndef EPMODEL_THERMOCHROMICGLAZING_IMPL_HPP
-#define EPMODEL_THERMOCHROMICGLAZING_IMPL_HPP
-
-#include "Glazing/Glazing_Impl.hpp"
+#include "GasLayer/GasLayer.hpp"
+#include "GasLayer/GasLayer_Impl.hpp"
 
 namespace openstudio {
 namespace epmodel {
 
-  namespace detail {
+  GasLayer::GasLayer(IddObjectType type, const Model& model) : FenestrationMaterial(type, model) {}
 
-    class EPMODEL_API ThermochromicGlazing_Impl : public Glazing_Impl
-    {
-     public:
-      using Glazing_Impl::Glazing_Impl;
-      virtual ~ThermochromicGlazing_Impl() override = default;
-    };
+  GasLayer::GasLayer(std::shared_ptr<detail::GasLayer_Impl> impl) : FenestrationMaterial(std::move(impl)) {}
 
-  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
-
-#endif  // EPMODEL_THERMOCHROMICGLAZING_IMPL_HPP
