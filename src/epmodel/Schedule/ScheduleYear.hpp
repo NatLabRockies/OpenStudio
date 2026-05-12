@@ -51,7 +51,6 @@ namespace epmodel {
     friend class openstudio::IdfObject;
     friend class openstudio::detail::IdfObject_Impl;
 
-    explicit ScheduleYear(IddObjectType type, const Model& model);
     explicit ScheduleYear(std::shared_ptr<detail::ScheduleYear_Impl> impl);
   };
 

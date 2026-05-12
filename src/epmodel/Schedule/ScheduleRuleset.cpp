@@ -11,6 +11,7 @@
 #include "ScheduleBase/ScheduleDay.hpp"
 #include "ScheduleBase/ScheduleDay_Impl.hpp"
 #include "Model.hpp"
+#include "Model_Impl.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/idd/IddEnums.hxx>
@@ -23,10 +24,25 @@
 #include <array>
 #include <sstream>
 
+namespace {
+
+// Creates a ScheduleRuleset_Impl directly — bypassing the IDD-type factory so that
+// plain Schedule:Year objects loaded from IDF remain ScheduleYear_Impl instances.
+std::shared_ptr<openstudio::epmodel::detail::ScheduleRuleset_Impl> makeRulesetImpl(const openstudio::epmodel::Model& model) {
+  openstudio::IdfObject idfObject(openstudio::IddObjectType::Schedule_Year);
+  auto modelImpl = model.getImpl<openstudio::epmodel::detail::Model_Impl>();
+  auto impl = std::make_shared<openstudio::epmodel::detail::ScheduleRuleset_Impl>(idfObject, modelImpl.get(), false);
+  std::vector<std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>> impls{impl};
+  modelImpl->addObjects(impls, false);
+  return impl;
+}
+
+}  // namespace
+
 namespace openstudio {
 namespace epmodel {
 
-  ScheduleRuleset::ScheduleRuleset(const Model& model) : ScheduleYear(ScheduleYear::iddObjectType(), model) {
+  ScheduleRuleset::ScheduleRuleset(const Model& model) : ScheduleYear(makeRulesetImpl(model)) {
     auto impl = getImpl<detail::ScheduleRuleset_Impl>();
     OS_ASSERT(impl);
 
@@ -37,7 +53,7 @@ namespace epmodel {
     impl->rebuildScheduleYear();
   }
 
-  ScheduleRuleset::ScheduleRuleset(const Model& model, double value) : ScheduleYear(ScheduleYear::iddObjectType(), model) {
+  ScheduleRuleset::ScheduleRuleset(const Model& model, double value) : ScheduleYear(makeRulesetImpl(model)) {
     auto impl = getImpl<detail::ScheduleRuleset_Impl>();
     OS_ASSERT(impl);
 

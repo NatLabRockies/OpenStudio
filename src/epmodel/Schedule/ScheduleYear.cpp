@@ -16,8 +16,6 @@ namespace epmodel {
 
   ScheduleYear::ScheduleYear(const Model& model) : Schedule(ScheduleYear::iddObjectType(), model) {}
 
-  ScheduleYear::ScheduleYear(IddObjectType type, const Model& model) : Schedule(type, model) {}
-
   ScheduleYear::ScheduleYear(std::shared_ptr<detail::ScheduleYear_Impl> impl) : Schedule(std::move(impl)) {}
 
   IddObjectType ScheduleYear::iddObjectType() {
