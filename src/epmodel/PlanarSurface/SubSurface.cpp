@@ -415,11 +415,11 @@ namespace epmodel {
 
             // DLM: this surface could have been initialized to FixedWindow and get its construction
             // from the default construction set, this was the source of #1924
-            // TODO: missing ConstructionBase
-            // boost::optional<ConstructionBase> construction = this->construction();
-            // if (!this->isConstructionDefaulted() && construction && construction->isFenestration()) {
-            //   isGlassDoor = true;
-            // }
+            boost::optional<ConstructionBase> construction = this->construction();
+            // NOTE: model/ check starts with !this->isConstructionDefaulted() but we can't default it right now
+            if (construction && construction->isFenestration()) {
+              isGlassDoor = true;
+            }
 
             boost::optional<std::string> value = getString(openstudio::FenestrationSurface_DetailedFields::SurfaceType);
             if (value && istringEqual("GlassDoor", *value)) {

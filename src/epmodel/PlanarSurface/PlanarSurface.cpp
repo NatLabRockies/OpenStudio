@@ -165,13 +165,9 @@ namespace epmodel {
     double PlanarSurface_Impl::netArea() const {
       double result = grossArea();
       for (const ModelObject& child : children()) {
-        const auto surface = child.optionalCast<PlanarSurface>();
-        if (surface && surface->subtractFromGrossArea()) {
-          double multiplier = 1.0;
-          if (const auto subSurface = child.optionalCast<SubSurface>()) {
-            multiplier = subSurface->multiplier();
-          }
-          result -= multiplier * surface->grossArea();  // TODO: should use roughOpeningArea
+        const auto subSurface = child.optionalCast<SubSurface>();
+        if (subSurface && subSurface->subtractFromGrossArea()) {
+          result -= subSurface->multiplier() * subSurface->roughOpeningArea();
         }
       }
       return result;
