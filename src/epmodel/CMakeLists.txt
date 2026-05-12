@@ -3437,6 +3437,7 @@ set(${target_name}_test_src
   test/ScheduleWeek_GTest.cpp
   test/ScheduleWeekCompact_GTest.cpp
   test/ScheduleYear_GTest.cpp
+  test/ScheduleRuleset_GTest.cpp
   test/Screen_GTest.cpp
   test/SetpointManager_GTest.cpp
   test/SetpointManagerCondenserEnteringReset_GTest.cpp
