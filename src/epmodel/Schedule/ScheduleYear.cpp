@@ -29,7 +29,7 @@ namespace openstudio {
 namespace epmodel {
   namespace detail {
 
-    boost::optional<unsigned> ScheduleYear_Impl::scheduleTypeLimitsFieldIndex() const {
+    unsigned ScheduleYear_Impl::scheduleTypeLimitsFieldIndex() const {
       return openstudio::Schedule_YearFields::ScheduleTypeLimitsName;
     }
 

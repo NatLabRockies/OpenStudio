@@ -19,7 +19,7 @@ namespace epmodel {
       virtual ~ScheduleYear_Impl() override = default;
 
      protected:
-      boost::optional<unsigned> scheduleTypeLimitsFieldIndex() const override;
+      unsigned scheduleTypeLimitsFieldIndex() const override;
     };
 
   }  // namespace detail

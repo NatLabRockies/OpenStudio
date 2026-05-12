@@ -46,7 +46,7 @@ namespace openstudio {
 namespace epmodel {
   namespace detail {
 
-    boost::optional<unsigned> ExternalInterfaceSchedule_Impl::scheduleTypeLimitsFieldIndex() const {
+    unsigned ExternalInterfaceSchedule_Impl::scheduleTypeLimitsFieldIndex() const {
       return openstudio::ExternalInterface_ScheduleFields::ScheduleTypeLimitsName;
     }
 

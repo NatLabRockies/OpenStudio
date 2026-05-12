@@ -36,7 +36,7 @@ namespace epmodel {
       virtual void ensureNoLeapDays() = 0;
 
      protected:
-      virtual boost::optional<unsigned> scheduleTypeLimitsFieldIndex() const = 0;
+      virtual unsigned scheduleTypeLimitsFieldIndex() const = 0;
 
       virtual bool candidateIsCompatibleWithCurrentUse(const ScheduleTypeLimits& candidate) const = 0;
 

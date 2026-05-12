@@ -47,7 +47,7 @@ namespace epmodel {
 
   namespace detail {
 
-    boost::optional<unsigned> ExternalInterfaceFunctionalMockupUnitExportToSchedule_Impl::scheduleTypeLimitsFieldIndex() const {
+    unsigned ExternalInterfaceFunctionalMockupUnitExportToSchedule_Impl::scheduleTypeLimitsFieldIndex() const {
       return openstudio::ExternalInterface_FunctionalMockupUnitExport_To_ScheduleFields::ScheduleTypeLimitsNames;
     }
 

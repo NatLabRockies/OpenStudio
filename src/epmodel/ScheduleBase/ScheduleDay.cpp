@@ -71,7 +71,7 @@ namespace epmodel {
       OS_ASSERT(result);
     }
 
-    boost::optional<unsigned> ScheduleDay_Impl::scheduleTypeLimitsFieldIndex() const {
+    unsigned ScheduleDay_Impl::scheduleTypeLimitsFieldIndex() const {
       return openstudio::Schedule_Day_IntervalFields::ScheduleTypeLimitsName;
     }
 

@@ -31,7 +31,7 @@ namespace epmodel {
       //@}
 
      protected:
-      boost::optional<unsigned> scheduleTypeLimitsFieldIndex() const override;
+      unsigned scheduleTypeLimitsFieldIndex() const override;
     };
 
   }  // namespace detail

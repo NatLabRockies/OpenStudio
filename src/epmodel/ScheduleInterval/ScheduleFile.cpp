@@ -146,7 +146,7 @@ namespace openstudio {
 namespace epmodel {
   namespace detail {
 
-    boost::optional<unsigned> ScheduleFile_Impl::scheduleTypeLimitsFieldIndex() const {
+    unsigned ScheduleFile_Impl::scheduleTypeLimitsFieldIndex() const {
       return openstudio::Schedule_FileFields::ScheduleTypeLimitsName;
     }
 
