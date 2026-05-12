@@ -204,16 +204,35 @@ TEST(Time, FromUntilString_Invalid) {
 }
 
 TEST(Time, ToUntilString) {
+  // With prefix (default) — canonical E+ "Until: HH:MM" format
   EXPECT_EQ(Time(0, 12, 0).toUntilString(), "Until: 12:00");
   EXPECT_EQ(Time(0, 1, 5).toUntilString(), "Until: 01:05");  // zero-padded
   EXPECT_EQ(Time(0, 0, 0).toUntilString(), "Until: 00:00");
   EXPECT_EQ(Time(0, 24, 0).toUntilString(), "Until: 24:00");  // end-of-day
   EXPECT_EQ(Time(0, 6, 30).toUntilString(), "Until: 06:30");
+
+  // Without prefix — bare "HH:MM" as written by EnergyPlus in IDF files
+  EXPECT_EQ(Time(0, 12, 0).toUntilString(false), "12:00");
+  EXPECT_EQ(Time(0, 1, 5).toUntilString(false), "01:05");
+  EXPECT_EQ(Time(0, 24, 0).toUntilString(false), "24:00");
+}
+
+TEST(Time, FromUntilString_NoPrefixBareHHMM) {
+  // E+ IDF files write bare "HH:MM" — fromUntilString must handle these without "Until: ".
+  EXPECT_EQ(Time::fromUntilString("06:00"), Time(0, 6, 0));
+  EXPECT_EQ(Time::fromUntilString("24:00"), Time(0, 24, 0));
+  EXPECT_EQ(Time::fromUntilString("1:30"), Time(0, 1, 30));
+  EXPECT_EQ(Time::fromUntilString("00:00"), Time(0, 0, 0));
 }
 
 TEST(Time, UntilString_RoundTrip) {
   for (const Time& t : {Time(0, 1, 0), Time(0, 6, 15), Time(0, 12, 30), Time(0, 23, 59), Time(0, 24, 0)}) {
-    const std::string s = t.toUntilString();
-    EXPECT_EQ(Time::fromUntilString(s), t) << "Round-trip failed for: " << s;
+    // With prefix
+    const std::string withPrefix = t.toUntilString();
+    EXPECT_EQ(Time::fromUntilString(withPrefix), t) << "Round-trip (with prefix) failed for: " << withPrefix;
+
+    // Without prefix — bare "HH:MM" as written in E+ IDF files
+    const std::string bare = t.toUntilString(false);
+    EXPECT_EQ(Time::fromUntilString(bare), t) << "Round-trip (bare) failed for: " << bare;
   }
 }

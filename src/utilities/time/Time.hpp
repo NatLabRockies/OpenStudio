@@ -142,8 +142,8 @@ class UTILITIES_API Time
 
   /// Construct from an "Until: hh:mm" string, where hh is hours and mm is minutes.  The "Until: " prefix is optional.
   static openstudio::Time fromUntilString(const std::string& untilString);
-  /// Convert to an "Until: hh:mm" string, where hh is hours and mm is minutes.  The "Until: " prefix is included.
-  std::string toUntilString() const;
+  /// Convert to an "Until: hh:mm" string, where hh is hours and mm is minutes.  The "Until: " prefix is included, or not.
+  std::string toUntilString(bool includePrefix = true) const;
 
  protected:
   const ImplType impl() const;

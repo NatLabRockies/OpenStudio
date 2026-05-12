@@ -234,7 +234,7 @@ Time Time::fromUntilString(const std::string& untilField) {
   }
 }
 
-std::string Time::toUntilString() const {
+std::string Time::toUntilString(bool includePrefix) const {
   int h = hours() + 24 * days();
   int m = minutes() + static_cast<int>(floor(seconds() / 60.0 + 0.5));
   if (m >= 60) {
@@ -242,7 +242,7 @@ std::string Time::toUntilString() const {
     m -= 60;
   }
   auto pad = [](int v) { return (v < 10 ? "0" : "") + to_string(v); };
-  return "Until: " + pad(h) + ":" + pad(m);
+  return (includePrefix ? "Until: " : "") + pad(h) + ":" + pad(m);
 }
 
 // std::ostream operator<<
