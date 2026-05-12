@@ -29,6 +29,14 @@ namespace epmodel {
     ConstructionBase& operator=(const ConstructionBase&) = default;
     ConstructionBase& operator=(ConstructionBase&&) = default;
 
+    bool isOpaque() const;
+    bool isFenestration() const;
+    bool isSolarDiffusing() const;
+    bool isModelPartition() const;
+
+    /** Returns true if the construction has RoofVegetation as the outer layer. */
+    bool isGreenRoof() const;
+
    protected:
     ConstructionBase(IddObjectType type, const Model& model);
 

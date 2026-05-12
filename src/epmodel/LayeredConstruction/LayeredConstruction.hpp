@@ -10,9 +10,14 @@
 #include "ConstructionBase/ConstructionBase.hpp"
 
 #include <memory>
+#include <vector>
 
 namespace openstudio {
 namespace epmodel {
+
+  class FenestrationMaterial;
+  class Material;
+  class OpaqueMaterial;
 
   namespace detail {
     class LayeredConstruction_Impl;
@@ -27,6 +32,42 @@ namespace epmodel {
     LayeredConstruction(LayeredConstruction&& other) = default;
     LayeredConstruction& operator=(const LayeredConstruction&) = default;
     LayeredConstruction& operator=(LayeredConstruction&&) = default;
+
+    /** @name Getters */
+    //@{
+
+    std::vector<Material> layers() const;
+    Material getLayer(unsigned layerIndex) const;
+
+    //@}
+    /** @name Static Validators */
+    //@{
+
+    /** Returns true if the given layers are a valid set for a LayeredConstruction. */
+    static bool layersAreValid(const std::vector<Material>& materials);
+    static bool layersAreValid(const std::vector<OpaqueMaterial>& opaqueMaterials);
+    static bool layersAreValid(const std::vector<FenestrationMaterial>& fenestrationMaterials);
+
+    //@}
+    /** @name Setters */
+    //@{
+
+    bool eraseLayer(unsigned layerIndex);
+    bool insertLayer(unsigned layerIndex, const Material& material);
+    bool setLayer(unsigned layerIndex, const Material& material);
+    bool setLayers(const std::vector<Material>& materials);
+
+    //@}
+    /** @name Queries */
+    //@{
+
+    std::vector<unsigned> nullLayers() const;
+    unsigned numLayers() const;
+    std::vector<unsigned> getLayerIndices(const Material& material) const;
+
+    //@}
+
+    void ensureUniqueLayers();
 
    protected:
     LayeredConstruction(IddObjectType type, const Model& model);

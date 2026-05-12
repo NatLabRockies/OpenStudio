@@ -26,6 +26,19 @@ namespace epmodel {
 
       double perimeterExposed() const;
       bool setPerimeterExposed(double perimeterExposed);
+
+      bool isOpaque() const override {
+        return true;
+      }
+      bool isFenestration() const override {
+        return false;
+      }
+      bool isSolarDiffusing() const override {
+        return false;
+      }
+      bool isModelPartition() const override {
+        return false;
+      }
     };
 
   }  // namespace detail

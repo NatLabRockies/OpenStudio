@@ -18,6 +18,17 @@ namespace epmodel {
      public:
       using ResourceObject_Impl::ResourceObject_Impl;
       virtual ~ConstructionBase_Impl() override = default;
+
+      virtual bool isOpaque() const = 0;
+      virtual bool isFenestration() const = 0;
+      virtual bool isSolarDiffusing() const = 0;
+      virtual bool isModelPartition() const = 0;
+
+      /** Returns true if the construction has RoofVegetation as the outer layer. */
+      virtual bool isGreenRoof() const;
+
+     private:
+      REGISTER_LOGGER("openstudio.epmodel.ConstructionBase");
     };
 
   }  // namespace detail

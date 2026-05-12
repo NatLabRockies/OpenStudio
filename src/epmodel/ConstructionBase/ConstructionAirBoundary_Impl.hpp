@@ -30,6 +30,19 @@ namespace epmodel {
       bool isSimpleMixingAirChangesPerHourDefaulted() const;
       bool setSimpleMixingAirChangesPerHour(double simpleMixingAirChangesPerHour);
       void resetSimpleMixingAirChangesPerHour();
+
+      bool isOpaque() const override {
+        return false;
+      }
+      bool isFenestration() const override {
+        return false;
+      }
+      bool isSolarDiffusing() const override {
+        return false;
+      }
+      bool isModelPartition() const override {
+        return true;
+      }
     };
 
   }  // namespace detail

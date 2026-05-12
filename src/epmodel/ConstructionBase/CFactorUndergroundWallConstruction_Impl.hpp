@@ -23,6 +23,19 @@ namespace epmodel {
 
       double height() const;
       bool setHeight(double height);
+
+      bool isOpaque() const override {
+        return true;
+      }
+      bool isFenestration() const override {
+        return false;
+      }
+      bool isSolarDiffusing() const override {
+        return false;
+      }
+      bool isModelPartition() const override {
+        return false;
+      }
     };
 
   }  // namespace detail
