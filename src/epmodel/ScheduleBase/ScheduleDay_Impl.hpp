@@ -6,7 +6,7 @@
 #ifndef EPMODEL_SCHEDULEDAY_IMPL_HPP
 #define EPMODEL_SCHEDULEDAY_IMPL_HPP
 
-#include "ModelObject_Impl.hpp"
+#include "ScheduleBase/ScheduleBase_Impl.hpp"
 
 #include <vector>
 
@@ -14,10 +14,10 @@ namespace openstudio {
 namespace epmodel {
   namespace detail {
 
-    class EPMODEL_API ScheduleDay_Impl : public ModelObject_Impl
+    class EPMODEL_API ScheduleDay_Impl : public ScheduleBase_Impl
     {
      public:
-      using ModelObject_Impl::ModelObject_Impl;
+      using ScheduleBase_Impl::ScheduleBase_Impl;
       virtual ~ScheduleDay_Impl() override = default;
 
       std::string interpolatetoTimestep() const;
@@ -25,7 +25,13 @@ namespace epmodel {
       bool isInterpolatetoTimestepDefaulted() const;
       void resetInterpolatetoTimestep();
 
-      std::vector<std::string> interpolatetoTimestepValues() const;
+      std::vector<double> values() const override;
+      void ensureNoLeapDays() override;
+
+     protected:
+      boost::optional<unsigned> scheduleTypeLimitsFieldIndex() const override;
+      bool candidateIsCompatibleWithCurrentUse(const ScheduleTypeLimits& candidate) const override;
+      bool okToResetScheduleTypeLimits() const override;
     };
 
   }  // namespace detail

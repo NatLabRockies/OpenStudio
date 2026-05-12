@@ -6,26 +6,25 @@
 #ifndef EPMODEL_SCHEDULE_IMPL_HPP
 #define EPMODEL_SCHEDULE_IMPL_HPP
 
-#include "ModelObject_Impl.hpp"
-#include <boost/optional.hpp>
+#include "ScheduleBase/ScheduleBase_Impl.hpp"
 
 namespace openstudio {
 namespace epmodel {
-  class ScheduleTypeLimits;
   namespace detail {
 
-    class EPMODEL_API Schedule_Impl : public ModelObject_Impl
+    class EPMODEL_API Schedule_Impl : public ScheduleBase_Impl
     {
      public:
-      using ModelObject_Impl::ModelObject_Impl;
+      using ScheduleBase_Impl::ScheduleBase_Impl;
       virtual ~Schedule_Impl() override = default;
 
-      boost::optional<openstudio::epmodel::ScheduleTypeLimits> scheduleTypeLimits() const;
-      bool setScheduleTypeLimits(const openstudio::epmodel::ScheduleTypeLimits& scheduleTypeLimits);
-      bool resetScheduleTypeLimits();
+      std::vector<double> values() const override;
+      void ensureNoLeapDays() override;
 
-     private:
-      boost::optional<unsigned> scheduleTypeLimitsFieldIndex() const;
+     protected:
+      boost::optional<unsigned> scheduleTypeLimitsFieldIndex() const override;
+      bool candidateIsCompatibleWithCurrentUse(const ScheduleTypeLimits& candidate) const override;
+      bool okToResetScheduleTypeLimits() const override;
     };
 
   }  // namespace detail

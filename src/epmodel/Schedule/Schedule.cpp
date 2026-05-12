@@ -7,8 +7,6 @@
 #include "Schedule/Schedule_Impl.hpp"
 
 #include "Model.hpp"
-#include "ResourceObject/ScheduleTypeLimits.hpp"
-#include "ResourceObject/ScheduleTypeLimits_Impl.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/idd/IddEnums.hxx>
@@ -20,24 +18,12 @@
 namespace openstudio {
 namespace epmodel {
 
-  Schedule::Schedule(IddObjectType type, const Model& model) : ModelObject(type, model) {
+  Schedule::Schedule(IddObjectType type, const Model& model) : ScheduleBase(type, model) {
     OS_ASSERT(getImpl<detail::Schedule_Impl>());
   }
 
-  Schedule::Schedule(std::shared_ptr<detail::Schedule_Impl> impl) : ModelObject(std::move(impl)) {
+  Schedule::Schedule(std::shared_ptr<detail::Schedule_Impl> impl) : ScheduleBase(std::move(impl)) {
     OS_ASSERT(getImpl<detail::Schedule_Impl>());
-  }
-
-  boost::optional<ScheduleTypeLimits> Schedule::scheduleTypeLimits() const {
-    return getImpl<detail::Schedule_Impl>()->scheduleTypeLimits();
-  }
-
-  bool Schedule::setScheduleTypeLimits(const ScheduleTypeLimits& scheduleTypeLimits) {
-    return getImpl<detail::Schedule_Impl>()->setScheduleTypeLimits(scheduleTypeLimits);
-  }
-
-  bool Schedule::resetScheduleTypeLimits() {
-    return getImpl<detail::Schedule_Impl>()->resetScheduleTypeLimits();
   }
 
   namespace detail {
@@ -57,31 +43,23 @@ namespace epmodel {
       }
     }
 
-    boost::optional<openstudio::epmodel::ScheduleTypeLimits> Schedule_Impl::scheduleTypeLimits() const {
-      const auto fieldIndex = scheduleTypeLimitsFieldIndex();
-      if (!fieldIndex) {
-        return boost::none;
-      }
-
-      return getObject<openstudio::epmodel::ModelObject>().getModelObjectTarget<openstudio::epmodel::ScheduleTypeLimits>(*fieldIndex);
+    std::vector<double> Schedule_Impl::values() const {
+      // TODO: implement
+      return {};
     }
 
-    bool Schedule_Impl::setScheduleTypeLimits(const openstudio::epmodel::ScheduleTypeLimits& scheduleTypeLimits) {
-      const auto fieldIndex = scheduleTypeLimitsFieldIndex();
-      if (!fieldIndex || (scheduleTypeLimits.model() != model())) {
-        return false;
-      }
-
-      return setPointer(*fieldIndex, scheduleTypeLimits.handle(), false);
+    void Schedule_Impl::ensureNoLeapDays() {
+      // TODO: implement if needed
     }
 
-    bool Schedule_Impl::resetScheduleTypeLimits() {
-      const auto fieldIndex = scheduleTypeLimitsFieldIndex();
-      if (!fieldIndex) {
-        return false;
-      }
+    bool Schedule_Impl::candidateIsCompatibleWithCurrentUse(const ScheduleTypeLimits& /*candidate*/) const {
+      // TODO: implement compatibility check
+      return true;
+    }
 
-      return setString(*fieldIndex, "", false);
+    bool Schedule_Impl::okToResetScheduleTypeLimits() const {
+      // TODO: implement check
+      return true;
     }
 
   }  // namespace detail

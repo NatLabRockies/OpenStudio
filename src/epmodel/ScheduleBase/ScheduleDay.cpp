@@ -17,9 +17,9 @@
 namespace openstudio {
 namespace epmodel {
 
-  ScheduleDay::ScheduleDay(const Model& model) : ModelObject(ScheduleDay::iddObjectType(), model) {}
+  ScheduleDay::ScheduleDay(const Model& model) : ScheduleBase(ScheduleDay::iddObjectType(), model) {}
 
-  ScheduleDay::ScheduleDay(std::shared_ptr<detail::ScheduleDay_Impl> impl) : ModelObject(std::move(impl)) {}
+  ScheduleDay::ScheduleDay(std::shared_ptr<detail::ScheduleDay_Impl> impl) : ScheduleBase(std::move(impl)) {}
 
   IddObjectType ScheduleDay::iddObjectType() {
     return IddObjectType::Schedule_Day_Interval;
@@ -71,8 +71,27 @@ namespace epmodel {
       OS_ASSERT(result);
     }
 
-    std::vector<std::string> ScheduleDay_Impl::interpolatetoTimestepValues() const {
-      return openstudio::epmodel::ScheduleDay::interpolatetoTimestepValues();
+    boost::optional<unsigned> ScheduleDay_Impl::scheduleTypeLimitsFieldIndex() const {
+      return openstudio::Schedule_Day_IntervalFields::ScheduleTypeLimitsName;
+    }
+
+    std::vector<double> ScheduleDay_Impl::values() const {
+      // TODO: implement by reading ValueUntilTime from extensible groups
+      return {};
+    }
+
+    void ScheduleDay_Impl::ensureNoLeapDays() {
+      // TODO: implement if needed
+    }
+
+    bool ScheduleDay_Impl::candidateIsCompatibleWithCurrentUse(const ScheduleTypeLimits& /*candidate*/) const {
+      // TODO: implement compatibility check
+      return true;
+    }
+
+    bool ScheduleDay_Impl::okToResetScheduleTypeLimits() const {
+      // TODO: implement check
+      return true;
     }
 
   }  // namespace detail

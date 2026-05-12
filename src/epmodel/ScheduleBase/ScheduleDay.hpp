@@ -7,7 +7,7 @@
 #define EPMODEL_SCHEDULEDAY_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "ScheduleBase/ScheduleBase.hpp"
 
 #include <utilities/idd/IddEnums.hxx>
 
@@ -17,13 +17,11 @@
 namespace openstudio {
 namespace epmodel {
 
-  class Model;
-
   namespace detail {
     class ScheduleDay_Impl;
   }
 
-  class EPMODEL_API ScheduleDay : public ModelObject
+  class EPMODEL_API ScheduleDay : public ScheduleBase
   {
    public:
     explicit ScheduleDay(const Model& model);
@@ -42,7 +40,7 @@ namespace epmodel {
     // - API: Preserve openstudio::model::ScheduleDay scalar accessor names/signatures where mappable in epmodel.
     // - Field Mapping: interpolatetoTimestep/setInterpolatetoTimestep map to EnergyPlus Schedule:Day:Interval
     //   field Interpolate to Timestep.
-    // - Field Mapping: Schedule Type Limits Name is an object-list relationship field and is intentionally excluded.
+    // - Field Mapping: ScheduleTypeLimitsName is provided by the ScheduleBase base class.
     // - Field Mapping: Time and Value Until Time live in extensible groups and are intentionally excluded from scalar accessors.
     // - ForwardTranslator evidence: ForwardTranslateScheduleDay.cpp writes modelObject.interpolatetoTimestep() to
     //   Schedule_Day_IntervalFields::InterpolatetoTimestep.
@@ -61,6 +59,9 @@ namespace epmodel {
 
     explicit ScheduleDay(std::shared_ptr<detail::ScheduleDay_Impl> impl);
   };
+
+  using OptionalScheduleDay = boost::optional<ScheduleDay>;
+  using ScheduleDayVector = std::vector<ScheduleDay>;
 
 }  // namespace epmodel
 }  // namespace openstudio
