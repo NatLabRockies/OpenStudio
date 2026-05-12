@@ -15,5 +15,7 @@ EPMODELOBJECT_WRAP(ExternalInterfaceSchedule, <epmodel/Schedule/ExternalInterfac
 EPMODELOBJECT_WRAP(ScheduleCompact, <epmodel/Schedule/ScheduleCompact.hpp>, 0, 1)
 EPMODELOBJECT_WRAP(ScheduleConstant, <epmodel/Schedule/ScheduleConstant.hpp>, 0, 1)
 EPMODELOBJECT_WRAP(ScheduleYear, <epmodel/Schedule/ScheduleYear.hpp>, 0, 1)
+EPMODELOBJECT_WRAP(ScheduleRuleset, <epmodel/Schedule/ScheduleRuleset.hpp>, 0, 1)
+EPMODELOBJECT_TEMPLATES(ScheduleRule, 0)
 
 #endif

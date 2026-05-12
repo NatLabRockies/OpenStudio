@@ -2052,6 +2052,11 @@ set(${target_name}_src
   Schedule/ScheduleYear.hpp
   Schedule/ScheduleYear_Impl.hpp
   Schedule/ScheduleYear.cpp
+  Schedule/ScheduleRuleset.hpp
+  Schedule/ScheduleRuleset_Impl.hpp
+  Schedule/ScheduleRuleset.cpp
+  Schedule/ScheduleRule.hpp
+  Schedule/ScheduleRule.cpp
 
   ScheduleBase/ScheduleBase.hpp
   ScheduleBase/ScheduleBase_Impl.hpp
