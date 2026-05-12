@@ -784,6 +784,9 @@ set(${target_name}_src
   OpaqueMaterial/MasslessOpaqueMaterial.hpp
   OpaqueMaterial/MasslessOpaqueMaterial_Impl.hpp
   OpaqueMaterial/MasslessOpaqueMaterial.cpp
+  OpaqueMaterial/OpaqueMaterial.hpp
+  OpaqueMaterial/OpaqueMaterial_Impl.hpp
+  OpaqueMaterial/OpaqueMaterial.cpp
   OpaqueMaterial/RoofVegetation.hpp
   OpaqueMaterial/RoofVegetation_Impl.hpp
   OpaqueMaterial/RoofVegetation.cpp

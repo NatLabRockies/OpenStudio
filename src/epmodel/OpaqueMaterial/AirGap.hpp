@@ -7,7 +7,7 @@
 #define EPMODEL_AIRGAP_HPP
 
 #include "EPModelAPI.hpp"
-#include "Material/Material.hpp"
+#include "OpaqueMaterial/OpaqueMaterial.hpp"
 
 #include <utilities/idd/IddEnums.hxx>
 
@@ -22,7 +22,7 @@ namespace epmodel {
     class AirGap_Impl;
   }
 
-  class EPMODEL_API AirGap : public Material
+  class EPMODEL_API AirGap : public OpaqueMaterial
   {
    public:
     explicit AirGap(const Model& model, double thermalResistance = 0.1);
@@ -37,13 +37,9 @@ namespace epmodel {
 
     // Schema Alignment Notes:
     // - API: Preserves openstudio::model::AirGap scalar accessor names/signatures.
-    // - Field Mapping: thermalResistance/setThermalResistance/resetThermalResistance map to E+ Material:AirGap Thermal Resistance.
+    // - Field Mapping: thermalResistance/setThermalResistance map to E+ Material:AirGap Thermal Resistance.
     // - ForwardTranslator evidence: ForwardTranslateAirGap.cpp writes model AirGap::thermalResistance directly to Material:AirGap Thermal Resistance.
     // - TODO(parity): Introduce an epmodel OpaqueMaterial hierarchy and migrate AirGap inheritance when broader opaque-material parity lands.
-    double thermalResistance() const;
-
-    bool setThermalResistance(double thermalResistance);
-    void resetThermalResistance();
 
    protected:
     using ImplType = detail::AirGap_Impl;

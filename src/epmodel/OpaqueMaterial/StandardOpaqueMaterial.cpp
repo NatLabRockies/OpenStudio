@@ -19,7 +19,7 @@ namespace epmodel {
 
   StandardOpaqueMaterial::StandardOpaqueMaterial(const Model& model, const std::string& roughness, double thickness, double conductivity,
                                                  double density, double specificHeat)
-    : Material(StandardOpaqueMaterial::iddObjectType(), model) {
+    : OpaqueMaterial(StandardOpaqueMaterial::iddObjectType(), model) {
     OS_ASSERT(getImpl<detail::StandardOpaqueMaterial_Impl>());
 
     bool ok = true;
@@ -35,7 +35,7 @@ namespace epmodel {
     OS_ASSERT(ok);
   }
 
-  StandardOpaqueMaterial::StandardOpaqueMaterial(std::shared_ptr<detail::StandardOpaqueMaterial_Impl> impl) : Material(std::move(impl)) {}
+  StandardOpaqueMaterial::StandardOpaqueMaterial(std::shared_ptr<detail::StandardOpaqueMaterial_Impl> impl) : OpaqueMaterial(std::move(impl)) {}
 
   IddObjectType StandardOpaqueMaterial::iddObjectType() {
     return IddObjectType::Material;
@@ -77,10 +77,6 @@ namespace epmodel {
     return getImpl<detail::StandardOpaqueMaterial_Impl>()->thermalResistivity();
   }
 
-  double StandardOpaqueMaterial::thermalResistance() const {
-    return getImpl<detail::StandardOpaqueMaterial_Impl>()->thermalResistance();
-  }
-
   bool StandardOpaqueMaterial::setConductivity(double conductivity) {
     return getImpl<detail::StandardOpaqueMaterial_Impl>()->setConductivity(conductivity);
   }
@@ -95,10 +91,6 @@ namespace epmodel {
 
   bool StandardOpaqueMaterial::setThermalResistivity(double value) {
     return getImpl<detail::StandardOpaqueMaterial_Impl>()->setThermalResistivity(value);
-  }
-
-  bool StandardOpaqueMaterial::setThermalResistance(double value) {
-    return getImpl<detail::StandardOpaqueMaterial_Impl>()->setThermalResistance(value);
   }
 
   double StandardOpaqueMaterial::density() const {

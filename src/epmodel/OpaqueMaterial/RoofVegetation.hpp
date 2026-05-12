@@ -7,7 +7,7 @@
 #define EPMODEL_ROOFVEGETATION_HPP
 
 #include "EPModelAPI.hpp"
-#include "Material/Material.hpp"
+#include "OpaqueMaterial/OpaqueMaterial.hpp"
 
 #include <utilities/idd/IddEnums.hxx>
 
@@ -24,7 +24,7 @@ namespace epmodel {
     class RoofVegetation_Impl;
   }
 
-  class EPMODEL_API RoofVegetation : public Material
+  class EPMODEL_API RoofVegetation : public OpaqueMaterial
   {
    public:
     explicit RoofVegetation(const Model& model, const std::string& roughness = "Smooth");
@@ -85,11 +85,9 @@ namespace epmodel {
     double thermalConductivity() const;
     double thermalConductance() const;
     double thermalResistivity() const;
-    double thermalResistance() const;
     bool setThermalConductivity(double value);
     bool setThermalConductance(double value);
     bool setThermalResistivity(double value);
-    bool setThermalResistance(double value);
 
     double conductivityofDrySoil() const;
     bool isConductivityofDrySoilDefaulted() const;
@@ -110,7 +108,7 @@ namespace epmodel {
     bool setSpecificHeatofDrySoil(double specificHeatofDrySoil);
     void resetSpecificHeatofDrySoil();
 
-    boost::optional<double> thermalAbsorptance() const;
+    double thermalAbsorptance() const;
     bool isThermalAbsorptanceDefaulted() const;
     boost::optional<double> thermalReflectance() const;
     bool setThermalAbsorptance(double thermalAbsorptance);
@@ -118,7 +116,7 @@ namespace epmodel {
     void resetThermalAbsorptance();
     bool setThermalReflectance(boost::optional<double> value);
 
-    boost::optional<double> solarAbsorptance() const;
+    double solarAbsorptance() const;
     bool isSolarAbsorptanceDefaulted() const;
     boost::optional<double> solarReflectance() const;
     bool setSolarAbsorptance(double solarAbsorptance);
@@ -126,7 +124,7 @@ namespace epmodel {
     void resetSolarAbsorptance();
     bool setSolarReflectance(boost::optional<double> value);
 
-    boost::optional<double> visibleAbsorptance() const;
+    double visibleAbsorptance() const;
     bool isVisibleAbsorptanceDefaulted() const;
     boost::optional<double> visibleReflectance() const;
     bool setVisibleAbsorptance(double visibleAbsorptance);
