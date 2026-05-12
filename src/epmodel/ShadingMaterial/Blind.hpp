@@ -7,7 +7,7 @@
 #define EPMODEL_BLIND_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "ShadingMaterial/ShadingMaterial.hpp"
 
 #include <utilities/idd/IddEnums.hxx>
 
@@ -24,7 +24,7 @@ namespace epmodel {
     class Blind_Impl;
   }
 
-  class EPMODEL_API Blind : public ModelObject
+  class EPMODEL_API Blind : public ShadingMaterial
   {
    public:
     explicit Blind(const Model& model);

@@ -6,17 +6,17 @@
 #ifndef EPMODEL_SHADE_IMPL_HPP
 #define EPMODEL_SHADE_IMPL_HPP
 
-#include "ModelObject_Impl.hpp"
+#include "ShadingMaterial/ShadingMaterial_Impl.hpp"
 
 namespace openstudio {
 namespace epmodel {
 
   namespace detail {
 
-    class EPMODEL_API Shade_Impl : public ModelObject_Impl
+    class EPMODEL_API Shade_Impl : public ShadingMaterial_Impl
     {
      public:
-      using ModelObject_Impl::ModelObject_Impl;
+      using ShadingMaterial_Impl::ShadingMaterial_Impl;
       virtual ~Shade_Impl() override = default;
 
       double thermalConductivity() const;

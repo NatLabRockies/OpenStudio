@@ -2143,6 +2143,9 @@ set(${target_name}_src
   SetpointManager/SetpointManagerWarmestTemperatureFlow_Impl.hpp
   SetpointManager/SetpointManagerWarmestTemperatureFlow.cpp
 
+  ShadingMaterial/ShadingMaterial.hpp
+  ShadingMaterial/ShadingMaterial_Impl.hpp
+  ShadingMaterial/ShadingMaterial.cpp
   ShadingMaterial/Blind.hpp
   ShadingMaterial/Blind_Impl.hpp
   ShadingMaterial/Blind.cpp
