@@ -414,6 +414,8 @@ mark_as_advanced(ENABLE_PCH)
 
 option(USE_LTO "Use Link-Time-Optimization" OFF)
 
+option(MINIMAL_BUILD "Build only core targets, skipping optional subprojects (epjson, radiance, gbxml, gltf, airflow, isomodel, sdd, install_utility)" OFF)
+
 if (USE_LTO)
   include(CheckIPOSupported)
 
@@ -1068,21 +1070,26 @@ set(project_directories
   epmodel
   modelica
   energyplus
-  epjson
-  radiance
-  gbxml
-  gltf
-  airflow
-  isomodel
   osversion
   alfalfa
   measure
-  sdd
   lib
-  install_utility
   scriptengine
   workflow
 )
+
+if(NOT MINIMAL_BUILD)
+  list(APPEND project_directories
+    epjson
+    radiance
+    gbxml
+    gltf
+    airflow
+    isomodel
+    sdd
+    install_utility
+  )
+endif()
 
 # resources must be added after find EnergyPlus
 add_subdirectory(resources)

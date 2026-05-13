@@ -14,6 +14,10 @@ target_include_directories(rubybindings PUBLIC
 
 target_link_libraries(rubybindings PRIVATE ${ALL_RUBY_BINDING_TARGETS} rubyinterpreter-declarations)
 
+if(MINIMAL_BUILD)
+  target_compile_definitions(rubybindings PRIVATE MINIMAL_BUILD)
+endif()
+
 # wd4996=no deprecated warnings ; wd5033=register
 target_compile_options(rubybindings PRIVATE
   $<$<CXX_COMPILER_ID:MSVC>:/bigobj /wd4996 /wd5033>

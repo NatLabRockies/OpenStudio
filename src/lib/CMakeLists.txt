@@ -4,25 +4,27 @@
 add_library(openstudiolib SHARED empty.cpp)
 
 
-target_link_libraries(
- openstudiolib
- PRIVATE
- openstudio_utilities
- openstudio_airflow
- openstudio_model
- openstudio_modelica
- openstudio_energyplus
- openstudio_epmodel
- openstudio_epjson
- openstudio_alfalfa
- openstudio_measure
- openstudio_osversion
- openstudio_sdd
- openstudio_isomodel
- openstudio_gbxml
- openstudio_gltf
- openstudio_radiance
+foreach(_lib
+  openstudio_utilities
+  openstudio_airflow
+  openstudio_model
+  openstudio_modelica
+  openstudio_energyplus
+  openstudio_epmodel
+  openstudio_epjson
+  openstudio_alfalfa
+  openstudio_measure
+  openstudio_osversion
+  openstudio_sdd
+  openstudio_isomodel
+  openstudio_gbxml
+  openstudio_gltf
+  openstudio_radiance
 )
+  if(TARGET ${_lib})
+    target_link_libraries(openstudiolib PRIVATE ${_lib})
+  endif()
+endforeach()
 
 target_link_libraries(
  openstudiolib

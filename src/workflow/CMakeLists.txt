@@ -27,6 +27,10 @@ add_library(openstudio_workflow
   Timer.cpp
 )
 
+if(MINIMAL_BUILD)
+  target_compile_definitions(openstudio_workflow PRIVATE MINIMAL_BUILD)
+endif()
+
 target_link_libraries(openstudio_workflow PUBLIC openstudiolib openstudio_epmodel)
 
 if(BUILD_TESTING)

@@ -12,7 +12,9 @@
 #include "../model/FileOperations.hpp"
 
 #include "../energyplus/ErrorFile.hpp"
-#include "../epjson/epJSONTranslator.hpp"
+#ifndef MINIMAL_BUILD
+#  include "../epjson/epJSONTranslator.hpp"
+#endif
 #include "../utilities/idf/Workspace.hpp"
 
 #include "../utilities/filetypes/WorkflowJSON.hpp"
@@ -190,6 +192,7 @@ void OSWorkflow::runEnergyPlus() {
     }
 
     if (workflowJSON.runOptions()->epjson()) {
+#ifndef MINIMAL_BUILD
       LOG(Info, "Beginning the translation to epJSON using OpenStudio");
       Json::Value jsonVal;
 
@@ -203,6 +206,9 @@ void OSWorkflow::runEnergyPlus() {
         std::ofstream ofs(openstudio::toString(inIDF), std::ofstream::trunc);
         ofs << jsonVal.toStyledString() << '\n';
       });
+#else
+      throw std::runtime_error("epJSON translation is not available in a MINIMAL_BUILD");
+#endif
     }
 
     // TODO: eventually we should change this system call to be an API call to libenergyplusapi (but we need E+ to add cmake exports)

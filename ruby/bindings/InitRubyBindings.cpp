@@ -33,24 +33,17 @@
 
 extern "C"
 {
-  void Init_openstudioairflow(void);
   void Init_openstudiomodelcore(void);
   void Init_openstudiomodelsimulation(void);
   void Init_openstudioutilitiescore(void);
   void Init_openstudioutilitiesplot(void);
   void Init_openstudioenergyplus(void);
-  void Init_openstudioepjson(void);
   void Init_openstudioosversion(void);
   void Init_openstudioutilitiesdata(void);
   void Init_openstudioutilitiessql(void);
-  void Init_openstudiogbxml(void);
-  void Init_openstudiogltf(void);
   void Init_openstudiomodelgenerators(void);
-  void Init_openstudioradiance(void);
   void Init_openstudioutilitiestime(void);
-  void Init_openstudioisomodel(void);
   void Init_openstudiomodelgeometry(void);
-  void Init_openstudiosdd(void);
   void Init_openstudioutilitiesfiletypes(void);
   void Init_openstudioutilitiesunits(void);
   void Init_openstudiomodelhvac(void);
@@ -73,6 +66,16 @@ extern "C"
   void Init_openstudioalfalfa(void);
 
   ////void Init_openstudiomodeleditor(void); # happens separately in openstudio.so only, for SketchUp plug-in
+
+#ifndef MINIMAL_BUILD
+  void Init_openstudioairflow(void);
+  void Init_openstudioepjson(void);
+  void Init_openstudiogbxml(void);
+  void Init_openstudiogltf(void);
+  void Init_openstudioisomodel(void);
+  void Init_openstudioradiance(void);
+  void Init_openstudiosdd(void);
+#endif  // MINIMAL_BUILD
 }
 
 namespace openstudio {
@@ -179,6 +182,7 @@ namespace ruby {
     rb_provide("openstudioenergyplus");
     rb_provide("openstudioenergyplus.so");
     initEpModelRubyBindings();
+#ifndef MINIMAL_BUILD
     Init_openstudioepjson();
     rb_provide("openstudioepjson");
     rb_provide("openstudioepjson.so");
@@ -194,18 +198,21 @@ namespace ruby {
     Init_openstudioairflow();
     rb_provide("openstudioairflow");
     rb_provide("openstudioairflow.so");
+#endif  // MINIMAL_BUILD
     Init_openstudioosversion();
     rb_provide("openstudioversion");
     rb_provide("openstudioversion.so");
     Init_openstudiomeasure();
     rb_provide("openstudiomeasure");
     rb_provide("openstudiomeasure.so");
+#ifndef MINIMAL_BUILD
     Init_openstudioisomodel();
     rb_provide("openstudioisomodel");
     rb_provide("openstudioisomodel.so");
     Init_openstudiosdd();
     rb_provide("openstudiosdd");
     rb_provide("openstudiosdd.so");
+#endif  // MINIMAL_BUILD
 
     //Init_openstudiomodeleditor(); # happens separately in openstudio.so only, for SketchUp plug-in
     //rb_provide("openstudiomodeleditor");

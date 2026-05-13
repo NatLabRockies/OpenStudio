@@ -17,19 +17,22 @@ if __package__ or "." in __name__:
     # from . import openstudiomodelplantequipmentoperationscheme as modelplantequipmentoperationscheme
     # from . import openstudiomodelstraightcomponent as modelstraightcomponent
     # from . import openstudiomodelzonehvac as momodelzonehvac
-    from . import openstudioairflow as airflow
     from . import openstudioenergyplus as energyplus
     from . import openstudioepmodel as epmodel
-    from . import openstudioepjson as epjson
-    from . import openstudiogbxml as gbxml
-    from . import openstudiogltf as gltf
-    from . import openstudioisomodel as isomodel
     from . import openstudiomeasure as measure
     from . import openstudiomodel as model
     from . import openstudioosversion as osversion
-    from . import openstudioradiance as radiance
-    from . import openstudiosdd as sdd
     from . import openstudioalfalfa as alfalfa
+    try:
+        from . import openstudioairflow as airflow
+        from . import openstudioepjson as epjson
+        from . import openstudiogbxml as gbxml
+        from . import openstudiogltf as gltf
+        from . import openstudioisomodel as isomodel
+        from . import openstudioradiance as radiance
+        from . import openstudiosdd as sdd
+    except ImportError:
+        pass
     from .openstudioutilities import *
     from .openstudioutilitiesbcl import *
     from .openstudioutilitiescore import *
@@ -60,13 +63,8 @@ else:
             if os.path.isfile(os.path.join(products_dir, 'openstudiolib.dll')):
                 os.add_dll_directory(products_dir)
 
-    import openstudioairflow as airflow
     import openstudioenergyplus as energyplus
     import openstudioepmodel as epmodel
-    import openstudioepjson as epjson
-    import openstudiogbxml as gbxml
-    import openstudiogltf as gltf
-    import openstudioisomodel as isomodel
     import openstudiomeasure as measure
     import openstudiomodel as model
     import openstudioalfalfa as alfalfa
@@ -85,8 +83,16 @@ else:
     # import openstudiomodelstraightcomponent as modelstraightcomponent
     # import openstudiomodelzonehvac as momodelzonehvac
     import openstudioosversion as osversion
-    import openstudioradiance as radiance
-    import openstudiosdd as sdd
+    try:
+        import openstudioairflow as airflow
+        import openstudioepjson as epjson
+        import openstudiogbxml as gbxml
+        import openstudiogltf as gltf
+        import openstudioisomodel as isomodel
+        import openstudioradiance as radiance
+        import openstudiosdd as sdd
+    except ImportError:
+        pass
     from openstudioutilities import *
     from openstudioutilitiesbcl import *
     from openstudioutilitiescore import *

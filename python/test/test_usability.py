@@ -5,6 +5,7 @@
 
 from pathlib import Path
 
+import pytest
 import openstudio
 
 
@@ -38,6 +39,7 @@ def test_path():
     assert openstudio.model.Model.load(openstudio.toPath("wrong.osm")).empty()
 
 
+@pytest.mark.skipif(not hasattr(openstudio, "epjson"), reason="epjson not built (MINIMAL_BUILD)")
 def test_json():
     """We can return jsoncpp objects to a native python dict."""
     idfFile = openstudio.IdfFile(openstudio.IddFileType("EnergyPlus"))

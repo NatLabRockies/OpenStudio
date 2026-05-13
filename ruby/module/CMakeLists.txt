@@ -66,23 +66,29 @@ else()
     openstudio_rb
     PRIVATE
     openstudio_utilities
-    openstudio_airflow
     openstudio_model
     openstudio_modelica
     openstudio_energyplus
     openstudio_epmodel
-    openstudio_epjson
     openstudio_alfalfa
     openstudio_measure
     openstudio_osversion
+    rubybindings
+    ${ALL_RUBY_BINDING_TARGETS}
+  )
+  foreach(_lib
+    openstudio_airflow
+    openstudio_epjson
     openstudio_sdd
     openstudio_isomodel
     openstudio_gbxml
     openstudio_gltf
     openstudio_radiance
-    rubybindings
-    ${ALL_RUBY_BINDING_TARGETS}
   )
+    if(TARGET ${_lib})
+      target_link_libraries(openstudio_rb PRIVATE ${_lib})
+    endif()
+  endforeach()
 endif()
 
 if (APPLE)
