@@ -19,6 +19,9 @@ class Model;
 // its always-on schedule accessors.
 %include <epmodel/ModelObject/ModelObject.hpp>
 %include <epmodel/ResourceObject/ResourceObject.hpp>
+// Using %import: we need SWIG to see the full definition of ScheduleBase (to resolve the inheritance chain for Schedule),
+// not to generate bindings for it in the root module
+%import <epmodel/ScheduleBase/ScheduleBase.hpp>
 %include <epmodel/Schedule/Schedule.hpp>
 
 // Root-owned classes do not pass through submodule EPMODELOBJECT_WRAP entries,
