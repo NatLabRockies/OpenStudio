@@ -30,7 +30,7 @@ namespace epmodel {
 
       double thermalAbsorptance() const override;
       bool isThermalAbsorptanceDefaulted() const;
-      bool setThermalAbsorptance(double thermalAbsorptance);
+      bool setThermalAbsorptance(double thermalAbsorptance) override;
       void resetThermalAbsorptance();
 
       double solarAbsorptance() const override;

@@ -22,33 +22,33 @@ namespace epmodel {
       using OpaqueMaterial_Impl::OpaqueMaterial_Impl;
       virtual ~StandardOpaqueMaterial_Impl() override = default;
 
-      double thermalConductivity() const;
-      bool setThermalConductivity(double value);
+      double thermalConductivity() const override;
+      bool setThermalConductivity(double value) override;
 
-      double thermalConductance() const;
-      bool setThermalConductance(double value);
+      double thermalConductance() const override;
+      bool setThermalConductance(double value) override;
 
-      double thermalResistivity() const;
-      bool setThermalResistivity(double value);
+      double thermalResistivity() const override;
+      bool setThermalResistivity(double value) override;
 
       double thermalResistance() const override;
       bool setThermalResistance(double value) override;
 
-      boost::optional<double> thermalReflectance() const;
-      bool setThermalReflectance(boost::optional<double> value);
+      boost::optional<double> thermalReflectance() const override;
+      bool setThermalReflectance(boost::optional<double> value) override;
 
-      boost::optional<double> solarReflectance() const;
-      bool setSolarReflectance(boost::optional<double> value);
+      boost::optional<double> solarReflectance() const override;
+      bool setSolarReflectance(boost::optional<double> value) override;
 
-      boost::optional<double> visibleReflectance() const;
-      bool setVisibleReflectance(boost::optional<double> value);
+      boost::optional<double> visibleReflectance() const override;
+      bool setVisibleReflectance(boost::optional<double> value) override;
 
       std::string roughness() const;
       bool setRoughness(const std::string& roughness);
       std::vector<std::string> roughnessValues() const;
 
-      double thickness() const;
-      bool setThickness(double thickness);
+      double thickness() const override;
+      bool setThickness(double thickness) override;
 
       double conductivity() const;
       bool setConductivity(double conductivity);
@@ -59,25 +59,25 @@ namespace epmodel {
       double specificHeat() const;
       bool setSpecificHeat(double specificHeat);
 
-      double thermalAbsorptance() const;
+      double thermalAbsorptance() const override;
       bool isThermalAbsorptanceDefaulted() const;
       bool setThermalAbsorptance(boost::optional<double> value);
-      bool setThermalAbsorptance(double thermalAbsorptance);
+      bool setThermalAbsorptance(double thermalAbsorptance) override;
       void resetThermalAbsorptance();
 
-      double solarAbsorptance() const;
+      double solarAbsorptance() const override;
       bool isSolarAbsorptanceDefaulted() const;
-      bool setSolarAbsorptance(boost::optional<double> value);
+      bool setSolarAbsorptance(boost::optional<double> value) override;
       bool setSolarAbsorptance(double solarAbsorptance);
       void resetSolarAbsorptance();
 
-      double visibleAbsorptance() const;
+      double visibleAbsorptance() const override;
       bool isVisibleAbsorptanceDefaulted() const;
-      bool setVisibleAbsorptance(boost::optional<double> value);
+      bool setVisibleAbsorptance(boost::optional<double> value) override;
       bool setVisibleAbsorptance(double visibleAbsorptance);
       void resetVisibleAbsorptance();
 
-      boost::optional<double> heatCapacity() const;
+      boost::optional<double> heatCapacity() const override;
     };
 
   }  // namespace detail

@@ -24,8 +24,8 @@ namespace epmodel {
       std::string gasType() const;
       bool setGasType(const std::string& gasType);
 
-      double thickness() const;
-      bool setThickness(double thickness);
+      double thickness() const override;
+      bool setThickness(double thickness) override;
 
       boost::optional<double> customConductivityCoefficientA() const;
       boost::optional<double> customConductivityCoefficientB() const;

@@ -27,8 +27,8 @@ namespace epmodel {
       bool setOpticalDataType(const std::string& opticalDataType);
       std::vector<std::string> opticalDataTypeValues() const;
 
-      double thickness() const;
-      bool setThickness(double thickness);
+      double thickness() const override;
+      bool setThickness(double thickness) override;
 
       double solarTransmittance() const;
       bool setSolarTransmittance(double value);
@@ -105,8 +105,8 @@ namespace epmodel {
       double interiorVisibleReflectance() const;
       double exteriorVisibleReflectance() const;
 
-      boost::optional<double> interiorVisibleAbsorptance() const;
-      boost::optional<double> exteriorVisibleAbsorptance() const;
+      boost::optional<double> interiorVisibleAbsorptance() const override;
+      boost::optional<double> exteriorVisibleAbsorptance() const override;
     };
 
   }  // namespace detail
