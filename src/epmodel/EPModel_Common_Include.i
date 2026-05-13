@@ -24,12 +24,15 @@
 
 // Vector/Optional directives
 %define EPMODELOBJECT_TEMPLATES(_name, _isUnique)
+#ifndef EPMODEL_TEMPLATES_##_name##_DEFINED
+#define EPMODEL_TEMPLATES_##_name##_DEFINED
 #if !(_isUnique)
   %ignore std::vector<openstudio::epmodel::_name>::vector(size_type);
   %ignore std::vector<openstudio::epmodel::_name>::resize(size_type);
   %template(_name##Vector) std::vector<openstudio::epmodel::_name>;
 #endif
   %template(Optional##_name) boost::optional<openstudio::epmodel::_name>;
+#endif
 %enddef // EPMODELOBJECT_TEMPLATES
 
 %define EPMODELEXTENSIBLEGROUP_TEMPLATES(_name)
