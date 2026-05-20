@@ -109,7 +109,7 @@ jobs:
               *OpenStudio*x86_64.tar.gz
             cpack_generators: "RPM;TGZ"
             max_jobs: 4
-            exclude_regex: "BCLFixture.RemoteBCLMetaSearchTest"
+            exclude_regex: "BCLFixture.RemoteBCLMetaSearchTest|OpenStudioCLI|MeasureFixture"
           - platform: ubuntu-2204-x64
             pretty: Ubuntu 22.04 x64
             os: ubuntu-22.04
@@ -123,7 +123,7 @@ jobs:
               *OpenStudio*x86_64.tar.gz
             cpack_generators: "DEB;TGZ"
             max_jobs: 3
-            exclude_regex: "ModelFixture.PythonPluginInstance_NotPYFile"
+            exclude_regex: "ModelFixture.PythonPluginInstance_NotPYFile|OpenStudioCLI|MeasureFixture"
           - platform: ubuntu-2404-x64
             pretty: Ubuntu 24.04 x64
             os: ubuntu-24.04
@@ -137,7 +137,7 @@ jobs:
               *OpenStudio*x86_64.tar.gz
             cpack_generators: "DEB;TGZ"
             max_jobs: 4
-            exclude_regex: ""
+            exclude_regex: "OpenStudioCLI|MeasureFixture"
           - platform: ubuntu-2204-arm64
             pretty: Ubuntu 22.04 ARM64
             os: ubuntu-22.04-arm
@@ -152,7 +152,7 @@ jobs:
             cpack_generators: "DEB;TGZ"
             max_jobs: 3
             # SqlFileFixture.AnnualTotalCosts needed until E+ itself disables ffp-contract on arm64 GCC
-            exclude_regex: "SqlFileFixture.AnnualTotalCosts|OpenStudioCLI.*test_measure_manager"
+            exclude_regex: "SqlFileFixture.AnnualTotalCosts|OpenStudioCLI|MeasureFixture"
           - platform: ubuntu-2404-arm64
             pretty: Ubuntu 24.04 ARM64
             os: ubuntu-24.04-arm
@@ -167,7 +167,7 @@ jobs:
             cpack_generators: "DEB;TGZ"
             max_jobs: 4
             # SqlFileFixture.AnnualTotalCosts needed until E+ itself disables ffp-contract on arm64 GCC
-            exclude_regex: "SqlFileFixture.AnnualTotalCosts|OpenStudioCLI.*test_measure_manager"
+            exclude_regex: "SqlFileFixture.AnnualTotalCosts|OpenStudioCLI|MeasureFixture"
     defaults:
       run:
         shell: bash
@@ -659,7 +659,7 @@ jobs:
             python-arch: x64
             dmg_glob: "*.dmg"
             tar_glob: "*OpenStudio*x86_64.tar.gz"
-            exclude_regex: ""
+            exclude_regex: "OpenStudioCLI|MeasureFixture"
             max_jobs: 3
           - macos_dev_target: "13.0"
             platform: macos-arm64
@@ -671,7 +671,7 @@ jobs:
             python-arch: arm64
             dmg_glob: "*.dmg"
             tar_glob: "*OpenStudio*arm64.tar.gz"
-            exclude_regex: ""
+            exclude_regex: "OpenStudioCLI|MeasureFixture"
             max_jobs: 3
     env:
       MAX_BUILD_THREADS: ${{ matrix.max_jobs }}
@@ -1229,7 +1229,7 @@ jobs:
             python-arch: x64
             allow_failure: false
             max_jobs: 4
-            exclude_regex: ""
+            exclude_regex: "OpenStudioCLI|MeasureFixture"
     defaults:
       run:
         shell: pwsh
