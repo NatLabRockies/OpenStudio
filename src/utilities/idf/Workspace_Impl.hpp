@@ -126,7 +126,7 @@ namespace detail {
 
     /** Get all objects in this workspace. The returned objects' data is shared with the workspace.
      *  If sorted, then the objects are returned in the preferred order. */
-    std::vector<WorkspaceObject> objects(bool sorted = false) const;
+    std::vector<WorkspaceObject> objects(bool sorted = false, bool includeTransient = true) const;
 
     /** Returns all objects, including the versionObject. Protected in public class. */
     std::vector<WorkspaceObject> allObjects() const;

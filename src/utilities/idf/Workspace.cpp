@@ -199,7 +199,7 @@ namespace detail {
     return boost::none;
   }
 
-  std::vector<WorkspaceObject> Workspace_Impl::objects(bool sorted) const {
+  std::vector<WorkspaceObject> Workspace_Impl::objects(bool sorted, bool includeTransient) const {
     OptionalIddObject versionIdd = m_iddFileAndFactoryWrapper.versionObject();
     if (!versionIdd) {
       return {};
@@ -214,20 +214,26 @@ namespace detail {
           OptionalWorkspaceObject owo = getObject(h);
           std::pair<HandleSet::iterator, bool> insertResult = setToCheckUniqueness.insert(h);
           if (owo && insertResult.second && (owo->iddObject() != versionIdd.get())) {
+            if (!includeTransient && owo->getImpl<WorkspaceObject_Impl>()->isTransient()) {
+              continue;
+            }
             result.push_back(*owo);
           } else {
-            return sort(objects(false));
+            return sort(objects(false, includeTransient));
           }
         }
         return result;
       }
-      return sort(objects(false));
+      return sort(objects(false, includeTransient));
     }
 
     WorkspaceObjectVector result;
     for (const WorkspaceObjectMap::value_type& p : m_workspaceObjectMap) {
       WorkspaceObject obj = WorkspaceObject(p.second);
       if (obj.iddObject() != versionIdd.get()) {
+        if (!includeTransient && obj.getImpl<WorkspaceObject_Impl>()->isTransient()) {
+          continue;
+        }
         result.push_back(obj);
       }
     }
@@ -1758,7 +1764,7 @@ namespace detail {
     }
 
     // add objects and replace handle pointers with names
-    WorkspaceObjectVector objs = objects(true);  // sorted objects
+    WorkspaceObjectVector objs = objects(true, false);  // sorted objects, but NO TRANSIENT objects
     for (const WorkspaceObject& obj : objs) {
       result.addObject(obj.idfObject());
     }
