@@ -1558,7 +1558,9 @@ TEST_F(IdfFixture, Workspace_GiveNames2) {
   EXPECT_EQ("Core_ZN Water Equipment", idfEquipment[0].name().get());
 
   Workspace workspace(*idf);
-  EXPECT_EQ(2u, workspace.objects().size());
+  // 2 regular objects like IDF, 2 transient nodes
+  EXPECT_EQ(2u, workspace.getImpl<openstudio::detail::Workspace_Impl>()->objects(false, false).size());
+  EXPECT_EQ(4u, workspace.objects().size());
   std::vector<WorkspaceObject> workspaceConnections = workspace.getObjectsByType(IddObjectType::WaterUse_Connections);
   std::vector<WorkspaceObject> workspaceEquipment = workspace.getObjectsByType(IddObjectType::WaterUse_Equipment);
   ASSERT_EQ(1u, workspaceConnections.size());

@@ -1618,6 +1618,11 @@ namespace detail {
       // by-object items
       for (const WorkspaceObjectMap::value_type& p : m_workspaceObjectMap) {
 
+        // Skip transients
+        if (p.second->isTransient()) {
+          continue;
+        }
+
         //find all objects with the same name
 
         OptionalString oName = p.second->name();
