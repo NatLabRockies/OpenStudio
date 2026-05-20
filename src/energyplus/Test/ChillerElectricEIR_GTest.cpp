@@ -342,5 +342,5 @@ TEST_F(EnergyPlusFixture, ForwardTranslator_ChillerElectricEIR_AirCooledCondense
 
   auto oaNodeLists = w.getObjectsByType(IddObjectType::OutdoorAir_NodeList);
   ASSERT_EQ(1u, oaNodeLists.size());
-  EXPECT_EQ("Air Cooled ChillerElectricEIR Inlet Node For Condenser", oaNodeLists.front().nameString());
+  EXPECT_EQ("Air Cooled ChillerElectricEIR Inlet Node For Condenser", oaNodeLists.front().getString(0).get());
 }

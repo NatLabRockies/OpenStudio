@@ -13,6 +13,7 @@
 #include "../../model/WaterHeaterStratified.hpp"
 // #include "../../model/WaterHeaterStratified_Impl.hpp"
 #include "../../model/Schedule.hpp"
+#include "../../model/Space.hpp"
 #include "../../model/ThermalZone.hpp"
 
 #include "../../model/PlantLoop.hpp"
@@ -131,6 +132,10 @@ TEST_F(EnergyPlusFixture, ForwardTranslatorWaterHeaterStratified_AmbientTemperat
   PlantLoop p(m);
   EXPECT_TRUE(p.addSupplyBranchForComponent(wh));
 
+  wh.autosizeTankVolume();
+  wh.autosizeTankHeight();
+  wh.autosizeHeater1Capacity();
+
   Workspace w = ft.translateModel(m);
 
   std::vector<WorkspaceObject> idfWHStratifieds(w.getObjectsByType(IddObjectType::WaterHeater_Stratified));
@@ -146,6 +151,8 @@ TEST_F(EnergyPlusFixture, ForwardTranslatorWaterHeaterStratified_AmbientTemperat
   EXPECT_EQ("Autosize", idfWHStratified.getString(WaterHeater_StratifiedFields::SourceSideDesignFlowRate, false).get());
 
   ThermalZone zone(m);
+  Space space(m);
+  space.setThermalZone(zone);
   EXPECT_TRUE(wh.setAmbientTemperatureIndicator("ThermalZone"));
   EXPECT_TRUE(wh.setAmbientTemperatureThermalZone(zone));
 

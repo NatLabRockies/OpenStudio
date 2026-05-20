@@ -391,9 +391,9 @@ TEST_F(EnergyPlusFixture, ForwardTranslator_HeatPumpPlantLoopEIRCooling_AirSourc
   EXPECT_EQ("Autosize", idfObj.getString(HeatPump_PlantLoop_EIR_CoolingFields::LoadSideReferenceFlowRate).get());
   EXPECT_EQ("Autosize", idfObj.getString(HeatPump_PlantLoop_EIR_CoolingFields::SourceSideReferenceFlowRate).get());
   EXPECT_EQ("Autosize", idfObj.getString(HeatPump_PlantLoop_EIR_CoolingFields::ReferenceCapacity).get());
-  EXPECT_FALSE(idfObj.getString(HeatPump_PlantLoop_EIR_CoolingFields::HeatRecoveryReferenceFlowRate));
-  EXPECT_FALSE(idfObj.getString(HeatPump_PlantLoop_EIR_CoolingFields::HeatRecoveryInletNodeName));
-  EXPECT_FALSE(idfObj.getString(HeatPump_PlantLoop_EIR_CoolingFields::HeatRecoveryOutletNodeName));
+  EXPECT_TRUE(idfObj.isEmpty(HeatPump_PlantLoop_EIR_CoolingFields::HeatRecoveryReferenceFlowRate));
+  EXPECT_TRUE(idfObj.isEmpty(HeatPump_PlantLoop_EIR_CoolingFields::HeatRecoveryInletNodeName));
+  EXPECT_TRUE(idfObj.isEmpty(HeatPump_PlantLoop_EIR_CoolingFields::HeatRecoveryOutletNodeName));
 
   WorkspaceObjectVector oaNodeLists(w.getObjectsByType(IddObjectType::OutdoorAir_NodeList));
   ASSERT_EQ(1u, oaNodeLists.size());
@@ -439,9 +439,9 @@ TEST_F(EnergyPlusFixture, ForwardTranslator_HeatPumpPlantLoopEIRHeating_AirSourc
   EXPECT_EQ("Autosize", idfObj.getString(HeatPump_PlantLoop_EIR_HeatingFields::LoadSideReferenceFlowRate).get());
   EXPECT_EQ("Autosize", idfObj.getString(HeatPump_PlantLoop_EIR_HeatingFields::SourceSideReferenceFlowRate).get());
   EXPECT_EQ("Autosize", idfObj.getString(HeatPump_PlantLoop_EIR_HeatingFields::ReferenceCapacity).get());
-  EXPECT_FALSE(idfObj.getString(HeatPump_PlantLoop_EIR_HeatingFields::HeatRecoveryReferenceFlowRate));
-  EXPECT_FALSE(idfObj.getString(HeatPump_PlantLoop_EIR_HeatingFields::HeatRecoveryInletNodeName));
-  EXPECT_FALSE(idfObj.getString(HeatPump_PlantLoop_EIR_HeatingFields::HeatRecoveryOutletNodeName));
+  EXPECT_TRUE(idfObj.isEmpty(HeatPump_PlantLoop_EIR_HeatingFields::HeatRecoveryReferenceFlowRate));
+  EXPECT_TRUE(idfObj.isEmpty(HeatPump_PlantLoop_EIR_HeatingFields::HeatRecoveryInletNodeName));
+  EXPECT_TRUE(idfObj.isEmpty(HeatPump_PlantLoop_EIR_HeatingFields::HeatRecoveryOutletNodeName));
 
   WorkspaceObjectVector oaNodeLists(w.getObjectsByType(IddObjectType::OutdoorAir_NodeList));
   ASSERT_EQ(1u, oaNodeLists.size());
