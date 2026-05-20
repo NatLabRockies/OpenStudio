@@ -52,6 +52,7 @@ namespace epmodel {
 
     boost::optional<HVACComponent> waterCoil() const;
 
+    // TODO: remove Defaulted + Reset + getter returns non optional : required in IDD AND canonicalized to a default value (+ ctor)
     boost::optional<std::string> controlVariable() const;
     bool isControlVariableDefaulted() const;
     bool setControlVariable(const std::string& controlVariable);
@@ -61,6 +62,7 @@ namespace epmodel {
     bool setAction(const std::string& action);
     void resetAction();
 
+    // TODO: remove Defaulted + Reset + getter returns non optional : required in IDD AND canonicalized to a default value (+ ctor)
     boost::optional<std::string> actuatorVariable() const;
     bool isActuatorVariableDefaulted() const;
     bool setActuatorVariable(const std::string& actuatorVariable);
