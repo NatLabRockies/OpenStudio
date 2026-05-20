@@ -18,6 +18,7 @@ void EPModelFixture::TearDown() {}
 void EPModelFixture::SetUpTestSuite() {
   logFile = FileLogSink(toPath("./EPModelTestFixture.log"));
   logFile->setLogLevel(Debug);
+  logFile->useWorkflowGemFormatter(true, true);
   Logger::instance().standardOutLogger().disable();
 
   openstudio::filesystem::create_directory(resourcesPath() / toPath("epmodel"));
