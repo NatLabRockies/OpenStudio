@@ -74,9 +74,9 @@ namespace model {
 
       double result = coefficient1Constant();
       result += coefficient2x() * x;
-      result += coefficient3xPOW2() * pow(x, 2);
+      result += coefficient3xPOW2() * std::pow(x, 2);
       result += coefficient4y() * y;
-      result += coefficient5yPOW2() * pow(y, 2);
+      result += coefficient5yPOW2() * std::pow(y, 2);
       result += coefficient6xTIMESY() * x * y;
 
       if (boost::optional<double> _minVal = minimumCurveOutput()) {

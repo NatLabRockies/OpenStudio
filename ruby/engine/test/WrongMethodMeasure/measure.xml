@@ -3,8 +3,8 @@
   <schema_version>3.1</schema_version>
   <name>wrong_method_measure</name>
   <uid>11111111-c89b-4b93-b400-110ca060b2bb</uid>
-  <version_id>8c8f5697-b6e0-4ae0-90f9-cace0f872d41</version_id>
-  <version_modified>2023-11-10T11:02:27Z</version_modified>
+  <version_id>44acd9ed-3410-4b52-b8d0-9007a85845c5</version_id>
+  <version_modified>2026-05-19T10:38:30Z</version_modified>
   <xml_checksum>5872977E</xml_checksum>
   <class_name>WrongMethodMeasure</class_name>
   <display_name>Wrong Method Measure</display_name>
@@ -53,7 +53,7 @@
       <filename>measure.rb</filename>
       <filetype>rb</filetype>
       <usage_type>script</usage_type>
-      <checksum>BB98326D</checksum>
+      <checksum>6A57905F</checksum>
     </file>
   </files>
 </measure>

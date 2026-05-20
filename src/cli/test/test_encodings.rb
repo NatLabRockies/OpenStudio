@@ -52,8 +52,7 @@ class Encoding_Test < Minitest::Test
   end
 
 
-  # In some cases, including the use of Dir.pwd, on Windows the string might
-  # not be UTF-8 encoded
+  # Test that Dir.pwd returns UTF-8 on all platforms (rb_enc_set_default_external forces UTF-8)
   def test_encoding_external
 
     # Go into a temp directory
@@ -77,13 +76,16 @@ class Encoding_Test < Minitest::Test
 
     # Now we chdir into it, and read the value via pwd
     Dir.chdir(File.dirname(s_utf8))
-    # Only Unix, dir_str is UTF-8
+
+    # Unix has always been UTF-8
+    # With Ruby 3.2.2, we got Windows to comply: rb_enc_set_default_external forces UTF-8 even there
     dir_str = Dir.pwd
 
+    # Nowadays, even Windows is good with UTF-8
     if Gem.win_platform?
-      assert_equal(dir_str.encoding, Encoding::Windows_1252)
+      assert_equal(Encoding::UTF_8, dir_str.encoding)
     else
-      assert_equal(dir_str.encoding, Encoding::UTF_8)
+      assert_equal(Encoding::UTF_8, dir_str.encoding)
     end
 
     p_dir = OpenStudio::Path.new(dir_str)

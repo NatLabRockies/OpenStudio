@@ -18,7 +18,7 @@
 #include "../utilities/units/Unit.hpp"
 
 #include "../utilities/core/Assert.hpp"
-#include <math.h>
+#include <cmath>
 
 namespace openstudio {
 namespace model {

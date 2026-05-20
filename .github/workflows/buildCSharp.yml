@@ -48,7 +48,7 @@ jobs:
 #      shell: bash
 #      run: |
 #        rm CMakeLists.txt
-#        aria2c https://raw.githubusercontent.com/NREL/OpenStudio/CSharp/CMakeLists.txt
+#        aria2c https://raw.githubusercontent.com/NatLabRockies/OpenStudio/CSharp/CMakeLists.txt
 #
 #    # Alternatively, if you have made lots of changes, just use this
 #    - name: Soft reset to v3.8.0

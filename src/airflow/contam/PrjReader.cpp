@@ -5,7 +5,7 @@
 
 #include "PrjReader.hpp"
 #include <iostream>
-#include <stdlib.h>
+#include <cstdlib>
 
 #include "../../utilities/core/Logger.hpp"
 #include "../../utilities/core/FilesystemHelpers.hpp"

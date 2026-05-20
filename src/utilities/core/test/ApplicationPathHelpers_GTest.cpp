@@ -8,7 +8,7 @@
 #include "../ApplicationPathHelpers.hpp"
 #include "../PathHelpers.hpp"
 #include "../Logger.hpp"
-#include <stdlib.h>
+#include <cstdlib>
 #include <thread>
 #include <future>
 #include <OpenStudio.hxx>

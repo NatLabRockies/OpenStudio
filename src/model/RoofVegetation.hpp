@@ -8,6 +8,7 @@
 
 #include "ModelAPI.hpp"
 #include "OpaqueMaterial.hpp"
+#include "../utilities/core/Deprecated.hpp"
 
 namespace openstudio {
 
@@ -158,7 +159,8 @@ namespace model {
 
     bool setResidualVolumetricMoistureContent(double value);
 
-    bool setInitialVolumetricMoistureConent(double value);
+    OS_DEPRECATED(3, 11, 0) bool setInitialVolumetricMoistureConent(double value);
+    bool setInitialVolumetricMoistureContent(double value);
 
     bool setMoistureDiffusionCalculationMethod(const std::string& value);
 

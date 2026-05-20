@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <measure>
-  <schema_version>3.0</schema_version>
+  <schema_version>3.1</schema_version>
   <name>python_energyplus_measure_dxf</name>
   <uid>5a5d3f23-10eb-43ec-b845-176bd294410c</uid>
-  <version_id>80536b82-6922-499d-ab0e-8b8164a6aaa6</version_id>
-  <version_modified>20230103T235847Z</version_modified>
+  <version_id>87ac22cc-7be9-4f78-a1d1-b6e9906ce606</version_id>
+  <version_modified>2026-05-19T10:38:03Z</version_modified>
   <xml_checksum>2E99387F</xml_checksum>
   <class_name>PythonEnergyplusMeasureDXF</class_name>
   <display_name>Python EnergyPlusMeasure to produce a DXF</display_name>
@@ -49,6 +49,12 @@
   </attributes>
   <files>
     <file>
+      <filename>LICENSE.md</filename>
+      <filetype>md</filetype>
+      <usage_type>license</usage_type>
+      <checksum>CD7F5672</checksum>
+    </file>
+    <file>
       <version>
         <software_program>OpenStudio</software_program>
         <identifier>3.5.1</identifier>
@@ -57,13 +63,7 @@
       <filename>measure.py</filename>
       <filetype>py</filetype>
       <usage_type>script</usage_type>
-      <checksum>BDDB2A79</checksum>
-    </file>
-    <file>
-      <filename>LICENSE.md</filename>
-      <filetype>md</filetype>
-      <usage_type>license</usage_type>
-      <checksum>CD7F5672</checksum>
+      <checksum>606A9FFD</checksum>
     </file>
   </files>
 </measure>

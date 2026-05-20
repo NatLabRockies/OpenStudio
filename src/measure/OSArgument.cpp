@@ -440,7 +440,7 @@ namespace measure {
 
     } else if (m_type == OSArgumentType::Integer) {
       // Let a double be assigned to an int, only if said double is really an integer expressed as a double
-      const int test = (int)floor(value);
+      const int test = (int)std::floor(value);
       if (test == value) {
         result = setValue(test);
       } else {
@@ -521,7 +521,7 @@ namespace measure {
       result = true;
     } else if (m_type == OSArgumentType::Integer) {
       // Let a double be assigned to an int, only if said double is really an integer expressed as a double
-      const int test = (int)floor(defaultValue);
+      const int test = (int)std::floor(defaultValue);
       if (test == defaultValue) {
         result = setDefaultValue(test);
       } else {
@@ -707,7 +707,7 @@ namespace measure {
 
   bool OSArgument::setMinValue(double minValue) {  // NOLINT(misc-no-recursion)
     if (m_type == OSArgumentType::Integer) {
-      const int test = (int)floor(minValue);
+      const int test = (int)std::floor(minValue);
       if (test == minValue) {
         // If int expressed as double (eg: 1.0 when type = int)
         // Then we call the int overload instead
@@ -765,7 +765,7 @@ namespace measure {
 
   bool OSArgument::setMaxValue(double maxValue) {  // NOLINT(misc-no-recursion)
     if (m_type == OSArgumentType::Integer) {
-      const int test = (int)floor(maxValue);
+      const int test = (int)std::floor(maxValue);
       if (test == maxValue) {
         return setMaxValue(test);
       }

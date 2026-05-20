@@ -66,8 +66,8 @@ namespace model {
       }
 
       double result = coefficient1C1();
-      result += coefficient2C2() * exp(coefficient3C3() * x);
-      result += coefficient4C4() * exp(coefficient5C5() * x);
+      result += coefficient2C2() * std::exp(coefficient3C3() * x);
+      result += coefficient4C4() * std::exp(coefficient5C5() * x);
 
       if (boost::optional<double> _minVal = minimumCurveOutput()) {
         double minVal = _minVal.get();

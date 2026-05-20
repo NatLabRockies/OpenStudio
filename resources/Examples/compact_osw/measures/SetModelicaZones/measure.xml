@@ -3,9 +3,9 @@
   <schema_version>3.1</schema_version>
   <name>set_modelica_zones</name>
   <uid>9e3fe0c1-3309-478f-a117-515c8516926e</uid>
-  <version_id>0d5f0900-967f-4415-aa7f-48b5fddf4ef5</version_id>
-  <version_modified>2025-03-06T22:59:10Z</version_modified>
-  <xml_checksum>00000000</xml_checksum>
+  <version_id>9005fd90-5019-4f58-8c2c-3affb6aecee1</version_id>
+  <version_modified>2026-05-19T10:38:08Z</version_modified>
+  <xml_checksum>FF0F38ED</xml_checksum>
   <class_name>SetModelicaZones</class_name>
   <display_name>SetModelicaZones</display_name>
   <description>DESCRIPTION_TEXT</description>
@@ -36,6 +36,12 @@
       <checksum>CD7F5672</checksum>
     </file>
     <file>
+      <filename>README.md</filename>
+      <filetype>md</filetype>
+      <usage_type>readme</usage_type>
+      <checksum>01DF739F</checksum>
+    </file>
+    <file>
       <filename>README.md.erb</filename>
       <filetype>erb</filetype>
       <usage_type>readmeerb</usage_type>
@@ -51,11 +57,12 @@
       <version>
         <software_program>OpenStudio</software_program>
         <identifier>3.9.1</identifier>
+        <min_compatible>3.9.1</min_compatible>
       </version>
       <filename>measure.rb</filename>
       <filetype>rb</filetype>
       <usage_type>script</usage_type>
-      <checksum>00000000</checksum>
+      <checksum>2797315A</checksum>
     </file>
     <file>
       <filename>set_modelica_zones_test.rb</filename>

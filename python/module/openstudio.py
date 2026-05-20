@@ -52,8 +52,13 @@ else:
         # This allows finding openstudiolib.dll and the msvc ones in the bin/ folder while we're in the Python/ folder
         # Otherwise you'd have to manually copy these DLLs from bin/ to Python/
         bin_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'bin'))
-        if os.path.isdir(bin_dir):
+        if os.path.isfile(os.path.join(bin_dir, 'openstudiolib.dll')):
             os.add_dll_directory(bin_dir)
+        else:
+            # Build tree: Products/python/ — DLLs live one level up in Products/
+            products_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+            if os.path.isfile(os.path.join(products_dir, 'openstudiolib.dll')):
+                os.add_dll_directory(products_dir)
 
     import openstudioairflow as airflow
     import openstudioenergyplus as energyplus

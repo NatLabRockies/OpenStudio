@@ -139,7 +139,7 @@ namespace energyplus {
         // Write out the current entry
         Time time(0, 0, 0, secondsFromStartOfDay);
         int hours = time.hours();
-        int minutes = time.minutes() + (int)floor((time.seconds() / 60.0) + 0.5);
+        int minutes = time.minutes() + (int)std::floor((time.seconds() / 60.0) + 0.5);
         // This is a little dangerous, but all of the problematic 24:00
         // times that might need to cause a day++ should be caught above.
         if (minutes == 60) {

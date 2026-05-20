@@ -1,8 +1,11 @@
+name: Full Build
+
 on:
   push:
     branches:
       - develop
       - master
+      - os-4.0-dev
     tags:
       - "v*"
   schedule:
@@ -13,6 +16,8 @@ on:
     branches:
       - develop
       - master
+      - os-4.0-dev
+
     types: [ opened, reopened, synchronize ]
   workflow_dispatch:
     inputs:
@@ -74,6 +79,7 @@ env:
   SCCACHE_GHA_ENABLED: "false"
   SCCACHE_DIR: "${{ github.workspace }}\\.sccache"
   SCCACHE_CACHE_SIZE: "10G"
+  ENABLE_PCH: ON
 
 jobs:
   linux-build:
@@ -103,7 +109,7 @@ jobs:
               *OpenStudio*x86_64.tar.gz
             cpack_generators: "RPM;TGZ"
             max_jobs: 4
-            exclude_regex: "BCLFixture.RemoteBCLMetaSearchTest|BCLFixture.BCLMeasure|BCLFixture.RemoteBCL_BCLSearchResult"
+            exclude_regex: "BCLFixture.RemoteBCLMetaSearchTest"
           - platform: ubuntu-2204-x64
             pretty: Ubuntu 22.04 x64
             os: ubuntu-22.04
@@ -117,7 +123,7 @@ jobs:
               *OpenStudio*x86_64.tar.gz
             cpack_generators: "DEB;TGZ"
             max_jobs: 3
-            exclude_regex: "ModelFixture.PythonPluginInstance_NotPYFile|BCLFixture.BCLMeasure|BCLFixture.RemoteBCL_BCLSearchResult"
+            exclude_regex: "ModelFixture.PythonPluginInstance_NotPYFile"
           - platform: ubuntu-2404-x64
             pretty: Ubuntu 24.04 x64
             os: ubuntu-24.04
@@ -131,7 +137,7 @@ jobs:
               *OpenStudio*x86_64.tar.gz
             cpack_generators: "DEB;TGZ"
             max_jobs: 4
-            exclude_regex: "BCLFixture.(BCLMeasure|RemoteBCL_BCLSearchResult)"
+            exclude_regex: ""
           - platform: ubuntu-2204-arm64
             pretty: Ubuntu 22.04 ARM64
             os: ubuntu-22.04-arm
@@ -145,7 +151,8 @@ jobs:
               *OpenStudio*arm64.tar.gz
             cpack_generators: "DEB;TGZ"
             max_jobs: 3
-            exclude_regex: "GeometryFixture.Plane_RayIntersection|ISOModelFixture.SimModel|SqlFileFixture.AnnualTotalCosts|OpenStudioCLI.*test_measure_manager|BCLFixture.BCLMeasure|BCLFixture.RemoteBCL_BCLSearchResult"
+            # SqlFileFixture.AnnualTotalCosts needed until E+ itself disables ffp-contract on arm64 GCC
+            exclude_regex: "SqlFileFixture.AnnualTotalCosts|OpenStudioCLI.*test_measure_manager"
           - platform: ubuntu-2404-arm64
             pretty: Ubuntu 24.04 ARM64
             os: ubuntu-24.04-arm
@@ -159,7 +166,8 @@ jobs:
               *OpenStudio*arm64.tar.gz
             cpack_generators: "DEB;TGZ"
             max_jobs: 4
-            exclude_regex: "GeometryFixture.Plane_RayIntersection|ISOModelFixture.SimModel|SqlFileFixture.AnnualTotalCosts|OpenStudioCLI.*test_measure_manager|BCLFixture.BCLMeasure|BCLFixture.RemoteBCL_BCLSearchResult"
+            # SqlFileFixture.AnnualTotalCosts needed until E+ itself disables ffp-contract on arm64 GCC
+            exclude_regex: "SqlFileFixture.AnnualTotalCosts|OpenStudioCLI.*test_measure_manager"
     defaults:
       run:
         shell: bash
@@ -331,6 +339,7 @@ jobs:
             -DPython_EXECUTABLE:FILEPATH="$SYSTEM_PYTHON_PATH" \
             -DPYTHON_VERSION:STRING=${{ env.PYTHON_REQUIRED_VERSION }} \
             -DSYSTEM_RUBY_EXECUTABLE="$SYSTEM_RUBY_PATH" \
+            -DENABLE_PCH:BOOL=${{ env.ENABLE_PCH }} \
             -DCMAKE_JOB_POOL_LINK:STRING=console
 
       - name: Build with Ninja
@@ -617,9 +626,9 @@ jobs:
           echo "Docker Image Tag: $DOCKER_IMAGE_TAG"
 
           # Trigger Workflow
-          echo "Triggering manual_update_develop workflow in NREL/docker-openstudio..."
+          echo "Triggering manual_update_develop workflow in NatLabRockies/docker-openstudio..."
           gh workflow run 'manual_update_develop' \
-            --repo NREL/docker-openstudio \
+            --repo NatLabRockies/docker-openstudio \
             --ref develop \
             -f docker_image_tag="$DOCKER_IMAGE_TAG" \
             -f os_installer_link="$BINARY_URL" \
@@ -650,7 +659,7 @@ jobs:
             python-arch: x64
             dmg_glob: "*.dmg"
             tar_glob: "*OpenStudio*x86_64.tar.gz"
-            exclude_regex: "BCLFixture.(BCLMeasure|RemoteBCL_BCLSearchResult)"
+            exclude_regex: ""
             max_jobs: 3
           - macos_dev_target: "13.0"
             platform: macos-arm64
@@ -662,7 +671,7 @@ jobs:
             python-arch: arm64
             dmg_glob: "*.dmg"
             tar_glob: "*OpenStudio*arm64.tar.gz"
-            exclude_regex: "GeometryFixture.Plane_RayIntersection|ISOModelFixture.SimModel|BCLFixture.BCLMeasure|BCLFixture.RemoteBCL_BCLSearchResult"
+            exclude_regex: ""
             max_jobs: 3
     env:
       MAX_BUILD_THREADS: ${{ matrix.max_jobs }}
@@ -861,6 +870,7 @@ jobs:
           -DBUILD_PYTHON_PIP_PACKAGE:BOOL=OFF \
           -DPYTHON_VERSION:STRING=${{ env.PYTHON_REQUIRED_VERSION }} \
           -DPython_ROOT_DIR:PATH="$(dirname $(dirname $SYSTEM_PYTHON_PATH))" \
+          -DENABLE_PCH:BOOL=${{ env.ENABLE_PCH }} \
           -DCMAKE_JOB_POOL_LINK:STRING=console \
           ../${{ env.OPENSTUDIO_SOURCE }}
 
@@ -1219,7 +1229,7 @@ jobs:
             python-arch: x64
             allow_failure: false
             max_jobs: 4
-            exclude_regex: "RubyTest-Date_Test-ymd_constructor|BCLFixture.BCLMeasure|BCLFixture.RemoteBCL_BCLSearchResult"
+            exclude_regex: ""
     defaults:
       run:
         shell: pwsh
@@ -1253,32 +1263,6 @@ jobs:
           key: sccache-${{ matrix.os }}-${{ matrix.platform }}-${{ hashFiles('conan.lock') }}
           restore-keys: |
             sccache-${{ matrix.os }}-${{ matrix.platform }}-
-
-      - name: Patch tests for Windows
-        working-directory: ${{ env.OPENSTUDIO_SOURCE }}
-        run: |
-          # Patch openstudio.py for build tree DLL loading
-          $os_py = "python/module/openstudio.py"
-          if (Test-Path $os_py) {
-            $content = Get-Content $os_py
-            $new_content = @()
-            foreach ($line in $content) {
-                $new_content += $line
-                if ($line -match "os.add_dll_directory\(bin_dir\)") {
-                    $new_content += "        products_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))"
-                    $new_content += "        if os.path.isdir(products_dir) and os.path.isfile(os.path.join(products_dir, 'openstudio_utilities.dll')):"
-                    $new_content += "            os.add_dll_directory(products_dir)"
-                    $new_content += "        # Add PATH to DLL search, needed for Conan dependencies on Python 3.8+"
-                    $new_content += "        for p in os.environ['PATH'].split(';'):"
-                    $new_content += "            if p and os.path.isdir(p):"
-                    $new_content += "                try:"
-                    $new_content += "                    os.add_dll_directory(p)"
-                    $new_content += "                except:"
-                    $new_content += "                    pass"
-                }
-            }
-            $new_content | Set-Content $os_py
-          }
 
       - name: Prepare workspace
         run: |
@@ -1319,41 +1303,10 @@ jobs:
           ruby-version: '3.2.2'
           bundler-cache: true
 
-      - name: Install System dependencies and LaTeX
-        shell: bash
-        run: |
-          set -x
-          echo "Downloading MiKTeX CLI installer"
-          # We download from a specific mirror already # TODO: Should store this setup package somewhere ourselves
-          curl -L -O --retry 5 --retry-connrefused https://ctan.math.utah.edu/ctan/tex-archive/systems/win32/miktex/setup/windows-x64/miktexsetup-5.5.0%2B1763023-x64.zip
-          unzip miktexsetup-5.5.0%2B1763023-x64.zip
-
-          echo "Setting up the local package directory via download"
-          ./miktexsetup_standalone.exe --verbose \
-              --local-package-repository=C:/ProgramData/MiKTeX-Repo \
-              --remote-package-repository="https://ctan.math.utah.edu/ctan/tex-archive/systems/win32/miktex/tm/packages/" \
-              --package-set=essential \
-              download
-
-          echo "Installing from the local package directory previously set up"
-          ./miktexsetup_standalone.exe --verbose \
-              --local-package-repository=C:/ProgramData/MiKTeX-Repo \
-              --package-set=essential \
-              --shared \
-              install
-
-          echo "Adding MiKTeX bin folder to PATH and to GITHUB_PATH"
-          echo "C:/Program Files/MiKTeX/miktex/bin/x64/" >> $GITHUB_PATH
-          export PATH="/c/Program Files/MiKTeX/miktex/bin/x64/:$PATH"
-
-          echo "Configuring MiKTeX to install missing packages on the fly"
-          initexmf --admin --verbose --set-config-value='[MPM]AutoInstall=1'
-
-          echo "Configure default mirror for packages"
-          mpm --admin --set-repository="https://ctan.math.utah.edu/ctan/tex-archive/systems/win32/miktex/tm/packages/"
-          # Avoid annoying warning: "xelatex: major issue: So far, you have not checked for updates as a MiKTeX user."
-          mpm --find-updates
-          mpm --admin --find-updates
+      - name: Setup QtIFW 4.x
+        uses: jmarrec/setup-qtifw@v1
+        with:
+          qtifw-version: '4.8.1'
 
       - name: Create Build Directory
         run: cmake -E make_directory ${{ env.OPENSTUDIO_BUILD }}
@@ -1404,7 +1357,7 @@ jobs:
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         run: |
           $sccacheExe = (Get-Command sccache).Source
-          & $env:ComSpec /c "call conanbuild.bat && cmake -G Ninja -DCMAKE_C_COMPILER_LAUNCHER=`"$sccacheExe`" -DCMAKE_CXX_COMPILER_LAUNCHER=`"$sccacheExe`" -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE:STRING=${{ env.BUILD_TYPE }} -DBUILD_TESTING:BOOL=ON -DCPACK_GENERATOR:STRING=`"NSIS;TGZ`" -DBUILD_PYTHON_BINDINGS:BOOL=ON -DBUILD_PYTHON_PIP_PACKAGE:BOOL=OFF -DPython_EXECUTABLE:FILEPATH=`"$env:SYSTEM_PYTHON_PATH`" -DPYTHON_VERSION:STRING=${{ env.PYTHON_REQUIRED_VERSION }} -DSYSTEM_RUBY_EXECUTABLE=`"%SYSTEM_RUBY_PATH%`" -DCMAKE_JOB_POOL_LINK:STRING=console `"../${{ env.OPENSTUDIO_SOURCE }}"`"
+          & $env:ComSpec /c "call conanbuild.bat && cmake -G Ninja -DCMAKE_C_COMPILER_LAUNCHER=`"$sccacheExe`" -DCMAKE_CXX_COMPILER_LAUNCHER=`"$sccacheExe`" -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE:STRING=${{ env.BUILD_TYPE }} -DBUILD_TESTING:BOOL=ON -DCPACK_GENERATOR:STRING=`"IFW;TGZ`" -DBUILD_PYTHON_BINDINGS:BOOL=ON -DBUILD_PYTHON_PIP_PACKAGE:BOOL=OFF -DPython_EXECUTABLE:FILEPATH=`"$env:SYSTEM_PYTHON_PATH`" -DPYTHON_VERSION:STRING=${{ env.PYTHON_REQUIRED_VERSION }} -DSYSTEM_RUBY_EXECUTABLE=`"%SYSTEM_RUBY_PATH%`" -DENABLE_PCH:BOOL=${{ env.ENABLE_PCH }} -DCMAKE_JOB_POOL_LINK:STRING=console `"../${{ env.OPENSTUDIO_SOURCE }}"`"
 
       - name: Build with Ninja
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
@@ -1452,10 +1405,6 @@ jobs:
               }
             }
           }
-
-          # Add build Products directory to Path so Python can find _openstudioairflow.pyd and its dependencies
-          $products_dir = Join-Path (Get-Location) "Products"
-          $env:Path = "$products_dir;" + $env:Path
 
           # Conflicting tests that must run sequentially
           $resource_locked_tests = @(

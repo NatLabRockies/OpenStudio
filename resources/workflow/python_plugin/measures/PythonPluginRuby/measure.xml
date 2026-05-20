@@ -3,8 +3,8 @@
   <schema_version>3.1</schema_version>
   <name>python_plugin_ruby</name>
   <uid>42a4a936-5f9a-48fd-9157-e4981b9a9dca</uid>
-  <version_id>3c230ca8-d85a-49bf-b4fb-4addb24d940b</version_id>
-  <version_modified>2024-02-16T08:51:46Z</version_modified>
+  <version_id>01181c3c-e3f3-4524-8ad1-2902b9bab12a</version_id>
+  <version_modified>2026-05-19T10:38:25Z</version_modified>
   <xml_checksum>5872977E</xml_checksum>
   <class_name>PythonPluginRuby</class_name>
   <display_name>Python Plugin Ruby.</display_name>
@@ -53,7 +53,7 @@
       <filename>measure.rb</filename>
       <filetype>rb</filetype>
       <usage_type>script</usage_type>
-      <checksum>A35AA6E2</checksum>
+      <checksum>52919D55</checksum>
     </file>
     <file>
       <filename>python_plugin_program.csv</filename>
@@ -65,7 +65,7 @@
       <filename>python_plugin_program.py.erb</filename>
       <filetype>erb</filetype>
       <usage_type>resource</usage_type>
-      <checksum>C734EFAE</checksum>
+      <checksum>E6458563</checksum>
     </file>
   </files>
 </measure>

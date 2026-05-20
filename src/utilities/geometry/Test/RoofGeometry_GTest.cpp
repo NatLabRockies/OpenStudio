@@ -9,7 +9,7 @@
 #include "../Intersection.hpp"
 #include "../Point3d.hpp"
 #include "GeometryFixture.hpp"
-#include <math.h>
+#include <cmath>
 
 using namespace openstudio;
 

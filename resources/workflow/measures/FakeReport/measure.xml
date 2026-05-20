@@ -3,8 +3,8 @@
   <schema_version>3.1</schema_version>
   <name>fake_report</name>
   <uid>ca6ba362-ea57-4236-b803-17e37b0c0817</uid>
-  <version_id>32617b1d-91b1-4325-9a3a-0708b9853d29</version_id>
-  <version_modified>2023-11-13T17:08:41Z</version_modified>
+  <version_id>83d23a22-5913-46b5-bf9e-735e3dcbf554</version_id>
+  <version_modified>2026-05-19T10:38:19Z</version_modified>
   <xml_checksum>B2AD275E</xml_checksum>
   <class_name>FakeReport</class_name>
   <display_name>Fake Report</display_name>
@@ -51,7 +51,7 @@
       <filename>measure.rb</filename>
       <filetype>rb</filetype>
       <usage_type>script</usage_type>
-      <checksum>4CFB5158</checksum>
+      <checksum>66B84DCA</checksum>
     </file>
   </files>
 </measure>

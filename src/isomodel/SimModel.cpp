@@ -1058,7 +1058,7 @@ if T_ht_ctrl_flag ==1  % if the HVAC heating controls are turned on.*/
       Vector v_Tstart(v_ht_tset_ctrl);
       for (size_t i = 0; i < M_Ta.size2(); i++) {
         for (size_t j = 0; j < M_Ta.size1(); j++) {
-          v_Tstart(j) = M_Ta(j, i) = (v_Tstart(j) - M_Te(j, i) - M_dT(j, i)) * exp(-1 * v_ti(i) / tau) + M_Te(j, i) + M_dT(j, i);
+          v_Tstart(j) = M_Ta(j, i) = (v_Tstart(j) - M_Te(j, i) - M_dT(j, i)) * std::exp(-1 * v_ti(i) / tau) + M_Te(j, i) + M_dT(j, i);
         }
       }
 
@@ -1069,7 +1069,7 @@ if T_ht_ctrl_flag ==1  % if the HVAC heating controls are turned on.*/
     M_Ta=zeros(12,4);
     v_Tstart=v_ht_tset_ctrl;
     for I=1:4
-        M_Ta(:,I)=(v_Tstart - M_Te(:,I) - M_dT(:,I)).*exp(-v_ti(I)./tau)+M_Te(:,I)+M_dT(:,I);
+        M_Ta(:,I)=(v_Tstart - M_Te(:,I) - M_dT(:,I)).*std::exp(-v_ti(I)./tau)+M_Te(:,I)+M_dT(:,I);
         v_Tstart=M_Ta(:,I);
     end
       */
@@ -1106,7 +1106,7 @@ if T_ht_ctrl_flag ==1  % if the HVAC heating controls are turned on.*/
 
       for (size_t i = 0; i < M_Tb.size2(); i++) {
         for (size_t j = 0; j < M_Tb.size1(); j++) {
-          double v_T_avg = tau / v_ti(i) * (M_Taa(j, i) - M_Te(j, i) - M_dT(j, i)) * (1 - exp(-1 * v_ti(i) / tau)) + M_Te(j, i) + M_dT(j, i);
+          double v_T_avg = tau / v_ti(i) * (M_Taa(j, i) - M_Te(j, i) - M_dT(j, i)) * (1 - std::exp(-1 * v_ti(i) / tau)) + M_Te(j, i) + M_dT(j, i);
           M_Tb(j, i) = std::max(v_T_avg, ht_tset_unocc);
         }
       }
@@ -1127,7 +1127,7 @@ if T_ht_ctrl_flag ==1  % if the HVAC heating controls are turned on.*/
     % ending temp and assuming exponential decay of temps
     %v_t_start=M_Taa(:,1);
     for I=1:5 % loop through wk nt to wke day to wke nt to wke day to wke nt
-        v_T_avg=tau./v_ti(I).*(M_Taa(:,I) - M_Te(:,I) -M_dT(:,I)).*(1-exp(-v_ti(I)/tau)) + M_Te(:,I) +M_dT(:,I);
+        v_T_avg=tau./v_ti(I).*(M_Taa(:,I) - M_Te(:,I) -M_dT(:,I)).*(1-std::exp(-v_ti(I)/tau)) + M_Te(:,I) +M_dT(:,I);
         M_Tb(:,I) = max(v_T_avg,ht_tset_unocc);
     end
 
@@ -1154,7 +1154,7 @@ end*/
       Vector v_Tstart(v_cl_tset_ctrl);
       for (size_t i = 0; i < M_Tc.size2(); i++) {
         for (size_t j = 0; j < M_Tc.size1(); j++) {
-          v_Tstart(j) = M_Tc(j, i) = (v_Tstart(j) - M_Te(j, i) - M_dT(j, i)) * exp(-1 * v_ti(i) / tau) + M_Te(j, i) + M_dT(j, i);
+          v_Tstart(j) = M_Tc(j, i) = (v_Tstart(j) - M_Te(j, i) - M_dT(j, i)) * std::exp(-1 * v_ti(i) / tau) + M_Te(j, i) + M_dT(j, i);
         }
       }
       /*
@@ -1163,7 +1163,7 @@ if T_cl_ctrl_flag ==1  % if the HVAC cooling controls are on
     M_Tc=zeros(12,4);
     v_Tstart=v_cl_tset_ctrl;
     for I=1:4
-        M_Tc(:,I)=(v_Tstart - M_Te(:,I) - M_dT(:,I)).*exp(-v_ti(I)/tau)+M_Te(:,I)+M_dT(:,I);
+        M_Tc(:,I)=(v_Tstart - M_Te(:,I) - M_dT(:,I)).*std::exp(-v_ti(I)/tau)+M_Te(:,I)+M_dT(:,I);
         v_Tstart=M_Tc(:,I);
     end
     */
@@ -1191,7 +1191,7 @@ if T_cl_ctrl_flag ==1  % if the HVAC cooling controls are on
 
       for (size_t i = 0; i < M_Td.size2(); i++) {
         for (size_t j = 0; j < M_Td.size1(); j++) {
-          double v_T_avg = tau / v_ti(i) * (M_Tcc(j, i) - M_Te(j, i) - M_dT(j, i)) * (1 - exp(-1 * v_ti(i) / tau)) + M_Te(j, i) + M_dT(j, i);
+          double v_T_avg = tau / v_ti(i) * (M_Tcc(j, i) - M_Te(j, i) - M_dT(j, i)) * (1 - std::exp(-1 * v_ti(i) / tau)) + M_Te(j, i) + M_dT(j, i);
           M_Td(j, i) = std::max(v_T_avg, cl_tset_unocc);
         }
       }
@@ -1212,7 +1212,7 @@ if T_cl_ctrl_flag ==1  % if the HVAC cooling controls are on
     %v_t_start=M_Tcc(:,1);
     M_Td=zeros(12,5);
     for I=1:5
-        v_T_avg=tau./v_ti(I).*(M_Tcc(:,I) - M_Te(:,I) -M_dT(:,I)).*(1-exp(-v_ti(I)/tau)) + M_Te(:,I) +M_dT(:,I);
+        v_T_avg=tau./v_ti(I).*(M_Tcc(:,I) - M_Te(:,I) -M_dT(:,I)).*(1-std::exp(-v_ti(I)/tau)) + M_Te(:,I) +M_dT(:,I);
         M_Td(:,I) = min(v_T_avg,cl_tset_unocc);
     end
 
@@ -1312,7 +1312,7 @@ tot_env_A=sum(In.wall_area)+sum(In.win_area);
     double n_stack_coeff = 0.0146;
     Vector dbtDiff = dif(location->weather()->mdbt(), v_Th_avg);
     printVector("dbtDiff", dbtDiff);
-    Vector dbtDiffAbs = abs(dbtDiff);
+    Vector dbtDiffAbs = isomodel::abs(dbtDiff);
     printVector("dbtDiffAbs", dbtDiffAbs);
     Vector dbtHStack = mult(dbtDiffAbs, h_stack);
     printVector("dbtHstack", dbtHStack);
@@ -1324,7 +1324,7 @@ tot_env_A=sum(In.wall_area)+sum(In.win_area);
     Vector v_qv_stack_ht = maximum(dbtMultQ4, 0.001);  //%qv_stack_heating m3/h/m2
     dbtDiff = dif(location->weather()->mdbt(), v_Tc_avg);
     printVector("dbtDiff", dbtDiff);
-    dbtDiffAbs = abs(dbtDiff);
+    dbtDiffAbs = isomodel::abs(dbtDiff);
     printVector("dbtDiffAbs", dbtDiffAbs);
     dbtHStack = mult(dbtDiffAbs, h_stack);
     printVector("dbtHstack", dbtHStack);
@@ -1353,8 +1353,8 @@ h_stack=n_zone_frac.*vent_zone_height;  % get the effective stack height for inf
 % calculate the infiltration from stack effect pressure difference from EN 15242: sec 6.7.1
 n_stack_exp=0.667;  % reset the pressure exponent to 0.667 for this part of the calc
 n_stack_coeff=0.0146;
-v_qv_stack_ht=max(n_stack_coeff.*v_Q4pa*(h_stack.*abs(W.mdbt-v_Th_avg)).^n_stack_exp,0.001); %qv_stack_heating m3/h/m2
-v_qv_stack_cl=max(n_stack_coeff.*v_Q4pa*(h_stack.*abs(W.mdbt-v_Tc_avg)).^n_stack_exp,0.001); %qv_stack_cooling
+v_qv_stack_ht=max(n_stack_coeff.*v_Q4pa*(h_stack.*std::abs(W.mdbt-v_Th_avg)).^n_stack_exp,0.001); %qv_stack_heating m3/h/m2
+v_qv_stack_cl=max(n_stack_coeff.*v_Q4pa*(h_stack.*std::abs(W.mdbt-v_Tc_avg)).^n_stack_exp,0.001); %qv_stack_cooling
 */
     double n_wind_exp = 0.667;
     double n_wind_coeff = 0.0769;

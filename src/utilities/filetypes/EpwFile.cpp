@@ -41,7 +41,7 @@ static double psat(double T) {
   } else {
     rhs = C8 / T + C9 + T * (C10 + T * (C11 + T * C12)) + C13 * std::log(T);
   }
-  return exp(rhs);
+  return std::exp(rhs);
 }
 
 static double psatp(double T, double psat) {

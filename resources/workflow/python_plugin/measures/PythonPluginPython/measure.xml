@@ -3,8 +3,8 @@
   <schema_version>3.1</schema_version>
   <name>python_plugin_python</name>
   <uid>42a4a936-5f9a-48fd-9157-e4981b9a9dca</uid>
-  <version_id>c8974060-b00b-4110-917e-6d88e8fa345b</version_id>
-  <version_modified>2024-02-16T08:52:12Z</version_modified>
+  <version_id>f6151ca5-1fe6-4fee-9a2c-de276790e1fc</version_id>
+  <version_modified>2026-05-19T10:38:23Z</version_modified>
   <xml_checksum>33A29C78</xml_checksum>
   <class_name>PythonPluginPython</class_name>
   <display_name>Python Plugin Python.</display_name>
@@ -53,7 +53,7 @@
       <filename>measure.py</filename>
       <filetype>py</filetype>
       <usage_type>script</usage_type>
-      <checksum>1AF145E8</checksum>
+      <checksum>61B67AD6</checksum>
     </file>
     <file>
       <filename>python_plugin_program.csv</filename>
@@ -65,7 +65,7 @@
       <filename>python_plugin_program.py.jinja</filename>
       <filetype>jinja</filetype>
       <usage_type>resource</usage_type>
-      <checksum>2A5E9738</checksum>
+      <checksum>1B737DA3</checksum>
     </file>
   </files>
 </measure>

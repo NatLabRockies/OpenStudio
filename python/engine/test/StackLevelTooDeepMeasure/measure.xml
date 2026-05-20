@@ -3,8 +3,8 @@
   <schema_version>3.1</schema_version>
   <name>stack_level_too_deep_measure</name>
   <uid>22222222-c89b-4b93-b400-220ca060b2bb</uid>
-  <version_id>c2e1967b-0672-4e80-84fd-9204e701f10a</version_id>
-  <version_modified>2023-11-10T14:04:04Z</version_modified>
+  <version_id>e55e7d3a-973f-4fbf-95d4-b6b879159753</version_id>
+  <version_modified>2026-05-19T10:37:47Z</version_modified>
   <xml_checksum>4EDA3A53</xml_checksum>
   <class_name>StackLevelTooDeepMeasure</class_name>
   <display_name>Stack Level Too Deep Measure</display_name>
@@ -53,7 +53,7 @@
       <filename>measure.py</filename>
       <filetype>py</filetype>
       <usage_type>script</usage_type>
-      <checksum>C952AC5B</checksum>
+      <checksum>F4B14301</checksum>
     </file>
   </files>
 </measure>

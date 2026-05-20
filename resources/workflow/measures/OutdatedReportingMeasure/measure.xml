@@ -3,8 +3,8 @@
   <schema_version>3.1</schema_version>
   <name>outdated_reporting_measure</name>
   <uid>681fa83e-57e1-439b-8bef-d3d234ac6f68</uid>
-  <version_id>ed691a5a-2114-4635-b462-cde7102e0df1</version_id>
-  <version_modified>2023-11-15T20:56:44Z</version_modified>
+  <version_id>798f7bdb-aada-4087-a776-23b7771fa30a</version_id>
+  <version_modified>2026-05-19T10:38:20Z</version_modified>
   <xml_checksum>C3203FCF</xml_checksum>
   <class_name>OutdatedReportingMeasure</class_name>
   <display_name>Outdated Reporting Measure</display_name>
@@ -57,7 +57,7 @@
       <filename>measure.rb</filename>
       <filetype>rb</filetype>
       <usage_type>script</usage_type>
-      <checksum>11D2080F</checksum>
+      <checksum>C13A2C3B</checksum>
     </file>
   </files>
 </measure>

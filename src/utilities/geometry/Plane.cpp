@@ -98,7 +98,7 @@ Plane::Plane(const std::vector<Point3d>& points) : m_a(0.0), m_b(0.0), m_c(0.0),
           // a^2 + b^2 + c^2 = 1
           // c^2*(a_c^2 + b_c^2 + 1) = 1
 
-          m_c = 1.0 / sqrt(a_c * a_c + b_c * b_c + 1.0);
+          m_c = 1.0 / std::sqrt(a_c * a_c + b_c * b_c + 1.0);
           m_a = a_c * m_c;
           m_b = b_c * m_c;
           m_d = d_c * m_c - m_a * points[0].x() - m_b * points[0].y() - m_c * points[0].z();
@@ -140,7 +140,7 @@ Plane::Plane(const std::vector<Point3d>& points) : m_a(0.0), m_b(0.0), m_c(0.0),
           // a^2 + b^2 + c^2 = 1
           // b^2*(a_b^2 + c_b^2 + 1) = 1
 
-          m_b = 1.0 / sqrt(a_b * a_b + c_b * c_b + 1.0);
+          m_b = 1.0 / std::sqrt(a_b * a_b + c_b * c_b + 1.0);
           m_a = a_b * m_b;
           m_c = c_b * m_b;
           m_d = d_b * m_b - m_a * points[0].x() - m_b * points[0].y() - m_c * points[0].z();
@@ -181,7 +181,7 @@ Plane::Plane(const std::vector<Point3d>& points) : m_a(0.0), m_b(0.0), m_c(0.0),
           // a^2 + b^2 + c^2 = 1
           // a^2*(b_a^2 + c_a^2 + 1) = 1
 
-          m_a = 1.0 / sqrt(b_a * b_a + c_a * c_a + 1.0);
+          m_a = 1.0 / std::sqrt(b_a * b_a + c_a * c_a + 1.0);
           m_b = b_a * m_a;
           m_c = c_a * m_a;
           m_d = d_a * m_a - m_a * points[0].x() - m_b * points[0].y() - m_c * points[0].z();
@@ -236,7 +236,7 @@ bool Plane::parallel(const Plane& other, double tol) const {
 }
 
 // is this plane equal to the other plane
-// true if dot product of outward normals is >= (1-tol) and abs(d1-d2) <= tol
+// true if dot product of outward normals is >= (1-tol) and std::abs(d1-d2) <= tol
 bool Plane::equal(const Plane& other, double tol) const {
   const double thisDot = (m_a * other.a() + m_b * other.b() + m_c * other.c());
   const double dist = m_d - other.d();
@@ -245,7 +245,7 @@ bool Plane::equal(const Plane& other, double tol) const {
 }
 
 // is this plane reverse equal to the other plane
-// true if dot product of outward normals is <= (-1+tol) and abs(d1+d2) <= tol
+// true if dot product of outward normals is <= (-1+tol) and std::abs(d1+d2) <= tol
 bool Plane::reverseEqual(const Plane& other, double tol) const {
   const double thisDot = (m_a * other.a() + m_b * other.b() + m_c * other.c());
   const double dist = m_d + other.d();

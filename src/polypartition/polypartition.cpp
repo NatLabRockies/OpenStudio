@@ -18,9 +18,9 @@
 //OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //THE SOFTWARE.
 
-#include <stdio.h>
-#include <string.h>
-#include <math.h>
+#include <cstdio>
+#include <cstring>
+#include <cmath>
 #include <list>
 #include <algorithm>
 #include <set>
@@ -129,7 +129,7 @@ TPPLPartition::PartitionVertex::PartitionVertex() : previous(NULL), next(NULL) {
 
 TPPLPoint TPPLPartition::Normalize(const TPPLPoint& p) {
   TPPLPoint r;
-  tppl_float n = sqrt(p.x * p.x + p.y * p.y);
+  tppl_float n = std::sqrt(p.x * p.x + p.y * p.y);
   if (n != 0) {
     r = p / n;
   } else {
@@ -144,7 +144,7 @@ tppl_float TPPLPartition::Distance(const TPPLPoint& p1, const TPPLPoint& p2) {
   tppl_float dy;
   dx = p2.x - p1.x;
   dy = p2.y - p1.y;
-  return (sqrt(dx * dx + dy * dy));
+  return (std::sqrt(dx * dx + dy * dy));
 }
 
 //checks if two lines intersect
@@ -1338,7 +1338,7 @@ int TPPLPartition::ConvexPartition_OPT(TPPLPoly* poly, TPPLPolyList* parts) {
 }
 
 //triangulates a set of polygons by first partitioning them into monotone polygons
-//O(n*log(n)) time complexity, O(n) space complexity
+//O(n*std::log(n)) time complexity, O(n) space complexity
 //the algorithm used here is outlined in the book
 //"Computational Geometry: Algorithms and Applications"
 //by Mark de Berg, Otfried Cheong, Marc van Kreveld and Mark Overmars

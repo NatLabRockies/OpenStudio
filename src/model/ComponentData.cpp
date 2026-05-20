@@ -15,7 +15,7 @@
 
 #include "../utilities/core/Assert.hpp"
 
-#include <time.h>
+#include <ctime>
 
 namespace openstudio {
 namespace model {

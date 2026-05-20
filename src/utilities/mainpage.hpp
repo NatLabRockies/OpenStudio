@@ -48,7 +48,7 @@ namespace openstudio {
  *  \li Used throughout: Assert.hpp, Compare.hpp, Containers.hpp, Enum.hpp, FileLogSink.hpp,
  *      Logger.hpp, LogMessage.hpp, Optional.hpp, Path.hpp, PathHelpers.hpp, String.hpp, UUID.hpp
  *  \li Used more sparingly: Application.hpp, ApplicationPathHelpers.hpp, Checksum.hpp,
- *      CommandLine.hpp, EnumHelpers.hpp, Exception.hpp, FileReference.hpp, Finder.hpp,
+ *      EnumHelpers.hpp, Exception.hpp, FileReference.hpp, Finder.hpp,
  *      PathWatcher.hpp, Queue.hpp,
  *      StringHelpers.hpp, StringStreamLogSink.hpp, System.hpp, UnzipFile.hpp
  *      URLHelpers.hpp, ZipFile.hpp

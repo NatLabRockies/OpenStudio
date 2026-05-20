@@ -15,9 +15,9 @@ namespace openstudio {
 int floor0(double value) {
   int result(0);
   if (value < 0.0) {
-    result = static_cast<int>(ceil(value));
+    result = static_cast<int>(std::ceil(value));
   } else {
-    result = static_cast<int>(floor(value));
+    result = static_cast<int>(std::floor(value));
   };
   return result;
 }

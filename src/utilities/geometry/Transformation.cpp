@@ -78,7 +78,7 @@ Transformation Transformation::rotation(const Vector3d& axis, double radians) {
   Q(2, 1) = normalVector(0);
 
   // rotation matrix
-  Matrix R = I * cos(radians) + (1 - cos(radians)) * P + Q * sin(radians);
+  Matrix R = I * std::cos(radians) + (1 - std::cos(radians)) * P + Q * std::sin(radians);
 
   for (unsigned i = 0; i < 3; ++i) {
     for (unsigned j = 0; j < 3; ++j) {
@@ -237,16 +237,16 @@ EulerAngles Transformation::eulerAngles() const {
   if (m_storage(2, 0) == 1.0) {
     phi = 0;
     theta = -boost::math::constants::pi<double>() / 2.0;
-    psi = atan2(-m_storage(0, 1), -m_storage(0, 2));
+    psi = std::atan2(-m_storage(0, 1), -m_storage(0, 2));
   } else if (m_storage(2, 0) == -1.0) {
     phi = 0;
     theta = boost::math::constants::pi<double>() / 2.0;
-    psi = atan2(m_storage(0, 1), m_storage(0, 2));
+    psi = std::atan2(m_storage(0, 1), m_storage(0, 2));
   } else {
     theta = -asin(m_storage(2, 0));
     // theta = pi + asin(m_storage(2,0)); // alternate solution
-    psi = atan2(m_storage(2, 1) / cos(theta), m_storage(2, 2) / cos(theta));
-    phi = atan2(m_storage(1, 0) / cos(theta), m_storage(0, 0) / cos(theta));
+    psi = std::atan2(m_storage(2, 1) / std::cos(theta), m_storage(2, 2) / std::cos(theta));
+    phi = std::atan2(m_storage(1, 0) / std::cos(theta), m_storage(0, 0) / std::cos(theta));
   }
   EulerAngles result(psi, theta, phi);
   return result;

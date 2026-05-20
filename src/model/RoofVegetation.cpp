@@ -14,6 +14,7 @@
 #include "../utilities/units/Unit.hpp"
 
 #include "../utilities/core/Assert.hpp"
+#include "../utilities/core/DeprecatedHelpers.hpp"
 
 namespace openstudio {
 namespace model {
@@ -883,7 +884,7 @@ namespace model {
     return getImpl<detail::RoofVegetation_Impl>()->setResidualVolumetricMoistureContent(value);
   }
 
-  bool RoofVegetation::setInitialVolumetricMoistureConent(double value) {
+  bool RoofVegetation::setInitialVolumetricMoistureContent(double value) {
     return getImpl<detail::RoofVegetation_Impl>()->setInitialVolumetricMoistureContent(value);
   }
 
@@ -993,6 +994,12 @@ namespace model {
 
   /// @cond
   RoofVegetation::RoofVegetation(std::shared_ptr<detail::RoofVegetation_Impl> impl) : OpaqueMaterial(std::move(impl)) {}
+
+  // DEPRECATED
+  bool RoofVegetation::setInitialVolumetricMoistureConent(double value) {
+    DEPRECATED_AT_MSG(3, 11, 0, "Use setInitialVolumetricMoistureContent instead.");
+    return getImpl<detail::RoofVegetation_Impl>()->setInitialVolumetricMoistureContent(value);
+  }
   /// @endcond
 
 }  // namespace model

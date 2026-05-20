@@ -158,7 +158,7 @@ std::vector<Point3dVector> Polygon3d::overlap(const Point3dVector& line) const {
 
   Point3d sp = line[0];
   Vector3d v = line[1] - line[0];
-  double rad = atan2(v.y(), v.x()) - atan2(0, 1);
+  double rad = std::atan2(v.y(), v.x()) - std::atan2(0, 1);
   // Make a transform so that the line being compared starts at 0 and is x = length
   Transformation t = Transformation::translation(Vector3d(sp.x(), sp.y(), 0)) * Transformation::rotation(Vector3d(0, 0, 1), rad);
   Transformation ti = t.inverse();

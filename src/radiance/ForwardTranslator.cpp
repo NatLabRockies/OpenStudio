@@ -74,7 +74,7 @@
 #include <algorithm>
 #include <fstream>
 #include <iomanip>
-#include <math.h>
+#include <cmath>
 
 using openstudio::Point3d;
 using openstudio::Point3dVector;
@@ -666,7 +666,7 @@ namespace radiance {
     Point3d startPoint = buildingTransformation * spaceTransformation * control.transformation() * Point3d(0, 0, 0);
     for (unsigned i = 0; i < n; ++i) {
       double angle = 2.0 * i * pi / (double(n));
-      Point3d endPoint = buildingTransformation * spaceTransformation * control.transformation() * Point3d(sin(angle), cos(angle), 0);
+      Point3d endPoint = buildingTransformation * spaceTransformation * control.transformation() * Point3d(std::sin(angle), std::cos(angle), 0);
       result.push_back(endPoint - startPoint);
     }
 
@@ -693,7 +693,7 @@ namespace radiance {
     Point3d startPoint = buildingTransformation * spaceTransformation * control.transformation() * Point3d(0, 0, 0);
     for (unsigned i = 0; i < n; ++i) {
       double angle = 2.0 * i * pi / (double(n));
-      Point3d endPoint = buildingTransformation * spaceTransformation * control.transformation() * Point3d(sin(angle), cos(angle), 0);
+      Point3d endPoint = buildingTransformation * spaceTransformation * control.transformation() * Point3d(std::sin(angle), std::cos(angle), 0);
       result.push_back(endPoint - startPoint);
     }
 
@@ -1172,7 +1172,7 @@ namespace radiance {
             double visibleTransmittance = subSurface.visibleTransmittance().get() * visibleTransmittanceMultiplier;
 
             // convert transmittance(Tn) to transmissivity(tn) for Radiance material
-            // tn = (sqrt(.8402528435+.0072522239*Tn*Tn)-.9166530661)/.0036261119/Tn
+            // tn = (std::sqrt(.8402528435+.0072522239*Tn*Tn)-.9166530661)/.0036261119/Tn
             // or: tn = 1.0895 * Tn (Thanks, Axel Jacobs! (http://www.jaloxa.eu/resources/radiance/documentation/docs/radiance_cookbook.pdf, p. 21))
             double tVis = visibleTransmittance;
             double tn = 0;
