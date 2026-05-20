@@ -132,6 +132,9 @@ class UTILITIES_API WorkspaceObject : public IdfObject
   //DLM@20101010: don't like const overload, just make sure everything is named all the time
   IdfObject idfObject() const;
 
+  // This is for LLDB debugging
+  void printToStdout() const;
+
   //@}
 
  protected:

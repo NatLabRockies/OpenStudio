@@ -255,6 +255,9 @@ namespace detail {
     /** Returns equivalent IdfObject, leaving unnamed target objects unnamed. All data is cloned. */
     IdfObject idfObject() const;
 
+    // This is for LLDB debugging
+    void printToStdout() const;
+
     //@}
     /** @name Signal Helpers */
     //@{

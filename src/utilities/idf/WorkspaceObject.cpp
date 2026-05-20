@@ -1082,6 +1082,10 @@ namespace detail {
     return getObject<WorkspaceObject>().idfObject();
   }
 
+  void WorkspaceObject_Impl::printToStdout() const {
+    getObject<WorkspaceObject>().printToStdout();
+  }
+
   void WorkspaceObject_Impl::emitChangeSignals() {
     if (m_diffs.empty()) {
       return;
@@ -1545,6 +1549,10 @@ IdfObject WorkspaceObject::idfObject() {
 IdfObject WorkspaceObject::idfObject() const {
   IdfObject object(getImpl<detail::WorkspaceObject_Impl>()->idfObjectImplPtr());
   return object;
+}
+
+void WorkspaceObject::printToStdout() const {
+  idfObject().printToStdout();
 }
 
 // PROTECTED
