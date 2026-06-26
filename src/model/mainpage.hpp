@@ -1228,7 +1228,7 @@ namespace model {
  *  future use, or directly used in another Model. To save a Component for future use, it should be
  *  added to a local BCL, and/or uploaded to the online %Building %Component Library. (These
  *  features are currently under development. Please see the documentation for utilities/bcl and
- *  http://bcl.nrel.gov/.)
+ *  http://bcl.nlr.gov/.)
  *
  *  To use a Component (either directly, or deserialized from a building component library) in a
  *  Model, use the method Model::insertComponent(const Component& ). This method first looks to see
