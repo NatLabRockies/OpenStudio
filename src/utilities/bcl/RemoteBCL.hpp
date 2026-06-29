@@ -43,6 +43,17 @@ class UTILITIES_API RemoteQueryResponse
   std::shared_ptr<pugi::xml_document> m_domDocument;
 };
 
+struct TaxonomyItem {
+  std::string full_name;
+  int tid;
+  std::string name;
+
+  // index into the static vectors
+  size_t parent;
+  std::vector<size_t> children;
+
+};
+
 /// Class for accessing the remote BCL.
 class UTILITIES_API RemoteBCL : public BCL
 {
@@ -69,6 +80,7 @@ class UTILITIES_API RemoteBCL : public BCL
 
   /// Get the measure by uid
   virtual boost::optional<BCLMeasure> getMeasure(const std::string& uid, const std::string& versionId = "") const override;
+
 
   /// Perform a meta search on the library to identify number and types of results available.
   /// The total number of search results available can be used in the search method which requires a page number.
@@ -211,6 +223,9 @@ class UTILITIES_API RemoteBCL : public BCL
 
   /// Emitted when a measure download completes
   Nano::Signal<void(const std::string& uid, const boost::optional<BCLMeasure>& measure)> measureDownloaded;
+
+  static const std::vector<TaxonomyItem>& measureTaxonomy();
+  static const std::vector<TaxonomyItem>& componentTaxonomy();
 
  private:
   REGISTER_LOGGER("openstudio.RemoteBCL");
