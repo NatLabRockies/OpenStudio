@@ -458,6 +458,7 @@ find_package(SQLite3)
 find_package(cpprestsdk)
 # TODO: this is a workaround for #5398, it should not be there for ever
 configure_file("${PROJECT_SOURCE_DIR}/dependencies/cpprestsdk_char_traits_workaround.hpp" "${PROJECT_BINARY_DIR}/src/cpprestsdk_char_traits_workaround.hpp" COPYONLY)
+find_package(httplib)
 
 find_package(websocketpp)
 find_package(Boost)

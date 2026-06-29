@@ -10,20 +10,6 @@
 #include "../core/Path.hpp"
 #include "../core/Deprecated.hpp"
 
-#if (defined(__GNUC__))
-#  pragma GCC diagnostic push
-#  pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
-#endif
-#if __APPLE__
-#  include <cpprestsdk_char_traits_workaround.hpp>  // OpenStudio/dependencies/cpprestsdk_char_traits_workaround.hpp
-#endif
-// Macro U from cpprestsdk is clashing with (cf boost https://github.com/microsoft/cpprestsdk/issues/1214)
-#define _TURN_OFF_PLATFORM_STRING
-#include <cpprest/http_client.h>
-#if (defined(__GNUC__))
-#  pragma GCC diagnostic pop
-#endif
-
 #include <nano/nano_signal_slot.hpp>
 #include <pugixml.hpp>
 
@@ -253,10 +239,7 @@ class UTILITIES_API RemoteBCL : public BCL
 
   // members
 
-  // A helper function to prepare a client, allowing us to change the http_client_config in one place only
-  static web::http::client::http_client getClient(const std::string& url, unsigned timeOutSeconds = 60);
-
-  boost::optional<pplx::task<void>> m_httpResponse;
+  bool m_lastRequestSuccess = false;
 
   struct DownloadFile
   {
@@ -265,7 +248,7 @@ class UTILITIES_API RemoteBCL : public BCL
     void flush();
     void close();
     const openstudio::path& fileName() const noexcept;
-    void write(const std::vector<unsigned char>& data);
+    void write(const std::string& data);
     bool open();
 
    private:

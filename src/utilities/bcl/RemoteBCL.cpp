@@ -12,12 +12,26 @@
 #include "../core/UnzipFile.hpp"
 #include "../core/DeprecatedHelpers.hpp"
 
+#include <httplib.h>
+
 #include <regex>
 
 #define REMOTE_PRODUCTION_SERVER "https://bcl.nlr.gov"
 #define REMOTE_DEVELOPMENT_SERVER "https://bcl-test.nlr.gov"
 
-using namespace utility::conversions;
+namespace {
+
+std::unique_ptr<httplib::Client> makeClient(const std::string& baseUrl, unsigned timeOutSeconds) {
+  auto cli = std::make_unique<httplib::Client>(baseUrl);
+  cli->enable_server_certificate_verification(false);
+  cli->set_follow_location(true);
+  cli->set_connection_timeout(static_cast<int>(timeOutSeconds), 0);
+  cli->set_read_timeout(static_cast<int>(timeOutSeconds), 0);
+  cli->set_write_timeout(static_cast<int>(timeOutSeconds), 0);
+  return cli;
+}
+
+}  // namespace
 
 namespace openstudio {
 
@@ -315,18 +329,6 @@ pugi::xml_node RemoteQueryResponse::root() const {
   return m_domDocument->document_element();
 }
 
-// TODO: please note that you should use getClient everywhere after instead of instantiating your own http_client_config
-// as it will allow us to change http_client_config (SSL settings etc) in  only one place
-web::http::client::http_client RemoteBCL::getClient(const std::string& url, unsigned timeOutSeconds) {
-  web::http::client::http_client_config config;
-  // bcl.nlr.gov can be slow to respond to client requests so bump the default of 30 seconds to 60 to account for lengthy response time.
-  // this is timeout is for each send and receive operation on the client and not the entire client session.
-  config.set_timeout(std::chrono::seconds(timeOutSeconds));
-  config.set_validate_certificates(false);
-
-  return web::http::client::http_client(utility::conversions::to_string_t(url), config);
-}
-
 unsigned RemoteBCL::timeOutSeconds() const {
   return m_timeOutSeconds;
 }
@@ -363,8 +365,8 @@ void RemoteBCL::DownloadFile::close() {
   m_ofs.close();
 }
 
-void RemoteBCL::DownloadFile::write(const std::vector<unsigned char>& data) {
-  m_ofs.write(reinterpret_cast<const char*>(data.data()), data.size());
+void RemoteBCL::DownloadFile::write(const std::string& data) {
+  m_ofs.write(data.data(), static_cast<std::streamsize>(data.size()));
 }
 
 RemoteBCL::RemoteBCL()
@@ -479,79 +481,55 @@ std::vector<BCLSearchResult> RemoteBCL::searchMeasureLibrary(const std::string& 
 int RemoteBCL::checkForComponentUpdates() {
   m_componentsWithUpdates.clear();
 
+  auto cli = makeClient(remoteUrl(), m_timeOutSeconds);
   for (const BCLComponent& component : LocalBCL::instance().components()) {
-    // can't start another request until last one is done
-    if (m_httpResponse && !m_httpResponse->is_done()) {
-      return 0;
+    m_lastSearch.clear();
+    m_lastRequestSuccess = false;
+
+    auto res = cli->Get("/api/search/*.xml", httplib::Params{{"fq", "uuid:" + component.uid()}}, httplib::Headers{});
+    if (res && res->status == 200) {
+      auto remoteQueryResponse = processReply(res->body);
+      if (remoteQueryResponse) {
+        m_lastSearch = processSearchResponse(*remoteQueryResponse);
+      }
+      m_lastRequestSuccess = true;
+    } else {
+      LOG(Error, "checkForComponentUpdates request failed" << (res ? ": HTTP " + std::to_string(res->status) : ""));
     }
 
-    m_lastSearch.clear();
-
-    auto client = getClient(remoteUrl(), m_timeOutSeconds);
-    web::uri_builder builder(to_string_t("/api/search/"));
-
-    builder.append_path(to_string_t("*.xml"));
-
-    builder.append_query(to_string_t("fq"), to_string_t("uuid:" + component.uid()));
-
-    // LOG(Debug, m_remoteUrl << builder.to_string());
-
-    m_httpResponse = client.request(web::http::methods::GET, builder.to_string())
-                       .then([](web::http::http_response resp) { return resp.extract_utf8string(); })
-                       .then([this](const std::string& xml) {
-                         auto remoteQueryResponse = processReply(xml);
-
-                         if (remoteQueryResponse) {
-                           m_lastSearch = processSearchResponse(*remoteQueryResponse);
-                         }
-                       });
-
-    std::vector<BCLSearchResult> result = waitForSearch();
-    if (!result.empty() && result[0].versionId() != component.versionId()) {
-      m_componentsWithUpdates.push_back(result[0]);
+    if (!m_lastSearch.empty() && m_lastSearch[0].versionId() != component.versionId()) {
+      m_componentsWithUpdates.push_back(m_lastSearch[0]);
     }
   }
 
-  return m_componentsWithUpdates.size();
+  return static_cast<int>(m_componentsWithUpdates.size());
 }
 
 int RemoteBCL::checkForMeasureUpdates() {
   m_measuresWithUpdates.clear();
 
+  auto cli = makeClient(remoteUrl(), m_timeOutSeconds);
   for (const BCLMeasure& measure : LocalBCL::instance().measures()) {
-    // can't start another request until last one is done
-    if (m_httpResponse && !m_httpResponse->is_done()) {
-      return 0;
+    m_lastSearch.clear();
+    m_lastRequestSuccess = false;
+
+    auto res = cli->Get("/api/search/*.xml", httplib::Params{{"fq", "uuid:" + measure.uid()}}, httplib::Headers{});
+    if (res && res->status == 200) {
+      auto remoteQueryResponse = processReply(res->body);
+      if (remoteQueryResponse) {
+        m_lastSearch = processSearchResponse(*remoteQueryResponse);
+      }
+      m_lastRequestSuccess = true;
+    } else {
+      LOG(Error, "checkForMeasureUpdates request failed" << (res ? ": HTTP " + std::to_string(res->status) : ""));
     }
 
-    m_lastSearch.clear();
-
-    auto client = getClient(remoteUrl(), m_timeOutSeconds);
-    web::uri_builder builder(to_string_t("/api/search/"));
-
-    builder.append_path(to_string_t("*.xml"));
-
-    builder.append_query(to_string_t("fq"), to_string_t("uuid:" + measure.uid()));
-
-    // LOG(Debug, m_remoteUrl << builder.to_string());
-
-    m_httpResponse = client.request(web::http::methods::GET, builder.to_string())
-                       .then([](web::http::http_response resp) { return resp.extract_utf8string(); })
-                       .then([this](const std::string& xml) {
-                         auto remoteQueryResponse = processReply(xml);
-
-                         if (remoteQueryResponse) {
-                           m_lastSearch = processSearchResponse(*remoteQueryResponse);
-                         }
-                       });
-
-    std::vector<BCLSearchResult> result = waitForSearch();
-    if (!result.empty() && result[0].versionId() != measure.versionId()) {
-      m_measuresWithUpdates.push_back(result[0]);
+    if (!m_lastSearch.empty() && m_lastSearch[0].versionId() != measure.versionId()) {
+      m_measuresWithUpdates.push_back(m_lastSearch[0]);
     }
   }
 
-  return m_measuresWithUpdates.size();
+  return static_cast<int>(m_measuresWithUpdates.size());
 }
 
 std::vector<BCLSearchResult> RemoteBCL::componentsWithUpdates() const {
@@ -598,22 +576,14 @@ void RemoteBCL::updateMeasures() {
 
 bool RemoteBCL::isOnline() {
   try {
-    auto ip = getClient("https://checkip.amazonaws.com/")
-                .request(web::http::methods::GET)
-                .then([](web::http::http_response response) {
-                  auto statusCode = response.status_code();
-                  if (statusCode != 200) {
-                    std::stringstream ss;
-                    ss << "Error: response code was " << statusCode;
-                    return ss.str();
-                  }
+    auto cli = makeClient("https://checkip.amazonaws.com", 10);
 
-                  auto body = response.extract_utf8string(true).get();
-                  // Remove trailing line ending
-                  return body.erase(body.find_last_not_of("\n") + 1);
-                })
-                .get();
-
+    auto res = cli->Get("/");
+    if (!res || res->status != 200) {
+      return false;
+    }
+    std::string ip = res->body;
+    ip.erase(ip.find_last_not_of("\n\r") + 1);
     std::regex ipRegex("^\\d{1,3}(?:\\.\\d{1,3}){3}$");
     return std::regex_search(ip, ipRegex);
   } catch (const std::exception&) {
@@ -732,33 +702,20 @@ bool RemoteBCL::validateAuthKey(const std::string& authKey, const std::string& r
       useRemoteProductionUrl();
     }
 
-    // can't start another request until last one is done
-    if (m_httpResponse && !m_httpResponse->is_done()) {
-      return false;
-    }
-
     m_lastSearch.clear();
+    m_lastRequestSuccess = false;
 
-    auto client = getClient(remoteUrl, m_timeOutSeconds);
-    web::uri_builder builder(to_string_t("/api/search/"));
-
-    builder.append_path(to_string_t("*.xml"));
-
-    builder.append_query(to_string_t("show_rows"), to_string_t("0"));
-
-    // LOG(Debug, m_remoteUrl << builder.to_string());
-
-    m_httpResponse = client.request(web::http::methods::GET, builder.to_string())
-                       .then([](web::http::http_response resp) { return resp.extract_utf8string(); })
-                       .then([this](const std::string& xml) {
-                         auto remoteQueryResponse = processReply(xml);
-
-                         if (remoteQueryResponse) {
-                           m_lastSearch = processSearchResponse(*remoteQueryResponse);
-                         }
-                       });
-
-    waitForSearch();
+    auto cli = makeClient(remoteUrl, m_timeOutSeconds);
+    auto res = cli->Get("/api/search/*.xml", httplib::Params{{"show_rows", "0"}}, httplib::Headers{});
+    if (res && res->status == 200) {
+      auto remoteQueryResponse = processReply(res->body);
+      if (remoteQueryResponse) {
+        m_lastSearch = processSearchResponse(*remoteQueryResponse);
+      }
+      m_lastRequestSuccess = true;
+    } else {
+      LOG(Error, "validateAuthKey request failed" << (res ? ": HTTP " + std::to_string(res->status) : ""));
+    }
 
     // Restore url
     if (previousUrl == remoteDevelopmentUrl()) {
@@ -829,15 +786,8 @@ std::vector<BCLSearchResult> RemoteBCL::waitForSearch(int) const {
 ///////////////////////////////////////////////////////////////////////////
 
 bool RemoteBCL::downloadComponent(const std::string& uid) {
-  // Check for empty uid
   if (uid.empty()) {
     LOG(Error, "Error: No uid provided");
-    return false;
-  }
-
-  // can't start another request until last one is done
-  if (m_httpResponse && !m_httpResponse->is_done()) {
-    LOG(Debug, "Cannot get mutex lock");
     return false;
   }
 
@@ -847,29 +797,22 @@ bool RemoteBCL::downloadComponent(const std::string& uid) {
   }
 
   m_downloadUid = uid;
-  // request.setRawHeader("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.56 Safari/537.17");
-  auto client = getClient(remoteUrl(), m_timeOutSeconds);
-  web::uri_builder builder(to_string_t("/api/download"));
+  m_lastRequestSuccess = false;
 
-  builder.append_query(to_string_t("uids"), to_string_t(uid));
+  auto cli = makeClient(remoteUrl(), m_timeOutSeconds);
+  auto res = cli->Get("/api/download", httplib::Params{{"uids", uid}}, httplib::Headers{});
+  if (res && res->status == 200) {
+    m_downloadFile->write(res->body);
+    m_downloadFile->flush();
+    m_downloadFile->close();
+    m_lastRequestSuccess = true;
+    onDownloadComplete();
+  } else {
+    LOG(Error, "downloadComponent request failed" << (res ? ": HTTP " + std::to_string(res->status) : ""));
+    m_downloadFile->close();
+  }
 
-  web::http::http_request msg(web::http::methods::GET);
-  msg.headers().add(to_string_t("User-Agent"),
-                    to_string_t("Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.56 Safari/537.17"));
-  msg.set_request_uri(builder.to_string());
-
-  // LOG(Debug, m_remoteUrl << builder.to_string());
-
-  m_httpResponse = client.request(web::http::methods::GET, builder.to_string())
-                     .then([](web::http::http_response resp) { return resp.extract_vector(); })
-                     .then([this](const std::vector<unsigned char>& zip) {
-                       m_downloadFile->write(zip);
-                       m_downloadFile->flush();
-                       m_downloadFile->close();
-                     })
-                     .then([this]() { onDownloadComplete(); });
-
-  return true;
+  return m_lastRequestSuccess;
 }
 
 bool RemoteBCL::downloadMeasure(const std::string& uid) {
@@ -877,204 +820,147 @@ bool RemoteBCL::downloadMeasure(const std::string& uid) {
 }
 
 bool RemoteBCL::startComponentLibraryMetaSearch(const std::string& searchTerm, const std::string& componentType, const std::string& filterType) {
-  // can't start another request until last one is done
-  if (m_httpResponse && !m_httpResponse->is_done()) {
-    return false;
-  }
-
   m_lastMetaSearch.reset();
+  m_lastRequestSuccess = false;
 
   const std::string normalizedFilterType = normalizeFilterType(filterType);
 
-  auto client = getClient(remoteUrl(), m_timeOutSeconds);
-  web::uri_builder builder(to_string_t("/api/metasearch/"));
-
-  // web::uri::encode_data_string will Encodes a string by converting all characters
-  // except for RFC 3986 unreserved characters to their hexadecimal representation. (eg: '+' => %2B, ' ' => %20)
   std::string query = searchTerm.empty() ? "*" : searchTerm;
-  builder.append_path(web::uri::encode_data_string(utility::conversions::to_string_t(query + ".xml")));
+  std::string path = "/api/metasearch/" + query + ".xml";
 
-  builder.append_query(to_string_t("fq"), to_string_t("bundle:" + normalizedFilterType));
-
+  httplib::Params params{{"fq", "bundle:" + normalizedFilterType}};
   if (!componentType.empty() && componentType != "*") {
-    std::string filter = (normalizedFilterType == "component") ? "component_tags" : "measure_tags";
-    filter += ":\"" + componentType + "\"";
-    builder.append_query(to_string_t("fq"), to_string_t(filter));
+    std::string tag = (normalizedFilterType == "component") ? "component_tags" : "measure_tags";
+    params.emplace("fq", tag + ":\"" + componentType + "\"");
   }
 
-  m_httpResponse = client.request(web::http::methods::GET, builder.to_string())
-                     .then([](web::http::http_response resp) { return resp.extract_utf8string(); })
-                     .then([this](const std::string& xml) {
-                       auto remoteQueryResponse = processReply(xml);
+  auto cli = makeClient(remoteUrl(), m_timeOutSeconds);
+  auto res = cli->Get(path, params, httplib::Headers{});
+  if (res && res->status == 200) {
+    auto remoteQueryResponse = processReply(res->body);
+    if (remoteQueryResponse) {
+      m_lastMetaSearch = processMetaSearchResponse(*remoteQueryResponse);
+    }
+    setLastTotalResults(m_lastMetaSearch ? m_lastMetaSearch->numResults() : 0);
+    m_lastRequestSuccess = true;
+  } else {
+    setLastTotalResults(0);
+    LOG(Error, "startComponentLibraryMetaSearch request failed" << (res ? ": HTTP " + std::to_string(res->status) : ""));
+  }
 
-                       if (remoteQueryResponse) {
-                         m_lastMetaSearch = processMetaSearchResponse(*remoteQueryResponse);
-                       }
-
-                       if (m_lastMetaSearch) {
-                         setLastTotalResults(m_lastMetaSearch->numResults());
-                       } else {
-                         setLastTotalResults(0);
-                       }
-                     });
-
-  // LOG(Debug, m_remoteUrl << builder.to_string());
-
-  return true;
+  return m_lastRequestSuccess;
 }
 
 bool RemoteBCL::startComponentLibraryMetaSearch(const std::string& searchTerm, const unsigned componentTypeTID, const std::string& filterType) {
-  // can't start another request until last one is done
-  if (m_httpResponse && !m_httpResponse->is_done()) {
-    return false;
-  }
-
   m_lastMetaSearch.reset();
+  m_lastRequestSuccess = false;
 
   const std::string normalizedFilterType = normalizeFilterType(filterType);
 
-  auto client = getClient(remoteUrl(), m_timeOutSeconds);
-  web::uri_builder builder(to_string_t("/api/metasearch/"));
-
   std::string query = searchTerm.empty() ? "*" : searchTerm;
-  builder.append_path(web::uri::encode_data_string(utility::conversions::to_string_t(query + ".xml")));
+  std::string path = "/api/metasearch/" + query + ".xml";
 
-  builder.append_query(to_string_t("fq"), to_string_t("bundle:" + normalizedFilterType));
-
+  httplib::Params params{{"fq", "bundle:" + normalizedFilterType}};
   if (componentTypeTID != 0) {
     const std::string tagName = tidToTagName(componentTypeTID, normalizedFilterType);
     if (!tagName.empty()) {
       const std::string tagField = (normalizedFilterType == "component") ? "component_tags" : "measure_tags";
-      builder.append_query(to_string_t("fq"), to_string_t(tagField + ":\"" + tagName + "\""));
+      params.emplace("fq", tagField + ":\"" + tagName + "\"");
     } else {
       LOG(Warn, "Unknown TID " << componentTypeTID << " for bundle '" << normalizedFilterType << "', ignoring tag filter");
     }
   }
 
-  m_httpResponse = client.request(web::http::methods::GET, builder.to_string())
-                     .then([](web::http::http_response resp) { return resp.extract_utf8string(); })
-                     .then([this](const std::string& xml) {
-                       auto remoteQueryResponse = processReply(xml);
+  auto cli = makeClient(remoteUrl(), m_timeOutSeconds);
+  auto res = cli->Get(path, params, httplib::Headers{});
+  if (res && res->status == 200) {
+    auto remoteQueryResponse = processReply(res->body);
+    if (remoteQueryResponse) {
+      m_lastMetaSearch = processMetaSearchResponse(*remoteQueryResponse);
+    }
+    setLastTotalResults(m_lastMetaSearch ? m_lastMetaSearch->numResults() : 0);
+    m_lastRequestSuccess = true;
+  } else {
+    setLastTotalResults(0);
+    LOG(Error, "startComponentLibraryMetaSearch request failed" << (res ? ": HTTP " + std::to_string(res->status) : ""));
+  }
 
-                       if (remoteQueryResponse) {
-                         m_lastMetaSearch = processMetaSearchResponse(*remoteQueryResponse);
-                       }
-
-                       if (m_lastMetaSearch) {
-                         setLastTotalResults(m_lastMetaSearch->numResults());
-                       } else {
-                         setLastTotalResults(0);
-                       }
-                     });
-
-  // LOG(Debug, m_remoteUrl << builder.to_string());
-
-  return true;
+  return m_lastRequestSuccess;
 }
 
 bool RemoteBCL::startComponentLibrarySearch(const std::string& searchTerm, const std::string& componentType, const std::string& filterType,
                                             const unsigned page) {
-  // can't start another request until last one is done
-  if (m_httpResponse && !m_httpResponse->is_done()) {
-    return false;
-  }
-
   m_lastSearch.clear();
+  m_lastRequestSuccess = false;
 
   const std::string normalizedFilterType = normalizeFilterType(filterType);
 
-  auto client = getClient(remoteUrl(), m_timeOutSeconds);
-  web::uri_builder builder(to_string_t("/api/search/"));
-
   std::string query = searchTerm.empty() ? "*" : searchTerm;
-  builder.append_path(web::uri::encode_data_string(utility::conversions::to_string_t(query + ".xml")));
+  std::string path = "/api/search/" + query + ".xml";
 
-  builder.append_query(to_string_t("fq"), to_string_t("bundle:" + normalizedFilterType));
-
+  httplib::Params params{{"fq", "bundle:" + normalizedFilterType},
+                         {"show_rows", openstudio::string_conversions::number(m_numResultsPerQuery)},
+                         {"page", openstudio::string_conversions::number(page)}};
   if (!componentType.empty() && componentType != "*") {
-    std::string filter = (normalizedFilterType == "component") ? "component_tags" : "measure_tags";
-    filter += ":\"" + componentType + "\"";
-    builder.append_query(to_string_t("fq"), to_string_t(filter));
+    std::string tag = (normalizedFilterType == "component") ? "component_tags" : "measure_tags";
+    params.emplace("fq", tag + ":\"" + componentType + "\"");
   }
 
-  builder.append_query(to_string_t("show_rows"), to_string_t(openstudio::string_conversions::number(m_numResultsPerQuery)));
-  builder.append_query(to_string_t("page"), to_string_t(openstudio::string_conversions::number(page)));
+  auto cli = makeClient(remoteUrl(), m_timeOutSeconds);
+  auto res = cli->Get(path, params, httplib::Headers{});
+  if (res && res->status == 200) {
+    auto remoteQueryResponse = processReply(res->body);
+    if (remoteQueryResponse) {
+      m_lastSearch = processSearchResponse(*remoteQueryResponse);
+    }
+    m_lastRequestSuccess = true;
+  } else {
+    LOG(Error, "startComponentLibrarySearch request failed" << (res ? ": HTTP " + std::to_string(res->status) : ""));
+  }
 
-  m_httpResponse = client.request(web::http::methods::GET, builder.to_string())
-                     .then([](web::http::http_response resp) { return resp.extract_utf8string(); })
-                     .then([this](const std::string& xml) {
-                       auto remoteQueryResponse = processReply(xml);
-
-                       if (remoteQueryResponse) {
-                         m_lastSearch = processSearchResponse(*remoteQueryResponse);
-                       }
-                     });
-
-  // LOG(Debug, m_remoteUrl << builder.to_string());
-
-  return true;
+  return m_lastRequestSuccess;
 }
 
 bool RemoteBCL::startComponentLibrarySearch(const std::string& searchTerm, const unsigned componentTypeTID, const std::string& filterType,
                                             const unsigned page) {
-  // can't start another request until last one is done
-  if (m_httpResponse && !m_httpResponse->is_done()) {
-    return false;
-  }
-
   m_lastSearch.clear();
+  m_lastRequestSuccess = false;
 
   const std::string normalizedFilterType = normalizeFilterType(filterType);
 
-  auto client = getClient(remoteUrl(), m_timeOutSeconds);
-  web::uri_builder builder(to_string_t("/api/search/"));
-
   std::string query = searchTerm.empty() ? "*" : searchTerm;
-  builder.append_path(web::uri::encode_data_string(utility::conversions::to_string_t(query + ".xml")));
+  std::string path = "/api/search/" + query + ".xml";
 
-  builder.append_query(to_string_t("fq"), to_string_t("bundle:" + normalizedFilterType));
-
+  httplib::Params params{{"fq", "bundle:" + normalizedFilterType},
+                         {"show_rows", openstudio::string_conversions::number(m_numResultsPerQuery)},
+                         {"page", openstudio::string_conversions::number(page)}};
   if (componentTypeTID != 0) {
     const std::string tagName = tidToTagName(componentTypeTID, normalizedFilterType);
     if (!tagName.empty()) {
       const std::string tagField = (normalizedFilterType == "component") ? "component_tags" : "measure_tags";
-      builder.append_query(to_string_t("fq"), to_string_t(tagField + ":\"" + tagName + "\""));
+      params.emplace("fq", tagField + ":\"" + tagName + "\"");
     } else {
       LOG(Warn, "Unknown TID " << componentTypeTID << " for bundle '" << normalizedFilterType << "', ignoring tag filter");
     }
   }
-  builder.append_query(to_string_t("show_rows"), to_string_t(openstudio::string_conversions::number(m_numResultsPerQuery)));
-  builder.append_query(to_string_t("page"), to_string_t(openstudio::string_conversions::number(page)));
 
-  m_httpResponse = client.request(web::http::methods::GET, builder.to_string())
-                     .then([](web::http::http_response resp) { return resp.extract_utf8string(); })
-                     .then([this](const std::string& xml) {
-                       auto remoteQueryResponse = processReply(xml);
+  auto cli = makeClient(remoteUrl(), m_timeOutSeconds);
+  auto res = cli->Get(path, params, httplib::Headers{});
+  if (res && res->status == 200) {
+    auto remoteQueryResponse = processReply(res->body);
+    if (remoteQueryResponse) {
+      m_lastSearch = processSearchResponse(*remoteQueryResponse);
+    }
+    m_lastRequestSuccess = true;
+  } else {
+    LOG(Error, "startComponentLibrarySearch request failed" << (res ? ": HTTP " + std::to_string(res->status) : ""));
+  }
 
-                       if (remoteQueryResponse) {
-                         m_lastSearch = processSearchResponse(*remoteQueryResponse);
-                       }
-                     });
-
-  // LOG(Debug, m_remoteUrl << builder.to_string());
-
-  return true;
+  return m_lastRequestSuccess;
 }
 
 bool RemoteBCL::waitForLock() const {
-
-  if (!m_httpResponse) {
-    return false;
-  }
-
-  try {
-    m_httpResponse->wait();
-    return true;
-  } catch (const std::exception& e) {
-    LOG(Error, "Request to url '" << m_remoteUrl << " 'failed with message: " << e.what());
-  }
-
-  return false;
+  return m_lastRequestSuccess;
 }
 
 boost::optional<RemoteQueryResponse> RemoteBCL::processReply(const std::string& reply) {
