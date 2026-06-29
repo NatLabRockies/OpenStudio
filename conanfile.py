@@ -47,9 +47,7 @@ class OpenStudioBuildRecipe(ConanFile):
         self.requires("jsoncpp/1.9.6")
         self.requires("fmt/12.1.0")
         self.requires("sqlite3/3.53.0")
-        self.requires("cpprestsdk/2.10.19")  # df2f6ac88e47cadd9c9e8e0971e00d89
         self.requires("cpp-httplib/0.47.0", options={"with_openssl": True})
-        self.requires("websocketpp/0.8.2")  # 3fd704c4c5388d9c08b11af86f79f616
         self.requires("geographiclib/2.6")
         self.requires("swig/4.4.0")
         self.requires("tinygltf/2.9.7")
