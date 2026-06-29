@@ -422,12 +422,18 @@ if (USE_LTO)
 endif()
 
 if(WIN32)
+
+  if( CMAKE_SYSTEM_NAME MATCHES "Windows" AND ${CMAKE_SYSTEM_VERSION} VERSION_LESS "10.0.0")
+    message(SEND_ERROR "Windows ${CMAKE_SYSTEM_VERSION} or lower is not supported. Please use Windows 10 or later.")
+  endif()
+
   add_definitions(-DNOMINMAX)
-  # Set the BOOST_USE_WINAPI_VERSION to >= Windows8 to avoid the wrong namespace being used for boost log and leading unresolved externals such as 
+  # Set the BOOST_USE_WINAPI_VERSION to >= Windows10 to avoid the wrong namespace being used for boost log and leading unresolved externals such as
   # UnitFactory.cpp.obj : error LNK2001: unresolved external symbol "public: __cdecl boost::log::v2s_mt_nt6::attribute_set::~attribute_set(void)"
   # The boost binaries we have on artifactory have the v2s_mt_nt62 namespace
+  # Windows8 would be enough, but cpp-httplib requires Windows10 or later, so we set it to that
   # https://github.com/boostorg/log/blob/9a906e2f540680ff35a20207f9a1a9a3b889f52b/include/boost/log/detail/config.hpp#L337-L343
-  add_compile_definitions(BOOST_USE_WINAPI_VERSION=BOOST_WINAPI_VERSION_WIN8)
+  add_compile_definitions(BOOST_USE_WINAPI_VERSION=BOOST_WINAPI_VERSION_WIN10)
   # This will also align _WIN32_WINNT and WINVER
   # add_compile_definitions(BOOST_USE_WINDOWS_H) # Getting a confict with `typedef GUID UUID` from windows.h
   add_compile_definitions(BOOST_WINAPI_DEFINE_VERSION_MACROS)
