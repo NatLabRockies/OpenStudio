@@ -8,7 +8,6 @@
 
 #include "../utilities/core/Logger.hpp"
 #include "../utilities/core/Path.hpp"
-#include "../utilities/core/ThreadSafeDeque.hpp"
 #include "../scriptengine/ScriptEngine.hpp"
 
 #include "../model/Model.hpp"
@@ -18,10 +17,8 @@
 
 #include <httplib.h>
 
-#include <future>
 #include <map>
 #include <string>
-#include <thread>
 
 namespace Json {
 class Value;
@@ -120,8 +117,6 @@ class MeasureManagerServer
   ResponseType duplicate_measure(const Json::Value& body);
   ResponseType update_measures(const Json::Value& body);
 
-  // Generally request handler, to ensure the work is done on the main thread.
-  // See commit message at https://github.com/NREL/OpenStudio/commit/3c4a1c32fd096ca183c5668e2aafe99ac6564fb4#diff-9785c162dbb96e5fdead1b101c7a2d639460e0bdb0d95c8ff21be7a451a8f377
   using memRequestHandlerFunPtr = ResponseType (MeasureManagerServer::*)(const Json::Value& body);
   void handle_request(const httplib::Request& req, httplib::Response& res, const Json::Value& body, memRequestHandlerFunPtr request_handler);
 
@@ -138,8 +133,6 @@ class MeasureManagerServer
 
   MeasureManager m_measureManager;
   httplib::Server m_server;
-  std::thread m_serverThread;
-  ThreadSafeDeque<std::packaged_task<ResponseType()>> tasks;
 
   std::string m_url;
   unsigned m_port;

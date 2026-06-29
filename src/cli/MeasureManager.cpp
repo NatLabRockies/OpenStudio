@@ -34,9 +34,6 @@
 
 #include <sstream>
 #include <utility>  // make_pair
-#include <condition_variable>
-#include <mutex>
-#include <csignal>
 #include <cstdio>
 
 namespace openstudio {
@@ -581,23 +578,18 @@ MeasureManagerServer::MeasureManagerServer(unsigned port, ScriptEngineInstance& 
   m_host = "0.0.0.0";
 #endif
 
+  // Single-threaded pool ensures serial execution — Ruby/Python engines are not thread-safe
+  m_server.new_task_queue = [] { return new httplib::ThreadPool(1, 1); };
   m_server.Get(".*", [this](const httplib::Request& req, httplib::Response& res) { handle_get(req, res); });
   m_server.Post(".*", [this](const httplib::Request& req, httplib::Response& res) { handle_post(req, res); });
 }
 
 bool MeasureManagerServer::open() {
-  if (!m_server.bind_to_port(m_host, static_cast<int>(m_port))) {
-    return false;
-  }
-  m_serverThread = std::thread([this]() { m_server.listen_after_bind(); });
-  return true;
+  return m_server.bind_to_port(m_host, static_cast<int>(m_port));
 }
 
 bool MeasureManagerServer::close() {
   m_server.stop();
-  if (m_serverThread.joinable()) {
-    m_serverThread.join();
-  }
   return true;
 }
 
@@ -1015,13 +1007,9 @@ void MeasureManagerServer::print_feedback(const httplib::Request& req, int statu
 void MeasureManagerServer::handle_request(const httplib::Request& req, httplib::Response& res, const Json::Value& body,
                                           memRequestHandlerFunPtr request_handler) {
 
-  std::packaged_task<ResponseType()> task([this, &body, &request_handler]() { return (this->*request_handler)(body); });
-
-  auto future_result = task.get_future();  // The task hasn't been started yet
-  tasks.push_back(std::move(task));        // It gets queued, the **main** thread will process it
   int status_code = httplib::StatusCode::Created_201;
   try {
-    auto result = future_result.get();  // This block until it's been processed
+    auto result = (this->*request_handler)(body);
     status_code = result.status_code;
     res.status = status_code;
     res.set_content(result.body, "application/json");
@@ -1039,11 +1027,8 @@ void MeasureManagerServer::do_tasks_forever() {
   fmt::print("MeasureManager Ready\n");
   fmt::print("Accepting requests on: {}\n", m_url);
   std::fflush(stdout);
-  while (true) {
-    auto task = tasks.wait_for_one();
-    task();
-    std::fflush(stdout);
-  }
+
+  m_server.listen_after_bind();
 }
 
 }  // namespace openstudio
