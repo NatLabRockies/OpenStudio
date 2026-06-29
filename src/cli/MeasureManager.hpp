@@ -126,11 +126,6 @@ class MeasureManagerServer
   // Helper to return a 404 error
   static void unknown_endpoint(const httplib::Request& req, httplib::Response& res);
 
-  // Print the request to the console (stdout if Ok, stderr otherwise)
-  // [2024-11-14T10:21:46+01:00] "POST /reset HTTP/1.1" 200
-  // [2024-11-14T10:22:09+01:00] "GET /dsd HTTP/1.1" 400
-  static void print_feedback(const httplib::Request& req, int status_code);
-
   MeasureManager m_measureManager;
   httplib::Server m_server;
 

@@ -40,86 +40,86 @@ namespace openstudio {
 
 namespace {
 
-std::string toJSONString(const Json::Value& json) {
-  Json::StreamWriterBuilder builder;
-  builder["indentation"] = "";
-  builder["commentStyle"] = "None";
-  return Json::writeString(builder, json);
-}
-
-std::string toJSONString(const std::string& s) {
-  return toJSONString(Json::Value(s));
-}
-
-// This just participates in overload resolution, otherwise it's ambiguous since Json::Value and std::string are constructible from char *
-std::string toJSONString(const char* s) {
-  return toJSONString(Json::Value(s));
-}
-
-Json::Value parseJsonBody(const std::string& body_str) {
-  Json::Value result;
-  if (!body_str.empty()) {
-    Json::CharReaderBuilder reader;
-    std::string errs;
-    std::istringstream ss(body_str);
-    Json::parseFromStream(reader, ss, &result, &errs);
+  std::string toJSONString(const Json::Value& json) {
+    Json::StreamWriterBuilder builder;
+    builder["indentation"] = "";
+    builder["commentStyle"] = "None";
+    return Json::writeString(builder, json);
   }
-  return result;
-}
 
-template <typename T>
-boost::optional<T> get_field(const Json::Value& body, const std::string& field_name);
-
-template <>
-boost::optional<std::string> get_field(const Json::Value& body, const std::string& field_name) {
-  if (body.isMember(field_name) && body[field_name].isString()) {
-    return body[field_name].asString();
+  std::string toJSONString(const std::string& s) {
+    return toJSONString(Json::Value(s));
   }
-  return boost::none;
-}
 
-template <>
-boost::optional<openstudio::path> get_field(const Json::Value& body, const std::string& field_name) {
-  if (body.isMember(field_name) && body[field_name].isString()) {
-    return openstudio::path(body[field_name].asString());
+  // This just participates in overload resolution, otherwise it's ambiguous since Json::Value and std::string are constructible from char *
+  std::string toJSONString(const char* s) {
+    return toJSONString(Json::Value(s));
   }
-  return boost::none;
-}
 
-template <>
-[[maybe_unused]] boost::optional<bool> get_field(const Json::Value& body, const std::string& field_name) {
-  if (body.isMember(field_name) && body[field_name].isBool()) {
-    return body[field_name].asBool();
+  Json::Value parseJsonBody(const std::string& body_str) {
+    Json::Value result;
+    if (!body_str.empty()) {
+      Json::CharReaderBuilder reader;
+      std::string errs;
+      std::istringstream ss(body_str);
+      Json::parseFromStream(reader, ss, &result, &errs);
+    }
+    return result;
   }
-  return boost::none;
-}
 
-template <typename T>
-T get_field(const Json::Value& body, const std::string& field_name, const T& defaultValue);
+  template <typename T>
+  boost::optional<T> get_field(const Json::Value& body, const std::string& field_name);
 
-template <>
-std::string get_field(const Json::Value& body, const std::string& field_name, const std::string& defaultValue) {
-  if (body.isMember(field_name) && body[field_name].isString()) {
-    return body[field_name].asString();
+  template <>
+  boost::optional<std::string> get_field(const Json::Value& body, const std::string& field_name) {
+    if (body.isMember(field_name) && body[field_name].isString()) {
+      return body[field_name].asString();
+    }
+    return boost::none;
   }
-  return defaultValue;
-}
 
-template <>
-openstudio::path get_field(const Json::Value& body, const std::string& field_name, const openstudio::path& defaultValue) {
-  if (body.isMember(field_name) && body[field_name].isString()) {
-    return openstudio::path(body[field_name].asString());
+  template <>
+  boost::optional<openstudio::path> get_field(const Json::Value& body, const std::string& field_name) {
+    if (body.isMember(field_name) && body[field_name].isString()) {
+      return openstudio::path(body[field_name].asString());
+    }
+    return boost::none;
   }
-  return defaultValue;
-}
 
-template <>
-bool get_field(const Json::Value& body, const std::string& field_name, const bool& defaultValue) {
-  if (body.isMember(field_name) && body[field_name].isBool()) {
-    return body[field_name].asBool();
+  template <>
+  [[maybe_unused]] boost::optional<bool> get_field(const Json::Value& body, const std::string& field_name) {
+    if (body.isMember(field_name) && body[field_name].isBool()) {
+      return body[field_name].asBool();
+    }
+    return boost::none;
   }
-  return defaultValue;
-}
+
+  template <typename T>
+  T get_field(const Json::Value& body, const std::string& field_name, const T& defaultValue);
+
+  template <>
+  std::string get_field(const Json::Value& body, const std::string& field_name, const std::string& defaultValue) {
+    if (body.isMember(field_name) && body[field_name].isString()) {
+      return body[field_name].asString();
+    }
+    return defaultValue;
+  }
+
+  template <>
+  openstudio::path get_field(const Json::Value& body, const std::string& field_name, const openstudio::path& defaultValue) {
+    if (body.isMember(field_name) && body[field_name].isString()) {
+      return openstudio::path(body[field_name].asString());
+    }
+    return defaultValue;
+  }
+
+  template <>
+  bool get_field(const Json::Value& body, const std::string& field_name, const bool& defaultValue) {
+    if (body.isMember(field_name) && body[field_name].isBool()) {
+      return body[field_name].asBool();
+    }
+    return defaultValue;
+  }
 
 }  // namespace
 
@@ -575,7 +575,7 @@ MeasureManagerServer::MeasureManagerServer(unsigned port, ScriptEngineInstance& 
   m_host = "127.0.0.1";
 #else
   // Works for 127.0.0.1, 0.0.0.0 and localhost on TCP4
-  m_host = "0.0.0.0";
+  m_host = "127.0.0.1";
 #endif
 
   // Single-threaded pool ensures serial execution — Ruby/Python engines are not thread-safe
@@ -596,7 +596,6 @@ bool MeasureManagerServer::close() {
 void MeasureManagerServer::unknown_endpoint(const httplib::Request& req, httplib::Response& res) {
   res.status = httplib::StatusCode::NotFound_404;
   res.set_content(toJSONString(fmt::format("Error, unknown path '{}'", req.path)), "application/json");
-  print_feedback(req, httplib::StatusCode::NotFound_404);
 }
 
 void MeasureManagerServer::handle_get(const httplib::Request& req, httplib::Response& res) {
@@ -705,7 +704,8 @@ MeasureManagerServer::ResponseType MeasureManagerServer::set(const Json::Value& 
   if (auto p_ = get_field<openstudio::path>(body, "my_measures_dir")) {
     if (!openstudio::filesystem::is_directory(*p_)) {
       // Issue an error message
-      return {httplib::StatusCode::BadRequest_400, toJSONString(fmt::format("Error, my_measures_dir '{}' is a not a valid directory", p_->generic_string()))};
+      return {httplib::StatusCode::BadRequest_400,
+              toJSONString(fmt::format("Error, my_measures_dir '{}' is a not a valid directory", p_->generic_string()))};
     }
     this->my_measures_dir = std::move(*p_);
     return {httplib::StatusCode::OK_200, toJSONString(Json::Value{})};
@@ -996,14 +996,6 @@ MeasureManagerServer::ResponseType MeasureManagerServer::duplicate_measure(const
   }
 }
 
-void MeasureManagerServer::print_feedback(const httplib::Request& req, int status_code) {
-  const std::string& uri = req.path;
-  const std::string& method = req.method;
-  const std::string& http_version = req.version;
-  fmt::print(status_code == httplib::StatusCode::OK_200 ? stdout : stderr, "[{}] \"{} {} {}\" {}\n", openstudio::DateTime::now().toXsdDateTime(), method, uri, http_version,
-             status_code);
-}
-
 void MeasureManagerServer::handle_request(const httplib::Request& req, httplib::Response& res, const Json::Value& body,
                                           memRequestHandlerFunPtr request_handler) {
 
@@ -1020,13 +1012,29 @@ void MeasureManagerServer::handle_request(const httplib::Request& req, httplib::
     res.status = status_code;
     res.set_content(fmt::format(msg, e.what()), "text/plain");
   }
-  print_feedback(req, status_code);
 }
 
 void MeasureManagerServer::do_tasks_forever() {
   fmt::print("MeasureManager Ready\n");
   fmt::print("Accepting requests on: {}\n", m_url);
   std::fflush(stdout);
+
+  // Print the request to the console (stdout if Ok, stderr otherwise)
+  // [2024-11-14T10:21:46+01:00] "POST /reset HTTP/1.1" 200 (OK)
+  // [2024-11-14T10:22:09+01:00] "GET /dsd HTTP/1.1" 404 (Not Found)
+  m_server.set_logger([](const httplib::Request& req, const httplib::Response& res) {
+    fmt::print(res.status == httplib::StatusCode::OK_200 ? stdout : stderr, "[{}] \"{} {} {}\" {} ({})\n",
+               openstudio::DateTime::now().toXsdDateTime(), req.method, req.path, req.version, res.status, httplib::status_message(res.status));
+  });
+  m_server.set_error_logger([](const httplib::Error& err, const httplib::Request* req) {
+    if (req) {
+      fmt::print(stderr, "error_logger: [{}] \"{} {} {}\" {} ({})\n", openstudio::DateTime::now().toXsdDateTime(), req->method, req->path,
+                 req->version, static_cast<int>(err), httplib::to_string(err));
+    } else {
+      fmt::print(stderr, "[{}] MeasureManager Server encountered an error: {} ({})\n", openstudio::DateTime::now().toXsdDateTime(),
+                 static_cast<int>(err), httplib::to_string(err));
+    }
+  });
 
   m_server.listen_after_bind();
 }
