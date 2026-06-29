@@ -594,7 +594,7 @@ bool MeasureManagerServer::close() {
 }
 
 void MeasureManagerServer::unknown_endpoint(const httplib::Request& req, httplib::Response& res) {
-  res.status = httplib::StatusCode::BadRequest_400;
+  res.status = httplib::StatusCode::NotFound_404;
   res.set_content(toJSONString(fmt::format("Error, unknown path '{}'", req.path)), "application/json");
   print_feedback(req, httplib::StatusCode::NotFound_404);
 }
