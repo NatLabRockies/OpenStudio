@@ -73,9 +73,9 @@ class UTILITIES_API RemoteBCL : public BCL
   /// Perform a meta search on the library to identify number and types of results available.
   /// The total number of search results available can be used in the search method which requires a page number.
   boost::optional<BCLMetaSearchResult> metaSearchComponentLibrary(const std::string& searchTerm, const std::string& componentType,
-                                                                  const std::string& filterType = "nrel_component") const;
+                                                                  const std::string& filterType = "component") const;
   boost::optional<BCLMetaSearchResult> metaSearchComponentLibrary(const std::string& searchTerm, const unsigned componentTypeTID,
-                                                                  const std::string& filterType = "nrel_component") const;
+                                                                  const std::string& filterType = "component") const;
 
   /// Perform a component search of the library, results are returned in 'pages',
   /// the number of results per page is configurable and a metasearch should be performed
@@ -283,8 +283,6 @@ class UTILITIES_API RemoteBCL : public BCL
   int m_numResultsPerQuery;
 
   int m_lastTotalResults;
-
-  std::string m_apiVersion;
 
   bool validProdAuthKey;
 

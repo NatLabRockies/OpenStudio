@@ -21,6 +21,19 @@ using namespace utility::conversions;
 
 namespace openstudio {
 
+namespace {
+// Map legacy API v2.0 bundle names to new API names
+std::string normalizeFilterType(const std::string& filterType) {
+  if (filterType == "nrel_component") {
+    return "component";
+  }
+  if (filterType == "nrel_measure") {
+    return "measure";
+  }
+  return filterType;
+}
+}  // namespace
+
 std::ostream& operator<<(std::ostream& os, const pugi::xml_document& element) {
   element.save(os, "  ");
   return os;
@@ -89,7 +102,6 @@ RemoteBCL::RemoteBCL()
     m_devAuthKey(LocalBCL::instance().devAuthKey()),
     m_numResultsPerQuery(10),
     m_lastTotalResults(0),
-    m_apiVersion("2.0"),
     validProdAuthKey(false),
     validDevAuthKey(false),
     m_timeOutSeconds(120) {
@@ -137,12 +149,12 @@ boost::optional<BCLMetaSearchResult> RemoteBCL::metaSearchComponentLibrary(const
 std::vector<BCLSearchResult> RemoteBCL::searchComponentLibrary(const std::string& searchTerm, const std::string& componentType,
                                                                const unsigned page) const {
   // Perform metaSearch first
-  metaSearchComponentLibrary(searchTerm, componentType, "nrel_component");
+  metaSearchComponentLibrary(searchTerm, componentType, "component");
   if (lastTotalResults() == 0) {
     return {};
   }
 
-  bool searchStarted = const_cast<RemoteBCL*>(this)->startComponentLibrarySearch(searchTerm, componentType, "nrel_component", page);
+  bool searchStarted = const_cast<RemoteBCL*>(this)->startComponentLibrarySearch(searchTerm, componentType, "component", page);
   if (searchStarted) {
     return waitForSearch();
   }
@@ -152,12 +164,12 @@ std::vector<BCLSearchResult> RemoteBCL::searchComponentLibrary(const std::string
 std::vector<BCLSearchResult> RemoteBCL::searchComponentLibrary(const std::string& searchTerm, const unsigned componentTypeTID,
                                                                const unsigned page) const {
   // Perform metaSearch first
-  metaSearchComponentLibrary(searchTerm, componentTypeTID, "nrel_component");
+  metaSearchComponentLibrary(searchTerm, componentTypeTID, "component");
   if (lastTotalResults() == 0) {
     return {};
   }
 
-  bool searchStarted = const_cast<RemoteBCL*>(this)->startComponentLibrarySearch(searchTerm, componentTypeTID, "nrel_component", page);
+  bool searchStarted = const_cast<RemoteBCL*>(this)->startComponentLibrarySearch(searchTerm, componentTypeTID, "component", page);
   if (searchStarted) {
     return waitForSearch();
   }
@@ -167,12 +179,12 @@ std::vector<BCLSearchResult> RemoteBCL::searchComponentLibrary(const std::string
 std::vector<BCLSearchResult> RemoteBCL::searchMeasureLibrary(const std::string& searchTerm, const std::string& componentType,
                                                              const unsigned page) const {
   // Perform metaSearch first
-  metaSearchComponentLibrary(searchTerm, componentType, "nrel_measure");
+  metaSearchComponentLibrary(searchTerm, componentType, "measure");
   if (lastTotalResults() == 0) {
     return {};
   }
 
-  bool searchStarted = const_cast<RemoteBCL*>(this)->startComponentLibrarySearch(searchTerm, componentType, "nrel_measure", page);
+  bool searchStarted = const_cast<RemoteBCL*>(this)->startComponentLibrarySearch(searchTerm, componentType, "measure", page);
   if (searchStarted) {
     return waitForSearch();
   }
@@ -182,12 +194,12 @@ std::vector<BCLSearchResult> RemoteBCL::searchMeasureLibrary(const std::string& 
 std::vector<BCLSearchResult> RemoteBCL::searchMeasureLibrary(const std::string& searchTerm, const unsigned componentTypeTID,
                                                              const unsigned page) const {
   // Perform metaSearch first
-  metaSearchComponentLibrary(searchTerm, componentTypeTID, "nrel_measure");
+  metaSearchComponentLibrary(searchTerm, componentTypeTID, "measure");
   if (lastTotalResults() == 0) {
     return {};
   }
 
-  bool searchStarted = const_cast<RemoteBCL*>(this)->startComponentLibrarySearch(searchTerm, componentTypeTID, "nrel_measure", page);
+  bool searchStarted = const_cast<RemoteBCL*>(this)->startComponentLibrarySearch(searchTerm, componentTypeTID, "measure", page);
   if (searchStarted) {
     return waitForSearch();
   }
@@ -210,9 +222,7 @@ int RemoteBCL::checkForComponentUpdates() {
 
     builder.append_path(to_string_t("*.xml"));
 
-    builder.append_query(to_string_t("fq[]"), to_string_t("ss_uuid:" + component.uid()));
-
-    builder.append_query(to_string_t("api_version"), to_string_t(m_apiVersion));
+    builder.append_query(to_string_t("fq"), to_string_t("uuid:" + component.uid()));
 
     // LOG(Debug, m_remoteUrl << builder.to_string());
 
@@ -251,9 +261,7 @@ int RemoteBCL::checkForMeasureUpdates() {
 
     builder.append_path(to_string_t("*.xml"));
 
-    builder.append_query(to_string_t("fq[]"), to_string_t("ss_uuid:" + measure.uid()));
-
-    builder.append_query(to_string_t("api_version"), to_string_t(m_apiVersion));
+    builder.append_query(to_string_t("fq"), to_string_t("uuid:" + measure.uid()));
 
     // LOG(Debug, m_remoteUrl << builder.to_string());
 
@@ -466,7 +474,6 @@ bool RemoteBCL::validateAuthKey(const std::string& authKey, const std::string& r
 
     builder.append_path(to_string_t("*.xml"));
 
-    builder.append_query(to_string_t("api_version"), to_string_t(m_apiVersion));
     builder.append_query(to_string_t("show_rows"), to_string_t("0"));
 
     // LOG(Debug, m_remoteUrl << builder.to_string());
@@ -572,7 +579,7 @@ bool RemoteBCL::downloadComponent(const std::string& uid) {
   m_downloadUid = uid;
   // request.setRawHeader("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.56 Safari/537.17");
   auto client = getClient(remoteUrl(), m_timeOutSeconds);
-  web::uri_builder builder(to_string_t("/api/component/download"));
+  web::uri_builder builder(to_string_t("/api/download/"));
 
   builder.append_query(to_string_t("uids"), to_string_t(uid));
 
@@ -607,6 +614,8 @@ bool RemoteBCL::startComponentLibraryMetaSearch(const std::string& searchTerm, c
 
   m_lastMetaSearch.reset();
 
+  const std::string normalizedFilterType = normalizeFilterType(filterType);
+
   auto client = getClient(remoteUrl(), m_timeOutSeconds);
   web::uri_builder builder(to_string_t("/api/metasearch/"));
 
@@ -615,15 +624,13 @@ bool RemoteBCL::startComponentLibraryMetaSearch(const std::string& searchTerm, c
   std::string query = searchTerm.empty() ? "*" : searchTerm;
   builder.append_path(web::uri::encode_data_string(utility::conversions::to_string_t(query + ".xml")));
 
-  builder.append_query(to_string_t("fq[]"), to_string_t("bundle:" + filterType));
+  builder.append_query(to_string_t("fq"), to_string_t("bundle:" + normalizedFilterType));
 
   if (!componentType.empty() && componentType != "*") {
-    std::string filter = (filterType == "nrel_component") ? "sm_vid_Component_Tags" : "sm_vid_Measure_Tags";
+    std::string filter = (normalizedFilterType == "component") ? "component_tags" : "measure_tags";
     filter += ":\"" + componentType + "\"";
-    builder.append_query(to_string_t("fq[]"), to_string_t(filter));
+    builder.append_query(to_string_t("fq"), to_string_t(filter));
   }
-
-  builder.append_query(to_string_t("api_version"), to_string_t(m_apiVersion));
 
   m_httpResponse = client.request(web::http::methods::GET, builder.to_string())
                      .then([](web::http::http_response resp) { return resp.extract_utf8string(); })
@@ -654,20 +661,20 @@ bool RemoteBCL::startComponentLibraryMetaSearch(const std::string& searchTerm, c
 
   m_lastMetaSearch.reset();
 
+  const std::string normalizedFilterType = normalizeFilterType(filterType);
+
   auto client = getClient(remoteUrl(), m_timeOutSeconds);
   web::uri_builder builder(to_string_t("/api/metasearch/"));
 
   std::string query = searchTerm.empty() ? "*" : searchTerm;
   builder.append_path(web::uri::encode_data_string(utility::conversions::to_string_t(query + ".xml")));
 
-  builder.append_query(to_string_t("fq[]"), to_string_t("bundle:" + filterType));
+  builder.append_query(to_string_t("fq"), to_string_t("bundle:" + normalizedFilterType));
 
   if (componentTypeTID != 0) {
     std::string filter = "tid:" + openstudio::string_conversions::number(componentTypeTID);
-    builder.append_query(to_string_t("fq[]"), to_string_t(filter));
+    builder.append_query(to_string_t("fq"), to_string_t(filter));
   }
-
-  builder.append_query(to_string_t("api_version"), to_string_t(m_apiVersion));
 
   m_httpResponse = client.request(web::http::methods::GET, builder.to_string())
                      .then([](web::http::http_response resp) { return resp.extract_utf8string(); })
@@ -699,21 +706,22 @@ bool RemoteBCL::startComponentLibrarySearch(const std::string& searchTerm, const
 
   m_lastSearch.clear();
 
+  const std::string normalizedFilterType = normalizeFilterType(filterType);
+
   auto client = getClient(remoteUrl(), m_timeOutSeconds);
   web::uri_builder builder(to_string_t("/api/search/"));
 
   std::string query = searchTerm.empty() ? "*" : searchTerm;
   builder.append_path(web::uri::encode_data_string(utility::conversions::to_string_t(query + ".xml")));
 
-  builder.append_query(to_string_t("fq[]"), to_string_t("bundle:" + filterType));
+  builder.append_query(to_string_t("fq"), to_string_t("bundle:" + normalizedFilterType));
 
   if (!componentType.empty() && componentType != "*") {
-    std::string filter = (filterType == "nrel_component") ? "sm_vid_Component_Tags" : "sm_vid_Measure_Tags";
+    std::string filter = (normalizedFilterType == "component") ? "component_tags" : "measure_tags";
     filter += ":\"" + componentType + "\"";
-    builder.append_query(to_string_t("fq[]"), to_string_t(filter));
+    builder.append_query(to_string_t("fq"), to_string_t(filter));
   }
 
-  builder.append_query(to_string_t("api_version"), to_string_t(m_apiVersion));
   builder.append_query(to_string_t("show_rows"), to_string_t(openstudio::string_conversions::number(m_numResultsPerQuery)));
   builder.append_query(to_string_t("page"), to_string_t(openstudio::string_conversions::number(page)));
 
@@ -741,19 +749,20 @@ bool RemoteBCL::startComponentLibrarySearch(const std::string& searchTerm, const
 
   m_lastSearch.clear();
 
+  const std::string normalizedFilterType = normalizeFilterType(filterType);
+
   auto client = getClient(remoteUrl(), m_timeOutSeconds);
   web::uri_builder builder(to_string_t("/api/search/"));
 
   std::string query = searchTerm.empty() ? "*" : searchTerm;
   builder.append_path(web::uri::encode_data_string(utility::conversions::to_string_t(query + ".xml")));
 
-  builder.append_query(to_string_t("fq[]"), to_string_t("bundle:" + filterType));
+  builder.append_query(to_string_t("fq"), to_string_t("bundle:" + normalizedFilterType));
 
   if (componentTypeTID != 0) {
     std::string filter = "tid:" + openstudio::string_conversions::number(componentTypeTID);
-    builder.append_query(to_string_t("fq[]"), to_string_t(filter));
+    builder.append_query(to_string_t("fq"), to_string_t(filter));
   }
-  builder.append_query(to_string_t("api_version"), to_string_t(m_apiVersion));
   builder.append_query(to_string_t("show_rows"), to_string_t(openstudio::string_conversions::number(m_numResultsPerQuery)));
   builder.append_query(to_string_t("page"), to_string_t(openstudio::string_conversions::number(page)));
 
