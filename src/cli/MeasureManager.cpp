@@ -29,6 +29,7 @@
 
 #include <json/json.h>
 #include <fmt/format.h>
+#include <httplib.h>
 #include <json/value.h>
 #include <pugixml.hpp>
 
@@ -564,6 +565,10 @@ void MeasureManager::reset() {
   m_measures.clear();
 }
 
+MeasureManagerServer::~MeasureManagerServer() {
+  close();
+}
+
 MeasureManagerServer::MeasureManagerServer(unsigned port, ScriptEngineInstance& rubyEngine, ScriptEngineInstance& pythonEngine)
   : m_measureManager(rubyEngine, pythonEngine),
     m_url(fmt::format("http://localhost:{}/", port)),
@@ -578,18 +583,19 @@ MeasureManagerServer::MeasureManagerServer(unsigned port, ScriptEngineInstance& 
   m_host = "127.0.0.1";
 #endif
 
+  m_server = std::make_unique<httplib::Server>();
   // Single-threaded pool ensures serial execution — Ruby/Python engines are not thread-safe
-  m_server.new_task_queue = [] { return new httplib::ThreadPool(1, 1); };
-  m_server.Get(".*", [this](const httplib::Request& req, httplib::Response& res) { handle_get(req, res); });
-  m_server.Post(".*", [this](const httplib::Request& req, httplib::Response& res) { handle_post(req, res); });
+  m_server->new_task_queue = [] { return new httplib::ThreadPool(1, 1); };
+  m_server->Get(".*", [this](const httplib::Request& req, httplib::Response& res) { handle_get(req, res); });
+  m_server->Post(".*", [this](const httplib::Request& req, httplib::Response& res) { handle_post(req, res); });
 }
 
 bool MeasureManagerServer::open() {
-  return m_server.bind_to_port(m_host, static_cast<int>(m_port));
+  return m_server->bind_to_port(m_host, static_cast<int>(m_port));
 }
 
 bool MeasureManagerServer::close() {
-  m_server.stop();
+  m_server->stop();
   return true;
 }
 
@@ -1022,11 +1028,11 @@ void MeasureManagerServer::do_tasks_forever() {
   // Print the request to the console (stdout if Ok, stderr otherwise)
   // [2024-11-14T10:21:46+01:00] "POST /reset HTTP/1.1" 200 (OK)
   // [2024-11-14T10:22:09+01:00] "GET /dsd HTTP/1.1" 404 (Not Found)
-  m_server.set_logger([](const httplib::Request& req, const httplib::Response& res) {
+  m_server->set_logger([](const httplib::Request& req, const httplib::Response& res) {
     fmt::print(res.status == httplib::StatusCode::OK_200 ? stdout : stderr, "[{}] \"{} {} {}\" {} ({})\n",
                openstudio::DateTime::now().toXsdDateTime(), req.method, req.path, req.version, res.status, httplib::status_message(res.status));
   });
-  m_server.set_error_logger([](const httplib::Error& err, const httplib::Request* req) {
+  m_server->set_error_logger([](const httplib::Error& err, const httplib::Request* req) {
     if (req) {
       fmt::print(stderr, "error_logger: [{}] \"{} {} {}\" {} ({})\n", openstudio::DateTime::now().toXsdDateTime(), req->method, req->path,
                  req->version, static_cast<int>(err), httplib::to_string(err));
@@ -1036,7 +1042,7 @@ void MeasureManagerServer::do_tasks_forever() {
     }
   });
 
-  m_server.listen_after_bind();
+  m_server->listen_after_bind();
 }
 
 }  // namespace openstudio

@@ -15,13 +15,18 @@
 #include "../measure/OSMeasureInfoGetter.hpp"
 #include "../utilities/bcl/BCLMeasure.hpp"
 
-#include <httplib.h>
-
 #include <map>
+#include <memory>
 #include <string>
 
 namespace Json {
 class Value;
+}
+
+namespace httplib {
+class Server;
+struct Request;
+struct Response;
 }
 
 namespace openstudio {
@@ -91,6 +96,7 @@ class MeasureManagerServer
 {
  public:
   explicit MeasureManagerServer(unsigned port, ScriptEngineInstance& rubyEngine, ScriptEngineInstance& pythonEngine);
+  ~MeasureManagerServer();
 
   bool open();
   bool close();
@@ -127,7 +133,7 @@ class MeasureManagerServer
   static void unknown_endpoint(const httplib::Request& req, httplib::Response& res);
 
   MeasureManager m_measureManager;
-  httplib::Server m_server;
+  std::unique_ptr<httplib::Server> m_server;
 
   std::string m_url;
   unsigned m_port;

@@ -38,6 +38,7 @@ target_link_libraries(openstudio
   openstudiolib
   openstudio_workflow
   CLI11::CLI11
+  httplib::httplib
 )
 
 if(BUILD_RUBY_BINDINGS)
