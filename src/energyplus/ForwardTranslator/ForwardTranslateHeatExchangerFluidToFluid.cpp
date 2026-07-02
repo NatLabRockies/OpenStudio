@@ -13,6 +13,7 @@
 #include "../../model/SetpointManager_Impl.hpp"
 #include "../../model/Schedule.hpp"
 #include "../../utilities/idf/Workspace.hpp"
+#include "../../utilities/core/Compare.hpp"
 #include "../../utilities/core/Logger.hpp"
 #include <utilities/idd/HeatExchanger_FluidToFluid_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
@@ -128,7 +129,14 @@ namespace energyplus {
 
     // HeatTransferMeteringEndUseType
     if ((s = modelObject.heatTransferMeteringEndUseType())) {
-      idfObject.setString(HeatExchanger_FluidToFluidFields::HeatTransferMeteringEndUseType, s.get());
+      // TODO: deal with the removed "HeatRecovery" option. I don't think it should have been removed at all
+      // https://github.com/NatLabRockies/EnergyPlus/pull/11344#issuecomment-4863193836
+      std::string heatTransferMeteringEndUseType = s.get();
+      if (openstudio::istringEqual("HeatRecovery", heatTransferMeteringEndUseType)) {
+        LOG(Warn, "HeatExchanger_FluidToFluid: HeatTransferMeteringEndUseType 'HeatRecovery' is no longer supported. Using 'LoopToLoop' instead.");
+        heatTransferMeteringEndUseType = "LoopToLoop";
+      }
+      idfObject.setString(HeatExchanger_FluidToFluidFields::HeatTransferMeteringEndUseType, heatTransferMeteringEndUseType);
     }
 
     // ComponentOverrideLoopSupplySideInletNode

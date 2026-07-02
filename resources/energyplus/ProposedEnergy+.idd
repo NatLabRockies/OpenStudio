@@ -50294,7 +50294,6 @@ HeatExchanger:FluidToFluid,
         \note This field controls end use reporting for heat transfer meters
         \type choice
         \key FreeCooling
-        \key HeatRecovery
         \key HeatRejection
         \key HeatRecoveryForCooling
         \key HeatRecoveryForHeating
