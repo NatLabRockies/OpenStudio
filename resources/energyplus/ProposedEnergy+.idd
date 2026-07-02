@@ -53297,11 +53297,11 @@ PlantEquipmentOperationSchemes,
        \min-fields 4
        \max-fields 25
   A1 , \field Name
-        \required-field
+       \required-field
        \reference PlantOperationSchemes
   A2 , \field Control Scheme 1 Object Type
-        \required-field
-        \begin-extensible
+       \required-field
+       \begin-extensible
        \type choice
        \key PlantEquipmentOperation:CoolingLoad
        \key PlantEquipmentOperation:HeatingLoad
@@ -58389,6 +58389,7 @@ PhotovoltaicPerformance:Simple,
         \memo which surfaces convert incident solar radiation to electricity and need not specify
         \memo arrays of specific modules.
    A1 , \field Name
+        \required-field
         \reference PVModules
    N1 , \field Fraction of Surface Area with Active Solar Cells
         \required-field
@@ -58414,6 +58415,7 @@ PhotovoltaicPerformance:EquivalentOne-Diode,
         \memo using an equivalent one-diode circuit. This model is also known as
         \memo the 4- or 5-parameter TRNSYS model for photovoltaics.
    A1 , \field Name
+        \required-field
         \reference PVModules
    A2 , \field Cell type
         \type choice
@@ -58524,6 +58526,7 @@ PhotovoltaicPerformance:Sandia,
         \memo Describes performance input data needed for specific makes and models of production
         \memo PV panels using the empirical coefficients assembled by Sandia National Laboratory.
    A1 , \field Name
+        \required-field
         \reference PVModules
    N1 , \field Active Area
         \note (m2, single module)
