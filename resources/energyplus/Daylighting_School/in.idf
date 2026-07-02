@@ -33,7 +33,7 @@
 ! WeatherFileName=USA_CO_Boulder_TMY2.epw
 ! End SimMetaData
 
-  Version,25.2;
+  Version,26.1;
 
   Timestep,6;
 
