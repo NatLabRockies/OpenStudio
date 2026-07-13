@@ -2796,6 +2796,23 @@ set(${target_name}_depends
 set(${target_name}_depends ${${target_name}_depends} PARENT_SCOPE)
 
 target_compile_definitions(${target_name} PRIVATE openstudio_epmodel_EXPORTS SHARED_OS_LIBS)
+
+# Headers-only INTERFACE target: gives consumers epmodel's per-subfolder include
+# directories without pulling in its OBJECT library's actual object files. On MSVC,
+# openstudio_epmodel's objects already live in openstudioepmodellib.dll; any consumer
+# that links both openstudio_epmodel directly AND openstudiolib (which PUBLIC-links
+# openstudioepmodellib) gets the same symbols twice -- once as real definitions, once
+# as the DLL's import-lib thunks -- which MSVC rejects (LNK2005). Consumers that only
+# need to compile against epmodel headers (not embed its objects) should link this
+# instead of openstudio_epmodel.
+add_library(openstudio_epmodel_headers INTERFACE)
+target_include_directories(openstudio_epmodel_headers INTERFACE
+  ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/HVACComponent
+  ${CMAKE_CURRENT_SOURCE_DIR}/ModelObject
+  ${CMAKE_CURRENT_SOURCE_DIR}/scaffolds
+  ${CMAKE_CURRENT_SOURCE_DIR}/StraightComponent
+  ${CMAKE_CURRENT_SOURCE_DIR}/ShadingMaterial)
+
 target_include_directories(${target_name} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/HVACComponent
   ${CMAKE_CURRENT_SOURCE_DIR}/ModelObject
   ${CMAKE_CURRENT_SOURCE_DIR}/scaffolds
@@ -3675,7 +3692,7 @@ set(${target_name}_test_src
 
 set(${target_name}_test_depends
   openstudiolib
-  openstudio_epmodel
+  openstudio_epmodel_headers
 )
 
 CREATE_SRC_GROUPS("${${target_name}_test_src}")
