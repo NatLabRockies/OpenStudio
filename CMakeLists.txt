@@ -590,6 +590,10 @@ if(MSVC)
   # warning level 3
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W3")
 
+  # Remove unreferenced COMDATs (functions/data) before they reach the linker.
+  # Shrinks object files; does NOT reduce dllexport'd symbol counts (verified empirically).
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Zc:inline")
+
   # warning level 4 - DLM: we should shoot for this
   #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
 
