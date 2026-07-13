@@ -17,6 +17,11 @@ if(MSVC)
   # (CLI, ruby/python/csharp bindings, tests) needs any change.
   # Each OBJECT library still lands in exactly one DLL, so the per-component
   # openstudio_<name>_EXPORTS / <NAME>_API macros produce correct dllexport/dllimport.
+  #
+  # openstudio_osversion goes in openstudiomodellib (not the top-level openstudiolib)
+  # because model/Model.cpp calls osversion::VersionTranslator directly (Model::load),
+  # while osversion links openstudio_model's own dependency chain -- a genuine mutual
+  # dependency that only compiles when both land in the same DLL.
   add_library(openstudioutilitieslib SHARED empty.cpp)
   target_link_libraries(
    openstudioutilitieslib
@@ -30,6 +35,7 @@ if(MSVC)
    PRIVATE
    openstudio_model
    openstudio_energyplus
+   openstudio_osversion
    PUBLIC
    openstudioutilitieslib
   )
@@ -52,7 +58,6 @@ if(MSVC)
    openstudio_epjson
    openstudio_alfalfa
    openstudio_measure
-   openstudio_osversion
    openstudio_sdd
    openstudio_isomodel
    openstudio_gbxml
