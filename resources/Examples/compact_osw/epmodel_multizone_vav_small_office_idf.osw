@@ -1,0 +1,10 @@
+{
+  "weather_file": "files/srrl_2013_amy.epw",
+  "seed_file": "files/RefBldgSmallOfficeNew2004_Chicago.idf",
+  "steps": [
+    {
+      "measure_dir_name": "EpModelMultizoneVAV",
+      "arguments": {}
+    }
+  ]
+}

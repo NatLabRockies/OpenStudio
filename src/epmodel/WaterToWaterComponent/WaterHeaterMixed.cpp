@@ -712,6 +712,20 @@ namespace epmodel {
 
     }  // namespace
 
+    void WaterHeaterMixed_Impl::doCanonicalize(LoadContext& context) {
+      WaterToWaterComponent_Impl::doCanonicalize(context);
+
+      try {
+        waterHeaterSizing();
+        return;
+      } catch (const std::exception&) {
+      }
+
+      const auto waterHeater = getObject<WaterHeaterMixed>();
+      WaterHeaterSizing sizing(waterHeater);
+      detail::addLoadInfo(context, "Created default WaterHeater:Sizing object for WaterHeater:Mixed '" + waterHeater.nameString() + "'.");
+    }
+
     std::vector<ModelObject> WaterHeaterMixed_Impl::children() const {
       return {waterHeaterSizing()};
     }
@@ -876,7 +890,8 @@ namespace epmodel {
     }
 
     bool WaterHeaterMixed_Impl::setUseFlowRateFractionSchedule(Schedule& schedule) {
-      return setSchedule(openstudio::WaterHeater_MixedFields::UseFlowRateFractionScheduleName, "WaterHeaterMixed", "Use Flow Rate Fraction", schedule);
+      return setSchedule(openstudio::WaterHeater_MixedFields::UseFlowRateFractionScheduleName, "WaterHeaterMixed", "Use Flow Rate Fraction",
+                         schedule);
     }
 
     void WaterHeaterMixed_Impl::resetUseFlowRateFractionSchedule() {
@@ -1076,9 +1091,14 @@ namespace epmodel {
     }
 
     WaterHeaterSizing WaterHeaterMixed_Impl::waterHeaterSizing() const {
-      for (const auto& sizing : model().getConcreteModelObjects<WaterHeaterSizing>()) {
-        if (sizing.waterHeater().handle() == handle()) {
-          return sizing;
+      for (const auto& source : getObject<ModelObject>().getSources(WaterHeaterSizing::iddObjectType())) {
+        if (auto sizing = source.optionalCast<WaterHeaterSizing>()) {
+          try {
+            if (sizing->waterHeater().handle() == handle()) {
+              return *sizing;
+            }
+          } catch (const std::exception&) {
+          }
         }
       }
       throw std::runtime_error("WaterHeaterMixed missing WaterHeater:Sizing object.");
@@ -1088,9 +1108,8 @@ namespace epmodel {
       if (auto sourceSidePlantLoop = secondaryPlantLoop()) {
         for (const auto& plantLoop : model().getConcreteModelObjects<PlantLoop>()) {
           const auto supplyComponents = plantLoop.supplyComponents(openstudio::IddObjectType::Catchall);
-          const auto matchesSourceLoop = std::find_if(supplyComponents.begin(), supplyComponents.end(), [&](const auto& component) {
-            return component.handle() == handle();
-          });
+          const auto matchesSourceLoop =
+            std::find_if(supplyComponents.begin(), supplyComponents.end(), [&](const auto& component) { return component.handle() == handle(); });
           if (matchesSourceLoop != supplyComponents.end() && plantLoop.handle() != sourceSidePlantLoop->handle()) {
             return plantLoop;
           }
@@ -1117,9 +1136,8 @@ namespace epmodel {
 
       if (auto sourceSidePlantLoop = sourceSideOutletNode_->plantLoop()) {
         const auto supplyComponents = sourceSidePlantLoop->supplyComponents(openstudio::IddObjectType::Catchall);
-        const auto matchesSourceLoop = std::find_if(supplyComponents.begin(), supplyComponents.end(), [&](const auto& component) {
-          return component.handle() == handle();
-        });
+        const auto matchesSourceLoop =
+          std::find_if(supplyComponents.begin(), supplyComponents.end(), [&](const auto& component) { return component.handle() == handle(); });
         if (matchesSourceLoop != supplyComponents.end()) {
           return sourceSidePlantLoop;
         }

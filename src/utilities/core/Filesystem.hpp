@@ -19,7 +19,6 @@ namespace filesystem {
 
   // types
   using boost::filesystem::path;
-  using boost::filesystem::wpath;
 
   using boost::filesystem::basic_ofstream;
 
@@ -32,9 +31,8 @@ namespace filesystem {
   using boost::filesystem::directory_entry;
 
   // functions
-  using boost::filesystem::basename;
+  using boost::filesystem::absolute;
   using boost::filesystem::canonical;
-  using boost::filesystem::complete;
   using boost::filesystem::copy;
   using boost::filesystem::copy_file;
   using boost::filesystem::create_directories;
@@ -42,7 +40,6 @@ namespace filesystem {
   using boost::filesystem::directory_iterator;
   using boost::filesystem::equivalent;
   using boost::filesystem::exists;
-  using boost::filesystem::extension;
   using boost::filesystem::file_size;
   using boost::filesystem::initial_path;
   using boost::filesystem::is_directory;

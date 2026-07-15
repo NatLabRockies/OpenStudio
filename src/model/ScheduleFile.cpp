@@ -314,7 +314,7 @@ namespace model {
     }
     // check the interval
     double intervalLength = intervalTime->totalMinutes();
-    if (intervalLength - floor(intervalLength) > 0) {
+    if (intervalLength - std::floor(intervalLength) > 0) {
       return false;
     }
     // check the interval
@@ -326,7 +326,7 @@ namespace model {
     Date startDate = firstReportDateTime.date();
     Time firstReportTime = firstReportDateTime.time();
     double numIntervalsToFirstReport = std::max(1.0, firstReportTime.totalMinutes() / intervalLength);
-    if (numIntervalsToFirstReport - floor(numIntervalsToFirstReport) > 0) {
+    if (numIntervalsToFirstReport - std::floor(numIntervalsToFirstReport) > 0) {
       return false;
     }
     // check the values

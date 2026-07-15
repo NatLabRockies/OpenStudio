@@ -11,19 +11,19 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API CurrencyType_Impl : public ParentObject_Impl
-{
- public:
-  using ParentObject_Impl::ParentObject_Impl;
-  virtual ~CurrencyType_Impl() override = default;
+    class EPMODEL_API CurrencyType_Impl : public ParentObject_Impl
+    {
+     public:
+      using ParentObject_Impl::ParentObject_Impl;
+      virtual ~CurrencyType_Impl() override = default;
 
-  boost::optional<std::string> monetaryUnit() const;
-  bool setMonetaryUnit(const std::string& monetaryUnit);
-};
+      boost::optional<std::string> monetaryUnit() const;
+      bool setMonetaryUnit(const std::string& monetaryUnit);
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

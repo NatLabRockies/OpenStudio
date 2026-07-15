@@ -50,8 +50,7 @@ namespace epmodel {
 
     bool HeatExchangerDesiccantBalancedFlowPerformanceDataType1_Impl::isNominalAirFaceVelocityAutosized() const {
       bool result = false;
-      boost::optional<std::string> value =
-        getString(HeatExchanger_Desiccant_BalancedFlow_PerformanceDataType1Fields::NominalAirFaceVelocity, true);
+      boost::optional<std::string> value = getString(HeatExchanger_Desiccant_BalancedFlow_PerformanceDataType1Fields::NominalAirFaceVelocity, true);
       if (value) {
         result = openstudio::istringEqual(value.get(), "autosize");
       }
@@ -153,15 +152,15 @@ namespace epmodel {
     }
 
     double HeatExchangerDesiccantBalancedFlowPerformanceDataType1_Impl::minimumProcessInletAirHumidityRatioforTemperatureEquation() const {
-      boost::optional<double> value = getDouble(
-        HeatExchanger_Desiccant_BalancedFlow_PerformanceDataType1Fields::MinimumProcessInletAirHumidityRatioforTemperatureEquation, true);
+      boost::optional<double> value =
+        getDouble(HeatExchanger_Desiccant_BalancedFlow_PerformanceDataType1Fields::MinimumProcessInletAirHumidityRatioforTemperatureEquation, true);
       OS_ASSERT(value);
       return value.get();
     }
 
     double HeatExchangerDesiccantBalancedFlowPerformanceDataType1_Impl::maximumProcessInletAirHumidityRatioforTemperatureEquation() const {
-      boost::optional<double> value = getDouble(
-        HeatExchanger_Desiccant_BalancedFlow_PerformanceDataType1Fields::MaximumProcessInletAirHumidityRatioforTemperatureEquation, true);
+      boost::optional<double> value =
+        getDouble(HeatExchanger_Desiccant_BalancedFlow_PerformanceDataType1Fields::MaximumProcessInletAirHumidityRatioforTemperatureEquation, true);
       OS_ASSERT(value);
       return value.get();
     }
@@ -321,29 +320,29 @@ namespace epmodel {
     }
 
     double HeatExchangerDesiccantBalancedFlowPerformanceDataType1_Impl::minimumProcessInletAirHumidityRatioforHumidityRatioEquation() const {
-      boost::optional<double> value = getDouble(
-        HeatExchanger_Desiccant_BalancedFlow_PerformanceDataType1Fields::MinimumProcessInletAirHumidityRatioforHumidityRatioEquation, true);
+      boost::optional<double> value =
+        getDouble(HeatExchanger_Desiccant_BalancedFlow_PerformanceDataType1Fields::MinimumProcessInletAirHumidityRatioforHumidityRatioEquation, true);
       OS_ASSERT(value);
       return value.get();
     }
 
     double HeatExchangerDesiccantBalancedFlowPerformanceDataType1_Impl::maximumProcessInletAirHumidityRatioforHumidityRatioEquation() const {
-      boost::optional<double> value = getDouble(
-        HeatExchanger_Desiccant_BalancedFlow_PerformanceDataType1Fields::MaximumProcessInletAirHumidityRatioforHumidityRatioEquation, true);
+      boost::optional<double> value =
+        getDouble(HeatExchanger_Desiccant_BalancedFlow_PerformanceDataType1Fields::MaximumProcessInletAirHumidityRatioforHumidityRatioEquation, true);
       OS_ASSERT(value);
       return value.get();
     }
 
     double HeatExchangerDesiccantBalancedFlowPerformanceDataType1_Impl::minimumProcessInletAirTemperatureforHumidityRatioEquation() const {
-      boost::optional<double> value = getDouble(
-        HeatExchanger_Desiccant_BalancedFlow_PerformanceDataType1Fields::MinimumProcessInletAirTemperatureforHumidityRatioEquation, true);
+      boost::optional<double> value =
+        getDouble(HeatExchanger_Desiccant_BalancedFlow_PerformanceDataType1Fields::MinimumProcessInletAirTemperatureforHumidityRatioEquation, true);
       OS_ASSERT(value);
       return value.get();
     }
 
     double HeatExchangerDesiccantBalancedFlowPerformanceDataType1_Impl::maximumProcessInletAirTemperatureforHumidityRatioEquation() const {
-      boost::optional<double> value = getDouble(
-        HeatExchanger_Desiccant_BalancedFlow_PerformanceDataType1Fields::MaximumProcessInletAirTemperatureforHumidityRatioEquation, true);
+      boost::optional<double> value =
+        getDouble(HeatExchanger_Desiccant_BalancedFlow_PerformanceDataType1Fields::MaximumProcessInletAirTemperatureforHumidityRatioEquation, true);
       OS_ASSERT(value);
       return value.get();
     }
@@ -378,16 +377,14 @@ namespace epmodel {
 
     double HeatExchangerDesiccantBalancedFlowPerformanceDataType1_Impl::minimumRegenerationInletAirRelativeHumidityforHumidityRatioEquation() const {
       boost::optional<double> value = getDouble(
-        HeatExchanger_Desiccant_BalancedFlow_PerformanceDataType1Fields::MinimumRegenerationInletAirRelativeHumidityforHumidityRatioEquation,
-        true);
+        HeatExchanger_Desiccant_BalancedFlow_PerformanceDataType1Fields::MinimumRegenerationInletAirRelativeHumidityforHumidityRatioEquation, true);
       OS_ASSERT(value);
       return value.get();
     }
 
     double HeatExchangerDesiccantBalancedFlowPerformanceDataType1_Impl::maximumRegenerationInletAirRelativeHumidityforHumidityRatioEquation() const {
       boost::optional<double> value = getDouble(
-        HeatExchanger_Desiccant_BalancedFlow_PerformanceDataType1Fields::MaximumRegenerationInletAirRelativeHumidityforHumidityRatioEquation,
-        true);
+        HeatExchanger_Desiccant_BalancedFlow_PerformanceDataType1Fields::MaximumRegenerationInletAirRelativeHumidityforHumidityRatioEquation, true);
       OS_ASSERT(value);
       return value.get();
     }
@@ -432,50 +429,50 @@ namespace epmodel {
     }
 
     bool HeatExchangerDesiccantBalancedFlowPerformanceDataType1_Impl::setTemperatureEquationCoefficient1(double temperatureEquationCoefficient1) {
-      bool result = setDouble(HeatExchanger_Desiccant_BalancedFlow_PerformanceDataType1Fields::TemperatureEquationCoefficient1,
-                              temperatureEquationCoefficient1);
+      bool result =
+        setDouble(HeatExchanger_Desiccant_BalancedFlow_PerformanceDataType1Fields::TemperatureEquationCoefficient1, temperatureEquationCoefficient1);
       return result;
     }
 
     bool HeatExchangerDesiccantBalancedFlowPerformanceDataType1_Impl::setTemperatureEquationCoefficient2(double temperatureEquationCoefficient2) {
-      bool result = setDouble(HeatExchanger_Desiccant_BalancedFlow_PerformanceDataType1Fields::TemperatureEquationCoefficient2,
-                              temperatureEquationCoefficient2);
+      bool result =
+        setDouble(HeatExchanger_Desiccant_BalancedFlow_PerformanceDataType1Fields::TemperatureEquationCoefficient2, temperatureEquationCoefficient2);
       return result;
     }
 
     bool HeatExchangerDesiccantBalancedFlowPerformanceDataType1_Impl::setTemperatureEquationCoefficient3(double temperatureEquationCoefficient3) {
-      bool result = setDouble(HeatExchanger_Desiccant_BalancedFlow_PerformanceDataType1Fields::TemperatureEquationCoefficient3,
-                              temperatureEquationCoefficient3);
+      bool result =
+        setDouble(HeatExchanger_Desiccant_BalancedFlow_PerformanceDataType1Fields::TemperatureEquationCoefficient3, temperatureEquationCoefficient3);
       return result;
     }
 
     bool HeatExchangerDesiccantBalancedFlowPerformanceDataType1_Impl::setTemperatureEquationCoefficient4(double temperatureEquationCoefficient4) {
-      bool result = setDouble(HeatExchanger_Desiccant_BalancedFlow_PerformanceDataType1Fields::TemperatureEquationCoefficient4,
-                              temperatureEquationCoefficient4);
+      bool result =
+        setDouble(HeatExchanger_Desiccant_BalancedFlow_PerformanceDataType1Fields::TemperatureEquationCoefficient4, temperatureEquationCoefficient4);
       return result;
     }
 
     bool HeatExchangerDesiccantBalancedFlowPerformanceDataType1_Impl::setTemperatureEquationCoefficient5(double temperatureEquationCoefficient5) {
-      bool result = setDouble(HeatExchanger_Desiccant_BalancedFlow_PerformanceDataType1Fields::TemperatureEquationCoefficient5,
-                              temperatureEquationCoefficient5);
+      bool result =
+        setDouble(HeatExchanger_Desiccant_BalancedFlow_PerformanceDataType1Fields::TemperatureEquationCoefficient5, temperatureEquationCoefficient5);
       return result;
     }
 
     bool HeatExchangerDesiccantBalancedFlowPerformanceDataType1_Impl::setTemperatureEquationCoefficient6(double temperatureEquationCoefficient6) {
-      bool result = setDouble(HeatExchanger_Desiccant_BalancedFlow_PerformanceDataType1Fields::TemperatureEquationCoefficient6,
-                              temperatureEquationCoefficient6);
+      bool result =
+        setDouble(HeatExchanger_Desiccant_BalancedFlow_PerformanceDataType1Fields::TemperatureEquationCoefficient6, temperatureEquationCoefficient6);
       return result;
     }
 
     bool HeatExchangerDesiccantBalancedFlowPerformanceDataType1_Impl::setTemperatureEquationCoefficient7(double temperatureEquationCoefficient7) {
-      bool result = setDouble(HeatExchanger_Desiccant_BalancedFlow_PerformanceDataType1Fields::TemperatureEquationCoefficient7,
-                              temperatureEquationCoefficient7);
+      bool result =
+        setDouble(HeatExchanger_Desiccant_BalancedFlow_PerformanceDataType1Fields::TemperatureEquationCoefficient7, temperatureEquationCoefficient7);
       return result;
     }
 
     bool HeatExchangerDesiccantBalancedFlowPerformanceDataType1_Impl::setTemperatureEquationCoefficient8(double temperatureEquationCoefficient8) {
-      bool result = setDouble(HeatExchanger_Desiccant_BalancedFlow_PerformanceDataType1Fields::TemperatureEquationCoefficient8,
-                              temperatureEquationCoefficient8);
+      bool result =
+        setDouble(HeatExchanger_Desiccant_BalancedFlow_PerformanceDataType1Fields::TemperatureEquationCoefficient8, temperatureEquationCoefficient8);
       return result;
     }
 
@@ -545,17 +542,15 @@ namespace epmodel {
 
     bool HeatExchangerDesiccantBalancedFlowPerformanceDataType1_Impl::setMinimumRegenerationAirVelocityforTemperatureEquation(
       double minimumRegenerationAirVelocityforTemperatureEquation) {
-      bool result =
-        setDouble(HeatExchanger_Desiccant_BalancedFlow_PerformanceDataType1Fields::MinimumRegenerationAirVelocityforTemperatureEquation,
-                  minimumRegenerationAirVelocityforTemperatureEquation);
+      bool result = setDouble(HeatExchanger_Desiccant_BalancedFlow_PerformanceDataType1Fields::MinimumRegenerationAirVelocityforTemperatureEquation,
+                              minimumRegenerationAirVelocityforTemperatureEquation);
       return result;
     }
 
     bool HeatExchangerDesiccantBalancedFlowPerformanceDataType1_Impl::setMaximumRegenerationAirVelocityforTemperatureEquation(
       double maximumRegenerationAirVelocityforTemperatureEquation) {
-      bool result =
-        setDouble(HeatExchanger_Desiccant_BalancedFlow_PerformanceDataType1Fields::MaximumRegenerationAirVelocityforTemperatureEquation,
-                  maximumRegenerationAirVelocityforTemperatureEquation);
+      bool result = setDouble(HeatExchanger_Desiccant_BalancedFlow_PerformanceDataType1Fields::MaximumRegenerationAirVelocityforTemperatureEquation,
+                              maximumRegenerationAirVelocityforTemperatureEquation);
       return result;
     }
 
@@ -577,17 +572,17 @@ namespace epmodel {
 
     bool HeatExchangerDesiccantBalancedFlowPerformanceDataType1_Impl::setMinimumRegenerationInletAirRelativeHumidityforTemperatureEquation(
       double minimumRegenerationInletAirRelativeHumidityforTemperatureEquation) {
-      bool result = setDouble(
-        HeatExchanger_Desiccant_BalancedFlow_PerformanceDataType1Fields::MinimumRegenerationInletAirRelativeHumidityforTemperatureEquation,
-        minimumRegenerationInletAirRelativeHumidityforTemperatureEquation);
+      bool result =
+        setDouble(HeatExchanger_Desiccant_BalancedFlow_PerformanceDataType1Fields::MinimumRegenerationInletAirRelativeHumidityforTemperatureEquation,
+                  minimumRegenerationInletAirRelativeHumidityforTemperatureEquation);
       return result;
     }
 
     bool HeatExchangerDesiccantBalancedFlowPerformanceDataType1_Impl::setMaximumRegenerationInletAirRelativeHumidityforTemperatureEquation(
       double maximumRegenerationInletAirRelativeHumidityforTemperatureEquation) {
-      bool result = setDouble(
-        HeatExchanger_Desiccant_BalancedFlow_PerformanceDataType1Fields::MaximumRegenerationInletAirRelativeHumidityforTemperatureEquation,
-        maximumRegenerationInletAirRelativeHumidityforTemperatureEquation);
+      bool result =
+        setDouble(HeatExchanger_Desiccant_BalancedFlow_PerformanceDataType1Fields::MaximumRegenerationInletAirRelativeHumidityforTemperatureEquation,
+                  maximumRegenerationInletAirRelativeHumidityforTemperatureEquation);
       return result;
     }
 
@@ -657,17 +652,17 @@ namespace epmodel {
 
     bool HeatExchangerDesiccantBalancedFlowPerformanceDataType1_Impl::setMinimumRegenerationInletAirHumidityRatioforHumidityRatioEquation(
       double minimumRegenerationInletAirHumidityRatioforHumidityRatioEquation) {
-      bool result = setDouble(
-        HeatExchanger_Desiccant_BalancedFlow_PerformanceDataType1Fields::MinimumRegenerationInletAirHumidityRatioforHumidityRatioEquation,
-        minimumRegenerationInletAirHumidityRatioforHumidityRatioEquation);
+      bool result =
+        setDouble(HeatExchanger_Desiccant_BalancedFlow_PerformanceDataType1Fields::MinimumRegenerationInletAirHumidityRatioforHumidityRatioEquation,
+                  minimumRegenerationInletAirHumidityRatioforHumidityRatioEquation);
       return result;
     }
 
     bool HeatExchangerDesiccantBalancedFlowPerformanceDataType1_Impl::setMaximumRegenerationInletAirHumidityRatioforHumidityRatioEquation(
       double maximumRegenerationInletAirHumidityRatioforHumidityRatioEquation) {
-      bool result = setDouble(
-        HeatExchanger_Desiccant_BalancedFlow_PerformanceDataType1Fields::MaximumRegenerationInletAirHumidityRatioforHumidityRatioEquation,
-        maximumRegenerationInletAirHumidityRatioforHumidityRatioEquation);
+      bool result =
+        setDouble(HeatExchanger_Desiccant_BalancedFlow_PerformanceDataType1Fields::MaximumRegenerationInletAirHumidityRatioforHumidityRatioEquation,
+                  maximumRegenerationInletAirHumidityRatioforHumidityRatioEquation);
       return result;
     }
 
@@ -721,33 +716,31 @@ namespace epmodel {
 
     bool HeatExchangerDesiccantBalancedFlowPerformanceDataType1_Impl::setMinimumRegenerationAirVelocityforHumidityRatioEquation(
       double minimumRegenerationAirVelocityforHumidityRatioEquation) {
-      bool result =
-        setDouble(HeatExchanger_Desiccant_BalancedFlow_PerformanceDataType1Fields::MinimumRegenerationAirVelocityforHumidityRatioEquation,
-                  minimumRegenerationAirVelocityforHumidityRatioEquation);
+      bool result = setDouble(HeatExchanger_Desiccant_BalancedFlow_PerformanceDataType1Fields::MinimumRegenerationAirVelocityforHumidityRatioEquation,
+                              minimumRegenerationAirVelocityforHumidityRatioEquation);
       return result;
     }
 
     bool HeatExchangerDesiccantBalancedFlowPerformanceDataType1_Impl::setMaximumRegenerationAirVelocityforHumidityRatioEquation(
       double maximumRegenerationAirVelocityforHumidityRatioEquation) {
-      bool result =
-        setDouble(HeatExchanger_Desiccant_BalancedFlow_PerformanceDataType1Fields::MaximumRegenerationAirVelocityforHumidityRatioEquation,
-                  maximumRegenerationAirVelocityforHumidityRatioEquation);
+      bool result = setDouble(HeatExchanger_Desiccant_BalancedFlow_PerformanceDataType1Fields::MaximumRegenerationAirVelocityforHumidityRatioEquation,
+                              maximumRegenerationAirVelocityforHumidityRatioEquation);
       return result;
     }
 
     bool HeatExchangerDesiccantBalancedFlowPerformanceDataType1_Impl::setMinimumRegenerationOutletAirHumidityRatioforHumidityRatioEquation(
       double minimumRegenerationOutletAirHumidityRatioforHumidityRatioEquation) {
-      bool result = setDouble(
-        HeatExchanger_Desiccant_BalancedFlow_PerformanceDataType1Fields::MinimumRegenerationOutletAirHumidityRatioforHumidityRatioEquation,
-        minimumRegenerationOutletAirHumidityRatioforHumidityRatioEquation);
+      bool result =
+        setDouble(HeatExchanger_Desiccant_BalancedFlow_PerformanceDataType1Fields::MinimumRegenerationOutletAirHumidityRatioforHumidityRatioEquation,
+                  minimumRegenerationOutletAirHumidityRatioforHumidityRatioEquation);
       return result;
     }
 
     bool HeatExchangerDesiccantBalancedFlowPerformanceDataType1_Impl::setMaximumRegenerationOutletAirHumidityRatioforHumidityRatioEquation(
       double maximumRegenerationOutletAirHumidityRatioforHumidityRatioEquation) {
-      bool result = setDouble(
-        HeatExchanger_Desiccant_BalancedFlow_PerformanceDataType1Fields::MaximumRegenerationOutletAirHumidityRatioforHumidityRatioEquation,
-        maximumRegenerationOutletAirHumidityRatioforHumidityRatioEquation);
+      bool result =
+        setDouble(HeatExchanger_Desiccant_BalancedFlow_PerformanceDataType1Fields::MaximumRegenerationOutletAirHumidityRatioforHumidityRatioEquation,
+                  maximumRegenerationOutletAirHumidityRatioforHumidityRatioEquation);
       return result;
     }
 
@@ -784,14 +777,14 @@ namespace epmodel {
     }
 
     boost::optional<double> HeatExchangerDesiccantBalancedFlowPerformanceDataType1_Impl::autosizedNominalAirFlowRate() {
-  // epmodel does not currently resolve autosized values from SQL results.
-  return boost::none;
-}
+      // epmodel does not currently resolve autosized values from SQL results.
+      return boost::none;
+    }
 
     boost::optional<double> HeatExchangerDesiccantBalancedFlowPerformanceDataType1_Impl::autosizedNominalAirFaceVelocity() {
-  // epmodel does not currently resolve autosized values from SQL results.
-  return boost::none;
-}
+      // epmodel does not currently resolve autosized values from SQL results.
+      return boost::none;
+    }
 
     void HeatExchangerDesiccantBalancedFlowPerformanceDataType1_Impl::autosize() {
       autosizeNominalAirFlowRate();

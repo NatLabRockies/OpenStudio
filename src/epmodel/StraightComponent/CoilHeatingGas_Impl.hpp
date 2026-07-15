@@ -27,7 +27,7 @@ namespace epmodel {
       unsigned outletPort() const override;
       std::vector<ModelObject> children() const override;
 
-      bool addToNode(Node& node);
+      bool addToNode(Node& node) override;
 
       Schedule availabilitySchedule() const;
       bool setAvailabilitySchedule(Schedule& schedule);

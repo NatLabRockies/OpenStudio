@@ -16,59 +16,61 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
-class Schedule;
+  class Model;
+  class Node;
+  class Schedule;
 
-namespace detail {
-class AirTerminalSingleDuctVAVHeatAndCoolNoReheat_Impl;
-}
+  namespace detail {
+    class AirTerminalSingleDuctVAVHeatAndCoolNoReheat_Impl;
+  }
 
-class EPMODEL_API AirTerminalSingleDuctVAVHeatAndCoolNoReheat : public StraightComponent
-{
- public:
-  explicit AirTerminalSingleDuctVAVHeatAndCoolNoReheat(const Model& model);
+  class EPMODEL_API AirTerminalSingleDuctVAVHeatAndCoolNoReheat : public StraightComponent
+  {
+   public:
+    explicit AirTerminalSingleDuctVAVHeatAndCoolNoReheat(const Model& model);
 
-  virtual ~AirTerminalSingleDuctVAVHeatAndCoolNoReheat() override = default;
-  AirTerminalSingleDuctVAVHeatAndCoolNoReheat(const AirTerminalSingleDuctVAVHeatAndCoolNoReheat& other) = default;
-  AirTerminalSingleDuctVAVHeatAndCoolNoReheat(AirTerminalSingleDuctVAVHeatAndCoolNoReheat&& other) = default;
-  AirTerminalSingleDuctVAVHeatAndCoolNoReheat& operator=(const AirTerminalSingleDuctVAVHeatAndCoolNoReheat&) = default;
-  AirTerminalSingleDuctVAVHeatAndCoolNoReheat& operator=(AirTerminalSingleDuctVAVHeatAndCoolNoReheat&&) = default;
+    virtual ~AirTerminalSingleDuctVAVHeatAndCoolNoReheat() override = default;
+    AirTerminalSingleDuctVAVHeatAndCoolNoReheat(const AirTerminalSingleDuctVAVHeatAndCoolNoReheat& other) = default;
+    AirTerminalSingleDuctVAVHeatAndCoolNoReheat(AirTerminalSingleDuctVAVHeatAndCoolNoReheat&& other) = default;
+    AirTerminalSingleDuctVAVHeatAndCoolNoReheat& operator=(const AirTerminalSingleDuctVAVHeatAndCoolNoReheat&) = default;
+    AirTerminalSingleDuctVAVHeatAndCoolNoReheat& operator=(AirTerminalSingleDuctVAVHeatAndCoolNoReheat&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  // Schema Alignment Notes:
-  // - Status: Scalar Parity. The scalar VAV heat-and-cool no-reheat contract is aligned; relationship and node plumbing remain narrower.
-  // - Canonical Counterpart: openstudio::model::AirTerminalSingleDuctVAVHeatAndCoolNoReheat.
-  // - Implemented Parity: `maximumAirFlowRate` and `zoneMinimumAirFlowFraction` preserve the canonical scalar contract.
-  // - Documented Delta: Air inlet/outlet node names remain outside this public surface.
-  // - Field/Storage Mapping: The preserved scalars map directly to EnergyPlus `AirTerminal:SingleDuct:VAV:HeatAndCool:NoReheat` fields; the translator handles links separately.
-  // - Evidence: `src/model/AirTerminalSingleDuctVAVHeatAndCoolNoReheat.hpp`, `src/model/AirTerminalSingleDuctVAVHeatAndCoolNoReheat.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirTerminalSingleDuctVAVHeatAndCoolNoReheat.cpp`, and `src/epmodel/test/AirTerminalSingleDuctVAVHeatAndCoolNoReheat_GTest.cpp`.
-  // - Remaining Parity Work: Add the omitted relationship helpers when this type moves beyond scalar parity.
-  boost::optional<Schedule> availabilitySchedule() const;
-  bool setAvailabilitySchedule(Schedule& schedule);
-  void resetAvailabilitySchedule();
+    bool addToNode(Node& node);
 
-  boost::optional<Schedule> minimumAirFlowTurndownSchedule() const;
-  bool setMinimumAirFlowTurndownSchedule(Schedule& schedule);
-  void resetMinimumAirFlowTurndownSchedule();
+    // Schema Alignment Notes:
+    // - Status: Connectivity Parity for the current epmodel zone-branch topology.
+    // - Canonical Counterpart: openstudio::model::AirTerminalSingleDuctVAVHeatAndCoolNoReheat.
+    // - Implemented Parity: `addToNode`, inherited `remove`, and `removeFromLoop` preserve terminal node wiring, AirLoopHVAC demand continuity, ZoneHVAC equipment registration, existing ADU references, and temporary inlet-node cleanup.
+    // - Documented Delta: canonical `model` accepts a broader set of demand insertion paths. This epmodel wrapper currently requires the target node to already be the ZoneSplitter/Mixer branch node produced by the epmodel AirLoopHVAC zone-branch topology.
+    // - Field/Storage Mapping: Scalars and links map directly to EnergyPlus `AirTerminal:SingleDuct:VAV:HeatAndCool:NoReheat` and `ZoneHVAC:AirDistributionUnit` fields; node links are resolved through epmodel transient Node targets.
+    // - Evidence: `src/model/AirTerminalSingleDuctVAVHeatAndCoolNoReheat.hpp`, `src/model/AirTerminalSingleDuctVAVHeatAndCoolNoReheat.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirTerminalSingleDuctVAVHeatAndCoolNoReheat.cpp`, and `src/epmodel/test/AirTerminalSingleDuctVAVHeatAndCoolNoReheat_GTest.cpp`.
+    boost::optional<Schedule> availabilitySchedule() const;
+    bool setAvailabilitySchedule(Schedule& schedule);
+    void resetAvailabilitySchedule();
 
-  boost::optional<double> maximumAirFlowRate() const;
-  bool isMaximumAirFlowRateAutosized() const;
-  bool setMaximumAirFlowRate(double maximumAirFlowRate);
-  void autosizeMaximumAirFlowRate();
+    boost::optional<Schedule> minimumAirFlowTurndownSchedule() const;
+    bool setMinimumAirFlowTurndownSchedule(Schedule& schedule);
+    void resetMinimumAirFlowTurndownSchedule();
 
-  double zoneMinimumAirFlowFraction() const;
-  bool setZoneMinimumAirFlowFraction(double zoneMinimumAirFlowFraction);
+    boost::optional<double> maximumAirFlowRate() const;
+    bool isMaximumAirFlowRateAutosized() const;
+    bool setMaximumAirFlowRate(double maximumAirFlowRate);
+    void autosizeMaximumAirFlowRate();
 
-protected:
-  using ImplType = detail::AirTerminalSingleDuctVAVHeatAndCoolNoReheat_Impl;
+    double zoneMinimumAirFlowFraction() const;
+    bool setZoneMinimumAirFlowFraction(double zoneMinimumAirFlowFraction);
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+   protected:
+    using ImplType = detail::AirTerminalSingleDuctVAVHeatAndCoolNoReheat_Impl;
 
-  explicit AirTerminalSingleDuctVAVHeatAndCoolNoReheat(std::shared_ptr<detail::AirTerminalSingleDuctVAVHeatAndCoolNoReheat_Impl> impl);
-};
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
+
+    explicit AirTerminalSingleDuctVAVHeatAndCoolNoReheat(std::shared_ptr<detail::AirTerminalSingleDuctVAVHeatAndCoolNoReheat_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

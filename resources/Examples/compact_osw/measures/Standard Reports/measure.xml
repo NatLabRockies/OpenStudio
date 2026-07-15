@@ -1,17 +1,26 @@
+<?xml version="1.0"?>
 <measure>
-  <schema_version>3.0</schema_version>
+  <schema_version>3.1</schema_version>
   <name>standard_reports</name>
   <uid>fc337100-8634-404e-8966-01243d292a79</uid>
-  <version_id>879df589-44e1-41b9-bc1b-3d3e13130792</version_id>
-  <version_modified>20160610T204427Z</version_modified>
-  <xml_checksum>9F9D8C87</xml_checksum>
+  <version_id>31ff9b0e-2830-46ab-8ad1-cc909de9e655</version_id>
+  <version_modified>2026-05-19T10:38:10Z</version_modified>
+  <xml_checksum>2C8A3EEF</xml_checksum>
   <class_name>StandardReports</class_name>
   <display_name>Standard Reports</display_name>
   <description>Change me</description>
   <modeler_description>Change me</modeler_description>
-  <arguments/>
-  <outputs/>
-  <provenances/>
+  <arguments />
+  <outputs>
+    <output>
+      <name>net_site_energy</name>
+      <display_name>net_site_energy</display_name>
+      <short_name>net_site_energy</short_name>
+      <type>Double</type>
+      <model_dependent>false</model_dependent>
+    </output>
+  </outputs>
+  <provenances />
   <tags>
     <tag>Reporting.QAQC</tag>
   </tags>
@@ -29,12 +38,6 @@
   </attributes>
   <files>
     <file>
-      <filename>StandardReports_Test.rb</filename>
-      <filetype>rb</filetype>
-      <usage_type>test</usage_type>
-      <checksum>F8EF9C7D</checksum>
-    </file>
-    <file>
       <version>
         <software_program>OpenStudio</software_program>
         <identifier>1.1.2</identifier>
@@ -43,7 +46,13 @@
       <filename>measure.rb</filename>
       <filetype>rb</filetype>
       <usage_type>script</usage_type>
-      <checksum>C25558B0</checksum>
+      <checksum>8B7DE9B2</checksum>
+    </file>
+    <file>
+      <filename>report.html.in</filename>
+      <filetype>in</filetype>
+      <usage_type>resource</usage_type>
+      <checksum>52ECE59E</checksum>
     </file>
     <file>
       <filename>ExampleModel.osm</filename>
@@ -52,10 +61,10 @@
       <checksum>F769B601</checksum>
     </file>
     <file>
-      <filename>report.html.in</filename>
-      <filetype>in</filetype>
-      <usage_type>resource</usage_type>
-      <checksum>DEB83B8D</checksum>
+      <filename>StandardReports_Test.rb</filename>
+      <filetype>rb</filetype>
+      <usage_type>test</usage_type>
+      <checksum>B622CD62</checksum>
     </file>
   </files>
 </measure>

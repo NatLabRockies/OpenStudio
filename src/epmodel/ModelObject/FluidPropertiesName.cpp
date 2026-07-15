@@ -17,67 +17,65 @@
 namespace openstudio {
 namespace epmodel {
 
-FluidPropertiesName::FluidPropertiesName(const Model& model)
-  : ModelObject(FluidPropertiesName::iddObjectType(), model) {}
+  FluidPropertiesName::FluidPropertiesName(const Model& model) : ModelObject(FluidPropertiesName::iddObjectType(), model) {}
 
-FluidPropertiesName::FluidPropertiesName(std::shared_ptr<detail::FluidPropertiesName_Impl> impl)
-  : ModelObject(std::move(impl)) {}
+  FluidPropertiesName::FluidPropertiesName(std::shared_ptr<detail::FluidPropertiesName_Impl> impl) : ModelObject(std::move(impl)) {}
 
-IddObjectType FluidPropertiesName::iddObjectType() {
-  return IddObjectType::FluidProperties_Name;
-}
+  IddObjectType FluidPropertiesName::iddObjectType() {
+    return IddObjectType::FluidProperties_Name;
+  }
 
-std::vector<std::string> FluidPropertiesName::fluidTypeValues() {
-  return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), openstudio::FluidProperties_NameFields::FluidType);
-}
+  std::vector<std::string> FluidPropertiesName::fluidTypeValues() {
+    return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), openstudio::FluidProperties_NameFields::FluidType);
+  }
 
-std::string FluidPropertiesName::fluidName() const {
-  return getImpl<detail::FluidPropertiesName_Impl>()->fluidName();
-}
+  std::string FluidPropertiesName::fluidName() const {
+    return getImpl<detail::FluidPropertiesName_Impl>()->fluidName();
+  }
 
-bool FluidPropertiesName::setFluidName(const std::string& fluidName) {
-  return getImpl<detail::FluidPropertiesName_Impl>()->setFluidName(fluidName);
-}
+  bool FluidPropertiesName::setFluidName(const std::string& fluidName) {
+    return getImpl<detail::FluidPropertiesName_Impl>()->setFluidName(fluidName);
+  }
 
-std::string FluidPropertiesName::fluidType() const {
-  return getImpl<detail::FluidPropertiesName_Impl>()->fluidType();
-}
+  std::string FluidPropertiesName::fluidType() const {
+    return getImpl<detail::FluidPropertiesName_Impl>()->fluidType();
+  }
 
-bool FluidPropertiesName::setFluidType(const std::string& fluidType) {
-  return getImpl<detail::FluidPropertiesName_Impl>()->setFluidType(fluidType);
-}
+  bool FluidPropertiesName::setFluidType(const std::string& fluidType) {
+    return getImpl<detail::FluidPropertiesName_Impl>()->setFluidType(fluidType);
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-std::string FluidPropertiesName_Impl::fluidName() const {
-  const auto value = getString(openstudio::FluidProperties_NameFields::FluidName, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    std::string FluidPropertiesName_Impl::fluidName() const {
+      const auto value = getString(openstudio::FluidProperties_NameFields::FluidName, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-bool FluidPropertiesName_Impl::setFluidName(const std::string& fluidName) {
-  return setString(openstudio::FluidProperties_NameFields::FluidName, fluidName);
-}
+    bool FluidPropertiesName_Impl::setFluidName(const std::string& fluidName) {
+      return setString(openstudio::FluidProperties_NameFields::FluidName, fluidName);
+    }
 
-std::string FluidPropertiesName_Impl::fluidType() const {
-  const auto value = getString(openstudio::FluidProperties_NameFields::FluidType, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    std::string FluidPropertiesName_Impl::fluidType() const {
+      const auto value = getString(openstudio::FluidProperties_NameFields::FluidType, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-bool FluidPropertiesName_Impl::setFluidType(const std::string& fluidType) {
-  return setString(openstudio::FluidProperties_NameFields::FluidType, fluidType);
-}
+    bool FluidPropertiesName_Impl::setFluidType(const std::string& fluidType) {
+      return setString(openstudio::FluidProperties_NameFields::FluidType, fluidType);
+    }
 
-std::vector<std::string> FluidPropertiesName_Impl::fluidTypeValues() const {
-  return openstudio::epmodel::FluidPropertiesName::fluidTypeValues();
-}
+    std::vector<std::string> FluidPropertiesName_Impl::fluidTypeValues() const {
+      return openstudio::epmodel::FluidPropertiesName::fluidTypeValues();
+    }
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio

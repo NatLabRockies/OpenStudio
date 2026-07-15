@@ -68,12 +68,9 @@ TEST_F(EPModelFixture, SolarCollectorFlatPlatePhotovoltaicThermal_AddToNode_Rout
   EXPECT_TRUE(airCollector.addToNode(*outboardOANode));
   EXPECT_TRUE(oaSystem.oaComponent(airCollector.handle()).has_value());
   ASSERT_TRUE(airCollector.getString(openstudio::SolarCollector_FlatPlate_PhotovoltaicThermalFields::ThermalWorkingFluidType, true));
-  EXPECT_EQ("Air",
-            airCollector.getString(openstudio::SolarCollector_FlatPlate_PhotovoltaicThermalFields::ThermalWorkingFluidType, true).get());
-  EXPECT_TRUE(
-    airCollector.getModelObjectTarget<Node>(openstudio::SolarCollector_FlatPlate_PhotovoltaicThermalFields::AirInletNodeName).has_value());
-  EXPECT_TRUE(
-    airCollector.getModelObjectTarget<Node>(openstudio::SolarCollector_FlatPlate_PhotovoltaicThermalFields::AirOutletNodeName).has_value());
+  EXPECT_EQ("Air", airCollector.getString(openstudio::SolarCollector_FlatPlate_PhotovoltaicThermalFields::ThermalWorkingFluidType, true).get());
+  EXPECT_TRUE(airCollector.getModelObjectTarget<Node>(openstudio::SolarCollector_FlatPlate_PhotovoltaicThermalFields::AirInletNodeName).has_value());
+  EXPECT_TRUE(airCollector.getModelObjectTarget<Node>(openstudio::SolarCollector_FlatPlate_PhotovoltaicThermalFields::AirOutletNodeName).has_value());
   EXPECT_FALSE(
     airCollector.getModelObjectTarget<Node>(openstudio::SolarCollector_FlatPlate_PhotovoltaicThermalFields::WaterInletNodeName).has_value());
   EXPECT_FALSE(
@@ -91,8 +88,7 @@ TEST_F(EPModelFixture, SolarCollectorFlatPlatePhotovoltaicThermal_AddToNode_Rout
   ASSERT_TRUE(waterCollector.plantLoop());
   EXPECT_EQ(plantLoop.handle(), waterCollector.plantLoop()->handle());
   ASSERT_TRUE(waterCollector.getString(openstudio::SolarCollector_FlatPlate_PhotovoltaicThermalFields::ThermalWorkingFluidType, true));
-  EXPECT_EQ("Water",
-            waterCollector.getString(openstudio::SolarCollector_FlatPlate_PhotovoltaicThermalFields::ThermalWorkingFluidType, true).get());
+  EXPECT_EQ("Water", waterCollector.getString(openstudio::SolarCollector_FlatPlate_PhotovoltaicThermalFields::ThermalWorkingFluidType, true).get());
   EXPECT_TRUE(
     waterCollector.getModelObjectTarget<Node>(openstudio::SolarCollector_FlatPlate_PhotovoltaicThermalFields::WaterInletNodeName).has_value());
   EXPECT_TRUE(
@@ -106,8 +102,7 @@ TEST_F(EPModelFixture, SolarCollectorFlatPlatePhotovoltaicThermal_AddToNode_Rout
   ASSERT_TRUE(waterCollector.plantLoop());
   EXPECT_EQ(plantLoop.handle(), waterCollector.plantLoop()->handle());
   EXPECT_FALSE(waterCollector.airLoopHVAC());
-  EXPECT_EQ("Water",
-            waterCollector.getString(openstudio::SolarCollector_FlatPlate_PhotovoltaicThermalFields::ThermalWorkingFluidType, true).get());
+  EXPECT_EQ("Water", waterCollector.getString(openstudio::SolarCollector_FlatPlate_PhotovoltaicThermalFields::ThermalWorkingFluidType, true).get());
   EXPECT_TRUE(
     waterCollector.getModelObjectTarget<Node>(openstudio::SolarCollector_FlatPlate_PhotovoltaicThermalFields::WaterInletNodeName).has_value());
   EXPECT_TRUE(
@@ -123,8 +118,7 @@ TEST_F(EPModelFixture, SolarCollectorFlatPlatePhotovoltaicThermal_AddToNode_Rout
   EXPECT_TRUE(waterCollector.addToNode(*moveOutboardOANode));
   EXPECT_FALSE(waterCollector.plantLoop());
   EXPECT_TRUE(moveOASystem.oaComponent(waterCollector.handle()).has_value());
-  EXPECT_EQ("Air",
-            waterCollector.getString(openstudio::SolarCollector_FlatPlate_PhotovoltaicThermalFields::ThermalWorkingFluidType, true).get());
+  EXPECT_EQ("Air", waterCollector.getString(openstudio::SolarCollector_FlatPlate_PhotovoltaicThermalFields::ThermalWorkingFluidType, true).get());
   EXPECT_TRUE(
     waterCollector.getModelObjectTarget<Node>(openstudio::SolarCollector_FlatPlate_PhotovoltaicThermalFields::AirInletNodeName).has_value());
   EXPECT_TRUE(

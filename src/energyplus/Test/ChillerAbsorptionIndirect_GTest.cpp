@@ -127,8 +127,7 @@ TEST_F(EnergyPlusFixture, ForwardTranslator_ChillerAbsorptionIndirect) {
   EXPECT_EQ("ConstantFlow", idfObject.getString(Chiller_Absorption_IndirectFields::ChillerFlowMode).get());
   EXPECT_EQ("generatorHeatInputCurve",
             idfObject.getString(Chiller_Absorption_IndirectFields::GeneratorHeatInputFunctionofPartLoadRatioCurveName).get());
-  EXPECT_EQ("pumpElectricCurve",
-            idfObject.getString(Chiller_Absorption_IndirectFields::PumpElectricInputFunctionofPartLoadRatioCurveName).get());
+  EXPECT_EQ("pumpElectricCurve", idfObject.getString(Chiller_Absorption_IndirectFields::PumpElectricInputFunctionofPartLoadRatioCurveName).get());
   EXPECT_EQ("capacityCondCurve",
             idfObject.getString(Chiller_Absorption_IndirectFields::CapacityCorrectionFunctionofCondenserTemperatureCurveName).get());
   EXPECT_EQ("capacityChwCurve",
@@ -138,8 +137,7 @@ TEST_F(EnergyPlusFixture, ForwardTranslator_ChillerAbsorptionIndirect) {
   EXPECT_EQ("generatorHeatCondCurve",
             idfObject.getString(Chiller_Absorption_IndirectFields::GeneratorHeatInputCorrectionFunctionofCondenserTemperatureCurveName).get());
   EXPECT_EQ("generatorHeatChwCurve",
-            idfObject.getString(Chiller_Absorption_IndirectFields::GeneratorHeatInputCorrectionFunctionofChilledWaterTemperatureCurveName)
-              .get());
+            idfObject.getString(Chiller_Absorption_IndirectFields::GeneratorHeatInputCorrectionFunctionofChilledWaterTemperatureCurveName).get());
   EXPECT_EQ("HotWater", idfObject.getString(Chiller_Absorption_IndirectFields::GeneratorHeatSourceType).get());
   EXPECT_DOUBLE_EQ(0.033, idfObject.getDouble(Chiller_Absorption_IndirectFields::DesignGeneratorFluidFlowRate).get());
   EXPECT_DOUBLE_EQ(30.5, idfObject.getDouble(Chiller_Absorption_IndirectFields::TemperatureLowerLimitGeneratorInlet).get());

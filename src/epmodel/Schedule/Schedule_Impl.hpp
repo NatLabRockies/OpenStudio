@@ -11,24 +11,24 @@
 
 namespace openstudio {
 namespace epmodel {
-class ScheduleTypeLimits;
-namespace detail {
+  class ScheduleTypeLimits;
+  namespace detail {
 
-class EPMODEL_API Schedule_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~Schedule_Impl() override = default;
+    class EPMODEL_API Schedule_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~Schedule_Impl() override = default;
 
-  boost::optional<openstudio::epmodel::ScheduleTypeLimits> scheduleTypeLimits() const;
-  bool setScheduleTypeLimits(const openstudio::epmodel::ScheduleTypeLimits& scheduleTypeLimits);
-  bool resetScheduleTypeLimits();
+      boost::optional<openstudio::epmodel::ScheduleTypeLimits> scheduleTypeLimits() const;
+      bool setScheduleTypeLimits(const openstudio::epmodel::ScheduleTypeLimits& scheduleTypeLimits);
+      bool resetScheduleTypeLimits();
 
- private:
-  boost::optional<unsigned> scheduleTypeLimitsFieldIndex() const;
-};
+     private:
+      boost::optional<unsigned> scheduleTypeLimitsFieldIndex() const;
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

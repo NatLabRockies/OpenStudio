@@ -7,14 +7,14 @@
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-ResourceObject_Impl::ResourceObject_Impl(const openstudio::IdfObject& idfObject, Model_Impl* model, bool keepHandle)
-  : ModelObject_Impl(idfObject, model, keepHandle) {}
+    ResourceObject_Impl::ResourceObject_Impl(const openstudio::IdfObject& idfObject, Model_Impl* model, bool keepHandle)
+      : ModelObject_Impl(idfObject, model, keepHandle) {}
 
-ResourceObject_Impl::ResourceObject_Impl(const openstudio::detail::WorkspaceObject_Impl& other, Model_Impl* model, bool keepHandle)
-  : ModelObject_Impl(other, model, keepHandle) {}
+    ResourceObject_Impl::ResourceObject_Impl(const openstudio::detail::WorkspaceObject_Impl& other, Model_Impl* model, bool keepHandle)
+      : ModelObject_Impl(other, model, keepHandle) {}
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio

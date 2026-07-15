@@ -17,46 +17,46 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class FaultModelFoulingAirFilter_Impl;
-}
+  namespace detail {
+    class FaultModelFoulingAirFilter_Impl;
+  }
 
-class EPMODEL_API FaultModelFoulingAirFilter : public ModelObject
-{
- public:
-  explicit FaultModelFoulingAirFilter(const Model& model);
+  class EPMODEL_API FaultModelFoulingAirFilter : public ModelObject
+  {
+   public:
+    explicit FaultModelFoulingAirFilter(const Model& model);
 
-  virtual ~FaultModelFoulingAirFilter() override = default;
-  FaultModelFoulingAirFilter(const FaultModelFoulingAirFilter& other) = default;
-  FaultModelFoulingAirFilter(FaultModelFoulingAirFilter&& other) = default;
-  FaultModelFoulingAirFilter& operator=(const FaultModelFoulingAirFilter&) = default;
-  FaultModelFoulingAirFilter& operator=(FaultModelFoulingAirFilter&&) = default;
+    virtual ~FaultModelFoulingAirFilter() override = default;
+    FaultModelFoulingAirFilter(const FaultModelFoulingAirFilter& other) = default;
+    FaultModelFoulingAirFilter(FaultModelFoulingAirFilter&& other) = default;
+    FaultModelFoulingAirFilter& operator=(const FaultModelFoulingAirFilter&) = default;
+    FaultModelFoulingAirFilter& operator=(FaultModelFoulingAirFilter&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  static std::vector<std::string> fanObjectTypeValues();
+    static std::vector<std::string> fanObjectTypeValues();
 
-  // Schema Alignment Notes:
-  // - API: This no-counterpart type uses IDD-derived class/accessor naming.
-  // - Field Mapping: fanObjectType maps directly to EnergyPlus FaultModel:Fouling:AirFilter / Fan Object Type.
-  // - Field Mapping: Name is provided by base ModelObject naming API and is intentionally not duplicated here.
-  // - Field Mapping: Fan Name, Availability Schedule Name, Pressure Fraction Schedule Name, and Fan Curve Name are
-  //   relationship-like object-list target-link fields and intentionally excluded from scalar accessors.
-  // - TODO(parity): Add relationship APIs after scalar scaffold saturation.
-  std::string fanObjectType() const;
-  bool setFanObjectType(const std::string& fanObjectType);
+    // Schema Alignment Notes:
+    // - API: This no-counterpart type uses IDD-derived class/accessor naming.
+    // - Field Mapping: fanObjectType maps directly to EnergyPlus FaultModel:Fouling:AirFilter / Fan Object Type.
+    // - Field Mapping: Name is provided by base ModelObject naming API and is intentionally not duplicated here.
+    // - Field Mapping: Fan Name, Availability Schedule Name, Pressure Fraction Schedule Name, and Fan Curve Name are
+    //   relationship-like object-list target-link fields and intentionally excluded from scalar accessors.
+    // - TODO(parity): Add relationship APIs after scalar scaffold saturation.
+    std::string fanObjectType() const;
+    bool setFanObjectType(const std::string& fanObjectType);
 
- protected:
-  using ImplType = detail::FaultModelFoulingAirFilter_Impl;
+   protected:
+    using ImplType = detail::FaultModelFoulingAirFilter_Impl;
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
 
-  explicit FaultModelFoulingAirFilter(std::shared_ptr<detail::FaultModelFoulingAirFilter_Impl> impl);
-};
+    explicit FaultModelFoulingAirFilter(std::shared_ptr<detail::FaultModelFoulingAirFilter_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

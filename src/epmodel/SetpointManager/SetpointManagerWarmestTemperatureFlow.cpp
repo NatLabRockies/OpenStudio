@@ -155,8 +155,7 @@ namespace epmodel {
     }
 
     bool SetpointManagerWarmestTemperatureFlow_Impl::setSetpointNode(const openstudio::epmodel::Node& node) {
-      return getObject<ModelObject>().setPointer(openstudio::SetpointManager_WarmestTemperatureFlowFields::SetpointNodeorNodeListName,
-                                                 node.handle());
+      return getObject<ModelObject>().setPointer(openstudio::SetpointManager_WarmestTemperatureFlowFields::SetpointNodeorNodeListName, node.handle());
     }
 
     void SetpointManagerWarmestTemperatureFlow_Impl::doCanonicalize(LoadContext& context) {

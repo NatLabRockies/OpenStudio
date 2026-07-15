@@ -3,8 +3,8 @@
   <schema_version>3.1</schema_version>
   <name>wrong_method_measure</name>
   <uid>11111111-c89b-4b93-b400-110ca060b2bb</uid>
-  <version_id>998cdb81-addf-4fae-809d-175c6475c592</version_id>
-  <version_modified>2023-11-10T10:37:53Z</version_modified>
+  <version_id>b61ddc39-145a-4dee-b1c4-cacaf936bc5f</version_id>
+  <version_modified>2026-05-19T10:37:50Z</version_modified>
   <xml_checksum>33A29C78</xml_checksum>
   <class_name>WrongMethodMeasure</class_name>
   <display_name>Wrong Method Measure</display_name>
@@ -53,7 +53,7 @@
       <filename>measure.py</filename>
       <filetype>py</filetype>
       <usage_type>script</usage_type>
-      <checksum>7DCE622C</checksum>
+      <checksum>AD80F9C8</checksum>
     </file>
   </files>
 </measure>

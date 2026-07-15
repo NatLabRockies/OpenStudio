@@ -15,60 +15,60 @@
 namespace openstudio {
 namespace epmodel {
 
-AirflowNetworkDistributionComponentHeatExchanger::AirflowNetworkDistributionComponentHeatExchanger(const Model& model)
-  : ModelObject(AirflowNetworkDistributionComponentHeatExchanger::iddObjectType(), model) {}
+  AirflowNetworkDistributionComponentHeatExchanger::AirflowNetworkDistributionComponentHeatExchanger(const Model& model)
+    : ModelObject(AirflowNetworkDistributionComponentHeatExchanger::iddObjectType(), model) {}
 
-AirflowNetworkDistributionComponentHeatExchanger::AirflowNetworkDistributionComponentHeatExchanger(
-  std::shared_ptr<detail::AirflowNetworkDistributionComponentHeatExchanger_Impl> impl)
-  : ModelObject(std::move(impl)) {}
+  AirflowNetworkDistributionComponentHeatExchanger::AirflowNetworkDistributionComponentHeatExchanger(
+    std::shared_ptr<detail::AirflowNetworkDistributionComponentHeatExchanger_Impl> impl)
+    : ModelObject(std::move(impl)) {}
 
-IddObjectType AirflowNetworkDistributionComponentHeatExchanger::iddObjectType() {
-  return IddObjectType::AirflowNetwork_Distribution_Component_HeatExchanger;
-}
+  IddObjectType AirflowNetworkDistributionComponentHeatExchanger::iddObjectType() {
+    return IddObjectType::AirflowNetwork_Distribution_Component_HeatExchanger;
+  }
 
-double AirflowNetworkDistributionComponentHeatExchanger::airPathLength() const {
-  return getImpl<detail::AirflowNetworkDistributionComponentHeatExchanger_Impl>()->airPathLength();
-}
+  double AirflowNetworkDistributionComponentHeatExchanger::airPathLength() const {
+    return getImpl<detail::AirflowNetworkDistributionComponentHeatExchanger_Impl>()->airPathLength();
+  }
 
-bool AirflowNetworkDistributionComponentHeatExchanger::setAirPathLength(double airPathLength) {
-  return getImpl<detail::AirflowNetworkDistributionComponentHeatExchanger_Impl>()->setAirPathLength(airPathLength);
-}
+  bool AirflowNetworkDistributionComponentHeatExchanger::setAirPathLength(double airPathLength) {
+    return getImpl<detail::AirflowNetworkDistributionComponentHeatExchanger_Impl>()->setAirPathLength(airPathLength);
+  }
 
-double AirflowNetworkDistributionComponentHeatExchanger::airPathHydraulicDiameter() const {
-  return getImpl<detail::AirflowNetworkDistributionComponentHeatExchanger_Impl>()->airPathHydraulicDiameter();
-}
+  double AirflowNetworkDistributionComponentHeatExchanger::airPathHydraulicDiameter() const {
+    return getImpl<detail::AirflowNetworkDistributionComponentHeatExchanger_Impl>()->airPathHydraulicDiameter();
+  }
 
-bool AirflowNetworkDistributionComponentHeatExchanger::setAirPathHydraulicDiameter(double airPathHydraulicDiameter) {
-  return getImpl<detail::AirflowNetworkDistributionComponentHeatExchanger_Impl>()->setAirPathHydraulicDiameter(airPathHydraulicDiameter);
-}
+  bool AirflowNetworkDistributionComponentHeatExchanger::setAirPathHydraulicDiameter(double airPathHydraulicDiameter) {
+    return getImpl<detail::AirflowNetworkDistributionComponentHeatExchanger_Impl>()->setAirPathHydraulicDiameter(airPathHydraulicDiameter);
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-double AirflowNetworkDistributionComponentHeatExchanger_Impl::airPathLength() const {
-  const auto value = getDouble(openstudio::AirflowNetwork_Distribution_Component_HeatExchangerFields::AirPathLength, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    double AirflowNetworkDistributionComponentHeatExchanger_Impl::airPathLength() const {
+      const auto value = getDouble(openstudio::AirflowNetwork_Distribution_Component_HeatExchangerFields::AirPathLength, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-bool AirflowNetworkDistributionComponentHeatExchanger_Impl::setAirPathLength(double airPathLength) {
-  return setDouble(openstudio::AirflowNetwork_Distribution_Component_HeatExchangerFields::AirPathLength, airPathLength);
-}
+    bool AirflowNetworkDistributionComponentHeatExchanger_Impl::setAirPathLength(double airPathLength) {
+      return setDouble(openstudio::AirflowNetwork_Distribution_Component_HeatExchangerFields::AirPathLength, airPathLength);
+    }
 
-double AirflowNetworkDistributionComponentHeatExchanger_Impl::airPathHydraulicDiameter() const {
-  const auto value = getDouble(openstudio::AirflowNetwork_Distribution_Component_HeatExchangerFields::AirPathHydraulicDiameter, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    double AirflowNetworkDistributionComponentHeatExchanger_Impl::airPathHydraulicDiameter() const {
+      const auto value = getDouble(openstudio::AirflowNetwork_Distribution_Component_HeatExchangerFields::AirPathHydraulicDiameter, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-bool AirflowNetworkDistributionComponentHeatExchanger_Impl::setAirPathHydraulicDiameter(double airPathHydraulicDiameter) {
-  return setDouble(openstudio::AirflowNetwork_Distribution_Component_HeatExchangerFields::AirPathHydraulicDiameter, airPathHydraulicDiameter);
-}
+    bool AirflowNetworkDistributionComponentHeatExchanger_Impl::setAirPathHydraulicDiameter(double airPathHydraulicDiameter) {
+      return setDouble(openstudio::AirflowNetwork_Distribution_Component_HeatExchangerFields::AirPathHydraulicDiameter, airPathHydraulicDiameter);
+    }
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio

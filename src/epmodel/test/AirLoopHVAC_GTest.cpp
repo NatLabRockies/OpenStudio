@@ -8,10 +8,16 @@
 #include "EPModelFixture.hpp"
 #include "../Loop/AirLoopHVAC.hpp"
 #include "../Loop/AirLoopHVAC_Impl.hpp"
+#include "../ModelObject/Branch.hpp"
+#include "../ModelObject/Branch_Impl.hpp"
+#include "../ModelObject/BranchList.hpp"
+#include "../ModelObject/BranchList_Impl.hpp"
 #include "../ModelObject/AirLoopHVACReturnPath.hpp"
 #include "../ModelObject/AirLoopHVACReturnPath_Impl.hpp"
 #include "../ModelObject/AirLoopHVACSupplyPath.hpp"
 #include "../ModelObject/AirLoopHVACSupplyPath_Impl.hpp"
+#include "../ModelObject/NodeList.hpp"
+#include "../ModelObject/NodeList_Impl.hpp"
 #include "../ModelObject/SizingSystem.hpp"
 #include "../ModelObject/SizingSystem_Impl.hpp"
 #include "../AvailabilityManager/AvailabilityManagerScheduledOn.hpp"
@@ -19,8 +25,14 @@
 #include "../ResourceObject/ScheduleTypeLimits.hpp"
 #include "../AvailabilityManager/AvailabilityManagerNightCycle.hpp"
 #include "../AvailabilityManager/AvailabilityManagerNightCycle_Impl.hpp"
+#include "../HVACComponent/ControllerWaterCoil.hpp"
+#include "../HVACComponent/ControllerWaterCoil_Impl.hpp"
 #include "../Mixer/AirLoopHVACZoneMixer.hpp"
 #include "../Mixer/AirLoopHVACZoneMixer_Impl.hpp"
+#include "../Loop/PlantLoop.hpp"
+#include "../ModelObject/AirLoopHVACControllerList.hpp"
+#include "../ModelObject/AirLoopHVACControllerList_Impl.hpp"
+#include "../ParentObject/ControllerOutdoorAir.hpp"
 #include "../Mixer/AirTerminalDualDuctConstantVolume.hpp"
 #include "../Splitter/AirLoopHVACZoneSplitter.hpp"
 #include "../Splitter/AirLoopHVACZoneSplitter_Impl.hpp"
@@ -29,23 +41,39 @@
 #include "../StraightComponent/FanConstantVolume.hpp"
 #include "../StraightComponent/FanSystemModel.hpp"
 #include "../StraightComponent/FanVariableVolume.hpp"
+#include "../StraightComponent/CoilHeatingElectric.hpp"
 #include "../StraightComponent/Node.hpp"
+#include "../StraightComponent/Node_Impl.hpp"
 #include "../HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
 #include "../HVACComponent/ThermalZone.hpp"
+#include "../WaterToAirComponent/CoilCoolingWater.hpp"
+#include "../WaterToAirComponent/CoilHeatingWater.hpp"
 #include "../Schedule/ScheduleCompact.hpp"
 #include "../Schedule/ScheduleConstant.hpp"
 #include "../Schedule/ScheduleConstant_Impl.hpp"
 #include "../Schedule/ScheduleYear.hpp"
 #include "../SetpointManager/SetpointManagerMixedAir.hpp"
+#include "../SetpointManager/SetpointManagerSingleZoneReheat.hpp"
+#include "../SetpointManager/SetpointManagerSingleZoneReheat_Impl.hpp"
 #include "../ModelObject/ZoneHVACAirDistributionUnit.hpp"
 #include "../ModelObject/ZoneHVACAirDistributionUnit_Impl.hpp"
-
+#include <utilities/idd/AirLoopHVAC_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/Sizing_System_FieldEnums.hxx>
+#include <fmt/format.h>
+#include <fmt/ranges.h>
 #include <algorithm>
 #include <set>
 
 using namespace openstudio::epmodel;
+
+std::string getObjectNames(const auto& comps) {
+  std::vector<std::string> names;
+  names.reserve(comps.size());
+  std::transform(comps.cbegin(), comps.cend(), std::back_inserter(names),
+                 [](const auto& obj) { return fmt::format("{}({})", obj.iddObject().type().valueDescription(), obj.nameString()); });
+  return fmt::format("{}", names);
+}
 
 namespace {
 
@@ -127,6 +155,8 @@ TEST_F(EPModelFixture, AirLoopHVAC_DefaultConstructor) {
   AirLoopHVAC airLoop(model);
   EXPECT_EQ(openstudio::IddObjectType(openstudio::IddObjectType::AirLoopHVAC), airLoop.iddObject().type());
   EXPECT_FALSE(airLoop.nameString().empty());
+  EXPECT_TRUE(airLoop.isDesignSupplyAirFlowRateAutosized());
+  EXPECT_DOUBLE_EQ(1.0, airLoop.designReturnAirFlowFractionofSupplyAirFlow());
 }
 
 TEST_F(EPModelFixture, AirLoopHVAC_DualDuctConstructorBuildsSupplySplitter) {
@@ -274,6 +304,51 @@ TEST_F(EPModelFixture, AirLoopHVAC_ScalarAccessors_RoundTrip) {
 
   EXPECT_TRUE(airLoop.setDesignReturnAirFlowFractionofSupplyAirFlow(0.5));
   EXPECT_DOUBLE_EQ(0.5, airLoop.designReturnAirFlowFractionofSupplyAirFlow());
+}
+
+TEST_F(EPModelFixture, AirLoopHVAC_RemoveRemovesSetpointManagersOnLoopNodes) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  SetpointManagerSingleZoneReheat setpointManager(model);
+  auto supplyOutletNode = airLoop.supplyOutletNode();
+  ASSERT_TRUE(setpointManager.addToNode(supplyOutletNode));
+  EXPECT_EQ(1u, supplyOutletNode.setpointManagers().size());
+
+  airLoop.remove();
+
+  EXPECT_TRUE(model.getConcreteModelObjects<SetpointManagerSingleZoneReheat>().empty());
+}
+
+TEST_F(EPModelFixture, AirLoopHVAC_RemoveRemovesCanonicalTopologyObjects) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  FanConstantVolume fan(model);
+  ThermalZone zone(model);
+  auto demandBranchNode = airLoop.zoneSplitter().lastOutletModelObject();
+  ASSERT_TRUE(demandBranchNode);
+  auto demandBranchNodeAsNode = demandBranchNode->optionalCast<Node>();
+  ASSERT_TRUE(demandBranchNodeAsNode);
+
+  auto supplyOutletNode = airLoop.supplyOutletNode();
+  ASSERT_TRUE(fan.addToNode(supplyOutletNode));
+  ASSERT_TRUE(zone.addToNode(*demandBranchNodeAsNode));
+  const auto supplyOutletNodeListName =
+    airLoop.getModelObjectTarget<NodeList>(openstudio::AirLoopHVACFields::SupplySideOutletNodeNames)->nameString();
+  const auto demandInletNodeListName = airLoop.getModelObjectTarget<NodeList>(openstudio::AirLoopHVACFields::DemandSideInletNodeNames)->nameString();
+
+  airLoop.remove();
+
+  EXPECT_TRUE(model.getObjectsByType(AirLoopHVAC::iddObjectType()).empty());
+  EXPECT_TRUE(model.getObjectsByType(AirLoopHVACSupplyPath::iddObjectType()).empty());
+  EXPECT_TRUE(model.getObjectsByType(AirLoopHVACReturnPath::iddObjectType()).empty());
+  EXPECT_TRUE(model.getObjectsByType(AirLoopHVACZoneSplitter::iddObjectType()).empty());
+  EXPECT_TRUE(model.getObjectsByType(AirLoopHVACZoneMixer::iddObjectType()).empty());
+  EXPECT_TRUE(model.getObjectsByType(BranchList::iddObjectType()).empty());
+  EXPECT_TRUE(model.getObjectsByType(Branch::iddObjectType()).empty());
+  EXPECT_FALSE(model.getObjectByTypeAndName(openstudio::IddObjectType::NodeList, supplyOutletNodeListName));
+  EXPECT_FALSE(model.getObjectByTypeAndName(openstudio::IddObjectType::NodeList, demandInletNodeListName));
+  EXPECT_TRUE(model.getObjectsByType(FanConstantVolume::iddObjectType()).empty());
+  EXPECT_EQ(1u, model.getObjectsByType(ThermalZone::iddObjectType()).size());
 }
 
 TEST_F(EPModelFixture, AirLoopHVACSupplyPath_DefaultConstructor) {
@@ -612,11 +687,11 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeNoReheat_AddToNode_Bra
   ASSERT_TRUE(mixerInletObject);
   auto mixerInletNode = mixerInletObject->optionalCast<Node>();
   ASSERT_TRUE(mixerInletNode);
-  EXPECT_EQ(*zoneBranchNode, *mixerInletNode);
+  EXPECT_NE(*zoneBranchNode, *mixerInletNode);
   EXPECT_NE(*splitterOutletNode, *mixerInletNode);
 
   const auto demandAfter = airLoop.demandComponents();
-  EXPECT_EQ(demandBefore.size() + 2u, demandAfter.size());
+  EXPECT_EQ(demandBefore.size() + 1u, demandAfter.size());
   const auto terminalCountAfter = std::count_if(demandAfter.begin(), demandAfter.end(), [](const ModelObject& mo) {
     return mo.iddObject().type() == openstudio::IddObjectType::AirTerminal_SingleDuct_ConstantVolume_NoReheat;
   });
@@ -1190,6 +1265,39 @@ TEST_F(EPModelFixture, AirLoopHVAC_Canonicalize_RepairsDemandBranchCountMismatch
   EXPECT_GT(report.warningCount, 0u);
 }
 
+TEST_F(EPModelFixture, AirLoopHVAC_Canonicalize_AddsSupplyWaterCoilControllersToControllerList) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  PlantLoop plantLoop(model);
+  CoilCoolingWater coolingCoil(model);
+  CoilHeatingWater heatingCoil(model);
+
+  ASSERT_TRUE(plantLoop.addDemandBranchForComponent(coolingCoil));
+  ASSERT_TRUE(plantLoop.addDemandBranchForComponent(heatingCoil));
+
+  auto supplyOutletNode = airLoop.supplyOutletNode();
+  ASSERT_TRUE(coolingCoil.addToNode(supplyOutletNode));
+  ASSERT_TRUE(heatingCoil.addToNode(supplyOutletNode));
+  ASSERT_TRUE(coolingCoil.controllerWaterCoil());
+  ASSERT_TRUE(heatingCoil.controllerWaterCoil());
+
+  auto controllerList = airLoop.getModelObjectTarget<AirLoopHVACControllerList>(openstudio::AirLoopHVACFields::ControllerListName);
+  ASSERT_TRUE(controllerList);
+
+  auto report = model.canonicalize(SanitizationPolicy::Repair);
+  EXPECT_EQ(0u, report.errorCount);
+
+  controllerList = airLoop.getModelObjectTarget<AirLoopHVACControllerList>(openstudio::AirLoopHVACFields::ControllerListName);
+  ASSERT_TRUE(controllerList);
+
+  const auto controllers = subsetCastVector<ControllerWaterCoil>(controllerList->controllers());
+  ASSERT_EQ(2u, controllers.size());
+  EXPECT_TRUE(
+    std::ranges::any_of(controllers, [&](const auto& controller) { return controller.handle() == coolingCoil.controllerWaterCoil()->handle(); }));
+  EXPECT_TRUE(
+    std::ranges::any_of(controllers, [&](const auto& controller) { return controller.handle() == heatingCoil.controllerWaterCoil()->handle(); }));
+}
+
 TEST_F(EPModelFixture, AirLoopHVAC_NightCycleControlType_UsesAvailabilityManagerNightCycle) {
   Model model;
   AirLoopHVAC airLoop(model);
@@ -1232,4 +1340,73 @@ TEST_F(EPModelFixture, AirLoopHVAC_SyncSetpointManagerMixedAirFanNodes_Recognize
   ASSERT_TRUE(setpointManager.fanOutletNode());
   EXPECT_EQ(fanInletObject->cast<Node>(), *setpointManager.fanInletNode());
   EXPECT_EQ(fanOutletObject->cast<Node>(), *setpointManager.fanOutletNode());
+}
+
+TEST_F(EPModelFixture, AirLoopHVAC_AddToNode) {
+  Model model;
+  AirLoopHVAC a(model);
+
+  // Supply: o ----- o
+  // Demand: o --- Splitter --- o --- Mixer --- o
+  EXPECT_EQ(5u, model.getModelObjects<Node>().size());
+  EXPECT_EQ(2u, a.supplyComponents().size()) << getObjectNames(a.supplyComponents());  // o ----- o
+  EXPECT_EQ(2u, a.supplyComponents(openstudio::IddObjectType("Node")).size());
+  EXPECT_EQ(5u, a.demandComponents().size()) << getObjectNames(a.demandComponents());  // o --- Splitter --- o --- Mixer --- o
+  EXPECT_EQ(3u, a.demandComponents(openstudio::IddObjectType("Node")).size());
+  EXPECT_EQ(1u, a.demandComponents(openstudio::IddObjectType("AirLoopHVAC:ZoneSplitter")).size());
+  EXPECT_EQ(1u, a.demandComponents(openstudio::IddObjectType("AirLoopHVAC:ZoneMixer")).size());
+
+  // Add a fan to the supply outlet node
+  // Supply: o --- Fan --- o
+  FanVariableVolume fan(model);
+  auto supplyOutletNode = a.supplyOutletNode();
+  ASSERT_TRUE(fan.addToNode(supplyOutletNode));
+  EXPECT_EQ(5u, model.getModelObjects<Node>().size());
+  EXPECT_EQ(3u, a.supplyComponents().size()) << getObjectNames(a.supplyComponents());  // o --- Fan --- o
+  EXPECT_EQ(2u, a.supplyComponents(openstudio::IddObjectType("Node")).size());
+  {
+    auto comps = a.supplyComponents();
+    ASSERT_EQ(3u, comps.size());
+    EXPECT_EQ("Node", comps[0].iddObject().type().valueDescription());
+    EXPECT_EQ("Fan:VariableVolume", comps[1].iddObject().type().valueDescription());
+    EXPECT_EQ("Node", comps[2].iddObject().type().valueDescription());
+    EXPECT_EQ("Air Loop HVAC 1 Supply Inlet Node", comps[0].nameString());
+    EXPECT_EQ("Fan Variable Volume 1", comps[1].nameString());
+    EXPECT_EQ("Air Loop HVAC 1 Supply Outlet Node", comps[2].nameString());
+  }
+  // Demand side unchanged: o --- Splitter --- o --- Mixer --- o
+  EXPECT_EQ(5u, a.demandComponents().size()) << getObjectNames(a.demandComponents());  // o --- Splitter --- o --- Mixer --- o
+  EXPECT_EQ(3u, a.demandComponents(openstudio::IddObjectType("Node")).size());
+
+  // Add a coil to the supply inlet node
+  // Supply: o --- Coil --- o --- Fan --- o
+  // This is where the bug manifests: an intermediate node is be inserted between coil and fan
+  CoilHeatingElectric coil(model);
+  auto supplyInletNode = a.supplyInletNode();
+  ASSERT_TRUE(coil.addToNode(supplyInletNode));
+
+  // Demand side must remain unchanged: o --- Splitter --- o --- Mixer --- o
+  EXPECT_EQ(5u, a.demandComponents().size()) << getObjectNames(a.demandComponents());  // o --- Splitter --- o --- Mixer --- o
+  EXPECT_EQ(3u, a.demandComponents(openstudio::IddObjectType("Node")).size());
+  EXPECT_EQ(1u, a.demandComponents(openstudio::IddObjectType("AirLoopHVAC:ZoneSplitter")).size());
+  EXPECT_EQ(1u, a.demandComponents(openstudio::IddObjectType("AirLoopHVAC:ZoneMixer")).size());
+
+  // Supply: o --- Coil --- o --- Fan --- o  (3 nodes, 5 components total)
+  EXPECT_EQ(6u, model.getModelObjects<Node>().size());
+  EXPECT_EQ(5u, a.supplyComponents().size()) << getObjectNames(a.supplyComponents());  // o --- Coil --- o --- Fan --- o
+  EXPECT_EQ(3u, a.supplyComponents(openstudio::IddObjectType("Node")).size());
+  {
+    auto comps = a.supplyComponents();
+    ASSERT_EQ(5u, comps.size());
+    EXPECT_EQ("Node", comps[0].iddObject().type().valueDescription());
+    EXPECT_EQ("Coil:Heating:Electric", comps[1].iddObject().type().valueDescription());
+    EXPECT_EQ("Node", comps[2].iddObject().type().valueDescription());
+    EXPECT_EQ("Fan:VariableVolume", comps[3].iddObject().type().valueDescription());
+    EXPECT_EQ("Node", comps[4].iddObject().type().valueDescription());
+    EXPECT_EQ("Air Loop HVAC 1 Supply Inlet Node", comps[0].nameString());
+    EXPECT_EQ("Coil Heating Electric 1", comps[1].nameString());
+    EXPECT_EQ("Coil Heating Electric 1 Outlet - Fan Variable Volume 1 Inlet", comps[2].nameString());
+    EXPECT_EQ("Fan Variable Volume 1", comps[3].nameString());
+    EXPECT_EQ("Air Loop HVAC 1 Supply Outlet Node", comps[4].nameString());
+  }
 }

@@ -22,7 +22,7 @@ namespace epmodel {
     class CentralHeatPumpSystem_Impl;
   }
 
-class EPMODEL_API CentralHeatPumpSystem : public WaterToWaterComponent
+  class EPMODEL_API CentralHeatPumpSystem : public WaterToWaterComponent
   {
    public:
     explicit CentralHeatPumpSystem(const Model& model);

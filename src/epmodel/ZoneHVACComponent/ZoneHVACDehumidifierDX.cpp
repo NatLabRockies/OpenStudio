@@ -85,8 +85,7 @@ namespace epmodel {
     OS_ASSERT(setOffCycleParasiticElectricLoad(0.0));
   }
 
-  ZoneHVACDehumidifierDX::ZoneHVACDehumidifierDX(std::shared_ptr<detail::ZoneHVACDehumidifierDX_Impl> impl)
-    : ZoneHVACComponent(std::move(impl)) {}
+  ZoneHVACDehumidifierDX::ZoneHVACDehumidifierDX(std::shared_ptr<detail::ZoneHVACDehumidifierDX_Impl> impl) : ZoneHVACComponent(std::move(impl)) {}
 
   IddObjectType ZoneHVACDehumidifierDX::iddObjectType() {
     return {IddObjectType::ZoneHVAC_Dehumidifier_DX};
@@ -183,10 +182,12 @@ namespace epmodel {
 
     std::vector<ModelObject> ZoneHVACDehumidifierDX_Impl::children() const {
       std::vector<ModelObject> result;
-      if (auto const waterRemovalCurve = getObject<ModelObject>().getModelObjectTarget<Curve>(openstudio::ZoneHVAC_Dehumidifier_DXFields::WaterRemovalCurveName)) {
+      if (auto const waterRemovalCurve =
+            getObject<ModelObject>().getModelObjectTarget<Curve>(openstudio::ZoneHVAC_Dehumidifier_DXFields::WaterRemovalCurveName)) {
         result.push_back(*waterRemovalCurve);
       }
-      if (auto const energyFactorCurve = getObject<ModelObject>().getModelObjectTarget<Curve>(openstudio::ZoneHVAC_Dehumidifier_DXFields::EnergyFactorCurveName)) {
+      if (auto const energyFactorCurve =
+            getObject<ModelObject>().getModelObjectTarget<Curve>(openstudio::ZoneHVAC_Dehumidifier_DXFields::EnergyFactorCurveName)) {
         result.push_back(*energyFactorCurve);
       }
       if (auto const partLoadFractionCorrelationCurve =
@@ -205,15 +206,15 @@ namespace epmodel {
     }
 
     Schedule ZoneHVACDehumidifierDX_Impl::availabilitySchedule() const {
-      if (auto target = getObject<ModelObject>().getModelObjectTarget<Schedule>(openstudio::ZoneHVAC_Dehumidifier_DXFields::AvailabilityScheduleName)) {
+      if (auto target =
+            getObject<ModelObject>().getModelObjectTarget<Schedule>(openstudio::ZoneHVAC_Dehumidifier_DXFields::AvailabilityScheduleName)) {
         return *target;
       }
       throw std::runtime_error("Zone HVAC DX dehumidifier is missing its availability schedule.");
     }
 
     bool ZoneHVACDehumidifierDX_Impl::setAvailabilitySchedule(Schedule& schedule) {
-      return setSchedule(openstudio::ZoneHVAC_Dehumidifier_DXFields::AvailabilityScheduleName, "ZoneHVACDehumidifierDX", "Availability",
-                         schedule);
+      return setSchedule(openstudio::ZoneHVAC_Dehumidifier_DXFields::AvailabilityScheduleName, "ZoneHVACDehumidifierDX", "Availability", schedule);
     }
 
     double ZoneHVACDehumidifierDX_Impl::ratedWaterRemoval() const {
@@ -269,8 +270,8 @@ namespace epmodel {
     }
 
     Curve ZoneHVACDehumidifierDX_Impl::partLoadFractionCorrelationCurve() const {
-      if (auto target = getObject<ModelObject>().getModelObjectTarget<Curve>(
-            openstudio::ZoneHVAC_Dehumidifier_DXFields::PartLoadFractionCorrelationCurveName)) {
+      if (auto target =
+            getObject<ModelObject>().getModelObjectTarget<Curve>(openstudio::ZoneHVAC_Dehumidifier_DXFields::PartLoadFractionCorrelationCurveName)) {
         return *target;
       }
       throw std::runtime_error("Zone HVAC DX dehumidifier is missing its part load fraction correlation curve.");

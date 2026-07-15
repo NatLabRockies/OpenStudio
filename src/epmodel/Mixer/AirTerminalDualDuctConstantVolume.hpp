@@ -37,13 +37,13 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     // Schema Alignment Notes:
-    // - Status: Scalar Parity. The scalar surface is aligned, but the canonical wrapper still exposes schedule and node-relationship convenience APIs that epmodel has not reintroduced.
+    // - Status: Partial Parity. epmodel preserves the scalar surface plus tested dual-duct node connectivity, but it does not expose the canonical availability-schedule convenience accessors.
     // - Canonical Counterpart: openstudio::model::AirTerminalDualDuctConstantVolume.
-    // - Implemented Parity: `maximumAirFlowRate`, autosize support, and the core scalar value semantics match the canonical dual-duct constant-volume terminal.
-    // - Documented Delta: epmodel still omits the availability-schedule and hot/cold inlet convenience accessors that canonical model code exposes.
-    // - Field/Storage Mapping: Availability Schedule Name, Air Outlet Node Name, Hot Air Inlet Node Name, and Cold Air Inlet Node Name are relationship fields and are intentionally excluded from scalar accessors.
-    // - Evidence: `src/model/AirTerminalDualDuctConstantVolume.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirTerminalDualDuctConstantVolume.cpp`, and `src/epmodel/test/AirTerminalDualDuctConstantVolume_GTest.cpp` show the same scalar mapping and missing relationship surface.
-    // - Remaining Parity Work: Reintroduce the availability-schedule and node-relationship wrappers if epmodel needs full model-side parity here.
+    // - Implemented Parity: `maximumAirFlowRate`, autosize support, constructor defaults, `hotAirInletNode`, `coldAirInletNode`, and the tested dual-duct `addToNode`/`remove` connectivity path are implemented here.
+    // - Documented Delta: epmodel does not expose canonical `availabilitySchedule()` / `setAvailabilitySchedule()` wrappers even though the underlying schedule relationship is still stored.
+    // - Field/Storage Mapping: `AvailabilityScheduleName` remains an underlying IDD relationship field used by the constructor and translator; Air Outlet/Hot Air Inlet/Cold Air Inlet node fields are surfaced through the preserved node accessors and shared AirLoopHVAC topology helpers.
+    // - Evidence: `src/model/AirTerminalDualDuctConstantVolume.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirTerminalDualDuctConstantVolume.cpp`, and `src/epmodel/test/AirTerminalDualDuctConstantVolume_GTest.cpp` cover the same scalar mapping plus supported connectivity.
+    // - Remaining Parity Work: Reintroduce the availability-schedule wrappers if full model-side API parity is needed.
     boost::optional<double> maximumAirFlowRate() const;
     bool setMaximumAirFlowRate(double maximumAirFlowRate);
     bool isMaximumAirFlowRateAutosized() const;

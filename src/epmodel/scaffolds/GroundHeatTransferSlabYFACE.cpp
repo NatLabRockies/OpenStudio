@@ -13,15 +13,14 @@
 namespace openstudio {
 namespace epmodel {
 
-GroundHeatTransferSlabYFACE::GroundHeatTransferSlabYFACE(const Model& model)
-  : ModelObject(GroundHeatTransferSlabYFACE::iddObjectType(), model) {}
+  GroundHeatTransferSlabYFACE::GroundHeatTransferSlabYFACE(const Model& model) : ModelObject(GroundHeatTransferSlabYFACE::iddObjectType(), model) {}
 
-GroundHeatTransferSlabYFACE::GroundHeatTransferSlabYFACE(std::shared_ptr<detail::GroundHeatTransferSlabYFACE_Impl> impl)
-  : ModelObject(std::move(impl)) {}
+  GroundHeatTransferSlabYFACE::GroundHeatTransferSlabYFACE(std::shared_ptr<detail::GroundHeatTransferSlabYFACE_Impl> impl)
+    : ModelObject(std::move(impl)) {}
 
-IddObjectType GroundHeatTransferSlabYFACE::iddObjectType() {
-  return IddObjectType::GroundHeatTransfer_Slab_YFACE;
-}
+  IddObjectType GroundHeatTransferSlabYFACE::iddObjectType() {
+    return IddObjectType::GroundHeatTransfer_Slab_YFACE;
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio

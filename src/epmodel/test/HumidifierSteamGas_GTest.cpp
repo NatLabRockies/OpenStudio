@@ -27,8 +27,7 @@ TEST_F(EPModelFixture, HumidifierSteamGas_DefaultConstructor) {
   EXPECT_EQ(HumidifierSteamGas::iddObjectType(), humidifier.iddObject().type());
   EXPECT_FALSE(humidifier.nameString().empty());
 
-  const std::vector<std::string> expectedInletWaterTemperatureOptionValues{"FixedInletWaterTemperature",
-                                                                           "VariableInletWaterTemperature"};
+  const std::vector<std::string> expectedInletWaterTemperatureOptionValues{"FixedInletWaterTemperature", "VariableInletWaterTemperature"};
   EXPECT_EQ(expectedInletWaterTemperatureOptionValues, HumidifierSteamGas::inletWaterTemperatureOptionValues());
 
   EXPECT_TRUE(humidifier.isRatedCapacityAutosized());

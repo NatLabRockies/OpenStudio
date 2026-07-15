@@ -12,143 +12,143 @@
 
 namespace openstudio {
 namespace epmodel {
-class Node;
-class Schedule;
-class Curve;
-namespace detail {
+  class Node;
+  class Schedule;
+  class Curve;
+  namespace detail {
 
-class EPMODEL_API CoilCoolingDXTwoSpeed_Impl : public StraightComponent_Impl
-{
- public:
-  using StraightComponent_Impl::StraightComponent_Impl;
-  virtual ~CoilCoolingDXTwoSpeed_Impl() override = default;
+    class EPMODEL_API CoilCoolingDXTwoSpeed_Impl : public StraightComponent_Impl
+    {
+     public:
+      using StraightComponent_Impl::StraightComponent_Impl;
+      virtual ~CoilCoolingDXTwoSpeed_Impl() override = default;
 
-  unsigned inletPort() const override;
-  unsigned outletPort() const override;
-  std::vector<ModelObject> children() const override;
+      unsigned inletPort() const override;
+      unsigned outletPort() const override;
+      std::vector<ModelObject> children() const override;
 
-  Schedule availabilitySchedule() const;
-  bool setAvailabilitySchedule(Schedule& schedule);
+      Schedule availabilitySchedule() const;
+      bool setAvailabilitySchedule(Schedule& schedule);
 
-  boost::optional<double> ratedHighSpeedTotalCoolingCapacity() const;
-  bool isRatedHighSpeedTotalCoolingCapacityAutosized() const;
-  bool setRatedHighSpeedTotalCoolingCapacity(double ratedHighSpeedTotalCoolingCapacity);
-  void autosizeRatedHighSpeedTotalCoolingCapacity();
+      boost::optional<double> ratedHighSpeedTotalCoolingCapacity() const;
+      bool isRatedHighSpeedTotalCoolingCapacityAutosized() const;
+      bool setRatedHighSpeedTotalCoolingCapacity(double ratedHighSpeedTotalCoolingCapacity);
+      void autosizeRatedHighSpeedTotalCoolingCapacity();
 
-  boost::optional<double> ratedHighSpeedSensibleHeatRatio() const;
-  bool isRatedHighSpeedSensibleHeatRatioAutosized() const;
-  bool setRatedHighSpeedSensibleHeatRatio(double ratedHighSpeedSensibleHeatRatio);
-  void autosizeRatedHighSpeedSensibleHeatRatio();
+      boost::optional<double> ratedHighSpeedSensibleHeatRatio() const;
+      bool isRatedHighSpeedSensibleHeatRatioAutosized() const;
+      bool setRatedHighSpeedSensibleHeatRatio(double ratedHighSpeedSensibleHeatRatio);
+      void autosizeRatedHighSpeedSensibleHeatRatio();
 
-  double ratedHighSpeedCOP() const;
-  bool setRatedHighSpeedCOP(double ratedHighSpeedCOP);
+      double ratedHighSpeedCOP() const;
+      bool setRatedHighSpeedCOP(double ratedHighSpeedCOP);
 
-  boost::optional<double> ratedHighSpeedAirFlowRate() const;
-  bool isRatedHighSpeedAirFlowRateAutosized() const;
-  bool setRatedHighSpeedAirFlowRate(double ratedHighSpeedAirFlowRate);
-  void autosizeRatedHighSpeedAirFlowRate();
+      boost::optional<double> ratedHighSpeedAirFlowRate() const;
+      bool isRatedHighSpeedAirFlowRateAutosized() const;
+      bool setRatedHighSpeedAirFlowRate(double ratedHighSpeedAirFlowRate);
+      void autosizeRatedHighSpeedAirFlowRate();
 
-  double ratedHighSpeedEvaporatorFanPowerPerVolumeFlowRate2017() const;
-  bool setRatedHighSpeedEvaporatorFanPowerPerVolumeFlowRate2017(double ratedHighSpeedEvaporatorFanPowerPerVolumeFlowRate2017);
+      double ratedHighSpeedEvaporatorFanPowerPerVolumeFlowRate2017() const;
+      bool setRatedHighSpeedEvaporatorFanPowerPerVolumeFlowRate2017(double ratedHighSpeedEvaporatorFanPowerPerVolumeFlowRate2017);
 
-  double ratedHighSpeedEvaporatorFanPowerPerVolumeFlowRate2023() const;
-  bool setRatedHighSpeedEvaporatorFanPowerPerVolumeFlowRate2023(double ratedHighSpeedEvaporatorFanPowerPerVolumeFlowRate2023);
+      double ratedHighSpeedEvaporatorFanPowerPerVolumeFlowRate2023() const;
+      bool setRatedHighSpeedEvaporatorFanPowerPerVolumeFlowRate2023(double ratedHighSpeedEvaporatorFanPowerPerVolumeFlowRate2023);
 
-  Curve totalCoolingCapacityFunctionOfTemperatureCurve() const;
-  bool setTotalCoolingCapacityFunctionOfTemperatureCurve(const Curve& curve);
+      Curve totalCoolingCapacityFunctionOfTemperatureCurve() const;
+      bool setTotalCoolingCapacityFunctionOfTemperatureCurve(const Curve& curve);
 
-  Curve totalCoolingCapacityFunctionOfFlowFractionCurve() const;
-  bool setTotalCoolingCapacityFunctionOfFlowFractionCurve(const Curve& curve);
+      Curve totalCoolingCapacityFunctionOfFlowFractionCurve() const;
+      bool setTotalCoolingCapacityFunctionOfFlowFractionCurve(const Curve& curve);
 
-  Curve energyInputRatioFunctionOfTemperatureCurve() const;
-  bool setEnergyInputRatioFunctionOfTemperatureCurve(const Curve& curve);
+      Curve energyInputRatioFunctionOfTemperatureCurve() const;
+      bool setEnergyInputRatioFunctionOfTemperatureCurve(const Curve& curve);
 
-  Curve energyInputRatioFunctionOfFlowFractionCurve() const;
-  bool setEnergyInputRatioFunctionOfFlowFractionCurve(const Curve& curve);
+      Curve energyInputRatioFunctionOfFlowFractionCurve() const;
+      bool setEnergyInputRatioFunctionOfFlowFractionCurve(const Curve& curve);
 
-  Curve partLoadFractionCorrelationCurve() const;
-  bool setPartLoadFractionCorrelationCurve(const Curve& curve);
+      Curve partLoadFractionCorrelationCurve() const;
+      bool setPartLoadFractionCorrelationCurve(const Curve& curve);
 
-  boost::optional<double> ratedLowSpeedTotalCoolingCapacity() const;
-  bool isRatedLowSpeedTotalCoolingCapacityAutosized() const;
-  bool setRatedLowSpeedTotalCoolingCapacity(double ratedLowSpeedTotalCoolingCapacity);
-  void autosizeRatedLowSpeedTotalCoolingCapacity();
+      boost::optional<double> ratedLowSpeedTotalCoolingCapacity() const;
+      bool isRatedLowSpeedTotalCoolingCapacityAutosized() const;
+      bool setRatedLowSpeedTotalCoolingCapacity(double ratedLowSpeedTotalCoolingCapacity);
+      void autosizeRatedLowSpeedTotalCoolingCapacity();
 
-  boost::optional<double> ratedLowSpeedSensibleHeatRatio() const;
-  bool isRatedLowSpeedSensibleHeatRatioAutosized() const;
-  bool setRatedLowSpeedSensibleHeatRatio(double ratedLowSpeedSensibleHeatRatio);
-  void autosizeRatedLowSpeedSensibleHeatRatio();
+      boost::optional<double> ratedLowSpeedSensibleHeatRatio() const;
+      bool isRatedLowSpeedSensibleHeatRatioAutosized() const;
+      bool setRatedLowSpeedSensibleHeatRatio(double ratedLowSpeedSensibleHeatRatio);
+      void autosizeRatedLowSpeedSensibleHeatRatio();
 
-  double ratedLowSpeedCOP() const;
-  bool setRatedLowSpeedCOP(double ratedLowSpeedCOP);
+      double ratedLowSpeedCOP() const;
+      bool setRatedLowSpeedCOP(double ratedLowSpeedCOP);
 
-  boost::optional<double> ratedLowSpeedAirFlowRate() const;
-  bool isRatedLowSpeedAirFlowRateAutosized() const;
-  bool setRatedLowSpeedAirFlowRate(double ratedLowSpeedAirFlowRate);
-  void autosizeRatedLowSpeedAirFlowRate();
+      boost::optional<double> ratedLowSpeedAirFlowRate() const;
+      bool isRatedLowSpeedAirFlowRateAutosized() const;
+      bool setRatedLowSpeedAirFlowRate(double ratedLowSpeedAirFlowRate);
+      void autosizeRatedLowSpeedAirFlowRate();
 
-  double ratedLowSpeedEvaporatorFanPowerPerVolumeFlowRate2017() const;
-  bool setRatedLowSpeedEvaporatorFanPowerPerVolumeFlowRate2017(double ratedLowSpeedEvaporatorFanPowerPerVolumeFlowRate2017);
+      double ratedLowSpeedEvaporatorFanPowerPerVolumeFlowRate2017() const;
+      bool setRatedLowSpeedEvaporatorFanPowerPerVolumeFlowRate2017(double ratedLowSpeedEvaporatorFanPowerPerVolumeFlowRate2017);
 
-  double ratedLowSpeedEvaporatorFanPowerPerVolumeFlowRate2023() const;
-  bool setRatedLowSpeedEvaporatorFanPowerPerVolumeFlowRate2023(double ratedLowSpeedEvaporatorFanPowerPerVolumeFlowRate2023);
+      double ratedLowSpeedEvaporatorFanPowerPerVolumeFlowRate2023() const;
+      bool setRatedLowSpeedEvaporatorFanPowerPerVolumeFlowRate2023(double ratedLowSpeedEvaporatorFanPowerPerVolumeFlowRate2023);
 
-  Curve lowSpeedTotalCoolingCapacityFunctionOfTemperatureCurve() const;
-  bool setLowSpeedTotalCoolingCapacityFunctionOfTemperatureCurve(const Curve& curve);
+      Curve lowSpeedTotalCoolingCapacityFunctionOfTemperatureCurve() const;
+      bool setLowSpeedTotalCoolingCapacityFunctionOfTemperatureCurve(const Curve& curve);
 
-  Curve lowSpeedEnergyInputRatioFunctionOfTemperatureCurve() const;
-  bool setLowSpeedEnergyInputRatioFunctionOfTemperatureCurve(const Curve& curve);
+      Curve lowSpeedEnergyInputRatioFunctionOfTemperatureCurve() const;
+      bool setLowSpeedEnergyInputRatioFunctionOfTemperatureCurve(const Curve& curve);
 
-  std::vector<std::string> condenserTypeValues() const;
-  std::string condenserType() const;
-  bool setCondenserType(const std::string& condenserType);
+      std::vector<std::string> condenserTypeValues() const;
+      std::string condenserType() const;
+      bool setCondenserType(const std::string& condenserType);
 
-  double highSpeedEvaporativeCondenserEffectiveness() const;
-  bool setHighSpeedEvaporativeCondenserEffectiveness(double highSpeedEvaporativeCondenserEffectiveness);
+      double highSpeedEvaporativeCondenserEffectiveness() const;
+      bool setHighSpeedEvaporativeCondenserEffectiveness(double highSpeedEvaporativeCondenserEffectiveness);
 
-  boost::optional<double> highSpeedEvaporativeCondenserAirFlowRate() const;
-  bool isHighSpeedEvaporativeCondenserAirFlowRateAutosized() const;
-  bool setHighSpeedEvaporativeCondenserAirFlowRate(double highSpeedEvaporativeCondenserAirFlowRate);
-  void autosizeHighSpeedEvaporativeCondenserAirFlowRate();
+      boost::optional<double> highSpeedEvaporativeCondenserAirFlowRate() const;
+      bool isHighSpeedEvaporativeCondenserAirFlowRateAutosized() const;
+      bool setHighSpeedEvaporativeCondenserAirFlowRate(double highSpeedEvaporativeCondenserAirFlowRate);
+      void autosizeHighSpeedEvaporativeCondenserAirFlowRate();
 
-  boost::optional<double> highSpeedEvaporativeCondenserPumpRatedPowerConsumption() const;
-  bool isHighSpeedEvaporativeCondenserPumpRatedPowerConsumptionAutosized() const;
-  bool setHighSpeedEvaporativeCondenserPumpRatedPowerConsumption(double highSpeedEvaporativeCondenserPumpRatedPowerConsumption);
-  void autosizeHighSpeedEvaporativeCondenserPumpRatedPowerConsumption();
+      boost::optional<double> highSpeedEvaporativeCondenserPumpRatedPowerConsumption() const;
+      bool isHighSpeedEvaporativeCondenserPumpRatedPowerConsumptionAutosized() const;
+      bool setHighSpeedEvaporativeCondenserPumpRatedPowerConsumption(double highSpeedEvaporativeCondenserPumpRatedPowerConsumption);
+      void autosizeHighSpeedEvaporativeCondenserPumpRatedPowerConsumption();
 
-  double lowSpeedEvaporativeCondenserEffectiveness() const;
-  bool setLowSpeedEvaporativeCondenserEffectiveness(double lowSpeedEvaporativeCondenserEffectiveness);
+      double lowSpeedEvaporativeCondenserEffectiveness() const;
+      bool setLowSpeedEvaporativeCondenserEffectiveness(double lowSpeedEvaporativeCondenserEffectiveness);
 
-  boost::optional<double> lowSpeedEvaporativeCondenserAirFlowRate() const;
-  bool isLowSpeedEvaporativeCondenserAirFlowRateAutosized() const;
-  bool setLowSpeedEvaporativeCondenserAirFlowRate(double lowSpeedEvaporativeCondenserAirFlowRate);
-  void autosizeLowSpeedEvaporativeCondenserAirFlowRate();
+      boost::optional<double> lowSpeedEvaporativeCondenserAirFlowRate() const;
+      bool isLowSpeedEvaporativeCondenserAirFlowRateAutosized() const;
+      bool setLowSpeedEvaporativeCondenserAirFlowRate(double lowSpeedEvaporativeCondenserAirFlowRate);
+      void autosizeLowSpeedEvaporativeCondenserAirFlowRate();
 
-  boost::optional<double> lowSpeedEvaporativeCondenserPumpRatedPowerConsumption() const;
-  bool isLowSpeedEvaporativeCondenserPumpRatedPowerConsumptionAutosized() const;
-  bool setLowSpeedEvaporativeCondenserPumpRatedPowerConsumption(double lowSpeedEvaporativeCondenserPumpRatedPowerConsumption);
-  void autosizeLowSpeedEvaporativeCondenserPumpRatedPowerConsumption();
+      boost::optional<double> lowSpeedEvaporativeCondenserPumpRatedPowerConsumption() const;
+      bool isLowSpeedEvaporativeCondenserPumpRatedPowerConsumptionAutosized() const;
+      bool setLowSpeedEvaporativeCondenserPumpRatedPowerConsumption(double lowSpeedEvaporativeCondenserPumpRatedPowerConsumption);
+      void autosizeLowSpeedEvaporativeCondenserPumpRatedPowerConsumption();
 
-  double basinHeaterCapacity() const;
-  bool setBasinHeaterCapacity(double basinHeaterCapacity);
+      double basinHeaterCapacity() const;
+      bool setBasinHeaterCapacity(double basinHeaterCapacity);
 
-  double basinHeaterSetpointTemperature() const;
-  bool setBasinHeaterSetpointTemperature(double basinHeaterSetpointTemperature);
+      double basinHeaterSetpointTemperature() const;
+      bool setBasinHeaterSetpointTemperature(double basinHeaterSetpointTemperature);
 
-  boost::optional<Schedule> basinHeaterOperatingSchedule() const;
-  bool setBasinHeaterOperatingSchedule(Schedule& schedule);
-  void resetBasinHeaterOperatingSchedule();
+      boost::optional<Schedule> basinHeaterOperatingSchedule() const;
+      bool setBasinHeaterOperatingSchedule(Schedule& schedule);
+      void resetBasinHeaterOperatingSchedule();
 
-  double minimumOutdoorDryBulbTemperatureforCompressorOperation() const;
-  bool setMinimumOutdoorDryBulbTemperatureforCompressorOperation(double minimumOutdoorDryBulbTemperatureforCompressorOperation);
+      double minimumOutdoorDryBulbTemperatureforCompressorOperation() const;
+      bool setMinimumOutdoorDryBulbTemperatureforCompressorOperation(double minimumOutdoorDryBulbTemperatureforCompressorOperation);
 
-  double unitInternalStaticAirPressure() const;
-  bool setUnitInternalStaticAirPressure(double unitInternalStaticAirPressure);
+      double unitInternalStaticAirPressure() const;
+      bool setUnitInternalStaticAirPressure(double unitInternalStaticAirPressure);
 
-  bool addToNode(Node& node);
-};
+      bool addToNode(Node& node) override;
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

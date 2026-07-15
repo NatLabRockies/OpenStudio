@@ -11,19 +11,19 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API MaterialPropertyHeatAndMoistureTransferThermalConductivity_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~MaterialPropertyHeatAndMoistureTransferThermalConductivity_Impl() override = default;
+    class EPMODEL_API MaterialPropertyHeatAndMoistureTransferThermalConductivity_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~MaterialPropertyHeatAndMoistureTransferThermalConductivity_Impl() override = default;
 
-  int numberofThermalCoordinates() const;
-  bool setNumberofThermalCoordinates(int numberofThermalCoordinates);
-};
+      int numberofThermalCoordinates() const;
+      bool setNumberofThermalCoordinates(int numberofThermalCoordinates);
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

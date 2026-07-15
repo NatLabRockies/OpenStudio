@@ -11,65 +11,65 @@
 namespace openstudio {
 namespace epmodel {
 
-class ZoneHVACBaseboardConvectiveWater;
+  class ZoneHVACBaseboardConvectiveWater;
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API CoilHeatingWaterBaseboard_Impl : public StraightComponent_Impl
-{
- public:
-  using StraightComponent_Impl::StraightComponent_Impl;
-  virtual ~CoilHeatingWaterBaseboard_Impl() override = default;
+    class EPMODEL_API CoilHeatingWaterBaseboard_Impl : public StraightComponent_Impl
+    {
+     public:
+      using StraightComponent_Impl::StraightComponent_Impl;
+      virtual ~CoilHeatingWaterBaseboard_Impl() override = default;
 
-  unsigned inletPort() const override;
-  unsigned outletPort() const override;
-  boost::optional<ModelObject> inletModelObject() const override;
-  boost::optional<ModelObject> outletModelObject() const override;
-  bool addToNode(Node& node) override;
-  bool removeFromLoop() override;
-  void disconnect() override;
+      unsigned inletPort() const override;
+      unsigned outletPort() const override;
+      boost::optional<ModelObject> inletModelObject() const override;
+      boost::optional<ModelObject> outletModelObject() const override;
+      bool addToNode(Node& node) override;
+      bool removeFromLoop() override;
+      void disconnect() override;
 
-  std::string heatingDesignCapacityMethod() const;
-  bool setHeatingDesignCapacityMethod(const std::string& heatingDesignCapacityMethod);
+      std::string heatingDesignCapacityMethod() const;
+      bool setHeatingDesignCapacityMethod(const std::string& heatingDesignCapacityMethod);
 
-  boost::optional<double> heatingDesignCapacity() const;
-  bool isHeatingDesignCapacityAutosized() const;
-  bool setHeatingDesignCapacity(double heatingDesignCapacity);
-  void autosizeHeatingDesignCapacity();
-  boost::optional<double> autosizedHeatingDesignCapacity() const;
+      boost::optional<double> heatingDesignCapacity() const;
+      bool isHeatingDesignCapacityAutosized() const;
+      bool setHeatingDesignCapacity(double heatingDesignCapacity);
+      void autosizeHeatingDesignCapacity();
+      boost::optional<double> autosizedHeatingDesignCapacity() const;
 
-  double heatingDesignCapacityPerFloorArea() const;
-  bool setHeatingDesignCapacityPerFloorArea(double heatingDesignCapacityPerFloorArea);
+      double heatingDesignCapacityPerFloorArea() const;
+      bool setHeatingDesignCapacityPerFloorArea(double heatingDesignCapacityPerFloorArea);
 
-  double fractionofAutosizedHeatingDesignCapacity() const;
-  bool setFractionofAutosizedHeatingDesignCapacity(double fractionofAutosizedHeatingDesignCapacity);
+      double fractionofAutosizedHeatingDesignCapacity() const;
+      bool setFractionofAutosizedHeatingDesignCapacity(double fractionofAutosizedHeatingDesignCapacity);
 
-  boost::optional<double> uFactorTimesAreaValue() const;
-  bool isUFactorTimesAreaValueDefaulted() const;
-  bool isUFactorTimesAreaValueAutosized() const;
-  bool setUFactorTimesAreaValue(double uFactorTimesAreaValue);
-  void resetUFactorTimesAreaValue();
-  void autosizeUFactorTimesAreaValue();
-  boost::optional<double> autosizedUFactorTimesAreaValue() const;
+      boost::optional<double> uFactorTimesAreaValue() const;
+      bool isUFactorTimesAreaValueDefaulted() const;
+      bool isUFactorTimesAreaValueAutosized() const;
+      bool setUFactorTimesAreaValue(double uFactorTimesAreaValue);
+      void resetUFactorTimesAreaValue();
+      void autosizeUFactorTimesAreaValue();
+      boost::optional<double> autosizedUFactorTimesAreaValue() const;
 
-  boost::optional<double> maximumWaterFlowRate() const;
-  bool isMaximumWaterFlowRateDefaulted() const;
-  bool isMaximumWaterFlowRateAutosized() const;
-  bool setMaximumWaterFlowRate(double maximumWaterFlowRate);
-  void resetMaximumWaterFlowRate();
-  void autosizeMaximumWaterFlowRate();
-  boost::optional<double> autosizedMaximumWaterFlowRate() const;
+      boost::optional<double> maximumWaterFlowRate() const;
+      bool isMaximumWaterFlowRateDefaulted() const;
+      bool isMaximumWaterFlowRateAutosized() const;
+      bool setMaximumWaterFlowRate(double maximumWaterFlowRate);
+      void resetMaximumWaterFlowRate();
+      void autosizeMaximumWaterFlowRate();
+      boost::optional<double> autosizedMaximumWaterFlowRate() const;
 
-  double convergenceTolerance() const;
-  bool isConvergenceToleranceDefaulted() const;
-  bool setConvergenceTolerance(double convergenceTolerance);
-  void resetConvergenceTolerance();
+      double convergenceTolerance() const;
+      bool isConvergenceToleranceDefaulted() const;
+      bool setConvergenceTolerance(double convergenceTolerance);
+      void resetConvergenceTolerance();
 
- private:
-  boost::optional<ZoneHVACBaseboardConvectiveWater> parent() const;
-};
+     private:
+      boost::optional<ZoneHVACBaseboardConvectiveWater> parent() const;
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

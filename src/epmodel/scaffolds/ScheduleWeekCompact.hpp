@@ -16,40 +16,40 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class ScheduleWeekCompact_Impl;
-}
+  namespace detail {
+    class ScheduleWeekCompact_Impl;
+  }
 
-class EPMODEL_API ScheduleWeekCompact : public ModelObject
-{
- public:
-  explicit ScheduleWeekCompact(const Model& model);
+  class EPMODEL_API ScheduleWeekCompact : public ModelObject
+  {
+   public:
+    explicit ScheduleWeekCompact(const Model& model);
 
-  virtual ~ScheduleWeekCompact() override = default;
-  ScheduleWeekCompact(const ScheduleWeekCompact& other) = default;
-  ScheduleWeekCompact(ScheduleWeekCompact&& other) = default;
-  ScheduleWeekCompact& operator=(const ScheduleWeekCompact&) = default;
-  ScheduleWeekCompact& operator=(ScheduleWeekCompact&&) = default;
+    virtual ~ScheduleWeekCompact() override = default;
+    ScheduleWeekCompact(const ScheduleWeekCompact& other) = default;
+    ScheduleWeekCompact(ScheduleWeekCompact&& other) = default;
+    ScheduleWeekCompact& operator=(const ScheduleWeekCompact&) = default;
+    ScheduleWeekCompact& operator=(ScheduleWeekCompact&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  // Schema Alignment Notes:
-  // - API: This no-counterpart type keeps IDD-derived class/API naming.
-  // - Field Mapping: Name remains available through base ModelObject scalar API.
-  // - Field Mapping: Day Type List / Schedule Day Name extensible fields are relationship-like links and excluded from scalar accessors.
-  // - TODO(parity): Add typed extensible relationship APIs incrementally after scalar saturation.
+    // Schema Alignment Notes:
+    // - API: This no-counterpart type keeps IDD-derived class/API naming.
+    // - Field Mapping: Name remains available through base ModelObject scalar API.
+    // - Field Mapping: Day Type List / Schedule Day Name extensible fields are relationship-like links and excluded from scalar accessors.
+    // - TODO(parity): Add typed extensible relationship APIs incrementally after scalar saturation.
 
- protected:
-  using ImplType = detail::ScheduleWeekCompact_Impl;
+   protected:
+    using ImplType = detail::ScheduleWeekCompact_Impl;
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
 
-  explicit ScheduleWeekCompact(std::shared_ptr<detail::ScheduleWeekCompact_Impl> impl);
-};
+    explicit ScheduleWeekCompact(std::shared_ptr<detail::ScheduleWeekCompact_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

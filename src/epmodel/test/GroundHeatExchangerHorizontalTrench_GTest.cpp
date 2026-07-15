@@ -70,8 +70,9 @@ TEST_F(EPModelFixture, GroundHeatExchangerHorizontalTrench_ScalarAndRelationship
   EXPECT_EQ(initialXing.handle(),
             ghxWithExplicitModel.getTarget(openstudio::GroundHeatExchanger_HorizontalTrenchFields::UndisturbedGroundTemperatureModelName)->handle());
   ASSERT_TRUE(ghxWithExplicitModel.getString(openstudio::GroundHeatExchanger_HorizontalTrenchFields::UndisturbedGroundTemperatureModelType, true));
-  EXPECT_EQ(initialXing.iddObject().name(),
-            ghxWithExplicitModel.getString(openstudio::GroundHeatExchanger_HorizontalTrenchFields::UndisturbedGroundTemperatureModelType, true).get());
+  EXPECT_EQ(
+    initialXing.iddObject().name(),
+    ghxWithExplicitModel.getString(openstudio::GroundHeatExchanger_HorizontalTrenchFields::UndisturbedGroundTemperatureModelType, true).get());
   EXPECT_EQ("SiteGroundTemperature", ghxWithExplicitModel.groundTemperatureModel());
   auto xingCloneObject = model.addObject(ghxWithExplicitModel.idfObject());
   ASSERT_TRUE(xingCloneObject);

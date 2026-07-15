@@ -842,18 +842,18 @@ namespace contam {
     double F;                    // mass flow rate at L-T transition
     double dP = 0;               // pressure drop at L-T transition
     double RHOAIR = 1.20410;     // density of standard air
-    double SRHO = 1.097315;      // sqrt( RHOAIR )
-    double SQRT2 = 1.414213562;  // sqrt( 2.0 )
+    double SRHO = 1.097315;      // std::sqrt( RHOAIR )
+    double SQRT2 = 1.414213562;  // std::sqrt( 2.0 )
     double MUAIR = 1.81625e-5;   // viscosity of standard air
     double DPTMIN = 1.0e-10;     // minimum L-T transition dP
     double Re = 30.0;            // Reynolds number of L-T transition
 
     double A = Ct / (0.6 * SQRT2);  // flow area
-    double D = sqrt(A);             // hydraulic diameter
+    double D = std::sqrt(A);             // hydraulic diameter
 
     // Re = rho * V * D / mu; F = rho * V * A; therefore
     F = MUAIR * Re * A / D;
-    // F = Ct * sqrt(rho) * dP^x
+    // F = Ct * std::sqrt(rho) * dP^x
     dP = std::pow(F / (Ct * SRHO), 1.0 / x);
     if (dP < DPTMIN) {
       dP = DPTMIN;  // 1998/07/17 - dPt > 0
@@ -870,7 +870,7 @@ namespace contam {
     // n - exponent
 
     double RHOAIR = 1.20410;  // density of standard air
-    double SRHO = 1.097315;   // sqrt( RHOAIR )
+    double SRHO = 1.097315;   // std::sqrt( RHOAIR )
 
     double F = RHOAIR * flow / 3600.0;  // mass flow in kg/s
 

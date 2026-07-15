@@ -28,6 +28,7 @@
 #include <boost/lexical_cast.hpp>
 
 #include <iomanip>
+#include <iostream>
 
 namespace openstudio {
 
@@ -1354,6 +1355,10 @@ namespace detail {
     return os;
   }
 
+  void IdfObject_Impl::printToStdout() const {
+    print(std::cout);
+  }
+
   void IdfObject_Impl::emitChangeSignals() {
     if (m_diffs.empty()) {
       return;
@@ -2308,6 +2313,10 @@ std::ostream& IdfObject::printName(std::ostream& os, bool hasFields) const {
 
 std::ostream& IdfObject::printField(std::ostream& os, unsigned index, bool isLastField) const {
   return m_impl->printField(os, index, isLastField);
+}
+
+void IdfObject::printToStdout() const {
+  m_impl->printToStdout();
 }
 
 /** Function object for sorting by name. */

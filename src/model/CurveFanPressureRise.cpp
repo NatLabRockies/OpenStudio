@@ -70,9 +70,9 @@ namespace model {
         Psm = maximumValueofPsm();
       }
 
-      double result = coefficient1C1() * pow(Qfan, 2);
+      double result = coefficient1C1() * std::pow(Qfan, 2);
       result += coefficient2C2() * Qfan;
-      result += coefficient3C3() * Qfan * sqrt(Psm);
+      result += coefficient3C3() * Qfan * std::sqrt(Psm);
       result += coefficient4C4() * Psm;
 
       if (boost::optional<double> _minVal = minimumCurveOutput()) {

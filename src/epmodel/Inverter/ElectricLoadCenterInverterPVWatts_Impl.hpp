@@ -11,26 +11,26 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API ElectricLoadCenterInverterPVWatts_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~ElectricLoadCenterInverterPVWatts_Impl() override = default;
+    class EPMODEL_API ElectricLoadCenterInverterPVWatts_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~ElectricLoadCenterInverterPVWatts_Impl() override = default;
 
-  double dcToACSizeRatio() const;
-  bool setDCToACSizeRatio(double dcToACSizeRatio);
-  bool isDCToACSizeRatioDefaulted() const;
-  void resetDCToACSizeRatio();
+      double dcToACSizeRatio() const;
+      bool setDCToACSizeRatio(double dcToACSizeRatio);
+      bool isDCToACSizeRatioDefaulted() const;
+      void resetDCToACSizeRatio();
 
-  double inverterEfficiency() const;
-  bool setInverterEfficiency(double inverterEfficiency);
-  bool isInverterEfficiencyDefaulted() const;
-  void resetInverterEfficiency();
-};
+      double inverterEfficiency() const;
+      bool setInverterEfficiency(double inverterEfficiency);
+      bool isInverterEfficiencyDefaulted() const;
+      void resetInverterEfficiency();
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

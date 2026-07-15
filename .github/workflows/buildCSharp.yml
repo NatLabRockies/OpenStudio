@@ -48,7 +48,7 @@ jobs:
 #      shell: bash
 #      run: |
 #        rm CMakeLists.txt
-#        aria2c https://raw.githubusercontent.com/NREL/OpenStudio/CSharp/CMakeLists.txt
+#        aria2c https://raw.githubusercontent.com/NatLabRockies/OpenStudio/CSharp/CMakeLists.txt
 #
 #    # Alternatively, if you have made lots of changes, just use this
 #    - name: Soft reset to v3.8.0
@@ -132,12 +132,7 @@ jobs:
         echo -e "::endgroup::"
 
         begin_group "Conan install"
-        if [ "$RUNNER_OS" == "macOS" ]; then
-          # Avoid "builtin __has_nothrow_assign is deprecated; use __is_nothrow_assignable instead" in boost/1.79 with recent clang
-          conan install . --output-folder=./build --build=missing -c tools.cmake.cmaketoolchain:generator=Ninja -s compiler.cppstd=20 -s build_type=${{ env.BUILD_TYPE }} -o with_testing=False -o with_benchmark=False -o with_ruby=False -o with_python=False -o with_csharp=True -c tools.build:cxxflags="['-D_LIBCPP_ENABLE_CXX17_REMOVED_UNARY_BINARY_FUNCTION']"
-        else
-          conan install . --output-folder=./build --build=missing -c tools.cmake.cmaketoolchain:generator=Ninja -s compiler.cppstd=20 -s build_type=${{ env.BUILD_TYPE }} -o with_testing=False -o with_benchmark=False -o with_ruby=False -o with_python=False -o with_csharp=True
-        fi
+        conan install . --output-folder=./build --build=missing -c tools.cmake.cmaketoolchain:generator=Ninja -s compiler.cppstd=20 -s build_type=${{ env.BUILD_TYPE }} -o with_testing=False -o with_benchmark=False -o with_ruby=False -o with_python=False -o with_csharp=True
         echo -e "::endgroup::"
 
         begin_group "CMake Configure"

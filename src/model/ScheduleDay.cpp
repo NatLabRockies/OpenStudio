@@ -348,7 +348,7 @@ namespace model {
       }
 
       int untilHours = untilTime.hours() + 24 * untilTime.days();
-      int untilMinutes = untilTime.minutes() + (int)floor((untilTime.seconds() / 60.0) + 0.5);
+      int untilMinutes = untilTime.minutes() + (int)std::floor((untilTime.seconds() / 60.0) + 0.5);
 
       if (untilMinutes >= 60) {
         untilHours += 1;

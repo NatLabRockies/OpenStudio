@@ -25,6 +25,8 @@ namespace epmodel {
   class EPMODEL_API Building : public ModelObject
   {
    public:
+    static constexpr bool is_unique = true;  // This is a Unique ModelObject
+
     virtual ~Building() override = default;
     Building(const Building& other) = default;
     Building(Building&& other) = default;

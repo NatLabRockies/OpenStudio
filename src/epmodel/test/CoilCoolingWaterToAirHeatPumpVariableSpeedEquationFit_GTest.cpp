@@ -35,8 +35,10 @@ TEST_F(EPModelFixture, CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit_Def
   EXPECT_EQ(CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit::iddObjectType(), coil.iddObject().type());
   EXPECT_EQ(openstudio::Coil_Cooling_WaterToAirHeatPump_VariableSpeedEquationFitFields::IndoorAirInletNodeName, coil.airInletPort());
   EXPECT_EQ(openstudio::Coil_Cooling_WaterToAirHeatPump_VariableSpeedEquationFitFields::IndoorAirOutletNodeName, coil.airOutletPort());
-  EXPECT_EQ(openstudio::Coil_Cooling_WaterToAirHeatPump_VariableSpeedEquationFitFields::WatertoRefrigerantHXWaterInletNodeName, coil.waterInletPort());
-  EXPECT_EQ(openstudio::Coil_Cooling_WaterToAirHeatPump_VariableSpeedEquationFitFields::WatertoRefrigerantHXWaterOutletNodeName, coil.waterOutletPort());
+  EXPECT_EQ(openstudio::Coil_Cooling_WaterToAirHeatPump_VariableSpeedEquationFitFields::WatertoRefrigerantHXWaterInletNodeName,
+            coil.waterInletPort());
+  EXPECT_EQ(openstudio::Coil_Cooling_WaterToAirHeatPump_VariableSpeedEquationFitFields::WatertoRefrigerantHXWaterOutletNodeName,
+            coil.waterOutletPort());
   EXPECT_FALSE(coil.airInletModelObject());
   EXPECT_FALSE(coil.airOutletModelObject());
   EXPECT_FALSE(coil.waterInletModelObject());
@@ -219,7 +221,6 @@ TEST_F(EPModelFixture, CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit_Air
   EXPECT_DOUBLE_EQ(0.82, reattached->airPathHydraulicDiameter());
 }
 
-
 TEST_F(EPModelFixture, CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit_RemoveCleansUpAttachedTransientSpeeds) {
   Model model;
   CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit coil(model);
@@ -230,12 +231,12 @@ TEST_F(EPModelFixture, CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit_Rem
   ASSERT_TRUE(coil.addSpeed(speed1));
   ASSERT_TRUE(coil.addSpeed(speed2));
   ASSERT_EQ(2u, coil.speeds().size());
-  EXPECT_EQ(2u, model.getConcreteModelObjects<CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFitSpeedData>(true).size());
+  EXPECT_EQ(2u, model.getConcreteModelObjects<CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFitSpeedData>().size());
   EXPECT_EQ(1u, model.getConcreteModelObjects<AirflowNetworkDistributionComponentCoil>().size());
 
   coil.remove();
 
-  EXPECT_TRUE(model.getConcreteModelObjects<CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFitSpeedData>(true).empty());
+  EXPECT_TRUE(model.getConcreteModelObjects<CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFitSpeedData>().empty());
   EXPECT_TRUE(model.getConcreteModelObjects<AirflowNetworkDistributionComponentCoil>().empty());
 }
 
@@ -245,7 +246,8 @@ TEST_F(EPModelFixture, CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit_Ava
 
   ASSERT_TRUE(
     coil.setPointer(openstudio::Coil_Cooling_WaterToAirHeatPump_VariableSpeedEquationFitFields::AvailabilityScheduleName, openstudio::Handle()));
-  EXPECT_FALSE(coil.getModelObjectTarget<Schedule>(openstudio::Coil_Cooling_WaterToAirHeatPump_VariableSpeedEquationFitFields::AvailabilityScheduleName));
+  EXPECT_FALSE(
+    coil.getModelObjectTarget<Schedule>(openstudio::Coil_Cooling_WaterToAirHeatPump_VariableSpeedEquationFitFields::AvailabilityScheduleName));
 
   const auto schedule = coil.availabilitySchedule();
   EXPECT_EQ(model.alwaysOnDiscreteSchedule(), schedule);

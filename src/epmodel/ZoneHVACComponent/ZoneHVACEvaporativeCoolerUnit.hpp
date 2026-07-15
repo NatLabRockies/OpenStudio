@@ -32,7 +32,7 @@ namespace epmodel {
   namespace detail {
     struct LoadContext;
     class ZoneHVACEvaporativeCoolerUnit_Impl;
-  }
+  }  // namespace detail
 
   class EPMODEL_API ZoneHVACEvaporativeCoolerUnit : public ZoneHVACComponent
   {

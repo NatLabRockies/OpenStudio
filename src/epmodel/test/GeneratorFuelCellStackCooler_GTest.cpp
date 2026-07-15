@@ -115,7 +115,6 @@ TEST_F(EPModelFixture, GeneratorFuelCellStackCooler_ScalarAccessors_RoundTrip) {
   EXPECT_DOUBLE_EQ(0.0, stackCooler.stackAirCoolerFanCoefficientf2());
 }
 
-
 TEST_F(EPModelFixture, GeneratorFuelCellStackCooler_RelationshipsAndAddToNode_PlantLoopOnly) {
   Model model;
   GeneratorFuelCellStackCooler stackCooler(model);

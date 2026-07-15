@@ -11,22 +11,22 @@
 namespace openstudio {
 namespace epmodel {
 
-class Schedule;
+  class Schedule;
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API AvailabilityManagerScheduledOn_Impl : public AvailabilityManager_Impl
-{
- public:
-  using AvailabilityManager_Impl::AvailabilityManager_Impl;
-  virtual ~AvailabilityManagerScheduledOn_Impl() override = default;
+    class EPMODEL_API AvailabilityManagerScheduledOn_Impl : public AvailabilityManager_Impl
+    {
+     public:
+      using AvailabilityManager_Impl::AvailabilityManager_Impl;
+      virtual ~AvailabilityManagerScheduledOn_Impl() override = default;
 
- openstudio::epmodel::Schedule schedule() const;
-  bool setSchedule(openstudio::epmodel::Schedule& schedule);
-  void doCanonicalize(LoadContext& context) override;
-};
+      openstudio::epmodel::Schedule schedule() const;
+      bool setSchedule(openstudio::epmodel::Schedule& schedule);
+      void doCanonicalize(LoadContext& context) override;
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

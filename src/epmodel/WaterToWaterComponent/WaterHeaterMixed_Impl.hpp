@@ -24,9 +24,10 @@ namespace epmodel {
     class EPMODEL_API WaterHeaterMixed_Impl : public WaterToWaterComponent_Impl
     {
      public:
-     using WaterToWaterComponent_Impl::WaterToWaterComponent_Impl;
+      using WaterToWaterComponent_Impl::WaterToWaterComponent_Impl;
       virtual ~WaterHeaterMixed_Impl() override = default;
 
+      void doCanonicalize(LoadContext& context) override;
       std::vector<ModelObject> children() const override;
 
       boost::optional<double> tankVolume() const;

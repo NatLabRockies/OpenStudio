@@ -13,13 +13,13 @@
 namespace openstudio {
 namespace epmodel {
 
-ParametricLogic::ParametricLogic(const Model& model) : ModelObject(ParametricLogic::iddObjectType(), model) {}
+  ParametricLogic::ParametricLogic(const Model& model) : ModelObject(ParametricLogic::iddObjectType(), model) {}
 
-ParametricLogic::ParametricLogic(std::shared_ptr<detail::ParametricLogic_Impl> impl) : ModelObject(std::move(impl)) {}
+  ParametricLogic::ParametricLogic(std::shared_ptr<detail::ParametricLogic_Impl> impl) : ModelObject(std::move(impl)) {}
 
-IddObjectType ParametricLogic::iddObjectType() {
-  return IddObjectType::Parametric_Logic;
-}
+  IddObjectType ParametricLogic::iddObjectType() {
+    return IddObjectType::Parametric_Logic;
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio

@@ -13,20 +13,20 @@
 namespace openstudio {
 namespace epmodel {
 
-class ModelObject;
+  class ModelObject;
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API ParentObject_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~ParentObject_Impl() = default;
+    class EPMODEL_API ParentObject_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~ParentObject_Impl() = default;
 
-  virtual std::vector<ModelObject> children() const;
-};
+      virtual std::vector<ModelObject> children() const;
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

@@ -120,8 +120,7 @@ namespace epmodel {
   }
 
   std::vector<std::string> WaterHeaterHeatPumpWrappedCondenser::compressorLocationValues() {
-    return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
-                          WaterHeater_HeatPump_WrappedCondenserFields::CompressorLocation);
+    return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), WaterHeater_HeatPump_WrappedCondenserFields::CompressorLocation);
   }
 
   std::vector<std::string> WaterHeaterHeatPumpWrappedCondenser::fanPlacementValues() {
@@ -497,8 +496,8 @@ namespace epmodel {
     }
 
     bool WaterHeaterHeatPumpWrappedCondenser_Impl::setAvailabilitySchedule(Schedule& schedule) {
-      return setSchedule(WaterHeater_HeatPump_WrappedCondenserFields::AvailabilityScheduleName, "WaterHeaterHeatPumpWrappedCondenser",
-                         "Availability", schedule);
+      return setSchedule(WaterHeater_HeatPump_WrappedCondenserFields::AvailabilityScheduleName, "WaterHeaterHeatPumpWrappedCondenser", "Availability",
+                         schedule);
     }
 
     void WaterHeaterHeatPumpWrappedCondenser_Impl::resetAvailabilitySchedule() {
@@ -522,8 +521,8 @@ namespace epmodel {
     }
 
     bool WaterHeaterHeatPumpWrappedCondenser_Impl::setInletAirTemperatureSchedule(Schedule& schedule) {
-      return setSchedule(WaterHeater_HeatPump_WrappedCondenserFields::InletAirTemperatureScheduleName,
-                         "WaterHeaterHeatPumpWrappedCondenser", "Inlet Air Temperature", schedule);
+      return setSchedule(WaterHeater_HeatPump_WrappedCondenserFields::InletAirTemperatureScheduleName, "WaterHeaterHeatPumpWrappedCondenser",
+                         "Inlet Air Temperature", schedule);
     }
 
     void WaterHeaterHeatPumpWrappedCondenser_Impl::resetInletAirTemperatureSchedule() {
@@ -535,8 +534,8 @@ namespace epmodel {
     }
 
     bool WaterHeaterHeatPumpWrappedCondenser_Impl::setInletAirHumiditySchedule(Schedule& schedule) {
-      return setSchedule(WaterHeater_HeatPump_WrappedCondenserFields::InletAirHumidityScheduleName,
-                         "WaterHeaterHeatPumpWrappedCondenser", "Inlet Air Humidity", schedule);
+      return setSchedule(WaterHeater_HeatPump_WrappedCondenserFields::InletAirHumidityScheduleName, "WaterHeaterHeatPumpWrappedCondenser",
+                         "Inlet Air Humidity", schedule);
     }
 
     void WaterHeaterHeatPumpWrappedCondenser_Impl::resetInletAirHumiditySchedule() {
@@ -585,8 +584,8 @@ namespace epmodel {
     }
 
     bool WaterHeaterHeatPumpWrappedCondenser_Impl::setCompressorAmbientTemperatureSchedule(Schedule& schedule) {
-      return setSchedule(WaterHeater_HeatPump_WrappedCondenserFields::CompressorAmbientTemperatureScheduleName,
-                         "WaterHeaterHeatPumpWrappedCondenser", "Compressor Ambient Temperature", schedule);
+      return setSchedule(WaterHeater_HeatPump_WrappedCondenserFields::CompressorAmbientTemperatureScheduleName, "WaterHeaterHeatPumpWrappedCondenser",
+                         "Compressor Ambient Temperature", schedule);
     }
 
     void WaterHeaterHeatPumpWrappedCondenser_Impl::resetCompressorAmbientTemperatureSchedule() {
@@ -751,15 +750,15 @@ namespace epmodel {
 
       if (tankComponent) {
         if (auto supplyInlet = tankComponent->getImpl<detail::ModelObject_Impl>()->resolvedNodeTarget(tankComponent->supplyInletPort())) {
-          changed = thisObject.getImpl<detail::ModelObject_Impl>()->setPointer(
-                      WaterHeater_HeatPump_WrappedCondenserFields::TankUseSideInletNodeName, supplyInlet->handle(), false)
+          changed = thisObject.getImpl<detail::ModelObject_Impl>()->setPointer(WaterHeater_HeatPump_WrappedCondenserFields::TankUseSideInletNodeName,
+                                                                               supplyInlet->handle(), false)
                     || changed;
         } else {
           changed = clearStringIfNeeded(thisObject, WaterHeater_HeatPump_WrappedCondenserFields::TankUseSideInletNodeName) || changed;
         }
         if (auto supplyOutlet = tankComponent->getImpl<detail::ModelObject_Impl>()->resolvedNodeTarget(tankComponent->supplyOutletPort())) {
-          changed = thisObject.getImpl<detail::ModelObject_Impl>()->setPointer(
-                      WaterHeater_HeatPump_WrappedCondenserFields::TankUseSideOutletNodeName, supplyOutlet->handle(), false)
+          changed = thisObject.getImpl<detail::ModelObject_Impl>()->setPointer(WaterHeater_HeatPump_WrappedCondenserFields::TankUseSideOutletNodeName,
+                                                                               supplyOutlet->handle(), false)
                     || changed;
         } else {
           changed = clearStringIfNeeded(thisObject, WaterHeater_HeatPump_WrappedCondenserFields::TankUseSideOutletNodeName) || changed;
@@ -783,14 +782,12 @@ namespace epmodel {
           openstudio::istringEqual(inletAirConfiguration(), "Schedule") ? baseName + " Outlet" : baseName + " Air Outlet Node";
         airInlet = resolvedOrCreatedNodeTarget(WaterHeater_HeatPump_WrappedCondenserFields::AirInletNodeName, inletName);
         airOutlet = resolvedOrCreatedNodeTarget(WaterHeater_HeatPump_WrappedCondenserFields::AirOutletNodeName, outletName);
-        changed =
-          thisObject.getImpl<detail::ModelObject_Impl>()->setPointer(WaterHeater_HeatPump_WrappedCondenserFields::AirInletNodeName,
-                                                                     airInlet->handle(), false)
-          || changed;
-        changed =
-          thisObject.getImpl<detail::ModelObject_Impl>()->setPointer(WaterHeater_HeatPump_WrappedCondenserFields::AirOutletNodeName,
-                                                                     airOutlet->handle(), false)
-          || changed;
+        changed = thisObject.getImpl<detail::ModelObject_Impl>()->setPointer(WaterHeater_HeatPump_WrappedCondenserFields::AirInletNodeName,
+                                                                             airInlet->handle(), false)
+                  || changed;
+        changed = thisObject.getImpl<detail::ModelObject_Impl>()->setPointer(WaterHeater_HeatPump_WrappedCondenserFields::AirOutletNodeName,
+                                                                             airOutlet->handle(), false)
+                  || changed;
       } else {
         changed = clearStringIfNeeded(thisObject, WaterHeater_HeatPump_WrappedCondenserFields::AirInletNodeName) || changed;
         changed = clearStringIfNeeded(thisObject, WaterHeater_HeatPump_WrappedCondenserFields::AirOutletNodeName) || changed;
@@ -815,14 +812,12 @@ namespace epmodel {
       if (outdoorOnly || zoneAndOutdoorAir) {
         outdoorAir = resolvedOrCreatedNodeTarget(WaterHeater_HeatPump_WrappedCondenserFields::OutdoorAirNodeName, baseName + " Outdoor Air");
         reliefAir = resolvedOrCreatedNodeTarget(WaterHeater_HeatPump_WrappedCondenserFields::ExhaustAirNodeName, baseName + " Exhaust Air");
-        changed =
-          thisObject.getImpl<detail::ModelObject_Impl>()->setPointer(WaterHeater_HeatPump_WrappedCondenserFields::OutdoorAirNodeName,
-                                                                     outdoorAir->handle(), false)
-          || changed;
-        changed =
-          thisObject.getImpl<detail::ModelObject_Impl>()->setPointer(WaterHeater_HeatPump_WrappedCondenserFields::ExhaustAirNodeName,
-                                                                     reliefAir->handle(), false)
-          || changed;
+        changed = thisObject.getImpl<detail::ModelObject_Impl>()->setPointer(WaterHeater_HeatPump_WrappedCondenserFields::OutdoorAirNodeName,
+                                                                             outdoorAir->handle(), false)
+                  || changed;
+        changed = thisObject.getImpl<detail::ModelObject_Impl>()->setPointer(WaterHeater_HeatPump_WrappedCondenserFields::ExhaustAirNodeName,
+                                                                             reliefAir->handle(), false)
+                  || changed;
       } else {
         changed = clearStringIfNeeded(thisObject, WaterHeater_HeatPump_WrappedCondenserFields::OutdoorAirNodeName) || changed;
         changed = clearStringIfNeeded(thisObject, WaterHeater_HeatPump_WrappedCondenserFields::ExhaustAirNodeName) || changed;
@@ -832,14 +827,12 @@ namespace epmodel {
         mixedAir = resolvedOrCreatedNodeTarget(WaterHeater_HeatPump_WrappedCondenserFields::InletAirMixerNodeName, baseName + " Mixed Air Node");
         splitterNode =
           resolvedOrCreatedNodeTarget(WaterHeater_HeatPump_WrappedCondenserFields::OutletAirSplitterNodeName, baseName + " Fan Outlet Node");
-        changed =
-          thisObject.getImpl<detail::ModelObject_Impl>()->setPointer(WaterHeater_HeatPump_WrappedCondenserFields::InletAirMixerNodeName,
-                                                                     mixedAir->handle(), false)
-          || changed;
-        changed =
-          thisObject.getImpl<detail::ModelObject_Impl>()->setPointer(WaterHeater_HeatPump_WrappedCondenserFields::OutletAirSplitterNodeName,
-                                                                     splitterNode->handle(), false)
-          || changed;
+        changed = thisObject.getImpl<detail::ModelObject_Impl>()->setPointer(WaterHeater_HeatPump_WrappedCondenserFields::InletAirMixerNodeName,
+                                                                             mixedAir->handle(), false)
+                  || changed;
+        changed = thisObject.getImpl<detail::ModelObject_Impl>()->setPointer(WaterHeater_HeatPump_WrappedCondenserFields::OutletAirSplitterNodeName,
+                                                                             splitterNode->handle(), false)
+                  || changed;
       } else {
         changed = clearStringIfNeeded(thisObject, WaterHeater_HeatPump_WrappedCondenserFields::InletAirMixerNodeName) || changed;
         changed = clearStringIfNeeded(thisObject, WaterHeater_HeatPump_WrappedCondenserFields::OutletAirSplitterNodeName) || changed;

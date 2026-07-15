@@ -1,9 +1,19 @@
 name: Build and Test (Ubuntu 22.04)
 
 on:
+  push:
+    branches: [ incremental_build_debug ]
+
   pull_request:
-    branches:
-      - develop
+    branches: [ develop, os-4.0-dev ]
+
+  workflow_dispatch:
+    inputs:
+      aggressive_clean:
+        description: 'Aggressive cleaning (remove all conan packages and build artifacts)'
+        required: false
+        type: boolean
+        default: false
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -11,7 +21,7 @@ concurrency:
 
 jobs:
   build:
-    if: github.event_name == 'push' || contains(github.event.pull_request.labels.*.name, 'Pull Request - Ready for CI')
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'push' || contains(github.event.pull_request.labels.*.name, 'Pull Request - Ready for CI')
     runs-on: linux-openstudio-2
 
     permissions:
@@ -30,7 +40,7 @@ jobs:
       OPENSTUDIO_DOCKER_VOLUME: /github/home/Ubuntu
       OPENSTUDIO_SOURCE_NAME: OpenStudio
       OPENSTUDIO_BUILD_NAME: OS-build
-      EXCLUDED_TESTS: "BCLFixture.BCLMeasure"
+      EXCLUDED_TESTS: "BCLFixture.RemoteBCL_BCLSearchResult"
 
     container: # Define the Docker container for the job. All subsequent steps run inside it.
       image: nrel/openstudio-cmake-tools:jammy-main
@@ -38,6 +48,10 @@ jobs:
       volumes: # envs don't work in volume definition for containers
         - "/srv/data/jenkins/docker-volumes/conan-data/.conan2:/github/home/.conan2" # Conan cache
         - "/srv/data/jenkins/docker-volumes/ubuntu-2204:/github/home/Ubuntu"
+
+    defaults:
+      run:
+        shell: bash
 
     steps:
       - name: Checkout repository
@@ -50,6 +64,24 @@ jobs:
           cd ${{ env.OPENSTUDIO_DOCKER_VOLUME }}/${{ env.OPENSTUDIO_SOURCE_NAME }}
           # make safe repository
           git config --global --add safe.directory "*"
+
+      - name: Aggressive clean
+        if: inputs.aggressive_clean
+        run: |
+          BUILD_DIR="${{ env.OPENSTUDIO_DOCKER_VOLUME }}/${{ env.OPENSTUDIO_SOURCE_NAME }}/${{ env.OPENSTUDIO_BUILD_NAME }}"
+          echo "Aggressive clean: removing entire build directory"
+          rm -rf "$BUILD_DIR"
+
+          echo "Aggressive clean: removing all conan packages to ensure clean state"
+          # Force remove all to ensure rebuild with correct ABI
+          conan remove "*" -c || true
+
+          CONAN_PROFILE_DEFAULT="${{ env.DOCKER_ROOT }}/.conan2/profiles/default"
+          if [ -f "$CONAN_PROFILE_DEFAULT" ]; then
+            echo "Aggressive clean: removing conan profile to ensure correct detection and rebuild"
+            conan profile show
+            rm -Rf "$CONAN_PROFILE_DEFAULT"
+          fi
 
       - name: Remove old artifacts
         run: |
@@ -84,27 +116,28 @@ jobs:
           git config user.name "ci-commercialbuildings" && \
           git fetch origin && \
           git fetch origin +refs/pull/*/head:refs/remotes/origin/pr/* && \
-          git checkout origin/pr/${{ github.event.pull_request.number || github.ref }}
-
-      - name: Install dependencies
-        run: |
-          cd ${{ env.OPENSTUDIO_DOCKER_VOLUME }}/${{ env.OPENSTUDIO_SOURCE_NAME }}
-          conan remote add conancenter https://center.conan.io --force
-          conan remote update conancenter --insecure
-          conan remote add nrel-v2 https://conan.openstudio.net/artifactory/api/conan/conan-v2 --force
-          conan remote update nrel-v2 --insecure
-          
-          # Force remove all to ensure rebuild with correct ABI
-          conan remove "*" -c || true
-          
-          # Fix SWIG_DIR env var being set to an invalid path by conan
-          export SWIG_DIR=""
-          
-          if [ ! -f "${{ env.DOCKER_ROOT }}/.conan2/profiles/default" ]; then
-            conan profile detect
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            git checkout origin/pr/${{ github.event.pull_request.number }}
+          else
+            git checkout ${{ github.ref_name }}
           fi
 
-          conan install . --output-folder=${{ env.OPENSTUDIO_BUILD_NAME }} --build=missing --build=boost --build=fmt --build=cpprestsdk --build=swig -c tools.cmake.cmaketoolchain:generator=Ninja -s compiler.cppstd=20 -s build_type=Release -s compiler=gcc -s compiler.version=11 -s compiler.libcxx=libstdc++11
+      - name: Install conan dependencies
+        working-directory: ${{ env.OPENSTUDIO_DOCKER_VOLUME }}/${{ env.OPENSTUDIO_SOURCE_NAME }}
+        run: |
+          conan remote add conancenter --force https://center2.conan.io
+          conan remote update conancenter --insecure
+          conan remote add nrel-v2 --index 0 --force https://conan.openstudio.net/artifactory/api/conan/conan-v2
+          conan remote update nrel-v2 --insecure
+
+          CONAN_PROFILE_DEFAULT="${{ env.DOCKER_ROOT }}/.conan2/profiles/default"
+          if [ ! -f "$CONAN_PROFILE_DEFAULT" ]; then
+            conan profile detect
+          fi
+          sed -i 's/cppstd=.*$/cppstd=20/g' $CONAN_PROFILE_DEFAULT
+          conan profile show
+
+          conan install . --output-folder=${{ env.OPENSTUDIO_BUILD_NAME }} --build=missing -c tools.cmake.cmaketoolchain:generator=Ninja -s compiler.cppstd=20 -s build_type=Release
 
       - name: Locate Ruby
         run: |
@@ -113,41 +146,10 @@ jobs:
 
         # wrap cmake with ccache using a flag or environment variable
       - name: Configure with CMake
-        working-directory: ${{ env.OPENSTUDIO_DOCKER_VOLUME }}/${{ env.OPENSTUDIO_SOURCE_NAME }}/${{ env.OPENSTUDIO_BUILD_NAME }}
+        working-directory: ${{ env.OPENSTUDIO_DOCKER_VOLUME }}/${{ env.OPENSTUDIO_SOURCE_NAME }}
         run: |
-          . ./conanbuild.sh
-          # Create a symlink to the swig executable in a standard path if it exists in conan cache
-          # This helps when the long conan path is causing issues or not being picked up correctly
-          SWIG_BIN=$(find /github/home/.conan2 -name swig -type f -executable | head -n 1)
-          if [ ! -z "$SWIG_BIN" ]; then
-            echo "Found SWIG at $SWIG_BIN"
-            mkdir -p $HOME/bin
-            ln -sf $SWIG_BIN $HOME/bin/swig
-            export PATH=$HOME/bin:$PATH
-            SWIG_EXEC_ARG="-DSWIG_EXECUTABLE=$HOME/bin/swig"
-          fi
-          
-          cmake -G Ninja \
-                -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake \
-                -DCMAKE_BUILD_TYPE:STRING=Release \
-                $SWIG_EXEC_ARG \
-                -DBUILD_TESTING:BOOL=ON \
-                -DCPACK_BINARY_DEB:BOOL=ON \
-                -DCPACK_BINARY_TGZ:BOOL=ON \
-                -DCPACK_BINARY_IFW:BOOL=OFF \
-                -DCPACK_BINARY_NSIS:BOOL=OFF \
-                -DCPACK_BINARY_RPM:BOOL=OFF \
-                -DCPACK_BINARY_STGZ:BOOL=OFF \
-                -DCPACK_BINARY_TBZ2:BOOL=OFF \
-                -DCPACK_BINARY_TXZ:BOOL=OFF \
-                -DCPACK_BINARY_TZ:BOOL=OFF \
-                -DBUILD_PYTHON_BINDINGS:BOOL=ON \
-                -DBUILD_PYTHON_PIP_PACKAGE:BOOL=OFF \
-                -DPYTHON_VERSION:STRING=3.12.2 \
-                -DBUILD_RUBY_BINDINGS:BOOL=ON \
-                -DBUILD_CLI:BOOL=ON \
-                -DSYSTEM_RUBY_EXECUTABLE="$SYSTEM_RUBY_PATH" \
-                ..
+          cmake --preset conan-release \
+                -DSYSTEM_RUBY_EXECUTABLE="$SYSTEM_RUBY_PATH"
 
       - name: Verify build state
         working-directory: ${{ env.OPENSTUDIO_DOCKER_VOLUME }}/${{ env.OPENSTUDIO_SOURCE_NAME }}/${{ env.OPENSTUDIO_BUILD_NAME }}
@@ -170,30 +172,28 @@ jobs:
         run: |
           set +e
           mkdir -p Testing/run{1,2,3}
-          
-          # First test run - quiet by default, show failures only
-          echo "Testing..."
-          ctest -j ${{ env.MAX_SAFE_THREADS }} --no-compress-output --output-junit Testing/run1/results.xml -E "${{ env.EXCLUDED_TESTS }}" > /tmp/run1.log 2>&1
-          RESULT1=$?
-          
+
+          begin_group() { echo -e "::group::\033[93m$1\033[0m"; }
+
+
+          begin_group "Run 1 - Initial with all tests"
+          ctest -j ${{ env.MAX_SAFE_THREADS }} --no-compress-output --output-junit Testing/run1/results.xml -E "${{ env.EXCLUDED_TESTS }}" 2>&1 | tee /tmp/run1.log
+          RESULT1=${PIPESTATUS[0]}
+          echo "::endgroup::"
+
           if [ $RESULT1 -ne 0 ]; then
-            # Show failures from first run
-            echo "Failed tests from run 1:"
-            grep -A 5 "FAILED\|Error\|Fail:" /tmp/run1.log | head -30 || tail -20 /tmp/run1.log
-            
-            # Retry failed tests
+            begin_group "Run 2 - Retrying failed tests"
             echo "Retrying failed tests..."
-            ctest -j ${{ env.MAX_SAFE_THREADS }} --rerun-failed --no-compress-output --output-junit Testing/run2/results.xml -E "${{ env.EXCLUDED_TESTS }}" > /tmp/run2.log 2>&1
-            RESULT2=$?
-            
+            ctest -j ${{ env.MAX_SAFE_THREADS }} --rerun-failed --no-compress-output --output-junit Testing/run2/results.xml -E "${{ env.EXCLUDED_TESTS }}" 2>&1 | tee /tmp/run2.log
+            RESULT2=${PIPESTATUS[0]}
+            echo "::endgroup::"
+
             if [ $RESULT2 -ne 0 ]; then
-              echo "Failed tests from run 2 (verbose):"
-              grep -A 10 "FAILED\|Error\|Fail:" /tmp/run2.log | head -50 || tail -30 /tmp/run2.log
-              
               # Final attempt with verbose output for failing tests
-              echo "Final attempt with verbose output..."
-              ctest -j ${{ env.MAX_SAFE_THREADS }} --rerun-failed --no-compress-output --output-junit Testing/run3/results.xml -E "${{ env.EXCLUDED_TESTS }}" 2>&1 | tee /tmp/run3.log
-              RESULT3=$?
+              begin_group "Run 3 - Final attempt with verbose output..."
+              ctest -j ${{ env.MAX_SAFE_THREADS }} --rerun-failed --no-compress-output --output-junit Testing/run3/results.xml -E "${{ env.EXCLUDED_TESTS }}" --output-on-failure 2>&1 | tee /tmp/run3.log
+              RESULT3=${PIPESTATUS[0]}
+              echo "::endgroup::"
             else
               RESULT3=0
               echo "Tests passed on retry"
@@ -203,18 +203,10 @@ jobs:
             RESULT2=0
             RESULT3=0
           fi
-          
-          # Verify no remaining failures
-          echo "Verifying no remaining failures..."
-          ctest --rerun-failed --no-tests=error -E "${{ env.EXCLUDED_TESTS }}" > /dev/null 2>&1
-          FINAL_CHECK=$?
-          
-          # Summary
-          echo ""
+
           echo "Test Results: Run1=$RESULT1 Run2=$RESULT2 Run3=$RESULT3"
-          
-          # Exit with failure if any issues remain
-          if ([ $RESULT1 -eq 0 ] || [ $RESULT2 -eq 0 ] || [ $RESULT3 -eq 0 ]) && [ $FINAL_CHECK -eq 0 ]; then
+
+          if [ $RESULT1 -eq 0 ] || [ $RESULT2 -eq 0 ] || [ $RESULT3 -eq 0 ]; then
             exit 0
           else
             exit 1
@@ -238,72 +230,72 @@ jobs:
         if: always()
         run: |
           mkdir -p ${{ env.OPENSTUDIO_DOCKER_VOLUME }}/${{ env.OPENSTUDIO_SOURCE_NAME }}/${{ env.OPENSTUDIO_BUILD_NAME }}/Testing/dashboard
-          
+
           # Create comprehensive test dashboard
           cat > ${{ env.OPENSTUDIO_DOCKER_VOLUME }}/${{ env.OPENSTUDIO_SOURCE_NAME }}/${{ env.OPENSTUDIO_BUILD_NAME }}/Testing/dashboard/test-dashboard.md << 'EOF'
           # 🧪 Test Results Dashboard
-          
+
           ## Summary
-          
+
           EOF
-          
+
           # Process JUnit XML files and extract test information
           python3 << 'PYTHON_EOF'
           import xml.etree.ElementTree as ET
           import os
           import glob
           from datetime import datetime
-          
+
           build_dir = "${{ env.OPENSTUDIO_DOCKER_VOLUME }}/${{ env.OPENSTUDIO_SOURCE_NAME }}/${{ env.OPENSTUDIO_BUILD_NAME }}"
           dashboard_file = f"{build_dir}/Testing/dashboard/test-dashboard.md"
-          
+
           # Find all JUnit XML files
           xml_files = glob.glob(f"{build_dir}/Testing/run*/results.xml")
-          
+
           total_tests = 0
           total_failures = 0
           total_errors = 0
           total_skipped = 0
           failed_tests = []
-          
+
           # Parse XML files
           for xml_file in xml_files:
               if os.path.exists(xml_file):
                   try:
                       tree = ET.parse(xml_file)
                       root = tree.getroot()
-                      
+
                       # Handle different JUnit XML formats
                       if root.tag == 'testsuites':
                           testsuites = root.findall('testsuite')
                       else:
                           testsuites = [root]
-                      
+
                       for testsuite in testsuites:
                           suite_name = testsuite.get('name', 'Unknown')
                           tests = int(testsuite.get('tests', 0))
                           failures = int(testsuite.get('failures', 0))
                           errors = int(testsuite.get('errors', 0))
                           skipped = int(testsuite.get('skipped', 0))
-                          
+
                           total_tests += tests
                           total_failures += failures
                           total_errors += errors
                           total_skipped += skipped
-                          
+
                           # Get failed test details
                           for testcase in testsuite.findall('testcase'):
                               test_name = testcase.get('name', 'Unknown')
                               classname = testcase.get('classname', suite_name)
-                              
+
                               failure = testcase.find('failure')
                               error = testcase.find('error')
-                              
+
                               if failure is not None or error is not None:
                                   failure_info = failure if failure is not None else error
                                   message = failure_info.get('message', 'No message')
                                   details = failure_info.text or 'No details available'
-                                  
+
                                   failed_tests.append({
                                       'suite': suite_name,
                                       'class': classname,
@@ -314,12 +306,12 @@ jobs:
                                   })
                   except Exception as e:
                       print(f"Error parsing {xml_file}: {e}")
-          
+
           # Generate dashboard content
           with open(dashboard_file, 'a') as f:
               # Summary section
               success_rate = ((total_tests - total_failures - total_errors) / total_tests * 100) if total_tests > 0 else 0
-              
+
               f.write(f"| Metric | Value |\n")
               f.write(f"|--------|-------|\n")
               f.write(f"| **Total Tests** | {total_tests} |\n")
@@ -329,18 +321,18 @@ jobs:
               f.write(f"| **Skipped** | {total_skipped} |\n")
               f.write(f"| **Success Rate** | {success_rate:.1f}% |\n")
               f.write(f"| **Generated** | {datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')} |\n\n")
-              
+
               if success_rate >= 100:
                   f.write("## ✅ All Tests Passed!\n\n")
               elif success_rate >= 95:
                   f.write("## ⚠️ Minor Issues Detected\n\n")
               else:
                   f.write("## ❌ Significant Test Failures\n\n")
-              
+
               # Failed tests section
               if failed_tests:
                   f.write(f"## 🔍 Failed Tests ({len(failed_tests)} failures)\n\n")
-                  
+
                   # Group by test suite
                   suites = {}
                   for test in failed_tests:
@@ -348,10 +340,10 @@ jobs:
                       if suite not in suites:
                           suites[suite] = []
                       suites[suite].append(test)
-                  
+
                   for suite_name, suite_tests in suites.items():
                       f.write(f"### {suite_name} ({len(suite_tests)} failures)\n\n")
-                      
+
                       for test in suite_tests:
                           f.write(f"<details>\n")
                           f.write(f"<summary><strong>{test['class']}.{test['name']}</strong> ({test['run']})</summary>\n\n")
@@ -360,7 +352,7 @@ jobs:
                           f.write(f"**Full Details:**\n")
                           f.write(f"```\n{test['details']}\n```\n\n")
                           f.write(f"</details>\n\n")
-              
+
               # Test run information
               f.write("## 📊 Test Run Information\n\n")
               f.write("| Run | XML File | Status |\n")
@@ -369,10 +361,10 @@ jobs:
                   status = "✅ Found" if os.path.exists(xml_file) else "❌ Missing"
                   run_name = os.path.basename(os.path.dirname(xml_file))
                   f.write(f"| {run_name} | `{os.path.basename(xml_file)}` | {status} |\n")
-              
+
               if not xml_files:
                   f.write("| - | No XML files found | ❌ Missing |\n")
-          
+
           print(f"Dashboard generated with {total_tests} tests, {total_failures + total_errors} failures")
           PYTHON_EOF
 

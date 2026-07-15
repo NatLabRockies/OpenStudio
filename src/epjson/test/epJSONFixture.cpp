@@ -123,8 +123,8 @@ void epJSONFixture::compareJSONS_detailed(Json::Value& lhs, Json::Value& rhs, co
 }
 
 openstudio::path setupIdftoEPJSONTest(const openstudio::path& location) {
-  const auto basename = openstudio::toPath(openstudio::filesystem::basename(location));
-  const auto working_directory = openstudio::filesystem::complete(openstudio::toPath("epjson_tests") / basename);
+  const auto basename = location.stem().string();
+  const auto working_directory = openstudio::filesystem::absolute(openstudio::toPath("epjson_tests") / basename);
   auto idf_path = working_directory / openstudio::toPath("eplus.idf");
   openstudio::filesystem::create_directories(working_directory);
   openstudio::filesystem::copy_file(location, idf_path, openstudio::filesystem::copy_options::overwrite_existing);

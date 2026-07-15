@@ -53,14 +53,12 @@ TEST_F(EPModelFixture, ChillerHeaterPerformanceElectricEIR_ScalarAccessors_Round
   EXPECT_TRUE(chiller.setCondenserType(condenserTypeValues.front()));
   EXPECT_EQ(condenserTypeValues.front(), chiller.condenserType());
 
-  const auto coolingModeTempCurveValues =
-    ChillerHeaterPerformanceElectricEIR::coolingModeTemperatureCurveCondenserWaterIndependentVariableValues();
+  const auto coolingModeTempCurveValues = ChillerHeaterPerformanceElectricEIR::coolingModeTemperatureCurveCondenserWaterIndependentVariableValues();
   ASSERT_FALSE(coolingModeTempCurveValues.empty());
   EXPECT_TRUE(chiller.setCoolingModeTemperatureCurveCondenserWaterIndependentVariable(coolingModeTempCurveValues.front()));
   EXPECT_EQ(coolingModeTempCurveValues.front(), chiller.coolingModeTemperatureCurveCondenserWaterIndependentVariable());
 
-  const auto heatingModeTempCurveValues =
-    ChillerHeaterPerformanceElectricEIR::heatingModeTemperatureCurveCondenserWaterIndependentVariableValues();
+  const auto heatingModeTempCurveValues = ChillerHeaterPerformanceElectricEIR::heatingModeTemperatureCurveCondenserWaterIndependentVariableValues();
   ASSERT_FALSE(heatingModeTempCurveValues.empty());
   EXPECT_TRUE(chiller.setHeatingModeTemperatureCurveCondenserWaterIndependentVariable(heatingModeTempCurveValues.front()));
   EXPECT_EQ(heatingModeTempCurveValues.front(), chiller.heatingModeTemperatureCurveCondenserWaterIndependentVariable());

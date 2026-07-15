@@ -62,8 +62,8 @@ namespace model {
       double result = coefficient2C2();
       double temp = coefficient3C3() - x;
       temp /= coefficient4C4();
-      temp = exp(temp);
-      temp = pow(1.0 + temp, coefficient5C5());
+      temp = std::exp(temp);
+      temp = std::pow(1.0 + temp, coefficient5C5());
       result /= temp;
       result += coefficient1C1();
 

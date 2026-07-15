@@ -159,8 +159,8 @@ namespace epmodel {
     }
 
     bool SetpointManagerSystemNodeResetTemperature_Impl::setSetpointNode(const openstudio::epmodel::Node& node) {
-      return getObject<ModelObject>().setPointer(
-        openstudio::SetpointManager_SystemNodeReset_TemperatureFields::SetpointNodeorNodeListName, node.handle());
+      return getObject<ModelObject>().setPointer(openstudio::SetpointManager_SystemNodeReset_TemperatureFields::SetpointNodeorNodeListName,
+                                                 node.handle());
     }
 
     void SetpointManagerSystemNodeResetTemperature_Impl::doCanonicalize(LoadContext& context) {

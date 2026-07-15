@@ -7,17 +7,9 @@
 
 #include "Util.hpp"
 
-#include "../model/Model.hpp"
-#include "../model/WeatherFile.hpp"
-#include "../model/Facility.hpp"
-#include "../model/Facility_Impl.hpp"
-#include "../model/Building.hpp"
-#include "../model/Building_Impl.hpp"
-#include "../energyplus/ForwardTranslator.hpp"
+#include "../epmodel/Model.hpp"
 
 #include "../utilities/filetypes/WorkflowJSON.hpp"
-#include "../utilities/filetypes/RunOptions.hpp"
-#include "../utilities/filetypes/ForwardTranslatorOptions.hpp"
 
 #include "../utilities/core/Filesystem.hpp"
 
@@ -46,15 +38,21 @@ void OSWorkflow::runTranslator() {
     LOG(Warn, "EPW file not found");
   }
 
-  // Translate the OSM to an IDF
-  LOG(Info, "Beginning the translation to IDF")
-  detailedTimeBlock("Translating to EnergyPlus IDF", [this]() {
-    openstudio::energyplus::ForwardTranslator ft;
-    ft.setForwardTranslatorOptions(workflowJSON.runOptions()->forwardTranslatorOptions());
-    workspace_ = ft.translateModel(model);
-  });
+  if (!epModel_) {
+    LOG_AND_THROW("Cannot stage EnergyPlus input because the workflow does not have an initialized epmodel.");
+  }
 
-  LOG(Info, "Successfully translated to IDF");
+  LOG(Info, "Staging epmodel as the EnergyPlus workspace");
+  detailedTimeBlock("Serializing epmodel to EnergyPlus IDF", [this]() {
+    /*
+     * This state deliberately no longer forward translates the post-measure model.  Translation has
+     * already happened at workflow ingress when the seed was an OSM.  From this point forward the
+     * workflow model is the EnergyPlus/IDD-backed epmodel, so the EnergyPlus workspace is just the
+     * serialized view of the same object graph the ModelMeasures mutated.
+     */
+    workspace_ = openstudio::Workspace(*epModel_);
+  });
+  LOG(Info, "Successfully staged epmodel as IDF");
 
   saveIDFToRootDirIfDebug();
 }

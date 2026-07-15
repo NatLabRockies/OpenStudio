@@ -38,7 +38,7 @@ TEST_F(EPModelFixture, CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFitSpee
   CurveBiquadratic coolingCurve7(model);
 
   CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFitSpeedData speed(model, coolingCurve1, coolingCurve2, coolingCurve3, coolingCurve4,
-                                                                        coolingCurve5, coolingCurve6, coolingCurve7);
+                                                                       coolingCurve5, coolingCurve6, coolingCurve7);
   EXPECT_EQ(coolingCurve1, speed.totalCoolingCapacityFunctionofTemperatureCurve());
   EXPECT_EQ(coolingCurve4, speed.energyInputRatioFunctionofTemperatureCurve());
   EXPECT_EQ(coolingCurve7, speed.wasteHeatFunctionofTemperatureCurve());

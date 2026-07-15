@@ -8,8 +8,9 @@
 #include "../../../src/measure/ModelMeasure.hpp"
 #include "../../../src/measure/OSArgument.hpp"
 #include "../../../src/measure/OSMeasure.hpp"
-#include "../../../src/model/Model.hpp"
+#include "../../../src/epmodel/Model.hpp"
 #include "../../../src/scriptengine/ScriptEngine.hpp"
+#include "../../../src/utilities/core/Assert.hpp"
 
 #include <fmt/format.h>
 
@@ -76,7 +77,7 @@ Traceback (most recent call last):
 {0}:16:in `arguments')",
                                                    scriptPath.generic_string());
 
-      openstudio::model::Model model;
+      openstudio::epmodel::Model model;
 
       try {
         measurePtr->arguments(model);
@@ -111,7 +112,7 @@ Traceback (most recent call last):
 {0}:12:in `arguments')",
                     scriptPath.generic_string());
 
-      openstudio::model::Model model;
+      openstudio::epmodel::Model model;
       try {
         measurePtr->arguments(model);
         ASSERT_FALSE(true) << "Expected measure arguments(model) to throw";
@@ -164,7 +165,7 @@ Traceback (most recent call last):
 {0}:12:in `s')",
                                                    scriptPath.generic_string());
 
-      openstudio::model::Model model;
+      openstudio::epmodel::Model model;
       try {
         measurePtr->arguments(model);
         ASSERT_FALSE(true) << "Expected measure arguments(model) to throw";

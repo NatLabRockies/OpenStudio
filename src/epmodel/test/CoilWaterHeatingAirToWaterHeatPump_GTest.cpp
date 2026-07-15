@@ -245,10 +245,8 @@ TEST_F(EPModelFixture, CoilWaterHeatingAirToWaterHeatPump_AvailabilityScheduleGe
   Model model;
   CoilWaterHeatingAirToWaterHeatPump coil(model);
 
-  ASSERT_TRUE(
-    coil.setPointer(openstudio::Coil_WaterHeating_AirToWaterHeatPump_PumpedFields::AvailabilityScheduleName, openstudio::Handle()));
-  EXPECT_FALSE(
-    coil.getModelObjectTarget<Schedule>(openstudio::Coil_WaterHeating_AirToWaterHeatPump_PumpedFields::AvailabilityScheduleName));
+  ASSERT_TRUE(coil.setPointer(openstudio::Coil_WaterHeating_AirToWaterHeatPump_PumpedFields::AvailabilityScheduleName, openstudio::Handle()));
+  EXPECT_FALSE(coil.getModelObjectTarget<Schedule>(openstudio::Coil_WaterHeating_AirToWaterHeatPump_PumpedFields::AvailabilityScheduleName));
 
   const auto schedule = coil.availabilitySchedule();
   EXPECT_EQ(model.alwaysOnDiscreteSchedule(), schedule);

@@ -11,36 +11,36 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API SiteWeatherStation_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~SiteWeatherStation_Impl() override = default;
+    class EPMODEL_API SiteWeatherStation_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~SiteWeatherStation_Impl() override = default;
 
-  double windSensorHeightAboveGround() const;
-  bool isWindSensorHeightAboveGroundDefaulted() const;
-  bool setWindSensorHeightAboveGround(double windSensorHeightAboveGround);
-  void resetWindSensorHeightAboveGround();
+      double windSensorHeightAboveGround() const;
+      bool isWindSensorHeightAboveGroundDefaulted() const;
+      bool setWindSensorHeightAboveGround(double windSensorHeightAboveGround);
+      void resetWindSensorHeightAboveGround();
 
-  double windSpeedProfileExponent() const;
-  bool isWindSpeedProfileExponentDefaulted() const;
-  bool setWindSpeedProfileExponent(double windSpeedProfileExponent);
-  void resetWindSpeedProfileExponent();
+      double windSpeedProfileExponent() const;
+      bool isWindSpeedProfileExponentDefaulted() const;
+      bool setWindSpeedProfileExponent(double windSpeedProfileExponent);
+      void resetWindSpeedProfileExponent();
 
-  double windSpeedProfileBoundaryLayerThickness() const;
-  bool isWindSpeedProfileBoundaryLayerThicknessDefaulted() const;
-  bool setWindSpeedProfileBoundaryLayerThickness(double windSpeedProfileBoundaryLayerThickness);
-  void resetWindSpeedProfileBoundaryLayerThickness();
+      double windSpeedProfileBoundaryLayerThickness() const;
+      bool isWindSpeedProfileBoundaryLayerThicknessDefaulted() const;
+      bool setWindSpeedProfileBoundaryLayerThickness(double windSpeedProfileBoundaryLayerThickness);
+      void resetWindSpeedProfileBoundaryLayerThickness();
 
-  double airTemperatureSensorHeightAboveGround() const;
-  bool isAirTemperatureSensorHeightAboveGroundDefaulted() const;
-  bool setAirTemperatureSensorHeightAboveGround(double airTemperatureSensorHeightAboveGround);
-  void resetAirTemperatureSensorHeightAboveGround();
-};
+      double airTemperatureSensorHeightAboveGround() const;
+      bool isAirTemperatureSensorHeightAboveGroundDefaulted() const;
+      bool setAirTemperatureSensorHeightAboveGround(double airTemperatureSensorHeightAboveGround);
+      void resetAirTemperatureSensorHeightAboveGround();
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

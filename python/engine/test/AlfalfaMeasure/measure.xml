@@ -3,8 +3,8 @@
   <schema_version>3.1</schema_version>
   <name>alfalfa_measure</name>
   <uid>812d3ebf-c89b-4b93-b400-110ca060b2bb</uid>
-  <version_id>25ad8ea8-b28b-4f45-93a6-76f056c28ca8</version_id>
-  <version_modified>2023-11-10T10:47:04Z</version_modified>
+  <version_id>5009c5f3-d31e-4cb9-92ca-a5fd5e9551ac</version_id>
+  <version_modified>2026-05-19T10:37:39Z</version_modified>
   <xml_checksum>33A29C78</xml_checksum>
   <class_name>AlfalfaMeasure</class_name>
   <display_name>Alfalfa Measure</display_name>
@@ -53,7 +53,7 @@
       <filename>measure.py</filename>
       <filetype>py</filetype>
       <usage_type>script</usage_type>
-      <checksum>E787E0E0</checksum>
+      <checksum>8875A1E6</checksum>
     </file>
   </files>
 </measure>

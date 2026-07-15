@@ -126,7 +126,7 @@ namespace detail {
 
     /** Get all objects in this workspace. The returned objects' data is shared with the workspace.
      *  If sorted, then the objects are returned in the preferred order. */
-    std::vector<WorkspaceObject> objects(bool sorted = false, bool includeTransient = false) const;
+    std::vector<WorkspaceObject> objects(bool sorted = false, bool includeTransient = true) const;
 
     /** Returns all objects, including the versionObject. Protected in public class. */
     std::vector<WorkspaceObject> allObjects() const;
@@ -146,35 +146,31 @@ namespace detail {
 
     /** Returns all objects named name (case insensitive). If exactMatch == false, will return
      *  all objects with name or name plus an integer suffix. */
-    std::vector<WorkspaceObject> getObjectsByName(const std::string& name, bool exactMatch = true, bool includeTransient = false) const;
+    std::vector<WorkspaceObject> getObjectsByName(const std::string& name, bool exactMatch = true) const;
 
     /// get all idf objects by type (e.g. Zone)
-    std::vector<WorkspaceObject> getObjectsByType(IddObjectType objectType, bool includeTransient = false) const;
+    std::vector<WorkspaceObject> getObjectsByType(IddObjectType objectType) const;
 
     /// get all idf objects by full idd type
-    std::vector<WorkspaceObject> getObjectsByType(const IddObject& objectType, bool includeTransient = false) const;
+    std::vector<WorkspaceObject> getObjectsByType(const IddObject& objectType) const;
 
     /** Returns the first object found of type objectType and named name (case insensitive,
      *  exact match). */
-    boost::optional<WorkspaceObject> getObjectByTypeAndName(IddObjectType objectType, const std::string& name,
-                                                            bool includeTransient = false) const;
+    boost::optional<WorkspaceObject> getObjectByTypeAndName(IddObjectType objectType, const std::string& name) const;
 
     /** Returns all objects named name or name plus an integer suffix (case insensitive). */
-    std::vector<WorkspaceObject> getObjectsByTypeAndName(IddObjectType objectType, const std::string& name,
-                                                         bool includeTransient = false) const;
+    std::vector<WorkspaceObject> getObjectsByTypeAndName(IddObjectType objectType, const std::string& name) const;
 
     /// get all objects by reference name (e.g. ZoneNames)
-    std::vector<WorkspaceObject> getObjectsByReference(const std::string& referenceName, bool includeTransient = false) const;
+    std::vector<WorkspaceObject> getObjectsByReference(const std::string& referenceName) const;
 
     /// get all objects by reference name (e.g. ZoneNames)
-    std::vector<WorkspaceObject> getObjectsByReference(const std::vector<std::string>& referenceNames, bool includeTransient = false) const;
+    std::vector<WorkspaceObject> getObjectsByReference(const std::vector<std::string>& referenceNames) const;
 
     /** Returns the first object found that is in at least one of the reference lists in
      *  referenceNames and named name (case insensitive, but exact match). Does not look for
      *  conflicts. */
-    boost::optional<WorkspaceObject> getObjectByNameAndReference(const std::string& name,
-                                                                 const std::vector<std::string>& referenceNames,
-                                                                 bool includeTransient = false) const;
+    boost::optional<WorkspaceObject> getObjectByNameAndReference(const std::string& name, const std::vector<std::string>& referenceNames) const;
 
     /** Returns true if fast naming is enabled. */
     bool fastNaming() const;

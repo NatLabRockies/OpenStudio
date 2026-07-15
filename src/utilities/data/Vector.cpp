@@ -226,7 +226,7 @@ Vector linspace(double a, double b, unsigned N) {
 
 /// generates a Vector linearly spaced points starting at a and ending before or at b with interval delta.
 Vector deltaSpace(double a, double b, double delta) {
-  unsigned N = (unsigned)floor((b - a) / delta) + 1;
+  unsigned N = (unsigned)std::floor((b - a) / delta) + 1;
 
   Vector result(N);
   for (unsigned n = 0; n < N; ++n) {
@@ -331,7 +331,7 @@ double variance(const Vector& vector) {
 
 /// std dev
 double stdDev(const Vector& vector) {
-  return sqrt(variance(vector));
+  return std::sqrt(variance(vector));
 }
 
 std::function<double(const Vector&)> sumVectorFunctor() {

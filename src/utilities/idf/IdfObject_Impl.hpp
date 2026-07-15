@@ -328,6 +328,9 @@ namespace detail {
      *  field value is followed by a ','. Otherwise, the object is ended by using a ';'. */
     std::ostream& printField(std::ostream& os, unsigned index, bool isLastField = false) const;
 
+    // This is for LLDB debugging
+    void printToStdout() const;
+
     //@}
     /** @name Type Casting */
     //@{

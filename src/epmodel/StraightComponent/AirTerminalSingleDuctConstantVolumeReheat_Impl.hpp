@@ -11,7 +11,7 @@
 #include "ModelObject/ZoneHVACAirDistributionUnit.hpp"
 
 namespace openstudio {
-  namespace epmodel {
+namespace epmodel {
 
   class Schedule;
   class HVACComponent;
@@ -26,8 +26,11 @@ namespace openstudio {
 
       unsigned inletPort() const override;
       unsigned outletPort() const override;
+      std::vector<ModelObject> children() const override;
+      std::vector<openstudio::IdfObject> remove() override;
+      bool removeFromLoop() override;
       boost::optional<ZoneHVACAirDistributionUnit> zoneHVACAirDistributionUnit() const;
-      bool addToNode(Node& node);
+      bool addToNode(Node& node) override;
 
       Schedule availabilitySchedule() const;
       bool setAvailabilitySchedule(Schedule& schedule);

@@ -13,6 +13,8 @@
 #include "../StraightComponent/Node.hpp"
 #include "../WaterToWaterComponent/ChillerElectricEIR.hpp"
 
+#include <utilities/idd/Chiller_Electric_EIR_FieldEnums.hxx>
+
 #include <limits>
 
 using namespace openstudio::epmodel;
@@ -35,19 +37,20 @@ TEST_F(EPModelFixture, ChillerElectricEIR_DefaultConstructor) {
   EXPECT_EQ("AirCooled", chiller.condenserType());
   EXPECT_TRUE(chiller.isReferenceCapacityAutosized());
   EXPECT_TRUE(chiller.isReferenceChilledWaterFlowRateAutosized());
-  EXPECT_TRUE(chiller.isDesignHeatRecoveryWaterFlowRateAutosized());
+  EXPECT_TRUE(chiller.isEmpty(openstudio::Chiller_Electric_EIRFields::DesignHeatRecoveryWaterFlowRate));
   EXPECT_DOUBLE_EQ(10.0, chiller.basinHeaterSetpointTemperature());
   EXPECT_FALSE(chiller.basinHeaterSchedule());
-  EXPECT_DOUBLE_EQ(1.0, chiller.condenserHeatRecoveryRelativeCapacityFraction());
-  EXPECT_FALSE(chiller.heatRecoveryInletHighTemperatureLimitSchedule());
-  EXPECT_FALSE(chiller.heatRecoveryLeavingTemperatureSetpointNode());
-  EXPECT_EQ("General", chiller.endUseSubcategory());
-  EXPECT_EQ("ConstantFlow", chiller.condenserFlowControl());
-  EXPECT_DOUBLE_EQ(0.2, chiller.condenserMinimumFlowFraction());
-  EXPECT_DOUBLE_EQ(0.0, chiller.thermosiphonMinimumTemperatureDifference());
-  EXPECT_FALSE(chiller.condenserLoopFlowRateFractionFunctionofLoopPartLoadRatioCurve());
-  EXPECT_FALSE(chiller.temperatureDifferenceAcrossCondenserSchedule());
-  EXPECT_FALSE(chiller.thermosiphonCapacityFractionCurve());
+
+  EXPECT_TRUE(chiller.isEmpty(openstudio::Chiller_Electric_EIRFields::CondenserHeatRecoveryRelativeCapacityFraction));
+  EXPECT_TRUE(chiller.isEmpty(openstudio::Chiller_Electric_EIRFields::HeatRecoveryInletHighTemperatureLimitScheduleName));
+  EXPECT_TRUE(chiller.isEmpty(openstudio::Chiller_Electric_EIRFields::HeatRecoveryLeavingTemperatureSetpointNodeName));
+  EXPECT_TRUE(chiller.isEmpty(openstudio::Chiller_Electric_EIRFields::EndUseSubcategory));
+  EXPECT_TRUE(chiller.isEmpty(openstudio::Chiller_Electric_EIRFields::CondenserFlowControl));
+  EXPECT_TRUE(chiller.isEmpty(openstudio::Chiller_Electric_EIRFields::CondenserLoopFlowRateFractionFunctionofLoopPartLoadRatioCurveName));
+  EXPECT_TRUE(chiller.isEmpty(openstudio::Chiller_Electric_EIRFields::TemperatureDifferenceAcrossCondenserScheduleName));
+  EXPECT_TRUE(chiller.isEmpty(openstudio::Chiller_Electric_EIRFields::CondenserMinimumFlowFraction));
+  EXPECT_TRUE(chiller.isEmpty(openstudio::Chiller_Electric_EIRFields::ThermosiphonCapacityFractionCurveName));
+  EXPECT_TRUE(chiller.isEmpty(openstudio::Chiller_Electric_EIRFields::ThermosiphonMinimumTemperatureDifference));
   EXPECT_FALSE(chiller.chilledWaterLoop());
   EXPECT_FALSE(chiller.condenserWaterLoop());
   EXPECT_FALSE(chiller.heatRecoveryLoop());
@@ -286,6 +289,8 @@ TEST_F(EPModelFixture, ChillerElectricEIR_PlantLoopAttachmentParity) {
   EXPECT_TRUE(heatRecoveryLoop.addDemandBranchForComponent(chiller));
   ASSERT_TRUE(chiller.heatRecoveryLoop());
   EXPECT_EQ(heatRecoveryLoop.handle(), chiller.heatRecoveryLoop()->handle());
+  EXPECT_FALSE(chiller.isEmpty(openstudio::Chiller_Electric_EIRFields::DesignHeatRecoveryWaterFlowRate));
+  EXPECT_TRUE(chiller.isDesignHeatRecoveryWaterFlowRateAutosized());
   ASSERT_TRUE(chiller.condenserWaterLoop());
   EXPECT_EQ(condenserLoop.handle(), chiller.condenserWaterLoop()->handle());
 

@@ -721,7 +721,7 @@ namespace epmodel {
             return true;
           }
 
-          if (auto zoneListObject = zone.model().getObjectByTypeAndName(openstudio::IddObjectType::ZoneList, *zoneOrListName, true)) {
+          if (auto zoneListObject = zone.model().getObjectByTypeAndName(openstudio::IddObjectType::ZoneList, *zoneOrListName)) {
             auto zoneListGroups = zoneListObject->extensibleGroups();
             for (const auto& group : zoneListGroups) {
               if (auto zoneListEntry = group.getString(openstudio::ZoneListExtensibleFields::ZoneName, true)) {
@@ -752,7 +752,7 @@ namespace epmodel {
           return true;
         }
 
-        if (auto zoneListObject = zone.model().getObjectByTypeAndName(openstudio::IddObjectType::ZoneList, *zoneOrSpaceName, true)) {
+        if (auto zoneListObject = zone.model().getObjectByTypeAndName(openstudio::IddObjectType::ZoneList, *zoneOrSpaceName)) {
           auto zoneListGroups = zoneListObject->extensibleGroups();
           for (const auto& group : zoneListGroups) {
             if (auto zoneListEntry = group.getString(openstudio::ZoneListExtensibleFields::ZoneName, true)) {
@@ -763,7 +763,7 @@ namespace epmodel {
           }
         }
 
-        if (auto spaceObject = zone.model().getObjectByTypeAndName(openstudio::IddObjectType::Space, *zoneOrSpaceName, true)) {
+        if (auto spaceObject = zone.model().getObjectByTypeAndName(openstudio::IddObjectType::Space, *zoneOrSpaceName)) {
           if (auto space = spaceObject->optionalCast<openstudio::epmodel::Space>()) {
             if (auto associatedZone = space->thermalZone()) {
               if (*associatedZone == zone) {
@@ -807,7 +807,7 @@ namespace epmodel {
           return boost::none;
         }
 
-        return zone.model().getObjectByTypeAndName(openstudio::IddObjectType::Daylighting_ReferencePoint, *referencePointName, true);
+        return zone.model().getObjectByTypeAndName(openstudio::IddObjectType::Daylighting_ReferencePoint, *referencePointName);
       }
 
       boost::optional<openstudio::WorkspaceObject> outputIlluminanceMapForZone(const ThermalZone& zone) {
@@ -821,27 +821,11 @@ namespace epmodel {
       }
 
       bool setZoneSplitterBranchNode(AirLoopHVACZoneSplitter& splitter, unsigned branchIndex, const Node& branchNode) {
-        auto groups = splitter.extensibleGroups();
-        IdfExtensibleGroup group = (branchIndex < groups.size()) ? groups[branchIndex] : splitter.pushExtensibleGroup();
-
-        auto workspaceGroup = group.optionalCast<openstudio::WorkspaceExtensibleGroup>();
-        if (!workspaceGroup) {
-          return false;
-        }
-
-        return workspaceGroup->setPointer(openstudio::AirLoopHVAC_ZoneSplitterExtensibleFields::OutletNodeName, branchNode.handle());
+        return splitter.setOutletModelObject(branchIndex, branchNode.cast<ModelObject>());
       }
 
       bool setZoneMixerBranchNode(AirLoopHVACZoneMixer& mixer, unsigned branchIndex, const Node& branchNode) {
-        auto groups = mixer.extensibleGroups();
-        IdfExtensibleGroup group = (branchIndex < groups.size()) ? groups[branchIndex] : mixer.pushExtensibleGroup();
-
-        auto workspaceGroup = group.optionalCast<openstudio::WorkspaceExtensibleGroup>();
-        if (!workspaceGroup) {
-          return false;
-        }
-
-        return workspaceGroup->setPointer(openstudio::AirLoopHVAC_ZoneMixerExtensibleFields::InletNodeName, branchNode.handle());
+        return mixer.setInletModelObject(branchIndex, branchNode.cast<ModelObject>());
       }
 
     }  // namespace
@@ -910,29 +894,31 @@ namespace epmodel {
       }
 
       const auto zone = getObject<openstudio::epmodel::ThermalZone>();
-      const std::string zoneBranchNodeName = zone.nameString() + " Demand Branch Node";
-      auto zoneBranchNode = model().getOrCreateTransientByName<openstudio::epmodel::Node>(zoneBranchNodeName);
+      const std::string zoneInletNodeName = zone.nameString() + " Demand Branch Node";
+      auto zoneInletNode = model().getOrCreateTransientByName<openstudio::epmodel::Node>(zoneInletNodeName);
+      const std::string zoneReturnNodeName = zone.nameString() + " Demand Return Node";
+      auto zoneReturnNode = model().getOrCreateTransientByName<openstudio::epmodel::Node>(zoneReturnNodeName);
 
-      if ((splitterOutlets[*targetBranchIndex] == zoneBranchNode.cast<openstudio::epmodel::ModelObject>())
-          && (mixerInlets[*targetBranchIndex] == zoneBranchNode.cast<openstudio::epmodel::ModelObject>())) {
+      if ((splitterOutlets[*targetBranchIndex] == zoneInletNode.cast<openstudio::epmodel::ModelObject>())
+          && (mixerInlets[*targetBranchIndex] == zoneReturnNode.cast<openstudio::epmodel::ModelObject>())) {
         return false;
       }
 
-      if (!setZoneSplitterBranchNode(zoneSplitter, *targetBranchIndex, zoneBranchNode)) {
+      if (!setZoneSplitterBranchNode(zoneSplitter, *targetBranchIndex, zoneInletNode)) {
         return false;
       }
 
-      if (!setZoneMixerBranchNode(zoneMixer, *targetBranchIndex, zoneBranchNode)) {
+      if (!setZoneMixerBranchNode(zoneMixer, *targetBranchIndex, zoneReturnNode)) {
         return false;
       }
 
       auto zoneConnections = getZoneHVACEquipmentConnections();
       auto zoneConnectionsImpl = zoneConnections.getImpl<openstudio::epmodel::detail::ZoneHVACEquipmentConnections_Impl>();
       OS_ASSERT(zoneConnectionsImpl);
-      if (!zoneConnectionsImpl->addZoneAirInletNode(zoneBranchNode)) {
+      if (!zoneConnectionsImpl->addZoneAirInletNode(zoneInletNode)) {
         return false;
       }
-      if (!zoneConnectionsImpl->addZoneReturnAirNode(zoneBranchNode)) {
+      if (!zoneConnectionsImpl->addZoneReturnAirNode(zoneReturnNode)) {
         return false;
       }
 
@@ -1203,7 +1189,7 @@ namespace epmodel {
       }
 
       auto assigned = thermostat;
-      for (const auto& zoneControl : model().getObjectsByType(openstudio::IddObjectType::ZoneControl_Thermostat, true)) {
+      for (const auto& zoneControl : model().getObjectsByType(openstudio::IddObjectType::ZoneControl_Thermostat)) {
         if (auto target = zoneControl.getTarget(openstudio::ZoneControl_ThermostatFields::Control1Name)) {
           if ((*target == thermostat) && !zoneControlThermostatTargetsZone(zone, zoneControl)) {
             auto clonedObject = model().addObject(thermostat.clone());
@@ -1413,10 +1399,9 @@ namespace epmodel {
       return false;
     }
 
-    // Keep this symmetric with addEquipment. ThermalZone only owns direct attach/detach for ZoneHVACComponent objects;
-    // those components know how to remove their equipment-list entry and any ZoneHVAC:EquipmentConnections nodes they own.
-    // Air terminals and other node-participating equipment are registered by addToNode-style topology code, so their
-    // detachment must be handled by that topology owner rather than by this list-style entry point.
+    // Keep direct ZoneHVAC removal symmetric with addEquipment. For air terminals and other node-participating
+    // equipment, match canonical ThermalZone::removeEquipment semantics by allowing the zone equipment list entry
+    // to be cleared without forcing topology teardown here; the owning topology still performs the actual disconnect.
     bool ThermalZone_Impl::removeEquipment(const openstudio::epmodel::ModelObject& equipment) {
       if (equipment.model() != model()) {
         return false;
@@ -1432,11 +1417,9 @@ namespace epmodel {
         return !zoneHVAC->thermalZone();
       }
 
-      LOG_FREE(Warn, "openstudio.epmodel.ThermalZone",
-               "ThermalZone::removeEquipment only detaches ZoneHVACComponent objects directly. Refusing to remove "
-                 << equipment.briefDescription() << " of type '" << equipment.iddObject().type().valueName() << "' from "
-                 << getObject<openstudio::epmodel::ThermalZone>().briefDescription()
-                 << ". Air terminals and other node-participating equipment should be detached through their owning topology.");
+      if (auto equipmentList = zoneHVACEquipmentList()) {
+        return equipmentList->removeEquipment(equipment);
+      }
       return false;
     }
 
@@ -1678,7 +1661,7 @@ namespace epmodel {
 
     boost::optional<openstudio::WorkspaceObject> ThermalZone_Impl::zoneControlThermostatObject() const {
       openstudio::epmodel::ThermalZone zone = getObject<openstudio::epmodel::ThermalZone>();
-      const auto zoneObjects = model().getObjectsByType(openstudio::IddObjectType::ZoneControl_Thermostat, true);
+      const auto zoneObjects = model().getObjectsByType(openstudio::IddObjectType::ZoneControl_Thermostat);
       for (const auto& object : zoneObjects) {
         if (zoneControlThermostatTargetsZone(zone, object)) {
           return object;
@@ -1703,7 +1686,7 @@ namespace epmodel {
 
     boost::optional<openstudio::WorkspaceObject> ThermalZone_Impl::zoneVentilationObject() const {
       const auto zone = getObject<openstudio::epmodel::ThermalZone>();
-      const auto objects = model().getObjectsByType(openstudio::IddObjectType::ZoneVentilation_DesignFlowRate, true);
+      const auto objects = model().getObjectsByType(openstudio::IddObjectType::ZoneVentilation_DesignFlowRate);
       for (const auto& object : objects) {
         if (zoneVentilationTargetsZone(zone, object)) {
           return object;

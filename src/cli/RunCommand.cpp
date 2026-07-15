@@ -10,6 +10,11 @@
 #include "../workflow/OSWorkflow.hpp"
 #include "../scriptengine/ScriptEngine.hpp"
 
+// CLI/App.hpp must be included after ScriptEngine.hpp so that windows.h (and winnls.h) is
+// pulled in before CLI11's windef.h, avoiding a missing LCTYPE in boost/regex's w32_regex_traits.hpp.
+// https://github.com/NatLabRockies/OpenStudio/pull/5606#issuecomment-4391907202
+#include <CLI/App.hpp>
+
 #include <cstdint>
 #include <fmt/format.h>
 

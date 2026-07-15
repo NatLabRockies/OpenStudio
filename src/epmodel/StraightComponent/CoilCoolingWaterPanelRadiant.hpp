@@ -17,120 +17,122 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
-class Schedule;
+  class Model;
+  class Schedule;
 
-namespace detail {
-class CoilCoolingWaterPanelRadiant_Impl;
-}
+  namespace detail {
+    class CoilCoolingWaterPanelRadiant_Impl;
+  }
 
-class EPMODEL_API CoilCoolingWaterPanelRadiant : public StraightComponent
-{
- public:
-  explicit CoilCoolingWaterPanelRadiant(const Model& model);
+  class EPMODEL_API CoilCoolingWaterPanelRadiant : public StraightComponent
+  {
+   public:
+    static constexpr bool is_transient = true;  // This is a Transient ModelObject
 
-  virtual ~CoilCoolingWaterPanelRadiant() override = default;
-  CoilCoolingWaterPanelRadiant(const CoilCoolingWaterPanelRadiant& other) = default;
-  CoilCoolingWaterPanelRadiant(CoilCoolingWaterPanelRadiant&& other) = default;
-  CoilCoolingWaterPanelRadiant& operator=(const CoilCoolingWaterPanelRadiant&) = default;
-  CoilCoolingWaterPanelRadiant& operator=(CoilCoolingWaterPanelRadiant&&) = default;
+    explicit CoilCoolingWaterPanelRadiant(const Model& model);
 
-  static IddObjectType iddObjectType();
-  static std::vector<std::string> coolingDesignCapacityMethodValues();
-  static std::vector<std::string> controlTypeValues();
-  static std::vector<std::string> condensationControlTypeValues();
+    virtual ~CoilCoolingWaterPanelRadiant() override = default;
+    CoilCoolingWaterPanelRadiant(const CoilCoolingWaterPanelRadiant& other) = default;
+    CoilCoolingWaterPanelRadiant(CoilCoolingWaterPanelRadiant&& other) = default;
+    CoilCoolingWaterPanelRadiant& operator=(const CoilCoolingWaterPanelRadiant&) = default;
+    CoilCoolingWaterPanelRadiant& operator=(CoilCoolingWaterPanelRadiant&&) = default;
 
-  // Schema Alignment Notes:
-  // - Status: Partial Parity. epmodel preserves the canonical coil child as a
-  //   transient straight-component view over the parent cooling panel object.
-  // - Canonical Counterpart: openstudio::model::CoilCoolingWaterPanelRadiant.
-  // - Why This Type Is Slightly Different: canonical OpenStudio factors the
-  //   cooling panel family into one parent ZoneHVAC object plus a cooling-coil
-  //   child. EnergyPlus does not persist a standalone coil object here; all of
-  //   the coil state is flattened onto the parent
-  //   `ZoneHVAC:CoolingPanel:RadiantConvective:Water` object. Epmodel keeps
-  //   the canonical child shape additively by exposing a transient coil that
-  //   reads and writes those parent-owned fields.
-  // - Implemented Parity: The canonical scalar, schedule, autosizing, and
-  //   water-node APIs are available through this child wrapper.
-  // - Documented Delta: Because this child is transient, it is not currently
-  //   allowed to place itself independently on a plant loop. `addToNode(...)`
-  //   therefore returns `false` instead of pretending there is a persisted
-  //   loop component behind the child wrapper.
-  // - Field/Storage Mapping: Every field exposed here writes through to the
-  //   persisted parent cooling-panel object.
+    static IddObjectType iddObjectType();
+    static std::vector<std::string> coolingDesignCapacityMethodValues();
+    static std::vector<std::string> controlTypeValues();
+    static std::vector<std::string> condensationControlTypeValues();
 
-  double ratedInletWaterTemperature() const;
-  bool isRatedInletWaterTemperatureDefaulted() const;
-  bool setRatedInletWaterTemperature(double ratedInletWaterTemperature);
-  void resetRatedInletWaterTemperature();
+    // Schema Alignment Notes:
+    // - Status: Partial Parity. epmodel preserves the canonical coil child as a
+    //   transient straight-component view over the parent cooling panel object.
+    // - Canonical Counterpart: openstudio::model::CoilCoolingWaterPanelRadiant.
+    // - Why This Type Is Slightly Different: canonical OpenStudio factors the
+    //   cooling panel family into one parent ZoneHVAC object plus a cooling-coil
+    //   child. EnergyPlus does not persist a standalone coil object here; all of
+    //   the coil state is flattened onto the parent
+    //   `ZoneHVAC:CoolingPanel:RadiantConvective:Water` object. Epmodel keeps
+    //   the canonical child shape additively by exposing a transient coil that
+    //   reads and writes those parent-owned fields.
+    // - Implemented Parity: The canonical scalar, schedule, autosizing, and
+    //   water-node APIs are available through this child wrapper.
+    // - Documented Delta: Because this child is transient, it is not currently
+    //   allowed to place itself independently on a plant loop. `addToNode(...)`
+    //   therefore returns `false` instead of pretending there is a persisted
+    //   loop component behind the child wrapper.
+    // - Field/Storage Mapping: Every field exposed here writes through to the
+    //   persisted parent cooling-panel object.
 
-  double ratedInletSpaceTemperature() const;
-  bool isRatedInletSpaceTemperatureDefaulted() const;
-  bool setRatedInletSpaceTemperature(double ratedInletSpaceTemperature);
-  void resetRatedInletSpaceTemperature();
+    double ratedInletWaterTemperature() const;
+    bool isRatedInletWaterTemperatureDefaulted() const;
+    bool setRatedInletWaterTemperature(double ratedInletWaterTemperature);
+    void resetRatedInletWaterTemperature();
 
-  double ratedWaterMassFlowRate() const;
-  bool isRatedWaterMassFlowRateDefaulted() const;
-  bool setRatedWaterMassFlowRate(double ratedWaterMassFlowRate);
-  void resetRatedWaterMassFlowRate();
+    double ratedInletSpaceTemperature() const;
+    bool isRatedInletSpaceTemperatureDefaulted() const;
+    bool setRatedInletSpaceTemperature(double ratedInletSpaceTemperature);
+    void resetRatedInletSpaceTemperature();
 
-  std::string coolingDesignCapacityMethod() const;
-  bool isCoolingDesignCapacityMethodDefaulted() const;
-  bool setCoolingDesignCapacityMethod(const std::string& coolingDesignCapacityMethod);
-  void resetCoolingDesignCapacityMethod();
+    double ratedWaterMassFlowRate() const;
+    bool isRatedWaterMassFlowRateDefaulted() const;
+    bool setRatedWaterMassFlowRate(double ratedWaterMassFlowRate);
+    void resetRatedWaterMassFlowRate();
 
-  boost::optional<double> coolingDesignCapacity() const;
-  bool isCoolingDesignCapacityAutosized() const;
-  bool setCoolingDesignCapacity(double coolingDesignCapacity);
-  void autosizeCoolingDesignCapacity();
-  boost::optional<double> autosizedCoolingDesignCapacity() const;
+    std::string coolingDesignCapacityMethod() const;
+    bool isCoolingDesignCapacityMethodDefaulted() const;
+    bool setCoolingDesignCapacityMethod(const std::string& coolingDesignCapacityMethod);
+    void resetCoolingDesignCapacityMethod();
 
-  double coolingDesignCapacityPerFloorArea() const;
-  bool setCoolingDesignCapacityPerFloorArea(double coolingDesignCapacityPerFloorArea);
+    boost::optional<double> coolingDesignCapacity() const;
+    bool isCoolingDesignCapacityAutosized() const;
+    bool setCoolingDesignCapacity(double coolingDesignCapacity);
+    void autosizeCoolingDesignCapacity();
+    boost::optional<double> autosizedCoolingDesignCapacity() const;
 
-  double fractionofAutosizedCoolingDesignCapacity() const;
-  bool setFractionofAutosizedCoolingDesignCapacity(double fractionofAutosizedCoolingDesignCapacity);
+    double coolingDesignCapacityPerFloorArea() const;
+    bool setCoolingDesignCapacityPerFloorArea(double coolingDesignCapacityPerFloorArea);
 
-  boost::optional<double> maximumChilledWaterFlowRate() const;
-  bool isMaximumChilledWaterFlowRateAutosized() const;
-  bool setMaximumChilledWaterFlowRate(double maximumChilledWaterFlowRate);
-  void autosizeMaximumChilledWaterFlowRate();
-  boost::optional<double> autosizedMaximumChilledWaterFlowRate() const;
+    double fractionofAutosizedCoolingDesignCapacity() const;
+    bool setFractionofAutosizedCoolingDesignCapacity(double fractionofAutosizedCoolingDesignCapacity);
 
-  std::string controlType() const;
-  bool isControlTypeDefaulted() const;
-  bool setControlType(const std::string& controlType);
-  void resetControlType();
+    boost::optional<double> maximumChilledWaterFlowRate() const;
+    bool isMaximumChilledWaterFlowRateAutosized() const;
+    bool setMaximumChilledWaterFlowRate(double maximumChilledWaterFlowRate);
+    void autosizeMaximumChilledWaterFlowRate();
+    boost::optional<double> autosizedMaximumChilledWaterFlowRate() const;
 
-  double coolingControlThrottlingRange() const;
-  bool isCoolingControlThrottlingRangeDefaulted() const;
-  bool setCoolingControlThrottlingRange(double coolingControlThrottlingRange);
-  void resetCoolingControlThrottlingRange();
+    std::string controlType() const;
+    bool isControlTypeDefaulted() const;
+    bool setControlType(const std::string& controlType);
+    void resetControlType();
 
-  boost::optional<Schedule> coolingControlTemperatureSchedule() const;
-  bool setCoolingControlTemperatureSchedule(Schedule& coolingControlTemperatureSchedule);
-  void resetCoolingControlTemperatureSchedule();
+    double coolingControlThrottlingRange() const;
+    bool isCoolingControlThrottlingRangeDefaulted() const;
+    bool setCoolingControlThrottlingRange(double coolingControlThrottlingRange);
+    void resetCoolingControlThrottlingRange();
 
-  std::string condensationControlType() const;
-  bool isCondensationControlTypeDefaulted() const;
-  bool setCondensationControlType(const std::string& condensationControlType);
-  void resetCondensationControlType();
+    boost::optional<Schedule> coolingControlTemperatureSchedule() const;
+    bool setCoolingControlTemperatureSchedule(Schedule& coolingControlTemperatureSchedule);
+    void resetCoolingControlTemperatureSchedule();
 
-  double condensationControlDewpointOffset() const;
-  bool isCondensationControlDewpointOffsetDefaulted() const;
-  bool setCondensationControlDewpointOffset(double condensationControlDewpointOffset);
-  void resetCondensationControlDewpointOffset();
+    std::string condensationControlType() const;
+    bool isCondensationControlTypeDefaulted() const;
+    bool setCondensationControlType(const std::string& condensationControlType);
+    void resetCondensationControlType();
 
- protected:
-  using ImplType = detail::CoilCoolingWaterPanelRadiant_Impl;
+    double condensationControlDewpointOffset() const;
+    bool isCondensationControlDewpointOffsetDefaulted() const;
+    bool setCondensationControlDewpointOffset(double condensationControlDewpointOffset);
+    void resetCondensationControlDewpointOffset();
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+   protected:
+    using ImplType = detail::CoilCoolingWaterPanelRadiant_Impl;
 
-  explicit CoilCoolingWaterPanelRadiant(std::shared_ptr<detail::CoilCoolingWaterPanelRadiant_Impl> impl);
-};
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
+
+    explicit CoilCoolingWaterPanelRadiant(std::shared_ptr<detail::CoilCoolingWaterPanelRadiant_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

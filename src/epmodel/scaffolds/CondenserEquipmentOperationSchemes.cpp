@@ -13,15 +13,15 @@
 namespace openstudio {
 namespace epmodel {
 
-CondenserEquipmentOperationSchemes::CondenserEquipmentOperationSchemes(const Model& model)
-  : ModelObject(CondenserEquipmentOperationSchemes::iddObjectType(), model) {}
+  CondenserEquipmentOperationSchemes::CondenserEquipmentOperationSchemes(const Model& model)
+    : ModelObject(CondenserEquipmentOperationSchemes::iddObjectType(), model) {}
 
-CondenserEquipmentOperationSchemes::CondenserEquipmentOperationSchemes(std::shared_ptr<detail::CondenserEquipmentOperationSchemes_Impl> impl)
-  : ModelObject(std::move(impl)) {}
+  CondenserEquipmentOperationSchemes::CondenserEquipmentOperationSchemes(std::shared_ptr<detail::CondenserEquipmentOperationSchemes_Impl> impl)
+    : ModelObject(std::move(impl)) {}
 
-IddObjectType CondenserEquipmentOperationSchemes::iddObjectType() {
-  return IddObjectType::CondenserEquipmentOperationSchemes;
-}
+  IddObjectType CondenserEquipmentOperationSchemes::iddObjectType() {
+    return IddObjectType::CondenserEquipmentOperationSchemes;
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio

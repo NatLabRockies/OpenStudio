@@ -11,19 +11,19 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API AirflowNetworkDistributionComponentConstantPressureDrop_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~AirflowNetworkDistributionComponentConstantPressureDrop_Impl() override = default;
+    class EPMODEL_API AirflowNetworkDistributionComponentConstantPressureDrop_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~AirflowNetworkDistributionComponentConstantPressureDrop_Impl() override = default;
 
-  double pressureDifferenceAcrosstheComponent() const;
-  bool setPressureDifferenceAcrosstheComponent(double pressureDifferenceAcrosstheComponent);
-};
+      double pressureDifferenceAcrosstheComponent() const;
+      bool setPressureDifferenceAcrosstheComponent(double pressureDifferenceAcrosstheComponent);
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

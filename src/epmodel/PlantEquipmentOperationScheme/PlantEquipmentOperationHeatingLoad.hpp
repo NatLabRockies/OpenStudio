@@ -7,7 +7,7 @@
 #define EPMODEL_PLANTEQUIPMENTOPERATIONHEATINGLOAD_HPP
 
 #include "EPModelAPI.hpp"
-#include "PlantEquipmentOperationScheme/PlantEquipmentOperationScheme.hpp"
+#include "PlantEquipmentOperationScheme/PlantEquipmentOperationRangeBasedScheme.hpp"
 
 #include <utilities/idd/IddEnums.hxx>
 
@@ -23,7 +23,7 @@ namespace epmodel {
     class PlantEquipmentOperationHeatingLoad_Impl;
   }
 
-  class EPMODEL_API PlantEquipmentOperationHeatingLoad : public PlantEquipmentOperationScheme
+  class EPMODEL_API PlantEquipmentOperationHeatingLoad : public PlantEquipmentOperationRangeBasedScheme
   {
    public:
     explicit PlantEquipmentOperationHeatingLoad(const Model& model);
@@ -37,11 +37,8 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     // Schema Alignment Notes:
-    // - API: Wraps the E+ PlantEquipmentOperation:HeatingLoad object while exposing the same scalar load-range helpers as the model counterpart.
-    // - Field Mapping: maximumUpperLimit() and minimumLowerLimit() peek at the Load Range n Upper/Lower Limit values from the first/last extensible groups.
-    // - TODO(parity): Add the extensible load-range/equipment list helpers once the general extensible-handling scaffold lands.
-    double maximumUpperLimit() const;
-    double minimumLowerLimit() const;
+    // - Canonical Counterpart: openstudio::model::PlantEquipmentOperationHeatingLoad.
+    // - API: Inherits the range/equipment helpers from PlantEquipmentOperationRangeBasedScheme.
 
    protected:
     using ImplType = detail::PlantEquipmentOperationHeatingLoad_Impl;

@@ -13,36 +13,36 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API SetpointManagerReturnTemperatureChilledWater_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~SetpointManagerReturnTemperatureChilledWater_Impl() override = default;
+    class EPMODEL_API SetpointManagerReturnTemperatureChilledWater_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~SetpointManagerReturnTemperatureChilledWater_Impl() override = default;
 
-  double minimumSupplyTemperatureSetpoint() const;
-  bool isMinimumSupplyTemperatureSetpointDefaulted() const;
-  bool setMinimumSupplyTemperatureSetpoint(double minimumSupplyTemperatureSetpoint);
-  void resetMinimumSupplyTemperatureSetpoint();
+      double minimumSupplyTemperatureSetpoint() const;
+      bool isMinimumSupplyTemperatureSetpointDefaulted() const;
+      bool setMinimumSupplyTemperatureSetpoint(double minimumSupplyTemperatureSetpoint);
+      void resetMinimumSupplyTemperatureSetpoint();
 
-  double maximumSupplyTemperatureSetpoint() const;
-  bool isMaximumSupplyTemperatureSetpointDefaulted() const;
-  bool setMaximumSupplyTemperatureSetpoint(double maximumSupplyTemperatureSetpoint);
-  void resetMaximumSupplyTemperatureSetpoint();
+      double maximumSupplyTemperatureSetpoint() const;
+      bool isMaximumSupplyTemperatureSetpointDefaulted() const;
+      bool setMaximumSupplyTemperatureSetpoint(double maximumSupplyTemperatureSetpoint);
+      void resetMaximumSupplyTemperatureSetpoint();
 
-  std::string returnTemperatureSetpointInputType() const;
-  bool setReturnTemperatureSetpointInputType(const std::string& returnTemperatureSetpointInputType);
+      std::string returnTemperatureSetpointInputType() const;
+      bool setReturnTemperatureSetpointInputType(const std::string& returnTemperatureSetpointInputType);
 
-  double returnTemperatureSetpointConstantValue() const;
-  bool isReturnTemperatureSetpointConstantValueDefaulted() const;
-  bool setReturnTemperatureSetpointConstantValue(double returnTemperatureSetpointConstantValue);
-  void resetReturnTemperatureSetpointConstantValue();
+      double returnTemperatureSetpointConstantValue() const;
+      bool isReturnTemperatureSetpointConstantValueDefaulted() const;
+      bool setReturnTemperatureSetpointConstantValue(double returnTemperatureSetpointConstantValue);
+      void resetReturnTemperatureSetpointConstantValue();
 
-  std::vector<std::string> returnTemperatureSetpointInputTypeValues() const;
-};
+      std::vector<std::string> returnTemperatureSetpointInputTypeValues() const;
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

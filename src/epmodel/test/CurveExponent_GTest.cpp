@@ -17,9 +17,7 @@ using namespace openstudio::epmodel;
 namespace {
 
 std::string firstNonEmpty(const std::vector<std::string>& values) {
-  auto it = std::find_if(values.begin(), values.end(), [](const auto& value) {
-    return !value.empty();
-  });
+  auto it = std::find_if(values.begin(), values.end(), [](const auto& value) { return !value.empty(); });
   if (it != values.end()) {
     return *it;
   }
@@ -27,9 +25,8 @@ std::string firstNonEmpty(const std::vector<std::string>& values) {
 }
 
 std::string firstNonEmptyDifferentFrom(const std::vector<std::string>& values, const std::string& baseline) {
-  auto it = std::find_if(values.begin(), values.end(), [&](const auto& value) {
-    return !value.empty() && !openstudio::istringEqual(value, baseline);
-  });
+  auto it =
+    std::find_if(values.begin(), values.end(), [&](const auto& value) { return !value.empty() && !openstudio::istringEqual(value, baseline); });
   if (it != values.end()) {
     return *it;
   }

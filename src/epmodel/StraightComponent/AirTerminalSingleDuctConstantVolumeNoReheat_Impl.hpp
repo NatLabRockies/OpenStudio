@@ -25,7 +25,8 @@ namespace epmodel {
       unsigned outletPort() const override;
 
       boost::optional<ZoneHVACAirDistributionUnit> zoneHVACAirDistributionUnit() const;
-      bool addToNode(Node& node);
+      bool removeFromLoop() override;
+      bool addToNode(Node& node) override;
 
       Schedule availabilitySchedule() const;
       bool setAvailabilitySchedule(Schedule& schedule);

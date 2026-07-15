@@ -163,9 +163,10 @@ TEST_F(EPModelFixture, EvaporativeCoolerDirectResearchSpecial_AvailabilitySchedu
   Model model;
   EvaporativeCoolerDirectResearchSpecial evaporativeCooler(model);
 
-  ASSERT_TRUE(evaporativeCooler.setPointer(openstudio::EvaporativeCooler_Direct_ResearchSpecialFields::AvailabilityScheduleName,
-                                          openstudio::Handle()));
-  EXPECT_FALSE(evaporativeCooler.getModelObjectTarget<Schedule>(openstudio::EvaporativeCooler_Direct_ResearchSpecialFields::AvailabilityScheduleName));
+  ASSERT_TRUE(
+    evaporativeCooler.setPointer(openstudio::EvaporativeCooler_Direct_ResearchSpecialFields::AvailabilityScheduleName, openstudio::Handle()));
+  EXPECT_FALSE(
+    evaporativeCooler.getModelObjectTarget<Schedule>(openstudio::EvaporativeCooler_Direct_ResearchSpecialFields::AvailabilityScheduleName));
 
   const auto repairedSchedule = evaporativeCooler.availabilitySchedule();
   EXPECT_EQ(model.alwaysOnDiscreteSchedule(), repairedSchedule);

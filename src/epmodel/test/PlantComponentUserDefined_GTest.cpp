@@ -47,12 +47,10 @@ TEST_F(EPModelFixture, PlantComponentUserDefined_ScalarAccessors_RoundTrip) {
   EXPECT_FALSE(PlantComponentUserDefined::plantConnection4LoopFlowRequestModeValues().empty());
 
   EXPECT_NE(std::find(PlantComponentUserDefined::plantConnection1LoadingModeValues().begin(),
-                      PlantComponentUserDefined::plantConnection1LoadingModeValues().end(),
-                      "DemandsLoad"),
+                      PlantComponentUserDefined::plantConnection1LoadingModeValues().end(), "DemandsLoad"),
             PlantComponentUserDefined::plantConnection1LoadingModeValues().end());
   EXPECT_NE(std::find(PlantComponentUserDefined::plantConnection1LoopFlowRequestModeValues().begin(),
-                      PlantComponentUserDefined::plantConnection1LoopFlowRequestModeValues().end(),
-                      "NeedsFlowIfLoopOn"),
+                      PlantComponentUserDefined::plantConnection1LoopFlowRequestModeValues().end(), "NeedsFlowIfLoopOn"),
             PlantComponentUserDefined::plantConnection1LoopFlowRequestModeValues().end());
 
   EXPECT_FALSE(userDefined.setNumberOfPlantLoopConnections(0));
@@ -132,7 +130,6 @@ TEST_F(EPModelFixture, PlantComponentUserDefined_ScalarAccessors_RoundTrip) {
   EXPECT_TRUE(clone.plantConnection2LoopFlowRequestMode()->empty());
 }
 
-
 TEST_F(EPModelFixture, PlantComponentUserDefined_AddToAndRemoveFromPlantLoop) {
   Model model;
   PlantLoop plantLoop(model);
@@ -183,4 +180,3 @@ TEST_F(EPModelFixture, PlantComponentUserDefined_AddToAndRemoveFromPlantLoop) {
   EXPECT_FALSE(plantLoop.supplyComponent(userDefined.handle()));
   EXPECT_FALSE(plantLoop.demandComponent(userDefined.handle()));
 }
-

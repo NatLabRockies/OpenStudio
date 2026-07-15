@@ -136,7 +136,7 @@ namespace epmodel {
       } else {
         OS_ASSERT(setDouble(openstudio::SetpointManager_MultiZone_Humidity_MaximumFields::MaximumSetpointHumidityRatio, 0.015));
         detail::addLoadInfo(context, "Set default Maximum Setpoint Humidity Ratio to 0.015 for SetpointManager:MultiZone:Humidity:Maximum '"
-                                      + getObject<ModelObject>().nameString() + "'.");
+                                       + getObject<ModelObject>().nameString() + "'.");
       }
     }
 

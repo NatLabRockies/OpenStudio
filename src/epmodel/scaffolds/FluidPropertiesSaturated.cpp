@@ -17,19 +17,16 @@
 namespace openstudio {
 namespace epmodel {
 
-  FluidPropertiesSaturated::FluidPropertiesSaturated(const Model& model)
-    : ModelObject(FluidPropertiesSaturated::iddObjectType(), model) {}
+  FluidPropertiesSaturated::FluidPropertiesSaturated(const Model& model) : ModelObject(FluidPropertiesSaturated::iddObjectType(), model) {}
 
-  FluidPropertiesSaturated::FluidPropertiesSaturated(std::shared_ptr<detail::FluidPropertiesSaturated_Impl> impl)
-    : ModelObject(std::move(impl)) {}
+  FluidPropertiesSaturated::FluidPropertiesSaturated(std::shared_ptr<detail::FluidPropertiesSaturated_Impl> impl) : ModelObject(std::move(impl)) {}
 
   IddObjectType FluidPropertiesSaturated::iddObjectType() {
     return IddObjectType::FluidProperties_Saturated;
   }
 
   std::vector<std::string> FluidPropertiesSaturated::fluidPropertyTypeValues() {
-    return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
-                        openstudio::FluidProperties_SaturatedFields::FluidPropertyType);
+    return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), openstudio::FluidProperties_SaturatedFields::FluidPropertyType);
   }
 
   boost::optional<std::string> FluidPropertiesSaturated::fluidPropertyType() const {
@@ -45,8 +42,7 @@ namespace epmodel {
   }
 
   std::vector<std::string> FluidPropertiesSaturated::fluidPhaseValues() {
-    return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
-                        openstudio::FluidProperties_SaturatedFields::FluidPhase);
+    return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), openstudio::FluidProperties_SaturatedFields::FluidPhase);
   }
 
   boost::optional<std::string> FluidPropertiesSaturated::fluidPhase() const {

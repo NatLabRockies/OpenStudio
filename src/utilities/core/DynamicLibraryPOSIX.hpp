@@ -8,6 +8,7 @@
 
 #include "Path.hpp"
 
+#include <memory>
 #include <stdexcept>
 #include <string>
 

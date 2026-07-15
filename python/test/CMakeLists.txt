@@ -11,9 +11,9 @@ if(BUILD_TESTING)
     add_test(NAME "PyTest.${test_name_clean}"
              COMMAND ${Python_EXECUTABLE} -m pytest ${test_file}
              WORKING_DIRECTORY "${PY_TEST_DIR}")
-    
+
     # Ensure PYTHONPATH is set so bindings are found at RUNTIME
-    set_tests_properties("PyTest.${test_name_clean}" PROPERTIES 
+    set_tests_properties("PyTest.${test_name_clean}" PROPERTIES
       ENVIRONMENT "PYTHONPATH=${PROJECT_BINARY_DIR}/Products/python")
   endforeach()
 endif()

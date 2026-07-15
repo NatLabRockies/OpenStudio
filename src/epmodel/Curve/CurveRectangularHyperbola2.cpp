@@ -25,8 +25,7 @@ namespace epmodel {
     OS_ASSERT(setMaximumValueofx(1.0));
   }
 
-  CurveRectangularHyperbola2::CurveRectangularHyperbola2(std::shared_ptr<detail::CurveRectangularHyperbola2_Impl> impl)
-    : Curve(std::move(impl)) {}
+  CurveRectangularHyperbola2::CurveRectangularHyperbola2(std::shared_ptr<detail::CurveRectangularHyperbola2_Impl> impl) : Curve(std::move(impl)) {}
 
   IddObjectType CurveRectangularHyperbola2::iddObjectType() {
     return IddObjectType::Curve_RectangularHyperbola2;

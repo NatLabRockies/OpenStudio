@@ -118,8 +118,7 @@ TEST_F(EPModelFixture, CoilWaterHeatingAirToWaterHeatPumpWrapped_ScalarAccessors
 
   const auto temperatureTypeChoices = CoilWaterHeatingAirToWaterHeatPumpWrapped::evaporatorAirTemperatureTypeforCurveObjectsValues();
   EXPECT_FALSE(temperatureTypeChoices.empty());
-  EXPECT_TRUE(std::find(temperatureTypeChoices.begin(), temperatureTypeChoices.end(), "WetBulbTemperature") !=
-              temperatureTypeChoices.end());
+  EXPECT_TRUE(std::find(temperatureTypeChoices.begin(), temperatureTypeChoices.end(), "WetBulbTemperature") != temperatureTypeChoices.end());
 
   EXPECT_TRUE(coil.isEvaporatorAirTemperatureTypeforCurveObjectsDefaulted());
   EXPECT_EQ("WetBulbTemperature", coil.evaporatorAirTemperatureTypeforCurveObjects());

@@ -18,32 +18,32 @@
 namespace openstudio {
 namespace epmodel {
 
-EnergyManagementSystemGlobalVariable::EnergyManagementSystemGlobalVariable(const Model& model, const std::string& variableName)
-  : ModelObject(EnergyManagementSystemGlobalVariable::iddObjectType(), model) {
-  OS_ASSERT(getImpl<detail::EnergyManagementSystemGlobalVariable_Impl>());
+  EnergyManagementSystemGlobalVariable::EnergyManagementSystemGlobalVariable(const Model& model, const std::string& variableName)
+    : ModelObject(EnergyManagementSystemGlobalVariable::iddObjectType(), model) {
+    OS_ASSERT(getImpl<detail::EnergyManagementSystemGlobalVariable_Impl>());
 
-  auto groups = extensibleGroups();
-  if (groups.empty()) {
-    pushExtensibleGroup();
-    groups = extensibleGroups();
+    auto groups = extensibleGroups();
+    if (groups.empty()) {
+      pushExtensibleGroup();
+      groups = extensibleGroups();
+    }
+    OS_ASSERT(!groups.empty());
+    auto variableGroup = groups.front();
+
+    bool ok = variableGroup.setString(openstudio::EnergyManagementSystem_GlobalVariableExtensibleFields::ErlVariableName, variableName);
+    const auto assignedName = variableGroup.getString(openstudio::EnergyManagementSystem_GlobalVariableExtensibleFields::ErlVariableName);
+    if ((!ok) || (!assignedName) || (*assignedName != variableName)) {
+      remove();
+      throw std::runtime_error("Unable to set EnergyManagementSystemGlobalVariable Erl Variable Name to '" + variableName + "'.");
+    }
   }
-  OS_ASSERT(!groups.empty());
-  auto variableGroup = groups.front();
 
-  bool ok = variableGroup.setString(openstudio::EnergyManagementSystem_GlobalVariableExtensibleFields::ErlVariableName, variableName);
-  const auto assignedName = variableGroup.getString(openstudio::EnergyManagementSystem_GlobalVariableExtensibleFields::ErlVariableName);
-  if ((!ok) || (!assignedName) || (*assignedName != variableName)) {
-    remove();
-    throw std::runtime_error("Unable to set EnergyManagementSystemGlobalVariable Erl Variable Name to '" + variableName + "'.");
+  EnergyManagementSystemGlobalVariable::EnergyManagementSystemGlobalVariable(std::shared_ptr<detail::EnergyManagementSystemGlobalVariable_Impl> impl)
+    : ModelObject(std::move(impl)) {}
+
+  IddObjectType EnergyManagementSystemGlobalVariable::iddObjectType() {
+    return IddObjectType::EnergyManagementSystem_GlobalVariable;
   }
-}
-
-EnergyManagementSystemGlobalVariable::EnergyManagementSystemGlobalVariable(std::shared_ptr<detail::EnergyManagementSystemGlobalVariable_Impl> impl)
-  : ModelObject(std::move(impl)) {}
-
-IddObjectType EnergyManagementSystemGlobalVariable::iddObjectType() {
-  return IddObjectType::EnergyManagementSystem_GlobalVariable;
-}
 
 }  // namespace epmodel
 }  // namespace openstudio

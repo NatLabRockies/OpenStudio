@@ -40,7 +40,7 @@ namespace energyplus {
 
     for (int i = 0; i < lengthOfStudyPeriodInYears; ++i) {
       IdfExtensibleGroup group = idfObject.pushExtensibleGroup();
-      double value = pow(1.0 + rate.get(), i);
+      double value = std::pow(1.0 + rate.get(), i);
       group.setDouble(LifeCycleCost_UsePriceEscalationExtensibleFields::YearEscalation, value);
     }
 

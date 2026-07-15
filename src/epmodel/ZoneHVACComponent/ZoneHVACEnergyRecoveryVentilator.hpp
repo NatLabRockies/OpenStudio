@@ -26,7 +26,7 @@ namespace epmodel {
   namespace detail {
     struct LoadContext;
     class ZoneHVACEnergyRecoveryVentilator_Impl;
-  }
+  }  // namespace detail
 
   class EPMODEL_API ZoneHVACEnergyRecoveryVentilator : public ZoneHVACComponent
   {

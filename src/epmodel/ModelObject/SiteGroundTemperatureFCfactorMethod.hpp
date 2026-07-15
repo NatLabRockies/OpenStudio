@@ -14,99 +14,101 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class SiteGroundTemperatureFCfactorMethod_Impl;
-}
+  namespace detail {
+    class SiteGroundTemperatureFCfactorMethod_Impl;
+  }
 
-class EPMODEL_API SiteGroundTemperatureFCfactorMethod : public ModelObject
-{
- public:
-  virtual ~SiteGroundTemperatureFCfactorMethod() override = default;
-  SiteGroundTemperatureFCfactorMethod(const SiteGroundTemperatureFCfactorMethod& other) = default;
-  SiteGroundTemperatureFCfactorMethod(SiteGroundTemperatureFCfactorMethod&& other) = default;
-  SiteGroundTemperatureFCfactorMethod& operator=(const SiteGroundTemperatureFCfactorMethod&) = default;
-  SiteGroundTemperatureFCfactorMethod& operator=(SiteGroundTemperatureFCfactorMethod&&) = default;
+  class EPMODEL_API SiteGroundTemperatureFCfactorMethod : public ModelObject
+  {
+   public:
+    static constexpr bool is_unique = true;  // This is a Unique ModelObject
 
-  static IddObjectType iddObjectType();
+    virtual ~SiteGroundTemperatureFCfactorMethod() override = default;
+    SiteGroundTemperatureFCfactorMethod(const SiteGroundTemperatureFCfactorMethod& other) = default;
+    SiteGroundTemperatureFCfactorMethod(SiteGroundTemperatureFCfactorMethod&& other) = default;
+    SiteGroundTemperatureFCfactorMethod& operator=(const SiteGroundTemperatureFCfactorMethod&) = default;
+    SiteGroundTemperatureFCfactorMethod& operator=(SiteGroundTemperatureFCfactorMethod&&) = default;
 
-  // Schema Alignment Notes:
-  // - API: Preserved from openstudio::model counterpart accessor naming/signatures.
-  // - Field Mapping: Month scalar APIs map directly to EnergyPlus Site:GroundTemperature:FCfactorMethod fields.
-  // - Translator Evidence: ForwardTranslateSiteGroundTemperatureFCfactorMethod.cpp writes the same 12 monthly fields.
-  // - TODO(parity): Add legacy non-scalar helper APIs in a follow-up parity pass.
-  double januaryGroundTemperature() const;
-  bool isJanuaryGroundTemperatureDefaulted() const;
-  bool setJanuaryGroundTemperature(double januaryGroundTemperature);
-  void resetJanuaryGroundTemperature();
+    static IddObjectType iddObjectType();
 
-  double februaryGroundTemperature() const;
-  bool isFebruaryGroundTemperatureDefaulted() const;
-  bool setFebruaryGroundTemperature(double februaryGroundTemperature);
-  void resetFebruaryGroundTemperature();
+    // Schema Alignment Notes:
+    // - API: Preserved from openstudio::model counterpart accessor naming/signatures.
+    // - Field Mapping: Month scalar APIs map directly to EnergyPlus Site:GroundTemperature:FCfactorMethod fields.
+    // - Translator Evidence: ForwardTranslateSiteGroundTemperatureFCfactorMethod.cpp writes the same 12 monthly fields.
+    // - TODO(parity): Add legacy non-scalar helper APIs in a follow-up parity pass.
+    double januaryGroundTemperature() const;
+    bool isJanuaryGroundTemperatureDefaulted() const;
+    bool setJanuaryGroundTemperature(double januaryGroundTemperature);
+    void resetJanuaryGroundTemperature();
 
-  double marchGroundTemperature() const;
-  bool isMarchGroundTemperatureDefaulted() const;
-  bool setMarchGroundTemperature(double marchGroundTemperature);
-  void resetMarchGroundTemperature();
+    double februaryGroundTemperature() const;
+    bool isFebruaryGroundTemperatureDefaulted() const;
+    bool setFebruaryGroundTemperature(double februaryGroundTemperature);
+    void resetFebruaryGroundTemperature();
 
-  double aprilGroundTemperature() const;
-  bool isAprilGroundTemperatureDefaulted() const;
-  bool setAprilGroundTemperature(double aprilGroundTemperature);
-  void resetAprilGroundTemperature();
+    double marchGroundTemperature() const;
+    bool isMarchGroundTemperatureDefaulted() const;
+    bool setMarchGroundTemperature(double marchGroundTemperature);
+    void resetMarchGroundTemperature();
 
-  double mayGroundTemperature() const;
-  bool isMayGroundTemperatureDefaulted() const;
-  bool setMayGroundTemperature(double mayGroundTemperature);
-  void resetMayGroundTemperature();
+    double aprilGroundTemperature() const;
+    bool isAprilGroundTemperatureDefaulted() const;
+    bool setAprilGroundTemperature(double aprilGroundTemperature);
+    void resetAprilGroundTemperature();
 
-  double juneGroundTemperature() const;
-  bool isJuneGroundTemperatureDefaulted() const;
-  bool setJuneGroundTemperature(double juneGroundTemperature);
-  void resetJuneGroundTemperature();
+    double mayGroundTemperature() const;
+    bool isMayGroundTemperatureDefaulted() const;
+    bool setMayGroundTemperature(double mayGroundTemperature);
+    void resetMayGroundTemperature();
 
-  double julyGroundTemperature() const;
-  bool isJulyGroundTemperatureDefaulted() const;
-  bool setJulyGroundTemperature(double julyGroundTemperature);
-  void resetJulyGroundTemperature();
+    double juneGroundTemperature() const;
+    bool isJuneGroundTemperatureDefaulted() const;
+    bool setJuneGroundTemperature(double juneGroundTemperature);
+    void resetJuneGroundTemperature();
 
-  double augustGroundTemperature() const;
-  bool isAugustGroundTemperatureDefaulted() const;
-  bool setAugustGroundTemperature(double augustGroundTemperature);
-  void resetAugustGroundTemperature();
+    double julyGroundTemperature() const;
+    bool isJulyGroundTemperatureDefaulted() const;
+    bool setJulyGroundTemperature(double julyGroundTemperature);
+    void resetJulyGroundTemperature();
 
-  double septemberGroundTemperature() const;
-  bool isSeptemberGroundTemperatureDefaulted() const;
-  bool setSeptemberGroundTemperature(double septemberGroundTemperature);
-  void resetSeptemberGroundTemperature();
+    double augustGroundTemperature() const;
+    bool isAugustGroundTemperatureDefaulted() const;
+    bool setAugustGroundTemperature(double augustGroundTemperature);
+    void resetAugustGroundTemperature();
 
-  double octoberGroundTemperature() const;
-  bool isOctoberGroundTemperatureDefaulted() const;
-  bool setOctoberGroundTemperature(double octoberGroundTemperature);
-  void resetOctoberGroundTemperature();
+    double septemberGroundTemperature() const;
+    bool isSeptemberGroundTemperatureDefaulted() const;
+    bool setSeptemberGroundTemperature(double septemberGroundTemperature);
+    void resetSeptemberGroundTemperature();
 
-  double novemberGroundTemperature() const;
-  bool isNovemberGroundTemperatureDefaulted() const;
-  bool setNovemberGroundTemperature(double novemberGroundTemperature);
-  void resetNovemberGroundTemperature();
+    double octoberGroundTemperature() const;
+    bool isOctoberGroundTemperatureDefaulted() const;
+    bool setOctoberGroundTemperature(double octoberGroundTemperature);
+    void resetOctoberGroundTemperature();
 
-  double decemberGroundTemperature() const;
-  bool isDecemberGroundTemperatureDefaulted() const;
-  bool setDecemberGroundTemperature(double decemberGroundTemperature);
-  void resetDecemberGroundTemperature();
+    double novemberGroundTemperature() const;
+    bool isNovemberGroundTemperatureDefaulted() const;
+    bool setNovemberGroundTemperature(double novemberGroundTemperature);
+    void resetNovemberGroundTemperature();
 
- protected:
-  explicit SiteGroundTemperatureFCfactorMethod(const Model& model);
+    double decemberGroundTemperature() const;
+    bool isDecemberGroundTemperatureDefaulted() const;
+    bool setDecemberGroundTemperature(double decemberGroundTemperature);
+    void resetDecemberGroundTemperature();
 
-  using ImplType = detail::SiteGroundTemperatureFCfactorMethod_Impl;
+   protected:
+    explicit SiteGroundTemperatureFCfactorMethod(const Model& model);
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+    using ImplType = detail::SiteGroundTemperatureFCfactorMethod_Impl;
 
-  explicit SiteGroundTemperatureFCfactorMethod(std::shared_ptr<detail::SiteGroundTemperatureFCfactorMethod_Impl> impl);
-};
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
+
+    explicit SiteGroundTemperatureFCfactorMethod(std::shared_ptr<detail::SiteGroundTemperatureFCfactorMethod_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

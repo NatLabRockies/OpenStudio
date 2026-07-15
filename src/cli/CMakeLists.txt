@@ -264,7 +264,7 @@ if(BUILD_TESTING)
 
   add_test(NAME OpenStudioCLI.Run_AlfalfaWorkflow
     COMMAND ${CMAKE_COMMAND} "-DCMD1=$<TARGET_FILE:openstudio> run -m -w compact_alfalfa.osw"
-    "-DCMD2=${CMAKE_COMMAND} -E cat run/alfalfa.json"
+    "-DCMD2=\"${CMAKE_COMMAND}\" -E cat run/alfalfa.json"
     -P ${CMAKE_SOURCE_DIR}/CMake/RunCommands.cmake
     WORKING_DIRECTORY "${PROJECT_BINARY_DIR}/resources/Examples/compact_osw"
   )

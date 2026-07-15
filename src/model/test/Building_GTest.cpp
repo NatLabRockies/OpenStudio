@@ -49,7 +49,7 @@
 #include "../../utilities/geometry/Geometry.hpp"
 #include "../../osversion/VersionTranslator.hpp"
 
-#include <math.h>
+#include <cmath>
 #include <algorithm>
 
 using namespace openstudio::model;

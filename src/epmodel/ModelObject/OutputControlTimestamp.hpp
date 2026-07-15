@@ -25,6 +25,8 @@ namespace epmodel {
   class EPMODEL_API OutputControlTimestamp : public ModelObject
   {
    public:
+    static constexpr bool is_unique = true;  // This is a Unique ModelObject
+
     virtual ~OutputControlTimestamp() override = default;
     OutputControlTimestamp(const OutputControlTimestamp& other) = default;
     OutputControlTimestamp(OutputControlTimestamp&& other) = default;

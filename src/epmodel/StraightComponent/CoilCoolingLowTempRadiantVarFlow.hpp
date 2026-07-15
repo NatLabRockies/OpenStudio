@@ -15,97 +15,99 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
-class Schedule;
-class ZoneHVACLowTempRadiantVarFlow;
+  class Model;
+  class Schedule;
+  class ZoneHVACLowTempRadiantVarFlow;
 
-namespace detail {
-class CoilCoolingLowTempRadiantVarFlow_Impl;
-}
+  namespace detail {
+    class CoilCoolingLowTempRadiantVarFlow_Impl;
+  }
 
-class EPMODEL_API CoilCoolingLowTempRadiantVarFlow : public StraightComponent
-{
- public:
-  explicit CoilCoolingLowTempRadiantVarFlow(const Model& model);
+  class EPMODEL_API CoilCoolingLowTempRadiantVarFlow : public StraightComponent
+  {
+   public:
+    static constexpr bool is_transient = true;  // This is a Transient ModelObject
 
-  virtual ~CoilCoolingLowTempRadiantVarFlow() override = default;
-  CoilCoolingLowTempRadiantVarFlow(const CoilCoolingLowTempRadiantVarFlow& other) = default;
-  CoilCoolingLowTempRadiantVarFlow(CoilCoolingLowTempRadiantVarFlow&& other) = default;
-  CoilCoolingLowTempRadiantVarFlow& operator=(const CoilCoolingLowTempRadiantVarFlow&) = default;
-  CoilCoolingLowTempRadiantVarFlow& operator=(CoilCoolingLowTempRadiantVarFlow&&) = default;
+    explicit CoilCoolingLowTempRadiantVarFlow(const Model& model);
 
-  static IddObjectType iddObjectType();
-  static std::vector<std::string> coolingDesignCapacityMethodValues();
-  static std::vector<std::string> condensationControlTypeValues();
+    virtual ~CoilCoolingLowTempRadiantVarFlow() override = default;
+    CoilCoolingLowTempRadiantVarFlow(const CoilCoolingLowTempRadiantVarFlow& other) = default;
+    CoilCoolingLowTempRadiantVarFlow(CoilCoolingLowTempRadiantVarFlow&& other) = default;
+    CoilCoolingLowTempRadiantVarFlow& operator=(const CoilCoolingLowTempRadiantVarFlow&) = default;
+    CoilCoolingLowTempRadiantVarFlow& operator=(CoilCoolingLowTempRadiantVarFlow&&) = default;
 
-  // Schema Alignment Notes:
-  // - Status: Partial Parity. epmodel preserves the canonical optional cooling-coil child as a transient
-  //   straight-component view over parent-owned EnergyPlus storage.
-  // - Canonical Counterpart: openstudio::model::CoilCoolingLowTempRadiantVarFlow.
-  // - Why This Type Is Slightly Different: canonical OpenStudio factors this family into one parent radiant object
-  //   plus optional heating/cooling coil children. EnergyPlus does not persist a standalone cooling coil here; it
-  //   stores the cooling-coil state directly on the parent radiant object and the persisted `...:Design` companion.
-  //   Epmodel keeps the canonical child shape additively by exposing a transient child that reads and writes those
-  //   parent-owned fields.
-  // - Implemented Parity: The canonical cooling-capacity, cold-water-flow, control schedule, throttling,
-  //   condensation-control, and water-node APIs are available through this transient child wrapper.
-  // - Plant Loop Behavior: The child is still transient, but it now supports the canonical plant-loop API surface.
-  //   Epmodel persists the parent radiant unit on the branch and projects that stored parent row back to this
-  //   transient cooling coil in high-level plant-loop traversal when the branch water-node pair matches the
-  //   cooling-side role.
-  // - Field/Storage Mapping: Cooling-side scalar fields live on the parent `ZoneHVAC:LowTemperatureRadiant:VariableFlow`
-  //   object and its persisted `...:Design` companion object. This child is a write-through view over that storage.
-  boost::optional<double> maximumColdWaterFlow() const;
-  bool isMaximumColdWaterFlowDefaulted() const;
-  bool isMaximumColdWaterFlowAutosized() const;
-  bool setMaximumColdWaterFlow(double maximumColdWaterFlow);
-  void resetMaximumColdWaterFlow();
-  void autosizeMaximumColdWaterFlow();
-  boost::optional<double> autosizedMaximumColdWaterFlow() const;
+    static IddObjectType iddObjectType();
+    static std::vector<std::string> coolingDesignCapacityMethodValues();
+    static std::vector<std::string> condensationControlTypeValues();
 
-  double coolingControlThrottlingRange() const;
-  bool isCoolingControlThrottlingRangeDefaulted() const;
-  bool setCoolingControlThrottlingRange(double coolingControlThrottlingRange);
-  void resetCoolingControlThrottlingRange();
+    // Schema Alignment Notes:
+    // - Status: Partial Parity. epmodel preserves the canonical optional cooling-coil child as a transient
+    //   straight-component view over parent-owned EnergyPlus storage.
+    // - Canonical Counterpart: openstudio::model::CoilCoolingLowTempRadiantVarFlow.
+    // - Why This Type Is Slightly Different: canonical OpenStudio factors this family into one parent radiant object
+    //   plus optional heating/cooling coil children. EnergyPlus does not persist a standalone cooling coil here; it
+    //   stores the cooling-coil state directly on the parent radiant object and the persisted `...:Design` companion.
+    //   Epmodel keeps the canonical child shape additively by exposing a transient child that reads and writes those
+    //   parent-owned fields.
+    // - Implemented Parity: The canonical cooling-capacity, cold-water-flow, control schedule, throttling,
+    //   condensation-control, and water-node APIs are available through this transient child wrapper.
+    // - Plant Loop Behavior: The child is still transient, but it now supports the canonical plant-loop API surface.
+    //   Epmodel persists the parent radiant unit on the branch and projects that stored parent row back to this
+    //   transient cooling coil in high-level plant-loop traversal when the branch water-node pair matches the
+    //   cooling-side role.
+    // - Field/Storage Mapping: Cooling-side scalar fields live on the parent `ZoneHVAC:LowTemperatureRadiant:VariableFlow`
+    //   object and its persisted `...:Design` companion object. This child is a write-through view over that storage.
+    boost::optional<double> maximumColdWaterFlow() const;
+    bool isMaximumColdWaterFlowDefaulted() const;
+    bool isMaximumColdWaterFlowAutosized() const;
+    bool setMaximumColdWaterFlow(double maximumColdWaterFlow);
+    void resetMaximumColdWaterFlow();
+    void autosizeMaximumColdWaterFlow();
+    boost::optional<double> autosizedMaximumColdWaterFlow() const;
 
-  boost::optional<Schedule> coolingControlTemperatureSchedule() const;
-  bool setCoolingControlTemperatureSchedule(Schedule& schedule);
-  void resetCoolingControlTemperatureSchedule();
+    double coolingControlThrottlingRange() const;
+    bool isCoolingControlThrottlingRangeDefaulted() const;
+    bool setCoolingControlThrottlingRange(double coolingControlThrottlingRange);
+    void resetCoolingControlThrottlingRange();
 
-  std::string condensationControlType() const;
-  bool isCondensationControlTypeDefaulted() const;
-  bool setCondensationControlType(const std::string& condensationControlType);
-  void resetCondensationControlType();
+    boost::optional<Schedule> coolingControlTemperatureSchedule() const;
+    bool setCoolingControlTemperatureSchedule(Schedule& schedule);
+    void resetCoolingControlTemperatureSchedule();
 
-  double condensationControlDewpointOffset() const;
-  bool isCondensationControlDewpointOffsetDefaulted() const;
-  bool setCondensationControlDewpointOffset(double condensationControlDewpointOffset);
-  void resetCondensationControlDewpointOffset();
+    std::string condensationControlType() const;
+    bool isCondensationControlTypeDefaulted() const;
+    bool setCondensationControlType(const std::string& condensationControlType);
+    void resetCondensationControlType();
 
-  std::string coolingDesignCapacityMethod() const;
-  bool setCoolingDesignCapacityMethod(const std::string& coolingDesignCapacityMethod);
+    double condensationControlDewpointOffset() const;
+    bool isCondensationControlDewpointOffsetDefaulted() const;
+    bool setCondensationControlDewpointOffset(double condensationControlDewpointOffset);
+    void resetCondensationControlDewpointOffset();
 
-  boost::optional<double> coolingDesignCapacity() const;
-  bool isCoolingDesignCapacityAutosized() const;
-  bool setCoolingDesignCapacity(double coolingDesignCapacity);
-  void autosizeCoolingDesignCapacity();
-  boost::optional<double> autosizedCoolingDesignCapacity() const;
+    std::string coolingDesignCapacityMethod() const;
+    bool setCoolingDesignCapacityMethod(const std::string& coolingDesignCapacityMethod);
 
-  double coolingDesignCapacityPerFloorArea() const;
-  bool setCoolingDesignCapacityPerFloorArea(double coolingDesignCapacityPerFloorArea);
+    boost::optional<double> coolingDesignCapacity() const;
+    bool isCoolingDesignCapacityAutosized() const;
+    bool setCoolingDesignCapacity(double coolingDesignCapacity);
+    void autosizeCoolingDesignCapacity();
+    boost::optional<double> autosizedCoolingDesignCapacity() const;
 
-  double fractionofAutosizedCoolingDesignCapacity() const;
-  bool setFractionofAutosizedCoolingDesignCapacity(double fractionofAutosizedCoolingDesignCapacity);
+    double coolingDesignCapacityPerFloorArea() const;
+    bool setCoolingDesignCapacityPerFloorArea(double coolingDesignCapacityPerFloorArea);
 
- protected:
-  using ImplType = detail::CoilCoolingLowTempRadiantVarFlow_Impl;
+    double fractionofAutosizedCoolingDesignCapacity() const;
+    bool setFractionofAutosizedCoolingDesignCapacity(double fractionofAutosizedCoolingDesignCapacity);
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+   protected:
+    using ImplType = detail::CoilCoolingLowTempRadiantVarFlow_Impl;
 
-  explicit CoilCoolingLowTempRadiantVarFlow(std::shared_ptr<detail::CoilCoolingLowTempRadiantVarFlow_Impl> impl);
-};
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
+
+    explicit CoilCoolingLowTempRadiantVarFlow(std::shared_ptr<detail::CoilCoolingLowTempRadiantVarFlow_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

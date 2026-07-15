@@ -13,9 +13,9 @@
 namespace openstudio {
 namespace epmodel {
 
-class Node;
-class Schedule;
-class AirflowNetworkDistributionComponentCoil;
+  class Node;
+  class Schedule;
+  class AirflowNetworkDistributionComponentCoil;
 
   namespace detail {
 
@@ -31,7 +31,7 @@ class AirflowNetworkDistributionComponentCoil;
       unsigned waterOutletPort() const override;
       bool addToNode(Node& node) override;
       std::vector<IdfObject> remove() override;
-      bool removeFromPlantLoop();
+      bool removeFromPlantLoop() override;
 
       std::vector<ModelObject> children() const override;
 

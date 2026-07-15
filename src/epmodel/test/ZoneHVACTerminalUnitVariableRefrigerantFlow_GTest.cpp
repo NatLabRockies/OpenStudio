@@ -451,8 +451,7 @@ TEST_F(EPModelFixture, ZoneHVACTerminalUnitVariableRefrigerantFlow_CanonicalizeR
   EXPECT_EQ("Rogue VRF Cooling Outlet", vrf.coolingCoilOutletNode()->nameString());
   EXPECT_EQ("Rogue VRF Heating Outlet", vrf.heatingCoilOutletNode()->nameString());
   EXPECT_EQ("Rogue VRF Fan Outlet", vrf.fanOutletNode()->nameString());
-  auto repairedHeatingInlet =
-    heatingCoil.getString(openstudio::Coil_Heating_DX_VariableRefrigerantFlowFields::CoilAirInletNode, true);
+  auto repairedHeatingInlet = heatingCoil.getString(openstudio::Coil_Heating_DX_VariableRefrigerantFlowFields::CoilAirInletNode, true);
   ASSERT_TRUE(repairedHeatingInlet);
   EXPECT_EQ(vrf.coolingCoilOutletNode()->nameString(), *repairedHeatingInlet);
   EXPECT_EQ(*vrf.heatingCoilOutletNode(), *fan.inletModelObject()->optionalCast<Node>());

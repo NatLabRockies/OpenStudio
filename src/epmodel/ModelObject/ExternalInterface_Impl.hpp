@@ -12,21 +12,21 @@
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API ExternalInterface_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~ExternalInterface_Impl() override = default;
+    class EPMODEL_API ExternalInterface_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~ExternalInterface_Impl() override = default;
 
-  std::string nameofExternalInterface() const;
-  bool setNameofExternalInterface(const std::string& nameofExternalInterface);
+      std::string nameofExternalInterface() const;
+      bool setNameofExternalInterface(const std::string& nameofExternalInterface);
 
-  std::vector<std::string> nameofExternalInterfaceValues() const;
-};
+      std::vector<std::string> nameofExternalInterfaceValues() const;
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

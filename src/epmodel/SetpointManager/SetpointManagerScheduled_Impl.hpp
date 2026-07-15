@@ -10,28 +10,38 @@
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
 
-class EPMODEL_API SetpointManagerScheduled_Impl : public SetpointManager_Impl
-{
- public:
-  using SetpointManager_Impl::SetpointManager_Impl;
-  virtual ~SetpointManagerScheduled_Impl() override = default;
+  class Schedule;
 
-  boost::optional<openstudio::epmodel::Node> setpointNode() const override;
-  std::string controlVariable() const override;
-  bool setControlVariable(const std::string& value) override;
-  bool isControlVariableDefaulted() const;
-  void resetControlVariable();
+  namespace detail {
 
- protected:
-  void doCanonicalize(LoadContext& context) override;
+    class EPMODEL_API SetpointManagerScheduled_Impl : public SetpointManager_Impl
+    {
+     public:
+      using SetpointManager_Impl::SetpointManager_Impl;
+      virtual ~SetpointManagerScheduled_Impl() override = default;
 
- private:
-  bool setSetpointNode(const openstudio::epmodel::Node& node) override;
-};
+      bool isAllowedOnPlantLoop() const override;
+      boost::optional<openstudio::epmodel::Node> setpointNode() const override;
+      std::string controlVariable() const override;
+      bool setControlVariable(const std::string& value) override;
+      bool isControlVariableDefaulted() const;
+      void resetControlVariable();
+      openstudio::epmodel::Schedule schedule() const;
+      bool setSchedule(openstudio::epmodel::Schedule& schedule);
+      bool setControlVariableAndSchedule(const std::string& controlVariable, openstudio::epmodel::Schedule& schedule);
 
-}  // namespace detail
+     protected:
+      void doCanonicalize(LoadContext& context) override;
+
+     private:
+      bool setSetpointNode(const openstudio::epmodel::Node& node) override;
+
+      std::string scheduleDisplayName() const;
+      std::string scheduleDisplayName(const std::string& candidateControlVariable) const;
+    };
+
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

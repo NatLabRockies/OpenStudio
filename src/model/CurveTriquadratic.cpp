@@ -96,9 +96,9 @@ namespace model {
         }
       }
 
-      double x2 = pow(x, 2);
-      double y2 = pow(y, 2);
-      double z2 = pow(z, 2);
+      double x2 = std::pow(x, 2);
+      double y2 = std::pow(y, 2);
+      double z2 = std::pow(z, 2);
       double result = 0.0;
       if (OptionalDouble coeff = coefficient1Constant()) {
         result += coeff.get();

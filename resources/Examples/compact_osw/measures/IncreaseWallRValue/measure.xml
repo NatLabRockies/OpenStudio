@@ -1,10 +1,11 @@
+<?xml version="1.0"?>
 <measure>
-  <schema_version>3.0</schema_version>
+  <schema_version>3.1</schema_version>
   <name>increase_insulation_r_value_for_exterior_walls_by_percentage</name>
   <uid>7508c563-22bd-49f4-b646-aac69b02a82d</uid>
-  <version_id>0abb166f-7a57-4ce2-87b4-39bf0c682522</version_id>
-  <version_modified>20160426T215418Z</version_modified>
-  <xml_checksum>350B6836</xml_checksum>
+  <version_id>bf774fee-e821-418c-8215-ce6be5d0d3f2</version_id>
+  <version_modified>2026-05-19T10:38:02Z</version_modified>
+  <xml_checksum>EB1A0C08</xml_checksum>
   <class_name>IncreaseInsulationRValueForExteriorWallsByPercentage</class_name>
   <display_name>Increase R-value of Insulation for Exterior Walls By a Specified Percentage</display_name>
   <description>Increase the R value of the insulation layer in roof constructinons by a percentage.</description>
@@ -19,8 +20,8 @@
       <default_value>30</default_value>
     </argument>
   </arguments>
-  <outputs/>
-  <provenances/>
+  <outputs />
+  <provenances />
   <tags>
     <tag>Envelope.Opaque</tag>
   </tags>
@@ -56,7 +57,7 @@
       <filename>measure.rb</filename>
       <filetype>rb</filetype>
       <usage_type>script</usage_type>
-      <checksum>2B0F0D0D</checksum>
+      <checksum>0CE68EA0</checksum>
     </file>
   </files>
 </measure>

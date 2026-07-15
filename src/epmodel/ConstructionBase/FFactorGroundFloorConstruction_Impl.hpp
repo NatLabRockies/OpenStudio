@@ -10,25 +10,25 @@
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API FFactorGroundFloorConstruction_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~FFactorGroundFloorConstruction_Impl() override = default;
+    class EPMODEL_API FFactorGroundFloorConstruction_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~FFactorGroundFloorConstruction_Impl() override = default;
 
-  double fFactor() const;
-  bool setFFactor(double fFactor);
+      double fFactor() const;
+      bool setFFactor(double fFactor);
 
-  double area() const;
-  bool setArea(double area);
+      double area() const;
+      bool setArea(double area);
 
-  double perimeterExposed() const;
-  bool setPerimeterExposed(double perimeterExposed);
-};
+      double perimeterExposed() const;
+      bool setPerimeterExposed(double perimeterExposed);
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

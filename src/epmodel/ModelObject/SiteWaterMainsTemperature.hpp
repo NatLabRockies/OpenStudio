@@ -26,6 +26,8 @@ namespace epmodel {
   class EPMODEL_API SiteWaterMainsTemperature : public ModelObject
   {
    public:
+    static constexpr bool is_unique = true;  // This is a Unique ModelObject
+
     virtual ~SiteWaterMainsTemperature() override = default;
     SiteWaterMainsTemperature(const SiteWaterMainsTemperature& other) = default;
     SiteWaterMainsTemperature(SiteWaterMainsTemperature&& other) = default;

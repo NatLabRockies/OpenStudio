@@ -14,43 +14,43 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
-class Schedule;
+  class Model;
+  class Schedule;
 
-namespace detail {
-class AvailabilityManagerScheduledOff_Impl;
-}
+  namespace detail {
+    class AvailabilityManagerScheduledOff_Impl;
+  }
 
-class EPMODEL_API AvailabilityManagerScheduledOff : public AvailabilityManager
-{
- public:
-  explicit AvailabilityManagerScheduledOff(const Model& model);
+  class EPMODEL_API AvailabilityManagerScheduledOff : public AvailabilityManager
+  {
+   public:
+    explicit AvailabilityManagerScheduledOff(const Model& model);
 
-  virtual ~AvailabilityManagerScheduledOff() override = default;
-  AvailabilityManagerScheduledOff(const AvailabilityManagerScheduledOff& other) = default;
-  AvailabilityManagerScheduledOff(AvailabilityManagerScheduledOff&& other) = default;
-  AvailabilityManagerScheduledOff& operator=(const AvailabilityManagerScheduledOff&) = default;
-  AvailabilityManagerScheduledOff& operator=(AvailabilityManagerScheduledOff&&) = default;
+    virtual ~AvailabilityManagerScheduledOff() override = default;
+    AvailabilityManagerScheduledOff(const AvailabilityManagerScheduledOff& other) = default;
+    AvailabilityManagerScheduledOff(AvailabilityManagerScheduledOff&& other) = default;
+    AvailabilityManagerScheduledOff& operator=(const AvailabilityManagerScheduledOff&) = default;
+    AvailabilityManagerScheduledOff& operator=(AvailabilityManagerScheduledOff&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  // Schema Alignment Notes:
-  // - API: Preserves model-counterpart class naming for AvailabilityManagerScheduledOff.
-  // - Field Mapping: EnergyPlus AvailabilityManager:ScheduledOff exposes only Schedule Name beyond Name.
-  // - Implemented Parity: `schedule()` and `setSchedule(...)` now expose the shared schedule relationship surface.
-  // - ForwardTranslator evidence: model::ForwardTranslateAvailabilityManagerScheduledOff maps only Schedule Name.
-  Schedule schedule() const;
-  bool setSchedule(Schedule& schedule);
+    // Schema Alignment Notes:
+    // - API: Preserves model-counterpart class naming for AvailabilityManagerScheduledOff.
+    // - Field Mapping: EnergyPlus AvailabilityManager:ScheduledOff exposes only Schedule Name beyond Name.
+    // - Implemented Parity: `schedule()` and `setSchedule(...)` now expose the shared schedule relationship surface.
+    // - ForwardTranslator evidence: model::ForwardTranslateAvailabilityManagerScheduledOff maps only Schedule Name.
+    Schedule schedule() const;
+    bool setSchedule(Schedule& schedule);
 
- protected:
-  using ImplType = detail::AvailabilityManagerScheduledOff_Impl;
+   protected:
+    using ImplType = detail::AvailabilityManagerScheduledOff_Impl;
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
 
-  explicit AvailabilityManagerScheduledOff(std::shared_ptr<detail::AvailabilityManagerScheduledOff_Impl> impl);
-};
+    explicit AvailabilityManagerScheduledOff(std::shared_ptr<detail::AvailabilityManagerScheduledOff_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

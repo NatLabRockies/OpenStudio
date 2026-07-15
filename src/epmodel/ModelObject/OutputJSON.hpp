@@ -26,6 +26,8 @@ namespace epmodel {
   class EPMODEL_API OutputJSON : public ModelObject
   {
    public:
+    static constexpr bool is_unique = true;  // This is a Unique ModelObject
+
     virtual ~OutputJSON() override = default;
     OutputJSON(const OutputJSON& other) = default;
     OutputJSON(OutputJSON&& other) = default;

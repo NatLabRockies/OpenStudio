@@ -10,12 +10,16 @@
 #include "../model/Model.hpp"
 #include "../model/WeatherFile.hpp"
 #include "../model/FileOperations.hpp"
+#include "../epmodel/Model.hpp"
+#include "../energyplus/ForwardTranslator.hpp"
 
 #include "../utilities/filetypes/WorkflowJSON.hpp"
 #include "../utilities/filetypes/RunOptions.hpp"
+#include "../utilities/filetypes/ForwardTranslatorOptions.hpp"
 
 #include "../utilities/core/Assert.hpp"
 #include "../utilities/core/Filesystem.hpp"
+#include "../utilities/idf/IdfFile.hpp"
 
 #include <fmt/chrono.h>
 
@@ -67,6 +71,7 @@ void OSWorkflow::runInitialization() {
   }
 
   LOG(Debug, "Finding and loading the seed file");
+  bool loadedIDFSeed = false;
   auto seedPath_ = workflowJSON.seedFile();
   if (seedPath_) {
     auto modelFullPath_ = workflowJSON.findFile(seedPath_.get());
@@ -76,10 +81,13 @@ void OSWorkflow::runInitialization() {
     }
 
     if (modelFullPath_->extension() == openstudio::filesystem::path(".idf")) {
+      loadedIDFSeed = true;
       if (m_add_timings && m_detailed_timings) {
         m_timers->newTimer("    Loading seed IDF");
       }
-      detailedTimeBlock("Loading seed IDF", [this, &modelFullPath_] { workspace_ = openstudio::workflow::util::loadIDF(modelFullPath_.get()); });
+      detailedTimeBlock("Loading seed IDF as epmodel", [this, &modelFullPath_] {
+        epModel_ = std::make_unique<openstudio::epmodel::Model>(openstudio::workflow::util::loadEPModel(modelFullPath_.get()));
+      });
 
     } else {
       detailedTimeBlock("Loading seed OSM (VersionTranslation)",
@@ -90,7 +98,36 @@ void OSWorkflow::runInitialization() {
     openstudio::model::initializeModelObjects(model);
   }
 
+  // The OSM ingress translation now happens during initialization, before ModelMeasures run.
+  // Attach the workflow file-search context before that translation so any model objects that
+  // resolve external files see the generated_files directory and the OSW file_paths exactly as
+  // they did when translation happened later in the workflow.
+  model.setWorkflowJSON(workflowJSON.clone());
+
   initializeWeatherFileFromOSW();
+
+  if (epModel_) {
+    workspace_ = openstudio::Workspace(*epModel_);
+  } else if (!m_post_process_only) {
+    detailedTimeBlock("Translating seed OSM to EnergyPlus IDF for epmodel", [this]() {
+      openstudio::energyplus::ForwardTranslator ft;
+      ft.setForwardTranslatorOptions(workflowJSON.runOptions()->forwardTranslatorOptions());
+      workspace_ = ft.translateModel(model);
+      epModel_ = std::make_unique<openstudio::epmodel::Model>(workspace_->toIdfFile());
+    });
+  }
+
+  if (epModel_ && !m_post_process_only && !workflowJSON.runOptions()->fast()) {
+    auto savePath = workflowJSON.absoluteRunDir() / "pre-model-measures.idf";
+    detailedTimeBlock(loadedIDFSeed ? "Saving staged seed IDF to Run Dir" : "Saving staged translated seed IDF to Run Dir", [this, &savePath]() {
+      /*
+       * The seed file remains read-only.  For an IDF seed this is a byte-level new artifact in the
+       * workflow, not an overwrite of the user input.  For an OSM seed this is the point where the
+       * workflow crosses from the legacy canonical model into the EnergyPlus/IDD-backed model.
+       */
+      epModel_->save(savePath, true);
+    });
+  }
 
   const auto seedModelicaPath = workflowJSON.seedModelicaFile();
   if (seedModelicaPath) {
@@ -103,9 +140,6 @@ void OSWorkflow::runInitialization() {
     m_modelicaSeedFileName = seedModelicaFileFullPath->filename();
     m_latestModelicaFilePath = seedModelicaFileFullPath.get();
   }
-
-  // Set a clone of the WorkflowJSON for the model, so that it finds the filePaths (such as generated_files we added above)
-  model.setWorkflowJSON(workflowJSON.clone());
 
   // Tell the workflowJSON we have started, it'll log the start time and reset the stepResults
   workflowJSON.start();

@@ -144,8 +144,8 @@ TEST_F(EPModelFixture, ZoneHVACBaseboardConvectiveWater_TransientHeatingCoilProj
   ASSERT_TRUE(heatingCoil.outletModelObject());
 
   const auto demandComponents = plantLoop.demandComponents();
-  EXPECT_TRUE(std::any_of(demandComponents.begin(), demandComponents.end(),
-                          [&](const auto& object) { return object.handle() == heatingCoil.handle(); }));
-  EXPECT_FALSE(std::any_of(demandComponents.begin(), demandComponents.end(),
-                           [&](const auto& object) { return object.handle() == baseboard.handle(); }));
+  EXPECT_TRUE(
+    std::any_of(demandComponents.begin(), demandComponents.end(), [&](const auto& object) { return object.handle() == heatingCoil.handle(); }));
+  EXPECT_FALSE(
+    std::any_of(demandComponents.begin(), demandComponents.end(), [&](const auto& object) { return object.handle() == baseboard.handle(); }));
 }

@@ -123,7 +123,7 @@ class MeasureManagerServlet < WEBrick::HTTPServlet::AbstractServlet
         my_measures_dir = data[:my_measures_dir]
 
         if my_measures_dir
-          @my_measures_dir = my_measures_dir.to_s
+          @my_measures_dir = my_measures_dir.to_s.tr('\\', '/')
         end
 
         response.body = JSON.generate(result)

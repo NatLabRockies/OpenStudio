@@ -20,8 +20,7 @@ namespace epmodel {
     OS_ASSERT(setDiameter(0.05));
   }
 
-  CurveFunctionalPressureDrop::CurveFunctionalPressureDrop(std::shared_ptr<detail::CurveFunctionalPressureDrop_Impl> impl)
-    : Curve(std::move(impl)) {}
+  CurveFunctionalPressureDrop::CurveFunctionalPressureDrop(std::shared_ptr<detail::CurveFunctionalPressureDrop_Impl> impl) : Curve(std::move(impl)) {}
 
   IddObjectType CurveFunctionalPressureDrop::iddObjectType() {
     return IddObjectType::Curve_Functional_PressureDrop;

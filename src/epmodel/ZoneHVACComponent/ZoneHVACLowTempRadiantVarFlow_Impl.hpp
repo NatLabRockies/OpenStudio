@@ -38,8 +38,8 @@ namespace epmodel {
       using ZoneHVACComponent_Impl::ZoneHVACComponent_Impl;
       virtual ~ZoneHVACLowTempRadiantVarFlow_Impl() override = default;
 
-      unsigned inletPort() const;
-      unsigned outletPort() const;
+      unsigned inletPort() const override;
+      unsigned outletPort() const override;
 
       boost::optional<Schedule> availabilitySchedule() const;
       bool setAvailabilitySchedule(Schedule& schedule);

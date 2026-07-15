@@ -73,7 +73,8 @@ TEST_F(EPModelFixture, AvailabilityManagerScheduledOn_CanonicalizeReattachesName
   ASSERT_TRUE(compactSchedule.setToConstantValue(0.5));
 
   AvailabilityManagerScheduledOn availabilityManagerScheduledOn(model);
-  ASSERT_TRUE(availabilityManagerScheduledOn.setString(openstudio::AvailabilityManager_ScheduledOnFields::ScheduleName, compactSchedule.nameString()));
+  ASSERT_TRUE(
+    availabilityManagerScheduledOn.setString(openstudio::AvailabilityManager_ScheduledOnFields::ScheduleName, compactSchedule.nameString()));
 
   auto report = model.canonicalize(SanitizationPolicy::Repair);
   EXPECT_EQ(0u, report.errorCount);

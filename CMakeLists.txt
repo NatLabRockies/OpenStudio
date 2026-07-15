@@ -18,7 +18,7 @@ if(CCACHE_PROGRAM)
 endif()
 
 # Project macro can only take digits in the version, it splits these out to specific variables
-project(OpenStudio VERSION 3.11.0)
+project(OpenStudio VERSION 4.0.0)
 
 include(CMake/compiler_flags.cmake)
 
@@ -165,7 +165,7 @@ get_directory_property(hasParent PARENT_DIRECTORY)
 
 # TODO: Modify the more specific variables as needed to indicate prerelease, etc
 # Keep in beta in-between release cycles. Set to empty string (or comment out) for official)
-set(PROJECT_VERSION_PRERELEASE "")
+set(PROJECT_VERSION_PRERELEASE "alpha")
 
 # OpenStudio version: Only include Major.Minor.Patch, eg "3.0.0", even if you have a prerelease tag
 set(OPENSTUDIO_VERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}")
@@ -377,8 +377,12 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES ".*Clan
   set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${SANITIZER_LINKER_FLAGS}")
   set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} ${SANITIZER_LINKER_FLAGS}")
 
+  option(ENABLE_BUILD_TIME_TRACE "Enable -ftime-trace feature on clang" OFF)
+  if (ENABLE_BUILD_TIME_TRACE)
+    add_definitions(-ftime-trace)
+  endif()
 
-  mark_as_advanced(ENABLE_COVERAGE ENABLE_THREAD_SANITIZER ENABLE_ADDRESS_SANITIZER ENABLE_UNDEFINED_SANITIZER ENABLE_NORECOVER_SANITIZER)
+  mark_as_advanced(ENABLE_COVERAGE ENABLE_THREAD_SANITIZER ENABLE_ADDRESS_SANITIZER ENABLE_UNDEFINED_SANITIZER ENABLE_NORECOVER_SANITIZER ENABLE_BUILD_TIME_TRACE)
 
 endif()
 
@@ -405,6 +409,9 @@ if(WIN32)
   endif()
 endif()
 
+option(ENABLE_PCH "Enable Precompiled Headers" ON)
+mark_as_advanced(ENABLE_PCH)
+
 option(USE_LTO "Use Link-Time-Optimization" OFF)
 
 if (USE_LTO)
@@ -416,8 +423,11 @@ endif()
 
 if(WIN32)
   add_definitions(-DNOMINMAX)
-  # Set the BOOST_USE_WINAPI_VERSION to Windows10
-  add_compile_definitions(BOOST_USE_WINAPI_VERSION=BOOST_WINAPI_VERSION_WIN7)
+  # Set the BOOST_USE_WINAPI_VERSION to >= Windows8 to avoid the wrong namespace being used for boost log and leading unresolved externals such as 
+  # UnitFactory.cpp.obj : error LNK2001: unresolved external symbol "public: __cdecl boost::log::v2s_mt_nt6::attribute_set::~attribute_set(void)"
+  # The boost binaries we have on artifactory have the v2s_mt_nt62 namespace
+  # https://github.com/boostorg/log/blob/9a906e2f540680ff35a20207f9a1a9a3b889f52b/include/boost/log/detail/config.hpp#L337-L343
+  add_compile_definitions(BOOST_USE_WINAPI_VERSION=BOOST_WINAPI_VERSION_WIN8)
   # This will also align _WIN32_WINNT and WINVER
   # add_compile_definitions(BOOST_USE_WINDOWS_H) # Getting a confict with `typedef GUID UUID` from windows.h
   add_compile_definitions(BOOST_WINAPI_DEFINE_VERSION_MACROS)
@@ -452,9 +462,10 @@ configure_file("${PROJECT_SOURCE_DIR}/dependencies/cpprestsdk_char_traits_workar
 find_package(websocketpp)
 find_package(Boost)
 find_package(geographiclib)
-find_package(SWIG 4.1.1 EXACT REQUIRED CONFIG)
+find_package(SWIG 4.4.0 EXACT REQUIRED CONFIG)
 message("SWIG_EXECUTABLE=${SWIG_EXECUTABLE}")
 message("SWIG_DIR=${SWIG_DIR}")
+message("SWIG_LIB=${SWIG_LIB}")
 find_package(TinyGLTF)
 find_package(CLI11)
 find_package(minizip)
@@ -553,9 +564,12 @@ if(UNIX)
   # Note: CMAKE_CXX_STANDARD (with no extensions) already sets -std=c++17 (or std=c++1z).
   if(APPLE)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
-    # TODO: workaround for #5398, remove when updating boost
-    AddCXXFlagIfSupported(-Wno-enum-constexpr-conversion COMPILER_SUPPORTS_enum_constexpr_conversion) # Clang 16.0+ and Apple Clang 15+ only
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated-declarations")
+  endif()
+
+  if(CMAKE_CXX_COMPILER_ID MATCHES ".*Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    # Disable fused floating point operations (affects Clang and GCC on ARM64)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ffp-contract=off")
   endif()
 endif()
 
@@ -575,6 +589,10 @@ endif()
 if(MSVC)
   # warning level 3
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W3")
+
+  # Remove unreferenced COMDATs (functions/data) before they reach the linker.
+  # Shrinks object files; does NOT reduce dllexport'd symbol counts (verified empirically).
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Zc:inline")
 
   # warning level 4 - DLM: we should shoot for this
   #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
@@ -1102,6 +1120,85 @@ endif()
 ###############################################################################
 
 ###############################################################################
+# Precompiled headers
+# Based on ftime-trace analysis: ModelObject.hpp/IdfObject.hpp/WorkspaceObject.hpp/Logger.hpp
+# are included thousands of times and dominate frontend parse time.
+if(ENABLE_PCH)
+  message(STATUS "Enabling precompiled headers")
+  set(_pch_model_headers
+    "src/utilities/core/Logger.hpp"
+    "src/utilities/idf/IdfObject.hpp"
+    "src/utilities/idf/WorkspaceObject.hpp"
+    "src/model/ModelObject.hpp"
+    "src/model/Model.hpp"
+    "src/utilities/sql/SqlFile.hpp"  # stable, expensive via ModelFixture/EnergyPlusFixture (500+ TUs)
+  )
+
+  target_precompile_headers(openstudio_utilities PRIVATE
+    "src/utilities/core/Logger.hpp"
+  )
+  # Each shared lib must build its own PCH with its own <target>_EXPORTS flag.
+  # REUSE_FROM would share the PCH compiled with openstudio_model_EXPORTS, which GCC
+  # and MSVC reject for any target that doesn't define that symbol (-Werror=invalid-pch).
+  set(_pch_reuse_targets
+    openstudio_model
+    openstudio_energyplus
+    openstudio_measure
+    openstudio_osversion
+    openstudio_epmodel
+    openstudio_modelica
+    openstudio_alfalfa
+    openstudio_workflow
+    # openstudio_scriptengine  # INTERFACE library — no compilation step, PCH not applicable
+    openstudio_airflow
+    openstudio_epjson
+    openstudio_gbxml
+    openstudio_gltf
+    openstudio_isomodel
+    openstudio_radiance
+    openstudio_sdd
+  )
+  foreach(_lib IN LISTS _pch_reuse_targets)
+    if(TARGET ${_lib})
+      target_precompile_headers(${_lib} PRIVATE ${_pch_model_headers})
+    endif()
+  endforeach()
+
+  if(BUILD_TESTING)
+    # openstudio_utilities_tests links openstudio_utilities directly, picking up
+    # extra compile definitions (GEOGRAPHICLIB_SHARED_LIB, HAVE_BZIP2,
+    # LIBXSLT_STATIC, HAVE_UNISTD_H …) that all other test targets lack — they
+    # reach the same code only through openstudiolib's PRIVATE link, which hides
+    # those transitive definitions.  GCC rejects the PCH for any TU whose macro
+    # environment differs from the one in effect when the PCH was compiled, so
+    # using openstudio_utilities_tests as the REUSE_FROM anchor causes every other
+    # target to fail with -Werror=invalid-pch.
+    #
+    # Fix: give openstudio_utilities_tests its own independent PCH, and pick the
+    # first remaining test (which links openstudiolib and therefore shares the
+    # same compile definitions as all the others) as the shared anchor.
+    target_precompile_headers(openstudio_utilities_tests PRIVATE ${_pch_model_headers})
+
+    set(_pch_anchor "")
+    foreach(_test ${ALL_TESTING_TARGETS})
+      if(NOT _test STREQUAL "openstudio_utilities_tests")
+        set(_pch_anchor "${_test}")
+        break()
+      endif()
+    endforeach()
+
+    if(_pch_anchor)
+      target_precompile_headers(${_pch_anchor} PRIVATE ${_pch_model_headers})
+      foreach(_test ${ALL_TESTING_TARGETS})
+        if(NOT _test STREQUAL "openstudio_utilities_tests" AND NOT _test STREQUAL "${_pch_anchor}")
+          target_precompile_headers(${_test} REUSE_FROM ${_pch_anchor})
+        endif()
+      endforeach()
+    endif()
+  endif()
+endif()
+
+###############################################################################
 # Targets that combine all bindings targets
 if(BUILD_RUBY_BINDINGS)
   add_custom_target(ALL_RUBY_BINDINGS)
@@ -1578,7 +1675,9 @@ if (MSVC)
     # within the same library. This may result in less efficient function calls.
 
     # The potential inefficiency goes away if we use LTO linking
-    target_link_libraries(openstudiolib PRIVATE -IGNORE:4217,4049)
+    foreach(_os_lib openstudiolib openstudiomodellib openstudioepmodellib openstudioutilitieslib)
+      target_link_libraries(${_os_lib} PRIVATE -IGNORE:4217,4049)
+    endforeach()
     if(CMAKE_SIZEOF_VOID_P EQUAL 8) # only applies to 64 bit windows platforms
       if (BUILD_RUBY_BINDINGS)
         target_link_libraries(openstudio_rb PRIVATE -IGNORE:4217,4049)

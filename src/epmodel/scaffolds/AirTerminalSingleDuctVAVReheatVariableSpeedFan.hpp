@@ -7,7 +7,7 @@
 #define EPMODEL_AIRTERMINALSINGLEDUCTVAVREHEATVARIABLESPEEDFAN_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "StraightComponent/StraightComponent.hpp"
 
 #include <utilities/idd/IddEnums.hxx>
 
@@ -16,69 +16,92 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
+  class Schedule;
+  class HVACComponent;
+  class Node;
 
-namespace detail {
-class AirTerminalSingleDuctVAVReheatVariableSpeedFan_Impl;
-}
+  namespace detail {
+    class AirTerminalSingleDuctVAVReheatVariableSpeedFan_Impl;
+  }
 
-class EPMODEL_API AirTerminalSingleDuctVAVReheatVariableSpeedFan : public ModelObject
-{
- public:
-  explicit AirTerminalSingleDuctVAVReheatVariableSpeedFan(const Model& model);
+  class EPMODEL_API AirTerminalSingleDuctVAVReheatVariableSpeedFan : public StraightComponent
+  {
+   public:
+    explicit AirTerminalSingleDuctVAVReheatVariableSpeedFan(const Model& model);
 
-  virtual ~AirTerminalSingleDuctVAVReheatVariableSpeedFan() override = default;
-  AirTerminalSingleDuctVAVReheatVariableSpeedFan(const AirTerminalSingleDuctVAVReheatVariableSpeedFan& other) = default;
-  AirTerminalSingleDuctVAVReheatVariableSpeedFan(AirTerminalSingleDuctVAVReheatVariableSpeedFan&& other) = default;
-  AirTerminalSingleDuctVAVReheatVariableSpeedFan& operator=(const AirTerminalSingleDuctVAVReheatVariableSpeedFan&) = default;
-  AirTerminalSingleDuctVAVReheatVariableSpeedFan& operator=(AirTerminalSingleDuctVAVReheatVariableSpeedFan&&) = default;
+    virtual ~AirTerminalSingleDuctVAVReheatVariableSpeedFan() override = default;
+    AirTerminalSingleDuctVAVReheatVariableSpeedFan(const AirTerminalSingleDuctVAVReheatVariableSpeedFan& other) = default;
+    AirTerminalSingleDuctVAVReheatVariableSpeedFan(AirTerminalSingleDuctVAVReheatVariableSpeedFan&& other) = default;
+    AirTerminalSingleDuctVAVReheatVariableSpeedFan& operator=(const AirTerminalSingleDuctVAVReheatVariableSpeedFan&) = default;
+    AirTerminalSingleDuctVAVReheatVariableSpeedFan& operator=(AirTerminalSingleDuctVAVReheatVariableSpeedFan&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  // Schema Alignment Notes:
-  // - API: No openstudio::model counterpart exists, so this class uses IDD-derived scalar accessor naming.
-  // - Field Mapping: Scalar APIs map directly to EnergyPlus AirTerminal:SingleDuct:VAV:Reheat:VariableSpeedFan fields.
-  // - Field Mapping: Availability Schedule Name, Air Inlet Node Name, Air Outlet Node Name, Fan Object Type,
-  //   Fan Name, Heating Coil Object Type, Heating Coil Name, and Minimum Air Flow Turndown Schedule Name are
-  //   relationship/target-link fields and intentionally excluded from scalar accessors.
-  // - TODO(parity): Add relationship/non-scalar behavior incrementally after scalar scaffold saturation.
-  boost::optional<double> maximumCoolingAirFlowRate() const;
-  bool isMaximumCoolingAirFlowRateAutosized() const;
-  bool setMaximumCoolingAirFlowRate(double maximumCoolingAirFlowRate);
-  void autosizeMaximumCoolingAirFlowRate();
+    bool addToNode(Node& node);
 
-  boost::optional<double> maximumHeatingAirFlowRate() const;
-  bool isMaximumHeatingAirFlowRateAutosized() const;
-  bool setMaximumHeatingAirFlowRate(double maximumHeatingAirFlowRate);
-  void autosizeMaximumHeatingAirFlowRate();
+    // Schema Alignment Notes:
+    // - Status: Connectivity-focused parity for the current epmodel zone-branch topology.
+    // - Canonical Counterpart: No direct openstudio::model wrapper exists; this entity follows the established epmodel
+    //   single-duct VAV/reheat terminal contract used by nearby straight-component air terminals.
+    // - Implemented Parity: `addToNode`, `remove`, and `removeFromLoop` preserve terminal node wiring,
+    //   AirLoopHVAC demand continuity, ZoneHVAC equipment registration, temporary inlet-node cleanup, heating-coil
+    //   plant branch cleanup, and both ADU-backed and stale ADU-only detach behavior for the supported zone-branch
+    //   insertion paths, including the explicit same-model/already-connected/zone-branch add guards covered by the
+    //   local connectivity tests.
+    // - Documented Delta: This wrapper still exposes only the bounded scalar and relationship surface needed for
+    //   connectivity parity; broader canonical-style clone/autosized-result convenience helpers are not claimed.
+    // - Field/Storage Mapping: Scalars map directly to EnergyPlus `AirTerminal:SingleDuct:VAV:Reheat:VariableSpeedFan`
+    //   fields; availability schedule, fan, heating coil, and node links are typed object relationships resolved through
+    //   epmodel transient loop topology.
+    // - Evidence: Nearby single-duct precedent in `src/epmodel/StraightComponent/AirTerminalSingleDuctVAVReheat.cpp`
+    //   and focused local coverage in `src/epmodel/test/AirTerminalSingleDuctVAVReheatVariableSpeedFan_GTest.cpp`.
+    boost::optional<Schedule> availabilitySchedule() const;
+    bool setAvailabilitySchedule(Schedule& schedule);
 
-  double zoneMinimumAirFlowFraction() const;
-  bool setZoneMinimumAirFlowFraction(double zoneMinimumAirFlowFraction);
+    HVACComponent fan() const;
+    bool setFan(HVACComponent& fan);
 
-  boost::optional<double> maximumHotWaterorSteamFlowRate() const;
-  bool isMaximumHotWaterorSteamFlowRateAutosized() const;
-  bool setMaximumHotWaterorSteamFlowRate(double maximumHotWaterorSteamFlowRate);
-  void autosizeMaximumHotWaterorSteamFlowRate();
+    HVACComponent heatingCoil() const;
+    bool setHeatingCoil(HVACComponent& coil);
 
-  double minimumHotWaterorSteamFlowRate() const;
-  bool isMinimumHotWaterorSteamFlowRateDefaulted() const;
-  bool setMinimumHotWaterorSteamFlowRate(double minimumHotWaterorSteamFlowRate);
-  void resetMinimumHotWaterorSteamFlowRate();
+    boost::optional<double> maximumCoolingAirFlowRate() const;
+    bool isMaximumCoolingAirFlowRateAutosized() const;
+    bool setMaximumCoolingAirFlowRate(double maximumCoolingAirFlowRate);
+    void autosizeMaximumCoolingAirFlowRate();
 
-  double heatingConvergenceTolerance() const;
-  bool isHeatingConvergenceToleranceDefaulted() const;
-  bool setHeatingConvergenceTolerance(double heatingConvergenceTolerance);
-  void resetHeatingConvergenceTolerance();
+    boost::optional<double> maximumHeatingAirFlowRate() const;
+    bool isMaximumHeatingAirFlowRateAutosized() const;
+    bool setMaximumHeatingAirFlowRate(double maximumHeatingAirFlowRate);
+    void autosizeMaximumHeatingAirFlowRate();
 
- protected:
-  using ImplType = detail::AirTerminalSingleDuctVAVReheatVariableSpeedFan_Impl;
+    double zoneMinimumAirFlowFraction() const;
+    bool setZoneMinimumAirFlowFraction(double zoneMinimumAirFlowFraction);
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+    boost::optional<double> maximumHotWaterorSteamFlowRate() const;
+    bool isMaximumHotWaterorSteamFlowRateAutosized() const;
+    bool setMaximumHotWaterorSteamFlowRate(double maximumHotWaterorSteamFlowRate);
+    void autosizeMaximumHotWaterorSteamFlowRate();
 
-  explicit AirTerminalSingleDuctVAVReheatVariableSpeedFan(std::shared_ptr<detail::AirTerminalSingleDuctVAVReheatVariableSpeedFan_Impl> impl);
-};
+    double minimumHotWaterorSteamFlowRate() const;
+    bool isMinimumHotWaterorSteamFlowRateDefaulted() const;
+    bool setMinimumHotWaterorSteamFlowRate(double minimumHotWaterorSteamFlowRate);
+    void resetMinimumHotWaterorSteamFlowRate();
+
+    double heatingConvergenceTolerance() const;
+    bool isHeatingConvergenceToleranceDefaulted() const;
+    bool setHeatingConvergenceTolerance(double heatingConvergenceTolerance);
+    void resetHeatingConvergenceTolerance();
+
+   protected:
+    using ImplType = detail::AirTerminalSingleDuctVAVReheatVariableSpeedFan_Impl;
+
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
+
+    explicit AirTerminalSingleDuctVAVReheatVariableSpeedFan(std::shared_ptr<detail::AirTerminalSingleDuctVAVReheatVariableSpeedFan_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

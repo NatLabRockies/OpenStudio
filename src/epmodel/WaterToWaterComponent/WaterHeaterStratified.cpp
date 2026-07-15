@@ -37,8 +37,7 @@
 namespace openstudio {
 namespace epmodel {
 
-  WaterHeaterStratified::WaterHeaterStratified(const Model& model)
-    : WaterToWaterComponent(WaterHeaterStratified::iddObjectType(), model) {
+  WaterHeaterStratified::WaterHeaterStratified(const Model& model) : WaterToWaterComponent(WaterHeaterStratified::iddObjectType(), model) {
     setTankVolume(0.1893);
     setTankHeight(1.4);
     setTankShape("VerticalCylinder");
@@ -108,8 +107,7 @@ namespace epmodel {
     WaterHeaterSizing waterHeaterSizing(*this);
   }
 
-  WaterHeaterStratified::WaterHeaterStratified(std::shared_ptr<detail::WaterHeaterStratified_Impl> impl)
-    : WaterToWaterComponent(std::move(impl)) {}
+  WaterHeaterStratified::WaterHeaterStratified(std::shared_ptr<detail::WaterHeaterStratified_Impl> impl) : WaterToWaterComponent(std::move(impl)) {}
 
   IddObjectType WaterHeaterStratified::iddObjectType() {
     return IddObjectType::WaterHeater_Stratified;
@@ -151,248 +149,537 @@ namespace epmodel {
                           openstudio::WaterHeater_StratifiedFields::SourceSideFlowControlMode);
   }
 
-#define EPM_FORWARD_GET(ReturnType, Method)                         \
-  ReturnType WaterHeaterStratified::Method() const {                \
-    return getImpl<detail::WaterHeaterStratified_Impl>()->Method(); \
+  std::string WaterHeaterStratified::endUseSubcategory() const {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->endUseSubcategory();
+  }
+  bool WaterHeaterStratified::setEndUseSubcategory(const std::string& endUseSubcategory) {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->setEndUseSubcategory(endUseSubcategory);
   }
 
-#define EPM_FORWARD_SET(ReturnType, Method, ArgList, CallArgs)             \
-  ReturnType WaterHeaterStratified::Method ArgList {                       \
-    return getImpl<detail::WaterHeaterStratified_Impl>()->Method CallArgs; \
+  boost::optional<double> WaterHeaterStratified::tankVolume() const {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->tankVolume();
+  }
+  bool WaterHeaterStratified::setTankVolume(double tankVolume) {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->setTankVolume(tankVolume);
+  }
+  void WaterHeaterStratified::autosizeTankVolume() {
+    getImpl<detail::WaterHeaterStratified_Impl>()->autosizeTankVolume();
+  }
+  bool WaterHeaterStratified::isTankVolumeAutosized() const {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->isTankVolumeAutosized();
+  }
+  boost::optional<double> WaterHeaterStratified::autosizedTankVolume() const {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->autosizedTankVolume();
   }
 
-#define EPM_FORWARD_VOID(Method, ArgList, CallArgs)                 \
-  void WaterHeaterStratified::Method ArgList {                      \
-    getImpl<detail::WaterHeaterStratified_Impl>()->Method CallArgs; \
+  boost::optional<double> WaterHeaterStratified::tankHeight() const {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->tankHeight();
+  }
+  bool WaterHeaterStratified::setTankHeight(double tankHeight) {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->setTankHeight(tankHeight);
+  }
+  void WaterHeaterStratified::autosizeTankHeight() {
+    getImpl<detail::WaterHeaterStratified_Impl>()->autosizeTankHeight();
+  }
+  bool WaterHeaterStratified::isTankHeightAutosized() const {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->isTankHeightAutosized();
+  }
+  boost::optional<double> WaterHeaterStratified::autosizedTankHeight() const {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->autosizedTankHeight();
   }
 
-  EPM_FORWARD_GET(std::string, endUseSubcategory)
-  EPM_FORWARD_SET(bool, setEndUseSubcategory, (const std::string& endUseSubcategory), (endUseSubcategory))
+  std::string WaterHeaterStratified::tankShape() const {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->tankShape();
+  }
+  bool WaterHeaterStratified::setTankShape(const std::string& tankShape) {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->setTankShape(tankShape);
+  }
 
-  EPM_FORWARD_GET(boost::optional<double>, tankVolume)
-  EPM_FORWARD_SET(bool, setTankVolume, (double tankVolume), (tankVolume))
-  EPM_FORWARD_VOID(autosizeTankVolume, (), ())
-  EPM_FORWARD_GET(bool, isTankVolumeAutosized)
-  EPM_FORWARD_GET(boost::optional<double>, autosizedTankVolume)
+  boost::optional<double> WaterHeaterStratified::tankPerimeter() const {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->tankPerimeter();
+  }
+  bool WaterHeaterStratified::setTankPerimeter(double tankPerimeter) {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->setTankPerimeter(tankPerimeter);
+  }
+  void WaterHeaterStratified::resetTankPerimeter() {
+    getImpl<detail::WaterHeaterStratified_Impl>()->resetTankPerimeter();
+  }
 
-  EPM_FORWARD_GET(boost::optional<double>, tankHeight)
-  EPM_FORWARD_SET(bool, setTankHeight, (double tankHeight), (tankHeight))
-  EPM_FORWARD_VOID(autosizeTankHeight, (), ())
-  EPM_FORWARD_GET(bool, isTankHeightAutosized)
-  EPM_FORWARD_GET(boost::optional<double>, autosizedTankHeight)
+  double WaterHeaterStratified::maximumTemperatureLimit() const {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->maximumTemperatureLimit();
+  }
+  bool WaterHeaterStratified::setMaximumTemperatureLimit(double maximumTemperatureLimit) {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->setMaximumTemperatureLimit(maximumTemperatureLimit);
+  }
 
-  EPM_FORWARD_GET(std::string, tankShape)
-  EPM_FORWARD_SET(bool, setTankShape, (const std::string& tankShape), (tankShape))
+  std::string WaterHeaterStratified::heaterPriorityControl() const {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->heaterPriorityControl();
+  }
+  bool WaterHeaterStratified::setHeaterPriorityControl(const std::string& heaterPriorityControl) {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->setHeaterPriorityControl(heaterPriorityControl);
+  }
 
-  EPM_FORWARD_GET(boost::optional<double>, tankPerimeter)
-  EPM_FORWARD_SET(bool, setTankPerimeter, (double tankPerimeter), (tankPerimeter))
-  EPM_FORWARD_VOID(resetTankPerimeter, (), ())
+  boost::optional<Schedule> WaterHeaterStratified::heater1SetpointTemperatureSchedule() const {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->heater1SetpointTemperatureSchedule();
+  }
+  bool WaterHeaterStratified::setHeater1SetpointTemperatureSchedule(Schedule& schedule) {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->setHeater1SetpointTemperatureSchedule(schedule);
+  }
+  void WaterHeaterStratified::resetHeater1SetpointTemperatureSchedule() {
+    getImpl<detail::WaterHeaterStratified_Impl>()->resetHeater1SetpointTemperatureSchedule();
+  }
 
-  EPM_FORWARD_GET(double, maximumTemperatureLimit)
-  EPM_FORWARD_SET(bool, setMaximumTemperatureLimit, (double maximumTemperatureLimit), (maximumTemperatureLimit))
+  double WaterHeaterStratified::heater1DeadbandTemperatureDifference() const {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->heater1DeadbandTemperatureDifference();
+  }
+  bool WaterHeaterStratified::setHeater1DeadbandTemperatureDifference(double heater1DeadbandTemperatureDifference) {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->setHeater1DeadbandTemperatureDifference(heater1DeadbandTemperatureDifference);
+  }
 
-  EPM_FORWARD_GET(std::string, heaterPriorityControl)
-  EPM_FORWARD_SET(bool, setHeaterPriorityControl, (const std::string& heaterPriorityControl), (heaterPriorityControl))
+  boost::optional<double> WaterHeaterStratified::heater1Capacity() const {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->heater1Capacity();
+  }
+  bool WaterHeaterStratified::setHeater1Capacity(double heater1Capacity) {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->setHeater1Capacity(heater1Capacity);
+  }
+  void WaterHeaterStratified::autosizeHeater1Capacity() {
+    getImpl<detail::WaterHeaterStratified_Impl>()->autosizeHeater1Capacity();
+  }
+  bool WaterHeaterStratified::isHeater1CapacityAutosized() const {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->isHeater1CapacityAutosized();
+  }
+  boost::optional<double> WaterHeaterStratified::autosizedHeater1Capacity() const {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->autosizedHeater1Capacity();
+  }
 
-  EPM_FORWARD_GET(boost::optional<Schedule>, heater1SetpointTemperatureSchedule)
-  EPM_FORWARD_SET(bool, setHeater1SetpointTemperatureSchedule, (Schedule& schedule), (schedule))
-  EPM_FORWARD_VOID(resetHeater1SetpointTemperatureSchedule, (), ())
+  double WaterHeaterStratified::heater1Height() const {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->heater1Height();
+  }
+  bool WaterHeaterStratified::setHeater1Height(double heater1Height) {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->setHeater1Height(heater1Height);
+  }
 
-  EPM_FORWARD_GET(double, heater1DeadbandTemperatureDifference)
-  EPM_FORWARD_SET(bool, setHeater1DeadbandTemperatureDifference, (double heater1DeadbandTemperatureDifference),
-                  (heater1DeadbandTemperatureDifference))
+  boost::optional<Schedule> WaterHeaterStratified::heater2SetpointTemperatureSchedule() const {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->heater2SetpointTemperatureSchedule();
+  }
+  bool WaterHeaterStratified::setHeater2SetpointTemperatureSchedule(Schedule& schedule) {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->setHeater2SetpointTemperatureSchedule(schedule);
+  }
+  void WaterHeaterStratified::resetHeater2SetpointTemperatureSchedule() {
+    getImpl<detail::WaterHeaterStratified_Impl>()->resetHeater2SetpointTemperatureSchedule();
+  }
 
-  EPM_FORWARD_GET(boost::optional<double>, heater1Capacity)
-  EPM_FORWARD_SET(bool, setHeater1Capacity, (double heater1Capacity), (heater1Capacity))
-  EPM_FORWARD_VOID(autosizeHeater1Capacity, (), ())
-  EPM_FORWARD_GET(bool, isHeater1CapacityAutosized)
-  EPM_FORWARD_GET(boost::optional<double>, autosizedHeater1Capacity)
+  double WaterHeaterStratified::heater2DeadbandTemperatureDifference() const {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->heater2DeadbandTemperatureDifference();
+  }
+  bool WaterHeaterStratified::setHeater2DeadbandTemperatureDifference(double heater2DeadbandTemperatureDifference) {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->setHeater2DeadbandTemperatureDifference(heater2DeadbandTemperatureDifference);
+  }
 
-  EPM_FORWARD_GET(double, heater1Height)
-  EPM_FORWARD_SET(bool, setHeater1Height, (double heater1Height), (heater1Height))
+  double WaterHeaterStratified::heater2Capacity() const {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->heater2Capacity();
+  }
+  bool WaterHeaterStratified::setHeater2Capacity(double heater2Capacity) {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->setHeater2Capacity(heater2Capacity);
+  }
 
-  EPM_FORWARD_GET(boost::optional<Schedule>, heater2SetpointTemperatureSchedule)
-  EPM_FORWARD_SET(bool, setHeater2SetpointTemperatureSchedule, (Schedule& schedule), (schedule))
-  EPM_FORWARD_VOID(resetHeater2SetpointTemperatureSchedule, (), ())
+  double WaterHeaterStratified::heater2Height() const {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->heater2Height();
+  }
+  bool WaterHeaterStratified::setHeater2Height(double heater2Height) {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->setHeater2Height(heater2Height);
+  }
 
-  EPM_FORWARD_GET(double, heater2DeadbandTemperatureDifference)
-  EPM_FORWARD_SET(bool, setHeater2DeadbandTemperatureDifference, (double heater2DeadbandTemperatureDifference),
-                  (heater2DeadbandTemperatureDifference))
+  std::string WaterHeaterStratified::heaterFuelType() const {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->heaterFuelType();
+  }
 
-  EPM_FORWARD_GET(double, heater2Capacity)
-  EPM_FORWARD_SET(bool, setHeater2Capacity, (double heater2Capacity), (heater2Capacity))
+  double WaterHeaterStratified::heaterThermalEfficiency() const {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->heaterThermalEfficiency();
+  }
+  bool WaterHeaterStratified::setHeaterThermalEfficiency(double heaterThermalEfficiency) {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->setHeaterThermalEfficiency(heaterThermalEfficiency);
+  }
 
-  EPM_FORWARD_GET(double, heater2Height)
-  EPM_FORWARD_SET(bool, setHeater2Height, (double heater2Height), (heater2Height))
+  double WaterHeaterStratified::offCycleParasiticFuelConsumptionRate() const {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->offCycleParasiticFuelConsumptionRate();
+  }
+  bool WaterHeaterStratified::setOffCycleParasiticFuelConsumptionRate(double offCycleParasiticFuelConsumptionRate) {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->setOffCycleParasiticFuelConsumptionRate(offCycleParasiticFuelConsumptionRate);
+  }
 
-  EPM_FORWARD_GET(std::string, heaterFuelType)
+  std::string WaterHeaterStratified::offCycleParasiticFuelType() const {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->offCycleParasiticFuelType();
+  }
 
-  EPM_FORWARD_GET(double, heaterThermalEfficiency)
-  EPM_FORWARD_SET(bool, setHeaterThermalEfficiency, (double heaterThermalEfficiency), (heaterThermalEfficiency))
+  double WaterHeaterStratified::offCycleParasiticHeatFractiontoTank() const {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->offCycleParasiticHeatFractiontoTank();
+  }
+  bool WaterHeaterStratified::setOffCycleParasiticHeatFractiontoTank(double offCycleParasiticHeatFractiontoTank) {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->setOffCycleParasiticHeatFractiontoTank(offCycleParasiticHeatFractiontoTank);
+  }
 
-  EPM_FORWARD_GET(double, offCycleParasiticFuelConsumptionRate)
-  EPM_FORWARD_SET(bool, setOffCycleParasiticFuelConsumptionRate, (double offCycleParasiticFuelConsumptionRate),
-                  (offCycleParasiticFuelConsumptionRate))
+  double WaterHeaterStratified::offCycleParasiticHeight() const {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->offCycleParasiticHeight();
+  }
+  bool WaterHeaterStratified::setOffCycleParasiticHeight(double offCycleParasiticHeight) {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->setOffCycleParasiticHeight(offCycleParasiticHeight);
+  }
 
-  EPM_FORWARD_GET(std::string, offCycleParasiticFuelType)
+  double WaterHeaterStratified::onCycleParasiticFuelConsumptionRate() const {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->onCycleParasiticFuelConsumptionRate();
+  }
+  bool WaterHeaterStratified::setOnCycleParasiticFuelConsumptionRate(double onCycleParasiticFuelConsumptionRate) {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->setOnCycleParasiticFuelConsumptionRate(onCycleParasiticFuelConsumptionRate);
+  }
 
-  EPM_FORWARD_GET(double, offCycleParasiticHeatFractiontoTank)
-  EPM_FORWARD_SET(bool, setOffCycleParasiticHeatFractiontoTank, (double offCycleParasiticHeatFractiontoTank), (offCycleParasiticHeatFractiontoTank))
+  std::string WaterHeaterStratified::onCycleParasiticFuelType() const {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->onCycleParasiticFuelType();
+  }
 
-  EPM_FORWARD_GET(double, offCycleParasiticHeight)
-  EPM_FORWARD_SET(bool, setOffCycleParasiticHeight, (double offCycleParasiticHeight), (offCycleParasiticHeight))
+  double WaterHeaterStratified::onCycleParasiticHeatFractiontoTank() const {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->onCycleParasiticHeatFractiontoTank();
+  }
+  bool WaterHeaterStratified::setOnCycleParasiticHeatFractiontoTank(double onCycleParasiticHeatFractiontoTank) {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->setOnCycleParasiticHeatFractiontoTank(onCycleParasiticHeatFractiontoTank);
+  }
 
-  EPM_FORWARD_GET(double, onCycleParasiticFuelConsumptionRate)
-  EPM_FORWARD_SET(bool, setOnCycleParasiticFuelConsumptionRate, (double onCycleParasiticFuelConsumptionRate), (onCycleParasiticFuelConsumptionRate))
+  double WaterHeaterStratified::onCycleParasiticHeight() const {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->onCycleParasiticHeight();
+  }
+  bool WaterHeaterStratified::setOnCycleParasiticHeight(double onCycleParasiticHeight) {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->setOnCycleParasiticHeight(onCycleParasiticHeight);
+  }
 
-  EPM_FORWARD_GET(std::string, onCycleParasiticFuelType)
+  std::string WaterHeaterStratified::ambientTemperatureIndicator() const {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->ambientTemperatureIndicator();
+  }
+  bool WaterHeaterStratified::setAmbientTemperatureIndicator(const std::string& ambientTemperatureIndicator) {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->setAmbientTemperatureIndicator(ambientTemperatureIndicator);
+  }
 
-  EPM_FORWARD_GET(double, onCycleParasiticHeatFractiontoTank)
-  EPM_FORWARD_SET(bool, setOnCycleParasiticHeatFractiontoTank, (double onCycleParasiticHeatFractiontoTank), (onCycleParasiticHeatFractiontoTank))
+  boost::optional<Schedule> WaterHeaterStratified::ambientTemperatureSchedule() const {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->ambientTemperatureSchedule();
+  }
+  bool WaterHeaterStratified::setAmbientTemperatureSchedule(Schedule& schedule) {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->setAmbientTemperatureSchedule(schedule);
+  }
+  void WaterHeaterStratified::resetAmbientTemperatureSchedule() {
+    getImpl<detail::WaterHeaterStratified_Impl>()->resetAmbientTemperatureSchedule();
+  }
 
-  EPM_FORWARD_GET(double, onCycleParasiticHeight)
-  EPM_FORWARD_SET(bool, setOnCycleParasiticHeight, (double onCycleParasiticHeight), (onCycleParasiticHeight))
+  boost::optional<ThermalZone> WaterHeaterStratified::ambientTemperatureThermalZone() const {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->ambientTemperatureThermalZone();
+  }
+  bool WaterHeaterStratified::setAmbientTemperatureThermalZone(const ThermalZone& thermalZone) {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->setAmbientTemperatureThermalZone(thermalZone);
+  }
+  void WaterHeaterStratified::resetAmbientTemperatureThermalZone() {
+    getImpl<detail::WaterHeaterStratified_Impl>()->resetAmbientTemperatureThermalZone();
+  }
 
-  EPM_FORWARD_GET(std::string, ambientTemperatureIndicator)
-  EPM_FORWARD_SET(bool, setAmbientTemperatureIndicator, (const std::string& ambientTemperatureIndicator), (ambientTemperatureIndicator))
+  boost::optional<std::string> WaterHeaterStratified::ambientTemperatureOutdoorAirNodeName() const {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->ambientTemperatureOutdoorAirNodeName();
+  }
+  bool WaterHeaterStratified::setAmbientTemperatureOutdoorAirNodeName(const std::string& ambientTemperatureOutdoorAirNodeName) {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->setAmbientTemperatureOutdoorAirNodeName(ambientTemperatureOutdoorAirNodeName);
+  }
+  void WaterHeaterStratified::resetAmbientTemperatureOutdoorAirNodeName() {
+    getImpl<detail::WaterHeaterStratified_Impl>()->resetAmbientTemperatureOutdoorAirNodeName();
+  }
 
-  EPM_FORWARD_GET(boost::optional<Schedule>, ambientTemperatureSchedule)
-  EPM_FORWARD_SET(bool, setAmbientTemperatureSchedule, (Schedule& schedule), (schedule))
-  EPM_FORWARD_VOID(resetAmbientTemperatureSchedule, (), ())
+  boost::optional<double> WaterHeaterStratified::uniformSkinLossCoefficientperUnitAreatoAmbientTemperature() const {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->uniformSkinLossCoefficientperUnitAreatoAmbientTemperature();
+  }
+  bool WaterHeaterStratified::setUniformSkinLossCoefficientperUnitAreatoAmbientTemperature(
+    double uniformSkinLossCoefficientperUnitAreatoAmbientTemperature) {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->setUniformSkinLossCoefficientperUnitAreatoAmbientTemperature(
+      uniformSkinLossCoefficientperUnitAreatoAmbientTemperature);
+  }
+  void WaterHeaterStratified::resetUniformSkinLossCoefficientperUnitAreatoAmbientTemperature() {
+    getImpl<detail::WaterHeaterStratified_Impl>()->resetUniformSkinLossCoefficientperUnitAreatoAmbientTemperature();
+  }
 
-  EPM_FORWARD_GET(boost::optional<ThermalZone>, ambientTemperatureThermalZone)
-  EPM_FORWARD_SET(bool, setAmbientTemperatureThermalZone, (const ThermalZone& thermalZone), (thermalZone))
-  EPM_FORWARD_VOID(resetAmbientTemperatureThermalZone, (), ())
+  double WaterHeaterStratified::skinLossFractiontoZone() const {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->skinLossFractiontoZone();
+  }
+  bool WaterHeaterStratified::setSkinLossFractiontoZone(double skinLossFractiontoZone) {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->setSkinLossFractiontoZone(skinLossFractiontoZone);
+  }
 
-  EPM_FORWARD_GET(boost::optional<std::string>, ambientTemperatureOutdoorAirNodeName)
-  EPM_FORWARD_SET(bool, setAmbientTemperatureOutdoorAirNodeName, (const std::string& ambientTemperatureOutdoorAirNodeName),
-                  (ambientTemperatureOutdoorAirNodeName))
-  EPM_FORWARD_VOID(resetAmbientTemperatureOutdoorAirNodeName, (), ())
+  boost::optional<double> WaterHeaterStratified::offCycleFlueLossCoefficienttoAmbientTemperature() const {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->offCycleFlueLossCoefficienttoAmbientTemperature();
+  }
+  bool WaterHeaterStratified::setOffCycleFlueLossCoefficienttoAmbientTemperature(double offCycleFlueLossCoefficienttoAmbientTemperature) {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->setOffCycleFlueLossCoefficienttoAmbientTemperature(
+      offCycleFlueLossCoefficienttoAmbientTemperature);
+  }
+  void WaterHeaterStratified::resetOffCycleFlueLossCoefficienttoAmbientTemperature() {
+    getImpl<detail::WaterHeaterStratified_Impl>()->resetOffCycleFlueLossCoefficienttoAmbientTemperature();
+  }
 
-  EPM_FORWARD_GET(boost::optional<double>, uniformSkinLossCoefficientperUnitAreatoAmbientTemperature)
-  EPM_FORWARD_SET(bool, setUniformSkinLossCoefficientperUnitAreatoAmbientTemperature,
-                  (double uniformSkinLossCoefficientperUnitAreatoAmbientTemperature), (uniformSkinLossCoefficientperUnitAreatoAmbientTemperature))
-  EPM_FORWARD_VOID(resetUniformSkinLossCoefficientperUnitAreatoAmbientTemperature, (), ())
+  double WaterHeaterStratified::offCycleFlueLossFractiontoZone() const {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->offCycleFlueLossFractiontoZone();
+  }
+  bool WaterHeaterStratified::setOffCycleFlueLossFractiontoZone(double offCycleFlueLossFractiontoZone) {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->setOffCycleFlueLossFractiontoZone(offCycleFlueLossFractiontoZone);
+  }
 
-  EPM_FORWARD_GET(double, skinLossFractiontoZone)
-  EPM_FORWARD_SET(bool, setSkinLossFractiontoZone, (double skinLossFractiontoZone), (skinLossFractiontoZone))
+  boost::optional<double> WaterHeaterStratified::peakUseFlowRate() const {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->peakUseFlowRate();
+  }
+  bool WaterHeaterStratified::setPeakUseFlowRate(double peakUseFlowRate) {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->setPeakUseFlowRate(peakUseFlowRate);
+  }
+  void WaterHeaterStratified::resetPeakUseFlowRate() {
+    getImpl<detail::WaterHeaterStratified_Impl>()->resetPeakUseFlowRate();
+  }
 
-  EPM_FORWARD_GET(boost::optional<double>, offCycleFlueLossCoefficienttoAmbientTemperature)
-  EPM_FORWARD_SET(bool, setOffCycleFlueLossCoefficienttoAmbientTemperature, (double offCycleFlueLossCoefficienttoAmbientTemperature),
-                  (offCycleFlueLossCoefficienttoAmbientTemperature))
-  EPM_FORWARD_VOID(resetOffCycleFlueLossCoefficienttoAmbientTemperature, (), ())
+  boost::optional<Schedule> WaterHeaterStratified::useFlowRateFractionSchedule() const {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->useFlowRateFractionSchedule();
+  }
+  bool WaterHeaterStratified::setUseFlowRateFractionSchedule(Schedule& schedule) {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->setUseFlowRateFractionSchedule(schedule);
+  }
+  void WaterHeaterStratified::resetUseFlowRateFractionSchedule() {
+    getImpl<detail::WaterHeaterStratified_Impl>()->resetUseFlowRateFractionSchedule();
+  }
 
-  EPM_FORWARD_GET(double, offCycleFlueLossFractiontoZone)
-  EPM_FORWARD_SET(bool, setOffCycleFlueLossFractiontoZone, (double offCycleFlueLossFractiontoZone), (offCycleFlueLossFractiontoZone))
+  boost::optional<Schedule> WaterHeaterStratified::coldWaterSupplyTemperatureSchedule() const {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->coldWaterSupplyTemperatureSchedule();
+  }
+  bool WaterHeaterStratified::setColdWaterSupplyTemperatureSchedule(Schedule& schedule) {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->setColdWaterSupplyTemperatureSchedule(schedule);
+  }
+  void WaterHeaterStratified::resetColdWaterSupplyTemperatureSchedule() {
+    getImpl<detail::WaterHeaterStratified_Impl>()->resetColdWaterSupplyTemperatureSchedule();
+  }
 
-  EPM_FORWARD_GET(boost::optional<double>, peakUseFlowRate)
-  EPM_FORWARD_SET(bool, setPeakUseFlowRate, (double peakUseFlowRate), (peakUseFlowRate))
-  EPM_FORWARD_VOID(resetPeakUseFlowRate, (), ())
+  double WaterHeaterStratified::useSideEffectiveness() const {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->useSideEffectiveness();
+  }
+  bool WaterHeaterStratified::setUseSideEffectiveness(double useSideEffectiveness) {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->setUseSideEffectiveness(useSideEffectiveness);
+  }
 
-  EPM_FORWARD_GET(boost::optional<Schedule>, useFlowRateFractionSchedule)
-  EPM_FORWARD_SET(bool, setUseFlowRateFractionSchedule, (Schedule& schedule), (schedule))
-  EPM_FORWARD_VOID(resetUseFlowRateFractionSchedule, (), ())
+  double WaterHeaterStratified::useSideInletHeight() const {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->useSideInletHeight();
+  }
+  bool WaterHeaterStratified::setUseSideInletHeight(double useSideInletHeight) {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->setUseSideInletHeight(useSideInletHeight);
+  }
 
-  EPM_FORWARD_GET(boost::optional<Schedule>, coldWaterSupplyTemperatureSchedule)
-  EPM_FORWARD_SET(bool, setColdWaterSupplyTemperatureSchedule, (Schedule& schedule), (schedule))
-  EPM_FORWARD_VOID(resetColdWaterSupplyTemperatureSchedule, (), ())
+  boost::optional<double> WaterHeaterStratified::useSideOutletHeight() const {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->useSideOutletHeight();
+  }
+  bool WaterHeaterStratified::setUseSideOutletHeight(double useSideOutletHeight) {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->setUseSideOutletHeight(useSideOutletHeight);
+  }
+  void WaterHeaterStratified::autocalculateUseSideOutletHeight() {
+    getImpl<detail::WaterHeaterStratified_Impl>()->autocalculateUseSideOutletHeight();
+  }
+  bool WaterHeaterStratified::isUseSideOutletHeightAutocalculated() const {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->isUseSideOutletHeightAutocalculated();
+  }
 
-  EPM_FORWARD_GET(double, useSideEffectiveness)
-  EPM_FORWARD_SET(bool, setUseSideEffectiveness, (double useSideEffectiveness), (useSideEffectiveness))
+  double WaterHeaterStratified::sourceSideEffectiveness() const {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->sourceSideEffectiveness();
+  }
+  bool WaterHeaterStratified::setSourceSideEffectiveness(double sourceSideEffectiveness) {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->setSourceSideEffectiveness(sourceSideEffectiveness);
+  }
 
-  EPM_FORWARD_GET(double, useSideInletHeight)
-  EPM_FORWARD_SET(bool, setUseSideInletHeight, (double useSideInletHeight), (useSideInletHeight))
+  boost::optional<double> WaterHeaterStratified::sourceSideInletHeight() const {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->sourceSideInletHeight();
+  }
+  bool WaterHeaterStratified::setSourceSideInletHeight(double sourceSideInletHeight) {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->setSourceSideInletHeight(sourceSideInletHeight);
+  }
+  void WaterHeaterStratified::autocalculateSourceSideInletHeight() {
+    getImpl<detail::WaterHeaterStratified_Impl>()->autocalculateSourceSideInletHeight();
+  }
+  bool WaterHeaterStratified::isSourceSideInletHeightAutocalculated() const {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->isSourceSideInletHeightAutocalculated();
+  }
 
-  EPM_FORWARD_GET(boost::optional<double>, useSideOutletHeight)
-  EPM_FORWARD_SET(bool, setUseSideOutletHeight, (double useSideOutletHeight), (useSideOutletHeight))
-  EPM_FORWARD_VOID(autocalculateUseSideOutletHeight, (), ())
-  EPM_FORWARD_GET(bool, isUseSideOutletHeightAutocalculated)
+  double WaterHeaterStratified::sourceSideOutletHeight() const {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->sourceSideOutletHeight();
+  }
+  bool WaterHeaterStratified::setSourceSideOutletHeight(double sourceSideOutletHeight) {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->setSourceSideOutletHeight(sourceSideOutletHeight);
+  }
 
-  EPM_FORWARD_GET(double, sourceSideEffectiveness)
-  EPM_FORWARD_SET(bool, setSourceSideEffectiveness, (double sourceSideEffectiveness), (sourceSideEffectiveness))
+  std::string WaterHeaterStratified::inletMode() const {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->inletMode();
+  }
+  bool WaterHeaterStratified::setInletMode(const std::string& inletMode) {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->setInletMode(inletMode);
+  }
 
-  EPM_FORWARD_GET(boost::optional<double>, sourceSideInletHeight)
-  EPM_FORWARD_SET(bool, setSourceSideInletHeight, (double sourceSideInletHeight), (sourceSideInletHeight))
-  EPM_FORWARD_VOID(autocalculateSourceSideInletHeight, (), ())
-  EPM_FORWARD_GET(bool, isSourceSideInletHeightAutocalculated)
+  boost::optional<double> WaterHeaterStratified::useSideDesignFlowRate() const {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->useSideDesignFlowRate();
+  }
+  bool WaterHeaterStratified::setUseSideDesignFlowRate(double useSideDesignFlowRate) {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->setUseSideDesignFlowRate(useSideDesignFlowRate);
+  }
+  void WaterHeaterStratified::autosizeUseSideDesignFlowRate() {
+    getImpl<detail::WaterHeaterStratified_Impl>()->autosizeUseSideDesignFlowRate();
+  }
+  bool WaterHeaterStratified::isUseSideDesignFlowRateAutosized() const {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->isUseSideDesignFlowRateAutosized();
+  }
+  boost::optional<double> WaterHeaterStratified::autosizedUseSideDesignFlowRate() const {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->autosizedUseSideDesignFlowRate();
+  }
 
-  EPM_FORWARD_GET(double, sourceSideOutletHeight)
-  EPM_FORWARD_SET(bool, setSourceSideOutletHeight, (double sourceSideOutletHeight), (sourceSideOutletHeight))
+  boost::optional<double> WaterHeaterStratified::sourceSideDesignFlowRate() const {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->sourceSideDesignFlowRate();
+  }
+  bool WaterHeaterStratified::setSourceSideDesignFlowRate(double sourceSideDesignFlowRate) {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->setSourceSideDesignFlowRate(sourceSideDesignFlowRate);
+  }
+  void WaterHeaterStratified::autosizeSourceSideDesignFlowRate() {
+    getImpl<detail::WaterHeaterStratified_Impl>()->autosizeSourceSideDesignFlowRate();
+  }
+  bool WaterHeaterStratified::isSourceSideDesignFlowRateAutosized() const {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->isSourceSideDesignFlowRateAutosized();
+  }
+  boost::optional<double> WaterHeaterStratified::autosizedSourceSideDesignFlowRate() const {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->autosizedSourceSideDesignFlowRate();
+  }
 
-  EPM_FORWARD_GET(std::string, inletMode)
-  EPM_FORWARD_SET(bool, setInletMode, (const std::string& inletMode), (inletMode))
+  double WaterHeaterStratified::indirectWaterHeatingRecoveryTime() const {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->indirectWaterHeatingRecoveryTime();
+  }
+  bool WaterHeaterStratified::setIndirectWaterHeatingRecoveryTime(double indirectWaterHeatingRecoveryTime) {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->setIndirectWaterHeatingRecoveryTime(indirectWaterHeatingRecoveryTime);
+  }
 
-  EPM_FORWARD_GET(boost::optional<double>, useSideDesignFlowRate)
-  EPM_FORWARD_SET(bool, setUseSideDesignFlowRate, (double useSideDesignFlowRate), (useSideDesignFlowRate))
-  EPM_FORWARD_VOID(autosizeUseSideDesignFlowRate, (), ())
-  EPM_FORWARD_GET(bool, isUseSideDesignFlowRateAutosized)
-  EPM_FORWARD_GET(boost::optional<double>, autosizedUseSideDesignFlowRate)
+  int WaterHeaterStratified::numberofNodes() const {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->numberofNodes();
+  }
+  bool WaterHeaterStratified::setNumberofNodes(int numberofNodes) {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->setNumberofNodes(numberofNodes);
+  }
 
-  EPM_FORWARD_GET(boost::optional<double>, sourceSideDesignFlowRate)
-  EPM_FORWARD_SET(bool, setSourceSideDesignFlowRate, (double sourceSideDesignFlowRate), (sourceSideDesignFlowRate))
-  EPM_FORWARD_VOID(autosizeSourceSideDesignFlowRate, (), ())
-  EPM_FORWARD_GET(bool, isSourceSideDesignFlowRateAutosized)
-  EPM_FORWARD_GET(boost::optional<double>, autosizedSourceSideDesignFlowRate)
+  double WaterHeaterStratified::additionalDestratificationConductivity() const {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->additionalDestratificationConductivity();
+  }
+  bool WaterHeaterStratified::setAdditionalDestratificationConductivity(double additionalDestratificationConductivity) {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->setAdditionalDestratificationConductivity(additionalDestratificationConductivity);
+  }
 
-  EPM_FORWARD_GET(double, indirectWaterHeatingRecoveryTime)
-  EPM_FORWARD_SET(bool, setIndirectWaterHeatingRecoveryTime, (double indirectWaterHeatingRecoveryTime), (indirectWaterHeatingRecoveryTime))
+  double WaterHeaterStratified::node1AdditionalLossCoefficient() const {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->node1AdditionalLossCoefficient();
+  }
+  bool WaterHeaterStratified::setNode1AdditionalLossCoefficient(double node1AdditionalLossCoefficient) {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->setNode1AdditionalLossCoefficient(node1AdditionalLossCoefficient);
+  }
 
-  EPM_FORWARD_GET(int, numberofNodes)
-  EPM_FORWARD_SET(bool, setNumberofNodes, (int numberofNodes), (numberofNodes))
+  double WaterHeaterStratified::node2AdditionalLossCoefficient() const {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->node2AdditionalLossCoefficient();
+  }
+  bool WaterHeaterStratified::setNode2AdditionalLossCoefficient(double node2AdditionalLossCoefficient) {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->setNode2AdditionalLossCoefficient(node2AdditionalLossCoefficient);
+  }
 
-  EPM_FORWARD_GET(double, additionalDestratificationConductivity)
-  EPM_FORWARD_SET(bool, setAdditionalDestratificationConductivity, (double additionalDestratificationConductivity),
-                  (additionalDestratificationConductivity))
+  double WaterHeaterStratified::node3AdditionalLossCoefficient() const {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->node3AdditionalLossCoefficient();
+  }
+  bool WaterHeaterStratified::setNode3AdditionalLossCoefficient(double node3AdditionalLossCoefficient) {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->setNode3AdditionalLossCoefficient(node3AdditionalLossCoefficient);
+  }
 
-  EPM_FORWARD_GET(double, node1AdditionalLossCoefficient)
-  EPM_FORWARD_SET(bool, setNode1AdditionalLossCoefficient, (double node1AdditionalLossCoefficient), (node1AdditionalLossCoefficient))
+  double WaterHeaterStratified::node4AdditionalLossCoefficient() const {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->node4AdditionalLossCoefficient();
+  }
+  bool WaterHeaterStratified::setNode4AdditionalLossCoefficient(double node4AdditionalLossCoefficient) {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->setNode4AdditionalLossCoefficient(node4AdditionalLossCoefficient);
+  }
 
-  EPM_FORWARD_GET(double, node2AdditionalLossCoefficient)
-  EPM_FORWARD_SET(bool, setNode2AdditionalLossCoefficient, (double node2AdditionalLossCoefficient), (node2AdditionalLossCoefficient))
+  double WaterHeaterStratified::node5AdditionalLossCoefficient() const {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->node5AdditionalLossCoefficient();
+  }
+  bool WaterHeaterStratified::setNode5AdditionalLossCoefficient(double node5AdditionalLossCoefficient) {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->setNode5AdditionalLossCoefficient(node5AdditionalLossCoefficient);
+  }
 
-  EPM_FORWARD_GET(double, node3AdditionalLossCoefficient)
-  EPM_FORWARD_SET(bool, setNode3AdditionalLossCoefficient, (double node3AdditionalLossCoefficient), (node3AdditionalLossCoefficient))
+  double WaterHeaterStratified::node6AdditionalLossCoefficient() const {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->node6AdditionalLossCoefficient();
+  }
+  bool WaterHeaterStratified::setNode6AdditionalLossCoefficient(double node6AdditionalLossCoefficient) {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->setNode6AdditionalLossCoefficient(node6AdditionalLossCoefficient);
+  }
 
-  EPM_FORWARD_GET(double, node4AdditionalLossCoefficient)
-  EPM_FORWARD_SET(bool, setNode4AdditionalLossCoefficient, (double node4AdditionalLossCoefficient), (node4AdditionalLossCoefficient))
+  double WaterHeaterStratified::node7AdditionalLossCoefficient() const {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->node7AdditionalLossCoefficient();
+  }
+  bool WaterHeaterStratified::setNode7AdditionalLossCoefficient(double node7AdditionalLossCoefficient) {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->setNode7AdditionalLossCoefficient(node7AdditionalLossCoefficient);
+  }
 
-  EPM_FORWARD_GET(double, node5AdditionalLossCoefficient)
-  EPM_FORWARD_SET(bool, setNode5AdditionalLossCoefficient, (double node5AdditionalLossCoefficient), (node5AdditionalLossCoefficient))
+  double WaterHeaterStratified::node8AdditionalLossCoefficient() const {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->node8AdditionalLossCoefficient();
+  }
+  bool WaterHeaterStratified::setNode8AdditionalLossCoefficient(double node8AdditionalLossCoefficient) {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->setNode8AdditionalLossCoefficient(node8AdditionalLossCoefficient);
+  }
 
-  EPM_FORWARD_GET(double, node6AdditionalLossCoefficient)
-  EPM_FORWARD_SET(bool, setNode6AdditionalLossCoefficient, (double node6AdditionalLossCoefficient), (node6AdditionalLossCoefficient))
+  double WaterHeaterStratified::node9AdditionalLossCoefficient() const {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->node9AdditionalLossCoefficient();
+  }
+  bool WaterHeaterStratified::setNode9AdditionalLossCoefficient(double node9AdditionalLossCoefficient) {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->setNode9AdditionalLossCoefficient(node9AdditionalLossCoefficient);
+  }
 
-  EPM_FORWARD_GET(double, node7AdditionalLossCoefficient)
-  EPM_FORWARD_SET(bool, setNode7AdditionalLossCoefficient, (double node7AdditionalLossCoefficient), (node7AdditionalLossCoefficient))
+  double WaterHeaterStratified::node10AdditionalLossCoefficient() const {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->node10AdditionalLossCoefficient();
+  }
+  bool WaterHeaterStratified::setNode10AdditionalLossCoefficient(double node10AdditionalLossCoefficient) {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->setNode10AdditionalLossCoefficient(node10AdditionalLossCoefficient);
+  }
 
-  EPM_FORWARD_GET(double, node8AdditionalLossCoefficient)
-  EPM_FORWARD_SET(bool, setNode8AdditionalLossCoefficient, (double node8AdditionalLossCoefficient), (node8AdditionalLossCoefficient))
+  double WaterHeaterStratified::node11AdditionalLossCoefficient() const {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->node11AdditionalLossCoefficient();
+  }
+  bool WaterHeaterStratified::setNode11AdditionalLossCoefficient(double node11AdditionalLossCoefficient) {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->setNode11AdditionalLossCoefficient(node11AdditionalLossCoefficient);
+  }
 
-  EPM_FORWARD_GET(double, node9AdditionalLossCoefficient)
-  EPM_FORWARD_SET(bool, setNode9AdditionalLossCoefficient, (double node9AdditionalLossCoefficient), (node9AdditionalLossCoefficient))
+  double WaterHeaterStratified::node12AdditionalLossCoefficient() const {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->node12AdditionalLossCoefficient();
+  }
+  bool WaterHeaterStratified::setNode12AdditionalLossCoefficient(double node12AdditionalLossCoefficient) {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->setNode12AdditionalLossCoefficient(node12AdditionalLossCoefficient);
+  }
 
-  EPM_FORWARD_GET(double, node10AdditionalLossCoefficient)
-  EPM_FORWARD_SET(bool, setNode10AdditionalLossCoefficient, (double node10AdditionalLossCoefficient), (node10AdditionalLossCoefficient))
+  std::string WaterHeaterStratified::sourceSideFlowControlMode() const {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->sourceSideFlowControlMode();
+  }
+  bool WaterHeaterStratified::setSourceSideFlowControlMode(const std::string& sourceSideFlowControlMode) {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->setSourceSideFlowControlMode(sourceSideFlowControlMode);
+  }
 
-  EPM_FORWARD_GET(double, node11AdditionalLossCoefficient)
-  EPM_FORWARD_SET(bool, setNode11AdditionalLossCoefficient, (double node11AdditionalLossCoefficient), (node11AdditionalLossCoefficient))
+  boost::optional<Schedule> WaterHeaterStratified::indirectAlternateSetpointTemperatureSchedule() const {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->indirectAlternateSetpointTemperatureSchedule();
+  }
+  bool WaterHeaterStratified::setIndirectAlternateSetpointTemperatureSchedule(Schedule& schedule) {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->setIndirectAlternateSetpointTemperatureSchedule(schedule);
+  }
+  void WaterHeaterStratified::resetIndirectAlternateSetpointTemperatureSchedule() {
+    getImpl<detail::WaterHeaterStratified_Impl>()->resetIndirectAlternateSetpointTemperatureSchedule();
+  }
 
-  EPM_FORWARD_GET(double, node12AdditionalLossCoefficient)
-  EPM_FORWARD_SET(bool, setNode12AdditionalLossCoefficient, (double node12AdditionalLossCoefficient), (node12AdditionalLossCoefficient))
-
-  EPM_FORWARD_GET(std::string, sourceSideFlowControlMode)
-  EPM_FORWARD_SET(bool, setSourceSideFlowControlMode, (const std::string& sourceSideFlowControlMode), (sourceSideFlowControlMode))
-
-  EPM_FORWARD_GET(boost::optional<Schedule>, indirectAlternateSetpointTemperatureSchedule)
-  EPM_FORWARD_SET(bool, setIndirectAlternateSetpointTemperatureSchedule, (Schedule& schedule), (schedule))
-  EPM_FORWARD_VOID(resetIndirectAlternateSetpointTemperatureSchedule, (), ())
-
-  EPM_FORWARD_GET(WaterHeaterSizing, waterHeaterSizing)
+  WaterHeaterSizing WaterHeaterStratified::waterHeaterSizing() const {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->waterHeaterSizing();
+  }
 
   ModelObject WaterHeaterStratified::clone(Model model) const {
     return getImpl<detail::WaterHeaterStratified_Impl>()->clone(model);
   }
-  EPM_FORWARD_SET(bool, addToSourceSideNode, (Node& node), (node))
+  bool WaterHeaterStratified::addToSourceSideNode(Node& node) {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->addToSourceSideNode(node);
+  }
 
   boost::optional<PlantLoop> WaterHeaterStratified::useSidePlantLoop() const {
     return plantLoop();
@@ -458,10 +745,6 @@ namespace epmodel {
     }
   }
 
-#undef EPM_FORWARD_GET
-#undef EPM_FORWARD_SET
-#undef EPM_FORWARD_VOID
-
   namespace detail {
 
     namespace {
@@ -481,6 +764,20 @@ namespace epmodel {
       }
 
     }  // namespace
+
+    void WaterHeaterStratified_Impl::doCanonicalize(LoadContext& context) {
+      WaterToWaterComponent_Impl::doCanonicalize(context);
+
+      try {
+        waterHeaterSizing();
+        return;
+      } catch (const std::exception&) {
+      }
+
+      const auto waterHeater = getObject<WaterHeaterStratified>();
+      WaterHeaterSizing sizing(waterHeater);
+      detail::addLoadInfo(context, "Created default WaterHeater:Sizing object for WaterHeater:Stratified '" + waterHeater.nameString() + "'.");
+    }
 
     std::vector<ModelObject> WaterHeaterStratified_Impl::children() const {
       return {waterHeaterSizing()};
@@ -742,8 +1039,8 @@ namespace epmodel {
       return setString(openstudio::WaterHeater_StratifiedFields::AmbientTemperatureIndicator, normalized);
     }
     bool WaterHeaterStratified_Impl::setAmbientTemperatureSchedule(Schedule& schedule) {
-      return setSchedule(openstudio::WaterHeater_StratifiedFields::AmbientTemperatureScheduleName, "WaterHeaterStratified",
-                         "Ambient Temperature", schedule);
+      return setSchedule(openstudio::WaterHeater_StratifiedFields::AmbientTemperatureScheduleName, "WaterHeaterStratified", "Ambient Temperature",
+                         schedule);
     }
     void WaterHeaterStratified_Impl::resetAmbientTemperatureSchedule() {
       OS_ASSERT(setString(openstudio::WaterHeater_StratifiedFields::AmbientTemperatureScheduleName, ""));
@@ -765,8 +1062,8 @@ namespace epmodel {
     OS_IMPL_SET_DOUBLE(setPeakUseFlowRate, PeakUseFlowRate)
     OS_IMPL_RESET(resetPeakUseFlowRate, PeakUseFlowRate)
     bool WaterHeaterStratified_Impl::setUseFlowRateFractionSchedule(Schedule& schedule) {
-      return setSchedule(openstudio::WaterHeater_StratifiedFields::UseFlowRateFractionScheduleName, "WaterHeaterStratified",
-                         "Use Flow Rate Fraction", schedule);
+      return setSchedule(openstudio::WaterHeater_StratifiedFields::UseFlowRateFractionScheduleName, "WaterHeaterStratified", "Use Flow Rate Fraction",
+                         schedule);
     }
     void WaterHeaterStratified_Impl::resetUseFlowRateFractionSchedule() {
       OS_ASSERT(setString(openstudio::WaterHeater_StratifiedFields::UseFlowRateFractionScheduleName, ""));
@@ -846,9 +1143,14 @@ namespace epmodel {
     }
 
     WaterHeaterSizing WaterHeaterStratified_Impl::waterHeaterSizing() const {
-      for (const auto& sizing : model().getConcreteModelObjects<WaterHeaterSizing>()) {
-        if (sizing.waterHeater().handle() == handle()) {
-          return sizing;
+      for (const auto& source : getObject<ModelObject>().getSources(WaterHeaterSizing::iddObjectType())) {
+        if (auto sizing = source.optionalCast<WaterHeaterSizing>()) {
+          try {
+            if (sizing->waterHeater().handle() == handle()) {
+              return *sizing;
+            }
+          } catch (const std::exception&) {
+          }
         }
       }
       throw std::runtime_error("WaterHeaterStratified missing WaterHeater:Sizing object.");
@@ -886,8 +1188,8 @@ namespace epmodel {
 
       if (auto sourceSidePlantLoop = sourceSideOutletNode_->plantLoop()) {
         const auto supplyComponents = sourceSidePlantLoop->supplyComponents(openstudio::IddObjectType::Catchall);
-        const auto matchesSourceLoop = std::find_if(supplyComponents.begin(), supplyComponents.end(),
-                                                    [&](const auto& component) { return component.handle() == handle(); });
+        const auto matchesSourceLoop =
+          std::find_if(supplyComponents.begin(), supplyComponents.end(), [&](const auto& component) { return component.handle() == handle(); });
         if (matchesSourceLoop != supplyComponents.end()) {
           return sourceSidePlantLoop;
         }

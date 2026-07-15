@@ -13,32 +13,32 @@
 namespace openstudio {
 namespace epmodel {
 
-class EnergyManagementSystemProgram;
+  class EnergyManagementSystemProgram;
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API EnergyManagementSystemProgramCallingManager_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~EnergyManagementSystemProgramCallingManager_Impl() override = default;
+    class EPMODEL_API EnergyManagementSystemProgramCallingManager_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~EnergyManagementSystemProgramCallingManager_Impl() override = default;
 
-  std::vector<std::string> validCallingPointValues() const;
+      std::vector<std::string> validCallingPointValues() const;
 
-  std::string callingPoint() const;
-  bool setCallingPoint(const std::string& callingPoint);
+      std::string callingPoint() const;
+      bool setCallingPoint(const std::string& callingPoint);
 
-  std::vector<EnergyManagementSystemProgram> programs() const;
-  boost::optional<EnergyManagementSystemProgram> getProgram(unsigned index) const;
+      std::vector<EnergyManagementSystemProgram> programs() const;
+      boost::optional<EnergyManagementSystemProgram> getProgram(unsigned index) const;
 
-  bool eraseProgram(unsigned index);
-  void erasePrograms();
-  bool addProgram(const EnergyManagementSystemProgram& program);
-  bool setProgram(const EnergyManagementSystemProgram& program, unsigned index);
-  bool setPrograms(const std::vector<EnergyManagementSystemProgram>& programs);
-};
+      bool eraseProgram(unsigned index);
+      void erasePrograms();
+      bool addProgram(const EnergyManagementSystemProgram& program);
+      bool setProgram(const EnergyManagementSystemProgram& program, unsigned index);
+      bool setPrograms(const std::vector<EnergyManagementSystemProgram>& programs);
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

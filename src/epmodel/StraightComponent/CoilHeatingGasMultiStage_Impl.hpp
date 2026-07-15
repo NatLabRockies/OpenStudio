@@ -12,40 +12,40 @@
 
 namespace openstudio {
 namespace epmodel {
-class Node;
-class Schedule;
-class Curve;
-namespace detail {
+  class Node;
+  class Schedule;
+  class Curve;
+  namespace detail {
 
-class EPMODEL_API CoilHeatingGasMultiStage_Impl : public StraightComponent_Impl
-{
- public:
-  using StraightComponent_Impl::StraightComponent_Impl;
-  virtual ~CoilHeatingGasMultiStage_Impl() override = default;
+    class EPMODEL_API CoilHeatingGasMultiStage_Impl : public StraightComponent_Impl
+    {
+     public:
+      using StraightComponent_Impl::StraightComponent_Impl;
+      virtual ~CoilHeatingGasMultiStage_Impl() override = default;
 
-  unsigned inletPort() const override;
-  unsigned outletPort() const override;
-  std::vector<ModelObject> children() const override;
+      unsigned inletPort() const override;
+      unsigned outletPort() const override;
+      std::vector<ModelObject> children() const override;
 
-  bool addToNode(Node& node) override;
+      bool addToNode(Node& node) override;
 
-  Schedule availabilitySchedule() const;
-  bool setAvailabilitySchedule(Schedule& schedule);
+      Schedule availabilitySchedule() const;
+      bool setAvailabilitySchedule(Schedule& schedule);
 
-  boost::optional<Curve> partLoadFractionCorrelationCurve() const;
-  bool setPartLoadFractionCorrelationCurve(const Curve& curve);
-  void resetPartLoadFractionCorrelationCurve();
+      boost::optional<Curve> partLoadFractionCorrelationCurve() const;
+      bool setPartLoadFractionCorrelationCurve(const Curve& curve);
+      void resetPartLoadFractionCorrelationCurve();
 
-  boost::optional<double> offCycleParasiticGasLoad() const;
+      boost::optional<double> offCycleParasiticGasLoad() const;
 
-  bool setOffCycleParasiticGasLoad(double offCycleParasiticGasLoad);
-  void resetOffCycleParasiticGasLoad();
+      bool setOffCycleParasiticGasLoad(double offCycleParasiticGasLoad);
+      void resetOffCycleParasiticGasLoad();
 
-  unsigned numberOfStages() const;
-  bool setNumberOfStages(unsigned numberOfStages);
-};
+      unsigned numberOfStages() const;
+      bool setNumberOfStages(unsigned numberOfStages);
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

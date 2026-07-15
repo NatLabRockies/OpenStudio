@@ -16,50 +16,50 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-  class ConnectorSplitter_Impl;
-}
+  namespace detail {
+    class ConnectorSplitter_Impl;
+  }
 
-class EPMODEL_API ConnectorSplitter : public Splitter
-{
- public:
-  explicit ConnectorSplitter(const Model& model);
+  class EPMODEL_API ConnectorSplitter : public Splitter
+  {
+   public:
+    explicit ConnectorSplitter(const Model& model);
 
-  virtual ~ConnectorSplitter() override = default;
-  ConnectorSplitter(const ConnectorSplitter& other) = default;
-  ConnectorSplitter(ConnectorSplitter&& other) = default;
-  ConnectorSplitter& operator=(const ConnectorSplitter&) = default;
-  ConnectorSplitter& operator=(ConnectorSplitter&&) = default;
+    virtual ~ConnectorSplitter() override = default;
+    ConnectorSplitter(const ConnectorSplitter& other) = default;
+    ConnectorSplitter(ConnectorSplitter&& other) = default;
+    ConnectorSplitter& operator=(const ConnectorSplitter&) = default;
+    ConnectorSplitter& operator=(ConnectorSplitter&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  // Schema Alignment Notes:
-  // - Status: Partial Parity. The connector-specific branch-port surface is present, but broader connector/topology behavior still relies on loop-level normalization.
-  // - Canonical Counterpart: openstudio::model::ConnectorSplitter.
-  // - Implemented Parity: Connector-specific inlet/outlet port traversal, branch indexing, inlet lookup, and branch removal APIs preserve the canonical connector-splitter topology contract.
-  // - Field/Storage Mapping: Public behavior is organized around EnergyPlus `Connector:Splitter` branch topology rather than OpenStudio connection storage.
-  // - Evidence: `src/model/ConnectorSplitter.hpp` and the loop topology family establish the canonical connector-specific branch API this wrapper is preserving.
-  // - Remaining Parity Work: Confirm any remaining connector-specific loop-integration semantics once the topology family normalization pass is complete.
-  unsigned inletPort() const override;
-  unsigned outletPort(unsigned branchIndex) const override;
-  unsigned nextOutletPort() const override;
-  boost::optional<ModelObject> inletModelObject() const override;
-  std::vector<ModelObject> outletModelObjects() const override;
-  unsigned nextBranchIndex() const override;
-  void removePortForBranch(unsigned branchIndex) override;
-  bool setOutletModelObject(unsigned branchIndex, const ModelObject& modelObject) override;
+    // Schema Alignment Notes:
+    // - Status: Partial Parity. The connector-specific branch-port surface is present, but broader connector/topology behavior still relies on loop-level normalization.
+    // - Canonical Counterpart: openstudio::model::ConnectorSplitter.
+    // - Implemented Parity: Connector-specific inlet/outlet port traversal, branch indexing, inlet lookup, and branch removal APIs preserve the canonical connector-splitter topology contract.
+    // - Field/Storage Mapping: Public behavior is organized around EnergyPlus `Connector:Splitter` branch topology rather than OpenStudio connection storage.
+    // - Evidence: `src/model/ConnectorSplitter.hpp` and the loop topology family establish the canonical connector-specific branch API this wrapper is preserving.
+    // - Remaining Parity Work: Confirm any remaining connector-specific loop-integration semantics once the topology family normalization pass is complete.
+    unsigned inletPort() const override;
+    unsigned outletPort(unsigned branchIndex) const override;
+    unsigned nextOutletPort() const override;
+    boost::optional<ModelObject> inletModelObject() const override;
+    std::vector<ModelObject> outletModelObjects() const override;
+    unsigned nextBranchIndex() const override;
+    void removePortForBranch(unsigned branchIndex) override;
+    bool setOutletModelObject(unsigned branchIndex, const ModelObject& modelObject) override;
 
- protected:
-  using ImplType = detail::ConnectorSplitter_Impl;
+   protected:
+    using ImplType = detail::ConnectorSplitter_Impl;
 
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
-  friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
+    friend class Model;
 
-  explicit ConnectorSplitter(std::shared_ptr<detail::ConnectorSplitter_Impl> impl);
-};
+    explicit ConnectorSplitter(std::shared_ptr<detail::ConnectorSplitter_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

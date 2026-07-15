@@ -6,7 +6,7 @@
 #ifndef EPMODEL_PLANTEQUIPMENTOPERATIONHEATINGLOAD_IMPL_HPP
 #define EPMODEL_PLANTEQUIPMENTOPERATIONHEATINGLOAD_IMPL_HPP
 
-#include "PlantEquipmentOperationScheme/PlantEquipmentOperationScheme_Impl.hpp"
+#include "PlantEquipmentOperationScheme/PlantEquipmentOperationRangeBasedScheme_Impl.hpp"
 
 namespace openstudio {
 class IdfObject;
@@ -21,16 +21,13 @@ namespace epmodel {
 
     class Model_Impl;
 
-    class EPMODEL_API PlantEquipmentOperationHeatingLoad_Impl : public PlantEquipmentOperationScheme_Impl
+    class EPMODEL_API PlantEquipmentOperationHeatingLoad_Impl : public PlantEquipmentOperationRangeBasedScheme_Impl
     {
      public:
       PlantEquipmentOperationHeatingLoad_Impl(const openstudio::IdfObject& idfObject, Model_Impl* model, bool keepHandle);
       PlantEquipmentOperationHeatingLoad_Impl(const openstudio::detail::WorkspaceObject_Impl& other, Model_Impl* model, bool keepHandle);
       PlantEquipmentOperationHeatingLoad_Impl(const PlantEquipmentOperationHeatingLoad_Impl& other, Model_Impl* model, bool keepHandle);
       virtual ~PlantEquipmentOperationHeatingLoad_Impl() override = default;
-
-      double maximumUpperLimit() const;
-      double minimumLowerLimit() const;
     };
 
   }  // namespace detail

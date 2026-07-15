@@ -16,143 +16,142 @@
 namespace openstudio {
 namespace epmodel {
 
-SetpointManagerCondenserEnteringResetIdeal::SetpointManagerCondenserEnteringResetIdeal(const Model& model)
-  : ModelObject(SetpointManagerCondenserEnteringResetIdeal::iddObjectType(), model) {}
+  SetpointManagerCondenserEnteringResetIdeal::SetpointManagerCondenserEnteringResetIdeal(const Model& model)
+    : ModelObject(SetpointManagerCondenserEnteringResetIdeal::iddObjectType(), model) {}
 
-SetpointManagerCondenserEnteringResetIdeal::SetpointManagerCondenserEnteringResetIdeal(
-  std::shared_ptr<detail::SetpointManagerCondenserEnteringResetIdeal_Impl> impl)
-  : ModelObject(std::move(impl)) {}
+  SetpointManagerCondenserEnteringResetIdeal::SetpointManagerCondenserEnteringResetIdeal(
+    std::shared_ptr<detail::SetpointManagerCondenserEnteringResetIdeal_Impl> impl)
+    : ModelObject(std::move(impl)) {}
 
-IddObjectType SetpointManagerCondenserEnteringResetIdeal::iddObjectType() {
-  return IddObjectType::SetpointManager_CondenserEnteringReset_Ideal;
-}
+  IddObjectType SetpointManagerCondenserEnteringResetIdeal::iddObjectType() {
+    return IddObjectType::SetpointManager_CondenserEnteringReset_Ideal;
+  }
 
-std::vector<std::string> SetpointManagerCondenserEnteringResetIdeal::controlVariableValues() {
-  return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
-                        openstudio::SetpointManager_CondenserEnteringReset_IdealFields::ControlVariable);
-}
+  std::vector<std::string> SetpointManagerCondenserEnteringResetIdeal::controlVariableValues() {
+    return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
+                          openstudio::SetpointManager_CondenserEnteringReset_IdealFields::ControlVariable);
+  }
 
-std::string SetpointManagerCondenserEnteringResetIdeal::controlVariable() const {
-  return getImpl<detail::SetpointManagerCondenserEnteringResetIdeal_Impl>()->controlVariable();
-}
+  std::string SetpointManagerCondenserEnteringResetIdeal::controlVariable() const {
+    return getImpl<detail::SetpointManagerCondenserEnteringResetIdeal_Impl>()->controlVariable();
+  }
 
-bool SetpointManagerCondenserEnteringResetIdeal::isControlVariableDefaulted() const {
-  return getImpl<detail::SetpointManagerCondenserEnteringResetIdeal_Impl>()->isControlVariableDefaulted();
-}
+  bool SetpointManagerCondenserEnteringResetIdeal::isControlVariableDefaulted() const {
+    return getImpl<detail::SetpointManagerCondenserEnteringResetIdeal_Impl>()->isControlVariableDefaulted();
+  }
 
-bool SetpointManagerCondenserEnteringResetIdeal::setControlVariable(const std::string& controlVariable) {
-  return getImpl<detail::SetpointManagerCondenserEnteringResetIdeal_Impl>()->setControlVariable(controlVariable);
-}
+  bool SetpointManagerCondenserEnteringResetIdeal::setControlVariable(const std::string& controlVariable) {
+    return getImpl<detail::SetpointManagerCondenserEnteringResetIdeal_Impl>()->setControlVariable(controlVariable);
+  }
 
-void SetpointManagerCondenserEnteringResetIdeal::resetControlVariable() {
-  getImpl<detail::SetpointManagerCondenserEnteringResetIdeal_Impl>()->resetControlVariable();
-}
+  void SetpointManagerCondenserEnteringResetIdeal::resetControlVariable() {
+    getImpl<detail::SetpointManagerCondenserEnteringResetIdeal_Impl>()->resetControlVariable();
+  }
 
-double SetpointManagerCondenserEnteringResetIdeal::minimumLift() const {
-  return getImpl<detail::SetpointManagerCondenserEnteringResetIdeal_Impl>()->minimumLift();
-}
+  double SetpointManagerCondenserEnteringResetIdeal::minimumLift() const {
+    return getImpl<detail::SetpointManagerCondenserEnteringResetIdeal_Impl>()->minimumLift();
+  }
 
-bool SetpointManagerCondenserEnteringResetIdeal::isMinimumLiftDefaulted() const {
-  return getImpl<detail::SetpointManagerCondenserEnteringResetIdeal_Impl>()->isMinimumLiftDefaulted();
-}
+  bool SetpointManagerCondenserEnteringResetIdeal::isMinimumLiftDefaulted() const {
+    return getImpl<detail::SetpointManagerCondenserEnteringResetIdeal_Impl>()->isMinimumLiftDefaulted();
+  }
 
-bool SetpointManagerCondenserEnteringResetIdeal::setMinimumLift(double minimumLift) {
-  return getImpl<detail::SetpointManagerCondenserEnteringResetIdeal_Impl>()->setMinimumLift(minimumLift);
-}
+  bool SetpointManagerCondenserEnteringResetIdeal::setMinimumLift(double minimumLift) {
+    return getImpl<detail::SetpointManagerCondenserEnteringResetIdeal_Impl>()->setMinimumLift(minimumLift);
+  }
 
-void SetpointManagerCondenserEnteringResetIdeal::resetMinimumLift() {
-  getImpl<detail::SetpointManagerCondenserEnteringResetIdeal_Impl>()->resetMinimumLift();
-}
+  void SetpointManagerCondenserEnteringResetIdeal::resetMinimumLift() {
+    getImpl<detail::SetpointManagerCondenserEnteringResetIdeal_Impl>()->resetMinimumLift();
+  }
 
-double SetpointManagerCondenserEnteringResetIdeal::maximumCondenserEnteringWaterTemperature() const {
-  return getImpl<detail::SetpointManagerCondenserEnteringResetIdeal_Impl>()->maximumCondenserEnteringWaterTemperature();
-}
+  double SetpointManagerCondenserEnteringResetIdeal::maximumCondenserEnteringWaterTemperature() const {
+    return getImpl<detail::SetpointManagerCondenserEnteringResetIdeal_Impl>()->maximumCondenserEnteringWaterTemperature();
+  }
 
-bool SetpointManagerCondenserEnteringResetIdeal::isMaximumCondenserEnteringWaterTemperatureDefaulted() const {
-  return getImpl<detail::SetpointManagerCondenserEnteringResetIdeal_Impl>()->isMaximumCondenserEnteringWaterTemperatureDefaulted();
-}
+  bool SetpointManagerCondenserEnteringResetIdeal::isMaximumCondenserEnteringWaterTemperatureDefaulted() const {
+    return getImpl<detail::SetpointManagerCondenserEnteringResetIdeal_Impl>()->isMaximumCondenserEnteringWaterTemperatureDefaulted();
+  }
 
-bool SetpointManagerCondenserEnteringResetIdeal::setMaximumCondenserEnteringWaterTemperature(double maximumCondenserEnteringWaterTemperature) {
-  return getImpl<detail::SetpointManagerCondenserEnteringResetIdeal_Impl>()
-    ->setMaximumCondenserEnteringWaterTemperature(maximumCondenserEnteringWaterTemperature);
-}
+  bool SetpointManagerCondenserEnteringResetIdeal::setMaximumCondenserEnteringWaterTemperature(double maximumCondenserEnteringWaterTemperature) {
+    return getImpl<detail::SetpointManagerCondenserEnteringResetIdeal_Impl>()->setMaximumCondenserEnteringWaterTemperature(
+      maximumCondenserEnteringWaterTemperature);
+  }
 
-void SetpointManagerCondenserEnteringResetIdeal::resetMaximumCondenserEnteringWaterTemperature() {
-  getImpl<detail::SetpointManagerCondenserEnteringResetIdeal_Impl>()->resetMaximumCondenserEnteringWaterTemperature();
-}
+  void SetpointManagerCondenserEnteringResetIdeal::resetMaximumCondenserEnteringWaterTemperature() {
+    getImpl<detail::SetpointManagerCondenserEnteringResetIdeal_Impl>()->resetMaximumCondenserEnteringWaterTemperature();
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-std::string SetpointManagerCondenserEnteringResetIdeal_Impl::controlVariable() const {
-  const auto value = getString(openstudio::SetpointManager_CondenserEnteringReset_IdealFields::ControlVariable, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    std::string SetpointManagerCondenserEnteringResetIdeal_Impl::controlVariable() const {
+      const auto value = getString(openstudio::SetpointManager_CondenserEnteringReset_IdealFields::ControlVariable, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-bool SetpointManagerCondenserEnteringResetIdeal_Impl::isControlVariableDefaulted() const {
-  return isEmpty(openstudio::SetpointManager_CondenserEnteringReset_IdealFields::ControlVariable);
-}
+    bool SetpointManagerCondenserEnteringResetIdeal_Impl::isControlVariableDefaulted() const {
+      return isEmpty(openstudio::SetpointManager_CondenserEnteringReset_IdealFields::ControlVariable);
+    }
 
-bool SetpointManagerCondenserEnteringResetIdeal_Impl::setControlVariable(const std::string& controlVariable) {
-  return setString(openstudio::SetpointManager_CondenserEnteringReset_IdealFields::ControlVariable, controlVariable);
-}
+    bool SetpointManagerCondenserEnteringResetIdeal_Impl::setControlVariable(const std::string& controlVariable) {
+      return setString(openstudio::SetpointManager_CondenserEnteringReset_IdealFields::ControlVariable, controlVariable);
+    }
 
-void SetpointManagerCondenserEnteringResetIdeal_Impl::resetControlVariable() {
-  OS_ASSERT(setString(openstudio::SetpointManager_CondenserEnteringReset_IdealFields::ControlVariable, ""));
-}
+    void SetpointManagerCondenserEnteringResetIdeal_Impl::resetControlVariable() {
+      OS_ASSERT(setString(openstudio::SetpointManager_CondenserEnteringReset_IdealFields::ControlVariable, ""));
+    }
 
-double SetpointManagerCondenserEnteringResetIdeal_Impl::minimumLift() const {
-  const auto value = getDouble(openstudio::SetpointManager_CondenserEnteringReset_IdealFields::MinimumLift, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    double SetpointManagerCondenserEnteringResetIdeal_Impl::minimumLift() const {
+      const auto value = getDouble(openstudio::SetpointManager_CondenserEnteringReset_IdealFields::MinimumLift, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-bool SetpointManagerCondenserEnteringResetIdeal_Impl::isMinimumLiftDefaulted() const {
-  return isEmpty(openstudio::SetpointManager_CondenserEnteringReset_IdealFields::MinimumLift);
-}
+    bool SetpointManagerCondenserEnteringResetIdeal_Impl::isMinimumLiftDefaulted() const {
+      return isEmpty(openstudio::SetpointManager_CondenserEnteringReset_IdealFields::MinimumLift);
+    }
 
-bool SetpointManagerCondenserEnteringResetIdeal_Impl::setMinimumLift(double minimumLift) {
-  const bool result = setDouble(openstudio::SetpointManager_CondenserEnteringReset_IdealFields::MinimumLift, minimumLift);
-  OS_ASSERT(result);
-  return result;
-}
+    bool SetpointManagerCondenserEnteringResetIdeal_Impl::setMinimumLift(double minimumLift) {
+      const bool result = setDouble(openstudio::SetpointManager_CondenserEnteringReset_IdealFields::MinimumLift, minimumLift);
+      OS_ASSERT(result);
+      return result;
+    }
 
-void SetpointManagerCondenserEnteringResetIdeal_Impl::resetMinimumLift() {
-  OS_ASSERT(setString(openstudio::SetpointManager_CondenserEnteringReset_IdealFields::MinimumLift, ""));
-}
+    void SetpointManagerCondenserEnteringResetIdeal_Impl::resetMinimumLift() {
+      OS_ASSERT(setString(openstudio::SetpointManager_CondenserEnteringReset_IdealFields::MinimumLift, ""));
+    }
 
-double SetpointManagerCondenserEnteringResetIdeal_Impl::maximumCondenserEnteringWaterTemperature() const {
-  const auto value =
-    getDouble(openstudio::SetpointManager_CondenserEnteringReset_IdealFields::MaximumCondenserEnteringWaterTemperature, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    double SetpointManagerCondenserEnteringResetIdeal_Impl::maximumCondenserEnteringWaterTemperature() const {
+      const auto value = getDouble(openstudio::SetpointManager_CondenserEnteringReset_IdealFields::MaximumCondenserEnteringWaterTemperature, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-bool SetpointManagerCondenserEnteringResetIdeal_Impl::isMaximumCondenserEnteringWaterTemperatureDefaulted() const {
-  return isEmpty(openstudio::SetpointManager_CondenserEnteringReset_IdealFields::MaximumCondenserEnteringWaterTemperature);
-}
+    bool SetpointManagerCondenserEnteringResetIdeal_Impl::isMaximumCondenserEnteringWaterTemperatureDefaulted() const {
+      return isEmpty(openstudio::SetpointManager_CondenserEnteringReset_IdealFields::MaximumCondenserEnteringWaterTemperature);
+    }
 
-bool SetpointManagerCondenserEnteringResetIdeal_Impl::setMaximumCondenserEnteringWaterTemperature(double maximumCondenserEnteringWaterTemperature) {
-  const bool result =
-    setDouble(openstudio::SetpointManager_CondenserEnteringReset_IdealFields::MaximumCondenserEnteringWaterTemperature,
-              maximumCondenserEnteringWaterTemperature);
-  OS_ASSERT(result);
-  return result;
-}
+    bool
+      SetpointManagerCondenserEnteringResetIdeal_Impl::setMaximumCondenserEnteringWaterTemperature(double maximumCondenserEnteringWaterTemperature) {
+      const bool result = setDouble(openstudio::SetpointManager_CondenserEnteringReset_IdealFields::MaximumCondenserEnteringWaterTemperature,
+                                    maximumCondenserEnteringWaterTemperature);
+      OS_ASSERT(result);
+      return result;
+    }
 
-void SetpointManagerCondenserEnteringResetIdeal_Impl::resetMaximumCondenserEnteringWaterTemperature() {
-  OS_ASSERT(setString(openstudio::SetpointManager_CondenserEnteringReset_IdealFields::MaximumCondenserEnteringWaterTemperature, ""));
-}
+    void SetpointManagerCondenserEnteringResetIdeal_Impl::resetMaximumCondenserEnteringWaterTemperature() {
+      OS_ASSERT(setString(openstudio::SetpointManager_CondenserEnteringReset_IdealFields::MaximumCondenserEnteringWaterTemperature, ""));
+    }
 
-std::vector<std::string> SetpointManagerCondenserEnteringResetIdeal_Impl::controlVariableValues() const {
-  return SetpointManagerCondenserEnteringResetIdeal::controlVariableValues();
-}
+    std::vector<std::string> SetpointManagerCondenserEnteringResetIdeal_Impl::controlVariableValues() const {
+      return SetpointManagerCondenserEnteringResetIdeal::controlVariableValues();
+    }
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio

@@ -14,97 +14,99 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class SiteGroundTemperatureDeep_Impl;
-}
+  namespace detail {
+    class SiteGroundTemperatureDeep_Impl;
+  }
 
-class EPMODEL_API SiteGroundTemperatureDeep : public ModelObject
-{
- public:
-  virtual ~SiteGroundTemperatureDeep() override = default;
-  SiteGroundTemperatureDeep(const SiteGroundTemperatureDeep& other) = default;
-  SiteGroundTemperatureDeep(SiteGroundTemperatureDeep&& other) = default;
-  SiteGroundTemperatureDeep& operator=(const SiteGroundTemperatureDeep&) = default;
-  SiteGroundTemperatureDeep& operator=(SiteGroundTemperatureDeep&&) = default;
+  class EPMODEL_API SiteGroundTemperatureDeep : public ModelObject
+  {
+   public:
+    static constexpr bool is_unique = true;  // This is a Unique ModelObject
 
-  static IddObjectType iddObjectType();
+    virtual ~SiteGroundTemperatureDeep() override = default;
+    SiteGroundTemperatureDeep(const SiteGroundTemperatureDeep& other) = default;
+    SiteGroundTemperatureDeep(SiteGroundTemperatureDeep&& other) = default;
+    SiteGroundTemperatureDeep& operator=(const SiteGroundTemperatureDeep&) = default;
+    SiteGroundTemperatureDeep& operator=(SiteGroundTemperatureDeep&&) = default;
 
-  // Schema Alignment Notes:
-  // - API: Preserved from openstudio::model counterpart.
-  // - Field Mapping: Month scalar APIs map directly to Site:GroundTemperature:Deep fields.
-  double januaryDeepGroundTemperature() const;
-  bool isJanuaryDeepGroundTemperatureDefaulted() const;
-  bool setJanuaryDeepGroundTemperature(double januaryDeepGroundTemperature);
-  void resetJanuaryDeepGroundTemperature();
+    static IddObjectType iddObjectType();
 
-  double februaryDeepGroundTemperature() const;
-  bool isFebruaryDeepGroundTemperatureDefaulted() const;
-  bool setFebruaryDeepGroundTemperature(double februaryDeepGroundTemperature);
-  void resetFebruaryDeepGroundTemperature();
+    // Schema Alignment Notes:
+    // - API: Preserved from openstudio::model counterpart.
+    // - Field Mapping: Month scalar APIs map directly to Site:GroundTemperature:Deep fields.
+    double januaryDeepGroundTemperature() const;
+    bool isJanuaryDeepGroundTemperatureDefaulted() const;
+    bool setJanuaryDeepGroundTemperature(double januaryDeepGroundTemperature);
+    void resetJanuaryDeepGroundTemperature();
 
-  double marchDeepGroundTemperature() const;
-  bool isMarchDeepGroundTemperatureDefaulted() const;
-  bool setMarchDeepGroundTemperature(double marchDeepGroundTemperature);
-  void resetMarchDeepGroundTemperature();
+    double februaryDeepGroundTemperature() const;
+    bool isFebruaryDeepGroundTemperatureDefaulted() const;
+    bool setFebruaryDeepGroundTemperature(double februaryDeepGroundTemperature);
+    void resetFebruaryDeepGroundTemperature();
 
-  double aprilDeepGroundTemperature() const;
-  bool isAprilDeepGroundTemperatureDefaulted() const;
-  bool setAprilDeepGroundTemperature(double aprilDeepGroundTemperature);
-  void resetAprilDeepGroundTemperature();
+    double marchDeepGroundTemperature() const;
+    bool isMarchDeepGroundTemperatureDefaulted() const;
+    bool setMarchDeepGroundTemperature(double marchDeepGroundTemperature);
+    void resetMarchDeepGroundTemperature();
 
-  double mayDeepGroundTemperature() const;
-  bool isMayDeepGroundTemperatureDefaulted() const;
-  bool setMayDeepGroundTemperature(double mayDeepGroundTemperature);
-  void resetMayDeepGroundTemperature();
+    double aprilDeepGroundTemperature() const;
+    bool isAprilDeepGroundTemperatureDefaulted() const;
+    bool setAprilDeepGroundTemperature(double aprilDeepGroundTemperature);
+    void resetAprilDeepGroundTemperature();
 
-  double juneDeepGroundTemperature() const;
-  bool isJuneDeepGroundTemperatureDefaulted() const;
-  bool setJuneDeepGroundTemperature(double juneDeepGroundTemperature);
-  void resetJuneDeepGroundTemperature();
+    double mayDeepGroundTemperature() const;
+    bool isMayDeepGroundTemperatureDefaulted() const;
+    bool setMayDeepGroundTemperature(double mayDeepGroundTemperature);
+    void resetMayDeepGroundTemperature();
 
-  double julyDeepGroundTemperature() const;
-  bool isJulyDeepGroundTemperatureDefaulted() const;
-  bool setJulyDeepGroundTemperature(double julyDeepGroundTemperature);
-  void resetJulyDeepGroundTemperature();
+    double juneDeepGroundTemperature() const;
+    bool isJuneDeepGroundTemperatureDefaulted() const;
+    bool setJuneDeepGroundTemperature(double juneDeepGroundTemperature);
+    void resetJuneDeepGroundTemperature();
 
-  double augustDeepGroundTemperature() const;
-  bool isAugustDeepGroundTemperatureDefaulted() const;
-  bool setAugustDeepGroundTemperature(double augustDeepGroundTemperature);
-  void resetAugustDeepGroundTemperature();
+    double julyDeepGroundTemperature() const;
+    bool isJulyDeepGroundTemperatureDefaulted() const;
+    bool setJulyDeepGroundTemperature(double julyDeepGroundTemperature);
+    void resetJulyDeepGroundTemperature();
 
-  double septemberDeepGroundTemperature() const;
-  bool isSeptemberDeepGroundTemperatureDefaulted() const;
-  bool setSeptemberDeepGroundTemperature(double septemberDeepGroundTemperature);
-  void resetSeptemberDeepGroundTemperature();
+    double augustDeepGroundTemperature() const;
+    bool isAugustDeepGroundTemperatureDefaulted() const;
+    bool setAugustDeepGroundTemperature(double augustDeepGroundTemperature);
+    void resetAugustDeepGroundTemperature();
 
-  double octoberDeepGroundTemperature() const;
-  bool isOctoberDeepGroundTemperatureDefaulted() const;
-  bool setOctoberDeepGroundTemperature(double octoberDeepGroundTemperature);
-  void resetOctoberDeepGroundTemperature();
+    double septemberDeepGroundTemperature() const;
+    bool isSeptemberDeepGroundTemperatureDefaulted() const;
+    bool setSeptemberDeepGroundTemperature(double septemberDeepGroundTemperature);
+    void resetSeptemberDeepGroundTemperature();
 
-  double novemberDeepGroundTemperature() const;
-  bool isNovemberDeepGroundTemperatureDefaulted() const;
-  bool setNovemberDeepGroundTemperature(double novemberDeepGroundTemperature);
-  void resetNovemberDeepGroundTemperature();
+    double octoberDeepGroundTemperature() const;
+    bool isOctoberDeepGroundTemperatureDefaulted() const;
+    bool setOctoberDeepGroundTemperature(double octoberDeepGroundTemperature);
+    void resetOctoberDeepGroundTemperature();
 
-  double decemberDeepGroundTemperature() const;
-  bool isDecemberDeepGroundTemperatureDefaulted() const;
-  bool setDecemberDeepGroundTemperature(double decemberDeepGroundTemperature);
-  void resetDecemberDeepGroundTemperature();
+    double novemberDeepGroundTemperature() const;
+    bool isNovemberDeepGroundTemperatureDefaulted() const;
+    bool setNovemberDeepGroundTemperature(double novemberDeepGroundTemperature);
+    void resetNovemberDeepGroundTemperature();
 
- protected:
-  explicit SiteGroundTemperatureDeep(const Model& model);
+    double decemberDeepGroundTemperature() const;
+    bool isDecemberDeepGroundTemperatureDefaulted() const;
+    bool setDecemberDeepGroundTemperature(double decemberDeepGroundTemperature);
+    void resetDecemberDeepGroundTemperature();
 
-  using ImplType = detail::SiteGroundTemperatureDeep_Impl;
+   protected:
+    explicit SiteGroundTemperatureDeep(const Model& model);
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+    using ImplType = detail::SiteGroundTemperatureDeep_Impl;
 
-  explicit SiteGroundTemperatureDeep(std::shared_ptr<detail::SiteGroundTemperatureDeep_Impl> impl);
-};
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
+
+    explicit SiteGroundTemperatureDeep(std::shared_ptr<detail::SiteGroundTemperatureDeep_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

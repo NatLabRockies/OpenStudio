@@ -54,11 +54,11 @@ namespace detail {
         return boost::none;
       }
 
-      if (auto existingNode = workspace->getObjectByTypeAndName(openstudio::IddObjectType::Node, targetName, true)) {
+      if (auto existingNode = workspace->getObjectByTypeAndName(openstudio::IddObjectType::Node, targetName)) {
         return existingNode;
       }
 
-      if (auto existingNodeList = workspace->getObjectByTypeAndName(openstudio::IddObjectType::NodeList, targetName, true)) {
+      if (auto existingNodeList = workspace->getObjectByTypeAndName(openstudio::IddObjectType::NodeList, targetName)) {
         return existingNodeList;
       }
 
@@ -120,9 +120,9 @@ namespace detail {
     return result;
   }
 
-	  void WorkspaceObject_Impl::initializeOnAdd(bool expectToLosePointers) {
-	    OS_ASSERT(m_workspace);
-	    bool ptrsAsHandles = iddObject().hasHandleField();
+  void WorkspaceObject_Impl::initializeOnAdd(bool expectToLosePointers) {
+    OS_ASSERT(m_workspace);
+    bool ptrsAsHandles = iddObject().hasHandleField();
     // loop through object list fields
     UnsignedVector fields = objectListFields();
     for (unsigned index : fields) {
@@ -542,6 +542,18 @@ namespace detail {
         return setPointer(index, *targetHandle, checkValidity);
       }
       return false;
+    }
+
+    if (isNodeField(iddObject(), index) && !value.empty() && boost::regex_match(value, uuidInString())) {
+      // Node-type pointer field receiving a UUID handle string (e.g. from fieldsWithHandles()
+      // during insertExtensibleGroup group-shifting). Route through setPointer so the pointer
+      // is tracked in m_sourceData->pointers. Without this, the UUID lands in m_fields as a
+      // plain string and getTarget() later calls resolveOrCreateTransientNode() with it,
+      // finding no Node named "{UUID}" and creating a spurious one.
+      Handle handle = toUUID(value);
+      if (m_workspace->isMember(handle)) {
+        return setPointer(index, handle, checkValidity);
+      }
     }
 
     // regular field -- name or data
@@ -1070,6 +1082,10 @@ namespace detail {
     return getObject<WorkspaceObject>().idfObject();
   }
 
+  void WorkspaceObject_Impl::printToStdout() const {
+    getObject<WorkspaceObject>().printToStdout();
+  }
+
   void WorkspaceObject_Impl::emitChangeSignals() {
     if (m_diffs.empty()) {
       return;
@@ -1533,6 +1549,10 @@ IdfObject WorkspaceObject::idfObject() {
 IdfObject WorkspaceObject::idfObject() const {
   IdfObject object(getImpl<detail::WorkspaceObject_Impl>()->idfObjectImplPtr());
   return object;
+}
+
+void WorkspaceObject::printToStdout() const {
+  idfObject().printToStdout();
 }
 
 // PROTECTED

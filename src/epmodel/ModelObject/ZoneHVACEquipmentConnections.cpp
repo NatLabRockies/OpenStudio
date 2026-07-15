@@ -83,7 +83,7 @@ namespace epmodel {
 
         if (auto nodeOrListName = connections.getString(field)) {
           if (!nodeOrListName->empty()) {
-            if (auto nodeList = connections.model().getObjectByTypeAndName(openstudio::IddObjectType::NodeList, *nodeOrListName, true)) {
+            if (auto nodeList = connections.model().getObjectByTypeAndName(openstudio::IddObjectType::NodeList, *nodeOrListName)) {
               if (auto castNodeList = nodeList->optionalCast<openstudio::epmodel::NodeList>()) {
                 if (!connections.getImpl<openstudio::epmodel::detail::ModelObject_Impl>()->setPointer(field, castNodeList->handle(), false)) {
                   return {};
@@ -178,8 +178,8 @@ namespace epmodel {
       // `ZoneHVAC:EquipmentConnections` is a zone-owned topology object in epmodel. Raw/imported
       // orphan objects are not meaningful steady-state API objects, so repair canonicalization
       // removes them. Once a zone is attached, canonicalization fills derived required topology.
-      auto zone = equipmentConnections.getModelObjectTarget<openstudio::epmodel::ThermalZone>(
-        openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneName);
+      auto zone =
+        equipmentConnections.getModelObjectTarget<openstudio::epmodel::ThermalZone>(openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneName);
       if (!zone) {
         detail::addLoadWarning(context, "Removed orphan ZoneHVAC:EquipmentConnections '" + equipmentConnections.nameString()
                                           + "' because it does not reference a ThermalZone.");
@@ -187,9 +187,8 @@ namespace epmodel {
         return;
       }
 
-      detail::addLoadInfo(context, "Canonicalizing ZoneHVAC:EquipmentConnections '" + equipmentConnections.nameString()
-                                     + "' for ThermalZone '" + zone->nameString()
-                                     + "': ensuring required equipment list and zone air node references are present.");
+      detail::addLoadInfo(context, "Canonicalizing ZoneHVAC:EquipmentConnections '" + equipmentConnections.nameString() + "' for ThermalZone '"
+                                     + zone->nameString() + "': ensuring required equipment list and zone air node references are present.");
 
       if (auto equipmentList = equipmentConnections.getModelObjectTarget<openstudio::epmodel::ZoneHVACEquipmentList>(
             openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneConditioningEquipmentListName)) {
@@ -209,31 +208,30 @@ namespace epmodel {
         }
       }
 
-      if (auto existingZoneAirNode = equipmentConnections.getModelObjectTarget<openstudio::epmodel::Node>(
-            openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneAirNodeName)) {
-        detail::addLoadInfo(context, "Preserved existing zone air node '" + existingZoneAirNode->nameString()
-                                       + "' on ZoneHVAC:EquipmentConnections '" + equipmentConnections.nameString() + "'.");
+      if (auto existingZoneAirNode =
+            equipmentConnections.getModelObjectTarget<openstudio::epmodel::Node>(openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneAirNodeName)) {
+        detail::addLoadInfo(context, "Preserved existing zone air node '" + existingZoneAirNode->nameString() + "' on ZoneHVAC:EquipmentConnections '"
+                                       + equipmentConnections.nameString() + "'.");
       } else {
         const auto zoneAirNodeName = zone->nameString() + " Demand Branch Node";
         const bool zoneAirNodeAlreadyExisted =
-          static_cast<bool>(model().getObjectByTypeAndName(openstudio::IddObjectType::Node, zoneAirNodeName, true));
+          static_cast<bool>(model().getObjectByTypeAndName(openstudio::IddObjectType::Node, zoneAirNodeName));
         auto zoneAirNode = model().getOrCreateTransientByName<openstudio::epmodel::Node>(zoneAirNodeName);
         if (!equipmentConnections.setPointer(openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneAirNodeName, zoneAirNode.handle())) {
-          detail::addLoadError(context, "Failed to attach zone air node '" + zoneAirNode.nameString()
-                                          + "' to ZoneHVAC:EquipmentConnections '" + equipmentConnections.nameString() + "'.");
+          detail::addLoadError(context, "Failed to attach zone air node '" + zoneAirNode.nameString() + "' to ZoneHVAC:EquipmentConnections '"
+                                          + equipmentConnections.nameString() + "'.");
           OS_ASSERT(false);
         } else {
-          detail::addLoadInfo(context, std::string(zoneAirNodeAlreadyExisted ? "Reused" : "Created") + " zone air node '"
-                                         + zoneAirNode.nameString() + "' and attached it to ZoneHVAC:EquipmentConnections '"
-                                         + equipmentConnections.nameString() + "'.");
+          detail::addLoadInfo(context, std::string(zoneAirNodeAlreadyExisted ? "Reused" : "Created") + " zone air node '" + zoneAirNode.nameString()
+                                         + "' and attached it to ZoneHVAC:EquipmentConnections '" + equipmentConnections.nameString() + "'.");
         }
       }
     }
 
     openstudio::epmodel::ThermalZone ZoneHVACEquipmentConnections_Impl::thermalZone() const {
       const auto equipmentConnections = getObject<openstudio::epmodel::ZoneHVACEquipmentConnections>();
-      auto zone = equipmentConnections.getModelObjectTarget<openstudio::epmodel::ThermalZone>(
-        openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneName);
+      auto zone =
+        equipmentConnections.getModelObjectTarget<openstudio::epmodel::ThermalZone>(openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneName);
       OS_ASSERT(zone);
       return *zone;
     }
@@ -272,8 +270,8 @@ namespace epmodel {
 
     openstudio::epmodel::Node ZoneHVACEquipmentConnections_Impl::zoneAirNode() const {
       const auto equipmentConnections = getObject<openstudio::epmodel::ZoneHVACEquipmentConnections>();
-      if (auto node = equipmentConnections.getModelObjectTarget<openstudio::epmodel::Node>(
-            openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneAirNodeName)) {
+      if (auto node =
+            equipmentConnections.getModelObjectTarget<openstudio::epmodel::Node>(openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneAirNodeName)) {
         return *node;
       }
       auto node = resolvedNodeTarget(openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneAirNodeName);

@@ -40,23 +40,19 @@ namespace epmodel {
 
     bool addToNode(Node& node);
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. This wrapper is closer to parity on constructors, availability-schedule handling and canonicalization behavior,
-    //   and maximum-air-flow-rate scalar/autosize surface, but `addToNode` remains narrower than the canonical model's insertion behavior.
+    // Connectivity Notes:
     // - Canonical Counterpart: openstudio::model::AirTerminalSingleDuctConstantVolumeNoReheat.
-    // - Implemented Parity: The canonical model exposes the schedule-taking constructor; `epmodel` retains that constructor and also adds a default
-    //   constructor that canonicalizes to `Model::alwaysOnDiscreteSchedule()` plus autosized maximum flow. `availabilitySchedule`,
-    //   `maximumAirFlowRate`, its autosize state mutators, and `autosizedMaximumAirFlowRate` preserve the remaining public contract, and
-    //   `availabilitySchedule()` intentionally repairs a missing required reference back to `Model::alwaysOnDiscreteSchedule()` in the same
-    //   OpenStudio style used by the canonical wrapper family.
-    // - Documented Delta: `autosizedMaximumAirFlowRate` is currently a typed `boost::none` stub because `epmodel` does not yet expose family-specific sizing
-    //   result lookup without shared-file work outside this wrapper. `addToNode` is also intentionally narrower than the canonical model: it currently
-    //   requires a demand-side drop node tied to an existing splitter/mixer branch pairing instead of supporting the canonical wrapper's broader node insertion paths.
-    // - Field/Storage Mapping: The preserved schedule relationship and maximum-air-flow-rate field map directly to EnergyPlus
-    //   `AirTerminal:SingleDuct:ConstantVolume:NoReheat` storage; when the required schedule pointer is missing, the getter canonicalizes the stored state
-    //   by reattaching the model's always-on discrete schedule before returning it.
-    // - Evidence: `src/model/AirTerminalSingleDuctConstantVolumeNoReheat.hpp`, `src/model/AirTerminalSingleDuctConstantVolumeNoReheat.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirTerminalSingleDuctConstantVolumeNoReheat.cpp`, and `src/epmodel/test/AirTerminalSingleDuctConstantVolumeNoReheat_GTest.cpp`.
-    // - Remaining Parity Work: Replace the `autosizedMaximumAirFlowRate` stub once `epmodel` can read this family's sizing results.
+    // - `addToNode` is intentionally scoped to an AirLoopHVAC demand-side zone branch node: it creates a terminal inlet node, rewires the
+    //   ZoneSplitter branch outlet to that inlet node, points the terminal outlet at the zone air node, updates an owning ADU outlet when
+    //   present, and registers the terminal on the served zone equipment list.
+    // - `removeFromLoop` reverses the entity-owned side effects by reconnecting the ZoneSplitter branch to the zone air node through the
+    //   shared StraightComponent removal path, removing the zone equipment-list entry, clearing any ADU outlet/terminal references, and
+    //   clearing this terminal's node pointers.
+    // - The availability schedule remains a required object relationship: constructors seed it, the getter repairs missing persisted state,
+    //   and translation depends on it. Node connectivity is likewise treated as a paired inlet/outlet relationship.
+    // - Documented Delta: canonical `model` accepts a broader set of demand insertion paths. This epmodel wrapper currently requires the
+    //   target node to already be the ZoneSplitter/Mixer branch node produced by the epmodel AirLoopHVAC zone-branch topology.
+    // - Scalar Delta: `autosizedMaximumAirFlowRate` remains a typed `boost::none` stub until epmodel exposes family-specific sizing results.
     Schedule availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);
 

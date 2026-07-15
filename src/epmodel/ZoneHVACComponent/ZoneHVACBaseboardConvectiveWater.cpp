@@ -26,17 +26,17 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-// These companion coils are transient views over parent-owned storage, so they
-// still need a stable model-level identity while the parent exists. We key
-// that identity off the parent handle instead of the parent display name so a
-// rename does not orphan the transient child.
-std::string transientHeatingCoilName(const openstudio::epmodel::ZoneHVACBaseboardConvectiveWater& parent) {
-  return "__transient__" + openstudio::toString(parent.handle()) + "__heating_water_baseboard";
-}
+    // These companion coils are transient views over parent-owned storage, so they
+    // still need a stable model-level identity while the parent exists. We key
+    // that identity off the parent handle instead of the parent display name so a
+    // rename does not orphan the transient child.
+    std::string transientHeatingCoilName(const openstudio::epmodel::ZoneHVACBaseboardConvectiveWater& parent) {
+      return "__transient__" + openstudio::toString(parent.handle()) + "__heating_water_baseboard";
+    }
 
-}  // namespace detail
+  }  // namespace detail
 
   ZoneHVACBaseboardConvectiveWater::ZoneHVACBaseboardConvectiveWater(const Model& model)
     : ZoneHVACComponent(ZoneHVACBaseboardConvectiveWater::iddObjectType(), model) {
@@ -220,8 +220,8 @@ std::string transientHeatingCoilName(const openstudio::epmodel::ZoneHVACBaseboar
     }
 
     bool ZoneHVACBaseboardConvectiveWater_Impl::setAvailabilitySchedule(Schedule& schedule) {
-      return setSchedule(openstudio::ZoneHVAC_Baseboard_Convective_WaterFields::AvailabilityScheduleName,
-                         "ZoneHVACBaseboardConvectiveWater", "Availability", schedule);
+      return setSchedule(openstudio::ZoneHVAC_Baseboard_Convective_WaterFields::AvailabilityScheduleName, "ZoneHVACBaseboardConvectiveWater",
+                         "Availability", schedule);
     }
 
     StraightComponent ZoneHVACBaseboardConvectiveWater_Impl::heatingCoil() const {

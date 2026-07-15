@@ -21,8 +21,8 @@ namespace epmodel {
       double minimumSetpointTemperature() const;
       bool setMinimumSetpointTemperature(double minimumSetpointTemperature);
 
-     double maximumSetpointTemperature() const;
-     bool setMaximumSetpointTemperature(double maximumSetpointTemperature);
+      double maximumSetpointTemperature() const;
+      bool setMaximumSetpointTemperature(double maximumSetpointTemperature);
 
       boost::optional<openstudio::epmodel::Node> setpointNode() const override;
       std::string controlVariable() const override;

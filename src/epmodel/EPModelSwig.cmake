@@ -97,7 +97,7 @@ macro(make_epmodel_swig_bindings NAME SIMPLENAME KEY_I_FILE I_FILES PARENT_TARGE
   if(BUILD_RUBY_BINDINGS)
     set(ruby_target "ruby_${NAME}")
     swig_add_library(${ruby_target}
-      TYPE STATIC
+      TYPE OBJECT
       LANGUAGE ruby
       OUTFILE_DIR "${CMAKE_CURRENT_BINARY_DIR}/swig/ruby/${LOWER_NAME}"
       OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/swig/ruby/${LOWER_NAME}"
@@ -106,9 +106,6 @@ macro(make_epmodel_swig_bindings NAME SIMPLENAME KEY_I_FILE I_FILES PARENT_TARGE
 
     set_target_properties(${ruby_target} PROPERTIES
       POSITION_INDEPENDENT_CODE ON
-      ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}/ruby/"
-      LIBRARY_OUTPUT_DIRECTORY "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/ruby/"
-      RUNTIME_OUTPUT_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ruby/"
       SWIG_USE_TARGET_INCLUDE_DIRECTORIES TRUE
       SWIG_COMPILE_OPTIONS "-fvirtual;-module;${RUBY_MODULE};-initname;${LOWER_NAME};-I${PROJECT_SOURCE_DIR}/ruby;${SWIG_COMMON}"
       SWIG_COMPILE_DEFINITIONS "${SWIG_DEFINES}"
@@ -162,7 +159,12 @@ macro(make_epmodel_swig_bindings NAME SIMPLENAME KEY_I_FILE I_FILES PARENT_TARGE
     target_include_directories(${python_target} PRIVATE ${common_swig_include_dirs})
     target_include_directories(${python_target} SYSTEM PRIVATE ${Python_INCLUDE_DIRS})
     target_compile_definitions(${python_target} PRIVATE SHARED_OS_LIBS SWIG_PYTHON_SILENT_MEMLEAK)
-    target_link_libraries(${python_target} PUBLIC ${PARENT_TARGET} ${${PARENT_TARGET}_depends})
+    # Do NOT link PARENT_TARGET (the openstudio_epmodel OBJECT library) directly here:
+    # every python binding target already gets the real symbols via openstudiolib
+    # (linked in python/module/CMakeLists.txt). Linking both directly embeds epmodel's
+    # object code twice, which MSVC rejects (LNK2005) since its import-lib thunks for
+    # openstudioepmodellib collide with the directly-linked definitions.
+    target_link_libraries(${python_target} PUBLIC ${${PARENT_TARGET}_depends})
     add_dependencies(${python_target} ${PARENT_TARGET})
 
     if(MSVC)

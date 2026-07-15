@@ -20,107 +20,109 @@ class MonthOfYear;
 
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class LifeCycleCostParameters_Impl;
-}
+  namespace detail {
+    class LifeCycleCostParameters_Impl;
+  }
 
-class EPMODEL_API LifeCycleCostParameters : public ParentObject
-{
- public:
-  virtual ~LifeCycleCostParameters() override = default;
-  LifeCycleCostParameters(const LifeCycleCostParameters& other) = default;
-  LifeCycleCostParameters(LifeCycleCostParameters&& other) = default;
-  LifeCycleCostParameters& operator=(const LifeCycleCostParameters&) = default;
-  LifeCycleCostParameters& operator=(LifeCycleCostParameters&&) = default;
+  class EPMODEL_API LifeCycleCostParameters : public ParentObject
+  {
+   public:
+    static constexpr bool is_unique = true;  // This is a Unique ModelObject
 
-  static IddObjectType iddObjectType();
+    virtual ~LifeCycleCostParameters() override = default;
+    LifeCycleCostParameters(const LifeCycleCostParameters& other) = default;
+    LifeCycleCostParameters(LifeCycleCostParameters&& other) = default;
+    LifeCycleCostParameters& operator=(const LifeCycleCostParameters&) = default;
+    LifeCycleCostParameters& operator=(LifeCycleCostParameters&&) = default;
 
-  static int nistYear();
-  static double fempRealDiscountRate();
-  static double fempNominalDiscountRate();
-  static double fempInflation();
+    static IddObjectType iddObjectType();
 
-  static std::vector<std::string> validDiscountingConventionValues();
-  static std::vector<std::string> validInflationApproachValues();
-  static std::vector<std::string> validDepreciationMethodValues();
+    static int nistYear();
+    static double fempRealDiscountRate();
+    static double fempNominalDiscountRate();
+    static double fempInflation();
 
-  // Schema Alignment Notes:
-  // - API: Preserve openstudio::model::LifeCycleCostParameters scalar accessor names/signatures where mappable to EnergyPlus.
-  // - Field Mapping: discountingConvention, inflationApproach, real/nominal discount rates, inflation, base/service date, length, tax,
-  //   and depreciationMethod map directly to LifeCycleCost:Parameters scalar fields.
-  // - ForwardTranslator evidence: ForwardTranslateLifeCycleCostParameters.cpp writes these same fields directly to
-  //   LifeCycleCost:Parameters.
-  // - Field Mapping: model-only APIs (analysisType / NIST escalation toggles / fuel-specific escalation rates) are not scalar fields on
-  //   EnergyPlus LifeCycleCost:Parameters and are intentionally excluded from this scaffold pass.
-  // - TODO(parity): Revisit model-only LCC abstractions if epmodel introduces cross-object helper behavior.
-  std::string discountingConvention() const;
-  bool isDiscountingConventionDefaulted() const;
-  bool setDiscountingConvention(const std::string& discountingConvention);
-  void resetDiscountingConvention();
+    static std::vector<std::string> validDiscountingConventionValues();
+    static std::vector<std::string> validInflationApproachValues();
+    static std::vector<std::string> validDepreciationMethodValues();
 
-  std::string inflationApproach() const;
-  bool isInflationApproachDefaulted() const;
-  bool setInflationApproach(const std::string& inflationApproach);
-  void resetInflationApproach();
+    // Schema Alignment Notes:
+    // - API: Preserve openstudio::model::LifeCycleCostParameters scalar accessor names/signatures where mappable to EnergyPlus.
+    // - Field Mapping: discountingConvention, inflationApproach, real/nominal discount rates, inflation, base/service date, length, tax,
+    //   and depreciationMethod map directly to LifeCycleCost:Parameters scalar fields.
+    // - ForwardTranslator evidence: ForwardTranslateLifeCycleCostParameters.cpp writes these same fields directly to
+    //   LifeCycleCost:Parameters.
+    // - Field Mapping: model-only APIs (analysisType / NIST escalation toggles / fuel-specific escalation rates) are not scalar fields on
+    //   EnergyPlus LifeCycleCost:Parameters and are intentionally excluded from this scaffold pass.
+    // - TODO(parity): Revisit model-only LCC abstractions if epmodel introduces cross-object helper behavior.
+    std::string discountingConvention() const;
+    bool isDiscountingConventionDefaulted() const;
+    bool setDiscountingConvention(const std::string& discountingConvention);
+    void resetDiscountingConvention();
 
-  bool isConstantDollarAnalysis() const;
+    std::string inflationApproach() const;
+    bool isInflationApproachDefaulted() const;
+    bool setInflationApproach(const std::string& inflationApproach);
+    void resetInflationApproach();
 
-  boost::optional<double> realDiscountRate() const;
-  bool setRealDiscountRate(double realDiscountRate);
+    bool isConstantDollarAnalysis() const;
 
-  boost::optional<double> nominalDiscountRate() const;
-  bool setNominalDiscountRate(double nominalDiscountRate);
+    boost::optional<double> realDiscountRate() const;
+    bool setRealDiscountRate(double realDiscountRate);
 
-  boost::optional<double> inflation() const;
-  bool setInflation(double inflation);
+    boost::optional<double> nominalDiscountRate() const;
+    bool setNominalDiscountRate(double nominalDiscountRate);
 
-  MonthOfYear baseDateMonth() const;
-  bool isBaseDateMonthDefaulted() const;
-  bool setBaseDateMonth(const MonthOfYear& baseDateMonth);
-  void resetBaseDateMonth();
+    boost::optional<double> inflation() const;
+    bool setInflation(double inflation);
 
-  int baseDateYear() const;
-  bool isBaseDateYearDefaulted() const;
-  bool setBaseDateYear(int baseDateYear);
-  void resetBaseDateYear();
+    MonthOfYear baseDateMonth() const;
+    bool isBaseDateMonthDefaulted() const;
+    bool setBaseDateMonth(const MonthOfYear& baseDateMonth);
+    void resetBaseDateMonth();
 
-  MonthOfYear serviceDateMonth() const;
-  bool isServiceDateMonthDefaulted() const;
-  bool setServiceDateMonth(const MonthOfYear& serviceDateMonth);
-  void resetServiceDateMonth();
+    int baseDateYear() const;
+    bool isBaseDateYearDefaulted() const;
+    bool setBaseDateYear(int baseDateYear);
+    void resetBaseDateYear();
 
-  int serviceDateYear() const;
-  bool isServiceDateYearDefaulted() const;
-  bool setServiceDateYear(int serviceDateYear);
-  void resetServiceDateYear();
+    MonthOfYear serviceDateMonth() const;
+    bool isServiceDateMonthDefaulted() const;
+    bool setServiceDateMonth(const MonthOfYear& serviceDateMonth);
+    void resetServiceDateMonth();
 
-  int lengthOfStudyPeriodInYears() const;
-  bool isLengthOfStudyPeriodInYearsDefaulted() const;
-  bool setLengthOfStudyPeriodInYears(int lengthOfStudyPeriodInYears);
-  void resetLengthOfStudyPeriodInYears();
+    int serviceDateYear() const;
+    bool isServiceDateYearDefaulted() const;
+    bool setServiceDateYear(int serviceDateYear);
+    void resetServiceDateYear();
 
-  boost::optional<double> taxRate() const;
-  bool setTaxRate(double taxRate);
-  void resetTaxRate();
+    int lengthOfStudyPeriodInYears() const;
+    bool isLengthOfStudyPeriodInYearsDefaulted() const;
+    bool setLengthOfStudyPeriodInYears(int lengthOfStudyPeriodInYears);
+    void resetLengthOfStudyPeriodInYears();
 
-  std::string depreciationMethod() const;
-  bool isDepreciationMethodDefaulted() const;
-  bool setDepreciationMethod(const std::string& depreciationMethod);
-  void resetDepreciationMethod();
+    boost::optional<double> taxRate() const;
+    bool setTaxRate(double taxRate);
+    void resetTaxRate();
 
- protected:
-  explicit LifeCycleCostParameters(const Model& model);
+    std::string depreciationMethod() const;
+    bool isDepreciationMethodDefaulted() const;
+    bool setDepreciationMethod(const std::string& depreciationMethod);
+    void resetDepreciationMethod();
 
-  using ImplType = detail::LifeCycleCostParameters_Impl;
+   protected:
+    explicit LifeCycleCostParameters(const Model& model);
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+    using ImplType = detail::LifeCycleCostParameters_Impl;
 
-  explicit LifeCycleCostParameters(std::shared_ptr<detail::LifeCycleCostParameters_Impl> impl);
-};
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
+
+    explicit LifeCycleCostParameters(std::shared_ptr<detail::LifeCycleCostParameters_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

@@ -18,36 +18,36 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-  class NodeList_Impl;
-}
+  namespace detail {
+    class NodeList_Impl;
+  }
 
-class EPMODEL_API NodeList : public ModelObject
-{
- public:
-  explicit NodeList(const Model& model);
+  class EPMODEL_API NodeList : public ModelObject
+  {
+   public:
+    explicit NodeList(const Model& model);
 
-  virtual ~NodeList() override = default;
-  NodeList(const NodeList& other) = default;
-  NodeList(NodeList&& other) = default;
-  NodeList& operator=(const NodeList&) = default;
-  NodeList& operator=(NodeList&&) = default;
+    virtual ~NodeList() override = default;
+    NodeList(const NodeList& other) = default;
+    NodeList(NodeList&& other) = default;
+    NodeList& operator=(const NodeList&) = default;
+    NodeList& operator=(NodeList&&) = default;
 
-  std::vector<Node> nodes() const;
+    std::vector<Node> nodes() const;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
- protected:
-  using ImplType = detail::NodeList_Impl;
+   protected:
+    using ImplType = detail::NodeList_Impl;
 
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
-  friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
+    friend class Model;
 
-  explicit NodeList(std::shared_ptr<detail::NodeList_Impl> impl);
-};
+    explicit NodeList(std::shared_ptr<detail::NodeList_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

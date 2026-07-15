@@ -10,36 +10,36 @@
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API FanPerformanceNightVentilation_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~FanPerformanceNightVentilation_Impl() override = default;
+    class EPMODEL_API FanPerformanceNightVentilation_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~FanPerformanceNightVentilation_Impl() override = default;
 
-  double fanTotalEfficiency() const;
-  bool setFanTotalEfficiency(double fanTotalEfficiency);
+      double fanTotalEfficiency() const;
+      bool setFanTotalEfficiency(double fanTotalEfficiency);
 
-  double pressureRise() const;
-  bool setPressureRise(double pressureRise);
+      double pressureRise() const;
+      bool setPressureRise(double pressureRise);
 
-  boost::optional<double> maximumFlowRate() const;
-  bool isMaximumFlowRateAutosized() const;
-  bool setMaximumFlowRate(double maximumFlowRate);
-  void resetMaximumFlowRate();
-  void autosizeMaximumFlowRate();
+      boost::optional<double> maximumFlowRate() const;
+      bool isMaximumFlowRateAutosized() const;
+      bool setMaximumFlowRate(double maximumFlowRate);
+      void resetMaximumFlowRate();
+      void autosizeMaximumFlowRate();
 
-  double motorEfficiency() const;
-  bool setMotorEfficiency(double motorEfficiency);
+      double motorEfficiency() const;
+      bool setMotorEfficiency(double motorEfficiency);
 
-  double motorinAirstreamFraction() const;
-  bool isMotorinAirstreamFractionDefaulted() const;
-  bool setMotorinAirstreamFraction(double motorinAirstreamFraction);
-  void resetMotorinAirstreamFraction();
-};
+      double motorinAirstreamFraction() const;
+      bool isMotorinAirstreamFractionDefaulted() const;
+      bool setMotorinAirstreamFraction(double motorinAirstreamFraction);
+      void resetMotorinAirstreamFraction();
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

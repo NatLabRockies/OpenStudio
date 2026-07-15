@@ -25,6 +25,8 @@ namespace epmodel {
   class EPMODEL_API PythonPluginSearchPaths : public ModelObject
   {
    public:
+    static constexpr bool is_unique = true;  // This is a Unique ModelObject
+
     virtual ~PythonPluginSearchPaths() override = default;
     PythonPluginSearchPaths(const PythonPluginSearchPaths& other) = default;
     PythonPluginSearchPaths(PythonPluginSearchPaths&& other) = default;

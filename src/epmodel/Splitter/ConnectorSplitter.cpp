@@ -73,7 +73,7 @@ namespace epmodel {
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
     unsigned ConnectorSplitter_Impl::inletPort() const {
       return getObject<openstudio::epmodel::ConnectorSplitter>().numNonextensibleFields() - 1u;
@@ -216,6 +216,6 @@ namespace detail {
       return setPointer(splitter.inletPort(), branch.handle(), false);
     }
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio

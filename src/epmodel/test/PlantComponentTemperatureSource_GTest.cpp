@@ -131,10 +131,8 @@ TEST_F(EPModelFixture, PlantComponentTemperatureSource_AddToNode_PlantLoopTopolo
   ASSERT_TRUE(plantComponentTemperatureSource.outletModelObject());
   EXPECT_TRUE(plantComponentTemperatureSource.isRemovable());
 
-  auto inletNode =
-    plantComponentTemperatureSource.getModelObjectTarget<Node>(openstudio::PlantComponent_TemperatureSourceFields::InletNode);
-  auto outletNode =
-    plantComponentTemperatureSource.getModelObjectTarget<Node>(openstudio::PlantComponent_TemperatureSourceFields::OutletNode);
+  auto inletNode = plantComponentTemperatureSource.getModelObjectTarget<Node>(openstudio::PlantComponent_TemperatureSourceFields::InletNode);
+  auto outletNode = plantComponentTemperatureSource.getModelObjectTarget<Node>(openstudio::PlantComponent_TemperatureSourceFields::OutletNode);
   ASSERT_TRUE(inletNode);
   ASSERT_TRUE(outletNode);
   EXPECT_EQ(plantComponentTemperatureSource.inletModelObject()->handle(), inletNode->handle());

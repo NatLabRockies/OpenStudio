@@ -18,6 +18,8 @@
 #include "../../utilities/sql/SqlFile.hpp"
 
 #include <array>
+#include <cmath>
+#include <limits>
 #include <string>
 
 namespace openstudio {
@@ -32,10 +34,6 @@ namespace epmodel {
   }
 
   ModelObject::ModelObject(std::shared_ptr<ImplType> impl) : WorkspaceObject(std::move(impl)) {}
-
-  std::shared_ptr<ModelObject::ImplType> ModelObject::getImpl() const {
-    return openstudio::IdfObject::getImpl<detail::ModelObject_Impl>();
-  }
 
   Model ModelObject::model() const {
     return getImpl<detail::ModelObject_Impl>()->model();
@@ -75,19 +73,25 @@ namespace epmodel {
       bool isContinuous;
       bool enforceNumericType;
       const char* unitType;
-      boost::optional<double> lowerLimitValue;
-      boost::optional<double> upperLimitValue;
+      double lowerLimitValue;
+      double upperLimitValue;
     };
 
+    static constexpr double kNoLower = -std::numeric_limits<double>::infinity();
+    static constexpr double kNoUpper = std::numeric_limits<double>::infinity();
+
     const ScheduleTypeSpec* findScheduleTypeSpec(const std::string& className, const std::string& scheduleDisplayName) {
-      static const std::array<ScheduleTypeSpec, 130> specs{{
+      static constexpr std::array<ScheduleTypeSpec, 135> specs{{
         {"AirLoopHVAC", "Availability Manager Scheduled On", false, true, "Availability", 0.0, 1.0},
         {"AvailabilityManagerScheduledOn", "Availability Manager Scheduled On", false, true, "Availability", 0.0, 1.0},
         {"AvailabilityManagerScheduledOff", "Availability Manager Scheduled Off", false, true, "Availability", 0.0, 1.0},
-        {"ThermostatSetpointDualSetpoint", "Heating Setpoint Temperature", true, true, "Temperature", boost::none, boost::none},
-        {"ThermostatSetpointDualSetpoint", "Cooling Setpoint Temperature", true, true, "Temperature", boost::none, boost::none},
-        {"ZoneControlThermostatStagedDualSetpoint", "Heating Temperature Setpoint Schedule", true, true, "Temperature", boost::none, boost::none},
-        {"ZoneControlThermostatStagedDualSetpoint", "Cooling Temperature Setpoint Base Schedule", true, true, "Temperature", boost::none, boost::none},
+        {"SetpointManagerScheduled", "(Exact, Min, Max) Temperature", true, true, "Temperature", kNoLower, kNoUpper},
+        {"SetpointManagerScheduled", "(Exact, Min, Max) Humidity Ratio", true, true, "Dimensionless", 0.0, kNoUpper},
+        {"SetpointManagerScheduled", "(Exact, Min, Max) Mass Flow Rate", true, true, "MassFlowRate", 0.0, kNoUpper},
+        {"ThermostatSetpointDualSetpoint", "Heating Setpoint Temperature", true, true, "Temperature", kNoLower, kNoUpper},
+        {"ThermostatSetpointDualSetpoint", "Cooling Setpoint Temperature", true, true, "Temperature", kNoLower, kNoUpper},
+        {"ZoneControlThermostatStagedDualSetpoint", "Heating Temperature Setpoint Schedule", true, true, "Temperature", kNoLower, kNoUpper},
+        {"ZoneControlThermostatStagedDualSetpoint", "Cooling Temperature Setpoint Base Schedule", true, true, "Temperature", kNoLower, kNoUpper},
         {"FanConstantVolume", "Availability", false, true, "Availability", 0.0, 1.0},
         {"FanOnOff", "Availability", false, true, "Availability", 0.0, 1.0},
         {"FanVariableVolume", "Availability", false, true, "Availability", 0.0, 1.0},
@@ -109,9 +113,9 @@ namespace epmodel {
         {"ZoneHVACBaseboardRadiantConvectiveWater", "Availability", false, true, "Availability", 0.0, 1.0},
         {"ZoneHVACBaseboardRadiantConvectiveElectric", "Availability", false, true, "Availability", 0.0, 1.0},
         {"ZoneHVACHighTemperatureRadiant", "Availability", false, true, "Availability", 0.0, 1.0},
-        {"ZoneHVACHighTemperatureRadiant", "Heating Setpoint Temperature", true, true, "Temperature", boost::none, boost::none},
+        {"ZoneHVACHighTemperatureRadiant", "Heating Setpoint Temperature", true, true, "Temperature", kNoLower, kNoUpper},
         {"ZoneHVACLowTemperatureRadiantElectric", "Availability", false, true, "Availability", 0.0, 1.0},
-        {"ZoneHVACLowTemperatureRadiantElectric", "Heating Setpoint Temperature", true, true, "Temperature", boost::none, boost::none},
+        {"ZoneHVACLowTemperatureRadiantElectric", "Heating Setpoint Temperature", true, true, "Temperature", kNoLower, kNoUpper},
         {"ZoneHVACEnergyRecoveryVentilator", "Availability", false, true, "Availability", 0.0, 1.0},
         {"ZoneHVACEvaporativeCoolerUnit", "Availability", false, true, "Availability", 0.0, 1.0},
         {"EvaporativeCoolerDirectResearchSpecial", "Availability", false, false, "Availability", 0.0, 1.0},
@@ -132,40 +136,40 @@ namespace epmodel {
         {"CoilCoolingWater", "Availability", false, true, "Availability", 0.0, 1.0},
         {"CoilHeatingWater", "Availability", false, true, "Availability", 0.0, 1.0},
         {"HeatExchangerFluidToFluid", "Availability", false, true, "Availability", 0.0, 1.0},
-        {"ThermalStorageChilledWaterStratified", "Setpoint Temperature", true, true, "Temperature", boost::none, boost::none},
-        {"ThermalStorageChilledWaterStratified", "Ambient Temperature", true, true, "Temperature", boost::none, boost::none},
+        {"ThermalStorageChilledWaterStratified", "Setpoint Temperature", true, true, "Temperature", kNoLower, kNoUpper},
+        {"ThermalStorageChilledWaterStratified", "Ambient Temperature", true, true, "Temperature", kNoLower, kNoUpper},
         {"ThermalStorageChilledWaterStratified", "Use Side Availability", false, true, "Availability", 0.0, 1.0},
         {"ThermalStorageChilledWaterStratified", "Source Side Availability", false, true, "Availability", 0.0, 1.0},
-        {"WaterHeaterMixed", "Setpoint Temperature", true, true, "Temperature", boost::none, boost::none},
-        {"WaterHeaterMixed", "Ambient Temperature", true, true, "Temperature", boost::none, boost::none},
+        {"WaterHeaterMixed", "Setpoint Temperature", true, true, "Temperature", kNoLower, kNoUpper},
+        {"WaterHeaterMixed", "Ambient Temperature", true, true, "Temperature", kNoLower, kNoUpper},
         {"WaterHeaterMixed", "Use Flow Rate Fraction", true, true, "Dimensionless", 0.0, 1.0},
-        {"WaterHeaterMixed", "Cold Water Supply Temperature", true, true, "Temperature", boost::none, boost::none},
-        {"WaterHeaterMixed", "Indirect Alternate Setpoint Temperature", true, true, "Temperature", boost::none, boost::none},
-        {"WaterHeaterStratified", "Heater 1 Setpoint Temperature", true, true, "Temperature", boost::none, boost::none},
-        {"WaterHeaterStratified", "Heater 2 Setpoint Temperature", true, true, "Temperature", boost::none, boost::none},
-        {"WaterHeaterStratified", "Ambient Temperature", true, true, "Temperature", boost::none, boost::none},
+        {"WaterHeaterMixed", "Cold Water Supply Temperature", true, true, "Temperature", kNoLower, kNoUpper},
+        {"WaterHeaterMixed", "Indirect Alternate Setpoint Temperature", true, true, "Temperature", kNoLower, kNoUpper},
+        {"WaterHeaterStratified", "Heater 1 Setpoint Temperature", true, true, "Temperature", kNoLower, kNoUpper},
+        {"WaterHeaterStratified", "Heater 2 Setpoint Temperature", true, true, "Temperature", kNoLower, kNoUpper},
+        {"WaterHeaterStratified", "Ambient Temperature", true, true, "Temperature", kNoLower, kNoUpper},
         {"WaterHeaterStratified", "Use Flow Rate Fraction", true, true, "Dimensionless", 0.0, 1.0},
-        {"WaterHeaterStratified", "Cold Water Supply Temperature", true, true, "Temperature", boost::none, boost::none},
-        {"WaterHeaterStratified", "Indirect Alternate Setpoint Temperature", true, true, "Temperature", boost::none, boost::none},
-        {"WaterUseConnections", "Hot Water Supply Temperature", true, true, "Temperature", boost::none, boost::none},
-        {"WaterUseConnections", "Cold Water Supply Temperature", true, true, "Temperature", boost::none, boost::none},
+        {"WaterHeaterStratified", "Cold Water Supply Temperature", true, true, "Temperature", kNoLower, kNoUpper},
+        {"WaterHeaterStratified", "Indirect Alternate Setpoint Temperature", true, true, "Temperature", kNoLower, kNoUpper},
+        {"WaterUseConnections", "Hot Water Supply Temperature", true, true, "Temperature", kNoLower, kNoUpper},
+        {"WaterUseConnections", "Cold Water Supply Temperature", true, true, "Temperature", kNoLower, kNoUpper},
         {"HeatPumpAirToWater", "Operating Mode Control", false, true, "", 0.0, 2.0},
-        {"RefrigerationCondenserWaterCooled", "Water Outlet Temperature", true, true, "Temperature", boost::none, boost::none},
-        {"RefrigerationCompressorRack", "Water Cooled Condenser Outlet Temperature", true, true, "Temperature", boost::none, boost::none},
+        {"RefrigerationCondenserWaterCooled", "Water Outlet Temperature", true, true, "Temperature", kNoLower, kNoUpper},
+        {"RefrigerationCompressorRack", "Water Cooled Condenser Outlet Temperature", true, true, "Temperature", kNoLower, kNoUpper},
         {"RefrigerationCompressorRack", "Evaporative Condenser Availability", false, true, "Availability", 0.0, 1.0},
         {"CentralHeatPumpSystem", "Ancillary Operation", false, true, "Availability", 0.0, 1.0},
         {"ChillerElectricEIR", "Basin Heater Operating", false, true, "Availability", 0.0, 1.0},
         {"CoolingTowerSingleSpeed", "Basin Heater Operating", false, true, "Availability", 0.0, 1.0},
         {"CoolingTowerSingleSpeed", "Blowdown Makeup Water Usage", false, true, "Availability", 0.0, 1.0},
         {"CoolingTowerVariableSpeed", "Basin Heater Operating Schedule", false, false, "Availability", 0.0, 1.0},
-        {"CoolingTowerVariableSpeed", "Blowdown Makeup Water Usage Schedule", true, false, "VolumetricFlowRate", 0.0, boost::none},
+        {"CoolingTowerVariableSpeed", "Blowdown Makeup Water Usage Schedule", true, false, "VolumetricFlowRate", 0.0, kNoUpper},
         {"CoolingTowerTwoSpeed", "Basin Heater Operating", false, false, "Availability", 0.0, 1.0},
-        {"CoolingTowerTwoSpeed", "Blowdown Makeup Water Usage", true, false, "VolumetricFlowRate", 0.0, boost::none},
-        {"ChillerElectricEIR", "Heat Recovery Inlet High Temperature Limit", true, true, "Temperature", boost::none, boost::none},
-        {"ChillerElectricEIR", "Temperature Difference Across Condenser", true, true, "Temperature", boost::none, boost::none},
-        {"ChillerElectricASHRAE205", "Ambient Temperature", true, true, "Temperature", boost::none, boost::none},
-        {"ChillerElectricReformulatedEIR", "Heat Recovery Inlet High Temperature Limit", true, true, "Temperature", boost::none, boost::none},
-        {"ChillerElectricReformulatedEIR", "Temperature Difference Across Condenser", true, true, "Temperature", boost::none, boost::none},
+        {"CoolingTowerTwoSpeed", "Blowdown Makeup Water Usage", true, false, "VolumetricFlowRate", 0.0, kNoUpper},
+        {"ChillerElectricEIR", "Heat Recovery Inlet High Temperature Limit", true, true, "Temperature", kNoLower, kNoUpper},
+        {"ChillerElectricEIR", "Temperature Difference Across Condenser", true, true, "Temperature", kNoLower, kNoUpper},
+        {"ChillerElectricASHRAE205", "Ambient Temperature", true, true, "Temperature", kNoLower, kNoUpper},
+        {"ChillerElectricReformulatedEIR", "Heat Recovery Inlet High Temperature Limit", true, true, "Temperature", kNoLower, kNoUpper},
+        {"ChillerElectricReformulatedEIR", "Temperature Difference Across Condenser", true, true, "Temperature", kNoLower, kNoUpper},
         {"CoilWaterHeatingAirToWaterHeatPump", "Availability Schedule", false, true, "Availability", 0.0, 1.0},
         {"CoilCoolingWaterToAirHeatPumpEquationFit", "Availability Schedule", false, true, "Availability", 0.0, 1.0},
         {"CoilHeatingWaterToAirHeatPumpEquationFit", "Availability Schedule", false, true, "Availability", 0.0, 1.0},
@@ -173,25 +177,25 @@ namespace epmodel {
         {"CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit", "Availability Schedule", false, true, "Availability", 0.0, 1.0},
         {"CoilWaterHeatingAirToWaterHeatPumpVariableSpeed", "Availability Schedule", false, true, "Availability", 0.0, 1.0},
         {"WaterHeaterHeatPump", "Availability", false, true, "Availability", 0.0, 1.0},
-        {"WaterHeaterHeatPump", "Compressor Setpoint Temperature", true, true, "Temperature", boost::none, boost::none},
-        {"WaterHeaterHeatPump", "Inlet Air Temperature", true, true, "Temperature", boost::none, boost::none},
+        {"WaterHeaterHeatPump", "Compressor Setpoint Temperature", true, true, "Temperature", kNoLower, kNoUpper},
+        {"WaterHeaterHeatPump", "Inlet Air Temperature", true, true, "Temperature", kNoLower, kNoUpper},
         {"WaterHeaterHeatPump", "Inlet Air Humidity", true, true, "Dimensionless", 0.0, 1.0},
-        {"WaterHeaterHeatPump", "Compressor Ambient Temperature", true, true, "Temperature", boost::none, boost::none},
+        {"WaterHeaterHeatPump", "Compressor Ambient Temperature", true, true, "Temperature", kNoLower, kNoUpper},
         {"WaterHeaterHeatPump", "Inlet Air Mixer", true, true, "Dimensionless", 0.0, 1.0},
         {"WaterHeaterHeatPumpWrappedCondenser", "Availability", false, true, "Availability", 0.0, 1.0},
-        {"WaterHeaterHeatPumpWrappedCondenser", "Compressor Setpoint Temperature", true, true, "Temperature", boost::none, boost::none},
-        {"WaterHeaterHeatPumpWrappedCondenser", "Inlet Air Temperature", true, true, "Temperature", boost::none, boost::none},
+        {"WaterHeaterHeatPumpWrappedCondenser", "Compressor Setpoint Temperature", true, true, "Temperature", kNoLower, kNoUpper},
+        {"WaterHeaterHeatPumpWrappedCondenser", "Inlet Air Temperature", true, true, "Temperature", kNoLower, kNoUpper},
         {"WaterHeaterHeatPumpWrappedCondenser", "Inlet Air Humidity", true, true, "Dimensionless", 0.0, 1.0},
-        {"WaterHeaterHeatPumpWrappedCondenser", "Compressor Ambient Temperature", true, true, "Temperature", boost::none, boost::none},
+        {"WaterHeaterHeatPumpWrappedCondenser", "Compressor Ambient Temperature", true, true, "Temperature", kNoLower, kNoUpper},
         {"WaterHeaterHeatPumpWrappedCondenser", "Inlet Air Mixer", true, true, "Dimensionless", 0.0, 1.0},
-        {"DistrictCooling", "Capacity Fraction", true, true, "Dimensionless", 0.0, boost::none},
-        {"DistrictHeatingWater", "Capacity Fraction", true, true, "Dimensionless", 0.0, boost::none},
-        {"DistrictHeatingSteam", "Capacity Fraction", true, true, "Dimensionless", 0.0, boost::none},
-        {"LoadProfilePlant", "Load", true, false, "", boost::none, boost::none},
+        {"DistrictCooling", "Capacity Fraction", true, true, "Dimensionless", 0.0, kNoUpper},
+        {"DistrictHeatingWater", "Capacity Fraction", true, true, "Dimensionless", 0.0, kNoUpper},
+        {"DistrictHeatingSteam", "Capacity Fraction", true, true, "Dimensionless", 0.0, kNoUpper},
+        {"LoadProfilePlant", "Load", true, false, "", kNoLower, kNoUpper},
         {"LoadProfilePlant", "Flow Rate Fraction", true, false, "", 0.0, 1.0},
-        {"PlantComponentTemperatureSource", "Source Temperature", true, false, "Temperature", boost::none, boost::none},
-        {"PipeIndoor", "Ambient Temperature Schedule", true, true, "Temperature", boost::none, boost::none},
-        {"PipeIndoor", "Ambient Air Velocity Schedule", true, true, "Velocity", 0.0, boost::none},
+        {"PlantComponentTemperatureSource", "Source Temperature", true, false, "Temperature", kNoLower, kNoUpper},
+        {"PipeIndoor", "Ambient Temperature Schedule", true, true, "Temperature", kNoLower, kNoUpper},
+        {"PipeIndoor", "Ambient Air Velocity Schedule", true, true, "Velocity", 0.0, kNoUpper},
         {"AirTerminalSingleDuctConstantVolumeNoReheat", "Availability", false, true, "Availability", 0.0, 1.0},
         {"AirTerminalSingleDuctConstantVolumeReheat", "Availability", false, true, "Availability", 0.0, 1.0},
         {"AirTerminalSingleDuctConstantVolumeFourPipeBeam", "Primary Air Availability", false, true, "Availability", 0.0, 1.0},
@@ -207,24 +211,18 @@ namespace epmodel {
         {"AirTerminalSingleDuctParallelPIUReheat", "Availability", false, true, "Availability", 0.0, 1.0},
         {"AirTerminalSingleDuctVAVHeatAndCoolNoReheat", "Availability", false, true, "Availability", 0.0, 1.0},
         {"AirTerminalSingleDuctVAVHeatAndCoolNoReheat", "Minimum Air Flow Turndown", true, true, "Dimensionless", 0.0, 1.0},
+        {"AirTerminalSingleDuctVAVReheatVariableSpeedFan", "Availability", false, true, "Availability", 0.0, 1.0},
         {"AirTerminalSingleDuctVAVHeatAndCoolReheat", "Availability", false, true, "Availability", 0.0, 1.0},
         {"AirTerminalSingleDuctVAVHeatAndCoolReheat", "Minimum Air Flow Turndown", true, true, "Dimensionless", 0.0, 1.0},
         {"HumidifierSteamElectric", "Availability", false, true, "Availability", 0.0, 1.0},
         {"HumidifierSteamGas", "Availability", false, true, "Availability", 0.0, 1.0},
+        {"FanComponentModel", "Availability", false, true, "Availability", 0.0, 1.0},
       }};
 
       for (const auto& spec : specs) {
         if (openstudio::istringEqual(className, spec.className) && openstudio::istringEqual(scheduleDisplayName, spec.scheduleDisplayName)) {
           return &spec;
         }
-      }
-
-      static const ScheduleTypeSpec fanComponentModelAvailability{
-        "FanComponentModel", "Availability", false, true, "Availability", 0.0, 1.0,
-      };
-      if (openstudio::istringEqual(className, fanComponentModelAvailability.className)
-          && openstudio::istringEqual(scheduleDisplayName, fanComponentModelAvailability.scheduleDisplayName)) {
-        return &fanComponentModelAvailability;
       }
 
       return nullptr;
@@ -234,12 +232,12 @@ namespace epmodel {
       std::string result = spec.unitType;
       if (result.empty()) {
         if (spec.isContinuous) {
-          if (spec.lowerLimitValue && (*spec.lowerLimitValue == 0.0) && spec.upperLimitValue && (*spec.upperLimitValue == 1.0)) {
+          if ((spec.lowerLimitValue == 0.0) && (spec.upperLimitValue == 1.0)) {
             result = "Fractional";
           } else {
             result = "Dimensionless";
           }
-        } else if (spec.lowerLimitValue && (*spec.lowerLimitValue == 0.0) && spec.upperLimitValue && (*spec.upperLimitValue == 1.0)) {
+        } else if ((spec.lowerLimitValue == 0.0) && (spec.upperLimitValue == 1.0)) {
           result = "Binary";
         } else {
           result = "Integer";
@@ -282,14 +280,14 @@ namespace epmodel {
         return false;
       }
 
-      if (spec.lowerLimitValue) {
-        if (!limits.lowerLimitValue() || (*limits.lowerLimitValue() < *spec.lowerLimitValue)) {
+      if (std::isfinite(spec.lowerLimitValue)) {
+        if (!limits.lowerLimitValue() || (*limits.lowerLimitValue() < spec.lowerLimitValue)) {
           return false;
         }
       }
 
-      if (spec.upperLimitValue) {
-        if (!limits.upperLimitValue() || (*limits.upperLimitValue() > *spec.upperLimitValue)) {
+      if (std::isfinite(spec.upperLimitValue)) {
+        if (!limits.upperLimitValue() || (*limits.upperLimitValue() > spec.upperLimitValue)) {
           return false;
         }
       }
@@ -302,11 +300,11 @@ namespace epmodel {
       if (!defaultScheduleTypeLimitsName(spec).empty()) {
         limits.setName(defaultScheduleTypeLimitsName(spec));
       }
-      if (spec.lowerLimitValue) {
-        OS_ASSERT(limits.setLowerLimitValue(*spec.lowerLimitValue));
+      if (std::isfinite(spec.lowerLimitValue)) {
+        OS_ASSERT(limits.setLowerLimitValue(spec.lowerLimitValue));
       }
-      if (spec.upperLimitValue) {
-        OS_ASSERT(limits.setUpperLimitValue(*spec.upperLimitValue));
+      if (std::isfinite(spec.upperLimitValue)) {
+        OS_ASSERT(limits.setUpperLimitValue(spec.upperLimitValue));
       }
       OS_ASSERT(limits.setNumericType(spec.isContinuous ? "Continuous" : "Discrete"));
       if (std::string(spec.unitType).empty()) {
@@ -346,8 +344,7 @@ namespace epmodel {
       }
 
       if (!model().sqlFile()) {
-        LOG_FREE(Warn, "openstudio.epmodel.ModelObject",
-                 "This model has no sql file, cannot retrieve the autosized value '" << valueName << "'.");
+        LOG_FREE(Warn, "openstudio.epmodel.ModelObject", "This model has no sql file, cannot retrieve the autosized value '" << valueName << "'.");
         return boost::none;
       }
 
@@ -414,8 +411,7 @@ namespace epmodel {
       }
 
       if (!model().sqlFile()) {
-        LOG_FREE(Warn, "openstudio.epmodel.ModelObject",
-                 "This model has no sql file, cannot retrieve the autosized value '" << valueName << "'.");
+        LOG_FREE(Warn, "openstudio.epmodel.ModelObject", "This model has no sql file, cannot retrieve the autosized value '" << valueName << "'.");
         return boost::none;
       }
 
@@ -437,8 +433,8 @@ namespace epmodel {
       auto val = model().sqlFile()->execAndReturnFirstDouble(directQuery, overrideCompType, sqlName, valueName, units);
       if (!val) {
         LOG_FREE(Debug, "openstudio.epmodel.ModelObject",
-                 "The direct autosized value query returned no value for component type '" << overrideCompType << "', component '" << sqlName
-                   << "', description '" << valueName << "', units '" << units << "'.");
+                 "The direct autosized value query returned no value for component type '"
+                   << overrideCompType << "', component '" << sqlName << "', description '" << valueName << "', units '" << units << "'.");
       }
       return val;
     }

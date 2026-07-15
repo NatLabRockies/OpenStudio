@@ -15,45 +15,46 @@
 namespace openstudio {
 namespace epmodel {
 
-MaterialPropertyHeatAndMoistureTransferSorptionIsotherm::MaterialPropertyHeatAndMoistureTransferSorptionIsotherm(const Model& model)
-  : ModelObject(MaterialPropertyHeatAndMoistureTransferSorptionIsotherm::iddObjectType(), model) {}
+  MaterialPropertyHeatAndMoistureTransferSorptionIsotherm::MaterialPropertyHeatAndMoistureTransferSorptionIsotherm(const Model& model)
+    : ModelObject(MaterialPropertyHeatAndMoistureTransferSorptionIsotherm::iddObjectType(), model) {}
 
-MaterialPropertyHeatAndMoistureTransferSorptionIsotherm::MaterialPropertyHeatAndMoistureTransferSorptionIsotherm(
-  std::shared_ptr<detail::MaterialPropertyHeatAndMoistureTransferSorptionIsotherm_Impl> impl)
-  : ModelObject(std::move(impl)) {}
+  MaterialPropertyHeatAndMoistureTransferSorptionIsotherm::MaterialPropertyHeatAndMoistureTransferSorptionIsotherm(
+    std::shared_ptr<detail::MaterialPropertyHeatAndMoistureTransferSorptionIsotherm_Impl> impl)
+    : ModelObject(std::move(impl)) {}
 
-IddObjectType MaterialPropertyHeatAndMoistureTransferSorptionIsotherm::iddObjectType() {
-  return IddObjectType::MaterialProperty_HeatAndMoistureTransfer_SorptionIsotherm;
-}
+  IddObjectType MaterialPropertyHeatAndMoistureTransferSorptionIsotherm::iddObjectType() {
+    return IddObjectType::MaterialProperty_HeatAndMoistureTransfer_SorptionIsotherm;
+  }
 
-int MaterialPropertyHeatAndMoistureTransferSorptionIsotherm::numberofIsothermCoordinates() const {
-  return getImpl<detail::MaterialPropertyHeatAndMoistureTransferSorptionIsotherm_Impl>()->numberofIsothermCoordinates();
-}
+  int MaterialPropertyHeatAndMoistureTransferSorptionIsotherm::numberofIsothermCoordinates() const {
+    return getImpl<detail::MaterialPropertyHeatAndMoistureTransferSorptionIsotherm_Impl>()->numberofIsothermCoordinates();
+  }
 
-bool MaterialPropertyHeatAndMoistureTransferSorptionIsotherm::setNumberofIsothermCoordinates(int numberofIsothermCoordinates) {
-  return getImpl<detail::MaterialPropertyHeatAndMoistureTransferSorptionIsotherm_Impl>()->setNumberofIsothermCoordinates(numberofIsothermCoordinates);
-}
+  bool MaterialPropertyHeatAndMoistureTransferSorptionIsotherm::setNumberofIsothermCoordinates(int numberofIsothermCoordinates) {
+    return getImpl<detail::MaterialPropertyHeatAndMoistureTransferSorptionIsotherm_Impl>()->setNumberofIsothermCoordinates(
+      numberofIsothermCoordinates);
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-int MaterialPropertyHeatAndMoistureTransferSorptionIsotherm_Impl::numberofIsothermCoordinates() const {
-  // Required integer getter (strict) for IDD field N1 Number of Isotherm Coordinates.
-  const auto value = getInt(openstudio::MaterialProperty_HeatAndMoistureTransfer_SorptionIsothermFields::NumberofIsothermCoordinates, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    int MaterialPropertyHeatAndMoistureTransferSorptionIsotherm_Impl::numberofIsothermCoordinates() const {
+      // Required integer getter (strict) for IDD field N1 Number of Isotherm Coordinates.
+      const auto value = getInt(openstudio::MaterialProperty_HeatAndMoistureTransfer_SorptionIsothermFields::NumberofIsothermCoordinates, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-bool MaterialPropertyHeatAndMoistureTransferSorptionIsotherm_Impl::setNumberofIsothermCoordinates(int numberofIsothermCoordinates) {
-  // Failable setter (bounded integer in schema: min/max), so return setInt result directly.
-  return setInt(openstudio::MaterialProperty_HeatAndMoistureTransfer_SorptionIsothermFields::NumberofIsothermCoordinates,
-                numberofIsothermCoordinates);
-}
+    bool MaterialPropertyHeatAndMoistureTransferSorptionIsotherm_Impl::setNumberofIsothermCoordinates(int numberofIsothermCoordinates) {
+      // Failable setter (bounded integer in schema: min/max), so return setInt result directly.
+      return setInt(openstudio::MaterialProperty_HeatAndMoistureTransfer_SorptionIsothermFields::NumberofIsothermCoordinates,
+                    numberofIsothermCoordinates);
+    }
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio

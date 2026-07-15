@@ -80,6 +80,9 @@
 #include "StraightComponent/AirTerminalSingleDuctConstantVolumeNoReheat_Impl.hpp"
 #include "StraightComponent/BoilerHotWater_Impl.hpp"
 #include "StraightComponent/BoilerSteam_Impl.hpp"
+#include "StraightComponent/CoilCoolingCooledBeam_Impl.hpp"
+#include "StraightComponent/CoilCoolingFourPipeBeam_Impl.hpp"
+#include "StraightComponent/CoilHeatingFourPipeBeam_Impl.hpp"
 #include "StraightComponent/DistrictCooling_Impl.hpp"
 #include "StraightComponent/DistrictHeatingSteam_Impl.hpp"
 #include "StraightComponent/DistrictHeatingWater_Impl.hpp"
@@ -571,6 +574,7 @@
 #include "PlantEquipmentOperationScheme/PlantEquipmentOperationComponentSetpoint_Impl.hpp"
 #include "PlantEquipmentOperationScheme/PlantEquipmentOperationThermalEnergyStorage_Impl.hpp"
 #include "ModelObject/PlantEquipmentOperationSchemes_Impl.hpp"
+#include "ModelObject/PlantEquipmentList_Impl.hpp"
 #include "PlantEquipmentOperationScheme/PlantEquipmentOperationCoolingLoad_Impl.hpp"
 #include "PlantEquipmentOperationScheme/PlantEquipmentOperationHeatingLoad_Impl.hpp"
 #include "PlantEquipmentOperationScheme/PlantEquipmentOperationOutdoorDewpoint_Impl.hpp"
@@ -933,6 +937,10 @@ namespace epmodel {
     canonicalize(SanitizationPolicy::Repair);
   }
 
+  Model Model::clone(bool keepHandles) const {
+    return Workspace::clone(keepHandles).cast<Model>();
+  }
+
   // Convenience loader for disk-based IDF files.
   // Internally this delegates to the IdfFile constructor above (typed object materialization
   // plus canonicalization with Repair policy).
@@ -1122,6 +1130,13 @@ namespace epmodel {
     Model_Impl::Model_Impl(const Model_Impl& other, const std::vector<Handle>& hs, bool keepHandles, StrictnessLevel level)
       : Workspace_Impl(other, hs, keepHandles, level),
         m_sqlFile((other.m_sqlFile) ? std::shared_ptr<SqlFile>(new SqlFile(*other.m_sqlFile)) : other.m_sqlFile) {}
+
+    Workspace Model_Impl::clone(bool keepHandles) const {
+      std::shared_ptr<Model_Impl> cloneImpl(new Model_Impl(*this, keepHandles));
+      createAndAddClonedObjects(model().getImpl<Model_Impl>(), cloneImpl, keepHandles);
+      Model result(cloneImpl);
+      return result.cast<Workspace>();
+    }
 
     std::shared_ptr<openstudio::detail::WorkspaceObject_Impl> Model_Impl::createObject(const IdfObject& object, bool keepHandle) {
       auto result = modelObjectCreator().getNew(this, object, keepHandle);
@@ -1341,6 +1356,9 @@ namespace epmodel {
                                CoilCoolingDXVariableRefrigerantFlowFluidTemperatureControl_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::OS_Coil_Cooling_LowTemperatureRadiant_ConstantFlow, CoilCoolingLowTempRadiantConstFlow_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::OS_Coil_Cooling_LowTemperatureRadiant_VariableFlow, CoilCoolingLowTempRadiantVarFlow_Impl);
+      REGISTER_NEW_CONSTRUCTOR(IddObjectType::OS_Coil_Cooling_CooledBeam, CoilCoolingCooledBeam_Impl);
+      REGISTER_NEW_CONSTRUCTOR(IddObjectType::OS_Coil_Cooling_FourPipeBeam, CoilCoolingFourPipeBeam_Impl);
+      REGISTER_NEW_CONSTRUCTOR(IddObjectType::OS_Coil_Heating_FourPipeBeam, CoilHeatingFourPipeBeam_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::OS_Coil_Cooling_Water_Panel_Radiant, CoilCoolingWaterPanelRadiant_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::Coil_Cooling_DX_VariableSpeed, CoilCoolingDXVariableSpeed_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::Coil_Cooling_Water, CoilCoolingWater_Impl);
@@ -1759,6 +1777,7 @@ namespace epmodel {
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::PlantComponent_TemperatureSource, PlantComponentTemperatureSource_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::PlantComponent_UserDefined, PlantComponentUserDefined_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::PlantEquipmentOperationSchemes, PlantEquipmentOperationSchemes_Impl);
+      REGISTER_NEW_CONSTRUCTOR(IddObjectType::PlantEquipmentList, PlantEquipmentList_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::PlantEquipmentOperation_ChillerHeaterChangeover, PlantEquipmentOperationChillerHeaterChangeover_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::PlantEquipmentOperation_ComponentSetpoint, PlantEquipmentOperationComponentSetpoint_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::PlantEquipmentOperation_CoolingLoad, PlantEquipmentOperationCoolingLoad_Impl);
@@ -2276,6 +2295,9 @@ namespace epmodel {
                                 CoilCoolingDXVariableRefrigerantFlowFluidTemperatureControl_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::OS_Coil_Cooling_LowTemperatureRadiant_ConstantFlow, CoilCoolingLowTempRadiantConstFlow_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::OS_Coil_Cooling_LowTemperatureRadiant_VariableFlow, CoilCoolingLowTempRadiantVarFlow_Impl);
+      REGISTER_COPY_CONSTRUCTOR(IddObjectType::OS_Coil_Cooling_CooledBeam, CoilCoolingCooledBeam_Impl);
+      REGISTER_COPY_CONSTRUCTOR(IddObjectType::OS_Coil_Cooling_FourPipeBeam, CoilCoolingFourPipeBeam_Impl);
+      REGISTER_COPY_CONSTRUCTOR(IddObjectType::OS_Coil_Heating_FourPipeBeam, CoilHeatingFourPipeBeam_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::OS_Coil_Cooling_Water_Panel_Radiant, CoilCoolingWaterPanelRadiant_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::Coil_Cooling_DX_VariableSpeed, CoilCoolingDXVariableSpeed_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::Coil_Cooling_Water, CoilCoolingWater_Impl);
@@ -2698,6 +2720,7 @@ namespace epmodel {
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::PlantComponent_TemperatureSource, PlantComponentTemperatureSource_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::PlantComponent_UserDefined, PlantComponentUserDefined_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::PlantEquipmentOperationSchemes, PlantEquipmentOperationSchemes_Impl);
+      REGISTER_COPY_CONSTRUCTOR(IddObjectType::PlantEquipmentList, PlantEquipmentList_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::PlantEquipmentOperation_ChillerHeaterChangeover, PlantEquipmentOperationChillerHeaterChangeover_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::PlantEquipmentOperation_ComponentSetpoint, PlantEquipmentOperationComponentSetpoint_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::PlantEquipmentOperation_CoolingLoad, PlantEquipmentOperationCoolingLoad_Impl);

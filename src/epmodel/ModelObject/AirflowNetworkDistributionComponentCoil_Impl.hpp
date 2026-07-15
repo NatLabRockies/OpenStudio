@@ -11,26 +11,26 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API AirflowNetworkDistributionComponentCoil_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~AirflowNetworkDistributionComponentCoil_Impl() override = default;
+    class EPMODEL_API AirflowNetworkDistributionComponentCoil_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~AirflowNetworkDistributionComponentCoil_Impl() override = default;
 
-  std::string coilObjectType() const;
-  bool setCoilObjectType(const std::string& coilObjectType);
-  std::vector<std::string> coilObjectTypeValues() const;
+      std::string coilObjectType() const;
+      bool setCoilObjectType(const std::string& coilObjectType);
+      std::vector<std::string> coilObjectTypeValues() const;
 
-  double airPathLength() const;
-  bool setAirPathLength(double airPathLength);
+      double airPathLength() const;
+      bool setAirPathLength(double airPathLength);
 
-  double airPathHydraulicDiameter() const;
-  bool setAirPathHydraulicDiameter(double airPathHydraulicDiameter);
-};
+      double airPathHydraulicDiameter() const;
+      bool setAirPathHydraulicDiameter(double airPathHydraulicDiameter);
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

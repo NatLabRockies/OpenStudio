@@ -8,10 +8,8 @@
 
 #include <utilities/core/Path.hpp>
 
-inline openstudio::path resourcesPath()
-{
+inline openstudio::path resourcesPath() {
   return openstudio::toPath("${CMAKE_CURRENT_BINARY_DIR}");
 }
 
-#endif // OPENSTUDIO_RESOURCES_HXX
-
+#endif  // OPENSTUDIO_RESOURCES_HXX

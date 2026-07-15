@@ -20,6 +20,7 @@
 #include <utilities/idd/IddObject.hpp>
 #include <utilities/idd/AirTerminal_SingleDuct_VAV_NoReheat_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
+#include <utilities/idd/ZoneHVAC_AirDistributionUnit_FieldEnums.hxx>
 
 using namespace openstudio::energyplus;
 using namespace openstudio::model;
@@ -72,7 +73,7 @@ TEST_F(EnergyPlusFixture, ForwardTranslator_AirTerminalSingleDuctVAVNoReheat) {
   EXPECT_EQ(0.3, idf_atu.getDouble(AirTerminal_SingleDuct_VAV_NoReheatFields::FixedMinimumAirFlowRate).get());
 
   boost::optional<WorkspaceObject> woFractionSchedule(
-    idf_atu.getTarget(AirTerminal_SingleDuct_VAV_NoReheatFields::MinimumAirFlowTurndownScheduleName));
+    idf_atu.getTarget(AirTerminal_SingleDuct_VAV_NoReheatFields::MinimumAirFlowFractionScheduleName));
   EXPECT_TRUE(woFractionSchedule);
   EXPECT_EQ(woFractionSchedule->iddObject().type(), IddObjectType::Schedule_Constant);
   EXPECT_EQ("Always On Discrete", woFractionSchedule->nameString());
@@ -82,6 +83,15 @@ TEST_F(EnergyPlusFixture, ForwardTranslator_AirTerminalSingleDuctVAVNoReheat) {
   EXPECT_TRUE(woTurndownSchedule);
   EXPECT_EQ(woTurndownSchedule->iddObject().type(), IddObjectType::Schedule_Constant);
   EXPECT_EQ("Always On Discrete", woTurndownSchedule->nameString());
+
+  WorkspaceObjectVector idfAirDistributionUnits = w.getObjectsByType(IddObjectType::ZoneHVAC_AirDistributionUnit);
+  ASSERT_EQ(1u, idfAirDistributionUnits.size());
+  WorkspaceObject idfAirDistributionUnit(idfAirDistributionUnits[0]);
+
+  EXPECT_EQ(idf_atu.getString(AirTerminal_SingleDuct_VAV_NoReheatFields::AirOutletNodeName).get(),
+            idfAirDistributionUnit.getString(ZoneHVAC_AirDistributionUnitFields::AirDistributionUnitOutletNodeName).get());
+  EXPECT_EQ("AirTerminal:SingleDuct:VAV:NoReheat", idfAirDistributionUnit.getString(ZoneHVAC_AirDistributionUnitFields::AirTerminalObjectType).get());
+  EXPECT_EQ(idf_atu.nameString(), idfAirDistributionUnit.getString(ZoneHVAC_AirDistributionUnitFields::AirTerminalName).get());
 
   boost::optional<WorkspaceObject> idf_dsoa(idf_atu.getTarget(AirTerminal_SingleDuct_VAV_NoReheatFields::DesignSpecificationOutdoorAirObjectName));
   EXPECT_TRUE(idf_dsoa);

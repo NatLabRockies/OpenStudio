@@ -15,86 +15,88 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
-class Schedule;
-class ZoneHVACLowTempRadiantVarFlow;
+  class Model;
+  class Schedule;
+  class ZoneHVACLowTempRadiantVarFlow;
 
-namespace detail {
-class CoilHeatingLowTempRadiantVarFlow_Impl;
-}
+  namespace detail {
+    class CoilHeatingLowTempRadiantVarFlow_Impl;
+  }
 
-class EPMODEL_API CoilHeatingLowTempRadiantVarFlow : public StraightComponent
-{
- public:
-  explicit CoilHeatingLowTempRadiantVarFlow(const Model& model);
+  class EPMODEL_API CoilHeatingLowTempRadiantVarFlow : public StraightComponent
+  {
+   public:
+    static constexpr bool is_transient = true;  // This is a Transient ModelObject
 
-  virtual ~CoilHeatingLowTempRadiantVarFlow() override = default;
-  CoilHeatingLowTempRadiantVarFlow(const CoilHeatingLowTempRadiantVarFlow& other) = default;
-  CoilHeatingLowTempRadiantVarFlow(CoilHeatingLowTempRadiantVarFlow&& other) = default;
-  CoilHeatingLowTempRadiantVarFlow& operator=(const CoilHeatingLowTempRadiantVarFlow&) = default;
-  CoilHeatingLowTempRadiantVarFlow& operator=(CoilHeatingLowTempRadiantVarFlow&&) = default;
+    explicit CoilHeatingLowTempRadiantVarFlow(const Model& model);
 
-  static IddObjectType iddObjectType();
-  static std::vector<std::string> heatingDesignCapacityMethodValues();
+    virtual ~CoilHeatingLowTempRadiantVarFlow() override = default;
+    CoilHeatingLowTempRadiantVarFlow(const CoilHeatingLowTempRadiantVarFlow& other) = default;
+    CoilHeatingLowTempRadiantVarFlow(CoilHeatingLowTempRadiantVarFlow&& other) = default;
+    CoilHeatingLowTempRadiantVarFlow& operator=(const CoilHeatingLowTempRadiantVarFlow&) = default;
+    CoilHeatingLowTempRadiantVarFlow& operator=(CoilHeatingLowTempRadiantVarFlow&&) = default;
 
-  // Schema Alignment Notes:
-  // - Status: Partial Parity. epmodel preserves the canonical optional heating-coil child as a transient
-  //   straight-component view over parent-owned EnergyPlus storage.
-  // - Canonical Counterpart: openstudio::model::CoilHeatingLowTempRadiantVarFlow.
-  // - Why This Type Is Slightly Different: canonical OpenStudio factors this family into one parent radiant object
-  //   plus optional heating/cooling coil children. EnergyPlus does not persist a standalone heating coil here; it
-  //   stores the heating-coil state directly on the parent radiant object and the persisted `...:Design` companion.
-  //   Epmodel keeps the canonical child shape additively by exposing a transient child that reads and writes those
-  //   parent-owned fields.
-  // - Implemented Parity: The canonical heating-capacity, hot-water-flow, control schedule, throttling, and water-node
-  //   APIs are available through this transient child wrapper.
-  // - Plant Loop Behavior: The child is still transient, but it now supports the canonical plant-loop API surface.
-  //   Epmodel persists the parent radiant unit on the branch and projects that stored parent row back to this
-  //   transient heating coil in high-level plant-loop traversal when the branch water-node pair matches the
-  //   heating-side role.
-  // - Field/Storage Mapping: Heating-side scalar fields live on the parent `ZoneHVAC:LowTemperatureRadiant:VariableFlow`
-  //   object and its persisted `...:Design` companion object. This child is a write-through view over that storage.
-  boost::optional<double> maximumHotWaterFlow() const;
-  bool isMaximumHotWaterFlowDefaulted() const;
-  bool isMaximumHotWaterFlowAutosized() const;
-  bool setMaximumHotWaterFlow(double maximumHotWaterFlow);
-  void resetMaximumHotWaterFlow();
-  void autosizeMaximumHotWaterFlow();
-  boost::optional<double> autosizedMaximumHotWaterFlow() const;
+    static IddObjectType iddObjectType();
+    static std::vector<std::string> heatingDesignCapacityMethodValues();
 
-  double heatingControlThrottlingRange() const;
-  bool isHeatingControlThrottlingRangeDefaulted() const;
-  bool setHeatingControlThrottlingRange(double heatingControlThrottlingRange);
-  void resetHeatingControlThrottlingRange();
+    // Schema Alignment Notes:
+    // - Status: Partial Parity. epmodel preserves the canonical optional heating-coil child as a transient
+    //   straight-component view over parent-owned EnergyPlus storage.
+    // - Canonical Counterpart: openstudio::model::CoilHeatingLowTempRadiantVarFlow.
+    // - Why This Type Is Slightly Different: canonical OpenStudio factors this family into one parent radiant object
+    //   plus optional heating/cooling coil children. EnergyPlus does not persist a standalone heating coil here; it
+    //   stores the heating-coil state directly on the parent radiant object and the persisted `...:Design` companion.
+    //   Epmodel keeps the canonical child shape additively by exposing a transient child that reads and writes those
+    //   parent-owned fields.
+    // - Implemented Parity: The canonical heating-capacity, hot-water-flow, control schedule, throttling, and water-node
+    //   APIs are available through this transient child wrapper.
+    // - Plant Loop Behavior: The child is still transient, but it now supports the canonical plant-loop API surface.
+    //   Epmodel persists the parent radiant unit on the branch and projects that stored parent row back to this
+    //   transient heating coil in high-level plant-loop traversal when the branch water-node pair matches the
+    //   heating-side role.
+    // - Field/Storage Mapping: Heating-side scalar fields live on the parent `ZoneHVAC:LowTemperatureRadiant:VariableFlow`
+    //   object and its persisted `...:Design` companion object. This child is a write-through view over that storage.
+    boost::optional<double> maximumHotWaterFlow() const;
+    bool isMaximumHotWaterFlowDefaulted() const;
+    bool isMaximumHotWaterFlowAutosized() const;
+    bool setMaximumHotWaterFlow(double maximumHotWaterFlow);
+    void resetMaximumHotWaterFlow();
+    void autosizeMaximumHotWaterFlow();
+    boost::optional<double> autosizedMaximumHotWaterFlow() const;
 
-  boost::optional<Schedule> heatingControlTemperatureSchedule() const;
-  bool setHeatingControlTemperatureSchedule(Schedule& schedule);
-  void resetHeatingControlTemperatureSchedule();
+    double heatingControlThrottlingRange() const;
+    bool isHeatingControlThrottlingRangeDefaulted() const;
+    bool setHeatingControlThrottlingRange(double heatingControlThrottlingRange);
+    void resetHeatingControlThrottlingRange();
 
-  std::string heatingDesignCapacityMethod() const;
-  bool setHeatingDesignCapacityMethod(const std::string& heatingDesignCapacityMethod);
+    boost::optional<Schedule> heatingControlTemperatureSchedule() const;
+    bool setHeatingControlTemperatureSchedule(Schedule& schedule);
+    void resetHeatingControlTemperatureSchedule();
 
-  boost::optional<double> heatingDesignCapacity() const;
-  bool isHeatingDesignCapacityAutosized() const;
-  bool setHeatingDesignCapacity(double heatingDesignCapacity);
-  void autosizeHeatingDesignCapacity();
-  boost::optional<double> autosizedHeatingDesignCapacity() const;
+    std::string heatingDesignCapacityMethod() const;
+    bool setHeatingDesignCapacityMethod(const std::string& heatingDesignCapacityMethod);
 
-  double heatingDesignCapacityPerFloorArea() const;
-  bool setHeatingDesignCapacityPerFloorArea(double heatingDesignCapacityPerFloorArea);
+    boost::optional<double> heatingDesignCapacity() const;
+    bool isHeatingDesignCapacityAutosized() const;
+    bool setHeatingDesignCapacity(double heatingDesignCapacity);
+    void autosizeHeatingDesignCapacity();
+    boost::optional<double> autosizedHeatingDesignCapacity() const;
 
-  double fractionofAutosizedHeatingDesignCapacity() const;
-  bool setFractionofAutosizedHeatingDesignCapacity(double fractionofAutosizedHeatingDesignCapacity);
+    double heatingDesignCapacityPerFloorArea() const;
+    bool setHeatingDesignCapacityPerFloorArea(double heatingDesignCapacityPerFloorArea);
 
- protected:
-  using ImplType = detail::CoilHeatingLowTempRadiantVarFlow_Impl;
+    double fractionofAutosizedHeatingDesignCapacity() const;
+    bool setFractionofAutosizedHeatingDesignCapacity(double fractionofAutosizedHeatingDesignCapacity);
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+   protected:
+    using ImplType = detail::CoilHeatingLowTempRadiantVarFlow_Impl;
 
-  explicit CoilHeatingLowTempRadiantVarFlow(std::shared_ptr<detail::CoilHeatingLowTempRadiantVarFlow_Impl> impl);
-};
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
+
+    explicit CoilHeatingLowTempRadiantVarFlow(std::shared_ptr<detail::CoilHeatingLowTempRadiantVarFlow_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

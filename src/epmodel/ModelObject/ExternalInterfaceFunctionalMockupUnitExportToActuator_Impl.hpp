@@ -10,28 +10,28 @@
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API ExternalInterfaceFunctionalMockupUnitExportToActuator_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~ExternalInterfaceFunctionalMockupUnitExportToActuator_Impl() override = default;
+    class EPMODEL_API ExternalInterfaceFunctionalMockupUnitExportToActuator_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~ExternalInterfaceFunctionalMockupUnitExportToActuator_Impl() override = default;
 
-  std::string actuatedComponentType() const;
-  bool setActuatedComponentType(const std::string& actuatedComponentType);
+      std::string actuatedComponentType() const;
+      bool setActuatedComponentType(const std::string& actuatedComponentType);
 
-  std::string actuatedComponentControlType() const;
-  bool setActuatedComponentControlType(const std::string& actuatedComponentControlType);
+      std::string actuatedComponentControlType() const;
+      bool setActuatedComponentControlType(const std::string& actuatedComponentControlType);
 
-  std::string fMUVariableName() const;
-  bool setFMUVariableName(const std::string& fMUVariableName);
+      std::string fMUVariableName() const;
+      bool setFMUVariableName(const std::string& fMUVariableName);
 
-  boost::optional<double> initialValue() const;
-  bool setInitialValue(double initialValue);
-};
+      boost::optional<double> initialValue() const;
+      bool setInitialValue(double initialValue);
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

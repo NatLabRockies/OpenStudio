@@ -5,7 +5,7 @@
 
 #include "WindPressure.hpp"
 
-#include <math.h>
+#include <cmath>
 
 namespace openstudio {
 namespace wind {
@@ -41,7 +41,7 @@ namespace wind {
         // This is the default, set above
         break;
     }
-    double wPmod = A0 * pow(0.1 * H, a);
+    double wPmod = A0 * std::pow(0.1 * H, a);
     wPmod *= wPmod;
     return wPmod;
   }

@@ -22,7 +22,7 @@ namespace epmodel {
 
   boost::optional<ThermalZone> Thermostat::thermalZone() const {
     const auto thisThermostat = *this;
-    for (const auto& zoneControl : model().getObjectsByType(openstudio::IddObjectType::ZoneControl_Thermostat, true)) {
+    for (const auto& zoneControl : model().getObjectsByType(openstudio::IddObjectType::ZoneControl_Thermostat)) {
       if (auto thermostatTarget = zoneControl.getTarget(openstudio::ZoneControl_ThermostatFields::Control1Name)) {
         if (*thermostatTarget != thisThermostat) {
           continue;

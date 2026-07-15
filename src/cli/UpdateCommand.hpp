@@ -6,7 +6,6 @@
 #ifndef CLI_UPDATECOMMAND_HPP
 #define CLI_UPDATECOMMAND_HPP
 
-#include <CLI/App.hpp>
 #include "../utilities/core/Filesystem.hpp"
 
 namespace openstudio {

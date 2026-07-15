@@ -25,6 +25,8 @@ namespace epmodel {
   class EPMODEL_API OutputDebuggingData : public ModelObject
   {
    public:
+    static constexpr bool is_unique = true;  // This is a Unique ModelObject
+
     virtual ~OutputDebuggingData() override = default;
     OutputDebuggingData(const OutputDebuggingData& other) = default;
     OutputDebuggingData(OutputDebuggingData&& other) = default;

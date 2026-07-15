@@ -19,67 +19,67 @@
 namespace openstudio {
 namespace epmodel {
 
-ZoneHVACLowTemperatureRadiantSurfaceGroup::ZoneHVACLowTemperatureRadiantSurfaceGroup(const Model& model)
-  : ModelObject(ZoneHVACLowTemperatureRadiantSurfaceGroup::iddObjectType(), model) {
-  OS_ASSERT(getImpl<detail::ZoneHVACLowTemperatureRadiantSurfaceGroup_Impl>());
-}
+  ZoneHVACLowTemperatureRadiantSurfaceGroup::ZoneHVACLowTemperatureRadiantSurfaceGroup(const Model& model)
+    : ModelObject(ZoneHVACLowTemperatureRadiantSurfaceGroup::iddObjectType(), model) {
+    OS_ASSERT(getImpl<detail::ZoneHVACLowTemperatureRadiantSurfaceGroup_Impl>());
+  }
 
-ZoneHVACLowTemperatureRadiantSurfaceGroup::ZoneHVACLowTemperatureRadiantSurfaceGroup(
-  std::shared_ptr<detail::ZoneHVACLowTemperatureRadiantSurfaceGroup_Impl> impl)
-  : ModelObject(std::move(impl)) {}
+  ZoneHVACLowTemperatureRadiantSurfaceGroup::ZoneHVACLowTemperatureRadiantSurfaceGroup(
+    std::shared_ptr<detail::ZoneHVACLowTemperatureRadiantSurfaceGroup_Impl> impl)
+    : ModelObject(std::move(impl)) {}
 
-IddObjectType ZoneHVACLowTemperatureRadiantSurfaceGroup::iddObjectType() {
-  return IddObjectType::ZoneHVAC_LowTemperatureRadiant_SurfaceGroup;
-}
+  IddObjectType ZoneHVACLowTemperatureRadiantSurfaceGroup::iddObjectType() {
+    return IddObjectType::ZoneHVAC_LowTemperatureRadiant_SurfaceGroup;
+  }
 
-std::vector<Surface> ZoneHVACLowTemperatureRadiantSurfaceGroup::surfaces() const {
-  return getImpl<detail::ZoneHVACLowTemperatureRadiantSurfaceGroup_Impl>()->surfaces();
-}
+  std::vector<Surface> ZoneHVACLowTemperatureRadiantSurfaceGroup::surfaces() const {
+    return getImpl<detail::ZoneHVACLowTemperatureRadiantSurfaceGroup_Impl>()->surfaces();
+  }
 
-std::vector<double> ZoneHVACLowTemperatureRadiantSurfaceGroup::flowFractions() const {
-  return getImpl<detail::ZoneHVACLowTemperatureRadiantSurfaceGroup_Impl>()->flowFractions();
-}
+  std::vector<double> ZoneHVACLowTemperatureRadiantSurfaceGroup::flowFractions() const {
+    return getImpl<detail::ZoneHVACLowTemperatureRadiantSurfaceGroup_Impl>()->flowFractions();
+  }
 
-namespace detail {
+  namespace detail {
 
-using SurfaceGroupFields = openstudio::ZoneHVAC_LowTemperatureRadiant_SurfaceGroupExtensibleFields;
+    using SurfaceGroupFields = openstudio::ZoneHVAC_LowTemperatureRadiant_SurfaceGroupExtensibleFields;
 
-std::vector<Surface> ZoneHVACLowTemperatureRadiantSurfaceGroup_Impl::surfaces() const {
-  std::vector<Surface> result;
-  for (const auto& group : extensibleGroups()) {
-    if (auto workspaceGroup = group.optionalCast<openstudio::WorkspaceExtensibleGroup>()) {
-      if (auto object = workspaceGroup->getTarget(SurfaceGroupFields::SurfaceName)) {
-        if (auto surface = object->optionalCast<Surface>()) {
-          result.push_back(*surface);
+    std::vector<Surface> ZoneHVACLowTemperatureRadiantSurfaceGroup_Impl::surfaces() const {
+      std::vector<Surface> result;
+      for (const auto& group : extensibleGroups()) {
+        if (auto workspaceGroup = group.optionalCast<openstudio::WorkspaceExtensibleGroup>()) {
+          if (auto object = workspaceGroup->getTarget(SurfaceGroupFields::SurfaceName)) {
+            if (auto surface = object->optionalCast<Surface>()) {
+              result.push_back(*surface);
+            }
+          }
         }
       }
+      return result;
     }
-  }
-  return result;
-}
 
-std::vector<double> ZoneHVACLowTemperatureRadiantSurfaceGroup_Impl::flowFractions() const {
-  std::vector<double> result;
-  for (const auto& group : extensibleGroups()) {
-    if (auto fraction = group.getDouble(SurfaceGroupFields::FlowFractionforSurface, true)) {
-      result.push_back(*fraction);
+    std::vector<double> ZoneHVACLowTemperatureRadiantSurfaceGroup_Impl::flowFractions() const {
+      std::vector<double> result;
+      for (const auto& group : extensibleGroups()) {
+        if (auto fraction = group.getDouble(SurfaceGroupFields::FlowFractionforSurface, true)) {
+          result.push_back(*fraction);
+        }
+      }
+      return result;
     }
-  }
-  return result;
-}
 
-void ZoneHVACLowTemperatureRadiantSurfaceGroup_Impl::clearSurfaces() {
-  getObject<ModelObject>().clearExtensibleGroups();
-}
+    void ZoneHVACLowTemperatureRadiantSurfaceGroup_Impl::clearSurfaces() {
+      getObject<ModelObject>().clearExtensibleGroups();
+    }
 
-bool ZoneHVACLowTemperatureRadiantSurfaceGroup_Impl::addSurface(Surface& surface, double flowFraction) {
-  auto group = getObject<ModelObject>().pushExtensibleGroup().cast<openstudio::WorkspaceExtensibleGroup>();
-  if (!group.setPointer(SurfaceGroupFields::SurfaceName, surface.handle(), false)) {
-    return false;
-  }
-  return group.setDouble(SurfaceGroupFields::FlowFractionforSurface, flowFraction);
-}
+    bool ZoneHVACLowTemperatureRadiantSurfaceGroup_Impl::addSurface(Surface& surface, double flowFraction) {
+      auto group = getObject<ModelObject>().pushExtensibleGroup().cast<openstudio::WorkspaceExtensibleGroup>();
+      if (!group.setPointer(SurfaceGroupFields::SurfaceName, surface.handle(), false)) {
+        return false;
+      }
+      return group.setDouble(SurfaceGroupFields::FlowFractionforSurface, flowFraction);
+    }
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio

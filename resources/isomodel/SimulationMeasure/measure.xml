@@ -1,10 +1,18 @@
+<?xml version="1.0"?>
 <measure>
+  <schema_version>3.1</schema_version>
   <name>OSM2ISMV01</name>
   <uid>80eafdcd-fcad-40da-85a5-48eec627ad20</uid>
-  <version_id>f8d5f40e-c14a-4331-8b32-f5b5a21b24ae</version_id>
+  <version_id>d3059dc6-04ba-4d0b-8bb5-7a00ea8f4543</version_id>
+  <version_modified>2026-05-19T10:38:11Z</version_modified>
+  <xml_checksum>0CA4D54C</xml_checksum>
+  <class_name></class_name>
+  <display_name>OSM2ISMV01</display_name>
   <description>This measure will convert the current loaded OSM file to an ISM file and run the ISO Model engine to get output.  Output is saved to  CSV files</description>
   <modeler_description>This measure uses the CEN/ISO monthly energy model as described in ISO 13790 and referenced CEN/ISO standards</modeler_description>
-  <provenances/>
+  <arguments />
+  <outputs />
+  <provenances />
   <tags>
     <tag>Reporting.QAQC</tag>
   </tags>
@@ -35,11 +43,12 @@
       <version>
         <software_program>OpenStudio</software_program>
         <identifier>1.0.1</identifier>
+        <min_compatible>1.0.1</min_compatible>
       </version>
       <filename>measure.rb</filename>
       <filetype>rb</filetype>
       <usage_type>script</usage_type>
-      <checksum>97B6E6FC</checksum>
+      <checksum>70B67495</checksum>
     </file>
   </files>
 </measure>

@@ -13,58 +13,57 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API HotWaterEquipment_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~HotWaterEquipment_Impl() override = default;
+    class EPMODEL_API HotWaterEquipment_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~HotWaterEquipment_Impl() override = default;
 
-  std::string designLevelCalculationMethod() const;
-  bool isDesignLevelCalculationMethodDefaulted() const;
-  bool setDesignLevelCalculationMethod(const std::string& designLevelCalculationMethod);
-  void resetDesignLevelCalculationMethod();
-  std::vector<std::string> designLevelCalculationMethodValues() const;
+      std::string designLevelCalculationMethod() const;
+      bool isDesignLevelCalculationMethodDefaulted() const;
+      bool setDesignLevelCalculationMethod(const std::string& designLevelCalculationMethod);
+      void resetDesignLevelCalculationMethod();
+      std::vector<std::string> designLevelCalculationMethodValues() const;
 
-  boost::optional<double> designLevel() const;
-  bool setDesignLevel(double designLevel);
-  void resetDesignLevel();
+      boost::optional<double> designLevel() const;
+      bool setDesignLevel(double designLevel);
+      void resetDesignLevel();
 
-  boost::optional<double> powerPerFloorArea() const;
-  bool setPowerPerFloorArea(double powerPerFloorArea);
-  void resetPowerPerFloorArea();
+      boost::optional<double> powerPerFloorArea() const;
+      bool setPowerPerFloorArea(double powerPerFloorArea);
+      void resetPowerPerFloorArea();
 
-  boost::optional<double> powerPerPerson() const;
-  bool setPowerPerPerson(double powerPerPerson);
-  void resetPowerPerPerson();
+      boost::optional<double> powerPerPerson() const;
+      bool setPowerPerPerson(double powerPerPerson);
+      void resetPowerPerPerson();
 
-  double fractionLatent() const;
-  bool isFractionLatentDefaulted() const;
-  bool setFractionLatent(double fractionLatent);
-  void resetFractionLatent();
+      double fractionLatent() const;
+      bool isFractionLatentDefaulted() const;
+      bool setFractionLatent(double fractionLatent);
+      void resetFractionLatent();
 
-  double fractionRadiant() const;
-  bool isFractionRadiantDefaulted() const;
-  bool setFractionRadiant(double fractionRadiant);
-  void resetFractionRadiant();
+      double fractionRadiant() const;
+      bool isFractionRadiantDefaulted() const;
+      bool setFractionRadiant(double fractionRadiant);
+      void resetFractionRadiant();
 
-  double fractionLost() const;
-  bool isFractionLostDefaulted() const;
-  bool setFractionLost(double fractionLost);
-  void resetFractionLost();
+      double fractionLost() const;
+      bool isFractionLostDefaulted() const;
+      bool setFractionLost(double fractionLost);
+      void resetFractionLost();
 
-  std::string endUseSubcategory() const;
-  bool isEndUseSubcategoryDefaulted() const;
-  bool setEndUseSubcategory(const std::string& endUseSubcategory);
-  void resetEndUseSubcategory();
+      std::string endUseSubcategory() const;
+      bool isEndUseSubcategoryDefaulted() const;
+      bool setEndUseSubcategory(const std::string& endUseSubcategory);
+      void resetEndUseSubcategory();
 
-  bool setMultiplier(double multiplier);
-  void resetMultiplier();
+      bool setMultiplier(double multiplier);
+      void resetMultiplier();
+    };
 
-};
-
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

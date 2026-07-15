@@ -11,20 +11,20 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API ConstructionWindowDataFile_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~ConstructionWindowDataFile_Impl() override = default;
+    class EPMODEL_API ConstructionWindowDataFile_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~ConstructionWindowDataFile_Impl() override = default;
 
-  boost::optional<std::string> fileName() const;
-  bool setFileName(const std::string& fileName);
-  void resetFileName();
-};
+      boost::optional<std::string> fileName() const;
+      bool setFileName(const std::string& fileName);
+      void resetFileName();
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

@@ -11,25 +11,25 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API EnergyManagementSystemActuator_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~EnergyManagementSystemActuator_Impl() override = default;
+    class EPMODEL_API EnergyManagementSystemActuator_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~EnergyManagementSystemActuator_Impl() override = default;
 
-  boost::optional<ModelObject> actuatedComponent() const;
-  bool setActuatedComponent(const ModelObject& actuatedComponent);
+      boost::optional<ModelObject> actuatedComponent() const;
+      bool setActuatedComponent(const ModelObject& actuatedComponent);
 
-  std::string actuatedComponentControlType() const;
-  bool setActuatedComponentControlType(const std::string& actuatedComponentControlType);
+      std::string actuatedComponentControlType() const;
+      bool setActuatedComponentControlType(const std::string& actuatedComponentControlType);
 
-  std::string actuatedComponentType() const;
-  bool setActuatedComponentType(const std::string& actuatedComponentType);
-};
+      std::string actuatedComponentType() const;
+      bool setActuatedComponentType(const std::string& actuatedComponentType);
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

@@ -9,10 +9,15 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
 
-    - uses: actions/setup-python@v5
+    permissions:
+      contents: write      # Commit to branch
+      pull-requests: write # Create pull request
+
+    steps:
+    - uses: actions/checkout@v6
+
+    - uses: actions/setup-python@v6
       with:
         python-version: '3.x'
 
@@ -26,8 +31,15 @@ jobs:
       shell: bash
       working-directory: ./developer/conan
       run: |
-        conan remote add nrel https://conan.openstudio.net/artifactory/api/conan/openstudio
-        conan config set general.revisions_enabled=True
+        begin_group() { echo -e "::group::\033[93m$1\033[0m"; }
+
+        begin_group "Configure Conan"
+        conan remote add --force nrel-v2 https://conan.openstudio.net/artifactory/api/conan/conan-v2
+        echo "core:non_interactive = True" >> $HOME/.conan2/global.conf
+        echo "core.download:parallel = {{os.cpu_count() - 2}}" >> $HOME/.conan2/global.conf
+        cat $HOME/.conan2/global.conf
+        echo "::endgroup::"
+
         # This returns 1 if update was needed
         python dependabot_conan.py
 
@@ -36,16 +48,16 @@ jobs:
       shell: bash
       run: |
         set -x
-        git config user.name 'Conan Dependabot'
-        git config user.email 'conan-dependabot@users.noreply.github.com'
+        git config user.name 'github-actions[bot]'
+        git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
         git commit -am "Automated checkin - update conan recipes"
 
     - name: Create Pull Request
-      uses: peter-evans/create-pull-request@v4
+      uses: peter-evans/create-pull-request@v8
       if: failure()
       with:
         branch: dependabot/conan
-        committer: 'Conan Dependabot <conan-dependabot@users.noreply.github.com>'
+        committer: 'github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>'
         delete-branch: true
         title: "[bot] New upstream conan recipes"
         body: |

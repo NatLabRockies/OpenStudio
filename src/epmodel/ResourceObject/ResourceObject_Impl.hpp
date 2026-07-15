@@ -11,17 +11,17 @@
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API ResourceObject_Impl : public ModelObject_Impl
-{
- public:
-  ResourceObject_Impl(const openstudio::IdfObject& idfObject, Model_Impl* model, bool keepHandle);
-  ResourceObject_Impl(const openstudio::detail::WorkspaceObject_Impl& other, Model_Impl* model, bool keepHandle);
-  virtual ~ResourceObject_Impl() override = default;
-};
+    class EPMODEL_API ResourceObject_Impl : public ModelObject_Impl
+    {
+     public:
+      ResourceObject_Impl(const openstudio::IdfObject& idfObject, Model_Impl* model, bool keepHandle);
+      ResourceObject_Impl(const openstudio::detail::WorkspaceObject_Impl& other, Model_Impl* model, bool keepHandle);
+      virtual ~ResourceObject_Impl() override = default;
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

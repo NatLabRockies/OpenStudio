@@ -11,24 +11,24 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API ElectricLoadCenterInverterSimple_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~ElectricLoadCenterInverterSimple_Impl() override = default;
+    class EPMODEL_API ElectricLoadCenterInverterSimple_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~ElectricLoadCenterInverterSimple_Impl() override = default;
 
-  boost::optional<double> radiativeFraction() const;
-  bool setRadiativeFraction(double radiativeFraction);
-  void resetRadiativeFraction();
+      boost::optional<double> radiativeFraction() const;
+      bool setRadiativeFraction(double radiativeFraction);
+      void resetRadiativeFraction();
 
-  boost::optional<double> inverterEfficiency() const;
-  bool setInverterEfficiency(double inverterEfficiency);
-  void resetInverterEfficiency();
-};
+      boost::optional<double> inverterEfficiency() const;
+      bool setInverterEfficiency(double inverterEfficiency);
+      void resetInverterEfficiency();
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

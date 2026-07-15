@@ -17,6 +17,7 @@
 #include "../ModelObject/PlantEquipmentOperationSchemes.hpp"
 #include "../ModelObject/PlantEquipmentOperationSchemes_Impl.hpp"
 #include "../Splitter/Splitter.hpp"
+#include "../ModelObject/ModelObject.hpp"
 #include "../ModelObject/Branch.hpp"
 #include "../ModelObject/BranchList.hpp"
 #include "../ModelObject/BranchList_Impl.hpp"
@@ -30,6 +31,7 @@
 #include "../StraightComponent/PipeAdiabatic.hpp"
 #include "../WaterToAirComponent/CoilHeatingWater.hpp"
 
+#include <utilities/idd/ConnectorList_FieldEnums.hxx>
 #include <utilities/idd/PlantLoop_FieldEnums.hxx>
 #include <utilities/idd/Sizing_Plant_FieldEnums.hxx>
 
@@ -56,10 +58,28 @@ TEST_F(EPModelFixture, PlantLoop_DefaultConstructor_CreatesCanonicalCompanions) 
   ASSERT_TRUE(assignmentList);
   EXPECT_TRUE(plantLoop.availabilityManagers().empty());
 
-  auto operationSchemes = plantLoop.getModelObjectTarget<PlantEquipmentOperationSchemes>(openstudio::PlantLoopFields::PlantEquipmentOperationSchemeName);
+  auto operationSchemes =
+    plantLoop.getModelObjectTarget<PlantEquipmentOperationSchemes>(openstudio::PlantLoopFields::PlantEquipmentOperationSchemeName);
   ASSERT_TRUE(operationSchemes);
   EXPECT_FALSE(plantLoop.plantEquipmentOperationHeatingLoad());
   EXPECT_FALSE(plantLoop.primaryPlantEquipmentOperationScheme());
+
+  auto supplyConnectorList = plantLoop.getModelObjectTarget<ModelObject>(openstudio::PlantLoopFields::PlantSideConnectorListName);
+  auto demandConnectorList = plantLoop.getModelObjectTarget<ModelObject>(openstudio::PlantLoopFields::DemandSideConnectorListName);
+  ASSERT_TRUE(supplyConnectorList);
+  ASSERT_TRUE(demandConnectorList);
+  EXPECT_EQ(openstudio::IddObjectType(openstudio::IddObjectType::ConnectorList), supplyConnectorList->iddObject().type());
+  EXPECT_EQ(openstudio::IddObjectType(openstudio::IddObjectType::ConnectorList), demandConnectorList->iddObject().type());
+  ASSERT_EQ(2u, supplyConnectorList->extensibleGroups().size());
+  ASSERT_EQ(2u, demandConnectorList->extensibleGroups().size());
+  EXPECT_EQ("Connector:Splitter",
+            supplyConnectorList->extensibleGroups()[0].getString(openstudio::ConnectorListExtensibleFields::ConnectorObjectType).get());
+  EXPECT_EQ("Connector:Mixer",
+            supplyConnectorList->extensibleGroups()[1].getString(openstudio::ConnectorListExtensibleFields::ConnectorObjectType).get());
+  EXPECT_EQ("Connector:Splitter",
+            demandConnectorList->extensibleGroups()[0].getString(openstudio::ConnectorListExtensibleFields::ConnectorObjectType).get());
+  EXPECT_EQ("Connector:Mixer",
+            demandConnectorList->extensibleGroups()[1].getString(openstudio::ConnectorListExtensibleFields::ConnectorObjectType).get());
 }
 
 TEST_F(EPModelFixture, PlantLoop_ScalarAccessors_RoundTrip) {

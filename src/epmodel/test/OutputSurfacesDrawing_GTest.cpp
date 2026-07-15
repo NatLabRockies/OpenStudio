@@ -32,7 +32,8 @@ TEST_F(EPModelFixture, OutputSurfacesDrawing_ScalarAccessors_RoundTrip) {
   EXPECT_NE(reportTypeValues.end(), std::find(reportTypeValues.begin(), reportTypeValues.end(), "VRML"));
 
   const auto reportSpecifications1Values = OutputSurfacesDrawing::reportSpecifications1Values();
-  EXPECT_NE(reportSpecifications1Values.end(), std::find(reportSpecifications1Values.begin(), reportSpecifications1Values.end(), "Triangulate3DFace"));
+  EXPECT_NE(reportSpecifications1Values.end(),
+            std::find(reportSpecifications1Values.begin(), reportSpecifications1Values.end(), "Triangulate3DFace"));
   EXPECT_NE(reportSpecifications1Values.end(), std::find(reportSpecifications1Values.begin(), reportSpecifications1Values.end(), "ThickPolyline"));
   EXPECT_NE(reportSpecifications1Values.end(), std::find(reportSpecifications1Values.begin(), reportSpecifications1Values.end(), "RegularPolyline"));
 

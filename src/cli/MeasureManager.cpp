@@ -24,6 +24,7 @@
 #include "../measure/OSOutput.hpp"
 #include "../measure/OSRunner.hpp"
 #include "../measure/OSMeasureInfoGetter.hpp"
+#include "../epmodel/Model.hpp"
 #include "../model/Model_Impl.hpp"  // For casting
 #include "../../ruby/interpreter/RubyException.hpp"
 
@@ -402,22 +403,6 @@ openstudio::measure::OSMeasureInfo MeasureManager::getMeasureInfo(const openstud
       fmt::format("Unable to locate primary Ruby script path for BCLMeasure '{}' located at '{}'", measure.name(), measureDirPath.generic_string()));
   }
 
-  auto getOrCreateModel = [this, &model_, &osmOrIdfPath]() -> openstudio::model::Model {
-    if (model_) {
-      // model should already have been cloned in the endpoint, so no need to do it twice
-      return *model_;  // _->clone(true).cast<openstudio::model::Model>();
-    } else if (!osmOrIdfPath.empty()) {
-      // TODO: not sure we want to keep this here or not..
-      if (auto osmInfo_ = getModel(osmOrIdfPath)) {
-        return osmInfo_->model.clone().cast<openstudio::model::Model>();
-      } else {
-        LOG_AND_THROW("Failed to load the Model at " << osmOrIdfPath);
-      }
-    } else {
-      return {};
-    }
-  };
-
   auto getOrCreateWorkspace = [this, &workspace_, &osmOrIdfPath]() -> openstudio::Workspace {
     if (workspace_) {
       return *workspace_;  // ->clone(true);
@@ -430,6 +415,40 @@ openstudio::measure::OSMeasureInfo MeasureManager::getMeasureInfo(const openstud
     } else {
       return {openstudio::StrictnessLevel::Draft, openstudio::IddFileType::EnergyPlus};
     }
+  };
+
+  auto getOrCreateEPModel = [this, &model_, &workspace_, &osmOrIdfPath]() -> openstudio::epmodel::Model {
+    if (workspace_) {
+      return openstudio::epmodel::Model(*workspace_);
+    }
+
+    auto translateModel = [](const openstudio::model::Model& model) {
+      openstudio::energyplus::ForwardTranslator ft;
+      return openstudio::epmodel::Model(ft.translateModel(model));
+    };
+
+    if (model_) {
+      return translateModel(*model_);
+    }
+
+    if (!osmOrIdfPath.empty()) {
+      if (osmOrIdfPath.extension() == openstudio::filesystem::path(".idf")) {
+        if (auto idfInfo_ = getIdf(osmOrIdfPath)) {
+          return openstudio::epmodel::Model(idfInfo_->workspace);
+        }
+      } else if (auto osmInfo_ = getModel(osmOrIdfPath)) {
+        /*
+         * Measure metadata can be requested from an OSM path, but ModelMeasure itself is now
+         * epmodel-based. Treat the OSM exactly like workflow ingress does: translate once at
+         * the boundary, then ask the measure for arguments against the IDD-backed model.
+         */
+        return translateModel(osmInfo_->model);
+      }
+
+      LOG_AND_THROW("Failed to load the Model at " << osmOrIdfPath);
+    }
+
+    return {};
   };
 
   ScriptEngineInstance* thisEngine = nullptr;
@@ -477,7 +496,7 @@ openstudio::measure::OSMeasureInfo MeasureManager::getMeasureInfo(const openstud
       taxonomy = measurePtr->taxonomy();
       modelerDescription = measurePtr->modeler_description();
 
-      auto model = getOrCreateModel();
+      auto model = getOrCreateEPModel();
       arguments = measurePtr->arguments(model);
       outputs = measurePtr->outputs();
 
@@ -520,7 +539,7 @@ end
 )ruby",
                                                className);
           rubyEngine->exec(patchArgumentsCmd);
-          arguments = measurePtr->arguments(openstudio::model::Model{});
+          arguments = measurePtr->arguments(openstudio::epmodel::Model{});
           rubyEngine->exec(fmt::format("Object.send(:remove_const, :{}Extensions)", className));
         } else {
           auto msg =
@@ -529,7 +548,7 @@ end
           return openstudio::measure::OSMeasureInfo(msg);
         }
       } else {
-        auto model = getOrCreateModel();
+        auto model = getOrCreateEPModel();
         arguments = measurePtr->arguments(model);
       }
       outputs = measurePtr->outputs();

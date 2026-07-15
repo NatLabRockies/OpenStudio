@@ -221,8 +221,7 @@ namespace epmodel {
     }
 
     bool SetpointManagerOutdoorAirPretreat_Impl::setSetpointNode(const openstudio::epmodel::Node& node) {
-      return getObject<ModelObject>().setPointer(openstudio::SetpointManager_OutdoorAirPretreatFields::SetpointNodeorNodeListName,
-                                                 node.handle());
+      return getObject<ModelObject>().setPointer(openstudio::SetpointManager_OutdoorAirPretreatFields::SetpointNodeorNodeListName, node.handle());
     }
 
     void SetpointManagerOutdoorAirPretreat_Impl::doCanonicalize(LoadContext& context) {

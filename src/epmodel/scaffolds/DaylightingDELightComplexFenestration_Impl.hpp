@@ -11,24 +11,24 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API DaylightingDELightComplexFenestration_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~DaylightingDELightComplexFenestration_Impl() override = default;
+    class EPMODEL_API DaylightingDELightComplexFenestration_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~DaylightingDELightComplexFenestration_Impl() override = default;
 
-  std::string complexFenestrationType() const;
-  bool setComplexFenestrationType(const std::string& complexFenestrationType);
+      std::string complexFenestrationType() const;
+      bool setComplexFenestrationType(const std::string& complexFenestrationType);
 
-  double fenestrationRotation() const;
-  bool isFenestrationRotationDefaulted() const;
-  bool setFenestrationRotation(double fenestrationRotation);
-  void resetFenestrationRotation();
-};
+      double fenestrationRotation() const;
+      bool isFenestrationRotationDefaulted() const;
+      bool setFenestrationRotation(double fenestrationRotation);
+      void resetFenestrationRotation();
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

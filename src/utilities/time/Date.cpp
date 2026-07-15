@@ -370,6 +370,15 @@ DayOfWeek Date::dayOfWeek() const {
 
 // initFromYearMonthDay
 void Date::initFromYearMonthDay(int year, MonthOfYear monthOfYear, unsigned dayOfMonth) {
+  // Let's gracefully reject day=0 and day = >= 29, 30, or 31 depending on the month and year, so that it's not boost that throws but us
+  // Boost gregorian valid range is 1400-9999
+  if (year < 1400 || year > 9999) {
+    LOG_AND_THROW("Bad Date: year = " << year << ", month = " << monthOfYear << ", day = " << dayOfMonth << ". ");
+  }
+  if (monthOfYear >= MonthOfYear::NotAMonth || dayOfMonth == 0
+      || dayOfMonth > static_cast<unsigned>(gregorian_calendar::end_of_month_day(year, monthOfYear.value()))) {
+    LOG_AND_THROW("Bad Date: year = " << year << ", month = " << monthOfYear << ", day = " << dayOfMonth << ". ");
+  }
   bool initialized = false;
   try {
     // construct with year, month, day
@@ -385,6 +394,9 @@ void Date::initFromYearMonthDay(int year, MonthOfYear monthOfYear, unsigned dayO
 
 // initFromYearDayOfYear
 void Date::initFromYearDayOfYear(int year, unsigned dayOfYear) {
+  if (year < 1400 || year > 9999) {
+    LOG_AND_THROW("Bad Date: year = " << year << ", dayOfYear = " << dayOfYear << ". ");
+  }
   bool initialized = false;
   try {
     // get days in this year, can throw bad_year

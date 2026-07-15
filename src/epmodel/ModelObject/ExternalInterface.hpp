@@ -26,6 +26,8 @@ namespace epmodel {
   class EPMODEL_API ExternalInterface : public ModelObject
   {
    public:
+    static constexpr bool is_unique = true;  // This is a Unique ModelObject
+
     virtual ~ExternalInterface() override = default;
     ExternalInterface(const ExternalInterface& other) = default;
     ExternalInterface(ExternalInterface&& other) = default;

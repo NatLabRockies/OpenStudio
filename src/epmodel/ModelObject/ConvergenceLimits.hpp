@@ -25,6 +25,8 @@ namespace epmodel {
   class EPMODEL_API ConvergenceLimits : public ModelObject
   {
    public:
+    static constexpr bool is_unique = true;  // This is a Unique ModelObject
+
     virtual ~ConvergenceLimits() override = default;
     ConvergenceLimits(const ConvergenceLimits& other) = default;
     ConvergenceLimits(ConvergenceLimits&& other) = default;

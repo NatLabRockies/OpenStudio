@@ -16,42 +16,42 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class MaterialPropertyVariableThermalConductivity_Impl;
-}
+  namespace detail {
+    class MaterialPropertyVariableThermalConductivity_Impl;
+  }
 
-/** MaterialPropertyVariableThermalConductivity is a ModelObject that wraps the EnergyPlus IDD object
+  /** MaterialPropertyVariableThermalConductivity is a ModelObject that wraps the EnergyPlus IDD object
  * 'MaterialProperty:VariableThermalConductivity'. */
-class EPMODEL_API MaterialPropertyVariableThermalConductivity : public ModelObject
-{
- public:
-  explicit MaterialPropertyVariableThermalConductivity(const Model& model);
+  class EPMODEL_API MaterialPropertyVariableThermalConductivity : public ModelObject
+  {
+   public:
+    explicit MaterialPropertyVariableThermalConductivity(const Model& model);
 
-  virtual ~MaterialPropertyVariableThermalConductivity() override = default;
-  MaterialPropertyVariableThermalConductivity(const MaterialPropertyVariableThermalConductivity& other) = default;
-  MaterialPropertyVariableThermalConductivity(MaterialPropertyVariableThermalConductivity&& other) = default;
-  MaterialPropertyVariableThermalConductivity& operator=(const MaterialPropertyVariableThermalConductivity&) = default;
-  MaterialPropertyVariableThermalConductivity& operator=(MaterialPropertyVariableThermalConductivity&&) = default;
+    virtual ~MaterialPropertyVariableThermalConductivity() override = default;
+    MaterialPropertyVariableThermalConductivity(const MaterialPropertyVariableThermalConductivity& other) = default;
+    MaterialPropertyVariableThermalConductivity(MaterialPropertyVariableThermalConductivity&& other) = default;
+    MaterialPropertyVariableThermalConductivity& operator=(const MaterialPropertyVariableThermalConductivity&) = default;
+    MaterialPropertyVariableThermalConductivity& operator=(MaterialPropertyVariableThermalConductivity&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  // Schema Alignment Notes:
-  // - API: This no-counterpart type uses IDD-derived class naming.
-  // - Field Mapping: In scalar-only scaffold mode, only inherited ModelObject name accessors are exposed.
-  // - Field Mapping: Extensible Temperature / Thermal Conductivity pairs are intentionally excluded from scalar accessors.
-  // - TODO(parity): Add extensible-group APIs in a dedicated extensible parity pass.
+    // Schema Alignment Notes:
+    // - API: This no-counterpart type uses IDD-derived class naming.
+    // - Field Mapping: In scalar-only scaffold mode, only inherited ModelObject name accessors are exposed.
+    // - Field Mapping: Extensible Temperature / Thermal Conductivity pairs are intentionally excluded from scalar accessors.
+    // - TODO(parity): Add extensible-group APIs in a dedicated extensible parity pass.
 
- protected:
-  using ImplType = detail::MaterialPropertyVariableThermalConductivity_Impl;
+   protected:
+    using ImplType = detail::MaterialPropertyVariableThermalConductivity_Impl;
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
 
-  explicit MaterialPropertyVariableThermalConductivity(std::shared_ptr<detail::MaterialPropertyVariableThermalConductivity_Impl> impl);
-};
+    explicit MaterialPropertyVariableThermalConductivity(std::shared_ptr<detail::MaterialPropertyVariableThermalConductivity_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

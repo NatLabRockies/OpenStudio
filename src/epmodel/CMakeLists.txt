@@ -586,6 +586,9 @@ set(${target_name}_src
   ModelObject/PlantEquipmentOperationSchemes.hpp
   ModelObject/PlantEquipmentOperationSchemes_Impl.hpp
   ModelObject/PlantEquipmentOperationSchemes.cpp
+  ModelObject/PlantEquipmentList.hpp
+  ModelObject/PlantEquipmentList_Impl.hpp
+  ModelObject/PlantEquipmentList.cpp
   ModelObject/PythonPluginOutputVariable.hpp
   ModelObject/PythonPluginOutputVariable_Impl.hpp
   ModelObject/PythonPluginOutputVariable.cpp
@@ -903,6 +906,9 @@ set(${target_name}_src
   PlantEquipmentOperationScheme/PlantEquipmentOperationOutdoorWetBulbDifference.hpp
   PlantEquipmentOperationScheme/PlantEquipmentOperationOutdoorWetBulbDifference_Impl.hpp
   PlantEquipmentOperationScheme/PlantEquipmentOperationOutdoorWetBulbDifference.cpp
+  PlantEquipmentOperationScheme/PlantEquipmentOperationRangeBasedScheme.hpp
+  PlantEquipmentOperationScheme/PlantEquipmentOperationRangeBasedScheme_Impl.hpp
+  PlantEquipmentOperationScheme/PlantEquipmentOperationRangeBasedScheme.cpp
   PlantEquipmentOperationScheme/PlantEquipmentOperationScheme.hpp
   PlantEquipmentOperationScheme/PlantEquipmentOperationScheme_Impl.hpp
   PlantEquipmentOperationScheme/PlantEquipmentOperationScheme.cpp
@@ -2181,6 +2187,15 @@ set(${target_name}_src
   StraightComponent/AirTerminalSingleDuctConstantVolumeCooledBeam.hpp
   StraightComponent/AirTerminalSingleDuctConstantVolumeCooledBeam_Impl.hpp
   StraightComponent/AirTerminalSingleDuctConstantVolumeCooledBeam.cpp
+  StraightComponent/CoilCoolingCooledBeam.hpp
+  StraightComponent/CoilCoolingCooledBeam_Impl.hpp
+  StraightComponent/CoilCoolingCooledBeam.cpp
+  StraightComponent/CoilCoolingFourPipeBeam.hpp
+  StraightComponent/CoilCoolingFourPipeBeam_Impl.hpp
+  StraightComponent/CoilCoolingFourPipeBeam.cpp
+  StraightComponent/CoilHeatingFourPipeBeam.hpp
+  StraightComponent/CoilHeatingFourPipeBeam_Impl.hpp
+  StraightComponent/CoilHeatingFourPipeBeam.cpp
   StraightComponent/AirTerminalSingleDuctConstantVolumeFourPipeBeam.hpp
   StraightComponent/AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl.hpp
   StraightComponent/AirTerminalSingleDuctConstantVolumeFourPipeBeam.cpp
@@ -2736,6 +2751,23 @@ set(${target_name}_depends
 set(${target_name}_depends ${${target_name}_depends} PARENT_SCOPE)
 
 target_compile_definitions(${target_name} PRIVATE openstudio_epmodel_EXPORTS SHARED_OS_LIBS)
+
+# Headers-only INTERFACE target: gives consumers epmodel's per-subfolder include
+# directories without pulling in its OBJECT library's actual object files. On MSVC,
+# openstudio_epmodel's objects already live in openstudioepmodellib.dll; any consumer
+# that links both openstudio_epmodel directly AND openstudiolib (which PUBLIC-links
+# openstudioepmodellib) gets the same symbols twice -- once as real definitions, once
+# as the DLL's import-lib thunks -- which MSVC rejects (LNK2005). Consumers that only
+# need to compile against epmodel headers (not embed its objects) should link this
+# instead of openstudio_epmodel.
+add_library(openstudio_epmodel_headers INTERFACE)
+target_include_directories(openstudio_epmodel_headers INTERFACE
+  ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/HVACComponent
+  ${CMAKE_CURRENT_SOURCE_DIR}/ModelObject
+  ${CMAKE_CURRENT_SOURCE_DIR}/scaffolds
+  ${CMAKE_CURRENT_SOURCE_DIR}/StraightComponent
+  ${CMAKE_CURRENT_SOURCE_DIR}/ShadingMaterial)
+
 target_include_directories(${target_name} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/HVACComponent
   ${CMAKE_CURRENT_SOURCE_DIR}/ModelObject
   ${CMAKE_CURRENT_SOURCE_DIR}/scaffolds
@@ -2767,9 +2799,12 @@ foreach(epmodel_swig_i IN LISTS ${target_name}_sub_swig_src)
      OR epmodel_swig_suffix STREQUAL "Splitter"
      OR epmodel_swig_suffix STREQUAL "StraightComponent"
      OR epmodel_swig_suffix STREQUAL "WaterToAirComponent"
-     OR epmodel_swig_suffix STREQUAL "WaterToWaterComponent"
-     OR epmodel_swig_suffix STREQUAL "ZoneHVACComponent")
+     OR epmodel_swig_suffix STREQUAL "WaterToWaterComponent")
     list(APPEND epmodel_parent_swig_targets OpenStudioEPModelHVACComponent)
+  endif()
+
+  if(epmodel_swig_suffix STREQUAL "ZoneHVACComponent")
+    list(APPEND epmodel_parent_swig_targets OpenStudioEPModelStraightComponent)
   endif()
 
   make_epmodel_swig_bindings(${epmodel_swig_target} EPModel "${CMAKE_CURRENT_SOURCE_DIR}/${epmodel_swig_i}" "${${target_name}_swig_src}" ${target_name} "${epmodel_parent_swig_targets}")
@@ -3292,6 +3327,7 @@ set(${target_name}_test_src
   test/PipingSystemUndergroundPipeSegment_GTest.cpp
   test/PlantComponentTemperatureSource_GTest.cpp
   test/PlantComponentUserDefined_GTest.cpp
+  test/PlantEquipmentList_GTest.cpp
   test/PlantEquipmentOperationChillerHeaterChangeover_GTest.cpp
   test/PlantEquipmentOperationComponentSetpoint_GTest.cpp
   test/PlantEquipmentOperationCoolingLoad_GTest.cpp
@@ -3607,7 +3643,7 @@ set(${target_name}_test_src
 
 set(${target_name}_test_depends
   openstudiolib
-  openstudio_epmodel
+  openstudio_epmodel_headers
 )
 
 CREATE_SRC_GROUPS("${${target_name}_test_src}")

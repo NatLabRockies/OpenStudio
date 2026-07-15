@@ -158,8 +158,7 @@ namespace epmodel {
 
     boost::optional<std::string> PlantEquipmentOperationSchemes_Impl::controlSchemeRawField(unsigned schemeIndex, unsigned fieldIndex) const {
       const auto& schemes = getObject<openstudio::epmodel::PlantEquipmentOperationSchemes>();
-      const unsigned absoluteIndex =
-        schemes.numNonextensibleFields() + (schemeIndex * schemes.iddObject().properties().numExtensible) + fieldIndex;
+      const unsigned absoluteIndex = schemes.numNonextensibleFields() + (schemeIndex * schemes.iddObject().properties().numExtensible) + fieldIndex;
       return openstudio::detail::IdfObject_Impl::getField(absoluteIndex, true);
     }
 
@@ -246,7 +245,7 @@ namespace epmodel {
       // During ordinary API use we rely on a live pointer. During canonicalize
       // we repair raw imported rows by finding the named object and attaching
       // the pointer so later renames stay tracked.
-      for (const auto& candidate : model().getObjectsByName(*name, true, true)) {
+      for (const auto& candidate : model().getObjectsByName(*name, true)) {
         if (auto typedCandidate = candidate.optionalCast<openstudio::epmodel::ModelObject>()) {
           if (typedCandidate->iddObject().name() != *type) {
             continue;
@@ -286,7 +285,16 @@ namespace epmodel {
       }
 
       if (!group->setPointer(ExtensibleFields::ControlSchemeName, controlScheme.handle(), false)) {
-        return group->setString(ExtensibleFields::ControlSchemeName, controlScheme.nameString());
+        if (!group->setString(ExtensibleFields::ControlSchemeName, controlScheme.nameString())) {
+          return false;
+        }
+      }
+
+      if (!groupHasControlSchemeSchedule(schemeIndex)) {
+        auto alwaysOn = model().alwaysOnDiscreteSchedule();
+        if (!setControlSchemeSchedule(schemeIndex, alwaysOn)) {
+          return false;
+        }
       }
 
       return true;
@@ -353,7 +361,7 @@ namespace epmodel {
         return boost::none;
       }
 
-      for (const auto& candidate : model().getObjectsByName(*name, true, true)) {
+      for (const auto& candidate : model().getObjectsByName(*name, true)) {
         if (auto schedule = candidate.optionalCast<openstudio::epmodel::Schedule>()) {
           if (group->setPointer(ExtensibleFields::ControlSchemeScheduleName, schedule->handle(), false)) {
             return schedule;
@@ -656,15 +664,14 @@ namespace epmodel {
           mergeGroupState(schemeIndex, keptIndex->second);
           groupsToErase.push_back(keptIndex->second);
           keptIndexBySlot[slotKey] = schemeIndex;
-          keptScoreBySlot[slotKey] =
-            (groupHasControlScheme(schemeIndex) ? 2 : 0) + (groupHasControlSchemeSchedule(schemeIndex) ? 1 : 0);
+          keptScoreBySlot[slotKey] = (groupHasControlScheme(schemeIndex) ? 2 : 0) + (groupHasControlSchemeSchedule(schemeIndex) ? 1 : 0);
           detail::addLoadWarning(context, "Removed lower-fidelity duplicate PlantEquipmentOperationSchemes entry for slot '" + slotKey + "' from '"
                                             + ownerName + "'.");
         } else {
           mergeGroupState(keptIndex->second, schemeIndex);
           groupsToErase.push_back(schemeIndex);
-          detail::addLoadWarning(context, "Removed duplicate PlantEquipmentOperationSchemes entry for slot '" + slotKey + "' from '" + ownerName
-                                            + "'.");
+          detail::addLoadWarning(context,
+                                 "Removed duplicate PlantEquipmentOperationSchemes entry for slot '" + slotKey + "' from '" + ownerName + "'.");
         }
       }
 

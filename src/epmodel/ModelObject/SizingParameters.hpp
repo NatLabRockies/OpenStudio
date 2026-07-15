@@ -25,6 +25,8 @@ namespace epmodel {
   class EPMODEL_API SizingParameters : public ModelObject
   {
    public:
+    static constexpr bool is_unique = true;  // This is a Unique ModelObject
+
     virtual ~SizingParameters() override = default;
     SizingParameters(const SizingParameters& other) = default;
     SizingParameters(SizingParameters&& other) = default;

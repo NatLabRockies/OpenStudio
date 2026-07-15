@@ -188,6 +188,7 @@ class ScriptEngineInstance
     instance.reset();
     engineLib.reset();
   }
+
  private:
   std::string libraryName;
   std::vector<std::string> args;

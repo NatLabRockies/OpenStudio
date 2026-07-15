@@ -20,6 +20,7 @@ namespace epmodel {
   class Model;
   class Schedule;
   class HVACComponent;
+  class Node;
 
   namespace detail {
     class AirTerminalSingleDuctVAVReheat_Impl;
@@ -41,14 +42,16 @@ namespace epmodel {
     static std::vector<std::string> zoneMinimumAirFlowInputMethodValues();
     static std::vector<std::string> damperHeatingActionValues();
 
+    bool addToNode(Node& node);
+
     // Schema Alignment Notes:
-    // - Status: Scalar Parity. The scalar VAV reheat contract is aligned; relationship and node plumbing remain narrower.
+    // - Status: Connectivity Parity for the current epmodel zone-branch topology.
     // - Canonical Counterpart: openstudio::model::AirTerminalSingleDuctVAVReheat.
-    // - Implemented Parity: `maximumAirFlowRate`, `zoneMinimumAirFlowInputMethod`, `zoneMinimumAirFlowMethod`, `constantMinimumAirFlowFraction`, `fixedMinimumAirFlowRate`, `maximumHotWaterorSteamFlowRate`, `minimumHotWaterorSteamFlowRate`, `maximumReheatAirTemperature`, and the legacy naming compatibility around `setMinimumHotWaterOrStreamFlowRate` preserve the canonical scalar contract.
-    // - Documented Delta: Damper/air inlet/air outlet node names, design-specification-outdoor-air behavior, and `controlForOutdoorAir` remain outside this pass.
-    // - Field/Storage Mapping: The preserved scalars map directly to EnergyPlus `AirTerminal:SingleDuct:VAV:Reheat` fields; the translator handles links separately.
+    // - Implemented Parity: `addToNode`, `remove`, and `removeFromLoop` preserve terminal node wiring, AirLoopHVAC demand continuity, ZoneHVAC equipment registration, existing ADU references, temporary inlet-node cleanup, and reheat-coil plant branch cleanup.
+    // - Documented Delta: Canonical OS-only outdoor-air export behavior is not implemented in this epmodel wrapper.
+    // - Field/Storage Mapping: Scalars and links map directly to EnergyPlus `AirTerminal:SingleDuct:VAV:Reheat` and `ZoneHVAC:AirDistributionUnit` fields; node links are resolved through epmodel transient Node targets.
     // - Evidence: `src/model/AirTerminalSingleDuctVAVReheat.hpp`, `src/model/AirTerminalSingleDuctVAVReheat.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirTerminalSingleDuctVAVReheat.cpp`, and `src/epmodel/test/AirTerminalSingleDuctVAVReheat_GTest.cpp`.
-    // - Remaining Parity Work: Add the omitted relationship helpers when this type moves beyond scalar parity.
+    // - Remaining Campaign Verification: Translator-specific regression coverage is out of scope unless EnergyPlus forward-translation assertions are authorized.
     HVACComponent reheatCoil() const;
     bool setReheatCoil(HVACComponent& coil);
 
@@ -113,7 +116,7 @@ namespace epmodel {
     double maximumReheatAirTemperature();
     bool setMaximumReheatAirTemperature(double value);
 
-  protected:
+   protected:
     using ImplType = detail::AirTerminalSingleDuctVAVReheat_Impl;
 
     friend class Model;

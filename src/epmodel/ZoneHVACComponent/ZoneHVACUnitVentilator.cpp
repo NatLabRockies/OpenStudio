@@ -732,9 +732,8 @@ namespace epmodel {
       if (cooling && heating) {
         if (!allowChildNodeRecovery) {
           auto currentCoolingOutlet = unitVentilatorAirOutletNode(*cooling);
-          const auto heatingAirInlet = unitVentilatorAirInletPort(*heating) != 0u
-                                         ? heating->getModelObjectTarget<Node>(unitVentilatorAirInletPort(*heating))
-                                         : boost::none;
+          const auto heatingAirInlet =
+            unitVentilatorAirInletPort(*heating) != 0u ? heating->getModelObjectTarget<Node>(unitVentilatorAirInletPort(*heating)) : boost::none;
           if (currentCoolingOutlet && heatingAirInlet && (*currentCoolingOutlet == *heatingAirInlet) && (*currentCoolingOutlet != outletNode)
               && (!fanOutlet || (*currentCoolingOutlet != *fanOutlet))) {
             coolingOutlet = currentCoolingOutlet;

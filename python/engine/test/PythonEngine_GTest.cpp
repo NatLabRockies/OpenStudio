@@ -9,7 +9,7 @@
 #include "../../../src/measure/OSArgument.hpp"
 #include "../../../src/measure/OSMeasure.hpp"
 #include "../../../src/measure/OSRunner.hpp"
-#include "../../../src/model/Model.hpp"
+#include "../../../src/epmodel/Model.hpp"
 #include "../../../src/scriptengine/ScriptEngine.hpp"
 
 #include <fmt/format.h>
@@ -61,7 +61,7 @@ Traceback (most recent call last):
 ValueError: oops)",
                                                scriptPath.generic_string());
 
-  openstudio::model::Model model;
+  openstudio::epmodel::Model model;
   try {
     measurePtr->arguments(model);
     ASSERT_FALSE(true) << "Expected measure arguments(model) to throw";
@@ -91,7 +91,7 @@ Traceback (most recent call last):
 AttributeError: 'Model' object has no attribute 'nonExistingMethod')",
                 scriptPath.generic_string());
 
-  openstudio::model::Model model;
+  openstudio::epmodel::Model model;
   try {
     measurePtr->arguments(model);
     ASSERT_FALSE(true) << "Expected measure arguments(model) to throw";
@@ -130,7 +130,7 @@ Traceback (most recent call last):
 RecursionError: maximum recursion depth exceeded)",
                 scriptPath.generic_string());
 
-  openstudio::model::Model model;
+  openstudio::epmodel::Model model;
   try {
     measurePtr->arguments(model);
     ASSERT_FALSE(true) << "Expected measure arguments(model) to throw";
@@ -165,7 +165,7 @@ TEST_F(PythonEngineFixture, AlfalfaMeasure) {
 }
   )json";
 
-  openstudio::model::Model model;
+  openstudio::epmodel::Model model;
   openstudio::WorkflowJSON workflow = *openstudio::WorkflowJSON::load(workflow_json);
   openstudio::measure::OSRunner runner(workflow);
   EXPECT_TRUE(runner.alfalfa().points().empty());

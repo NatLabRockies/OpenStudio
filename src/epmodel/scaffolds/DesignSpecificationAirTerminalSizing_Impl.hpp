@@ -11,41 +11,41 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API DesignSpecificationAirTerminalSizing_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~DesignSpecificationAirTerminalSizing_Impl() override = default;
+    class EPMODEL_API DesignSpecificationAirTerminalSizing_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~DesignSpecificationAirTerminalSizing_Impl() override = default;
 
-  double fractionofDesignCoolingLoad() const;
-  bool isFractionofDesignCoolingLoadDefaulted() const;
-  bool setFractionofDesignCoolingLoad(double fractionofDesignCoolingLoad);
-  void resetFractionofDesignCoolingLoad();
+      double fractionofDesignCoolingLoad() const;
+      bool isFractionofDesignCoolingLoadDefaulted() const;
+      bool setFractionofDesignCoolingLoad(double fractionofDesignCoolingLoad);
+      void resetFractionofDesignCoolingLoad();
 
-  double coolingDesignSupplyAirTemperatureDifferenceRatio() const;
-  bool isCoolingDesignSupplyAirTemperatureDifferenceRatioDefaulted() const;
-  bool setCoolingDesignSupplyAirTemperatureDifferenceRatio(double coolingDesignSupplyAirTemperatureDifferenceRatio);
-  void resetCoolingDesignSupplyAirTemperatureDifferenceRatio();
+      double coolingDesignSupplyAirTemperatureDifferenceRatio() const;
+      bool isCoolingDesignSupplyAirTemperatureDifferenceRatioDefaulted() const;
+      bool setCoolingDesignSupplyAirTemperatureDifferenceRatio(double coolingDesignSupplyAirTemperatureDifferenceRatio);
+      void resetCoolingDesignSupplyAirTemperatureDifferenceRatio();
 
-  double fractionofDesignHeatingLoad() const;
-  bool isFractionofDesignHeatingLoadDefaulted() const;
-  bool setFractionofDesignHeatingLoad(double fractionofDesignHeatingLoad);
-  void resetFractionofDesignHeatingLoad();
+      double fractionofDesignHeatingLoad() const;
+      bool isFractionofDesignHeatingLoadDefaulted() const;
+      bool setFractionofDesignHeatingLoad(double fractionofDesignHeatingLoad);
+      void resetFractionofDesignHeatingLoad();
 
-  double heatingDesignSupplyAirTemperatureDifferenceRatio() const;
-  bool isHeatingDesignSupplyAirTemperatureDifferenceRatioDefaulted() const;
-  bool setHeatingDesignSupplyAirTemperatureDifferenceRatio(double heatingDesignSupplyAirTemperatureDifferenceRatio);
-  void resetHeatingDesignSupplyAirTemperatureDifferenceRatio();
+      double heatingDesignSupplyAirTemperatureDifferenceRatio() const;
+      bool isHeatingDesignSupplyAirTemperatureDifferenceRatioDefaulted() const;
+      bool setHeatingDesignSupplyAirTemperatureDifferenceRatio(double heatingDesignSupplyAirTemperatureDifferenceRatio);
+      void resetHeatingDesignSupplyAirTemperatureDifferenceRatio();
 
-  double fractionofMinimumOutdoorAirFlow() const;
-  bool isFractionofMinimumOutdoorAirFlowDefaulted() const;
-  bool setFractionofMinimumOutdoorAirFlow(double fractionofMinimumOutdoorAirFlow);
-  void resetFractionofMinimumOutdoorAirFlow();
-};
+      double fractionofMinimumOutdoorAirFlow() const;
+      bool isFractionofMinimumOutdoorAirFlowDefaulted() const;
+      bool setFractionofMinimumOutdoorAirFlow(double fractionofMinimumOutdoorAirFlow);
+      void resetFractionofMinimumOutdoorAirFlow();
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

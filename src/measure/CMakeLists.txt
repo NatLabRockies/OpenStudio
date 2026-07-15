@@ -46,6 +46,7 @@ CREATE_SRC_GROUPS("${${target_name}_src}")
 CREATE_SRC_GROUPS("${${target_name}_swig_src}")
 
 set(${target_name}_depends
+  openstudio_epmodel_headers
   ${openstudio_osversion_depends}
 )
 set(${target_name}_depends ${${target_name}_depends} PARENT_SCOPE)
@@ -62,6 +63,7 @@ add_dependencies(${target_name} GenerateIddFactoryRun)
 set(${target_name}_test_depends
   ${COREFOUNDATION_LIBRARY}
   openstudiolib
+  openstudio_epmodel_headers
   fmt::fmt
 )
 
@@ -71,4 +73,4 @@ endif()
 
 CREATE_TEST_TARGETS(${target_name} "${${target_name}_test_src}" "${${target_name}_test_depends}")
 
-MAKE_SWIG_TARGET(OpenStudioMeasure measure "${CMAKE_CURRENT_SOURCE_DIR}/Measure.i" "${${target_name}_swig_src}" ${target_name} OpenStudioAlfalfa)
+MAKE_SWIG_TARGET(OpenStudioMeasure measure "${CMAKE_CURRENT_SOURCE_DIR}/Measure.i" "${${target_name}_swig_src}" ${target_name} "OpenStudioAlfalfa;OpenStudioEPModel")

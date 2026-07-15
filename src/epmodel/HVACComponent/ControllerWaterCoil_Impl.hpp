@@ -24,6 +24,8 @@ namespace epmodel {
       using HVACComponent_Impl::HVACComponent_Impl;
       virtual ~ControllerWaterCoil_Impl() override = default;
 
+      void doCanonicalize(LoadContext& context) override;
+
       boost::optional<HVACComponent> waterCoil() const;
 
       boost::optional<std::string> controlVariable() const;

@@ -83,7 +83,7 @@ namespace epmodel {
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
     unsigned AirLoopHVACZoneSplitter_Impl::inletPort() const {
       return static_cast<unsigned>(openstudio::AirLoopHVAC_ZoneSplitterFields::InletNodeName);
@@ -125,6 +125,6 @@ namespace detail {
       return setPointer(openstudio::AirLoopHVAC_ZoneSplitterFields::InletNodeName, node.handle(), false);
     }
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio

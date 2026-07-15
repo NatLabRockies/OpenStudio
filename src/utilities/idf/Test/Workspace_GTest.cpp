@@ -207,7 +207,8 @@ TEST_F(IdfFixture, Workspace_FollowingPointers) {
   ASSERT_TRUE(!epIdfFile.objects().empty());
   Workspace workspace(epIdfFile, StrictnessLevel::Draft);
 
-  EXPECT_EQ(epIdfFile.objects().size(), workspace.objects().size());
+  // Equality of number of objects, transients excluded
+  EXPECT_EQ(epIdfFile.objects().size(), workspace.getImpl<openstudio::detail::Workspace_Impl>()->objects(false, false).size());
 
   // there are 6 zones, 5 with lights
 
@@ -396,7 +397,8 @@ TEST_F(IdfFixture, Workspace_RemoveObject) {
 
   ASSERT_TRUE(!epIdfFile.objects().empty());
   ASSERT_TRUE(!workspace.objects().empty());
-  EXPECT_EQ(epIdfFile.objects().size(), workspace.objects().size());
+  // Equality of number of objects, transients excluded
+  EXPECT_EQ(epIdfFile.objects().size(), workspace.getImpl<openstudio::detail::Workspace_Impl>()->objects(false, false).size());
 
   // delete object with only one reference
   WorkspaceObject object = workspace.objects()[0];
@@ -411,7 +413,8 @@ TEST_F(IdfFixture, Workspace_RemoveObject2) {
 
   ASSERT_TRUE(!epIdfFile.objects().empty());
   ASSERT_TRUE(!workspace.objects().empty());
-  EXPECT_EQ(epIdfFile.objects().size(), workspace.objects().size());
+  // Equality of number of objects, transients excluded
+  EXPECT_EQ(epIdfFile.objects().size(), workspace.getImpl<openstudio::detail::Workspace_Impl>()->objects(false, false).size());
 
   // delete object with two references
 
@@ -1555,7 +1558,9 @@ TEST_F(IdfFixture, Workspace_GiveNames2) {
   EXPECT_EQ("Core_ZN Water Equipment", idfEquipment[0].name().get());
 
   Workspace workspace(*idf);
-  EXPECT_EQ(2u, workspace.objects().size());
+  // 2 regular objects like IDF, 2 transient nodes
+  EXPECT_EQ(2u, workspace.getImpl<openstudio::detail::Workspace_Impl>()->objects(false, false).size());
+  EXPECT_EQ(4u, workspace.objects().size());
   std::vector<WorkspaceObject> workspaceConnections = workspace.getObjectsByType(IddObjectType::WaterUse_Connections);
   std::vector<WorkspaceObject> workspaceEquipment = workspace.getObjectsByType(IddObjectType::WaterUse_Equipment);
   ASSERT_EQ(1u, workspaceConnections.size());
@@ -2054,7 +2059,8 @@ TEST_F(IdfFixture, Workspace_getObjects_Type_StringOverload) {
   ASSERT_TRUE(!epIdfFile.objects().empty());
   Workspace workspace(epIdfFile, StrictnessLevel::Draft);
 
-  EXPECT_EQ(epIdfFile.objects().size(), workspace.objects().size());
+  // Equality of number of objects, transients excluded
+  EXPECT_EQ(epIdfFile.objects().size(), workspace.getImpl<openstudio::detail::Workspace_Impl>()->objects(false, false).size());
 
   // there are 6 zones (5ZoneAirCooled + plenum)
   // Test everything with the IddObjectType version (proved and weathered!)

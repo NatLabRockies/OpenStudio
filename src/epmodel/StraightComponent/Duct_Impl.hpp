@@ -10,20 +10,20 @@
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API Duct_Impl : public StraightComponent_Impl
-{
- public:
-  using StraightComponent_Impl::StraightComponent_Impl;
-  virtual ~Duct_Impl() override = default;
+    class EPMODEL_API Duct_Impl : public StraightComponent_Impl
+    {
+     public:
+      using StraightComponent_Impl::StraightComponent_Impl;
+      virtual ~Duct_Impl() override = default;
 
-  // Duct has no scalar IDD fields; only relationship-like node-link fields.
-  unsigned inletPort() const override;
-  unsigned outletPort() const override;
-};
+      // Duct has no scalar IDD fields; only relationship-like node-link fields.
+      unsigned inletPort() const override;
+      unsigned outletPort() const override;
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

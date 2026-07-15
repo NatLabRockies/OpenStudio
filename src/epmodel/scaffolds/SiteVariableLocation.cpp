@@ -13,13 +13,13 @@
 namespace openstudio {
 namespace epmodel {
 
-SiteVariableLocation::SiteVariableLocation(const Model& model) : ModelObject(SiteVariableLocation::iddObjectType(), model) {}
+  SiteVariableLocation::SiteVariableLocation(const Model& model) : ModelObject(SiteVariableLocation::iddObjectType(), model) {}
 
-SiteVariableLocation::SiteVariableLocation(std::shared_ptr<detail::SiteVariableLocation_Impl> impl) : ModelObject(std::move(impl)) {}
+  SiteVariableLocation::SiteVariableLocation(std::shared_ptr<detail::SiteVariableLocation_Impl> impl) : ModelObject(std::move(impl)) {}
 
-IddObjectType SiteVariableLocation::iddObjectType() {
-  return IddObjectType::Site_VariableLocation;
-}
+  IddObjectType SiteVariableLocation::iddObjectType() {
+    return IddObjectType::Site_VariableLocation;
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio

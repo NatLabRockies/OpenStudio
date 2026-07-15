@@ -13,15 +13,13 @@
 namespace openstudio {
 namespace epmodel {
 
-SpaceHVACZoneReturnMixer::SpaceHVACZoneReturnMixer(const Model& model)
-  : ModelObject(SpaceHVACZoneReturnMixer::iddObjectType(), model) {}
+  SpaceHVACZoneReturnMixer::SpaceHVACZoneReturnMixer(const Model& model) : ModelObject(SpaceHVACZoneReturnMixer::iddObjectType(), model) {}
 
-SpaceHVACZoneReturnMixer::SpaceHVACZoneReturnMixer(std::shared_ptr<detail::SpaceHVACZoneReturnMixer_Impl> impl)
-  : ModelObject(std::move(impl)) {}
+  SpaceHVACZoneReturnMixer::SpaceHVACZoneReturnMixer(std::shared_ptr<detail::SpaceHVACZoneReturnMixer_Impl> impl) : ModelObject(std::move(impl)) {}
 
-IddObjectType SpaceHVACZoneReturnMixer::iddObjectType() {
-  return IddObjectType::SpaceHVAC_ZoneReturnMixer;
-}
+  IddObjectType SpaceHVACZoneReturnMixer::iddObjectType() {
+    return IddObjectType::SpaceHVAC_ZoneReturnMixer;
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio

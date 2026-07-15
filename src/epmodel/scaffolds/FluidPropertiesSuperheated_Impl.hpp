@@ -13,26 +13,26 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API FluidPropertiesSuperheated_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~FluidPropertiesSuperheated_Impl() override = default;
+    class EPMODEL_API FluidPropertiesSuperheated_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~FluidPropertiesSuperheated_Impl() override = default;
 
-  boost::optional<std::string> fluidPropertyType() const;
-  bool setFluidPropertyType(const std::string& fluidPropertyType);
-  void resetFluidPropertyType();
+      boost::optional<std::string> fluidPropertyType() const;
+      bool setFluidPropertyType(const std::string& fluidPropertyType);
+      void resetFluidPropertyType();
 
-  boost::optional<double> pressure() const;
-  bool setPressure(double pressure);
-  void resetPressure();
+      boost::optional<double> pressure() const;
+      bool setPressure(double pressure);
+      void resetPressure();
 
-  std::vector<std::string> fluidPropertyTypeValues() const;
-};
+      std::vector<std::string> fluidPropertyTypeValues() const;
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

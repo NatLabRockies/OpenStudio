@@ -21,6 +21,7 @@
 #include "../Schedule/ScheduleConstant.hpp"
 #include "../Schedule/ScheduleConstant_Impl.hpp"
 #include "../StraightComponent/Node.hpp"
+#include "../StraightComponent/FanVariableVolume.hpp"
 #include "../WaterToAirComponent/CoilHeatingWater.hpp"
 
 using namespace openstudio::epmodel;
@@ -153,6 +154,23 @@ TEST_F(EPModelFixture, CoilHeatingWater_ControllerWaterCoil_IsInferredFromLoopNo
 
   ASSERT_TRUE(plantLoop.removeDemandBranchWithComponent(coil));
   EXPECT_FALSE(coil.controllerWaterCoil());
+}
+
+TEST_F(EPModelFixture, CoilHeatingWater_AirInletTracksUpstreamInsertion) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  CoilHeatingWater coil(model);
+  FanVariableVolume fan(model);
+
+  auto supplyOutletNode = airLoop.supplyOutletNode();
+  ASSERT_TRUE(coil.addToNode(supplyOutletNode));
+  ASSERT_TRUE(fan.addToNode(supplyOutletNode));
+
+  auto coilInlet = coil.airInletModelObject();
+  auto fanOutlet = fan.outletModelObject();
+  ASSERT_TRUE(coilInlet);
+  ASSERT_TRUE(fanOutlet);
+  EXPECT_EQ(fanOutlet->handle(), coilInlet->handle());
 }
 
 TEST_F(EPModelFixture, CoilHeatingWater_RemoveCleansUpAttachedControllerWaterCoil) {

@@ -16,40 +16,42 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class OutputDiagnostics_Impl;
-}
+  namespace detail {
+    class OutputDiagnostics_Impl;
+  }
 
-class EPMODEL_API OutputDiagnostics : public ModelObject
-{
- public:
-  virtual ~OutputDiagnostics() override = default;
-  OutputDiagnostics(const OutputDiagnostics& other) = default;
-  OutputDiagnostics(OutputDiagnostics&& other) = default;
-  OutputDiagnostics& operator=(const OutputDiagnostics&) = default;
-  OutputDiagnostics& operator=(OutputDiagnostics&&) = default;
+  class EPMODEL_API OutputDiagnostics : public ModelObject
+  {
+   public:
+    static constexpr bool is_unique = true;  // This is a Unique ModelObject
 
-  static IddObjectType iddObjectType();
+    virtual ~OutputDiagnostics() override = default;
+    OutputDiagnostics(const OutputDiagnostics& other) = default;
+    OutputDiagnostics(OutputDiagnostics&& other) = default;
+    OutputDiagnostics& operator=(const OutputDiagnostics&) = default;
+    OutputDiagnostics& operator=(OutputDiagnostics&&) = default;
 
-  // Schema Alignment Notes:
-  // - API: Preserves openstudio::model::OutputDiagnostics class naming for counterpart parity.
-  // - Field Mapping: Output:Diagnostics has extensible Key entries only; scalar field APIs are intentionally not added in this scalar-only scaffold pass.
-  // - ForwardTranslator evidence: ForwardTranslateOutputDiagnostics.cpp emits one extensible Key per model key and skips translation when no keys exist.
-  // - TODO(parity): Add non-scalar key list APIs (keys/addKey/setKeys/clearKeys) in a later parity pass without breaking this class identity.
+    static IddObjectType iddObjectType();
 
- protected:
-  explicit OutputDiagnostics(const Model& model);
+    // Schema Alignment Notes:
+    // - API: Preserves openstudio::model::OutputDiagnostics class naming for counterpart parity.
+    // - Field Mapping: Output:Diagnostics has extensible Key entries only; scalar field APIs are intentionally not added in this scalar-only scaffold pass.
+    // - ForwardTranslator evidence: ForwardTranslateOutputDiagnostics.cpp emits one extensible Key per model key and skips translation when no keys exist.
+    // - TODO(parity): Add non-scalar key list APIs (keys/addKey/setKeys/clearKeys) in a later parity pass without breaking this class identity.
 
-  using ImplType = detail::OutputDiagnostics_Impl;
+   protected:
+    explicit OutputDiagnostics(const Model& model);
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+    using ImplType = detail::OutputDiagnostics_Impl;
 
-  explicit OutputDiagnostics(std::shared_ptr<detail::OutputDiagnostics_Impl> impl);
-};
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
+
+    explicit OutputDiagnostics(std::shared_ptr<detail::OutputDiagnostics_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

@@ -18,6 +18,9 @@
 #include "../StraightComponent/CoilHeatingElectric.hpp"
 #include "../StraightComponent/Node.hpp"
 #include "../Splitter/AirLoopHVACZoneSplitter.hpp"
+#include "../Mixer/AirLoopHVACZoneMixer.hpp"
+#include "../Loop/PlantLoop.hpp"
+#include "../StraightComponent/CoilCoolingCooledBeam.hpp"
 
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/OS_AirTerminal_SingleDuct_ConstantVolume_CooledBeam_FieldEnums.hxx>
@@ -151,7 +154,8 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeCooledBeam_Availabilit
   auto coil = ModelObject::create(openstudio::IddObjectType::OS_Coil_Cooling_CooledBeam, model);
   AirTerminalSingleDuctConstantVolumeCooledBeam terminal(model, schedule, coil);
 
-  ASSERT_TRUE(terminal.setPointer(openstudio::OS_AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::AvailabilityScheduleName, openstudio::Handle()));
+  ASSERT_TRUE(
+    terminal.setPointer(openstudio::OS_AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::AvailabilityScheduleName, openstudio::Handle()));
   EXPECT_FALSE(
     terminal.getModelObjectTarget<Schedule>(openstudio::OS_AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::AvailabilityScheduleName));
 
@@ -258,4 +262,155 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeCooledBeam_AddToNode_R
   auto linkedAirLoop = terminal.airLoopHVAC();
   ASSERT_TRUE(linkedAirLoop);
   EXPECT_EQ(airLoop, *linkedAirLoop);
+}
+
+TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeCooledBeam_AddToNode_RejectsMismatchedSplitterMixerBranch) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  ThermalZone zone(model);
+  ScheduleConstant schedule(model);
+  schedule.setValue(1.0);
+  auto coil = ModelObject::create(openstudio::IddObjectType::OS_Coil_Cooling_CooledBeam, model);
+  AirTerminalSingleDuctConstantVolumeCooledBeam terminal(model, schedule, coil);
+
+  auto branchObject = airLoop.zoneSplitter().lastOutletModelObject();
+  ASSERT_TRUE(branchObject);
+  auto branchNode = branchObject->optionalCast<Node>();
+  ASSERT_TRUE(branchNode);
+  ASSERT_TRUE(zone.addToNode(*branchNode));
+  auto zoneAirNode = zone.zoneAirNode();
+
+  Node mismatchedMixerNode(model);
+  ASSERT_TRUE(airLoop.zoneMixer().setInletModelObject(0u, mismatchedMixerNode.cast<ModelObject>()));
+
+  EXPECT_FALSE(terminal.addToNode(zoneAirNode));
+  EXPECT_FALSE(terminal.inletModelObject());
+  EXPECT_FALSE(terminal.outletModelObject());
+  EXPECT_TRUE(zone.equipment().empty());
+
+  auto splitterOutlet = airLoop.zoneSplitter().outletModelObject(0u);
+  ASSERT_TRUE(splitterOutlet);
+  EXPECT_EQ(zoneAirNode.cast<ModelObject>(), *splitterOutlet);
+}
+
+TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeCooledBeam_Remove_ReconnectsZoneBranchAndCleansZoneReferences) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  ThermalZone zone(model);
+  ScheduleConstant schedule(model);
+  schedule.setValue(1.0);
+  auto coilObject = ModelObject::create(openstudio::IddObjectType::OS_Coil_Cooling_CooledBeam, model);
+  AirTerminalSingleDuctConstantVolumeCooledBeam terminal(model, schedule, coilObject);
+  ASSERT_TRUE(airLoop.addBranchForZone(zone, terminal));
+  const auto zoneAirNode = zone.zoneAirNode();
+
+  auto inletObject = terminal.inletModelObject();
+  ASSERT_TRUE(inletObject);
+  auto inletNode = inletObject->optionalCast<Node>();
+  ASSERT_TRUE(inletNode);
+  const auto inletNodeHandle = inletNode->handle();
+  EXPECT_NE(zoneAirNode, *inletNode);
+
+  auto splitterOutlet = airLoop.zoneSplitter().outletModelObject(0u);
+  ASSERT_TRUE(splitterOutlet);
+  EXPECT_EQ(inletNode->cast<ModelObject>(), *splitterOutlet);
+  ASSERT_EQ(1u, zone.equipment().size());
+
+  const auto removedObjects = terminal.remove();
+  EXPECT_FALSE(removedObjects.empty());
+
+  splitterOutlet = airLoop.zoneSplitter().outletModelObject(0u);
+  ASSERT_TRUE(splitterOutlet);
+  EXPECT_EQ(zoneAirNode.cast<ModelObject>(), *splitterOutlet);
+  EXPECT_EQ(6u, airLoop.demandComponents().size());
+  EXPECT_TRUE(airLoop.demandComponents(AirTerminalSingleDuctConstantVolumeCooledBeam::iddObjectType()).empty());
+  EXPECT_TRUE(zone.equipment().empty());
+  EXPECT_FALSE(model.getModelObject<Node>(inletNodeHandle));
+}
+
+TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeCooledBeam_RemoveFromLoop_CleansConnectivityWithoutRemovingTerminal) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  ThermalZone zone(model);
+  ScheduleConstant schedule(model);
+  schedule.setValue(1.0);
+  auto coilObject = ModelObject::create(openstudio::IddObjectType::OS_Coil_Cooling_CooledBeam, model);
+  AirTerminalSingleDuctConstantVolumeCooledBeam terminal(model, schedule, coilObject);
+  ASSERT_TRUE(airLoop.addBranchForZone(zone, terminal));
+  const auto zoneAirNode = zone.zoneAirNode();
+  auto inletObject = terminal.inletModelObject();
+  ASSERT_TRUE(inletObject);
+  auto inletNode = inletObject->optionalCast<Node>();
+  ASSERT_TRUE(inletNode);
+  const auto inletNodeHandle = inletNode->handle();
+
+  ASSERT_TRUE(terminal.removeFromLoop());
+
+  auto splitterOutlet = airLoop.zoneSplitter().outletModelObject(0u);
+  ASSERT_TRUE(splitterOutlet);
+  EXPECT_EQ(zoneAirNode.cast<ModelObject>(), *splitterOutlet);
+  EXPECT_TRUE(zone.equipment().empty());
+  EXPECT_FALSE(terminal.inletModelObject());
+  EXPECT_FALSE(terminal.outletModelObject());
+  EXPECT_TRUE(model.getObject(terminal.handle()));
+  EXPECT_FALSE(model.getModelObject<Node>(inletNodeHandle));
+}
+
+TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeCooledBeam_CoilCoolingCooledBeam_PlantDemandBranchLifecycle) {
+  Model model;
+  PlantLoop plantLoop(model);
+  AirLoopHVAC airLoop(model);
+  CoilCoolingCooledBeam coil1(model);
+  CoilCoolingCooledBeam coil2(model);
+  Node standaloneNode(model);
+  auto airSupplyOutletNode = airLoop.supplyOutletNode();
+
+  EXPECT_FALSE(coil1.addToNode(standaloneNode));
+  EXPECT_FALSE(coil1.addToNode(airSupplyOutletNode));
+  EXPECT_FALSE(coil1.plantLoop());
+
+  ASSERT_TRUE(plantLoop.addDemandBranchForComponent(coil1));
+  ASSERT_TRUE(coil1.plantLoop());
+  EXPECT_EQ(plantLoop.handle(), coil1.plantLoop()->handle());
+  ASSERT_TRUE(coil1.inletModelObject());
+  ASSERT_TRUE(coil1.outletModelObject());
+
+  ASSERT_TRUE(plantLoop.addDemandBranchForComponent(coil2));
+  ASSERT_TRUE(coil2.plantLoop());
+  EXPECT_EQ(plantLoop.handle(), coil2.plantLoop()->handle());
+  ASSERT_TRUE(coil2.inletModelObject());
+  ASSERT_TRUE(coil2.outletModelObject());
+  EXPECT_NE(coil1.inletModelObject()->handle(), coil2.inletModelObject()->handle());
+
+  ASSERT_TRUE(plantLoop.removeDemandBranchWithComponent(coil1));
+  EXPECT_FALSE(coil1.inletModelObject());
+  EXPECT_FALSE(coil1.outletModelObject());
+  EXPECT_FALSE(coil1.plantLoop());
+  ASSERT_TRUE(coil2.plantLoop());
+  EXPECT_EQ(plantLoop.handle(), coil2.plantLoop()->handle());
+  EXPECT_TRUE(coil2.inletModelObject());
+  EXPECT_TRUE(coil2.outletModelObject());
+}
+
+TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeCooledBeam_Remove_CleansCoolingCoilPlantDemandBranch) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  ThermalZone zone(model);
+  PlantLoop plantLoop(model);
+  ScheduleConstant schedule(model);
+  schedule.setValue(1.0);
+  CoilCoolingCooledBeam coil(model);
+  AirTerminalSingleDuctConstantVolumeCooledBeam terminal(model, schedule, coil);
+
+  ASSERT_TRUE(airLoop.addBranchForZone(zone, terminal));
+  ASSERT_TRUE(plantLoop.addDemandBranchForComponent(coil));
+  ASSERT_TRUE(coil.plantLoop());
+  EXPECT_EQ(plantLoop.handle(), coil.plantLoop()->handle());
+
+  const auto removedObjects = terminal.remove();
+  EXPECT_FALSE(removedObjects.empty());
+
+  EXPECT_TRUE(plantLoop.demandComponents(CoilCoolingCooledBeam::iddObjectType()).empty());
+  EXPECT_TRUE(airLoop.demandComponents(AirTerminalSingleDuctConstantVolumeCooledBeam::iddObjectType()).empty());
+  EXPECT_TRUE(zone.equipment().empty());
 }

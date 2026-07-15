@@ -21,6 +21,8 @@
 #include "BranchList.hpp"
 #include "Model.hpp"
 #include "Node.hpp"
+#include "WaterToAirComponent/WaterToAirComponent.hpp"
+#include "WaterToAirComponent/WaterToAirComponent_Impl.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/Compare.hpp>
@@ -223,8 +225,8 @@ namespace epmodel {
       auto thisComponent = getObject<openstudio::epmodel::HVACComponent>();
       if (thisComponent.loop() && !removeFromLoop()) {
         LOG_FREE(Warn, "openstudio.epmodel.StraightComponent",
-                 "Failed to detach " << thisObject.briefDescription()
-                                      << " from its existing loop topology before adding it to node '" << node.nameString() << "'.");
+                 "Failed to detach " << thisObject.briefDescription() << " from its existing loop topology before adding it to node '"
+                                     << node.nameString() << "'.");
         return false;
       }
 
@@ -339,7 +341,12 @@ namespace epmodel {
           }
 
           // Generate a new intermediate node name to preserve the existing node position.
-          const std::string newNodeName = *nodeName + " - " + thisName + " Outlet";
+          std::string newNodeName;
+          if (matchesInlet) {
+            newNodeName = thisName + " Outlet - " + components[i].nameString() + " Inlet";
+          } else {  // matchesOutlet
+            newNodeName = components[i].nameString() + " Outlet - " + thisName + " Inlet";
+          }
 
           // Insert the new component group before the downstream component (if inlet match),
           // otherwise after the upstream component (if outlet match).
@@ -355,12 +362,13 @@ namespace epmodel {
             newInletName = *nodeName;
             newOutletName = newNodeName;
           }
+          // This instantiates the new node already
           if (!branch->getImpl<openstudio::epmodel::detail::Branch_Impl>()->insertComponent(insertIndex, thisObject, newInletName, newOutletName)) {
             return false;
           }
 
-          auto newInletNode = model().getOrCreateTransientByName<openstudio::epmodel::Node>(newInletName);
-          auto newOutletNode = model().getOrCreateTransientByName<openstudio::epmodel::Node>(newOutletName);
+          auto newInletNode = model().getConcreteModelObjectByName<openstudio::epmodel::Node>(newInletName).get();
+          auto newOutletNode = model().getConcreteModelObjectByName<openstudio::epmodel::Node>(newOutletName).get();
           setPointer(inletPort(), newInletNode.handle(), false);
           setPointer(outletPort(), newOutletNode.handle(), false);
 
@@ -370,11 +378,31 @@ namespace epmodel {
             if (!branch->getImpl<openstudio::epmodel::detail::Branch_Impl>()->setComponentInletNode(insertIndex + 1u, newNode)) {
               return false;
             }
+            if (auto straightComponent = components[i].optionalCast<openstudio::epmodel::StraightComponent>()) {
+              if (!straightComponent->setPointer(straightComponent->inletPort(), newNode.handle())) {
+                return false;
+              }
+            } else if (auto waterToAirComponent = components[i].optionalCast<openstudio::epmodel::WaterToAirComponent>()) {
+              const auto port = airLoop ? waterToAirComponent->airInletPort() : waterToAirComponent->waterInletPort();
+              if (!waterToAirComponent->setPointer(port, newNode.handle())) {
+                return false;
+              }
+            }
           } else {
             // The upstream component currently uses nodeName as its outlet; reroute it to newNodeName.
             auto newNode = model().getOrCreateTransientByName<openstudio::epmodel::Node>(newNodeName);
             if (!branch->getImpl<openstudio::epmodel::detail::Branch_Impl>()->setComponentOutletNode(insertIndex - 1u, newNode)) {
               return false;
+            }
+            if (auto straightComponent = components[i].optionalCast<openstudio::epmodel::StraightComponent>()) {
+              if (!straightComponent->setPointer(straightComponent->outletPort(), newNode.handle())) {
+                return false;
+              }
+            } else if (auto waterToAirComponent = components[i].optionalCast<openstudio::epmodel::WaterToAirComponent>()) {
+              const auto port = airLoop ? waterToAirComponent->airOutletPort() : waterToAirComponent->waterOutletPort();
+              if (!waterToAirComponent->setPointer(port, newNode.handle())) {
+                return false;
+              }
             }
           }
 

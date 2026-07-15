@@ -285,14 +285,10 @@ TEST_F(EPModelFixture, ZoneHVACLowTempRadiantConstFlow_TransientCompanionCoils_R
   Node coolingInlet = model.getOrCreateTransientByName<Node>("Radiant Cooling Inlet");
   Node coolingOutlet = model.getOrCreateTransientByName<Node>("Radiant Cooling Outlet");
 
-  ASSERT_TRUE(
-    radiant.setPointer(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::HeatingWaterInletNodeName, heatingInlet.handle()));
-  ASSERT_TRUE(
-    radiant.setPointer(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::HeatingWaterOutletNodeName, heatingOutlet.handle()));
-  ASSERT_TRUE(
-    radiant.setPointer(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::CoolingWaterInletNodeName, coolingInlet.handle()));
-  ASSERT_TRUE(
-    radiant.setPointer(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::CoolingWaterOutletNodeName, coolingOutlet.handle()));
+  ASSERT_TRUE(radiant.setPointer(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::HeatingWaterInletNodeName, heatingInlet.handle()));
+  ASSERT_TRUE(radiant.setPointer(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::HeatingWaterOutletNodeName, heatingOutlet.handle()));
+  ASSERT_TRUE(radiant.setPointer(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::CoolingWaterInletNodeName, coolingInlet.handle()));
+  ASSERT_TRUE(radiant.setPointer(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::CoolingWaterOutletNodeName, coolingOutlet.handle()));
 
   auto heatingCoil = radiant.heatingCoil();
   auto coolingCoil = radiant.coolingCoil();
@@ -326,8 +322,7 @@ TEST_F(EPModelFixture, ZoneHVACLowTempRadiantConstFlow_RadiantSurfaceType_Rewrit
   ConstructionWithInternalSource radiantConstruction(model);
   ASSERT_TRUE(radiantConstruction.setPointer(openstudio::ConstructionProperty_InternalHeatSourceFields::ConstructionName, construction.handle()));
 
-  auto makeSurface = [&](const std::string& name, const std::string& surfaceType,
-                         const std::vector<std::array<double, 3>>& vertices) -> Surface {
+  auto makeSurface = [&](const std::string& name, const std::string& surfaceType, const std::vector<std::array<double, 3>>& vertices) -> Surface {
     Surface surface(model);
     EXPECT_TRUE(surface.setName(name));
     EXPECT_TRUE(surface.setSurfaceType(surfaceType));

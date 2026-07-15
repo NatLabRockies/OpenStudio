@@ -13,15 +13,15 @@
 namespace openstudio {
 namespace epmodel {
 
-AirflowNetworkIntraZoneLinkage::AirflowNetworkIntraZoneLinkage(const Model& model)
-  : ModelObject(AirflowNetworkIntraZoneLinkage::iddObjectType(), model) {}
+  AirflowNetworkIntraZoneLinkage::AirflowNetworkIntraZoneLinkage(const Model& model)
+    : ModelObject(AirflowNetworkIntraZoneLinkage::iddObjectType(), model) {}
 
-AirflowNetworkIntraZoneLinkage::AirflowNetworkIntraZoneLinkage(std::shared_ptr<detail::AirflowNetworkIntraZoneLinkage_Impl> impl)
-  : ModelObject(std::move(impl)) {}
+  AirflowNetworkIntraZoneLinkage::AirflowNetworkIntraZoneLinkage(std::shared_ptr<detail::AirflowNetworkIntraZoneLinkage_Impl> impl)
+    : ModelObject(std::move(impl)) {}
 
-IddObjectType AirflowNetworkIntraZoneLinkage::iddObjectType() {
-  return IddObjectType::AirflowNetwork_IntraZone_Linkage;
-}
+  IddObjectType AirflowNetworkIntraZoneLinkage::iddObjectType() {
+    return IddObjectType::AirflowNetwork_IntraZone_Linkage;
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio

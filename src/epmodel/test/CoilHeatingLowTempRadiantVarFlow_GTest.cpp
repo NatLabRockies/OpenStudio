@@ -47,8 +47,10 @@ TEST_F(EPModelFixture, CoilHeatingLowTempRadiantVarFlow_PlantLoopTraversalProjec
   EXPECT_FALSE(radiant.plantLoop());
 
   const auto demandComponents = plantLoop.demandComponents();
-  EXPECT_TRUE(std::any_of(demandComponents.begin(), demandComponents.end(), [&](const auto& object) { return object.handle() == heatingCoil.handle(); }));
-  EXPECT_FALSE(std::any_of(demandComponents.begin(), demandComponents.end(), [&](const auto& object) { return object.handle() == radiant.handle(); }));
+  EXPECT_TRUE(
+    std::any_of(demandComponents.begin(), demandComponents.end(), [&](const auto& object) { return object.handle() == heatingCoil.handle(); }));
+  EXPECT_FALSE(
+    std::any_of(demandComponents.begin(), demandComponents.end(), [&](const auto& object) { return object.handle() == radiant.handle(); }));
 
   auto inletNode = heatingCoil.inletModelObject()->cast<Node>();
   ASSERT_TRUE(inletNode.outletModelObject());

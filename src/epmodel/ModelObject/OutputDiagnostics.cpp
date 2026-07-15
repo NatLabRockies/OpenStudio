@@ -13,13 +13,13 @@
 namespace openstudio {
 namespace epmodel {
 
-OutputDiagnostics::OutputDiagnostics(const Model& model) : ModelObject(OutputDiagnostics::iddObjectType(), model) {}
+  OutputDiagnostics::OutputDiagnostics(const Model& model) : ModelObject(OutputDiagnostics::iddObjectType(), model) {}
 
-OutputDiagnostics::OutputDiagnostics(std::shared_ptr<detail::OutputDiagnostics_Impl> impl) : ModelObject(std::move(impl)) {}
+  OutputDiagnostics::OutputDiagnostics(std::shared_ptr<detail::OutputDiagnostics_Impl> impl) : ModelObject(std::move(impl)) {}
 
-IddObjectType OutputDiagnostics::iddObjectType() {
-  return IddObjectType::Output_Diagnostics;
-}
+  IddObjectType OutputDiagnostics::iddObjectType() {
+    return IddObjectType::Output_Diagnostics;
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio

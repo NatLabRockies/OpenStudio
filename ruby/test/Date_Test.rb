@@ -30,13 +30,13 @@ class Date_Test < Minitest::Test
     assert_raises(RuntimeError){OpenStudio::Date.new("Jan".to_MonthOfYear,0,2008)}
     assert_raises(RuntimeError){OpenStudio::Date.new("Dec".to_MonthOfYear,0,2008)}
 
-    # TC 2021-05-26  After the upgrade to ruby 2.7.2, Ruby on Windows segfaults running the below tests. 
+    # TC 2021-05-26  After the upgrade to ruby 2.7.2, Ruby on Windows segfaults running the below tests.
     # These throw a RuntimeError when ran outside the minitest. It seems isolated to ruby 2.7.2, minitest on Windows
-    #assert_raises(RuntimeError){OpenStudio::Date.new("Jan".to_MonthOfYear,32,2008)}
-    #assert_raises(RuntimeError){OpenStudio::Date.new("Feb".to_MonthOfYear,30,2008)}
-    #assert_raises(RuntimeError){OpenStudio::Date.new("Dec".to_MonthOfYear,32,2008)}
-    #assert_raises(RuntimeError){OpenStudio::Date.new("NotAMonth".to_MonthOfYear,1,2008)}
-    #assert_raises(RuntimeError){OpenStudio::Date.new("NumMonths".to_MonthOfYear,1,2008)}
+    assert_raises(RuntimeError){OpenStudio::Date.new("Jan".to_MonthOfYear,32,2008)}
+    assert_raises(RuntimeError){OpenStudio::Date.new("Feb".to_MonthOfYear,30,2008)}
+    assert_raises(RuntimeError){OpenStudio::Date.new("Dec".to_MonthOfYear,32,2008)}
+    assert_raises(RuntimeError){OpenStudio::Date.new("NotAMonth".to_MonthOfYear,1,2008)}
+    assert_raises(RuntimeError){OpenStudio::Date.new("NumMonths".to_MonthOfYear,1,2008)}
   end
 
   def test_ydoy_constructor

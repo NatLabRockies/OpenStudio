@@ -11,26 +11,26 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API ExternalInterfaceActuator_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~ExternalInterfaceActuator_Impl() override = default;
+    class EPMODEL_API ExternalInterfaceActuator_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~ExternalInterfaceActuator_Impl() override = default;
 
-  std::string actuatedComponentControlType() const;
-  bool setActuatedComponentControlType(const std::string& actuatedComponentControlType);
+      std::string actuatedComponentControlType() const;
+      bool setActuatedComponentControlType(const std::string& actuatedComponentControlType);
 
-  std::string actuatedComponentType() const;
-  bool setActuatedComponentType(const std::string& actuatedComponentType);
+      std::string actuatedComponentType() const;
+      bool setActuatedComponentType(const std::string& actuatedComponentType);
 
-  boost::optional<double> optionalInitialValue() const;
-  bool setOptionalInitialValue(double optionalInitialValue);
-  void resetOptionalInitialValue();
-};
+      boost::optional<double> optionalInitialValue() const;
+      bool setOptionalInitialValue(double optionalInitialValue);
+      void resetOptionalInitialValue();
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

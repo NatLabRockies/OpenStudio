@@ -16,40 +16,40 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class EnergyManagementSystemProgram_Impl;
-}
+  namespace detail {
+    class EnergyManagementSystemProgram_Impl;
+  }
 
-class EPMODEL_API EnergyManagementSystemProgram : public ModelObject
-{
- public:
-  explicit EnergyManagementSystemProgram(const Model& model);
+  class EPMODEL_API EnergyManagementSystemProgram : public ModelObject
+  {
+   public:
+    explicit EnergyManagementSystemProgram(const Model& model);
 
-  virtual ~EnergyManagementSystemProgram() override = default;
-  EnergyManagementSystemProgram(const EnergyManagementSystemProgram& other) = default;
-  EnergyManagementSystemProgram(EnergyManagementSystemProgram&& other) = default;
-  EnergyManagementSystemProgram& operator=(const EnergyManagementSystemProgram&) = default;
-  EnergyManagementSystemProgram& operator=(EnergyManagementSystemProgram&&) = default;
+    virtual ~EnergyManagementSystemProgram() override = default;
+    EnergyManagementSystemProgram(const EnergyManagementSystemProgram& other) = default;
+    EnergyManagementSystemProgram(EnergyManagementSystemProgram&& other) = default;
+    EnergyManagementSystemProgram& operator=(const EnergyManagementSystemProgram&) = default;
+    EnergyManagementSystemProgram& operator=(EnergyManagementSystemProgram&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  // Schema Alignment Notes:
-  // - API: Preserves openstudio::model::EnergyManagementSystemProgram class naming.
-  // - Field Mapping: EnergyPlus Program Line is an extensible/non-scalar field and intentionally excluded from simple scalar accessor scaffold.
-  // - ForwardTranslator evidence: ForwardTranslateEnergyManagementSystemProgram.cpp maps OS extensible ProgramLine entries to E+ extensible ProgramLine entries.
-  // - TODO(parity): Add non-scalar body/lines/referencedObjects APIs incrementally without changing scalar scaffolding conventions.
+    // Schema Alignment Notes:
+    // - API: Preserves openstudio::model::EnergyManagementSystemProgram class naming.
+    // - Field Mapping: EnergyPlus Program Line is an extensible/non-scalar field and intentionally excluded from simple scalar accessor scaffold.
+    // - ForwardTranslator evidence: ForwardTranslateEnergyManagementSystemProgram.cpp maps OS extensible ProgramLine entries to E+ extensible ProgramLine entries.
+    // - TODO(parity): Add non-scalar body/lines/referencedObjects APIs incrementally without changing scalar scaffolding conventions.
 
- protected:
-  using ImplType = detail::EnergyManagementSystemProgram_Impl;
+   protected:
+    using ImplType = detail::EnergyManagementSystemProgram_Impl;
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
 
-  explicit EnergyManagementSystemProgram(std::shared_ptr<detail::EnergyManagementSystemProgram_Impl> impl);
-};
+    explicit EnergyManagementSystemProgram(std::shared_ptr<detail::EnergyManagementSystemProgram_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

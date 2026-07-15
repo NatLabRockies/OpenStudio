@@ -157,7 +157,8 @@ namespace epmodel {
     }
 
     boost::optional<Schedule> PlantComponentTemperatureSource_Impl::sourceTemperatureSchedule() const {
-      return getObject<ModelObject>().getModelObjectTarget<Schedule>(openstudio::PlantComponent_TemperatureSourceFields::SourceTemperatureScheduleName);
+      return getObject<ModelObject>().getModelObjectTarget<Schedule>(
+        openstudio::PlantComponent_TemperatureSourceFields::SourceTemperatureScheduleName);
     }
 
     bool PlantComponentTemperatureSource_Impl::setSourceTemperatureSchedule(Schedule& schedule) {

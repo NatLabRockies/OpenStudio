@@ -26,6 +26,8 @@ namespace epmodel {
   class EPMODEL_API OutputControlResilienceSummaries : public ModelObject
   {
    public:
+    static constexpr bool is_unique = true;  // This is a Unique ModelObject
+
     virtual ~OutputControlResilienceSummaries() override = default;
     OutputControlResilienceSummaries(const OutputControlResilienceSummaries& other) = default;
     OutputControlResilienceSummaries(OutputControlResilienceSummaries&& other) = default;

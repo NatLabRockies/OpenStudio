@@ -16,7 +16,7 @@ namespace detail {
 }
 
 namespace epmodel {
-class PlantLoop;
+  class PlantLoop;
 
   namespace detail {
 

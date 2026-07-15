@@ -15,50 +15,49 @@
 namespace openstudio {
 namespace epmodel {
 
-ExternalInterfaceSchedule::ExternalInterfaceSchedule(const Model& model, double initialValue)
-  : Schedule(ExternalInterfaceSchedule::iddObjectType(), model) {
-  OS_ASSERT(setInitialValue(initialValue));
-}
+  ExternalInterfaceSchedule::ExternalInterfaceSchedule(const Model& model, double initialValue)
+    : Schedule(ExternalInterfaceSchedule::iddObjectType(), model) {
+    OS_ASSERT(setInitialValue(initialValue));
+  }
 
-ExternalInterfaceSchedule::ExternalInterfaceSchedule(const Model& model) : Schedule(ExternalInterfaceSchedule::iddObjectType(), model) {
-  OS_ASSERT(setInitialValue(0.0));
-}
+  ExternalInterfaceSchedule::ExternalInterfaceSchedule(const Model& model) : Schedule(ExternalInterfaceSchedule::iddObjectType(), model) {
+    OS_ASSERT(setInitialValue(0.0));
+  }
 
-ExternalInterfaceSchedule::ExternalInterfaceSchedule(std::shared_ptr<detail::ExternalInterfaceSchedule_Impl> impl)
-  : Schedule(std::move(impl)) {}
+  ExternalInterfaceSchedule::ExternalInterfaceSchedule(std::shared_ptr<detail::ExternalInterfaceSchedule_Impl> impl) : Schedule(std::move(impl)) {}
 
-IddObjectType ExternalInterfaceSchedule::iddObjectType() {
-  return IddObjectType::ExternalInterface_Schedule;
-}
+  IddObjectType ExternalInterfaceSchedule::iddObjectType() {
+    return IddObjectType::ExternalInterface_Schedule;
+  }
 
-// Initial Value accessors
-double ExternalInterfaceSchedule::initialValue() const {
-  return getImpl<detail::ExternalInterfaceSchedule_Impl>()->initialValue();
-}
+  // Initial Value accessors
+  double ExternalInterfaceSchedule::initialValue() const {
+    return getImpl<detail::ExternalInterfaceSchedule_Impl>()->initialValue();
+  }
 
-bool ExternalInterfaceSchedule::setInitialValue(double initialValue) {
-  return getImpl<detail::ExternalInterfaceSchedule_Impl>()->setInitialValue(initialValue);
-}
+  bool ExternalInterfaceSchedule::setInitialValue(double initialValue) {
+    return getImpl<detail::ExternalInterfaceSchedule_Impl>()->setInitialValue(initialValue);
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-double ExternalInterfaceSchedule_Impl::initialValue() const {
-  const auto value = getDouble(openstudio::ExternalInterface_ScheduleFields::InitialValue, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    double ExternalInterfaceSchedule_Impl::initialValue() const {
+      const auto value = getDouble(openstudio::ExternalInterface_ScheduleFields::InitialValue, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-bool ExternalInterfaceSchedule_Impl::setInitialValue(double initialValue) {
-  const bool result = setDouble(openstudio::ExternalInterface_ScheduleFields::InitialValue, initialValue);
-  OS_ASSERT(result);
-  return result;
-}
+    bool ExternalInterfaceSchedule_Impl::setInitialValue(double initialValue) {
+      const bool result = setDouble(openstudio::ExternalInterface_ScheduleFields::InitialValue, initialValue);
+      OS_ASSERT(result);
+      return result;
+    }
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio

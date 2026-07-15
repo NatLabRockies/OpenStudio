@@ -13,6 +13,7 @@
 #include "../../model/WaterHeaterStratified.hpp"
 // #include "../../model/WaterHeaterStratified_Impl.hpp"
 #include "../../model/Schedule.hpp"
+#include "../../model/Space.hpp"
 #include "../../model/ThermalZone.hpp"
 
 #include "../../model/PlantLoop.hpp"
@@ -116,8 +117,7 @@ TEST_F(EnergyPlusFixture, ForwardTranslatorWaterHeaterStratified_AmbientTemperat
 
   EXPECT_EQ("Outdoors", idfWHStratified.getString(WaterHeater_StratifiedFields::AmbientTemperatureIndicator, false).get());
   ASSERT_FALSE(idfWHStratified.isEmpty(WaterHeater_StratifiedFields::AmbientTemperatureOutdoorAirNodeName));
-  const std::string outdoorAirNodeName =
-    idfWHStratified.getString(WaterHeater_StratifiedFields::AmbientTemperatureOutdoorAirNodeName, false).get();
+  const std::string outdoorAirNodeName = idfWHStratified.getString(WaterHeater_StratifiedFields::AmbientTemperatureOutdoorAirNodeName, false).get();
 
   std::vector<WorkspaceObject> oaNodeLists(w.getObjectsByType(IddObjectType::OutdoorAir_NodeList));
   ASSERT_EQ(1u, oaNodeLists.size());
@@ -131,6 +131,10 @@ TEST_F(EnergyPlusFixture, ForwardTranslatorWaterHeaterStratified_AmbientTemperat
   WaterHeaterStratified wh(m);
   PlantLoop p(m);
   EXPECT_TRUE(p.addSupplyBranchForComponent(wh));
+
+  wh.autosizeTankVolume();
+  wh.autosizeTankHeight();
+  wh.autosizeHeater1Capacity();
 
   Workspace w = ft.translateModel(m);
 
@@ -147,6 +151,8 @@ TEST_F(EnergyPlusFixture, ForwardTranslatorWaterHeaterStratified_AmbientTemperat
   EXPECT_EQ("Autosize", idfWHStratified.getString(WaterHeater_StratifiedFields::SourceSideDesignFlowRate, false).get());
 
   ThermalZone zone(m);
+  Space space(m);
+  space.setThermalZone(zone);
   EXPECT_TRUE(wh.setAmbientTemperatureIndicator("ThermalZone"));
   EXPECT_TRUE(wh.setAmbientTemperatureThermalZone(zone));
 

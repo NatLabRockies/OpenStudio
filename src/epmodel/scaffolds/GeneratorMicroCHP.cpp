@@ -13,13 +13,13 @@
 namespace openstudio {
 namespace epmodel {
 
-GeneratorMicroCHP::GeneratorMicroCHP(const Model& model) : ModelObject(GeneratorMicroCHP::iddObjectType(), model) {}
+  GeneratorMicroCHP::GeneratorMicroCHP(const Model& model) : ModelObject(GeneratorMicroCHP::iddObjectType(), model) {}
 
-GeneratorMicroCHP::GeneratorMicroCHP(std::shared_ptr<detail::GeneratorMicroCHP_Impl> impl) : ModelObject(std::move(impl)) {}
+  GeneratorMicroCHP::GeneratorMicroCHP(std::shared_ptr<detail::GeneratorMicroCHP_Impl> impl) : ModelObject(std::move(impl)) {}
 
-IddObjectType GeneratorMicroCHP::iddObjectType() {
-  return IddObjectType::Generator_MicroCHP;
-}
+  IddObjectType GeneratorMicroCHP::iddObjectType() {
+    return IddObjectType::Generator_MicroCHP;
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio

@@ -60,7 +60,7 @@ namespace energyplus {
         hourPrefix = "0";
       }
 
-      int minutes = times[i].minutes() + (int)floor((times[i].seconds() / 60.0) + 0.5);
+      int minutes = times[i].minutes() + (int)std::floor((times[i].seconds() / 60.0) + 0.5);
       if (minutes < 10) {
         minutePrefix = "0";
       }

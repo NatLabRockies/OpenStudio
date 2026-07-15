@@ -10,19 +10,19 @@
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API ScheduleConstant_Impl : public Schedule_Impl
-{
- public:
-  using Schedule_Impl::Schedule_Impl;
-  virtual ~ScheduleConstant_Impl() override = default;
+    class EPMODEL_API ScheduleConstant_Impl : public Schedule_Impl
+    {
+     public:
+      using Schedule_Impl::Schedule_Impl;
+      virtual ~ScheduleConstant_Impl() override = default;
 
-  double value() const;
-  bool setValue(double value);
-};
+      double value() const;
+      bool setValue(double value);
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

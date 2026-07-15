@@ -7,7 +7,7 @@
 #define EPMODEL_AIRTERMINALSINGLEDUCTUSERDEFINED_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "StraightComponent/StraightComponent.hpp"
 
 #include <utilities/idd/IddEnums.hxx>
 
@@ -17,12 +17,13 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class Node;
 
   namespace detail {
     class AirTerminalSingleDuctUserDefined_Impl;
   }
 
-  class EPMODEL_API AirTerminalSingleDuctUserDefined : public ModelObject
+  class EPMODEL_API AirTerminalSingleDuctUserDefined : public StraightComponent
   {
    public:
     explicit AirTerminalSingleDuctUserDefined(const Model& model);
@@ -35,12 +36,23 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
+    bool addToNode(Node& node);
+
     // Schema Alignment Notes:
-    // - API: This no-counterpart type uses IDD-derived naming for scalar accessors.
-    // - Field Mapping: numberofPlantLoopConnections maps directly to E+ AirTerminal:SingleDuct:UserDefined Number of Plant Loop Connections.
-    // - Field Mapping: Program calling manager names, node names, tank names, and Ambient Zone Name are relationship fields and intentionally excluded
-    //   from scalar accessors.
-    // - TODO(parity): Add relationship APIs incrementally after scalar scaffold saturation.
+    // - Status: Connectivity-focused parity for the current epmodel single-duct zone-branch topology.
+    // - Canonical Counterpart: No direct openstudio::model wrapper exists; this entity follows the tested epmodel
+    //   single-duct straight-component terminal contract used by nearby air terminals.
+    // - Implemented Parity: `addToNode` and the inherited removal path (`remove`/`removeFromLoop`) preserve
+    //   primary-air node wiring, AirLoopHVAC demand continuity, ZoneHVAC equipment registration cleanup,
+    //   conditional transient inlet-node cleanup, and ADU outlet/terminal cleanup for the supported zone-branch
+    //   insertion paths, with best-effort rollback of observed intermediate `addToNode` mutations on the tested
+    //   failure path.
+    // - Documented Delta: Public parity here stays intentionally narrow. Secondary-air nodes, plant-connection
+    //   node relationships, program-calling-manager relationships, tank relationships, and ambient-zone
+    //   convenience are not exposed yet beyond the stored scalar count.
+    // - Field Mapping: `numberofPlantLoopConnections` maps directly to E+ AirTerminal:SingleDuct:UserDefined
+    //   Number of Plant Loop Connections. Primary air inlet/outlet node fields participate in the shared
+    //   straight-component topology contract.
     /** @name Number of Plant Loop Connections */
     //@{
     int numberofPlantLoopConnections() const;

@@ -15,6 +15,9 @@ namespace openstudio {
 namespace model {
   class Model;
 }
+namespace epmodel {
+  class Model;
+}
 class IdfObject;
 class Workspace;
 class WorkflowStepResult;
@@ -27,6 +30,7 @@ namespace workflow {
 
     model::Model loadOSM(const openstudio::filesystem::path& osmPath);
     Workspace loadIDF(const openstudio::filesystem::path& idfPath);
+    epmodel::Model loadEPModel(const openstudio::filesystem::path& idfPath);
 
     void gatherReports(const openstudio::filesystem::path& runDirPath, const openstudio::filesystem::path& rootDirPath);
 

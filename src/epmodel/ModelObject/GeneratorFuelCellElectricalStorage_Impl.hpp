@@ -13,46 +13,46 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API GeneratorFuelCellElectricalStorage_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~GeneratorFuelCellElectricalStorage_Impl() override = default;
+    class EPMODEL_API GeneratorFuelCellElectricalStorage_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~GeneratorFuelCellElectricalStorage_Impl() override = default;
 
-  std::string choiceofModel() const;
-  bool setChoiceofModel(const std::string& choiceofModel);
-  void resetChoiceofModel();
+      std::string choiceofModel() const;
+      bool setChoiceofModel(const std::string& choiceofModel);
+      void resetChoiceofModel();
 
-  double nominalChargingEnergeticEfficiency() const;
-  bool setNominalChargingEnergeticEfficiency(double nominalChargingEnergeticEfficiency);
-  void resetNominalChargingEnergeticEfficiency();
+      double nominalChargingEnergeticEfficiency() const;
+      bool setNominalChargingEnergeticEfficiency(double nominalChargingEnergeticEfficiency);
+      void resetNominalChargingEnergeticEfficiency();
 
-  double nominalDischargingEnergeticEfficiency() const;
-  bool setNominalDischargingEnergeticEfficiency(double nominalDischargingEnergeticEfficiency);
-  void resetNominalDischargingEnergeticEfficiency();
+      double nominalDischargingEnergeticEfficiency() const;
+      bool setNominalDischargingEnergeticEfficiency(double nominalDischargingEnergeticEfficiency);
+      void resetNominalDischargingEnergeticEfficiency();
 
-  double simpleMaximumCapacity() const;
-  bool setSimpleMaximumCapacity(double simpleMaximumCapacity);
-  void resetSimpleMaximumCapacity();
+      double simpleMaximumCapacity() const;
+      bool setSimpleMaximumCapacity(double simpleMaximumCapacity);
+      void resetSimpleMaximumCapacity();
 
-  double simpleMaximumPowerDraw() const;
-  bool setSimpleMaximumPowerDraw(double simpleMaximumPowerDraw);
-  void resetSimpleMaximumPowerDraw();
+      double simpleMaximumPowerDraw() const;
+      bool setSimpleMaximumPowerDraw(double simpleMaximumPowerDraw);
+      void resetSimpleMaximumPowerDraw();
 
-  double simpleMaximumPowerStore() const;
-  bool setSimpleMaximumPowerStore(double simpleMaximumPowerStore);
-  void resetSimpleMaximumPowerStore();
+      double simpleMaximumPowerStore() const;
+      bool setSimpleMaximumPowerStore(double simpleMaximumPowerStore);
+      void resetSimpleMaximumPowerStore();
 
-  double initialChargeState() const;
-  bool setInitialChargeState(double initialChargeState);
-  void resetInitialChargeState();
+      double initialChargeState() const;
+      bool setInitialChargeState(double initialChargeState);
+      void resetInitialChargeState();
 
-  std::vector<std::string> choiceofModelValues() const;
-};
+      std::vector<std::string> choiceofModelValues() const;
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

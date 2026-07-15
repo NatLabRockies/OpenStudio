@@ -13,15 +13,15 @@
 namespace openstudio {
 namespace epmodel {
 
-SpaceHVACEquipmentConnections::SpaceHVACEquipmentConnections(const Model& model)
-  : ModelObject(SpaceHVACEquipmentConnections::iddObjectType(), model) {}
+  SpaceHVACEquipmentConnections::SpaceHVACEquipmentConnections(const Model& model)
+    : ModelObject(SpaceHVACEquipmentConnections::iddObjectType(), model) {}
 
-SpaceHVACEquipmentConnections::SpaceHVACEquipmentConnections(std::shared_ptr<detail::SpaceHVACEquipmentConnections_Impl> impl)
-  : ModelObject(std::move(impl)) {}
+  SpaceHVACEquipmentConnections::SpaceHVACEquipmentConnections(std::shared_ptr<detail::SpaceHVACEquipmentConnections_Impl> impl)
+    : ModelObject(std::move(impl)) {}
 
-IddObjectType SpaceHVACEquipmentConnections::iddObjectType() {
-  return IddObjectType::SpaceHVAC_EquipmentConnections;
-}
+  IddObjectType SpaceHVACEquipmentConnections::iddObjectType() {
+    return IddObjectType::SpaceHVAC_EquipmentConnections;
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio

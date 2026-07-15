@@ -18,51 +18,51 @@
 namespace openstudio {
 namespace epmodel {
 
-PipeAdiabatic::PipeAdiabatic(const Model& model) : StraightComponent(PipeAdiabatic::iddObjectType(), model) {
-  OS_ASSERT(getImpl<detail::PipeAdiabatic_Impl>());
-}
+  PipeAdiabatic::PipeAdiabatic(const Model& model) : StraightComponent(PipeAdiabatic::iddObjectType(), model) {
+    OS_ASSERT(getImpl<detail::PipeAdiabatic_Impl>());
+  }
 
-PipeAdiabatic::PipeAdiabatic(std::shared_ptr<detail::PipeAdiabatic_Impl> impl) : StraightComponent(std::move(impl)) {}
+  PipeAdiabatic::PipeAdiabatic(std::shared_ptr<detail::PipeAdiabatic_Impl> impl) : StraightComponent(std::move(impl)) {}
 
-unsigned PipeAdiabatic::inletPort() const {
-  return getImpl<detail::PipeAdiabatic_Impl>()->inletPort();
-}
+  unsigned PipeAdiabatic::inletPort() const {
+    return getImpl<detail::PipeAdiabatic_Impl>()->inletPort();
+  }
 
-unsigned PipeAdiabatic::outletPort() const {
-  return getImpl<detail::PipeAdiabatic_Impl>()->outletPort();
-}
+  unsigned PipeAdiabatic::outletPort() const {
+    return getImpl<detail::PipeAdiabatic_Impl>()->outletPort();
+  }
 
-IddObjectType PipeAdiabatic::iddObjectType() {
-  return IddObjectType::Pipe_Adiabatic;
-}
+  IddObjectType PipeAdiabatic::iddObjectType() {
+    return IddObjectType::Pipe_Adiabatic;
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-unsigned PipeAdiabatic_Impl::inletPort() const {
-  // Relationship mapping only: Pipe:Adiabatic Inlet Node Name
-  return openstudio::Pipe_AdiabaticFields::InletNodeName;
-}
-
-unsigned PipeAdiabatic_Impl::outletPort() const {
-  // Relationship mapping only: Pipe:Adiabatic Outlet Node Name
-  return openstudio::Pipe_AdiabaticFields::OutletNodeName;
-}
-
-bool PipeAdiabatic_Impl::addToNode(Node& node) {
-  for (const auto& plant : model().getConcreteModelObjects<openstudio::epmodel::PlantLoop>()) {
-    if (plant.component(node.handle())) {
-      return StraightComponent_Impl::addToNode(node);
+    unsigned PipeAdiabatic_Impl::inletPort() const {
+      // Relationship mapping only: Pipe:Adiabatic Inlet Node Name
+      return openstudio::Pipe_AdiabaticFields::InletNodeName;
     }
-  }
 
-  return false;
-}
+    unsigned PipeAdiabatic_Impl::outletPort() const {
+      // Relationship mapping only: Pipe:Adiabatic Outlet Node Name
+      return openstudio::Pipe_AdiabaticFields::OutletNodeName;
+    }
 
-}  // namespace detail
+    bool PipeAdiabatic_Impl::addToNode(Node& node) {
+      for (const auto& plant : model().getConcreteModelObjects<openstudio::epmodel::PlantLoop>()) {
+        if (plant.component(node.handle())) {
+          return StraightComponent_Impl::addToNode(node);
+        }
+      }
+
+      return false;
+    }
+
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio

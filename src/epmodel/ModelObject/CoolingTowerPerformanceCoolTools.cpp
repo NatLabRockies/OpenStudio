@@ -427,7 +427,8 @@ namespace epmodel {
     }
 
     bool CoolingTowerPerformanceCoolTools_Impl::setMinimumInletAirWetBulbTemperature(double minimumInletAirWetBulbTemperature) {
-      const bool result = setDouble(openstudio::CoolingTowerPerformance_CoolToolsFields::MinimumInletAirWetBulbTemperature, minimumInletAirWetBulbTemperature);
+      const bool result =
+        setDouble(openstudio::CoolingTowerPerformance_CoolToolsFields::MinimumInletAirWetBulbTemperature, minimumInletAirWetBulbTemperature);
       OS_ASSERT(result);
       return result;
     }
@@ -439,7 +440,8 @@ namespace epmodel {
     }
 
     bool CoolingTowerPerformanceCoolTools_Impl::setMaximumInletAirWetBulbTemperature(double maximumInletAirWetBulbTemperature) {
-      const bool result = setDouble(openstudio::CoolingTowerPerformance_CoolToolsFields::MaximumInletAirWetBulbTemperature, maximumInletAirWetBulbTemperature);
+      const bool result =
+        setDouble(openstudio::CoolingTowerPerformance_CoolToolsFields::MaximumInletAirWetBulbTemperature, maximumInletAirWetBulbTemperature);
       OS_ASSERT(result);
       return result;
     }

@@ -13,13 +13,13 @@
 namespace openstudio {
 namespace epmodel {
 
-AirLoopHVACReturnPlenum::AirLoopHVACReturnPlenum(const Model& model) : ModelObject(AirLoopHVACReturnPlenum::iddObjectType(), model) {}
+  AirLoopHVACReturnPlenum::AirLoopHVACReturnPlenum(const Model& model) : ModelObject(AirLoopHVACReturnPlenum::iddObjectType(), model) {}
 
-AirLoopHVACReturnPlenum::AirLoopHVACReturnPlenum(std::shared_ptr<detail::AirLoopHVACReturnPlenum_Impl> impl) : ModelObject(std::move(impl)) {}
+  AirLoopHVACReturnPlenum::AirLoopHVACReturnPlenum(std::shared_ptr<detail::AirLoopHVACReturnPlenum_Impl> impl) : ModelObject(std::move(impl)) {}
 
-IddObjectType AirLoopHVACReturnPlenum::iddObjectType() {
-  return IddObjectType::AirLoopHVAC_ReturnPlenum;
-}
+  IddObjectType AirLoopHVACReturnPlenum::iddObjectType() {
+    return IddObjectType::AirLoopHVAC_ReturnPlenum;
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio

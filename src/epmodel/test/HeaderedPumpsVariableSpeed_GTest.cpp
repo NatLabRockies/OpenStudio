@@ -51,8 +51,8 @@ TEST_F(EPModelFixture, HeaderedPumpsVariableSpeed_ScalarAccessors_RoundTrip) {
   ASSERT_FALSE(HeaderedPumpsVariableSpeed::designPowerSizingMethodValues().empty());
 
   auto flowSequencingControlScheme = HeaderedPumpsVariableSpeed::flowSequencingControlSchemeValues().front();
-  if (flowSequencingControlScheme == pump.flowSequencingControlScheme() &&
-      HeaderedPumpsVariableSpeed::flowSequencingControlSchemeValues().size() > 1) {
+  if (flowSequencingControlScheme == pump.flowSequencingControlScheme()
+      && HeaderedPumpsVariableSpeed::flowSequencingControlSchemeValues().size() > 1) {
     flowSequencingControlScheme = HeaderedPumpsVariableSpeed::flowSequencingControlSchemeValues()[1];
   }
 
@@ -62,8 +62,7 @@ TEST_F(EPModelFixture, HeaderedPumpsVariableSpeed_ScalarAccessors_RoundTrip) {
   }
 
   auto designPowerSizingMethod = HeaderedPumpsVariableSpeed::designPowerSizingMethodValues().front();
-  if (designPowerSizingMethod == pump.designPowerSizingMethod() &&
-      HeaderedPumpsVariableSpeed::designPowerSizingMethodValues().size() > 1) {
+  if (designPowerSizingMethod == pump.designPowerSizingMethod() && HeaderedPumpsVariableSpeed::designPowerSizingMethodValues().size() > 1) {
     designPowerSizingMethod = HeaderedPumpsVariableSpeed::designPowerSizingMethodValues()[1];
   }
 

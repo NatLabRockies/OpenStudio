@@ -5,7 +5,7 @@
 
 #include <gtest/gtest.h>
 #include "GeometryFixture.hpp"
-#include <math.h>
+#include <cmath>
 
 #include "../Geometry.hpp"
 #include "../Point3d.hpp"

@@ -17,6 +17,7 @@
 #include "../measure/OSRunner.hpp"
 #include "../model/Model.hpp"
 #include "../model/Model_Impl.hpp"
+#include "../epmodel/Model.hpp"
 #include "../utilities/filetypes/WorkflowStep.hpp"
 #include "../utilities/bcl/BCLMeasure.hpp"
 #include "../utilities/idf/Workspace.hpp"
@@ -90,10 +91,10 @@ void OSWorkflow::applyMeasures(MeasureType measureType, ApplyMeasureType apply_m
       continue;
     }
 
-    if (model.numObjects() > 0) {
-      runner.setLastOpenStudioModel(model);
-    }
-    if (workspace_) {
+    if (epModel_) {
+      workspace_ = openstudio::Workspace(*epModel_);
+      runner.setLastEnergyPlusWorkspace(workspace_.get());
+    } else if (workspace_) {
       runner.setLastEnergyPlusWorkspace(workspace_.get());
     }
     if (!sqlPath.empty()) {
@@ -102,8 +103,6 @@ void OSWorkflow::applyMeasures(MeasureType measureType, ApplyMeasureType apply_m
     if (m_lastModelicaResultPath) {
       runner.setLastModelicaResultPath(*m_lastModelicaResultPath);
     }
-
-    updateLastWeatherFileFromModel();
 
     if (openstudio::filesystem::path(measureDirName).is_absolute()) {
       LOG(Warn, "measure_dir_name should not be a full path. It should be a relative path to the measure directory or the name of the measure "
@@ -165,9 +164,11 @@ void OSWorkflow::applyMeasures(MeasureType measureType, ApplyMeasureType apply_m
       std::vector<measure::OSArgument> arguments;
 
       if (measureType == MeasureType::ModelMeasure) {
-        // For computing arguments
-        auto modelClone = model.clone(true).cast<model::Model>();
-        arguments = static_cast<openstudio::measure::ModelMeasure*>(measurePtr)->arguments(modelClone);  // NOLINT
+        if (!epModel_) {
+          throw std::runtime_error("ModelMeasure argument discovery requires an initialized epmodel.");
+        }
+        auto epModelClone = epModel_->clone(true);
+        arguments = static_cast<openstudio::measure::ModelMeasure*>(measurePtr)->arguments(epModelClone);  // NOLINT
       } else if (measureType == MeasureType::EnergyPlusMeasure) {
         auto workspaceClone = workspace_->clone(true).cast<openstudio::Workspace>();
         arguments = static_cast<openstudio::measure::EnergyPlusMeasure*>(measurePtr)->arguments(workspaceClone);  // NOLINT
@@ -176,8 +177,11 @@ void OSWorkflow::applyMeasures(MeasureType measureType, ApplyMeasureType apply_m
         auto modelClone = model.clone(true).cast<model::Model>();
         arguments = static_cast<openstudio::measure::ModelicaMeasure*>(measurePtr)->arguments(modelClone, workspaceClone);  // NOLINT
       } else if (measureType == MeasureType::ReportingMeasure) {
-        auto modelClone = model.clone(true).cast<model::Model>();
-        arguments = static_cast<openstudio::measure::ReportingMeasure*>(measurePtr)->arguments(modelClone);  // NOLINT
+        if (!epModel_) {
+          throw std::runtime_error("ReportingMeasure argument discovery requires an initialized epmodel.");
+        }
+        auto epModelClone = epModel_->clone(true);
+        arguments = static_cast<openstudio::measure::ReportingMeasure*>(measurePtr)->arguments(epModelClone);  // NOLINT
       }
 
       if (!arguments.empty()) {
@@ -276,7 +280,11 @@ end
     // TODO: this doesn't protect! it'll crash if a wrong method is used in the ruby measure for eg
     try {
       if (measureType == MeasureType::ModelMeasure) {
-        static_cast<openstudio::measure::ModelMeasure*>(measurePtr)->run(model, runner, argmap);
+        if (!epModel_) {
+          throw std::runtime_error("ModelMeasure execution requires an initialized epmodel.");
+        }
+        static_cast<openstudio::measure::ModelMeasure*>(measurePtr)->run(*epModel_, runner, argmap);
+        workspace_ = openstudio::Workspace(*epModel_);
       } else if (measureType == MeasureType::EnergyPlusMeasure) {
         static_cast<openstudio::measure::EnergyPlusMeasure*>(measurePtr)->run(workspace_.get(), runner, argmap);
       } else if (measureType == MeasureType::ModelicaMeasure) {
@@ -284,10 +292,14 @@ end
       } else if (measureType == MeasureType::ReportingMeasure) {
         if (apply_measure_type == ApplyMeasureType::ModelOutputRequests) {
           if ((*thisEngine)->hasMethod(measureScriptObject, "modelOutputRequests")) {
-            auto n = model.numObjects();
+            if (!epModel_) {
+              throw std::runtime_error("ReportingMeasure modelOutputRequests requires an initialized epmodel.");
+            }
+            auto n = epModel_->numObjects();
             LOG(Debug, "Calling measure.modelOutputRequests for '" << measureDirName << "'");
-            static_cast<openstudio::measure::ReportingMeasure*>(measurePtr)->modelOutputRequests(model, runner, argmap);
-            LOG(Debug, "Finished measure.modelOutputRequests for '" << measureDirName << "', " << (model.numObjects() - n) << " objects added");
+            static_cast<openstudio::measure::ReportingMeasure*>(measurePtr)->modelOutputRequests(*epModel_, runner, argmap);
+            workspace_ = openstudio::Workspace(*epModel_);
+            LOG(Debug, "Finished measure.modelOutputRequests for '" << measureDirName << "', " << (epModel_->numObjects() - n) << " objects added");
           } else {
             LOG(Debug, "Reporting Measure '" << measureDirName << "' does not have a modelOutputRequests method");
           }
@@ -355,10 +367,6 @@ end
           ensureBlock(true);
           throw;
         }
-      }
-
-      if (measureType == MeasureType::ModelMeasure) {
-        updateLastWeatherFileFromModel();
       }
     }
 

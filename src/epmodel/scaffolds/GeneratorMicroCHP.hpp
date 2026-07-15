@@ -16,41 +16,41 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class GeneratorMicroCHP_Impl;
-}
+  namespace detail {
+    class GeneratorMicroCHP_Impl;
+  }
 
-class EPMODEL_API GeneratorMicroCHP : public ModelObject
-{
- public:
-  explicit GeneratorMicroCHP(const Model& model);
+  class EPMODEL_API GeneratorMicroCHP : public ModelObject
+  {
+   public:
+    explicit GeneratorMicroCHP(const Model& model);
 
-  virtual ~GeneratorMicroCHP() override = default;
-  GeneratorMicroCHP(const GeneratorMicroCHP& other) = default;
-  GeneratorMicroCHP(GeneratorMicroCHP&& other) = default;
-  GeneratorMicroCHP& operator=(const GeneratorMicroCHP&) = default;
-  GeneratorMicroCHP& operator=(GeneratorMicroCHP&&) = default;
+    virtual ~GeneratorMicroCHP() override = default;
+    GeneratorMicroCHP(const GeneratorMicroCHP& other) = default;
+    GeneratorMicroCHP(GeneratorMicroCHP&& other) = default;
+    GeneratorMicroCHP& operator=(const GeneratorMicroCHP&) = default;
+    GeneratorMicroCHP& operator=(GeneratorMicroCHP&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  // Schema Alignment Notes:
-  // - API: This no-counterpart type keeps IDD-derived class/API naming.
-  // - Field Mapping: Name remains available through base ModelObject scalar API.
-  // - Field Mapping: Performance Parameters Name, Zone Name, Cooling Water Inlet/Outlet Node Name, Air Inlet/Outlet Node Name, Generator Fuel Supply
-  //   Name, and Availability Schedule Name are relationship-like link fields and excluded from scalar accessors.
-  // - TODO(parity): Add relationship APIs incrementally after scalar saturation.
+    // Schema Alignment Notes:
+    // - API: This no-counterpart type keeps IDD-derived class/API naming.
+    // - Field Mapping: Name remains available through base ModelObject scalar API.
+    // - Field Mapping: Performance Parameters Name, Zone Name, Cooling Water Inlet/Outlet Node Name, Air Inlet/Outlet Node Name, Generator Fuel Supply
+    //   Name, and Availability Schedule Name are relationship-like link fields and excluded from scalar accessors.
+    // - TODO(parity): Add relationship APIs incrementally after scalar saturation.
 
- protected:
-  using ImplType = detail::GeneratorMicroCHP_Impl;
+   protected:
+    using ImplType = detail::GeneratorMicroCHP_Impl;
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
 
-  explicit GeneratorMicroCHP(std::shared_ptr<detail::GeneratorMicroCHP_Impl> impl);
-};
+    explicit GeneratorMicroCHP(std::shared_ptr<detail::GeneratorMicroCHP_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

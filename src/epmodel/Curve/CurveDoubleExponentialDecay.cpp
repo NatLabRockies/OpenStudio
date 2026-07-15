@@ -46,8 +46,7 @@ namespace epmodel {
     OS_ASSERT(setMaximumValueofx(1.0));
   }
 
-  CurveDoubleExponentialDecay::CurveDoubleExponentialDecay(std::shared_ptr<detail::CurveDoubleExponentialDecay_Impl> impl)
-    : Curve(std::move(impl)) {}
+  CurveDoubleExponentialDecay::CurveDoubleExponentialDecay(std::shared_ptr<detail::CurveDoubleExponentialDecay_Impl> impl) : Curve(std::move(impl)) {}
 
   IddObjectType CurveDoubleExponentialDecay::iddObjectType() {
     return IddObjectType::Curve_DoubleExponentialDecay;

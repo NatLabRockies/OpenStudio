@@ -17,64 +17,64 @@
 namespace openstudio {
 namespace epmodel {
 
-ScheduleDay::ScheduleDay(const Model& model) : ModelObject(ScheduleDay::iddObjectType(), model) {}
+  ScheduleDay::ScheduleDay(const Model& model) : ModelObject(ScheduleDay::iddObjectType(), model) {}
 
-ScheduleDay::ScheduleDay(std::shared_ptr<detail::ScheduleDay_Impl> impl) : ModelObject(std::move(impl)) {}
+  ScheduleDay::ScheduleDay(std::shared_ptr<detail::ScheduleDay_Impl> impl) : ModelObject(std::move(impl)) {}
 
-IddObjectType ScheduleDay::iddObjectType() {
-  return IddObjectType::Schedule_Day_Interval;
-}
+  IddObjectType ScheduleDay::iddObjectType() {
+    return IddObjectType::Schedule_Day_Interval;
+  }
 
-std::vector<std::string> ScheduleDay::interpolatetoTimestepValues() {
-  return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), openstudio::Schedule_Day_IntervalFields::InterpolatetoTimestep);
-}
+  std::vector<std::string> ScheduleDay::interpolatetoTimestepValues() {
+    return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), openstudio::Schedule_Day_IntervalFields::InterpolatetoTimestep);
+  }
 
-std::string ScheduleDay::interpolatetoTimestep() const {
-  return getImpl<detail::ScheduleDay_Impl>()->interpolatetoTimestep();
-}
+  std::string ScheduleDay::interpolatetoTimestep() const {
+    return getImpl<detail::ScheduleDay_Impl>()->interpolatetoTimestep();
+  }
 
-bool ScheduleDay::isInterpolatetoTimestepDefaulted() const {
-  return getImpl<detail::ScheduleDay_Impl>()->isInterpolatetoTimestepDefaulted();
-}
+  bool ScheduleDay::isInterpolatetoTimestepDefaulted() const {
+    return getImpl<detail::ScheduleDay_Impl>()->isInterpolatetoTimestepDefaulted();
+  }
 
-bool ScheduleDay::setInterpolatetoTimestep(const std::string& interpolatetoTimestep) {
-  return getImpl<detail::ScheduleDay_Impl>()->setInterpolatetoTimestep(interpolatetoTimestep);
-}
+  bool ScheduleDay::setInterpolatetoTimestep(const std::string& interpolatetoTimestep) {
+    return getImpl<detail::ScheduleDay_Impl>()->setInterpolatetoTimestep(interpolatetoTimestep);
+  }
 
-void ScheduleDay::resetInterpolatetoTimestep() {
-  getImpl<detail::ScheduleDay_Impl>()->resetInterpolatetoTimestep();
-}
+  void ScheduleDay::resetInterpolatetoTimestep() {
+    getImpl<detail::ScheduleDay_Impl>()->resetInterpolatetoTimestep();
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-std::string ScheduleDay_Impl::interpolatetoTimestep() const {
-  const auto value = getString(openstudio::Schedule_Day_IntervalFields::InterpolatetoTimestep, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    std::string ScheduleDay_Impl::interpolatetoTimestep() const {
+      const auto value = getString(openstudio::Schedule_Day_IntervalFields::InterpolatetoTimestep, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-bool ScheduleDay_Impl::isInterpolatetoTimestepDefaulted() const {
-  return isEmpty(openstudio::Schedule_Day_IntervalFields::InterpolatetoTimestep);
-}
+    bool ScheduleDay_Impl::isInterpolatetoTimestepDefaulted() const {
+      return isEmpty(openstudio::Schedule_Day_IntervalFields::InterpolatetoTimestep);
+    }
 
-bool ScheduleDay_Impl::setInterpolatetoTimestep(const std::string& interpolatetoTimestep) {
-  return setString(openstudio::Schedule_Day_IntervalFields::InterpolatetoTimestep, interpolatetoTimestep);
-}
+    bool ScheduleDay_Impl::setInterpolatetoTimestep(const std::string& interpolatetoTimestep) {
+      return setString(openstudio::Schedule_Day_IntervalFields::InterpolatetoTimestep, interpolatetoTimestep);
+    }
 
-void ScheduleDay_Impl::resetInterpolatetoTimestep() {
-  const bool result = setString(openstudio::Schedule_Day_IntervalFields::InterpolatetoTimestep, "");
-  OS_ASSERT(result);
-}
+    void ScheduleDay_Impl::resetInterpolatetoTimestep() {
+      const bool result = setString(openstudio::Schedule_Day_IntervalFields::InterpolatetoTimestep, "");
+      OS_ASSERT(result);
+    }
 
-std::vector<std::string> ScheduleDay_Impl::interpolatetoTimestepValues() const {
-  return openstudio::epmodel::ScheduleDay::interpolatetoTimestepValues();
-}
+    std::vector<std::string> ScheduleDay_Impl::interpolatetoTimestepValues() const {
+      return openstudio::epmodel::ScheduleDay::interpolatetoTimestepValues();
+    }
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio

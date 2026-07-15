@@ -214,7 +214,8 @@ TEST_F(EPModelFixture, ZoneHVACCoolingPanelRadiantConvectiveWater_ZoneAttachment
     auto workspaceGroup = group.cast<openstudio::WorkspaceExtensibleGroup>();
     auto target = workspaceGroup.getTarget(openstudio::ZoneHVAC_CoolingPanel_RadiantConvective_WaterExtensibleFields::SurfaceName);
     ASSERT_TRUE(target);
-    auto fraction = group.getDouble(openstudio::ZoneHVAC_CoolingPanel_RadiantConvective_WaterExtensibleFields::FractionofRadiantEnergytoSurface, true);
+    auto fraction =
+      group.getDouble(openstudio::ZoneHVAC_CoolingPanel_RadiantConvective_WaterExtensibleFields::FractionofRadiantEnergytoSurface, true);
     ASSERT_TRUE(fraction);
     totalFraction += *fraction;
   }
@@ -223,7 +224,8 @@ TEST_F(EPModelFixture, ZoneHVACCoolingPanelRadiantConvectiveWater_ZoneAttachment
   ASSERT_TRUE(panel.setFractionofRadiantEnergyIncidentonPeople(0.1));
   double updatedTotalFraction = 0.0;
   for (const auto& group : panel.extensibleGroups()) {
-    auto fraction = group.getDouble(openstudio::ZoneHVAC_CoolingPanel_RadiantConvective_WaterExtensibleFields::FractionofRadiantEnergytoSurface, true);
+    auto fraction =
+      group.getDouble(openstudio::ZoneHVAC_CoolingPanel_RadiantConvective_WaterExtensibleFields::FractionofRadiantEnergytoSurface, true);
     ASSERT_TRUE(fraction);
     updatedTotalFraction += *fraction;
   }

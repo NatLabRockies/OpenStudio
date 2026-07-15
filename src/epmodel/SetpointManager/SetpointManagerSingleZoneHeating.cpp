@@ -101,8 +101,7 @@ namespace epmodel {
     }
 
     bool SetpointManagerSingleZoneHeating_Impl::setSetpointNode(const openstudio::epmodel::Node& node) {
-      return getObject<ModelObject>().setPointer(openstudio::SetpointManager_SingleZone_HeatingFields::SetpointNodeorNodeListName,
-                                                 node.handle());
+      return getObject<ModelObject>().setPointer(openstudio::SetpointManager_SingleZone_HeatingFields::SetpointNodeorNodeListName, node.handle());
     }
 
     void SetpointManagerSingleZoneHeating_Impl::doCanonicalize(LoadContext& context) {

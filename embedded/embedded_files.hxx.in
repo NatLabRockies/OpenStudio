@@ -38,15 +38,18 @@
 
 using EmbeddedFile = std::pair<size_t, const uint8_t*>;
 
+// clang-format off
 @BEGIN_NAMESPACE@
+  // clang-format on
 
-/* Decompress from file source to file dest until stream ends or EOF.
+  /* Decompress from file source to file dest until stream ends or EOF.
    inf() returns Z_OK on success, Z_MEM_ERROR if memory could not be
    allocated for processing, Z_DATA_ERROR if the deflate data is
    invalid or incomplete, Z_VERSION_ERROR if the version of zlib.h and
    the version of the library linked do not match, or Z_ERRNO if there
    is an error reading or writing the files. */
-inline int inf(const EmbeddedFile& file, std::vector<uint8_t>& result) {
+  inline int
+  inf(const EmbeddedFile& file, std::vector<uint8_t>& result) {
   //std::vector<uint8_t> result;
 
   int ret;
@@ -118,82 +121,83 @@ inline int inf(const EmbeddedFile& file, std::vector<uint8_t>& result) {
 }
 
 namespace embedded_files {
-  const std::map<std::string, EmbeddedFile>& files();
+const std::map<std::string, EmbeddedFile>& files();
 
-  const std::vector<std::string>& fileNames();
+const std::vector<std::string>& fileNames();
 
-  inline const std::string& allFileNamesAsString() {
-    static const auto return_value = []() {
-      std::string result;
-      for (const auto& fileName : fileNames()) {
-        result += (fileName + ";");
-      }
-      return result;
-    }();
-
-    return return_value;
-  }
-
-  inline std::string findFirstFileByName(const std::string& t_filename) {
-    for (const auto& path : fileNames()) {
-      if (t_filename.size() > path.size()) {
-        continue;
-      }
-      if (std::equal(t_filename.rbegin(), t_filename.rend(), path.rbegin())) {
-        return path;
-      }
+inline const std::string& allFileNamesAsString() {
+  static const auto return_value = []() {
+    std::string result;
+    for (const auto& fileName : fileNames()) {
+      result += (fileName + ";");
     }
-    return {};
-  }
+    return result;
+  }();
 
-  inline bool hasFile(const std::string& t_filename) {
-    const auto& fs = fileNames();
-    return (std::find(fs.begin(), fs.end(), t_filename) != fs.end());
-  }
+  return return_value;
+}
 
-  inline std::string getFileAsString(const std::string& t_filename) {
-    const auto& fs = files();
-    const auto f = fs.find(t_filename);
-    if (f == fs.end()) {
-      throw std::runtime_error("Embedded file not found '" + t_filename + "'");
+inline std::string findFirstFileByName(const std::string& t_filename) {
+  for (const auto& path : fileNames()) {
+    if (t_filename.size() > path.size()) {
+      continue;
     }
-    std::vector<uint8_t> inflated_data;
-    if (inf(f->second, inflated_data) != Z_OK) {
-      throw std::runtime_error("Embedded file failed to inflate '" + t_filename + "'");
-    }
-    return std::string(inflated_data.begin(), inflated_data.end());
-  }
-
-  inline void extractFile(const std::string& t_filename, const std::string& t_location, bool quiet = false) {
-    const auto& fs = files();
-    const auto f = fs.find(t_filename);
-    if (f == fs.end()) {
-      throw std::runtime_error("Embedded file not found '" + t_filename + "'");
-    }
-
-    std::string filenameonly = t_filename;
-    size_t i = t_filename.rfind('/', t_filename.length());
-    if (i != std::string::npos) {
-      filenameonly = t_filename.substr(i + 1, t_filename.length() - i);
-    }
-
-
-    std::filesystem::path createdFile = t_location / std::filesystem::path{filenameonly};
-    std::filesystem::create_directories(t_location);
-
-    std::ofstream ofs(createdFile);
-
-    std::vector<uint8_t> inflated_data;
-    if (inf(f->second, inflated_data) != Z_OK) {
-      throw std::runtime_error("Embedded file failed to inflate '" + t_filename + "'");
-    }
-
-    ofs.write(reinterpret_cast<const char*>(inflated_data.data()), inflated_data.size());
-    if (!quiet) {
-      std::cout << "***** Extracted " << t_filename << " to: " << createdFile.generic_string()  << " *****\n";
+    if (std::equal(t_filename.rbegin(), t_filename.rend(), path.rbegin())) {
+      return path;
     }
   }
+  return {};
+}
+
+inline bool hasFile(const std::string& t_filename) {
+  const auto& fs = fileNames();
+  return (std::find(fs.begin(), fs.end(), t_filename) != fs.end());
+}
+
+inline std::string getFileAsString(const std::string& t_filename) {
+  const auto& fs = files();
+  const auto f = fs.find(t_filename);
+  if (f == fs.end()) {
+    throw std::runtime_error("Embedded file not found '" + t_filename + "'");
+  }
+  std::vector<uint8_t> inflated_data;
+  if (inf(f->second, inflated_data) != Z_OK) {
+    throw std::runtime_error("Embedded file failed to inflate '" + t_filename + "'");
+  }
+  return std::string(inflated_data.begin(), inflated_data.end());
+}
+
+inline void extractFile(const std::string& t_filename, const std::string& t_location, bool quiet = false) {
+  const auto& fs = files();
+  const auto f = fs.find(t_filename);
+  if (f == fs.end()) {
+    throw std::runtime_error("Embedded file not found '" + t_filename + "'");
+  }
+
+  std::string filenameonly = t_filename;
+  size_t i = t_filename.rfind('/', t_filename.length());
+  if (i != std::string::npos) {
+    filenameonly = t_filename.substr(i + 1, t_filename.length() - i);
+  }
+
+  std::filesystem::path createdFile = t_location / std::filesystem::path{filenameonly};
+  std::filesystem::create_directories(t_location);
+
+  std::ofstream ofs(createdFile);
+
+  std::vector<uint8_t> inflated_data;
+  if (inf(f->second, inflated_data) != Z_OK) {
+    throw std::runtime_error("Embedded file failed to inflate '" + t_filename + "'");
+  }
+
+  ofs.write(reinterpret_cast<const char*>(inflated_data.data()), inflated_data.size());
+  if (!quiet) {
+    std::cout << "***** Extracted " << t_filename << " to: " << createdFile.generic_string() << " *****\n";
+  }
+}
 
 }  // namespace embedded_files
 
+// clang-format off
 @END_NAMESPACE@
+  // clang-format on

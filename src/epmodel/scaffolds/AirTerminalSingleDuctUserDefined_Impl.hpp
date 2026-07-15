@@ -6,24 +6,40 @@
 #ifndef EPMODEL_AIRTERMINALSINGLEDUCTUSERDEFINED_IMPL_HPP
 #define EPMODEL_AIRTERMINALSINGLEDUCTUSERDEFINED_IMPL_HPP
 
-#include "ModelObject_Impl.hpp"
+#include "StraightComponent/StraightComponent_Impl.hpp"
+
+#include "ModelObject/ZoneHVACAirDistributionUnit.hpp"
+#include "Node.hpp"
 
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API AirTerminalSingleDuctUserDefined_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~AirTerminalSingleDuctUserDefined_Impl() override = default;
+    class EPMODEL_API AirTerminalSingleDuctUserDefined_Impl : public StraightComponent_Impl
+    {
+     public:
+      enum class AddToNodeFailureStage
+      {
+        None,
+        AfterADUUpdateBeforeZoneRegistration,
+      };
 
-  int numberofPlantLoopConnections() const;
-  bool setNumberofPlantLoopConnections(int numberofPlantLoopConnections);
-};
+      using StraightComponent_Impl::StraightComponent_Impl;
+      virtual ~AirTerminalSingleDuctUserDefined_Impl() override = default;
 
-}  // namespace detail
+      unsigned inletPort() const override;
+      unsigned outletPort() const override;
+      bool addToNode(Node& node) override;
+      bool addToNode(Node& node, AddToNodeFailureStage failureStage);
+      bool removeFromLoop() override;
+      boost::optional<ZoneHVACAirDistributionUnit> zoneHVACAirDistributionUnit() const;
+
+      int numberofPlantLoopConnections() const;
+      bool setNumberofPlantLoopConnections(int numberofPlantLoopConnections);
+    };
+
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

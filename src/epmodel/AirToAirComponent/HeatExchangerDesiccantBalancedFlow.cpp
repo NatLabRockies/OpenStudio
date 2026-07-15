@@ -44,16 +44,15 @@ namespace openstudio {
 namespace epmodel {
   namespace detail {
 
-    HeatExchangerDesiccantBalancedFlow_Impl::HeatExchangerDesiccantBalancedFlow_Impl(const IdfObject& idfObject, Model_Impl* model,
-                                                                                     bool keepHandle)
+    HeatExchangerDesiccantBalancedFlow_Impl::HeatExchangerDesiccantBalancedFlow_Impl(const IdfObject& idfObject, Model_Impl* model, bool keepHandle)
       : AirToAirComponent_Impl(idfObject, model, keepHandle) {}
 
-    HeatExchangerDesiccantBalancedFlow_Impl::HeatExchangerDesiccantBalancedFlow_Impl(
-      const openstudio::detail::WorkspaceObject_Impl& other, Model_Impl* model, bool keepHandle)
+    HeatExchangerDesiccantBalancedFlow_Impl::HeatExchangerDesiccantBalancedFlow_Impl(const openstudio::detail::WorkspaceObject_Impl& other,
+                                                                                     Model_Impl* model, bool keepHandle)
       : AirToAirComponent_Impl(other, model, keepHandle) {}
 
-    HeatExchangerDesiccantBalancedFlow_Impl::HeatExchangerDesiccantBalancedFlow_Impl(
-      const HeatExchangerDesiccantBalancedFlow_Impl& other, Model_Impl* model, bool keepHandle)
+    HeatExchangerDesiccantBalancedFlow_Impl::HeatExchangerDesiccantBalancedFlow_Impl(const HeatExchangerDesiccantBalancedFlow_Impl& other,
+                                                                                     Model_Impl* model, bool keepHandle)
       : AirToAirComponent_Impl(other, model, keepHandle) {}
 
     // Scalar accessors for Economizer Lockout

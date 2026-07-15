@@ -47,193 +47,194 @@
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-constexpr const char* kDefaultFluidtoRadiantSurfaceHeatTransferModel = "ConvectionOnly";
-constexpr double kDefaultHydronicTubingInsideDiameter = 0.013;
-constexpr double kDefaultHydronicTubingOutsideDiameter = 0.016;
-constexpr double kDefaultHydronicTubingConductivity = 0.35;
-constexpr const char* kDefaultTemperatureControlType = "MeanAirTemperature";
-constexpr const char* kDefaultSetpointControlType = "HalfFlowPower";
-constexpr const char* kDefaultHeatingDesignCapacityMethod = "HeatingDesignCapacity";
-constexpr double kDefaultFractionofAutosizedHeatingDesignCapacity = 1.0;
-constexpr double kDefaultHeatingControlThrottlingRange = 0.5;
-constexpr const char* kDefaultCoolingDesignCapacityMethod = "CoolingDesignCapacity";
-constexpr double kDefaultCoolingControlThrottlingRange = 0.5;
-constexpr const char* kDefaultCondensationControlType = "SimpleOff";
-constexpr double kDefaultCondensationControlDewpointOffset = 1.0;
+    constexpr const char* kDefaultFluidtoRadiantSurfaceHeatTransferModel = "ConvectionOnly";
+    constexpr double kDefaultHydronicTubingInsideDiameter = 0.013;
+    constexpr double kDefaultHydronicTubingOutsideDiameter = 0.016;
+    constexpr double kDefaultHydronicTubingConductivity = 0.35;
+    constexpr const char* kDefaultTemperatureControlType = "MeanAirTemperature";
+    constexpr const char* kDefaultSetpointControlType = "HalfFlowPower";
+    constexpr const char* kDefaultHeatingDesignCapacityMethod = "HeatingDesignCapacity";
+    constexpr double kDefaultFractionofAutosizedHeatingDesignCapacity = 1.0;
+    constexpr double kDefaultHeatingControlThrottlingRange = 0.5;
+    constexpr const char* kDefaultCoolingDesignCapacityMethod = "CoolingDesignCapacity";
+    constexpr double kDefaultCoolingControlThrottlingRange = 0.5;
+    constexpr const char* kDefaultCondensationControlType = "SimpleOff";
+    constexpr double kDefaultCondensationControlDewpointOffset = 1.0;
 
-std::string transientHeatingCoilName(const openstudio::epmodel::ZoneHVACLowTempRadiantVarFlow& parent) {
-  return "__transient__" + openstudio::toString(parent.handle()) + "__heating_low_temp_radiant_var_flow";
-}
+    std::string transientHeatingCoilName(const openstudio::epmodel::ZoneHVACLowTempRadiantVarFlow& parent) {
+      return "__transient__" + openstudio::toString(parent.handle()) + "__heating_low_temp_radiant_var_flow";
+    }
 
-std::string transientCoolingCoilName(const openstudio::epmodel::ZoneHVACLowTempRadiantVarFlow& parent) {
-  return "__transient__" + openstudio::toString(parent.handle()) + "__cooling_low_temp_radiant_var_flow";
-}
+    std::string transientCoolingCoilName(const openstudio::epmodel::ZoneHVACLowTempRadiantVarFlow& parent) {
+      return "__transient__" + openstudio::toString(parent.handle()) + "__cooling_low_temp_radiant_var_flow";
+    }
 
-using SurfaceGroupFields = openstudio::ZoneHVAC_LowTemperatureRadiant_SurfaceGroupExtensibleFields;
-using SurfaceFields = openstudio::BuildingSurface_DetailedFields;
-using SurfaceVertexFields = openstudio::BuildingSurface_DetailedExtensibleFields;
+    using SurfaceGroupFields = openstudio::ZoneHVAC_LowTemperatureRadiant_SurfaceGroupExtensibleFields;
+    using SurfaceFields = openstudio::BuildingSurface_DetailedFields;
+    using SurfaceVertexFields = openstudio::BuildingSurface_DetailedExtensibleFields;
 
-static bool surfaceMatchesRadiantSelection(const openstudio::epmodel::Surface& surface, const std::string& radiantSurfaceType) {
-  const auto surfaceType = surface.surfaceType();
-  const bool isCeilingLike = openstudio::istringEqual(surfaceType, "RoofCeiling") || openstudio::istringEqual(surfaceType, "Roof")
-                             || openstudio::istringEqual(surfaceType, "Ceiling");
-  if (openstudio::istringEqual(radiantSurfaceType, "Ceilings")) {
-    return isCeilingLike;
-  }
-  if (openstudio::istringEqual(radiantSurfaceType, "Floors")) {
-    return openstudio::istringEqual(surfaceType, "Floor");
-  }
-  if (openstudio::istringEqual(radiantSurfaceType, "CeilingsandFloors")) {
-    return isCeilingLike || openstudio::istringEqual(surfaceType, "Floor");
-  }
-  if (openstudio::istringEqual(radiantSurfaceType, "AllSurfaces")) {
-    return true;
-  }
-  return false;
-}
-
-static bool surfaceHasInternalSourceConstruction(const openstudio::epmodel::Surface& surface) {
-  const auto construction = surface.getModelObjectTarget<openstudio::epmodel::ModelObject>(SurfaceFields::ConstructionName);
-  if (!construction) {
-    return false;
-  }
-
-  for (const auto& internalSourceProperty : surface.model().getConcreteModelObjects<openstudio::epmodel::ConstructionWithInternalSource>()) {
-    if (auto propertyConstruction =
-          internalSourceProperty.getModelObjectTarget<openstudio::epmodel::ModelObject>(openstudio::ConstructionProperty_InternalHeatSourceFields::ConstructionName)) {
-      if (propertyConstruction->handle() == construction->handle()) {
+    static bool surfaceMatchesRadiantSelection(const openstudio::epmodel::Surface& surface, const std::string& radiantSurfaceType) {
+      const auto surfaceType = surface.surfaceType();
+      const bool isCeilingLike = openstudio::istringEqual(surfaceType, "RoofCeiling") || openstudio::istringEqual(surfaceType, "Roof")
+                                 || openstudio::istringEqual(surfaceType, "Ceiling");
+      if (openstudio::istringEqual(radiantSurfaceType, "Ceilings")) {
+        return isCeilingLike;
+      }
+      if (openstudio::istringEqual(radiantSurfaceType, "Floors")) {
+        return openstudio::istringEqual(surfaceType, "Floor");
+      }
+      if (openstudio::istringEqual(radiantSurfaceType, "CeilingsandFloors")) {
+        return isCeilingLike || openstudio::istringEqual(surfaceType, "Floor");
+      }
+      if (openstudio::istringEqual(radiantSurfaceType, "AllSurfaces")) {
         return true;
       }
+      return false;
     }
-  }
 
-  return false;
-}
-
-static std::vector<openstudio::Point3d> surfaceVertices(const openstudio::epmodel::Surface& surface) {
-  std::vector<openstudio::Point3d> result;
-  for (const auto& group : surface.extensibleGroups()) {
-    auto x = group.getDouble(SurfaceVertexFields::VertexXcoordinate, true);
-    auto y = group.getDouble(SurfaceVertexFields::VertexYcoordinate, true);
-    auto z = group.getDouble(SurfaceVertexFields::VertexZcoordinate, true);
-    if (!x || !y || !z) {
-      return {};
-    }
-    result.emplace_back(*x, *y, *z);
-  }
-  return result;
-}
-
-static double surfaceGrossArea(const openstudio::epmodel::Surface& surface) {
-  const auto vertices = surfaceVertices(surface);
-  if (vertices.size() < 3u) {
-    return 0.0;
-  }
-  if (const auto area = openstudio::getArea(vertices)) {
-    return *area;
-  }
-  return 0.0;
-}
-
-static std::vector<openstudio::epmodel::Surface> eligibleRadiantSurfaces(const openstudio::epmodel::Model& model,
-                                                                         const openstudio::epmodel::ThermalZone& zone,
-                                                                         const std::string& radiantSurfaceType) {
-  std::vector<openstudio::epmodel::Surface> result;
-
-  for (const auto& surface : model.getConcreteModelObjects<openstudio::epmodel::Surface>()) {
-    bool belongsToZone = false;
-    if (auto space = surface.getModelObjectTarget<openstudio::epmodel::Space>(SurfaceFields::SpaceName)) {
-      if (auto surfaceZone = space->thermalZone()) {
-        belongsToZone = (*surfaceZone == zone);
+    static bool surfaceHasInternalSourceConstruction(const openstudio::epmodel::Surface& surface) {
+      const auto construction = surface.getModelObjectTarget<openstudio::epmodel::ModelObject>(SurfaceFields::ConstructionName);
+      if (!construction) {
+        return false;
       }
-    } else if (auto directZone = surface.getModelObjectTarget<openstudio::epmodel::ThermalZone>(SurfaceFields::ZoneName)) {
-      belongsToZone = (*directZone == zone);
+
+      for (const auto& internalSourceProperty : surface.model().getConcreteModelObjects<openstudio::epmodel::ConstructionWithInternalSource>()) {
+        if (auto propertyConstruction = internalSourceProperty.getModelObjectTarget<openstudio::epmodel::ModelObject>(
+              openstudio::ConstructionProperty_InternalHeatSourceFields::ConstructionName)) {
+          if (propertyConstruction->handle() == construction->handle()) {
+            return true;
+          }
+        }
+      }
+
+      return false;
     }
 
-    if (!belongsToZone) {
-      continue;
+    static std::vector<openstudio::Point3d> surfaceVertices(const openstudio::epmodel::Surface& surface) {
+      std::vector<openstudio::Point3d> result;
+      for (const auto& group : surface.extensibleGroups()) {
+        auto x = group.getDouble(SurfaceVertexFields::VertexXcoordinate, true);
+        auto y = group.getDouble(SurfaceVertexFields::VertexYcoordinate, true);
+        auto z = group.getDouble(SurfaceVertexFields::VertexZcoordinate, true);
+        if (!x || !y || !z) {
+          return {};
+        }
+        result.emplace_back(*x, *y, *z);
+      }
+      return result;
     }
-    if (!surfaceHasInternalSourceConstruction(surface)) {
-      continue;
+
+    static double surfaceGrossArea(const openstudio::epmodel::Surface& surface) {
+      const auto vertices = surfaceVertices(surface);
+      if (vertices.size() < 3u) {
+        return 0.0;
+      }
+      if (const auto area = openstudio::getArea(vertices)) {
+        return *area;
+      }
+      return 0.0;
     }
-    if (!surfaceMatchesRadiantSelection(surface, radiantSurfaceType)) {
-      continue;
+
+    static std::vector<openstudio::epmodel::Surface> eligibleRadiantSurfaces(const openstudio::epmodel::Model& model,
+                                                                             const openstudio::epmodel::ThermalZone& zone,
+                                                                             const std::string& radiantSurfaceType) {
+      std::vector<openstudio::epmodel::Surface> result;
+
+      for (const auto& surface : model.getConcreteModelObjects<openstudio::epmodel::Surface>()) {
+        bool belongsToZone = false;
+        if (auto space = surface.getModelObjectTarget<openstudio::epmodel::Space>(SurfaceFields::SpaceName)) {
+          if (auto surfaceZone = space->thermalZone()) {
+            belongsToZone = (*surfaceZone == zone);
+          }
+        } else if (auto directZone = surface.getModelObjectTarget<openstudio::epmodel::ThermalZone>(SurfaceFields::ZoneName)) {
+          belongsToZone = (*directZone == zone);
+        }
+
+        if (!belongsToZone) {
+          continue;
+        }
+        if (!surfaceHasInternalSourceConstruction(surface)) {
+          continue;
+        }
+        if (!surfaceMatchesRadiantSelection(surface, radiantSurfaceType)) {
+          continue;
+        }
+        result.push_back(surface);
+      }
+
+      return result;
     }
-    result.push_back(surface);
-  }
 
-  return result;
-}
+    static bool sameVarFlowSurfaceSet(const std::vector<openstudio::epmodel::Surface>& lhs, const std::vector<openstudio::epmodel::Surface>& rhs) {
+      if (lhs.size() != rhs.size()) {
+        return false;
+      }
 
-static bool sameVarFlowSurfaceSet(const std::vector<openstudio::epmodel::Surface>& lhs,
-                                  const std::vector<openstudio::epmodel::Surface>& rhs) {
-  if (lhs.size() != rhs.size()) {
-    return false;
-  }
+      std::vector<openstudio::Handle> lhsHandles;
+      lhsHandles.reserve(lhs.size());
+      for (const auto& surface : lhs) {
+        lhsHandles.push_back(surface.handle());
+      }
+      std::sort(lhsHandles.begin(), lhsHandles.end());
 
-  std::vector<openstudio::Handle> lhsHandles;
-  lhsHandles.reserve(lhs.size());
-  for (const auto& surface : lhs) {
-    lhsHandles.push_back(surface.handle());
-  }
-  std::sort(lhsHandles.begin(), lhsHandles.end());
+      std::vector<openstudio::Handle> rhsHandles;
+      rhsHandles.reserve(rhs.size());
+      for (const auto& surface : rhs) {
+        rhsHandles.push_back(surface.handle());
+      }
+      std::sort(rhsHandles.begin(), rhsHandles.end());
 
-  std::vector<openstudio::Handle> rhsHandles;
-  rhsHandles.reserve(rhs.size());
-  for (const auto& surface : rhs) {
-    rhsHandles.push_back(surface.handle());
-  }
-  std::sort(rhsHandles.begin(), rhsHandles.end());
-
-  return lhsHandles == rhsHandles;
-}
-
-static bool hasHeatingCoilData(const openstudio::epmodel::detail::ZoneHVACLowTempRadiantVarFlow_Impl& impl) {
-  using Fields = openstudio::ZoneHVAC_LowTemperatureRadiant_VariableFlowFields;
-  if (!impl.isEmpty(Fields::HeatingDesignCapacity) || !impl.isEmpty(Fields::MaximumHotWaterFlow)
-      || !impl.isEmpty(Fields::HeatingWaterInletNodeName) || !impl.isEmpty(Fields::HeatingWaterOutletNodeName)) {
-    return true;
-  }
-
-  if (auto target = impl.getTarget(openstudio::ZoneHVAC_LowTemperatureRadiant_VariableFlowFields::DesignObject)) {
-    if (auto design = target->optionalCast<ZoneHVACLowTempRadiantVarFlowDesign>()) {
-      auto designImpl = design->getImpl<detail::ZoneHVACLowTempRadiantVarFlowDesign_Impl>();
-      using DesignFields = openstudio::ZoneHVAC_LowTemperatureRadiant_VariableFlow_DesignFields;
-      return !designImpl->isEmpty(DesignFields::HeatingControlTemperatureScheduleName)
-             || !designImpl->isEmpty(DesignFields::HeatingDesignCapacityMethod) || !designImpl->isEmpty(DesignFields::HeatingDesignCapacityPerFloorArea)
-             || !designImpl->isEmpty(DesignFields::FractionofAutosizedHeatingDesignCapacity)
-             || !designImpl->isEmpty(DesignFields::HeatingControlThrottlingRange);
+      return lhsHandles == rhsHandles;
     }
-  }
 
-  return false;
-}
+    static bool hasHeatingCoilData(const openstudio::epmodel::detail::ZoneHVACLowTempRadiantVarFlow_Impl& impl) {
+      using Fields = openstudio::ZoneHVAC_LowTemperatureRadiant_VariableFlowFields;
+      if (!impl.isEmpty(Fields::HeatingDesignCapacity) || !impl.isEmpty(Fields::MaximumHotWaterFlow)
+          || !impl.isEmpty(Fields::HeatingWaterInletNodeName) || !impl.isEmpty(Fields::HeatingWaterOutletNodeName)) {
+        return true;
+      }
 
-static bool hasCoolingCoilData(const openstudio::epmodel::detail::ZoneHVACLowTempRadiantVarFlow_Impl& impl) {
-  using Fields = openstudio::ZoneHVAC_LowTemperatureRadiant_VariableFlowFields;
-  if (!impl.isEmpty(Fields::CoolingDesignCapacity) || !impl.isEmpty(Fields::MaximumColdWaterFlow)
-      || !impl.isEmpty(Fields::CoolingWaterInletNodeName) || !impl.isEmpty(Fields::CoolingWaterOutletNodeName)) {
-    return true;
-  }
+      if (auto target = impl.getTarget(openstudio::ZoneHVAC_LowTemperatureRadiant_VariableFlowFields::DesignObject)) {
+        if (auto design = target->optionalCast<ZoneHVACLowTempRadiantVarFlowDesign>()) {
+          auto designImpl = design->getImpl<detail::ZoneHVACLowTempRadiantVarFlowDesign_Impl>();
+          using DesignFields = openstudio::ZoneHVAC_LowTemperatureRadiant_VariableFlow_DesignFields;
+          return !designImpl->isEmpty(DesignFields::HeatingControlTemperatureScheduleName)
+                 || !designImpl->isEmpty(DesignFields::HeatingDesignCapacityMethod)
+                 || !designImpl->isEmpty(DesignFields::HeatingDesignCapacityPerFloorArea)
+                 || !designImpl->isEmpty(DesignFields::FractionofAutosizedHeatingDesignCapacity)
+                 || !designImpl->isEmpty(DesignFields::HeatingControlThrottlingRange);
+        }
+      }
 
-  if (auto target = impl.getTarget(openstudio::ZoneHVAC_LowTemperatureRadiant_VariableFlowFields::DesignObject)) {
-    if (auto design = target->optionalCast<ZoneHVACLowTempRadiantVarFlowDesign>()) {
-      auto designImpl = design->getImpl<detail::ZoneHVACLowTempRadiantVarFlowDesign_Impl>();
-      using DesignFields = openstudio::ZoneHVAC_LowTemperatureRadiant_VariableFlow_DesignFields;
-      return !designImpl->isEmpty(DesignFields::CoolingControlTemperatureScheduleName)
-             || !designImpl->isEmpty(DesignFields::CoolingDesignCapacityMethod) || !designImpl->isEmpty(DesignFields::CoolingDesignCapacityPerFloorArea)
-             || !designImpl->isEmpty(DesignFields::FractionofAutosizedCoolingDesignCapacity)
-             || !designImpl->isEmpty(DesignFields::CoolingControlThrottlingRange) || !designImpl->isEmpty(DesignFields::CondensationControlType)
-             || !designImpl->isEmpty(DesignFields::CondensationControlDewpointOffset);
+      return false;
     }
-  }
 
-  return false;
-}
+    static bool hasCoolingCoilData(const openstudio::epmodel::detail::ZoneHVACLowTempRadiantVarFlow_Impl& impl) {
+      using Fields = openstudio::ZoneHVAC_LowTemperatureRadiant_VariableFlowFields;
+      if (!impl.isEmpty(Fields::CoolingDesignCapacity) || !impl.isEmpty(Fields::MaximumColdWaterFlow)
+          || !impl.isEmpty(Fields::CoolingWaterInletNodeName) || !impl.isEmpty(Fields::CoolingWaterOutletNodeName)) {
+        return true;
+      }
 
-}  // namespace detail
+      if (auto target = impl.getTarget(openstudio::ZoneHVAC_LowTemperatureRadiant_VariableFlowFields::DesignObject)) {
+        if (auto design = target->optionalCast<ZoneHVACLowTempRadiantVarFlowDesign>()) {
+          auto designImpl = design->getImpl<detail::ZoneHVACLowTempRadiantVarFlowDesign_Impl>();
+          using DesignFields = openstudio::ZoneHVAC_LowTemperatureRadiant_VariableFlow_DesignFields;
+          return !designImpl->isEmpty(DesignFields::CoolingControlTemperatureScheduleName)
+                 || !designImpl->isEmpty(DesignFields::CoolingDesignCapacityMethod)
+                 || !designImpl->isEmpty(DesignFields::CoolingDesignCapacityPerFloorArea)
+                 || !designImpl->isEmpty(DesignFields::FractionofAutosizedCoolingDesignCapacity)
+                 || !designImpl->isEmpty(DesignFields::CoolingControlThrottlingRange) || !designImpl->isEmpty(DesignFields::CondensationControlType)
+                 || !designImpl->isEmpty(DesignFields::CondensationControlDewpointOffset);
+        }
+      }
+
+      return false;
+    }
+
+  }  // namespace detail
 
   ZoneHVACLowTempRadiantVarFlow::ZoneHVACLowTempRadiantVarFlow(const Model& model)
     : ZoneHVACComponent(ZoneHVACLowTempRadiantVarFlow::iddObjectType(), model) {
@@ -308,7 +309,8 @@ static bool hasCoolingCoilData(const openstudio::epmodel::detail::ZoneHVACLowTem
   namespace detail {
 
     boost::optional<Schedule> ZoneHVACLowTempRadiantVarFlow_Impl::availabilitySchedule() const {
-      return getObject<ModelObject>().getModelObjectTarget<Schedule>(openstudio::ZoneHVAC_LowTemperatureRadiant_VariableFlowFields::AvailabilityScheduleName);
+      return getObject<ModelObject>().getModelObjectTarget<Schedule>(
+        openstudio::ZoneHVAC_LowTemperatureRadiant_VariableFlowFields::AvailabilityScheduleName);
     }
 
     bool ZoneHVACLowTempRadiantVarFlow_Impl::setAvailabilitySchedule(Schedule& schedule) {
@@ -392,8 +394,9 @@ static bool hasCoolingCoilData(const openstudio::epmodel::detail::ZoneHVACLowTem
         return boost::none;
       }
       const auto parent = getObject<openstudio::epmodel::ZoneHVACLowTempRadiantVarFlow>();
-      return model().getOrCreateTransientByName<openstudio::epmodel::CoilHeatingLowTempRadiantVarFlow>(
-        detail::transientHeatingCoilName(parent)).cast<HVACComponent>();
+      return model()
+        .getOrCreateTransientByName<openstudio::epmodel::CoilHeatingLowTempRadiantVarFlow>(detail::transientHeatingCoilName(parent))
+        .cast<HVACComponent>();
     }
 
     bool ZoneHVACLowTempRadiantVarFlow_Impl::setHeatingCoil(HVACComponent& heatingCoil) {
@@ -407,9 +410,10 @@ static bool hasCoolingCoilData(const openstudio::epmodel::detail::ZoneHVACLowTem
 
       bool result = true;
 
-      result = source->isMaximumHotWaterFlowAutosized() ? (target.autosizeMaximumHotWaterFlow(), result)
-                                                        : (source->maximumHotWaterFlow() ? (target.setMaximumHotWaterFlow(*source->maximumHotWaterFlow()) && result)
-                                                                                        : (target.resetMaximumHotWaterFlow(), result));
+      result = source->isMaximumHotWaterFlowAutosized()
+                 ? (target.autosizeMaximumHotWaterFlow(), result)
+                 : (source->maximumHotWaterFlow() ? (target.setMaximumHotWaterFlow(*source->maximumHotWaterFlow()) && result)
+                                                  : (target.resetMaximumHotWaterFlow(), result));
 
       if (auto schedule = source->heatingControlTemperatureSchedule()) {
         result = target.setHeatingControlTemperatureSchedule(*schedule) && result;
@@ -418,16 +422,19 @@ static bool hasCoolingCoilData(const openstudio::epmodel::detail::ZoneHVACLowTem
       }
 
       result = target.setHeatingDesignCapacityMethod(source->heatingDesignCapacityMethod()) && result;
-      result = source->isHeatingDesignCapacityAutosized() ? (target.autosizeHeatingDesignCapacity(), result)
-                                                          : (source->heatingDesignCapacity() ? (target.setHeatingDesignCapacity(*source->heatingDesignCapacity()) && result)
-                                                                                            : (setString(openstudio::ZoneHVAC_LowTemperatureRadiant_VariableFlowFields::HeatingDesignCapacity, "", false) && result));
+      result = source->isHeatingDesignCapacityAutosized()
+                 ? (target.autosizeHeatingDesignCapacity(), result)
+                 : (source->heatingDesignCapacity()
+                      ? (target.setHeatingDesignCapacity(*source->heatingDesignCapacity()) && result)
+                      : (setString(openstudio::ZoneHVAC_LowTemperatureRadiant_VariableFlowFields::HeatingDesignCapacity, "", false) && result));
       result = target.setHeatingDesignCapacityPerFloorArea(source->heatingDesignCapacityPerFloorArea()) && result;
       result = target.setFractionofAutosizedHeatingDesignCapacity(source->fractionofAutosizedHeatingDesignCapacity()) && result;
       result = target.setHeatingControlThrottlingRange(source->heatingControlThrottlingRange()) && result;
 
       if (auto inlet = source->inletModelObject()) {
         if (auto node = inlet->optionalCast<Node>()) {
-          result = setPointer(openstudio::ZoneHVAC_LowTemperatureRadiant_VariableFlowFields::HeatingWaterInletNodeName, node->handle(), false) && result;
+          result =
+            setPointer(openstudio::ZoneHVAC_LowTemperatureRadiant_VariableFlowFields::HeatingWaterInletNodeName, node->handle(), false) && result;
         }
       } else {
         result = setPointer(openstudio::ZoneHVAC_LowTemperatureRadiant_VariableFlowFields::HeatingWaterInletNodeName, Handle(), false) && result;
@@ -435,7 +442,8 @@ static bool hasCoolingCoilData(const openstudio::epmodel::detail::ZoneHVACLowTem
 
       if (auto outlet = source->outletModelObject()) {
         if (auto node = outlet->optionalCast<Node>()) {
-          result = setPointer(openstudio::ZoneHVAC_LowTemperatureRadiant_VariableFlowFields::HeatingWaterOutletNodeName, node->handle(), false) && result;
+          result =
+            setPointer(openstudio::ZoneHVAC_LowTemperatureRadiant_VariableFlowFields::HeatingWaterOutletNodeName, node->handle(), false) && result;
         }
       } else {
         result = setPointer(openstudio::ZoneHVAC_LowTemperatureRadiant_VariableFlowFields::HeatingWaterOutletNodeName, Handle(), false) && result;
@@ -458,7 +466,7 @@ static bool hasCoolingCoilData(const openstudio::epmodel::detail::ZoneHVACLowTem
       impl->resetHeatingControlTemperatureSchedule();
 
       const auto transientName = detail::transientHeatingCoilName(getObject<openstudio::epmodel::ZoneHVACLowTempRadiantVarFlow>());
-      if (auto object = workspace().getObjectByTypeAndName(IddObjectType::OS_Coil_Heating_LowTemperatureRadiant_VariableFlow, transientName, true)) {
+      if (auto object = workspace().getObjectByTypeAndName(IddObjectType::OS_Coil_Heating_LowTemperatureRadiant_VariableFlow, transientName)) {
         object->remove();
       }
     }
@@ -468,8 +476,9 @@ static bool hasCoolingCoilData(const openstudio::epmodel::detail::ZoneHVACLowTem
         return boost::none;
       }
       const auto parent = getObject<openstudio::epmodel::ZoneHVACLowTempRadiantVarFlow>();
-      return model().getOrCreateTransientByName<openstudio::epmodel::CoilCoolingLowTempRadiantVarFlow>(
-        detail::transientCoolingCoilName(parent)).cast<HVACComponent>();
+      return model()
+        .getOrCreateTransientByName<openstudio::epmodel::CoilCoolingLowTempRadiantVarFlow>(detail::transientCoolingCoilName(parent))
+        .cast<HVACComponent>();
     }
 
     bool ZoneHVACLowTempRadiantVarFlow_Impl::setCoolingCoil(HVACComponent& coolingCoil) {
@@ -483,9 +492,10 @@ static bool hasCoolingCoilData(const openstudio::epmodel::detail::ZoneHVACLowTem
 
       bool result = true;
 
-      result = source->isMaximumColdWaterFlowAutosized() ? (target.autosizeMaximumColdWaterFlow(), result)
-                                                         : (source->maximumColdWaterFlow() ? (target.setMaximumColdWaterFlow(*source->maximumColdWaterFlow()) && result)
-                                                                                          : (target.resetMaximumColdWaterFlow(), result));
+      result = source->isMaximumColdWaterFlowAutosized()
+                 ? (target.autosizeMaximumColdWaterFlow(), result)
+                 : (source->maximumColdWaterFlow() ? (target.setMaximumColdWaterFlow(*source->maximumColdWaterFlow()) && result)
+                                                   : (target.resetMaximumColdWaterFlow(), result));
 
       if (auto schedule = source->coolingControlTemperatureSchedule()) {
         result = target.setCoolingControlTemperatureSchedule(*schedule) && result;
@@ -496,16 +506,19 @@ static bool hasCoolingCoilData(const openstudio::epmodel::detail::ZoneHVACLowTem
       result = target.setCondensationControlType(source->condensationControlType()) && result;
       result = target.setCondensationControlDewpointOffset(source->condensationControlDewpointOffset()) && result;
       result = target.setCoolingDesignCapacityMethod(source->coolingDesignCapacityMethod()) && result;
-      result = source->isCoolingDesignCapacityAutosized() ? (target.autosizeCoolingDesignCapacity(), result)
-                                                          : (source->coolingDesignCapacity() ? (target.setCoolingDesignCapacity(*source->coolingDesignCapacity()) && result)
-                                                                                            : (setString(openstudio::ZoneHVAC_LowTemperatureRadiant_VariableFlowFields::CoolingDesignCapacity, "", false) && result));
+      result = source->isCoolingDesignCapacityAutosized()
+                 ? (target.autosizeCoolingDesignCapacity(), result)
+                 : (source->coolingDesignCapacity()
+                      ? (target.setCoolingDesignCapacity(*source->coolingDesignCapacity()) && result)
+                      : (setString(openstudio::ZoneHVAC_LowTemperatureRadiant_VariableFlowFields::CoolingDesignCapacity, "", false) && result));
       result = target.setCoolingDesignCapacityPerFloorArea(source->coolingDesignCapacityPerFloorArea()) && result;
       result = target.setFractionofAutosizedCoolingDesignCapacity(source->fractionofAutosizedCoolingDesignCapacity()) && result;
       result = target.setCoolingControlThrottlingRange(source->coolingControlThrottlingRange()) && result;
 
       if (auto inlet = source->inletModelObject()) {
         if (auto node = inlet->optionalCast<Node>()) {
-          result = setPointer(openstudio::ZoneHVAC_LowTemperatureRadiant_VariableFlowFields::CoolingWaterInletNodeName, node->handle(), false) && result;
+          result =
+            setPointer(openstudio::ZoneHVAC_LowTemperatureRadiant_VariableFlowFields::CoolingWaterInletNodeName, node->handle(), false) && result;
         }
       } else {
         result = setPointer(openstudio::ZoneHVAC_LowTemperatureRadiant_VariableFlowFields::CoolingWaterInletNodeName, Handle(), false) && result;
@@ -513,7 +526,8 @@ static bool hasCoolingCoilData(const openstudio::epmodel::detail::ZoneHVACLowTem
 
       if (auto outlet = source->outletModelObject()) {
         if (auto node = outlet->optionalCast<Node>()) {
-          result = setPointer(openstudio::ZoneHVAC_LowTemperatureRadiant_VariableFlowFields::CoolingWaterOutletNodeName, node->handle(), false) && result;
+          result =
+            setPointer(openstudio::ZoneHVAC_LowTemperatureRadiant_VariableFlowFields::CoolingWaterOutletNodeName, node->handle(), false) && result;
         }
       } else {
         result = setPointer(openstudio::ZoneHVAC_LowTemperatureRadiant_VariableFlowFields::CoolingWaterOutletNodeName, Handle(), false) && result;
@@ -538,7 +552,7 @@ static bool hasCoolingCoilData(const openstudio::epmodel::detail::ZoneHVACLowTem
       impl->resetCondensationControlDewpointOffset();
 
       const auto transientName = detail::transientCoolingCoilName(getObject<openstudio::epmodel::ZoneHVACLowTempRadiantVarFlow>());
-      if (auto object = workspace().getObjectByTypeAndName(IddObjectType::OS_Coil_Cooling_LowTemperatureRadiant_VariableFlow, transientName, true)) {
+      if (auto object = workspace().getObjectByTypeAndName(IddObjectType::OS_Coil_Cooling_LowTemperatureRadiant_VariableFlow, transientName)) {
         object->remove();
       }
     }
@@ -1184,7 +1198,7 @@ static bool hasCoolingCoilData(const openstudio::epmodel::detail::ZoneHVACLowTem
       }
 
       if (auto name = getString(openstudio::ZoneHVAC_LowTemperatureRadiant_VariableFlowFields::DesignObject, true); name && !name->empty()) {
-        if (auto obj = workspace().getObjectByTypeAndName(IddObjectType::ZoneHVAC_LowTemperatureRadiant_VariableFlow_Design, *name, true)) {
+        if (auto obj = workspace().getObjectByTypeAndName(IddObjectType::ZoneHVAC_LowTemperatureRadiant_VariableFlow_Design, *name)) {
           if (auto typed = obj->optionalCast<ZoneHVACLowTempRadiantVarFlowDesign>()) {
             auto* self = const_cast<ZoneHVACLowTempRadiantVarFlow_Impl*>(this);
             self->setPointer(openstudio::ZoneHVAC_LowTemperatureRadiant_VariableFlowFields::DesignObject, typed->handle(), false);
@@ -1234,10 +1248,10 @@ static bool hasCoolingCoilData(const openstudio::epmodel::detail::ZoneHVACLowTem
       if (const auto existingName =
             getString(openstudio::ZoneHVAC_LowTemperatureRadiant_VariableFlowFields::SurfaceNameorRadiantSurfaceGroupName, true);
           existingName && !existingName->empty()) {
-        if (auto obj = workspace().getObjectByTypeAndName(IddObjectType::ZoneHVAC_LowTemperatureRadiant_SurfaceGroup, *existingName, true)) {
+        if (auto obj = workspace().getObjectByTypeAndName(IddObjectType::ZoneHVAC_LowTemperatureRadiant_SurfaceGroup, *existingName)) {
           if (auto typed = obj->optionalCast<ZoneHVACLowTemperatureRadiantSurfaceGroup>()) {
-            OS_ASSERT(setPointer(openstudio::ZoneHVAC_LowTemperatureRadiant_VariableFlowFields::SurfaceNameorRadiantSurfaceGroupName,
-                                 typed->handle(), false));
+            OS_ASSERT(setPointer(openstudio::ZoneHVAC_LowTemperatureRadiant_VariableFlowFields::SurfaceNameorRadiantSurfaceGroupName, typed->handle(),
+                                 false));
             return *typed;
           }
         }
@@ -1251,8 +1265,8 @@ static bool hasCoolingCoilData(const openstudio::epmodel::detail::ZoneHVACLowTem
       } else {
         created.setName(getObject<ModelObject>().nameString() + " Surface Group");
       }
-      OS_ASSERT(setPointer(openstudio::ZoneHVAC_LowTemperatureRadiant_VariableFlowFields::SurfaceNameorRadiantSurfaceGroupName,
-                           created.handle(), false));
+      OS_ASSERT(
+        setPointer(openstudio::ZoneHVAC_LowTemperatureRadiant_VariableFlowFields::SurfaceNameorRadiantSurfaceGroupName, created.handle(), false));
       return created;
     }
 

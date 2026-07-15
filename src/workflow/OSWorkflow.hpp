@@ -33,11 +33,16 @@ namespace measure {
   using OSArgumentMap = std::map<std::string, OSArgument>;
 }  // namespace measure
 
+namespace epmodel {
+  class Model;
+}
+
 class OSWorkflow
 {
  public:
   OSWorkflow(const filesystem::path& oswPath, ScriptEngineInstance& ruby, ScriptEngineInstance& python);
   OSWorkflow(const WorkflowRunOptions& t_workflowRunOptions, ScriptEngineInstance& ruby, ScriptEngineInstance& python);
+  ~OSWorkflow();
 
   bool run();
 
@@ -52,6 +57,7 @@ class OSWorkflow
   WorkflowJSON workflowJSON;
   measure::OSRunner runner{workflowJSON};
   model::Model model;
+  std::unique_ptr<epmodel::Model> epModel_;
   boost::optional<Workspace> workspace_;
   boost::optional<modelica::ModelicaFile> modelicaFile;
   boost::optional<openstudio::path> m_modelicaSeedFileName;

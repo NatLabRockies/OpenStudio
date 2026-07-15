@@ -449,7 +449,7 @@ TEST_F(BCLFixture, RemoteBCL_BCLSearchResult) {
   EXPECT_TRUE(response.costs().empty());
 
   EXPECT_FALSE(response.org().empty());
-  EXPECT_EQ("NREL", response.org());
+  EXPECT_EQ("NatLabRockies", response.org());
   EXPECT_FALSE(response.repo().empty());
   EXPECT_EQ("openstudio-common-measures-gem", response.repo());
   EXPECT_FALSE(response.releaseTag().empty());

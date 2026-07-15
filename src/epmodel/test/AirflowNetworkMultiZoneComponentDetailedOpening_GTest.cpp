@@ -57,10 +57,8 @@ TEST_F(EPModelFixture, AirflowNetworkMultiZoneComponentDetailedOpening_ScalarAcc
   EXPECT_DOUBLE_EQ(0.0, opening.extraCrackLengthorHeightofPivotingAxis());
 
   // Relationship/extensible fields remain accessible through generic IDF APIs and are excluded from scalar wrappers.
-  EXPECT_TRUE(
-    opening.setInt(openstudio::AirflowNetwork_MultiZone_Component_DetailedOpeningFields::NumberofSetsofOpeningFactorData, 2));
-  auto numberOfSets =
-    opening.getInt(openstudio::AirflowNetwork_MultiZone_Component_DetailedOpeningFields::NumberofSetsofOpeningFactorData, true);
+  EXPECT_TRUE(opening.setInt(openstudio::AirflowNetwork_MultiZone_Component_DetailedOpeningFields::NumberofSetsofOpeningFactorData, 2));
+  auto numberOfSets = opening.getInt(openstudio::AirflowNetwork_MultiZone_Component_DetailedOpeningFields::NumberofSetsofOpeningFactorData, true);
   ASSERT_TRUE(numberOfSets);
   EXPECT_EQ(2, *numberOfSets);
 }

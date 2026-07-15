@@ -25,6 +25,8 @@ namespace epmodel {
   class EPMODEL_API RunPeriod : public ParentObject
   {
    public:
+    static constexpr bool is_unique = true;  // This is a Unique ModelObject
+
     virtual ~RunPeriod() override = default;
     RunPeriod(const RunPeriod& other) = default;
     RunPeriod(RunPeriod&& other) = default;

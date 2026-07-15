@@ -23,6 +23,8 @@ namespace epmodel {
   class EPMODEL_API ZoneCapacitanceMultiplierResearchSpecial : public ModelObject
   {
    public:
+    static constexpr bool is_unique = true;  // This is a Unique ModelObject
+
     virtual ~ZoneCapacitanceMultiplierResearchSpecial() override = default;
     ZoneCapacitanceMultiplierResearchSpecial(const ZoneCapacitanceMultiplierResearchSpecial& other) = default;
     ZoneCapacitanceMultiplierResearchSpecial(ZoneCapacitanceMultiplierResearchSpecial&& other) = default;

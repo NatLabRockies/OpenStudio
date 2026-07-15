@@ -33,6 +33,7 @@ namespace epmodel {
   {
    public:
     explicit WaterHeaterSizing(const Model& model);
+    explicit WaterHeaterSizing(const WaterToWaterComponent& waterHeater);
 
     virtual ~WaterHeaterSizing() override = default;
     WaterHeaterSizing(const WaterHeaterSizing& other) = default;
@@ -125,7 +126,6 @@ namespace epmodel {
     friend class openstudio::IdfObject;
     friend class openstudio::detail::IdfObject_Impl;
 
-    explicit WaterHeaterSizing(const WaterToWaterComponent& waterHeater);
     bool setWaterHeater(const WaterToWaterComponent& waterHeater);
     explicit WaterHeaterSizing(std::shared_ptr<detail::WaterHeaterSizing_Impl> impl);
   };

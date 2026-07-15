@@ -44,10 +44,8 @@ TEST_F(EPModelFixture, ZoneHVACLowTemperatureRadiantSurfaceGroup_SurfaceRows_Rou
   EXPECT_TRUE(floorGroup.setDouble(openstudio::ZoneHVAC_LowTemperatureRadiant_SurfaceGroupExtensibleFields::FlowFractionforSurface, 0.4));
 
   auto ceilingGroup = group.pushExtensibleGroup();
-  EXPECT_TRUE(
-    ceilingGroup.setString(openstudio::ZoneHVAC_LowTemperatureRadiant_SurfaceGroupExtensibleFields::SurfaceName, ceiling.nameString()));
-  EXPECT_TRUE(
-    ceilingGroup.setDouble(openstudio::ZoneHVAC_LowTemperatureRadiant_SurfaceGroupExtensibleFields::FlowFractionforSurface, 0.6));
+  EXPECT_TRUE(ceilingGroup.setString(openstudio::ZoneHVAC_LowTemperatureRadiant_SurfaceGroupExtensibleFields::SurfaceName, ceiling.nameString()));
+  EXPECT_TRUE(ceilingGroup.setDouble(openstudio::ZoneHVAC_LowTemperatureRadiant_SurfaceGroupExtensibleFields::FlowFractionforSurface, 0.6));
 
   ASSERT_EQ(2u, group.surfaces().size());
   EXPECT_EQ(floor.handle(), group.surfaces()[0].handle());

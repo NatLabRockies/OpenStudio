@@ -13,35 +13,35 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API EvaporativeCoolerDirectCelDekPad_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~EvaporativeCoolerDirectCelDekPad_Impl() override = default;
+    class EPMODEL_API EvaporativeCoolerDirectCelDekPad_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~EvaporativeCoolerDirectCelDekPad_Impl() override = default;
 
-  boost::optional<double> directPadArea() const;
-  bool isDirectPadAreaAutosized() const;
-  bool setDirectPadArea(double directPadArea);
-  void resetDirectPadArea();
-  void autosizeDirectPadArea();
+      boost::optional<double> directPadArea() const;
+      bool isDirectPadAreaAutosized() const;
+      bool setDirectPadArea(double directPadArea);
+      void resetDirectPadArea();
+      void autosizeDirectPadArea();
 
-  boost::optional<double> directPadDepth() const;
-  bool isDirectPadDepthAutosized() const;
-  bool setDirectPadDepth(double directPadDepth);
-  void resetDirectPadDepth();
-  void autosizeDirectPadDepth();
+      boost::optional<double> directPadDepth() const;
+      bool isDirectPadDepthAutosized() const;
+      bool setDirectPadDepth(double directPadDepth);
+      void resetDirectPadDepth();
+      void autosizeDirectPadDepth();
 
-  double recirculatingWaterPumpPowerConsumption() const;
-  bool setRecirculatingWaterPumpPowerConsumption(double recirculatingWaterPumpPowerConsumption);
+      double recirculatingWaterPumpPowerConsumption() const;
+      bool setRecirculatingWaterPumpPowerConsumption(double recirculatingWaterPumpPowerConsumption);
 
-  boost::optional<std::string> controlType() const;
-  bool setControlType(const std::string& controlType);
-  void resetControlType();
-};
+      boost::optional<std::string> controlType() const;
+      bool setControlType(const std::string& controlType);
+      void resetControlType();
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

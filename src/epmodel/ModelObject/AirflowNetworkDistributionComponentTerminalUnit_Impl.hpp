@@ -13,27 +13,27 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API AirflowNetworkDistributionComponentTerminalUnit_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~AirflowNetworkDistributionComponentTerminalUnit_Impl() override = default;
+    class EPMODEL_API AirflowNetworkDistributionComponentTerminalUnit_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~AirflowNetworkDistributionComponentTerminalUnit_Impl() override = default;
 
-  std::string terminalUnitObjectType() const;
-  bool setTerminalUnitObjectType(const std::string& terminalUnitObjectType);
+      std::string terminalUnitObjectType() const;
+      bool setTerminalUnitObjectType(const std::string& terminalUnitObjectType);
 
-  double airPathLength() const;
-  bool setAirPathLength(double airPathLength);
+      double airPathLength() const;
+      bool setAirPathLength(double airPathLength);
 
-  double airPathHydraulicDiameter() const;
-  bool setAirPathHydraulicDiameter(double airPathHydraulicDiameter);
+      double airPathHydraulicDiameter() const;
+      bool setAirPathHydraulicDiameter(double airPathHydraulicDiameter);
 
-  std::vector<std::string> terminalUnitObjectTypeValues() const;
-};
+      std::vector<std::string> terminalUnitObjectTypeValues() const;
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

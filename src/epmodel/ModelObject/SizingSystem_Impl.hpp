@@ -21,6 +21,8 @@ namespace epmodel {
       using ModelObject_Impl::ModelObject_Impl;
       virtual ~SizingSystem_Impl() override = default;
 
+      void doCanonicalize(LoadContext& context) override;
+
       std::string typeofLoadtoSizeOn() const;
       bool isTypeofLoadtoSizeOnDefaulted() const;
       bool setTypeofLoadtoSizeOn(const std::string& typeofLoadtoSizeOn);
@@ -174,6 +176,7 @@ namespace epmodel {
       double maximumHeatingCapacityToCoolingCapacitySizingRatio() const;
       bool setMaximumHeatingCapacityToCoolingCapacitySizingRatio(double maximumHeatingCapacityToCoolingCapacitySizingRatio);
 
+      boost::optional<openstudio::epmodel::AirLoopHVAC> airLoopHVAC() const;
       bool setAirLoopHVAC(const openstudio::epmodel::AirLoopHVAC& airLoopHVAC);
     };
 

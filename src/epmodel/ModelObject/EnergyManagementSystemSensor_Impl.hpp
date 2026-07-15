@@ -13,23 +13,23 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API EnergyManagementSystemSensor_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~EnergyManagementSystemSensor_Impl() override = default;
+    class EPMODEL_API EnergyManagementSystemSensor_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~EnergyManagementSystemSensor_Impl() override = default;
 
-  boost::optional<std::string> keyName() const;
-  bool setKeyName(const std::string& keyName);
-  void resetKeyName();
+      boost::optional<std::string> keyName() const;
+      bool setKeyName(const std::string& keyName);
+      void resetKeyName();
 
-  std::string outputVariableOrMeterName() const;
-  bool setOutputVariableOrMeterName(const std::string& outputVariableOrMeterName);
-};
+      std::string outputVariableOrMeterName() const;
+      bool setOutputVariableOrMeterName(const std::string& outputVariableOrMeterName);
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

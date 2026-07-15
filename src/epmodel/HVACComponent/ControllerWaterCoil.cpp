@@ -47,6 +47,8 @@ namespace epmodel {
   }  // namespace
 
   ControllerWaterCoil::ControllerWaterCoil(const Model& model) : HVACComponent(ControllerWaterCoil::iddObjectType(), model) {
+    OS_ASSERT(setControlVariable("Temperature"));
+    OS_ASSERT(setActuatorVariable("Flow"));
     resetMinimumActuatedFlow();
   }
 
@@ -212,6 +214,17 @@ namespace epmodel {
         return coolingCoil;
       }
       return inferWaterCoilByNodes<CoilHeatingWater>(*this);
+    }
+
+    void ControllerWaterCoil_Impl::doCanonicalize(LoadContext& context) {
+      HVACComponent_Impl::doCanonicalize(context);
+
+      if (isEmpty(openstudio::Controller_WaterCoilFields::ControlVariable)) {
+        OS_ASSERT(setControlVariable("Temperature"));
+      }
+      if (isEmpty(openstudio::Controller_WaterCoilFields::ActuatorVariable)) {
+        OS_ASSERT(setActuatorVariable("Flow"));
+      }
     }
 
     boost::optional<std::string> ControllerWaterCoil_Impl::controlVariable() const {

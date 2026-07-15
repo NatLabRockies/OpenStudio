@@ -10,20 +10,20 @@
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API ExternalInterfaceSchedule_Impl : public Schedule_Impl
-{
- public:
-  using Schedule_Impl::Schedule_Impl;
-  virtual ~ExternalInterfaceSchedule_Impl() override = default;
+    class EPMODEL_API ExternalInterfaceSchedule_Impl : public Schedule_Impl
+    {
+     public:
+      using Schedule_Impl::Schedule_Impl;
+      virtual ~ExternalInterfaceSchedule_Impl() override = default;
 
-  // Initial Value accessors
-  double initialValue() const;
-  bool setInitialValue(double initialValue);
-};
+      // Initial Value accessors
+      double initialValue() const;
+      bool setInitialValue(double initialValue);
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

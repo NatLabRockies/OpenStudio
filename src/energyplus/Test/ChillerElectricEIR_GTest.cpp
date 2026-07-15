@@ -337,12 +337,10 @@ TEST_F(EnergyPlusFixture, ForwardTranslator_ChillerElectricEIR_AirCooledCondense
   const auto& woCh = woChs.front();
 
   EXPECT_EQ("AirCooled", woCh.getString(Chiller_Electric_EIRFields::CondenserType).get());
-  EXPECT_EQ("Air Cooled ChillerElectricEIR Inlet Node For Condenser",
-            woCh.getString(Chiller_Electric_EIRFields::CondenserInletNodeName).get());
-  EXPECT_EQ("Air Cooled ChillerElectricEIR Outlet Node For Condenser",
-            woCh.getString(Chiller_Electric_EIRFields::CondenserOutletNodeName).get());
+  EXPECT_EQ("Air Cooled ChillerElectricEIR Inlet Node For Condenser", woCh.getString(Chiller_Electric_EIRFields::CondenserInletNodeName).get());
+  EXPECT_EQ("Air Cooled ChillerElectricEIR Outlet Node For Condenser", woCh.getString(Chiller_Electric_EIRFields::CondenserOutletNodeName).get());
 
   auto oaNodeLists = w.getObjectsByType(IddObjectType::OutdoorAir_NodeList);
   ASSERT_EQ(1u, oaNodeLists.size());
-  EXPECT_EQ("Air Cooled ChillerElectricEIR Inlet Node For Condenser", oaNodeLists.front().nameString());
+  EXPECT_EQ("Air Cooled ChillerElectricEIR Inlet Node For Condenser", oaNodeLists.front().getString(0).get());
 }

@@ -877,7 +877,7 @@ namespace gbxml {
       double height = faceBoundingBox.maxY().get() - faceBoundingBox.minY().get();
       double areaCorrection = 1.0;
       if (width > 0 && height > 0) {
-        areaCorrection = sqrt(area / (width * height));
+        areaCorrection = std::sqrt(area / (width * height));
       }
 
       // pick lower left corner vertex in face coordinates
@@ -1035,7 +1035,7 @@ namespace gbxml {
       double height = faceBoundingBox.maxY().get() - faceBoundingBox.minY().get();
       double areaCorrection = 1.0;
       if (width > 0 && height > 0) {
-        areaCorrection = sqrt(area / (width * height));
+        areaCorrection = std::sqrt(area / (width * height));
       }
 
       // pick lower left corner vertex in face coordinates
@@ -1203,7 +1203,7 @@ namespace gbxml {
       double height = faceBoundingBox.maxY().get() - faceBoundingBox.minY().get();
       double areaCorrection = 1.0;
       if (width > 0 && height > 0) {
-        areaCorrection = sqrt(area / (width * height));
+        areaCorrection = std::sqrt(area / (width * height));
       }
 
       // pick lower left corner vertex in face coordinates

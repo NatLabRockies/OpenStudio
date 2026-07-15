@@ -14,39 +14,39 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
-class Node;
+  class Model;
+  class Node;
 
-namespace detail {
-class ZoneHVACAirDistributionUnit_Impl;
-}
+  namespace detail {
+    class ZoneHVACAirDistributionUnit_Impl;
+  }
 
-class EPMODEL_API ZoneHVACAirDistributionUnit : public ModelObject
-{
- public:
-  explicit ZoneHVACAirDistributionUnit(const Model& model);
+  class EPMODEL_API ZoneHVACAirDistributionUnit : public ModelObject
+  {
+   public:
+    explicit ZoneHVACAirDistributionUnit(const Model& model);
 
-  virtual ~ZoneHVACAirDistributionUnit() override = default;
-  ZoneHVACAirDistributionUnit(const ZoneHVACAirDistributionUnit& other) = default;
-  ZoneHVACAirDistributionUnit(ZoneHVACAirDistributionUnit&& other) = default;
-  ZoneHVACAirDistributionUnit& operator=(const ZoneHVACAirDistributionUnit&) = default;
-  ZoneHVACAirDistributionUnit& operator=(ZoneHVACAirDistributionUnit&&) = default;
+    virtual ~ZoneHVACAirDistributionUnit() override = default;
+    ZoneHVACAirDistributionUnit(const ZoneHVACAirDistributionUnit& other) = default;
+    ZoneHVACAirDistributionUnit(ZoneHVACAirDistributionUnit&& other) = default;
+    ZoneHVACAirDistributionUnit& operator=(const ZoneHVACAirDistributionUnit&) = default;
+    ZoneHVACAirDistributionUnit& operator=(ZoneHVACAirDistributionUnit&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  boost::optional<ModelObject> airTerminal() const;
+    boost::optional<ModelObject> airTerminal() const;
 
-  boost::optional<Node> outletNode() const;
+    boost::optional<Node> outletNode() const;
 
- protected:
-  using ImplType = detail::ZoneHVACAirDistributionUnit_Impl;
+   protected:
+    using ImplType = detail::ZoneHVACAirDistributionUnit_Impl;
 
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
-  friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
+    friend class Model;
 
-  explicit ZoneHVACAirDistributionUnit(std::shared_ptr<detail::ZoneHVACAirDistributionUnit_Impl> impl);
-};
+    explicit ZoneHVACAirDistributionUnit(std::shared_ptr<detail::ZoneHVACAirDistributionUnit_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

@@ -526,8 +526,7 @@ namespace epmodel {
     }
 
     void SolarCollectorPerformanceIntegralCollectorStorage_Impl::resetExtinctionCoefficientTimesThicknessOfOuterCover() {
-      OS_ASSERT(setString(openstudio::SolarCollectorPerformance_IntegralCollectorStorageFields::ExtinctionCoefficientTimesThicknessofOuterCover,
-                          ""));
+      OS_ASSERT(setString(openstudio::SolarCollectorPerformance_IntegralCollectorStorageFields::ExtinctionCoefficientTimesThicknessofOuterCover, ""));
     }
 
     double SolarCollectorPerformanceIntegralCollectorStorage_Impl::emissivityOfOuterCover() const {
@@ -585,7 +584,8 @@ namespace epmodel {
     }
 
     void SolarCollectorPerformanceIntegralCollectorStorage_Impl::resetExtinctionCoefficientTimesThicknessOfTheInnerCover() {
-      OS_ASSERT(setString(openstudio::SolarCollectorPerformance_IntegralCollectorStorageFields::ExtinctionCoefficientTimesThicknessoftheinnerCover, ""));
+      OS_ASSERT(
+        setString(openstudio::SolarCollectorPerformance_IntegralCollectorStorageFields::ExtinctionCoefficientTimesThicknessoftheinnerCover, ""));
     }
 
     double SolarCollectorPerformanceIntegralCollectorStorage_Impl::emissivityOfInnerCover() const {

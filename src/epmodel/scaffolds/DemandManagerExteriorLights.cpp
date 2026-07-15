@@ -17,173 +17,172 @@
 namespace openstudio {
 namespace epmodel {
 
-DemandManagerExteriorLights::DemandManagerExteriorLights(const Model& model)
-  : ModelObject(DemandManagerExteriorLights::iddObjectType(), model) {}
+  DemandManagerExteriorLights::DemandManagerExteriorLights(const Model& model) : ModelObject(DemandManagerExteriorLights::iddObjectType(), model) {}
 
-DemandManagerExteriorLights::DemandManagerExteriorLights(std::shared_ptr<detail::DemandManagerExteriorLights_Impl> impl)
-  : ModelObject(std::move(impl)) {}
+  DemandManagerExteriorLights::DemandManagerExteriorLights(std::shared_ptr<detail::DemandManagerExteriorLights_Impl> impl)
+    : ModelObject(std::move(impl)) {}
 
-IddObjectType DemandManagerExteriorLights::iddObjectType() {
-  return IddObjectType::DemandManager_ExteriorLights;
-}
+  IddObjectType DemandManagerExteriorLights::iddObjectType() {
+    return IddObjectType::DemandManager_ExteriorLights;
+  }
 
-std::vector<std::string> DemandManagerExteriorLights::limitControlValues() {
-  return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), openstudio::DemandManager_ExteriorLightsFields::LimitControl);
-}
+  std::vector<std::string> DemandManagerExteriorLights::limitControlValues() {
+    return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), openstudio::DemandManager_ExteriorLightsFields::LimitControl);
+  }
 
-std::vector<std::string> DemandManagerExteriorLights::selectionControlValues() {
-  return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), openstudio::DemandManager_ExteriorLightsFields::SelectionControl);
-}
+  std::vector<std::string> DemandManagerExteriorLights::selectionControlValues() {
+    return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), openstudio::DemandManager_ExteriorLightsFields::SelectionControl);
+  }
 
-std::string DemandManagerExteriorLights::limitControl() const {
-  return getImpl<detail::DemandManagerExteriorLights_Impl>()->limitControl();
-}
+  std::string DemandManagerExteriorLights::limitControl() const {
+    return getImpl<detail::DemandManagerExteriorLights_Impl>()->limitControl();
+  }
 
-bool DemandManagerExteriorLights::setLimitControl(const std::string& limitControl) {
-  return getImpl<detail::DemandManagerExteriorLights_Impl>()->setLimitControl(limitControl);
-}
+  bool DemandManagerExteriorLights::setLimitControl(const std::string& limitControl) {
+    return getImpl<detail::DemandManagerExteriorLights_Impl>()->setLimitControl(limitControl);
+  }
 
-boost::optional<int> DemandManagerExteriorLights::minimumLimitDuration() const {
-  return getImpl<detail::DemandManagerExteriorLights_Impl>()->minimumLimitDuration();
-}
+  boost::optional<int> DemandManagerExteriorLights::minimumLimitDuration() const {
+    return getImpl<detail::DemandManagerExteriorLights_Impl>()->minimumLimitDuration();
+  }
 
-bool DemandManagerExteriorLights::setMinimumLimitDuration(int minimumLimitDuration) {
-  return getImpl<detail::DemandManagerExteriorLights_Impl>()->setMinimumLimitDuration(minimumLimitDuration);
-}
+  bool DemandManagerExteriorLights::setMinimumLimitDuration(int minimumLimitDuration) {
+    return getImpl<detail::DemandManagerExteriorLights_Impl>()->setMinimumLimitDuration(minimumLimitDuration);
+  }
 
-void DemandManagerExteriorLights::resetMinimumLimitDuration() {
-  getImpl<detail::DemandManagerExteriorLights_Impl>()->resetMinimumLimitDuration();
-}
+  void DemandManagerExteriorLights::resetMinimumLimitDuration() {
+    getImpl<detail::DemandManagerExteriorLights_Impl>()->resetMinimumLimitDuration();
+  }
 
-boost::optional<double> DemandManagerExteriorLights::maximumLimitFraction() const {
-  return getImpl<detail::DemandManagerExteriorLights_Impl>()->maximumLimitFraction();
-}
+  boost::optional<double> DemandManagerExteriorLights::maximumLimitFraction() const {
+    return getImpl<detail::DemandManagerExteriorLights_Impl>()->maximumLimitFraction();
+  }
 
-bool DemandManagerExteriorLights::setMaximumLimitFraction(double maximumLimitFraction) {
-  return getImpl<detail::DemandManagerExteriorLights_Impl>()->setMaximumLimitFraction(maximumLimitFraction);
-}
+  bool DemandManagerExteriorLights::setMaximumLimitFraction(double maximumLimitFraction) {
+    return getImpl<detail::DemandManagerExteriorLights_Impl>()->setMaximumLimitFraction(maximumLimitFraction);
+  }
 
-void DemandManagerExteriorLights::resetMaximumLimitFraction() {
-  getImpl<detail::DemandManagerExteriorLights_Impl>()->resetMaximumLimitFraction();
-}
+  void DemandManagerExteriorLights::resetMaximumLimitFraction() {
+    getImpl<detail::DemandManagerExteriorLights_Impl>()->resetMaximumLimitFraction();
+  }
 
-boost::optional<double> DemandManagerExteriorLights::limitStepChange() const {
-  return getImpl<detail::DemandManagerExteriorLights_Impl>()->limitStepChange();
-}
+  boost::optional<double> DemandManagerExteriorLights::limitStepChange() const {
+    return getImpl<detail::DemandManagerExteriorLights_Impl>()->limitStepChange();
+  }
 
-bool DemandManagerExteriorLights::setLimitStepChange(double limitStepChange) {
-  return getImpl<detail::DemandManagerExteriorLights_Impl>()->setLimitStepChange(limitStepChange);
-}
+  bool DemandManagerExteriorLights::setLimitStepChange(double limitStepChange) {
+    return getImpl<detail::DemandManagerExteriorLights_Impl>()->setLimitStepChange(limitStepChange);
+  }
 
-void DemandManagerExteriorLights::resetLimitStepChange() {
-  getImpl<detail::DemandManagerExteriorLights_Impl>()->resetLimitStepChange();
-}
+  void DemandManagerExteriorLights::resetLimitStepChange() {
+    getImpl<detail::DemandManagerExteriorLights_Impl>()->resetLimitStepChange();
+  }
 
-std::string DemandManagerExteriorLights::selectionControl() const {
-  return getImpl<detail::DemandManagerExteriorLights_Impl>()->selectionControl();
-}
+  std::string DemandManagerExteriorLights::selectionControl() const {
+    return getImpl<detail::DemandManagerExteriorLights_Impl>()->selectionControl();
+  }
 
-bool DemandManagerExteriorLights::setSelectionControl(const std::string& selectionControl) {
-  return getImpl<detail::DemandManagerExteriorLights_Impl>()->setSelectionControl(selectionControl);
-}
+  bool DemandManagerExteriorLights::setSelectionControl(const std::string& selectionControl) {
+    return getImpl<detail::DemandManagerExteriorLights_Impl>()->setSelectionControl(selectionControl);
+  }
 
-boost::optional<int> DemandManagerExteriorLights::rotationDuration() const {
-  return getImpl<detail::DemandManagerExteriorLights_Impl>()->rotationDuration();
-}
+  boost::optional<int> DemandManagerExteriorLights::rotationDuration() const {
+    return getImpl<detail::DemandManagerExteriorLights_Impl>()->rotationDuration();
+  }
 
-bool DemandManagerExteriorLights::setRotationDuration(int rotationDuration) {
-  return getImpl<detail::DemandManagerExteriorLights_Impl>()->setRotationDuration(rotationDuration);
-}
+  bool DemandManagerExteriorLights::setRotationDuration(int rotationDuration) {
+    return getImpl<detail::DemandManagerExteriorLights_Impl>()->setRotationDuration(rotationDuration);
+  }
 
-void DemandManagerExteriorLights::resetRotationDuration() {
-  getImpl<detail::DemandManagerExteriorLights_Impl>()->resetRotationDuration();
-}
+  void DemandManagerExteriorLights::resetRotationDuration() {
+    getImpl<detail::DemandManagerExteriorLights_Impl>()->resetRotationDuration();
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-std::string DemandManagerExteriorLights_Impl::limitControl() const {
-  const auto value = getString(openstudio::DemandManager_ExteriorLightsFields::LimitControl, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    std::string DemandManagerExteriorLights_Impl::limitControl() const {
+      const auto value = getString(openstudio::DemandManager_ExteriorLightsFields::LimitControl, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-bool DemandManagerExteriorLights_Impl::setLimitControl(const std::string& limitControl) {
-  return setString(openstudio::DemandManager_ExteriorLightsFields::LimitControl, limitControl);
-}
+    bool DemandManagerExteriorLights_Impl::setLimitControl(const std::string& limitControl) {
+      return setString(openstudio::DemandManager_ExteriorLightsFields::LimitControl, limitControl);
+    }
 
-boost::optional<int> DemandManagerExteriorLights_Impl::minimumLimitDuration() const {
-  return getInt(openstudio::DemandManager_ExteriorLightsFields::MinimumLimitDuration, true);
-}
+    boost::optional<int> DemandManagerExteriorLights_Impl::minimumLimitDuration() const {
+      return getInt(openstudio::DemandManager_ExteriorLightsFields::MinimumLimitDuration, true);
+    }
 
-bool DemandManagerExteriorLights_Impl::setMinimumLimitDuration(int minimumLimitDuration) {
-  return setInt(openstudio::DemandManager_ExteriorLightsFields::MinimumLimitDuration, minimumLimitDuration);
-}
+    bool DemandManagerExteriorLights_Impl::setMinimumLimitDuration(int minimumLimitDuration) {
+      return setInt(openstudio::DemandManager_ExteriorLightsFields::MinimumLimitDuration, minimumLimitDuration);
+    }
 
-void DemandManagerExteriorLights_Impl::resetMinimumLimitDuration() {
-  OS_ASSERT(setString(openstudio::DemandManager_ExteriorLightsFields::MinimumLimitDuration, ""));
-}
+    void DemandManagerExteriorLights_Impl::resetMinimumLimitDuration() {
+      OS_ASSERT(setString(openstudio::DemandManager_ExteriorLightsFields::MinimumLimitDuration, ""));
+    }
 
-boost::optional<double> DemandManagerExteriorLights_Impl::maximumLimitFraction() const {
-  return getDouble(openstudio::DemandManager_ExteriorLightsFields::MaximumLimitFraction, true);
-}
+    boost::optional<double> DemandManagerExteriorLights_Impl::maximumLimitFraction() const {
+      return getDouble(openstudio::DemandManager_ExteriorLightsFields::MaximumLimitFraction, true);
+    }
 
-bool DemandManagerExteriorLights_Impl::setMaximumLimitFraction(double maximumLimitFraction) {
-  return setDouble(openstudio::DemandManager_ExteriorLightsFields::MaximumLimitFraction, maximumLimitFraction);
-}
+    bool DemandManagerExteriorLights_Impl::setMaximumLimitFraction(double maximumLimitFraction) {
+      return setDouble(openstudio::DemandManager_ExteriorLightsFields::MaximumLimitFraction, maximumLimitFraction);
+    }
 
-void DemandManagerExteriorLights_Impl::resetMaximumLimitFraction() {
-  OS_ASSERT(setString(openstudio::DemandManager_ExteriorLightsFields::MaximumLimitFraction, ""));
-}
+    void DemandManagerExteriorLights_Impl::resetMaximumLimitFraction() {
+      OS_ASSERT(setString(openstudio::DemandManager_ExteriorLightsFields::MaximumLimitFraction, ""));
+    }
 
-boost::optional<double> DemandManagerExteriorLights_Impl::limitStepChange() const {
-  return getDouble(openstudio::DemandManager_ExteriorLightsFields::LimitStepChange, true);
-}
+    boost::optional<double> DemandManagerExteriorLights_Impl::limitStepChange() const {
+      return getDouble(openstudio::DemandManager_ExteriorLightsFields::LimitStepChange, true);
+    }
 
-bool DemandManagerExteriorLights_Impl::setLimitStepChange(double limitStepChange) {
-  const bool result = setDouble(openstudio::DemandManager_ExteriorLightsFields::LimitStepChange, limitStepChange);
-  OS_ASSERT(result);
-  return result;
-}
+    bool DemandManagerExteriorLights_Impl::setLimitStepChange(double limitStepChange) {
+      const bool result = setDouble(openstudio::DemandManager_ExteriorLightsFields::LimitStepChange, limitStepChange);
+      OS_ASSERT(result);
+      return result;
+    }
 
-void DemandManagerExteriorLights_Impl::resetLimitStepChange() {
-  OS_ASSERT(setString(openstudio::DemandManager_ExteriorLightsFields::LimitStepChange, ""));
-}
+    void DemandManagerExteriorLights_Impl::resetLimitStepChange() {
+      OS_ASSERT(setString(openstudio::DemandManager_ExteriorLightsFields::LimitStepChange, ""));
+    }
 
-std::string DemandManagerExteriorLights_Impl::selectionControl() const {
-  const auto value = getString(openstudio::DemandManager_ExteriorLightsFields::SelectionControl, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    std::string DemandManagerExteriorLights_Impl::selectionControl() const {
+      const auto value = getString(openstudio::DemandManager_ExteriorLightsFields::SelectionControl, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-bool DemandManagerExteriorLights_Impl::setSelectionControl(const std::string& selectionControl) {
-  return setString(openstudio::DemandManager_ExteriorLightsFields::SelectionControl, selectionControl);
-}
+    bool DemandManagerExteriorLights_Impl::setSelectionControl(const std::string& selectionControl) {
+      return setString(openstudio::DemandManager_ExteriorLightsFields::SelectionControl, selectionControl);
+    }
 
-boost::optional<int> DemandManagerExteriorLights_Impl::rotationDuration() const {
-  return getInt(openstudio::DemandManager_ExteriorLightsFields::RotationDuration, true);
-}
+    boost::optional<int> DemandManagerExteriorLights_Impl::rotationDuration() const {
+      return getInt(openstudio::DemandManager_ExteriorLightsFields::RotationDuration, true);
+    }
 
-bool DemandManagerExteriorLights_Impl::setRotationDuration(int rotationDuration) {
-  return setInt(openstudio::DemandManager_ExteriorLightsFields::RotationDuration, rotationDuration);
-}
+    bool DemandManagerExteriorLights_Impl::setRotationDuration(int rotationDuration) {
+      return setInt(openstudio::DemandManager_ExteriorLightsFields::RotationDuration, rotationDuration);
+    }
 
-void DemandManagerExteriorLights_Impl::resetRotationDuration() {
-  OS_ASSERT(setString(openstudio::DemandManager_ExteriorLightsFields::RotationDuration, ""));
-}
+    void DemandManagerExteriorLights_Impl::resetRotationDuration() {
+      OS_ASSERT(setString(openstudio::DemandManager_ExteriorLightsFields::RotationDuration, ""));
+    }
 
-std::vector<std::string> DemandManagerExteriorLights_Impl::limitControlValues() const {
-  return openstudio::epmodel::DemandManagerExteriorLights::limitControlValues();
-}
+    std::vector<std::string> DemandManagerExteriorLights_Impl::limitControlValues() const {
+      return openstudio::epmodel::DemandManagerExteriorLights::limitControlValues();
+    }
 
-std::vector<std::string> DemandManagerExteriorLights_Impl::selectionControlValues() const {
-  return openstudio::epmodel::DemandManagerExteriorLights::selectionControlValues();
-}
+    std::vector<std::string> DemandManagerExteriorLights_Impl::selectionControlValues() const {
+      return openstudio::epmodel::DemandManagerExteriorLights::selectionControlValues();
+    }
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio

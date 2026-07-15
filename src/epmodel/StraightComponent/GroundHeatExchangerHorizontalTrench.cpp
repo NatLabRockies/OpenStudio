@@ -62,15 +62,14 @@ namespace epmodel {
     OS_ASSERT(ok);
   }
 
-  GroundHeatExchangerHorizontalTrench::GroundHeatExchangerHorizontalTrench(const Model& model,
-                                                                           const ModelObject& undisturbedGroundTemperatureModel)
+  GroundHeatExchangerHorizontalTrench::GroundHeatExchangerHorizontalTrench(const Model& model, const ModelObject& undisturbedGroundTemperatureModel)
     : StraightComponent(GroundHeatExchangerHorizontalTrench::iddObjectType(), model) {
     bool ok = setUndisturbedGroundTemperatureModel(undisturbedGroundTemperatureModel);
     if (!ok) {
       remove();
       LOG_FREE_AND_THROW("openstudio.epmodel.GroundHeatExchangerHorizontalTrench",
                          "Unable to set " << briefDescription() << "'s Undisturbed Ground Temperature Model to "
-                                           << undisturbedGroundTemperatureModel.briefDescription() << ".");
+                                          << undisturbedGroundTemperatureModel.briefDescription() << ".");
     }
     ok = setDesignFlowRate(0.004);
     OS_ASSERT(ok);
@@ -184,8 +183,9 @@ namespace epmodel {
   }
 
   std::string GroundHeatExchangerHorizontalTrench::groundTemperatureModel() const {
-    LOG_FREE(Warn, "openstudio.epmodel.GroundHeatExchangerHorizontalTrench",
-             "As of 3.6.0, groundTemperatureModel is deprecated. Use undisturbedGroundTemperatureModel instead. It will be removed within three releases.");
+    LOG_FREE(
+      Warn, "openstudio.epmodel.GroundHeatExchangerHorizontalTrench",
+      "As of 3.6.0, groundTemperatureModel is deprecated. Use undisturbedGroundTemperatureModel instead. It will be removed within three releases.");
     if (undisturbedGroundTemperatureModel().iddObject().type() == IddObjectType::Site_GroundTemperature_Undisturbed_KusudaAchenbach) {
       return "KusudaAchenbach";
     }
@@ -200,8 +200,7 @@ namespace epmodel {
   double GroundHeatExchangerHorizontalTrench::kusudaAchenbachAverageSurfaceTemperature() const {
     DEPRECATED_AT_MSG(3, 6, 0, "Use undisturbedGroundTemperatureModel instead.");
     if (undisturbedGroundTemperatureModel().iddObject().type() != IddObjectType::Site_GroundTemperature_Undisturbed_KusudaAchenbach) {
-      LOG_FREE_AND_THROW("openstudio.epmodel.GroundHeatExchangerHorizontalTrench",
-                         "Undisturbed ground temperature model is not KusudaAchenbach.");
+      LOG_FREE_AND_THROW("openstudio.epmodel.GroundHeatExchangerHorizontalTrench", "Undisturbed ground temperature model is not KusudaAchenbach.");
     }
     auto kusuda = undisturbedGroundTemperatureModel().cast<SiteGroundTemperatureUndisturbedKusudaAchenbach>();
     auto value = kusuda.averageSoilSurfaceTemperature();
@@ -212,8 +211,7 @@ namespace epmodel {
   double GroundHeatExchangerHorizontalTrench::kusudaAchenbachAverageAmplitudeofSurfaceTemperature() const {
     DEPRECATED_AT_MSG(3, 6, 0, "Use undisturbedGroundTemperatureModel instead.");
     if (undisturbedGroundTemperatureModel().iddObject().type() != IddObjectType::Site_GroundTemperature_Undisturbed_KusudaAchenbach) {
-      LOG_FREE_AND_THROW("openstudio.epmodel.GroundHeatExchangerHorizontalTrench",
-                         "Undisturbed ground temperature model is not KusudaAchenbach.");
+      LOG_FREE_AND_THROW("openstudio.epmodel.GroundHeatExchangerHorizontalTrench", "Undisturbed ground temperature model is not KusudaAchenbach.");
     }
     auto kusuda = undisturbedGroundTemperatureModel().cast<SiteGroundTemperatureUndisturbedKusudaAchenbach>();
     auto value = kusuda.averageAmplitudeofSurfaceTemperature();
@@ -224,8 +222,7 @@ namespace epmodel {
   double GroundHeatExchangerHorizontalTrench::kusudaAchenbachPhaseShiftofMinimumSurfaceTemperature() const {
     DEPRECATED_AT_MSG(3, 6, 0, "Use undisturbedGroundTemperatureModel instead.");
     if (undisturbedGroundTemperatureModel().iddObject().type() != IddObjectType::Site_GroundTemperature_Undisturbed_KusudaAchenbach) {
-      LOG_FREE_AND_THROW("openstudio.epmodel.GroundHeatExchangerHorizontalTrench",
-                         "Undisturbed ground temperature model is not KusudaAchenbach.");
+      LOG_FREE_AND_THROW("openstudio.epmodel.GroundHeatExchangerHorizontalTrench", "Undisturbed ground temperature model is not KusudaAchenbach.");
     }
     auto kusuda = undisturbedGroundTemperatureModel().cast<SiteGroundTemperatureUndisturbedKusudaAchenbach>();
     auto value = kusuda.phaseShiftofMinimumSurfaceTemperature();
@@ -311,36 +308,30 @@ namespace epmodel {
   bool GroundHeatExchangerHorizontalTrench::setKusudaAchenbachAverageSurfaceTemperature(double kusudaAchenbachAverageSurfaceTemperature) {
     DEPRECATED_AT_MSG(3, 6, 0, "Use undisturbedGroundTemperatureModel instead.");
     if (undisturbedGroundTemperatureModel().iddObject().type() != IddObjectType::Site_GroundTemperature_Undisturbed_KusudaAchenbach) {
-      LOG_FREE_AND_THROW("openstudio.epmodel.GroundHeatExchangerHorizontalTrench",
-                         "Undisturbed ground temperature model is not KusudaAchenbach.");
+      LOG_FREE_AND_THROW("openstudio.epmodel.GroundHeatExchangerHorizontalTrench", "Undisturbed ground temperature model is not KusudaAchenbach.");
     }
-    return undisturbedGroundTemperatureModel()
-      .cast<SiteGroundTemperatureUndisturbedKusudaAchenbach>()
-      .setAverageSoilSurfaceTemperature(kusudaAchenbachAverageSurfaceTemperature);
+    return undisturbedGroundTemperatureModel().cast<SiteGroundTemperatureUndisturbedKusudaAchenbach>().setAverageSoilSurfaceTemperature(
+      kusudaAchenbachAverageSurfaceTemperature);
   }
 
   bool GroundHeatExchangerHorizontalTrench::setKusudaAchenbachAverageAmplitudeofSurfaceTemperature(
     double kusudaAchenbachAverageAmplitudeofSurfaceTemperature) {
     DEPRECATED_AT_MSG(3, 6, 0, "Use undisturbedGroundTemperatureModel instead.");
     if (undisturbedGroundTemperatureModel().iddObject().type() != IddObjectType::Site_GroundTemperature_Undisturbed_KusudaAchenbach) {
-      LOG_FREE_AND_THROW("openstudio.epmodel.GroundHeatExchangerHorizontalTrench",
-                         "Undisturbed ground temperature model is not KusudaAchenbach.");
+      LOG_FREE_AND_THROW("openstudio.epmodel.GroundHeatExchangerHorizontalTrench", "Undisturbed ground temperature model is not KusudaAchenbach.");
     }
-    return undisturbedGroundTemperatureModel()
-      .cast<SiteGroundTemperatureUndisturbedKusudaAchenbach>()
-      .setAverageAmplitudeofSurfaceTemperature(kusudaAchenbachAverageAmplitudeofSurfaceTemperature);
+    return undisturbedGroundTemperatureModel().cast<SiteGroundTemperatureUndisturbedKusudaAchenbach>().setAverageAmplitudeofSurfaceTemperature(
+      kusudaAchenbachAverageAmplitudeofSurfaceTemperature);
   }
 
   bool GroundHeatExchangerHorizontalTrench::setKusudaAchenbachPhaseShiftofMinimumSurfaceTemperature(
     double kusudaAchenbachPhaseShiftofMinimumSurfaceTemperature) {
     DEPRECATED_AT_MSG(3, 6, 0, "Use undisturbedGroundTemperatureModel instead.");
     if (undisturbedGroundTemperatureModel().iddObject().type() != IddObjectType::Site_GroundTemperature_Undisturbed_KusudaAchenbach) {
-      LOG_FREE_AND_THROW("openstudio.epmodel.GroundHeatExchangerHorizontalTrench",
-                         "Undisturbed ground temperature model is not KusudaAchenbach.");
+      LOG_FREE_AND_THROW("openstudio.epmodel.GroundHeatExchangerHorizontalTrench", "Undisturbed ground temperature model is not KusudaAchenbach.");
     }
-    return undisturbedGroundTemperatureModel()
-      .cast<SiteGroundTemperatureUndisturbedKusudaAchenbach>()
-      .setPhaseShiftofMinimumSurfaceTemperature(kusudaAchenbachPhaseShiftofMinimumSurfaceTemperature);
+    return undisturbedGroundTemperatureModel().cast<SiteGroundTemperatureUndisturbedKusudaAchenbach>().setPhaseShiftofMinimumSurfaceTemperature(
+      kusudaAchenbachPhaseShiftofMinimumSurfaceTemperature);
   }
 
   bool GroundHeatExchangerHorizontalTrench::setEvapotranspirationGroundCoverParameter(double evapotranspirationGroundCoverParameter) {

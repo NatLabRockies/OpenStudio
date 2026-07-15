@@ -41,7 +41,7 @@ TEST_F(EPModelFixture, ControllerWaterCoil_ScalarAccessors_RoundTrip) {
   EXPECT_TRUE(std::find(actuatorVariableValues.begin(), actuatorVariableValues.end(), "Flow") != actuatorVariableValues.end());
 
   EXPECT_TRUE(controller.controlVariable());
-  EXPECT_TRUE(controller.isControlVariableDefaulted());
+  EXPECT_FALSE(controller.isControlVariableDefaulted()) << controller;
   EXPECT_TRUE(controller.setControlVariable("Temperature"));
   ASSERT_TRUE(controller.controlVariable());
   EXPECT_EQ("Temperature", controller.controlVariable().get());
@@ -54,7 +54,7 @@ TEST_F(EPModelFixture, ControllerWaterCoil_ScalarAccessors_RoundTrip) {
   controller.resetAction();
 
   EXPECT_TRUE(controller.actuatorVariable());
-  EXPECT_TRUE(controller.isActuatorVariableDefaulted());
+  EXPECT_FALSE(controller.isActuatorVariableDefaulted());
   EXPECT_TRUE(controller.setActuatorVariable("Flow"));
   ASSERT_TRUE(controller.actuatorVariable());
   EXPECT_EQ("Flow", controller.actuatorVariable().get());

@@ -13,13 +13,13 @@
 namespace openstudio {
 namespace epmodel {
 
-ScheduleWeek::ScheduleWeek(const Model& model) : ModelObject(ScheduleWeek::iddObjectType(), model) {}
+  ScheduleWeek::ScheduleWeek(const Model& model) : ModelObject(ScheduleWeek::iddObjectType(), model) {}
 
-ScheduleWeek::ScheduleWeek(std::shared_ptr<detail::ScheduleWeek_Impl> impl) : ModelObject(std::move(impl)) {}
+  ScheduleWeek::ScheduleWeek(std::shared_ptr<detail::ScheduleWeek_Impl> impl) : ModelObject(std::move(impl)) {}
 
-IddObjectType ScheduleWeek::iddObjectType() {
-  return IddObjectType::Schedule_Week_Daily;
-}
+  IddObjectType ScheduleWeek::iddObjectType() {
+    return IddObjectType::Schedule_Week_Daily;
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio

@@ -23,6 +23,8 @@ namespace epmodel {
   class EPMODEL_API SiteGroundReflectance : public ModelObject
   {
    public:
+    static constexpr bool is_unique = true;  // This is a Unique ModelObject
+
     virtual ~SiteGroundReflectance() override = default;
     SiteGroundReflectance(const SiteGroundReflectance& other) = default;
     SiteGroundReflectance(SiteGroundReflectance&& other) = default;

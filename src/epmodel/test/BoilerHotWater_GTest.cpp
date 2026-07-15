@@ -18,6 +18,13 @@ TEST_F(EPModelFixture, BoilerHotWater_DefaultConstructor) {
   BoilerHotWater boiler(model);
   EXPECT_EQ(BoilerHotWater::iddObjectType(), boiler.iddObject().type());
   EXPECT_FALSE(boiler.nameString().empty());
+  EXPECT_DOUBLE_EQ(0.8, boiler.nominalThermalEfficiency());
+  EXPECT_DOUBLE_EQ(99.0, boiler.waterOutletUpperTemperatureLimit());
+  EXPECT_EQ("ConstantFlow", boiler.boilerFlowMode());
+  EXPECT_DOUBLE_EQ(1.0, boiler.sizingFactor());
+  EXPECT_EQ("General", boiler.endUseSubcategory());
+  EXPECT_DOUBLE_EQ(0.0, boiler.onCycleParasiticElectricLoad());
+  EXPECT_DOUBLE_EQ(0.0, boiler.offCycleParasiticFuelLoad());
 }
 
 TEST_F(EPModelFixture, BoilerHotWater_ScalarAccessors_RoundTrip) {

@@ -11,79 +11,84 @@
 namespace openstudio {
 namespace epmodel {
 
-class Node;
-class Schedule;
+  class Node;
+  class Schedule;
+  class ZoneHVACAirDistributionUnit;
 
-namespace detail {
+  namespace detail {
 
-  class EPMODEL_API AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl : public StraightComponent_Impl
-  {
-   public:
-    using StraightComponent_Impl::StraightComponent_Impl;
-    virtual ~AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl() override = default;
+    class EPMODEL_API AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl : public StraightComponent_Impl
+    {
+     public:
+      using StraightComponent_Impl::StraightComponent_Impl;
+      virtual ~AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl() override = default;
 
-    unsigned inletPort() const override;
-    unsigned outletPort() const override;
-    bool addToNode(Node& node) override;
+      unsigned inletPort() const override;
+      unsigned outletPort() const override;
+      bool addToNode(Node& node) override;
+      std::vector<ModelObject> children() const override;
+      std::vector<openstudio::IdfObject> remove() override;
+      bool removeFromLoop() override;
+      boost::optional<ZoneHVACAirDistributionUnit> zoneHVACAirDistributionUnit() const;
 
-    boost::optional<Schedule> availabilitySchedule() const;
-    bool setAvailabilitySchedule(Schedule& schedule);
-    void resetAvailabilitySchedule();
+      boost::optional<Schedule> availabilitySchedule() const;
+      bool setAvailabilitySchedule(Schedule& schedule);
+      void resetAvailabilitySchedule();
 
-    boost::optional<double> maximumTotalAirFlowRate() const;
-    bool isMaximumTotalAirFlowRateAutosized() const;
-    bool setMaximumTotalAirFlowRate(double maximumTotalAirFlowRate);
-    void autosizeMaximumTotalAirFlowRate();
+      boost::optional<double> maximumTotalAirFlowRate() const;
+      bool isMaximumTotalAirFlowRateAutosized() const;
+      bool setMaximumTotalAirFlowRate(double maximumTotalAirFlowRate);
+      void autosizeMaximumTotalAirFlowRate();
 
-    double inductionRatio() const;
-    bool isInductionRatioDefaulted() const;
-    bool setInductionRatio(double inductionRatio);
-    void resetInductionRatio();
+      double inductionRatio() const;
+      bool isInductionRatioDefaulted() const;
+      bool setInductionRatio(double inductionRatio);
+      void resetInductionRatio();
 
-    HVACComponent heatingCoil() const;
-    bool setHeatingCoil(const HVACComponent& heatingCoil);
+      HVACComponent heatingCoil() const;
+      bool setHeatingCoil(const HVACComponent& heatingCoil);
 
-    boost::optional<double> maximumHotWaterFlowRate() const;
-    bool isMaximumHotWaterFlowRateAutosized() const;
-    bool setMaximumHotWaterFlowRate(double maximumHotWaterFlowRate);
-    void resetMaximumHotWaterFlowRate();
-    void autosizeMaximumHotWaterFlowRate();
+      boost::optional<double> maximumHotWaterFlowRate() const;
+      bool isMaximumHotWaterFlowRateAutosized() const;
+      bool setMaximumHotWaterFlowRate(double maximumHotWaterFlowRate);
+      void resetMaximumHotWaterFlowRate();
+      void autosizeMaximumHotWaterFlowRate();
 
-    double minimumHotWaterFlowRate() const;
-    bool isMinimumHotWaterFlowRateDefaulted() const;
-    bool setMinimumHotWaterFlowRate(double minimumHotWaterFlowRate);
-    void resetMinimumHotWaterFlowRate();
+      double minimumHotWaterFlowRate() const;
+      bool isMinimumHotWaterFlowRateDefaulted() const;
+      bool setMinimumHotWaterFlowRate(double minimumHotWaterFlowRate);
+      void resetMinimumHotWaterFlowRate();
 
-    double heatingConvergenceTolerance() const;
-    bool isHeatingConvergenceToleranceDefaulted() const;
-    bool setHeatingConvergenceTolerance(double heatingConvergenceTolerance);
-    void resetHeatingConvergenceTolerance();
+      double heatingConvergenceTolerance() const;
+      bool isHeatingConvergenceToleranceDefaulted() const;
+      bool setHeatingConvergenceTolerance(double heatingConvergenceTolerance);
+      void resetHeatingConvergenceTolerance();
 
-    boost::optional<HVACComponent> coolingCoil() const;
-    bool setCoolingCoil(const boost::optional<HVACComponent>& coolingCoil);
-    void resetCoolingCoil();
+      boost::optional<HVACComponent> coolingCoil() const;
+      bool setCoolingCoil(const boost::optional<HVACComponent>& coolingCoil);
+      void resetCoolingCoil();
 
-    boost::optional<double> maximumColdWaterFlowRate() const;
-    bool isMaximumColdWaterFlowRateAutosized() const;
-    bool setMaximumColdWaterFlowRate(double maximumColdWaterFlowRate);
-    void resetMaximumColdWaterFlowRate();
-    void autosizeMaximumColdWaterFlowRate();
+      boost::optional<double> maximumColdWaterFlowRate() const;
+      bool isMaximumColdWaterFlowRateAutosized() const;
+      bool setMaximumColdWaterFlowRate(double maximumColdWaterFlowRate);
+      void resetMaximumColdWaterFlowRate();
+      void autosizeMaximumColdWaterFlowRate();
 
-    double minimumColdWaterFlowRate() const;
-    bool isMinimumColdWaterFlowRateDefaulted() const;
-    bool setMinimumColdWaterFlowRate(double minimumColdWaterFlowRate);
-    void resetMinimumColdWaterFlowRate();
+      double minimumColdWaterFlowRate() const;
+      bool isMinimumColdWaterFlowRateDefaulted() const;
+      bool setMinimumColdWaterFlowRate(double minimumColdWaterFlowRate);
+      void resetMinimumColdWaterFlowRate();
 
-    double coolingConvergenceTolerance() const;
-    bool isCoolingConvergenceToleranceDefaulted() const;
-    bool setCoolingConvergenceTolerance(double coolingConvergenceTolerance);
-    void resetCoolingConvergenceTolerance();
+      double coolingConvergenceTolerance() const;
+      bool isCoolingConvergenceToleranceDefaulted() const;
+      bool setCoolingConvergenceTolerance(double coolingConvergenceTolerance);
+      void resetCoolingConvergenceTolerance();
 
-    boost::optional<Node> inducedAirInletNode() const;
-    unsigned inducedAirInletPort() const;
-  };
+      boost::optional<Node> inducedAirInletNode() const;
+      unsigned inducedAirInletPort() const;
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

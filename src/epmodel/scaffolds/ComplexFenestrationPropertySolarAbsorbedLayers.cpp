@@ -13,16 +13,16 @@
 namespace openstudio {
 namespace epmodel {
 
-ComplexFenestrationPropertySolarAbsorbedLayers::ComplexFenestrationPropertySolarAbsorbedLayers(const Model& model)
-  : ModelObject(ComplexFenestrationPropertySolarAbsorbedLayers::iddObjectType(), model) {}
+  ComplexFenestrationPropertySolarAbsorbedLayers::ComplexFenestrationPropertySolarAbsorbedLayers(const Model& model)
+    : ModelObject(ComplexFenestrationPropertySolarAbsorbedLayers::iddObjectType(), model) {}
 
-ComplexFenestrationPropertySolarAbsorbedLayers::ComplexFenestrationPropertySolarAbsorbedLayers(
-  std::shared_ptr<detail::ComplexFenestrationPropertySolarAbsorbedLayers_Impl> impl)
-  : ModelObject(std::move(impl)) {}
+  ComplexFenestrationPropertySolarAbsorbedLayers::ComplexFenestrationPropertySolarAbsorbedLayers(
+    std::shared_ptr<detail::ComplexFenestrationPropertySolarAbsorbedLayers_Impl> impl)
+    : ModelObject(std::move(impl)) {}
 
-IddObjectType ComplexFenestrationPropertySolarAbsorbedLayers::iddObjectType() {
-  return IddObjectType::ComplexFenestrationProperty_SolarAbsorbedLayers;
-}
+  IddObjectType ComplexFenestrationPropertySolarAbsorbedLayers::iddObjectType() {
+    return IddObjectType::ComplexFenestrationProperty_SolarAbsorbedLayers;
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio

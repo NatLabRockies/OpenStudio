@@ -16,41 +16,41 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class SolarCollectorUnglazedTranspiredMultisystem_Impl;
-}
+  namespace detail {
+    class SolarCollectorUnglazedTranspiredMultisystem_Impl;
+  }
 
-class EPMODEL_API SolarCollectorUnglazedTranspiredMultisystem : public ModelObject
-{
- public:
-  explicit SolarCollectorUnglazedTranspiredMultisystem(const Model& model);
+  class EPMODEL_API SolarCollectorUnglazedTranspiredMultisystem : public ModelObject
+  {
+   public:
+    explicit SolarCollectorUnglazedTranspiredMultisystem(const Model& model);
 
-  virtual ~SolarCollectorUnglazedTranspiredMultisystem() override = default;
-  SolarCollectorUnglazedTranspiredMultisystem(const SolarCollectorUnglazedTranspiredMultisystem& other) = default;
-  SolarCollectorUnglazedTranspiredMultisystem(SolarCollectorUnglazedTranspiredMultisystem&& other) = default;
-  SolarCollectorUnglazedTranspiredMultisystem& operator=(const SolarCollectorUnglazedTranspiredMultisystem&) = default;
-  SolarCollectorUnglazedTranspiredMultisystem& operator=(SolarCollectorUnglazedTranspiredMultisystem&&) = default;
+    virtual ~SolarCollectorUnglazedTranspiredMultisystem() override = default;
+    SolarCollectorUnglazedTranspiredMultisystem(const SolarCollectorUnglazedTranspiredMultisystem& other) = default;
+    SolarCollectorUnglazedTranspiredMultisystem(SolarCollectorUnglazedTranspiredMultisystem&& other) = default;
+    SolarCollectorUnglazedTranspiredMultisystem& operator=(const SolarCollectorUnglazedTranspiredMultisystem&) = default;
+    SolarCollectorUnglazedTranspiredMultisystem& operator=(SolarCollectorUnglazedTranspiredMultisystem&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  // Schema Alignment Notes:
-  // - API: This no-counterpart type keeps IDD-derived class/API naming.
-  // - Field Mapping: Name remains available through base ModelObject scalar API.
-  // - Field Mapping: Solar Collector Name is an object-list relationship field and is excluded from scalar accessors.
-  // - Field Mapping: Extensible node quad-tuples are relationship fields and excluded from scalar accessors.
-  // - TODO(parity): Add relationship/extensible APIs incrementally after scalar saturation.
+    // Schema Alignment Notes:
+    // - API: This no-counterpart type keeps IDD-derived class/API naming.
+    // - Field Mapping: Name remains available through base ModelObject scalar API.
+    // - Field Mapping: Solar Collector Name is an object-list relationship field and is excluded from scalar accessors.
+    // - Field Mapping: Extensible node quad-tuples are relationship fields and excluded from scalar accessors.
+    // - TODO(parity): Add relationship/extensible APIs incrementally after scalar saturation.
 
- protected:
-  using ImplType = detail::SolarCollectorUnglazedTranspiredMultisystem_Impl;
+   protected:
+    using ImplType = detail::SolarCollectorUnglazedTranspiredMultisystem_Impl;
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
 
-  explicit SolarCollectorUnglazedTranspiredMultisystem(std::shared_ptr<detail::SolarCollectorUnglazedTranspiredMultisystem_Impl> impl);
-};
+    explicit SolarCollectorUnglazedTranspiredMultisystem(std::shared_ptr<detail::SolarCollectorUnglazedTranspiredMultisystem_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

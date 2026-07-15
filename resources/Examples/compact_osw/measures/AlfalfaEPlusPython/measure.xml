@@ -3,23 +3,14 @@
   <schema_version>3.1</schema_version>
   <name>alfalfa_e_plus_python</name>
   <uid>d3160f18-a73e-4470-a574-03bdf39c9ef2</uid>
-  <version_id>e8e471ba-b61a-47b7-ac7b-162f337d38c2</version_id>
-  <version_modified>2024-09-09T17:02:46Z</version_modified>
-  <xml_checksum>00000000</xml_checksum>
+  <version_id>19d3a095-ba2c-4a28-ba1c-533447b1ab71</version_id>
+  <version_modified>2026-05-19T10:37:52Z</version_modified>
+  <xml_checksum>0D339DE6</xml_checksum>
   <class_name>AlfalfaEPlusPython</class_name>
   <display_name>AlfalfaEPlusPython</display_name>
   <description>DESCRIPTION_TEXT</description>
   <modeler_description>MODELER_DESCRIPTION_TEXT</modeler_description>
-  <arguments>
-    <argument>
-      <name>zone_name</name>
-      <display_name>New zone name</display_name>
-      <description>This name will be used as the name of the new zone.</description>
-      <type>String</type>
-      <required>true</required>
-      <model_dependent>false</model_dependent>
-    </argument>
-  </arguments>
+  <arguments />
   <outputs />
   <provenances />
   <tags>
@@ -39,32 +30,15 @@
   </attributes>
   <files>
     <file>
-      <filename>LICENSE.md</filename>
-      <filetype>md</filetype>
-      <usage_type>license</usage_type>
-      <checksum>CD7F5672</checksum>
-    </file>
-    <file>
-      <filename>.gitkeep</filename>
-      <filetype>gitkeep</filetype>
-      <usage_type>doc</usage_type>
-      <checksum>00000000</checksum>
-    </file>
-    <file>
       <version>
         <software_program>OpenStudio</software_program>
         <identifier>3.8.0</identifier>
+        <min_compatible>3.8.0</min_compatible>
       </version>
       <filename>measure.py</filename>
       <filetype>py</filetype>
       <usage_type>script</usage_type>
-      <checksum>88CBEF7D</checksum>
-    </file>
-    <file>
-      <filename>test_alfalfa_e_plus_python.py</filename>
-      <filetype>py</filetype>
-      <usage_type>test</usage_type>
-      <checksum>E636CDC6</checksum>
+      <checksum>CEB28791</checksum>
     </file>
   </files>
 </measure>

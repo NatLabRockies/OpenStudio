@@ -255,6 +255,9 @@ namespace detail {
     /** Returns equivalent IdfObject, leaving unnamed target objects unnamed. All data is cloned. */
     IdfObject idfObject() const;
 
+    // This is for LLDB debugging
+    void printToStdout() const;
+
     //@}
     /** @name Signal Helpers */
     //@{
@@ -314,7 +317,7 @@ namespace detail {
 
     virtual bool fieldIsNonnullIfRequired(unsigned index) const override;
 
-  private:
+   private:
     bool m_isTransient = false;
     bool m_initialized;
     Workspace_Impl* m_workspace;

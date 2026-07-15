@@ -3,8 +3,8 @@
   <schema_version>3.1</schema_version>
   <name>reporting_measure_registers_error</name>
   <uid>cb6ba362-ea57-4236-b803-17e37b0c0817</uid>
-  <version_id>cf96487c-311a-4c07-99e9-8694a5a6248b</version_id>
-  <version_modified>2023-11-15T11:08:57Z</version_modified>
+  <version_id>ea1f4c2f-7034-4ee6-8d2e-d9d5550a82fc</version_id>
+  <version_modified>2026-05-19T10:38:21Z</version_modified>
   <xml_checksum>B2AD275E</xml_checksum>
   <class_name>ReportingMeasureRegistersError</class_name>
   <display_name>Reporting Measure Registers Error</display_name>
@@ -51,7 +51,7 @@
       <filename>measure.rb</filename>
       <filetype>rb</filetype>
       <usage_type>script</usage_type>
-      <checksum>B2934521</checksum>
+      <checksum>4B40AC57</checksum>
     </file>
   </files>
 </measure>

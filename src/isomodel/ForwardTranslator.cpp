@@ -134,7 +134,7 @@
 #include "../model/ZoneHVACWaterToAirHeatPump.hpp"
 #include "../model/ZoneHVACWaterToAirHeatPump_Impl.hpp"
 
-#include <math.h>
+#include <cmath>
 
 namespace openstudio {
 namespace isomodel {

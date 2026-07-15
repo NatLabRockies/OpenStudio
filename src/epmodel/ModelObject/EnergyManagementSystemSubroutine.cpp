@@ -13,15 +13,15 @@
 namespace openstudio {
 namespace epmodel {
 
-EnergyManagementSystemSubroutine::EnergyManagementSystemSubroutine(const Model& model)
-  : ModelObject(EnergyManagementSystemSubroutine::iddObjectType(), model) {}
+  EnergyManagementSystemSubroutine::EnergyManagementSystemSubroutine(const Model& model)
+    : ModelObject(EnergyManagementSystemSubroutine::iddObjectType(), model) {}
 
-EnergyManagementSystemSubroutine::EnergyManagementSystemSubroutine(std::shared_ptr<detail::EnergyManagementSystemSubroutine_Impl> impl)
-  : ModelObject(std::move(impl)) {}
+  EnergyManagementSystemSubroutine::EnergyManagementSystemSubroutine(std::shared_ptr<detail::EnergyManagementSystemSubroutine_Impl> impl)
+    : ModelObject(std::move(impl)) {}
 
-IddObjectType EnergyManagementSystemSubroutine::iddObjectType() {
-  return IddObjectType::EnergyManagementSystem_Subroutine;
-}
+  IddObjectType EnergyManagementSystemSubroutine::iddObjectType() {
+    return IddObjectType::EnergyManagementSystem_Subroutine;
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio

@@ -11,22 +11,22 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API AirflowNetworkDistributionComponentHeatExchanger_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~AirflowNetworkDistributionComponentHeatExchanger_Impl() override = default;
+    class EPMODEL_API AirflowNetworkDistributionComponentHeatExchanger_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~AirflowNetworkDistributionComponentHeatExchanger_Impl() override = default;
 
-  double airPathLength() const;
-  bool setAirPathLength(double airPathLength);
+      double airPathLength() const;
+      bool setAirPathLength(double airPathLength);
 
-  double airPathHydraulicDiameter() const;
-  bool setAirPathHydraulicDiameter(double airPathHydraulicDiameter);
-};
+      double airPathHydraulicDiameter() const;
+      bool setAirPathHydraulicDiameter(double airPathHydraulicDiameter);
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

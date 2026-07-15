@@ -140,7 +140,7 @@ unsigned numFractionalDigits(double value, unsigned numSigFigs) {
   }
 
   value = std::fabs(value);
-  int orderOfMagnitude = int(floor(log10(value)));  // 1683 => 3
+  int orderOfMagnitude = int(std::floor(std::log10(value)));  // 1683 => 3
                                                     // 0.001683892 => -3
   int figsBeforeDecimal = std::min(std::max(orderOfMagnitude + 1, 0), int(numSigFigs));
   OS_ASSERT(figsBeforeDecimal >= 0);
@@ -185,16 +185,16 @@ double toNumSigFigs(double value, unsigned numSigFigs) {
   double absValue = std::fabs(value);
   bool negative = (value != absValue);
 
-  double orderOfMagnitude = floor(log10(absValue));  // 1683 => 3
+  double orderOfMagnitude = std::floor(std::log10(absValue));  // 1683 => 3
                                                      // 0.001683892 => -3
   //                             X.XXXXX             add more sig-figs
   double positioningPowerOfTen = -orderOfMagnitude + double(int(numSigFigs) - 1);
   // 1683, 2 sig-figs => 1683 * 10**-2 => 16.83
   // 0.001683892, 2 sig-figs => 0.001683892 * 10**4 => 16.83892
 
-  double temp = absValue * pow(10.0, positioningPowerOfTen);
-  temp = floor(temp + 0.5);  // round doesn't exist in VS2008 at least
-  double result = temp * pow(10.0, -positioningPowerOfTen);
+  double temp = absValue * std::pow(10.0, positioningPowerOfTen);
+  temp = std::floor(temp + 0.5);  // round doesn't exist in VS2008 at least
+  double result = temp * std::pow(10.0, -positioningPowerOfTen);
 
   if (negative) {
     return -result;

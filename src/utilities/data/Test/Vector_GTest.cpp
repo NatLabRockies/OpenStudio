@@ -78,17 +78,17 @@ TEST(Vector, Logspace) {
   Vector vector = logspace(0, 2, 11);
 
   ASSERT_EQ(static_cast<unsigned int>(11), vector.size());
-  EXPECT_NEAR(pow(10.0, 0.0), vector(0), 1e-6);
-  EXPECT_NEAR(pow(10.0, 0.2), vector(1), 1e-6);
-  EXPECT_NEAR(pow(10.0, 0.4), vector(2), 1e-6);
-  EXPECT_NEAR(pow(10.0, 0.6), vector(3), 1e-6);
-  EXPECT_NEAR(pow(10.0, 0.8), vector(4), 1e-6);
-  EXPECT_NEAR(pow(10.0, 1.0), vector(5), 1e-6);
-  EXPECT_NEAR(pow(10.0, 1.2), vector(6), 1e-6);
-  EXPECT_NEAR(pow(10.0, 1.4), vector(7), 1e-6);
-  EXPECT_NEAR(pow(10.0, 1.6), vector(8), 1e-6);
-  EXPECT_NEAR(pow(10.0, 1.8), vector(9), 1e-6);
-  EXPECT_NEAR(pow(10.0, 2.0), vector(10), 1e-6);
+  EXPECT_NEAR(std::pow(10.0, 0.0), vector(0), 1e-6);
+  EXPECT_NEAR(std::pow(10.0, 0.2), vector(1), 1e-6);
+  EXPECT_NEAR(std::pow(10.0, 0.4), vector(2), 1e-6);
+  EXPECT_NEAR(std::pow(10.0, 0.6), vector(3), 1e-6);
+  EXPECT_NEAR(std::pow(10.0, 0.8), vector(4), 1e-6);
+  EXPECT_NEAR(std::pow(10.0, 1.0), vector(5), 1e-6);
+  EXPECT_NEAR(std::pow(10.0, 1.2), vector(6), 1e-6);
+  EXPECT_NEAR(std::pow(10.0, 1.4), vector(7), 1e-6);
+  EXPECT_NEAR(std::pow(10.0, 1.6), vector(8), 1e-6);
+  EXPECT_NEAR(std::pow(10.0, 1.8), vector(9), 1e-6);
+  EXPECT_NEAR(std::pow(10.0, 2.0), vector(10), 1e-6);
 }
 
 TEST_F(DataFixture, Vector_Log) {

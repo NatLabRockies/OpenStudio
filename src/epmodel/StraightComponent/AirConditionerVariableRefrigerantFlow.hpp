@@ -82,7 +82,7 @@ namespace epmodel {
     bool isCondenserTypeDefaulted() const;
     void resetCondenserType();
 
-  protected:
+   protected:
     using ImplType = detail::AirConditionerVariableRefrigerantFlow_Impl;
 
     friend class Model;

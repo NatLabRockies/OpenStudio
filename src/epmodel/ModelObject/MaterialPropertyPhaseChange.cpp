@@ -15,66 +15,64 @@
 namespace openstudio {
 namespace epmodel {
 
-MaterialPropertyPhaseChange::MaterialPropertyPhaseChange(const Model& model)
-  : ModelObject(MaterialPropertyPhaseChange::iddObjectType(), model) {}
+  MaterialPropertyPhaseChange::MaterialPropertyPhaseChange(const Model& model) : ModelObject(MaterialPropertyPhaseChange::iddObjectType(), model) {}
 
-MaterialPropertyPhaseChange::MaterialPropertyPhaseChange(std::shared_ptr<detail::MaterialPropertyPhaseChange_Impl> impl)
-  : ModelObject(std::move(impl)) {}
+  MaterialPropertyPhaseChange::MaterialPropertyPhaseChange(std::shared_ptr<detail::MaterialPropertyPhaseChange_Impl> impl)
+    : ModelObject(std::move(impl)) {}
 
-IddObjectType MaterialPropertyPhaseChange::iddObjectType() {
-  return IddObjectType::MaterialProperty_PhaseChange;
-}
+  IddObjectType MaterialPropertyPhaseChange::iddObjectType() {
+    return IddObjectType::MaterialProperty_PhaseChange;
+  }
 
-// TemperatureCoefficientforThermalConductivity field accessors.
+  // TemperatureCoefficientforThermalConductivity field accessors.
 
-double MaterialPropertyPhaseChange::temperatureCoefficientforThermalConductivity() const {
-  return getImpl<detail::MaterialPropertyPhaseChange_Impl>()->temperatureCoefficientforThermalConductivity();
-}
+  double MaterialPropertyPhaseChange::temperatureCoefficientforThermalConductivity() const {
+    return getImpl<detail::MaterialPropertyPhaseChange_Impl>()->temperatureCoefficientforThermalConductivity();
+  }
 
-bool MaterialPropertyPhaseChange::isTemperatureCoefficientforThermalConductivityDefaulted() const {
-  return getImpl<detail::MaterialPropertyPhaseChange_Impl>()->isTemperatureCoefficientforThermalConductivityDefaulted();
-}
+  bool MaterialPropertyPhaseChange::isTemperatureCoefficientforThermalConductivityDefaulted() const {
+    return getImpl<detail::MaterialPropertyPhaseChange_Impl>()->isTemperatureCoefficientforThermalConductivityDefaulted();
+  }
 
-bool MaterialPropertyPhaseChange::setTemperatureCoefficientforThermalConductivity(double temperatureCoefficientforThermalConductivity) {
-  return getImpl<detail::MaterialPropertyPhaseChange_Impl>()->setTemperatureCoefficientforThermalConductivity(
-    temperatureCoefficientforThermalConductivity);
-}
+  bool MaterialPropertyPhaseChange::setTemperatureCoefficientforThermalConductivity(double temperatureCoefficientforThermalConductivity) {
+    return getImpl<detail::MaterialPropertyPhaseChange_Impl>()->setTemperatureCoefficientforThermalConductivity(
+      temperatureCoefficientforThermalConductivity);
+  }
 
-void MaterialPropertyPhaseChange::resetTemperatureCoefficientforThermalConductivity() {
-  getImpl<detail::MaterialPropertyPhaseChange_Impl>()->resetTemperatureCoefficientforThermalConductivity();
-}
+  void MaterialPropertyPhaseChange::resetTemperatureCoefficientforThermalConductivity() {
+    getImpl<detail::MaterialPropertyPhaseChange_Impl>()->resetTemperatureCoefficientforThermalConductivity();
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-// TemperatureCoefficientforThermalConductivity field accessors.
-double MaterialPropertyPhaseChange_Impl::temperatureCoefficientforThermalConductivity() const {
-  const auto value = getDouble(openstudio::MaterialProperty_PhaseChangeFields::TemperatureCoefficientforThermalConductivity, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    // TemperatureCoefficientforThermalConductivity field accessors.
+    double MaterialPropertyPhaseChange_Impl::temperatureCoefficientforThermalConductivity() const {
+      const auto value = getDouble(openstudio::MaterialProperty_PhaseChangeFields::TemperatureCoefficientforThermalConductivity, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-bool MaterialPropertyPhaseChange_Impl::isTemperatureCoefficientforThermalConductivityDefaulted() const {
-  return isEmpty(openstudio::MaterialProperty_PhaseChangeFields::TemperatureCoefficientforThermalConductivity);
-}
+    bool MaterialPropertyPhaseChange_Impl::isTemperatureCoefficientforThermalConductivityDefaulted() const {
+      return isEmpty(openstudio::MaterialProperty_PhaseChangeFields::TemperatureCoefficientforThermalConductivity);
+    }
 
-bool MaterialPropertyPhaseChange_Impl::setTemperatureCoefficientforThermalConductivity(double temperatureCoefficientforThermalConductivity) {
-  const bool result = setDouble(openstudio::MaterialProperty_PhaseChangeFields::TemperatureCoefficientforThermalConductivity,
-                                temperatureCoefficientforThermalConductivity);
-  OS_ASSERT(result);
-  return result;
-}
+    bool MaterialPropertyPhaseChange_Impl::setTemperatureCoefficientforThermalConductivity(double temperatureCoefficientforThermalConductivity) {
+      const bool result = setDouble(openstudio::MaterialProperty_PhaseChangeFields::TemperatureCoefficientforThermalConductivity,
+                                    temperatureCoefficientforThermalConductivity);
+      OS_ASSERT(result);
+      return result;
+    }
 
-void MaterialPropertyPhaseChange_Impl::resetTemperatureCoefficientforThermalConductivity() {
-  const bool result =
-    setString(openstudio::MaterialProperty_PhaseChangeFields::TemperatureCoefficientforThermalConductivity, "");
-  OS_ASSERT(result);
-}
+    void MaterialPropertyPhaseChange_Impl::resetTemperatureCoefficientforThermalConductivity() {
+      const bool result = setString(openstudio::MaterialProperty_PhaseChangeFields::TemperatureCoefficientforThermalConductivity, "");
+      OS_ASSERT(result);
+    }
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio

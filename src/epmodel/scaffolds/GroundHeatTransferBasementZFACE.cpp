@@ -13,15 +13,15 @@
 namespace openstudio {
 namespace epmodel {
 
-GroundHeatTransferBasementZFACE::GroundHeatTransferBasementZFACE(const Model& model)
-  : ModelObject(GroundHeatTransferBasementZFACE::iddObjectType(), model) {}
+  GroundHeatTransferBasementZFACE::GroundHeatTransferBasementZFACE(const Model& model)
+    : ModelObject(GroundHeatTransferBasementZFACE::iddObjectType(), model) {}
 
-GroundHeatTransferBasementZFACE::GroundHeatTransferBasementZFACE(std::shared_ptr<detail::GroundHeatTransferBasementZFACE_Impl> impl)
-  : ModelObject(std::move(impl)) {}
+  GroundHeatTransferBasementZFACE::GroundHeatTransferBasementZFACE(std::shared_ptr<detail::GroundHeatTransferBasementZFACE_Impl> impl)
+    : ModelObject(std::move(impl)) {}
 
-IddObjectType GroundHeatTransferBasementZFACE::iddObjectType() {
-  return IddObjectType::GroundHeatTransfer_Basement_ZFACE;
-}
+  IddObjectType GroundHeatTransferBasementZFACE::iddObjectType() {
+    return IddObjectType::GroundHeatTransfer_Basement_ZFACE;
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio

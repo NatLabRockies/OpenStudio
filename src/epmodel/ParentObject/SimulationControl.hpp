@@ -16,84 +16,86 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class SimulationControl_Impl;
-}
+  namespace detail {
+    class SimulationControl_Impl;
+  }
 
-class EPMODEL_API SimulationControl : public ParentObject
-{
- public:
-  virtual ~SimulationControl() override = default;
-  SimulationControl(const SimulationControl& other) = default;
-  SimulationControl(SimulationControl&& other) = default;
-  SimulationControl& operator=(const SimulationControl&) = default;
-  SimulationControl& operator=(SimulationControl&&) = default;
+  class EPMODEL_API SimulationControl : public ParentObject
+  {
+   public:
+    static constexpr bool is_unique = true;  // This is a Unique ModelObject
 
-  static IddObjectType iddObjectType();
+    virtual ~SimulationControl() override = default;
+    SimulationControl(const SimulationControl& other) = default;
+    SimulationControl(SimulationControl&& other) = default;
+    SimulationControl& operator=(const SimulationControl&) = default;
+    SimulationControl& operator=(SimulationControl&&) = default;
 
-  // Schema Alignment Notes:
-  // - API: Preserve openstudio::model::SimulationControl scalar accessor names/signatures for SimulationControl fields.
-  // - Field Mapping: do*/run*/HVAC sizing-pass APIs map directly to EnergyPlus SimulationControl fields.
-  // - Field Mapping: loadsConvergenceToleranceValue, temperatureConvergenceToleranceValue, solarDistribution,
-  //   maximumNumberofWarmupDays, and minimumNumberofWarmupDays are translated via EnergyPlus Building and are
-  //   intentionally excluded from this class's scalar API.
-  // - ForwardTranslator evidence: ForwardTranslateSimulationControl.cpp writes the retained SimulationControl fields;
-  //   ForwardTranslateBuilding.cpp maps the excluded fields from model::SimulationControl to Building.
-  // - TODO(parity): Revisit cross-object parity for excluded Building-mapped SimulationControl APIs after scalar saturation.
-  bool doZoneSizingCalculation() const;
-  bool isDoZoneSizingCalculationDefaulted() const;
-  bool setDoZoneSizingCalculation(bool doZoneSizingCalculation);
-  void setDoZoneSizingCalculationNoFail(bool doZoneSizingCalculation);
-  void resetDoZoneSizingCalculation();
+    static IddObjectType iddObjectType();
 
-  bool doSystemSizingCalculation() const;
-  bool isDoSystemSizingCalculationDefaulted() const;
-  bool setDoSystemSizingCalculation(bool doSystemSizingCalculation);
-  void setDoSystemSizingCalculationNoFail(bool doSystemSizingCalculation);
-  void resetDoSystemSizingCalculation();
+    // Schema Alignment Notes:
+    // - API: Preserve openstudio::model::SimulationControl scalar accessor names/signatures for SimulationControl fields.
+    // - Field Mapping: do*/run*/HVAC sizing-pass APIs map directly to EnergyPlus SimulationControl fields.
+    // - Field Mapping: loadsConvergenceToleranceValue, temperatureConvergenceToleranceValue, solarDistribution,
+    //   maximumNumberofWarmupDays, and minimumNumberofWarmupDays are translated via EnergyPlus Building and are
+    //   intentionally excluded from this class's scalar API.
+    // - ForwardTranslator evidence: ForwardTranslateSimulationControl.cpp writes the retained SimulationControl fields;
+    //   ForwardTranslateBuilding.cpp maps the excluded fields from model::SimulationControl to Building.
+    // - TODO(parity): Revisit cross-object parity for excluded Building-mapped SimulationControl APIs after scalar saturation.
+    bool doZoneSizingCalculation() const;
+    bool isDoZoneSizingCalculationDefaulted() const;
+    bool setDoZoneSizingCalculation(bool doZoneSizingCalculation);
+    void setDoZoneSizingCalculationNoFail(bool doZoneSizingCalculation);
+    void resetDoZoneSizingCalculation();
 
-  bool doPlantSizingCalculation() const;
-  bool isDoPlantSizingCalculationDefaulted() const;
-  bool setDoPlantSizingCalculation(bool doPlantSizingCalculation);
-  void setDoPlantSizingCalculationNoFail(bool doPlantSizingCalculation);
-  void resetDoPlantSizingCalculation();
+    bool doSystemSizingCalculation() const;
+    bool isDoSystemSizingCalculationDefaulted() const;
+    bool setDoSystemSizingCalculation(bool doSystemSizingCalculation);
+    void setDoSystemSizingCalculationNoFail(bool doSystemSizingCalculation);
+    void resetDoSystemSizingCalculation();
 
-  bool runSimulationforSizingPeriods() const;
-  bool isRunSimulationforSizingPeriodsDefaulted() const;
-  bool setRunSimulationforSizingPeriods(bool runSimulationforSizingPeriods);
-  void setRunSimulationforSizingPeriodsNoFail(bool runSimulationforSizingPeriods);
-  void resetRunSimulationforSizingPeriods();
+    bool doPlantSizingCalculation() const;
+    bool isDoPlantSizingCalculationDefaulted() const;
+    bool setDoPlantSizingCalculation(bool doPlantSizingCalculation);
+    void setDoPlantSizingCalculationNoFail(bool doPlantSizingCalculation);
+    void resetDoPlantSizingCalculation();
 
-  bool runSimulationforWeatherFileRunPeriods() const;
-  bool isRunSimulationforWeatherFileRunPeriodsDefaulted() const;
-  bool setRunSimulationforWeatherFileRunPeriods(bool runSimulationforWeatherFileRunPeriods);
-  void setRunSimulationforWeatherFileRunPeriodsNoFail(bool runSimulationforWeatherFileRunPeriods);
-  void resetRunSimulationforWeatherFileRunPeriods();
+    bool runSimulationforSizingPeriods() const;
+    bool isRunSimulationforSizingPeriodsDefaulted() const;
+    bool setRunSimulationforSizingPeriods(bool runSimulationforSizingPeriods);
+    void setRunSimulationforSizingPeriodsNoFail(bool runSimulationforSizingPeriods);
+    void resetRunSimulationforSizingPeriods();
 
-  bool doHVACSizingSimulationforSizingPeriods() const;
-  bool isDoHVACSizingSimulationforSizingPeriodsDefaulted() const;
-  bool setDoHVACSizingSimulationforSizingPeriods(bool doHVACSizingSimulationforSizingPeriods);
-  void setDoHVACSizingSimulationforSizingPeriodsNoFail(bool doHVACSizingSimulationforSizingPeriods);
-  void resetDoHVACSizingSimulationforSizingPeriods();
+    bool runSimulationforWeatherFileRunPeriods() const;
+    bool isRunSimulationforWeatherFileRunPeriodsDefaulted() const;
+    bool setRunSimulationforWeatherFileRunPeriods(bool runSimulationforWeatherFileRunPeriods);
+    void setRunSimulationforWeatherFileRunPeriodsNoFail(bool runSimulationforWeatherFileRunPeriods);
+    void resetRunSimulationforWeatherFileRunPeriods();
 
-  int maximumNumberofHVACSizingSimulationPasses() const;
-  bool isMaximumNumberofHVACSizingSimulationPassesDefaulted() const;
-  bool setMaximumNumberofHVACSizingSimulationPasses(int maximumNumberofHVACSizingSimulationPasses);
-  void resetMaximumNumberofHVACSizingSimulationPasses();
+    bool doHVACSizingSimulationforSizingPeriods() const;
+    bool isDoHVACSizingSimulationforSizingPeriodsDefaulted() const;
+    bool setDoHVACSizingSimulationforSizingPeriods(bool doHVACSizingSimulationforSizingPeriods);
+    void setDoHVACSizingSimulationforSizingPeriodsNoFail(bool doHVACSizingSimulationforSizingPeriods);
+    void resetDoHVACSizingSimulationforSizingPeriods();
 
- protected:
-  explicit SimulationControl(const Model& model);
+    int maximumNumberofHVACSizingSimulationPasses() const;
+    bool isMaximumNumberofHVACSizingSimulationPassesDefaulted() const;
+    bool setMaximumNumberofHVACSizingSimulationPasses(int maximumNumberofHVACSizingSimulationPasses);
+    void resetMaximumNumberofHVACSizingSimulationPasses();
 
-  using ImplType = detail::SimulationControl_Impl;
+   protected:
+    explicit SimulationControl(const Model& model);
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+    using ImplType = detail::SimulationControl_Impl;
 
-  explicit SimulationControl(std::shared_ptr<detail::SimulationControl_Impl> impl);
-};
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
+
+    explicit SimulationControl(std::shared_ptr<detail::SimulationControl_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

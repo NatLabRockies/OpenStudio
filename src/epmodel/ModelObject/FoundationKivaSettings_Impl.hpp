@@ -13,79 +13,79 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API FoundationKivaSettings_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~FoundationKivaSettings_Impl() override = default;
+    class EPMODEL_API FoundationKivaSettings_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~FoundationKivaSettings_Impl() override = default;
 
-  double soilConductivity() const;
-  bool isSoilConductivityDefaulted() const;
-  bool setSoilConductivity(double soilConductivity);
-  void resetSoilConductivity();
+      double soilConductivity() const;
+      bool isSoilConductivityDefaulted() const;
+      bool setSoilConductivity(double soilConductivity);
+      void resetSoilConductivity();
 
-  double soilDensity() const;
-  bool isSoilDensityDefaulted() const;
-  bool setSoilDensity(double soilDensity);
-  void resetSoilDensity();
+      double soilDensity() const;
+      bool isSoilDensityDefaulted() const;
+      bool setSoilDensity(double soilDensity);
+      void resetSoilDensity();
 
-  double soilSpecificHeat() const;
-  bool isSoilSpecificHeatDefaulted() const;
-  bool setSoilSpecificHeat(double soilSpecificHeat);
-  void resetSoilSpecificHeat();
+      double soilSpecificHeat() const;
+      bool isSoilSpecificHeatDefaulted() const;
+      bool setSoilSpecificHeat(double soilSpecificHeat);
+      void resetSoilSpecificHeat();
 
-  double groundSolarAbsorptivity() const;
-  bool isGroundSolarAbsorptivityDefaulted() const;
-  bool setGroundSolarAbsorptivity(double groundSolarAbsorptivity);
-  void resetGroundSolarAbsorptivity();
+      double groundSolarAbsorptivity() const;
+      bool isGroundSolarAbsorptivityDefaulted() const;
+      bool setGroundSolarAbsorptivity(double groundSolarAbsorptivity);
+      void resetGroundSolarAbsorptivity();
 
-  double groundThermalAbsorptivity() const;
-  bool isGroundThermalAbsorptivityDefaulted() const;
-  bool setGroundThermalAbsorptivity(double groundThermalAbsorptivity);
-  void resetGroundThermalAbsorptivity();
+      double groundThermalAbsorptivity() const;
+      bool isGroundThermalAbsorptivityDefaulted() const;
+      bool setGroundThermalAbsorptivity(double groundThermalAbsorptivity);
+      void resetGroundThermalAbsorptivity();
 
-  double groundSurfaceRoughness() const;
-  bool isGroundSurfaceRoughnessDefaulted() const;
-  bool setGroundSurfaceRoughness(double groundSurfaceRoughness);
-  void resetGroundSurfaceRoughness();
+      double groundSurfaceRoughness() const;
+      bool isGroundSurfaceRoughnessDefaulted() const;
+      bool setGroundSurfaceRoughness(double groundSurfaceRoughness);
+      void resetGroundSurfaceRoughness();
 
-  double farFieldWidth() const;
-  bool isFarFieldWidthDefaulted() const;
-  bool setFarFieldWidth(double farFieldWidth);
-  void resetFarFieldWidth();
+      double farFieldWidth() const;
+      bool isFarFieldWidthDefaulted() const;
+      bool setFarFieldWidth(double farFieldWidth);
+      void resetFarFieldWidth();
 
-  std::string deepGroundBoundaryCondition() const;
-  bool isDeepGroundBoundaryConditionAutoselected();
-  bool setDeepGroundBoundaryCondition(const std::string& deepGroundBoundaryCondition);
-  void resetDeepGroundBoundaryCondition();
+      std::string deepGroundBoundaryCondition() const;
+      bool isDeepGroundBoundaryConditionAutoselected();
+      bool setDeepGroundBoundaryCondition(const std::string& deepGroundBoundaryCondition);
+      void resetDeepGroundBoundaryCondition();
 
-  boost::optional<double> deepGroundDepth();
-  bool isDeepGroundDepthAutocalculated();
-  bool setDeepGroundDepth(double deepGroundDepth);
-  void autocalculateDeepGroundDepth();
+      boost::optional<double> deepGroundDepth();
+      bool isDeepGroundDepthAutocalculated();
+      bool setDeepGroundDepth(double deepGroundDepth);
+      void autocalculateDeepGroundDepth();
 
-  double minimumCellDimension() const;
-  bool isMinimumCellDimensionDefaulted() const;
-  bool setMinimumCellDimension(double minimumCellDimension);
-  void resetMinimumCellDimension();
+      double minimumCellDimension() const;
+      bool isMinimumCellDimensionDefaulted() const;
+      bool setMinimumCellDimension(double minimumCellDimension);
+      void resetMinimumCellDimension();
 
-  double maximumCellGrowthCoefficient() const;
-  bool isMaximumCellGrowthCoefficientDefaulted() const;
-  bool setMaximumCellGrowthCoefficient(double maximumCellGrowthCoefficient);
-  void resetMaximumCellGrowthCoefficient();
+      double maximumCellGrowthCoefficient() const;
+      bool isMaximumCellGrowthCoefficientDefaulted() const;
+      bool setMaximumCellGrowthCoefficient(double maximumCellGrowthCoefficient);
+      void resetMaximumCellGrowthCoefficient();
 
-  std::string simulationTimestep() const;
-  bool isSimulationTimestepDefaulted() const;
-  bool setSimulationTimestep(const std::string& simulationTimestep);
-  void resetSimulationTimestep();
+      std::string simulationTimestep() const;
+      bool isSimulationTimestepDefaulted() const;
+      bool setSimulationTimestep(const std::string& simulationTimestep);
+      void resetSimulationTimestep();
 
-  std::vector<std::string> deepGroundBoundaryConditionValues() const;
-  std::vector<std::string> simulationTimestepValues() const;
-};
+      std::vector<std::string> deepGroundBoundaryConditionValues() const;
+      std::vector<std::string> simulationTimestepValues() const;
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

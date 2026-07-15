@@ -72,7 +72,7 @@ namespace model {
         y = maximumValueofy();
       }
 
-      double x2 = pow(x, 2);
+      double x2 = std::pow(x, 2);
       double result = coefficient1Constant();
       result += coefficient2x() * x;
       result += coefficient3xPOW2() * x2;

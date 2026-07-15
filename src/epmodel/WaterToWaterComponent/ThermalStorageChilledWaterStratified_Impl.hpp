@@ -26,6 +26,7 @@ namespace epmodel {
       using WaterToWaterComponent_Impl::WaterToWaterComponent_Impl;
       virtual ~ThermalStorageChilledWaterStratified_Impl() override = default;
 
+      void doCanonicalize(LoadContext& context) override;
       std::vector<ModelObject> children() const override;
       unsigned supplyInletPort() const override;
       unsigned supplyOutletPort() const override;

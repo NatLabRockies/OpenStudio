@@ -25,209 +25,209 @@
 namespace openstudio {
 namespace epmodel {
 
-FanZoneExhaust::FanZoneExhaust(const Model& model) : ZoneHVACComponent(FanZoneExhaust::iddObjectType(), model) {
-  // Mirror openstudio::model constructor defaults for required scalar fields.
-  OS_ASSERT(setFanTotalEfficiency(0.60));
-  OS_ASSERT(setPressureRise(0.0));
-  OS_ASSERT(setEndUseSubcategory("General"));
-  OS_ASSERT(setSystemAvailabilityManagerCouplingMode("Decoupled"));
-}
+  FanZoneExhaust::FanZoneExhaust(const Model& model) : ZoneHVACComponent(FanZoneExhaust::iddObjectType(), model) {
+    // Mirror openstudio::model constructor defaults for required scalar fields.
+    OS_ASSERT(setFanTotalEfficiency(0.60));
+    OS_ASSERT(setPressureRise(0.0));
+    OS_ASSERT(setEndUseSubcategory("General"));
+    OS_ASSERT(setSystemAvailabilityManagerCouplingMode("Decoupled"));
+  }
 
-FanZoneExhaust::FanZoneExhaust(std::shared_ptr<detail::FanZoneExhaust_Impl> impl) : ZoneHVACComponent(std::move(impl)) {}
+  FanZoneExhaust::FanZoneExhaust(std::shared_ptr<detail::FanZoneExhaust_Impl> impl) : ZoneHVACComponent(std::move(impl)) {}
 
-IddObjectType FanZoneExhaust::iddObjectType() {
-  return IddObjectType::Fan_ZoneExhaust;
-}
+  IddObjectType FanZoneExhaust::iddObjectType() {
+    return IddObjectType::Fan_ZoneExhaust;
+  }
 
-std::vector<std::string> FanZoneExhaust::systemAvailabilityManagerCouplingModeValues() {
-  return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
-                        openstudio::Fan_ZoneExhaustFields::SystemAvailabilityManagerCouplingMode);
-}
+  std::vector<std::string> FanZoneExhaust::systemAvailabilityManagerCouplingModeValues() {
+    return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
+                          openstudio::Fan_ZoneExhaustFields::SystemAvailabilityManagerCouplingMode);
+  }
 
-double FanZoneExhaust::fanTotalEfficiency() const {
-  return getImpl<detail::FanZoneExhaust_Impl>()->fanTotalEfficiency();
-}
+  double FanZoneExhaust::fanTotalEfficiency() const {
+    return getImpl<detail::FanZoneExhaust_Impl>()->fanTotalEfficiency();
+  }
 
-bool FanZoneExhaust::setFanTotalEfficiency(double fanTotalEfficiency) {
-  return getImpl<detail::FanZoneExhaust_Impl>()->setFanTotalEfficiency(fanTotalEfficiency);
-}
+  bool FanZoneExhaust::setFanTotalEfficiency(double fanTotalEfficiency) {
+    return getImpl<detail::FanZoneExhaust_Impl>()->setFanTotalEfficiency(fanTotalEfficiency);
+  }
 
-double FanZoneExhaust::fanEfficiency() const {
-  return getImpl<detail::FanZoneExhaust_Impl>()->fanTotalEfficiency();
-}
+  double FanZoneExhaust::fanEfficiency() const {
+    return getImpl<detail::FanZoneExhaust_Impl>()->fanTotalEfficiency();
+  }
 
-bool FanZoneExhaust::setFanEfficiency(double fanTotalEfficiency) {
-  return getImpl<detail::FanZoneExhaust_Impl>()->setFanTotalEfficiency(fanTotalEfficiency);
-}
+  bool FanZoneExhaust::setFanEfficiency(double fanTotalEfficiency) {
+    return getImpl<detail::FanZoneExhaust_Impl>()->setFanTotalEfficiency(fanTotalEfficiency);
+  }
 
-double FanZoneExhaust::pressureRise() const {
-  return getImpl<detail::FanZoneExhaust_Impl>()->pressureRise();
-}
+  double FanZoneExhaust::pressureRise() const {
+    return getImpl<detail::FanZoneExhaust_Impl>()->pressureRise();
+  }
 
-bool FanZoneExhaust::setPressureRise(double pressureRise) {
-  return getImpl<detail::FanZoneExhaust_Impl>()->setPressureRise(pressureRise);
-}
+  bool FanZoneExhaust::setPressureRise(double pressureRise) {
+    return getImpl<detail::FanZoneExhaust_Impl>()->setPressureRise(pressureRise);
+  }
 
-boost::optional<double> FanZoneExhaust::maximumFlowRate() const {
-  return getImpl<detail::FanZoneExhaust_Impl>()->maximumFlowRate();
-}
+  boost::optional<double> FanZoneExhaust::maximumFlowRate() const {
+    return getImpl<detail::FanZoneExhaust_Impl>()->maximumFlowRate();
+  }
 
-bool FanZoneExhaust::setMaximumFlowRate(double maximumFlowRate) {
-  return getImpl<detail::FanZoneExhaust_Impl>()->setMaximumFlowRate(maximumFlowRate);
-}
+  bool FanZoneExhaust::setMaximumFlowRate(double maximumFlowRate) {
+    return getImpl<detail::FanZoneExhaust_Impl>()->setMaximumFlowRate(maximumFlowRate);
+  }
 
-void FanZoneExhaust::resetMaximumFlowRate() {
-  getImpl<detail::FanZoneExhaust_Impl>()->resetMaximumFlowRate();
-}
+  void FanZoneExhaust::resetMaximumFlowRate() {
+    getImpl<detail::FanZoneExhaust_Impl>()->resetMaximumFlowRate();
+  }
 
-std::string FanZoneExhaust::endUseSubcategory() const {
-  return getImpl<detail::FanZoneExhaust_Impl>()->endUseSubcategory();
-}
+  std::string FanZoneExhaust::endUseSubcategory() const {
+    return getImpl<detail::FanZoneExhaust_Impl>()->endUseSubcategory();
+  }
 
-bool FanZoneExhaust::setEndUseSubcategory(const std::string& endUseSubcategory) {
-  return getImpl<detail::FanZoneExhaust_Impl>()->setEndUseSubcategory(endUseSubcategory);
-}
+  bool FanZoneExhaust::setEndUseSubcategory(const std::string& endUseSubcategory) {
+    return getImpl<detail::FanZoneExhaust_Impl>()->setEndUseSubcategory(endUseSubcategory);
+  }
 
-std::string FanZoneExhaust::systemAvailabilityManagerCouplingMode() const {
-  return getImpl<detail::FanZoneExhaust_Impl>()->systemAvailabilityManagerCouplingMode();
-}
+  std::string FanZoneExhaust::systemAvailabilityManagerCouplingMode() const {
+    return getImpl<detail::FanZoneExhaust_Impl>()->systemAvailabilityManagerCouplingMode();
+  }
 
-bool FanZoneExhaust::setSystemAvailabilityManagerCouplingMode(const std::string& systemAvailabilityManagerCouplingMode) {
-  return getImpl<detail::FanZoneExhaust_Impl>()->setSystemAvailabilityManagerCouplingMode(systemAvailabilityManagerCouplingMode);
-}
+  bool FanZoneExhaust::setSystemAvailabilityManagerCouplingMode(const std::string& systemAvailabilityManagerCouplingMode) {
+    return getImpl<detail::FanZoneExhaust_Impl>()->setSystemAvailabilityManagerCouplingMode(systemAvailabilityManagerCouplingMode);
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-bool FanZoneExhaust_Impl::addToThermalZone(ThermalZone& thermalZone) {
-  if (thermalZone.model() != model()) {
-    return false;
-  }
+    bool FanZoneExhaust_Impl::addToThermalZone(ThermalZone& thermalZone) {
+      if (thermalZone.model() != model()) {
+        return false;
+      }
 
-  removeFromThermalZone();
-  thermalZone.setUseIdealAirLoads(false);
+      removeFromThermalZone();
+      thermalZone.setUseIdealAirLoads(false);
 
-  auto zoneImpl = thermalZone.getImpl<detail::ThermalZone_Impl>();
-  auto equipmentList = zoneImpl->getZoneHVACEquipmentList();
-  OS_ASSERT(equipmentList.addEquipment(getObject<ModelObject>()));
+      auto zoneImpl = thermalZone.getImpl<detail::ThermalZone_Impl>();
+      auto equipmentList = zoneImpl->getZoneHVACEquipmentList();
+      OS_ASSERT(equipmentList.addEquipment(getObject<ModelObject>()));
 
-  const auto objectName = getObject<ModelObject>().nameString();
-  auto inlet = model().getOrCreateTransientByName<Node>(objectName + " Air Inlet Node");
-  auto outlet = model().getOrCreateTransientByName<Node>(objectName + " Air Outlet Node");
+      const auto objectName = getObject<ModelObject>().nameString();
+      auto inlet = model().getOrCreateTransientByName<Node>(objectName + " Air Inlet Node");
+      auto outlet = model().getOrCreateTransientByName<Node>(objectName + " Air Outlet Node");
 
-  OS_ASSERT(setPointer(inletPort(), inlet.handle(), false));
-  OS_ASSERT(setPointer(outletPort(), outlet.handle(), false));
+      OS_ASSERT(setPointer(inletPort(), inlet.handle(), false));
+      OS_ASSERT(setPointer(outletPort(), outlet.handle(), false));
 
-  auto connections = zoneImpl->getZoneHVACEquipmentConnections();
-  auto connectionsImpl = connections.getImpl<detail::ZoneHVACEquipmentConnections_Impl>();
-  OS_ASSERT(connectionsImpl);
-  OS_ASSERT(connectionsImpl->addZoneAirExhaustNode(inlet));
-  return true;
-}
-
-void FanZoneExhaust_Impl::removeFromThermalZone() {
-  auto zone = thermalZone();
-  if (!zone) {
-    disconnect();
-    return;
-  }
-
-  auto zoneImpl = zone->getImpl<detail::ThermalZone_Impl>();
-  if (auto connections = zoneImpl->zoneHVACEquipmentConnections()) {
-    auto connectionsImpl = connections->getImpl<detail::ZoneHVACEquipmentConnections_Impl>();
-    OS_ASSERT(connectionsImpl);
-    if (auto inlet = inletNode()) {
-      OS_ASSERT(connectionsImpl->removeZoneAirExhaustNode(*inlet));
+      auto connections = zoneImpl->getZoneHVACEquipmentConnections();
+      auto connectionsImpl = connections.getImpl<detail::ZoneHVACEquipmentConnections_Impl>();
+      OS_ASSERT(connectionsImpl);
+      OS_ASSERT(connectionsImpl->addZoneAirExhaustNode(inlet));
+      return true;
     }
-  }
 
-  if (auto equipmentList = zoneImpl->zoneHVACEquipmentList()) {
-    OS_ASSERT(equipmentList->removeEquipment(getObject<ModelObject>()));
-  }
+    void FanZoneExhaust_Impl::removeFromThermalZone() {
+      auto zone = thermalZone();
+      if (!zone) {
+        disconnect();
+        return;
+      }
 
-  if (inletPort() != 0u) {
-    setPointer(inletPort(), Handle(), false);
-  }
-  if (outletPort() != 0u) {
-    setPointer(outletPort(), Handle(), false);
-  }
+      auto zoneImpl = zone->getImpl<detail::ThermalZone_Impl>();
+      if (auto connections = zoneImpl->zoneHVACEquipmentConnections()) {
+        auto connectionsImpl = connections->getImpl<detail::ZoneHVACEquipmentConnections_Impl>();
+        OS_ASSERT(connectionsImpl);
+        if (auto inlet = inletNode()) {
+          OS_ASSERT(connectionsImpl->removeZoneAirExhaustNode(*inlet));
+        }
+      }
 
-  disconnect();
-}
+      if (auto equipmentList = zoneImpl->zoneHVACEquipmentList()) {
+        OS_ASSERT(equipmentList->removeEquipment(getObject<ModelObject>()));
+      }
 
-unsigned FanZoneExhaust_Impl::inletPort() const {
-  return openstudio::Fan_ZoneExhaustFields::AirInletNodeName;
-}
+      if (inletPort() != 0u) {
+        setPointer(inletPort(), Handle(), false);
+      }
+      if (outletPort() != 0u) {
+        setPointer(outletPort(), Handle(), false);
+      }
 
-unsigned FanZoneExhaust_Impl::outletPort() const {
-  return openstudio::Fan_ZoneExhaustFields::AirOutletNodeName;
-}
+      disconnect();
+    }
 
-double FanZoneExhaust_Impl::fanTotalEfficiency() const {
-  const auto value = getDouble(openstudio::Fan_ZoneExhaustFields::FanTotalEfficiency, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    unsigned FanZoneExhaust_Impl::inletPort() const {
+      return openstudio::Fan_ZoneExhaustFields::AirInletNodeName;
+    }
 
-bool FanZoneExhaust_Impl::setFanTotalEfficiency(double fanTotalEfficiency) {
-  return setDouble(openstudio::Fan_ZoneExhaustFields::FanTotalEfficiency, fanTotalEfficiency);
-}
+    unsigned FanZoneExhaust_Impl::outletPort() const {
+      return openstudio::Fan_ZoneExhaustFields::AirOutletNodeName;
+    }
 
-double FanZoneExhaust_Impl::pressureRise() const {
-  const auto value = getDouble(openstudio::Fan_ZoneExhaustFields::PressureRise, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    double FanZoneExhaust_Impl::fanTotalEfficiency() const {
+      const auto value = getDouble(openstudio::Fan_ZoneExhaustFields::FanTotalEfficiency, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-bool FanZoneExhaust_Impl::setPressureRise(double pressureRise) {
-  const bool result = setDouble(openstudio::Fan_ZoneExhaustFields::PressureRise, pressureRise);
-  OS_ASSERT(result);
-  return result;
-}
+    bool FanZoneExhaust_Impl::setFanTotalEfficiency(double fanTotalEfficiency) {
+      return setDouble(openstudio::Fan_ZoneExhaustFields::FanTotalEfficiency, fanTotalEfficiency);
+    }
 
-boost::optional<double> FanZoneExhaust_Impl::maximumFlowRate() const {
-  return getDouble(openstudio::Fan_ZoneExhaustFields::MaximumFlowRate, true);
-}
+    double FanZoneExhaust_Impl::pressureRise() const {
+      const auto value = getDouble(openstudio::Fan_ZoneExhaustFields::PressureRise, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-bool FanZoneExhaust_Impl::setMaximumFlowRate(double maximumFlowRate) {
-  return setDouble(openstudio::Fan_ZoneExhaustFields::MaximumFlowRate, maximumFlowRate);
-}
+    bool FanZoneExhaust_Impl::setPressureRise(double pressureRise) {
+      const bool result = setDouble(openstudio::Fan_ZoneExhaustFields::PressureRise, pressureRise);
+      OS_ASSERT(result);
+      return result;
+    }
 
-void FanZoneExhaust_Impl::resetMaximumFlowRate() {
-  const bool result = setString(openstudio::Fan_ZoneExhaustFields::MaximumFlowRate, "");
-  OS_ASSERT(result);
-}
+    boost::optional<double> FanZoneExhaust_Impl::maximumFlowRate() const {
+      return getDouble(openstudio::Fan_ZoneExhaustFields::MaximumFlowRate, true);
+    }
 
-std::string FanZoneExhaust_Impl::endUseSubcategory() const {
-  const auto value = getString(openstudio::Fan_ZoneExhaustFields::EndUseSubcategory, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    bool FanZoneExhaust_Impl::setMaximumFlowRate(double maximumFlowRate) {
+      return setDouble(openstudio::Fan_ZoneExhaustFields::MaximumFlowRate, maximumFlowRate);
+    }
 
-bool FanZoneExhaust_Impl::setEndUseSubcategory(const std::string& endUseSubcategory) {
-  const bool result = setString(openstudio::Fan_ZoneExhaustFields::EndUseSubcategory, endUseSubcategory);
-  OS_ASSERT(result);
-  return result;
-}
+    void FanZoneExhaust_Impl::resetMaximumFlowRate() {
+      const bool result = setString(openstudio::Fan_ZoneExhaustFields::MaximumFlowRate, "");
+      OS_ASSERT(result);
+    }
 
-std::string FanZoneExhaust_Impl::systemAvailabilityManagerCouplingMode() const {
-  const auto value = getString(openstudio::Fan_ZoneExhaustFields::SystemAvailabilityManagerCouplingMode, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    std::string FanZoneExhaust_Impl::endUseSubcategory() const {
+      const auto value = getString(openstudio::Fan_ZoneExhaustFields::EndUseSubcategory, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-bool FanZoneExhaust_Impl::setSystemAvailabilityManagerCouplingMode(const std::string& systemAvailabilityManagerCouplingMode) {
-  return setString(openstudio::Fan_ZoneExhaustFields::SystemAvailabilityManagerCouplingMode, systemAvailabilityManagerCouplingMode);
-}
+    bool FanZoneExhaust_Impl::setEndUseSubcategory(const std::string& endUseSubcategory) {
+      const bool result = setString(openstudio::Fan_ZoneExhaustFields::EndUseSubcategory, endUseSubcategory);
+      OS_ASSERT(result);
+      return result;
+    }
 
-std::vector<std::string> FanZoneExhaust_Impl::systemAvailabilityManagerCouplingModeValues() const {
-  return openstudio::epmodel::FanZoneExhaust::systemAvailabilityManagerCouplingModeValues();
-}
+    std::string FanZoneExhaust_Impl::systemAvailabilityManagerCouplingMode() const {
+      const auto value = getString(openstudio::Fan_ZoneExhaustFields::SystemAvailabilityManagerCouplingMode, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-}  // namespace detail
+    bool FanZoneExhaust_Impl::setSystemAvailabilityManagerCouplingMode(const std::string& systemAvailabilityManagerCouplingMode) {
+      return setString(openstudio::Fan_ZoneExhaustFields::SystemAvailabilityManagerCouplingMode, systemAvailabilityManagerCouplingMode);
+    }
+
+    std::vector<std::string> FanZoneExhaust_Impl::systemAvailabilityManagerCouplingModeValues() const {
+      return openstudio::epmodel::FanZoneExhaust::systemAvailabilityManagerCouplingModeValues();
+    }
+
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio

@@ -136,8 +136,7 @@ namespace epmodel {
     }
 
     bool SetpointManagerSingleZoneReheat_Impl::setSetpointNode(const openstudio::epmodel::Node& node) {
-      return getObject<ModelObject>().setPointer(openstudio::SetpointManager_SingleZone_ReheatFields::SetpointNodeorNodeListName,
-                                                 node.handle());
+      return getObject<ModelObject>().setPointer(openstudio::SetpointManager_SingleZone_ReheatFields::SetpointNodeorNodeListName, node.handle());
     }
 
     void SetpointManagerSingleZoneReheat_Impl::doCanonicalize(LoadContext& context) {

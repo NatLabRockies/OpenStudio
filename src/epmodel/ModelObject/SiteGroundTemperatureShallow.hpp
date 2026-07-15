@@ -14,99 +14,101 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class SiteGroundTemperatureShallow_Impl;
-}
+  namespace detail {
+    class SiteGroundTemperatureShallow_Impl;
+  }
 
-class EPMODEL_API SiteGroundTemperatureShallow : public ModelObject
-{
- public:
-  virtual ~SiteGroundTemperatureShallow() override = default;
-  SiteGroundTemperatureShallow(const SiteGroundTemperatureShallow& other) = default;
-  SiteGroundTemperatureShallow(SiteGroundTemperatureShallow&& other) = default;
-  SiteGroundTemperatureShallow& operator=(const SiteGroundTemperatureShallow&) = default;
-  SiteGroundTemperatureShallow& operator=(SiteGroundTemperatureShallow&&) = default;
+  class EPMODEL_API SiteGroundTemperatureShallow : public ModelObject
+  {
+   public:
+    static constexpr bool is_unique = true;  // This is a Unique ModelObject
 
-  static IddObjectType iddObjectType();
+    virtual ~SiteGroundTemperatureShallow() override = default;
+    SiteGroundTemperatureShallow(const SiteGroundTemperatureShallow& other) = default;
+    SiteGroundTemperatureShallow(SiteGroundTemperatureShallow&& other) = default;
+    SiteGroundTemperatureShallow& operator=(const SiteGroundTemperatureShallow&) = default;
+    SiteGroundTemperatureShallow& operator=(SiteGroundTemperatureShallow&&) = default;
 
-  // Schema Alignment Notes:
-  // - API: Preserved openstudio::model month accessor names/signatures delegate to epmodel scalar fields.
-  // - Field Mapping: <Month>SurfaceGroundTemperature maps to Site:GroundTemperature:Shallow <Month> Surface Ground Temperature.
-  // - Translator Evidence: ForwardTranslateSiteGroundTemperatureShallow.cpp writes these same 12 monthly fields.
-  // - TODO(parity): Add legacy non-scalar helper APIs in a follow-up parity pass.
-  double januarySurfaceGroundTemperature() const;
-  bool isJanuarySurfaceGroundTemperatureDefaulted() const;
-  bool setJanuarySurfaceGroundTemperature(double januarySurfaceGroundTemperature);
-  void resetJanuarySurfaceGroundTemperature();
+    static IddObjectType iddObjectType();
 
-  double februarySurfaceGroundTemperature() const;
-  bool isFebruarySurfaceGroundTemperatureDefaulted() const;
-  bool setFebruarySurfaceGroundTemperature(double februarySurfaceGroundTemperature);
-  void resetFebruarySurfaceGroundTemperature();
+    // Schema Alignment Notes:
+    // - API: Preserved openstudio::model month accessor names/signatures delegate to epmodel scalar fields.
+    // - Field Mapping: <Month>SurfaceGroundTemperature maps to Site:GroundTemperature:Shallow <Month> Surface Ground Temperature.
+    // - Translator Evidence: ForwardTranslateSiteGroundTemperatureShallow.cpp writes these same 12 monthly fields.
+    // - TODO(parity): Add legacy non-scalar helper APIs in a follow-up parity pass.
+    double januarySurfaceGroundTemperature() const;
+    bool isJanuarySurfaceGroundTemperatureDefaulted() const;
+    bool setJanuarySurfaceGroundTemperature(double januarySurfaceGroundTemperature);
+    void resetJanuarySurfaceGroundTemperature();
 
-  double marchSurfaceGroundTemperature() const;
-  bool isMarchSurfaceGroundTemperatureDefaulted() const;
-  bool setMarchSurfaceGroundTemperature(double marchSurfaceGroundTemperature);
-  void resetMarchSurfaceGroundTemperature();
+    double februarySurfaceGroundTemperature() const;
+    bool isFebruarySurfaceGroundTemperatureDefaulted() const;
+    bool setFebruarySurfaceGroundTemperature(double februarySurfaceGroundTemperature);
+    void resetFebruarySurfaceGroundTemperature();
 
-  double aprilSurfaceGroundTemperature() const;
-  bool isAprilSurfaceGroundTemperatureDefaulted() const;
-  bool setAprilSurfaceGroundTemperature(double aprilSurfaceGroundTemperature);
-  void resetAprilSurfaceGroundTemperature();
+    double marchSurfaceGroundTemperature() const;
+    bool isMarchSurfaceGroundTemperatureDefaulted() const;
+    bool setMarchSurfaceGroundTemperature(double marchSurfaceGroundTemperature);
+    void resetMarchSurfaceGroundTemperature();
 
-  double maySurfaceGroundTemperature() const;
-  bool isMaySurfaceGroundTemperatureDefaulted() const;
-  bool setMaySurfaceGroundTemperature(double maySurfaceGroundTemperature);
-  void resetMaySurfaceGroundTemperature();
+    double aprilSurfaceGroundTemperature() const;
+    bool isAprilSurfaceGroundTemperatureDefaulted() const;
+    bool setAprilSurfaceGroundTemperature(double aprilSurfaceGroundTemperature);
+    void resetAprilSurfaceGroundTemperature();
 
-  double juneSurfaceGroundTemperature() const;
-  bool isJuneSurfaceGroundTemperatureDefaulted() const;
-  bool setJuneSurfaceGroundTemperature(double juneSurfaceGroundTemperature);
-  void resetJuneSurfaceGroundTemperature();
+    double maySurfaceGroundTemperature() const;
+    bool isMaySurfaceGroundTemperatureDefaulted() const;
+    bool setMaySurfaceGroundTemperature(double maySurfaceGroundTemperature);
+    void resetMaySurfaceGroundTemperature();
 
-  double julySurfaceGroundTemperature() const;
-  bool isJulySurfaceGroundTemperatureDefaulted() const;
-  bool setJulySurfaceGroundTemperature(double julySurfaceGroundTemperature);
-  void resetJulySurfaceGroundTemperature();
+    double juneSurfaceGroundTemperature() const;
+    bool isJuneSurfaceGroundTemperatureDefaulted() const;
+    bool setJuneSurfaceGroundTemperature(double juneSurfaceGroundTemperature);
+    void resetJuneSurfaceGroundTemperature();
 
-  double augustSurfaceGroundTemperature() const;
-  bool isAugustSurfaceGroundTemperatureDefaulted() const;
-  bool setAugustSurfaceGroundTemperature(double augustSurfaceGroundTemperature);
-  void resetAugustSurfaceGroundTemperature();
+    double julySurfaceGroundTemperature() const;
+    bool isJulySurfaceGroundTemperatureDefaulted() const;
+    bool setJulySurfaceGroundTemperature(double julySurfaceGroundTemperature);
+    void resetJulySurfaceGroundTemperature();
 
-  double septemberSurfaceGroundTemperature() const;
-  bool isSeptemberSurfaceGroundTemperatureDefaulted() const;
-  bool setSeptemberSurfaceGroundTemperature(double septemberSurfaceGroundTemperature);
-  void resetSeptemberSurfaceGroundTemperature();
+    double augustSurfaceGroundTemperature() const;
+    bool isAugustSurfaceGroundTemperatureDefaulted() const;
+    bool setAugustSurfaceGroundTemperature(double augustSurfaceGroundTemperature);
+    void resetAugustSurfaceGroundTemperature();
 
-  double octoberSurfaceGroundTemperature() const;
-  bool isOctoberSurfaceGroundTemperatureDefaulted() const;
-  bool setOctoberSurfaceGroundTemperature(double octoberSurfaceGroundTemperature);
-  void resetOctoberSurfaceGroundTemperature();
+    double septemberSurfaceGroundTemperature() const;
+    bool isSeptemberSurfaceGroundTemperatureDefaulted() const;
+    bool setSeptemberSurfaceGroundTemperature(double septemberSurfaceGroundTemperature);
+    void resetSeptemberSurfaceGroundTemperature();
 
-  double novemberSurfaceGroundTemperature() const;
-  bool isNovemberSurfaceGroundTemperatureDefaulted() const;
-  bool setNovemberSurfaceGroundTemperature(double novemberSurfaceGroundTemperature);
-  void resetNovemberSurfaceGroundTemperature();
+    double octoberSurfaceGroundTemperature() const;
+    bool isOctoberSurfaceGroundTemperatureDefaulted() const;
+    bool setOctoberSurfaceGroundTemperature(double octoberSurfaceGroundTemperature);
+    void resetOctoberSurfaceGroundTemperature();
 
-  double decemberSurfaceGroundTemperature() const;
-  bool isDecemberSurfaceGroundTemperatureDefaulted() const;
-  bool setDecemberSurfaceGroundTemperature(double decemberSurfaceGroundTemperature);
-  void resetDecemberSurfaceGroundTemperature();
+    double novemberSurfaceGroundTemperature() const;
+    bool isNovemberSurfaceGroundTemperatureDefaulted() const;
+    bool setNovemberSurfaceGroundTemperature(double novemberSurfaceGroundTemperature);
+    void resetNovemberSurfaceGroundTemperature();
 
- protected:
-  explicit SiteGroundTemperatureShallow(const Model& model);
+    double decemberSurfaceGroundTemperature() const;
+    bool isDecemberSurfaceGroundTemperatureDefaulted() const;
+    bool setDecemberSurfaceGroundTemperature(double decemberSurfaceGroundTemperature);
+    void resetDecemberSurfaceGroundTemperature();
 
-  using ImplType = detail::SiteGroundTemperatureShallow_Impl;
+   protected:
+    explicit SiteGroundTemperatureShallow(const Model& model);
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+    using ImplType = detail::SiteGroundTemperatureShallow_Impl;
 
-  explicit SiteGroundTemperatureShallow(std::shared_ptr<detail::SiteGroundTemperatureShallow_Impl> impl);
-};
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
+
+    explicit SiteGroundTemperatureShallow(std::shared_ptr<detail::SiteGroundTemperatureShallow_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

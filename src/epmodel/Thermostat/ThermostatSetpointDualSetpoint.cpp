@@ -25,8 +25,7 @@ namespace epmodel {
     ThermostatSetpointDualSetpoint_Impl::ThermostatSetpointDualSetpoint_Impl(const IdfObject& idfObject, Model_Impl* model, bool keepHandle)
       : Thermostat_Impl(idfObject, model, keepHandle) {
       const auto type = idfObject.iddObject().type().value();
-      OS_ASSERT((type == ThermostatSetpointDualSetpoint::iddObjectType().value())
-                || (type == IddObjectType::ThermostatSetpoint_SingleCooling)
+      OS_ASSERT((type == ThermostatSetpointDualSetpoint::iddObjectType().value()) || (type == IddObjectType::ThermostatSetpoint_SingleCooling)
                 || (type == IddObjectType::ThermostatSetpoint_SingleHeating));
     }
 
@@ -34,8 +33,7 @@ namespace epmodel {
                                                                              bool keepHandle)
       : Thermostat_Impl(other, model, keepHandle) {
       const auto type = other.iddObject().type().value();
-      OS_ASSERT((type == ThermostatSetpointDualSetpoint::iddObjectType().value())
-                || (type == IddObjectType::ThermostatSetpoint_SingleCooling)
+      OS_ASSERT((type == ThermostatSetpointDualSetpoint::iddObjectType().value()) || (type == IddObjectType::ThermostatSetpoint_SingleCooling)
                 || (type == IddObjectType::ThermostatSetpoint_SingleHeating));
     }
 

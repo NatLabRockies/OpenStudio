@@ -182,12 +182,12 @@ namespace epmodel {
                                                                                              bool keepHandle)
       : AirToAirComponent_Impl(idfObject, model, keepHandle) {}
 
-    HeatExchangerAirToAirSensibleAndLatent_Impl::HeatExchangerAirToAirSensibleAndLatent_Impl(
-      const openstudio::detail::WorkspaceObject_Impl& other, Model_Impl* model, bool keepHandle)
+    HeatExchangerAirToAirSensibleAndLatent_Impl::HeatExchangerAirToAirSensibleAndLatent_Impl(const openstudio::detail::WorkspaceObject_Impl& other,
+                                                                                             Model_Impl* model, bool keepHandle)
       : AirToAirComponent_Impl(other, model, keepHandle) {}
 
-    HeatExchangerAirToAirSensibleAndLatent_Impl::HeatExchangerAirToAirSensibleAndLatent_Impl(
-      const HeatExchangerAirToAirSensibleAndLatent_Impl& other, Model_Impl* model, bool keepHandle)
+    HeatExchangerAirToAirSensibleAndLatent_Impl::HeatExchangerAirToAirSensibleAndLatent_Impl(const HeatExchangerAirToAirSensibleAndLatent_Impl& other,
+                                                                                             Model_Impl* model, bool keepHandle)
       : AirToAirComponent_Impl(other, model, keepHandle) {}
 
     boost::optional<double> HeatExchangerAirToAirSensibleAndLatent_Impl::nominalSupplyAirFlowRate() const {

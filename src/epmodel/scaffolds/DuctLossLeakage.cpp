@@ -13,13 +13,13 @@
 namespace openstudio {
 namespace epmodel {
 
-DuctLossLeakage::DuctLossLeakage(const Model& model) : ModelObject(DuctLossLeakage::iddObjectType(), model) {}
+  DuctLossLeakage::DuctLossLeakage(const Model& model) : ModelObject(DuctLossLeakage::iddObjectType(), model) {}
 
-DuctLossLeakage::DuctLossLeakage(std::shared_ptr<detail::DuctLossLeakage_Impl> impl) : ModelObject(std::move(impl)) {}
+  DuctLossLeakage::DuctLossLeakage(std::shared_ptr<detail::DuctLossLeakage_Impl> impl) : ModelObject(std::move(impl)) {}
 
-IddObjectType DuctLossLeakage::iddObjectType() {
-  return IddObjectType::Duct_Loss_Leakage;
-}
+  IddObjectType DuctLossLeakage::iddObjectType() {
+    return IddObjectType::Duct_Loss_Leakage;
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio

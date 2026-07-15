@@ -6,10 +6,12 @@
 #include "OSWorkflow.hpp"
 
 #include "../model/Model.hpp"
+#include "../epmodel/Model.hpp"
 
 #include "../utilities/filetypes/WorkflowJSON.hpp"
 #include "../utilities/filetypes/RunOptions.hpp"
 #include "../utilities/core/Filesystem.hpp"
+#include "../utilities/idf/Workspace.hpp"
 
 namespace openstudio {
 
@@ -26,18 +28,20 @@ void OSWorkflow::runOpenStudioMeasures() {
   applyMeasures(MeasureType::ReportingMeasure, ApplyMeasureType::ModelOutputRequests);
   LOG(Info, "Finished applying Reporting Measures's Model Output Requests.")
 
-  // Save final OSM
+  if (!epModel_) {
+    LOG_AND_THROW("Cannot run OpenStudio ModelMeasures because the workflow does not have an initialized epmodel.");
+  }
+
+  // Save the model-measure artifact without modifying the seed.  The mutable workflow model is
+  // already EnergyPlus/IDD-backed, so the step artifact is an IDF instead of an OSM.
   if (!workflowJSON.runOptions()->fast()) {
-    // Save to run dir
-    auto savePath = workflowJSON.absoluteRunDir() / "in.osm";
-    detailedTimeBlock("Saving Final OSM to Run Dir", [this, &savePath]() {
-      // TODO: workflow gem was actually serializating via model.to_s for speed...
-      model.save(savePath, true);
-    });
+    auto savePath = workflowJSON.absoluteRunDir() / "model-measures.idf";
+    detailedTimeBlock("Saving ModelMeasure IDF to Run Dir", [this, &savePath]() { epModel_->save(savePath, true); });
   }
 
   communicateMeasureAttributes();
-  saveOSMToRootDirIfDebug();
+  workspace_ = openstudio::Workspace(*epModel_);
+  saveIDFToRootDirIfDebug();
 }
 
 }  // namespace openstudio

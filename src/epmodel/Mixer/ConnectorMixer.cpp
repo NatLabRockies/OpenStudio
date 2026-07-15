@@ -71,7 +71,7 @@ namespace epmodel {
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
     unsigned ConnectorMixer_Impl::outletPort() const {
       return getObject<openstudio::epmodel::ConnectorMixer>().numNonextensibleFields() - 1u;
@@ -181,6 +181,6 @@ namespace detail {
       return setPointer(mixer.outletPort(), branch.handle(), false);
     }
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio

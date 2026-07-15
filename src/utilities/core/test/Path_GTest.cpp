@@ -102,16 +102,16 @@ TEST_F(CoreFixture, Path_SetFileExtension) {
   // example usage for assigning proper file extension
   path p = resourcesPath() / toPath("energyplus/5ZoneAirCooled/in");
   path result = setFileExtension(p, "idf");
-  EXPECT_TRUE(openstudio::filesystem::extension(p).empty());
-  EXPECT_TRUE(toString(openstudio::filesystem::extension(result)) == std::string(".idf"));
+  EXPECT_TRUE(p.extension().empty());
+  EXPECT_TRUE(result.extension().string() == std::string(".idf"));
   EXPECT_TRUE(openstudio::filesystem::exists(result));
   EXPECT_TRUE(openstudio::filesystem::is_regular_file(result));
 
   // passes out path as is if file extension already set
   p = resourcesPath() / toPath("energyplus/5ZoneAirCooled/in.idf");
   result = setFileExtension(p, "idf");
-  EXPECT_TRUE(toString(openstudio::filesystem::extension(p)) == std::string(".idf"));
-  EXPECT_TRUE(toString(openstudio::filesystem::extension(result)) == std::string(".idf"));
+  EXPECT_TRUE(p.extension().string() == std::string(".idf"));
+  EXPECT_TRUE(result.extension().string() == std::string(".idf"));
 
   // will not replace extension, but will log warning and alert user by returning empty path
   p = toPath("energyplus/5ZoneAirCooled/in.osm");
@@ -121,12 +121,12 @@ TEST_F(CoreFixture, Path_SetFileExtension) {
   // will replace extension if asked
   p = toPath("energyplus/5ZoneAirCooled/in.osm");
   result = setFileExtension(p, "idf", true, false);
-  EXPECT_TRUE(toString(openstudio::filesystem::extension(result)) == std::string(".idf"));
+  EXPECT_TRUE(result.extension().string() == std::string(".idf"));
 
   // setFileExtension does not care about existence
   p = toPath("fakeDir/fakeDirOrFile");
   result = setFileExtension(p, "jjj", true);
-  EXPECT_TRUE(toString(openstudio::filesystem::extension(result)) == std::string(".jjj"));
+  EXPECT_TRUE(result.extension().string() == std::string(".jjj"));
 }
 
 TEST_F(CoreFixture, Path_MakeParentFolder) {

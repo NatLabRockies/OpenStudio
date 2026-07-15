@@ -10,26 +10,26 @@
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API SetpointManagerSingleZoneHumidityMaximum_Impl : public SetpointManager_Impl
-{
- public:
-  using SetpointManager_Impl::SetpointManager_Impl;
-  virtual ~SetpointManagerSingleZoneHumidityMaximum_Impl() override = default;
+    class EPMODEL_API SetpointManagerSingleZoneHumidityMaximum_Impl : public SetpointManager_Impl
+    {
+     public:
+      using SetpointManager_Impl::SetpointManager_Impl;
+      virtual ~SetpointManagerSingleZoneHumidityMaximum_Impl() override = default;
 
-  boost::optional<openstudio::epmodel::Node> setpointNode() const override;
-  std::string controlVariable() const override;
-  bool setControlVariable(const std::string& value) override;
+      boost::optional<openstudio::epmodel::Node> setpointNode() const override;
+      std::string controlVariable() const override;
+      bool setControlVariable(const std::string& value) override;
 
- protected:
-  void doCanonicalize(LoadContext& context) override;
+     protected:
+      void doCanonicalize(LoadContext& context) override;
 
- private:
-  bool setSetpointNode(const openstudio::epmodel::Node& node) override;
-};
+     private:
+      bool setSetpointNode(const openstudio::epmodel::Node& node) override;
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

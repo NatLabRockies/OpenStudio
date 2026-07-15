@@ -149,7 +149,7 @@ namespace epmodel {
 
       void doCanonicalize(LoadContext& context) override;
 
-    private:
+     private:
       openstudio::epmodel::PlantEquipmentOperationSchemes plantEquipmentOperationSchemes() const;
       bool syncConnectorPorts(openstudio::epmodel::ConnectorSplitter& splitter, openstudio::epmodel::ConnectorMixer& mixer,
                               const openstudio::epmodel::Branch& inletBranch, const openstudio::epmodel::Branch& outletBranch,

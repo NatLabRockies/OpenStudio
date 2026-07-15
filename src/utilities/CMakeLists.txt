@@ -16,8 +16,6 @@ set(core_src
   core/Assert.hpp
   core/Checksum.hpp
   core/Checksum.cpp
-  core/CommandLine.hpp
-  core/CommandLine.cpp
   core/Compare.hpp
   core/Compare.cpp
   core/ContainersMove.hpp

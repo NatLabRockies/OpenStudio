@@ -35,38 +35,38 @@ class OpenStudioBuildRecipe(ConanFile):
 
         if is_apple_os(self):
             self.requires(
-                "boost/1.79.0", force=True, options={"visibility": "global"}
-            )  # f664bfe40e2245fa9baf1c742591d582
+                "boost/1.86.0", force=True, options={"visibility": "global"}
+            )
         else:
-            self.requires("boost/1.79.0", force=True)
-        self.requires("pugixml/1.12.1")  # 5a39f82651eba3e7d6197903a3202e21
+            self.requires("boost/1.86.0", force=True) # cpprestsdk doesn't build with boost 1.87.0
+        self.requires("pugixml/1.15")
         self.requires(
             "libxml2/[<2.12.0]"
         )  # deprecated xmlSubstituteEntitiesDefault and co https://github.com/GNOME/libxml2/commit/db8b9722cb2a1f7dca7374ec38ecaa4936ab3869
-        self.requires("libxslt/1.1.37")  # 9085031f5b9b2bb328ad615cd1bf1282
-        self.requires("jsoncpp/1.9.5")  # 536d080aa154e5853332339bf576747c
-        self.requires("fmt/9.1.0")  # 811e918ca4b4e0b9ddd6d5a2883efa82
-        self.requires("sqlite3/3.38.5")  # 010911927ce1889b5cf824f45e7cd3d2
+        self.requires("libxslt/1.1.37")  # TODO use libxslt/1.1.43 after porting the libxml2 code
+        self.requires("jsoncpp/1.9.6")
+        self.requires("fmt/12.1.0")
+        self.requires("sqlite3/3.53.0")
         self.requires("cpprestsdk/2.10.19")  # df2f6ac88e47cadd9c9e8e0971e00d89
         self.requires("websocketpp/0.8.2")  # 3fd704c4c5388d9c08b11af86f79f616
-        self.requires("geographiclib/1.52")  # 76536a9315a003ef3511919310b2fe37
-        self.requires("swig/4.1.1")  # Pending https://github.com/conan-io/conan-center-index/pull/19058
-        self.requires("tinygltf/2.5.0")  # c8b2aca9505e86312bb42aa0e1c639ec
-        self.requires("cli11/2.3.2")  # 8ccdf14fb1ad53532d498c16ae580b4b
-        self.requires("antlr4-cppruntime/4.13.1") # a173ea06e501a0f833003e679d5f3fb4 
+        self.requires("geographiclib/2.6")
+        self.requires("swig/4.4.0")
+        self.requires("tinygltf/2.9.7")
+        self.requires("cli11/2.6.2")
+        self.requires("antlr4-cppruntime/4.13.2")
 
         self.requires(
-            "minizip/1.2.13"
-        )  # 0b5296887a2558500d0323c6c94c8d02 # This depends on zlib, and basically patches it
+            "minizip/1.3.1"
+        )  # This depends on zlib, and basically patches it
         self.requires(
             "zlib/[>=1.2.11 <2]"
-        )  # 3b9e037ae1c615d045a06c67d88491ae # Also needed, so we can find zlib.h and co (+ pinning exactly is good)
+        )  # Also needed, so we can find zlib.h and co (+ pinning exactly is good)
         self.requires("openssl/[>=3 <4]")
 
         if self.options.with_testing:
-            self.requires("gtest/1.14.0")
+            self.requires("gtest/1.17.0")
         if self.options.with_benchmark:
-            self.requires("benchmark/1.8.3")
+            self.requires("benchmark/1.9.5")
 
     # Let people provide their own CMake for now
     # def build_requirements(self):
@@ -100,6 +100,14 @@ class OpenStudioBuildRecipe(ConanFile):
         tc.cache_variables["CPACK_BINARY_TXZ"] = False
         tc.cache_variables["CPACK_BINARY_TZ"] = False
 
+        # Ensure cmake finds the conan executable
+        exe_ext = ".exe" if self.settings.os == "Windows" else ""
+        swig_exe = (Path(self.dependencies['swig'].cpp_info.bindir) / f"swig{exe_ext}").as_posix()
+        # CMakePresets.json
+        tc.cache_variables["SWIG_EXECUTABLE"] = swig_exe
+        # conan_toolchain.cmake
+        tc.variables["SWIG_EXECUTABLE"] = swig_exe
+
         if self.options.with_python:
             v = sys.version_info
             if (v.major, v.minor) == (3, 12):
@@ -108,7 +116,7 @@ class OpenStudioBuildRecipe(ConanFile):
                     f"Setting PYTHON_VERSION and Python_ROOT_DIR from your current python: {python_version}, '{sys.base_prefix}'"
                 )
                 tc.cache_variables["PYTHON_VERSION"] = python_version
-                tc.cache_variables["Python_ROOT_DIR"] = str(Path(sys.base_prefix))
+                tc.cache_variables["Python_ROOT_DIR"] = Path(sys.base_prefix).as_posix()
             else:
                 self.output.warning(
                     "Your current python is not in the 3.12.x range, which is what we target.\n"

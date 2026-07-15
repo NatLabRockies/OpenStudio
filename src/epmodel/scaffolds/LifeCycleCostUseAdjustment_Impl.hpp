@@ -13,22 +13,22 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API LifeCycleCostUseAdjustment_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~LifeCycleCostUseAdjustment_Impl() override = default;
+    class EPMODEL_API LifeCycleCostUseAdjustment_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~LifeCycleCostUseAdjustment_Impl() override = default;
 
-  std::string resource() const;
+      std::string resource() const;
 
-  bool setResource(const std::string& resource);
+      bool setResource(const std::string& resource);
 
-  std::vector<std::string> resourceValues() const;
-};
+      std::vector<std::string> resourceValues() const;
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

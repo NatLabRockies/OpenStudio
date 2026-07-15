@@ -10,36 +10,36 @@
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API RoomAirSettingsThreeNodeDisplacementVentilation_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~RoomAirSettingsThreeNodeDisplacementVentilation_Impl() override = default;
+    class EPMODEL_API RoomAirSettingsThreeNodeDisplacementVentilation_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~RoomAirSettingsThreeNodeDisplacementVentilation_Impl() override = default;
 
-  double numberofPlumesperOccupant() const;
-  bool isNumberofPlumesperOccupantDefaulted() const;
-  bool setNumberofPlumesperOccupant(double numberofPlumesperOccupant);
-  void resetNumberofPlumesperOccupant();
+      double numberofPlumesperOccupant() const;
+      bool isNumberofPlumesperOccupantDefaulted() const;
+      bool setNumberofPlumesperOccupant(double numberofPlumesperOccupant);
+      void resetNumberofPlumesperOccupant();
 
-  double thermostatHeight() const;
-  bool isThermostatHeightDefaulted() const;
-  bool setThermostatHeight(double thermostatHeight);
-  void resetThermostatHeight();
+      double thermostatHeight() const;
+      bool isThermostatHeightDefaulted() const;
+      bool setThermostatHeight(double thermostatHeight);
+      void resetThermostatHeight();
 
-  double comfortHeight() const;
-  bool isComfortHeightDefaulted() const;
-  bool setComfortHeight(double comfortHeight);
-  void resetComfortHeight();
+      double comfortHeight() const;
+      bool isComfortHeightDefaulted() const;
+      bool setComfortHeight(double comfortHeight);
+      void resetComfortHeight();
 
-  double temperatureDifferenceThresholdforReporting() const;
-  bool isTemperatureDifferenceThresholdforReportingDefaulted() const;
-  bool setTemperatureDifferenceThresholdforReporting(double temperatureDifferenceThresholdforReporting);
-  void resetTemperatureDifferenceThresholdforReporting();
-};
+      double temperatureDifferenceThresholdforReporting() const;
+      bool isTemperatureDifferenceThresholdforReportingDefaulted() const;
+      bool setTemperatureDifferenceThresholdforReporting(double temperatureDifferenceThresholdforReporting);
+      void resetTemperatureDifferenceThresholdforReporting();
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

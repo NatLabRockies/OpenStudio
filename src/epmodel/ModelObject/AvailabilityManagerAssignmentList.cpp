@@ -287,7 +287,7 @@ namespace epmodel {
           continue;
         }
 
-        auto candidateObject = model().getObjectByTypeAndName(iddType, *objectName, true);
+        auto candidateObject = model().getObjectByTypeAndName(iddType, *objectName);
         auto availabilityManager = candidateObject ? candidateObject->optionalCast<openstudio::epmodel::AvailabilityManager>() : boost::none;
         if (!availabilityManager) {
           assignmentList.eraseExtensibleGroup(groupIndex);

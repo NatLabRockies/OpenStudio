@@ -10,29 +10,29 @@
 
 namespace openstudio {
 namespace epmodel {
-class Node;
-class Schedule;
-namespace detail {
+  class Node;
+  class Schedule;
+  namespace detail {
 
-class EPMODEL_API CoilHeatingElectricMultiStage_Impl : public StraightComponent_Impl
-{
- public:
-  using StraightComponent_Impl::StraightComponent_Impl;
-  virtual ~CoilHeatingElectricMultiStage_Impl() override = default;
+    class EPMODEL_API CoilHeatingElectricMultiStage_Impl : public StraightComponent_Impl
+    {
+     public:
+      using StraightComponent_Impl::StraightComponent_Impl;
+      virtual ~CoilHeatingElectricMultiStage_Impl() override = default;
 
-  unsigned inletPort() const override;
-  unsigned outletPort() const override;
+      unsigned inletPort() const override;
+      unsigned outletPort() const override;
 
-  bool addToNode(Node& node) override;
+      bool addToNode(Node& node) override;
 
-  Schedule availabilitySchedule() const;
-  bool setAvailabilitySchedule(Schedule& schedule);
+      Schedule availabilitySchedule() const;
+      bool setAvailabilitySchedule(Schedule& schedule);
 
-  unsigned numberOfStages() const;
-  bool setNumberOfStages(unsigned numberOfStages);
-};
+      unsigned numberOfStages() const;
+      bool setNumberOfStages(unsigned numberOfStages);
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

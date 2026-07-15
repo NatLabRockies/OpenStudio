@@ -6,7 +6,9 @@
 #ifndef CLI_MEASUREUPDATECOMMAND_HPP
 #define CLI_MEASUREUPDATECOMMAND_HPP
 
-#include <CLI/App.hpp>
+namespace CLI {
+class App;
+}  // namespace CLI
 
 #include "../utilities/core/Filesystem.hpp"
 #include "../utilities/bcl/BCLEnums.hpp"

@@ -29,479 +29,483 @@
 namespace openstudio {
 namespace epmodel {
 
-CoilCoolingLowTempRadiantConstFlow::CoilCoolingLowTempRadiantConstFlow(const Model& model)
-  : StraightComponent(CoilCoolingLowTempRadiantConstFlow::iddObjectType(), model, false, true) {}
+  CoilCoolingLowTempRadiantConstFlow::CoilCoolingLowTempRadiantConstFlow(const Model& model)
+    : StraightComponent(CoilCoolingLowTempRadiantConstFlow::iddObjectType(), model, false, true) {}
 
-CoilCoolingLowTempRadiantConstFlow::CoilCoolingLowTempRadiantConstFlow(std::shared_ptr<detail::CoilCoolingLowTempRadiantConstFlow_Impl> impl)
-  : StraightComponent(std::move(impl)) {}
+  CoilCoolingLowTempRadiantConstFlow::CoilCoolingLowTempRadiantConstFlow(std::shared_ptr<detail::CoilCoolingLowTempRadiantConstFlow_Impl> impl)
+    : StraightComponent(std::move(impl)) {}
 
-IddObjectType CoilCoolingLowTempRadiantConstFlow::iddObjectType() {
-  return IddObjectType::OS_Coil_Cooling_LowTemperatureRadiant_ConstantFlow;
-}
+  IddObjectType CoilCoolingLowTempRadiantConstFlow::iddObjectType() {
+    return IddObjectType::OS_Coil_Cooling_LowTemperatureRadiant_ConstantFlow;
+  }
 
-boost::optional<Schedule> CoilCoolingLowTempRadiantConstFlow::coolingHighWaterTemperatureSchedule() const {
-  return getImpl<detail::CoilCoolingLowTempRadiantConstFlow_Impl>()->coolingHighWaterTemperatureSchedule();
-}
+  boost::optional<Schedule> CoilCoolingLowTempRadiantConstFlow::coolingHighWaterTemperatureSchedule() const {
+    return getImpl<detail::CoilCoolingLowTempRadiantConstFlow_Impl>()->coolingHighWaterTemperatureSchedule();
+  }
 
-boost::optional<Schedule> CoilCoolingLowTempRadiantConstFlow::coolingLowWaterTemperatureSchedule() const {
-  return getImpl<detail::CoilCoolingLowTempRadiantConstFlow_Impl>()->coolingLowWaterTemperatureSchedule();
-}
+  boost::optional<Schedule> CoilCoolingLowTempRadiantConstFlow::coolingLowWaterTemperatureSchedule() const {
+    return getImpl<detail::CoilCoolingLowTempRadiantConstFlow_Impl>()->coolingLowWaterTemperatureSchedule();
+  }
 
-boost::optional<Schedule> CoilCoolingLowTempRadiantConstFlow::coolingHighControlTemperatureSchedule() const {
-  return getImpl<detail::CoilCoolingLowTempRadiantConstFlow_Impl>()->coolingHighControlTemperatureSchedule();
-}
+  boost::optional<Schedule> CoilCoolingLowTempRadiantConstFlow::coolingHighControlTemperatureSchedule() const {
+    return getImpl<detail::CoilCoolingLowTempRadiantConstFlow_Impl>()->coolingHighControlTemperatureSchedule();
+  }
 
-boost::optional<Schedule> CoilCoolingLowTempRadiantConstFlow::coolingLowControlTemperatureSchedule() const {
-  return getImpl<detail::CoilCoolingLowTempRadiantConstFlow_Impl>()->coolingLowControlTemperatureSchedule();
-}
+  boost::optional<Schedule> CoilCoolingLowTempRadiantConstFlow::coolingLowControlTemperatureSchedule() const {
+    return getImpl<detail::CoilCoolingLowTempRadiantConstFlow_Impl>()->coolingLowControlTemperatureSchedule();
+  }
 
-std::string CoilCoolingLowTempRadiantConstFlow::condensationControlType() const {
-  return getImpl<detail::CoilCoolingLowTempRadiantConstFlow_Impl>()->condensationControlType();
-}
+  std::string CoilCoolingLowTempRadiantConstFlow::condensationControlType() const {
+    return getImpl<detail::CoilCoolingLowTempRadiantConstFlow_Impl>()->condensationControlType();
+  }
 
-bool CoilCoolingLowTempRadiantConstFlow::isCondensationControlTypeDefaulted() const {
-  return getImpl<detail::CoilCoolingLowTempRadiantConstFlow_Impl>()->isCondensationControlTypeDefaulted();
-}
+  bool CoilCoolingLowTempRadiantConstFlow::isCondensationControlTypeDefaulted() const {
+    return getImpl<detail::CoilCoolingLowTempRadiantConstFlow_Impl>()->isCondensationControlTypeDefaulted();
+  }
 
-double CoilCoolingLowTempRadiantConstFlow::condensationControlDewpointOffset() const {
-  return getImpl<detail::CoilCoolingLowTempRadiantConstFlow_Impl>()->condensationControlDewpointOffset();
-}
+  double CoilCoolingLowTempRadiantConstFlow::condensationControlDewpointOffset() const {
+    return getImpl<detail::CoilCoolingLowTempRadiantConstFlow_Impl>()->condensationControlDewpointOffset();
+  }
 
-bool CoilCoolingLowTempRadiantConstFlow::isCondensationControlDewpointOffsetDefaulted() const {
-  return getImpl<detail::CoilCoolingLowTempRadiantConstFlow_Impl>()->isCondensationControlDewpointOffsetDefaulted();
-}
+  bool CoilCoolingLowTempRadiantConstFlow::isCondensationControlDewpointOffsetDefaulted() const {
+    return getImpl<detail::CoilCoolingLowTempRadiantConstFlow_Impl>()->isCondensationControlDewpointOffsetDefaulted();
+  }
 
-bool CoilCoolingLowTempRadiantConstFlow::setCoolingHighWaterTemperatureSchedule(Schedule& schedule) {
-  return getImpl<detail::CoilCoolingLowTempRadiantConstFlow_Impl>()->setCoolingHighWaterTemperatureSchedule(schedule);
-}
+  bool CoilCoolingLowTempRadiantConstFlow::setCoolingHighWaterTemperatureSchedule(Schedule& schedule) {
+    return getImpl<detail::CoilCoolingLowTempRadiantConstFlow_Impl>()->setCoolingHighWaterTemperatureSchedule(schedule);
+  }
 
-void CoilCoolingLowTempRadiantConstFlow::resetCoolingHighWaterTemperatureSchedule() {
-  getImpl<detail::CoilCoolingLowTempRadiantConstFlow_Impl>()->resetCoolingHighWaterTemperatureSchedule();
-}
+  void CoilCoolingLowTempRadiantConstFlow::resetCoolingHighWaterTemperatureSchedule() {
+    getImpl<detail::CoilCoolingLowTempRadiantConstFlow_Impl>()->resetCoolingHighWaterTemperatureSchedule();
+  }
 
-bool CoilCoolingLowTempRadiantConstFlow::setCoolingLowWaterTemperatureSchedule(Schedule& schedule) {
-  return getImpl<detail::CoilCoolingLowTempRadiantConstFlow_Impl>()->setCoolingLowWaterTemperatureSchedule(schedule);
-}
+  bool CoilCoolingLowTempRadiantConstFlow::setCoolingLowWaterTemperatureSchedule(Schedule& schedule) {
+    return getImpl<detail::CoilCoolingLowTempRadiantConstFlow_Impl>()->setCoolingLowWaterTemperatureSchedule(schedule);
+  }
 
-void CoilCoolingLowTempRadiantConstFlow::resetCoolingLowWaterTemperatureSchedule() {
-  getImpl<detail::CoilCoolingLowTempRadiantConstFlow_Impl>()->resetCoolingLowWaterTemperatureSchedule();
-}
+  void CoilCoolingLowTempRadiantConstFlow::resetCoolingLowWaterTemperatureSchedule() {
+    getImpl<detail::CoilCoolingLowTempRadiantConstFlow_Impl>()->resetCoolingLowWaterTemperatureSchedule();
+  }
 
-bool CoilCoolingLowTempRadiantConstFlow::setCoolingHighControlTemperatureSchedule(Schedule& schedule) {
-  return getImpl<detail::CoilCoolingLowTempRadiantConstFlow_Impl>()->setCoolingHighControlTemperatureSchedule(schedule);
-}
+  bool CoilCoolingLowTempRadiantConstFlow::setCoolingHighControlTemperatureSchedule(Schedule& schedule) {
+    return getImpl<detail::CoilCoolingLowTempRadiantConstFlow_Impl>()->setCoolingHighControlTemperatureSchedule(schedule);
+  }
 
-void CoilCoolingLowTempRadiantConstFlow::resetCoolingHighControlTemperatureSchedule() {
-  getImpl<detail::CoilCoolingLowTempRadiantConstFlow_Impl>()->resetCoolingHighControlTemperatureSchedule();
-}
+  void CoilCoolingLowTempRadiantConstFlow::resetCoolingHighControlTemperatureSchedule() {
+    getImpl<detail::CoilCoolingLowTempRadiantConstFlow_Impl>()->resetCoolingHighControlTemperatureSchedule();
+  }
 
-bool CoilCoolingLowTempRadiantConstFlow::setCoolingLowControlTemperatureSchedule(Schedule& schedule) {
-  return getImpl<detail::CoilCoolingLowTempRadiantConstFlow_Impl>()->setCoolingLowControlTemperatureSchedule(schedule);
-}
+  bool CoilCoolingLowTempRadiantConstFlow::setCoolingLowControlTemperatureSchedule(Schedule& schedule) {
+    return getImpl<detail::CoilCoolingLowTempRadiantConstFlow_Impl>()->setCoolingLowControlTemperatureSchedule(schedule);
+  }
 
-void CoilCoolingLowTempRadiantConstFlow::resetCoolingLowControlTemperatureSchedule() {
-  getImpl<detail::CoilCoolingLowTempRadiantConstFlow_Impl>()->resetCoolingLowControlTemperatureSchedule();
-}
+  void CoilCoolingLowTempRadiantConstFlow::resetCoolingLowControlTemperatureSchedule() {
+    getImpl<detail::CoilCoolingLowTempRadiantConstFlow_Impl>()->resetCoolingLowControlTemperatureSchedule();
+  }
 
-bool CoilCoolingLowTempRadiantConstFlow::setCondensationControlType(const std::string& condensationControlType) {
-  return getImpl<detail::CoilCoolingLowTempRadiantConstFlow_Impl>()->setCondensationControlType(condensationControlType);
-}
+  bool CoilCoolingLowTempRadiantConstFlow::setCondensationControlType(const std::string& condensationControlType) {
+    return getImpl<detail::CoilCoolingLowTempRadiantConstFlow_Impl>()->setCondensationControlType(condensationControlType);
+  }
 
-void CoilCoolingLowTempRadiantConstFlow::resetCondensationControlType() {
-  getImpl<detail::CoilCoolingLowTempRadiantConstFlow_Impl>()->resetCondensationControlType();
-}
+  void CoilCoolingLowTempRadiantConstFlow::resetCondensationControlType() {
+    getImpl<detail::CoilCoolingLowTempRadiantConstFlow_Impl>()->resetCondensationControlType();
+  }
 
-bool CoilCoolingLowTempRadiantConstFlow::setCondensationControlDewpointOffset(double condensationControlDewpointOffset) {
-  return getImpl<detail::CoilCoolingLowTempRadiantConstFlow_Impl>()->setCondensationControlDewpointOffset(condensationControlDewpointOffset);
-}
+  bool CoilCoolingLowTempRadiantConstFlow::setCondensationControlDewpointOffset(double condensationControlDewpointOffset) {
+    return getImpl<detail::CoilCoolingLowTempRadiantConstFlow_Impl>()->setCondensationControlDewpointOffset(condensationControlDewpointOffset);
+  }
 
-void CoilCoolingLowTempRadiantConstFlow::resetCondensationControlDewpointOffset() {
-  getImpl<detail::CoilCoolingLowTempRadiantConstFlow_Impl>()->resetCondensationControlDewpointOffset();
-}
+  void CoilCoolingLowTempRadiantConstFlow::resetCondensationControlDewpointOffset() {
+    getImpl<detail::CoilCoolingLowTempRadiantConstFlow_Impl>()->resetCondensationControlDewpointOffset();
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-constexpr const char* kDefaultCondensationControlType = "SimpleOff";
-constexpr double kDefaultCondensationControlDewpointOffset = 1.0;
+    constexpr const char* kDefaultCondensationControlType = "SimpleOff";
+    constexpr double kDefaultCondensationControlDewpointOffset = 1.0;
 
-namespace {
+    namespace {
 
-bool addTransientRadiantParentToPlantNode(Node& node, ModelObject parentObject, unsigned inletField, unsigned outletField, const std::string& roleLabel) {
-  auto plantLoop = node.plantLoop();
-  if (!plantLoop) {
-    return false;
-  }
+      bool addTransientRadiantParentToPlantNode(Node& node, ModelObject parentObject, unsigned inletField, unsigned outletField,
+                                                const std::string& roleLabel) {
+        auto plantLoop = node.plantLoop();
+        if (!plantLoop) {
+          return false;
+        }
 
-  auto plantLoopImpl = plantLoop->getImpl<detail::PlantLoop_Impl>();
-  auto branch = plantLoopImpl->branchForNode(node);
-  if (!branch) {
-    return false;
-  }
+        auto plantLoopImpl = plantLoop->getImpl<detail::PlantLoop_Impl>();
+        auto branch = plantLoopImpl->branchForNode(node);
+        if (!branch) {
+          return false;
+        }
 
-  const auto nodeName = node.name();
-  if (!nodeName) {
-    return false;
-  }
+        const auto nodeName = node.name();
+        if (!nodeName) {
+          return false;
+        }
 
-  if (!parentObject.name()) {
-    parentObject.createName();
-    if (!parentObject.name()) {
+        if (!parentObject.name()) {
+          parentObject.createName();
+          if (!parentObject.name()) {
+            return false;
+          }
+        }
+
+        const auto parentName = parentObject.nameString();
+        const auto roleObjectName = parentName + " " + roleLabel;
+        const auto setParentNodes = [&](const Node& inletNode, const Node& outletNode) {
+          return parentObject.setPointer(inletField, inletNode.handle()) && parentObject.setPointer(outletField, outletNode.handle());
+        };
+
+        auto components = branch->components();
+        if (components.empty()) {
+          std::string newInletName;
+          std::string newOutletName;
+          const bool isOutletAnchor = ((*branch == plantLoopImpl->supplyOutletBranch()) && (node == plantLoop->supplyOutletNode()))
+                                      || ((*branch == plantLoopImpl->demandOutletBranch()) && (node == plantLoop->demandOutletNode()));
+          if (isOutletAnchor) {
+            newInletName = *nodeName + " - " + roleObjectName + " Inlet";
+            newOutletName = *nodeName;
+          } else {
+            newInletName = *nodeName;
+            newOutletName = *nodeName + " - " + roleObjectName + " Outlet";
+          }
+
+          if (!branch->getImpl<detail::Branch_Impl>()->appendComponent(parentObject, newInletName, newOutletName)) {
+            return false;
+          }
+
+          auto inletNode = node.model().getOrCreateTransientByName<Node>(newInletName);
+          auto outletNode = node.model().getOrCreateTransientByName<Node>(newOutletName);
+          return setParentNodes(inletNode, outletNode);
+        }
+
+        for (unsigned i = 0; i < components.size(); ++i) {
+          const auto inletNode = branch->componentInletNode(i);
+          const auto outletNode = branch->componentOutletNode(i);
+          const bool matchesInlet = inletNode && (*inletNode == node);
+          const bool matchesOutlet = outletNode && (*outletNode == node);
+          if (!matchesInlet && !matchesOutlet) {
+            continue;
+          }
+
+          const std::string newNodeName = *nodeName + " - " + roleObjectName + " Outlet";
+          const unsigned insertIndex = matchesInlet ? i : static_cast<unsigned>(i + 1u);
+
+          std::string newInletName;
+          std::string newOutletName;
+          if (matchesOutlet && (i + 1u == components.size())) {
+            newInletName = newNodeName;
+            newOutletName = *nodeName;
+          } else {
+            newInletName = *nodeName;
+            newOutletName = newNodeName;
+          }
+
+          if (!branch->getImpl<detail::Branch_Impl>()->insertComponent(insertIndex, parentObject, newInletName, newOutletName)) {
+            return false;
+          }
+
+          auto newInletNode = node.model().getOrCreateTransientByName<Node>(newInletName);
+          auto newOutletNode = node.model().getOrCreateTransientByName<Node>(newOutletName);
+          if (!setParentNodes(newInletNode, newOutletNode)) {
+            return false;
+          }
+
+          auto newNode = node.model().getOrCreateTransientByName<Node>(newNodeName);
+          if (matchesInlet) {
+            return branch->getImpl<detail::Branch_Impl>()->setComponentInletNode(insertIndex + 1u, newNode);
+          }
+          return branch->getImpl<detail::Branch_Impl>()->setComponentOutletNode(insertIndex - 1u, newNode);
+        }
+
+        return false;
+      }
+
+      bool removeTransientRadiantParentFromPlantLoop(const CoilCoolingLowTempRadiantConstFlow_Impl& coilImpl, ModelObject parentObject,
+                                                     unsigned inletField, unsigned outletField) {
+        auto inletNode = coilImpl.inletModelObject() ? coilImpl.inletModelObject()->optionalCast<Node>() : boost::none;
+        auto outletNode = coilImpl.outletModelObject() ? coilImpl.outletModelObject()->optionalCast<Node>() : boost::none;
+        if (!inletNode || !outletNode) {
+          return false;
+        }
+
+        auto plantLoop = coilImpl.getObject<openstudio::epmodel::HVACComponent>().plantLoop();
+        if (!plantLoop) {
+          return false;
+        }
+
+        auto plantLoopImpl = plantLoop->getImpl<detail::PlantLoop_Impl>();
+        auto branch = plantLoopImpl->branchForNode(*inletNode);
+        if (!branch) {
+          branch = plantLoopImpl->branchForNode(*outletNode);
+        }
+        if (!branch) {
+          return false;
+        }
+
+        auto components = branch->components();
+        for (unsigned i = 0; i < components.size(); ++i) {
+          if (components[i] != parentObject) {
+            continue;
+          }
+
+          const auto branchInletNode = branch->componentInletNode(i);
+          const auto branchOutletNode = branch->componentOutletNode(i);
+          if (!(branchInletNode && branchOutletNode && (*branchInletNode == *inletNode) && (*branchOutletNode == *outletNode))) {
+            continue;
+          }
+
+          if ((i + 1u < components.size()) && !branch->getImpl<detail::Branch_Impl>()->setComponentInletNode(i + 1u, *inletNode)) {
+            return false;
+          }
+          if (!branch->getImpl<detail::Branch_Impl>()->removeComponent(i)) {
+            return false;
+          }
+
+          return parentObject.setPointer(inletField, Handle()) && parentObject.setPointer(outletField, Handle());
+        }
+
+        return false;
+      }
+
+    }  // namespace
+
+    unsigned CoilCoolingLowTempRadiantConstFlow_Impl::inletPort() const {
+      return openstudio::OS_Coil_Cooling_LowTemperatureRadiant_ConstantFlowFields::CoolingWaterInletNodeName;
+    }
+
+    unsigned CoilCoolingLowTempRadiantConstFlow_Impl::outletPort() const {
+      return openstudio::OS_Coil_Cooling_LowTemperatureRadiant_ConstantFlowFields::CoolingWaterOutletNodeName;
+    }
+
+    boost::optional<ModelObject> CoilCoolingLowTempRadiantConstFlow_Impl::inletModelObject() const {
+      if (auto p = parent()) {
+        if (auto node = p->getImpl<detail::ZoneHVACLowTempRadiantConstFlow_Impl>()->resolvedNodeTarget(
+              openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::CoolingWaterInletNodeName)) {
+          return node->cast<ModelObject>();
+        }
+      }
+      return boost::none;
+    }
+
+    boost::optional<ModelObject> CoilCoolingLowTempRadiantConstFlow_Impl::outletModelObject() const {
+      if (auto p = parent()) {
+        if (auto node = p->getImpl<detail::ZoneHVACLowTempRadiantConstFlow_Impl>()->resolvedNodeTarget(
+              openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::CoolingWaterOutletNodeName)) {
+          return node->cast<ModelObject>();
+        }
+      }
+      return boost::none;
+    }
+
+    bool CoilCoolingLowTempRadiantConstFlow_Impl::addToNode(Node& node) {
+      auto p = parent();
+      if (!p || plantLoop()) {
+        return false;
+      }
+
+      return addTransientRadiantParentToPlantNode(
+        node, p->cast<ModelObject>(), openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::CoolingWaterInletNodeName,
+        openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::CoolingWaterOutletNodeName, "Cooling Coil");
+    }
+
+    bool CoilCoolingLowTempRadiantConstFlow_Impl::removeFromLoop() {
+      if (auto p = parent()) {
+        return removeTransientRadiantParentFromPlantLoop(*this, p->cast<ModelObject>(),
+                                                         openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::CoolingWaterInletNodeName,
+                                                         openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::CoolingWaterOutletNodeName);
+      }
       return false;
     }
-  }
 
-  const auto parentName = parentObject.nameString();
-  const auto roleObjectName = parentName + " " + roleLabel;
-  const auto setParentNodes = [&](const Node& inletNode, const Node& outletNode) {
-    return parentObject.setPointer(inletField, inletNode.handle()) && parentObject.setPointer(outletField, outletNode.handle());
-  };
-
-  auto components = branch->components();
-  if (components.empty()) {
-    std::string newInletName;
-    std::string newOutletName;
-    const bool isOutletAnchor = ((*branch == plantLoopImpl->supplyOutletBranch()) && (node == plantLoop->supplyOutletNode()))
-                                || ((*branch == plantLoopImpl->demandOutletBranch()) && (node == plantLoop->demandOutletNode()));
-    if (isOutletAnchor) {
-      newInletName = *nodeName + " - " + roleObjectName + " Inlet";
-      newOutletName = *nodeName;
-    } else {
-      newInletName = *nodeName;
-      newOutletName = *nodeName + " - " + roleObjectName + " Outlet";
+    void CoilCoolingLowTempRadiantConstFlow_Impl::disconnect() {
+      if (auto p = parent()) {
+        p->setPointer(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::CoolingWaterInletNodeName, Handle());
+        p->setPointer(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::CoolingWaterOutletNodeName, Handle());
+      }
     }
 
-    if (!branch->getImpl<detail::Branch_Impl>()->appendComponent(parentObject, newInletName, newOutletName)) {
+    boost::optional<ZoneHVACLowTempRadiantConstFlow> CoilCoolingLowTempRadiantConstFlow_Impl::parent() const {
+      const auto thisName = getObject<openstudio::epmodel::CoilCoolingLowTempRadiantConstFlow>().name();
+      if (!thisName) {
+        return boost::none;
+      }
+
+      // This is intentionally a name-based reverse lookup for now. These transient
+      // companion coils are not persisted EnergyPlus objects, and today they do not
+      // carry an explicit parent handle. The stable transient name gives us a way
+      // to recover the owning radiant parent without inventing fake persisted
+      // relationship fields. It works, but it is also a sign that a future
+      // transient-ownership mechanism could be cleaner than reverse name matching.
+      for (const auto& candidate : model().getConcreteModelObjects<openstudio::epmodel::ZoneHVACLowTempRadiantConstFlow>()) {
+        if (openstudio::istringEqual(*thisName, detail::transientCoolingCoilName(candidate))) {
+          return candidate;
+        }
+      }
+      return boost::none;
+    }
+
+    boost::optional<Schedule> CoilCoolingLowTempRadiantConstFlow_Impl::coolingHighWaterTemperatureSchedule() const {
+      if (auto p = parent()) {
+        return p->getModelObjectTarget<Schedule>(
+          openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::CoolingHighWaterTemperatureScheduleName);
+      }
+      return boost::none;
+    }
+
+    boost::optional<Schedule> CoilCoolingLowTempRadiantConstFlow_Impl::coolingLowWaterTemperatureSchedule() const {
+      if (auto p = parent()) {
+        return p->getModelObjectTarget<Schedule>(
+          openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::CoolingLowWaterTemperatureScheduleName);
+      }
+      return boost::none;
+    }
+
+    boost::optional<Schedule> CoilCoolingLowTempRadiantConstFlow_Impl::coolingHighControlTemperatureSchedule() const {
+      if (auto p = parent()) {
+        return p->getModelObjectTarget<Schedule>(
+          openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::CoolingHighControlTemperatureScheduleName);
+      }
+      return boost::none;
+    }
+
+    boost::optional<Schedule> CoilCoolingLowTempRadiantConstFlow_Impl::coolingLowControlTemperatureSchedule() const {
+      if (auto p = parent()) {
+        return p->getModelObjectTarget<Schedule>(
+          openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::CoolingLowControlTemperatureScheduleName);
+      }
+      return boost::none;
+    }
+
+    std::string CoilCoolingLowTempRadiantConstFlow_Impl::condensationControlType() const {
+      if (auto p = parent()) {
+        if (const auto design = p->getImpl<detail::ZoneHVACLowTempRadiantConstFlow_Impl>()->designObject()) {
+          return design->getImpl<detail::ZoneHVACLowTempRadiantConstFlowDesign_Impl>()->condensationControlType();
+        }
+      }
+      return kDefaultCondensationControlType;
+    }
+
+    bool CoilCoolingLowTempRadiantConstFlow_Impl::isCondensationControlTypeDefaulted() const {
+      if (auto p = parent()) {
+        if (const auto design = p->getImpl<detail::ZoneHVACLowTempRadiantConstFlow_Impl>()->designObject()) {
+          return design->getImpl<detail::ZoneHVACLowTempRadiantConstFlowDesign_Impl>()->isCondensationControlTypeDefaulted();
+        }
+      }
+      return true;
+    }
+
+    double CoilCoolingLowTempRadiantConstFlow_Impl::condensationControlDewpointOffset() const {
+      if (auto p = parent()) {
+        if (const auto design = p->getImpl<detail::ZoneHVACLowTempRadiantConstFlow_Impl>()->designObject()) {
+          return design->getImpl<detail::ZoneHVACLowTempRadiantConstFlowDesign_Impl>()->condensationControlDewpointOffset();
+        }
+      }
+      return kDefaultCondensationControlDewpointOffset;
+    }
+
+    bool CoilCoolingLowTempRadiantConstFlow_Impl::isCondensationControlDewpointOffsetDefaulted() const {
+      if (auto p = parent()) {
+        if (const auto design = p->getImpl<detail::ZoneHVACLowTempRadiantConstFlow_Impl>()->designObject()) {
+          return design->getImpl<detail::ZoneHVACLowTempRadiantConstFlowDesign_Impl>()->isCondensationControlDewpointOffsetDefaulted();
+        }
+      }
+      return true;
+    }
+
+    bool CoilCoolingLowTempRadiantConstFlow_Impl::setCoolingHighWaterTemperatureSchedule(Schedule& schedule) {
+      if (auto p = parent()) {
+        return p->setPointer(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::CoolingHighWaterTemperatureScheduleName,
+                             schedule.handle());
+      }
       return false;
     }
 
-    auto inletNode = node.model().getOrCreateTransientByName<Node>(newInletName);
-    auto outletNode = node.model().getOrCreateTransientByName<Node>(newOutletName);
-    return setParentNodes(inletNode, outletNode);
-  }
-
-  for (unsigned i = 0; i < components.size(); ++i) {
-    const auto inletNode = branch->componentInletNode(i);
-    const auto outletNode = branch->componentOutletNode(i);
-    const bool matchesInlet = inletNode && (*inletNode == node);
-    const bool matchesOutlet = outletNode && (*outletNode == node);
-    if (!matchesInlet && !matchesOutlet) {
-      continue;
+    void CoilCoolingLowTempRadiantConstFlow_Impl::resetCoolingHighWaterTemperatureSchedule() {
+      if (auto p = parent()) {
+        OS_ASSERT(p->setString(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::CoolingHighWaterTemperatureScheduleName, ""));
+      }
     }
 
-    const std::string newNodeName = *nodeName + " - " + roleObjectName + " Outlet";
-    const unsigned insertIndex = matchesInlet ? i : static_cast<unsigned>(i + 1u);
-
-    std::string newInletName;
-    std::string newOutletName;
-    if (matchesOutlet && (i + 1u == components.size())) {
-      newInletName = newNodeName;
-      newOutletName = *nodeName;
-    } else {
-      newInletName = *nodeName;
-      newOutletName = newNodeName;
-    }
-
-    if (!branch->getImpl<detail::Branch_Impl>()->insertComponent(insertIndex, parentObject, newInletName, newOutletName)) {
+    bool CoilCoolingLowTempRadiantConstFlow_Impl::setCoolingLowWaterTemperatureSchedule(Schedule& schedule) {
+      if (auto p = parent()) {
+        return p->setPointer(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::CoolingLowWaterTemperatureScheduleName,
+                             schedule.handle());
+      }
       return false;
     }
 
-    auto newInletNode = node.model().getOrCreateTransientByName<Node>(newInletName);
-    auto newOutletNode = node.model().getOrCreateTransientByName<Node>(newOutletName);
-    if (!setParentNodes(newInletNode, newOutletNode)) {
+    void CoilCoolingLowTempRadiantConstFlow_Impl::resetCoolingLowWaterTemperatureSchedule() {
+      if (auto p = parent()) {
+        OS_ASSERT(p->setString(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::CoolingLowWaterTemperatureScheduleName, ""));
+      }
+    }
+
+    bool CoilCoolingLowTempRadiantConstFlow_Impl::setCoolingHighControlTemperatureSchedule(Schedule& schedule) {
+      if (auto p = parent()) {
+        return p->setPointer(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::CoolingHighControlTemperatureScheduleName,
+                             schedule.handle());
+      }
       return false;
     }
 
-    auto newNode = node.model().getOrCreateTransientByName<Node>(newNodeName);
-    if (matchesInlet) {
-      return branch->getImpl<detail::Branch_Impl>()->setComponentInletNode(insertIndex + 1u, newNode);
-    }
-    return branch->getImpl<detail::Branch_Impl>()->setComponentOutletNode(insertIndex - 1u, newNode);
-  }
-
-  return false;
-}
-
-bool removeTransientRadiantParentFromPlantLoop(const CoilCoolingLowTempRadiantConstFlow_Impl& coilImpl, ModelObject parentObject, unsigned inletField,
-                                               unsigned outletField) {
-  auto inletNode = coilImpl.inletModelObject() ? coilImpl.inletModelObject()->optionalCast<Node>() : boost::none;
-  auto outletNode = coilImpl.outletModelObject() ? coilImpl.outletModelObject()->optionalCast<Node>() : boost::none;
-  if (!inletNode || !outletNode) {
-    return false;
-  }
-
-  auto plantLoop = coilImpl.getObject<openstudio::epmodel::HVACComponent>().plantLoop();
-  if (!plantLoop) {
-    return false;
-  }
-
-  auto plantLoopImpl = plantLoop->getImpl<detail::PlantLoop_Impl>();
-  auto branch = plantLoopImpl->branchForNode(*inletNode);
-  if (!branch) {
-    branch = plantLoopImpl->branchForNode(*outletNode);
-  }
-  if (!branch) {
-    return false;
-  }
-
-  auto components = branch->components();
-  for (unsigned i = 0; i < components.size(); ++i) {
-    if (components[i] != parentObject) {
-      continue;
+    void CoilCoolingLowTempRadiantConstFlow_Impl::resetCoolingHighControlTemperatureSchedule() {
+      if (auto p = parent()) {
+        OS_ASSERT(p->setString(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::CoolingHighControlTemperatureScheduleName, ""));
+      }
     }
 
-    const auto branchInletNode = branch->componentInletNode(i);
-    const auto branchOutletNode = branch->componentOutletNode(i);
-    if (!(branchInletNode && branchOutletNode && (*branchInletNode == *inletNode) && (*branchOutletNode == *outletNode))) {
-      continue;
-    }
-
-    if ((i + 1u < components.size()) && !branch->getImpl<detail::Branch_Impl>()->setComponentInletNode(i + 1u, *inletNode)) {
-      return false;
-    }
-    if (!branch->getImpl<detail::Branch_Impl>()->removeComponent(i)) {
+    bool CoilCoolingLowTempRadiantConstFlow_Impl::setCoolingLowControlTemperatureSchedule(Schedule& schedule) {
+      if (auto p = parent()) {
+        return p->setPointer(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::CoolingLowControlTemperatureScheduleName,
+                             schedule.handle());
+      }
       return false;
     }
 
-    return parentObject.setPointer(inletField, Handle()) && parentObject.setPointer(outletField, Handle());
-  }
-
-  return false;
-}
-
-}  // namespace
-
-unsigned CoilCoolingLowTempRadiantConstFlow_Impl::inletPort() const {
-  return openstudio::OS_Coil_Cooling_LowTemperatureRadiant_ConstantFlowFields::CoolingWaterInletNodeName;
-}
-
-unsigned CoilCoolingLowTempRadiantConstFlow_Impl::outletPort() const {
-  return openstudio::OS_Coil_Cooling_LowTemperatureRadiant_ConstantFlowFields::CoolingWaterOutletNodeName;
-}
-
-boost::optional<ModelObject> CoilCoolingLowTempRadiantConstFlow_Impl::inletModelObject() const {
-  if (auto p = parent()) {
-    if (auto node = p->getImpl<detail::ZoneHVACLowTempRadiantConstFlow_Impl>()->resolvedNodeTarget(
-          openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::CoolingWaterInletNodeName)) {
-      return node->cast<ModelObject>();
+    void CoilCoolingLowTempRadiantConstFlow_Impl::resetCoolingLowControlTemperatureSchedule() {
+      if (auto p = parent()) {
+        OS_ASSERT(p->setString(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::CoolingLowControlTemperatureScheduleName, ""));
+      }
     }
-  }
-  return boost::none;
-}
 
-boost::optional<ModelObject> CoilCoolingLowTempRadiantConstFlow_Impl::outletModelObject() const {
-  if (auto p = parent()) {
-    if (auto node = p->getImpl<detail::ZoneHVACLowTempRadiantConstFlow_Impl>()->resolvedNodeTarget(
-          openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::CoolingWaterOutletNodeName)) {
-      return node->cast<ModelObject>();
+    bool CoilCoolingLowTempRadiantConstFlow_Impl::setCondensationControlType(const std::string& condensationControlType) {
+      if (auto p = parent()) {
+        auto design = p->getImpl<detail::ZoneHVACLowTempRadiantConstFlow_Impl>()->ensureDesignObject();
+        return design.getImpl<detail::ZoneHVACLowTempRadiantConstFlowDesign_Impl>()->setCondensationControlType(condensationControlType);
+      }
+      return false;
     }
-  }
-  return boost::none;
-}
 
-bool CoilCoolingLowTempRadiantConstFlow_Impl::addToNode(Node& node) {
-  auto p = parent();
-  if (!p || plantLoop()) {
-    return false;
-  }
-
-  return addTransientRadiantParentToPlantNode(node, p->cast<ModelObject>(),
-                                              openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::CoolingWaterInletNodeName,
-                                              openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::CoolingWaterOutletNodeName,
-                                              "Cooling Coil");
-}
-
-bool CoilCoolingLowTempRadiantConstFlow_Impl::removeFromLoop() {
-  if (auto p = parent()) {
-    return removeTransientRadiantParentFromPlantLoop(*this, p->cast<ModelObject>(),
-                                                     openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::CoolingWaterInletNodeName,
-                                                     openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::CoolingWaterOutletNodeName);
-  }
-  return false;
-}
-
-void CoilCoolingLowTempRadiantConstFlow_Impl::disconnect() {
-  if (auto p = parent()) {
-    p->setPointer(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::CoolingWaterInletNodeName, Handle());
-    p->setPointer(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::CoolingWaterOutletNodeName, Handle());
-  }
-}
-
-boost::optional<ZoneHVACLowTempRadiantConstFlow> CoilCoolingLowTempRadiantConstFlow_Impl::parent() const {
-  const auto thisName = getObject<openstudio::epmodel::CoilCoolingLowTempRadiantConstFlow>().name();
-  if (!thisName) {
-    return boost::none;
-  }
-
-  // This is intentionally a name-based reverse lookup for now. These transient
-  // companion coils are not persisted EnergyPlus objects, and today they do not
-  // carry an explicit parent handle. The stable transient name gives us a way
-  // to recover the owning radiant parent without inventing fake persisted
-  // relationship fields. It works, but it is also a sign that a future
-  // transient-ownership mechanism could be cleaner than reverse name matching.
-  for (const auto& candidate : model().getConcreteModelObjects<openstudio::epmodel::ZoneHVACLowTempRadiantConstFlow>()) {
-    if (openstudio::istringEqual(*thisName, detail::transientCoolingCoilName(candidate))) {
-      return candidate;
+    void CoilCoolingLowTempRadiantConstFlow_Impl::resetCondensationControlType() {
+      if (auto p = parent()) {
+        auto design = p->getImpl<detail::ZoneHVACLowTempRadiantConstFlow_Impl>()->ensureDesignObject();
+        design.getImpl<detail::ZoneHVACLowTempRadiantConstFlowDesign_Impl>()->resetCondensationControlType();
+      }
     }
-  }
-  return boost::none;
-}
 
-boost::optional<Schedule> CoilCoolingLowTempRadiantConstFlow_Impl::coolingHighWaterTemperatureSchedule() const {
-  if (auto p = parent()) {
-    return p->getModelObjectTarget<Schedule>(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::CoolingHighWaterTemperatureScheduleName);
-  }
-  return boost::none;
-}
-
-boost::optional<Schedule> CoilCoolingLowTempRadiantConstFlow_Impl::coolingLowWaterTemperatureSchedule() const {
-  if (auto p = parent()) {
-    return p->getModelObjectTarget<Schedule>(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::CoolingLowWaterTemperatureScheduleName);
-  }
-  return boost::none;
-}
-
-boost::optional<Schedule> CoilCoolingLowTempRadiantConstFlow_Impl::coolingHighControlTemperatureSchedule() const {
-  if (auto p = parent()) {
-    return p->getModelObjectTarget<Schedule>(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::CoolingHighControlTemperatureScheduleName);
-  }
-  return boost::none;
-}
-
-boost::optional<Schedule> CoilCoolingLowTempRadiantConstFlow_Impl::coolingLowControlTemperatureSchedule() const {
-  if (auto p = parent()) {
-    return p->getModelObjectTarget<Schedule>(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::CoolingLowControlTemperatureScheduleName);
-  }
-  return boost::none;
-}
-
-std::string CoilCoolingLowTempRadiantConstFlow_Impl::condensationControlType() const {
-  if (auto p = parent()) {
-    if (const auto design = p->getImpl<detail::ZoneHVACLowTempRadiantConstFlow_Impl>()->designObject()) {
-      return design->getImpl<detail::ZoneHVACLowTempRadiantConstFlowDesign_Impl>()->condensationControlType();
+    bool CoilCoolingLowTempRadiantConstFlow_Impl::setCondensationControlDewpointOffset(double condensationControlDewpointOffset) {
+      if (auto p = parent()) {
+        auto design = p->getImpl<detail::ZoneHVACLowTempRadiantConstFlow_Impl>()->ensureDesignObject();
+        return design.getImpl<detail::ZoneHVACLowTempRadiantConstFlowDesign_Impl>()->setCondensationControlDewpointOffset(
+          condensationControlDewpointOffset);
+      }
+      return false;
     }
-  }
-  return kDefaultCondensationControlType;
-}
 
-bool CoilCoolingLowTempRadiantConstFlow_Impl::isCondensationControlTypeDefaulted() const {
-  if (auto p = parent()) {
-    if (const auto design = p->getImpl<detail::ZoneHVACLowTempRadiantConstFlow_Impl>()->designObject()) {
-      return design->getImpl<detail::ZoneHVACLowTempRadiantConstFlowDesign_Impl>()->isCondensationControlTypeDefaulted();
+    void CoilCoolingLowTempRadiantConstFlow_Impl::resetCondensationControlDewpointOffset() {
+      if (auto p = parent()) {
+        auto design = p->getImpl<detail::ZoneHVACLowTempRadiantConstFlow_Impl>()->ensureDesignObject();
+        design.getImpl<detail::ZoneHVACLowTempRadiantConstFlowDesign_Impl>()->resetCondensationControlDewpointOffset();
+      }
     }
-  }
-  return true;
-}
 
-double CoilCoolingLowTempRadiantConstFlow_Impl::condensationControlDewpointOffset() const {
-  if (auto p = parent()) {
-    if (const auto design = p->getImpl<detail::ZoneHVACLowTempRadiantConstFlow_Impl>()->designObject()) {
-      return design->getImpl<detail::ZoneHVACLowTempRadiantConstFlowDesign_Impl>()->condensationControlDewpointOffset();
-    }
-  }
-  return kDefaultCondensationControlDewpointOffset;
-}
-
-bool CoilCoolingLowTempRadiantConstFlow_Impl::isCondensationControlDewpointOffsetDefaulted() const {
-  if (auto p = parent()) {
-    if (const auto design = p->getImpl<detail::ZoneHVACLowTempRadiantConstFlow_Impl>()->designObject()) {
-      return design->getImpl<detail::ZoneHVACLowTempRadiantConstFlowDesign_Impl>()->isCondensationControlDewpointOffsetDefaulted();
-    }
-  }
-  return true;
-}
-
-bool CoilCoolingLowTempRadiantConstFlow_Impl::setCoolingHighWaterTemperatureSchedule(Schedule& schedule) {
-  if (auto p = parent()) {
-    return p->setPointer(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::CoolingHighWaterTemperatureScheduleName,
-                         schedule.handle());
-  }
-  return false;
-}
-
-void CoilCoolingLowTempRadiantConstFlow_Impl::resetCoolingHighWaterTemperatureSchedule() {
-  if (auto p = parent()) {
-    OS_ASSERT(p->setString(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::CoolingHighWaterTemperatureScheduleName, ""));
-  }
-}
-
-bool CoilCoolingLowTempRadiantConstFlow_Impl::setCoolingLowWaterTemperatureSchedule(Schedule& schedule) {
-  if (auto p = parent()) {
-    return p->setPointer(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::CoolingLowWaterTemperatureScheduleName,
-                         schedule.handle());
-  }
-  return false;
-}
-
-void CoilCoolingLowTempRadiantConstFlow_Impl::resetCoolingLowWaterTemperatureSchedule() {
-  if (auto p = parent()) {
-    OS_ASSERT(p->setString(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::CoolingLowWaterTemperatureScheduleName, ""));
-  }
-}
-
-bool CoilCoolingLowTempRadiantConstFlow_Impl::setCoolingHighControlTemperatureSchedule(Schedule& schedule) {
-  if (auto p = parent()) {
-    return p->setPointer(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::CoolingHighControlTemperatureScheduleName,
-                         schedule.handle());
-  }
-  return false;
-}
-
-void CoilCoolingLowTempRadiantConstFlow_Impl::resetCoolingHighControlTemperatureSchedule() {
-  if (auto p = parent()) {
-    OS_ASSERT(p->setString(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::CoolingHighControlTemperatureScheduleName, ""));
-  }
-}
-
-bool CoilCoolingLowTempRadiantConstFlow_Impl::setCoolingLowControlTemperatureSchedule(Schedule& schedule) {
-  if (auto p = parent()) {
-    return p->setPointer(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::CoolingLowControlTemperatureScheduleName,
-                         schedule.handle());
-  }
-  return false;
-}
-
-void CoilCoolingLowTempRadiantConstFlow_Impl::resetCoolingLowControlTemperatureSchedule() {
-  if (auto p = parent()) {
-    OS_ASSERT(p->setString(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::CoolingLowControlTemperatureScheduleName, ""));
-  }
-}
-
-bool CoilCoolingLowTempRadiantConstFlow_Impl::setCondensationControlType(const std::string& condensationControlType) {
-  if (auto p = parent()) {
-    auto design = p->getImpl<detail::ZoneHVACLowTempRadiantConstFlow_Impl>()->ensureDesignObject();
-    return design.getImpl<detail::ZoneHVACLowTempRadiantConstFlowDesign_Impl>()->setCondensationControlType(condensationControlType);
-  }
-  return false;
-}
-
-void CoilCoolingLowTempRadiantConstFlow_Impl::resetCondensationControlType() {
-  if (auto p = parent()) {
-    auto design = p->getImpl<detail::ZoneHVACLowTempRadiantConstFlow_Impl>()->ensureDesignObject();
-    design.getImpl<detail::ZoneHVACLowTempRadiantConstFlowDesign_Impl>()->resetCondensationControlType();
-  }
-}
-
-bool CoilCoolingLowTempRadiantConstFlow_Impl::setCondensationControlDewpointOffset(double condensationControlDewpointOffset) {
-  if (auto p = parent()) {
-    auto design = p->getImpl<detail::ZoneHVACLowTempRadiantConstFlow_Impl>()->ensureDesignObject();
-    return design.getImpl<detail::ZoneHVACLowTempRadiantConstFlowDesign_Impl>()->setCondensationControlDewpointOffset(
-      condensationControlDewpointOffset);
-  }
-  return false;
-}
-
-void CoilCoolingLowTempRadiantConstFlow_Impl::resetCondensationControlDewpointOffset() {
-  if (auto p = parent()) {
-    auto design = p->getImpl<detail::ZoneHVACLowTempRadiantConstFlow_Impl>()->ensureDesignObject();
-    design.getImpl<detail::ZoneHVACLowTempRadiantConstFlowDesign_Impl>()->resetCondensationControlDewpointOffset();
-  }
-}
-
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio

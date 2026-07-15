@@ -96,8 +96,7 @@ namespace epmodel {
     // lookup can now use the shared serial-air bases instead of hard-coding
     // each VRF coil field enum again.
     bool isVRFTerminalAirPathComponent(const HVACComponent& component) {
-      return static_cast<bool>(component.optionalCast<StraightComponent>())
-             || static_cast<bool>(component.optionalCast<WaterToAirComponent>());
+      return static_cast<bool>(component.optionalCast<StraightComponent>()) || static_cast<bool>(component.optionalCast<WaterToAirComponent>());
     }
 
     unsigned vrfTerminalAirInletPort(const HVACComponent& component) {
@@ -871,7 +870,8 @@ namespace epmodel {
     }
 
     HVACComponent ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::supplyAirFan() const {
-      auto fan = getObject<ModelObject>().getModelObjectTarget<HVACComponent>(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::SupplyAirFanObjectName);
+      auto fan =
+        getObject<ModelObject>().getModelObjectTarget<HVACComponent>(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::SupplyAirFanObjectName);
       OS_ASSERT(fan);
       return *fan;
     }
@@ -931,12 +931,10 @@ namespace epmodel {
 
       if (auto heating = heatingCoil()) {
         const auto heatingType = heating->iddObject().type();
-        const bool heatingFluidControl =
-          (heatingType == IddObjectType::OS_Coil_Heating_DX_VariableRefrigerantFlow_FluidTemperatureControl)
-          || (heatingType == IddObjectType::Coil_Heating_DX_VariableRefrigerantFlow_FluidTemperatureControl);
-        const bool coolingFluidControl =
-          (iddObjectType == IddObjectType::OS_Coil_Cooling_DX_VariableRefrigerantFlow_FluidTemperatureControl)
-          || (iddObjectType == IddObjectType::Coil_Cooling_DX_VariableRefrigerantFlow_FluidTemperatureControl);
+        const bool heatingFluidControl = (heatingType == IddObjectType::OS_Coil_Heating_DX_VariableRefrigerantFlow_FluidTemperatureControl)
+                                         || (heatingType == IddObjectType::Coil_Heating_DX_VariableRefrigerantFlow_FluidTemperatureControl);
+        const bool coolingFluidControl = (iddObjectType == IddObjectType::OS_Coil_Cooling_DX_VariableRefrigerantFlow_FluidTemperatureControl)
+                                         || (iddObjectType == IddObjectType::Coil_Cooling_DX_VariableRefrigerantFlow_FluidTemperatureControl);
         if (heatingFluidControl != coolingFluidControl) {
           return false;
         }
@@ -968,12 +966,10 @@ namespace epmodel {
 
       if (auto cooling = coolingCoil()) {
         const auto coolingType = cooling->iddObject().type();
-        const bool coolingFluidControl =
-          (coolingType == IddObjectType::OS_Coil_Cooling_DX_VariableRefrigerantFlow_FluidTemperatureControl)
-          || (coolingType == IddObjectType::Coil_Cooling_DX_VariableRefrigerantFlow_FluidTemperatureControl);
-        const bool heatingFluidControl =
-          (iddObjectType == IddObjectType::OS_Coil_Heating_DX_VariableRefrigerantFlow_FluidTemperatureControl)
-          || (iddObjectType == IddObjectType::Coil_Heating_DX_VariableRefrigerantFlow_FluidTemperatureControl);
+        const bool coolingFluidControl = (coolingType == IddObjectType::OS_Coil_Cooling_DX_VariableRefrigerantFlow_FluidTemperatureControl)
+                                         || (coolingType == IddObjectType::Coil_Cooling_DX_VariableRefrigerantFlow_FluidTemperatureControl);
+        const bool heatingFluidControl = (iddObjectType == IddObjectType::OS_Coil_Heating_DX_VariableRefrigerantFlow_FluidTemperatureControl)
+                                         || (iddObjectType == IddObjectType::Coil_Heating_DX_VariableRefrigerantFlow_FluidTemperatureControl);
         if (coolingFluidControl != heatingFluidControl) {
           return false;
         }
@@ -987,7 +983,8 @@ namespace epmodel {
     }
 
     boost::optional<HVACComponent> ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::supplementalHeatingCoil() const {
-      return getObject<ModelObject>().getModelObjectTarget<HVACComponent>(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::SupplementalHeatingCoilName);
+      return getObject<ModelObject>().getModelObjectTarget<HVACComponent>(
+        ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::SupplementalHeatingCoilName);
     }
 
     bool ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::setSupplementalHeatingCoil(const HVACComponent& coil) {
@@ -1016,7 +1013,8 @@ namespace epmodel {
     }
 
     boost::optional<Node> ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::fanOutletNode() const {
-      auto fanObject = getObject<ModelObject>().getModelObjectTarget<HVACComponent>(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::SupplyAirFanObjectName);
+      auto fanObject =
+        getObject<ModelObject>().getModelObjectTarget<HVACComponent>(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::SupplyAirFanObjectName);
       auto fan = fanObject ? fanObject->optionalCast<StraightComponent>() : boost::none;
       if (!fan) {
         return boost::none;
@@ -1027,7 +1025,8 @@ namespace epmodel {
     }
 
     boost::optional<Node> ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::coolingCoilOutletNode() const {
-      auto cooling = getObject<ModelObject>().getModelObjectTarget<HVACComponent>(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::CoolingCoilObjectName);
+      auto cooling =
+        getObject<ModelObject>().getModelObjectTarget<HVACComponent>(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::CoolingCoilObjectName);
       if (!cooling) {
         return boost::none;
       }
@@ -1035,7 +1034,8 @@ namespace epmodel {
     }
 
     boost::optional<Node> ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::heatingCoilOutletNode() const {
-      auto heating = getObject<ModelObject>().getModelObjectTarget<HVACComponent>(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::HeatingCoilObjectName);
+      auto heating =
+        getObject<ModelObject>().getModelObjectTarget<HVACComponent>(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::HeatingCoilObjectName);
       if (!heating) {
         return boost::none;
       }
@@ -1081,16 +1081,16 @@ namespace epmodel {
     std::vector<ModelObject> ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::children() const {
       std::vector<ModelObject> result;
 
-      if (auto fan = getObject<ModelObject>().getModelObjectTarget<ModelObject>(
-            ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::SupplyAirFanObjectName)) {
+      if (auto fan =
+            getObject<ModelObject>().getModelObjectTarget<ModelObject>(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::SupplyAirFanObjectName)) {
         result.push_back(*fan);
       }
-      if (auto coil = getObject<ModelObject>().getModelObjectTarget<ModelObject>(
-            ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::CoolingCoilObjectName)) {
+      if (auto coil =
+            getObject<ModelObject>().getModelObjectTarget<ModelObject>(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::CoolingCoilObjectName)) {
         result.push_back(*coil);
       }
-      if (auto coil = getObject<ModelObject>().getModelObjectTarget<ModelObject>(
-            ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::HeatingCoilObjectName)) {
+      if (auto coil =
+            getObject<ModelObject>().getModelObjectTarget<ModelObject>(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::HeatingCoilObjectName)) {
         result.push_back(*coil);
       }
       if (auto coil = getObject<ModelObject>().getModelObjectTarget<ModelObject>(
@@ -1131,8 +1131,10 @@ namespace epmodel {
     }
 
     bool ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::isFluidTemperatureControl() const {
-      const auto cooling = getObject<ModelObject>().getModelObjectTarget<HVACComponent>(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::CoolingCoilObjectName);
-      const auto heating = getObject<ModelObject>().getModelObjectTarget<HVACComponent>(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::HeatingCoilObjectName);
+      const auto cooling =
+        getObject<ModelObject>().getModelObjectTarget<HVACComponent>(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::CoolingCoilObjectName);
+      const auto heating =
+        getObject<ModelObject>().getModelObjectTarget<HVACComponent>(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::HeatingCoilObjectName);
       const auto isFluidTemp = [](const boost::optional<HVACComponent>& component) {
         if (!component) {
           return false;
@@ -1171,13 +1173,12 @@ namespace epmodel {
       auto fanObject = thisObject.getModelObjectTarget<HVACComponent>(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::SupplyAirFanObjectName);
       auto coolingObject = thisObject.getModelObjectTarget<HVACComponent>(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::CoolingCoilObjectName);
       auto heatingObject = thisObject.getModelObjectTarget<HVACComponent>(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::HeatingCoilObjectName);
-      auto supplementalObject = thisObject.getModelObjectTarget<HVACComponent>(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::SupplementalHeatingCoilName);
+      auto supplementalObject =
+        thisObject.getModelObjectTarget<HVACComponent>(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::SupplementalHeatingCoilName);
 
       auto fan = fanObject ? fanObject->optionalCast<StraightComponent>() : boost::none;
-      auto cooling =
-        (coolingObject && isVRFTerminalAirPathComponent(*coolingObject)) ? boost::optional<HVACComponent>(*coolingObject) : boost::none;
-      auto heating =
-        (heatingObject && isVRFTerminalAirPathComponent(*heatingObject)) ? boost::optional<HVACComponent>(*heatingObject) : boost::none;
+      auto cooling = (coolingObject && isVRFTerminalAirPathComponent(*coolingObject)) ? boost::optional<HVACComponent>(*coolingObject) : boost::none;
+      auto heating = (heatingObject && isVRFTerminalAirPathComponent(*heatingObject)) ? boost::optional<HVACComponent>(*heatingObject) : boost::none;
       auto supplemental = (supplementalObject && isVRFTerminalAirPathComponent(*supplementalObject))
                             ? boost::optional<HVACComponent>(*supplementalObject)
                             : boost::none;
@@ -1229,9 +1230,8 @@ namespace epmodel {
       boost::optional<Node> sourceNode;
       if (usesHiddenMixedAir) {
         sourceNode = model().getOrCreateTransientByName<Node>(baseName + " Mixer Outlet Node");
-        outdoorAirMixer =
-          getOrCreateOwnedOutdoorAirMixer(thisObject, ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::OutsideAirMixerObjectName,
-                                          baseName + " OA Mixer");
+        outdoorAirMixer = getOrCreateOwnedOutdoorAirMixer(thisObject, ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::OutsideAirMixerObjectName,
+                                                          baseName + " OA Mixer");
         changed = setPointer(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::OutsideAirMixerObjectName, outdoorAirMixer->handle()) || changed;
 
         const auto currentMixerType = thisObject.getString(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::OutsideAirMixerObjectType, true);
@@ -1292,8 +1292,7 @@ namespace epmodel {
         if (allowChildNodeRecovery) {
           // Canonicalization can preserve an existing mixed-air node when the
           // first child already points at one that is not a boundary node.
-          if (auto candidate =
-                firstComponent.getImpl<detail::ModelObject_Impl>()->resolvedNodeTarget(vrfTerminalAirInletPort(firstComponent))) {
+          if (auto candidate = firstComponent.getImpl<detail::ModelObject_Impl>()->resolvedNodeTarget(vrfTerminalAirInletPort(firstComponent))) {
             if ((*candidate != inletNode) && (*candidate != outletNode)) {
               sourceNode = candidate;
               changed = outdoorAirMixer->setPointer(OutdoorAir_MixerFields::MixedAirNodeName, sourceNode->handle()) || changed;
@@ -1304,25 +1303,22 @@ namespace epmodel {
 
       Node upstreamNode = sourceNode ? *sourceNode : inletNode;
       auto& firstComponent = orderedComponents.front();
-      trackNodeChange(firstComponent.getImpl<detail::ModelObject_Impl>()->setPointer(vrfTerminalAirInletPort(firstComponent),
-                                                                                    upstreamNode.handle(), false));
+      trackNodeChange(
+        firstComponent.getImpl<detail::ModelObject_Impl>()->setPointer(vrfTerminalAirInletPort(firstComponent), upstreamNode.handle(), false));
 
       for (size_t i = 0; i < orderedComponents.size(); ++i) {
         auto& component = orderedComponents[i];
         const bool hasNext = (i + 1u) < orderedComponents.size();
         if (!hasNext) {
-          trackNodeChange(component.getImpl<detail::ModelObject_Impl>()->setPointer(vrfTerminalAirOutletPort(component),
-                                                                                   outletNode.handle(), false));
+          trackNodeChange(component.getImpl<detail::ModelObject_Impl>()->setPointer(vrfTerminalAirOutletPort(component), outletNode.handle(), false));
           continue;
         }
 
         auto& downstream = orderedComponents[i + 1u];
         boost::optional<Node> connectorNode;
 
-        if (auto currentOutlet =
-              component.getImpl<detail::ModelObject_Impl>()->resolvedNodeTarget(vrfTerminalAirOutletPort(component))) {
-          if (auto downstreamInlet =
-                downstream.getImpl<detail::ModelObject_Impl>()->resolvedNodeTarget(vrfTerminalAirInletPort(downstream))) {
+        if (auto currentOutlet = component.getImpl<detail::ModelObject_Impl>()->resolvedNodeTarget(vrfTerminalAirOutletPort(component))) {
+          if (auto downstreamInlet = downstream.getImpl<detail::ModelObject_Impl>()->resolvedNodeTarget(vrfTerminalAirInletPort(downstream))) {
             if ((*currentOutlet == *downstreamInlet) && (*currentOutlet != inletNode) && (*currentOutlet != outletNode)
                 && (!sourceNode || (*currentOutlet != *sourceNode))) {
               connectorNode = currentOutlet;
@@ -1337,8 +1333,7 @@ namespace epmodel {
           // Canonicalization keeps an existing shared connector when adjacent
           // children already agree on it and it is not one of the parent-owned
           // boundary or mixed-air nodes.
-          if (auto downstreamInlet =
-                downstream.getImpl<detail::ModelObject_Impl>()->resolvedNodeTarget(vrfTerminalAirInletPort(downstream))) {
+          if (auto downstreamInlet = downstream.getImpl<detail::ModelObject_Impl>()->resolvedNodeTarget(vrfTerminalAirInletPort(downstream))) {
             if ((*downstreamInlet != inletNode) && (*downstreamInlet != outletNode) && (!sourceNode || (*downstreamInlet != *sourceNode))) {
               connectorNode = downstreamInlet;
             }
@@ -1357,10 +1352,10 @@ namespace epmodel {
           connectorNode = model().getOrCreateTransientByName<Node>(suggestedName);
         }
 
-        trackNodeChange(component.getImpl<detail::ModelObject_Impl>()->setPointer(vrfTerminalAirOutletPort(component),
-                                                                                 connectorNode->handle(), false));
-        trackNodeChange(downstream.getImpl<detail::ModelObject_Impl>()->setPointer(vrfTerminalAirInletPort(downstream),
-                                                                                  connectorNode->handle(), false));
+        trackNodeChange(
+          component.getImpl<detail::ModelObject_Impl>()->setPointer(vrfTerminalAirOutletPort(component), connectorNode->handle(), false));
+        trackNodeChange(
+          downstream.getImpl<detail::ModelObject_Impl>()->setPointer(vrfTerminalAirInletPort(downstream), connectorNode->handle(), false));
       }
 
       if (nodeWiringChanged && context) {
