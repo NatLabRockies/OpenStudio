@@ -7,6 +7,7 @@
 
 #include "EPModelFixture.hpp"
 #include "../ScheduleInterval/ScheduleFile.hpp"
+#include "../ScheduleInterval/ScheduleFile_Impl.hpp"
 
 #include "../../utilities/data/TimeSeries.hpp"
 
@@ -133,6 +134,7 @@ TEST_F(EPModelFixture, ScheduleFile_ScalarAccessors_RoundTrip) {
 TEST_F(EPModelFixture, ScheduleFile_fromTimeSeries_intervalLengthYes) {
   Model model;
 
+  // hourly
   Date startDate(MonthOfYear::Jan, 1);
   Time intervalLength(0, 0, 60);
   Vector values(8760);
@@ -144,16 +146,42 @@ TEST_F(EPModelFixture, ScheduleFile_fromTimeSeries_intervalLengthYes) {
 
   boost::optional<ScheduleFile> schedule = ScheduleFile::fromTimeSeries(timeSeries, model);
   ASSERT_TRUE(schedule);
-  //EXPECT_EQ("", schedule->fileName());
-  EXPECT_EQ(1, schedule->columnNumber());
+  openstudio::path filePath = schedule->getImpl<epmodel::detail::ScheduleFile_Impl>()->fileName();
+  ASSERT_TRUE(exists(filePath));
+  EXPECT_EQ("Schedule File 1.csv", filePath.filename());
+  EXPECT_EQ(2, schedule->columnNumber());
   EXPECT_EQ(0, schedule->rowstoSkipatTop());
   ASSERT_TRUE(schedule->numberofHoursofData());
   EXPECT_EQ(8760, schedule->numberofHoursofData().get());
   EXPECT_EQ("Comma", schedule->columnSeparator());
-  EXPECT_TRUE(schedule->interpolatetoTimestep());
+  EXPECT_FALSE(schedule->interpolatetoTimestep());
   ASSERT_TRUE(schedule->minutesperItem());
   EXPECT_EQ("60", schedule->minutesperItem().get());
   EXPECT_TRUE(schedule->adjustScheduleforDaylightSavings());
+
+  // 15-minutely
+  Time intervalLength2(0, 0, 15);
+  Vector values2(4 * 8760);
+  for (unsigned i = 0; i < values2.size(); ++i) {
+    values2[i] = i % 24;
+  }
+
+  TimeSeries timeSeries2(startDate, intervalLength2, values2, "");
+
+  boost::optional<ScheduleFile> schedule2 = ScheduleFile::fromTimeSeries(timeSeries2, model);
+  ASSERT_TRUE(schedule2);
+  openstudio::path filePath2 = schedule2->getImpl<epmodel::detail::ScheduleFile_Impl>()->fileName();
+  ASSERT_TRUE(exists(filePath2));
+  EXPECT_EQ("Schedule File 2.csv", filePath2.filename());
+  EXPECT_EQ(2, schedule2->columnNumber());
+  EXPECT_EQ(0, schedule2->rowstoSkipatTop());
+  ASSERT_TRUE(schedule2->numberofHoursofData());
+  EXPECT_EQ(8760, schedule2->numberofHoursofData().get());
+  EXPECT_EQ("Comma", schedule2->columnSeparator());
+  EXPECT_FALSE(schedule2->interpolatetoTimestep());
+  ASSERT_TRUE(schedule2->minutesperItem());
+  EXPECT_EQ("15", schedule2->minutesperItem().get());
+  EXPECT_TRUE(schedule2->adjustScheduleforDaylightSavings());
 }
 
 TEST_F(EPModelFixture, ScheduleFile_fromTimeSeries_intervalLengthNo) {
