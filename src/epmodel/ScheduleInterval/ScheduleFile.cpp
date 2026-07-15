@@ -175,7 +175,7 @@ namespace epmodel {
 
     boost::optional<openstudio::Time> intervalTime = timeSeries.intervalLength();
     if (intervalTime) {
-      result = ScheduleFile(model, 2);
+      result = ScheduleFile(model, 2); // FT ScheduleFixedInterval wrote the dateTimes to file
       const std::string name = result->nameString();
       openstudio::path filePath = toPath(name + ".csv");
 
@@ -198,7 +198,6 @@ namespace epmodel {
       ok &= result->getImpl<detail::ScheduleFile_Impl>()->setTimeSeries(timeSeries);
       OS_ASSERT(ok);
     } else {
-      // FIXME: deprecate ScheduleVariableInterval?
       LOG_FREE(Warn, "openstudio.epmodel.Model", "Timeseries does not have an interval length defined, but ScheduleVariableInterval is deprecated");
     }
 
@@ -218,15 +217,29 @@ namespace epmodel {
         return false;
       }
 
-      // TODO: bunch of stuff based on the timeseries
-      // borrow from non-epmodel ScheduleFixedInterval / ScheduleFile?
-      // placeholders below
+      auto intervalLengthAsInteger = [](const double value) -> int {
+        double integralPart = 0.0;
+        if (std::modf(value, &integralPart) == 0.0) {
+          // The intervalLength is actually an int, not a double
+          return static_cast<int>(integralPart);
+        }
+        return -1;
+      };
+
+      // check the interval
+      const double intervalLengthDouble = intervalTime->totalMinutes();
+      const int intervalLength = intervalLengthAsInteger(intervalLengthDouble);
+      if (intervalLength < 0) {
+        return false;
+      }
+
       bool ok = true;
-      ok &= this->setNumberofHoursofData(8760);
-      ok &= this->setColumnSeparator("Comma");
-      ok &= this->setInterpolatetoTimestep(true);
-      ok &= this->setMinutesperItem(60);
-      ok &= this->setAdjustScheduleforDaylightSavings(true);
+      ok &= this->setMinutesperItem(intervalLength);
+      // Do we actually need the following? They aren't required in the IDD.
+      //ok &= this->setNumberofHoursofData(8760);
+      //ok &= this->setColumnSeparator("Comma");
+      //ok &= this->setInterpolatetoTimestep(true);
+      //ok &= this->setAdjustScheduleforDaylightSavings(true);
       return true;
     }
 
