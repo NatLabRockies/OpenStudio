@@ -15,7 +15,7 @@
 #include <regex>
 
 #define REMOTE_PRODUCTION_SERVER "https://bcl.nlr.gov"
-#define REMOTE_DEVELOPMENT_SERVER "https://bcl2.nrel.gov"
+#define REMOTE_DEVELOPMENT_SERVER "https://bcl-test.nlr.gov"
 
 using namespace utility::conversions;
 
