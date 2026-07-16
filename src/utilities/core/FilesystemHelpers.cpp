@@ -20,7 +20,10 @@ namespace filesystem {
     const auto file_len = end_pos - cur_pos;
     t_file.seekg(cur_pos);
     std::vector<char> buf(file_len);
-    t_file.read(&buf.front(), file_len);
+    t_file.read(buf.data(), file_len);
+    // In text mode on Windows, CRLF->LF translation can make the number of characters read
+    // less than the on-disk length computed above; trim the unwritten zero-filled tail
+    buf.resize(static_cast<std::size_t>(t_file.gcount()));
     return buf;
   }
 
