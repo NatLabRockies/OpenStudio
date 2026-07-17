@@ -10,6 +10,7 @@
 #include "Schedule/Schedule.hpp"
 #include "../../utilities/core/Path.hpp"
 #include "../../utilities/filetypes/CSVFile.hpp"
+#include <utilities/core/Deprecated.hpp>
 
 #include <utilities/idd/IddEnums.hxx>
 
@@ -31,7 +32,7 @@ namespace epmodel {
    public:
     // explicit ScheduleFile(const ExternalFile& externalfile, int column = 1, int rowsToSkip = 0); // FIXME: how do we maintain this?
     explicit ScheduleFile(const Model& model, int column = 1, int rowsToSkip = 0); // new ctor
-    explicit ScheduleFile(const Model& model, const openstudio::path& filePath, int column = 1, int rowsToSkip = 0); // old ctor
+    explicit ScheduleFile(const Model& model, const openstudio::path& filePath, int column = 1, int rowsToSkip = 0, bool translateFileWithRelativePath = false); // old ctor
 
     virtual ~ScheduleFile() override = default;
     ScheduleFile(const ScheduleFile& other) = default;
@@ -52,8 +53,9 @@ namespace epmodel {
     // - Field Mapping: ScheduleTypeLimitsName and FileName are intentionally excluded in this scalar-only pass
     //   (relationship/file-path behavior is handled separately from scalar accessors).
     // - TODO(parity): Add relationship and path-translation parity APIs incrementally after scalar scaffold saturation.
-    //std::string fileName() const;
-    //bool setFileName(std::string fileName);
+
+    // std::string fileName() const;
+    // bool setFileName(std::string fileName);
 
     int columnNumber() const;
     bool setColumnNumber(int columnNumber);
@@ -88,7 +90,13 @@ namespace epmodel {
 
     static boost::optional<ScheduleFile> fromTimeSeries(const openstudio::TimeSeries& timeSeries, Model& model);
 
-    //bool setTimeSeries(const openstudio::TimeSeries& timeSeries);
+    // Extra setters/getters
+    boost::optional<CSVFile> csvFile() const;
+    OS_DEPRECATED(4, 0, 0) bool translateFileWithRelativePath() const;
+    OS_DEPRECATED(4, 0, 0) bool isTranslateFileWithRelativePathDefaulted() const;
+    OS_DEPRECATED(4, 0, 0) bool setTranslateFileWithRelativePath(bool translateFileWithRelativePath);
+    OS_DEPRECATED(4, 0, 0) void resetTranslateFileWithRelativePath();
+    openstudio::path translatedFilePath() const;
 
    protected:
     using ImplType = detail::ScheduleFile_Impl;
@@ -98,6 +106,9 @@ namespace epmodel {
     friend class openstudio::detail::IdfObject_Impl;
 
     explicit ScheduleFile(std::shared_ptr<detail::ScheduleFile_Impl> impl);
+
+   private:
+    REGISTER_LOGGER("openstudio.epmodel.ScheduleFile");
   };
 
 }  // namespace epmodel

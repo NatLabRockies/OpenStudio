@@ -23,65 +23,6 @@ TEST_F(EPModelFixture, ScheduleFile_DefaultConstructor) {
   EXPECT_EQ(0, schedule.rowstoSkipatTop());
 }
 
-/* TEST_F(EPModelFixture, ScheduleFileAltCtor) {
-  Model model;
-  // EXPECT_EQ(0u, model.getConcreteModelObjects<ExternalFile>().size());
-  EXPECT_EQ(0u, model.getConcreteModelObjects<ScheduleFile>().size());
-
-  path p = resourcesPath() / toPath("model/schedulefile.csv");
-  EXPECT_TRUE(exists(p));
-
-  path expectedDestDir;
-  std::vector<path> absoluteFilePaths = model.workflowJSON().absoluteFilePaths();
-  if (absoluteFilePaths.empty()) {
-    expectedDestDir = model.workflowJSON().absoluteRootDir();
-  } else {
-    expectedDestDir = absoluteFilePaths[0];
-  }
-
-  if (exists(expectedDestDir)) {
-    removeDirectory(expectedDestDir);
-  }
-  ASSERT_FALSE(exists(expectedDestDir));
-
-  ScheduleFile schedule(model, openstudio::toString(p));
-  EXPECT_EQ(1u, model.getConcreteModelObjects<ScheduleFile>().size());
-  // EXPECT_EQ(1u, model.getConcreteModelObjects<ExternalFile>().size());
-  ExternalFile externalfile = schedule.externalFile();
-  EXPECT_EQ(1u, externalfile.scheduleFiles().size());
-  EXPECT_EQ(openstudio::toString(p), externalfile.fileName());
-  //EXPECT_TRUE(externalfile.isColumnSeparatorDefaulted());
-  EXPECT_FALSE(equivalent(expectedDestDir / externalfile.fileName(), externalfile.filePath()));
-  EXPECT_TRUE(exists(externalfile.filePath()));
-  EXPECT_EQ(p, externalfile.filePath());
-  EXPECT_TRUE(schedule.isNumberofHoursofDataDefaulted());
-  EXPECT_EQ(1, schedule.columnNumber());
-  schedule.setColumnNumber(1);
-  EXPECT_EQ(1, schedule.columnNumber());
-  EXPECT_EQ(0, schedule.rowstoSkipatTop());
-  schedule.setRowstoSkipatTop(1);
-  EXPECT_EQ(1, schedule.rowstoSkipatTop());
-
-  EXPECT_EQ("Comma", schedule.columnSeparator());
-  EXPECT_TRUE(schedule.isColumnSeparatorDefaulted());
-  EXPECT_TRUE(schedule.setColumnSeparator("Tab"));
-  EXPECT_EQ("Tab", schedule.columnSeparator());
-
-  ScheduleFile schedule2(model, openstudio::toString(p));
-  EXPECT_EQ(2u, model.getConcreteModelObjects<ScheduleFile>().size());
-  EXPECT_EQ(1u, model.getConcreteModelObjects<ExternalFile>().size());
-  ExternalFile externalfile2 = schedule2.externalFile();
-  EXPECT_EQ(2u, externalfile.scheduleFiles().size());
-  EXPECT_EQ(externalfile.handle(), externalfile2.handle());
-  EXPECT_TRUE(schedule2.isNumberofHoursofDataDefaulted());
-  EXPECT_EQ(1, schedule2.columnNumber());
-  schedule2.setColumnNumber(2);
-  EXPECT_EQ(2, schedule2.columnNumber());
-  EXPECT_EQ(0, schedule2.rowstoSkipatTop());
-  schedule2.setRowstoSkipatTop(1);
-  EXPECT_EQ(1, schedule2.rowstoSkipatTop());
-} */
-
 TEST_F(EPModelFixture, ScheduleFile_ScalarAccessors_RoundTrip) {
   Model model;
   ScheduleFile schedule(model);
@@ -129,6 +70,126 @@ TEST_F(EPModelFixture, ScheduleFile_ScalarAccessors_RoundTrip) {
   EXPECT_FALSE(schedule.adjustScheduleforDaylightSavings());
   schedule.resetAdjustScheduleforDaylightSavings();
   EXPECT_TRUE(schedule.adjustScheduleforDaylightSavings());
+}
+
+TEST_F(EPModelFixture, ScheduleFile_AltCtor) {
+  Model model;
+  // EXPECT_EQ(0u, model.getConcreteModelObjects<ExternalFile>().size());
+  EXPECT_EQ(0u, model.getConcreteModelObjects<ScheduleFile>().size());
+
+  path p = resourcesPath() / toPath("model/schedulefile.csv");
+  EXPECT_TRUE(exists(p));
+
+/*   path expectedDestDir;
+  std::vector<path> absoluteFilePaths = model.workflowJSON().absoluteFilePaths();
+  if (absoluteFilePaths.empty()) {
+    expectedDestDir = model.workflowJSON().absoluteRootDir();
+  } else {
+    expectedDestDir = absoluteFilePaths[0];
+  }
+
+  if (exists(expectedDestDir)) {
+    removeDirectory(expectedDestDir);
+  }
+  ASSERT_FALSE(exists(expectedDestDir)); */
+
+  ScheduleFile schedule(model, openstudio::toString(p));
+  EXPECT_EQ(1u, model.getConcreteModelObjects<ScheduleFile>().size());
+/*   EXPECT_EQ(1u, model.getConcreteModelObjects<ExternalFile>().size());
+  ExternalFile externalfile = schedule.externalFile();
+  EXPECT_EQ(1u, externalfile.scheduleFiles().size());
+  EXPECT_EQ(openstudio::toString(p), externalfile.fileName());
+  EXPECT_TRUE(externalfile.isColumnSeparatorDefaulted());
+  EXPECT_FALSE(equivalent(expectedDestDir / externalfile.fileName(), externalfile.filePath()));
+  EXPECT_TRUE(exists(externalfile.filePath()));
+  EXPECT_EQ(p, externalfile.filePath()); */
+  EXPECT_TRUE(schedule.isNumberofHoursofDataDefaulted());
+  EXPECT_EQ(1, schedule.columnNumber());
+  schedule.setColumnNumber(1);
+  EXPECT_EQ(1, schedule.columnNumber());
+  EXPECT_EQ(0, schedule.rowstoSkipatTop());
+  schedule.setRowstoSkipatTop(1);
+  EXPECT_EQ(1, schedule.rowstoSkipatTop());
+
+  EXPECT_EQ("Comma", schedule.columnSeparator());
+  EXPECT_TRUE(schedule.isColumnSeparatorDefaulted());
+  EXPECT_TRUE(schedule.setColumnSeparator("Tab"));
+  EXPECT_EQ("Tab", schedule.columnSeparator());
+
+  ScheduleFile schedule2(model, openstudio::toString(p));
+  EXPECT_EQ(2u, model.getConcreteModelObjects<ScheduleFile>().size());
+/*   EXPECT_EQ(1u, model.getConcreteModelObjects<ExternalFile>().size());
+  ExternalFile externalfile2 = schedule2.externalFile();
+  EXPECT_EQ(2u, externalfile.scheduleFiles().size());
+  EXPECT_EQ(externalfile.handle(), externalfile2.handle()); */
+  EXPECT_TRUE(schedule2.isNumberofHoursofDataDefaulted());
+  EXPECT_EQ(1, schedule2.columnNumber());
+  schedule2.setColumnNumber(2);
+  EXPECT_EQ(2, schedule2.columnNumber());
+  EXPECT_EQ(0, schedule2.rowstoSkipatTop());
+  schedule2.setRowstoSkipatTop(1);
+  EXPECT_EQ(1, schedule2.rowstoSkipatTop());
+
+  openstudio::path filePath = schedule2.getImpl<epmodel::detail::ScheduleFile_Impl>()->fileName();
+  ASSERT_TRUE(exists(filePath));
+  EXPECT_EQ("schedulefile.csv", filePath.filename());
+
+  schedule2.remove();
+  EXPECT_EQ(1u, model.getConcreteModelObjects<ScheduleFile>().size());
+}
+
+TEST_F(EPModelFixture, ScheduleFile_ExtraSettersGetters) {
+  Model model;
+
+  path p = toPath("resources/model/schedulefile.csv");
+  EXPECT_TRUE(exists(p));
+
+  bool translateFileWithRelativePath = false;
+  ScheduleFile schedule(model, openstudio::toString(p), 1, 0, translateFileWithRelativePath);
+
+  boost::optional<CSVFile> csvFile = schedule.csvFile();
+  ASSERT_TRUE(csvFile);
+  // EXPECT_EQ(3, csvFile->numColumns());
+  // EXPECT_EQ(8760, csvFile->numRows());
+  EXPECT_FALSE(schedule.translateFileWithRelativePath());
+  EXPECT_FALSE(schedule.isTranslateFileWithRelativePathDefaulted());
+  EXPECT_FALSE(schedule.setTranslateFileWithRelativePath(true));
+  schedule.resetTranslateFileWithRelativePath();
+  openstudio::path filePath = schedule.getImpl<epmodel::detail::ScheduleFile_Impl>()->fileName();
+  ASSERT_TRUE(exists(filePath));
+  EXPECT_NE(p, filePath);
+  EXPECT_NE(p, schedule.translatedFilePath());
+
+  translateFileWithRelativePath = true;
+  ScheduleFile schedule2(model, openstudio::toString(p), 1, 0, translateFileWithRelativePath);
+
+  boost::optional<CSVFile> csvFile2 = schedule2.csvFile();
+  ASSERT_TRUE(csvFile2);
+  // EXPECT_EQ(3, csvFile2->numColumns());
+  // EXPECT_EQ(8760, csvFile2->numRows());
+  EXPECT_FALSE(schedule2.translateFileWithRelativePath());
+  EXPECT_FALSE(schedule2.isTranslateFileWithRelativePathDefaulted());
+  EXPECT_FALSE(schedule2.setTranslateFileWithRelativePath(true));
+  schedule2.resetTranslateFileWithRelativePath();
+  openstudio::path filePath2 = schedule2.getImpl<epmodel::detail::ScheduleFile_Impl>()->fileName();
+  ASSERT_TRUE(exists(filePath2));
+  EXPECT_EQ(p, filePath2);
+  EXPECT_EQ(p, schedule2.translatedFilePath());
+}
+
+TEST_F(EPModelFixture, ScheduleFile_CheckCannotFindFile) {
+  Model model;
+
+  path p = toPath("resources/model/schedulefile2.csv");
+  EXPECT_FALSE(exists(p));
+  EXPECT_THROW(ScheduleFile(model, openstudio::toString(p)), openstudio::Exception);
+
+  path p2 = toPath("resources/model/schedulefile.csv");
+  EXPECT_TRUE(exists(p2));
+  ScheduleFile schedule(model, openstudio::toString(p2));
+  EXPECT_TRUE(schedule.getImpl<epmodel::detail::ScheduleFile_Impl>()->setFileName(toString(p)));
+  EXPECT_NO_THROW(schedule.translatedFilePath());
+  EXPECT_EQ(p, schedule.translatedFilePath());
 }
 
 TEST_F(EPModelFixture, ScheduleFile_fromTimeSeries_intervalLengthYes) {

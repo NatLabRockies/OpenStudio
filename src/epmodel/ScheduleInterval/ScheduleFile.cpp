@@ -13,6 +13,8 @@
 #include <utilities/idd/IddFactory.hxx>
 #include <utilities/idd/IddObject.hpp>
 #include <utilities/idd/Schedule_File_FieldEnums.hxx>
+#include <utilities/core/DeprecatedHelpers.hpp>
+#include <utilities/core/Logger.hpp>
 
 #include "../utilities/data/TimeSeries.hpp"
 
@@ -29,16 +31,20 @@ namespace epmodel {
     OS_ASSERT(ok);
   }
 
-  ScheduleFile::ScheduleFile(const Model& model, const openstudio::path& filePath, int column, int rowsToSkip)
+  ScheduleFile::ScheduleFile(const Model& model, const openstudio::path& filePath, int column, int rowsToSkip, bool translateFileWithRelativePath)
     : Schedule(ScheduleFile::iddObjectType(), model) {
 
     openstudio::path p;
     if (!exists(filePath)) {
       this->remove();
-      // LOG_AND_THROW("Cannot find file \"" << toString(filePath) << "\" for " << this->briefDescription());
+      LOG_FREE_AND_THROW("openstudio.epmodel.ScheduleFile", "Cannot find file \"" << toString(filePath) << "\" for " << briefDescription());
     } else {
-      // make the path correct for this system
-      p = system_complete(filePath);
+      if (translateFileWithRelativePath) {
+        p = filePath;
+      } else {
+        // make the path correct for this system
+        p = system_complete(filePath);
+      }
     }
 
     bool ok = true;
@@ -170,6 +176,33 @@ namespace epmodel {
     getImpl<detail::ScheduleFile_Impl>()->resetAdjustScheduleforDaylightSavings();
   }
 
+  boost::optional<CSVFile> ScheduleFile::csvFile() const {
+    return getImpl<detail::ScheduleFile_Impl>()->csvFile();
+  }
+
+  bool ScheduleFile::translateFileWithRelativePath() const {
+    DEPRECATED_AT_MSG(4, 0, 0, "Schedule:File is no longer 'translated'.");
+    return false;
+  }
+  
+  bool ScheduleFile::isTranslateFileWithRelativePathDefaulted() const {
+    DEPRECATED_AT_MSG(4, 0, 0, "Schedule:File is no longer 'translated'.");
+    return false;
+  }
+  
+  bool ScheduleFile::setTranslateFileWithRelativePath(bool translateFileWithRelativePath) {
+    DEPRECATED_AT_MSG(4, 0, 0, "Schedule:File is no longer 'translated'.");
+    return false;
+  }
+  
+  void ScheduleFile::resetTranslateFileWithRelativePath() {
+    DEPRECATED_AT_MSG(4, 0, 0, "Schedule:File is no longer 'translated'.");
+  }
+  
+  openstudio::path ScheduleFile::translatedFilePath() const {
+    return getImpl<epmodel::detail::ScheduleFile_Impl>()->translatedFilePath();
+  }
+
   boost::optional<ScheduleFile> ScheduleFile::fromTimeSeries(const openstudio::TimeSeries& timeSeries, Model& model) {
     boost::optional<ScheduleFile> result;
 
@@ -198,7 +231,7 @@ namespace epmodel {
       ok &= result->getImpl<detail::ScheduleFile_Impl>()->setTimeSeries(timeSeries);
       OS_ASSERT(ok);
     } else {
-      LOG_FREE(Warn, "openstudio.epmodel.Model", "Timeseries does not have an interval length defined, but ScheduleVariableInterval is deprecated");
+      LOG_FREE(Warn, "openstudio.epmodel.ScheduleFile", "Timeseries does not have an interval length defined, but ScheduleVariableInterval is deprecated");
     }
 
     return result;
@@ -362,6 +395,20 @@ namespace epmodel {
 
     void ScheduleFile_Impl::resetAdjustScheduleforDaylightSavings() {
       OS_ASSERT(setString(openstudio::Schedule_FileFields::AdjustScheduleforDaylightSavings, ""));
+    }
+
+    boost::optional<CSVFile> ScheduleFile_Impl::csvFile() const {
+      boost::optional<CSVFile> csvFile;
+      csvFile = CSVFile::load(this->fileName());
+      return csvFile;
+    }
+
+    openstudio::path ScheduleFile_Impl::translatedFilePath() const {
+      openstudio::path filePath = this->fileName();
+      if (!exists(filePath)) {
+        LOG_FREE(Warn, "openstudio.epmodel.ScheduleFile", "Cannot find file \"" << filePath << "\"");
+      }
+      return filePath;
     }
 
     std::vector<std::string> ScheduleFile_Impl::columnSeparatorValues() const {

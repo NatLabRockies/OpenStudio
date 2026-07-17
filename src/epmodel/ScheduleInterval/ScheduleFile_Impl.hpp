@@ -7,6 +7,7 @@
 #define EPMODEL_SCHEDULEFILE_IMPL_HPP
 
 #include "Schedule/Schedule_Impl.hpp"
+#include "../utilities/filetypes/CSVFile.hpp"
 
 #include <vector>
 
@@ -53,7 +54,17 @@ namespace epmodel {
       bool setAdjustScheduleforDaylightSavings(bool adjustScheduleforDaylightSavings);
       void resetAdjustScheduleforDaylightSavings();
 
+      // openstudio::TimeSeries timeSeries() const;
       bool setTimeSeries(const openstudio::TimeSeries& timeSeries);
+
+      // Extra setters/getters
+      boost::optional<CSVFile> csvFile() const;
+      // bool translateFileWithRelativePath() const;
+      // bool isTranslateFileWithRelativePathDefaulted() const;
+      // void ensureNoLeapDays();
+      // bool setTranslateFileWithRelativePath(bool translateFileWithRelativePath);
+      // void resetTranslateFileWithRelativePath();
+      openstudio::path translatedFilePath() const;
 
       std::vector<std::string> columnSeparatorValues() const;
       std::vector<std::string> minutesperItemValues() const;
