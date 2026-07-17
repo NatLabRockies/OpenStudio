@@ -10,6 +10,7 @@
 #include "../ScheduleInterval/ScheduleFile_Impl.hpp"
 
 #include "../../utilities/data/TimeSeries.hpp"
+#include "../../utilities/core/StringStreamLogSink.hpp"
 
 using namespace openstudio;
 using namespace openstudio::epmodel;
@@ -180,16 +181,28 @@ TEST_F(EPModelFixture, ScheduleFile_ExtraSettersGetters) {
 TEST_F(EPModelFixture, ScheduleFile_CheckCannotFindFile) {
   Model model;
 
+  StringStreamLogSink sink;
+  sink.setLogLevel(Warn);
+
   path p = toPath("resources/model/schedulefile2.csv");
   EXPECT_FALSE(exists(p));
   EXPECT_THROW(ScheduleFile(model, openstudio::toString(p)), openstudio::Exception);
+  EXPECT_EQ(1, sink.logMessages().size());
+  EXPECT_EQ("openstudio.epmodel.ScheduleFile", sink.logMessages().front().logChannel());
+  EXPECT_EQ("Cannot find file \"resources/model/schedulefile2.csv\" for Object of type 'Schedule:File' and named 'Schedule File 1'", sink.logMessages().front().logMessage());
 
   path p2 = toPath("resources/model/schedulefile.csv");
   EXPECT_TRUE(exists(p2));
   ScheduleFile schedule(model, openstudio::toString(p2));
   EXPECT_TRUE(schedule.getImpl<epmodel::detail::ScheduleFile_Impl>()->setFileName(toString(p)));
-  EXPECT_NO_THROW(schedule.translatedFilePath());
+
+  StringStreamLogSink sink2;
+  sink2.setLogLevel(Warn);
+
   EXPECT_EQ(p, schedule.translatedFilePath());
+  EXPECT_EQ(1, sink2.logMessages().size());
+  EXPECT_EQ("openstudio.epmodel.ScheduleFile", sink2.logMessages().front().logChannel());
+  EXPECT_EQ("Cannot find file \"resources/model/schedulefile2.csv\"", sink2.logMessages().front().logMessage());
 }
 
 TEST_F(EPModelFixture, ScheduleFile_fromTimeSeries_intervalLengthYes) {
