@@ -8,6 +8,15 @@
 %include <epmodel/EPModel_Common_Include.i>
 %import <epmodel/EPModel.i>
 
+#ifdef SWIGPYTHON
+  // Schedule's optional/vector wrappers are owned by the root EPModel module
+  // because Model returns Schedule directly. Import their Python proxy names
+  // here before the generated helper annotations refer to them.
+  %pythoncode %{
+from openstudioepmodel import OptionalSchedule, ScheduleVector
+  %}
+#endif
+
 EPMODELOBJECT_WRAP(Schedule, <epmodel/Schedule/Schedule.hpp>, 0, 0)
 EPMODELOBJECT_WRAP(ExternalInterfaceFunctionalMockupUnitImportToSchedule, <epmodel/Schedule/ExternalInterfaceFunctionalMockupUnitImportToSchedule.hpp>, 0, 1)
 EPMODELOBJECT_WRAP(ExternalInterfaceFunctionalMockupUnitExportToSchedule, <epmodel/Schedule/ExternalInterfaceFunctionalMockupUnitExportToSchedule.hpp>, 0, 1)

@@ -15,10 +15,12 @@ class Model;
 }
 
 // Root EPModel owns ModelObject and ResourceObject as the common EPModel object
-// bases. Schedule is included here because Model directly returns Schedule from
-// its always-on schedule accessors.
+// bases. ScheduleBase and Schedule are included here because Model directly
+// returns Schedule from its always-on schedule accessors. Keep ScheduleBase
+// visible first so SWIG preserves Schedule's C++ inheritance hierarchy.
 %include <epmodel/ModelObject/ModelObject.hpp>
 %include <epmodel/ResourceObject/ResourceObject.hpp>
+%include <epmodel/ScheduleBase/ScheduleBase.hpp>
 %include <epmodel/Schedule/Schedule.hpp>
 
 // Root-owned classes do not pass through submodule EPMODELOBJECT_WRAP entries,

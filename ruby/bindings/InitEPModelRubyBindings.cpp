@@ -5,6 +5,8 @@ extern "C"
   void Init_openstudioepmodel(void);
   void Init_openstudioepmodelmodelobject(void);
   void Init_openstudioepmodelresourceobject(void);
+  void Init_openstudioepmodelmaterial(void);
+  void Init_openstudioepmodelfenestrationmaterial(void);
   void Init_openstudioepmodelplantequipmentoperationscheme(void);
   void Init_openstudioepmodelparentobject(void);
   void Init_openstudioepmodelgaslayer(void);
@@ -57,6 +59,12 @@ namespace ruby {
     Init_openstudioepmodelresourceobject();
     rb_provide("openstudioepmodelresourceobject");
     rb_provide("openstudioepmodelresourceobject.so");
+    Init_openstudioepmodelmaterial();
+    rb_provide("openstudioepmodelmaterial");
+    rb_provide("openstudioepmodelmaterial.so");
+    Init_openstudioepmodelfenestrationmaterial();
+    rb_provide("openstudioepmodelfenestrationmaterial");
+    rb_provide("openstudioepmodelfenestrationmaterial.so");
     Init_openstudioepmodelplantequipmentoperationscheme();
     rb_provide("openstudioepmodelplantequipmentoperationscheme");
     rb_provide("openstudioepmodelplantequipmentoperationscheme.so");
