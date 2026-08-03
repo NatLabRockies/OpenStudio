@@ -21,8 +21,8 @@ namespace epmodel {
       using Glazing_Impl::Glazing_Impl;
       virtual ~RefractionExtinctionGlazing_Impl() override = default;
 
-      double thickness() const;
-      bool setThickness(double thickness);
+      double thickness() const override;
+      bool setThickness(double thickness) override;
 
       double solarIndexofRefraction() const;
       bool setSolarIndexofRefraction(double solarIndexofRefraction);

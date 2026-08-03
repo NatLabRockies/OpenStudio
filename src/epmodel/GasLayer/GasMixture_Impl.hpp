@@ -21,8 +21,8 @@ namespace epmodel {
       using GasLayer_Impl::GasLayer_Impl;
       virtual ~GasMixture_Impl() override = default;
 
-      double thickness() const;
-      bool setThickness(double thickness);
+      double thickness() const override;
+      bool setThickness(double thickness) override;
 
       int numberofGasesinMixture() const;
       bool setNumberofGasesinMixture(int numberofGasesinMixture);

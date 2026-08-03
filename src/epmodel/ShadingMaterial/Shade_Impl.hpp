@@ -52,8 +52,8 @@ namespace epmodel {
       double solarAbsorptance() const;
       double visibleAbsorptance() const;
 
-      double thickness() const;
-      bool setThickness(double thickness);
+      double thickness() const override;
+      bool setThickness(double thickness) override;
 
       double conductivity() const;
       bool setConductivity(double conductivity);

@@ -2053,6 +2053,9 @@ set(${target_name}_src
   Schedule/ScheduleYear_Impl.hpp
   Schedule/ScheduleYear.cpp
 
+  ScheduleBase/ScheduleBase.hpp
+  ScheduleBase/ScheduleBase_Impl.hpp
+  ScheduleBase/ScheduleBase.cpp
   ScheduleBase/ScheduleDay.hpp
   ScheduleBase/ScheduleDay_Impl.hpp
   ScheduleBase/ScheduleDay.cpp

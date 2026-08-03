@@ -20,6 +20,9 @@ namespace epmodel {
 
       double value() const;
       bool setValue(double value);
+
+     protected:
+      unsigned scheduleTypeLimitsFieldIndex() const override;
     };
 
   }  // namespace detail

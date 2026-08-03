@@ -7,10 +7,7 @@
 #define EPMODEL_SCHEDULE_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
-#include "ResourceObject/ScheduleTypeLimits.hpp"
-
-#include <boost/optional.hpp>
+#include "ScheduleBase/ScheduleBase.hpp"
 
 #include <memory>
 #include <vector>
@@ -18,13 +15,11 @@
 namespace openstudio {
 namespace epmodel {
 
-  class Model;
-
   namespace detail {
     class Schedule_Impl;
   }
 
-  class EPMODEL_API Schedule : public ModelObject
+  class EPMODEL_API Schedule : public ScheduleBase
   {
    public:
     virtual ~Schedule() override = default;
@@ -32,10 +27,6 @@ namespace epmodel {
     Schedule(Schedule&& other) = default;
     Schedule& operator=(const Schedule&) = default;
     Schedule& operator=(Schedule&&) = default;
-
-    boost::optional<ScheduleTypeLimits> scheduleTypeLimits() const;
-    bool setScheduleTypeLimits(const ScheduleTypeLimits& scheduleTypeLimits);
-    bool resetScheduleTypeLimits();
 
    protected:
     using ImplType = detail::Schedule_Impl;

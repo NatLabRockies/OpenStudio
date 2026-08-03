@@ -62,6 +62,41 @@ namespace epmodel {
       return result;
     }
 
+    /** Get all objects of type T that point to this object. This method is preferred over the
+     *  WorkspaceObject equivalent, as its use does not require knowledge of the IddObjectType. */
+    template <AnyModelObject T>
+    std::vector<T> getModelObjectSources() const {
+      std::vector<T> result;
+      std::vector<WorkspaceObject> wos = sources();
+      result.reserve(wos.size());
+      for (const WorkspaceObject& wo : wos) {
+        boost::optional<T> oSource = wo.optionalCast<T>();
+        if (oSource) {
+          result.emplace_back(*oSource);
+        }
+      }
+      return result;
+    }
+
+    /** Get all objects of type T that point to this object. Preferred usage (do not use with
+     *  abstract classes):
+     *
+     *  \code
+     *  PeopleVector myZonesPeople = zone.getModelObjectSources<People>(People::iddObjectType());
+     *  \endcode
+     **/
+    template <AnyModelObject T>
+    std::vector<T> getModelObjectSources(IddObjectType iddObjectType) const {
+      std::vector<T> result;
+      std::vector<WorkspaceObject> wos = getSources(iddObjectType);
+      result.reserve(wos.size());
+      for (const WorkspaceObject& wo : wos) {
+        // assume iddObjectType is valid for T
+        result.emplace_back(wo.cast<T>());
+      }
+      return result;
+    }
+
     bool operator<(const ModelObject& right) const;
     bool operator==(const ModelObject& other) const;
     bool operator!=(const ModelObject& other) const;

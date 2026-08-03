@@ -17,6 +17,9 @@ namespace epmodel {
      public:
       using Schedule_Impl::Schedule_Impl;
       virtual ~ScheduleYear_Impl() override = default;
+
+     protected:
+      unsigned scheduleTypeLimitsFieldIndex() const override;
     };
 
   }  // namespace detail
