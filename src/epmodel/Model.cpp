@@ -255,6 +255,8 @@
 #include "PlanarSurface/SubSurface_Impl.hpp"
 #include "PlanarSurface/InteriorPartitionSurface_Impl.hpp"
 #include "BranchList_Impl.hpp"
+#include "ModelObject/BuildingStory_Impl.hpp"
+#include "ModelObject/SpaceList_Impl.hpp"
 #include "StraightComponent/CoilCoolingDXMultiSpeed_Impl.hpp"
 #include "StraightComponent/CoilCoolingDXSingleSpeed_Impl.hpp"
 #include "StraightComponent/CoilCoolingDXSingleSpeedThermalStorage_Impl.hpp"
@@ -1939,7 +1941,8 @@ namespace epmodel {
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::SpaceHVAC_ZoneEquipmentMixer, SpaceHVACZoneEquipmentMixer_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::SpaceHVAC_ZoneEquipmentSplitter, SpaceHVACZoneEquipmentSplitter_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::SpaceHVAC_ZoneReturnMixer, SpaceHVACZoneReturnMixer_Impl);
-      REGISTER_NEW_CONSTRUCTOR(IddObjectType::SpaceList, SpaceType_Impl);
+      REGISTER_NEW_CONSTRUCTOR(IddObjectType::SpaceList, SpaceList_Impl);
+      REGISTER_NEW_CONSTRUCTOR(IddObjectType::OS_BuildingStory, BuildingStory_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::SteamEquipment, SteamEquipment_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::SurfaceContaminantSourceAndSink_Generic_BoundaryLayerDiffusion,
                                SurfaceContaminantSourceAndSinkGenericBoundaryLayerDiffusion_Impl);
@@ -2887,7 +2890,8 @@ namespace epmodel {
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::SpaceHVAC_ZoneEquipmentMixer, SpaceHVACZoneEquipmentMixer_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::SpaceHVAC_ZoneEquipmentSplitter, SpaceHVACZoneEquipmentSplitter_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::SpaceHVAC_ZoneReturnMixer, SpaceHVACZoneReturnMixer_Impl);
-      REGISTER_COPY_CONSTRUCTOR(IddObjectType::SpaceList, SpaceType_Impl);
+      REGISTER_COPY_CONSTRUCTOR(IddObjectType::SpaceList, SpaceList_Impl);
+      REGISTER_COPY_CONSTRUCTOR(IddObjectType::OS_BuildingStory, BuildingStory_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::SteamEquipment, SteamEquipment_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::SurfaceContaminantSourceAndSink_Generic_BoundaryLayerDiffusion,
                                 SurfaceContaminantSourceAndSinkGenericBoundaryLayerDiffusion_Impl);

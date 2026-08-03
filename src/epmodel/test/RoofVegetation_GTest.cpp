@@ -46,8 +46,7 @@ TEST_F(EPModelFixture, RoofVegetation_ScalarAccessors_RoundTrip) {
 
   EXPECT_TRUE(roofVegetation.isSolarAbsorptanceDefaulted());
   EXPECT_TRUE(roofVegetation.setSolarAbsorptance(0.65));
-  ASSERT_TRUE(roofVegetation.solarAbsorptance());
-  EXPECT_DOUBLE_EQ(0.65, roofVegetation.solarAbsorptance().get());
+  EXPECT_DOUBLE_EQ(0.65, roofVegetation.solarAbsorptance());
   EXPECT_FALSE(roofVegetation.isSolarAbsorptanceDefaulted());
   roofVegetation.resetSolarAbsorptance();
   EXPECT_TRUE(roofVegetation.isSolarAbsorptanceDefaulted());

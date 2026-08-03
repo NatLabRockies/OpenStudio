@@ -214,8 +214,7 @@ namespace epmodel {
                                        + equipmentConnections.nameString() + "'.");
       } else {
         const auto zoneAirNodeName = zone->nameString() + " Demand Branch Node";
-        const bool zoneAirNodeAlreadyExisted =
-          static_cast<bool>(model().getObjectByTypeAndName(openstudio::IddObjectType::Node, zoneAirNodeName));
+        const bool zoneAirNodeAlreadyExisted = static_cast<bool>(model().getObjectByTypeAndName(openstudio::IddObjectType::Node, zoneAirNodeName));
         auto zoneAirNode = model().getOrCreateTransientByName<openstudio::epmodel::Node>(zoneAirNodeName);
         if (!equipmentConnections.setPointer(openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneAirNodeName, zoneAirNode.handle())) {
           detail::addLoadError(context, "Failed to attach zone air node '" + zoneAirNode.nameString() + "' to ZoneHVAC:EquipmentConnections '"

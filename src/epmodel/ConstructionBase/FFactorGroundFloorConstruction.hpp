@@ -7,7 +7,7 @@
 #define EPMODEL_FFACTORGROUNDFLOORCONSTRUCTION_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "ConstructionBase/ConstructionBase.hpp"
 
 #include <utilities/idd/IddEnums.hxx>
 
@@ -22,7 +22,7 @@ namespace epmodel {
     class FFactorGroundFloorConstruction_Impl;
   }
 
-  class EPMODEL_API FFactorGroundFloorConstruction : public ModelObject
+  class EPMODEL_API FFactorGroundFloorConstruction : public ConstructionBase
   {
    public:
     explicit FFactorGroundFloorConstruction(const Model& model, double fFactor = 0.1, double area = 0.1, double perimeterExposed = 0.1);

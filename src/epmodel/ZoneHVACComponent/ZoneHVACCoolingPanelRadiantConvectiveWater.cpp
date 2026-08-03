@@ -78,8 +78,7 @@ namespace epmodel {
 
     static bool isCeilingSurface(const openstudio::epmodel::Surface& surface) {
       const auto surfaceType = surface.surfaceType();
-      return openstudio::istringEqual(surfaceType, "RoofCeiling") || openstudio::istringEqual(surfaceType, "Roof")
-             || openstudio::istringEqual(surfaceType, "Ceiling");
+      return openstudio::epmodel::Surface::isCeilingLike(surfaceType);
     }
 
   }  // namespace detail

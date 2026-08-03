@@ -9,6 +9,9 @@
 #include "ModelObject_Impl.hpp"
 
 namespace openstudio {
+
+class Transformation;
+
 namespace epmodel {
 
   namespace detail {
@@ -23,6 +26,8 @@ namespace epmodel {
       bool isNorthAxisDefaulted() const;
       bool setNorthAxis(double northAxis);
       void resetNorthAxis();
+
+      Transformation transformation() const;
     };
 
   }  // namespace detail

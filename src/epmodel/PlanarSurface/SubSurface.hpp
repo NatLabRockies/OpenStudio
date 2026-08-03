@@ -7,7 +7,7 @@
 #define EPMODEL_SUBSURFACE_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "PlanarSurface.hpp"
 
 #include <utilities/idd/IddEnums.hxx>
 
@@ -18,15 +18,17 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class Surface;
+  class WindowPropertyFrameAndDivider;
 
   namespace detail {
     class SubSurface_Impl;
   }
 
-  class EPMODEL_API SubSurface : public ModelObject
+  class EPMODEL_API SubSurface : public PlanarSurface
   {
    public:
-    explicit SubSurface(const Model& model);
+    explicit SubSurface(const std::vector<Point3d>& vertices, const Model& model);
 
     virtual ~SubSurface() override = default;
     SubSurface(const SubSurface& other) = default;
@@ -55,7 +57,6 @@ namespace epmodel {
     boost::optional<double> viewFactortoGround() const;
     bool isViewFactortoGroundDefaulted() const;
     bool isViewFactortoGroundAutocalculated() const;
-    bool setViewFactortoGround(boost::optional<double> viewFactortoGround);
     bool setViewFactortoGround(double viewFactortoGround);
     void resetViewFactortoGround();
     void autocalculateViewFactortoGround();
@@ -65,13 +66,50 @@ namespace epmodel {
     bool setMultiplier(double multiplier);
     void resetMultiplier();
 
-    boost::optional<double> numberofVertices() const;
+    unsigned int numberofVertices() const;
     bool isNumberofVerticesDefaulted() const;
     bool isNumberofVerticesAutocalculated() const;
-    bool setNumberofVertices(boost::optional<double> numberofVertices);
-    bool setNumberofVertices(double numberofVertices);
+    bool setNumberofVertices(unsigned int numberofVertices);
     void resetNumberofVertices();
     void autocalculateNumberofVertices();
+
+    bool allowWindowPropertyFrameAndDivider() const;
+    boost::optional<WindowPropertyFrameAndDivider> windowPropertyFrameAndDivider() const;
+    bool setWindowPropertyFrameAndDivider(const WindowPropertyFrameAndDivider& windowPropertyFrameAndDivider);
+    void resetWindowPropertyFrameAndDivider();
+
+    boost::optional<Surface> surface() const;
+    bool setSurface(const Surface& surface);
+
+    /// get the adjacent subsurface
+    boost::optional<SubSurface> adjacentSubSurface() const;
+
+    /// set the adjacent subsurface, will fail unless both sub surfaces are parented by surfaces
+    /// which are adjacent
+    bool setAdjacentSubSurface(SubSurface& subSurface);
+    /// reset the adjacent subsurface, will clear references on both this and adjacent sub surface
+    void resetAdjacentSubSurface();
+
+    /** Assign default sub surface type based on vertices. */
+    void assignDefaultSubSurfaceType();
+
+    /** Return the surface()'s outsideBoundaryCondition, or an empty string. */
+    std::string outsideBoundaryCondition() const;
+
+    /* Get the total area of the sub surface rough area which includes the frame */
+    double roughOpeningArea() const;
+
+    /* Get the rough opening vertices for the sub surface including the frame */
+    std::vector<Point3d> roughOpeningVertices() const;
+
+    // Gets the total area of the frame
+    double frameArea() const;
+
+    // Gets the total area of the divider
+    double dividerArea() const;
+
+    /** Returns true if this sub-surface is a skylight (type "Window" with tilt < 60deg or > 179deg). */
+    bool isSkylight() const;
 
    protected:
     using ImplType = detail::SubSurface_Impl;

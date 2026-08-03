@@ -7,7 +7,7 @@
 #define EPMODEL_SCREEN_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "ShadingMaterial/ShadingMaterial.hpp"
 
 #include <utilities/idd/IddEnums.hxx>
 
@@ -24,7 +24,7 @@ namespace epmodel {
     class Screen_Impl;
   }
 
-  class EPMODEL_API Screen : public ModelObject
+  class EPMODEL_API Screen : public ShadingMaterial
   {
    public:
     explicit Screen(const Model& model);

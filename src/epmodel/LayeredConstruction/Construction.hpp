@@ -7,7 +7,7 @@
 #define EPMODEL_CONSTRUCTION_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "LayeredConstruction/LayeredConstruction.hpp"
 
 #include <utilities/idd/IddEnums.hxx>
 
@@ -16,13 +16,11 @@
 namespace openstudio {
 namespace epmodel {
 
-  class Model;
-
   namespace detail {
     class Construction_Impl;
   }
 
-  class EPMODEL_API Construction : public ModelObject
+  class EPMODEL_API Construction : public LayeredConstruction
   {
    public:
     explicit Construction(const Model& model);

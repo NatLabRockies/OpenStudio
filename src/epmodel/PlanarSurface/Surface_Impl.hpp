@@ -6,18 +6,32 @@
 #ifndef EPMODEL_SURFACE_IMPL_HPP
 #define EPMODEL_SURFACE_IMPL_HPP
 
-#include "ModelObject_Impl.hpp"
+#include "PlanarSurface_Impl.hpp"
+
+#include <utilities/geometry/Point3d.hpp>
 
 namespace openstudio {
 namespace epmodel {
 
+  class ConstructionBase;
+  class Space;
+  class SubSurface;
+  class Surface;
+  class SurfaceIntersection;
+
   namespace detail {
 
-    class EPMODEL_API Surface_Impl : public ModelObject_Impl
+    class EPMODEL_API Surface_Impl : public PlanarSurface_Impl
     {
      public:
-      using ModelObject_Impl::ModelObject_Impl;
+      using PlanarSurface_Impl::PlanarSurface_Impl;
       virtual ~Surface_Impl() override = default;
+
+      virtual bool setVertices(const std::vector<Point3d>& vertices) override;
+
+      boost::optional<ConstructionBase> construction() const override;
+      bool setConstruction(const ConstructionBase& construction) override;
+      void resetConstruction() override;
 
       std::string surfaceType() const;
       bool setSurfaceType(const std::string& surfaceType);
@@ -38,18 +52,45 @@ namespace epmodel {
       boost::optional<double> viewFactortoGround() const;
       bool isViewFactortoGroundDefaulted() const;
       bool isViewFactortoGroundAutocalculated() const;
-      bool setViewFactortoGround(boost::optional<double> viewFactortoGround);
       bool setViewFactortoGround(double viewFactortoGround);
       void resetViewFactortoGround();
       void autocalculateViewFactortoGround();
 
-      boost::optional<double> numberofVertices() const;
+      unsigned int numberofVertices() const;
       bool isNumberofVerticesDefaulted() const;
       bool isNumberofVerticesAutocalculated() const;
-      bool setNumberofVertices(boost::optional<double> numberofVertices);
-      bool setNumberofVertices(double numberofVertices);
+      bool setNumberofVertices(unsigned int numberofVertices);
       void resetNumberofVertices();
       void autocalculateNumberofVertices();
+
+      // Helpers
+      std::vector<SubSurface> subSurfaces() const;
+
+      virtual boost::optional<Space> space() const override;
+      virtual bool subtractFromGrossArea() const override;
+      bool setSpace(const Space& space);
+
+      boost::optional<SubSurface> setWindowToWallRatio(double wwr, double desiredHeightOffset, bool heightOffsetFromFloor);
+
+      boost::optional<Surface> adjacentSurface() const;
+      bool setAdjacentSurface(Surface& surface);
+      void resetAdjacentSurface();
+
+      bool intersect(Surface& otherSurface);
+      boost::optional<SurfaceIntersection> computeIntersection(Surface& otherSurface);
+
+      boost::optional<Surface> createAdjacentSurface(const Space& otherSpace);
+
+      bool isGroundSurface() const;
+      bool isPartOfEnvelope() const;
+
+      void assignDefaultSurfaceType(bool emitChangeSignals = true);
+      void assignDefaultBoundaryCondition(bool emitChangeSignals = true);
+      void assignDefaultSunExposure(bool emitChangeSignals = true);
+      void assignDefaultWindExposure(bool emitChangeSignals = true);
+
+     private:
+      REGISTER_LOGGER("openstudio.epmodel.Surface");
     };
 
   }  // namespace detail

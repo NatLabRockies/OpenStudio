@@ -6,7 +6,7 @@
 #ifndef EPMODEL_CONSTRUCTIONAIRBOUNDARY_IMPL_HPP
 #define EPMODEL_CONSTRUCTIONAIRBOUNDARY_IMPL_HPP
 
-#include "ModelObject_Impl.hpp"
+#include "ConstructionBase/ConstructionBase_Impl.hpp"
 
 #include <vector>
 
@@ -14,10 +14,10 @@ namespace openstudio {
 namespace epmodel {
   namespace detail {
 
-    class EPMODEL_API ConstructionAirBoundary_Impl : public ModelObject_Impl
+    class EPMODEL_API ConstructionAirBoundary_Impl : public ConstructionBase_Impl
     {
      public:
-      using ModelObject_Impl::ModelObject_Impl;
+      using ConstructionBase_Impl::ConstructionBase_Impl;
       virtual ~ConstructionAirBoundary_Impl() override = default;
 
       // Simple scalar-only API; schedule/object-link fields remain intentionally excluded in this scaffold pass.
@@ -30,6 +30,19 @@ namespace epmodel {
       bool isSimpleMixingAirChangesPerHourDefaulted() const;
       bool setSimpleMixingAirChangesPerHour(double simpleMixingAirChangesPerHour);
       void resetSimpleMixingAirChangesPerHour();
+
+      bool isOpaque() const override {
+        return false;
+      }
+      bool isFenestration() const override {
+        return false;
+      }
+      bool isSolarDiffusing() const override {
+        return false;
+      }
+      bool isModelPartition() const override {
+        return true;
+      }
     };
 
   }  // namespace detail

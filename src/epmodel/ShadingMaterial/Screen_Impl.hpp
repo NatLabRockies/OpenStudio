@@ -6,7 +6,7 @@
 #ifndef EPMODEL_SCREEN_IMPL_HPP
 #define EPMODEL_SCREEN_IMPL_HPP
 
-#include "ModelObject_Impl.hpp"
+#include "ShadingMaterial/ShadingMaterial_Impl.hpp"
 
 #include <string>
 #include <vector>
@@ -16,10 +16,10 @@ namespace epmodel {
 
   namespace detail {
 
-    class EPMODEL_API Screen_Impl : public ModelObject_Impl
+    class EPMODEL_API Screen_Impl : public ShadingMaterial_Impl
     {
      public:
-      using ModelObject_Impl::ModelObject_Impl;
+      using ShadingMaterial_Impl::ShadingMaterial_Impl;
       virtual ~Screen_Impl() override = default;
 
       double thermalConductivity() const;

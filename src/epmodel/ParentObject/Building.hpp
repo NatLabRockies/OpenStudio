@@ -14,6 +14,9 @@
 #include <memory>
 
 namespace openstudio {
+
+class Transformation;
+
 namespace epmodel {
 
   class Model;
@@ -45,6 +48,9 @@ namespace epmodel {
     bool setNorthAxis(double northAxis);
     bool isNorthAxisDefaulted() const;
     void resetNorthAxis();
+
+    /// Returns the Transformation from the Building coordinate system to world coordinates.
+    Transformation transformation() const;
 
    protected:
     explicit Building(const Model& model);

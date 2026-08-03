@@ -6,7 +6,7 @@
 #ifndef EPMODEL_GASMIXTURE_IMPL_HPP
 #define EPMODEL_GASMIXTURE_IMPL_HPP
 
-#include "ModelObject_Impl.hpp"
+#include "GasLayer/GasLayer_Impl.hpp"
 
 #include <string>
 
@@ -15,10 +15,10 @@ namespace epmodel {
 
   namespace detail {
 
-    class EPMODEL_API GasMixture_Impl : public ModelObject_Impl
+    class EPMODEL_API GasMixture_Impl : public GasLayer_Impl
     {
      public:
-      using ModelObject_Impl::ModelObject_Impl;
+      using GasLayer_Impl::GasLayer_Impl;
       virtual ~GasMixture_Impl() override = default;
 
       double thickness() const;

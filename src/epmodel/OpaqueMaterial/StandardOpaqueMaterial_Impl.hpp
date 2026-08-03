@@ -6,7 +6,7 @@
 #ifndef EPMODEL_STANDARDOPAQUEMATERIAL_IMPL_HPP
 #define EPMODEL_STANDARDOPAQUEMATERIAL_IMPL_HPP
 
-#include "ModelObject_Impl.hpp"
+#include "OpaqueMaterial/OpaqueMaterial_Impl.hpp"
 
 #include <string>
 #include <vector>
@@ -16,10 +16,10 @@ namespace epmodel {
 
   namespace detail {
 
-    class EPMODEL_API StandardOpaqueMaterial_Impl : public ModelObject_Impl
+    class EPMODEL_API StandardOpaqueMaterial_Impl : public OpaqueMaterial_Impl
     {
      public:
-      using ModelObject_Impl::ModelObject_Impl;
+      using OpaqueMaterial_Impl::OpaqueMaterial_Impl;
       virtual ~StandardOpaqueMaterial_Impl() override = default;
 
       double thermalConductivity() const;
@@ -31,8 +31,8 @@ namespace epmodel {
       double thermalResistivity() const;
       bool setThermalResistivity(double value);
 
-      double thermalResistance() const;
-      bool setThermalResistance(double value);
+      double thermalResistance() const override;
+      bool setThermalResistance(double value) override;
 
       boost::optional<double> thermalReflectance() const;
       bool setThermalReflectance(boost::optional<double> value);

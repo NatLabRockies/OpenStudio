@@ -15,9 +15,9 @@
 namespace openstudio {
 namespace epmodel {
 
-  Shade::Shade(const Model& model) : ModelObject(Shade::iddObjectType(), model) {}
+  Shade::Shade(const Model& model) : ShadingMaterial(Shade::iddObjectType(), model) {}
 
-  Shade::Shade(std::shared_ptr<detail::Shade_Impl> impl) : ModelObject(std::move(impl)) {}
+  Shade::Shade(std::shared_ptr<detail::Shade_Impl> impl) : ShadingMaterial(std::move(impl)) {}
 
   IddObjectType Shade::iddObjectType() {
     return IddObjectType::WindowMaterial_Shade;

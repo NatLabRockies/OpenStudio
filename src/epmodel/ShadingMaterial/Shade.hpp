@@ -7,7 +7,7 @@
 #define EPMODEL_SHADE_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "ShadingMaterial/ShadingMaterial.hpp"
 
 #include <utilities/idd/IddEnums.hxx>
 
@@ -22,7 +22,7 @@ namespace epmodel {
     class Shade_Impl;
   }
 
-  class EPMODEL_API Shade : public ModelObject
+  class EPMODEL_API Shade : public ShadingMaterial
   {
    public:
     explicit Shade(const Model& model);

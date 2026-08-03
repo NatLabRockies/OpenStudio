@@ -17,7 +17,7 @@ namespace openstudio {
 namespace epmodel {
 
   MasslessOpaqueMaterial::MasslessOpaqueMaterial(const Model& model, const std::string& roughness, double thermalResistance)
-    : ModelObject(MasslessOpaqueMaterial::iddObjectType(), model) {
+    : OpaqueMaterial(MasslessOpaqueMaterial::iddObjectType(), model) {
     OS_ASSERT(getImpl<detail::MasslessOpaqueMaterial_Impl>());
 
     bool ok = true;
@@ -27,7 +27,7 @@ namespace epmodel {
     OS_ASSERT(ok);
   }
 
-  MasslessOpaqueMaterial::MasslessOpaqueMaterial(std::shared_ptr<detail::MasslessOpaqueMaterial_Impl> impl) : ModelObject(std::move(impl)) {}
+  MasslessOpaqueMaterial::MasslessOpaqueMaterial(std::shared_ptr<detail::MasslessOpaqueMaterial_Impl> impl) : OpaqueMaterial(std::move(impl)) {}
 
   IddObjectType MasslessOpaqueMaterial::iddObjectType() {
     return IddObjectType::Material_NoMass;
@@ -41,11 +41,7 @@ namespace epmodel {
     return getImpl<detail::MasslessOpaqueMaterial_Impl>()->roughness();
   }
 
-  double MasslessOpaqueMaterial::thermalResistance() const {
-    return getImpl<detail::MasslessOpaqueMaterial_Impl>()->thermalResistance();
-  }
-
-  boost::optional<double> MasslessOpaqueMaterial::thermalAbsorptance() const {
+  double MasslessOpaqueMaterial::thermalAbsorptance() const {
     return getImpl<detail::MasslessOpaqueMaterial_Impl>()->thermalAbsorptance();
   }
 
@@ -53,7 +49,7 @@ namespace epmodel {
     return getImpl<detail::MasslessOpaqueMaterial_Impl>()->isThermalAbsorptanceDefaulted();
   }
 
-  boost::optional<double> MasslessOpaqueMaterial::solarAbsorptance() const {
+  double MasslessOpaqueMaterial::solarAbsorptance() const {
     return getImpl<detail::MasslessOpaqueMaterial_Impl>()->solarAbsorptance();
   }
 
@@ -61,7 +57,7 @@ namespace epmodel {
     return getImpl<detail::MasslessOpaqueMaterial_Impl>()->isSolarAbsorptanceDefaulted();
   }
 
-  boost::optional<double> MasslessOpaqueMaterial::visibleAbsorptance() const {
+  double MasslessOpaqueMaterial::visibleAbsorptance() const {
     return getImpl<detail::MasslessOpaqueMaterial_Impl>()->visibleAbsorptance();
   }
 
@@ -71,10 +67,6 @@ namespace epmodel {
 
   bool MasslessOpaqueMaterial::setRoughness(const std::string& roughness) {
     return getImpl<detail::MasslessOpaqueMaterial_Impl>()->setRoughness(roughness);
-  }
-
-  bool MasslessOpaqueMaterial::setThermalResistance(double thermalResistance) {
-    return getImpl<detail::MasslessOpaqueMaterial_Impl>()->setThermalResistance(thermalResistance);
   }
 
   bool MasslessOpaqueMaterial::setThermalAbsorptance(double thermalAbsorptance) {
@@ -120,24 +112,30 @@ namespace epmodel {
       return *value;
     }
 
-    boost::optional<double> MasslessOpaqueMaterial_Impl::thermalAbsorptance() const {
-      return getDouble(openstudio::Material_NoMassFields::ThermalAbsorptance, true);
+    double MasslessOpaqueMaterial_Impl::thermalAbsorptance() const {
+      const auto value = getDouble(openstudio::Material_NoMassFields::ThermalAbsorptance, true);
+      OS_ASSERT(value);
+      return *value;
     }
 
     bool MasslessOpaqueMaterial_Impl::isThermalAbsorptanceDefaulted() const {
       return isEmpty(openstudio::Material_NoMassFields::ThermalAbsorptance);
     }
 
-    boost::optional<double> MasslessOpaqueMaterial_Impl::solarAbsorptance() const {
-      return getDouble(openstudio::Material_NoMassFields::SolarAbsorptance, true);
+    double MasslessOpaqueMaterial_Impl::solarAbsorptance() const {
+      const auto value = getDouble(openstudio::Material_NoMassFields::SolarAbsorptance, true);
+      OS_ASSERT(value);
+      return *value;
     }
 
     bool MasslessOpaqueMaterial_Impl::isSolarAbsorptanceDefaulted() const {
       return isEmpty(openstudio::Material_NoMassFields::SolarAbsorptance);
     }
 
-    boost::optional<double> MasslessOpaqueMaterial_Impl::visibleAbsorptance() const {
-      return getDouble(openstudio::Material_NoMassFields::VisibleAbsorptance, true);
+    double MasslessOpaqueMaterial_Impl::visibleAbsorptance() const {
+      const auto value = getDouble(openstudio::Material_NoMassFields::VisibleAbsorptance, true);
+      OS_ASSERT(value);
+      return *value;
     }
 
     bool MasslessOpaqueMaterial_Impl::isVisibleAbsorptanceDefaulted() const {

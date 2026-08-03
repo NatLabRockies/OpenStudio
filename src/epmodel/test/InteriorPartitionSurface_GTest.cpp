@@ -12,14 +12,14 @@ using namespace openstudio::epmodel;
 
 TEST_F(EPModelFixture, InteriorPartitionSurface_DefaultConstructor) {
   Model model;
-  InteriorPartitionSurface interiorPartitionSurface(model);
+  InteriorPartitionSurface interiorPartitionSurface({{0, 0, 1}, {0, 0, 0}, {1, 0, 0}, {1, 0, 1}}, model);
   EXPECT_EQ(InteriorPartitionSurface::iddObjectType(), interiorPartitionSurface.iddObject().type());
   EXPECT_FALSE(interiorPartitionSurface.nameString().empty());
 }
 
 TEST_F(EPModelFixture, InteriorPartitionSurface_ScalarAccessors_RoundTrip) {
   Model model;
-  InteriorPartitionSurface interiorPartitionSurface(model);
+  InteriorPartitionSurface interiorPartitionSurface({{0, 0, 1}, {0, 0, 0}, {1, 0, 0}, {1, 0, 1}}, model);
 
   EXPECT_TRUE(interiorPartitionSurface.converttoInternalMass());
   EXPECT_TRUE(interiorPartitionSurface.isConverttoInternalMassDefaulted());

@@ -16,10 +16,10 @@ namespace openstudio {
 namespace epmodel {
 
   ConstructionWithInternalSource::ConstructionWithInternalSource(const Model& model)
-    : ModelObject(ConstructionWithInternalSource::iddObjectType(), model) {}
+    : LayeredConstruction(ConstructionWithInternalSource::iddObjectType(), model) {}
 
   ConstructionWithInternalSource::ConstructionWithInternalSource(std::shared_ptr<detail::ConstructionWithInternalSource_Impl> impl)
-    : ModelObject(std::move(impl)) {}
+    : LayeredConstruction(std::move(impl)) {}
 
   IddObjectType ConstructionWithInternalSource::iddObjectType() {
     return IddObjectType::ConstructionProperty_InternalHeatSource;

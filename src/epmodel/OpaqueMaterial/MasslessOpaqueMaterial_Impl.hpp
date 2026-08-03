@@ -6,7 +6,7 @@
 #ifndef EPMODEL_MASSLESSOPAQUEMATERIAL_IMPL_HPP
 #define EPMODEL_MASSLESSOPAQUEMATERIAL_IMPL_HPP
 
-#include "ModelObject_Impl.hpp"
+#include "OpaqueMaterial/OpaqueMaterial_Impl.hpp"
 
 #include <string>
 #include <vector>
@@ -16,29 +16,29 @@ namespace epmodel {
 
   namespace detail {
 
-    class EPMODEL_API MasslessOpaqueMaterial_Impl : public ModelObject_Impl
+    class EPMODEL_API MasslessOpaqueMaterial_Impl : public OpaqueMaterial_Impl
     {
      public:
-      using ModelObject_Impl::ModelObject_Impl;
+      using OpaqueMaterial_Impl::OpaqueMaterial_Impl;
       virtual ~MasslessOpaqueMaterial_Impl() override = default;
 
       std::string roughness() const;
       bool setRoughness(const std::string& roughness);
 
-      double thermalResistance() const;
-      bool setThermalResistance(double thermalResistance);
+      double thermalResistance() const override;
+      bool setThermalResistance(double thermalResistance) override;
 
-      boost::optional<double> thermalAbsorptance() const;
+      double thermalAbsorptance() const override;
       bool isThermalAbsorptanceDefaulted() const;
       bool setThermalAbsorptance(double thermalAbsorptance);
       void resetThermalAbsorptance();
 
-      boost::optional<double> solarAbsorptance() const;
+      double solarAbsorptance() const override;
       bool isSolarAbsorptanceDefaulted() const;
       bool setSolarAbsorptance(double solarAbsorptance);
       void resetSolarAbsorptance();
 
-      boost::optional<double> visibleAbsorptance() const;
+      double visibleAbsorptance() const override;
       bool isVisibleAbsorptanceDefaulted() const;
       bool setVisibleAbsorptance(double visibleAbsorptance);
       void resetVisibleAbsorptance();

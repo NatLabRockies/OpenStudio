@@ -1,6 +1,6 @@
-/***********************************************************************************************************************  
-*  OpenStudio(R), Copyright (c) Alliance for Energy Innovation, LLC.  
-*  See also https://openstudio.net/license  
+/***********************************************************************************************************************
+*  OpenStudio(R), Copyright (c) Alliance for Energy Innovation, LLC.
+*  See also https://openstudio.net/license
 ***********************************************************************************************************************/
 
 #include <gtest/gtest.h>
@@ -14,10 +14,12 @@
 #include "../PlanarSurfaceGroup/Space.hpp"
 #include "../StraightComponent/Node.hpp"
 #include "../ZoneHVACComponent/ZoneHVACLowTempRadiantConstFlow.hpp"
+
 #include <utilities/idd/BuildingSurface_Detailed_FieldEnums.hxx>
 #include <utilities/idd/ConstructionProperty_InternalHeatSource_FieldEnums.hxx>
 #include <utilities/idd/ZoneHVAC_LowTemperatureRadiant_ConstantFlow_FieldEnums.hxx>
 #include <utilities/idf/IdfExtensibleGroup.hpp>
+#include <utilities/geometry/Point3d.hpp>
 
 #include <array>
 #include <algorithm>
@@ -322,18 +324,12 @@ TEST_F(EPModelFixture, ZoneHVACLowTempRadiantConstFlow_RadiantSurfaceType_Rewrit
   ConstructionWithInternalSource radiantConstruction(model);
   ASSERT_TRUE(radiantConstruction.setPointer(openstudio::ConstructionProperty_InternalHeatSourceFields::ConstructionName, construction.handle()));
 
-  auto makeSurface = [&](const std::string& name, const std::string& surfaceType, const std::vector<std::array<double, 3>>& vertices) -> Surface {
-    Surface surface(model);
+  auto makeSurface = [&](const std::string& name, const std::string& surfaceType, const std::vector<Point3d>& vertices) -> Surface {
+    Surface surface(vertices, model);
     EXPECT_TRUE(surface.setName(name));
     EXPECT_TRUE(surface.setSurfaceType(surfaceType));
     EXPECT_TRUE(surface.setPointer(openstudio::BuildingSurface_DetailedFields::ConstructionName, construction.handle()));
     EXPECT_TRUE(surface.setPointer(openstudio::BuildingSurface_DetailedFields::SpaceName, space.handle()));
-    for (const auto& vertex : vertices) {
-      auto group = surface.pushExtensibleGroup();
-      EXPECT_TRUE(group.setDouble(openstudio::BuildingSurface_DetailedExtensibleFields::VertexXcoordinate, vertex[0]));
-      EXPECT_TRUE(group.setDouble(openstudio::BuildingSurface_DetailedExtensibleFields::VertexYcoordinate, vertex[1]));
-      EXPECT_TRUE(group.setDouble(openstudio::BuildingSurface_DetailedExtensibleFields::VertexZcoordinate, vertex[2]));
-    }
     return surface;
   };
 

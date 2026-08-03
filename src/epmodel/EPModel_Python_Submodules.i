@@ -7,8 +7,6 @@
     from openstudioepmodelresourceobject import *
     from openstudioepmodelplantequipmentoperationscheme import *
     from openstudioepmodelparentobject import *
-    from openstudioepmodelgaslayer import *
-    from openstudioepmodelshadingmaterial import *
     from openstudioepmodelairflownetworklinkage import *
     from openstudioepmodelairflownetworknode import *
     from openstudioepmodelavailabilitymanager import *
@@ -17,6 +15,10 @@
     from openstudioepmodelschedulebase import *
     from openstudioepmodelspaceloadinstance import *
     from openstudioepmodelspaceload import *
+    from openstudioepmodelmaterial import *
+    from openstudioepmodelfenestrationmaterial import *
+    from openstudioepmodelgaslayer import *
+    from openstudioepmodelshadingmaterial import *
     from openstudioepmodelopaquematerial import *
     from openstudioepmodelmodelpartitionmaterial import *
     from openstudioepmodelthermostat import *

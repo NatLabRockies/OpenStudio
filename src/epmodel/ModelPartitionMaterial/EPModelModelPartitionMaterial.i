@@ -7,6 +7,7 @@
 
 %include <epmodel/EPModel_Common_Include.i>
 %import <epmodel/EPModel.i>
+%import <epmodel/Material/EPModelMaterial.i>
 
 EPMODELOBJECT_WRAP(InfraredTransparentMaterial, <epmodel/ModelPartitionMaterial/InfraredTransparentMaterial.hpp>, 0, 1)
 

@@ -7,7 +7,7 @@
 #define EPMODEL_MASSLESSOPAQUEMATERIAL_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "OpaqueMaterial/OpaqueMaterial.hpp"
 
 #include <utilities/idd/IddEnums.hxx>
 
@@ -24,7 +24,7 @@ namespace epmodel {
     class MasslessOpaqueMaterial_Impl;
   }
 
-  class EPMODEL_API MasslessOpaqueMaterial : public ModelObject
+  class EPMODEL_API MasslessOpaqueMaterial : public OpaqueMaterial
   {
    public:
     explicit MasslessOpaqueMaterial(const Model& model, const std::string& roughness = "Smooth", double thermalResistance = 0.1);
@@ -48,20 +48,17 @@ namespace epmodel {
     std::string roughness() const;
     bool setRoughness(const std::string& roughness);
 
-    double thermalResistance() const;
-    bool setThermalResistance(double thermalResistance);
-
-    boost::optional<double> thermalAbsorptance() const;
+    double thermalAbsorptance() const;
     bool isThermalAbsorptanceDefaulted() const;
     bool setThermalAbsorptance(double thermalAbsorptance);
     void resetThermalAbsorptance();
 
-    boost::optional<double> solarAbsorptance() const;
+    double solarAbsorptance() const;
     bool isSolarAbsorptanceDefaulted() const;
     bool setSolarAbsorptance(double solarAbsorptance);
     void resetSolarAbsorptance();
 
-    boost::optional<double> visibleAbsorptance() const;
+    double visibleAbsorptance() const;
     bool isVisibleAbsorptanceDefaulted() const;
     bool setVisibleAbsorptance(double visibleAbsorptance);
     void resetVisibleAbsorptance();

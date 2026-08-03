@@ -5,19 +5,27 @@
 
 #include "PlanarSurface/InteriorPartitionSurface.hpp"
 #include "PlanarSurface/InteriorPartitionSurface_Impl.hpp"
+#include "ConstructionBase/ConstructionBase.hpp"
+#include "ConstructionBase/ConstructionBase_Impl.hpp"
 
 #include "Model.hpp"
+#include "PlanarSurfaceGroup/Space.hpp"
+#include "PlanarSurfaceGroup/Space_Impl.hpp"
 
 #include <utilities/core/Assert.hpp>
+#include <utilities/geometry/Point3d.hpp>
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/InternalMass_FieldEnums.hxx>
 
 namespace openstudio {
 namespace epmodel {
 
-  InteriorPartitionSurface::InteriorPartitionSurface(const Model& model) : ModelObject(InteriorPartitionSurface::iddObjectType(), model) {}
+  InteriorPartitionSurface::InteriorPartitionSurface(const std::vector<Point3d>& vertices, const Model& model)
+    : PlanarSurface(InteriorPartitionSurface::iddObjectType(), model) {
+    getImpl<detail::InteriorPartitionSurface_Impl>()->setVertices(vertices);
+  }
 
-  InteriorPartitionSurface::InteriorPartitionSurface(std::shared_ptr<detail::InteriorPartitionSurface_Impl> impl) : ModelObject(std::move(impl)) {}
+  InteriorPartitionSurface::InteriorPartitionSurface(std::shared_ptr<detail::InteriorPartitionSurface_Impl> impl) : PlanarSurface(std::move(impl)) {}
 
   IddObjectType InteriorPartitionSurface::iddObjectType() {
     return IddObjectType::InternalMass;
@@ -89,6 +97,26 @@ namespace epmodel {
 namespace openstudio {
 namespace epmodel {
   namespace detail {
+
+    boost::optional<Space> InteriorPartitionSurface_Impl::space() const {
+      return getObject<InteriorPartitionSurface>().getModelObjectTarget<Space>(openstudio::InternalMassFields::SpaceorSpaceListName);
+    }
+
+    bool InteriorPartitionSurface_Impl::subtractFromGrossArea() const {
+      return false;
+    }
+
+    boost::optional<ConstructionBase> InteriorPartitionSurface_Impl::construction() const {
+      return getObject<InteriorPartitionSurface>().getModelObjectTarget<ConstructionBase>(openstudio::InternalMassFields::ConstructionName);
+    }
+
+    bool InteriorPartitionSurface_Impl::setConstruction(const ConstructionBase& construction) {
+      return setPointer(openstudio::InternalMassFields::ConstructionName, construction.handle());
+    }
+
+    void InteriorPartitionSurface_Impl::resetConstruction() {
+      setString(openstudio::InternalMassFields::ConstructionName, "");
+    }
 
     bool InteriorPartitionSurface_Impl::converttoInternalMass() const {
       // InternalMass is already the translated EP object for this class.

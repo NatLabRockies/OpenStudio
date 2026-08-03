@@ -6,16 +6,16 @@
 #ifndef EPMODEL_FFACTORGROUNDFLOORCONSTRUCTION_IMPL_HPP
 #define EPMODEL_FFACTORGROUNDFLOORCONSTRUCTION_IMPL_HPP
 
-#include "ModelObject_Impl.hpp"
+#include "ConstructionBase/ConstructionBase_Impl.hpp"
 
 namespace openstudio {
 namespace epmodel {
   namespace detail {
 
-    class EPMODEL_API FFactorGroundFloorConstruction_Impl : public ModelObject_Impl
+    class EPMODEL_API FFactorGroundFloorConstruction_Impl : public ConstructionBase_Impl
     {
      public:
-      using ModelObject_Impl::ModelObject_Impl;
+      using ConstructionBase_Impl::ConstructionBase_Impl;
       virtual ~FFactorGroundFloorConstruction_Impl() override = default;
 
       double fFactor() const;
@@ -26,6 +26,19 @@ namespace epmodel {
 
       double perimeterExposed() const;
       bool setPerimeterExposed(double perimeterExposed);
+
+      bool isOpaque() const override {
+        return true;
+      }
+      bool isFenestration() const override {
+        return false;
+      }
+      bool isSolarDiffusing() const override {
+        return false;
+      }
+      bool isModelPartition() const override {
+        return false;
+      }
     };
 
   }  // namespace detail

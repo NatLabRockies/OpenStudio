@@ -8,18 +8,21 @@
 #include "EPModelFixture.hpp"
 #include "../PlanarSurface/SubSurface.hpp"
 
+#include <utilities/geometry/Point3d.hpp>
+
 using namespace openstudio::epmodel;
 
 TEST_F(EPModelFixture, SubSurface_DefaultConstructor) {
   Model model;
-  SubSurface subSurface(model);
+
+  SubSurface subSurface({{0, 0, 1}, {0, 0, 0}, {1, 0, 0}, {1, 0, 1}}, model);
   EXPECT_EQ(SubSurface::iddObjectType(), subSurface.iddObject().type());
   EXPECT_FALSE(subSurface.nameString().empty());
 }
 
 TEST_F(EPModelFixture, SubSurface_ScalarAccessors_RoundTrip) {
   Model model;
-  SubSurface subSurface(model);
+  SubSurface subSurface({{0, 0, 1}, {0, 0, 0}, {1, 0, 0}, {1, 0, 1}}, model);
 
   EXPECT_TRUE(subSurface.setSubSurfaceType("Window"));
   EXPECT_EQ("Window", subSurface.subSurfaceType());
@@ -33,7 +36,7 @@ TEST_F(EPModelFixture, SubSurface_ScalarAccessors_RoundTrip) {
   EXPECT_FALSE(subSurface.isViewFactortoGroundAutocalculated());
   subSurface.autocalculateViewFactortoGround();
   EXPECT_TRUE(subSurface.isViewFactortoGroundAutocalculated());
-  EXPECT_TRUE(subSurface.setViewFactortoGround(boost::optional<double>{}));
+  subSurface.resetViewFactortoGround();
   EXPECT_TRUE(subSurface.isViewFactortoGroundDefaulted());
 
   EXPECT_TRUE(subSurface.setMultiplier(1.25));
@@ -42,12 +45,11 @@ TEST_F(EPModelFixture, SubSurface_ScalarAccessors_RoundTrip) {
   subSurface.resetMultiplier();
   EXPECT_TRUE(subSurface.isMultiplierDefaulted());
 
-  EXPECT_TRUE(subSurface.setNumberofVertices(4.0));
-  ASSERT_TRUE(subSurface.numberofVertices());
-  EXPECT_DOUBLE_EQ(4.0, *subSurface.numberofVertices());
+  EXPECT_TRUE(subSurface.setNumberofVertices(4));
+  EXPECT_EQ(4u, subSurface.numberofVertices());
   EXPECT_FALSE(subSurface.isNumberofVerticesAutocalculated());
   subSurface.autocalculateNumberofVertices();
   EXPECT_TRUE(subSurface.isNumberofVerticesAutocalculated());
-  EXPECT_TRUE(subSurface.setNumberofVertices(boost::optional<double>{}));
+  subSurface.resetNumberofVertices();
   EXPECT_TRUE(subSurface.isNumberofVerticesDefaulted());
 }

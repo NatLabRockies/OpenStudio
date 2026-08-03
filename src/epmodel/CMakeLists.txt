@@ -66,6 +66,9 @@ set(${target_name}_src
   ConstructionBase/CFactorUndergroundWallConstruction.hpp
   ConstructionBase/CFactorUndergroundWallConstruction_Impl.hpp
   ConstructionBase/CFactorUndergroundWallConstruction.cpp
+  ConstructionBase/ConstructionBase.hpp
+  ConstructionBase/ConstructionBase_Impl.hpp
+  ConstructionBase/ConstructionBase.cpp
   ConstructionBase/ConstructionAirBoundary.hpp
   ConstructionBase/ConstructionAirBoundary_Impl.hpp
   ConstructionBase/ConstructionAirBoundary.cpp
@@ -161,6 +164,13 @@ set(${target_name}_src
   ExteriorLoadInstance/ExteriorWaterEquipment_Impl.hpp
   ExteriorLoadInstance/ExteriorWaterEquipment.cpp
 
+  FenestrationMaterial/FenestrationMaterial.hpp
+  FenestrationMaterial/FenestrationMaterial_Impl.hpp
+  FenestrationMaterial/FenestrationMaterial.cpp
+
+  GasLayer/GasLayer.hpp
+  GasLayer/GasLayer_Impl.hpp
+  GasLayer/GasLayer.cpp
   GasLayer/Gas.hpp
   GasLayer/Gas_Impl.hpp
   GasLayer/Gas.cpp
@@ -184,6 +194,9 @@ set(${target_name}_src
   Generator/GeneratorWindTurbine_Impl.hpp
   Generator/GeneratorWindTurbine.cpp
 
+  Glazing/Glazing.hpp
+  Glazing/Glazing_Impl.hpp
+  Glazing/Glazing.cpp
   Glazing/RefractionExtinctionGlazing.hpp
   Glazing/RefractionExtinctionGlazing_Impl.hpp
   Glazing/RefractionExtinctionGlazing.cpp
@@ -226,6 +239,9 @@ set(${target_name}_src
   Inverter/ElectricLoadCenterInverterSimple_Impl.hpp
   Inverter/ElectricLoadCenterInverterSimple.cpp
 
+  LayeredConstruction/LayeredConstruction.hpp
+  LayeredConstruction/LayeredConstruction_Impl.hpp
+  LayeredConstruction/LayeredConstruction.cpp
   LayeredConstruction/Construction.hpp
   LayeredConstruction/Construction_Impl.hpp
   LayeredConstruction/Construction.cpp
@@ -358,6 +374,9 @@ set(${target_name}_src
   ModelObject/BranchList.hpp
   ModelObject/BranchList_Impl.hpp
   ModelObject/BranchList.cpp
+  ModelObject/BuildingStory.hpp
+  ModelObject/BuildingStory_Impl.hpp
+  ModelObject/BuildingStory.cpp
   ModelObject/CoilSystemCoolingDX.hpp
   ModelObject/CoilSystemCoolingDX_Impl.hpp
   ModelObject/CoilSystemCoolingDX.cpp
@@ -682,6 +701,9 @@ set(${target_name}_src
   ModelObject/SolarCollectorPerformancePhotovoltaicThermalSimple.hpp
   ModelObject/SolarCollectorPerformancePhotovoltaicThermalSimple_Impl.hpp
   ModelObject/SolarCollectorPerformancePhotovoltaicThermalSimple.cpp
+  ModelObject/SpaceList.hpp
+  ModelObject/SpaceList_Impl.hpp
+  ModelObject/SpaceList.cpp
   ModelObject/SurfaceControlMovableInsulation.hpp
   ModelObject/SurfaceControlMovableInsulation_Impl.hpp
   ModelObject/SurfaceControlMovableInsulation.cpp
@@ -758,6 +780,10 @@ set(${target_name}_src
   ModelObject/ZonePropertyUserViewFactorsBySurfaceName_Impl.hpp
   ModelObject/ZonePropertyUserViewFactorsBySurfaceName.cpp
 
+  Material/Material.hpp
+  Material/Material_Impl.hpp
+  Material/Material.cpp
+
   ModelPartitionMaterial/InfraredTransparentMaterial.hpp
   ModelPartitionMaterial/InfraredTransparentMaterial_Impl.hpp
   ModelPartitionMaterial/InfraredTransparentMaterial.cpp
@@ -768,6 +794,9 @@ set(${target_name}_src
   OpaqueMaterial/MasslessOpaqueMaterial.hpp
   OpaqueMaterial/MasslessOpaqueMaterial_Impl.hpp
   OpaqueMaterial/MasslessOpaqueMaterial.cpp
+  OpaqueMaterial/OpaqueMaterial.hpp
+  OpaqueMaterial/OpaqueMaterial_Impl.hpp
+  OpaqueMaterial/OpaqueMaterial.cpp
   OpaqueMaterial/RoofVegetation.hpp
   OpaqueMaterial/RoofVegetation_Impl.hpp
   OpaqueMaterial/RoofVegetation.cpp
@@ -859,6 +888,9 @@ set(${target_name}_src
   PhotovoltaicPerformance/PhotovoltaicPerformanceSimple_Impl.hpp
   PhotovoltaicPerformance/PhotovoltaicPerformanceSimple.cpp
 
+  PlanarSurface/PlanarSurface.hpp
+  PlanarSurface/PlanarSurface_Impl.hpp
+  PlanarSurface/PlanarSurface.cpp
   PlanarSurface/InteriorPartitionSurface.hpp
   PlanarSurface/InteriorPartitionSurface_Impl.hpp
   PlanarSurface/InteriorPartitionSurface.cpp
@@ -869,6 +901,9 @@ set(${target_name}_src
   PlanarSurface/Surface_Impl.hpp
   PlanarSurface/Surface.cpp
 
+  PlanarSurfaceGroup/PlanarSurfaceGroup.hpp
+  PlanarSurfaceGroup/PlanarSurfaceGroup_Impl.hpp
+  PlanarSurfaceGroup/PlanarSurfaceGroup.cpp
   PlanarSurfaceGroup/Space.hpp
   PlanarSurfaceGroup/Space_Impl.hpp
   PlanarSurfaceGroup/Space.cpp
@@ -2108,6 +2143,9 @@ set(${target_name}_src
   SetpointManager/SetpointManagerWarmestTemperatureFlow_Impl.hpp
   SetpointManager/SetpointManagerWarmestTemperatureFlow.cpp
 
+  ShadingMaterial/ShadingMaterial.hpp
+  ShadingMaterial/ShadingMaterial_Impl.hpp
+  ShadingMaterial/ShadingMaterial.cpp
   ShadingMaterial/Blind.hpp
   ShadingMaterial/Blind_Impl.hpp
   ShadingMaterial/Blind.cpp
@@ -2695,6 +2733,8 @@ set(${target_name}_sub_swig_src
 
   ExteriorLoadInstance/EPModelExteriorLoadInstance.i
 
+  FenestrationMaterial/EPModelFenestrationMaterial.i
+
   GasLayer/EPModelGasLayer.i
 
   Generator/EPModelGenerator.i
@@ -2704,6 +2744,8 @@ set(${target_name}_sub_swig_src
   Inverter/EPModelInverter.i
 
   LayeredConstruction/EPModelLayeredConstruction.i
+
+  Material/EPModelMaterial.i
 
   ModelObject/EPModelModelObject.i
 
@@ -2773,6 +2815,10 @@ foreach(epmodel_swig_i IN LISTS ${target_name}_sub_swig_src)
   set(epmodel_parent_swig_targets OpenStudioEPModel)
 
   if(epmodel_swig_suffix STREQUAL "HVACComponent" OR epmodel_swig_suffix STREQUAL "Loop")
+    list(APPEND epmodel_parent_swig_targets OpenStudioEPModelParentObject)
+  endif()
+
+  if(epmodel_swig_suffix STREQUAL "PlanarSurface")
     list(APPEND epmodel_parent_swig_targets OpenStudioEPModelParentObject)
   endif()
 

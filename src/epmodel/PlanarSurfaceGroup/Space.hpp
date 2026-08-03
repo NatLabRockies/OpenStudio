@@ -7,24 +7,31 @@
 #define EPMODEL_SPACE_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "PlanarSurfaceGroup/PlanarSurfaceGroup.hpp"
 
+#include "../utilities/geometry/Point3d.hpp"
 #include "../utilities/idd/IddEnums.hpp"
 
 #include <memory>
 
 namespace openstudio {
+
+class Polyhedron;
+class Transformation;
+
 namespace epmodel {
 
+  class BuildingStory;
   class Model;
-  class ThermalZone;
   class DesignSpecificationOutdoorAir;
+  class Surface;
+  class ThermalZone;
 
   namespace detail {
     class Space_Impl;
   }
 
-  class EPMODEL_API Space : public ModelObject
+  class EPMODEL_API Space : public PlanarSurfaceGroup
   {
    public:
     // Schema Alignment Notes:
@@ -39,6 +46,9 @@ namespace epmodel {
     //   Zoned spaces write through ThermalZone -> Sizing:Zone -> DSOA:SpaceList.
     //   Unzoned spaces write to an orphan DSOA:SpaceList owned by the Model.
     explicit Space(const Model& model);
+
+    static boost::optional<Space> fromFloorPrint(const std::vector<Point3d>& floorPrint, double floorHeight, const Model& model,
+                                                 const std::string& spaceName = {});
 
     virtual ~Space() override = default;
     Space(const Space& other) = default;
@@ -76,11 +86,29 @@ namespace epmodel {
     void autocalculateFloorArea();
     void resetFloorArea();
 
+    boost::optional<BuildingStory> buildingStory() const;
+    bool setBuildingStory(BuildingStory& buildingStory);
+
     boost::optional<ThermalZone> thermalZone() const;
     bool setThermalZone(const ThermalZone& thermalZone);
     void resetThermalZone();
     boost::optional<DesignSpecificationOutdoorAir> designSpecificationOutdoorAir() const;
     bool setDesignSpecificationOutdoorAir(const DesignSpecificationOutdoorAir& designSpecificationOutdoorAir);
+
+    /// Returns all \link Surface Surfaces \endlink in this space.
+    std::vector<Surface> surfaces() const;
+
+    /** Unmatch any matched surfaces and sub surfaces in this space. */
+    void unmatchSurfaces();
+
+    /** Match surfaces and sub surfaces in this space with those in the other. */
+    void matchSurfaces(Space& other);
+
+    /** Intersect surfaces in this space with those in the other. */
+    void intersectSurfaces(Space& other);
+
+    Polyhedron polyhedron() const;
+    bool isEnclosedVolume() const;
 
    protected:
     using ImplType = detail::Space_Impl;
@@ -90,7 +118,16 @@ namespace epmodel {
     friend class Model;
 
     explicit Space(std::shared_ptr<detail::Space_Impl> impl);
+
+   private:
+    REGISTER_LOGGER("openstudio.epmodel.Space");
   };
+
+  /** Match surfaces and sub surfaces between all spaces in the vector. */
+  EPMODEL_API void matchSurfaces(std::vector<Space>& spaces);
+
+  /** Unmatch surfaces and sub surfaces for all spaces in the vector. */
+  EPMODEL_API void unmatchSurfaces(std::vector<Space>& spaces);
 
 }  // namespace epmodel
 }  // namespace openstudio

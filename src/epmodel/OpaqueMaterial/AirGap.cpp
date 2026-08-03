@@ -15,28 +15,16 @@
 namespace openstudio {
 namespace epmodel {
 
-  AirGap::AirGap(const Model& model, double thermalResistance) : ModelObject(AirGap::iddObjectType(), model) {
+  AirGap::AirGap(const Model& model, double thermalResistance) : OpaqueMaterial(AirGap::iddObjectType(), model) {
     OS_ASSERT(getImpl<detail::AirGap_Impl>());
     const bool ok = setThermalResistance(thermalResistance);
     OS_ASSERT(ok);
   }
 
-  AirGap::AirGap(std::shared_ptr<detail::AirGap_Impl> impl) : ModelObject(std::move(impl)) {}
+  AirGap::AirGap(std::shared_ptr<detail::AirGap_Impl> impl) : OpaqueMaterial(std::move(impl)) {}
 
   IddObjectType AirGap::iddObjectType() {
     return IddObjectType::Material_AirGap;
-  }
-
-  double AirGap::thermalResistance() const {
-    return getImpl<detail::AirGap_Impl>()->thermalResistance();
-  }
-
-  bool AirGap::setThermalResistance(double thermalResistance) {
-    return getImpl<detail::AirGap_Impl>()->setThermalResistance(thermalResistance);
-  }
-
-  void AirGap::resetThermalResistance() {
-    getImpl<detail::AirGap_Impl>()->resetThermalResistance();
   }
 
 }  // namespace epmodel
@@ -56,12 +44,6 @@ namespace epmodel {
       const bool result = setDouble(openstudio::Material_AirGapFields::ThermalResistance, thermalResistance);
       OS_ASSERT(result);
       return result;
-    }
-
-    void AirGap_Impl::resetThermalResistance() {
-      // Preserve model-counterpart behavior: reset to constructor default even though E+ field has no IDD default.
-      const bool result = setDouble(openstudio::Material_AirGapFields::ThermalResistance, 0.1);
-      OS_ASSERT(result);
     }
 
   }  // namespace detail
