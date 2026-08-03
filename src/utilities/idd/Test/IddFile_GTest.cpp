@@ -55,7 +55,7 @@ TEST_F(IddFixture, EpIddFile) {
     EXPECT_EQ("", logMessage.logMessage());
   }
 
-  EXPECT_EQ("25.2.0", loadedIddFile->version());
+  EXPECT_EQ(energyPlusVersion(), loadedIddFile->version());
   EXPECT_EQ(epIddFile.objects().size(), loadedIddFile->objects().size());
   if (epIddFile.objects().size() != loadedIddFile->objects().size()) {
     // get sets of IddObjectType

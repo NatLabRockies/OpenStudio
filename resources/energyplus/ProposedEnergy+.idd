@@ -1,4 +1,4 @@
-!IDD_Version 25.2.0
+!IDD_Version 26.1.0
 !IDD_BUILD TBD
 ! **************************************************************************
 ! This file is the Input Data Dictionary (IDD) for EnergyPlus.
@@ -405,7 +405,7 @@ Version,
       \format singleLine
       \min-fields 1
   A1 ; \field Version Identifier
-      \default 25.2
+      \default 26.1
 
 SimulationControl,
       \unique-object
@@ -28304,24 +28304,22 @@ AirTerminal:SingleDuct:SeriesPIU:Reheat,
        \type node
   A5,  \field Outlet Node Name
        \type node
-  A6,  \field Reheat Coil Air Inlet Node Name
-       \type node
-  A7,  \field Zone Mixer Name
+  A6,  \field Zone Mixer Name
        \type object-list
        \object-list ZoneMixers
-  A8,  \field Fan Name
+  A7,  \field Fan Name
        \note Fan type must be Fan:SystemModel or Fan:ConstantVolume
        \type object-list
        \object-list FansCV
        \object-list FansSystemModel
-  A9,  \field Reheat Coil Object Type
+  A8,  \field Reheat Coil Object Type
        \required-field
        \type choice
        \key Coil:Heating:Water
        \key Coil:Heating:Electric
        \key Coil:Heating:Fuel
        \key Coil:Heating:Steam
-  A10, \field Reheat Coil Name
+  A9,  \field Reheat Coil Name
        \required-field
        \type object-list
        \object-list HeatingCoilName
@@ -28342,7 +28340,7 @@ AirTerminal:SingleDuct:SeriesPIU:Reheat,
        \type real
        \minimum> 0.0
        \default 0.001
-  A11, \field Fan Control Type
+  A10, \field Fan Control Type
        \note If VariableSpeed, then the fan object type must be Fan:SystemModel
        \type choice
        \key VariableSpeed
@@ -28355,7 +28353,7 @@ AirTerminal:SingleDuct:SeriesPIU:Reheat,
        \minimum 0.0
        \maximum 1.0
        \default 0.3
-  A12, \field Heating Control Type
+  A11, \field Heating Control Type
        \type choice
        \key Staged
        \key Modulated
@@ -28416,25 +28414,22 @@ AirTerminal:SingleDuct:ParallelPIU:Reheat,
        \type node
   A5,  \field Outlet Node Name
        \type node
-  A6,  \field Reheat Coil Air Inlet Node Name
-       \type node
-       \note mixer outlet node
-  A7,  \field Zone Mixer Name
+  A6,  \field Zone Mixer Name
        \type object-list
        \object-list ZoneMixers
-  A8,  \field Fan Name
+  A7,  \field Fan Name
        \note Fan type must be Fan:SystemModel or Fan:ConstantVolume
        \type object-list
        \object-list FansCV
        \object-list FansSystemModel
-  A9,  \field Reheat Coil Object Type
+  A8,  \field Reheat Coil Object Type
        \required-field
        \type choice
        \key Coil:Heating:Water
        \key Coil:Heating:Electric
        \key Coil:Heating:Fuel
        \key Coil:Heating:Steam
-  A10, \field Reheat Coil Name
+  A9,  \field Reheat Coil Name
        \required-field
        \type object-list
        \object-list HeatingCoilName
@@ -28455,7 +28450,7 @@ AirTerminal:SingleDuct:ParallelPIU:Reheat,
        \type real
        \minimum> 0.0
        \default 0.001
-  A11, \field Fan Control Type
+  A10, \field Fan Control Type
        \note If VariableSpeed, then the fan object type must be Fan:SystemModel
        \type choice
        \key VariableSpeed
@@ -28468,7 +28463,7 @@ AirTerminal:SingleDuct:ParallelPIU:Reheat,
        \minimum 0.0
        \maximum 1.0
        \default 0.3
-  A12, \field Heating Control Type
+  A11, \field Heating Control Type
        \type choice
        \key Staged
        \key Modulated
@@ -28478,12 +28473,22 @@ AirTerminal:SingleDuct:ParallelPIU:Reheat,
        \default 32.1
        \note Only used if Heating Control Type is Modulated
        \note Used to control second stage heating, typically zone heat setpoint plus 20F
-  N10; \field High Limit Heating Discharge Air Temperature
+  N10, \field High Limit Heating Discharge Air Temperature
        \type real
        \units C
        \default 37.7
        \note Only used if Heating Control Type is Modulated
        \note Used to determine end of third stage heating
+  A12, \field Backdraft Damper Leakage Fraction Curve Name
+       \type object-list
+       \object-list UnivariateFunctions
+       \note Backdraft damper leakage fraction is the ratio of mass leakage flow rate to primary air flow rate
+       \note at a constant static pressure setpoint. This curve should describe the ratio as a function primary
+       \note air flow fraction (ratio of primary flow fraction to maximum nominal primary air flow rate).
+  A13; \field Backdraft Damper Leakage Zone Name
+       \note Name of a zone that will be impacted by the backdraft damper leakage.
+       \type object-list
+       \object-list ZoneNames
 
 AirTerminal:SingleDuct:ConstantVolume:FourPipeInduction,
        \memo Central air system terminal unit, single duct, variable volume, induction unit with
@@ -50316,7 +50321,6 @@ HeatExchanger:FluidToFluid,
         \note This field controls end use reporting for heat transfer meters
         \type choice
         \key FreeCooling
-        \key HeatRecovery
         \key HeatRejection
         \key HeatRecoveryForCooling
         \key HeatRecoveryForHeating
@@ -53320,11 +53324,11 @@ PlantEquipmentOperationSchemes,
        \min-fields 4
        \max-fields 25
   A1 , \field Name
-        \required-field
+       \required-field
        \reference PlantOperationSchemes
   A2 , \field Control Scheme 1 Object Type
-        \required-field
-        \begin-extensible
+       \required-field
+       \begin-extensible
        \type choice
        \key PlantEquipmentOperation:CoolingLoad
        \key PlantEquipmentOperation:HeatingLoad
@@ -58412,6 +58416,7 @@ PhotovoltaicPerformance:Simple,
         \memo which surfaces convert incident solar radiation to electricity and need not specify
         \memo arrays of specific modules.
    A1 , \field Name
+        \required-field
         \reference PVModules
    N1 , \field Fraction of Surface Area with Active Solar Cells
         \required-field
@@ -58437,6 +58442,7 @@ PhotovoltaicPerformance:EquivalentOne-Diode,
         \memo using an equivalent one-diode circuit. This model is also known as
         \memo the 4- or 5-parameter TRNSYS model for photovoltaics.
    A1 , \field Name
+        \required-field
         \reference PVModules
    A2 , \field Cell type
         \type choice
@@ -58547,6 +58553,7 @@ PhotovoltaicPerformance:Sandia,
         \memo Describes performance input data needed for specific makes and models of production
         \memo PV panels using the empirical coefficients assembled by Sandia National Laboratory.
    A1 , \field Name
+        \required-field
         \reference PVModules
    N1 , \field Active Area
         \note (m2, single module)

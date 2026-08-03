@@ -71,8 +71,6 @@ TEST_F(EnergyPlusFixture, ForwardTranslator_AirTerminalSingleDuctParallelPIURehe
   EXPECT_EQ(atu.secondaryAirInletNode()->nameString(),
             idf_atu.getString(AirTerminal_SingleDuct_ParallelPIU_ReheatFields::SecondaryAirInletNodeName, false).get());
   EXPECT_EQ(atu.outletModelObject()->nameString(), idf_atu.getString(AirTerminal_SingleDuct_ParallelPIU_ReheatFields::OutletNodeName, false).get());
-  EXPECT_EQ(atu.nameString() + " Mixer Outlet",
-            idf_atu.getString(AirTerminal_SingleDuct_ParallelPIU_ReheatFields::ReheatCoilAirInletNodeName, false).get());
   EXPECT_EQ(atu.nameString() + " Mixer", idf_atu.getString(AirTerminal_SingleDuct_ParallelPIU_ReheatFields::ZoneMixerName, false).get());
   EXPECT_EQ(fan.nameString(), idf_atu.getString(AirTerminal_SingleDuct_ParallelPIU_ReheatFields::FanName, false).get());
   EXPECT_EQ("Coil:Heating:Electric", idf_atu.getString(AirTerminal_SingleDuct_ParallelPIU_ReheatFields::ReheatCoilObjectType, false).get());
