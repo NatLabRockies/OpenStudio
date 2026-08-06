@@ -23,12 +23,14 @@
 #include "Schedule/ScheduleConstant_Impl.hpp"
 #include "StraightComponent/StraightComponent.hpp"
 
+#include <memory>
 #include <optional>
 #include <stdexcept>
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/IddFactory.hxx>
+#include <utilities/idd/ZoneHVAC_AirDistributionUnit_FieldEnums.hxx>
 #include <utilities/idd/ZoneHVAC_EquipmentConnections_FieldEnums.hxx>
 #include <utilities/idd/ZoneHVAC_EquipmentList_FieldEnums.hxx>
 #include <utilities/idf/IdfExtensibleGroup.hpp>
@@ -255,46 +257,181 @@ namespace epmodel {
       }
 
       boost::optional<openstudio::epmodel::ZoneHVACAirDistributionUnit>
-        airDistributionUnitForTerminal(const openstudio::epmodel::ModelObject& terminal) {
+        existingAirDistributionUnitForTerminal(const openstudio::epmodel::ModelObject& terminal) {
         for (const auto& source : terminal.getSources(openstudio::IddObjectType::ZoneHVAC_AirDistributionUnit)) {
           if (auto airDistributionUnit = source.optionalCast<openstudio::epmodel::ZoneHVACAirDistributionUnit>()) {
             return *airDistributionUnit;
           }
         }
 
-        openstudio::epmodel::ZoneHVACAirDistributionUnit airDistributionUnit(terminal.model());
-        if (!terminal.nameString().empty()) {
-          airDistributionUnit.setName(terminal.nameString() + " Air Distribution Unit");
+        return boost::none;
+      }
+
+      class EquipmentRegistrationPlan
+      {
+       public:
+        static std::unique_ptr<EquipmentRegistrationPlan> prepare(openstudio::epmodel::ZoneHVACEquipmentList equipmentList,
+                                                                  const openstudio::epmodel::ModelObject& component) {
+          if (component.model() != equipmentList.model()) {
+            return nullptr;
+          }
+
+          auto plan = std::unique_ptr<EquipmentRegistrationPlan>(new EquipmentRegistrationPlan(std::move(equipmentList), component));
+          if (!plan->prepareTarget()) {
+            return nullptr;
+          }
+          return plan;
         }
 
-        auto airDistributionUnitImpl = airDistributionUnit.getImpl<openstudio::epmodel::detail::ZoneHVACAirDistributionUnit_Impl>();
-        OS_ASSERT(airDistributionUnitImpl);
-        if (!airDistributionUnitImpl->setAirTerminal(terminal)) {
-          airDistributionUnit.remove();
-          return boost::none;
-        }
+        EquipmentRegistrationPlan(const EquipmentRegistrationPlan&) = delete;
+        EquipmentRegistrationPlan& operator=(const EquipmentRegistrationPlan&) = delete;
+        EquipmentRegistrationPlan(EquipmentRegistrationPlan&&) = delete;
+        EquipmentRegistrationPlan& operator=(EquipmentRegistrationPlan&&) = delete;
 
-        if (auto outletNode = airTerminalOutletNode(terminal)) {
-          if (!airDistributionUnitImpl->setOutletNode(*outletNode)) {
-            airDistributionUnit.remove();
-            return boost::none;
+        ~EquipmentRegistrationPlan() {
+          if (m_state == State::Prepared) {
+            cleanupPreparedState();
           }
         }
 
-        return airDistributionUnit;
-      }
+        bool addExtensibleRow() {
+          if (m_state != State::Prepared || m_alreadyRegistered || !m_equipmentListTarget) {
+            return m_state == State::Prepared && m_alreadyRegistered;
+          }
 
-      boost::optional<openstudio::epmodel::ModelObject> equipmentListTargetFor(const openstudio::epmodel::ModelObject& component) {
-        if (!isAirTerminal(component)) {
-          return component;
+          const unsigned coolingPriority = static_cast<unsigned>(m_equipmentList.equipmentInCoolingOrder().size() + 1u);
+          const unsigned heatingPriority = static_cast<unsigned>(m_equipmentList.equipmentInHeatingOrder().size() + 1u);
+          auto group = m_equipmentList.pushExtensibleGroup().optionalCast<openstudio::WorkspaceExtensibleGroup>();
+          if (!group) {
+            return false;
+          }
+          m_groupIndex = group->groupIndex();
+
+          if (!group->setString(openstudio::ZoneHVAC_EquipmentListExtensibleFields::ZoneEquipmentObjectType,
+                                m_equipmentListTarget->iddObject().name(), false)
+              || !setEquipmentTarget(*group, *m_equipmentListTarget)) {
+            return false;
+          }
+
+          return group->setUnsigned(openstudio::ZoneHVAC_EquipmentListExtensibleFields::ZoneEquipmentCoolingSequence, coolingPriority)
+                 && group->setUnsigned(openstudio::ZoneHVAC_EquipmentListExtensibleFields::ZoneEquipmentHeatingorNoLoadSequence, heatingPriority);
         }
 
-        auto airDistributionUnit = airDistributionUnitForTerminal(component);
-        if (!airDistributionUnit) {
-          return boost::none;
+        bool alreadyRegistered() const {
+          return m_alreadyRegistered;
         }
-        return airDistributionUnit->cast<openstudio::epmodel::ModelObject>();
-      }
+
+        void commit() {
+          OS_ASSERT(m_state == State::Prepared);
+          m_state = State::Committed;
+        }
+
+       private:
+        enum class State
+        {
+          Prepared,
+          Committed,
+        };
+
+        EquipmentRegistrationPlan(openstudio::epmodel::ZoneHVACEquipmentList equipmentList, openstudio::epmodel::ModelObject component)
+          : m_equipmentList(std::move(equipmentList)), m_component(std::move(component)) {}
+
+        bool prepareTarget() {
+          const auto currentEquipment = m_equipmentList.equipment();
+          m_alreadyRegistered = std::ranges::find(currentEquipment, m_component) != currentEquipment.end();
+
+          if (!isAirTerminal(m_component)) {
+            m_equipmentListTarget = m_component;
+            return true;
+          }
+
+          m_airDistributionUnit = existingAirDistributionUnitForTerminal(m_component);
+          if (!m_airDistributionUnit) {
+            m_airDistributionUnit = openstudio::epmodel::ZoneHVACAirDistributionUnit(m_component.model());
+            m_createdAirDistributionUnit = true;
+            if (!m_component.nameString().empty()) {
+              m_airDistributionUnit->setName(m_component.nameString() + " Air Distribution Unit");
+            }
+
+            auto airDistributionUnitImpl = m_airDistributionUnit->getImpl<openstudio::epmodel::detail::ZoneHVACAirDistributionUnit_Impl>();
+            OS_ASSERT(airDistributionUnitImpl);
+            if (!airDistributionUnitImpl->setAirTerminal(m_component)) {
+              return false;
+            }
+          } else {
+            const auto outletField = openstudio::ZoneHVAC_AirDistributionUnitFields::AirDistributionUnitOutletNodeName;
+            if (auto managedField = m_airDistributionUnit->getField(outletField, false)) {
+              const auto targetHandle = toUUID(*managedField);
+              if (!targetHandle.isNull()) {
+                if (auto target = m_component.model().getObject(targetHandle)) {
+                  m_originalOutletTarget = target->optionalCast<openstudio::epmodel::ModelObject>();
+                }
+              }
+            }
+            if (!m_originalOutletTarget) {
+              auto workspaceImpl = m_airDistributionUnit->getImpl<openstudio::detail::WorkspaceObject_Impl>();
+              OS_ASSERT(workspaceImpl);
+              m_originalOutletNodeName = workspaceImpl->openstudio::detail::IdfObject_Impl::getString(outletField, false, true);
+            }
+          }
+
+          if (auto outletNode = airTerminalOutletNode(m_component)) {
+            auto airDistributionUnitImpl = m_airDistributionUnit->getImpl<openstudio::epmodel::detail::ZoneHVACAirDistributionUnit_Impl>();
+            OS_ASSERT(airDistributionUnitImpl);
+            if (!airDistributionUnitImpl->setOutletNode(*outletNode)) {
+              return false;
+            }
+            m_outletSynchronized = true;
+          }
+
+          m_equipmentListTarget = m_airDistributionUnit->cast<openstudio::epmodel::ModelObject>();
+          return true;
+        }
+
+        void cleanupPreparedState() {
+          if (m_groupIndex && *m_groupIndex < m_equipmentList.extensibleGroups().size()) {
+            m_equipmentList.eraseExtensibleGroup(*m_groupIndex);
+          }
+
+          if (!m_airDistributionUnit) {
+            return;
+          }
+          if (m_createdAirDistributionUnit) {
+            if (m_equipmentList.model().getObject(m_airDistributionUnit->handle())) {
+              m_airDistributionUnit->remove();
+            }
+            return;
+          }
+          if (m_outletSynchronized) {
+            auto impl = m_airDistributionUnit->getImpl<openstudio::epmodel::detail::ZoneHVACAirDistributionUnit_Impl>();
+            OS_ASSERT(impl);
+            const auto outletField = openstudio::ZoneHVAC_AirDistributionUnitFields::AirDistributionUnitOutletNodeName;
+            bool restored = false;
+            if (m_originalOutletTarget) {
+              restored = impl->setPointer(outletField, m_originalOutletTarget->handle(), false);
+            } else {
+              const bool pointerCleared = impl->setPointer(outletField, Handle(), false);
+              const bool rawRestored =
+                impl->openstudio::detail::IdfObject_Impl::setString(outletField, m_originalOutletNodeName.get_value_or(""), false);
+              restored = pointerCleared && rawRestored;
+            }
+            OS_ASSERT(restored);
+            (void)restored;
+          }
+        }
+
+        State m_state = State::Prepared;
+        openstudio::epmodel::ZoneHVACEquipmentList m_equipmentList;
+        openstudio::epmodel::ModelObject m_component;
+        boost::optional<openstudio::epmodel::ModelObject> m_equipmentListTarget;
+        boost::optional<openstudio::epmodel::ZoneHVACAirDistributionUnit> m_airDistributionUnit;
+        boost::optional<openstudio::epmodel::ModelObject> m_originalOutletTarget;
+        boost::optional<std::string> m_originalOutletNodeName;
+        boost::optional<unsigned> m_groupIndex;
+        bool m_alreadyRegistered = false;
+        bool m_createdAirDistributionUnit = false;
+        bool m_outletSynchronized = false;
+      };
 
       bool equipmentListTargetMatches(const openstudio::epmodel::ModelObject& equipmentListTarget,
                                       const openstudio::epmodel::ModelObject& component) {
@@ -484,40 +621,22 @@ namespace epmodel {
     }
 
     bool ZoneHVACEquipmentList_Impl::addEquipment(const openstudio::epmodel::ModelObject& component) {
-      if (component.model() != model()) {
-        return false;
-      }
+      return addEquipment(component, AddEquipmentFailureStage::None);
+    }
 
-      auto currentEquipment = equipment();
-      if (std::ranges::find(currentEquipment, component) != currentEquipment.end()) {
-        return true;
-      }
-
-      auto equipmentListTarget = equipmentListTargetFor(component);
-      if (!equipmentListTarget) {
+    bool ZoneHVACEquipmentList_Impl::addEquipment(const openstudio::epmodel::ModelObject& component, AddEquipmentFailureStage failureStage) {
+      auto registration = EquipmentRegistrationPlan::prepare(getObject<openstudio::epmodel::ZoneHVACEquipmentList>(), component);
+      if (!registration || failureStage == AddEquipmentFailureStage::AfterTargetPrepared) {
         return false;
       }
-
-      auto equipmentList = getObject<openstudio::epmodel::ZoneHVACEquipmentList>();
-      auto group = equipmentList.pushExtensibleGroup().optionalCast<openstudio::WorkspaceExtensibleGroup>();
-      if (!group) {
+      if (!registration->alreadyRegistered() && !registration->addExtensibleRow()) {
         return false;
       }
-
-      if (!group->setString(openstudio::ZoneHVAC_EquipmentListExtensibleFields::ZoneEquipmentObjectType, equipmentListTarget->iddObject().name(),
-                            false)) {
+      if (failureStage == AddEquipmentFailureStage::AfterExtensibleRowAdded) {
         return false;
       }
-      if (!setEquipmentTarget(*group, *equipmentListTarget)) {
-        return false;
-      }
-
-      const unsigned coolingPriority = static_cast<unsigned>(equipmentInCoolingOrder().size() + 1u);
-      const unsigned heatingPriority = static_cast<unsigned>(equipmentInHeatingOrder().size() + 1u);
-      if (!group->setUnsigned(openstudio::ZoneHVAC_EquipmentListExtensibleFields::ZoneEquipmentCoolingSequence, coolingPriority)) {
-        return false;
-      }
-      return group->setUnsigned(openstudio::ZoneHVAC_EquipmentListExtensibleFields::ZoneEquipmentHeatingorNoLoadSequence, heatingPriority);
+      registration->commit();
+      return true;
     }
 
     bool ZoneHVACEquipmentList_Impl::removeEquipment(const openstudio::epmodel::ModelObject& component) {
@@ -548,12 +667,28 @@ namespace epmodel {
         for (unsigned j = 0; j < coolingEquipment.size(); ++j) {
           auto remainingGroup = groupForModelObject(equipmentList, coolingEquipment[j]);
           OS_ASSERT(remainingGroup);
-          OS_ASSERT(remainingGroup->setUnsigned(openstudio::ZoneHVAC_EquipmentListExtensibleFields::ZoneEquipmentCoolingSequence, j + 1u));
+          if (!remainingGroup) {
+            return false;
+          }
+          const bool prioritySet =
+            remainingGroup->setUnsigned(openstudio::ZoneHVAC_EquipmentListExtensibleFields::ZoneEquipmentCoolingSequence, j + 1u);
+          OS_ASSERT(prioritySet);
+          if (!prioritySet) {
+            return false;
+          }
         }
         for (unsigned j = 0; j < heatingEquipment.size(); ++j) {
           auto remainingGroup = groupForModelObject(equipmentList, heatingEquipment[j]);
           OS_ASSERT(remainingGroup);
-          OS_ASSERT(remainingGroup->setUnsigned(openstudio::ZoneHVAC_EquipmentListExtensibleFields::ZoneEquipmentHeatingorNoLoadSequence, j + 1u));
+          if (!remainingGroup) {
+            return false;
+          }
+          const bool prioritySet =
+            remainingGroup->setUnsigned(openstudio::ZoneHVAC_EquipmentListExtensibleFields::ZoneEquipmentHeatingorNoLoadSequence, j + 1u);
+          OS_ASSERT(prioritySet);
+          if (!prioritySet) {
+            return false;
+          }
         }
         return true;
       }
@@ -584,7 +719,15 @@ namespace epmodel {
       for (unsigned i = 0; i < equipmentVector.size(); ++i) {
         auto equipmentGroup = groupForModelObject(equipmentList, equipmentVector[i]);
         OS_ASSERT(equipmentGroup);
-        OS_ASSERT(equipmentGroup->setUnsigned(openstudio::ZoneHVAC_EquipmentListExtensibleFields::ZoneEquipmentCoolingSequence, i + 1u));
+        if (!equipmentGroup) {
+          return false;
+        }
+        const bool prioritySet =
+          equipmentGroup->setUnsigned(openstudio::ZoneHVAC_EquipmentListExtensibleFields::ZoneEquipmentCoolingSequence, i + 1u);
+        OS_ASSERT(prioritySet);
+        if (!prioritySet) {
+          return false;
+        }
       }
       return true;
     }
@@ -613,7 +756,15 @@ namespace epmodel {
       for (unsigned i = 0; i < equipmentVector.size(); ++i) {
         auto equipmentGroup = groupForModelObject(equipmentList, equipmentVector[i]);
         OS_ASSERT(equipmentGroup);
-        OS_ASSERT(equipmentGroup->setUnsigned(openstudio::ZoneHVAC_EquipmentListExtensibleFields::ZoneEquipmentHeatingorNoLoadSequence, i + 1u));
+        if (!equipmentGroup) {
+          return false;
+        }
+        const bool prioritySet = equipmentGroup->setUnsigned(
+          openstudio::ZoneHVAC_EquipmentListExtensibleFields::ZoneEquipmentHeatingorNoLoadSequence, i + 1u);
+        OS_ASSERT(prioritySet);
+        if (!prioritySet) {
+          return false;
+        }
       }
       return true;
     }

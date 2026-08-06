@@ -30,6 +30,7 @@
 #include "Mixer/AirLoopHVACZoneMixer_Impl.hpp"
 
 #include <algorithm>
+#include <memory>
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/Logger.hpp>
 #include <utilities/core/StringHelpers.hpp>
@@ -126,25 +127,32 @@ namespace epmodel {
       return false;
     }
 
+    void applyConstructorDefaults(AirTerminalSingleDuctParallelPIUReheat& terminal) {
+      terminal.autosizeMaximumPrimaryAirFlowRate();
+      terminal.autosizeMaximumSecondaryAirFlowRate();
+      terminal.autosizeMinimumPrimaryAirFlowFraction();
+      terminal.autosizeFanOnFlowFraction();
+      terminal.autosizeMaximumHotWaterorSteamFlowRate();
+      const bool minimumFlowSet = terminal.setMinimumHotWaterorSteamFlowRate(0.0);
+      const bool convergenceSet = terminal.setConvergenceTolerance(0.001);
+      const bool fanControlSet = terminal.setFanControlType("ConstantSpeed");
+      const bool fanTurnDownSet = terminal.setMinimumFanTurnDownRatio(0.3);
+      const bool heatingControlSet = terminal.setHeatingControlType("Staged");
+      const bool designTemperatureSet = terminal.setDesignHeatingDischargeAirTemperature(32.1);
+      const bool highLimitTemperatureSet = terminal.setHighLimitHeatingDischargeAirTemperature(37.7);
+      OS_ASSERT(minimumFlowSet && convergenceSet && fanControlSet && fanTurnDownSet && heatingControlSet && designTemperatureSet
+                && highLimitTemperatureSet);
+    }
+
   }  // namespace
 
   AirTerminalSingleDuctParallelPIUReheat::AirTerminalSingleDuctParallelPIUReheat(const Model& model)
     : StraightComponent(AirTerminalSingleDuctParallelPIUReheat::iddObjectType(), model) {
     ScheduleConstant alwaysOn(model);
-    OS_ASSERT(alwaysOn.setValue(1.0));
-    OS_ASSERT(setAvailabilitySchedule(alwaysOn));
-    autosizeMaximumPrimaryAirFlowRate();
-    autosizeMaximumSecondaryAirFlowRate();
-    autosizeMinimumPrimaryAirFlowFraction();
-    autosizeFanOnFlowFraction();
-    autosizeMaximumHotWaterorSteamFlowRate();
-    OS_ASSERT(setMinimumHotWaterorSteamFlowRate(0.0));
-    OS_ASSERT(setConvergenceTolerance(0.001));
-    OS_ASSERT(setFanControlType("ConstantSpeed"));
-    OS_ASSERT(setMinimumFanTurnDownRatio(0.3));
-    OS_ASSERT(setHeatingControlType("Staged"));
-    OS_ASSERT(setDesignHeatingDischargeAirTemperature(32.1));
-    OS_ASSERT(setHighLimitHeatingDischargeAirTemperature(37.7));
+    const bool valueSet = alwaysOn.setValue(1.0);
+    const bool availabilitySet = setAvailabilitySchedule(alwaysOn);
+    OS_ASSERT(valueSet && availabilitySet);
+    applyConstructorDefaults(*this);
   }
 
   AirTerminalSingleDuctParallelPIUReheat::AirTerminalSingleDuctParallelPIUReheat(const Model& model, Schedule& schedule, HVACComponent& fan,
@@ -170,18 +178,7 @@ namespace epmodel {
                          "Could not construct " << briefDescription() << ", because the reheat coil type was invalid or from another model.");
     }
 
-    autosizeMaximumPrimaryAirFlowRate();
-    autosizeMaximumSecondaryAirFlowRate();
-    autosizeMinimumPrimaryAirFlowFraction();
-    autosizeFanOnFlowFraction();
-    autosizeMaximumHotWaterorSteamFlowRate();
-    OS_ASSERT(setMinimumHotWaterorSteamFlowRate(0.0));
-    OS_ASSERT(setConvergenceTolerance(0.001));
-    OS_ASSERT(setFanControlType("ConstantSpeed"));
-    OS_ASSERT(setMinimumFanTurnDownRatio(0.3));
-    OS_ASSERT(setHeatingControlType("Staged"));
-    OS_ASSERT(setDesignHeatingDischargeAirTemperature(32.1));
-    OS_ASSERT(setHighLimitHeatingDischargeAirTemperature(37.7));
+    applyConstructorDefaults(*this);
   }
 
   AirTerminalSingleDuctParallelPIUReheat::AirTerminalSingleDuctParallelPIUReheat(
@@ -402,6 +399,247 @@ namespace epmodel {
 namespace openstudio {
 namespace epmodel {
   namespace detail {
+
+    // Owns every provisional mutation made while inserting a parallel PIU.
+    // Zone-specific secondary-air and equipment projections are enrolled only
+    // when the demand branch already serves a zone; a terminal-only branch has
+    // primary air topology but deliberately has no invented zone state.
+    class AirTerminalSingleDuctParallelPIUReheat_Impl::InsertionPlan
+    {
+     public:
+      static std::unique_ptr<InsertionPlan> prepare(AirTerminalSingleDuctParallelPIUReheat_Impl& terminalImpl, AirLoopHVAC airLoop,
+                                                    AirLoopHVACZoneSplitter splitter, unsigned branchIndex, Node outletNode,
+                                                    boost::optional<ThermalZone> thermalZone) {
+        auto terminal = terminalImpl.getObject<ModelObject>();
+        const std::string inletNodeName = outletNode.nameString() + " - " + terminal.nameString() + " Inlet Node";
+        const bool inletNodeExisted = static_cast<bool>(terminalImpl.model().getConcreteModelObjectByName<Node>(inletNodeName));
+        auto inletNode = terminalImpl.model().getOrCreateTransientByName<Node>(inletNodeName);
+
+        boost::optional<Node> secondaryNode;
+        bool secondaryNodeExisted = false;
+        if (thermalZone) {
+          const std::string secondaryNodeName = outletNode.nameString() + " - " + terminal.nameString() + " Secondary Air Inlet Node";
+          secondaryNodeExisted = static_cast<bool>(terminalImpl.model().getConcreteModelObjectByName<Node>(secondaryNodeName));
+          secondaryNode = terminalImpl.model().getOrCreateTransientByName<Node>(secondaryNodeName);
+        }
+
+        auto plan = std::unique_ptr<InsertionPlan>(new InsertionPlan(terminalImpl, std::move(airLoop), std::move(splitter), branchIndex,
+                                                                     std::move(outletNode), std::move(inletNode), !inletNodeExisted,
+                                                                     std::move(thermalZone), std::move(secondaryNode), !secondaryNodeExisted));
+        if (!plan->prepareTopology()) {
+          return nullptr;
+        }
+        return plan;
+      }
+
+      InsertionPlan(const InsertionPlan&) = delete;
+      InsertionPlan& operator=(const InsertionPlan&) = delete;
+      InsertionPlan(InsertionPlan&& other) noexcept
+        : m_state(other.m_state),
+          m_terminalImpl(other.m_terminalImpl),
+          m_airLoop(std::move(other.m_airLoop)),
+          m_splitter(std::move(other.m_splitter)),
+          m_branchIndex(other.m_branchIndex),
+          m_outletNode(std::move(other.m_outletNode)),
+          m_inletNode(std::move(other.m_inletNode)),
+          m_inletNodeCreated(other.m_inletNodeCreated),
+          m_thermalZone(std::move(other.m_thermalZone)),
+          m_secondaryNode(std::move(other.m_secondaryNode)),
+          m_secondaryNodeCreated(other.m_secondaryNodeCreated),
+          m_zoneConnections(std::move(other.m_zoneConnections)),
+          m_airDistributionUnit(std::move(other.m_airDistributionUnit)),
+          m_previousADUOutletTarget(std::move(other.m_previousADUOutletTarget)),
+          m_previousADUOutletNodeName(std::move(other.m_previousADUOutletNodeName)),
+          m_splitterRewired(other.m_splitterRewired),
+          m_inletAssigned(other.m_inletAssigned),
+          m_outletAssigned(other.m_outletAssigned),
+          m_secondaryAssigned(other.m_secondaryAssigned),
+          m_exhaustRegistered(other.m_exhaustRegistered),
+          m_aduUpdated(other.m_aduUpdated),
+          m_zoneRegistered(other.m_zoneRegistered) {
+        other.m_state = State::MovedFrom;
+      }
+      InsertionPlan& operator=(InsertionPlan&&) = delete;
+
+      ~InsertionPlan() {
+        if (m_state == State::Prepared) {
+          cleanupPreparedState();
+        }
+      }
+
+      bool commit() {
+        OS_ASSERT(m_state == State::Prepared);
+        auto fanObject = m_terminalImpl->fan();
+        auto loopAvailability = m_airLoop.availabilitySchedule();
+        if (!syncFanAvailabilityWithLoop(fanObject, loopAvailability)) {
+          return false;
+        }
+        m_state = State::Committed;
+        return true;
+      }
+
+     private:
+      enum class State
+      {
+        Prepared,
+        Committed,
+        MovedFrom,
+      };
+
+      InsertionPlan(AirTerminalSingleDuctParallelPIUReheat_Impl& terminalImpl, AirLoopHVAC airLoop, AirLoopHVACZoneSplitter splitter,
+                    unsigned branchIndex, Node outletNode, Node inletNode, bool inletNodeCreated, boost::optional<ThermalZone> thermalZone,
+                    boost::optional<Node> secondaryNode, bool secondaryNodeCreated)
+        : m_terminalImpl(&terminalImpl),
+          m_airLoop(std::move(airLoop)),
+          m_splitter(std::move(splitter)),
+          m_branchIndex(branchIndex),
+          m_outletNode(std::move(outletNode)),
+          m_inletNode(std::move(inletNode)),
+          m_inletNodeCreated(inletNodeCreated),
+          m_thermalZone(std::move(thermalZone)),
+          m_secondaryNode(std::move(secondaryNode)),
+          m_secondaryNodeCreated(secondaryNodeCreated) {}
+
+      bool prepareTopology() {
+        auto terminal = m_terminalImpl->getObject<ModelObject>();
+        if (m_thermalZone) {
+          auto zoneImpl = m_thermalZone->getImpl<detail::ThermalZone_Impl>();
+          OS_ASSERT(zoneImpl);
+          m_zoneConnections = zoneImpl->getZoneHVACEquipmentConnections();
+          m_airDistributionUnit = m_terminalImpl->zoneHVACAirDistributionUnit();
+          if (m_airDistributionUnit) {
+            m_previousADUOutletNodeName =
+              m_airDistributionUnit->getString(openstudio::ZoneHVAC_AirDistributionUnitFields::AirDistributionUnitOutletNodeName, false, true);
+            if (auto target = m_airDistributionUnit->getTarget(openstudio::ZoneHVAC_AirDistributionUnitFields::AirDistributionUnitOutletNodeName)) {
+              m_previousADUOutletTarget = target->optionalCast<ModelObject>();
+            }
+          }
+        }
+
+        if (!m_splitter.setOutletModelObject(m_branchIndex, m_inletNode.cast<ModelObject>())) {
+          return false;
+        }
+        m_splitterRewired = true;
+
+        if (!m_terminalImpl->setPointer(m_terminalImpl->inletPort(), m_inletNode.handle(), false)) {
+          return false;
+        }
+        m_inletAssigned = true;
+        if (!m_terminalImpl->setPointer(m_terminalImpl->outletPort(), m_outletNode.handle(), false)) {
+          return false;
+        }
+        m_outletAssigned = true;
+
+        if (!m_thermalZone) {
+          return true;
+        }
+
+        OS_ASSERT(m_secondaryNode && m_zoneConnections);
+        if (!m_terminalImpl->setPointer(m_terminalImpl->secondaryAirInletPort(), m_secondaryNode->handle(), false)) {
+          return false;
+        }
+        m_secondaryAssigned = true;
+
+        const auto originalExhaustNodes = m_zoneConnections->zoneAirExhaustNodes();
+        const bool wasExhaustRegistered = std::ranges::find(originalExhaustNodes, *m_secondaryNode) != originalExhaustNodes.end();
+        const bool exhaustResult = m_zoneConnections->getImpl<detail::ZoneHVACEquipmentConnections_Impl>()->addZoneAirExhaustNode(*m_secondaryNode);
+        const auto currentExhaustNodes = m_zoneConnections->zoneAirExhaustNodes();
+        m_exhaustRegistered = !wasExhaustRegistered && (std::ranges::find(currentExhaustNodes, *m_secondaryNode) != currentExhaustNodes.end());
+        if (!exhaustResult) {
+          return false;
+        }
+
+        if (m_airDistributionUnit) {
+          if (!m_airDistributionUnit->getImpl<detail::ZoneHVACAirDistributionUnit_Impl>()->setOutletNode(m_outletNode)) {
+            return false;
+          }
+          m_aduUpdated = true;
+        }
+
+        const auto originalEquipment = m_thermalZone->equipment();
+        const bool wasZoneRegistered = std::ranges::find(originalEquipment, terminal) != originalEquipment.end();
+        const bool zoneResult = registerTerminalWithZone(*m_thermalZone, terminal);
+        const auto currentEquipment = m_thermalZone->equipment();
+        m_zoneRegistered = !wasZoneRegistered && (std::ranges::find(currentEquipment, terminal) != currentEquipment.end());
+        return zoneResult;
+      }
+
+      void cleanupPreparedState() {
+        auto terminal = m_terminalImpl->getObject<ModelObject>();
+        if (m_zoneRegistered && m_thermalZone) {
+          const bool removed = unregisterTerminalFromZone(*m_thermalZone, terminal);
+          OS_ASSERT(removed);
+          (void)removed;
+        }
+        if (m_aduUpdated && m_airDistributionUnit) {
+          auto aduImpl = m_airDistributionUnit->getImpl<detail::ZoneHVACAirDistributionUnit_Impl>();
+          OS_ASSERT(aduImpl);
+          const bool restored =
+            m_previousADUOutletTarget ? aduImpl->setPointer(openstudio::ZoneHVAC_AirDistributionUnitFields::AirDistributionUnitOutletNodeName,
+                                                            m_previousADUOutletTarget->handle(), false)
+            : m_previousADUOutletNodeName
+              ? aduImpl->setString(openstudio::ZoneHVAC_AirDistributionUnitFields::AirDistributionUnitOutletNodeName, *m_previousADUOutletNodeName,
+                                   false)
+              : aduImpl->setPointer(openstudio::ZoneHVAC_AirDistributionUnitFields::AirDistributionUnitOutletNodeName, Handle(), false);
+          OS_ASSERT(restored);
+          (void)restored;
+        }
+        if (m_exhaustRegistered && m_zoneConnections && m_secondaryNode) {
+          const bool removed = m_zoneConnections->getImpl<detail::ZoneHVACEquipmentConnections_Impl>()->removeZoneAirExhaustNode(*m_secondaryNode);
+          OS_ASSERT(removed);
+          (void)removed;
+        }
+        if (m_secondaryAssigned) {
+          const bool cleared = m_terminalImpl->setPointer(m_terminalImpl->secondaryAirInletPort(), openstudio::Handle(), false);
+          OS_ASSERT(cleared);
+          (void)cleared;
+        }
+        if (m_outletAssigned) {
+          const bool cleared = m_terminalImpl->setPointer(m_terminalImpl->outletPort(), openstudio::Handle(), false);
+          OS_ASSERT(cleared);
+          (void)cleared;
+        }
+        if (m_inletAssigned) {
+          const bool cleared = m_terminalImpl->setPointer(m_terminalImpl->inletPort(), openstudio::Handle(), false);
+          OS_ASSERT(cleared);
+          (void)cleared;
+        }
+        if (m_splitterRewired) {
+          const bool restored = m_splitter.setOutletModelObject(m_branchIndex, m_outletNode.cast<ModelObject>());
+          OS_ASSERT(restored);
+          (void)restored;
+        }
+        if (m_secondaryNodeCreated && m_secondaryNode && m_terminalImpl->model().getObject(m_secondaryNode->handle())) {
+          m_secondaryNode->remove();
+        }
+        if (m_inletNodeCreated && m_terminalImpl->model().getObject(m_inletNode.handle())) {
+          m_inletNode.remove();
+        }
+      }
+
+      State m_state = State::Prepared;
+      AirTerminalSingleDuctParallelPIUReheat_Impl* m_terminalImpl;
+      AirLoopHVAC m_airLoop;
+      AirLoopHVACZoneSplitter m_splitter;
+      unsigned m_branchIndex;
+      Node m_outletNode;
+      Node m_inletNode;
+      bool m_inletNodeCreated;
+      boost::optional<ThermalZone> m_thermalZone;
+      boost::optional<Node> m_secondaryNode;
+      bool m_secondaryNodeCreated;
+      boost::optional<ZoneHVACEquipmentConnections> m_zoneConnections;
+      boost::optional<ZoneHVACAirDistributionUnit> m_airDistributionUnit;
+      boost::optional<ModelObject> m_previousADUOutletTarget;
+      boost::optional<std::string> m_previousADUOutletNodeName;
+      bool m_splitterRewired = false;
+      bool m_inletAssigned = false;
+      bool m_outletAssigned = false;
+      bool m_secondaryAssigned = false;
+      bool m_exhaustRegistered = false;
+      bool m_aduUpdated = false;
+      bool m_zoneRegistered = false;
+    };
 
     Schedule AirTerminalSingleDuctParallelPIUReheat_Impl::availabilitySchedule() const {
       auto schedule = getObject<ModelObject>().getModelObjectTarget<Schedule>(
@@ -697,18 +935,32 @@ namespace epmodel {
 
     std::vector<openstudio::IdfObject> AirTerminalSingleDuctParallelPIUReheat_Impl::remove() {
       auto thisObject = getObject<openstudio::epmodel::ModelObject>();
-      auto reheat = thisObject.getModelObjectTarget<openstudio::epmodel::HVACComponent>(
-        openstudio::AirTerminal_SingleDuct_ParallelPIU_ReheatFields::ReheatCoilName);
-
-      removeFromLoop();
-
-      if (reheat) {
-        if (auto plantLoop = reheat->plantLoop()) {
-          plantLoop->removeDemandBranchWithComponent(*reheat);
+      auto ownedChildren = children();
+      const bool hadTopology = static_cast<bool>(inletModelObject()) || static_cast<bool>(outletModelObject())
+                               || static_cast<bool>(secondaryAirInletNode()) || static_cast<bool>(thermalZoneContainingTerminal(model(), thisObject))
+                               || static_cast<bool>(zoneHVACAirDistributionUnit());
+      bool childHadPlantTopology = false;
+      for (const auto& child : ownedChildren) {
+        if (auto component = child.optionalCast<openstudio::epmodel::HVACComponent>(); component && component->plantLoop()) {
+          childHadPlantTopology = true;
+          break;
         }
       }
 
-      return HVACComponent_Impl::remove();
+      if ((hadTopology || childHadPlantTopology) && !removeFromLoop()) {
+        return {};
+      }
+
+      auto result = HVACComponent_Impl::remove();
+      if (result.empty()) {
+        return result;
+      }
+
+      for (auto& child : ownedChildren) {
+        auto removedChild = child.remove();
+        result.insert(result.end(), removedChild.begin(), removedChild.end());
+      }
+      return result;
     }
 
     bool AirTerminalSingleDuctParallelPIUReheat_Impl::removeFromLoop() {
@@ -731,10 +983,8 @@ namespace epmodel {
         if (auto airLoop = terminal->airLoopHVAC()) {
           if (inletNode && outletNode) {
             const auto splitter = airLoop->zoneSplitter();
-            const auto mixer = airLoop->zoneMixer();
             const auto splitterBranchIndex = splitter.branchIndexForOutletModelObject(*inletNode);
-            shouldRemoveTerminalInletNode =
-              (splitter.outletModelObject(splitterBranchIndex) == *inletNode) && (mixer.inletModelObject(splitterBranchIndex) == *outletNode);
+            shouldRemoveTerminalInletNode = splitter.outletModelObject(splitterBranchIndex) == *inletNode;
           }
         }
       }
@@ -765,9 +1015,11 @@ namespace epmodel {
           return false;
         }
 
-        if (secondaryNode->sources().empty()) {
-          secondaryNode->remove();
-          removedSecondaryNode = true;
+        const auto secondaryNodeHandle = secondaryNode->handle();
+        secondaryNode->remove();
+        removedSecondaryNode = !model().getObject(secondaryNodeHandle);
+        if (!removedSecondaryNode) {
+          return false;
         }
       }
 
@@ -810,13 +1062,17 @@ namespace epmodel {
     }
 
     bool AirTerminalSingleDuctParallelPIUReheat_Impl::addToNode(Node& node) {
+      return addToNode(node, AddToNodeFailureStage::None);
+    }
+
+    bool AirTerminalSingleDuctParallelPIUReheat_Impl::addToNode(Node& node, AddToNodeFailureStage failureStage) {
       if (node.model() != model()) {
         LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctParallelPIUReheat",
                  "addToNode requires a node in the same model as the parallel PIU terminal.");
         return false;
       }
 
-      if (getObject<openstudio::epmodel::HVACComponent>().loop()) {
+      if (getObject<openstudio::epmodel::HVACComponent>().loop() || inletModelObject() || outletModelObject() || secondaryAirInletNode()) {
         LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctParallelPIUReheat",
                  "Refusing to add an already-connected parallel PIU terminal to node '" << node.nameString() << "'.");
         return false;
@@ -854,13 +1110,15 @@ namespace epmodel {
         return false;
       }
 
-      if (!thermalZone) {
+      auto thisObject = getObject<ModelObject>();
+      const auto fanComponent = thisObject.getModelObjectTarget<HVACComponent>(openstudio::AirTerminal_SingleDuct_ParallelPIU_ReheatFields::FanName);
+      const auto reheatComponent =
+        thisObject.getModelObjectTarget<HVACComponent>(openstudio::AirTerminal_SingleDuct_ParallelPIU_ReheatFields::ReheatCoilName);
+      if (!fanComponent || !reheatComponent) {
         LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctParallelPIUReheat",
-                 "addToNode requires the drop node to be the current zone-branch node for an attached thermal zone.");
+                 "addToNode requires both the fan and reheat coil relationships to be established before insertion.");
         return false;
       }
-
-      auto thisObject = getObject<ModelObject>();
       if (!thisObject.name()) {
         thisObject.createName();
         if (!thisObject.name()) {
@@ -868,52 +1126,14 @@ namespace epmodel {
         }
       }
 
-      const std::string inletNodeName = node.nameString() + " - " + thisObject.nameString() + " Inlet Node";
-      auto inletNode = model().getOrCreateTransientByName<Node>(inletNodeName);
-      if (!zoneSplitter.setOutletModelObject(splitterBranchIndex, inletNode.cast<ModelObject>())) {
+      auto insertion = InsertionPlan::prepare(*this, *airLoop, zoneSplitter, splitterBranchIndex, node, thermalZone);
+      if (!insertion) {
         return false;
       }
-
-      if (!setPointer(inletPort(), inletNode.handle(), false)) {
+      if (failureStage == AddToNodeFailureStage::AfterTopologyPrepared) {
         return false;
       }
-
-      if (!setPointer(outletPort(), node.handle(), false)) {
-        return false;
-      }
-
-      const std::string secondaryNodeName = node.nameString() + " - " + thisObject.nameString() + " Secondary Air Inlet Node";
-      auto secondaryNode = model().getOrCreateTransientByName<openstudio::epmodel::Node>(secondaryNodeName);
-      if (!setPointer(secondaryAirInletPort(), secondaryNode.handle(), false)) {
-        return false;
-      }
-
-      auto zoneImpl = thermalZone->getImpl<detail::ThermalZone_Impl>();
-      OS_ASSERT(zoneImpl);
-      auto zoneConnections = zoneImpl->getZoneHVACEquipmentConnections();
-      if (!zoneConnections.getImpl<detail::ZoneHVACEquipmentConnections_Impl>()->addZoneAirExhaustNode(secondaryNode)) {
-        return false;
-      }
-
-      if (auto adu = zoneHVACAirDistributionUnit()) {
-        if (!adu->getImpl<detail::ZoneHVACAirDistributionUnit_Impl>()->setOutletNode(node)) {
-          return false;
-        }
-      }
-
-      auto fanObject = fan();
-      auto loopAvailability = airLoop->availabilitySchedule();
-      if (!syncFanAvailabilityWithLoop(fanObject, loopAvailability)) {
-        return false;
-      }
-
-      if (!registerTerminalWithZone(*thermalZone, thisObject)) {
-        LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctParallelPIUReheat",
-                 "addToNode failed to register the parallel PIU terminal with the owning thermal zone.");
-        return false;
-      }
-
-      return true;
+      return insertion->commit();
     }
 
     unsigned AirTerminalSingleDuctParallelPIUReheat_Impl::secondaryAirInletPort() const {

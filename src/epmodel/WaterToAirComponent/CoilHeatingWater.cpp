@@ -69,6 +69,18 @@ namespace epmodel {
       }
     }
 
+    void removeControllerWaterCoil(ControllerWaterCoil& controller) {
+      // NodeType fields participate in epmodel's live pointer graph, but they
+      // are not Workspace object-list fields and generic removal does not
+      // clear their reverse pointers. Detach them explicitly before deleting
+      // the controller so later loop traversal cannot encounter its handle.
+      auto controllerImpl = controller.getImpl<detail::ControllerWaterCoil_Impl>();
+      OS_ASSERT(controllerImpl);
+      (void)controllerImpl->setPointer(openstudio::Controller_WaterCoilFields::SensorNodeName, openstudio::Handle(), false);
+      (void)controllerImpl->setPointer(openstudio::Controller_WaterCoilFields::ActuatorNodeName, openstudio::Handle(), false);
+      controller.remove();
+    }
+
   }  // namespace
 
   CoilHeatingWater::CoilHeatingWater(const Model& model, Schedule& availabilitySchedule)
@@ -293,7 +305,7 @@ namespace epmodel {
 
     bool CoilHeatingWater_Impl::removeFromPlantLoop() {
       if (auto controller = inferControllerForCoil(getObject<openstudio::epmodel::CoilHeatingWater>())) {
-        controller->remove();
+        removeControllerWaterCoil(*controller);
         syncAirLoopWaterCoilControllers(getObject<openstudio::epmodel::CoilHeatingWater>());
       }
       return WaterToAirComponent_Impl::removeFromPlantLoop();
@@ -305,7 +317,7 @@ namespace epmodel {
       }
 
       if (auto controller = inferControllerForCoil(getObject<openstudio::epmodel::CoilHeatingWater>())) {
-        controller->remove();
+        removeControllerWaterCoil(*controller);
         syncAirLoopWaterCoilControllers(getObject<openstudio::epmodel::CoilHeatingWater>());
       }
 

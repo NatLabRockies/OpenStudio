@@ -74,7 +74,9 @@ namespace epmodel {
 
     std::vector<openstudio::IdfObject> AirTerminalDualDuctVAV_Impl::remove() {
       auto terminal = getObject<AirTerminalDualDuctVAV>().cast<Mixer>();
-      AirLoopHVAC_Impl::removeDualDuctTerminalFromAirLoopHVAC(terminal);
+      if (!AirLoopHVAC_Impl::removeDualDuctTerminalFromAirLoopHVAC(terminal)) {
+        return {};
+      }
       return Mixer_Impl::remove();
     }
 

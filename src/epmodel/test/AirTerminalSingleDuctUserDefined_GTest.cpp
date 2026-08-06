@@ -200,7 +200,7 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctUserDefined_Remove_ReconnectsZoneBra
   splitterOutlet = airLoop.zoneSplitter().outletModelObject(0u);
   ASSERT_TRUE(splitterOutlet);
   EXPECT_EQ(zoneAirNode.cast<ModelObject>(), *splitterOutlet);
-  EXPECT_EQ(6u, airLoop.demandComponents().size());
+  EXPECT_EQ(7u, airLoop.demandComponents().size());
   EXPECT_TRUE(airLoop.demandComponents(AirTerminalSingleDuctUserDefined::iddObjectType()).empty());
   EXPECT_TRUE(zone.equipment().empty());
   EXPECT_FALSE(adu.outletNode());
@@ -304,4 +304,42 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctUserDefined_RemoveFromLoop_CleansCon
   EXPECT_TRUE(model.getObject(terminal.handle()));
   EXPECT_FALSE(model.getModelObject<Node>(inletNodeHandle));
   EXPECT_FALSE(terminal.removeFromLoop());
+}
+
+TEST_F(EPModelFixture, AirTerminalSingleDuctUserDefined_TerminalOnlyBranchBesideZoneRemovesIndependently) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  ThermalZone zone(model);
+  AirTerminalSingleDuctUserDefined terminal(model);
+
+  ASSERT_TRUE(airLoop.addBranchForZone(zone));
+  ASSERT_TRUE(airLoop.addBranchForHVACComponent(terminal));
+  ASSERT_TRUE(terminal.airLoopHVAC());
+  EXPECT_EQ(1u, airLoop.thermalZones().size());
+  EXPECT_EQ(2u, airLoop.zoneSplitter().outletModelObjects().size());
+  EXPECT_EQ(2u, airLoop.zoneMixer().inletModelObjects().size());
+
+  const auto zoneAirNode = zone.zoneAirNode();
+  const auto zoneReturnNode = zone.returnAirModelObject();
+  ASSERT_TRUE(zoneReturnNode);
+  ASSERT_TRUE(airLoop.zoneSplitter().outletModelObject(0u));
+  ASSERT_TRUE(airLoop.zoneMixer().inletModelObject(0u));
+  EXPECT_EQ(zoneAirNode.cast<ModelObject>(), *airLoop.zoneSplitter().outletModelObject(0u));
+  EXPECT_EQ(*zoneReturnNode, *airLoop.zoneMixer().inletModelObject(0u));
+
+  ASSERT_TRUE(terminal.removeFromLoop());
+  EXPECT_FALSE(terminal.airLoopHVAC());
+  EXPECT_TRUE(model.getObject(terminal.handle()));
+  EXPECT_EQ(1u, airLoop.thermalZones().size());
+  // Removing a demand-side StraightComponent preserves its branch as a
+  // splitter-to-mixer pass-through, matching model graph semantics.
+  EXPECT_EQ(2u, airLoop.zoneSplitter().outletModelObjects().size());
+  EXPECT_EQ(2u, airLoop.zoneMixer().inletModelObjects().size());
+  ASSERT_TRUE(airLoop.zoneSplitter().outletModelObject(0u));
+  ASSERT_TRUE(airLoop.zoneMixer().inletModelObject(0u));
+  EXPECT_EQ(zoneAirNode.cast<ModelObject>(), *airLoop.zoneSplitter().outletModelObject(0u));
+  EXPECT_EQ(*zoneReturnNode, *airLoop.zoneMixer().inletModelObject(0u));
+  ASSERT_TRUE(airLoop.zoneSplitter().outletModelObject(1u));
+  ASSERT_TRUE(airLoop.zoneMixer().inletModelObject(1u));
+  EXPECT_EQ(*airLoop.zoneSplitter().outletModelObject(1u), *airLoop.zoneMixer().inletModelObject(1u));
 }

@@ -79,7 +79,9 @@ namespace epmodel {
     bool unregisterTerminalFromThermalZone(const ModelObject& terminal, ThermalZone& thermalZone) {
       auto zoneImpl = thermalZone.getImpl<detail::ThermalZone_Impl>();
       OS_ASSERT(zoneImpl);
-      return zoneImpl->getZoneHVACEquipmentList().removeEquipment(terminal);
+      auto equipmentList = zoneImpl->getZoneHVACEquipmentList();
+      const auto equipment = equipmentList.equipment();
+      return (std::ranges::find(equipment, terminal) == equipment.end()) || equipmentList.removeEquipment(terminal);
     }
 
   }  // namespace
@@ -278,10 +280,8 @@ namespace epmodel {
         if (auto airLoop = terminal->airLoopHVAC()) {
           if (inletNode && outletNode) {
             const auto splitter = airLoop->zoneSplitter();
-            const auto mixer = airLoop->zoneMixer();
             const auto splitterBranchIndex = splitter.branchIndexForOutletModelObject(*inletNode);
-            shouldRemoveTerminalInletNode =
-              (splitter.outletModelObject(splitterBranchIndex) == *inletNode) && (mixer.inletModelObject(splitterBranchIndex) == *outletNode);
+            shouldRemoveTerminalInletNode = splitter.outletModelObject(splitterBranchIndex) == *inletNode;
           }
         }
       }

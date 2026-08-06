@@ -166,6 +166,12 @@ namespace epmodel {
 
     void ZoneHVACEquipmentConnections_Impl::doCanonicalize(LoadContext& context) {
       auto equipmentConnections = getObject<openstudio::epmodel::ZoneHVACEquipmentConnections>();
+
+      // This object is authoritative for a ThermalZone's inlet and return
+      // boundary-node membership. AirLoopHVAC traversal consumes this
+      // relationship rather than inferring zone ownership from direct node
+      // continuity.
+
       if (!equipmentConnections.name() || equipmentConnections.name()->empty()) {
         equipmentConnections.createName();
         if (equipmentConnections.name() && !equipmentConnections.name()->empty()) {

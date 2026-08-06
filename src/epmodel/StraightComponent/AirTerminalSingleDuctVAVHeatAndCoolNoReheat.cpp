@@ -181,10 +181,8 @@ namespace epmodel {
         if (auto airLoop = terminal->airLoopHVAC()) {
           if (inletNode && outletNode) {
             const auto splitter = airLoop->zoneSplitter();
-            const auto mixer = airLoop->zoneMixer();
             const auto splitterBranchIndex = splitter.branchIndexForOutletModelObject(*inletNode);
-            shouldRemoveTerminalInletNode =
-              (splitter.outletModelObject(splitterBranchIndex) == *inletNode) && (mixer.inletModelObject(splitterBranchIndex) == *outletNode);
+            shouldRemoveTerminalInletNode = splitter.outletModelObject(splitterBranchIndex) == *inletNode;
           }
         }
       }

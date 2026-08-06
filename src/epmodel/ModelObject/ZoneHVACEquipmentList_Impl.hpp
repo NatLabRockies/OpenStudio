@@ -20,6 +20,13 @@ namespace epmodel {
     class EPMODEL_API ZoneHVACEquipmentList_Impl : public ModelObject_Impl
     {
      public:
+      enum class AddEquipmentFailureStage
+      {
+        None,
+        AfterTargetPrepared,
+        AfterExtensibleRowAdded,
+      };
+
       using ModelObject_Impl::ModelObject_Impl;
       virtual ~ZoneHVACEquipmentList_Impl() override = default;
 
@@ -32,6 +39,7 @@ namespace epmodel {
       std::vector<openstudio::epmodel::ModelObject> equipmentInCoolingOrder() const;
       openstudio::epmodel::ThermalZone thermalZone() const;
       bool addEquipment(const openstudio::epmodel::ModelObject& component);
+      bool addEquipment(const openstudio::epmodel::ModelObject& component, AddEquipmentFailureStage failureStage);
       bool removeEquipment(const openstudio::epmodel::ModelObject& component);
       bool setCoolingPriority(const openstudio::epmodel::ModelObject& component, unsigned priority);
       bool setHeatingPriority(const openstudio::epmodel::ModelObject& component, unsigned priority);

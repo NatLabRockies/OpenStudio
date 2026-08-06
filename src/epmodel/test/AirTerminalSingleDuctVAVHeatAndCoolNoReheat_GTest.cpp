@@ -279,3 +279,28 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctVAVHeatAndCoolNoReheat_Remove_Reconn
   EXPECT_FALSE(model.getObject(terminalForRemove.handle()));
   EXPECT_FALSE(model.getModelObject<Node>(removeInletNodeHandle));
 }
+
+TEST_F(EPModelFixture, AirTerminalSingleDuctVAVHeatAndCoolNoReheat_TerminalOnlyBranchSupportsRemoveFromLoopAndReuse) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  AirTerminalSingleDuctVAVHeatAndCoolNoReheat terminal(model);
+
+  ASSERT_TRUE(airLoop.addBranchForHVACComponent(terminal));
+  ASSERT_TRUE(terminal.airLoopHVAC());
+  EXPECT_TRUE(airLoop.thermalZones().empty());
+  ASSERT_TRUE(terminal.inletModelObject());
+  ASSERT_TRUE(terminal.outletModelObject());
+
+  ASSERT_TRUE(terminal.removeFromLoop());
+  EXPECT_TRUE(model.getObject(terminal.handle()));
+  EXPECT_FALSE(terminal.airLoopHVAC());
+  EXPECT_FALSE(terminal.inletModelObject());
+  EXPECT_FALSE(terminal.outletModelObject());
+  ASSERT_TRUE(airLoop.zoneSplitter().outletModelObject(0u));
+  ASSERT_TRUE(airLoop.zoneMixer().inletModelObject(0u));
+  EXPECT_EQ(*airLoop.zoneSplitter().outletModelObject(0u), *airLoop.zoneMixer().inletModelObject(0u));
+
+  ASSERT_TRUE(airLoop.addBranchForHVACComponent(terminal));
+  EXPECT_TRUE(terminal.airLoopHVAC());
+  EXPECT_TRUE(airLoop.thermalZones().empty());
+}

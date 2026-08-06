@@ -95,12 +95,11 @@ namespace epmodel {
 
     void Splitter_Impl::removePortForBranch(unsigned branchIndex) {
       const auto next = nextBranchIndex();
-      auto splitter = getObject<openstudio::epmodel::Splitter>();
       if (branchIndex >= next) {
         return;
       }
 
-      splitter.setPointer(outletPort(branchIndex), Handle());
+      setPointer(outletPort(branchIndex), Handle(), false);
       for (unsigned i = branchIndex + 1; i < next; ++i) {
         auto mo = outletModelObject(i);
         OS_ASSERT(mo);
@@ -109,7 +108,7 @@ namespace epmodel {
         }
       }
 
-      splitter.setPointer(outletPort(next - 1u), Handle());
+      setPointer(outletPort(next - 1u), Handle(), false);
     }
 
     bool Splitter_Impl::setOutletModelObject(unsigned branchIndex, const ModelObject& modelObject) {

@@ -430,11 +430,14 @@ TEST_F(EPModelFixture, API_ThermalZone_EquipmentAndTopologyHelpers_RoundTrip) {
 
   auto returnAirObject = zone.returnAirModelObject();
   ASSERT_TRUE(returnAirObject);
-  EXPECT_EQ(zoneAirNode.cast<ModelObject>(), *returnAirObject);
+  EXPECT_NE(zoneAirNode.cast<ModelObject>(), *returnAirObject);
+  auto mixerInletObject = airLoop.zoneMixer().lastInletModelObject();
+  ASSERT_TRUE(mixerInletObject);
+  EXPECT_EQ(*mixerInletObject, *returnAirObject);
 
   auto returnAirObjects = zone.returnAirModelObjects();
   ASSERT_EQ(1u, returnAirObjects.size());
-  EXPECT_EQ(zoneAirNode.cast<ModelObject>(), returnAirObjects.front());
+  EXPECT_EQ(*returnAirObject, returnAirObjects.front());
 
   auto airLoopTerminal = zone.airLoopHVACTerminal();
   ASSERT_TRUE(airLoopTerminal);

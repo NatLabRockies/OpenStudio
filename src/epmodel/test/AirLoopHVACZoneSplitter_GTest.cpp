@@ -52,3 +52,22 @@ TEST_F(EPModelFixture, API_AirLoopHVACZoneSplitter_SetOutletModelObjectCreatesMi
   EXPECT_EQ(branchNode1.cast<ModelObject>(), *splitter.outletModelObject(1u));
   EXPECT_EQ(2u, splitter.nextBranchIndex());
 }
+
+TEST_F(EPModelFixture, API_AirLoopHVACZoneSplitter_RemovePortCompactsPointersAndReverseSources) {
+  Model model;
+  AirLoopHVACZoneSplitter splitter(model);
+  Node branchNode0(model);
+  Node branchNode1(model);
+
+  ASSERT_TRUE(splitter.setOutletModelObject(0u, branchNode0.cast<ModelObject>()));
+  ASSERT_TRUE(splitter.setOutletModelObject(1u, branchNode1.cast<ModelObject>()));
+  ASSERT_EQ(1u, branchNode0.sources().size());
+  ASSERT_EQ(1u, branchNode1.sources().size());
+
+  splitter.removePortForBranch(0u);
+
+  EXPECT_TRUE(branchNode0.sources().empty());
+  ASSERT_EQ(1u, splitter.outletModelObjects().size());
+  EXPECT_EQ(branchNode1.cast<ModelObject>(), *splitter.outletModelObject(0u));
+  EXPECT_EQ(1u, branchNode1.sources().size());
+}

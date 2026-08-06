@@ -6,17 +6,20 @@
 #include <gtest/gtest.h>
 
 #include <algorithm>
+#include <utilities/core/Exception.hpp>
 
 #include "EPModelFixture.hpp"
 #include "../Schedule/ScheduleCompact.hpp"
 #include "../Schedule/ScheduleConstant.hpp"
 #include "../Schedule/ScheduleConstant_Impl.hpp"
 #include "../HVACComponent/ThermalZone.hpp"
+#include "../HVACComponent/ThermalZone_Impl.hpp"
 #include "../Loop/AirLoopHVAC.hpp"
 #include "../Loop/PlantLoop.hpp"
 #include "../Mixer/AirLoopHVACZoneMixer.hpp"
 #include "../ModelObject/ZoneHVACAirDistributionUnit.hpp"
 #include "../ModelObject/ZoneHVACAirDistributionUnit_Impl.hpp"
+#include "../ModelObject/ZoneHVACEquipmentConnections.hpp"
 #include "../StraightComponent/Node.hpp"
 #include "../Splitter/AirLoopHVACZoneSplitter.hpp"
 #include "../StraightComponent/AirTerminalSingleDuctConstantVolumeNoReheat.hpp"
@@ -35,6 +38,37 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctVAVReheat_DefaultConstructor) {
   AirTerminalSingleDuctVAVReheat terminal(model);
   EXPECT_EQ(AirTerminalSingleDuctVAVReheat::iddObjectType(), terminal.iddObject().type());
   EXPECT_FALSE(terminal.nameString().empty());
+}
+
+TEST_F(EPModelFixture, AirTerminalSingleDuctVAVReheat_CanonicalConstructorEstablishesRequiredRelationships) {
+  Model model;
+  ScheduleCompact availability(model);
+  ASSERT_TRUE(availability.setToConstantValue(0.6));
+  CoilHeatingElectric reheatCoil(model);
+
+  AirTerminalSingleDuctVAVReheat terminal(model, availability, reheatCoil);
+
+  EXPECT_EQ(availability.handle(), terminal.availabilitySchedule().handle());
+  EXPECT_EQ(reheatCoil.handle(), terminal.reheatCoil().handle());
+  EXPECT_TRUE(terminal.isMaximumAirFlowRateAutosized());
+
+  FanConstantVolume invalidCoil(model);
+  EXPECT_THROW({ AirTerminalSingleDuctVAVReheat invalidTerminal(model, availability, invalidCoil); }, openstudio::Exception);
+}
+
+TEST_F(EPModelFixture, AirTerminalSingleDuctVAVReheat_Remove_DisconnectedDeletesOwnedReheatCoil) {
+  Model model;
+  ScheduleCompact availability(model);
+  ASSERT_TRUE(availability.setToConstantValue(1.0));
+  CoilHeatingElectric reheatCoil(model);
+  AirTerminalSingleDuctVAVReheat terminal(model, availability, reheatCoil);
+  const auto terminalHandle = terminal.handle();
+  const auto coilHandle = reheatCoil.handle();
+
+  const auto removedObjects = terminal.remove();
+  EXPECT_FALSE(removedObjects.empty());
+  EXPECT_FALSE(model.getObject(terminalHandle));
+  EXPECT_FALSE(model.getObject(coilHandle));
 }
 
 TEST_F(EPModelFixture, AirTerminalSingleDuctVAVReheat_ScalarAccessors_RoundTrip) {
@@ -201,6 +235,12 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctVAVReheat_AddToNode_ResolvesAirLoopH
   ASSERT_TRUE(zone.addToNode(*branchNode));
 
   auto zoneAirNode = zone.zoneAirNode();
+  EXPECT_FALSE(terminal.addToNode(zoneAirNode));
+  EXPECT_FALSE(terminal.inletModelObject());
+  EXPECT_FALSE(terminal.outletModelObject());
+
+  CoilHeatingElectric reheatCoil(model);
+  ASSERT_TRUE(terminal.setReheatCoil(reheatCoil));
   ASSERT_TRUE(terminal.addToNode(zoneAirNode));
 
   auto linkedAirLoop = terminal.airLoopHVAC();
@@ -277,6 +317,8 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctVAVReheat_AddToNode_RegistersSecondB
   ThermalZone zone2(model);
   AirTerminalSingleDuctConstantVolumeNoReheat dummyTerminal(model);
   AirTerminalSingleDuctVAVReheat terminal(model);
+  CoilHeatingElectric reheatCoil(model);
+  ASSERT_TRUE(terminal.setReheatCoil(reheatCoil));
   ZoneHVACAirDistributionUnit adu(model);
 
   auto aduImpl = adu.getImpl<detail::ZoneHVACAirDistributionUnit_Impl>();
@@ -326,6 +368,8 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctVAVReheat_AddToNode_RejectsMismatche
   AirLoopHVAC airLoop(model);
   ThermalZone zone(model);
   AirTerminalSingleDuctVAVReheat terminal(model);
+  CoilHeatingElectric reheatCoil(model);
+  ASSERT_TRUE(terminal.setReheatCoil(reheatCoil));
 
   auto branchObject = airLoop.zoneSplitter().lastOutletModelObject();
   ASSERT_TRUE(branchObject);
@@ -347,6 +391,35 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctVAVReheat_AddToNode_RejectsMismatche
   EXPECT_EQ(zoneAirNode.cast<ModelObject>(), *splitterOutlet);
 }
 
+TEST_F(EPModelFixture, AirTerminalSingleDuctVAVReheat_TerminalOnlyBranchCanBeClaimedByZoneAndRemoved) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  ThermalZone zone(model);
+  CoilHeatingElectric reheatCoil(model);
+  AirTerminalSingleDuctVAVReheat terminal(model);
+  ASSERT_TRUE(terminal.setReheatCoil(reheatCoil));
+  const auto terminalHandle = terminal.handle();
+  const auto coilHandle = reheatCoil.handle();
+
+  ASSERT_TRUE(airLoop.addBranchForHVACComponent(terminal));
+  ASSERT_TRUE(terminal.airLoopHVAC());
+  ASSERT_TRUE(zone.equipment().empty());
+
+  ASSERT_TRUE(airLoop.addBranchForZone(zone));
+  ASSERT_EQ(1u, zone.equipment().size());
+  EXPECT_EQ(terminal.cast<ModelObject>(), zone.equipment().front());
+  ASSERT_TRUE(terminal.outletModelObject());
+  auto connections = zone.getImpl<detail::ThermalZone_Impl>()->zoneHVACEquipmentConnections();
+  ASSERT_TRUE(connections);
+  ASSERT_EQ(1u, connections->zoneAirInletNodes().size());
+  EXPECT_EQ(terminal.outletModelObject()->handle(), connections->zoneAirInletNodes().front().handle());
+
+  EXPECT_TRUE(airLoop.removeBranchForZone(zone));
+  EXPECT_FALSE(model.getObject(terminalHandle));
+  EXPECT_FALSE(model.getObject(coilHandle));
+  EXPECT_TRUE(zone.equipment().empty());
+}
+
 TEST_F(EPModelFixture, AirTerminalSingleDuctVAVReheat_Remove_ReconnectsZoneBranchAndCleansZoneAndPlantReferences) {
   Model model;
   AirLoopHVAC airLoop(model);
@@ -355,6 +428,8 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctVAVReheat_Remove_ReconnectsZoneBranc
   CoilHeatingWater waterCoil(model);
   AirTerminalSingleDuctVAVReheat terminal(model);
   ASSERT_TRUE(terminal.setReheatCoil(waterCoil));
+  const auto terminalHandle = terminal.handle();
+  const auto coilHandle = waterCoil.handle();
   ZoneHVACAirDistributionUnit adu(model);
 
   auto aduImpl = adu.getImpl<detail::ZoneHVACAirDistributionUnit_Impl>();
@@ -393,7 +468,8 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctVAVReheat_Remove_ReconnectsZoneBranc
   EXPECT_FALSE(adu.outletNode());
   EXPECT_FALSE(adu.airTerminal());
   EXPECT_FALSE(model.getModelObject<Node>(inletNodeHandle));
-  EXPECT_FALSE(waterCoil.plantLoop());
+  EXPECT_FALSE(model.getObject(terminalHandle));
+  EXPECT_FALSE(model.getObject(coilHandle));
   EXPECT_TRUE(plantLoop.demandComponents(CoilHeatingWater::iddObjectType()).empty());
 }
 
@@ -411,6 +487,7 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctVAVReheat_RemoveFromLoop_CleansPlant
 
   EXPECT_TRUE(terminal.removeFromLoop());
   EXPECT_TRUE(model.getObject(terminal.handle()));
+  EXPECT_TRUE(model.getObject(waterCoil.handle()));
   EXPECT_FALSE(waterCoil.plantLoop());
   EXPECT_TRUE(plantLoop.demandComponents(CoilHeatingWater::iddObjectType()).empty());
   EXPECT_FALSE(terminal.removeFromLoop());

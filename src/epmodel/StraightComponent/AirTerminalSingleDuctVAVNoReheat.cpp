@@ -40,6 +40,11 @@ namespace epmodel {
 
   namespace {
 
+    void assertSuccessfulMutation(bool result) {
+      OS_ASSERT(result);
+      (void)result;
+    }
+
     boost::optional<ThermalZone> owningThermalZoneForBranchNode(const Model& model, const Node& node) {
       for (const auto& connections : model.getConcreteModelObjects<ZoneHVACEquipmentConnections>()) {
         const auto inletNodes = connections.zoneAirInletNodes();
@@ -94,11 +99,23 @@ namespace epmodel {
   AirTerminalSingleDuctVAVNoReheat::AirTerminalSingleDuctVAVNoReheat(const Model& model)
     : StraightComponent(AirTerminalSingleDuctVAVNoReheat::iddObjectType(), model) {
     ScheduleConstant alwaysOn(model);
-    OS_ASSERT(alwaysOn.setValue(1.0));
-    OS_ASSERT(setAvailabilitySchedule(alwaysOn));
+    assertSuccessfulMutation(alwaysOn.setValue(1.0));
+    assertSuccessfulMutation(setAvailabilitySchedule(alwaysOn));
     autosizeMaximumAirFlowRate();
-    OS_ASSERT(setZoneMinimumAirFlowInputMethod("Constant"));
-    OS_ASSERT(setConstantMinimumAirFlowFraction(0.3));
+    assertSuccessfulMutation(setZoneMinimumAirFlowInputMethod("Constant"));
+    assertSuccessfulMutation(setConstantMinimumAirFlowFraction(0.3));
+  }
+
+  AirTerminalSingleDuctVAVNoReheat::AirTerminalSingleDuctVAVNoReheat(const Model& model, Schedule& schedule)
+    : StraightComponent(AirTerminalSingleDuctVAVNoReheat::iddObjectType(), model) {
+    if (!setAvailabilitySchedule(schedule)) {
+      remove();
+      LOG_FREE_AND_THROW("openstudio.epmodel.AirTerminalSingleDuctVAVNoReheat",
+                         "Could not construct " << briefDescription() << ", because the availability schedule could not be assigned.");
+    }
+    autosizeMaximumAirFlowRate();
+    assertSuccessfulMutation(setZoneMinimumAirFlowInputMethod("Constant"));
+    assertSuccessfulMutation(setConstantMinimumAirFlowFraction(0.3));
   }
 
   AirTerminalSingleDuctVAVNoReheat::AirTerminalSingleDuctVAVNoReheat(std::shared_ptr<detail::AirTerminalSingleDuctVAVNoReheat_Impl> impl)
@@ -264,10 +281,8 @@ namespace epmodel {
         if (auto airLoop = terminal->airLoopHVAC()) {
           if (inletNode && outletNode) {
             const auto splitter = airLoop->zoneSplitter();
-            const auto mixer = airLoop->zoneMixer();
             const auto splitterBranchIndex = splitter.branchIndexForOutletModelObject(*inletNode);
-            shouldRemoveTerminalInletNode =
-              (splitter.outletModelObject(splitterBranchIndex) == *inletNode) && (mixer.inletModelObject(splitterBranchIndex) == *outletNode);
+            shouldRemoveTerminalInletNode = splitter.outletModelObject(splitterBranchIndex) == *inletNode;
           }
         }
       }

@@ -1800,14 +1800,16 @@ namespace epmodel {
           if (!waterToAir->removeFromPlantLoop()) {
             return false;
           }
-          if (!waterToAir->airLoopHVAC()) {
+          waterToAir->disconnectWaterSide();
+          if (!waterToAir->airLoopHVAC() && !waterToAir->containingHVACComponent()) {
             waterToAir->remove();
           }
         } else if (auto waterToAir = component.optionalCast<CoilCoolingWater>()) {
           if (!waterToAir->removeFromPlantLoop()) {
             return false;
           }
-          if (!waterToAir->airLoopHVAC()) {
+          waterToAir->disconnectWaterSide();
+          if (!waterToAir->airLoopHVAC() && !waterToAir->containingHVACComponent()) {
             waterToAir->remove();
           }
         } else if (auto waterToWater = component.optionalCast<WaterToWaterComponent>()) {

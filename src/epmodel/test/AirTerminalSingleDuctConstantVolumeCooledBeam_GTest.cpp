@@ -21,6 +21,7 @@
 #include "../Mixer/AirLoopHVACZoneMixer.hpp"
 #include "../Loop/PlantLoop.hpp"
 #include "../StraightComponent/CoilCoolingCooledBeam.hpp"
+#include "../StraightComponent/CoilCoolingCooledBeam_Impl.hpp"
 
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/OS_AirTerminal_SingleDuct_ConstantVolume_CooledBeam_FieldEnums.hxx>
@@ -39,11 +40,26 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeCooledBeam_ScheduleAnd
   Model model;
   ScheduleConstant schedule(model);
   schedule.setValue(1.0);
-  auto coil = ModelObject::create(openstudio::IddObjectType::OS_Coil_Cooling_CooledBeam, model);
+  CoilCoolingCooledBeam coil(model);
 
   AirTerminalSingleDuctConstantVolumeCooledBeam terminal(model, schedule, coil);
   EXPECT_EQ(schedule.handle(), terminal.availabilitySchedule().handle());
-  EXPECT_EQ(coil.handle(), terminal.coilCoolingCooledBeam().handle());
+  HVACComponent returnedCoil = terminal.coilCoolingCooledBeam();
+  EXPECT_EQ(coil.handle(), returnedCoil.handle());
+}
+
+TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeCooledBeam_Remove_DisconnectedDeletesOwnedCoolingCoil) {
+  Model model;
+  ScheduleConstant schedule(model);
+  CoilCoolingCooledBeam coil(model);
+  AirTerminalSingleDuctConstantVolumeCooledBeam terminal(model, schedule, coil);
+  const auto terminalHandle = terminal.handle();
+  const auto coilHandle = coil.handle();
+
+  const auto removedObjects = terminal.remove();
+  EXPECT_FALSE(removedObjects.empty());
+  EXPECT_FALSE(model.getObject(terminalHandle));
+  EXPECT_FALSE(model.getObject(coilHandle));
 }
 
 TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeCooledBeam_ScalarAccessors_RoundTrip) {
@@ -125,7 +141,7 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeCooledBeam_Relationshi
   EXPECT_TRUE(terminal.setAvailabilitySchedule(schedule));
   EXPECT_EQ(schedule.handle(), terminal.availabilitySchedule().handle());
 
-  auto coil = ModelObject::create(openstudio::IddObjectType::OS_Coil_Cooling_CooledBeam, model);
+  CoilCoolingCooledBeam coil(model);
   EXPECT_TRUE(terminal.setCoolingCoil(coil));
   EXPECT_EQ(coil.handle(), terminal.coilCoolingCooledBeam().handle());
 }
@@ -134,7 +150,7 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeCooledBeam_CoolingCoil
   Model model;
   ScheduleConstant schedule(model);
   schedule.setValue(1.0);
-  auto coil = ModelObject::create(openstudio::IddObjectType::OS_Coil_Cooling_CooledBeam, model);
+  CoilCoolingCooledBeam coil(model);
   AirTerminalSingleDuctConstantVolumeCooledBeam terminal(model, schedule, coil);
 
   CoilHeatingElectric heatingCoil(model);
@@ -142,7 +158,7 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeCooledBeam_CoolingCoil
   EXPECT_EQ(coil.handle(), terminal.coilCoolingCooledBeam().handle());
 
   Model otherModel;
-  auto foreignCoil = ModelObject::create(openstudio::IddObjectType::OS_Coil_Cooling_CooledBeam, otherModel);
+  CoilCoolingCooledBeam foreignCoil(otherModel);
   EXPECT_FALSE(terminal.setCoolingCoil(foreignCoil));
   EXPECT_EQ(coil.handle(), terminal.coilCoolingCooledBeam().handle());
 }
@@ -151,7 +167,7 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeCooledBeam_Availabilit
   Model model;
   ScheduleConstant schedule(model);
   schedule.setValue(1.0);
-  auto coil = ModelObject::create(openstudio::IddObjectType::OS_Coil_Cooling_CooledBeam, model);
+  CoilCoolingCooledBeam coil(model);
   AirTerminalSingleDuctConstantVolumeCooledBeam terminal(model, schedule, coil);
 
   ASSERT_TRUE(
@@ -173,7 +189,7 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeCooledBeam_AddToNode_R
   ThermalZone zone(model);
   ScheduleConstant schedule(model);
   schedule.setValue(1.0);
-  auto coil = ModelObject::create(openstudio::IddObjectType::OS_Coil_Cooling_CooledBeam, model);
+  CoilCoolingCooledBeam coil(model);
   AirTerminalSingleDuctConstantVolumeCooledBeam terminal(model, schedule, coil);
   Node standaloneNode(model);
   auto supplyInletNode = airLoop.supplyInletNode();
@@ -187,13 +203,36 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeCooledBeam_AddToNode_R
   EXPECT_FALSE(terminal.airLoopHVAC());
 }
 
+TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeCooledBeam_RequiredCoilPreflightPreservesTopologyAndRetries) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  AirTerminalSingleDuctConstantVolumeCooledBeam terminal(model);
+
+  const auto originalSplitterOutlets = airLoop.zoneSplitter().outletModelObjects();
+  const auto originalMixerInlets = airLoop.zoneMixer().inletModelObjects();
+  const auto originalNodeCount = model.getConcreteModelObjects<Node>().size();
+
+  EXPECT_FALSE(airLoop.addBranchForHVACComponent(terminal));
+  EXPECT_EQ(originalSplitterOutlets, airLoop.zoneSplitter().outletModelObjects());
+  EXPECT_EQ(originalMixerInlets, airLoop.zoneMixer().inletModelObjects());
+  EXPECT_EQ(originalNodeCount, model.getConcreteModelObjects<Node>().size());
+  EXPECT_FALSE(terminal.inletModelObject());
+  EXPECT_FALSE(terminal.outletModelObject());
+
+  CoilCoolingCooledBeam coil(model);
+  ASSERT_TRUE(terminal.setCoolingCoil(coil));
+  EXPECT_TRUE(airLoop.addBranchForHVACComponent(terminal));
+  EXPECT_TRUE(terminal.inletModelObject());
+  EXPECT_TRUE(terminal.outletModelObject());
+}
+
 TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeCooledBeam_AddToNode_ResolvesAirLoopHVACAndRegistersZoneEquipment) {
   Model model;
   AirLoopHVAC airLoop(model);
   ThermalZone zone(model);
   ScheduleConstant schedule(model);
   schedule.setValue(1.0);
-  auto coil = ModelObject::create(openstudio::IddObjectType::OS_Coil_Cooling_CooledBeam, model);
+  CoilCoolingCooledBeam coil(model);
   AirTerminalSingleDuctConstantVolumeCooledBeam terminal(model, schedule, coil);
 
   auto branchObject = airLoop.zoneSplitter().lastOutletModelObject();
@@ -234,7 +273,7 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeCooledBeam_AddToNode_R
   AirTerminalSingleDuctConstantVolumeNoReheat dummyTerminal(model);
   ScheduleConstant schedule(model);
   schedule.setValue(1.0);
-  auto coil = ModelObject::create(openstudio::IddObjectType::OS_Coil_Cooling_CooledBeam, model);
+  CoilCoolingCooledBeam coil(model);
   AirTerminalSingleDuctConstantVolumeCooledBeam terminal(model, schedule, coil);
 
   ASSERT_TRUE(airLoop.addBranchForZone(zone1, dummyTerminal));
@@ -270,7 +309,7 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeCooledBeam_AddToNode_R
   ThermalZone zone(model);
   ScheduleConstant schedule(model);
   schedule.setValue(1.0);
-  auto coil = ModelObject::create(openstudio::IddObjectType::OS_Coil_Cooling_CooledBeam, model);
+  CoilCoolingCooledBeam coil(model);
   AirTerminalSingleDuctConstantVolumeCooledBeam terminal(model, schedule, coil);
 
   auto branchObject = airLoop.zoneSplitter().lastOutletModelObject();
@@ -299,7 +338,7 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeCooledBeam_Remove_Reco
   ThermalZone zone(model);
   ScheduleConstant schedule(model);
   schedule.setValue(1.0);
-  auto coilObject = ModelObject::create(openstudio::IddObjectType::OS_Coil_Cooling_CooledBeam, model);
+  CoilCoolingCooledBeam coilObject(model);
   AirTerminalSingleDuctConstantVolumeCooledBeam terminal(model, schedule, coilObject);
   ASSERT_TRUE(airLoop.addBranchForZone(zone, terminal));
   const auto zoneAirNode = zone.zoneAirNode();
@@ -322,7 +361,7 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeCooledBeam_Remove_Reco
   splitterOutlet = airLoop.zoneSplitter().outletModelObject(0u);
   ASSERT_TRUE(splitterOutlet);
   EXPECT_EQ(zoneAirNode.cast<ModelObject>(), *splitterOutlet);
-  EXPECT_EQ(6u, airLoop.demandComponents().size());
+  EXPECT_EQ(7u, airLoop.demandComponents().size());
   EXPECT_TRUE(airLoop.demandComponents(AirTerminalSingleDuctConstantVolumeCooledBeam::iddObjectType()).empty());
   EXPECT_TRUE(zone.equipment().empty());
   EXPECT_FALSE(model.getModelObject<Node>(inletNodeHandle));
@@ -334,7 +373,7 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeCooledBeam_RemoveFromL
   ThermalZone zone(model);
   ScheduleConstant schedule(model);
   schedule.setValue(1.0);
-  auto coilObject = ModelObject::create(openstudio::IddObjectType::OS_Coil_Cooling_CooledBeam, model);
+  CoilCoolingCooledBeam coilObject(model);
   AirTerminalSingleDuctConstantVolumeCooledBeam terminal(model, schedule, coilObject);
   ASSERT_TRUE(airLoop.addBranchForZone(zone, terminal));
   const auto zoneAirNode = zone.zoneAirNode();
@@ -401,6 +440,8 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeCooledBeam_Remove_Clea
   schedule.setValue(1.0);
   CoilCoolingCooledBeam coil(model);
   AirTerminalSingleDuctConstantVolumeCooledBeam terminal(model, schedule, coil);
+  const auto terminalHandle = terminal.handle();
+  const auto coilHandle = coil.handle();
 
   ASSERT_TRUE(airLoop.addBranchForZone(zone, terminal));
   ASSERT_TRUE(plantLoop.addDemandBranchForComponent(coil));
@@ -413,4 +454,42 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeCooledBeam_Remove_Clea
   EXPECT_TRUE(plantLoop.demandComponents(CoilCoolingCooledBeam::iddObjectType()).empty());
   EXPECT_TRUE(airLoop.demandComponents(AirTerminalSingleDuctConstantVolumeCooledBeam::iddObjectType()).empty());
   EXPECT_TRUE(zone.equipment().empty());
+  EXPECT_FALSE(model.getObject(terminalHandle));
+  EXPECT_FALSE(model.getObject(coilHandle));
+}
+
+TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeCooledBeam_Remove_MalformedPlantReferencePreservesParentAndChild) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  ThermalZone zone(model);
+  PlantLoop plantLoop(model);
+  ScheduleConstant schedule(model);
+  CoilCoolingCooledBeam coil(model);
+  AirTerminalSingleDuctConstantVolumeCooledBeam terminal(model, schedule, coil);
+  const auto terminalHandle = terminal.handle();
+  const auto coilHandle = coil.handle();
+
+  ASSERT_TRUE(airLoop.addBranchForZone(zone, terminal));
+  ASSERT_TRUE(terminal.inletModelObject());
+  const auto terminalInletHandle = terminal.inletModelObject()->handle();
+
+  // Deliberately point the coil at plant endpoint nodes without placing it on
+  // a demand-equipment branch. plantLoop() resolves, but branch removal is invalid.
+  auto coilImpl = coil.getImpl<openstudio::epmodel::detail::CoilCoolingCooledBeam_Impl>();
+  ASSERT_TRUE(coilImpl);
+  ASSERT_TRUE(coilImpl->setPointer(coil.inletPort(), plantLoop.demandInletNode().handle(), false));
+  ASSERT_TRUE(coilImpl->setPointer(coil.outletPort(), plantLoop.demandOutletNode().handle(), false));
+  ASSERT_TRUE(coil.plantLoop());
+  EXPECT_FALSE(plantLoop.demandComponent(coilHandle));
+
+  EXPECT_TRUE(terminal.remove().empty());
+
+  EXPECT_TRUE(model.getObject(terminalHandle));
+  EXPECT_TRUE(model.getObject(coilHandle));
+  ASSERT_TRUE(terminal.inletModelObject());
+  EXPECT_EQ(terminalInletHandle, terminal.inletModelObject()->handle());
+  EXPECT_EQ(1u, airLoop.demandComponents(AirTerminalSingleDuctConstantVolumeCooledBeam::iddObjectType()).size());
+  EXPECT_EQ(1u, zone.equipment().size());
+  ASSERT_TRUE(coil.plantLoop());
+  EXPECT_EQ(plantLoop.handle(), coil.plantLoop()->handle());
 }

@@ -26,10 +26,15 @@ namespace epmodel {
   AirTerminalDualDuctVAVOutdoorAir::AirTerminalDualDuctVAVOutdoorAir(const Model& model)
     : Mixer(AirTerminalDualDuctVAVOutdoorAir::iddObjectType(), model) {
     auto alwaysOn = model.alwaysOnDiscreteSchedule();
-    OS_ASSERT(setPointer(openstudio::AirTerminal_DualDuct_VAV_OutdoorAirFields::AvailabilityScheduleName, alwaysOn.handle()));
+    const bool availabilityScheduleSet =
+      setPointer(openstudio::AirTerminal_DualDuct_VAV_OutdoorAirFields::AvailabilityScheduleName, alwaysOn.handle());
+    OS_ASSERT(availabilityScheduleSet);
+    (void)availabilityScheduleSet;
 
     // Keep non-optional scalar getter strictness aligned with preserved model API.
-    OS_ASSERT(setPerPersonVentilationRateMode("CurrentOccupancy"));
+    const bool ventilationModeSet = setPerPersonVentilationRateMode("CurrentOccupancy");
+    OS_ASSERT(ventilationModeSet);
+    (void)ventilationModeSet;
 
     // Mirror model constructor autosize behavior for Maximum Terminal Air Flow Rate.
     autosizeMaximumTerminalAirFlowRate();
@@ -111,7 +116,9 @@ namespace epmodel {
 
     std::vector<openstudio::IdfObject> AirTerminalDualDuctVAVOutdoorAir_Impl::remove() {
       auto terminal = getObject<AirTerminalDualDuctVAVOutdoorAir>().cast<Mixer>();
-      AirLoopHVAC_Impl::removeDualDuctTerminalFromAirLoopHVAC(terminal);
+      if (!AirLoopHVAC_Impl::removeDualDuctTerminalFromAirLoopHVAC(terminal)) {
+        return {};
+      }
       return Mixer_Impl::remove();
     }
 
@@ -145,7 +152,9 @@ namespace epmodel {
     }
 
     void AirTerminalDualDuctVAVOutdoorAir_Impl::autosizeMaximumTerminalAirFlowRate() {
-      OS_ASSERT(setString(openstudio::AirTerminal_DualDuct_VAV_OutdoorAirFields::MaximumTerminalAirFlowRate, "autosize"));
+      const bool autosized = setString(openstudio::AirTerminal_DualDuct_VAV_OutdoorAirFields::MaximumTerminalAirFlowRate, "autosize");
+      OS_ASSERT(autosized);
+      (void)autosized;
     }
 
     std::string AirTerminalDualDuctVAVOutdoorAir_Impl::perPersonVentilationRateMode() const {

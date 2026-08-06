@@ -51,7 +51,9 @@ namespace epmodel {
     // - Cleanup Surface: `remove` and `removeFromLoop` reverse those entity-owned branch side effects by restoring the original branch node, clearing stale ADU and zone-equipment references,
     //   and deleting the transient inlet node when this wrapper created it.
     // - Documented Delta: This wrapper keeps the same default-constructor shape as the canonical model object, but it intentionally omits the canonical
-    //   `controlForOutdoorAir` API plus the associated DesignSpecificationOutdoorAir export path from the openstudio::model surface.
+    //   `controlForOutdoorAir` API plus the associated DesignSpecificationOutdoorAir export path from the openstudio::model surface. It is explicitly
+    //   unsupported as an implicit AirLoopHVAC clone-last source because its secondary inlet may be owned by downstream ZoneHVAC equipment that cannot
+    //   be re-homed transactionally by the current epmodel topology API.
     // - Field/Storage Mapping: The preserved scalar and direct object links map directly to the EnergyPlus `AirTerminal:SingleDuct:Mixer` fields,
     //   while the connectivity methods update those node/object references to match the current zone-branch topology.
     // - Evidence: `src/model/AirTerminalSingleDuctInletSideMixer.hpp`, `src/model/AirTerminalSingleDuctInletSideMixer.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirTerminalSingleDuctInletSideMixer.cpp`, and `src/epmodel/test/AirTerminalSingleDuctInletSideMixer_GTest.cpp`.

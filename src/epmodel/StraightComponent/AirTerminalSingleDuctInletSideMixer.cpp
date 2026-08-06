@@ -113,6 +113,51 @@ namespace epmodel {
       return boost::none;
     }
 
+    class DownstreamZoneHVACDetachmentPlan
+    {
+     public:
+      DownstreamZoneHVACDetachmentPlan(boost::optional<ZoneHVACComponent> component, boost::optional<ThermalZone> zone)
+        : m_component(std::move(component)), m_zone(std::move(zone)) {}
+
+      DownstreamZoneHVACDetachmentPlan(const DownstreamZoneHVACDetachmentPlan&) = delete;
+      DownstreamZoneHVACDetachmentPlan& operator=(const DownstreamZoneHVACDetachmentPlan&) = delete;
+      DownstreamZoneHVACDetachmentPlan(DownstreamZoneHVACDetachmentPlan&&) = delete;
+      DownstreamZoneHVACDetachmentPlan& operator=(DownstreamZoneHVACDetachmentPlan&&) = delete;
+
+      ~DownstreamZoneHVACDetachmentPlan() {
+        if (m_detached && !restore()) {
+          LOG_FREE(Error, "openstudio.epmodel.AirTerminalSingleDuctInletSideMixer",
+                   "Failed to restore downstream zone HVAC equipment while unwinding inlet-side mixer removal.");
+        }
+      }
+
+      bool detach() {
+        if (m_component && m_zone) {
+          // The downstream component must still be able to discover the mixer
+          // while clearing its secondary-air and ZoneHVAC-unit fields.
+          m_component->removeFromThermalZone();
+          m_detached = true;
+        }
+        return true;
+      }
+
+      bool restore() {
+        if (!m_detached) {
+          return true;
+        }
+        if (!m_component->addToThermalZone(*m_zone)) {
+          return false;
+        }
+        m_detached = false;
+        return true;
+      }
+
+     private:
+      boost::optional<ZoneHVACComponent> m_component;
+      boost::optional<ThermalZone> m_zone;
+      bool m_detached = false;
+    };
+
   }  // namespace
 
   AirTerminalSingleDuctInletSideMixer::AirTerminalSingleDuctInletSideMixer(const Model& model)
@@ -204,18 +249,21 @@ namespace epmodel {
         }
       }
 
+      DownstreamZoneHVACDetachmentPlan downstreamPlan(downstreamZoneHVAC, downstreamZone);
+      if (!downstreamPlan.detach()) {
+        return false;
+      }
+
       bool shouldRemoveTerminalInletNode = false;
       if (auto terminal = thisObject.optionalCast<openstudio::epmodel::HVACComponent>()) {
         if (auto airLoop = terminal->airLoopHVAC()) {
           if (inletNode && outletNode) {
             const auto splitter = airLoop->zoneSplitter();
-            const auto mixer = airLoop->zoneMixer();
             const auto splitterOutlets = splitter.outletModelObjects();
             const auto splitterIt = std::ranges::find(splitterOutlets, *inletNode);
             if (splitterIt != splitterOutlets.end()) {
               const auto splitterBranchIndex = static_cast<unsigned>(std::distance(splitterOutlets.begin(), splitterIt));
-              shouldRemoveTerminalInletNode =
-                (splitter.outletModelObject(splitterBranchIndex) == *inletNode) && (mixer.inletModelObject(splitterBranchIndex) == *outletNode);
+              shouldRemoveTerminalInletNode = splitter.outletModelObject(splitterBranchIndex) == *inletNode;
             }
           }
         }
@@ -256,11 +304,8 @@ namespace epmodel {
         }
       }
 
-      if (downstreamZoneHVAC && downstreamZone) {
-        downstreamZoneHVAC->removeFromThermalZone();
-        if (!downstreamZoneHVAC->addToThermalZone(*downstreamZone)) {
-          return false;
-        }
+      if (!downstreamPlan.restore()) {
+        return false;
       }
 
       return removedFromAirLoop || static_cast<bool>(thermalZone) || cleanedADU || static_cast<bool>(downstreamZoneHVAC);

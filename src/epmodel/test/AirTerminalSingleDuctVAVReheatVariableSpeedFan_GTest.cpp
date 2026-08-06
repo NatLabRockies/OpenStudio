@@ -178,6 +178,10 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctVAVReheatVariableSpeedFan_AddToNode_
   AirLoopHVAC airLoop(model);
   ThermalZone zone(model);
   AirTerminalSingleDuctVAVReheatVariableSpeedFan terminal(model);
+  FanSystemModel fan(model);
+  CoilHeatingElectric heatingCoil(model);
+  ASSERT_TRUE(terminal.setFan(fan));
+  ASSERT_TRUE(terminal.setHeatingCoil(heatingCoil));
 
   auto branchObject = airLoop.zoneSplitter().lastOutletModelObject();
   ASSERT_TRUE(branchObject);
@@ -197,6 +201,45 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctVAVReheatVariableSpeedFan_AddToNode_
   auto splitterOutlet = airLoop.zoneSplitter().outletModelObject(0u);
   ASSERT_TRUE(splitterOutlet);
   EXPECT_EQ(zoneAirNode.cast<ModelObject>(), *splitterOutlet);
+}
+
+TEST_F(EPModelFixture, AirTerminalSingleDuctVAVReheatVariableSpeedFan_RequiredChildrenPreflightAndTerminalFirstLifecycle) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  PlantLoop plantLoop(model);
+  ThermalZone zone(model);
+  AirTerminalSingleDuctVAVReheatVariableSpeedFan terminal(model);
+  const auto demandComponentsBefore = airLoop.demandComponents();
+
+  EXPECT_FALSE(airLoop.addBranchForHVACComponent(terminal));
+  EXPECT_EQ(demandComponentsBefore, airLoop.demandComponents());
+  EXPECT_FALSE(terminal.inletModelObject());
+  EXPECT_FALSE(terminal.outletModelObject());
+
+  FanSystemModel fan(model);
+  ASSERT_TRUE(terminal.setFan(fan));
+  EXPECT_FALSE(airLoop.addBranchForHVACComponent(terminal));
+  EXPECT_EQ(demandComponentsBefore, airLoop.demandComponents());
+
+  CoilHeatingWater heatingCoil(model);
+  ASSERT_TRUE(terminal.setHeatingCoil(heatingCoil));
+  const auto terminalHandle = terminal.handle();
+  const auto fanHandle = fan.handle();
+  const auto coilHandle = heatingCoil.handle();
+
+  ASSERT_TRUE(airLoop.addBranchForHVACComponent(terminal));
+  ASSERT_TRUE(plantLoop.addDemandBranchForComponent(heatingCoil));
+  ASSERT_TRUE(airLoop.addBranchForZone(zone));
+  ASSERT_EQ(1u, zone.equipment().size());
+  EXPECT_EQ(terminal.cast<ModelObject>(), zone.equipment().front());
+  EXPECT_TRUE(heatingCoil.plantLoop());
+
+  EXPECT_TRUE(airLoop.removeBranchForZone(zone));
+  EXPECT_FALSE(model.getObject(terminalHandle));
+  EXPECT_FALSE(model.getObject(fanHandle));
+  EXPECT_FALSE(model.getObject(coilHandle));
+  EXPECT_TRUE(zone.equipment().empty());
+  EXPECT_TRUE(plantLoop.demandComponents(CoilHeatingWater::iddObjectType()).empty());
 }
 
 TEST_F(EPModelFixture, AirTerminalSingleDuctVAVReheatVariableSpeedFan_Remove_ReconnectsZoneBranchAndCleansZoneAndPlantReferences) {
@@ -233,6 +276,9 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctVAVReheatVariableSpeedFan_Remove_Rec
   ASSERT_EQ(1u, zone.equipment().size());
   ASSERT_TRUE(adu.outletNode());
   ASSERT_TRUE(adu.airTerminal());
+  const auto terminalHandle = terminal.handle();
+  const auto fanHandle = fan.handle();
+  const auto coilHandle = waterCoil.handle();
 
   const auto removedObjects = terminal.remove();
   EXPECT_FALSE(removedObjects.empty());
@@ -245,7 +291,9 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctVAVReheatVariableSpeedFan_Remove_Rec
   EXPECT_FALSE(adu.outletNode());
   EXPECT_FALSE(adu.airTerminal());
   EXPECT_FALSE(model.getModelObject<Node>(inletNodeHandle));
-  EXPECT_FALSE(waterCoil.plantLoop());
+  EXPECT_FALSE(model.getObject(terminalHandle));
+  EXPECT_FALSE(model.getObject(fanHandle));
+  EXPECT_FALSE(model.getObject(coilHandle));
   EXPECT_TRUE(plantLoop.demandComponents(CoilHeatingWater::iddObjectType()).empty());
 }
 
@@ -281,6 +329,9 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctVAVReheatVariableSpeedFan_Remove_Dir
   ASSERT_TRUE(splitterOutlet);
   EXPECT_EQ(inletNode->cast<ModelObject>(), *splitterOutlet);
   ASSERT_EQ(1u, zone.equipment().size());
+  const auto terminalHandle = terminal.handle();
+  const auto fanHandle = fan.handle();
+  const auto coilHandle = waterCoil.handle();
 
   const auto removedObjects = terminal.remove();
   EXPECT_FALSE(removedObjects.empty());
@@ -290,9 +341,10 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctVAVReheatVariableSpeedFan_Remove_Dir
   EXPECT_EQ(zoneAirNode.cast<ModelObject>(), *splitterOutlet);
   EXPECT_TRUE(zone.equipment().empty());
   EXPECT_FALSE(model.getModelObject<Node>(inletNodeHandle));
-  EXPECT_FALSE(waterCoil.plantLoop());
+  EXPECT_FALSE(model.getObject(terminalHandle));
+  EXPECT_FALSE(model.getObject(fanHandle));
+  EXPECT_FALSE(model.getObject(coilHandle));
   EXPECT_TRUE(plantLoop.demandComponents(CoilHeatingWater::iddObjectType()).empty());
-  EXPECT_FALSE(model.getObject(terminal.handle()));
 }
 
 TEST_F(EPModelFixture, AirTerminalSingleDuctVAVReheatVariableSpeedFan_RemoveFromLoop_CleansStaleADUOnlyReference) {

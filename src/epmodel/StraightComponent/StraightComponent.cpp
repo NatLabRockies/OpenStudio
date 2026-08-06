@@ -537,16 +537,18 @@ namespace epmodel {
 
       if (auto loop = thisComponent->airLoopHVAC()) {
         auto splitter = loop->zoneSplitter();
-        auto mixer = loop->zoneMixer();
 
         const auto splitterBranchIndex = splitter.branchIndexForOutletModelObject(inletNode->cast<ModelObject>());
-        const auto mixerBranchIndex = mixer.branchIndexForInletModelObject(outletNode->cast<ModelObject>());
-        const bool isZoneBranch = (splitterBranchIndex == mixerBranchIndex)
-                                  && (splitter.outletModelObject(splitterBranchIndex) == inletNode->cast<ModelObject>())
-                                  && (mixer.inletModelObject(mixerBranchIndex) == outletNode->cast<ModelObject>());
+        // Air terminals are inserted immediately after a zone-splitter outlet.
+        // The terminal outlet is the zone inlet node, while the matching zone-
+        // mixer inlet is normally a distinct zone return node. Do not require
+        // those two nodes to be identical when recognizing the demand branch.
+        const bool isZoneBranch = splitter.outletModelObject(splitterBranchIndex) == inletNode->cast<ModelObject>();
 
         if (isZoneBranch) {
-          splitter.setOutletModelObject(splitterBranchIndex, outletNode->cast<ModelObject>());
+          if (!splitter.setOutletModelObject(splitterBranchIndex, outletNode->cast<ModelObject>())) {
+            return false;
+          }
         } else {
           auto branchList = loop->getImpl<openstudio::epmodel::detail::AirLoopHVAC_Impl>()->branchList();
           const auto branches = branchList.branches();
@@ -555,6 +557,7 @@ namespace epmodel {
           }
           auto branch = branches.front();
           auto components = branch.components();
+          bool removedFromSupplyBranch = false;
           for (unsigned i = 0; i < components.size(); ++i) {
             if (components[i] != thisObject) {
               continue;
@@ -567,7 +570,11 @@ namespace epmodel {
             if (!branch.getImpl<openstudio::epmodel::detail::Branch_Impl>()->removeComponent(i)) {
               return false;
             }
+            removedFromSupplyBranch = true;
             break;
+          }
+          if (!removedFromSupplyBranch) {
+            return false;
           }
         }
 
@@ -656,8 +663,18 @@ namespace epmodel {
         return;
       }
 
-      setPointer(inletPort(), Handle(), false);
-      setPointer(outletPort(), Handle(), false);
+      // Node derives from StraightComponent but uses port 0 as a sentinel: its
+      // topology is inferred from the loop rather than stored in object fields.
+      // Clearing field 0 would clear the Node name and leave invalid reverse
+      // pointers behind when the Node is subsequently removed.
+      const auto inlet = inletPort();
+      if (inlet != 0u) {
+        setPointer(inlet, Handle(), false);
+      }
+      const auto outlet = outletPort();
+      if (outlet != 0u) {
+        setPointer(outlet, Handle(), false);
+      }
     }
 
   }  // namespace detail

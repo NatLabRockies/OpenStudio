@@ -52,3 +52,22 @@ TEST_F(EPModelFixture, API_AirLoopHVACZoneMixer_SetInletModelObjectCreatesMissin
   EXPECT_EQ(branchNode1.cast<ModelObject>(), *mixer.inletModelObject(1u));
   EXPECT_EQ(2u, mixer.nextBranchIndex());
 }
+
+TEST_F(EPModelFixture, API_AirLoopHVACZoneMixer_RemovePortCompactsPointersAndReverseSources) {
+  Model model;
+  AirLoopHVACZoneMixer mixer(model);
+  Node branchNode0(model);
+  Node branchNode1(model);
+
+  ASSERT_TRUE(mixer.setInletModelObject(0u, branchNode0.cast<ModelObject>()));
+  ASSERT_TRUE(mixer.setInletModelObject(1u, branchNode1.cast<ModelObject>()));
+  ASSERT_EQ(1u, branchNode0.sources().size());
+  ASSERT_EQ(1u, branchNode1.sources().size());
+
+  mixer.removePortForBranch(0u);
+
+  EXPECT_TRUE(branchNode0.sources().empty());
+  ASSERT_EQ(1u, mixer.inletModelObjects().size());
+  EXPECT_EQ(branchNode1.cast<ModelObject>(), *mixer.inletModelObject(0u));
+  EXPECT_EQ(1u, branchNode1.sources().size());
+}

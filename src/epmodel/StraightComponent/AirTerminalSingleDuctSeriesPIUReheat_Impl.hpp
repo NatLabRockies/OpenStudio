@@ -23,6 +23,12 @@ namespace epmodel {
     class EPMODEL_API AirTerminalSingleDuctSeriesPIUReheat_Impl : public StraightComponent_Impl
     {
      public:
+      enum class AddToNodeFailureStage
+      {
+        None,
+        AfterTopologyPrepared,
+      };
+
       using StraightComponent_Impl::StraightComponent_Impl;
       virtual ~AirTerminalSingleDuctSeriesPIUReheat_Impl() override = default;
 
@@ -32,6 +38,7 @@ namespace epmodel {
       std::vector<openstudio::IdfObject> remove() override;
       bool removeFromLoop() override;
       bool addToNode(Node& node) override;
+      bool addToNode(Node& node, AddToNodeFailureStage failureStage);
       boost::optional<ZoneHVACAirDistributionUnit> zoneHVACAirDistributionUnit() const;
 
       boost::optional<Schedule> availabilitySchedule() const;
@@ -90,6 +97,9 @@ namespace epmodel {
 
       double highLimitHeatingDischargeAirTemperature() const;
       bool setHighLimitHeatingDischargeAirTemperature(double highLimitHeatingDischargeAirTemperature);
+
+     private:
+      class InsertionPlan;
     };
 
   }  // namespace detail

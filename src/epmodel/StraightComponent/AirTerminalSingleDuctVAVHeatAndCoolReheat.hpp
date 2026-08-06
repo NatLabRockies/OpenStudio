@@ -29,6 +29,7 @@ namespace epmodel {
   {
    public:
     explicit AirTerminalSingleDuctVAVHeatAndCoolReheat(const Model& model);
+    explicit AirTerminalSingleDuctVAVHeatAndCoolReheat(const Model& model, const HVACComponent& reheatCoil);
 
     virtual ~AirTerminalSingleDuctVAVHeatAndCoolReheat() override = default;
     AirTerminalSingleDuctVAVHeatAndCoolReheat(const AirTerminalSingleDuctVAVHeatAndCoolReheat& other) = default;
@@ -41,18 +42,22 @@ namespace epmodel {
     bool addToNode(Node& node);
 
     // Schema Alignment Notes:
-    // - Status: Connectivity-focused parity for the campaign scope.
+    // - Status: Near Parity.
     // - Canonical Counterpart: openstudio::model::AirTerminalSingleDuctVAVHeatAndCoolReheat.
-    // - Implemented Parity: `addToNode`, zone equipment registration/cleanup, splitter/mixer branch rewiring, ADU outlet synchronization,
-    //   reheat-coil child ownership, and terminal removal implement canonical-style zone-branch connectivity behavior, including rollback of
+    // - Implemented Parity: The canonical `(Model, HVACComponent)` constructor establishes the required reheat-coil relationship. `addToNode`,
+    //   zone equipment registration/cleanup, splitter/mixer branch rewiring, ADU outlet synchronization, reheat-coil child ownership, and
+    //   terminal removal implement canonical-style zone-branch connectivity behavior, including rollback of
     //   entity-local `addToNode()` mutations on late failure, with epmodel-specific guards for already-connected terminals and mismatched
     //   splitter/mixer branches plus explicit `removeFromLoop()` cleanup after supported detach or stale-reference recovery paths.
-    // - Documented Delta: This wrapper still omits the canonical constructor that requires a reheat coil, allows late coil assignment through
-    //   `setReheatCoil`, and does not claim broader autosizing or clone-helper parity.
+    // - Documented Delta: The legacy `(Model)` constructor remains available for incremental object assembly and allows late coil assignment
+    //   through `setReheatCoil`; this wrapper does not claim broader autosizing or clone-helper parity.
+    // - Field/Storage Mapping: Scalars and relationships map directly to EnergyPlus `AirTerminal:SingleDuct:VAV:HeatAndCool:Reheat` and
+    //   `ZoneHVAC:AirDistributionUnit` fields; node links are represented by tracked epmodel Node targets.
     // - Evidence: `src/model/AirTerminalSingleDuctVAVHeatAndCoolReheat.cpp`,
     //   `src/epmodel/StraightComponent/AirTerminalSingleDuctVAVHeatAndCoolReheat.cpp`,
     //   `src/energyplus/ForwardTranslator/ForwardTranslateAirTerminalSingleDuctVAVHeatAndCoolReheat.cpp`, and
     //   `src/epmodel/test/AirTerminalSingleDuctVAVHeatAndCoolReheat_GTest.cpp`.
+    // - Remaining Parity Work: Add the remaining canonical autosized-result and deep-clone helper behavior.
     boost::optional<Schedule> availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);
     void resetAvailabilitySchedule();

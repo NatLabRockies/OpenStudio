@@ -16,8 +16,10 @@
 #include "../Schedule/Schedule_Impl.hpp"
 #include "../Schedule/ScheduleConstant.hpp"
 #include "../StraightComponent/AirTerminalSingleDuctConstantVolumeFourPipeBeam.hpp"
+#include "../StraightComponent/AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl.hpp"
 #include "../StraightComponent/CoilCoolingFourPipeBeam.hpp"
 #include "../StraightComponent/CoilHeatingFourPipeBeam.hpp"
+#include "../StraightComponent/CoilHeatingFourPipeBeam_Impl.hpp"
 #include "../StraightComponent/AirTerminalSingleDuctConstantVolumeNoReheat.hpp"
 #include "../StraightComponent/CoilHeatingElectric.hpp"
 #include "../StraightComponent/Node.hpp"
@@ -47,8 +49,8 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeFourPipeBeam_DefaultCo
 
 TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeFourPipeBeam_CoilConstructor_Parity) {
   Model model;
-  auto coolingCoil = ModelObject::create(openstudio::IddObjectType::OS_Coil_Cooling_FourPipeBeam, model);
-  auto heatingCoil = ModelObject::create(openstudio::IddObjectType::OS_Coil_Heating_FourPipeBeam, model);
+  CoilCoolingFourPipeBeam coolingCoil(model);
+  CoilHeatingFourPipeBeam heatingCoil(model);
 
   AirTerminalSingleDuctConstantVolumeFourPipeBeam airTerminal(model, coolingCoil, heatingCoil);
   EXPECT_EQ(model.alwaysOnDiscreteSchedule(), airTerminal.primaryAirAvailabilitySchedule());
@@ -58,6 +60,22 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeFourPipeBeam_CoilConst
   ASSERT_TRUE(airTerminal.heatingCoil());
   EXPECT_EQ(coolingCoil.handle(), airTerminal.coolingCoil()->handle());
   EXPECT_EQ(heatingCoil.handle(), airTerminal.heatingCoil()->handle());
+}
+
+TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeFourPipeBeam_Remove_DisconnectedDeletesOwnedCoils) {
+  Model model;
+  CoilCoolingFourPipeBeam coolingCoil(model);
+  CoilHeatingFourPipeBeam heatingCoil(model);
+  AirTerminalSingleDuctConstantVolumeFourPipeBeam terminal(model, coolingCoil, heatingCoil);
+  const auto terminalHandle = terminal.handle();
+  const auto coolingCoilHandle = coolingCoil.handle();
+  const auto heatingCoilHandle = heatingCoil.handle();
+
+  const auto removedObjects = terminal.remove();
+  EXPECT_FALSE(removedObjects.empty());
+  EXPECT_FALSE(model.getObject(terminalHandle));
+  EXPECT_FALSE(model.getObject(coolingCoilHandle));
+  EXPECT_FALSE(model.getObject(heatingCoilHandle));
 }
 
 TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeFourPipeBeam_ScalarAccessors_RoundTrip) {
@@ -118,8 +136,8 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeFourPipeBeam_Relations
   EXPECT_TRUE(terminal.setHeatingAvailabilitySchedule(heatingSchedule));
   EXPECT_EQ(heatingSchedule.handle(), terminal.heatingAvailabilitySchedule().handle());
 
-  auto coolingCoil = ModelObject::create(openstudio::IddObjectType::OS_Coil_Cooling_FourPipeBeam, model);
-  auto heatingCoil = ModelObject::create(openstudio::IddObjectType::OS_Coil_Heating_FourPipeBeam, model);
+  CoilCoolingFourPipeBeam coolingCoil(model);
+  CoilHeatingFourPipeBeam heatingCoil(model);
   EXPECT_TRUE(terminal.setCoolingCoil(coolingCoil));
   EXPECT_TRUE(terminal.setHeatingCoil(heatingCoil));
   ASSERT_TRUE(terminal.coolingCoil());
@@ -172,17 +190,17 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeFourPipeBeam_CoolingAn
   EXPECT_FALSE(terminal.setCoolingCoil(heatingElectric));
   EXPECT_FALSE(terminal.coolingCoil());
 
-  auto wrongCooling = ModelObject::create(openstudio::IddObjectType::OS_Coil_Heating_FourPipeBeam, model);
+  CoilHeatingFourPipeBeam wrongCooling(model);
   EXPECT_FALSE(terminal.setCoolingCoil(wrongCooling));
   EXPECT_FALSE(terminal.coolingCoil());
 
-  auto wrongHeating = ModelObject::create(openstudio::IddObjectType::OS_Coil_Cooling_FourPipeBeam, model);
+  CoilCoolingFourPipeBeam wrongHeating(model);
   EXPECT_FALSE(terminal.setHeatingCoil(wrongHeating));
   EXPECT_FALSE(terminal.heatingCoil());
 
   Model otherModel;
-  auto foreignCooling = ModelObject::create(openstudio::IddObjectType::OS_Coil_Cooling_FourPipeBeam, otherModel);
-  auto foreignHeating = ModelObject::create(openstudio::IddObjectType::OS_Coil_Heating_FourPipeBeam, otherModel);
+  CoilCoolingFourPipeBeam foreignCooling(otherModel);
+  CoilHeatingFourPipeBeam foreignHeating(otherModel);
   EXPECT_FALSE(terminal.setCoolingCoil(foreignCooling));
   EXPECT_FALSE(terminal.setHeatingCoil(foreignHeating));
 }
@@ -208,8 +226,8 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeFourPipeBeam_AddToNode
   Model model;
   AirLoopHVAC airLoop(model);
   ThermalZone zone(model);
-  auto coolingCoil = ModelObject::create(openstudio::IddObjectType::OS_Coil_Cooling_FourPipeBeam, model);
-  auto heatingCoil = ModelObject::create(openstudio::IddObjectType::OS_Coil_Heating_FourPipeBeam, model);
+  CoilCoolingFourPipeBeam coolingCoil(model);
+  CoilHeatingFourPipeBeam heatingCoil(model);
   AirTerminalSingleDuctConstantVolumeFourPipeBeam terminal(model, coolingCoil, heatingCoil);
 
   auto branchObject = airLoop.zoneSplitter().lastOutletModelObject();
@@ -248,8 +266,8 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeFourPipeBeam_AddToNode
   ThermalZone zone1(model);
   ThermalZone zone2(model);
   AirTerminalSingleDuctConstantVolumeNoReheat dummyTerminal(model);
-  auto coolingCoil = ModelObject::create(openstudio::IddObjectType::OS_Coil_Cooling_FourPipeBeam, model);
-  auto heatingCoil = ModelObject::create(openstudio::IddObjectType::OS_Coil_Heating_FourPipeBeam, model);
+  CoilCoolingFourPipeBeam coolingCoil(model);
+  CoilHeatingFourPipeBeam heatingCoil(model);
   AirTerminalSingleDuctConstantVolumeFourPipeBeam terminal(model, coolingCoil, heatingCoil);
 
   ASSERT_TRUE(airLoop.addBranchForZone(zone1, dummyTerminal));
@@ -284,8 +302,8 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeFourPipeBeam_AddToNode
   Model model;
   AirLoopHVAC airLoop(model);
   ThermalZone zone(model);
-  auto coolingCoil = ModelObject::create(openstudio::IddObjectType::OS_Coil_Cooling_FourPipeBeam, model);
-  auto heatingCoil = ModelObject::create(openstudio::IddObjectType::OS_Coil_Heating_FourPipeBeam, model);
+  CoilCoolingFourPipeBeam coolingCoil(model);
+  CoilHeatingFourPipeBeam heatingCoil(model);
   AirTerminalSingleDuctConstantVolumeFourPipeBeam terminal(model, coolingCoil, heatingCoil);
 
   auto branchObject = airLoop.zoneSplitter().lastOutletModelObject();
@@ -313,8 +331,8 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeFourPipeBeam_AddToNode
   AirLoopHVAC airLoop(model);
   ThermalZone zone1(model);
   ThermalZone zone2(model);
-  auto coolingCoil = ModelObject::create(openstudio::IddObjectType::OS_Coil_Cooling_FourPipeBeam, model);
-  auto heatingCoil = ModelObject::create(openstudio::IddObjectType::OS_Coil_Heating_FourPipeBeam, model);
+  CoilCoolingFourPipeBeam coolingCoil(model);
+  CoilHeatingFourPipeBeam heatingCoil(model);
   AirTerminalSingleDuctConstantVolumeFourPipeBeam terminal(model, coolingCoil, heatingCoil);
 
   ASSERT_TRUE(airLoop.addBranchForZone(zone1, terminal));
@@ -333,15 +351,24 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeFourPipeBeam_AddToNode
 
   ASSERT_EQ(1u, zone1.equipment().size());
   EXPECT_EQ(terminal.cast<ModelObject>(), zone1.equipment().front());
-  EXPECT_TRUE(zone2.equipment().empty());
+  ASSERT_EQ(1u, zone2.equipment().size());
+  auto clonedTerminal = zone2.equipment().front().optionalCast<AirTerminalSingleDuctConstantVolumeFourPipeBeam>();
+  ASSERT_TRUE(clonedTerminal);
+  ASSERT_TRUE(terminal.coolingCoil());
+  ASSERT_TRUE(terminal.heatingCoil());
+  ASSERT_TRUE(clonedTerminal->coolingCoil());
+  ASSERT_TRUE(clonedTerminal->heatingCoil());
+  EXPECT_NE(terminal.handle(), clonedTerminal->handle());
+  EXPECT_NE(terminal.coolingCoil()->handle(), clonedTerminal->coolingCoil()->handle());
+  EXPECT_NE(terminal.heatingCoil()->handle(), clonedTerminal->heatingCoil()->handle());
 }
 
 TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeFourPipeBeam_RemoveFromLoop_CleansConnectivityWithoutRemovingTerminal) {
   Model model;
   AirLoopHVAC airLoop(model);
   ThermalZone zone(model);
-  auto coolingCoil = ModelObject::create(openstudio::IddObjectType::OS_Coil_Cooling_FourPipeBeam, model);
-  auto heatingCoil = ModelObject::create(openstudio::IddObjectType::OS_Coil_Heating_FourPipeBeam, model);
+  CoilCoolingFourPipeBeam coolingCoil(model);
+  CoilHeatingFourPipeBeam heatingCoil(model);
   AirTerminalSingleDuctConstantVolumeFourPipeBeam terminal(model, coolingCoil, heatingCoil);
   ASSERT_TRUE(terminal.name());
 
@@ -377,9 +404,12 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeFourPipeBeam_Remove_Re
   Model model;
   AirLoopHVAC airLoop(model);
   ThermalZone zone(model);
-  auto coolingCoil = ModelObject::create(openstudio::IddObjectType::OS_Coil_Cooling_FourPipeBeam, model);
-  auto heatingCoil = ModelObject::create(openstudio::IddObjectType::OS_Coil_Heating_FourPipeBeam, model);
+  CoilCoolingFourPipeBeam coolingCoil(model);
+  CoilHeatingFourPipeBeam heatingCoil(model);
   AirTerminalSingleDuctConstantVolumeFourPipeBeam terminal(model, coolingCoil, heatingCoil);
+  const auto terminalHandle = terminal.handle();
+  const auto coolingCoilHandle = coolingCoil.handle();
+  const auto heatingCoilHandle = heatingCoil.handle();
   ASSERT_TRUE(airLoop.addBranchForZone(zone, terminal));
   const auto zoneAirNode = zone.zoneAirNode();
 
@@ -400,13 +430,13 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeFourPipeBeam_Remove_Re
   splitterOutlet = airLoop.zoneSplitter().outletModelObject(0u);
   ASSERT_TRUE(splitterOutlet);
   EXPECT_EQ(zoneAirNode.cast<ModelObject>(), *splitterOutlet);
-  EXPECT_EQ(6u, airLoop.demandComponents().size());
+  EXPECT_EQ(7u, airLoop.demandComponents().size());
   EXPECT_TRUE(airLoop.demandComponents(AirTerminalSingleDuctConstantVolumeFourPipeBeam::iddObjectType()).empty());
   EXPECT_TRUE(zone.equipment().empty());
-  EXPECT_FALSE(model.getObject(terminal.handle()));
+  EXPECT_FALSE(model.getObject(terminalHandle));
   EXPECT_FALSE(model.getModelObject<Node>(inletNodeHandle));
-  EXPECT_TRUE(model.getObject(coolingCoil.handle()));
-  EXPECT_TRUE(model.getObject(heatingCoil.handle()));
+  EXPECT_FALSE(model.getObject(coolingCoilHandle));
+  EXPECT_FALSE(model.getObject(heatingCoilHandle));
 }
 
 TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeFourPipeBeam_CoilFourPipeBeam_PlantDemandBranchLifecycle) {
@@ -482,6 +512,9 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeFourPipeBeam_Remove_Cl
   CoilCoolingFourPipeBeam coolingCoil(model);
   CoilHeatingFourPipeBeam heatingCoil(model);
   AirTerminalSingleDuctConstantVolumeFourPipeBeam terminal(model, coolingCoil, heatingCoil);
+  const auto terminalHandle = terminal.handle();
+  const auto coolingCoilHandle = coolingCoil.handle();
+  const auto heatingCoilHandle = heatingCoil.handle();
 
   ASSERT_TRUE(airLoop.addBranchForZone(zone, terminal));
   ASSERT_TRUE(chilledWaterLoop.addDemandBranchForComponent(coolingCoil));
@@ -498,6 +531,107 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeFourPipeBeam_Remove_Cl
   EXPECT_TRUE(hotWaterLoop.demandComponents(CoilHeatingFourPipeBeam::iddObjectType()).empty());
   EXPECT_TRUE(airLoop.demandComponents(AirTerminalSingleDuctConstantVolumeFourPipeBeam::iddObjectType()).empty());
   EXPECT_TRUE(zone.equipment().empty());
+  EXPECT_FALSE(model.getObject(terminalHandle));
+  EXPECT_FALSE(model.getObject(coolingCoilHandle));
+  EXPECT_FALSE(model.getObject(heatingCoilHandle));
+}
+
+TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeFourPipeBeam_Remove_PreflightFailurePreservesBothPlantSidesAndOwnedObjects) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  ThermalZone zone(model);
+  PlantLoop chilledWaterLoop(model);
+  PlantLoop hotWaterLoop(model);
+  CoilCoolingFourPipeBeam coolingCoil(model);
+  CoilHeatingFourPipeBeam heatingCoil(model);
+  AirTerminalSingleDuctConstantVolumeFourPipeBeam terminal(model, coolingCoil, heatingCoil);
+  const auto terminalHandle = terminal.handle();
+  const auto coolingCoilHandle = coolingCoil.handle();
+  const auto heatingCoilHandle = heatingCoil.handle();
+
+  ASSERT_TRUE(airLoop.addBranchForZone(zone, terminal));
+  ASSERT_TRUE(chilledWaterLoop.addDemandBranchForComponent(coolingCoil));
+  ASSERT_TRUE(coolingCoil.inletModelObject());
+  ASSERT_TRUE(coolingCoil.outletModelObject());
+  const auto coolingInletHandle = coolingCoil.inletModelObject()->handle();
+  const auto coolingOutletHandle = coolingCoil.outletModelObject()->handle();
+  ASSERT_TRUE(terminal.inletModelObject());
+  const auto terminalInletHandle = terminal.inletModelObject()->handle();
+
+  // The hot-side coil appears loop-connected through endpoint pointers but is
+  // absent from every demand-equipment branch. Both plant sides must be
+  // preflighted before the valid chilled-water branch is removed.
+  auto heatingCoilImpl = heatingCoil.getImpl<openstudio::epmodel::detail::CoilHeatingFourPipeBeam_Impl>();
+  ASSERT_TRUE(heatingCoilImpl);
+  ASSERT_TRUE(heatingCoilImpl->setPointer(heatingCoil.inletPort(), hotWaterLoop.demandInletNode().handle(), false));
+  ASSERT_TRUE(heatingCoilImpl->setPointer(heatingCoil.outletPort(), hotWaterLoop.demandOutletNode().handle(), false));
+  ASSERT_TRUE(heatingCoil.plantLoop());
+  EXPECT_FALSE(hotWaterLoop.demandComponent(heatingCoilHandle));
+
+  EXPECT_TRUE(terminal.remove().empty());
+
+  EXPECT_TRUE(model.getObject(terminalHandle));
+  EXPECT_TRUE(model.getObject(coolingCoilHandle));
+  EXPECT_TRUE(model.getObject(heatingCoilHandle));
+  ASSERT_TRUE(coolingCoil.inletModelObject());
+  ASSERT_TRUE(coolingCoil.outletModelObject());
+  EXPECT_EQ(coolingInletHandle, coolingCoil.inletModelObject()->handle());
+  EXPECT_EQ(coolingOutletHandle, coolingCoil.outletModelObject()->handle());
+  ASSERT_TRUE(coolingCoil.plantLoop());
+  EXPECT_EQ(chilledWaterLoop.handle(), coolingCoil.plantLoop()->handle());
+  ASSERT_TRUE(heatingCoil.plantLoop());
+  EXPECT_EQ(hotWaterLoop.handle(), heatingCoil.plantLoop()->handle());
+  ASSERT_TRUE(terminal.inletModelObject());
+  EXPECT_EQ(terminalInletHandle, terminal.inletModelObject()->handle());
+  EXPECT_EQ(1u, airLoop.demandComponents(AirTerminalSingleDuctConstantVolumeFourPipeBeam::iddObjectType()).size());
+  EXPECT_EQ(1u, zone.equipment().size());
+}
+
+TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeFourPipeBeam_CanonicalTopologyConveniences) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  ThermalZone zone(model);
+  PlantLoop chilledWaterLoop(model);
+  PlantLoop hotWaterLoop(model);
+  CoilCoolingFourPipeBeam coolingCoil(model);
+  CoilHeatingFourPipeBeam heatingCoil(model);
+  AirTerminalSingleDuctConstantVolumeFourPipeBeam terminal(model, coolingCoil, heatingCoil);
+
+  EXPECT_FALSE(terminal.primaryAirInletNode());
+  EXPECT_FALSE(terminal.primaryAirOutletNode());
+  EXPECT_FALSE(terminal.chilledWaterPlantLoop());
+  EXPECT_FALSE(terminal.chilledWaterInletNode());
+  EXPECT_FALSE(terminal.chilledWaterOutletNode());
+  EXPECT_FALSE(terminal.hotWaterPlantLoop());
+  EXPECT_FALSE(terminal.hotWaterInletNode());
+  EXPECT_FALSE(terminal.hotWaterOutletNode());
+
+  ASSERT_TRUE(airLoop.addBranchForZone(zone, terminal));
+  ASSERT_TRUE(chilledWaterLoop.addDemandBranchForComponent(coolingCoil));
+  ASSERT_TRUE(hotWaterLoop.addDemandBranchForComponent(heatingCoil));
+
+  const auto primaryInlet = terminal.inletModelObject()->optionalCast<Node>();
+  const auto primaryOutlet = terminal.outletModelObject()->optionalCast<Node>();
+  ASSERT_TRUE(primaryInlet);
+  ASSERT_TRUE(primaryOutlet);
+  ASSERT_TRUE(terminal.primaryAirInletNode());
+  ASSERT_TRUE(terminal.primaryAirOutletNode());
+  EXPECT_EQ(*primaryInlet, *terminal.primaryAirInletNode());
+  EXPECT_EQ(*primaryOutlet, *terminal.primaryAirOutletNode());
+
+  ASSERT_TRUE(terminal.chilledWaterPlantLoop());
+  ASSERT_TRUE(terminal.chilledWaterInletNode());
+  ASSERT_TRUE(terminal.chilledWaterOutletNode());
+  EXPECT_EQ(chilledWaterLoop, *terminal.chilledWaterPlantLoop());
+  EXPECT_EQ(coolingCoil.inletModelObject()->cast<Node>(), *terminal.chilledWaterInletNode());
+  EXPECT_EQ(coolingCoil.outletModelObject()->cast<Node>(), *terminal.chilledWaterOutletNode());
+
+  ASSERT_TRUE(terminal.hotWaterPlantLoop());
+  ASSERT_TRUE(terminal.hotWaterInletNode());
+  ASSERT_TRUE(terminal.hotWaterOutletNode());
+  EXPECT_EQ(hotWaterLoop, *terminal.hotWaterPlantLoop());
+  EXPECT_EQ(heatingCoil.inletModelObject()->cast<Node>(), *terminal.hotWaterInletNode());
+  EXPECT_EQ(heatingCoil.outletModelObject()->cast<Node>(), *terminal.hotWaterOutletNode());
 }
 
 TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeFourPipeBeam_Remove_CleansCoolingOnlyCoilPlantDemandBranch) {

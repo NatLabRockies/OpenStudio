@@ -44,9 +44,13 @@ namespace epmodel {
     static std::vector<std::string> heatingControlTypeValues();
 
     // Schema Alignment Notes:
-    // - Status: Connectivity parity is implemented for the current epmodel zone-branch insertion/removal path, including add/remove cleanup, child ownership, and secondary-air exhaust wiring.
+    // - Status: Near Parity. Terminal-only and zone-serving demand-branch insertion/removal, child ownership, and secondary-air exhaust wiring
+    //   are implemented; the sizing-result and plenum helpers remain narrower.
     // - Canonical Counterpart: openstudio::model::AirTerminalSingleDuctParallelPIUReheat.
-    // - Implemented Parity: The `(Model, Schedule, HVACComponent fan, HVACComponent reheatCoil)` constructor, `availabilitySchedule`, `fan`, `reheatCoil`, `secondaryAirInletNode`, `secondaryAirInletPort`, `addToNode`, the custom `removeFromLoop` cleanup path, child ownership, and the preserved PIU control scalars follow the canonical terminal behavior used by current epmodel loop and translator code.
+    // - Implemented Parity: The `(Model, Schedule, HVACComponent fan, HVACComponent reheatCoil)` constructor, relationships and PIU control
+    //   scalars follow canonical behavior. `addToNode` supports both terminal-only splitter-to-mixer branches and zone-serving branches; the
+    //   latter alone projects a secondary inlet into zone exhaust topology and registers zone equipment. Insertion is atomic, and
+    //   `removeFromLoop` preserves the terminal and owned children for reuse.
     // - Documented Delta: epmodel currently omits the canonical autosized-result query helpers and `setInducedAirPlenumZone(ThermalZone&)` until the shared sizing and plenum infrastructure are broad enough to support them without stubs or local workarounds.
     // - Field/Storage Mapping: The preserved scalars map directly to EnergyPlus `AirTerminal:SingleDuct:ParallelPIU:Reheat` fields; epmodel rewires the zone branch through a terminal-owned inlet node, persists a distinct secondary inlet node, records that node on the zone exhaust `NodeList`, synchronizes fan availability to the serving air loop, and cleans zone, ADU, and plant references in the supported `remove()`/`removeFromLoop()` teardown paths, including the stale-zone cleanup regression path.
     // - Evidence: `src/model/AirTerminalSingleDuctParallelPIUReheat.hpp`, `src/model/AirTerminalSingleDuctParallelPIUReheat.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirTerminalSingleDuctParallelPIUReheat.cpp`, and `src/epmodel/test/AirTerminalSingleDuctParallelPIUReheat_GTest.cpp`.

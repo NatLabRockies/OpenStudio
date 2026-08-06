@@ -5,6 +5,8 @@
 
 #include <gtest/gtest.h>
 
+#include <utilities/core/Exception.hpp>
+
 #include "EPModelFixture.hpp"
 #include "../HVACComponent/ThermalZone.hpp"
 #include "../Loop/AirLoopHVAC.hpp"
@@ -25,6 +27,21 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctVAVNoReheat_DefaultConstructor) {
   AirTerminalSingleDuctVAVNoReheat terminal(model);
   EXPECT_EQ(AirTerminalSingleDuctVAVNoReheat::iddObjectType(), terminal.iddObject().type());
   EXPECT_FALSE(terminal.nameString().empty());
+}
+
+TEST_F(EPModelFixture, AirTerminalSingleDuctVAVNoReheat_CanonicalConstructorEstablishesRequiredSchedule) {
+  Model model;
+  ScheduleCompact availability(model);
+  ASSERT_TRUE(availability.setToConstantValue(0.6));
+
+  AirTerminalSingleDuctVAVNoReheat terminal(model, availability);
+
+  EXPECT_EQ(availability.handle(), terminal.availabilitySchedule().handle());
+  EXPECT_TRUE(terminal.isMaximumAirFlowRateAutosized());
+
+  Model otherModel;
+  ScheduleCompact foreignAvailability(otherModel);
+  EXPECT_THROW({ AirTerminalSingleDuctVAVNoReheat invalidTerminal(model, foreignAvailability); }, openstudio::Exception);
 }
 
 TEST_F(EPModelFixture, AirTerminalSingleDuctVAVNoReheat_ScalarAccessors_RoundTrip) {
@@ -383,4 +400,37 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctVAVNoReheat_RemoveFromLoop_CleansCon
   EXPECT_TRUE(model.getObject(terminal.handle()));
   EXPECT_FALSE(model.getModelObject<Node>(inletNodeHandle));
   EXPECT_FALSE(terminal.removeFromLoop());
+}
+
+TEST_F(EPModelFixture, AirTerminalSingleDuctVAVNoReheat_TerminalOnlyBranchSupportsDetachReuseAndRemove) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  AirTerminalSingleDuctVAVNoReheat terminal(model);
+
+  ASSERT_TRUE(airLoop.addBranchForHVACComponent(terminal));
+  ASSERT_TRUE(terminal.airLoopHVAC());
+  EXPECT_TRUE(airLoop.thermalZones().empty());
+  ASSERT_TRUE(terminal.inletModelObject());
+  ASSERT_TRUE(terminal.outletModelObject());
+  EXPECT_EQ(1u, airLoop.zoneSplitter().outletModelObjects().size());
+  EXPECT_EQ(1u, airLoop.zoneMixer().inletModelObjects().size());
+
+  ASSERT_TRUE(terminal.removeFromLoop());
+  EXPECT_TRUE(model.getObject(terminal.handle()));
+  EXPECT_FALSE(terminal.airLoopHVAC());
+  EXPECT_FALSE(terminal.inletModelObject());
+  EXPECT_FALSE(terminal.outletModelObject());
+  ASSERT_TRUE(airLoop.zoneSplitter().outletModelObject(0u));
+  ASSERT_TRUE(airLoop.zoneMixer().inletModelObject(0u));
+  EXPECT_EQ(*airLoop.zoneSplitter().outletModelObject(0u), *airLoop.zoneMixer().inletModelObject(0u));
+
+  ASSERT_TRUE(airLoop.addBranchForHVACComponent(terminal));
+  const auto terminalHandle = terminal.handle();
+  const auto removedObjects = terminal.remove();
+  EXPECT_FALSE(removedObjects.empty());
+  EXPECT_FALSE(model.getObject(terminalHandle));
+  EXPECT_TRUE(airLoop.thermalZones().empty());
+  ASSERT_TRUE(airLoop.zoneSplitter().outletModelObject(0u));
+  ASSERT_TRUE(airLoop.zoneMixer().inletModelObject(0u));
+  EXPECT_EQ(*airLoop.zoneSplitter().outletModelObject(0u), *airLoop.zoneMixer().inletModelObject(0u));
 }

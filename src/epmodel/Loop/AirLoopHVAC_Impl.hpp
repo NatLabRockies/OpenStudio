@@ -101,9 +101,31 @@ namespace epmodel {
       unsigned availabilityManagerPriority(const openstudio::epmodel::AvailabilityManager& availabilityManager) const;
       bool setNightCycleControlType(const std::string& controlType);
       std::string nightCycleControlType() const;
+      enum class DualDuctZoneAttachmentFailureStage
+      {
+        None,
+        AfterProvisionalObjectsPrepared,
+      };
+      enum class DemandBranchAttachmentFailureStage
+      {
+        None,
+        AfterTerminalClonePrepared,
+        AfterFirstPlantReconnectionPrepared,
+        AfterPlantReconnectionPrepared,
+        AfterReservationPrepared,
+        AfterZonePrepared,
+        AfterTerminalZoneProjectionPrepared,
+        BeforeTerminalAttachment,
+        AfterDualDuctTerminalPrepared,
+      };
       bool addBranchForZone(openstudio::epmodel::ThermalZone& thermalZone);
+      bool addBranchForZone(openstudio::epmodel::ThermalZone& thermalZone, DualDuctZoneAttachmentFailureStage failureStage);
+      bool addBranchForZone(openstudio::epmodel::ThermalZone& thermalZone, DemandBranchAttachmentFailureStage failureStage);
       bool addBranchForZone(openstudio::epmodel::ThermalZone& thermalZone, openstudio::epmodel::HVACComponent& airTerminal);
+      bool addBranchForZone(openstudio::epmodel::ThermalZone& thermalZone, openstudio::epmodel::HVACComponent& airTerminal,
+                            DemandBranchAttachmentFailureStage failureStage);
       bool addBranchForHVACComponent(openstudio::epmodel::HVACComponent& hvacComponent);
+      bool addBranchForHVACComponent(openstudio::epmodel::HVACComponent& hvacComponent, DemandBranchAttachmentFailureStage failureStage);
       bool removeBranchForZone(openstudio::epmodel::ThermalZone& thermalZone);
       void syncControllerMechanicalVentilationZoneOutdoorAirEntries();
       void syncSetpointManagerMixedAirFanNodes();
@@ -117,37 +139,29 @@ namespace epmodel {
       void doCanonicalize(LoadContext& context) override;
 
      private:
+      class DemandBranchAttachmentPlan;
+      class TerminalZoneProjectionPlan;
+      class SingleDuctTerminalClonePlan;
+      class DualDuctZoneAttachment;
+      class DualDuctTerminalInsertionPlan;
       static boost::optional<openstudio::epmodel::ModelObject> resolveTerminalOnDemandBranchNodes(const openstudio::epmodel::Node& splitterOutletNode,
                                                                                                   const openstudio::epmodel::Node& mixerInletNode);
       static boost::optional<openstudio::epmodel::ModelObject> resolveTerminalOutletObject(const openstudio::epmodel::ModelObject& terminalObject);
       static boost::optional<openstudio::epmodel::ThermalZone> resolveZoneServedByInletNode(const openstudio::epmodel::Node& zoneInletNode);
       static boost::optional<openstudio::epmodel::ThermalZone> resolveZoneServedByReturnNode(const openstudio::epmodel::Node& zoneReturnNode);
       bool isTerminalTypeValid(const openstudio::epmodel::HVACComponent& airTerminal) const;
+      boost::optional<openstudio::epmodel::HVACComponent> reusableSingleDuctTerminalForZone() const;
+      boost::optional<openstudio::epmodel::StraightComponent> lastSingleDuctTerminalForClone() const;
       boost::optional<openstudio::epmodel::HVACComponent> cloneLastDualDuctTerminalForBranch() const;
-      // Demand-side branch mutation always starts by reserving a splitter/mixer
-      // branch slot. For the default one-branch loop we reuse the shared
-      // splitter<->mixer node; once real branching already exists we allocate a
-      // new branch row and transient node as one unit so later rollback can
-      // cleanly remove only the newly introduced topology.
-      bool reserveDemandBranchSlot(openstudio::epmodel::AirLoopHVACZoneSplitter& splitter, openstudio::epmodel::AirLoopHVACZoneMixer& mixer,
-                                   unsigned& targetBranchIndex, boost::optional<openstudio::epmodel::Node>& branchNode, bool& createdNewBranch);
-      // Undo only the reservation work performed by reserveDemandBranchSlot().
-      // This intentionally does not try to remove any component or zone that
-      // was successfully attached later in the mutation flow.
-      void rollbackReservedDemandBranchSlot(openstudio::epmodel::AirLoopHVACZoneSplitter& splitter, openstudio::epmodel::AirLoopHVACZoneMixer& mixer,
-                                            unsigned targetBranchIndex, bool createdNewBranch);
       boost::optional<unsigned> demandBranchIndexForZoneInletNode(const openstudio::epmodel::Node& zoneInletNode) const;
       bool removeDemandBranchAtIndex(unsigned branchIndex);
       bool collapseSecondaryDemandPathIfEmpty(openstudio::epmodel::Node secondaryDemandInletNode,
                                               openstudio::epmodel::AirLoopHVACZoneSplitter secondarySplitter);
       bool ensureDefaultDemandBranch();
-      boost::optional<openstudio::epmodel::Node> reusableDualDuctTerminalBranchNodeForZone() const;
+      boost::optional<openstudio::epmodel::Mixer> reusableDualDuctTerminalForZone() const;
       bool detachZoneFromDemandNodes(openstudio::epmodel::ZoneHVACEquipmentConnections& connections);
-      bool ensureSecondaryDemandInletNode(const openstudio::epmodel::Node& node);
       boost::optional<openstudio::epmodel::AirLoopHVACZoneSplitter>
         zoneSplitterForDemandInletNode(const openstudio::epmodel::Node& demandInletNode) const;
-      boost::optional<openstudio::epmodel::AirLoopHVACZoneSplitter>
-        ensureSecondarySupplyPathAndZoneSplitter(const openstudio::epmodel::Node& secondaryDemandInletNode);
       static bool isSupportedMixedAirFanType(openstudio::IddObjectType objectType);
       static boost::optional<openstudio::epmodel::HVACComponent> lastSupportedFan(const std::vector<openstudio::epmodel::ModelObject>& components);
       // AirLoopHVAC availability-schedule APIs are mapped onto one canonical

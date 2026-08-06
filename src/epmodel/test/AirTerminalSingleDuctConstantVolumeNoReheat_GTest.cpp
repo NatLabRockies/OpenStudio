@@ -7,7 +7,9 @@
 
 #include "EPModelFixture.hpp"
 #include "../HVACComponent/ThermalZone.hpp"
+#include "../HVACComponent/ThermalZone_Impl.hpp"
 #include "../Loop/AirLoopHVAC.hpp"
+#include "../Loop/AirLoopHVAC_Impl.hpp"
 #include "../Mixer/AirLoopHVACZoneMixer.hpp"
 #include "../Schedule/Schedule.hpp"
 #include "../Schedule/Schedule_Impl.hpp"
@@ -17,8 +19,10 @@
 #include "../ModelObject/ZoneHVACAirDistributionUnit.hpp"
 #include "../ModelObject/ZoneHVACAirDistributionUnit_Impl.hpp"
 #include "../StraightComponent/AirTerminalSingleDuctConstantVolumeNoReheat.hpp"
+#include "../StraightComponent/AirTerminalSingleDuctConstantVolumeNoReheat_Impl.hpp"
 
 #include <utilities/idd/AirTerminal_SingleDuct_ConstantVolume_NoReheat_FieldEnums.hxx>
+#include <utilities/core/Path.hpp>
 #include <utilities/idf/Handle.hpp>
 
 using namespace openstudio::epmodel;
@@ -229,7 +233,7 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeNoReheat_Remove_Reconn
   splitterOutlet = airLoop.zoneSplitter().outletModelObject(0u);
   ASSERT_TRUE(splitterOutlet);
   EXPECT_EQ(zoneAirNode.cast<ModelObject>(), *splitterOutlet);
-  EXPECT_EQ(6u, airLoop.demandComponents().size());
+  EXPECT_EQ(7u, airLoop.demandComponents().size());
   EXPECT_TRUE(airLoop.demandComponents(AirTerminalSingleDuctConstantVolumeNoReheat::iddObjectType()).empty());
   EXPECT_TRUE(zone.equipment().empty());
   EXPECT_FALSE(adu.outletNode());
@@ -268,4 +272,46 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeNoReheat_RemoveFromLoo
   EXPECT_FALSE(terminal.outletModelObject());
   EXPECT_TRUE(model.getObject(terminal.handle()));
   EXPECT_FALSE(model.getModelObject<Node>(inletNodeHandle));
+}
+
+TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeNoReheat_ConnectedTopologySurvivesSaveLoadAndRemoval) {
+  const auto idfPath = openstudio::tempDir() / openstudio::toPath("epmodel-terminal-connected-roundtrip.idf");
+
+  Model model;
+  AirLoopHVAC airLoop(model);
+  ThermalZone zone(model);
+  AirTerminalSingleDuctConstantVolumeNoReheat terminal(model);
+  ASSERT_TRUE(airLoop.setName("Roundtrip Air Loop"));
+  ASSERT_TRUE(zone.setName("Roundtrip Zone"));
+  ASSERT_TRUE(terminal.setName("Roundtrip Terminal"));
+  ASSERT_TRUE(airLoop.addBranchForZone(zone, terminal));
+  ASSERT_TRUE(model.save(idfPath, true));
+
+  auto loadedModel = Model::load(idfPath);
+  ASSERT_TRUE(loadedModel);
+  auto loadedAirLoop = loadedModel->getConcreteModelObjectByName<AirLoopHVAC>("Roundtrip Air Loop");
+  auto loadedZone = loadedModel->getConcreteModelObjectByName<ThermalZone>("Roundtrip Zone");
+  auto loadedTerminal = loadedModel->getConcreteModelObjectByName<AirTerminalSingleDuctConstantVolumeNoReheat>("Roundtrip Terminal");
+  ASSERT_TRUE(loadedAirLoop);
+  ASSERT_TRUE(loadedZone);
+  ASSERT_TRUE(loadedTerminal);
+
+  ASSERT_TRUE(loadedTerminal->airLoopHVAC());
+  EXPECT_EQ(loadedAirLoop->handle(), loadedTerminal->airLoopHVAC()->handle());
+  ASSERT_EQ(1u, loadedAirLoop->thermalZones().size());
+  EXPECT_EQ(loadedZone->handle(), loadedAirLoop->thermalZones().front().handle());
+  ASSERT_EQ(1u, loadedZone->equipment().size());
+  EXPECT_EQ(loadedTerminal->handle(), loadedZone->equipment().front().handle());
+  ASSERT_TRUE(loadedTerminal->inletModelObject());
+  ASSERT_TRUE(loadedTerminal->outletModelObject());
+
+  const auto loadedTerminalHandle = loadedTerminal->handle();
+  const auto removedObjects = loadedTerminal->remove();
+  EXPECT_FALSE(removedObjects.empty());
+  EXPECT_FALSE(loadedModel->getObject(loadedTerminalHandle));
+  EXPECT_TRUE(loadedZone->equipment().empty());
+  ASSERT_TRUE(loadedAirLoop->removeBranchForZone(*loadedZone));
+  EXPECT_TRUE(loadedAirLoop->thermalZones().empty());
+
+  openstudio::filesystem::remove(idfPath);
 }

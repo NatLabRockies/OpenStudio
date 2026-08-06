@@ -145,6 +145,7 @@ TEST_F(EPModelFixture, CoilHeatingWater_ControllerWaterCoil_IsInferredFromLoopNo
 
   auto actuatorNode = controller->actuatorNode();
   auto sensorNode = controller->sensorNode();
+  const auto controllerHandle = controller->handle();
   ASSERT_TRUE(actuatorNode);
   ASSERT_TRUE(sensorNode);
   ASSERT_TRUE(coil.waterInletModelObject());
@@ -154,6 +155,13 @@ TEST_F(EPModelFixture, CoilHeatingWater_ControllerWaterCoil_IsInferredFromLoopNo
 
   ASSERT_TRUE(plantLoop.removeDemandBranchWithComponent(coil));
   EXPECT_FALSE(coil.controllerWaterCoil());
+  EXPECT_FALSE(model.getObject(controllerHandle));
+  const auto hasRemovedControllerSource = [&](const Node& node) {
+    const auto sources = node.sources();
+    return std::ranges::find_if(sources, [&](const auto& source) { return source.handle() == controllerHandle; }) != sources.end();
+  };
+  EXPECT_FALSE(hasRemovedControllerSource(*actuatorNode));
+  EXPECT_FALSE(hasRemovedControllerSource(*sensorNode));
 }
 
 TEST_F(EPModelFixture, CoilHeatingWater_AirInletTracksUpstreamInsertion) {
