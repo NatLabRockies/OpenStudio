@@ -16,6 +16,7 @@
 #include "ModelObject/PlantEquipmentOperationSchemes_Impl.hpp"
 #include "ModelObject/SizingPlant.hpp"
 #include "ModelObject/SizingPlant_Impl.hpp"
+#include "ModelObject/WaterHeaterSizing.hpp"
 #include "PlantEquipmentOperationScheme/PlantEquipmentOperationCoolingLoad.hpp"
 #include "PlantEquipmentOperationScheme/PlantEquipmentOperationHeatingLoad.hpp"
 #include "Schedule/Schedule.hpp"
@@ -31,6 +32,7 @@
 #include "Splitter/Splitter.hpp"
 #include "Splitter/ConnectorSplitter.hpp"
 #include "Splitter/ConnectorSplitter_Impl.hpp"
+#include "WaterToAirComponent/WaterToAirComponent.hpp"
 #include "WaterToAirComponent/CoilCoolingWater.hpp"
 #include "WaterToAirComponent/CoilCoolingWater_Impl.hpp"
 #include "WaterToAirComponent/CoilHeatingWater.hpp"
@@ -62,6 +64,22 @@
 #include "StraightComponent/GroundHeatExchangerVertical_Impl.hpp"
 #include "WaterToWaterComponent/WaterToWaterComponent.hpp"
 #include "WaterToWaterComponent/WaterToWaterComponent_Impl.hpp"
+#include "WaterToWaterComponent/ChillerElectricEIR.hpp"
+#include "WaterToWaterComponent/ChillerElectricEIR_Impl.hpp"
+#include "WaterToWaterComponent/ChillerElectricReformulatedEIR.hpp"
+#include "WaterToWaterComponent/ChillerElectricReformulatedEIR_Impl.hpp"
+#include "WaterToWaterComponent/CentralHeatPumpSystem.hpp"
+#include "WaterToWaterComponent/CentralHeatPumpSystem_Impl.hpp"
+#include "WaterToWaterComponent/HeatPumpPlantLoopEIRCooling.hpp"
+#include "WaterToWaterComponent/HeatPumpPlantLoopEIRCooling_Impl.hpp"
+#include "WaterToWaterComponent/HeatPumpPlantLoopEIRHeating.hpp"
+#include "WaterToWaterComponent/HeatPumpPlantLoopEIRHeating_Impl.hpp"
+#include "WaterToWaterComponent/HeatPumpWaterToWaterEquationFitCooling.hpp"
+#include "WaterToWaterComponent/HeatPumpWaterToWaterEquationFitCooling_Impl.hpp"
+#include "WaterToWaterComponent/HeatPumpWaterToWaterEquationFitHeating.hpp"
+#include "WaterToWaterComponent/HeatPumpWaterToWaterEquationFitHeating_Impl.hpp"
+#include "WaterToWaterComponent/HeatExchangerFluidToFluid.hpp"
+#include "WaterToWaterComponent/HeatExchangerFluidToFluid_Impl.hpp"
 #include "WaterToWaterComponent/WaterHeaterMixed.hpp"
 #include "WaterToWaterComponent/WaterHeaterMixed_Impl.hpp"
 #include "WaterToWaterComponent/WaterHeaterStratified.hpp"
@@ -94,6 +112,28 @@ namespace openstudio {
 namespace epmodel {
 
   PlantLoop::PlantLoop(const Model& model) : Loop(PlantLoop::iddObjectType(), model) {
+    const auto loopHandle = handle();
+    const auto canonicalNameIsTaken = [&model, &loopHandle](const std::string& candidate) {
+      const auto prefix = candidate + " ";
+      return std::ranges::any_of(model.objects(), [&loopHandle, &candidate, &prefix](const auto& object) {
+        if (object.handle() == loopHandle) {
+          return false;
+        }
+        const auto objectName = object.name();
+        return objectName && ((*objectName == candidate) || objectName->starts_with(prefix));
+      });
+    };
+
+    const auto initialName = nameString();
+    auto canonicalName = initialName;
+    unsigned suffix = 2u;
+    while (canonicalNameIsTaken(canonicalName)) {
+      canonicalName = initialName + " " + std::to_string(suffix++);
+    }
+    if (canonicalName != initialName) {
+      OS_ASSERT(setName(canonicalName));
+    }
+
     detail::LoadContext context{const_cast<Model&>(model), SanitizationPolicy::Repair, SanitizationReport{}, {}};  // NOLINT
     getImpl<detail::PlantLoop_Impl>()->canonicalize(context);
   }
@@ -1152,6 +1192,406 @@ namespace epmodel {
       return demandComponents(demandInletNode(), demandOutletNode(), type);
     }
 
+    std::vector<IdfObject> PlantLoop_Impl::remove() {
+      std::vector<IdfObject> result;
+      auto plantLoop = getObject<PlantLoop>();
+      const auto owningModel = model();
+
+      const auto appendRemoved = [&result](std::vector<IdfObject>&& removed) { result.insert(result.end(), removed.begin(), removed.end()); };
+
+      const auto supplyBranches = supplyBranchList().branches();
+      const auto demandBranches = demandBranchList().branches();
+      enum class SelectedWaterToWaterOwner
+      {
+        Supply,
+        SecondarySupply,
+        SecondaryDemand,
+        TertiarySupply,
+        TertiaryDemand,
+      };
+      struct SelectedWaterToWaterComponent
+      {
+        WaterToWaterComponent component;
+        SelectedWaterToWaterOwner owner;
+        bool retained;
+      };
+      std::vector<WaterToAirComponent> retainedWaterCoils;
+      std::vector<SelectedWaterToWaterComponent> selectedWaterToWaterComponents;
+      size_t ownedSupplyStraightComponentCount = 0u;
+      size_t ownedDemandStraightComponentCount = 0u;
+      size_t selectedSpecializedComponentCount = 0u;
+      const auto hasOnlySelectedComponents = [&](const auto& branches, bool supplySide) {
+        for (const auto& branch : branches) {
+          for (const auto& component : branch.components()) {
+            auto straightComponent = component.template optionalCast<StraightComponent>();
+            if (straightComponent) {
+              if (straightComponent->containingHVACComponent() || !straightComponent->children().empty()) {
+                return false;
+              }
+              auto componentPlantLoop = straightComponent->plantLoop();
+              if (!componentPlantLoop || *componentPlantLoop != plantLoop) {
+                return false;
+              }
+              if (supplySide) {
+                ++ownedSupplyStraightComponentCount;
+              } else {
+                ++ownedDemandStraightComponentCount;
+              }
+              continue;
+            }
+
+            auto waterCoil = component.template optionalCast<WaterToAirComponent>();
+            const bool isSelectedWaterCoil =
+              component.template optionalCast<CoilHeatingWater>() || component.template optionalCast<CoilCoolingWater>();
+            if (waterCoil && isSelectedWaterCoil) {
+              if (supplySide || waterCoil->containingHVACComponent() || !waterCoil->children().empty()) {
+                return false;
+              }
+              auto componentPlantLoop = waterCoil->plantLoop();
+              auto componentAirLoop = waterCoil->airLoopHVAC();
+              if (!componentPlantLoop || *componentPlantLoop != plantLoop || !componentAirLoop) {
+                return false;
+              }
+              ++selectedSpecializedComponentCount;
+              if (std::ranges::none_of(retainedWaterCoils, [&waterCoil](const auto& existing) { return existing.handle() == waterCoil->handle(); })) {
+                retainedWaterCoils.push_back(*waterCoil);
+              }
+              continue;
+            }
+
+            auto waterToWaterComponent = component.template optionalCast<WaterToWaterComponent>();
+            const auto waterHeaterMixed = component.template optionalCast<WaterHeaterMixed>();
+            const auto waterHeaterStratified = component.template optionalCast<WaterHeaterStratified>();
+            const bool isSelectedWaterHeater = waterHeaterMixed || waterHeaterStratified;
+            const auto children = waterToWaterComponent ? waterToWaterComponent->children() : std::vector<ModelObject>{};
+            const bool hasSelectedWaterHeaterChild =
+              isSelectedWaterHeater && (children.size() == 1u) && (children.front().iddObject().type() == WaterHeaterSizing::iddObjectType());
+            if (!waterToWaterComponent || waterToWaterComponent->containingHVACComponent() || (!children.empty() && !hasSelectedWaterHeaterChild)) {
+              return false;
+            }
+
+            auto primaryLoop = waterToWaterComponent->plantLoop();
+            auto secondaryLoop = waterToWaterComponent->secondaryPlantLoop();
+            auto tertiaryLoop = waterToWaterComponent->tertiaryPlantLoop();
+            bool retained = false;
+            auto selectedOwner = supplySide ? SelectedWaterToWaterOwner::Supply : SelectedWaterToWaterOwner::SecondaryDemand;
+            if (component.template optionalCast<HeatExchangerFluidToFluid>()) {
+              if (tertiaryLoop) {
+                return false;
+              }
+              retained = supplySide ? static_cast<bool>(secondaryLoop) : static_cast<bool>(primaryLoop);
+              if ((supplySide && (!primaryLoop || (*primaryLoop != plantLoop))) || (!supplySide && (!secondaryLoop || (*secondaryLoop != plantLoop)))
+                  || (primaryLoop && secondaryLoop && (*primaryLoop == *secondaryLoop)) || (!supplySide && !retained)) {
+                return false;
+              }
+            } else if (component.template optionalCast<HeatPumpWaterToWaterEquationFitHeating>()) {
+              if (tertiaryLoop) {
+                return false;
+              }
+              if (supplySide) {
+                if (!primaryLoop || (*primaryLoop != plantLoop) || (secondaryLoop && (*primaryLoop == *secondaryLoop))) {
+                  return false;
+                }
+                selectedOwner = SelectedWaterToWaterOwner::Supply;
+                retained = static_cast<bool>(secondaryLoop);
+              } else if (secondaryLoop && (*secondaryLoop == plantLoop) && (!primaryLoop || (*primaryLoop != *secondaryLoop))) {
+                selectedOwner = SelectedWaterToWaterOwner::SecondaryDemand;
+                retained = static_cast<bool>(primaryLoop);
+              } else {
+                return false;
+              }
+            } else if (component.template optionalCast<HeatPumpWaterToWaterEquationFitCooling>()) {
+              if (tertiaryLoop) {
+                return false;
+              }
+              if (supplySide) {
+                if (!primaryLoop || (*primaryLoop != plantLoop) || (secondaryLoop && (*primaryLoop == *secondaryLoop))) {
+                  return false;
+                }
+                selectedOwner = SelectedWaterToWaterOwner::Supply;
+                retained = static_cast<bool>(secondaryLoop);
+              } else if (secondaryLoop && (*secondaryLoop == plantLoop) && (!primaryLoop || (*primaryLoop != *secondaryLoop))) {
+                selectedOwner = SelectedWaterToWaterOwner::SecondaryDemand;
+                retained = static_cast<bool>(primaryLoop);
+              } else {
+                return false;
+              }
+            } else if (component.template optionalCast<ChillerElectricEIR>()) {
+              if ((primaryLoop && secondaryLoop && (*primaryLoop == *secondaryLoop))
+                  || (primaryLoop && tertiaryLoop && (*primaryLoop == *tertiaryLoop))
+                  || (secondaryLoop && tertiaryLoop && (*secondaryLoop == *tertiaryLoop))) {
+                return false;
+              }
+              if (supplySide && primaryLoop && (*primaryLoop == plantLoop)) {
+                const bool hasBothDemandOwners = secondaryLoop && tertiaryLoop;
+                const bool hasNoDemandOwners = !secondaryLoop && !tertiaryLoop;
+                if (!hasBothDemandOwners && !hasNoDemandOwners) {
+                  return false;
+                }
+                selectedOwner = SelectedWaterToWaterOwner::Supply;
+                retained = hasBothDemandOwners;
+              } else if (!supplySide && primaryLoop && secondaryLoop && (*secondaryLoop == plantLoop)) {
+                selectedOwner = SelectedWaterToWaterOwner::SecondaryDemand;
+                retained = true;
+              } else if (!supplySide && primaryLoop && secondaryLoop && tertiaryLoop && (*tertiaryLoop == plantLoop)) {
+                selectedOwner = SelectedWaterToWaterOwner::TertiaryDemand;
+                retained = true;
+              } else {
+                return false;
+              }
+            } else if (component.template optionalCast<ChillerElectricReformulatedEIR>()) {
+              if ((primaryLoop && secondaryLoop && (*primaryLoop == *secondaryLoop))
+                  || (primaryLoop && tertiaryLoop && (*primaryLoop == *tertiaryLoop))
+                  || (secondaryLoop && tertiaryLoop && (*secondaryLoop == *tertiaryLoop))) {
+                return false;
+              }
+              if (supplySide && primaryLoop && (*primaryLoop == plantLoop)) {
+                const bool hasBothDemandOwners = secondaryLoop && tertiaryLoop;
+                const bool hasNoDemandOwners = !secondaryLoop && !tertiaryLoop;
+                if (!hasBothDemandOwners && !hasNoDemandOwners) {
+                  return false;
+                }
+                selectedOwner = SelectedWaterToWaterOwner::Supply;
+                retained = hasBothDemandOwners;
+              } else if (!supplySide && secondaryLoop && (*secondaryLoop == plantLoop)) {
+                const bool hasPrimaryOwner = static_cast<bool>(primaryLoop);
+                const bool isOnlySecondaryOwner = !primaryLoop && !tertiaryLoop;
+                if (!hasPrimaryOwner && !isOnlySecondaryOwner) {
+                  return false;
+                }
+                selectedOwner = SelectedWaterToWaterOwner::SecondaryDemand;
+                retained = !isOnlySecondaryOwner;
+              } else if (!supplySide && secondaryLoop && tertiaryLoop && (*tertiaryLoop == plantLoop)) {
+                selectedOwner = SelectedWaterToWaterOwner::TertiaryDemand;
+                retained = true;
+              } else {
+                return false;
+              }
+            } else if (component.template optionalCast<CentralHeatPumpSystem>()) {
+              if ((primaryLoop && secondaryLoop && (*primaryLoop == *secondaryLoop))
+                  || (primaryLoop && tertiaryLoop && (*primaryLoop == *tertiaryLoop))
+                  || (secondaryLoop && tertiaryLoop && (*secondaryLoop == *tertiaryLoop))) {
+                return false;
+              }
+              if (!supplySide && primaryLoop && secondaryLoop && (*secondaryLoop == plantLoop)) {
+                selectedOwner = SelectedWaterToWaterOwner::SecondaryDemand;
+                retained = true;
+              } else if (supplySide && primaryLoop && (*primaryLoop == plantLoop)) {
+                const bool hasBothOtherOwners = secondaryLoop && tertiaryLoop;
+                const bool hasNoOtherOwners = !secondaryLoop && !tertiaryLoop;
+                if (!hasBothOtherOwners && !hasNoOtherOwners) {
+                  return false;
+                }
+                selectedOwner = SelectedWaterToWaterOwner::Supply;
+                retained = hasBothOtherOwners;
+              } else if (supplySide && primaryLoop && secondaryLoop && tertiaryLoop && (*tertiaryLoop == plantLoop)) {
+                selectedOwner = SelectedWaterToWaterOwner::TertiarySupply;
+                retained = true;
+              } else {
+                return false;
+              }
+            } else if (component.template optionalCast<HeatPumpPlantLoopEIRHeating>()
+                       || component.template optionalCast<HeatPumpPlantLoopEIRCooling>()) {
+              if ((primaryLoop && secondaryLoop && (*primaryLoop == *secondaryLoop))
+                  || (primaryLoop && tertiaryLoop && (*primaryLoop == *tertiaryLoop))
+                  || (secondaryLoop && tertiaryLoop && (*secondaryLoop == *tertiaryLoop))) {
+                return false;
+              }
+              if (supplySide && primaryLoop && (*primaryLoop == plantLoop)) {
+                const bool hasBothDemandOwners = secondaryLoop && tertiaryLoop;
+                const bool hasNoDemandOwners = !secondaryLoop && !tertiaryLoop;
+                if (!hasBothDemandOwners && !hasNoDemandOwners) {
+                  return false;
+                }
+                selectedOwner = SelectedWaterToWaterOwner::Supply;
+                retained = hasBothDemandOwners;
+              } else if (!supplySide && primaryLoop && secondaryLoop && (*secondaryLoop == plantLoop)) {
+                selectedOwner = SelectedWaterToWaterOwner::SecondaryDemand;
+                retained = true;
+              } else if (!supplySide && primaryLoop && secondaryLoop && tertiaryLoop && (*tertiaryLoop == plantLoop)) {
+                selectedOwner = SelectedWaterToWaterOwner::TertiaryDemand;
+                retained = true;
+              } else {
+                return false;
+              }
+            } else if (isSelectedWaterHeater) {
+              if (!primaryLoop || tertiaryLoop || (secondaryLoop && (*primaryLoop == *secondaryLoop))) {
+                return false;
+              }
+              if (supplySide) {
+                if (*primaryLoop == plantLoop) {
+                  selectedOwner = SelectedWaterToWaterOwner::Supply;
+                  retained = static_cast<bool>(secondaryLoop);
+                } else if (secondaryLoop && (*secondaryLoop == plantLoop)) {
+                  selectedOwner = SelectedWaterToWaterOwner::SecondarySupply;
+                  retained = true;
+                } else {
+                  return false;
+                }
+              } else if (secondaryLoop && (*secondaryLoop == plantLoop)) {
+                selectedOwner = SelectedWaterToWaterOwner::SecondaryDemand;
+                retained = true;
+              } else {
+                return false;
+              }
+            } else {
+              return false;
+            }
+
+            ++selectedSpecializedComponentCount;
+            if (std::ranges::none_of(selectedWaterToWaterComponents, [&waterToWaterComponent](const auto& existing) {
+                  return existing.component.handle() == waterToWaterComponent->handle();
+                })) {
+              selectedWaterToWaterComponents.push_back({*waterToWaterComponent, selectedOwner, retained});
+            }
+          }
+        }
+        return true;
+      };
+      const bool hasOnlySelectedSupplyComponents = hasOnlySelectedComponents(supplyBranches, true);
+      const bool hasOnlySelectedDemandComponents = hasOnlySelectedComponents(demandBranches, false);
+      bool isSelectedEquationFitCompanionPair = false;
+      if (hasOnlySelectedSupplyComponents && hasOnlySelectedDemandComponents && retainedWaterCoils.empty()
+          && (selectedSpecializedComponentCount == 2u) && (selectedWaterToWaterComponents.size() == 2u)
+          && ((ownedSupplyStraightComponentCount + ownedDemandStraightComponentCount) == 0u)) {
+        const auto heating = std::ranges::find_if(selectedWaterToWaterComponents, [](const auto& selected) {
+          return selected.component.template optionalCast<HeatPumpWaterToWaterEquationFitHeating>().has_value();
+        });
+        const auto cooling = std::ranges::find_if(selectedWaterToWaterComponents, [](const auto& selected) {
+          return selected.component.template optionalCast<HeatPumpWaterToWaterEquationFitCooling>().has_value();
+        });
+        if ((heating != selectedWaterToWaterComponents.end()) && (cooling != selectedWaterToWaterComponents.end())
+            && (heating->owner == SelectedWaterToWaterOwner::Supply) && (cooling->owner == SelectedWaterToWaterOwner::SecondaryDemand)) {
+          const auto heatingHeatPump = heating->component.cast<HeatPumpWaterToWaterEquationFitHeating>();
+          const auto coolingHeatPump = cooling->component.cast<HeatPumpWaterToWaterEquationFitCooling>();
+          const auto companionCoolingHeatPump = heatingHeatPump.companionCoolingHeatPump();
+          const auto companionHeatingHeatPump = coolingHeatPump.companionHeatingHeatPump();
+          isSelectedEquationFitCompanionPair = companionCoolingHeatPump && companionHeatingHeatPump
+                                               && (companionCoolingHeatPump->handle() == coolingHeatPump.handle())
+                                               && (companionHeatingHeatPump->handle() == heatingHeatPump.handle());
+        }
+      }
+      const bool hasSelectedSpecializedCardinality =
+        (selectedSpecializedComponentCount == 0u)
+        || ((selectedSpecializedComponentCount == 1u) && ((ownedSupplyStraightComponentCount + ownedDemandStraightComponentCount) == 0u))
+        || isSelectedEquationFitCompanionPair;
+      if (!hasOnlySelectedSupplyComponents || !hasOnlySelectedDemandComponents || !hasSelectedSpecializedCardinality) {
+        // Specialized branch members are separate ownership lifecycles.
+        // Preserve the pre-existing generic behavior until each has a paired
+        // contract.
+        return Loop_Impl::remove();
+      }
+
+      std::vector<ModelObject> removalObjects;
+      const auto addRemovalObject = [&removalObjects](const ModelObject& object) {
+        if (std::ranges::none_of(removalObjects, [&object](const auto& existing) { return existing.handle() == object.handle(); })) {
+          removalObjects.push_back(object);
+        }
+      };
+      const auto isRetainedSharedComponent = [&retainedWaterCoils, &selectedWaterToWaterComponents](const ModelObject& component) {
+        return std::ranges::any_of(retainedWaterCoils, [&component](const auto& waterCoil) { return waterCoil.handle() == component.handle(); })
+               || std::ranges::any_of(selectedWaterToWaterComponents, [&component](const auto& selectedComponent) {
+                    return selectedComponent.retained && (selectedComponent.component.handle() == component.handle());
+                  });
+      };
+
+      // Capture the public topology before removing its PlantLoop source. This
+      // includes the transient Nodes used to project empty equipment branches.
+      for (const auto& component : supplyComponents(openstudio::IddObjectType::Catchall)) {
+        if (!isRetainedSharedComponent(component)) {
+          addRemovalObject(component);
+        }
+      }
+      for (const auto& component : demandComponents(openstudio::IddObjectType::Catchall)) {
+        if (!isRetainedSharedComponent(component)) {
+          addRemovalObject(component);
+        }
+      }
+
+      // Branches and connector rows are canonical PlantLoop scaffolding in an
+      // EnergyPlus-native graph. They are owned by the loop even though their
+      // storage differs from Model's OS objects.
+      for (const auto& branch : supplyBranches) {
+        addRemovalObject(branch.cast<ModelObject>());
+      }
+      for (const auto& branch : demandBranches) {
+        addRemovalObject(branch.cast<ModelObject>());
+      }
+      addRemovalObject(supplyBranchList().cast<ModelObject>());
+      addRemovalObject(demandBranchList().cast<ModelObject>());
+
+      if (auto connectorList = plantLoop.getModelObjectTarget<ModelObject>(openstudio::PlantLoopFields::PlantSideConnectorListName)) {
+        addRemovalObject(*connectorList);
+      }
+      if (auto connectorList = plantLoop.getModelObjectTarget<ModelObject>(openstudio::PlantLoopFields::DemandSideConnectorListName)) {
+        addRemovalObject(*connectorList);
+      }
+
+      addRemovalObject(sizingPlant().cast<ModelObject>());
+      addRemovalObject(availabilityManagerAssignmentList().cast<ModelObject>());
+      addRemovalObject(plantEquipmentOperationSchemes().cast<ModelObject>());
+
+      // A selected shared water coil is owned by its surviving air path, not
+      // by this PlantLoop. Remove only the PlantLoop branch and inferred water
+      // controller before deleting the owner-local canonical graph.
+      for (auto waterCoil : retainedWaterCoils) {
+        if (!plantLoop.removeDemandBranchWithComponent(waterCoil)) {
+          return {};
+        }
+      }
+
+      // A selected shared water-to-water component retains the port pairs
+      // owned by its opposite PlantLoops. A selected last-owner component is
+      // removed after its final branch and ports are cleared; the selected
+      // water-heater paths also own their WaterHeaterSizing companions.
+      for (auto selectedComponent : selectedWaterToWaterComponents) {
+        const bool supplyOwner =
+          (selectedComponent.owner == SelectedWaterToWaterOwner::Supply) || (selectedComponent.owner == SelectedWaterToWaterOwner::SecondarySupply);
+        const bool removed = (selectedComponent.owner == SelectedWaterToWaterOwner::TertiarySupply)
+                               ? selectedComponent.component.removeFromTertiaryPlantLoop()
+                               : (supplyOwner ? plantLoop.removeSupplyBranchWithComponent(selectedComponent.component)
+                                              : plantLoop.removeDemandBranchWithComponent(selectedComponent.component));
+        if (!removed) {
+          return {};
+        }
+        if (selectedComponent.owner == SelectedWaterToWaterOwner::SecondaryDemand) {
+          if (auto chiller = selectedComponent.component.optionalCast<ChillerElectricEIR>(); chiller && !chiller->setCondenserType("AirCooled")) {
+            return {};
+          }
+          if (auto heatPump = selectedComponent.component.optionalCast<HeatPumpPlantLoopEIRHeating>();
+              heatPump && !heatPump->setCondenserType("AirSource")) {
+            return {};
+          }
+          if (auto heatPump = selectedComponent.component.optionalCast<HeatPumpPlantLoopEIRCooling>();
+              heatPump && !heatPump->setCondenserType("AirSource")) {
+            return {};
+          }
+        }
+        if (!selectedComponent.retained) {
+          if (auto waterHeater = selectedComponent.component.optionalCast<WaterHeaterMixed>()) {
+            appendRemoved(waterHeater->waterHeaterSizing().remove());
+          } else if (auto waterHeater = selectedComponent.component.optionalCast<WaterHeaterStratified>()) {
+            appendRemoved(waterHeater->waterHeaterSizing().remove());
+          }
+          appendRemoved(selectedComponent.component.remove());
+        }
+      }
+
+      appendRemoved(Loop_Impl::remove());
+
+      std::set<Handle> removedHandles;
+      for (auto object : removalObjects) {
+        const auto handle = object.handle();
+        if (handle.isNull() || removedHandles.contains(handle) || !owningModel.getObject(handle)) {
+          continue;
+        }
+        removedHandles.insert(handle);
+        appendRemoved(object.remove());
+      }
+
+      return result;
+    }
+
     boost::optional<Branch> PlantLoop_Impl::branchForNode(const Node& node) const {
       if (auto branch = supplyBranchForNode(node)) {
         return branch;
@@ -1481,15 +1921,19 @@ namespace epmodel {
       if (!hvacComponent.optionalCast<StraightComponent>() && !hvacComponent.optionalCast<WaterToWaterComponent>()) {
         return false;
       }
-      if (hvacComponent.optionalCast<StraightComponent>() && hvacComponent.loop()) {
-        return false;
+      if (hvacComponent.optionalCast<StraightComponent>()) {
+        if (auto currentLoop = hvacComponent.loop(); currentLoop && (currentLoop->handle() == getObject<PlantLoop>().handle())) {
+          return false;
+        }
       }
       if (auto waterToWater = hvacComponent.optionalCast<WaterToWaterComponent>()) {
         if (waterToWater->plantLoop()) {
           const bool canRouteSupplySideToSource =
             (hvacComponent.optionalCast<WaterHeaterMixed>() || hvacComponent.optionalCast<WaterHeaterStratified>())
             && !waterToWater->secondaryPlantLoop();
-          if (!canRouteSupplySideToSource) {
+          const bool canRouteSupplySideToTertiary =
+            hvacComponent.optionalCast<CentralHeatPumpSystem>() && waterToWater->secondaryPlantLoop() && !waterToWater->tertiaryPlantLoop();
+          if (!canRouteSupplySideToSource && !canRouteSupplySideToTertiary) {
             return false;
           }
         }
@@ -1587,6 +2031,16 @@ namespace epmodel {
       }
 
       const auto components = projectedBranchComponents(*targetBranch);
+      std::set<Handle> sourceSideWaterHeaterHandles;
+      for (const auto& component : components) {
+        const bool isSelectedWaterHeater = component.optionalCast<WaterHeaterMixed>() || component.optionalCast<WaterHeaterStratified>();
+        if (auto waterHeater = component.optionalCast<WaterToWaterComponent>(); waterHeater && isSelectedWaterHeater) {
+          const auto sourceLoop = waterHeater->secondaryPlantLoop();
+          if (sourceLoop && (*sourceLoop == getObject<PlantLoop>())) {
+            sourceSideWaterHeaterHandles.insert(waterHeater->handle());
+          }
+        }
+      }
 
       auto branchList = supplyBranchList();
       const bool keepAsDefaultBranch = (equipmentBranches.size() == 1u);
@@ -1609,10 +2063,25 @@ namespace epmodel {
 
       for (auto component : components) {
         if (auto straightComponent = component.optionalCast<StraightComponent>()) {
-          straightComponent->disconnect();
+          if (component.optionalCast<GroundHeatExchangerVertical>()) {
+            // The public vertical-ground-heat-exchanger identity projects a
+            // GroundHeatExchanger:System row and owns its node cleanup.
+            straightComponent->disconnect();
+          } else {
+            // Supply-branch removal already owns the branch edit. Clear
+            // ordinary component ports directly instead of asking disconnect()
+            // to traverse a BranchList that is temporarily being mutated.
+            component.setPointer(straightComponent->inletPort(), Handle());
+            component.setPointer(straightComponent->outletPort(), Handle());
+          }
         } else if (auto waterToWater = component.optionalCast<WaterToWaterComponent>()) {
-          component.setPointer(waterToWater->supplyInletPort(), Handle());
-          component.setPointer(waterToWater->supplyOutletPort(), Handle());
+          if (sourceSideWaterHeaterHandles.contains(component.handle())) {
+            component.setPointer(waterToWater->demandInletPort(), Handle());
+            component.setPointer(waterToWater->demandOutletPort(), Handle());
+          } else {
+            component.setPointer(waterToWater->supplyInletPort(), Handle());
+            component.setPointer(waterToWater->supplyOutletPort(), Handle());
+          }
         } else {
           return false;
         }
@@ -1655,8 +2124,10 @@ namespace epmodel {
           return false;
         }
       }
-      if (hvacComponent.optionalCast<StraightComponent>() && hvacComponent.loop() && !isBeamDemandBranchComponent(hvacComponent)) {
-        return false;
+      if (hvacComponent.optionalCast<StraightComponent>() && !isBeamDemandBranchComponent(hvacComponent)) {
+        if (auto currentLoop = hvacComponent.loop(); currentLoop && (currentLoop->handle() == getObject<PlantLoop>().handle())) {
+          return false;
+        }
       }
       if (auto waterToWater = hvacComponent.optionalCast<WaterToWaterComponent>()) {
         if (tertiary) {

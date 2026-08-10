@@ -75,6 +75,8 @@ namespace epmodel {
       bool addDemandBranchForComponent(openstudio::epmodel::HVACComponent hvacComponent, bool tertiary = false);
       bool removeDemandBranchWithComponent(openstudio::epmodel::HVACComponent hvacComponent);
 
+      std::vector<openstudio::IdfObject> remove() override;
+
       boost::optional<openstudio::epmodel::Branch> branchForNode(const openstudio::epmodel::Node& node) const;
 
       std::string loadDistributionScheme() const;
