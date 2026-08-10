@@ -5,9 +5,13 @@
 
 #include <gtest/gtest.h>
 
+#include <string>
+#include <vector>
+
 #include "EPModelFixture.hpp"
 #include "../Loop/AirLoopHVAC.hpp"
 #include "../Loop/PlantLoop.hpp"
+#include "../Loop/PlantLoop_Impl.hpp"
 #include "../StraightComponent/Node.hpp"
 #include "../StraightComponent/PipeAdiabatic.hpp"
 #include "../StraightComponent/PipeAdiabatic_Impl.hpp"
@@ -96,6 +100,10 @@ TEST_F(EPModelFixture, PipeAdiabatic_TopologyCharacterization_CurrentBehavior) {
     EXPECT_FALSE(pipe.loop());
     EXPECT_TRUE(pipe.inletModelObject());
     EXPECT_TRUE(pipe.outletModelObject());
+
+    EXPECT_TRUE(pipe.addToNode(node));
+    EXPECT_EQ(7u, plantLoop.supplyComponents().size());
+    EXPECT_TRUE(pipe.loop());
   }
 
   {
@@ -114,7 +122,7 @@ TEST_F(EPModelFixture, PipeAdiabatic_TopologyCharacterization_CurrentBehavior) {
   }
 
   {
-    SCOPED_TRACE("same-position re-add currently succeeds after detach and reinsert");
+    SCOPED_TRACE("same-position re-add is rejected without changing topology");
     Model model;
     PlantLoop plantLoop(model);
     PipeAdiabatic pipe(model);
@@ -123,11 +131,19 @@ TEST_F(EPModelFixture, PipeAdiabatic_TopologyCharacterization_CurrentBehavior) {
     ASSERT_TRUE(pipe.addToNode(node));
     auto outletObject = pipe.outletModelObject();
     ASSERT_TRUE(outletObject);
+    auto inletObject = pipe.inletModelObject();
+    ASSERT_TRUE(inletObject);
+    const auto inletHandle = inletObject->handle();
+    const auto outletHandle = outletObject->handle();
     auto adjacentNode = outletObject->cast<Node>();
 
-    EXPECT_TRUE(pipe.addToNode(adjacentNode));
+    EXPECT_FALSE(pipe.addToNode(adjacentNode));
     EXPECT_EQ(7u, plantLoop.supplyComponents().size());
     EXPECT_TRUE(pipe.loop());
+    ASSERT_TRUE(pipe.inletModelObject());
+    ASSERT_TRUE(pipe.outletModelObject());
+    EXPECT_EQ(inletHandle, pipe.inletModelObject()->handle());
+    EXPECT_EQ(outletHandle, pipe.outletModelObject()->handle());
   }
 
   {
@@ -163,4 +179,93 @@ TEST_F(EPModelFixture, PipeAdiabatic_TopologyCharacterization_CurrentBehavior) {
     EXPECT_EQ(5u, plantLoop.supplyComponents().size());
     EXPECT_FALSE(model.getModelObject<PipeAdiabatic>(pipeHandle));
   }
+}
+
+TEST_F(EPModelFixture, PipeAdiabatic_PlantTopologySurvivesSaveLoadAndMutation) {
+  const auto idfPath = openstudio::tempDir() / openstudio::toPath("epmodel-pipe-plant-topology-roundtrip.idf");
+
+  Model model;
+  PlantLoop plantLoop(model);
+  PipeAdiabatic pipe(model);
+  ASSERT_TRUE(plantLoop.setName("Roundtrip Pipe Plant Loop"));
+  ASSERT_TRUE(pipe.setName("Roundtrip Demand Pipe"));
+  auto demandOutletNode = plantLoop.demandOutletNode();
+  ASSERT_TRUE(pipe.addToNode(demandOutletNode));
+  ASSERT_TRUE(model.save(idfPath, true));
+
+  auto loadedModel = Model::load(idfPath);
+  ASSERT_TRUE(loadedModel);
+  auto loadedPlantLoop = loadedModel->getConcreteModelObjectByName<PlantLoop>("Roundtrip Pipe Plant Loop");
+  auto loadedPipe = loadedModel->getConcreteModelObjectByName<PipeAdiabatic>("Roundtrip Demand Pipe");
+  ASSERT_TRUE(loadedPlantLoop);
+  ASSERT_TRUE(loadedPipe);
+
+  EXPECT_EQ(5u, loadedPlantLoop->supplyComponents().size());
+  EXPECT_EQ(7u, loadedPlantLoop->demandComponents().size());
+  EXPECT_TRUE(loadedPlantLoop->demandComponent(loadedPipe->handle()));
+  ASSERT_TRUE(loadedPipe->plantLoop());
+  EXPECT_EQ(loadedPlantLoop->handle(), loadedPipe->plantLoop()->handle());
+  EXPECT_TRUE(loadedPipe->inletModelObject());
+  EXPECT_TRUE(loadedPipe->outletModelObject());
+
+  auto loadedDemandOutletNode = loadedPlantLoop->demandOutletNode();
+  ASSERT_TRUE(loadedPipe->removeFromLoop());
+  EXPECT_EQ(5u, loadedPlantLoop->demandComponents().size());
+  EXPECT_FALSE(loadedPlantLoop->demandComponent(loadedPipe->handle()));
+  EXPECT_FALSE(loadedPipe->plantLoop());
+  EXPECT_TRUE(loadedPipe->inletModelObject());
+  EXPECT_TRUE(loadedPipe->outletModelObject());
+  ASSERT_TRUE(loadedPipe->addToNode(loadedDemandOutletNode));
+  EXPECT_EQ(7u, loadedPlantLoop->demandComponents().size());
+  EXPECT_TRUE(loadedPlantLoop->demandComponent(loadedPipe->handle()));
+  ASSERT_TRUE(loadedPipe->plantLoop());
+  EXPECT_EQ(loadedPlantLoop->handle(), loadedPipe->plantLoop()->handle());
+
+  openstudio::filesystem::remove(idfPath);
+}
+
+TEST_F(EPModelFixture, PipeAdiabatic_DemandOrderingAndMovement) {
+  Model model;
+  PlantLoop plantLoop(model);
+  PipeAdiabatic pipeA(model);
+  PipeAdiabatic pipeB(model);
+
+  auto normalizedDemandOrder = [&]() {
+    std::vector<std::string> result;
+    for (const auto& component : plantLoop.demandComponents()) {
+      if (component.handle() == pipeA.handle()) {
+        result.emplace_back("A");
+      } else if (component.handle() == pipeB.handle()) {
+        result.emplace_back("B");
+      } else if (component.optionalCast<Node>()) {
+        result.emplace_back("Node");
+      } else {
+        result.emplace_back("Connector");
+      }
+    }
+    return result;
+  };
+
+  auto demandOutletNode = plantLoop.demandOutletNode();
+  ASSERT_TRUE(pipeA.addToNode(demandOutletNode));
+  ASSERT_TRUE(pipeB.addToNode(demandOutletNode));
+  EXPECT_EQ((std::vector<std::string>{"Node", "Connector", "Node", "Connector", "Node", "A", "Node", "B", "Node"}), normalizedDemandOrder());
+  ASSERT_TRUE(pipeA.outletModelObject());
+  ASSERT_TRUE(pipeB.inletModelObject());
+  EXPECT_EQ(pipeA.outletModelObject()->handle(), pipeB.inletModelObject()->handle());
+
+  auto demandInletNode = plantLoop.demandInletNode();
+  ASSERT_TRUE(pipeA.addToNode(demandInletNode));
+  EXPECT_EQ((std::vector<std::string>{"Node", "A", "Node", "Connector", "Node", "Connector", "Node", "B", "Node"}), normalizedDemandOrder());
+  ASSERT_TRUE(pipeA.inletModelObject());
+  EXPECT_EQ(demandInletNode.handle(), pipeA.inletModelObject()->handle());
+
+  auto demandComponents = plantLoop.demandComponents();
+  ASSERT_GT(demandComponents.size(), 4u);
+  auto midPathNode = demandComponents[4].optionalCast<Node>();
+  ASSERT_TRUE(midPathNode);
+  ASSERT_TRUE(pipeB.addToNode(*midPathNode));
+  EXPECT_EQ((std::vector<std::string>{"Node", "A", "Node", "Connector", "Node", "B", "Node", "Connector", "Node"}), normalizedDemandOrder());
+  ASSERT_TRUE(pipeB.inletModelObject());
+  EXPECT_EQ(midPathNode->handle(), pipeB.inletModelObject()->handle());
 }

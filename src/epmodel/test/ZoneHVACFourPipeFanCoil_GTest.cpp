@@ -356,6 +356,57 @@ TEST_F(EPModelFixture, ZoneHVACFourPipeFanCoil_ContainedChildTopologyMutationsAr
   EXPECT_EQ(*coil.coolingCoilOutletNode(), *heatingCoil.airInletModelObject()->optionalCast<Node>());
 }
 
+TEST_F(EPModelFixture, ZoneHVACFourPipeFanCoil_PlantAttachedOwnedChildLifecycle) {
+  Model model;
+  PlantLoop chilledWaterLoop(model);
+  PlantLoop hotWaterLoop(model);
+  FanConstantVolume fan(model);
+  CoilCoolingWater originalCoolingCoil(model);
+  CoilCoolingWater replacementCoolingCoil(model);
+  CoilHeatingWater heatingCoil(model);
+  ZoneHVACFourPipeFanCoil fanCoil(model);
+
+  ASSERT_TRUE(fanCoil.setCapacityControlMethod("ConstantFanVariableFlow"));
+  ASSERT_TRUE(fanCoil.setSupplyAirFan(fan));
+  ASSERT_TRUE(fanCoil.setCoolingCoil(originalCoolingCoil));
+  ASSERT_TRUE(fanCoil.setHeatingCoil(heatingCoil));
+  ASSERT_TRUE(chilledWaterLoop.addDemandBranchForComponent(originalCoolingCoil));
+  ASSERT_TRUE(hotWaterLoop.addDemandBranchForComponent(heatingCoil));
+  ASSERT_TRUE(originalCoolingCoil.plantLoop());
+  ASSERT_TRUE(heatingCoil.plantLoop());
+  EXPECT_EQ(chilledWaterLoop, originalCoolingCoil.plantLoop().get());
+  EXPECT_EQ(hotWaterLoop, heatingCoil.plantLoop().get());
+  EXPECT_FALSE(originalCoolingCoil.isRemovable());
+  EXPECT_FALSE(heatingCoil.isRemovable());
+
+  ASSERT_TRUE(fanCoil.setCoolingCoil(replacementCoolingCoil));
+  EXPECT_TRUE(originalCoolingCoil.isRemovable());
+  ASSERT_TRUE(originalCoolingCoil.plantLoop());
+  EXPECT_EQ(chilledWaterLoop, originalCoolingCoil.plantLoop().get());
+  EXPECT_TRUE(chilledWaterLoop.demandComponent(originalCoolingCoil.handle()));
+  EXPECT_FALSE(replacementCoolingCoil.isRemovable());
+
+  ASSERT_TRUE(chilledWaterLoop.addDemandBranchForComponent(replacementCoolingCoil));
+  ASSERT_TRUE(replacementCoolingCoil.plantLoop());
+  EXPECT_EQ(chilledWaterLoop, replacementCoolingCoil.plantLoop().get());
+
+  const auto fanCoilHandle = fanCoil.handle();
+  const auto fanHandle = fan.handle();
+  const auto originalCoolingCoilHandle = originalCoolingCoil.handle();
+  const auto replacementCoolingCoilHandle = replacementCoolingCoil.handle();
+  const auto heatingCoilHandle = heatingCoil.handle();
+
+  EXPECT_FALSE(fanCoil.remove().empty());
+  EXPECT_FALSE(model.getObject(fanCoilHandle));
+  EXPECT_FALSE(model.getObject(fanHandle));
+  EXPECT_TRUE(model.getObject(originalCoolingCoilHandle));
+  EXPECT_FALSE(model.getObject(replacementCoolingCoilHandle));
+  EXPECT_FALSE(model.getObject(heatingCoilHandle));
+  EXPECT_TRUE(chilledWaterLoop.demandComponent(originalCoolingCoilHandle));
+  EXPECT_FALSE(chilledWaterLoop.demandComponent(replacementCoolingCoilHandle));
+  EXPECT_FALSE(hotWaterLoop.demandComponent(heatingCoilHandle));
+}
+
 TEST_F(EPModelFixture, ZoneHVACFourPipeFanCoil_OwnerMutationsRebuildContainedPathWithoutSalvage) {
   Model model;
   ZoneHVACFourPipeFanCoil coil(model);

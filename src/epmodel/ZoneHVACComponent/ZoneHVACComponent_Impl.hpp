@@ -42,7 +42,7 @@ namespace epmodel {
 
       bool addToNode(Node& node) override;
       boost::optional<AirLoopHVAC> airLoopHVAC() const override;
-      bool removeFromAirLoopHVAC();
+      virtual bool removeFromAirLoopHVAC();
 
       boost::optional<ModelObject> airInletModelObject() const;
       boost::optional<ModelObject> airOutletModelObject() const;

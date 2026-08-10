@@ -30,6 +30,7 @@ namespace epmodel {
       virtual ~ZoneHVACFourPipeFanCoil_Impl() override = default;
 
       std::vector<ModelObject> children() const override;
+      std::vector<IdfObject> remove() override;
       unsigned inletPort() const override;
       unsigned outletPort() const override;
       bool addToThermalZone(ThermalZone& thermalZone) override;

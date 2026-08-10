@@ -43,6 +43,10 @@ namespace epmodel {
     return getImpl<detail::HVACComponent_Impl>()->plantLoop();
   }
 
+  boost::optional<AirLoopHVACOutdoorAirSystem> HVACComponent::airLoopHVACOutdoorAirSystem() const {
+    return getImpl<detail::HVACComponent_Impl>()->airLoopHVACOutdoorAirSystem();
+  }
+
   boost::optional<HVACComponent> HVACComponent::containingHVACComponent() const {
     return getImpl<detail::HVACComponent_Impl>()->containingHVACComponent();
   }
@@ -134,6 +138,16 @@ namespace epmodel {
         const auto demandComponents = plantLoop.demandComponents(openstudio::IddObjectType::Catchall);
         if (std::ranges::find_if(demandComponents, [&](const auto& component) { return component.handle() == handle(); }) != demandComponents.end()) {
           return plantLoop;
+        }
+      }
+      return boost::none;
+    }
+
+    boost::optional<AirLoopHVACOutdoorAirSystem> HVACComponent_Impl::airLoopHVACOutdoorAirSystem() const {
+      const auto thisObject = getObject<openstudio::epmodel::ModelObject>();
+      for (const auto& oaSystem : model().getConcreteModelObjects<openstudio::epmodel::AirLoopHVACOutdoorAirSystem>()) {
+        if (oaSystem.component(thisObject.handle())) {
+          return oaSystem;
         }
       }
       return boost::none;

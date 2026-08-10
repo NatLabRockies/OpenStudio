@@ -29,6 +29,7 @@ namespace epmodel {
       unsigned inletPort() const override;
       unsigned outletPort() const override;
       std::vector<ModelObject> children() const override;
+      std::vector<IdfObject> remove() override;
 
       AirToAirComponent heatExchanger() const;
       bool setHeatExchanger(const AirToAirComponent& heatExchanger);

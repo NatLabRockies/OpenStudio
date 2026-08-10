@@ -237,6 +237,24 @@ namespace epmodel {
       return result;
     }
 
+    std::vector<IdfObject> CoilSystemCoolingWater_Impl::remove() {
+      const auto ownedChildren = children();
+      auto removedParent = StraightComponent_Impl::remove();
+      if (removedParent.empty()) {
+        return {};
+      }
+
+      std::vector<IdfObject> result;
+      for (const auto& child : ownedChildren) {
+        if (auto component = child.optionalCast<HVACComponent>()) {
+          auto removed = component->remove();
+          result.insert(result.end(), removed.begin(), removed.end());
+        }
+      }
+      result.insert(result.end(), removedParent.begin(), removedParent.end());
+      return result;
+    }
+
     Schedule CoilSystemCoolingWater_Impl::availabilitySchedule() const {
       auto value = getObject<ModelObject>().getModelObjectTarget<Schedule>(kAvailabilityScheduleField);
       OS_ASSERT(value);

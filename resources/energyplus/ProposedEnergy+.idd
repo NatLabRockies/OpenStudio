@@ -35522,6 +35522,8 @@ CoilSystem:Cooling:Water:HeatExchangerAssisted,
        \key HeatExchanger:AirToAir:SensibleAndLatent
   A3 , \field Heat Exchanger Name
        \required-field
+       \type object-list
+       \object-list HXAirToAirNames
   A4 , \field Cooling Coil Object Type
        \required-field
        \type choice

@@ -20,6 +20,7 @@ class FuelType;
 namespace epmodel {
   class Node;
   class AirLoopHVAC;
+  class AirLoopHVACOutdoorAirSystem;
   class HVACComponent;
   class Loop;
   class PlantLoop;
@@ -36,6 +37,7 @@ namespace epmodel {
       virtual boost::optional<Loop> loop() const;
       virtual boost::optional<AirLoopHVAC> airLoopHVAC() const;
       virtual boost::optional<PlantLoop> plantLoop() const;
+      virtual boost::optional<AirLoopHVACOutdoorAirSystem> airLoopHVACOutdoorAirSystem() const;
       virtual boost::optional<HVACComponent> containingHVACComponent() const;
       virtual boost::optional<ZoneHVACComponent> containingZoneHVACComponent() const;
 

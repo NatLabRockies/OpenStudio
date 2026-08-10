@@ -119,7 +119,23 @@ TEST_F(EPModelFixture, CoilHeatingGas_AddToNodeSupportsOutboardOANode) {
   auto outboardOANode = oaSystem.outboardOANode();
   ASSERT_TRUE(outboardOANode);
 
+  CoilHeatingGas supplyCoil(model);
+  EXPECT_TRUE(supplyCoil.addToNode(supplyInletNode));
+  EXPECT_EQ(5u, airLoop.supplyComponents().size());
+  EXPECT_FALSE(oaSystem.component(supplyCoil.handle()));
+
   CoilHeatingGas coil(model);
   EXPECT_TRUE(coil.addToNode(*outboardOANode));
   EXPECT_EQ(3u, oaSystem.oaComponents().size());
+
+  auto inletObject = coil.inletModelObject();
+  auto outletObject = coil.outletModelObject();
+  ASSERT_TRUE(inletObject);
+  ASSERT_TRUE(outletObject);
+  EXPECT_FALSE(coil.addToNode(*outboardOANode));
+  EXPECT_EQ(3u, oaSystem.oaComponents().size());
+  ASSERT_TRUE(coil.inletModelObject());
+  ASSERT_TRUE(coil.outletModelObject());
+  EXPECT_EQ(inletObject->handle(), coil.inletModelObject()->handle());
+  EXPECT_EQ(outletObject->handle(), coil.outletModelObject()->handle());
 }

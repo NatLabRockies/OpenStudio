@@ -137,23 +137,6 @@ namespace epmodel {
       }
 
       template <typename T>
-      T requiredNamedTarget(const ModelObject_Impl& impl, unsigned fieldIndex, const char* label) {
-        const auto value = impl.getString(fieldIndex, true);
-        if (!value) {
-          std::ostringstream message;
-          message << impl.briefDescription() << " does not have a " << label << " attached.";
-          throw std::runtime_error(message.str());
-        }
-        auto target = impl.model().getModelObjectByName<T>(*value);
-        if (!target) {
-          std::ostringstream message;
-          message << impl.briefDescription() << " could not resolve its " << label << " named '" << *value << "'.";
-          throw std::runtime_error(message.str());
-        }
-        return *target;
-      }
-
-      template <typename T>
       bool setPointerRelationship(ModelObject_Impl& impl, unsigned objectTypeField, unsigned objectField, const T& target) {
         if (!impl.setString(objectTypeField, target.iddObject().name())) {
           return false;
@@ -177,7 +160,37 @@ namespace epmodel {
     }
 
     std::vector<ModelObject> CoilSystemCoolingWaterHeatExchangerAssisted_Impl::children() const {
-      return {coolingCoil().cast<ModelObject>(), heatExchanger().cast<ModelObject>()};
+      std::vector<ModelObject> result;
+      const auto thisObject = getObject<ModelObject>();
+
+      if (auto coolingCoil = thisObject.getModelObjectTarget<WaterToAirComponent>(kCoolingCoilField)) {
+        result.push_back(coolingCoil->cast<ModelObject>());
+      }
+      if (auto heatExchanger = thisObject.getModelObjectTarget<AirToAirComponent>(kHeatExchangerField)) {
+        result.push_back(heatExchanger->cast<ModelObject>());
+      }
+
+      return result;
+    }
+
+    std::vector<IdfObject> CoilSystemCoolingWaterHeatExchangerAssisted_Impl::remove() {
+      const auto ownedChildren = children();
+      auto removedParent = StraightComponent_Impl::remove();
+      if (removedParent.empty()) {
+        return {};
+      }
+
+      // The cooling coil may have an independent plant attachment. Removing it
+      // through its normal path after containment is released heals that branch.
+      std::vector<IdfObject> result;
+      for (const auto& child : ownedChildren) {
+        if (auto component = child.optionalCast<HVACComponent>()) {
+          auto removed = component->remove();
+          result.insert(result.end(), removed.begin(), removed.end());
+        }
+      }
+      result.insert(result.end(), removedParent.begin(), removedParent.end());
+      return result;
     }
 
     unsigned CoilSystemCoolingWaterHeatExchangerAssisted_Impl::inletPort() const {
@@ -191,7 +204,7 @@ namespace epmodel {
     }
 
     AirToAirComponent CoilSystemCoolingWaterHeatExchangerAssisted_Impl::heatExchanger() const {
-      return requiredNamedTarget<AirToAirComponent>(*this, kHeatExchangerField, "Heat Exchanger");
+      return requiredPointerTarget<AirToAirComponent>(*this, kHeatExchangerField, "Heat Exchanger");
     }
 
     bool CoilSystemCoolingWaterHeatExchangerAssisted_Impl::setHeatExchanger(const AirToAirComponent& heatExchanger) {
@@ -202,10 +215,7 @@ namespace epmodel {
       if (std::find(allowedTypes.begin(), allowedTypes.end(), heatExchanger.iddObject().name()) == allowedTypes.end()) {
         return false;
       }
-      if (!setString(kHeatExchangerObjectTypeField, heatExchanger.iddObject().name())) {
-        return false;
-      }
-      return setString(kHeatExchangerField, heatExchanger.nameString());
+      return setPointerRelationship(*this, kHeatExchangerObjectTypeField, kHeatExchangerField, heatExchanger);
     }
 
     WaterToAirComponent CoilSystemCoolingWaterHeatExchangerAssisted_Impl::coolingCoil() const {

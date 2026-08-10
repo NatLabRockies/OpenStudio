@@ -84,6 +84,19 @@ TEST_F(EPModelFixture, CoilSystemCoolingWaterHeatExchangerAssisted_RelationshipA
   EXPECT_EQ(replacementHeatExchanger.iddObject().name(), coilSystem.heatExchangerObjectType());
 }
 
+TEST_F(EPModelFixture, CoilSystemCoolingWaterHeatExchangerAssisted_RelationshipSurvivesHeatExchangerRename) {
+  Model model;
+  HeatExchangerAirToAirSensibleAndLatent heatExchanger(model);
+  CoilSystemCoolingWaterHeatExchangerAssisted coilSystem(model, heatExchanger);
+
+  ASSERT_TRUE(heatExchanger.setName("Renamed Assisted Heat Exchanger"));
+  EXPECT_EQ(heatExchanger.handle(), coilSystem.heatExchanger().handle());
+
+  const auto children = coilSystem.children();
+  ASSERT_EQ(2u, children.size());
+  EXPECT_TRUE(std::any_of(children.begin(), children.end(), [&](const auto& child) { return child.handle() == heatExchanger.handle(); }));
+}
+
 TEST_F(EPModelFixture, CoilSystemCoolingWaterHeatExchangerAssisted_InvalidRelationshipConstructorCleansUp) {
   Model model;
   HeatExchangerDesiccantBalancedFlow hxDesiccant(model);

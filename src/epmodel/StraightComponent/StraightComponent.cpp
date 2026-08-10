@@ -200,11 +200,23 @@ namespace epmodel {
     }
 
     bool StraightComponent_Impl::addToNode(Node& node) {
-      if (auto owner = getObject<openstudio::epmodel::HVACComponent>().containingHVACComponent()) {
+      auto thisComponent = getObject<openstudio::epmodel::HVACComponent>();
+      if (auto owner = thisComponent.containingHVACComponent()) {
         LOG_FREE(Warn, "openstudio.epmodel.StraightComponent",
                  "Refusing to move " << getObject<ModelObject>().briefDescription() << " onto node '" << node.nameString()
                                      << "' because its air-side connectivity is owned by " << owner->briefDescription() << ".");
         return false;
+      }
+
+      // Reject active adjacency without mistaking the retained node fields of a
+      // detached EnergyPlus-backed object for a live connection.
+      const auto currentLoop = thisComponent.loop();
+      if (currentLoop) {
+        const auto inletObject = inletModelObject();
+        const auto outletObject = outletModelObject();
+        if ((inletObject && (inletObject->handle() == node.handle())) || (outletObject && (outletObject->handle() == node.handle()))) {
+          return false;
+        }
       }
 
       const auto nodeName = node.name();
@@ -222,8 +234,7 @@ namespace epmodel {
 
       const auto thisName = thisObject.nameString();
 
-      auto thisComponent = getObject<openstudio::epmodel::HVACComponent>();
-      if (thisComponent.loop() && !removeFromLoop()) {
+      if (currentLoop && !removeFromLoop()) {
         LOG_FREE(Warn, "openstudio.epmodel.StraightComponent",
                  "Failed to detach " << thisObject.briefDescription() << " from its existing loop topology before adding it to node '"
                                      << node.nameString() << "'.");
@@ -231,7 +242,15 @@ namespace epmodel {
       }
 
       if (auto oaSystem = node.airLoopHVACOutdoorAirSystem()) {
-        return addToOutdoorAirSystem(*oaSystem, node);
+        const auto outboardOANode = oaSystem->outboardOANode();
+        const auto outboardReliefNode = oaSystem->outboardReliefNode();
+        const bool onOutdoorAirStream = oaSystem->oaComponent(node.handle()).has_value() || (outboardOANode && (*outboardOANode == node));
+        const bool onReliefStream = oaSystem->reliefComponent(node.handle()).has_value() || (outboardReliefNode && (*outboardReliefNode == node));
+        if (onOutdoorAirStream || onReliefStream) {
+          return addToOutdoorAirSystem(*oaSystem, node);
+        }
+        // Return- and mixed-air endpoints are owned by the OA system but can
+        // also be valid nodes on its containing air-loop supply branch.
       }
 
       boost::optional<openstudio::epmodel::AirLoopHVAC> airLoop = node.airLoopHVAC();
