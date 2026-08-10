@@ -8,8 +8,10 @@
 #include "EPModelFixture.hpp"
 #include "../HVACComponent/ThermalZone.hpp"
 #include "../Loop/PlantLoop.hpp"
+#include "../Loop/PlantLoop_Impl.hpp"
 #include "../ModelObject/WaterHeaterSizing.hpp"
 #include "../ModelObject/WaterHeaterSizing_Impl.hpp"
+#include "../ModelObject/SizingPlant.hpp"
 #include "../Schedule/ScheduleConstant.hpp"
 #include "../StraightComponent/Node.hpp"
 #include "../WaterToWaterComponent/WaterHeaterStratified.hpp"
@@ -292,4 +294,216 @@ TEST_F(EPModelFixture, WaterHeaterStratified_WaterToWaterTopology) {
   EXPECT_TRUE(heater.addToSourceSideNode(replacementSourceNode));
   ASSERT_TRUE(heater.sourceSidePlantLoop());
   EXPECT_EQ(replacementSourceLoop.handle(), heater.sourceSidePlantLoop()->handle());
+}
+
+TEST_F(EPModelFixture, WaterHeaterStratified_OwnerLoopRemovalLifecycle) {
+  const auto idfPath = openstudio::tempDir() / openstudio::toPath("epmodel-water-heater-stratified-use-owner-removal.idf");
+
+  Model model;
+  PlantLoop useLoop(model);
+  PlantLoop sourceLoop(model);
+  WaterHeaterStratified heater(model);
+  ASSERT_TRUE(useLoop.setName("Removed Stratified Water Heater Use Loop"));
+  ASSERT_TRUE(sourceLoop.setName("Surviving Stratified Water Heater Source Loop"));
+  ASSERT_TRUE(heater.setName("Surviving Dual Supply Stratified Water Heater"));
+  ASSERT_TRUE(useLoop.addSupplyBranchForComponent(heater));
+  ASSERT_TRUE(sourceLoop.addSupplyBranchForComponent(heater));
+  ASSERT_TRUE(model.save(idfPath, true));
+
+  auto loadedModel = Model::load(idfPath);
+  ASSERT_TRUE(loadedModel);
+  auto loadedUseLoop = loadedModel->getConcreteModelObjectByName<PlantLoop>("Removed Stratified Water Heater Use Loop");
+  auto loadedSourceLoop = loadedModel->getConcreteModelObjectByName<PlantLoop>("Surviving Stratified Water Heater Source Loop");
+  auto loadedHeater = loadedModel->getConcreteModelObjectByName<WaterHeaterStratified>("Surviving Dual Supply Stratified Water Heater");
+  ASSERT_TRUE(loadedUseLoop);
+  ASSERT_TRUE(loadedSourceLoop);
+  ASSERT_TRUE(loadedHeater);
+  ASSERT_TRUE(loadedHeater->useSidePlantLoop());
+  ASSERT_TRUE(loadedHeater->sourceSidePlantLoop());
+  EXPECT_EQ(*loadedUseLoop, *loadedHeater->useSidePlantLoop());
+  EXPECT_EQ(*loadedSourceLoop, *loadedHeater->sourceSidePlantLoop());
+  EXPECT_EQ(1u, loadedUseLoop->supplyComponents(WaterHeaterStratified::iddObjectType()).size());
+  EXPECT_EQ(1u, loadedSourceLoop->supplyComponents(WaterHeaterStratified::iddObjectType()).size());
+  EXPECT_TRUE(loadedHeater->useSideInletModelObject());
+  EXPECT_TRUE(loadedHeater->useSideOutletModelObject());
+  EXPECT_TRUE(loadedHeater->sourceSideInletModelObject());
+  EXPECT_TRUE(loadedHeater->sourceSideOutletModelObject());
+  auto loadedWaterHeaterSizing = loadedHeater->waterHeaterSizing();
+  EXPECT_EQ(loadedHeater->handle(), loadedWaterHeaterSizing.waterHeater().handle());
+
+  std::vector<openstudio::Handle> useTopologyHandles;
+  for (const auto& component : loadedUseLoop->supplyComponents()) {
+    if (component.handle() != loadedHeater->handle()) {
+      useTopologyHandles.push_back(component.handle());
+    }
+  }
+  for (const auto& component : loadedUseLoop->demandComponents()) {
+    useTopologyHandles.push_back(component.handle());
+  }
+  const auto useLoopHandle = loadedUseLoop->handle();
+  const auto sizingPlantHandle = loadedUseLoop->sizingPlant().handle();
+  const auto heaterHandle = loadedHeater->handle();
+  const auto waterHeaterSizingHandle = loadedWaterHeaterSizing.handle();
+  EXPECT_FALSE(loadedUseLoop->remove().empty());
+  EXPECT_FALSE(loadedModel->getObject(useLoopHandle));
+  EXPECT_FALSE(loadedModel->getObject(sizingPlantHandle));
+  for (const auto& handle : useTopologyHandles) {
+    EXPECT_FALSE(loadedModel->getObject(handle));
+  }
+  EXPECT_TRUE(loadedModel->getObject(heaterHandle));
+  EXPECT_TRUE(loadedModel->getObject(waterHeaterSizingHandle));
+  EXPECT_FALSE(loadedHeater->useSidePlantLoop());
+  EXPECT_FALSE(loadedHeater->useSideInletModelObject());
+  EXPECT_FALSE(loadedHeater->useSideOutletModelObject());
+  ASSERT_TRUE(loadedHeater->sourceSidePlantLoop());
+  EXPECT_EQ(*loadedSourceLoop, *loadedHeater->sourceSidePlantLoop());
+  EXPECT_EQ(1u, loadedSourceLoop->supplyComponents(WaterHeaterStratified::iddObjectType()).size());
+  EXPECT_TRUE(loadedHeater->sourceSideInletModelObject());
+  EXPECT_TRUE(loadedHeater->sourceSideOutletModelObject());
+  EXPECT_EQ(loadedHeater->handle(), loadedHeater->waterHeaterSizing().waterHeater().handle());
+
+  PlantLoop replacementUseLoop(*loadedModel);
+  ASSERT_TRUE(replacementUseLoop.setName("Replacement Stratified Water Heater Use Loop"));
+  ASSERT_TRUE(replacementUseLoop.addSupplyBranchForComponent(*loadedHeater));
+  ASSERT_TRUE(loadedModel->save(idfPath, true));
+
+  auto reloadedModel = Model::load(idfPath);
+  ASSERT_TRUE(reloadedModel);
+  auto reloadedUseLoop = reloadedModel->getConcreteModelObjectByName<PlantLoop>("Replacement Stratified Water Heater Use Loop");
+  auto reloadedSourceLoop = reloadedModel->getConcreteModelObjectByName<PlantLoop>("Surviving Stratified Water Heater Source Loop");
+  auto reloadedHeater = reloadedModel->getConcreteModelObjectByName<WaterHeaterStratified>("Surviving Dual Supply Stratified Water Heater");
+  ASSERT_TRUE(reloadedUseLoop);
+  ASSERT_TRUE(reloadedSourceLoop);
+  ASSERT_TRUE(reloadedHeater);
+  EXPECT_FALSE(reloadedModel->getConcreteModelObjectByName<PlantLoop>("Removed Stratified Water Heater Use Loop"));
+  ASSERT_TRUE(reloadedHeater->useSidePlantLoop());
+  ASSERT_TRUE(reloadedHeater->sourceSidePlantLoop());
+  EXPECT_EQ(*reloadedUseLoop, *reloadedHeater->useSidePlantLoop());
+  EXPECT_EQ(*reloadedSourceLoop, *reloadedHeater->sourceSidePlantLoop());
+  EXPECT_EQ(1u, reloadedUseLoop->supplyComponents(WaterHeaterStratified::iddObjectType()).size());
+  EXPECT_EQ(1u, reloadedSourceLoop->supplyComponents(WaterHeaterStratified::iddObjectType()).size());
+  EXPECT_TRUE(reloadedHeater->useSideInletModelObject());
+  EXPECT_TRUE(reloadedHeater->useSideOutletModelObject());
+  EXPECT_TRUE(reloadedHeater->sourceSideInletModelObject());
+  EXPECT_TRUE(reloadedHeater->sourceSideOutletModelObject());
+  EXPECT_EQ(reloadedHeater->handle(), reloadedHeater->waterHeaterSizing().waterHeater().handle());
+
+  std::vector<openstudio::Handle> sourceTopologyHandles;
+  for (const auto& component : reloadedSourceLoop->supplyComponents()) {
+    if (component.handle() != reloadedHeater->handle()) {
+      sourceTopologyHandles.push_back(component.handle());
+    }
+  }
+  for (const auto& component : reloadedSourceLoop->demandComponents()) {
+    sourceTopologyHandles.push_back(component.handle());
+  }
+  const auto sourceLoopHandle = reloadedSourceLoop->handle();
+  const auto sourceSizingPlantHandle = reloadedSourceLoop->sizingPlant().handle();
+  const auto reloadedHeaterHandle = reloadedHeater->handle();
+  const auto reloadedWaterHeaterSizingHandle = reloadedHeater->waterHeaterSizing().handle();
+  EXPECT_FALSE(reloadedSourceLoop->remove().empty());
+  EXPECT_FALSE(reloadedModel->getObject(sourceLoopHandle));
+  EXPECT_FALSE(reloadedModel->getObject(sourceSizingPlantHandle));
+  for (const auto& handle : sourceTopologyHandles) {
+    EXPECT_FALSE(reloadedModel->getObject(handle));
+  }
+  EXPECT_TRUE(reloadedModel->getObject(reloadedHeaterHandle));
+  EXPECT_TRUE(reloadedModel->getObject(reloadedWaterHeaterSizingHandle));
+  EXPECT_FALSE(reloadedHeater->sourceSidePlantLoop());
+  EXPECT_FALSE(reloadedHeater->sourceSideInletModelObject());
+  EXPECT_FALSE(reloadedHeater->sourceSideOutletModelObject());
+  ASSERT_TRUE(reloadedHeater->useSidePlantLoop());
+  EXPECT_EQ(*reloadedUseLoop, *reloadedHeater->useSidePlantLoop());
+  EXPECT_EQ(1u, reloadedUseLoop->supplyComponents(WaterHeaterStratified::iddObjectType()).size());
+  EXPECT_TRUE(reloadedHeater->useSideInletModelObject());
+  EXPECT_TRUE(reloadedHeater->useSideOutletModelObject());
+  EXPECT_EQ(reloadedHeater->handle(), reloadedHeater->waterHeaterSizing().waterHeater().handle());
+
+  PlantLoop replacementSourceLoop(*reloadedModel);
+  ASSERT_TRUE(replacementSourceLoop.setName("Replacement Stratified Water Heater Source Loop"));
+  ASSERT_TRUE(replacementSourceLoop.addSupplyBranchForComponent(*reloadedHeater));
+  ASSERT_TRUE(reloadedModel->save(idfPath, true));
+
+  auto finalModel = Model::load(idfPath);
+  ASSERT_TRUE(finalModel);
+  auto finalUseLoop = finalModel->getConcreteModelObjectByName<PlantLoop>("Replacement Stratified Water Heater Use Loop");
+  auto finalSourceLoop = finalModel->getConcreteModelObjectByName<PlantLoop>("Replacement Stratified Water Heater Source Loop");
+  auto finalHeater = finalModel->getConcreteModelObjectByName<WaterHeaterStratified>("Surviving Dual Supply Stratified Water Heater");
+  ASSERT_TRUE(finalUseLoop);
+  ASSERT_TRUE(finalSourceLoop);
+  ASSERT_TRUE(finalHeater);
+  EXPECT_FALSE(finalModel->getConcreteModelObjectByName<PlantLoop>("Surviving Stratified Water Heater Source Loop"));
+  ASSERT_TRUE(finalHeater->useSidePlantLoop());
+  ASSERT_TRUE(finalHeater->sourceSidePlantLoop());
+  EXPECT_EQ(*finalUseLoop, *finalHeater->useSidePlantLoop());
+  EXPECT_EQ(*finalSourceLoop, *finalHeater->sourceSidePlantLoop());
+  EXPECT_EQ(1u, finalUseLoop->supplyComponents(WaterHeaterStratified::iddObjectType()).size());
+  EXPECT_EQ(1u, finalSourceLoop->supplyComponents(WaterHeaterStratified::iddObjectType()).size());
+  EXPECT_TRUE(finalHeater->useSideInletModelObject());
+  EXPECT_TRUE(finalHeater->useSideOutletModelObject());
+  EXPECT_TRUE(finalHeater->sourceSideInletModelObject());
+  EXPECT_TRUE(finalHeater->sourceSideOutletModelObject());
+  EXPECT_EQ(finalHeater->handle(), finalHeater->waterHeaterSizing().waterHeater().handle());
+
+  openstudio::filesystem::remove(idfPath);
+}
+
+TEST_F(EPModelFixture, WaterHeaterStratified_LastOwnerUseLoopRemovalLifecycle) {
+  const auto idfPath = openstudio::tempDir() / openstudio::toPath("epmodel-water-heater-stratified-last-owner-use-removal.idf");
+
+  Model model;
+  PlantLoop useLoop(model);
+  WaterHeaterStratified heater(model);
+  ASSERT_TRUE(useLoop.setName("Last Owner Stratified Water Heater Use Loop"));
+  ASSERT_TRUE(heater.setName("Last Owner Stratified Water Heater"));
+  ASSERT_TRUE(useLoop.addSupplyBranchForComponent(heater));
+  ASSERT_TRUE(model.save(idfPath, true));
+
+  auto loadedModel = Model::load(idfPath);
+  ASSERT_TRUE(loadedModel);
+  auto loadedUseLoop = loadedModel->getConcreteModelObjectByName<PlantLoop>("Last Owner Stratified Water Heater Use Loop");
+  auto loadedHeater = loadedModel->getConcreteModelObjectByName<WaterHeaterStratified>("Last Owner Stratified Water Heater");
+  ASSERT_TRUE(loadedUseLoop);
+  ASSERT_TRUE(loadedHeater);
+  ASSERT_TRUE(loadedHeater->useSidePlantLoop());
+  EXPECT_EQ(*loadedUseLoop, *loadedHeater->useSidePlantLoop());
+  EXPECT_FALSE(loadedHeater->sourceSidePlantLoop());
+  EXPECT_EQ(1u, loadedUseLoop->supplyComponents(WaterHeaterStratified::iddObjectType()).size());
+  EXPECT_TRUE(loadedHeater->useSideInletModelObject());
+  EXPECT_TRUE(loadedHeater->useSideOutletModelObject());
+  EXPECT_FALSE(loadedHeater->sourceSideInletModelObject());
+  EXPECT_FALSE(loadedHeater->sourceSideOutletModelObject());
+  auto loadedWaterHeaterSizing = loadedHeater->waterHeaterSizing();
+  EXPECT_EQ(loadedHeater->handle(), loadedWaterHeaterSizing.waterHeater().handle());
+
+  std::vector<openstudio::Handle> topologyHandles;
+  for (const auto& component : loadedUseLoop->supplyComponents()) {
+    if (component.handle() != loadedHeater->handle()) {
+      topologyHandles.push_back(component.handle());
+    }
+  }
+  for (const auto& component : loadedUseLoop->demandComponents()) {
+    topologyHandles.push_back(component.handle());
+  }
+  const auto loopHandle = loadedUseLoop->handle();
+  const auto sizingPlantHandle = loadedUseLoop->sizingPlant().handle();
+  const auto heaterHandle = loadedHeater->handle();
+  const auto waterHeaterSizingHandle = loadedWaterHeaterSizing.handle();
+  EXPECT_FALSE(loadedUseLoop->remove().empty());
+  EXPECT_FALSE(loadedModel->getObject(loopHandle));
+  EXPECT_FALSE(loadedModel->getObject(sizingPlantHandle));
+  EXPECT_FALSE(loadedModel->getObject(heaterHandle));
+  EXPECT_FALSE(loadedModel->getObject(waterHeaterSizingHandle));
+  for (const auto& handle : topologyHandles) {
+    EXPECT_FALSE(loadedModel->getObject(handle));
+  }
+
+  ASSERT_TRUE(loadedModel->save(idfPath, true));
+  auto reloadedModel = Model::load(idfPath);
+  ASSERT_TRUE(reloadedModel);
+  EXPECT_FALSE(reloadedModel->getConcreteModelObjectByName<PlantLoop>("Last Owner Stratified Water Heater Use Loop"));
+  EXPECT_FALSE(reloadedModel->getConcreteModelObjectByName<WaterHeaterStratified>("Last Owner Stratified Water Heater"));
+  EXPECT_TRUE(reloadedModel->getConcreteModelObjects<WaterHeaterSizing>().empty());
+
+  openstudio::filesystem::remove(idfPath);
 }
