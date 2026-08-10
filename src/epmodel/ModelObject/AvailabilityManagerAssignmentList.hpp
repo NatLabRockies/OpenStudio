@@ -19,6 +19,7 @@ namespace epmodel {
   class AirLoopHVAC;
   class Loop;
   class Model;
+  class PlantLoop;
 
   namespace detail {
     class AvailabilityManagerAssignmentList_Impl;
@@ -59,8 +60,14 @@ namespace epmodel {
 
     /** @name Loop associations */
     //@{
+    // Schema Alignment Notes:
+    // - Canonical Counterpart: openstudio::model::AvailabilityManagerAssignmentList.
+    // - Implemented Parity: Singular loop, air-loop, and plant-loop reverse discovery follows the canonical loop-owned assignment-list target.
+    // - Field/Storage Mapping: AirLoopHVAC and PlantLoop store the EnergyPlus Availability Manager List Name; the list stores ordered manager rows.
+    // - Remaining Parity Work: Multi-loop assignment ambiguity and ZoneHVAC assignment-list ownership are not characterized.
     boost::optional<Loop> loop() const;
     boost::optional<AirLoopHVAC> airLoopHVAC() const;
+    boost::optional<PlantLoop> plantLoop() const;
     //@}
 
    protected:

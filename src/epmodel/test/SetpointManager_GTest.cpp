@@ -8,7 +8,9 @@
 #include "EPModelFixture.hpp"
 
 #include "../Loop/AirLoopHVAC.hpp"
+#include "../Loop/AirLoopHVAC_Impl.hpp"
 #include "../Loop/PlantLoop.hpp"
+#include "../Loop/PlantLoop_Impl.hpp"
 #include "../HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
 #include "../Splitter/AirLoopHVACZoneSplitter.hpp"
 #include "../StraightComponent/FanConstantVolume.hpp"
@@ -29,9 +31,13 @@
 #include "../SetpointManager/SetpointManagerWarmest.hpp"
 #include "../SetpointManager/SetpointManagerWarmestTemperatureFlow.hpp"
 #include "../HVACComponent/ThermalZone.hpp"
+#include "../Schedule/ScheduleConstant.hpp"
+#include "../Schedule/ScheduleConstant_Impl.hpp"
 #include "../Schedule/ScheduleCompact.hpp"
 
+#include <utilities/core/Filesystem.hpp>
 #include <utilities/idd/SetpointManager_Scheduled_FieldEnums.hxx>
+#include <utilities/idd/SetpointManager_SingleZone_Reheat_FieldEnums.hxx>
 
 using namespace openstudio::epmodel;
 
@@ -121,6 +127,126 @@ TEST_F(EPModelFixture, SetpointManagerScheduled_AddToPlantSupplyNode) {
   auto setpointNode = spm.setpointNode();
   ASSERT_TRUE(setpointNode);
   EXPECT_EQ(node, *setpointNode);
+}
+
+TEST_F(EPModelFixture, SetpointManagerScheduled_ControlRelationshipLifecycle) {
+  const auto idfPath = openstudio::tempDir() / openstudio::toPath("epmodel-scheduled-setpoint-manager-lifecycle.idf");
+
+  Model model;
+  AirLoopHVAC airLoop(model);
+  PlantLoop plantLoop(model);
+  ASSERT_TRUE(airLoop.setName("Scheduled Control Air Loop"));
+  ASSERT_TRUE(plantLoop.setName("Scheduled Control Plant Loop"));
+
+  ScheduleConstant initialAirSchedule(model);
+  ScheduleConstant replacementAirSchedule(model);
+  ScheduleConstant plantSchedule(model);
+  ASSERT_TRUE(initialAirSchedule.setName("Initial Air Setpoint Schedule"));
+  ASSERT_TRUE(replacementAirSchedule.setName("Replacement Air Setpoint Schedule"));
+  ASSERT_TRUE(plantSchedule.setName("Plant Setpoint Schedule"));
+  ASSERT_TRUE(initialAirSchedule.setValue(12.0));
+  ASSERT_TRUE(replacementAirSchedule.setValue(13.0));
+  ASSERT_TRUE(plantSchedule.setValue(60.0));
+
+  SetpointManagerScheduled airManager(model);
+  SetpointManagerScheduled plantManager(model);
+  ASSERT_TRUE(airManager.setName("Air Scheduled Setpoint Manager"));
+  ASSERT_TRUE(plantManager.setName("Plant Scheduled Setpoint Manager"));
+  ASSERT_TRUE(airManager.setSchedule(initialAirSchedule));
+  ASSERT_TRUE(plantManager.setSchedule(plantSchedule));
+
+  auto airNode = airLoop.supplyOutletNode();
+  auto plantNode = plantLoop.supplyOutletNode();
+  ASSERT_TRUE(airManager.addToNode(airNode));
+  ASSERT_TRUE(plantManager.addToNode(plantNode));
+  ASSERT_TRUE(plantLoop.setLoopTemperatureSetpointNode(plantNode));
+  ASSERT_TRUE(airManager.setSchedule(replacementAirSchedule));
+
+  ASSERT_TRUE(airManager.setpointNode());
+  ASSERT_TRUE(plantManager.setpointNode());
+  EXPECT_EQ(airNode, *airManager.setpointNode());
+  EXPECT_EQ(plantNode, *plantManager.setpointNode());
+  ASSERT_EQ(1u, airNode.setpointManagers().size());
+  ASSERT_EQ(1u, plantNode.setpointManagers().size());
+  EXPECT_EQ(airManager, airNode.setpointManagers().front());
+  EXPECT_EQ(plantManager, plantNode.setpointManagers().front());
+  EXPECT_EQ(replacementAirSchedule, airManager.schedule());
+  EXPECT_EQ(plantNode, plantLoop.loopTemperatureSetpointNode());
+  ASSERT_TRUE(airManager.loop());
+  ASSERT_TRUE(airManager.airLoopHVAC());
+  ASSERT_TRUE(plantManager.loop());
+  ASSERT_TRUE(plantManager.plantLoop());
+  EXPECT_EQ(airLoop.handle(), airManager.loop()->handle());
+  EXPECT_EQ(airLoop, *airManager.airLoopHVAC());
+  EXPECT_EQ(plantLoop.handle(), plantManager.loop()->handle());
+  EXPECT_EQ(plantLoop, *plantManager.plantLoop());
+  ASSERT_TRUE(model.save(idfPath, true));
+
+  auto loadedModel = Model::load(idfPath);
+  ASSERT_TRUE(loadedModel);
+  auto loadedAirLoop = loadedModel->getConcreteModelObjectByName<AirLoopHVAC>("Scheduled Control Air Loop");
+  auto loadedPlantLoop = loadedModel->getConcreteModelObjectByName<PlantLoop>("Scheduled Control Plant Loop");
+  auto loadedAirManager = loadedModel->getConcreteModelObjectByName<SetpointManagerScheduled>("Air Scheduled Setpoint Manager");
+  auto loadedPlantManager = loadedModel->getConcreteModelObjectByName<SetpointManagerScheduled>("Plant Scheduled Setpoint Manager");
+  auto loadedAirSchedule = loadedModel->getConcreteModelObjectByName<ScheduleConstant>("Replacement Air Setpoint Schedule");
+  ASSERT_TRUE(loadedAirLoop);
+  ASSERT_TRUE(loadedPlantLoop);
+  ASSERT_TRUE(loadedAirManager);
+  ASSERT_TRUE(loadedPlantManager);
+  ASSERT_TRUE(loadedAirSchedule);
+
+  auto loadedAirNode = loadedAirLoop->supplyOutletNode();
+  auto loadedPlantNode = loadedPlantLoop->supplyOutletNode();
+  ASSERT_TRUE(loadedAirManager->setpointNode());
+  ASSERT_TRUE(loadedPlantManager->setpointNode());
+  EXPECT_EQ(loadedAirNode, *loadedAirManager->setpointNode());
+  EXPECT_EQ(loadedPlantNode, *loadedPlantManager->setpointNode());
+  ASSERT_EQ(1u, loadedAirNode.setpointManagers().size());
+  ASSERT_EQ(1u, loadedPlantNode.setpointManagers().size());
+  EXPECT_EQ(*loadedAirManager, loadedAirNode.setpointManagers().front());
+  EXPECT_EQ(*loadedPlantManager, loadedPlantNode.setpointManagers().front());
+  EXPECT_EQ(*loadedAirSchedule, loadedAirManager->schedule());
+  EXPECT_EQ(loadedPlantNode, loadedPlantLoop->loopTemperatureSetpointNode());
+  EXPECT_EQ(2u, loadedAirLoop->supplyComponents().size());
+  EXPECT_TRUE(loadedAirLoop->supplyComponent(loadedAirNode.handle()));
+  EXPECT_TRUE(loadedAirNode.airLoopHVAC());
+  ASSERT_TRUE(loadedAirManager->airLoopHVAC());
+  ASSERT_TRUE(loadedPlantManager->plantLoop());
+  ASSERT_TRUE(loadedAirManager->loop());
+  ASSERT_TRUE(loadedPlantManager->loop());
+  EXPECT_EQ(*loadedAirLoop, *loadedAirManager->airLoopHVAC());
+  EXPECT_EQ(*loadedPlantLoop, *loadedPlantManager->plantLoop());
+  EXPECT_EQ(loadedAirLoop->handle(), loadedAirManager->loop()->handle());
+  EXPECT_EQ(loadedPlantLoop->handle(), loadedPlantManager->loop()->handle());
+
+  ScheduleConstant postLoadPlantSchedule(*loadedModel);
+  ASSERT_TRUE(postLoadPlantSchedule.setName("Post-load Plant Setpoint Schedule"));
+  ASSERT_TRUE(postLoadPlantSchedule.setValue(55.0));
+  ASSERT_TRUE(loadedPlantManager->setSchedule(postLoadPlantSchedule));
+  EXPECT_EQ(postLoadPlantSchedule, loadedPlantManager->schedule());
+
+  ScheduleConstant replacementManagerSchedule(*loadedModel);
+  ASSERT_TRUE(replacementManagerSchedule.setName("Replacement Manager Schedule"));
+  ASSERT_TRUE(replacementManagerSchedule.setValue(14.0));
+  SetpointManagerScheduled replacementAirManager(*loadedModel);
+  ASSERT_TRUE(replacementAirManager.setName("Replacement Air Scheduled Setpoint Manager"));
+  ASSERT_TRUE(replacementAirManager.setSchedule(replacementManagerSchedule));
+  const auto oldAirManagerHandle = loadedAirManager->handle();
+  ASSERT_TRUE(replacementAirManager.addToNode(loadedAirNode));
+  EXPECT_FALSE(loadedModel->getObject(oldAirManagerHandle));
+  ASSERT_EQ(1u, loadedAirNode.setpointManagers().size());
+  EXPECT_EQ(replacementAirManager, loadedAirNode.setpointManagers().front());
+
+  const auto airLoopHandle = loadedAirLoop->handle();
+  const auto plantLoopHandle = loadedPlantLoop->handle();
+  EXPECT_FALSE(replacementAirManager.remove().empty());
+  EXPECT_FALSE(loadedPlantManager->remove().empty());
+  EXPECT_TRUE(loadedAirNode.setpointManagers().empty());
+  EXPECT_TRUE(loadedPlantNode.setpointManagers().empty());
+  EXPECT_TRUE(loadedModel->getObject(airLoopHandle));
+  EXPECT_TRUE(loadedModel->getObject(plantLoopHandle));
+
+  openstudio::filesystem::remove(idfPath);
 }
 
 TEST_F(EPModelFixture, SetpointManagerScheduledDualSetpoint_DefaultConstructor) {
@@ -264,6 +390,19 @@ TEST_F(EPModelFixture, SetpointManagerSingleZoneReheat_ScalarAccessors_RoundTrip
 
   EXPECT_DOUBLE_EQ(14.25, spm.minimumSupplyAirTemperature());
   EXPECT_DOUBLE_EQ(22.75, spm.maximumSupplyAirTemperature());
+}
+
+TEST_F(EPModelFixture, SetpointManagerSingleZoneReheat_RemovalClearsManagedNodePointers) {
+  Model model;
+  Node zoneInletNode(model);
+  SetpointManagerSingleZoneReheat spm(model);
+
+  ASSERT_TRUE(spm.setPointer(openstudio::SetpointManager_SingleZone_ReheatFields::ZoneInletNodeName, zoneInletNode.handle()));
+  ASSERT_EQ(1u, zoneInletNode.sources().size());
+  EXPECT_EQ(spm.handle(), zoneInletNode.sources().front().handle());
+
+  EXPECT_FALSE(spm.remove().empty());
+  EXPECT_TRUE(zoneInletNode.sources().empty());
 }
 
 TEST_F(EPModelFixture, SetpointManagerColdest_DefaultConstructor) {
@@ -487,6 +626,18 @@ TEST_F(EPModelFixture, SetpointManagerScheduled_AddToNodeRejectsOutboardOANode) 
   auto outboardReliefNode = oaSystem.outboardReliefNode();
   ASSERT_TRUE(outboardReliefNode);
   EXPECT_FALSE(spm.addToNode(*outboardReliefNode));
+
+  auto mixedAirObject = oaSystem.mixedAirModelObject();
+  ASSERT_TRUE(mixedAirObject);
+  auto mixedAirNode = mixedAirObject->optionalCast<Node>();
+  ASSERT_TRUE(mixedAirNode);
+  ASSERT_TRUE(spm.addToNode(*mixedAirNode));
+  ASSERT_TRUE(spm.airLoopHVACOutdoorAirSystem());
+  ASSERT_TRUE(spm.airLoopHVAC());
+  ASSERT_TRUE(spm.loop());
+  EXPECT_EQ(oaSystem, *spm.airLoopHVACOutdoorAirSystem());
+  EXPECT_EQ(airLoop, *spm.airLoopHVAC());
+  EXPECT_EQ(airLoop.handle(), spm.loop()->handle());
 }
 
 TEST_F(EPModelFixture, SetpointManagerMixedAir_AddToNodeSetsReferenceAndFanNodes) {

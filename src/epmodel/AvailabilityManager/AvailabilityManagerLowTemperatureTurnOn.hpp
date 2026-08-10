@@ -7,7 +7,7 @@
 #define EPMODEL_AVAILABILITYMANAGERLOWTEMPERATURETURNON_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "AvailabilityManager.hpp"
 
 #include <memory>
 
@@ -15,12 +15,13 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class Node;
 
   namespace detail {
     class AvailabilityManagerLowTemperatureTurnOn_Impl;
   }
 
-  class EPMODEL_API AvailabilityManagerLowTemperatureTurnOn : public ModelObject
+  class EPMODEL_API AvailabilityManagerLowTemperatureTurnOn : public AvailabilityManager
   {
    public:
     explicit AvailabilityManagerLowTemperatureTurnOn(const Model& model);
@@ -34,9 +35,13 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     // Schema Alignment Notes:
-    // - API: Preserves openstudio::model scalar accessor name/signature for this model-counterpart class.
+    // - API: Inherits AvailabilityManager so this object participates in loop assignment and live reverse discovery.
     // - Field Mapping: temperature maps to E+ AvailabilityManager:LowTemperatureTurnOn Temperature.
-    // - TODO(parity): Keep relationship field sensorNode out of this scalar-only scaffold pass.
+    // - Field Mapping: sensorNode maps to E+ AvailabilityManager:LowTemperatureTurnOn Sensor Node Name as a managed Node target.
+    boost::optional<Node> sensorNode() const;
+    bool setSensorNode(const Node& node);
+    void resetSensorNode();
+
     /** @name Temperature field */
     //@{
     double temperature() const;
