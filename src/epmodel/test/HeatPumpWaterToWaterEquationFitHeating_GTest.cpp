@@ -9,13 +9,378 @@
 #include "../Curve/CurveQuadLinear.hpp"
 #include "../Curve/CurveQuadLinear_Impl.hpp"
 #include "../Loop/PlantLoop.hpp"
+#include "../Loop/PlantLoop_Impl.hpp"
+#include "../ModelObject/SizingPlant.hpp"
 #include "../StraightComponent/Node.hpp"
 #include "../WaterToWaterComponent/HeatPumpWaterToWaterEquationFitCooling.hpp"
 #include "../WaterToWaterComponent/HeatPumpWaterToWaterEquationFitHeating.hpp"
+#include "../WaterToWaterComponent/HeatPumpWaterToWaterEquationFitHeating_Impl.hpp"
 
 #include <utilities/idd/HeatPump_WaterToWater_EquationFit_Heating_FieldEnums.hxx>
 
 using namespace openstudio::epmodel;
+
+TEST_F(EPModelFixture, HeatPumpWaterToWaterEquationFitHeating_OppositeSequentialLastOwnerLoopRemovalLifecycle) {
+  const auto idfPath = openstudio::tempDir() / openstudio::toPath("epmodel-equation-fit-heating-opposite-last-owner-removal.idf");
+
+  Model model;
+  PlantLoop sourceLoop(model);
+  PlantLoop loadLoop(model);
+  HeatPumpWaterToWaterEquationFitHeating heatPump(model);
+  ASSERT_TRUE(sourceLoop.setName("Removed Last Equation Fit Heating Source Loop"));
+  ASSERT_TRUE(loadLoop.setName("Removed First Equation Fit Heating Load Loop"));
+  ASSERT_TRUE(heatPump.setName("Deleted Opposite Equation Fit Heating Heat Pump"));
+  ASSERT_TRUE(sourceLoop.addSupplyBranchForComponent(heatPump));
+  ASSERT_TRUE(loadLoop.addDemandBranchForComponent(heatPump));
+  ASSERT_TRUE(model.save(idfPath, true));
+
+  auto loadedModel = Model::load(idfPath);
+  ASSERT_TRUE(loadedModel);
+  auto loadedSourceLoop = loadedModel->getConcreteModelObjectByName<PlantLoop>("Removed Last Equation Fit Heating Source Loop");
+  auto loadedLoadLoop = loadedModel->getConcreteModelObjectByName<PlantLoop>("Removed First Equation Fit Heating Load Loop");
+  auto loadedHeatPump =
+    loadedModel->getConcreteModelObjectByName<HeatPumpWaterToWaterEquationFitHeating>("Deleted Opposite Equation Fit Heating Heat Pump");
+  ASSERT_TRUE(loadedSourceLoop);
+  ASSERT_TRUE(loadedLoadLoop);
+  ASSERT_TRUE(loadedHeatPump);
+  ASSERT_TRUE(loadedHeatPump->plantLoop());
+  ASSERT_TRUE(loadedHeatPump->secondaryPlantLoop());
+  EXPECT_EQ(*loadedSourceLoop, *loadedHeatPump->plantLoop());
+  EXPECT_EQ(*loadedLoadLoop, *loadedHeatPump->secondaryPlantLoop());
+  EXPECT_EQ(1u, loadedSourceLoop->supplyComponents(HeatPumpWaterToWaterEquationFitHeating::iddObjectType()).size());
+  EXPECT_EQ(1u, loadedLoadLoop->demandComponents(HeatPumpWaterToWaterEquationFitHeating::iddObjectType()).size());
+  EXPECT_TRUE(loadedHeatPump->supplyInletModelObject());
+  EXPECT_TRUE(loadedHeatPump->supplyOutletModelObject());
+  EXPECT_TRUE(loadedHeatPump->demandInletModelObject());
+  EXPECT_TRUE(loadedHeatPump->demandOutletModelObject());
+
+  std::vector<openstudio::Handle> loadTopologyHandles;
+  for (const auto& component : loadedLoadLoop->supplyComponents()) {
+    loadTopologyHandles.push_back(component.handle());
+  }
+  for (const auto& component : loadedLoadLoop->demandComponents()) {
+    if (component.handle() != loadedHeatPump->handle()) {
+      loadTopologyHandles.push_back(component.handle());
+    }
+  }
+  const auto loadLoopHandle = loadedLoadLoop->handle();
+  const auto loadSizingPlantHandle = loadedLoadLoop->sizingPlant().handle();
+  const auto heatPumpHandle = loadedHeatPump->handle();
+  EXPECT_FALSE(loadedLoadLoop->remove().empty());
+  EXPECT_FALSE(loadedModel->getObject(loadLoopHandle));
+  EXPECT_FALSE(loadedModel->getObject(loadSizingPlantHandle));
+  for (const auto& handle : loadTopologyHandles) {
+    EXPECT_FALSE(loadedModel->getObject(handle));
+  }
+  ASSERT_TRUE(loadedModel->getObject(heatPumpHandle));
+  EXPECT_FALSE(loadedHeatPump->secondaryPlantLoop());
+  EXPECT_FALSE(loadedHeatPump->demandInletModelObject());
+  EXPECT_FALSE(loadedHeatPump->demandOutletModelObject());
+  ASSERT_TRUE(loadedHeatPump->plantLoop());
+  EXPECT_EQ(*loadedSourceLoop, *loadedHeatPump->plantLoop());
+  EXPECT_EQ(1u, loadedSourceLoop->supplyComponents(HeatPumpWaterToWaterEquationFitHeating::iddObjectType()).size());
+  EXPECT_TRUE(loadedHeatPump->supplyInletModelObject());
+  EXPECT_TRUE(loadedHeatPump->supplyOutletModelObject());
+
+  std::vector<openstudio::Handle> sourceTopologyHandles;
+  for (const auto& component : loadedSourceLoop->supplyComponents()) {
+    if (component.handle() != heatPumpHandle) {
+      sourceTopologyHandles.push_back(component.handle());
+    }
+  }
+  for (const auto& component : loadedSourceLoop->demandComponents()) {
+    sourceTopologyHandles.push_back(component.handle());
+  }
+  const auto sourceLoopHandle = loadedSourceLoop->handle();
+  const auto sourceSizingPlantHandle = loadedSourceLoop->sizingPlant().handle();
+  EXPECT_FALSE(loadedSourceLoop->remove().empty());
+  EXPECT_FALSE(loadedModel->getObject(sourceLoopHandle));
+  EXPECT_FALSE(loadedModel->getObject(sourceSizingPlantHandle));
+  for (const auto& handle : sourceTopologyHandles) {
+    EXPECT_FALSE(loadedModel->getObject(handle));
+  }
+  EXPECT_FALSE(loadedModel->getObject(heatPumpHandle));
+
+  ASSERT_TRUE(loadedModel->save(idfPath, true));
+  auto reloadedModel = Model::load(idfPath);
+  ASSERT_TRUE(reloadedModel);
+  EXPECT_FALSE(reloadedModel->getConcreteModelObjectByName<PlantLoop>("Removed First Equation Fit Heating Load Loop"));
+  EXPECT_FALSE(reloadedModel->getConcreteModelObjectByName<PlantLoop>("Removed Last Equation Fit Heating Source Loop"));
+  EXPECT_FALSE(
+    reloadedModel->getConcreteModelObjectByName<HeatPumpWaterToWaterEquationFitHeating>("Deleted Opposite Equation Fit Heating Heat Pump"));
+
+  openstudio::filesystem::remove(idfPath);
+}
+
+TEST_F(EPModelFixture, HeatPumpWaterToWaterEquationFitHeating_SequentialLastOwnerLoopRemovalLifecycle) {
+  const auto idfPath = openstudio::tempDir() / openstudio::toPath("epmodel-equation-fit-heating-last-owner-removal.idf");
+
+  Model model;
+  PlantLoop sourceLoop(model);
+  PlantLoop loadLoop(model);
+  HeatPumpWaterToWaterEquationFitHeating heatPump(model);
+  ASSERT_TRUE(sourceLoop.setName("Removed First Equation Fit Heating Source Loop"));
+  ASSERT_TRUE(loadLoop.setName("Removed Last Equation Fit Heating Load Loop"));
+  ASSERT_TRUE(heatPump.setName("Deleted Equation Fit Heating Heat Pump"));
+  ASSERT_TRUE(sourceLoop.addSupplyBranchForComponent(heatPump));
+  ASSERT_TRUE(loadLoop.addDemandBranchForComponent(heatPump));
+  ASSERT_TRUE(model.save(idfPath, true));
+
+  auto loadedModel = Model::load(idfPath);
+  ASSERT_TRUE(loadedModel);
+  auto loadedSourceLoop = loadedModel->getConcreteModelObjectByName<PlantLoop>("Removed First Equation Fit Heating Source Loop");
+  auto loadedLoadLoop = loadedModel->getConcreteModelObjectByName<PlantLoop>("Removed Last Equation Fit Heating Load Loop");
+  auto loadedHeatPump = loadedModel->getConcreteModelObjectByName<HeatPumpWaterToWaterEquationFitHeating>("Deleted Equation Fit Heating Heat Pump");
+  ASSERT_TRUE(loadedSourceLoop);
+  ASSERT_TRUE(loadedLoadLoop);
+  ASSERT_TRUE(loadedHeatPump);
+  ASSERT_TRUE(loadedHeatPump->plantLoop());
+  ASSERT_TRUE(loadedHeatPump->secondaryPlantLoop());
+  EXPECT_EQ(*loadedSourceLoop, *loadedHeatPump->plantLoop());
+  EXPECT_EQ(*loadedLoadLoop, *loadedHeatPump->secondaryPlantLoop());
+  EXPECT_EQ(1u, loadedSourceLoop->supplyComponents(HeatPumpWaterToWaterEquationFitHeating::iddObjectType()).size());
+  EXPECT_EQ(1u, loadedLoadLoop->demandComponents(HeatPumpWaterToWaterEquationFitHeating::iddObjectType()).size());
+  EXPECT_TRUE(loadedHeatPump->supplyInletModelObject());
+  EXPECT_TRUE(loadedHeatPump->supplyOutletModelObject());
+  EXPECT_TRUE(loadedHeatPump->demandInletModelObject());
+  EXPECT_TRUE(loadedHeatPump->demandOutletModelObject());
+
+  std::vector<openstudio::Handle> sourceTopologyHandles;
+  for (const auto& component : loadedSourceLoop->supplyComponents()) {
+    if (component.handle() != loadedHeatPump->handle()) {
+      sourceTopologyHandles.push_back(component.handle());
+    }
+  }
+  for (const auto& component : loadedSourceLoop->demandComponents()) {
+    sourceTopologyHandles.push_back(component.handle());
+  }
+  const auto sourceLoopHandle = loadedSourceLoop->handle();
+  const auto sourceSizingPlantHandle = loadedSourceLoop->sizingPlant().handle();
+  const auto heatPumpHandle = loadedHeatPump->handle();
+  EXPECT_FALSE(loadedSourceLoop->remove().empty());
+  EXPECT_FALSE(loadedModel->getObject(sourceLoopHandle));
+  EXPECT_FALSE(loadedModel->getObject(sourceSizingPlantHandle));
+  for (const auto& handle : sourceTopologyHandles) {
+    EXPECT_FALSE(loadedModel->getObject(handle));
+  }
+  ASSERT_TRUE(loadedModel->getObject(heatPumpHandle));
+  EXPECT_FALSE(loadedHeatPump->plantLoop());
+  EXPECT_FALSE(loadedHeatPump->supplyInletModelObject());
+  EXPECT_FALSE(loadedHeatPump->supplyOutletModelObject());
+  ASSERT_TRUE(loadedHeatPump->secondaryPlantLoop());
+  EXPECT_EQ(*loadedLoadLoop, *loadedHeatPump->secondaryPlantLoop());
+  EXPECT_EQ(1u, loadedLoadLoop->demandComponents(HeatPumpWaterToWaterEquationFitHeating::iddObjectType()).size());
+  EXPECT_TRUE(loadedHeatPump->demandInletModelObject());
+  EXPECT_TRUE(loadedHeatPump->demandOutletModelObject());
+
+  std::vector<openstudio::Handle> loadTopologyHandles;
+  for (const auto& component : loadedLoadLoop->supplyComponents()) {
+    loadTopologyHandles.push_back(component.handle());
+  }
+  for (const auto& component : loadedLoadLoop->demandComponents()) {
+    if (component.handle() != heatPumpHandle) {
+      loadTopologyHandles.push_back(component.handle());
+    }
+  }
+  const auto loadLoopHandle = loadedLoadLoop->handle();
+  const auto loadSizingPlantHandle = loadedLoadLoop->sizingPlant().handle();
+  EXPECT_FALSE(loadedLoadLoop->remove().empty());
+  EXPECT_FALSE(loadedModel->getObject(loadLoopHandle));
+  EXPECT_FALSE(loadedModel->getObject(loadSizingPlantHandle));
+  for (const auto& handle : loadTopologyHandles) {
+    EXPECT_FALSE(loadedModel->getObject(handle));
+  }
+  EXPECT_FALSE(loadedModel->getObject(heatPumpHandle));
+
+  ASSERT_TRUE(loadedModel->save(idfPath, true));
+  auto reloadedModel = Model::load(idfPath);
+  ASSERT_TRUE(reloadedModel);
+  EXPECT_FALSE(reloadedModel->getConcreteModelObjectByName<PlantLoop>("Removed First Equation Fit Heating Source Loop"));
+  EXPECT_FALSE(reloadedModel->getConcreteModelObjectByName<PlantLoop>("Removed Last Equation Fit Heating Load Loop"));
+  EXPECT_FALSE(reloadedModel->getConcreteModelObjectByName<HeatPumpWaterToWaterEquationFitHeating>("Deleted Equation Fit Heating Heat Pump"));
+
+  openstudio::filesystem::remove(idfPath);
+}
+
+TEST_F(EPModelFixture, HeatPumpWaterToWaterEquationFitHeating_LoadDemandOwnerLoopRemovalLifecycle) {
+  const auto idfPath = openstudio::tempDir() / openstudio::toPath("epmodel-equation-fit-heating-load-owner-removal.idf");
+
+  Model model;
+  PlantLoop sourceLoop(model);
+  PlantLoop loadLoop(model);
+  HeatPumpWaterToWaterEquationFitHeating heatPump(model);
+  ASSERT_TRUE(sourceLoop.setName("Equation Fit Heating Source Loop"));
+  ASSERT_TRUE(loadLoop.setName("Removed Equation Fit Heating Load Loop"));
+  ASSERT_TRUE(heatPump.setName("Surviving Equation Fit Heating Heat Pump"));
+  ASSERT_TRUE(sourceLoop.addSupplyBranchForComponent(heatPump));
+  ASSERT_TRUE(loadLoop.addDemandBranchForComponent(heatPump));
+  ASSERT_TRUE(model.save(idfPath, true));
+
+  auto loadedModel = Model::load(idfPath);
+  ASSERT_TRUE(loadedModel);
+  auto loadedSourceLoop = loadedModel->getConcreteModelObjectByName<PlantLoop>("Equation Fit Heating Source Loop");
+  auto loadedLoadLoop = loadedModel->getConcreteModelObjectByName<PlantLoop>("Removed Equation Fit Heating Load Loop");
+  auto loadedHeatPump = loadedModel->getConcreteModelObjectByName<HeatPumpWaterToWaterEquationFitHeating>("Surviving Equation Fit Heating Heat Pump");
+  ASSERT_TRUE(loadedSourceLoop);
+  ASSERT_TRUE(loadedLoadLoop);
+  ASSERT_TRUE(loadedHeatPump);
+  ASSERT_TRUE(loadedHeatPump->plantLoop());
+  ASSERT_TRUE(loadedHeatPump->secondaryPlantLoop());
+  EXPECT_EQ(*loadedSourceLoop, *loadedHeatPump->plantLoop());
+  EXPECT_EQ(*loadedLoadLoop, *loadedHeatPump->secondaryPlantLoop());
+  EXPECT_EQ(1u, loadedSourceLoop->supplyComponents(HeatPumpWaterToWaterEquationFitHeating::iddObjectType()).size());
+  EXPECT_EQ(1u, loadedLoadLoop->demandComponents(HeatPumpWaterToWaterEquationFitHeating::iddObjectType()).size());
+  EXPECT_TRUE(loadedHeatPump->supplyInletModelObject());
+  EXPECT_TRUE(loadedHeatPump->supplyOutletModelObject());
+  EXPECT_TRUE(loadedHeatPump->demandInletModelObject());
+  EXPECT_TRUE(loadedHeatPump->demandOutletModelObject());
+
+  std::vector<openstudio::Handle> loadTopologyHandles;
+  for (const auto& component : loadedLoadLoop->supplyComponents()) {
+    loadTopologyHandles.push_back(component.handle());
+  }
+  for (const auto& component : loadedLoadLoop->demandComponents()) {
+    if (component.handle() != loadedHeatPump->handle()) {
+      loadTopologyHandles.push_back(component.handle());
+    }
+  }
+  const auto loadLoopHandle = loadedLoadLoop->handle();
+  const auto loadSizingPlantHandle = loadedLoadLoop->sizingPlant().handle();
+  const auto heatPumpHandle = loadedHeatPump->handle();
+  EXPECT_FALSE(loadedLoadLoop->remove().empty());
+  EXPECT_FALSE(loadedModel->getObject(loadLoopHandle));
+  EXPECT_FALSE(loadedModel->getObject(loadSizingPlantHandle));
+  for (const auto& handle : loadTopologyHandles) {
+    EXPECT_FALSE(loadedModel->getObject(handle));
+  }
+  ASSERT_TRUE(loadedModel->getObject(heatPumpHandle));
+  EXPECT_FALSE(loadedHeatPump->secondaryPlantLoop());
+  EXPECT_FALSE(loadedHeatPump->demandInletModelObject());
+  EXPECT_FALSE(loadedHeatPump->demandOutletModelObject());
+  ASSERT_TRUE(loadedHeatPump->plantLoop());
+  EXPECT_EQ(*loadedSourceLoop, *loadedHeatPump->plantLoop());
+  EXPECT_EQ(1u, loadedSourceLoop->supplyComponents(HeatPumpWaterToWaterEquationFitHeating::iddObjectType()).size());
+  EXPECT_TRUE(loadedHeatPump->supplyInletModelObject());
+  EXPECT_TRUE(loadedHeatPump->supplyOutletModelObject());
+
+  PlantLoop replacementLoadLoop(*loadedModel);
+  ASSERT_TRUE(replacementLoadLoop.setName("Replacement Equation Fit Heating Load Loop"));
+  ASSERT_TRUE(replacementLoadLoop.addDemandBranchForComponent(*loadedHeatPump));
+  ASSERT_TRUE(loadedModel->save(idfPath, true));
+
+  auto reloadedModel = Model::load(idfPath);
+  ASSERT_TRUE(reloadedModel);
+  auto reloadedSourceLoop = reloadedModel->getConcreteModelObjectByName<PlantLoop>("Equation Fit Heating Source Loop");
+  auto reloadedLoadLoop = reloadedModel->getConcreteModelObjectByName<PlantLoop>("Replacement Equation Fit Heating Load Loop");
+  auto reloadedHeatPump =
+    reloadedModel->getConcreteModelObjectByName<HeatPumpWaterToWaterEquationFitHeating>("Surviving Equation Fit Heating Heat Pump");
+  ASSERT_TRUE(reloadedSourceLoop);
+  ASSERT_TRUE(reloadedLoadLoop);
+  ASSERT_TRUE(reloadedHeatPump);
+  EXPECT_FALSE(reloadedModel->getConcreteModelObjectByName<PlantLoop>("Removed Equation Fit Heating Load Loop"));
+  ASSERT_TRUE(reloadedHeatPump->plantLoop());
+  ASSERT_TRUE(reloadedHeatPump->secondaryPlantLoop());
+  EXPECT_EQ(*reloadedSourceLoop, *reloadedHeatPump->plantLoop());
+  EXPECT_EQ(*reloadedLoadLoop, *reloadedHeatPump->secondaryPlantLoop());
+  EXPECT_EQ(1u, reloadedSourceLoop->supplyComponents(HeatPumpWaterToWaterEquationFitHeating::iddObjectType()).size());
+  EXPECT_EQ(1u, reloadedLoadLoop->demandComponents(HeatPumpWaterToWaterEquationFitHeating::iddObjectType()).size());
+  EXPECT_TRUE(reloadedHeatPump->supplyInletModelObject());
+  EXPECT_TRUE(reloadedHeatPump->supplyOutletModelObject());
+  EXPECT_TRUE(reloadedHeatPump->demandInletModelObject());
+  EXPECT_TRUE(reloadedHeatPump->demandOutletModelObject());
+
+  openstudio::filesystem::remove(idfPath);
+}
+
+TEST_F(EPModelFixture, HeatPumpWaterToWaterEquationFitHeating_SourceSupplyOwnerLoopRemovalLifecycle) {
+  const auto idfPath = openstudio::tempDir() / openstudio::toPath("epmodel-equation-fit-heating-source-owner-removal.idf");
+
+  Model model;
+  PlantLoop sourceLoop(model);
+  PlantLoop loadLoop(model);
+  HeatPumpWaterToWaterEquationFitHeating heatPump(model);
+  ASSERT_TRUE(sourceLoop.setName("Removed Equation Fit Heating Source Loop"));
+  ASSERT_TRUE(loadLoop.setName("Equation Fit Heating Load Loop"));
+  ASSERT_TRUE(heatPump.setName("Surviving Equation Fit Heating Heat Pump"));
+  ASSERT_TRUE(sourceLoop.addSupplyBranchForComponent(heatPump));
+  ASSERT_TRUE(loadLoop.addDemandBranchForComponent(heatPump));
+  ASSERT_TRUE(model.save(idfPath, true));
+
+  auto loadedModel = Model::load(idfPath);
+  ASSERT_TRUE(loadedModel);
+  auto loadedSourceLoop = loadedModel->getConcreteModelObjectByName<PlantLoop>("Removed Equation Fit Heating Source Loop");
+  auto loadedLoadLoop = loadedModel->getConcreteModelObjectByName<PlantLoop>("Equation Fit Heating Load Loop");
+  auto loadedHeatPump = loadedModel->getConcreteModelObjectByName<HeatPumpWaterToWaterEquationFitHeating>("Surviving Equation Fit Heating Heat Pump");
+  ASSERT_TRUE(loadedSourceLoop);
+  ASSERT_TRUE(loadedLoadLoop);
+  ASSERT_TRUE(loadedHeatPump);
+  ASSERT_TRUE(loadedHeatPump->plantLoop());
+  ASSERT_TRUE(loadedHeatPump->secondaryPlantLoop());
+  EXPECT_EQ(*loadedSourceLoop, *loadedHeatPump->plantLoop());
+  EXPECT_EQ(*loadedLoadLoop, *loadedHeatPump->secondaryPlantLoop());
+  EXPECT_EQ(1u, loadedSourceLoop->supplyComponents(HeatPumpWaterToWaterEquationFitHeating::iddObjectType()).size());
+  EXPECT_EQ(1u, loadedLoadLoop->demandComponents(HeatPumpWaterToWaterEquationFitHeating::iddObjectType()).size());
+  EXPECT_TRUE(loadedHeatPump->supplyInletModelObject());
+  EXPECT_TRUE(loadedHeatPump->supplyOutletModelObject());
+  EXPECT_TRUE(loadedHeatPump->demandInletModelObject());
+  EXPECT_TRUE(loadedHeatPump->demandOutletModelObject());
+
+  std::vector<openstudio::Handle> sourceTopologyHandles;
+  for (const auto& component : loadedSourceLoop->supplyComponents()) {
+    if (component.handle() != loadedHeatPump->handle()) {
+      sourceTopologyHandles.push_back(component.handle());
+    }
+  }
+  for (const auto& component : loadedSourceLoop->demandComponents()) {
+    sourceTopologyHandles.push_back(component.handle());
+  }
+  const auto sourceLoopHandle = loadedSourceLoop->handle();
+  const auto sourceSizingPlantHandle = loadedSourceLoop->sizingPlant().handle();
+  const auto heatPumpHandle = loadedHeatPump->handle();
+  EXPECT_FALSE(loadedSourceLoop->remove().empty());
+  EXPECT_FALSE(loadedModel->getObject(sourceLoopHandle));
+  EXPECT_FALSE(loadedModel->getObject(sourceSizingPlantHandle));
+  for (const auto& handle : sourceTopologyHandles) {
+    EXPECT_FALSE(loadedModel->getObject(handle));
+  }
+  ASSERT_TRUE(loadedModel->getObject(heatPumpHandle));
+  EXPECT_FALSE(loadedHeatPump->plantLoop());
+  EXPECT_FALSE(loadedHeatPump->supplyInletModelObject());
+  EXPECT_FALSE(loadedHeatPump->supplyOutletModelObject());
+  ASSERT_TRUE(loadedHeatPump->secondaryPlantLoop());
+  EXPECT_EQ(*loadedLoadLoop, *loadedHeatPump->secondaryPlantLoop());
+  EXPECT_EQ(1u, loadedLoadLoop->demandComponents(HeatPumpWaterToWaterEquationFitHeating::iddObjectType()).size());
+  EXPECT_TRUE(loadedHeatPump->demandInletModelObject());
+  EXPECT_TRUE(loadedHeatPump->demandOutletModelObject());
+
+  PlantLoop replacementSourceLoop(*loadedModel);
+  ASSERT_TRUE(replacementSourceLoop.setName("Replacement Equation Fit Heating Source Loop"));
+  ASSERT_TRUE(replacementSourceLoop.addSupplyBranchForComponent(*loadedHeatPump));
+  ASSERT_TRUE(loadedModel->save(idfPath, true));
+
+  auto reloadedModel = Model::load(idfPath);
+  ASSERT_TRUE(reloadedModel);
+  auto reloadedSourceLoop = reloadedModel->getConcreteModelObjectByName<PlantLoop>("Replacement Equation Fit Heating Source Loop");
+  auto reloadedLoadLoop = reloadedModel->getConcreteModelObjectByName<PlantLoop>("Equation Fit Heating Load Loop");
+  auto reloadedHeatPump =
+    reloadedModel->getConcreteModelObjectByName<HeatPumpWaterToWaterEquationFitHeating>("Surviving Equation Fit Heating Heat Pump");
+  ASSERT_TRUE(reloadedSourceLoop);
+  ASSERT_TRUE(reloadedLoadLoop);
+  ASSERT_TRUE(reloadedHeatPump);
+  EXPECT_FALSE(reloadedModel->getConcreteModelObjectByName<PlantLoop>("Removed Equation Fit Heating Source Loop"));
+  ASSERT_TRUE(reloadedHeatPump->plantLoop());
+  ASSERT_TRUE(reloadedHeatPump->secondaryPlantLoop());
+  EXPECT_EQ(*reloadedSourceLoop, *reloadedHeatPump->plantLoop());
+  EXPECT_EQ(*reloadedLoadLoop, *reloadedHeatPump->secondaryPlantLoop());
+  EXPECT_EQ(1u, reloadedSourceLoop->supplyComponents(HeatPumpWaterToWaterEquationFitHeating::iddObjectType()).size());
+  EXPECT_EQ(1u, reloadedLoadLoop->demandComponents(HeatPumpWaterToWaterEquationFitHeating::iddObjectType()).size());
+  EXPECT_TRUE(reloadedHeatPump->supplyInletModelObject());
+  EXPECT_TRUE(reloadedHeatPump->supplyOutletModelObject());
+  EXPECT_TRUE(reloadedHeatPump->demandInletModelObject());
+  EXPECT_TRUE(reloadedHeatPump->demandOutletModelObject());
+
+  openstudio::filesystem::remove(idfPath);
+}
 
 TEST_F(EPModelFixture, HeatPumpWaterToWaterEquationFitHeating_DefaultConstructor) {
   Model model;
