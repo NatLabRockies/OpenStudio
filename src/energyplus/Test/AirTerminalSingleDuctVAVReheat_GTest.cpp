@@ -20,6 +20,7 @@
 
 #include <utilities/idd/IddObject.hpp>
 #include <utilities/idd/AirTerminal_SingleDuct_VAV_Reheat_FieldEnums.hxx>
+#include <utilities/idd/Coil_Heating_Electric_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
 
 using namespace openstudio::energyplus;
@@ -72,7 +73,9 @@ TEST_F(EnergyPlusFixture, ForwardTranslator_AirTerminalSingleDuctVAVReheat) {
   EXPECT_EQ(woAvailabilitySchedule->iddObject().type(), IddObjectType::Schedule_Constant);
   EXPECT_EQ("Always On Discrete", woAvailabilitySchedule->nameString());
 
-  EXPECT_EQ("ATU SingleDuct VAV Reheat Damper Outlet", idf_atu.getString(AirTerminal_SingleDuct_VAV_ReheatFields::DamperAirOutletNodeName).get());
+  const auto damperOutletNodeName = idf_atu.getString(AirTerminal_SingleDuct_VAV_ReheatFields::DamperAirOutletNodeName);
+  ASSERT_TRUE(damperOutletNodeName);
+  EXPECT_EQ("ATU SingleDuct VAV Reheat Damper Outlet", *damperOutletNodeName);
   EXPECT_EQ(atu.inletModelObject()->nameString(), idf_atu.getString(AirTerminal_SingleDuct_VAV_ReheatFields::AirInletNodeName).get());
 
   EXPECT_EQ("Coil:Heating:Electric", idf_atu.getString(AirTerminal_SingleDuct_VAV_ReheatFields::ReheatCoilObjectType).get());
@@ -81,6 +84,7 @@ TEST_F(EnergyPlusFixture, ForwardTranslator_AirTerminalSingleDuctVAVReheat) {
   EXPECT_TRUE(woReheatCoil);
   EXPECT_EQ(woReheatCoil->iddObject().type(), IddObjectType::Coil_Heating_Electric);
   EXPECT_EQ("Coil Heating Electric 1", woReheatCoil->nameString());
+  EXPECT_EQ(*damperOutletNodeName, woReheatCoil->getString(Coil_Heating_ElectricFields::AirInletNodeName).get());
 
   EXPECT_EQ(0.1, idf_atu.getDouble(AirTerminal_SingleDuct_VAV_ReheatFields::MaximumAirFlowRate).get());
   EXPECT_EQ("FixedFlowRate", idf_atu.getString(AirTerminal_SingleDuct_VAV_ReheatFields::ZoneMinimumAirFlowInputMethod).get());

@@ -95,6 +95,9 @@ namespace epmodel {
 
       double maximumReheatAirTemperature();
       bool setMaximumReheatAirTemperature(double value);
+
+     private:
+      bool maintainReheatCoilAirPath(HVACComponent& coil);
     };
 
   }  // namespace detail

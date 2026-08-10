@@ -409,7 +409,7 @@ TEST_F(IdfFixture, WorkspaceObject_OS_DaylightingDevice_Shelf) {
   EXPECT_EQ(w2->nameString(), obj1->getString(OS_DaylightingDevice_ShelfFields::InsideShelfName).get());
 }
 
-TEST_F(IdfFixture, WorkspaceObject_EnergyPlus_NodeFieldSetPointerTracksRename) {
+TEST_F(IdfFixture, WorkspaceObject_EnergyPlus_NodeFieldSetPointerTracksRenameAndRemoval) {
   Workspace ws(StrictnessLevel::Draft, IddFileType::EnergyPlus);
 
   OptionalWorkspaceObject zoneSplitter = ws.addObject(IdfObject(IddObjectType::AirLoopHVAC_ZoneSplitter));
@@ -432,6 +432,12 @@ TEST_F(IdfFixture, WorkspaceObject_EnergyPlus_NodeFieldSetPointerTracksRename) {
   ASSERT_TRUE(node->setName("Node B"));
   ASSERT_TRUE(zoneSplitter->getString(AirLoopHVAC_ZoneSplitterFields::InletNodeName));
   EXPECT_EQ("Node B", zoneSplitter->getString(AirLoopHVAC_ZoneSplitterFields::InletNodeName).get());
+
+  ASSERT_EQ(1u, node->sources().size());
+  EXPECT_EQ(zoneSplitter->handle(), node->sources().front().handle());
+
+  EXPECT_TRUE(ws.removeObject(zoneSplitter->handle()));
+  EXPECT_TRUE(node->sources().empty());
 }
 
 //TEST_F(IdfFixture, WorkspaceObject_OS_AirLoopHVAC_ZoneSplitter)

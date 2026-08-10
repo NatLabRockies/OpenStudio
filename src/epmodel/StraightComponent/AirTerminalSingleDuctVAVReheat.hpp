@@ -49,8 +49,9 @@ namespace epmodel {
     // - Status: Near Parity.
     // - Canonical Counterpart: openstudio::model::AirTerminalSingleDuctVAVReheat.
     // - Implemented Parity: The canonical `(Model, Schedule, HVACComponent)` constructor establishes the required availability-schedule and
-    //   reheat-coil relationships. `addToNode`, `remove`, and `removeFromLoop` preserve terminal node wiring, AirLoopHVAC demand continuity,
-    //   ZoneHVAC equipment registration, existing ADU references, temporary inlet-node cleanup, and reheat-coil plant branch cleanup.
+    //   reheat-coil relationships, including one shared damper-outlet/coil-inlet Node that remains coherent when the terminal is renamed and
+    //   attached and survives direct-IDF reload. `addToNode`, `remove`, and `removeFromLoop` preserve terminal node wiring, AirLoopHVAC demand
+    //   continuity, ZoneHVAC equipment registration, existing ADU references, temporary inlet-node cleanup, and reheat-coil plant branch cleanup.
     // - Documented Delta: The legacy `(Model)` constructor remains available for incremental object assembly and does not establish a
     //   reheat coil. Canonical OS-only outdoor-air export behavior is not implemented in this epmodel wrapper.
     // - Field/Storage Mapping: Scalars and links map directly to EnergyPlus `AirTerminal:SingleDuct:VAV:Reheat` and `ZoneHVAC:AirDistributionUnit` fields; node links are resolved through epmodel transient Node targets.

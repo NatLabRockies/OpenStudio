@@ -15,7 +15,9 @@
 #include "../HVACComponent/ThermalZone.hpp"
 #include "../HVACComponent/ThermalZone_Impl.hpp"
 #include "../Loop/AirLoopHVAC.hpp"
+#include "../Loop/AirLoopHVAC_Impl.hpp"
 #include "../Loop/PlantLoop.hpp"
+#include "../Loop/PlantLoop_Impl.hpp"
 #include "../Mixer/AirLoopHVACZoneMixer.hpp"
 #include "../ModelObject/ZoneHVACAirDistributionUnit.hpp"
 #include "../ModelObject/ZoneHVACAirDistributionUnit_Impl.hpp"
@@ -24,9 +26,11 @@
 #include "../Splitter/AirLoopHVACZoneSplitter.hpp"
 #include "../StraightComponent/AirTerminalSingleDuctConstantVolumeNoReheat.hpp"
 #include "../StraightComponent/AirTerminalSingleDuctVAVReheat.hpp"
+#include "../StraightComponent/AirTerminalSingleDuctVAVReheat_Impl.hpp"
 #include "../StraightComponent/CoilHeatingElectric.hpp"
 #include "../StraightComponent/FanConstantVolume.hpp"
 #include "../WaterToAirComponent/CoilHeatingWater.hpp"
+#include "../WaterToAirComponent/CoilHeatingWater_Impl.hpp"
 
 #include <utilities/idd/AirTerminal_SingleDuct_VAV_Reheat_FieldEnums.hxx>
 #include <utilities/idd/Coil_Heating_Water_FieldEnums.hxx>
@@ -54,6 +58,111 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctVAVReheat_CanonicalConstructorEstabl
 
   FanConstantVolume invalidCoil(model);
   EXPECT_THROW({ AirTerminalSingleDuctVAVReheat invalidTerminal(model, availability, invalidCoil); }, openstudio::Exception);
+}
+
+TEST_F(EPModelFixture, AirTerminalSingleDuctVAVReheat_CanonicalConstructorRenameThenAddMaintainsReheatAirPath) {
+  Model model;
+  auto availability = model.alwaysOnDiscreteSchedule();
+  PlantLoop hotWaterLoop(model);
+  CoilHeatingWater reheatCoil(model);
+  ASSERT_TRUE(hotWaterLoop.addDemandBranchForComponent(reheatCoil));
+
+  AirTerminalSingleDuctVAVReheat terminal(model, availability, reheatCoil);
+  const auto initialDamperOutletNode =
+    terminal.getModelObjectTarget<Node>(openstudio::AirTerminal_SingleDuct_VAV_ReheatFields::DamperAirOutletNodeName);
+  const auto initialCoilAirInletNode = reheatCoil.getModelObjectTarget<Node>(openstudio::Coil_Heating_WaterFields::AirInletNodeName);
+  ASSERT_TRUE(initialDamperOutletNode);
+  ASSERT_TRUE(initialCoilAirInletNode);
+  EXPECT_EQ(*initialDamperOutletNode, *initialCoilAirInletNode);
+  ASSERT_TRUE(terminal.setName("Renamed VAV Reheat Terminal"));
+
+  AirLoopHVAC airLoop(model);
+  ThermalZone zone(model);
+  ASSERT_TRUE(airLoop.addBranchForZone(zone, terminal));
+  ASSERT_TRUE(terminal.setReheatCoil(reheatCoil));
+
+  const auto damperOutletNode = terminal.getModelObjectTarget<Node>(openstudio::AirTerminal_SingleDuct_VAV_ReheatFields::DamperAirOutletNodeName);
+  const auto coilAirInletNode = reheatCoil.getModelObjectTarget<Node>(openstudio::Coil_Heating_WaterFields::AirInletNodeName);
+  const auto coilAirOutletNode = reheatCoil.getModelObjectTarget<Node>(openstudio::Coil_Heating_WaterFields::AirOutletNodeName);
+  const auto terminalOutletNode = terminal.outletModelObject();
+
+  ASSERT_TRUE(damperOutletNode);
+  ASSERT_TRUE(coilAirInletNode);
+  EXPECT_EQ(*damperOutletNode, *coilAirInletNode);
+  EXPECT_EQ("Renamed VAV Reheat Terminal Damper Outlet", damperOutletNode->nameString());
+
+  ASSERT_TRUE(coilAirOutletNode);
+  ASSERT_TRUE(terminalOutletNode);
+  EXPECT_EQ(terminalOutletNode->cast<Node>(), *coilAirOutletNode);
+}
+
+TEST_F(EPModelFixture, AirTerminalSingleDuctVAVReheat_SurvivesSaveLoadAndRemoval) {
+  const auto idfPath = openstudio::tempDir() / openstudio::toPath("epmodel-vav-reheat-roundtrip.idf");
+
+  Model model;
+  AirLoopHVAC airLoop(model);
+  PlantLoop plantLoop(model);
+  ThermalZone zone(model);
+  ASSERT_TRUE(airLoop.setName("Roundtrip VAV Air Loop"));
+  ASSERT_TRUE(plantLoop.setName("Roundtrip VAV Plant Loop"));
+  ASSERT_TRUE(zone.setName("Roundtrip VAV Zone"));
+
+  auto availability = model.alwaysOnDiscreteSchedule();
+  CoilHeatingWater reheatCoil(model);
+  ASSERT_TRUE(reheatCoil.setName("Roundtrip VAV Reheat Coil"));
+  ASSERT_TRUE(plantLoop.addDemandBranchForComponent(reheatCoil));
+  AirTerminalSingleDuctVAVReheat terminal(model, availability, reheatCoil);
+  ASSERT_TRUE(terminal.setName("Roundtrip VAV Reheat Terminal"));
+  ASSERT_TRUE(airLoop.addBranchForZone(zone, terminal));
+  ASSERT_TRUE(model.save(idfPath, true));
+
+  auto loadedModel = Model::load(idfPath);
+  ASSERT_TRUE(loadedModel);
+  auto loadedAirLoop = loadedModel->getConcreteModelObjectByName<AirLoopHVAC>("Roundtrip VAV Air Loop");
+  auto loadedPlantLoop = loadedModel->getConcreteModelObjectByName<PlantLoop>("Roundtrip VAV Plant Loop");
+  auto loadedZone = loadedModel->getConcreteModelObjectByName<ThermalZone>("Roundtrip VAV Zone");
+  auto loadedTerminal = loadedModel->getConcreteModelObjectByName<AirTerminalSingleDuctVAVReheat>("Roundtrip VAV Reheat Terminal");
+  auto loadedReheatCoil = loadedModel->getConcreteModelObjectByName<CoilHeatingWater>("Roundtrip VAV Reheat Coil");
+  ASSERT_TRUE(loadedAirLoop);
+  ASSERT_TRUE(loadedPlantLoop);
+  ASSERT_TRUE(loadedZone);
+  ASSERT_TRUE(loadedTerminal);
+  ASSERT_TRUE(loadedReheatCoil);
+
+  EXPECT_EQ(loadedReheatCoil->handle(), loadedTerminal->reheatCoil().handle());
+  ASSERT_TRUE(loadedTerminal->airLoopHVAC());
+  EXPECT_EQ(loadedAirLoop->handle(), loadedTerminal->airLoopHVAC()->handle());
+  ASSERT_TRUE(loadedReheatCoil->plantLoop());
+  EXPECT_EQ(loadedPlantLoop->handle(), loadedReheatCoil->plantLoop()->handle());
+  ASSERT_TRUE(loadedZone->airLoopHVACTerminal());
+  EXPECT_EQ(loadedTerminal->handle(), loadedZone->airLoopHVACTerminal()->handle());
+
+  const auto loadedDamperOutletNode =
+    loadedTerminal->getModelObjectTarget<Node>(openstudio::AirTerminal_SingleDuct_VAV_ReheatFields::DamperAirOutletNodeName);
+  const auto loadedCoilAirInletNode = loadedReheatCoil->getModelObjectTarget<Node>(openstudio::Coil_Heating_WaterFields::AirInletNodeName);
+  ASSERT_TRUE(loadedDamperOutletNode);
+  ASSERT_TRUE(loadedCoilAirInletNode);
+  EXPECT_EQ(*loadedDamperOutletNode, *loadedCoilAirInletNode);
+
+  ASSERT_TRUE(loadedTerminal->setName("Reloaded VAV Reheat Terminal"));
+  ASSERT_TRUE(loadedTerminal->setReheatCoil(*loadedReheatCoil));
+  const auto maintainedDamperOutletNode =
+    loadedTerminal->getModelObjectTarget<Node>(openstudio::AirTerminal_SingleDuct_VAV_ReheatFields::DamperAirOutletNodeName);
+  const auto maintainedCoilAirInletNode = loadedReheatCoil->getModelObjectTarget<Node>(openstudio::Coil_Heating_WaterFields::AirInletNodeName);
+  ASSERT_TRUE(maintainedDamperOutletNode);
+  ASSERT_TRUE(maintainedCoilAirInletNode);
+  EXPECT_EQ(*maintainedDamperOutletNode, *maintainedCoilAirInletNode);
+  EXPECT_EQ("Reloaded VAV Reheat Terminal Damper Outlet", maintainedDamperOutletNode->nameString());
+
+  const auto terminalHandle = loadedTerminal->handle();
+  const auto reheatCoilHandle = loadedReheatCoil->handle();
+  EXPECT_FALSE(loadedTerminal->remove().empty());
+  EXPECT_FALSE(loadedModel->getObject(terminalHandle));
+  EXPECT_FALSE(loadedModel->getObject(reheatCoilHandle));
+  EXPECT_FALSE(loadedZone->airLoopHVACTerminal());
+  EXPECT_TRUE(loadedPlantLoop->demandComponents(CoilHeatingWater::iddObjectType()).empty());
+
+  openstudio::filesystem::remove(idfPath);
 }
 
 TEST_F(EPModelFixture, AirTerminalSingleDuctVAVReheat_Remove_DisconnectedDeletesOwnedReheatCoil) {
