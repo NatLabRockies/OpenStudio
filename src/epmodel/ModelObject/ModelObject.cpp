@@ -81,7 +81,7 @@ namespace epmodel {
     static constexpr double kNoUpper = std::numeric_limits<double>::infinity();
 
     const ScheduleTypeSpec* findScheduleTypeSpec(const std::string& className, const std::string& scheduleDisplayName) {
-      static constexpr std::array<ScheduleTypeSpec, 136> specs{{
+      static constexpr std::array<ScheduleTypeSpec, 140> specs{{
         {"AirLoopHVAC", "Availability Manager Scheduled On", false, true, "Availability", 0.0, 1.0},
         {"AirLoopHVACDedicatedOutdoorAirSystem", "Availability Schedule", false, true, "Availability", 0.0, 1.0},
         {"AvailabilityManagerScheduledOn", "Availability Manager Scheduled On", false, true, "Availability", 0.0, 1.0},
@@ -97,6 +97,10 @@ namespace epmodel {
         {"FanOnOff", "Availability", false, true, "Availability", 0.0, 1.0},
         {"FanVariableVolume", "Availability", false, true, "Availability", 0.0, 1.0},
         {"FanSystemModel", "Availability", false, true, "Availability", 0.0, 1.0},
+        {"FanZoneExhaust", "Availability", false, true, "Availability", 0.0, 1.0},
+        {"FanZoneExhaust", "Flow Fraction", true, true, "Dimensionless", 0.0, 1.0},
+        {"FanZoneExhaust", "Minimum Zone Temperature Limit", true, true, "Temperature", kNoLower, kNoUpper},
+        {"FanZoneExhaust", "Balanced Exhaust Fraction", true, true, "Dimensionless", 0.0, 1.0},
         {"ZoneHVACUnitHeater", "Availability", false, true, "Availability", 0.0, 1.0},
         {"ZoneHVACUnitVentilator", "Availability", false, true, "Availability", 0.0, 1.0},
         {"ZoneHVACUnitVentilator", "Supply Air Fan Operating Mode", false, true, "Availability", 0.0, 1.0},
