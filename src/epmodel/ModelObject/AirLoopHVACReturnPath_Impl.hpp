@@ -31,11 +31,10 @@ namespace epmodel {
       //@{
       boost::optional<openstudio::epmodel::AirLoopHVAC> airLoopHVAC() const;
       std::vector<openstudio::epmodel::ModelObject> components() const;
+      bool addComponent(const openstudio::epmodel::ModelObject& component);
+      bool removeComponent(const openstudio::epmodel::ModelObject& component);
       //@}
       void doCanonicalize(LoadContext& context) override;
-
-     private:
-      bool addComponent(const openstudio::epmodel::ModelObject& component);
     };
 
   }  // namespace detail

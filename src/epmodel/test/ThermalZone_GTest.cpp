@@ -360,6 +360,7 @@ TEST_F(EPModelFixture, API_ThermalZone_Thermostat_Relationships) {
   EXPECT_FALSE(zone.thermostat());
   EXPECT_FALSE(zone.thermostatSetpointDualSetpoint());
   EXPECT_FALSE(thermostat.thermalZone());
+  EXPECT_TRUE(model.getObjectsByType(openstudio::IddObjectType::ZoneControl_Thermostat).empty());
 }
 
 TEST_F(EPModelFixture, API_ThermalZone_ZoneControlHumidistat_Relationships) {

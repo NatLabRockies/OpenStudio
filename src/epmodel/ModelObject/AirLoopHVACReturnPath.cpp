@@ -8,6 +8,8 @@
 
 #include "Loop/AirLoopHVAC.hpp"
 #include "Loop/AirLoopHVAC_Impl.hpp"
+#include "Mixer/AirLoopHVACReturnPlenum.hpp"
+#include "Mixer/AirLoopHVACReturnPlenum_Impl.hpp"
 #include "Mixer/AirLoopHVACZoneMixer.hpp"
 #include "Mixer/AirLoopHVACZoneMixer_Impl.hpp"
 #include "Model.hpp"
@@ -45,6 +47,14 @@ namespace epmodel {
 
   std::vector<openstudio::epmodel::ModelObject> AirLoopHVACReturnPath::components() const {
     return getImpl<detail::AirLoopHVACReturnPath_Impl>()->components();
+  }
+
+  bool AirLoopHVACReturnPath::addComponent(const openstudio::epmodel::ModelObject& component) {
+    return getImpl<detail::AirLoopHVACReturnPath_Impl>()->addComponent(component);
+  }
+
+  bool AirLoopHVACReturnPath::removeComponent(const openstudio::epmodel::ModelObject& component) {
+    return getImpl<detail::AirLoopHVACReturnPath_Impl>()->removeComponent(component);
   }
 
 }  // namespace epmodel
@@ -125,15 +135,51 @@ namespace epmodel {
         }
       }
 
-      auto group = returnPath.pushExtensibleGroup();
+      unsigned insertIndex = returnPath.numExtensibleGroups();
+      if (component.optionalCast<openstudio::epmodel::AirLoopHVACReturnPlenum>()) {
+        const auto groups = returnPath.extensibleGroups();
+        for (unsigned i = 0u; i < groups.size(); ++i) {
+          const auto type = groups[i].getString(openstudio::AirLoopHVAC_ReturnPathExtensibleFields::ComponentObjectType).value_or("");
+          if (type == openstudio::epmodel::AirLoopHVACZoneMixer::iddObjectType().valueDescription()) {
+            insertIndex = i;
+            break;
+          }
+        }
+      }
+
+      auto group = returnPath.insertExtensibleGroup(insertIndex);
       auto workspaceGroup = group.optionalCast<openstudio::WorkspaceExtensibleGroup>();
       if (!workspaceGroup) {
+        returnPath.eraseExtensibleGroup(insertIndex);
         return false;
       }
       if (!workspaceGroup->setString(openstudio::AirLoopHVAC_ReturnPathExtensibleFields::ComponentObjectType, component.iddObject().name())) {
+        returnPath.eraseExtensibleGroup(insertIndex);
         return false;
       }
-      return workspaceGroup->setPointer(openstudio::AirLoopHVAC_ReturnPathExtensibleFields::ComponentName, component.handle());
+      if (!workspaceGroup->setPointer(openstudio::AirLoopHVAC_ReturnPathExtensibleFields::ComponentName, component.handle())) {
+        returnPath.eraseExtensibleGroup(insertIndex);
+        return false;
+      }
+      return true;
+    }
+
+    bool AirLoopHVACReturnPath_Impl::removeComponent(const openstudio::epmodel::ModelObject& component) {
+      auto returnPath = getObject<openstudio::epmodel::AirLoopHVACReturnPath>();
+      if (component.model() != returnPath.model()) {
+        return false;
+      }
+
+      const auto groups = returnPath.extensibleGroups();
+      for (unsigned i = 0u; i < groups.size(); ++i) {
+        const auto workspaceGroup = groups[i].optionalCast<openstudio::WorkspaceExtensibleGroup>();
+        const auto target =
+          workspaceGroup ? workspaceGroup->getTarget(openstudio::AirLoopHVAC_ReturnPathExtensibleFields::ComponentName) : boost::none;
+        if (target && (target->handle() == component.handle())) {
+          return !returnPath.eraseExtensibleGroup(i).empty();
+        }
+      }
+      return false;
     }
 
     boost::optional<openstudio::epmodel::Node> AirLoopHVACReturnPath_Impl::returnAirPathOutletNode() const {

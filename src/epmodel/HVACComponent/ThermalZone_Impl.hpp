@@ -107,6 +107,11 @@ namespace epmodel {
       std::vector<openstudio::epmodel::ModelObject> returnAirModelObjects() const;
       openstudio::epmodel::Node zoneAirNode() const;
 
+      bool setReturnPlenum(const openstudio::epmodel::ThermalZone& plenumZone);
+      bool setReturnPlenum(const openstudio::epmodel::ThermalZone& plenumZone, openstudio::epmodel::AirLoopHVAC& airLoop);
+      void removeReturnPlenum();
+      void removeReturnPlenum(openstudio::epmodel::AirLoopHVAC& airLoop);
+
       bool addEquipment(const openstudio::epmodel::ModelObject& equipment);
       bool removeEquipment(const openstudio::epmodel::ModelObject& equipment);
       std::vector<openstudio::epmodel::ModelObject> equipment() const;

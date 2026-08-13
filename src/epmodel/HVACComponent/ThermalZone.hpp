@@ -48,10 +48,10 @@ namespace epmodel {
     // - Status: Near Parity. ThermalZone preserves the main HVAC topology, sizing, equipment, ideal-loads, and zone-control surfaces needed by downstream
     //   air-side and zone-equipment code, while broader daylighting and some thermostat-abstraction parity remain outstanding.
     // - Canonical Counterpart: openstudio::model::ThermalZone.
-    // - Implemented Parity: `addToNode`, scalar zone fields, `useIdealAirLoads`, thermostat convenience, humidistat/contaminant-controller
-    //   relationships, zone equipment list/name helpers, return-air/zone-air helpers, outdoor-air scalars, and daylighting scalars preserve the main
-    //   canonical HVAC-facing zone wrapper behavior that is already implemented in epmodel.
-    // - Documented Delta: Daylighting-control and illuminance-map object conveniences remain deferred.
+    // - Implemented Parity: `addToNode`, shared `setReturnPlenum` and `removeReturnPlenum` topology, scalar zone fields, `useIdealAirLoads`, thermostat convenience,
+    //   humidistat/contaminant-controller relationships, zone equipment list/name helpers, return-air/zone-air helpers, outdoor-air scalars, and
+    //   daylighting scalars preserve the main canonical HVAC-facing zone wrapper behavior that is already implemented in epmodel.
+    // - Documented Delta: Multi-air-loop zone attachment, plus daylighting-control and illuminance-map object conveniences, remain deferred.
     // - Field/Storage Mapping: `addToNode` keeps the EnergyPlus `ZoneHVAC:EquipmentConnections` object aligned with the current demand branch node when the zone is connected to or moved between air-loop branches.
     // - Evidence: `src/model/ThermalZone.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateThermalZone.cpp`, `src/energyplus/ReverseTranslator/ReverseTranslateSizingZone.cpp`, and `src/epmodel/test/IDF_SmallOffice_GTest.cpp` show the canonical and epmodel zone-link behavior being preserved or exercised.
     // - Remaining Parity Work: Close the remaining daylighting and illuminance-map object convenience gaps.
@@ -129,6 +129,11 @@ namespace epmodel {
     OptionalModelObject returnAirModelObject() const;
     std::vector<ModelObject> returnAirModelObjects() const;
     Node zoneAirNode() const;
+
+    bool setReturnPlenum(const ThermalZone& plenumZone);
+    bool setReturnPlenum(const ThermalZone& plenumZone, AirLoopHVAC& airLoop);
+    void removeReturnPlenum();
+    void removeReturnPlenum(AirLoopHVAC& airLoop);
 
     bool addEquipment(const ModelObject& equipment);
     bool removeEquipment(const ModelObject& equipment);

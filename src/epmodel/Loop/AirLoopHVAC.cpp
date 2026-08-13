@@ -29,6 +29,8 @@
 #include "ModelObject/CoilSystemCoolingDX_Impl.hpp"
 #include "Mixer/AirLoopHVACZoneMixer.hpp"
 #include "Mixer/AirLoopHVACZoneMixer_Impl.hpp"
+#include "Mixer/AirLoopHVACReturnPlenum.hpp"
+#include "Mixer/AirLoopHVACReturnPlenum_Impl.hpp"
 #include "Mixer/AirTerminalDualDuctConstantVolume.hpp"
 #include "Mixer/AirTerminalDualDuctVAV.hpp"
 #include "Mixer/AirTerminalDualDuctVAVOutdoorAir.hpp"
@@ -2897,22 +2899,60 @@ namespace epmodel {
           }
         }
 
-        const auto demandMixerBranchCount = mixerInlets.size() - bypassReturnNodes.size();
+        std::set<Handle> returnPlenumOutletHandles;
+        std::size_t returnPlenumBranchCount = 0u;
+        for (const auto& plenum : model().getConcreteModelObjects<AirLoopHVACReturnPlenum>()) {
+          const auto outlet = plenum.outletModelObject();
+          if (!outlet || (std::ranges::find(mixerInlets, *outlet) == mixerInlets.end())) {
+            continue;
+          }
+
+          std::size_t servedInletCount = 0u;
+          for (const auto& inlet : plenum.inletModelObjects()) {
+            if (bypassReturnHandles.contains(inlet.handle())) {
+              continue;
+            }
+            if (auto inletNode = inlet.optionalCast<Node>()) {
+              if (resolveZoneServedByReturnNode(*inletNode)) {
+                ++servedInletCount;
+              }
+            }
+          }
+          if (servedInletCount > 0u) {
+            returnPlenumOutletHandles.insert(outlet->handle());
+            returnPlenumBranchCount += servedInletCount;
+          }
+        }
+
+        std::size_t directDemandBranchCount = 0u;
+        for (const auto& inlet : mixerInlets) {
+          if (!bypassReturnHandles.contains(inlet.handle()) && !returnPlenumOutletHandles.contains(inlet.handle())) {
+            ++directDemandBranchCount;
+          }
+        }
+        const auto demandMixerBranchCount = directDemandBranchCount + returnPlenumBranchCount;
         bool rebuiltDemandBranches = false;
 
         if (zs.outletModelObjects().size() != demandMixerBranchCount) {
           const auto splitterBranches = zs.outletModelObjects().size();
-          while (!zs.outletModelObjects().empty()) {
-            zs.removePortForBranch(static_cast<unsigned>(zs.outletModelObjects().size() - 1u));
+          if (returnPlenumOutletHandles.empty()) {
+            while (!zs.outletModelObjects().empty()) {
+              zs.removePortForBranch(static_cast<unsigned>(zs.outletModelObjects().size() - 1u));
+            }
+            while (!zm.inletModelObjects().empty()) {
+              zm.removePortForBranch(static_cast<unsigned>(zm.inletModelObjects().size() - 1u));
+            }
+            rebuiltDemandBranches = true;
+            detail::addLoadWarning(context, "ZoneSplitter/ZoneMixer branch count mismatch for AirLoopHVAC '" + loopName
+                                              + "' (splitter=" + std::to_string(splitterBranches) + ", effective return branches="
+                                              + std::to_string(demandMixerBranchCount) + ", bypass return=" + std::to_string(bypassReturnNodes.size())
+                                              + "). Cleared branch node ports to rebuild.");
+          } else {
+            detail::addLoadWarning(context, "ZoneSplitter/effective return branch count mismatch for AirLoopHVAC '" + loopName
+                                              + "' (splitter=" + std::to_string(splitterBranches)
+                                              + ", effective return branches=" + std::to_string(demandMixerBranchCount)
+                                              + "). Preserved the return-plenum topology for explicit repair.");
           }
-          while (!zm.inletModelObjects().empty()) {
-            zm.removePortForBranch(static_cast<unsigned>(zm.inletModelObjects().size() - 1u));
-          }
-          rebuiltDemandBranches = true;
-          detail::addLoadWarning(context,
-                                 "ZoneSplitter/ZoneMixer branch count mismatch for AirLoopHVAC '" + loopName
-                                   + "' (splitter=" + std::to_string(splitterBranches) + ", demand mixer=" + std::to_string(demandMixerBranchCount)
-                                   + ", bypass return=" + std::to_string(bypassReturnNodes.size()) + "). Cleared branch node ports to rebuild.");
         }
 
         if (zs.outletModelObjects().empty()) {
@@ -4729,7 +4769,7 @@ namespace epmodel {
       const auto zoneSplitter = this->zoneSplitter();
       const auto zoneMixer = this->zoneMixer();
 
-      auto buildDemandBranchLeg = [&](const ModelObject& splitterOutletObject, const ModelObject& mixerInletObject) {
+      auto buildDemandBranchLeg = [&](const ModelObject& splitterOutletObject, const ModelObject& branchReturnObject) {
         // Construct one demand leg at a time from splitter outlet to mixer
         // inlet, explicitly stitching terminal/zone objects where they can be
         // resolved. This keeps leg construction local and debuggable.
@@ -4773,7 +4813,7 @@ namespace epmodel {
         bool zoneAdded = false;
         boost::optional<ModelObject> terminal;
         auto splitterOutletNode = splitterOutletObject.optionalCast<Node>();
-        auto mixerInletNode = mixerInletObject.optionalCast<Node>();
+        auto mixerInletNode = branchReturnObject.optionalCast<Node>();
         if (splitterOutletNode && mixerInletNode) {
           if (auto branchStraightComponents = resolveDemandBranchChain(*splitterOutletNode, *mixerInletNode)) {
             for (auto it = branchStraightComponents->rbegin(); it != branchStraightComponents->rend(); ++it) {
@@ -4806,17 +4846,17 @@ namespace epmodel {
         // Fallback for incomplete terminal linkage: still anchor zone via
         // mixer-side node so demand graph remains connected.
         if (!zoneAdded) {
-          if (auto mixerInletNode = mixerInletObject.optionalCast<Node>()) {
-            if (auto zone = resolveZoneServedByReturnNode(*mixerInletNode)) {
+          if (auto branchReturnNode = branchReturnObject.optionalCast<Node>()) {
+            if (auto zone = resolveZoneServedByReturnNode(*branchReturnNode)) {
               appendDistinct(zone.get().cast<ModelObject>());
               appendZoneAirTerminals(*zone);
             }
           }
         }
 
-        // Anchor each leg at mixer inlet; we intentionally do not model full
-        // intra-zone graph details in this loop-level traversal API.
-        appendDistinct(mixerInletObject);
+        // The plenum inlet or direct mixer inlet is the branch-local endpoint.
+        // Shared downstream objects are appended after every branch.
+        appendDistinct(branchReturnObject);
 
         return chain;
       };
@@ -4828,13 +4868,106 @@ namespace epmodel {
 
       const auto splitterOutlets = zoneSplitter.outletModelObjects();
       const auto mixerInlets = zoneMixer.inletModelObjects();
-      // Canonical demand topology keeps splitter outlets and mixer inlets in
-      // lockstep. Keep traversal resilient and bounded by min().
-      const auto branchCount = std::min(splitterOutlets.size(), mixerInlets.size());
 
-      for (unsigned i = 0; i < branchCount; ++i) {
-        auto chain = buildDemandBranchLeg(splitterOutlets[i], mixerInlets[i]);
-        pathObjects.insert(pathObjects.end(), chain.begin(), chain.end());
+      std::set<Handle> bypassReturnHandles;
+      for (const auto& unitary : model().getConcreteModelObjects<AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass>()) {
+        if (const auto bypassReturnNode = unitary.getModelObjectTarget<Node>(unitary.plenumorMixerAirPort())) {
+          bypassReturnHandles.insert(bypassReturnNode->handle());
+        }
+      }
+
+      struct DemandReturnEndpoint
+      {
+        ModelObject mixerInlet;
+        ModelObject branchReturn;
+        boost::optional<AirLoopHVACReturnPlenum> returnPlenum;
+      };
+      std::vector<DemandReturnEndpoint> returnEndpoints;
+      for (const auto& mixerInlet : mixerInlets) {
+        if (bypassReturnHandles.contains(mixerInlet.handle())) {
+          continue;
+        }
+
+        boost::optional<AirLoopHVACReturnPlenum> attachedPlenum;
+        for (const auto& candidate : model().getConcreteModelObjects<AirLoopHVACReturnPlenum>()) {
+          const auto outlet = candidate.outletModelObject();
+          if (outlet && (*outlet == mixerInlet)) {
+            attachedPlenum = candidate;
+            break;
+          }
+        }
+
+        if (attachedPlenum) {
+          for (const auto& plenumInlet : attachedPlenum->inletModelObjects()) {
+            if (bypassReturnHandles.contains(plenumInlet.handle())) {
+              continue;
+            }
+            auto inletNode = plenumInlet.optionalCast<Node>();
+            if (inletNode && resolveZoneServedByReturnNode(*inletNode)) {
+              returnEndpoints.push_back(DemandReturnEndpoint{mixerInlet, plenumInlet, attachedPlenum});
+            }
+          }
+        } else {
+          returnEndpoints.push_back(DemandReturnEndpoint{mixerInlet, mixerInlet, boost::none});
+        }
+      }
+
+      std::vector<boost::optional<DemandReturnEndpoint>> endpointByBranch(splitterOutlets.size());
+      std::vector<bool> endpointUsed(returnEndpoints.size(), false);
+      for (unsigned endpointIndex = 0u; endpointIndex < returnEndpoints.size(); ++endpointIndex) {
+        const auto returnNode = returnEndpoints[endpointIndex].branchReturn.optionalCast<Node>();
+        const auto zone = returnNode ? resolveZoneServedByReturnNode(*returnNode) : boost::none;
+        if (!zone) {
+          continue;
+        }
+        const auto connections = zone->getImpl<detail::ThermalZone_Impl>()->zoneHVACEquipmentConnections();
+        if (!connections) {
+          continue;
+        }
+        for (const auto& zoneInletNode : connections->zoneAirInletNodes()) {
+          const auto branchIndex = demandBranchIndexForZoneInletNode(zoneInletNode);
+          if (branchIndex && (*branchIndex < endpointByBranch.size()) && !endpointByBranch[*branchIndex]) {
+            endpointByBranch[*branchIndex] = returnEndpoints[endpointIndex];
+            endpointUsed[endpointIndex] = true;
+            break;
+          }
+        }
+      }
+
+      unsigned nextUnusedEndpoint = 0u;
+      for (unsigned branchIndex = 0u; branchIndex < endpointByBranch.size(); ++branchIndex) {
+        if (!endpointByBranch[branchIndex]) {
+          while ((nextUnusedEndpoint < endpointUsed.size()) && endpointUsed[nextUnusedEndpoint]) {
+            ++nextUnusedEndpoint;
+          }
+          if (nextUnusedEndpoint < returnEndpoints.size()) {
+            endpointByBranch[branchIndex] = returnEndpoints[nextUnusedEndpoint];
+            endpointUsed[nextUnusedEndpoint] = true;
+          }
+        }
+        if (!endpointByBranch[branchIndex]) {
+          continue;
+        }
+
+        const auto& endpoint = *endpointByBranch[branchIndex];
+        auto chain = buildDemandBranchLeg(splitterOutlets[branchIndex], endpoint.branchReturn);
+        for (const auto& object : chain) {
+          if (std::ranges::find(pathObjects, object) == pathObjects.end()) {
+            pathObjects.push_back(object);
+          }
+        }
+      }
+
+      // A linear API view cannot represent the converging demand graph
+      // directly. Put shared plenums and their mixer inlet nodes after all
+      // branch-local objects so every served zone precedes its return plenum.
+      for (const auto& endpoint : returnEndpoints) {
+        if (endpoint.returnPlenum && (std::ranges::find(pathObjects, endpoint.returnPlenum->cast<ModelObject>()) == pathObjects.end())) {
+          pathObjects.push_back(endpoint.returnPlenum->cast<ModelObject>());
+        }
+        if (std::ranges::find(pathObjects, endpoint.mixerInlet) == pathObjects.end()) {
+          pathObjects.push_back(endpoint.mixerInlet);
+        }
       }
 
       pathObjects.emplace_back(zoneMixer);

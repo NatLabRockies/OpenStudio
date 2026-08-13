@@ -54,13 +54,13 @@ namespace epmodel {
     //   supply-air-fan operating mode schedule, heating coil, cooling coil, and the scalar airflow/control fields preserve the main
     //   canonical wrapper contract. The relationship constructor and child traversal now match the canonical wrapper's owned-component slice.
     //   The owned fan/cooling/heating chain shares a stable parent-maintained air path, with direct access to the meaningful outlet node
-    //   roles on the compound. The optional bypass return can be connected to the same loop's AirLoopHVAC:ZoneMixer.
+    //   roles on the compound. The optional bypass return can be connected to the same loop's AirLoopHVAC:ZoneMixer or AirLoopHVAC:ReturnPlenum.
     // - Documented Delta: `fanOutletNode()`, `coolingCoilOutletNode()`, and `heatingCoilOutletNode()` are additive epmodel conveniences
-    //   for the owned serial air path. AirLoopHVAC:ReturnPlenum remains unsupported until that EPModel class implements the Mixer contract.
+    //   for the owned serial air path.
     // - Field/Storage Mapping: Scalar values map directly to EnergyPlus unitary-system flow and control fields, while schedule, fan/coil,
     //   and internal-node relationships are explicit parent-owned object links in epmodel.
     // - Evidence: `src/model/AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass.hpp`, `src/model/AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirLoopHVACUnitaryHeatCoolVAVChangeoverBypass.cpp`, and `src/epmodel/test/AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_GTest.cpp`.
-    // - Remaining Parity Work: Extend setPlenumorMixer to AirLoopHVAC:ReturnPlenum when that class has equivalent mixer topology.
+    // - Remaining Parity Work: Complete the broader return-plenum zone-assignment convenience surface.
     boost::optional<Schedule> availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);
     void resetAvailabilitySchedule();

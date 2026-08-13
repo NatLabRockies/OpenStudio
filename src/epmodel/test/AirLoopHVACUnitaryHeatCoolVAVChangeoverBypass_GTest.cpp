@@ -8,6 +8,9 @@
 #include "EPModelFixture.hpp"
 #include "../Loop/AirLoopHVAC.hpp"
 #include "../Loop/PlantLoop.hpp"
+#include "../HVACComponent/ThermalZone.hpp"
+#include "../Mixer/AirLoopHVACReturnPlenum.hpp"
+#include "../Mixer/AirLoopHVACReturnPlenum_Impl.hpp"
 #include "../Mixer/AirLoopHVACZoneMixer.hpp"
 #include "../Mixer/AirLoopHVACZoneMixer_Impl.hpp"
 #include "../ModelObject/OutdoorAirMixer.hpp"
@@ -251,6 +254,43 @@ TEST_F(EPModelFixture, AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_ConnectsByp
   EXPECT_FALSE(unitary.getModelObjectTarget<Node>(unitary.plenumorMixerAirPort()));
   EXPECT_FALSE(unitary.plenumorMixer());
   EXPECT_EQ(originalInletCount, zoneMixer.inletModelObjects().size());
+}
+
+TEST_F(EPModelFixture, AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_ConnectsBypassReturnToSameLoopReturnPlenum) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  ThermalZone plenumZone(model);
+  AirLoopHVACReturnPlenum returnPlenum(model);
+  AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass unitary(model);
+
+  auto supplyOutletNode = airLoop.supplyOutletNode();
+  ASSERT_TRUE(unitary.addToNode(supplyOutletNode));
+  ASSERT_TRUE(returnPlenum.setThermalZone(plenumZone));
+
+  auto zoneMixer = airLoop.zoneMixer();
+  const auto originalMixerInlets = zoneMixer.inletModelObjects();
+  ASSERT_EQ(1u, originalMixerInlets.size());
+  Node plenumOutlet(model);
+  ASSERT_TRUE(returnPlenum.setInletModelObject(0u, originalMixerInlets[0]));
+  ASSERT_TRUE(returnPlenum.setOutletModelObject(plenumOutlet));
+  ASSERT_TRUE(zoneMixer.setInletModelObject(0u, plenumOutlet));
+
+  ASSERT_TRUE(unitary.setPlenumorMixer(returnPlenum));
+  ASSERT_TRUE(unitary.plenumorMixer());
+  EXPECT_EQ(returnPlenum, unitary.plenumorMixer()->cast<AirLoopHVACReturnPlenum>());
+  ASSERT_EQ(2u, returnPlenum.inletModelObjects().size());
+  EXPECT_EQ(unitary.plenumorMixerNode(), returnPlenum.inletModelObjects().back().cast<Node>());
+  EXPECT_EQ(1u, zoneMixer.inletModelObjects().size());
+
+  auto report = model.canonicalize();
+  EXPECT_EQ(0u, report.errorCount);
+  ASSERT_TRUE(unitary.plenumorMixer());
+  EXPECT_EQ(returnPlenum, unitary.plenumorMixer()->cast<AirLoopHVACReturnPlenum>());
+
+  unitary.resetPlenumorMixer();
+  EXPECT_FALSE(unitary.plenumorMixer());
+  ASSERT_EQ(1u, returnPlenum.inletModelObjects().size());
+  EXPECT_EQ(originalMixerInlets[0], returnPlenum.inletModelObjects()[0]);
 }
 
 TEST_F(EPModelFixture, AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_TopologyAndInternalNodes) {

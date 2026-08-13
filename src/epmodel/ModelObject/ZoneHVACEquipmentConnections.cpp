@@ -109,13 +109,19 @@ namespace epmodel {
           }
         }
 
-        if (nodes.empty()) {
-          return connections.setPointer(field, Handle());
-        }
-
         boost::optional<openstudio::epmodel::NodeList> existingNodeList;
         if (auto target = connections.getTarget(field)) {
           existingNodeList = target->optionalCast<openstudio::epmodel::NodeList>();
+        }
+
+        if (nodes.empty()) {
+          if (!connections.setPointer(field, Handle())) {
+            return false;
+          }
+          if (existingNodeList && existingNodeList->sources().empty()) {
+            existingNodeList->remove();
+          }
+          return true;
         }
 
         auto nodeList = existingNodeList ? *existingNodeList : openstudio::epmodel::NodeList(connections.model());

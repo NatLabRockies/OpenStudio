@@ -44,6 +44,8 @@ namespace epmodel {
     // - TODO(parity): Add typed relationship APIs incrementally if needed beyond current behavior.
     boost::optional<openstudio::epmodel::AirLoopHVAC> airLoopHVAC() const;
     std::vector<openstudio::epmodel::ModelObject> components() const;
+    bool addComponent(const openstudio::epmodel::ModelObject& component);
+    bool removeComponent(const openstudio::epmodel::ModelObject& component);
 
    protected:
     using ImplType = detail::AirLoopHVACReturnPath_Impl;

@@ -7,7 +7,7 @@
 #define EPMODEL_AIRLOOPHVACRETURNPLENUM_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "Mixer.hpp"
 
 #include <utilities/idd/IddEnums.hxx>
 
@@ -17,12 +17,14 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class Node;
+  class ThermalZone;
 
   namespace detail {
     class AirLoopHVACReturnPlenum_Impl;
   }
 
-  class EPMODEL_API AirLoopHVACReturnPlenum : public ModelObject
+  class EPMODEL_API AirLoopHVACReturnPlenum : public Mixer
   {
    public:
     explicit AirLoopHVACReturnPlenum(const Model& model);
@@ -36,13 +38,26 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     // Schema Alignment Notes:
-    // - Status: Partial Parity. The return-plenum topology surface is present, but the canonical wrapper exposes additional zone-attachment convenience and airflow-network behavior.
+    // - Status: Near Parity. The return-plenum mixer, plenum-zone relationships, and zone attachment/removal topology are present; induced-air behavior remains incomplete.
     // - Canonical Counterpart: openstudio::model::AirLoopHVACReturnPlenum.
-    // - Implemented Parity: `thermalZone`, `setThermalZone`, `resetThermalZone`, port access, and branch insertion preserve the main canonical return-plenum contract.
-    // - Documented Delta: epmodel keeps this object as topology-focused storage and does not yet expose the full AirflowNetwork convenience surface present in the canonical wrapper.
-    // - Field/Storage Mapping: The plenum zone relationship is maintained through EnergyPlus-backed node and branch topology rather than through a separate scalar field.
-    // - Evidence: `src/model/AirLoopHVACReturnPlenum.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirLoopHVACReturnPlenum.cpp`, and `src/epmodel/test/AirLoopHVACReturnPlenum_GTest.cpp` cover the same zone-plenum behavior.
-    // - Remaining Parity Work: Add any remaining model-side convenience APIs only if the epmodel topology layer needs them explicitly.
+    // - Implemented Parity: `thermalZone`, `setThermalZone`, `resetThermalZone`, `addToNode`, shared `ThermalZone::setReturnPlenum` and `removeReturnPlenum` topology, outlet/inlet ports, and Mixer branch mutation map directly to the EnergyPlus return-plenum object.
+    // - Documented Delta: addBranchForZone, induced-air outlets, and the AirflowNetwork convenience surface remain deferred.
+    // - Field/Storage Mapping: The plenum zone, zone node, outlet node, and extensible inlet nodes are explicit EnergyPlus-backed relationships.
+    // - Evidence: `src/model/AirLoopHVACReturnPlenum.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirLoopHVACReturnPlenum.cpp`, and `src/epmodel/test/AirLoopHVACReturnPlenum_GTest.cpp`.
+    // - Remaining Parity Work: Add induced-air and AirflowNetwork conveniences when their adjacent topology is available.
+    boost::optional<ThermalZone> thermalZone() const;
+    bool setThermalZone(const ThermalZone& thermalZone);
+    void resetThermalZone();
+
+    bool addToNode(Node& node);
+
+    unsigned outletPort() const override;
+    unsigned inletPort(unsigned branchIndex) const override;
+    unsigned nextInletPort() const override;
+    std::vector<ModelObject> inletModelObjects() const override;
+    unsigned nextBranchIndex() const override;
+    void removePortForBranch(unsigned branchIndex) override;
+    bool setInletModelObject(unsigned branchIndex, const ModelObject& modelObject) override;
 
    protected:
     using ImplType = detail::AirLoopHVACReturnPlenum_Impl;

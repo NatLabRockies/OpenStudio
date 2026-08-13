@@ -8,6 +8,8 @@
 
 #include "HVACComponent.hpp"
 #include "Loop/AirLoopHVAC.hpp"
+#include "Mixer/AirLoopHVACReturnPlenum.hpp"
+#include "Mixer/AirLoopHVACReturnPlenum_Impl.hpp"
 #include "Mixer/AirLoopHVACZoneMixer.hpp"
 #include "Mixer/AirLoopHVACZoneMixer_Impl.hpp"
 #include "Mixer/Mixer.hpp"
@@ -783,6 +785,12 @@ namespace epmodel {
         return boost::none;
       }
 
+      for (const auto& returnPlenum : model().getConcreteModelObjects<AirLoopHVACReturnPlenum>()) {
+        const auto inlets = returnPlenum.inletModelObjects();
+        if (std::ranges::find(inlets, node->cast<ModelObject>()) != inlets.end()) {
+          return returnPlenum.cast<Mixer>();
+        }
+      }
       for (const auto& zoneMixer : model().getConcreteModelObjects<AirLoopHVACZoneMixer>()) {
         const auto inlets = zoneMixer.inletModelObjects();
         if (std::ranges::find(inlets, node->cast<ModelObject>()) != inlets.end()) {
@@ -794,20 +802,36 @@ namespace epmodel {
 
     bool AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_Impl::setPlenumorMixer(const Mixer& returnPathComponent) {
       auto zoneMixer = returnPathComponent.optionalCast<AirLoopHVACZoneMixer>();
+      auto returnPlenum = returnPathComponent.optionalCast<AirLoopHVACReturnPlenum>();
       auto thisLoop = getObject<AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass>().airLoopHVAC();
-      auto mixerLoop = zoneMixer ? zoneMixer->airLoopHVAC() : boost::none;
-      if (!(zoneMixer && thisLoop && mixerLoop && (*thisLoop == *mixerLoop))) {
+      boost::optional<AirLoopHVAC> mixerLoop;
+      if (zoneMixer) {
+        mixerLoop = zoneMixer->airLoopHVAC();
+      } else if (returnPlenum) {
+        const auto plenumOutlet = returnPlenum->outletModelObject();
+        if (plenumOutlet) {
+          for (const auto& candidate : model().getConcreteModelObjects<AirLoopHVACZoneMixer>()) {
+            const auto inlets = candidate.inletModelObjects();
+            if (std::ranges::find(inlets, *plenumOutlet) != inlets.end()) {
+              mixerLoop = candidate.airLoopHVAC();
+              break;
+            }
+          }
+        }
+      }
+      if (!(thisLoop && mixerLoop && (*thisLoop == *mixerLoop) && (zoneMixer || returnPlenum))) {
         return false;
       }
 
       resetPlenumorMixer();
       auto node = plenumorMixerNode();
-      const auto branchIndex = zoneMixer->nextBranchIndex();
-      if (!zoneMixer->setInletModelObject(branchIndex, node)) {
+      auto mixer = returnPathComponent;
+      const auto branchIndex = mixer.nextBranchIndex();
+      if (!mixer.setInletModelObject(branchIndex, node)) {
         return false;
       }
       if (!setPointer(plenumorMixerAirPort(), node.handle(), false)) {
-        zoneMixer->removePortForBranch(branchIndex);
+        mixer.removePortForBranch(branchIndex);
         return false;
       }
       return true;
@@ -816,6 +840,15 @@ namespace epmodel {
     void AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_Impl::resetPlenumorMixer() {
       auto node = resolvedNodeTarget(plenumorMixerAirPort());
       if (node) {
+        for (auto returnPlenum : model().getConcreteModelObjects<AirLoopHVACReturnPlenum>()) {
+          const auto inlets = returnPlenum.inletModelObjects();
+          const auto inlet = std::ranges::find(inlets, node->cast<ModelObject>());
+          if (inlet != inlets.end()) {
+            returnPlenum.removePortForBranch(static_cast<unsigned>(std::distance(inlets.begin(), inlet)));
+            setPointer(plenumorMixerAirPort(), Handle(), false);
+            return;
+          }
+        }
         for (auto zoneMixer : model().getConcreteModelObjects<AirLoopHVACZoneMixer>()) {
           const auto inlets = zoneMixer.inletModelObjects();
           const auto inlet = std::ranges::find(inlets, node->cast<ModelObject>());

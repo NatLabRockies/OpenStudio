@@ -6,18 +6,32 @@
 #ifndef EPMODEL_AIRLOOPHVACRETURNPLENUM_IMPL_HPP
 #define EPMODEL_AIRLOOPHVACRETURNPLENUM_IMPL_HPP
 
-#include "ModelObject_Impl.hpp"
+#include "Mixer/Mixer_Impl.hpp"
 
 namespace openstudio {
 namespace epmodel {
 
+  class ModelObject;
+  class Node;
+  class ThermalZone;
+
   namespace detail {
 
-    class EPMODEL_API AirLoopHVACReturnPlenum_Impl : public ModelObject_Impl
+    class EPMODEL_API AirLoopHVACReturnPlenum_Impl : public Mixer_Impl
     {
      public:
-      using ModelObject_Impl::ModelObject_Impl;
+      using Mixer_Impl::Mixer_Impl;
       virtual ~AirLoopHVACReturnPlenum_Impl() override = default;
+
+      boost::optional<openstudio::epmodel::ThermalZone> thermalZone() const;
+      bool setThermalZone(const openstudio::epmodel::ThermalZone& thermalZone);
+      void resetThermalZone();
+      bool addToNode(openstudio::epmodel::Node& node) override;
+
+      unsigned outletPort() const override;
+      unsigned inletPort(unsigned branchIndex) const override;
+      void removePortForBranch(unsigned branchIndex) override;
+      bool setInletModelObject(unsigned branchIndex, const openstudio::epmodel::ModelObject& modelObject) override;
     };
 
   }  // namespace detail
