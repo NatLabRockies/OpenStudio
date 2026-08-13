@@ -2496,6 +2496,7 @@ set(${target_name}_src
   StraightComponent/SingleDuctTerminalInsertionPlan.cpp
   StraightComponent/SingleDuctTerminalRemovalPlan.hpp
   StraightComponent/SingleDuctTerminalRemovalPlan.cpp
+  StraightComponent/CompoundTerminalTopologyInspection.hpp
   StraightComponent/SolarCollectorFlatPlatePhotovoltaicThermal.hpp
   StraightComponent/SolarCollectorFlatPlatePhotovoltaicThermal_Impl.hpp
   StraightComponent/SolarCollectorFlatPlatePhotovoltaicThermal.cpp

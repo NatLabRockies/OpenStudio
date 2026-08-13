@@ -32,6 +32,7 @@ namespace epmodel {
   class Schedule;
   class SizingPlant;
   class Splitter;
+  class WaterToAirComponent;
 
   namespace detail {
     struct LoadContext;
@@ -155,25 +156,25 @@ namespace epmodel {
       void doCanonicalize(LoadContext& context) override;
 
      private:
-      // Carries a fully validated CoilHeatingWater demand-branch teardown
-      // across a compound terminal operation. It is private implementation
-      // machinery, not part of the PlantLoop wrapper API.
-      class CoilHeatingWaterDemandBranchRemovalPlan
+      // Carries a fully validated water-coil demand-branch teardown across a
+      // compound terminal operation. It is private implementation machinery,
+      // not part of the PlantLoop wrapper API.
+      class WaterCoilDemandBranchRemovalPlan
       {
        public:
-        ~CoilHeatingWaterDemandBranchRemovalPlan();
+        ~WaterCoilDemandBranchRemovalPlan();
 
-        CoilHeatingWaterDemandBranchRemovalPlan(const CoilHeatingWaterDemandBranchRemovalPlan&) = delete;
-        CoilHeatingWaterDemandBranchRemovalPlan& operator=(const CoilHeatingWaterDemandBranchRemovalPlan&) = delete;
-        CoilHeatingWaterDemandBranchRemovalPlan(CoilHeatingWaterDemandBranchRemovalPlan&&) = delete;
-        CoilHeatingWaterDemandBranchRemovalPlan& operator=(CoilHeatingWaterDemandBranchRemovalPlan&&) = delete;
+        WaterCoilDemandBranchRemovalPlan(const WaterCoilDemandBranchRemovalPlan&) = delete;
+        WaterCoilDemandBranchRemovalPlan& operator=(const WaterCoilDemandBranchRemovalPlan&) = delete;
+        WaterCoilDemandBranchRemovalPlan(WaterCoilDemandBranchRemovalPlan&&) = delete;
+        WaterCoilDemandBranchRemovalPlan& operator=(WaterCoilDemandBranchRemovalPlan&&) = delete;
 
         void commit();
 
        private:
         struct State;
 
-        explicit CoilHeatingWaterDemandBranchRemovalPlan(std::unique_ptr<State> state);
+        explicit WaterCoilDemandBranchRemovalPlan(std::unique_ptr<State> state);
 
         std::unique_ptr<State> m_state;
         bool m_committed = false;
@@ -181,8 +182,10 @@ namespace epmodel {
         friend class PlantLoop_Impl;
       };
 
-      std::unique_ptr<CoilHeatingWaterDemandBranchRemovalPlan>
-        prepareCoilHeatingWaterDemandBranchRemoval(const openstudio::epmodel::CoilHeatingWater& coil);
+      using CoilHeatingWaterDemandBranchRemovalPlan = WaterCoilDemandBranchRemovalPlan;
+
+      std::unique_ptr<WaterCoilDemandBranchRemovalPlan> prepareWaterCoilDemandBranchRemoval(const openstudio::epmodel::WaterToAirComponent& coil);
+      std::unique_ptr<WaterCoilDemandBranchRemovalPlan> prepareCoilHeatingWaterDemandBranchRemoval(const openstudio::epmodel::CoilHeatingWater& coil);
 
       openstudio::epmodel::PlantEquipmentOperationSchemes plantEquipmentOperationSchemes() const;
       bool syncConnectorPorts(openstudio::epmodel::ConnectorSplitter& splitter, openstudio::epmodel::ConnectorMixer& mixer,
@@ -197,6 +200,7 @@ namespace epmodel {
       friend class AirTerminalSingleDuctVAVHeatAndCoolReheat_Impl;
       friend class AirTerminalSingleDuctSeriesPIUReheat_Impl;
       friend class AirTerminalSingleDuctParallelPIUReheat_Impl;
+      friend class AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl;
     };
 
   }  // namespace detail

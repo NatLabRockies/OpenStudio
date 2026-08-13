@@ -5173,6 +5173,7 @@ namespace epmodel {
         });
         const auto terminalType = airTerminal->iddObject().type();
         const bool hasFamilyOwnedPlantPreflight = terminalType == AirTerminalSingleDuctConstantVolumeReheat::iddObjectType()
+                                                  || terminalType == AirTerminalSingleDuctConstantVolumeFourPipeInduction::iddObjectType()
                                                   || terminalType == AirTerminalSingleDuctVAVHeatAndCoolReheat::iddObjectType()
                                                   || terminalType == AirTerminalSingleDuctParallelPIUReheat::iddObjectType()
                                                   || terminalType == AirTerminalSingleDuctSeriesPIUReheat::iddObjectType();

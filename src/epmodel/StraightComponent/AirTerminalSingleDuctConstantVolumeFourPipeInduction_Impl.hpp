@@ -34,6 +34,7 @@ namespace epmodel {
       bool addToNode(Node& node) override;
       bool addToNode(Node& node, AddToNodeFailureStage failureStage);
       std::vector<ModelObject> children() const override;
+      bool isRemovable() const override;
       std::vector<openstudio::IdfObject> remove() override;
       bool removeFromLoop() override;
       boost::optional<ZoneHVACAirDistributionUnit> zoneHVACAirDistributionUnit() const;

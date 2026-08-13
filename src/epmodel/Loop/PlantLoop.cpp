@@ -640,10 +640,10 @@ namespace epmodel {
 
     }  // namespace
 
-    struct PlantLoop_Impl::CoilHeatingWaterDemandBranchRemovalPlan::State
+    struct PlantLoop_Impl::WaterCoilDemandBranchRemovalPlan::State
     {
       PlantLoop plantLoop;
-      CoilHeatingWater coil;
+      WaterToAirComponent coil;
       Branch branch;
       BranchList branchList;
       ConnectorSplitter splitter;
@@ -651,14 +651,13 @@ namespace epmodel {
       bool keepAsDefaultBranch;
     };
 
-    PlantLoop_Impl::CoilHeatingWaterDemandBranchRemovalPlan::CoilHeatingWaterDemandBranchRemovalPlan(std::unique_ptr<State> state)
-      : m_state(std::move(state)) {
+    PlantLoop_Impl::WaterCoilDemandBranchRemovalPlan::WaterCoilDemandBranchRemovalPlan(std::unique_ptr<State> state) : m_state(std::move(state)) {
       OS_ASSERT(m_state);
     }
 
-    PlantLoop_Impl::CoilHeatingWaterDemandBranchRemovalPlan::~CoilHeatingWaterDemandBranchRemovalPlan() = default;
+    PlantLoop_Impl::WaterCoilDemandBranchRemovalPlan::~WaterCoilDemandBranchRemovalPlan() = default;
 
-    void PlantLoop_Impl::CoilHeatingWaterDemandBranchRemovalPlan::commit() {
+    void PlantLoop_Impl::WaterCoilDemandBranchRemovalPlan::commit() {
       OS_ASSERT(m_state);
       OS_ASSERT(!m_committed);
 
@@ -2264,9 +2263,13 @@ namespace epmodel {
       return true;
     }
 
-    std::unique_ptr<PlantLoop_Impl::CoilHeatingWaterDemandBranchRemovalPlan>
-      PlantLoop_Impl::prepareCoilHeatingWaterDemandBranchRemoval(const CoilHeatingWater& coil) {
+    std::unique_ptr<PlantLoop_Impl::WaterCoilDemandBranchRemovalPlan>
+      PlantLoop_Impl::prepareWaterCoilDemandBranchRemoval(const WaterToAirComponent& coil) {
       if (coil.model() != model()) {
+        return nullptr;
+      }
+      const auto coilType = coil.iddObject().type();
+      if (coilType != CoilHeatingWater::iddObjectType() && coilType != CoilCoolingWater::iddObjectType()) {
         return nullptr;
       }
 
@@ -2357,9 +2360,14 @@ namespace epmodel {
         return nullptr;
       }
 
-      auto state = std::make_unique<CoilHeatingWaterDemandBranchRemovalPlan::State>(
-        CoilHeatingWaterDemandBranchRemovalPlan::State{thisLoop, coil, *targetBranch, branchList, splitter, mixer, equipmentBranches.size() == 1u});
-      return std::unique_ptr<CoilHeatingWaterDemandBranchRemovalPlan>(new CoilHeatingWaterDemandBranchRemovalPlan(std::move(state)));
+      auto state = std::make_unique<WaterCoilDemandBranchRemovalPlan::State>(
+        WaterCoilDemandBranchRemovalPlan::State{thisLoop, coil, *targetBranch, branchList, splitter, mixer, equipmentBranches.size() == 1u});
+      return std::unique_ptr<WaterCoilDemandBranchRemovalPlan>(new WaterCoilDemandBranchRemovalPlan(std::move(state)));
+    }
+
+    std::unique_ptr<PlantLoop_Impl::WaterCoilDemandBranchRemovalPlan>
+      PlantLoop_Impl::prepareCoilHeatingWaterDemandBranchRemoval(const CoilHeatingWater& coil) {
+      return prepareWaterCoilDemandBranchRemoval(coil);
     }
 
     bool PlantLoop_Impl::removeDemandBranchWithComponent(HVACComponent hvacComponent) {

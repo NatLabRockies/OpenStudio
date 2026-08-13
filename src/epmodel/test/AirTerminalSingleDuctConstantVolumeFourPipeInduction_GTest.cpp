@@ -7,11 +7,16 @@
 #include "../HVACComponent/ThermalZone.hpp"
 #include "../HVACComponent/ThermalZone_Impl.hpp"
 #include "../Loop/AirLoopHVAC.hpp"
+#include "../Loop/AirLoopHVAC_Impl.hpp"
 #include "../Loop/PlantLoop.hpp"
+#include "../Mixer/AirLoopHVACReturnPlenum.hpp"
+#include "../Mixer/AirLoopHVACReturnPlenum_Impl.hpp"
 #include "../Mixer/AirLoopHVACZoneMixer.hpp"
 #include "../Mixer/AirLoopHVACZoneMixer_Impl.hpp"
 #include "../ModelObject/ZoneHVACAirDistributionUnit.hpp"
 #include "../Splitter/AirLoopHVACZoneSplitter.hpp"
+#include "../Splitter/AirLoopHVACSupplyPlenum.hpp"
+#include "../Splitter/AirLoopHVACSupplyPlenum_Impl.hpp"
 #include "../ModelObject/ZoneHVACAirDistributionUnit_Impl.hpp"
 #include "../ModelObject/ZoneHVACEquipmentConnections.hpp"
 #include "../Schedule/ScheduleConstant.hpp"
@@ -33,6 +38,7 @@
 #include <utilities/idf/WorkspaceObject_Impl.hpp>
 
 #include <algorithm>
+#include <set>
 
 using namespace openstudio::epmodel;
 
@@ -578,6 +584,228 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeFourPipeInduction_Remo
   EXPECT_EQ(1u, airLoop.demandComponents(AirTerminalSingleDuctConstantVolumeFourPipeInduction::iddObjectType()).size());
 }
 
+TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeFourPipeInduction_CoolingPreflightFailurePreservesHotWaterAndAirTopology) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  ThermalZone zone(model);
+  PlantLoop hotWaterLoop(model);
+  PlantLoop coldWaterLoop(model);
+  CoilHeatingWater heatingCoil(model);
+  CoilCoolingWater coolingCoil(model);
+  CoilCoolingWater neighboringCoolingCoil(model);
+  AirTerminalSingleDuctConstantVolumeFourPipeInduction terminal(model, heatingCoil);
+  ASSERT_TRUE(terminal.setCoolingCoil(coolingCoil));
+
+  ASSERT_TRUE(airLoop.addBranchForZone(zone, terminal));
+  ASSERT_TRUE(hotWaterLoop.addDemandBranchForComponent(heatingCoil));
+  ASSERT_TRUE(coldWaterLoop.addDemandBranchForComponent(coolingCoil));
+  ASSERT_TRUE(coldWaterLoop.addDemandBranchForComponent(neighboringCoolingCoil));
+  ASSERT_TRUE(heatingCoil.waterInletModelObject());
+  ASSERT_TRUE(heatingCoil.waterOutletModelObject());
+  ASSERT_TRUE(terminal.inletModelObject());
+  ASSERT_TRUE(terminal.inducedAirInletNode());
+  const auto heatingInletHandle = heatingCoil.waterInletModelObject()->handle();
+  const auto heatingOutletHandle = heatingCoil.waterOutletModelObject()->handle();
+  const auto terminalInletHandle = terminal.inletModelObject()->handle();
+  const auto inducedNodeHandle = terminal.inducedAirInletNode()->handle();
+  const auto hotWaterComponentsBefore = hotWaterLoop.demandComponents();
+  const auto coldWaterComponentsBefore = coldWaterLoop.demandComponents();
+
+  // Make the cooling coil span two demand-equipment branches. The already
+  // prepared hot-water plan must not commit when cold-water preflight fails.
+  ASSERT_TRUE(neighboringCoolingCoil.waterInletModelObject());
+  auto coolingCoilImpl = coolingCoil.getImpl<openstudio::epmodel::detail::CoilCoolingWater_Impl>();
+  ASSERT_TRUE(coolingCoilImpl);
+  ASSERT_TRUE(coolingCoilImpl->setPointer(coolingCoil.waterOutletPort(), neighboringCoolingCoil.waterInletModelObject()->handle(), false));
+
+  EXPECT_FALSE(terminal.isRemovable());
+  EXPECT_FALSE(terminal.removeFromLoop());
+  EXPECT_TRUE(terminal.remove().empty());
+
+  EXPECT_TRUE(model.getObject(terminal.handle()));
+  EXPECT_TRUE(model.getObject(heatingCoil.handle()));
+  EXPECT_TRUE(model.getObject(coolingCoil.handle()));
+  ASSERT_TRUE(terminal.inletModelObject());
+  EXPECT_EQ(terminalInletHandle, terminal.inletModelObject()->handle());
+  ASSERT_TRUE(terminal.inducedAirInletNode());
+  EXPECT_EQ(inducedNodeHandle, terminal.inducedAirInletNode()->handle());
+  ASSERT_TRUE(heatingCoil.waterInletModelObject());
+  ASSERT_TRUE(heatingCoil.waterOutletModelObject());
+  EXPECT_EQ(heatingInletHandle, heatingCoil.waterInletModelObject()->handle());
+  EXPECT_EQ(heatingOutletHandle, heatingCoil.waterOutletModelObject()->handle());
+  EXPECT_EQ(hotWaterComponentsBefore, hotWaterLoop.demandComponents());
+  EXPECT_EQ(coldWaterComponentsBefore, coldWaterLoop.demandComponents());
+  EXPECT_EQ(1u, zone.equipment().size());
+  EXPECT_EQ(1u, airLoop.demandComponents(AirTerminalSingleDuctConstantVolumeFourPipeInduction::iddObjectType()).size());
+}
+
+TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeFourPipeInduction_MalformedContainedPathPreservesAllTopology) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  ThermalZone zone(model);
+  PlantLoop hotWaterLoop(model);
+  PlantLoop coldWaterLoop(model);
+  CoilHeatingWater heatingCoil(model);
+  CoilCoolingWater coolingCoil(model);
+  AirTerminalSingleDuctConstantVolumeFourPipeInduction terminal(model, heatingCoil);
+  ASSERT_TRUE(terminal.setCoolingCoil(coolingCoil));
+  ASSERT_TRUE(airLoop.addBranchForZone(zone, terminal));
+  ASSERT_TRUE(hotWaterLoop.addDemandBranchForComponent(heatingCoil));
+  ASSERT_TRUE(coldWaterLoop.addDemandBranchForComponent(coolingCoil));
+
+  ASSERT_TRUE(heatingCoil.airOutletModelObject());
+  const auto canonicalHeatingOutlet = heatingCoil.airOutletModelObject()->cast<Node>();
+  Node wrongHeatingOutlet(model);
+  ASSERT_TRUE(heatingCoil.setPointer(openstudio::Coil_Heating_WaterFields::AirOutletNodeName, wrongHeatingOutlet.handle()));
+
+  const auto splitterOutletsBefore = airLoop.zoneSplitter().outletModelObjects();
+  const auto mixerInletsBefore = airLoop.zoneMixer().inletModelObjects();
+  const auto zoneEquipmentBefore = zone.equipment();
+  const auto hotWaterComponentsBefore = hotWaterLoop.demandComponents();
+  const auto coldWaterComponentsBefore = coldWaterLoop.demandComponents();
+  const auto exhaustNodesBefore = zone.getImpl<detail::ThermalZone_Impl>()->zoneHVACEquipmentConnections()->zoneAirExhaustNodes();
+  const auto terminalMixerBefore =
+    terminal.getModelObjectTarget<AirLoopHVACZoneMixer>(openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeInductionFields::ZoneMixerName);
+  ASSERT_TRUE(terminalMixerBefore);
+  std::set<openstudio::Handle> handlesBefore;
+  for (const auto& object : model.objects()) {
+    handlesBefore.insert(object.handle());
+  }
+
+  EXPECT_FALSE(terminal.isRemovable());
+  EXPECT_FALSE(terminal.removeFromLoop());
+  EXPECT_TRUE(terminal.remove().empty());
+  EXPECT_FALSE(airLoop.removeBranchForZone(zone));
+
+  std::set<openstudio::Handle> handlesAfter;
+  for (const auto& object : model.objects()) {
+    handlesAfter.insert(object.handle());
+  }
+  EXPECT_EQ(handlesBefore, handlesAfter);
+  EXPECT_EQ(splitterOutletsBefore, airLoop.zoneSplitter().outletModelObjects());
+  EXPECT_EQ(mixerInletsBefore, airLoop.zoneMixer().inletModelObjects());
+  EXPECT_EQ(zoneEquipmentBefore, zone.equipment());
+  EXPECT_EQ(hotWaterComponentsBefore, hotWaterLoop.demandComponents());
+  EXPECT_EQ(coldWaterComponentsBefore, coldWaterLoop.demandComponents());
+  EXPECT_EQ(exhaustNodesBefore, zone.getImpl<detail::ThermalZone_Impl>()->zoneHVACEquipmentConnections()->zoneAirExhaustNodes());
+  ASSERT_TRUE(
+    terminal.getModelObjectTarget<AirLoopHVACZoneMixer>(openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeInductionFields::ZoneMixerName));
+  EXPECT_EQ(
+    terminalMixerBefore->handle(),
+    terminal.getModelObjectTarget<AirLoopHVACZoneMixer>(openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeInductionFields::ZoneMixerName)
+      ->handle());
+  ASSERT_TRUE(heatingCoil.airOutletModelObject());
+  EXPECT_EQ(wrongHeatingOutlet.handle(), heatingCoil.airOutletModelObject()->handle());
+  EXPECT_TRUE(model.getObject(canonicalHeatingOutlet.handle()));
+  EXPECT_TRUE(heatingCoil.plantLoop());
+  EXPECT_TRUE(coolingCoil.plantLoop());
+}
+
+TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeFourPipeInduction_IsRemovableDoesNotAttachRawContainedMixerInlet) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  ThermalZone zone(model);
+  CoilHeatingWater heatingCoil(model);
+  CoilCoolingWater coolingCoil(model);
+  AirTerminalSingleDuctConstantVolumeFourPipeInduction terminal(model, heatingCoil);
+  ASSERT_TRUE(terminal.setCoolingCoil(coolingCoil));
+  ASSERT_TRUE(airLoop.addBranchForZone(zone, terminal));
+
+  auto mixer =
+    terminal.getModelObjectTarget<AirLoopHVACZoneMixer>(openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeInductionFields::ZoneMixerName);
+  ASSERT_TRUE(mixer);
+  ASSERT_TRUE(coolingCoil.airOutletModelObject());
+  const auto coolingOutlet = coolingCoil.airOutletModelObject()->cast<Node>();
+  const auto inletField = mixer->inletPort(1u);
+  auto mixerImpl = mixer->getImpl<detail::AirLoopHVACZoneMixer_Impl>();
+  ASSERT_TRUE(mixerImpl);
+  ASSERT_TRUE(mixerImpl->setPointer(inletField, openstudio::Handle(), false));
+  ASSERT_TRUE(mixerImpl->openstudio::detail::IdfObject_Impl::setString(inletField, coolingOutlet.nameString(), false));
+  const auto coolingOutletSourcesBefore = coolingOutlet.sources();
+  EXPECT_EQ(coolingOutletSourcesBefore.end(),
+            std::ranges::find_if(coolingOutletSourcesBefore, [&](const auto& source) { return source.handle() == mixer->handle(); }));
+  std::set<openstudio::Handle> handlesBefore;
+  for (const auto& object : model.objects()) {
+    handlesBefore.insert(object.handle());
+  }
+
+  EXPECT_FALSE(terminal.isRemovable());
+
+  std::set<openstudio::Handle> handlesAfter;
+  for (const auto& object : model.objects()) {
+    handlesAfter.insert(object.handle());
+  }
+  EXPECT_EQ(handlesBefore, handlesAfter);
+  const auto rawInletName = mixerImpl->openstudio::detail::IdfObject_Impl::getString(inletField, false, true);
+  ASSERT_TRUE(rawInletName);
+  EXPECT_EQ(coolingOutlet.nameString(), *rawInletName);
+  const auto coolingOutletSourcesAfter = coolingOutlet.sources();
+  EXPECT_EQ(coolingOutletSourcesAfter.end(),
+            std::ranges::find_if(coolingOutletSourcesAfter, [&](const auto& source) { return source.handle() == mixer->handle(); }));
+
+  const std::string missingInletName = "Missing Raw Four Pipe Induction Mixer Inlet";
+  ASSERT_TRUE(mixerImpl->openstudio::detail::IdfObject_Impl::setString(inletField, missingInletName, false));
+  EXPECT_FALSE(model.getConcreteModelObjectByName<Node>(missingInletName));
+  handlesBefore.clear();
+  for (const auto& object : model.objects()) {
+    handlesBefore.insert(object.handle());
+  }
+
+  EXPECT_FALSE(terminal.isRemovable());
+
+  handlesAfter.clear();
+  for (const auto& object : model.objects()) {
+    handlesAfter.insert(object.handle());
+  }
+  EXPECT_EQ(handlesBefore, handlesAfter);
+  EXPECT_FALSE(model.getConcreteModelObjectByName<Node>(missingInletName));
+  const auto missingInletNameAfter = mixerImpl->openstudio::detail::IdfObject_Impl::getString(inletField, false, true);
+  ASSERT_TRUE(missingInletNameAfter);
+  EXPECT_EQ(missingInletName, *missingInletNameAfter);
+}
+
+TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeFourPipeInduction_SamePlantLoopRemovalIsRejectedWithoutMutation) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  ThermalZone zone(model);
+  PlantLoop plantLoop(model);
+  CoilHeatingWater heatingCoil(model);
+  CoilCoolingWater coolingCoil(model);
+  AirTerminalSingleDuctConstantVolumeFourPipeInduction terminal(model, heatingCoil);
+  ASSERT_TRUE(terminal.setCoolingCoil(coolingCoil));
+  ASSERT_TRUE(airLoop.addBranchForZone(zone, terminal));
+  ASSERT_TRUE(plantLoop.addDemandBranchForComponent(heatingCoil));
+  ASSERT_TRUE(plantLoop.addDemandBranchForComponent(coolingCoil));
+
+  const auto plantComponentsBefore = plantLoop.demandComponents();
+  const auto zoneEquipmentBefore = zone.equipment();
+  const auto splitterOutletsBefore = airLoop.zoneSplitter().outletModelObjects();
+  const auto mixerInletsBefore = airLoop.zoneMixer().inletModelObjects();
+  std::set<openstudio::Handle> handlesBefore;
+  for (const auto& object : model.objects()) {
+    handlesBefore.insert(object.handle());
+  }
+
+  EXPECT_FALSE(terminal.isRemovable());
+  EXPECT_FALSE(terminal.removeFromLoop());
+  EXPECT_TRUE(terminal.remove().empty());
+  EXPECT_FALSE(airLoop.removeBranchForZone(zone));
+
+  std::set<openstudio::Handle> handlesAfter;
+  for (const auto& object : model.objects()) {
+    handlesAfter.insert(object.handle());
+  }
+  EXPECT_EQ(handlesBefore, handlesAfter);
+  EXPECT_EQ(plantComponentsBefore, plantLoop.demandComponents());
+  EXPECT_EQ(zoneEquipmentBefore, zone.equipment());
+  EXPECT_EQ(splitterOutletsBefore, airLoop.zoneSplitter().outletModelObjects());
+  EXPECT_EQ(mixerInletsBefore, airLoop.zoneMixer().inletModelObjects());
+  ASSERT_TRUE(heatingCoil.plantLoop());
+  ASSERT_TRUE(coolingCoil.plantLoop());
+  EXPECT_EQ(plantLoop.handle(), heatingCoil.plantLoop()->handle());
+  EXPECT_EQ(plantLoop.handle(), coolingCoil.plantLoop()->handle());
+}
+
 TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeFourPipeInduction_TerminalFirstClaimRemovalPreservesNeighborIdentity) {
   Model model;
   AirLoopHVAC airLoop(model);
@@ -653,6 +881,86 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeFourPipeInduction_Term
   EXPECT_EQ(neighborZone, airLoop.thermalZones().front());
   ASSERT_EQ(1u, neighborZone.equipment().size());
   EXPECT_EQ(neighborTerminalHandle, neighborZone.equipment().front().handle());
+}
+
+TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeFourPipeInduction_SharedPlenumRemovalSurvivesReload) {
+  const auto idfPath = openstudio::tempDir() / openstudio::toPath("epmodel-four-pipe-induction-shared-plenum-removal.idf");
+
+  Model model;
+  AirLoopHVAC airLoop(model);
+  PlantLoop hotWaterLoop(model);
+  PlantLoop coldWaterLoop(model);
+  ThermalZone siblingZone(model);
+  ThermalZone targetZone(model);
+  ThermalZone supplyPlenumZone(model);
+  ThermalZone returnPlenumZone(model);
+  CoilHeatingWater siblingHeatingCoil(model);
+  CoilHeatingWater targetHeatingCoil(model);
+  CoilCoolingWater targetCoolingCoil(model);
+  AirTerminalSingleDuctConstantVolumeFourPipeInduction siblingTerminal(model, siblingHeatingCoil);
+  AirTerminalSingleDuctConstantVolumeFourPipeInduction targetTerminal(model, targetHeatingCoil);
+  ASSERT_TRUE(targetTerminal.setCoolingCoil(targetCoolingCoil));
+  ASSERT_TRUE(siblingZone.setName("Four Pipe Induction Reload Sibling Zone"));
+  ASSERT_TRUE(targetZone.setName("Four Pipe Induction Reload Target Zone"));
+  ASSERT_TRUE(siblingTerminal.setName("Four Pipe Induction Reload Sibling Terminal"));
+  ASSERT_TRUE(targetTerminal.setName("Four Pipe Induction Reload Target Terminal"));
+  ASSERT_TRUE(targetHeatingCoil.setName("Four Pipe Induction Reload Target Heating Coil"));
+  ASSERT_TRUE(targetCoolingCoil.setName("Four Pipe Induction Reload Target Cooling Coil"));
+
+  ASSERT_TRUE(airLoop.addBranchForZone(siblingZone, siblingTerminal));
+  ASSERT_TRUE(airLoop.addBranchForZone(targetZone, targetTerminal));
+  ASSERT_TRUE(hotWaterLoop.addDemandBranchForComponent(targetHeatingCoil));
+  ASSERT_TRUE(coldWaterLoop.addDemandBranchForComponent(targetCoolingCoil));
+  ASSERT_TRUE(siblingZone.setSupplyPlenum(supplyPlenumZone));
+  ASSERT_TRUE(targetZone.setSupplyPlenum(supplyPlenumZone));
+  ASSERT_TRUE(siblingZone.setReturnPlenum(returnPlenumZone));
+  ASSERT_TRUE(targetZone.setReturnPlenum(returnPlenumZone));
+  ASSERT_TRUE(model.save(idfPath, true));
+
+  auto loadedModel = Model::load(idfPath);
+  ASSERT_TRUE(loadedModel);
+  auto loadedSiblingTerminal =
+    loadedModel->getConcreteModelObjectByName<AirTerminalSingleDuctConstantVolumeFourPipeInduction>("Four Pipe Induction Reload Sibling Terminal");
+  auto loadedTargetTerminal =
+    loadedModel->getConcreteModelObjectByName<AirTerminalSingleDuctConstantVolumeFourPipeInduction>("Four Pipe Induction Reload Target Terminal");
+  auto loadedTargetHeatingCoil = loadedModel->getConcreteModelObjectByName<CoilHeatingWater>("Four Pipe Induction Reload Target Heating Coil");
+  auto loadedTargetCoolingCoil = loadedModel->getConcreteModelObjectByName<CoilCoolingWater>("Four Pipe Induction Reload Target Cooling Coil");
+  auto loadedSiblingZone = loadedModel->getConcreteModelObjectByName<ThermalZone>("Four Pipe Induction Reload Sibling Zone");
+  auto loadedTargetZone = loadedModel->getConcreteModelObjectByName<ThermalZone>("Four Pipe Induction Reload Target Zone");
+  ASSERT_TRUE(loadedSiblingTerminal);
+  ASSERT_TRUE(loadedTargetTerminal);
+  ASSERT_TRUE(loadedTargetHeatingCoil);
+  ASSERT_TRUE(loadedTargetCoolingCoil);
+  ASSERT_TRUE(loadedSiblingZone);
+  ASSERT_TRUE(loadedTargetZone);
+  ASSERT_EQ(1u, loadedModel->getConcreteModelObjects<AirLoopHVACSupplyPlenum>().size());
+  ASSERT_EQ(1u, loadedModel->getConcreteModelObjects<AirLoopHVACReturnPlenum>().size());
+  ASSERT_EQ(2u, loadedModel->getConcreteModelObjects<AirLoopHVACSupplyPlenum>().front().outletModelObjects().size());
+  ASSERT_EQ(2u, loadedModel->getConcreteModelObjects<AirLoopHVACReturnPlenum>().front().inletModelObjects().size());
+  ASSERT_TRUE(loadedTargetHeatingCoil->plantLoop());
+  ASSERT_TRUE(loadedTargetCoolingCoil->plantLoop());
+  auto loadedAirLoops = loadedModel->getConcreteModelObjects<AirLoopHVAC>();
+  ASSERT_EQ(1u, loadedAirLoops.size());
+  const auto targetTerminalHandle = loadedTargetTerminal->handle();
+  const auto targetHeatingCoilHandle = loadedTargetHeatingCoil->handle();
+  const auto targetCoolingCoilHandle = loadedTargetCoolingCoil->handle();
+
+  ASSERT_TRUE(loadedTargetTerminal->isRemovable());
+  ASSERT_TRUE(loadedAirLoops.front().removeBranchForZone(*loadedTargetZone));
+
+  EXPECT_FALSE(loadedModel->getObject(targetTerminalHandle));
+  EXPECT_FALSE(loadedModel->getObject(targetHeatingCoilHandle));
+  EXPECT_FALSE(loadedModel->getObject(targetCoolingCoilHandle));
+  EXPECT_TRUE(loadedModel->getObject(loadedSiblingTerminal->handle()));
+  EXPECT_TRUE(loadedSiblingTerminal->airLoopHVAC());
+  EXPECT_EQ(1u, loadedSiblingZone->equipment().size());
+  EXPECT_TRUE(loadedTargetZone->equipment().empty());
+  ASSERT_EQ(1u, loadedModel->getConcreteModelObjects<AirLoopHVACSupplyPlenum>().size());
+  ASSERT_EQ(1u, loadedModel->getConcreteModelObjects<AirLoopHVACReturnPlenum>().size());
+  EXPECT_EQ(1u, loadedModel->getConcreteModelObjects<AirLoopHVACSupplyPlenum>().front().outletModelObjects().size());
+  EXPECT_EQ(1u, loadedModel->getConcreteModelObjects<AirLoopHVACReturnPlenum>().front().inletModelObjects().size());
+
+  openstudio::filesystem::remove(idfPath);
 }
 
 TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeFourPipeInduction_ConnectedCoilReplacementAndReloadMaintainAirPath) {
@@ -854,7 +1162,7 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeFourPipeInduction_Miss
   EXPECT_FALSE(coolingCoil.getTarget(openstudio::Coil_Cooling_WaterFields::AirOutletNodeName));
 }
 
-TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeFourPipeInduction_ContainedWaterCoilsRemoveExistingControllersOnPlantMove) {
+TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeFourPipeInduction_RemovalDeletesBothContainedWaterCoilControllers) {
   Model model;
   AirLoopHVAC airLoop(model);
   PlantLoop hotWaterLoop(model);
@@ -872,17 +1180,21 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeFourPipeInduction_Cont
   ASSERT_TRUE(heatingController.setActuatorNode(heatingCoil.waterInletModelObject()->cast<Node>()));
   ASSERT_TRUE(heatingController.setSensorNode(heatingCoil.airOutletModelObject()->cast<Node>()));
   ASSERT_TRUE(heatingCoil.controllerWaterCoil());
-  auto hotWaterDemandOutlet = hotWaterLoop.demandOutletNode();
-  ASSERT_TRUE(heatingCoil.addToNode(hotWaterDemandOutlet));
-  EXPECT_FALSE(heatingCoil.controllerWaterCoil());
-  EXPECT_FALSE(model.getObject(heatingController.handle()));
 
   ControllerWaterCoil coolingController(model);
   ASSERT_TRUE(coolingController.setActuatorNode(coolingCoil.waterInletModelObject()->cast<Node>()));
   ASSERT_TRUE(coolingController.setSensorNode(coolingCoil.airOutletModelObject()->cast<Node>()));
   ASSERT_TRUE(coolingCoil.controllerWaterCoil());
-  auto chilledWaterDemandOutlet = chilledWaterLoop.demandOutletNode();
-  ASSERT_TRUE(coolingCoil.addToNode(chilledWaterDemandOutlet));
+
+  ASSERT_TRUE(terminal.removeFromLoop());
+
+  EXPECT_FALSE(heatingCoil.controllerWaterCoil());
   EXPECT_FALSE(coolingCoil.controllerWaterCoil());
+  EXPECT_FALSE(model.getObject(heatingController.handle()));
   EXPECT_FALSE(model.getObject(coolingController.handle()));
+  EXPECT_FALSE(heatingCoil.plantLoop());
+  EXPECT_FALSE(coolingCoil.plantLoop());
+  EXPECT_TRUE(model.getObject(terminal.handle()));
+  EXPECT_TRUE(model.getObject(heatingCoil.handle()));
+  EXPECT_TRUE(model.getObject(coolingCoil.handle()));
 }
