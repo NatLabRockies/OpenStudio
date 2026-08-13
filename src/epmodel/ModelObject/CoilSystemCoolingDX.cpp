@@ -13,12 +13,16 @@
 #include "BranchList.hpp"
 #include "Loop/AirLoopHVAC.hpp"
 #include "Loop/AirLoopHVAC_Impl.hpp"
+#include "StraightComponent/CoilCoolingDX.hpp"
+#include "StraightComponent/CoilCoolingDX_Impl.hpp"
 #include "StraightComponent/CoilCoolingDXTwoSpeed.hpp"
 #include "StraightComponent/CoilCoolingDXTwoSpeed_Impl.hpp"
 #include "Schedule/Schedule.hpp"
+#include "Schedule/Schedule_Impl.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
+#include <utilities/idd/Coil_Cooling_DX_FieldEnums.hxx>
 #include <utilities/idd/Coil_Cooling_DX_TwoSpeed_FieldEnums.hxx>
 #include <utilities/idd/CoilSystem_Cooling_DX_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
@@ -185,7 +189,7 @@ namespace epmodel {
       return boost::none;
     }
 
-    bool CoilSystemCoolingDX_Impl::configureForCoolingCoil(CoilCoolingDXTwoSpeed& coil) {
+    bool CoilSystemCoolingDX_Impl::configureForCoolingCoilObject(StraightComponent& coil, unsigned scheduleFieldIndex) {
       if (coil.model() != model()) {
         return false;
       }
@@ -193,7 +197,10 @@ namespace epmodel {
         return false;
       }
 
-      auto schedule = coil.availabilitySchedule();
+      const auto schedule = coil.getTarget(scheduleFieldIndex);
+      if (!schedule || !schedule->optionalCast<Schedule>()) {
+        return false;
+      }
       const auto adapter = getObject<ModelObject>();
       const auto oldType = getString(openstudio::CoilSystem_Cooling_DXFields::CoolingCoilObjectType);
       const auto oldCoil = adapter.getTarget(openstudio::CoilSystem_Cooling_DXFields::CoolingCoilName);
@@ -201,7 +208,7 @@ namespace epmodel {
 
       if (!setString(openstudio::CoilSystem_Cooling_DXFields::CoolingCoilObjectType, coil.iddObject().name())
           || !setPointer(openstudio::CoilSystem_Cooling_DXFields::CoolingCoilName, coil.handle(), false)
-          || !setPointer(openstudio::CoilSystem_Cooling_DXFields::AvailabilityScheduleName, schedule.handle(), false)) {
+          || !setPointer(openstudio::CoilSystem_Cooling_DXFields::AvailabilityScheduleName, schedule->handle(), false)) {
         OS_ASSERT(setString(openstudio::CoilSystem_Cooling_DXFields::CoolingCoilObjectType, oldType.value_or("")));
         OS_ASSERT(setPointer(openstudio::CoilSystem_Cooling_DXFields::CoolingCoilName, oldCoil ? oldCoil->handle() : Handle(), false));
         OS_ASSERT(
@@ -211,13 +218,21 @@ namespace epmodel {
       return true;
     }
 
-    bool CoilSystemCoolingDX_Impl::isCoherentForCoolingCoil(const CoilCoolingDXTwoSpeed& coil) const {
+    bool CoilSystemCoolingDX_Impl::configureForCoolingCoil(CoilCoolingDX& coil) {
+      return configureForCoolingCoilObject(coil, openstudio::Coil_Cooling_DXFields::AvailabilityScheduleName);
+    }
+
+    bool CoilSystemCoolingDX_Impl::configureForCoolingCoil(CoilCoolingDXTwoSpeed& coil) {
+      return configureForCoolingCoilObject(coil, openstudio::Coil_Cooling_DX_TwoSpeedFields::AvailabilityScheduleName);
+    }
+
+    bool CoilSystemCoolingDX_Impl::isCoherentForCoolingCoilObject(const StraightComponent& coil, unsigned scheduleFieldIndex) const {
       const auto linkedCoil = coolingCoil();
       if (!linkedCoil || linkedCoil->handle() != coil.handle() || !openstudio::istringEqual(coolingCoilObjectType(), coil.iddObject().name())) {
         return false;
       }
       const auto schedule = getObject<ModelObject>().getTarget(openstudio::CoilSystem_Cooling_DXFields::AvailabilityScheduleName);
-      const auto coilSchedule = coil.getTarget(openstudio::Coil_Cooling_DX_TwoSpeedFields::AvailabilityScheduleName);
+      const auto coilSchedule = coil.getTarget(scheduleFieldIndex);
       if (!schedule || !coilSchedule || schedule->handle() != coilSchedule->handle()) {
         return false;
       }
@@ -236,6 +251,14 @@ namespace epmodel {
              && adapterOutlet->handle() == coilOutlet->handle() && sensor->handle() == adapterOutlet->handle();
     }
 
+    bool CoilSystemCoolingDX_Impl::isCoherentForCoolingCoil(const CoilCoolingDX& coil) const {
+      return isCoherentForCoolingCoilObject(coil, openstudio::Coil_Cooling_DXFields::AvailabilityScheduleName);
+    }
+
+    bool CoilSystemCoolingDX_Impl::isCoherentForCoolingCoil(const CoilCoolingDXTwoSpeed& coil) const {
+      return isCoherentForCoolingCoilObject(coil, openstudio::Coil_Cooling_DX_TwoSpeedFields::AvailabilityScheduleName);
+    }
+
     bool CoilSystemCoolingDX_Impl::syncCoolingCoilNodes() {
       auto linkedCoil = coolingCoil();
       auto inlet = inletModelObject();
@@ -243,11 +266,16 @@ namespace epmodel {
       if (!linkedCoil || !inlet || !outlet) {
         return false;
       }
-      auto coil = linkedCoil->optionalCast<CoilCoolingDXTwoSpeed>();
+      boost::optional<StraightComponent> coil;
+      if (auto curveFitCoil = linkedCoil->optionalCast<CoilCoolingDX>()) {
+        coil = curveFitCoil->cast<StraightComponent>();
+      } else if (auto twoSpeedCoil = linkedCoil->optionalCast<CoilCoolingDXTwoSpeed>()) {
+        coil = twoSpeedCoil->cast<StraightComponent>();
+      }
       if (!coil) {
         return false;
       }
-      auto coilImpl = coil->getImpl<CoilCoolingDXTwoSpeed_Impl>();
+      auto coilImpl = coil->getImpl<StraightComponent_Impl>();
       OS_ASSERT(coilImpl);
       return coilImpl->setPointer(coilImpl->inletPort(), inlet->handle(), false)
              && coilImpl->setPointer(coilImpl->outletPort(), outlet->handle(), false)
@@ -256,8 +284,14 @@ namespace epmodel {
 
     void CoilSystemCoolingDX_Impl::clearTopologyPointers() {
       if (auto linkedCoil = coolingCoil()) {
-        if (auto coil = linkedCoil->optionalCast<CoilCoolingDXTwoSpeed>()) {
-          auto coilImpl = coil->getImpl<CoilCoolingDXTwoSpeed_Impl>();
+        boost::optional<StraightComponent> coil;
+        if (auto curveFitCoil = linkedCoil->optionalCast<CoilCoolingDX>()) {
+          coil = curveFitCoil->cast<StraightComponent>();
+        } else if (auto twoSpeedCoil = linkedCoil->optionalCast<CoilCoolingDXTwoSpeed>()) {
+          coil = twoSpeedCoil->cast<StraightComponent>();
+        }
+        if (coil) {
+          auto coilImpl = coil->getImpl<StraightComponent_Impl>();
           OS_ASSERT(coilImpl);
           OS_ASSERT(coilImpl->setPointer(coilImpl->inletPort(), Handle(), false));
           OS_ASSERT(coilImpl->setPointer(coilImpl->outletPort(), Handle(), false));
@@ -270,8 +304,11 @@ namespace epmodel {
 
     bool CoilSystemCoolingDX_Impl::addToNode(Node& node) {
       auto linkedCoil = coolingCoil();
-      auto coil = linkedCoil ? linkedCoil->optionalCast<CoilCoolingDXTwoSpeed>() : boost::none;
-      if (!coil || !isCoherentForCoolingCoil(*coil)) {
+      const bool coherent =
+        linkedCoil
+        && ((linkedCoil->optionalCast<CoilCoolingDX>() && isCoherentForCoolingCoil(linkedCoil->cast<CoilCoolingDX>()))
+            || (linkedCoil->optionalCast<CoilCoolingDXTwoSpeed>() && isCoherentForCoolingCoil(linkedCoil->cast<CoilCoolingDXTwoSpeed>())));
+      if (!coherent) {
         return false;
       }
       auto airLoop = node.airLoopHVAC();
@@ -294,8 +331,11 @@ namespace epmodel {
         return false;
       }
       auto linkedCoil = coolingCoil();
-      auto coil = linkedCoil ? linkedCoil->optionalCast<CoilCoolingDXTwoSpeed>() : boost::none;
-      if (!coil || !isCoherentForCoolingCoil(*coil)) {
+      const bool coherent =
+        linkedCoil
+        && ((linkedCoil->optionalCast<CoilCoolingDX>() && isCoherentForCoolingCoil(linkedCoil->cast<CoilCoolingDX>()))
+            || (linkedCoil->optionalCast<CoilCoolingDXTwoSpeed>() && isCoherentForCoolingCoil(linkedCoil->cast<CoilCoolingDXTwoSpeed>())));
+      if (!coherent) {
         return false;
       }
       if (!StraightComponent_Impl::removeFromLoop()) {
@@ -316,8 +356,11 @@ namespace epmodel {
     std::vector<IdfObject> CoilSystemCoolingDX_Impl::remove() {
       if (airLoopHVAC()) {
         auto linkedCoil = coolingCoil();
-        auto coil = linkedCoil ? linkedCoil->optionalCast<CoilCoolingDXTwoSpeed>() : boost::none;
-        if (!coil || !isCoherentForCoolingCoil(*coil)) {
+        const bool coherent =
+          linkedCoil
+          && ((linkedCoil->optionalCast<CoilCoolingDX>() && isCoherentForCoolingCoil(linkedCoil->cast<CoilCoolingDX>()))
+              || (linkedCoil->optionalCast<CoilCoolingDXTwoSpeed>() && isCoherentForCoolingCoil(linkedCoil->cast<CoilCoolingDXTwoSpeed>())));
+        if (!coherent) {
           return {};
         }
       }

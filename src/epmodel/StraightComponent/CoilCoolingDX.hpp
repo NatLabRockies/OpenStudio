@@ -41,20 +41,21 @@ namespace epmodel {
     bool addToNode(Node& node);
 
     // Schema Alignment Notes:
-    // - Status: Partial Parity. The canonical schedule/performance/condenser-zone surface plus the current epmodel supply-side air-loop
-    //   insertion path are now exposed, while the existing condenser-node scalar shim remains and the broader AFN/tank-link and DOAS
-    //   insertion surfaces are still intentionally deferred.
+    // - Status: Partial Parity. The canonical schedule/performance/condenser-zone surface plus a persisted-adapter supply-side air-loop
+    //   lifecycle are exposed, while the existing condenser-node scalar shim remains and the broader AFN/tank-link and DOAS insertion surfaces
+    //   are still intentionally deferred.
     // - Canonical Counterpart: openstudio::model::CoilCoolingDX.
     // - Implemented Parity: `availabilitySchedule`, `setAvailabilitySchedule`, `performanceObject`, `setPerformanceObject`, `condenserZone`,
-    //   `setCondenserZone`, `resetCondenserZone`, `addToNode` for the current supply-side air-loop path, the inherited straight-component ports,
-    //   and the existing condenser inlet/outlet node-name scalar accessors preserve the bounded canonical contract.
+    //   `setCondenserZone`, `resetCondenserZone`, `addToNode` for ordinary supply branches, live branch movement, detach/remove/re-add, the
+    //   inherited straight-component ports, and the existing condenser inlet/outlet node-name scalar accessors preserve the bounded contract.
     // - Documented Delta: AirflowNetworkEquivalentDuct, condensate/evaporative tank-link parity, and the canonical dedicated-outdoor-air
     //   insertion path remain explicitly deferred for this slice.
-    // - Field/Storage Mapping: The preserved API maps directly to EnergyPlus `Coil:Cooling:DX` schedule, performance-object, condenser-zone,
-    //   condenser node-name fields, plus the inherited inlet/outlet node wiring used for the current air-loop insertion path.
-    // - Evidence: `src/model/CoilCoolingDX.hpp` and `src/energyplus/ForwardTranslator/ForwardTranslateCoilCoolingDX.cpp`.
-    // - Remaining Parity Work: Add the deferred AFN, tank-link, and dedicated-outdoor-air insertion helpers when the relationship surface is
-    //   expanded further.
+    // - Field/Storage Mapping: Coil state maps to `Coil:Cooling:DX`; direct supply placement persists one `CoilSystem:Cooling:DX` on the Branch,
+    //   synchronizes both objects' inlet/outlet nodes and the adapter sensor, and projects this coil as the public AirLoopHVAC component.
+    // - Evidence: `src/model/CoilCoolingDX.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateCoilCoolingDX.cpp`, and
+    //   `src/epmodel/test/CoilCoolingDX_GTest.cpp`.
+    // - Remaining Parity Work: Add the deferred AFN, tank-link, dedicated-outdoor-air insertion, and complete curve-fit performance-graph
+    //   scripting behavior. Other DX child families remain outside this adapter topology contract until separately characterized.
     Schedule availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);
 

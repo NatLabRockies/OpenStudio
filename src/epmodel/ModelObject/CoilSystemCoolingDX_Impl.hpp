@@ -13,6 +13,7 @@
 namespace openstudio {
 namespace epmodel {
   class AirLoopHVAC;
+  class CoilCoolingDX;
   class CoilCoolingDXTwoSpeed;
   class ModelObject;
   class Node;
@@ -66,11 +67,15 @@ namespace epmodel {
       boost::optional<ModelObject> coolingCoil() const;
       boost::optional<Node> sensorNode() const;
 
+      bool configureForCoolingCoil(CoilCoolingDX& coolingCoil);
       bool configureForCoolingCoil(CoilCoolingDXTwoSpeed& coolingCoil);
+      bool isCoherentForCoolingCoil(const CoilCoolingDX& coolingCoil) const;
       bool isCoherentForCoolingCoil(const CoilCoolingDXTwoSpeed& coolingCoil) const;
       bool syncCoolingCoilNodes();
 
      private:
+      bool configureForCoolingCoilObject(StraightComponent& coolingCoil, unsigned scheduleFieldIndex);
+      bool isCoherentForCoolingCoilObject(const StraightComponent& coolingCoil, unsigned scheduleFieldIndex) const;
       void clearTopologyPointers();
     };
 

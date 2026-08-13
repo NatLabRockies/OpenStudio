@@ -65,6 +65,8 @@
 #include "HVACComponent/HVACComponent.hpp"
 #include "ModelObject.hpp"
 #include "StraightComponent/StraightComponent.hpp"
+#include "StraightComponent/CoilCoolingDX.hpp"
+#include "StraightComponent/CoilCoolingDX_Impl.hpp"
 #include "StraightComponent/CoilCoolingDXTwoSpeed.hpp"
 #include "StraightComponent/CoilCoolingDXTwoSpeed_Impl.hpp"
 #include "StraightComponent/AirTerminalSingleDuctConstantVolumeCooledBeam.hpp"
@@ -5757,9 +5759,13 @@ namespace epmodel {
           auto component = components[index];
           if (auto coilSystem = component.optionalCast<CoilSystemCoolingDX>()) {
             if (auto coolingCoilObject = coilSystem->coolingCoil()) {
-              if (auto coolingCoil = coolingCoilObject->optionalCast<CoilCoolingDXTwoSpeed>()) {
-                auto coilSystemImpl = coilSystem->getImpl<detail::CoilSystemCoolingDX_Impl>();
-                OS_ASSERT(coilSystemImpl);
+              auto coilSystemImpl = coilSystem->getImpl<detail::CoilSystemCoolingDX_Impl>();
+              OS_ASSERT(coilSystemImpl);
+              if (auto coolingCoil = coolingCoilObject->optionalCast<CoilCoolingDX>()) {
+                if (coilSystemImpl->isCoherentForCoolingCoil(*coolingCoil)) {
+                  component = *coolingCoil;
+                }
+              } else if (auto coolingCoil = coolingCoilObject->optionalCast<CoilCoolingDXTwoSpeed>()) {
                 if (coilSystemImpl->isCoherentForCoolingCoil(*coolingCoil)) {
                   component = *coolingCoil;
                 }
@@ -6255,12 +6261,14 @@ namespace epmodel {
           for (const auto& component : branch.components()) {
             auto coilSystem = component.optionalCast<CoilSystemCoolingDX>();
             auto coolingCoilObject = coilSystem ? coilSystem->coolingCoil() : boost::optional<ModelObject>();
-            auto coolingCoil =
-              coolingCoilObject ? coolingCoilObject->optionalCast<CoilCoolingDXTwoSpeed>() : boost::optional<CoilCoolingDXTwoSpeed>();
-            if (coilSystem && coolingCoil) {
+            if (coilSystem && coolingCoilObject) {
               auto coilSystemImpl = coilSystem->getImpl<detail::CoilSystemCoolingDX_Impl>();
               OS_ASSERT(coilSystemImpl);
-              if (coilSystemImpl->isCoherentForCoolingCoil(*coolingCoil)) {
+              if (auto coolingCoil = coolingCoilObject->optionalCast<CoilCoolingDX>();
+                  coolingCoil && coilSystemImpl->isCoherentForCoolingCoil(*coolingCoil)) {
+                collectRemovalObject(component);
+              } else if (auto coolingCoil = coolingCoilObject->optionalCast<CoilCoolingDXTwoSpeed>();
+                         coolingCoil && coilSystemImpl->isCoherentForCoolingCoil(*coolingCoil)) {
                 collectRemovalObject(component);
               }
             }

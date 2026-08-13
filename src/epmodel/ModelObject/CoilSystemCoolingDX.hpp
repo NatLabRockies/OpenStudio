@@ -42,20 +42,21 @@ namespace epmodel {
     static std::vector<std::string> dehumidificationControlTypeValues();
 
     // Schema Alignment Notes:
-    // - Status: Partial Parity. This EnergyPlus storage adapter preserves scalar fields and the bounded two-speed DX branch lifecycle without
-    //   becoming the public component reported by AirLoopHVAC traversal.
+    // - Status: Partial Parity. This EnergyPlus storage adapter preserves scalar fields and the bounded curve-fit and two-speed DX branch
+    //   lifecycles without becoming the public component reported by AirLoopHVAC traversal.
     // - Canonical Counterpart: None. `openstudio::model` creates this EnergyPlus object during translation rather than exposing a same-name class.
-    // - Implemented Parity: The adapter keeps its inlet, outlet, sensor, child-coil, and availability-schedule relationships aligned during direct
-    //   two-speed coil placement, detachment, restoration, and reload. Whole-AirLoopHVAC teardown removes the persisted adapter and referenced
-    //   coil together for every loaded coil family so it cannot leave an invalid orphan without air nodes.
+    // - Implemented Parity: For exactly `CoilCoolingDX` and `CoilCoolingDXTwoSpeed`, the adapter keeps its inlet, outlet, sensor, child-coil, and
+    //   availability-schedule relationships aligned during direct supply-branch placement, movement, detachment, restoration, and reload.
+    //   Whole-AirLoopHVAC teardown removes the persisted adapter and referenced coil together for every loaded coil family so it cannot leave an
+    //   invalid orphan without air nodes.
     // - Documented Delta: Public AirLoopHVAC traversal projects the linked cooling coil, while Branch and concrete-object access retain the
     //   persisted `CoilSystem:Cooling:DX` record. Topology mutation belongs to the linked coil rather than this adapter's public API.
     // - Field/Storage Mapping: Scalars map directly to `CoilSystem:Cooling:DX`; inlet/outlet use StraightComponent ports, and sensor and cooling
     //   coil are read-only public relationships.
-    // - Evidence: `src/epmodel/test/CoilCoolingDXTwoSpeed_GTest.cpp`, `src/epmodel/test/CoilSystemCoolingDX_GTest.cpp`, and the
-    //   `resources/Examples/compact_osw/measures/EpModelDualDuct` workflow.
-    // - Remaining Parity Work: Characterize other EnergyPlus-supported child coil families and outdoor-air/DOAS placement before widening the
-    //   adapter's ownership contract.
+    // - Evidence: `src/epmodel/test/CoilCoolingDX_GTest.cpp`, `src/epmodel/test/CoilCoolingDXTwoSpeed_GTest.cpp`,
+    //   `src/epmodel/test/CoilSystemCoolingDX_GTest.cpp`, and the `resources/Examples/compact_osw/measures/EpModelDualDuct` workflow.
+    // - Remaining Parity Work: Characterize outdoor-air/DOAS placement and other EnergyPlus-supported child coil families before widening the
+    //   adapter's topology contract beyond `CoilCoolingDX` and `CoilCoolingDXTwoSpeed`.
     boost::optional<Node> sensorNode() const;
     boost::optional<ModelObject> coolingCoil() const;
     std::string coolingCoilObjectType() const;

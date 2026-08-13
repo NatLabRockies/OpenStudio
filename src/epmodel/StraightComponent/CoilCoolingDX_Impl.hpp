@@ -11,6 +11,7 @@
 namespace openstudio {
 namespace epmodel {
 
+  class CoilSystemCoolingDX;
   class Schedule;
   class ThermalZone;
   class CoilCoolingDXCurveFitPerformance;
@@ -27,7 +28,11 @@ namespace epmodel {
       unsigned inletPort() const override;
       unsigned outletPort() const override;
       bool addToNode(Node& node) override;
+      bool removeFromLoop() override;
+      void disconnect() override;
+      std::vector<IdfObject> remove() override;
       std::vector<ModelObject> children() const override;
+      boost::optional<CoilSystemCoolingDX> coilSystemCoolingDX() const;
 
       Schedule availabilitySchedule() const;
       bool setAvailabilitySchedule(Schedule& schedule);
