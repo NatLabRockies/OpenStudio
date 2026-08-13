@@ -194,6 +194,7 @@ namespace epmodel {
 
       friend class AirTerminalSingleDuctVAVReheat_Impl;
       friend class AirTerminalSingleDuctConstantVolumeReheat_Impl;
+      friend class AirTerminalSingleDuctVAVHeatAndCoolReheat_Impl;
     };
 
   }  // namespace detail

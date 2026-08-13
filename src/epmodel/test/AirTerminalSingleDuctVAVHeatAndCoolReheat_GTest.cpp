@@ -26,6 +26,7 @@
 #include "../WaterToAirComponent/CoilHeatingWater.hpp"
 #include "../WaterToAirComponent/CoilHeatingWater_Impl.hpp"
 
+#include <utilities/idd/Coil_Heating_Water_FieldEnums.hxx>
 #include <utilities/idd/ZoneHVAC_AirDistributionUnit_FieldEnums.hxx>
 #include <utilities/idf/WorkspaceObject_Impl.hpp>
 
@@ -662,14 +663,14 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctVAVHeatAndCoolReheat_Remove_RemovesD
   ASSERT_TRUE(terminal.setReheatCoil(waterCoil));
   ZoneHVACAirDistributionUnit adu(model);
 
-  auto zoneImpl = zone.getImpl<detail::ThermalZone_Impl>();
-  ASSERT_TRUE(zoneImpl);
-  ASSERT_TRUE(zoneImpl->getZoneHVACEquipmentList().addEquipment(terminal.cast<ModelObject>()));
-
   auto aduImpl = adu.getImpl<detail::ZoneHVACAirDistributionUnit_Impl>();
   ASSERT_TRUE(aduImpl);
   ASSERT_TRUE(aduImpl->setAirTerminal(terminal.cast<ModelObject>()));
   ASSERT_TRUE(adu.airTerminal());
+
+  auto zoneImpl = zone.getImpl<detail::ThermalZone_Impl>();
+  ASSERT_TRUE(zoneImpl);
+  ASSERT_TRUE(zoneImpl->getZoneHVACEquipmentList().addEquipment(terminal.cast<ModelObject>()));
 
   ASSERT_TRUE(plantLoop.addDemandBranchForComponent(waterCoil));
   ASSERT_TRUE(waterCoil.plantLoop());
@@ -694,6 +695,12 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctVAVHeatAndCoolReheat_RemoveFromLoop_
   CoilHeatingWater waterCoil(model);
   AirTerminalSingleDuctVAVHeatAndCoolReheat terminal(model);
   ASSERT_TRUE(terminal.setReheatCoil(waterCoil));
+  Node coilAirInlet(model);
+  Node coilAirOutlet(model);
+  auto waterCoilImpl = waterCoil.getImpl<detail::CoilHeatingWater_Impl>();
+  ASSERT_TRUE(waterCoilImpl);
+  ASSERT_TRUE(waterCoilImpl->setPointer(openstudio::Coil_Heating_WaterFields::AirInletNodeName, coilAirInlet.handle(), false));
+  ASSERT_TRUE(waterCoilImpl->setPointer(openstudio::Coil_Heating_WaterFields::AirOutletNodeName, coilAirOutlet.handle(), false));
   ZoneHVACAirDistributionUnit adu(model);
 
   auto aduImpl = adu.getImpl<detail::ZoneHVACAirDistributionUnit_Impl>();
@@ -703,6 +710,10 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctVAVHeatAndCoolReheat_RemoveFromLoop_
   ASSERT_TRUE(airLoop.addBranchForZone(zone, terminal));
   ASSERT_TRUE(plantLoop.addDemandBranchForComponent(waterCoil));
   ASSERT_TRUE(waterCoil.plantLoop());
+  ASSERT_TRUE(waterCoil.getModelObjectTarget<Node>(openstudio::Coil_Heating_WaterFields::AirInletNodeName));
+  ASSERT_TRUE(waterCoil.getModelObjectTarget<Node>(openstudio::Coil_Heating_WaterFields::AirOutletNodeName));
+  EXPECT_EQ(coilAirInlet.handle(), waterCoil.getModelObjectTarget<Node>(openstudio::Coil_Heating_WaterFields::AirInletNodeName)->handle());
+  EXPECT_EQ(coilAirOutlet.handle(), waterCoil.getModelObjectTarget<Node>(openstudio::Coil_Heating_WaterFields::AirOutletNodeName)->handle());
   const auto zoneAirNode = zone.zoneAirNode();
   auto inletObject = terminal.inletModelObject();
   ASSERT_TRUE(inletObject);
@@ -721,6 +732,12 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctVAVHeatAndCoolReheat_RemoveFromLoop_
   EXPECT_FALSE(terminal.inletModelObject());
   EXPECT_FALSE(terminal.outletModelObject());
   EXPECT_TRUE(model.getObject(terminal.handle()));
+  EXPECT_TRUE(model.getObject(coilAirInlet.handle()));
+  EXPECT_TRUE(model.getObject(coilAirOutlet.handle()));
+  ASSERT_TRUE(waterCoil.getModelObjectTarget<Node>(openstudio::Coil_Heating_WaterFields::AirInletNodeName));
+  ASSERT_TRUE(waterCoil.getModelObjectTarget<Node>(openstudio::Coil_Heating_WaterFields::AirOutletNodeName));
+  EXPECT_EQ(coilAirInlet.handle(), waterCoil.getModelObjectTarget<Node>(openstudio::Coil_Heating_WaterFields::AirInletNodeName)->handle());
+  EXPECT_EQ(coilAirOutlet.handle(), waterCoil.getModelObjectTarget<Node>(openstudio::Coil_Heating_WaterFields::AirOutletNodeName)->handle());
   EXPECT_FALSE(model.getModelObject<Node>(inletNodeHandle));
   EXPECT_FALSE(waterCoil.plantLoop());
   EXPECT_TRUE(plantLoop.demandComponents(CoilHeatingWater::iddObjectType()).empty());
