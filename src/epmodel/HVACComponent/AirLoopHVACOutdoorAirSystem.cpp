@@ -795,16 +795,24 @@ namespace epmodel {
       const auto components = branch.components();
       if (components.empty()) {
         const auto supplyInlet = airLoop->supplyInletNode();
-        const auto supplyOutlet = airLoop->supplyOutletNode();
-        if (node != supplyInlet && node != supplyOutlet) {
+        const auto supplyOutletNodes = airLoop->supplyOutletNodes();
+        const bool isSupplyOutlet = std::ranges::find(supplyOutletNodes, node) != supplyOutletNodes.end();
+        if (node != supplyInlet && !isSupplyOutlet) {
           return false;
         }
-        if (!branch.getImpl<openstudio::epmodel::detail::Branch_Impl>()->appendComponent(thisObject, supplyInlet.nameString(),
-                                                                                         supplyOutlet.nameString())) {
+
+        if (airLoop->isDualDuct() && isSupplyOutlet) {
+          // EPModel owns the OA relationship on the common branch. Do not
+          // silently redirect a deck-specific insertion request there.
           return false;
         }
+
         returnNodeName = supplyInlet.nameString();
-        mixedNodeName = supplyOutlet.nameString();
+        mixedNodeName = airLoop->isDualDuct() ? (supplyInlet.nameString() + " - " + thisObject.nameString() + " Mixed Air")
+                                              : airLoop->supplyOutletNode().nameString();
+        if (!branch.getImpl<openstudio::epmodel::detail::Branch_Impl>()->appendComponent(thisObject, returnNodeName, mixedNodeName)) {
+          return false;
+        }
       } else {
         bool inserted = false;
         for (std::size_t i = 0; i < components.size(); ++i) {

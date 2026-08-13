@@ -332,6 +332,12 @@ namespace epmodel {
           if (isSupplyOutlet && airLoop->isDualDuct()) {
             newInletName = *nodeName + " - " + thisName + " Inlet";
             newOutletName = *nodeName;
+          } else if (airLoop->isDualDuct()) {
+            // The main branch ends at the deck splitter, not at either deck
+            // outlet. Give its first component a distinct outlet so the
+            // splitter inlet follows the branch endpoint.
+            newInletName = supplyInlet.nameString();
+            newOutletName = *nodeName + " - " + thisName + " Outlet";
           } else {
             newInletName = supplyInlet.nameString();
             newOutletName = airLoop->supplyOutletNode().nameString();

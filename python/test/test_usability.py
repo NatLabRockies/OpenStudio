@@ -50,3 +50,14 @@ def test_json():
     assert "Version" in d
     assert "Building" in d
     assert d["Building"]["Building 1"]["north_axis"] == 0
+
+
+def test_epmodel_loop_returns_wrapped_nodes():
+    model = openstudio.epmodel.Model()
+    air_loop = openstudio.epmodel.AirLoopHVAC(model, True)
+
+    supply_outlet_nodes = air_loop.supplyOutletNodes()
+
+    assert isinstance(supply_outlet_nodes, tuple)
+    assert len(supply_outlet_nodes) == 2
+    assert all(isinstance(node, openstudio.epmodel.Node) for node in supply_outlet_nodes)
