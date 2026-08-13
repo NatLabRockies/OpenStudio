@@ -28,6 +28,7 @@ namespace epmodel {
       unsigned inletPort() const override;
       unsigned outletPort() const override;
       boost::optional<AirLoopHVAC> airLoopHVAC() const override;
+      boost::optional<AirLoopHVACOutdoorAirSystem> airLoopHVACOutdoorAirSystem() const override;
       bool addToNode(Node& node) override;
       bool removeFromLoop() override;
       void disconnect() override;
@@ -71,6 +72,7 @@ namespace epmodel {
       bool configureForCoolingCoil(CoilCoolingDXTwoSpeed& coolingCoil);
       bool isCoherentForCoolingCoil(const CoilCoolingDX& coolingCoil) const;
       bool isCoherentForCoolingCoil(const CoilCoolingDXTwoSpeed& coolingCoil) const;
+      boost::optional<ModelObject> projectedCoolingCoil() const;
       bool syncCoolingCoilNodes();
 
      private:

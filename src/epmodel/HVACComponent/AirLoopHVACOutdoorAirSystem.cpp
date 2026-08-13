@@ -30,6 +30,8 @@
 #include "HVACComponent/ControllerWaterCoil_Impl.hpp"
 #include "ModelObject/ControllerMechanicalVentilation.hpp"
 #include "ModelObject/ControllerMechanicalVentilation_Impl.hpp"
+#include "ModelObject/CoilSystemCoolingDX.hpp"
+#include "ModelObject/CoilSystemCoolingDX_Impl.hpp"
 #include "Model.hpp"
 #include "ModelObject.hpp"
 #include "ModelObject_Impl.hpp"
@@ -64,6 +66,23 @@
 
 namespace openstudio {
 namespace epmodel {
+
+  namespace {
+
+    ModelObject projectCoolingDXAdapter(const ModelObject& object) {
+      auto coilSystem = object.optionalCast<CoilSystemCoolingDX>();
+      if (!coilSystem) {
+        return object;
+      }
+      auto coilSystemImpl = coilSystem->getImpl<detail::CoilSystemCoolingDX_Impl>();
+      OS_ASSERT(coilSystemImpl);
+      if (auto coolingCoil = coilSystemImpl->projectedCoolingCoil()) {
+        return *coolingCoil;
+      }
+      return object;
+    }
+
+  }  // namespace
 
   AirLoopHVACOutdoorAirSystem::AirLoopHVACOutdoorAirSystem(const Model& model) : HVACComponent(AirLoopHVACOutdoorAirSystem::iddObjectType(), model) {
     auto impl = getImpl<detail::AirLoopHVACOutdoorAirSystem_Impl>();
@@ -438,6 +457,14 @@ namespace epmodel {
                                       : ((stream == OAStream::OutdoorAir) ? airToAir->primaryAirOutletPort() : airToAir->secondaryAirOutletPort());
         return airToAir->setPointer(port, node.handle());
       }
+      if (auto coilSystem = mutableObject.optionalCast<openstudio::epmodel::CoilSystemCoolingDX>()) {
+        auto coilSystemImpl = coilSystem->getImpl<openstudio::epmodel::detail::CoilSystemCoolingDX_Impl>();
+        OS_ASSERT(coilSystemImpl);
+        if (!coilSystemImpl->setPointer(updateInlet ? coilSystem->inletPort() : coilSystem->outletPort(), node.handle(), false)) {
+          return false;
+        }
+        return coilSystemImpl->syncCoolingCoilNodes();
+      }
       if (auto straight = mutableObject.optionalCast<openstudio::epmodel::StraightComponent>()) {
         return straight->setPointer(updateInlet ? straight->inletPort() : straight->outletPort(), node.handle());
       }
@@ -655,6 +682,7 @@ namespace epmodel {
         builder.addLink(oaPath[i - 1], oaPath[i]);
       }
       auto path = builder.walkPath(model(), start->cast<ModelObject>(), *target);
+      std::ranges::transform(path, path.begin(), projectCoolingDXAdapter);
       if (type == openstudio::IddObjectType::Catchall) {
         return path;
       }
@@ -679,6 +707,7 @@ namespace epmodel {
         builder.addLink(reliefPath[i - 1], reliefPath[i]);
       }
       auto path = builder.walkPath(model(), *start, target->cast<ModelObject>());
+      std::ranges::transform(path, path.begin(), projectCoolingDXAdapter);
       if (type == openstudio::IddObjectType::Catchall) {
         return path;
       }
@@ -721,6 +750,24 @@ namespace epmodel {
         return *it;
       }
       return boost::none;
+    }
+
+    bool AirLoopHVACOutdoorAirSystem_Impl::isOutdoorAirStreamComponent(openstudio::Handle handle) const {
+      const auto path = walkOutdoorAirStream();
+      return std::ranges::any_of(path, [&handle](const auto& object) { return object.handle() == handle; });
+    }
+
+    bool AirLoopHVACOutdoorAirSystem_Impl::isReliefAirStreamComponent(openstudio::Handle handle) const {
+      const auto path = walkReliefAirStream();
+      return std::ranges::any_of(path, [&handle](const auto& object) { return object.handle() == handle; });
+    }
+
+    std::vector<openstudio::epmodel::ModelObject> AirLoopHVACOutdoorAirSystem_Impl::outdoorAirStreamComponents() const {
+      return walkOutdoorAirStream();
+    }
+
+    std::vector<openstudio::epmodel::ModelObject> AirLoopHVACOutdoorAirSystem_Impl::reliefAirStreamComponents() const {
+      return walkReliefAirStream();
     }
 
     openstudio::epmodel::ControllerOutdoorAir AirLoopHVACOutdoorAirSystem_Impl::getControllerOutdoorAir() const {

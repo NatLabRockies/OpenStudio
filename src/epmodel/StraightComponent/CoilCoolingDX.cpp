@@ -14,6 +14,7 @@
 #include "ResourceObject/CoilCoolingDXCurveFitOperatingMode.hpp"
 #include "ResourceObject/CoilCoolingDXCurveFitOperatingMode_Impl.hpp"
 #include "Loop/AirLoopHVAC.hpp"
+#include "HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
 #include "Node.hpp"
 #include "Schedule/Schedule.hpp"
 #include "Schedule/Schedule_Impl.hpp"
@@ -316,7 +317,7 @@ namespace epmodel {
         if (!systemImpl->isCoherentForCoolingCoil(thisCoil)) {
           return {};
         }
-        if (system.airLoopHVAC() && !system.removeFromLoop()) {
+        if ((system.airLoopHVAC() || system.airLoopHVACOutdoorAirSystem()) && !system.removeFromLoop()) {
           return {};
         }
         auto removedSystem = system.remove();

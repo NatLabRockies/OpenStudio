@@ -122,7 +122,9 @@ namespace epmodel {
         return false;
       }
 
-      auto path = onOutdoorAirStream ? oaSystem.oaComponents() : oaSystem.reliefComponents();
+      auto oaSystemImpl = oaSystem.getImpl<openstudio::epmodel::detail::AirLoopHVACOutdoorAirSystem_Impl>();
+      OS_ASSERT(oaSystemImpl);
+      auto path = onOutdoorAirStream ? oaSystemImpl->outdoorAirStreamComponents() : oaSystemImpl->reliefAirStreamComponents();
       const auto nodeIt = std::find_if(path.begin(), path.end(), [&](const auto& object) { return object.handle() == node.handle(); });
       if (nodeIt == path.end()) {
         return false;
@@ -130,8 +132,6 @@ namespace epmodel {
 
       auto inletNode = node;
       auto outletNode = node;
-      auto oaSystemImpl = oaSystem.getImpl<openstudio::epmodel::detail::AirLoopHVACOutdoorAirSystem_Impl>();
-      OS_ASSERT(oaSystemImpl);
 
       if (path.size() == 1u) {
         auto newNode = model().getOrCreateTransientByName<openstudio::epmodel::Node>(node.nameString() + " - " + thisObject.nameString() + " Outlet");
@@ -196,20 +196,20 @@ namespace epmodel {
       }
 
       const auto thisObject = getObject<ModelObject>();
-      const bool onOutdoorAirStream = oaSystem.oaComponent(handle()).has_value();
-      const bool onReliefStream = oaSystem.reliefComponent(handle()).has_value();
+      auto oaSystemImpl = oaSystem.getImpl<openstudio::epmodel::detail::AirLoopHVACOutdoorAirSystem_Impl>();
+      OS_ASSERT(oaSystemImpl);
+      const bool onOutdoorAirStream = oaSystemImpl->isOutdoorAirStreamComponent(handle());
+      const bool onReliefStream = oaSystemImpl->isReliefAirStreamComponent(handle());
       if (!onOutdoorAirStream && !onReliefStream) {
         return false;
       }
 
-      auto path = onOutdoorAirStream ? oaSystem.oaComponents() : oaSystem.reliefComponents();
+      auto path = onOutdoorAirStream ? oaSystemImpl->outdoorAirStreamComponents() : oaSystemImpl->reliefAirStreamComponents();
       auto it = std::find_if(path.begin(), path.end(), [&](const auto& object) { return object.handle() == thisObject.handle(); });
       if (it == path.end()) {
         return false;
       }
 
-      auto oaSystemImpl = oaSystem.getImpl<openstudio::epmodel::detail::AirLoopHVACOutdoorAirSystem_Impl>();
-      OS_ASSERT(oaSystemImpl);
       const auto index = static_cast<std::size_t>(std::distance(path.begin(), it));
       if (path.size() == 3u) {
         if (onOutdoorAirStream) {
@@ -272,7 +272,8 @@ namespace epmodel {
       // Reject active adjacency without mistaking the retained node fields of a
       // detached EnergyPlus-backed object for a live connection.
       const auto currentLoop = thisComponent.loop();
-      if (currentLoop) {
+      const auto currentOASystem = thisComponent.airLoopHVACOutdoorAirSystem();
+      if (currentLoop || currentOASystem) {
         const auto inletObject = inletModelObject();
         const auto outletObject = outletModelObject();
         if ((inletObject && (inletObject->handle() == node.handle())) || (outletObject && (outletObject->handle() == node.handle()))) {
@@ -295,7 +296,7 @@ namespace epmodel {
 
       const auto thisName = thisObject.nameString();
 
-      if (currentLoop && !removeFromLoop()) {
+      if ((currentLoop || currentOASystem) && !removeFromLoop()) {
         LOG_FREE(Warn, "openstudio.epmodel.StraightComponent",
                  "Failed to detach " << thisObject.briefDescription() << " from its existing loop topology before adding it to node '"
                                      << node.nameString() << "'.");
@@ -613,7 +614,9 @@ namespace epmodel {
       }
 
       for (auto oaSystem : model().getConcreteModelObjects<openstudio::epmodel::AirLoopHVACOutdoorAirSystem>()) {
-        if (oaSystem.component(handle())) {
+        auto oaSystemImpl = oaSystem.getImpl<openstudio::epmodel::detail::AirLoopHVACOutdoorAirSystem_Impl>();
+        OS_ASSERT(oaSystemImpl);
+        if (oaSystemImpl->isOutdoorAirStreamComponent(handle()) || oaSystemImpl->isReliefAirStreamComponent(handle())) {
           return removeFromOutdoorAirSystem(oaSystem);
         }
       }

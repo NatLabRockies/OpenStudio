@@ -409,7 +409,6 @@ namespace epmodel {
 
 }  // namespace epmodel
 }  // namespace openstudio
-
 namespace openstudio {
 namespace epmodel {
   namespace detail {
@@ -5758,18 +5757,10 @@ namespace epmodel {
         for (unsigned index = 0; index < components.size(); ++index) {
           auto component = components[index];
           if (auto coilSystem = component.optionalCast<CoilSystemCoolingDX>()) {
-            if (auto coolingCoilObject = coilSystem->coolingCoil()) {
-              auto coilSystemImpl = coilSystem->getImpl<detail::CoilSystemCoolingDX_Impl>();
-              OS_ASSERT(coilSystemImpl);
-              if (auto coolingCoil = coolingCoilObject->optionalCast<CoilCoolingDX>()) {
-                if (coilSystemImpl->isCoherentForCoolingCoil(*coolingCoil)) {
-                  component = *coolingCoil;
-                }
-              } else if (auto coolingCoil = coolingCoilObject->optionalCast<CoilCoolingDXTwoSpeed>()) {
-                if (coilSystemImpl->isCoherentForCoolingCoil(*coolingCoil)) {
-                  component = *coolingCoil;
-                }
-              }
+            auto coilSystemImpl = coilSystem->getImpl<detail::CoilSystemCoolingDX_Impl>();
+            OS_ASSERT(coilSystemImpl);
+            if (auto coolingCoil = coilSystemImpl->projectedCoolingCoil()) {
+              component = *coolingCoil;
             }
           }
           builder.addLink(previousObject, component);

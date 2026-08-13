@@ -53,6 +53,10 @@ namespace epmodel {
       boost::optional<openstudio::epmodel::ModelObject> component(openstudio::Handle handle) const;
       boost::optional<openstudio::epmodel::ModelObject> oaComponent(openstudio::Handle handle) const;
       boost::optional<openstudio::epmodel::ModelObject> reliefComponent(openstudio::Handle handle) const;
+      bool isOutdoorAirStreamComponent(openstudio::Handle handle) const;
+      bool isReliefAirStreamComponent(openstudio::Handle handle) const;
+      std::vector<openstudio::epmodel::ModelObject> outdoorAirStreamComponents() const;
+      std::vector<openstudio::epmodel::ModelObject> reliefAirStreamComponents() const;
       openstudio::epmodel::ControllerOutdoorAir getControllerOutdoorAir() const;
       bool setControllerOutdoorAir(const openstudio::epmodel::ControllerOutdoorAir& controllerOutdoorAir);
 

@@ -13,6 +13,9 @@
 #include "BranchList.hpp"
 #include "Loop/AirLoopHVAC.hpp"
 #include "Loop/AirLoopHVAC_Impl.hpp"
+#include "HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
+#include "HVACComponent/AirLoopHVACOutdoorAirSystem_Impl.hpp"
+#include "ModelObject/AirLoopHVACDedicatedOutdoorAirSystem.hpp"
 #include "StraightComponent/CoilCoolingDX.hpp"
 #include "StraightComponent/CoilCoolingDX_Impl.hpp"
 #include "StraightComponent/CoilCoolingDXTwoSpeed.hpp"
@@ -189,6 +192,18 @@ namespace epmodel {
       return boost::none;
     }
 
+    boost::optional<AirLoopHVACOutdoorAirSystem> CoilSystemCoolingDX_Impl::airLoopHVACOutdoorAirSystem() const {
+      const auto thisObject = getObject<ModelObject>();
+      for (const auto& oaSystem : model().getConcreteModelObjects<AirLoopHVACOutdoorAirSystem>()) {
+        auto oaSystemImpl = oaSystem.getImpl<AirLoopHVACOutdoorAirSystem_Impl>();
+        OS_ASSERT(oaSystemImpl);
+        if (oaSystemImpl->isOutdoorAirStreamComponent(thisObject.handle()) || oaSystemImpl->isReliefAirStreamComponent(thisObject.handle())) {
+          return oaSystem;
+        }
+      }
+      return boost::none;
+    }
+
     bool CoilSystemCoolingDX_Impl::configureForCoolingCoilObject(StraightComponent& coil, unsigned scheduleFieldIndex) {
       if (coil.model() != model()) {
         return false;
@@ -259,6 +274,23 @@ namespace epmodel {
       return isCoherentForCoolingCoilObject(coil, openstudio::Coil_Cooling_DX_TwoSpeedFields::AvailabilityScheduleName);
     }
 
+    boost::optional<ModelObject> CoilSystemCoolingDX_Impl::projectedCoolingCoil() const {
+      auto coolingCoilObject = coolingCoil();
+      if (!coolingCoilObject) {
+        return boost::none;
+      }
+      if (auto coolingCoil = coolingCoilObject->optionalCast<CoilCoolingDX>()) {
+        if (isCoherentForCoolingCoil(*coolingCoil)) {
+          return coolingCoil->cast<ModelObject>();
+        }
+      } else if (auto coolingCoil = coolingCoilObject->optionalCast<CoilCoolingDXTwoSpeed>()) {
+        if (isCoherentForCoolingCoil(*coolingCoil)) {
+          return coolingCoil->cast<ModelObject>();
+        }
+      }
+      return boost::none;
+    }
+
     bool CoilSystemCoolingDX_Impl::syncCoolingCoilNodes() {
       auto linkedCoil = coolingCoil();
       auto inlet = inletModelObject();
@@ -311,8 +343,11 @@ namespace epmodel {
       if (!coherent) {
         return false;
       }
-      auto airLoop = node.airLoopHVAC();
-      if (!(airLoop && airLoop->supplyComponent(node.handle()))) {
+      const auto airLoop = node.airLoopHVAC();
+      const auto oaSystem = node.airLoopHVACOutdoorAirSystem();
+      const bool onAirLoopSupply = airLoop && airLoop->supplyComponent(node.handle());
+      const bool onDedicatedOutdoorAirSystem = oaSystem && oaSystem->airLoopHVACDedicatedOutdoorAirSystem();
+      if (!onAirLoopSupply && !onDedicatedOutdoorAirSystem) {
         return false;
       }
       if (!StraightComponent_Impl::addToNode(node)) {
@@ -327,7 +362,7 @@ namespace epmodel {
     }
 
     bool CoilSystemCoolingDX_Impl::removeFromLoop() {
-      if (!airLoopHVAC()) {
+      if (!airLoopHVAC() && !airLoopHVACOutdoorAirSystem()) {
         return false;
       }
       auto linkedCoil = coolingCoil();
@@ -346,7 +381,7 @@ namespace epmodel {
     }
 
     void CoilSystemCoolingDX_Impl::disconnect() {
-      if (airLoopHVAC()) {
+      if (airLoopHVAC() || airLoopHVACOutdoorAirSystem()) {
         (void)removeFromLoop();
       } else {
         clearTopologyPointers();
@@ -354,7 +389,7 @@ namespace epmodel {
     }
 
     std::vector<IdfObject> CoilSystemCoolingDX_Impl::remove() {
-      if (airLoopHVAC()) {
+      if (airLoopHVAC() || airLoopHVACOutdoorAirSystem()) {
         auto linkedCoil = coolingCoil();
         const bool coherent =
           linkedCoil

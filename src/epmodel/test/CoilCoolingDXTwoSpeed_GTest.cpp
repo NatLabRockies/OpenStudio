@@ -11,8 +11,10 @@
 #include "../Curve/CurveQuadratic.hpp"
 #include "../Curve/CurveQuadratic_Impl.hpp"
 #include "../HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
+#include "../HVACComponent/AirLoopHVACOutdoorAirSystem_Impl.hpp"
 #include "../Loop/AirLoopHVAC.hpp"
 #include "../Loop/AirLoopHVAC_Impl.hpp"
+#include "../ModelObject/AirLoopHVACDedicatedOutdoorAirSystem.hpp"
 #include "../ModelObject/Branch.hpp"
 #include "../ModelObject/BranchList.hpp"
 #include "../ModelObject/CoilSystemCoolingDX.hpp"
@@ -22,6 +24,8 @@
 #include "../StraightComponent/CoilCoolingDXTwoSpeed.hpp"
 #include "../StraightComponent/CoilCoolingDXTwoSpeed_Impl.hpp"
 #include "../StraightComponent/Duct.hpp"
+#include "../StraightComponent/FanSystemModel.hpp"
+#include "../StraightComponent/FanSystemModel_Impl.hpp"
 #include "../StraightComponent/Node.hpp"
 
 #include <utilities/idd/CoilSystem_Cooling_DX_FieldEnums.hxx>
@@ -256,7 +260,7 @@ TEST_F(EPModelFixture, CoilCoolingDXTwoSpeed_RelationshipConstructor) {
   EXPECT_TRUE(coil.isRatedLowSpeedAirFlowRateAutosized());
 }
 
-TEST_F(EPModelFixture, CoilCoolingDXTwoSpeed_AddToNodeSupplyOnly) {
+TEST_F(EPModelFixture, CoilCoolingDXTwoSpeed_AddToNodeDirectSupplyAndRejectsOrdinaryOutdoorAir) {
   Model model;
   AirLoopHVAC airLoop(model);
   AirLoopHVACOutdoorAirSystem oaSystem(model);
@@ -291,6 +295,99 @@ TEST_F(EPModelFixture, CoilCoolingDXTwoSpeed_AddToNodeSupplyOnly) {
   ASSERT_TRUE(outboardOANode);
   EXPECT_FALSE(oaCoil.addToNode(*outboardOANode));
   EXPECT_FALSE(oaCoil.airLoopHVAC());
+}
+
+TEST_F(EPModelFixture, CoilCoolingDXTwoSpeed_DedicatedOutdoorAirAdapterLifecycle) {
+  const auto idfPath = openstudio::tempDir() / openstudio::toPath("epmodel-two-speed-dx-doas-adapter.idf");
+
+  Model model;
+  AirLoopHVACOutdoorAirSystem dedicatedOA(model);
+  ASSERT_TRUE(dedicatedOA.setName("Two Speed DX Dedicated OA"));
+  AirLoopHVACDedicatedOutdoorAirSystem doas(dedicatedOA);
+
+  CoilCoolingDXTwoSpeed coil(model);
+  ASSERT_TRUE(coil.setName("Dedicated Two Speed DX Coil"));
+  auto outboardNode = dedicatedOA.outboardOANode();
+  ASSERT_TRUE(outboardNode);
+  ASSERT_TRUE(coil.addToNode(*outboardNode));
+
+  auto systems = model.getConcreteModelObjects<CoilSystemCoolingDX>();
+  ASSERT_EQ(1u, systems.size());
+  auto system = systems.front();
+  ASSERT_TRUE(system.coolingCoil());
+  EXPECT_EQ(coil.handle(), system.coolingCoil()->handle());
+  ASSERT_TRUE(system.sensorNode());
+  ASSERT_TRUE(coil.outletModelObject());
+  EXPECT_EQ(coil.outletModelObject()->handle(), system.sensorNode()->handle());
+  ASSERT_TRUE(coil.airLoopHVACOutdoorAirSystem());
+  EXPECT_EQ(dedicatedOA.handle(), coil.airLoopHVACOutdoorAirSystem()->handle());
+  ASSERT_TRUE(system.airLoopHVACOutdoorAirSystem());
+  EXPECT_EQ(dedicatedOA.handle(), system.airLoopHVACOutdoorAirSystem()->handle());
+  EXPECT_TRUE(dedicatedOA.oaComponent(coil.handle()));
+  EXPECT_FALSE(dedicatedOA.oaComponent(system.handle()));
+  EXPECT_EQ(1u, dedicatedOA.oaComponents(openstudio::IddObjectType::Coil_Cooling_DX_TwoSpeed).size());
+  EXPECT_TRUE(dedicatedOA.oaComponents(openstudio::IddObjectType::CoilSystem_Cooling_DX).empty());
+
+  FanSystemModel fan(model);
+  ASSERT_TRUE(fan.setName("Dedicated OA Fan"));
+  outboardNode = dedicatedOA.outboardOANode();
+  ASSERT_TRUE(outboardNode);
+  ASSERT_TRUE(fan.addToNode(*outboardNode));
+  ASSERT_TRUE(fan.outletModelObject());
+  ASSERT_TRUE(coil.inletModelObject());
+  ASSERT_TRUE(system.inletModelObject());
+  EXPECT_EQ(fan.outletModelObject()->handle(), coil.inletModelObject()->handle());
+  EXPECT_EQ(coil.inletModelObject()->handle(), system.inletModelObject()->handle());
+  ASSERT_TRUE(coil.outletModelObject());
+  ASSERT_TRUE(system.outletModelObject());
+  ASSERT_TRUE(system.sensorNode());
+  EXPECT_EQ(coil.outletModelObject()->handle(), system.outletModelObject()->handle());
+  EXPECT_EQ(system.outletModelObject()->handle(), system.sensorNode()->handle());
+
+  auto publicPath = dedicatedOA.oaComponents();
+  const auto fanIt = std::ranges::find(publicPath, fan.cast<ModelObject>());
+  const auto coilIt = std::ranges::find(publicPath, coil.cast<ModelObject>());
+  ASSERT_NE(publicPath.end(), fanIt);
+  ASSERT_NE(publicPath.end(), coilIt);
+  EXPECT_LT(std::distance(publicPath.begin(), fanIt), std::distance(publicPath.begin(), coilIt));
+  EXPECT_EQ(publicPath.end(), std::ranges::find(publicPath, system.cast<ModelObject>()));
+
+  ASSERT_TRUE(model.save(idfPath, true));
+  auto loadedModel = Model::load(idfPath);
+  ASSERT_TRUE(loadedModel);
+  auto loadedOA = loadedModel->getConcreteModelObjectByName<AirLoopHVACOutdoorAirSystem>("Two Speed DX Dedicated OA");
+  auto loadedCoil = loadedModel->getConcreteModelObjectByName<CoilCoolingDXTwoSpeed>("Dedicated Two Speed DX Coil");
+  auto loadedSystem = loadedModel->getConcreteModelObjectByName<CoilSystemCoolingDX>("Dedicated Two Speed DX Coil CoilSystem");
+  auto loadedFan = loadedModel->getConcreteModelObjectByName<FanSystemModel>("Dedicated OA Fan");
+  ASSERT_TRUE(loadedOA);
+  ASSERT_TRUE(loadedCoil);
+  ASSERT_TRUE(loadedSystem);
+  ASSERT_TRUE(loadedFan);
+  EXPECT_TRUE(loadedOA->oaComponent(loadedCoil->handle()));
+  EXPECT_FALSE(loadedOA->oaComponent(loadedSystem->handle()));
+  EXPECT_EQ(1u, loadedOA->oaComponents(openstudio::IddObjectType::Coil_Cooling_DX_TwoSpeed).size());
+  ASSERT_TRUE(loadedSystem->sensorNode());
+  ASSERT_TRUE(loadedCoil->outletModelObject());
+  EXPECT_EQ(loadedCoil->outletModelObject()->handle(), loadedSystem->sensorNode()->handle());
+
+  ASSERT_TRUE(loadedFan->removeFromLoop());
+  ASSERT_TRUE(loadedCoil->inletModelObject());
+  ASSERT_TRUE(loadedSystem->inletModelObject());
+  EXPECT_EQ(loadedCoil->inletModelObject()->handle(), loadedSystem->inletModelObject()->handle());
+  EXPECT_TRUE(loadedOA->oaComponents(openstudio::IddObjectType::Fan_SystemModel).empty());
+  ASSERT_TRUE(loadedCoil->removeFromLoop());
+  EXPECT_TRUE(loadedOA->oaComponents(openstudio::IddObjectType::Coil_Cooling_DX_TwoSpeed).empty());
+  EXPECT_FALSE(loadedCoil->inletModelObject());
+  EXPECT_FALSE(loadedSystem->inletModelObject());
+  EXPECT_FALSE(loadedSystem->sensorNode());
+
+  auto loadedOutboardNode = loadedOA->outboardOANode();
+  ASSERT_TRUE(loadedOutboardNode);
+  ASSERT_TRUE(loadedCoil->addToNode(*loadedOutboardNode));
+  EXPECT_EQ(1u, loadedModel->getConcreteModelObjects<CoilSystemCoolingDX>().size());
+  EXPECT_TRUE(loadedOA->oaComponent(loadedCoil->handle()));
+
+  openstudio::filesystem::remove(idfPath);
 }
 
 TEST_F(EPModelFixture, CoilCoolingDXTwoSpeed_DualDuctAdapterLifecycleAcrossReloadAndAirLoopRemoval) {

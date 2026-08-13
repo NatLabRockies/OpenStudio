@@ -13,6 +13,7 @@
 #include "Curve/CurveQuadratic_Impl.hpp"
 #include "Loop/AirLoopHVAC.hpp"
 #include "HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
+#include "ModelObject/AirLoopHVACDedicatedOutdoorAirSystem.hpp"
 #include "ModelObject/CoilSystemCoolingDX.hpp"
 #include "ModelObject/CoilSystemCoolingDX_Impl.hpp"
 #include "Model.hpp"
@@ -1049,9 +1050,11 @@ namespace epmodel {
         return false;
       }
 
-      auto airLoop = node.airLoopHVAC();
-
-      if (!(airLoop && airLoop->supplyComponent(node.handle()))) {
+      const auto airLoop = node.airLoopHVAC();
+      const auto oaSystem = node.airLoopHVACOutdoorAirSystem();
+      const bool onAirLoopSupply = airLoop && airLoop->supplyComponent(node.handle());
+      const bool onDedicatedOutdoorAirSystem = oaSystem && oaSystem->airLoopHVACDedicatedOutdoorAirSystem();
+      if (!onAirLoopSupply && !onDedicatedOutdoorAirSystem) {
         return false;
       }
 
@@ -1066,7 +1069,7 @@ namespace epmodel {
         // A bare DX coil is not valid branch equipment in EnergyPlus. Refuse
         // to layer an adapter over legacy live topology that we cannot replace
         // as one transaction.
-        if (StraightComponent_Impl::airLoopHVAC()) {
+        if (StraightComponent_Impl::airLoopHVAC() || StraightComponent_Impl::airLoopHVACOutdoorAirSystem()) {
           return false;
         }
 
@@ -1163,7 +1166,7 @@ namespace epmodel {
         if (!systemImpl->isCoherentForCoolingCoil(thisCoil)) {
           return {};
         }
-        if (system.airLoopHVAC() && !system.removeFromLoop()) {
+        if ((system.airLoopHVAC() || system.airLoopHVACOutdoorAirSystem()) && !system.removeFromLoop()) {
           return {};
         }
         auto removedSystem = system.remove();
