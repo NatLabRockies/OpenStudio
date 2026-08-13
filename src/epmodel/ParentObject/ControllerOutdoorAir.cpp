@@ -9,6 +9,7 @@
 #include "Loop/AirLoopHVAC.hpp"
 #include "Loop/AirLoopHVAC_Impl.hpp"
 #include "HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
+#include "ModelObject/AirLoopHVACDedicatedOutdoorAirSystem.hpp"
 #include "ModelObject/AirLoopHVACControllerList.hpp"
 #include "ModelObject/AirLoopHVACControllerList_Impl.hpp"
 #include "ModelObject/AirLoopHVACOutdoorAirSystemEquipmentList.hpp"
@@ -257,20 +258,62 @@ namespace epmodel {
 
       boost::optional<openstudio::epmodel::AirLoopHVACOutdoorAirSystem>
         findOwningOutdoorAirSystemForCanonicalize(const openstudio::epmodel::ControllerOutdoorAir& controller) {
+        auto controllerImpl = controller.getImpl<openstudio::epmodel::detail::ControllerOutdoorAir_Impl>();
+        const auto hasUniqueTransientList = [](const openstudio::epmodel::ControllerOutdoorAir& candidate) {
+          auto candidateImpl = candidate.getImpl<openstudio::epmodel::detail::ControllerOutdoorAir_Impl>();
+          if (!candidateImpl || !candidateImpl->isTransient()) {
+            return false;
+          }
+          unsigned transientListCount = 0u;
+          for (const auto& source : candidate.getModelObjectSources<openstudio::epmodel::AirLoopHVACControllerList>()) {
+            auto listImpl = source.getImpl<openstudio::epmodel::detail::AirLoopHVACControllerList_Impl>();
+            auto listedController = source.optionalControllerOutdoorAir();
+            if (listImpl && listImpl->isTransient() && listedController && (*listedController == candidate)) {
+              ++transientListCount;
+            }
+          }
+          return transientListCount == 1u;
+        };
+
+        boost::optional<openstudio::epmodel::AirLoopHVACOutdoorAirSystem> result;
         for (const auto& oaSystem : controller.model().getConcreteModelObjects<openstudio::epmodel::AirLoopHVACOutdoorAirSystem>()) {
           // Canonicalization path may run before OA-system invariants are fully
           // established on every instance, so use a tolerant lookup here.
           auto controllerList = oaSystem.getModelObjectTarget<openstudio::epmodel::AirLoopHVACControllerList>(
             openstudio::AirLoopHVAC_OutdoorAirSystemFields::ControllerListName);
-          if (!controllerList) {
-            continue;
+          bool matches = false;
+          if (controllerList) {
+            auto oaController = controllerList->optionalControllerOutdoorAir();
+            matches = oaController && (*oaController == controller);
+          } else if (controllerImpl && controllerImpl->isTransient() && hasUniqueTransientList(controller)
+                     && oaSystem.airLoopHVACDedicatedOutdoorAirSystem()) {
+            auto actuatorNode = controller.getModelObjectTarget<openstudio::epmodel::Node>(openstudio::Controller_OutdoorAirFields::ActuatorNodeName);
+            if (actuatorNode) {
+              auto outdoorModelObject = oaSystem.outdoorAirModelObject();
+              if (outdoorModelObject && (outdoorModelObject->handle() == actuatorNode->handle())) {
+                unsigned projectedControllerCount = 0u;
+                for (const auto& candidate : controller.model().getConcreteModelObjects<openstudio::epmodel::ControllerOutdoorAir>()) {
+                  if (!hasUniqueTransientList(candidate)) {
+                    continue;
+                  }
+                  auto candidateActuator =
+                    candidate.getModelObjectTarget<openstudio::epmodel::Node>(openstudio::Controller_OutdoorAirFields::ActuatorNodeName);
+                  if (candidateActuator && (candidateActuator->handle() == outdoorModelObject->handle())) {
+                    ++projectedControllerCount;
+                  }
+                }
+                matches = projectedControllerCount == 1u;
+              }
+            }
           }
-          auto oaController = controllerList->optionalControllerOutdoorAir();
-          if (oaController && (*oaController == controller)) {
-            return oaSystem;
+          if (matches) {
+            if (result) {
+              return boost::none;
+            }
+            result = oaSystem;
           }
         }
-        return boost::none;
+        return result;
       }
 
       bool hasServedZoneWithDesignSpecificationOutdoorAir(const openstudio::epmodel::ControllerOutdoorAir& controller, LoadContext& context) {
@@ -504,15 +547,34 @@ namespace epmodel {
       // - This getter remains non-throwing for API parity and creates on demand when missing.
       auto thisController = getObject<openstudio::epmodel::ControllerOutdoorAir>();
       auto newController = openstudio::epmodel::ControllerMechanicalVentilation(model());
+      if (isTransient()) {
+        newController.getImpl<openstudio::epmodel::detail::ControllerMechanicalVentilation_Impl>()->setTransient(true);
+      }
       OS_ASSERT(thisController.setPointer(openstudio::Controller_OutdoorAirFields::MechanicalVentilationControllerName, newController.handle()));
       return newController;
     }
 
     bool ControllerOutdoorAir_Impl::setControllerMechanicalVentilation(
       const openstudio::epmodel::ControllerMechanicalVentilation& controllerMechanicalVentilation) {
+      if (controllerMechanicalVentilation.model() != model()) {
+        return false;
+      }
+      const auto thisController = getObject<openstudio::epmodel::ControllerOutdoorAir>();
+      auto mechanicalVentilationImpl = controllerMechanicalVentilation.getImpl<openstudio::epmodel::detail::ControllerMechanicalVentilation_Impl>();
+      OS_ASSERT(mechanicalVentilationImpl);
+      for (const auto& source : controllerMechanicalVentilation.sources()) {
+        // Persistent ordinary OA controllers may share a persistent CMV, as
+        // the reference Model API permits. Never share across a transient
+        // boundary: changing one DOAS projection later would change the
+        // serialization state required by the other owner.
+        if ((source.handle() != thisController.handle()) && (isTransient() || mechanicalVentilationImpl->isTransient())) {
+          return false;
+        }
+      }
       const bool result =
         setPointer(openstudio::Controller_OutdoorAirFields::MechanicalVentilationControllerName, controllerMechanicalVentilation.handle(), false);
       if (result) {
+        mechanicalVentilationImpl->setTransient(isTransient());
         if (auto oaSystem = airLoopHVACOutdoorAirSystem()) {
           if (auto airLoop = oaSystem->airLoopHVAC()) {
             airLoop->getImpl<openstudio::epmodel::detail::AirLoopHVAC_Impl>()->syncControllerMechanicalVentilationZoneOutdoorAirEntries();
@@ -524,22 +586,7 @@ namespace epmodel {
 
     boost::optional<openstudio::epmodel::AirLoopHVACOutdoorAirSystem> ControllerOutdoorAir_Impl::airLoopHVACOutdoorAirSystem() const {
       const auto thisController = getObject<openstudio::epmodel::ControllerOutdoorAir>();
-      for (const auto& oaSystem : model().getConcreteModelObjects<openstudio::epmodel::AirLoopHVACOutdoorAirSystem>()) {
-        // This accessor is used by canonicalization flows (eg CMV rebuild),
-        // where other OA systems in the same model may not yet satisfy
-        // getControllerOutdoorAir() invariants. Use tolerant relationship
-        // lookup here to avoid cross-object canonicalization ordering asserts.
-        auto controllerList = oaSystem.getModelObjectTarget<openstudio::epmodel::AirLoopHVACControllerList>(
-          openstudio::AirLoopHVAC_OutdoorAirSystemFields::ControllerListName);
-        if (!controllerList) {
-          continue;
-        }
-        auto controller = controllerList->optionalControllerOutdoorAir();
-        if (controller && (*controller == thisController)) {
-          return oaSystem;
-        }
-      }
-      return boost::none;
+      return findOwningOutdoorAirSystemForCanonicalize(thisController);
     }
 
     void ControllerOutdoorAir_Impl::doCanonicalize(LoadContext& context) {
@@ -603,6 +650,9 @@ namespace epmodel {
 
       if (!target && hasServedZoneWithDesignSpecificationOutdoorAir(thisController, context)) {
         auto newController = openstudio::epmodel::ControllerMechanicalVentilation(model());
+        if (isTransient()) {
+          newController.getImpl<openstudio::epmodel::detail::ControllerMechanicalVentilation_Impl>()->setTransient(true);
+        }
         OS_ASSERT(thisController.setPointer(openstudio::Controller_OutdoorAirFields::MechanicalVentilationControllerName, newController.handle()));
         target = newController;
         detail::addLoadInfo(context, "Created Controller:MechanicalVentilation '" + newController.nameString() + "' for Controller:OutdoorAir '"
@@ -613,6 +663,7 @@ namespace epmodel {
       // - If zone OA assignments exist in the model, CMV is synthesized/maintained at canonicalization.
       // - Otherwise CMV is optional and may still be created on-demand by getter API.
       if (target) {
+        target->getImpl<openstudio::epmodel::detail::ControllerMechanicalVentilation_Impl>()->setTransient(isTransient());
         target->getImpl<openstudio::epmodel::detail::ControllerMechanicalVentilation_Impl>()->canonicalize(context);
       }
     }

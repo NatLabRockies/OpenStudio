@@ -17,14 +17,19 @@
 #include "AirLoopHVACOutdoorAirSystemEquipmentList_Impl.hpp"
 #include "ModelObject/AirLoopHVACDedicatedOutdoorAirSystem.hpp"
 #include "ModelObject/AirLoopHVACDedicatedOutdoorAirSystem_Impl.hpp"
+#include "ModelObject/AirLoopHVACSplitter.hpp"
+#include "ModelObject/AirLoopHVACSplitter_Impl.hpp"
 #include "Branch.hpp"
 #include "Branch_Impl.hpp"
 #include "BranchList.hpp"
 #include "BranchList_Impl.hpp"
 #include "ParentObject/ControllerOutdoorAir.hpp"
 #include "ParentObject/ControllerOutdoorAir_Impl.hpp"
+#include "ModelObject/ControllerMechanicalVentilation.hpp"
+#include "ModelObject/ControllerMechanicalVentilation_Impl.hpp"
 #include "Model.hpp"
 #include "ModelObject.hpp"
+#include "ModelObject_Impl.hpp"
 #include "Node.hpp"
 #include "ModelObject/OutdoorAirMixer.hpp"
 #include "ModelObject/OutdoorAirMixer_Impl.hpp"
@@ -42,6 +47,7 @@
 #include <utilities/core/Compare.hpp>
 #include <utilities/idd/AirLoopHVAC_OutdoorAirSystem_FieldEnums.hxx>
 #include <utilities/idd/AirLoopHVAC_DedicatedOutdoorAirSystem_FieldEnums.hxx>
+#include <utilities/idd/AirLoopHVAC_Splitter_FieldEnums.hxx>
 #include <utilities/idd/Controller_OutdoorAir_FieldEnums.hxx>
 #include <utilities/idd/OutdoorAir_NodeList_FieldEnums.hxx>
 #include <utilities/idd/OutdoorAir_Mixer_FieldEnums.hxx>
@@ -349,6 +355,10 @@ namespace epmodel {
     }
 
     bool AirLoopHVACOutdoorAirSystem_Impl::rewriteEquipmentListOrder(LoadContext* context) {
+      return rewriteEquipmentListOrder(context, static_cast<bool>(airLoopHVACDedicatedOutdoorAirSystem()));
+    }
+
+    bool AirLoopHVACOutdoorAirSystem_Impl::rewriteEquipmentListOrder(LoadContext* context, bool omitMixer) {
       auto equipmentList = airLoopHVACOutdoorAirSystemEquipmentList();
       auto equipmentListImpl = equipmentList.getImpl<detail::AirLoopHVACOutdoorAirSystemEquipmentList_Impl>();
       OS_ASSERT(equipmentListImpl);
@@ -358,10 +368,12 @@ namespace epmodel {
       auto mixer = outdoorAirMixer().cast<ModelObject>();
 
       std::vector<ModelObject> ordered;
-      ordered.push_back(mixer);
 
       std::set<Handle> seen;
       seen.insert(mixer.handle());
+      if (!omitMixer) {
+        ordered.push_back(mixer);
+      }
 
       for (const auto& object : oaPath) {
         if (object.optionalCast<Node>()) {
@@ -429,7 +441,46 @@ namespace epmodel {
     }
 
     bool AirLoopHVACOutdoorAirSystem_Impl::setOutdoorAirStreamNode(const Node& node) {
-      return outdoorAirMixer().setPointer(outdoorAirPort(), node.handle());
+      auto mixer = outdoorAirMixer();
+      const auto oldNode = mixer.getTarget(outdoorAirPort());
+      auto doas = airLoopHVACDedicatedOutdoorAirSystem();
+      boost::optional<openstudio::epmodel::AirLoopHVACSplitter> splitter;
+      boost::optional<WorkspaceObject> oldSplitterInlet;
+      boost::optional<openstudio::epmodel::ControllerOutdoorAir> controller;
+      boost::optional<WorkspaceObject> oldControllerActuator;
+      if (doas) {
+        splitter = doas->getImpl<openstudio::epmodel::detail::AirLoopHVACDedicatedOutdoorAirSystem_Impl>()->airLoopHVACSplitter();
+        controller = projectedControllerOutdoorAir();
+        if (!splitter || !controller) {
+          return false;
+        }
+        oldSplitterInlet = splitter->getTarget(openstudio::AirLoopHVAC_SplitterFields::InletNodeName);
+        oldControllerActuator = controller->getTarget(openstudio::Controller_OutdoorAirFields::ActuatorNodeName);
+      }
+
+      if (!mixer.setPointer(outdoorAirPort(), node.handle())) {
+        return false;
+      }
+
+      if (doas) {
+        OS_ASSERT(splitter);
+        OS_ASSERT(controller);
+        if (!splitter->setPointer(openstudio::AirLoopHVAC_SplitterFields::InletNodeName, node.handle())) {
+          if (oldNode) {
+            OS_ASSERT(mixer.setPointer(outdoorAirPort(), oldNode->handle()));
+          }
+          return false;
+        }
+        if (!controller->setPointer(openstudio::Controller_OutdoorAirFields::ActuatorNodeName, node.handle())) {
+          OS_ASSERT(splitter->getImpl<detail::ModelObject_Impl>()->setPointer(openstudio::AirLoopHVAC_SplitterFields::InletNodeName,
+                                                                              oldSplitterInlet ? oldSplitterInlet->handle() : Handle(), false));
+          OS_ASSERT(mixer.getImpl<detail::ModelObject_Impl>()->setPointer(outdoorAirPort(), oldNode ? oldNode->handle() : Handle(), false));
+          OS_ASSERT(controller->getImpl<detail::ModelObject_Impl>()->setPointer(
+            openstudio::Controller_OutdoorAirFields::ActuatorNodeName, oldControllerActuator ? oldControllerActuator->handle() : Handle(), false));
+          return false;
+        }
+      }
+      return true;
     }
 
     bool AirLoopHVACOutdoorAirSystem_Impl::setReliefAirStreamNode(const Node& node) {
@@ -481,8 +532,43 @@ namespace epmodel {
 
     openstudio::epmodel::OutdoorAirMixer AirLoopHVACOutdoorAirSystem_Impl::outdoorAirMixer() const {
       const auto mixers = subsetCastVector<openstudio::epmodel::OutdoorAirMixer>(airLoopHVACOutdoorAirSystemEquipmentList().equipment());
-      OS_ASSERT(mixers.size() == 1u);
-      return mixers.front();
+      if (mixers.size() == 1u) {
+        return mixers.front();
+      }
+      auto projectedMixer = projectedOutdoorAirMixer();
+      OS_ASSERT(projectedMixer);
+      return *projectedMixer;
+    }
+
+    boost::optional<openstudio::epmodel::OutdoorAirMixer> AirLoopHVACOutdoorAirSystem_Impl::projectedOutdoorAirMixer() const {
+      auto doas = airLoopHVACDedicatedOutdoorAirSystem();
+      if (!doas) {
+        return boost::none;
+      }
+      auto splitter = doas->getImpl<openstudio::epmodel::detail::AirLoopHVACDedicatedOutdoorAirSystem_Impl>()->airLoopHVACSplitter();
+      if (!splitter) {
+        return boost::none;
+      }
+      auto splitterInlet = splitter->getModelObjectTarget<openstudio::epmodel::Node>(openstudio::AirLoopHVAC_SplitterFields::InletNodeName);
+      if (!splitterInlet) {
+        return boost::none;
+      }
+
+      boost::optional<openstudio::epmodel::OutdoorAirMixer> result;
+      for (const auto& mixer : model().getConcreteModelObjects<openstudio::epmodel::OutdoorAirMixer>()) {
+        auto mixerImpl = mixer.getImpl<openstudio::epmodel::detail::OutdoorAirMixer_Impl>();
+        if (!mixerImpl || !mixerImpl->isTransient()) {
+          continue;
+        }
+        auto outdoorNode = mixerImpl->outdoorAirNode();
+        if (outdoorNode && (*outdoorNode == *splitterInlet)) {
+          if (result) {
+            return boost::none;
+          }
+          result = mixer;
+        }
+      }
+      return result;
     }
 
     boost::optional<openstudio::epmodel::ModelObject> AirLoopHVACOutdoorAirSystem_Impl::returnAirModelObject() const {
@@ -603,11 +689,66 @@ namespace epmodel {
 
     openstudio::epmodel::ControllerOutdoorAir AirLoopHVACOutdoorAirSystem_Impl::getControllerOutdoorAir() const {
       auto controller = airLoopHVACControllerList().optionalControllerOutdoorAir();
+      if (!controller) {
+        controller = projectedControllerOutdoorAir();
+      }
       OS_ASSERT(controller);
       return *controller;
     }
 
     bool AirLoopHVACOutdoorAirSystem_Impl::setControllerOutdoorAir(const openstudio::epmodel::ControllerOutdoorAir& controllerOutdoorAir) {
+      if (controllerOutdoorAir.model() != model()) {
+        return false;
+      }
+      if (airLoopHVACDedicatedOutdoorAirSystem()) {
+        auto oldController = projectedControllerOutdoorAir();
+        if (oldController && (*oldController == controllerOutdoorAir)) {
+          return true;
+        }
+        if (!controllerOutdoorAir.sources().empty()) {
+          return false;
+        }
+        auto controllerList = airLoopHVACControllerList();
+        auto controller = controllerOutdoorAir;
+        auto mixer = outdoorAirMixer();
+        auto controllerImpl = controller.getImpl<openstudio::epmodel::detail::ControllerOutdoorAir_Impl>();
+        OS_ASSERT(controllerImpl);
+        controllerImpl->setTransient(true);
+        auto mechanicalVentilation = controllerImpl->optionalControllerMechanicalVentilation();
+        if (mechanicalVentilation) {
+          mechanicalVentilation->getImpl<openstudio::epmodel::detail::ControllerMechanicalVentilation_Impl>()->setTransient(true);
+        }
+        if (!configureDedicatedCompanions(mixer, controller)) {
+          controllerImpl->setTransient(false);
+          if (mechanicalVentilation) {
+            mechanicalVentilation->getImpl<openstudio::epmodel::detail::ControllerMechanicalVentilation_Impl>()->setTransient(false);
+          }
+          return false;
+        }
+        if (!controllerList.getImpl<openstudio::epmodel::detail::AirLoopHVACControllerList_Impl>()->setControllerOutdoorAir(controller)) {
+          controllerImpl->setTransient(false);
+          if (mechanicalVentilation) {
+            mechanicalVentilation->getImpl<openstudio::epmodel::detail::ControllerMechanicalVentilation_Impl>()->setTransient(false);
+          }
+          return false;
+        }
+        if (oldController && (*oldController != controller) && oldController->sources().empty()) {
+          auto oldControllerImpl = oldController->getImpl<openstudio::epmodel::detail::ControllerOutdoorAir_Impl>();
+          auto oldMechanicalVentilation = oldControllerImpl ? oldControllerImpl->optionalControllerMechanicalVentilation() : boost::none;
+          const auto oldMechanicalVentilationHandle =
+            oldMechanicalVentilation ? boost::optional<Handle>(oldMechanicalVentilation->handle()) : boost::none;
+          oldController->remove();
+          if (oldMechanicalVentilationHandle) {
+            if (auto orphan = model().getModelObject<openstudio::epmodel::ControllerMechanicalVentilation>(*oldMechanicalVentilationHandle)) {
+              if (orphan->sources().empty()) {
+                orphan->remove();
+              }
+            }
+          }
+        }
+        return true;
+      }
+
       auto controllerList = airLoopHVACControllerList();
       const bool result =
         controllerList.getImpl<openstudio::epmodel::detail::AirLoopHVACControllerList_Impl>()->setControllerOutdoorAir(controllerOutdoorAir);
@@ -619,10 +760,109 @@ namespace epmodel {
       return result;
     }
 
+    boost::optional<openstudio::epmodel::ControllerOutdoorAir> AirLoopHVACOutdoorAirSystem_Impl::projectedControllerOutdoorAir() const {
+      auto mixer = projectedOutdoorAirMixer();
+      if (!mixer) {
+        return boost::none;
+      }
+      auto outdoorNode = mixer->getModelObjectTarget<openstudio::epmodel::Node>(outdoorAirPort());
+      if (!outdoorNode) {
+        return boost::none;
+      }
+
+      boost::optional<openstudio::epmodel::ControllerOutdoorAir> result;
+      for (const auto& controller : model().getConcreteModelObjects<openstudio::epmodel::ControllerOutdoorAir>()) {
+        auto controllerImpl = controller.getImpl<openstudio::epmodel::detail::ControllerOutdoorAir_Impl>();
+        if (!controllerImpl || !controllerImpl->isTransient()) {
+          continue;
+        }
+        auto actuatorNode = controller.getModelObjectTarget<openstudio::epmodel::Node>(openstudio::Controller_OutdoorAirFields::ActuatorNodeName);
+        if (actuatorNode && (*actuatorNode == *outdoorNode)) {
+          if (result) {
+            return boost::none;
+          }
+          result = controller;
+        }
+      }
+      return result;
+    }
+
+    bool AirLoopHVACOutdoorAirSystem_Impl::configureDedicatedCompanions(openstudio::epmodel::OutdoorAirMixer& mixer,
+                                                                        openstudio::epmodel::ControllerOutdoorAir& controller) {
+      auto oaSystem = getObject<openstudio::epmodel::AirLoopHVACOutdoorAirSystem>();
+      auto mixerImpl = mixer.getImpl<openstudio::epmodel::detail::OutdoorAirMixer_Impl>();
+      OS_ASSERT(mixerImpl);
+
+      auto outdoorNode = mixerImpl->outdoorAirNode();
+      if (auto doas = airLoopHVACDedicatedOutdoorAirSystem()) {
+        auto splitter = doas->getImpl<openstudio::epmodel::detail::AirLoopHVACDedicatedOutdoorAirSystem_Impl>()->airLoopHVACSplitter();
+        if (splitter) {
+          if (auto splitterInlet = splitter->getModelObjectTarget<openstudio::epmodel::Node>(openstudio::AirLoopHVAC_SplitterFields::InletNodeName)) {
+            if (!outdoorNode || (*outdoorNode != *splitterInlet)) {
+              if (!mixerImpl->setOutdoorAirNode(*splitterInlet)) {
+                return false;
+              }
+            }
+            outdoorNode = splitterInlet;
+          }
+        }
+      }
+      if (!outdoorNode) {
+        outdoorNode = model().getOrCreateTransientByName<openstudio::epmodel::Node>(oaSystem.nameString() + " Outboard OA Node");
+        if (!mixerImpl->setOutdoorAirNode(*outdoorNode)) {
+          return false;
+        }
+      }
+
+      auto reliefNode = mixerImpl->reliefAirNode();
+      if (!reliefNode) {
+        reliefNode = model().getOrCreateTransientByName<openstudio::epmodel::Node>(oaSystem.nameString() + " Relief Node");
+        if (!mixerImpl->setReliefAirNode(*reliefNode)) {
+          return false;
+        }
+      }
+      auto returnNode = mixerImpl->returnAirNode();
+      if (!returnNode) {
+        returnNode = model().getOrCreateTransientByName<openstudio::epmodel::Node>(oaSystem.nameString() + " Conceptual Return Node");
+        if (!mixerImpl->setReturnAirNode(*returnNode)) {
+          return false;
+        }
+      }
+      auto mixedNode = mixerImpl->mixedAirNode();
+      if (!mixedNode) {
+        mixedNode = model().getOrCreateTransientByName<openstudio::epmodel::Node>(oaSystem.nameString() + " Conceptual Mixed Air Node");
+        if (!mixerImpl->setMixedAirNode(*mixedNode)) {
+          return false;
+        }
+      }
+
+      return controller.setPointer(openstudio::Controller_OutdoorAirFields::ReliefAirOutletNodeName, reliefNode->handle())
+             && controller.setPointer(openstudio::Controller_OutdoorAirFields::ReturnAirNodeName, returnNode->handle())
+             && controller.setPointer(openstudio::Controller_OutdoorAirFields::MixedAirNodeName, mixedNode->handle())
+             && controller.setPointer(openstudio::Controller_OutdoorAirFields::ActuatorNodeName, outdoorNode->handle());
+    }
+
     openstudio::epmodel::AirLoopHVACControllerList AirLoopHVACOutdoorAirSystem_Impl::airLoopHVACControllerList() const {
       auto oaSystem = getObject<openstudio::epmodel::AirLoopHVACOutdoorAirSystem>();
       auto controllerList = oaSystem.getModelObjectTarget<openstudio::epmodel::AirLoopHVACControllerList>(
         openstudio::AirLoopHVAC_OutdoorAirSystemFields::ControllerListName);
+      if (!controllerList) {
+        if (auto controller = projectedControllerOutdoorAir()) {
+          boost::optional<openstudio::epmodel::AirLoopHVACControllerList> projectedList;
+          for (const auto& source : controller->getModelObjectSources<openstudio::epmodel::AirLoopHVACControllerList>()) {
+            auto sourceImpl = source.getImpl<openstudio::epmodel::detail::AirLoopHVACControllerList_Impl>();
+            if (!sourceImpl || !sourceImpl->isTransient()) {
+              continue;
+            }
+            if (projectedList) {
+              projectedList = boost::none;
+              break;
+            }
+            projectedList = source;
+          }
+          controllerList = projectedList;
+        }
+      }
       OS_ASSERT(controllerList);
       return *controllerList;
     }
@@ -660,9 +900,65 @@ namespace epmodel {
       return result;
     }
 
+    bool AirLoopHVACOutdoorAirSystem_Impl::setDedicatedOutdoorAirSystemMode(bool enabled) {
+      auto oaSystem = getObject<openstudio::epmodel::AirLoopHVACOutdoorAirSystem>();
+      auto equipmentList = airLoopHVACOutdoorAirSystemEquipmentList();
+      auto equipmentListImpl = equipmentList.getImpl<detail::AirLoopHVACOutdoorAirSystemEquipmentList_Impl>();
+      auto controllerList = airLoopHVACControllerList();
+      auto controllerListImpl = controllerList.getImpl<openstudio::epmodel::detail::AirLoopHVACControllerList_Impl>();
+      OS_ASSERT(equipmentListImpl);
+      OS_ASSERT(controllerListImpl);
+
+      auto mixer = outdoorAirMixer();
+      auto controller = getControllerOutdoorAir();
+      auto mixerImpl = mixer.getImpl<openstudio::epmodel::detail::OutdoorAirMixer_Impl>();
+      auto controllerImpl = controller.getImpl<openstudio::epmodel::detail::ControllerOutdoorAir_Impl>();
+      OS_ASSERT(mixerImpl);
+      OS_ASSERT(controllerImpl);
+
+      if (enabled) {
+        if (!configureDedicatedCompanions(mixer, controller)) {
+          return false;
+        }
+        equipmentListImpl->removeEquipment(mixer.cast<ModelObject>());
+        if (!controllerListImpl->setControllerOutdoorAir(controller)) {
+          return false;
+        }
+        mixerImpl->setTransient(true);
+        controllerImpl->setTransient(true);
+        if (auto mechanicalVentilation = controllerImpl->optionalControllerMechanicalVentilation()) {
+          mechanicalVentilation->getImpl<openstudio::epmodel::detail::ControllerMechanicalVentilation_Impl>()->setTransient(true);
+        }
+        controllerListImpl->setTransient(true);
+        if (!oaSystem.getImpl<detail::ModelObject_Impl>()->setPointer(openstudio::AirLoopHVAC_OutdoorAirSystemFields::ControllerListName, Handle(),
+                                                                      false)) {
+          return false;
+        }
+      } else {
+        mixerImpl->setTransient(false);
+        controllerImpl->setTransient(false);
+        if (auto mechanicalVentilation = controllerImpl->optionalControllerMechanicalVentilation()) {
+          mechanicalVentilation->getImpl<openstudio::epmodel::detail::ControllerMechanicalVentilation_Impl>()->setTransient(false);
+        }
+        controllerListImpl->setTransient(false);
+        if (!oaSystem.setPointer(openstudio::AirLoopHVAC_OutdoorAirSystemFields::ControllerListName, controllerList.handle())) {
+          return false;
+        }
+        if (!equipmentListImpl->containsEquipment(mixer.cast<ModelObject>()) && !equipmentListImpl->addEquipment(mixer.cast<ModelObject>())) {
+          return false;
+        }
+        if (!controllerListImpl->setControllerOutdoorAir(controller)) {
+          return false;
+        }
+      }
+
+      return rewriteEquipmentListOrder(nullptr, enabled);
+    }
+
     void AirLoopHVACOutdoorAirSystem_Impl::doCanonicalize(LoadContext& context) {
       auto oaSystem = getObject<openstudio::epmodel::AirLoopHVACOutdoorAirSystem>();
       auto oaSystemName = oaSystem.nameString();
+      const bool dedicated = static_cast<bool>(airLoopHVACDedicatedOutdoorAirSystem());
 
       // Maintain the non-optional OA controller invariant to match getControllerOutdoorAir().
       auto controllerList = oaSystem.getModelObjectTarget<openstudio::epmodel::AirLoopHVACControllerList>(
@@ -670,7 +966,11 @@ namespace epmodel {
       if (!controllerList) {
         auto createdControllerList = openstudio::epmodel::AirLoopHVACControllerList(model());
         createdControllerList.setName(oaSystem.nameString() + " Controller List");
-        OS_ASSERT(oaSystem.setPointer(openstudio::AirLoopHVAC_OutdoorAirSystemFields::ControllerListName, createdControllerList.handle()));
+        if (dedicated) {
+          createdControllerList.getImpl<openstudio::epmodel::detail::AirLoopHVACControllerList_Impl>()->setTransient(true);
+        } else {
+          OS_ASSERT(oaSystem.setPointer(openstudio::AirLoopHVAC_OutdoorAirSystemFields::ControllerListName, createdControllerList.handle()));
+        }
         controllerList = createdControllerList;
         detail::addLoadInfo(context, "Created missing AirLoopHVAC:ControllerList '" + createdControllerList.nameString()
                                        + "' for AirLoopHVAC:OutdoorAirSystem '" + oaSystem.nameString() + "'.");
@@ -683,11 +983,21 @@ namespace epmodel {
       if (!oaController) {
         auto createdController = openstudio::epmodel::ControllerOutdoorAir(model());
         createdController.setName(model().nextName(openstudio::IddObjectType::Controller_OutdoorAir, true));
+        if (dedicated) {
+          createdController.getImpl<openstudio::epmodel::detail::ControllerOutdoorAir_Impl>()->setTransient(true);
+        }
         OS_ASSERT(
           controllerListObject.getImpl<openstudio::epmodel::detail::AirLoopHVACControllerList_Impl>()->setControllerOutdoorAir(createdController));
         oaController = createdController;
-        detail::addLoadInfo(context, "Created missing Controller:OutdoorAir '" + createdController.nameString()
-                                       + "' for AirLoopHVAC:OutdoorAirSystem '" + oaSystem.nameString() + "'.");
+        detail::addLoadInfo(context, "Created missing " + std::string(dedicated ? "transient " : "") + "Controller:OutdoorAir '"
+                                       + createdController.nameString() + "' for AirLoopHVAC:OutdoorAirSystem '" + oaSystem.nameString() + "'.");
+      } else if (dedicated) {
+        oaController->getImpl<openstudio::epmodel::detail::ControllerOutdoorAir_Impl>()->setTransient(true);
+      }
+      if (dedicated) {
+        controllerListObject.getImpl<openstudio::epmodel::detail::AirLoopHVACControllerList_Impl>()->setTransient(true);
+        OS_ASSERT(oaSystem.getImpl<detail::ModelObject_Impl>()->setPointer(openstudio::AirLoopHVAC_OutdoorAirSystemFields::ControllerListName,
+                                                                           Handle(), false));
       }
       OS_ASSERT(oaController);
       oaController->getImpl<openstudio::epmodel::detail::ControllerOutdoorAir_Impl>()->canonicalize(context);
@@ -711,11 +1021,19 @@ namespace epmodel {
       if (mixers.empty()) {
         mixer = OutdoorAirMixer(model());
         mixer->setName(oaSystem.nameString() + " mixer");
-        OS_ASSERT(el->getImpl<detail::AirLoopHVACOutdoorAirSystemEquipmentList_Impl>()->addEquipment(*mixer));
-        detail::addLoadInfo(context, "Created missing OutdoorAir:Mixer '" + mixer->nameString() + "' for AirLoopHVAC:OutdoorAirSystem '"
-                                       + oaSystem.nameString() + "'.");
+        if (dedicated) {
+          mixer->getImpl<openstudio::epmodel::detail::OutdoorAirMixer_Impl>()->setTransient(true);
+        } else {
+          OS_ASSERT(el->getImpl<detail::AirLoopHVACOutdoorAirSystemEquipmentList_Impl>()->addEquipment(*mixer));
+        }
+        detail::addLoadInfo(context, "Created missing " + std::string(dedicated ? "transient " : "") + "OutdoorAir:Mixer '" + mixer->nameString()
+                                       + "' for AirLoopHVAC:OutdoorAirSystem '" + oaSystem.nameString() + "'.");
       } else {
         mixer = mixers.front();
+        if (dedicated) {
+          OS_ASSERT(el->getImpl<detail::AirLoopHVACOutdoorAirSystemEquipmentList_Impl>()->removeEquipment(*mixer));
+          mixer->getImpl<openstudio::epmodel::detail::OutdoorAirMixer_Impl>()->setTransient(true);
+        }
         // Remove any mixer after the first one
         if (mixers.size() > 1u) {
           auto duplicateMixers = mixers;
@@ -724,6 +1042,10 @@ namespace epmodel {
             if (el->getImpl<detail::AirLoopHVACOutdoorAirSystemEquipmentList_Impl>()->removeEquipment(duplicateMixer)) {
               detail::addLoadInfo(context, "Removed duplicate OutdoorAir:Mixer '" + duplicateMixer.nameString()
                                              + "' from AirLoopHVAC:OutdoorAirSystem '" + oaSystem.nameString() + "'.");
+            }
+            if (dedicated && duplicateMixer.sources().empty()) {
+              auto removableMixer = duplicateMixer;
+              removableMixer.remove();
             }
           }
         }
@@ -741,6 +1063,10 @@ namespace epmodel {
       if (!mixerImpl->reliefAirNode()) {
         auto reliefAirNode = model().getOrCreateTransientByName<openstudio::epmodel::Node>(oaSystemName + " Relief Node");
         OS_ASSERT(mixerImpl->setReliefAirNode(reliefAirNode));
+      }
+
+      if (dedicated) {
+        OS_ASSERT(configureDedicatedCompanions(*mixer, *oaController));
       }
 
       if (auto outboardNode = outboardOANode()) {
@@ -776,7 +1102,7 @@ namespace epmodel {
 
       oaController->getImpl<openstudio::epmodel::detail::ControllerOutdoorAir_Impl>()->canonicalize(context);
 
-      OS_ASSERT(rewriteEquipmentListOrder(context));
+      OS_ASSERT(rewriteEquipmentListOrder(&context, dedicated));
     }
 
     bool AirLoopHVACOutdoorAirSystem_Impl::addToNode(Node& node) {

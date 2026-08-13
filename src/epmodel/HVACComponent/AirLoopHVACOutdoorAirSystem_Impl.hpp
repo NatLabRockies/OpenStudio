@@ -60,6 +60,11 @@ namespace epmodel {
       boost::optional<openstudio::epmodel::Node> outboardReliefNode() const;
       boost::optional<openstudio::epmodel::AirLoopHVACDedicatedOutdoorAirSystem> airLoopHVACDedicatedOutdoorAirSystem() const;
 
+      // A dedicated outdoor-air system keeps the canonical public mixer and
+      // outdoor-air controller as transient companion views. EnergyPlus must
+      // see only the dedicated equipment/controller projection.
+      bool setDedicatedOutdoorAirSystemMode(bool enabled);
+
       void doCanonicalize(LoadContext& context) override;
       bool addToNode(Node& node) override;
       bool setOutdoorAirStreamNode(const Node& node);
@@ -87,6 +92,10 @@ namespace epmodel {
       std::vector<openstudio::epmodel::ModelObject> walkOutdoorAirStream() const;
       std::vector<openstudio::epmodel::ModelObject> walkReliefAirStream() const;
       bool rewriteEquipmentListOrder(LoadContext* context);
+      bool rewriteEquipmentListOrder(LoadContext* context, bool omitMixer);
+      boost::optional<openstudio::epmodel::OutdoorAirMixer> projectedOutdoorAirMixer() const;
+      boost::optional<openstudio::epmodel::ControllerOutdoorAir> projectedControllerOutdoorAir() const;
+      bool configureDedicatedCompanions(openstudio::epmodel::OutdoorAirMixer& mixer, openstudio::epmodel::ControllerOutdoorAir& controller);
       static bool updateAdjacentStreamNode(const ModelObject& object, OAStream stream, bool updateInlet, const Node& node);
     };
 

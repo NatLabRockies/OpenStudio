@@ -16,12 +16,31 @@
 #include "../ModelObject/AirLoopHVACMixer_Impl.hpp"
 #include "../ModelObject/AirLoopHVACSplitter.hpp"
 #include "../ModelObject/AirLoopHVACSplitter_Impl.hpp"
+#include "../ModelObject/AirLoopHVACControllerList.hpp"
+#include "../ModelObject/AirLoopHVACControllerList_Impl.hpp"
+#include "../ModelObject/AirLoopHVACOutdoorAirSystemEquipmentList.hpp"
+#include "../ModelObject/AirLoopHVACOutdoorAirSystemEquipmentList_Impl.hpp"
+#include "../ModelObject/OutdoorAirMixer.hpp"
+#include "../ModelObject/OutdoorAirMixer_Impl.hpp"
+#include "../ModelObject/ControllerMechanicalVentilation.hpp"
+#include "../ModelObject/ControllerMechanicalVentilation_Impl.hpp"
+#include "../ParentObject/ControllerOutdoorAir.hpp"
+#include "../ParentObject/ControllerOutdoorAir_Impl.hpp"
 #include "../Schedule/Schedule.hpp"
+#include "../StraightComponent/FanSystemModel.hpp"
+#include "../StraightComponent/FanSystemModel_Impl.hpp"
 #include "../StraightComponent/Node.hpp"
 #include <utilities/idd/AirLoopHVAC_DedicatedOutdoorAirSystem_FieldEnums.hxx>
 #include <utilities/idd/AirLoopHVAC_Mixer_FieldEnums.hxx>
+#include <utilities/idd/AirLoopHVAC_OutdoorAirSystem_FieldEnums.hxx>
+#include <utilities/idd/AirLoopHVAC_OutdoorAirSystem_EquipmentList_FieldEnums.hxx>
 #include <utilities/idd/AirLoopHVAC_Splitter_FieldEnums.hxx>
+#include <utilities/idd/AirLoopHVAC_ControllerList_FieldEnums.hxx>
+#include <utilities/idd/Controller_OutdoorAir_FieldEnums.hxx>
+#include <utilities/idd/Fan_SystemModel_FieldEnums.hxx>
+#include <utilities/idd/IddEnums.hxx>
 #include <utilities/idf/WorkspaceExtensibleGroup.hpp>
+#include <utilities/idf/IdfFile.hpp>
 
 #include <stdexcept>
 
@@ -65,6 +84,163 @@ TEST_F(EPModelFixture, AirLoopHVACDedicatedOutdoorAirSystem_OutdoorAirSystemCons
   EXPECT_EQ(1u, model.getConcreteModelObjects<AirLoopHVACSplitter>().size());
 }
 
+TEST_F(EPModelFixture, AirLoopHVACDedicatedOutdoorAirSystem_ProjectsOnlyDedicatedEquipmentToEnergyPlus) {
+  const auto idfPath = openstudio::tempDir() / openstudio::toPath("epmodel-doas-equipment-projection.idf");
+  Model model;
+  AirLoopHVACOutdoorAirSystem dedicatedOA(model);
+  AirLoopHVACDedicatedOutdoorAirSystem doas(dedicatedOA);
+
+  auto equipmentList = dedicatedOA.getModelObjectTarget<AirLoopHVACOutdoorAirSystemEquipmentList>(
+    openstudio::AirLoopHVAC_OutdoorAirSystemFields::OutdoorAirEquipmentListName);
+  auto controllerLists = model.getConcreteModelObjects<AirLoopHVACControllerList>();
+  ASSERT_TRUE(equipmentList);
+  ASSERT_EQ(1u, controllerLists.size());
+  auto controllerList = controllerLists.front();
+  EXPECT_TRUE(equipmentList->extensibleGroups().empty());
+  EXPECT_EQ(1u, controllerList.extensibleGroups().size());
+  EXPECT_TRUE(controllerList.getImpl<detail::AirLoopHVACControllerList_Impl>()->isTransient());
+  EXPECT_FALSE(dedicatedOA.getTarget(openstudio::AirLoopHVAC_OutdoorAirSystemFields::ControllerListName));
+
+  const auto conceptualMixers = model.getConcreteModelObjects<OutdoorAirMixer>();
+  const auto conceptualControllers = model.getConcreteModelObjects<ControllerOutdoorAir>();
+  ASSERT_EQ(1u, conceptualMixers.size());
+  ASSERT_EQ(1u, conceptualControllers.size());
+  EXPECT_TRUE(conceptualMixers.front().getImpl<detail::OutdoorAirMixer_Impl>()->isTransient());
+  EXPECT_TRUE(conceptualControllers.front().getImpl<detail::ControllerOutdoorAir_Impl>()->isTransient());
+  EXPECT_EQ(conceptualControllers.front(), dedicatedOA.getControllerOutdoorAir());
+  ASSERT_TRUE(dedicatedOA.getControllerOutdoorAir().airLoopHVACOutdoorAirSystem());
+  EXPECT_EQ(dedicatedOA, *dedicatedOA.getControllerOutdoorAir().airLoopHVACOutdoorAirSystem());
+  ControllerOutdoorAir unrelatedController(model);
+  auto dedicatedOutdoorNode = dedicatedOA.outdoorAirModelObject();
+  ASSERT_TRUE(dedicatedOutdoorNode);
+  ASSERT_TRUE(unrelatedController.setPointer(openstudio::Controller_OutdoorAirFields::ActuatorNodeName, dedicatedOutdoorNode->handle()));
+  EXPECT_FALSE(unrelatedController.airLoopHVACOutdoorAirSystem());
+  unrelatedController.remove();
+  auto mechanicalVentilation = dedicatedOA.getControllerOutdoorAir().controllerMechanicalVentilation();
+  EXPECT_TRUE(mechanicalVentilation.getImpl<detail::ControllerMechanicalVentilation_Impl>()->isTransient());
+
+  FanSystemModel fan(model);
+  auto outboardNode = dedicatedOA.outboardOANode();
+  ASSERT_TRUE(outboardNode);
+  ASSERT_TRUE(fan.addToNode(*outboardNode));
+  ASSERT_EQ(1u, equipmentList->extensibleGroups().size());
+  auto equipmentGroup = equipmentList->extensibleGroups().front().cast<openstudio::WorkspaceExtensibleGroup>();
+  EXPECT_EQ("Fan:SystemModel",
+            equipmentGroup.getString(openstudio::AirLoopHVAC_OutdoorAirSystem_EquipmentListExtensibleFields::ComponentObjectType).get());
+  EXPECT_EQ(fan,
+            equipmentGroup.getTarget(openstudio::AirLoopHVAC_OutdoorAirSystem_EquipmentListExtensibleFields::ComponentName)->cast<FanSystemModel>());
+
+  auto splitter = model.getConcreteModelObjects<AirLoopHVACSplitter>().front();
+  auto splitterInlet = splitter.getModelObjectTarget<Node>(openstudio::AirLoopHVAC_SplitterFields::InletNodeName);
+  auto fanOutlet = fan.outletModelObject();
+  ASSERT_TRUE(splitterInlet);
+  ASSERT_TRUE(fanOutlet);
+  EXPECT_EQ(*splitterInlet, fanOutlet->cast<Node>());
+  auto liveController = dedicatedOA.getControllerOutdoorAir();
+  auto liveActuator = liveController.getModelObjectTarget<Node>(openstudio::Controller_OutdoorAirFields::ActuatorNodeName);
+  ASSERT_TRUE(liveActuator);
+  EXPECT_EQ(fanOutlet->cast<Node>(), *liveActuator);
+  ASSERT_TRUE(liveController.airLoopHVACOutdoorAirSystem());
+  EXPECT_EQ(dedicatedOA, *liveController.airLoopHVACOutdoorAirSystem());
+
+  FanSystemModel secondFan(model);
+  ASSERT_TRUE(secondFan.addToNode(*liveActuator));
+  ASSERT_EQ(2u, dedicatedOA.oaComponents(openstudio::IddObjectType::Fan_SystemModel).size());
+  EXPECT_EQ(liveController, dedicatedOA.getControllerOutdoorAir());
+  auto secondFanOutlet = secondFan.outletModelObject();
+  auto secondActuator = liveController.getModelObjectTarget<Node>(openstudio::Controller_OutdoorAirFields::ActuatorNodeName);
+  ASSERT_TRUE(secondFanOutlet);
+  ASSERT_TRUE(secondActuator);
+  EXPECT_EQ(secondFanOutlet->cast<Node>(), *secondActuator);
+  ASSERT_TRUE(liveController.airLoopHVACOutdoorAirSystem());
+  EXPECT_EQ(dedicatedOA, *liveController.airLoopHVACOutdoorAirSystem());
+  ASSERT_TRUE(secondFan.removeFromLoop());
+  EXPECT_EQ(1u, dedicatedOA.oaComponents(openstudio::IddObjectType::Fan_SystemModel).size());
+  EXPECT_EQ(liveController, dedicatedOA.getControllerOutdoorAir());
+  auto restoredActuator = liveController.getModelObjectTarget<Node>(openstudio::Controller_OutdoorAirFields::ActuatorNodeName);
+  auto restoredFanOutlet = fan.outletModelObject();
+  auto restoredSplitterInlet = splitter.getModelObjectTarget<Node>(openstudio::AirLoopHVAC_SplitterFields::InletNodeName);
+  ASSERT_TRUE(restoredActuator);
+  ASSERT_TRUE(restoredFanOutlet);
+  ASSERT_TRUE(restoredSplitterInlet);
+  EXPECT_EQ(restoredFanOutlet->cast<Node>(), *restoredActuator);
+  EXPECT_EQ(*restoredSplitterInlet, *restoredActuator);
+  ASSERT_TRUE(liveController.airLoopHVACOutdoorAirSystem());
+  EXPECT_EQ(dedicatedOA, *liveController.airLoopHVACOutdoorAirSystem());
+
+  auto serialized = model.toIdfFile();
+  EXPECT_TRUE(serialized.getObjectsByType(openstudio::IddObjectType::OutdoorAir_Mixer).empty());
+  EXPECT_TRUE(serialized.getObjectsByType(openstudio::IddObjectType::Controller_OutdoorAir).empty());
+  EXPECT_TRUE(serialized.getObjectsByType(openstudio::IddObjectType::Controller_MechanicalVentilation).empty());
+  EXPECT_TRUE(serialized.getObjectsByType(openstudio::IddObjectType::AirLoopHVAC_ControllerList).empty());
+  ASSERT_TRUE(model.save(idfPath, true));
+
+  auto loadedModel = Model::load(idfPath);
+  ASSERT_TRUE(loadedModel);
+  auto loadedDOAS = loadedModel->getConcreteModelObjects<AirLoopHVACDedicatedOutdoorAirSystem>();
+  ASSERT_EQ(1u, loadedDOAS.size());
+  auto loadedOA = loadedDOAS.front().airLoopHVACOutdoorAirSystem();
+  EXPECT_EQ(1u, loadedOA.oaComponents(openstudio::IddObjectType::Fan_SystemModel).size());
+  EXPECT_TRUE(loadedOA.getControllerOutdoorAir().getImpl<detail::ControllerOutdoorAir_Impl>()->isTransient());
+  ASSERT_TRUE(loadedOA.getControllerOutdoorAir().airLoopHVACOutdoorAirSystem());
+  EXPECT_EQ(loadedOA, *loadedOA.getControllerOutdoorAir().airLoopHVACOutdoorAirSystem());
+  EXPECT_EQ(1u, loadedModel->getConcreteModelObjects<OutdoorAirMixer>().size());
+  EXPECT_TRUE(loadedModel->getConcreteModelObjects<OutdoorAirMixer>().front().getImpl<detail::OutdoorAirMixer_Impl>()->isTransient());
+
+  openstudio::filesystem::remove(idfPath);
+}
+
+TEST_F(EPModelFixture, AirLoopHVACDedicatedOutdoorAirSystem_ReplacesProjectedOutdoorAirController) {
+  Model model;
+  AirLoopHVACOutdoorAirSystem dedicatedOA(model);
+  AirLoopHVACDedicatedOutdoorAirSystem doas(dedicatedOA);
+  auto oldController = dedicatedOA.getControllerOutdoorAir();
+  auto oldMechanicalVentilation = oldController.controllerMechanicalVentilation();
+  const auto oldControllerHandle = oldController.handle();
+  const auto oldMechanicalVentilationHandle = oldMechanicalVentilation.handle();
+
+  ControllerOutdoorAir replacement(model);
+  auto replacementMechanicalVentilation = replacement.controllerMechanicalVentilation();
+  EXPECT_FALSE(replacement.getImpl<detail::ControllerOutdoorAir_Impl>()->isTransient());
+  EXPECT_FALSE(replacementMechanicalVentilation.getImpl<detail::ControllerMechanicalVentilation_Impl>()->isTransient());
+
+  ASSERT_TRUE(dedicatedOA.setControllerOutdoorAir(replacement));
+  EXPECT_EQ(replacement, dedicatedOA.getControllerOutdoorAir());
+  EXPECT_TRUE(replacement.getImpl<detail::ControllerOutdoorAir_Impl>()->isTransient());
+  EXPECT_TRUE(replacementMechanicalVentilation.getImpl<detail::ControllerMechanicalVentilation_Impl>()->isTransient());
+  ASSERT_TRUE(replacement.airLoopHVACOutdoorAirSystem());
+  EXPECT_EQ(dedicatedOA, *replacement.airLoopHVACOutdoorAirSystem());
+  EXPECT_FALSE(model.getObject(oldControllerHandle));
+  EXPECT_FALSE(model.getObject(oldMechanicalVentilationHandle));
+
+  auto serialized = model.toIdfFile();
+  EXPECT_TRUE(serialized.getObjectsByType(openstudio::IddObjectType::Controller_OutdoorAir).empty());
+  EXPECT_TRUE(serialized.getObjectsByType(openstudio::IddObjectType::Controller_MechanicalVentilation).empty());
+}
+
+TEST_F(EPModelFixture, AirLoopHVACDedicatedOutdoorAirSystem_RejectsSharedMechanicalVentilationController) {
+  Model model;
+  AirLoopHVACOutdoorAirSystem ordinaryOA(model);
+  auto ordinaryController = ordinaryOA.getControllerOutdoorAir();
+  auto ordinaryMechanicalVentilation = ordinaryController.controllerMechanicalVentilation();
+  EXPECT_FALSE(ordinaryMechanicalVentilation.getImpl<detail::ControllerMechanicalVentilation_Impl>()->isTransient());
+  AirLoopHVACOutdoorAirSystem secondOrdinaryOA(model);
+  auto secondOrdinaryController = secondOrdinaryOA.getControllerOutdoorAir();
+  ASSERT_TRUE(secondOrdinaryController.setControllerMechanicalVentilation(ordinaryMechanicalVentilation));
+  EXPECT_EQ(ordinaryMechanicalVentilation, secondOrdinaryController.controllerMechanicalVentilation());
+
+  AirLoopHVACOutdoorAirSystem dedicatedOA(model);
+  AirLoopHVACDedicatedOutdoorAirSystem doas(dedicatedOA);
+  auto dedicatedController = dedicatedOA.getControllerOutdoorAir();
+  auto dedicatedMechanicalVentilation = dedicatedController.controllerMechanicalVentilation();
+  ASSERT_NE(ordinaryMechanicalVentilation, dedicatedMechanicalVentilation);
+  EXPECT_FALSE(dedicatedController.setControllerMechanicalVentilation(ordinaryMechanicalVentilation));
+  EXPECT_EQ(dedicatedMechanicalVentilation, dedicatedController.controllerMechanicalVentilation());
+  EXPECT_FALSE(ordinaryMechanicalVentilation.getImpl<detail::ControllerMechanicalVentilation_Impl>()->isTransient());
+  ASSERT_TRUE(ordinaryController.airLoopHVACOutdoorAirSystem());
+  EXPECT_EQ(ordinaryOA, *ordinaryController.airLoopHVACOutdoorAirSystem());
+}
+
 TEST_F(EPModelFixture, AirLoopHVACDedicatedOutdoorAirSystem_ConstructorRejectsOwnedOutdoorAirSystemWithoutResidue) {
   Model model;
   AirLoopHVACOutdoorAirSystem oaSystem(model);
@@ -76,6 +252,30 @@ TEST_F(EPModelFixture, AirLoopHVACDedicatedOutdoorAirSystem_ConstructorRejectsOw
   EXPECT_EQ(1u, model.getConcreteModelObjects<AirLoopHVACSplitter>().size());
   ASSERT_TRUE(oaSystem.airLoopHVACDedicatedOutdoorAirSystem());
   EXPECT_EQ(doas, *oaSystem.airLoopHVACDedicatedOutdoorAirSystem());
+}
+
+TEST_F(EPModelFixture, AirLoopHVACDedicatedOutdoorAirSystem_RejectsOutdoorAirSystemInstalledOnAirLoopWithoutResidue) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  AirLoopHVACOutdoorAirSystem attachedOA(model);
+  auto supplyInlet = airLoop.supplyInletNode();
+  ASSERT_TRUE(attachedOA.addToNode(supplyInlet));
+  auto originalController = attachedOA.getControllerOutdoorAir();
+  auto equipmentList = attachedOA.getModelObjectTarget<AirLoopHVACOutdoorAirSystemEquipmentList>(
+    openstudio::AirLoopHVAC_OutdoorAirSystemFields::OutdoorAirEquipmentListName);
+  ASSERT_TRUE(equipmentList);
+  auto originalEquipment = equipmentList->equipment();
+
+  EXPECT_THROW({ AirLoopHVACDedicatedOutdoorAirSystem rejected(attachedOA); }, std::runtime_error);
+  EXPECT_TRUE(model.getConcreteModelObjects<AirLoopHVACDedicatedOutdoorAirSystem>().empty());
+  EXPECT_TRUE(model.getConcreteModelObjects<AirLoopHVACMixer>().empty());
+  EXPECT_TRUE(model.getConcreteModelObjects<AirLoopHVACSplitter>().empty());
+  ASSERT_TRUE(attachedOA.airLoopHVAC());
+  EXPECT_EQ(airLoop, *attachedOA.airLoopHVAC());
+  EXPECT_FALSE(attachedOA.airLoopHVACDedicatedOutdoorAirSystem());
+  EXPECT_EQ(originalController, attachedOA.getControllerOutdoorAir());
+  EXPECT_EQ(originalEquipment, equipmentList->equipment());
+  EXPECT_FALSE(originalController.getImpl<detail::ControllerOutdoorAir_Impl>()->isTransient());
 }
 
 TEST_F(EPModelFixture, AirLoopHVACDedicatedOutdoorAirSystem_MembershipKeepsEnergyPlusRowsAligned) {
@@ -156,6 +356,25 @@ TEST_F(EPModelFixture, AirLoopHVACDedicatedOutdoorAirSystem_RejectsInvalidOwners
   AirLoopHVAC loopWithoutOA(model);
   EXPECT_FALSE(secondDOAS.addAirLoop(loopWithoutOA));
   EXPECT_EQ(0u, secondDOAS.numberofAirLoops());
+}
+
+TEST_F(EPModelFixture, AirLoopHVACDedicatedOutdoorAirSystem_ChangingOutdoorAirSystemRestoresTheOldProjection) {
+  Model model;
+  AirLoopHVACOutdoorAirSystem firstOA(model);
+  AirLoopHVACOutdoorAirSystem secondOA(model);
+  AirLoopHVACDedicatedOutdoorAirSystem doas(firstOA);
+
+  EXPECT_FALSE(firstOA.getTarget(openstudio::AirLoopHVAC_OutdoorAirSystemFields::ControllerListName));
+  ASSERT_TRUE(doas.setAirLoopHVACOutdoorAirSystem(secondOA));
+  EXPECT_EQ(secondOA, doas.airLoopHVACOutdoorAirSystem());
+  EXPECT_FALSE(secondOA.getTarget(openstudio::AirLoopHVAC_OutdoorAirSystemFields::ControllerListName));
+
+  auto restoredControllerList =
+    firstOA.getModelObjectTarget<AirLoopHVACControllerList>(openstudio::AirLoopHVAC_OutdoorAirSystemFields::ControllerListName);
+  ASSERT_TRUE(restoredControllerList);
+  EXPECT_FALSE(restoredControllerList->getImpl<detail::AirLoopHVACControllerList_Impl>()->isTransient());
+  EXPECT_FALSE(firstOA.getControllerOutdoorAir().getImpl<detail::ControllerOutdoorAir_Impl>()->isTransient());
+  EXPECT_TRUE(secondOA.getControllerOutdoorAir().getImpl<detail::ControllerOutdoorAir_Impl>()->isTransient());
 }
 
 TEST_F(EPModelFixture, AirLoopHVACDedicatedOutdoorAirSystem_BatchAdditionIsAllOrNothing) {
@@ -277,6 +496,16 @@ TEST_F(EPModelFixture, AirLoopHVACDedicatedOutdoorAirSystem_RemoveCleansOwnedCon
   EXPECT_FALSE(servedLoop.airLoopHVACDedicatedOutdoorAirSystem());
   EXPECT_FALSE(model.getObject(mixerOutlet->handle()));
   EXPECT_EQ(2u, model.getConcreteModelObjects<AirLoopHVACOutdoorAirSystem>().size());
+
+  auto restoredControllerList =
+    dedicatedOA.getModelObjectTarget<AirLoopHVACControllerList>(openstudio::AirLoopHVAC_OutdoorAirSystemFields::ControllerListName);
+  ASSERT_TRUE(restoredControllerList);
+  EXPECT_FALSE(restoredControllerList->getImpl<detail::AirLoopHVACControllerList_Impl>()->isTransient());
+  EXPECT_FALSE(dedicatedOA.getControllerOutdoorAir().getImpl<detail::ControllerOutdoorAir_Impl>()->isTransient());
+  auto restoredMixers = model.getConcreteModelObjects<OutdoorAirMixer>();
+  ASSERT_EQ(2u, restoredMixers.size());
+  EXPECT_TRUE(
+    std::ranges::none_of(restoredMixers, [](const OutdoorAirMixer& mixer) { return mixer.getImpl<detail::OutdoorAirMixer_Impl>()->isTransient(); }));
 }
 
 TEST_F(EPModelFixture, AirLoopHVACDedicatedOutdoorAirSystem_RemovePreservesSharedConnectors) {

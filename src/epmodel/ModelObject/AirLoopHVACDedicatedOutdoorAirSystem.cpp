@@ -311,6 +311,12 @@ namespace epmodel {
       if (airLoopHVACOutdoorAirSystem.model() != model()) {
         return false;
       }
+      // A central DOAS outdoor-air system is not installed on any one served
+      // air loop. Projecting an already-installed system would remove the
+      // mixer and controller required by that loop's own OA branch.
+      if (airLoopHVACOutdoorAirSystem.airLoopHVAC()) {
+        return false;
+      }
       for (const auto& doas : model().getConcreteModelObjects<openstudio::epmodel::AirLoopHVACDedicatedOutdoorAirSystem>()) {
         auto target = doas.getModelObjectTarget<openstudio::epmodel::AirLoopHVACOutdoorAirSystem>(
           openstudio::AirLoopHVAC_DedicatedOutdoorAirSystemFields::AirLoopHVAC_OutdoorAirSystemName);
@@ -321,16 +327,36 @@ namespace epmodel {
 
       auto doas = getObject<openstudio::epmodel::ModelObject>();
       const auto oldTarget = doas.getTarget(openstudio::AirLoopHVAC_DedicatedOutdoorAirSystemFields::AirLoopHVAC_OutdoorAirSystemName);
-      if (!doas.setPointer(openstudio::AirLoopHVAC_DedicatedOutdoorAirSystemFields::AirLoopHVAC_OutdoorAirSystemName,
-                           airLoopHVACOutdoorAirSystem.handle())) {
+      auto oldOASystem = oldTarget ? oldTarget->optionalCast<openstudio::epmodel::AirLoopHVACOutdoorAirSystem>() : boost::none;
+      if (oldOASystem && (*oldOASystem == airLoopHVACOutdoorAirSystem)) {
+        return ensureMixerAndSplitter()
+               && airLoopHVACOutdoorAirSystem.getImpl<openstudio::epmodel::detail::AirLoopHVACOutdoorAirSystem_Impl>()
+                    ->setDedicatedOutdoorAirSystemMode(true);
+      }
+
+      if (oldOASystem
+          && !oldOASystem->getImpl<openstudio::epmodel::detail::AirLoopHVACOutdoorAirSystem_Impl>()->setDedicatedOutdoorAirSystemMode(false)) {
         return false;
       }
-      if (ensureMixerAndSplitter()) {
+      if (!doas.setPointer(openstudio::AirLoopHVAC_DedicatedOutdoorAirSystemFields::AirLoopHVAC_OutdoorAirSystemName,
+                           airLoopHVACOutdoorAirSystem.handle())) {
+        if (oldOASystem) {
+          OS_ASSERT(oldOASystem->getImpl<openstudio::epmodel::detail::AirLoopHVACOutdoorAirSystem_Impl>()->setDedicatedOutdoorAirSystemMode(true));
+        }
+        return false;
+      }
+      if (ensureMixerAndSplitter()
+          && airLoopHVACOutdoorAirSystem.getImpl<openstudio::epmodel::detail::AirLoopHVACOutdoorAirSystem_Impl>()->setDedicatedOutdoorAirSystemMode(
+            true)) {
         return true;
       }
 
+      airLoopHVACOutdoorAirSystem.getImpl<openstudio::epmodel::detail::AirLoopHVACOutdoorAirSystem_Impl>()->setDedicatedOutdoorAirSystemMode(false);
       if (oldTarget) {
         OS_ASSERT(doas.setPointer(openstudio::AirLoopHVAC_DedicatedOutdoorAirSystemFields::AirLoopHVAC_OutdoorAirSystemName, oldTarget->handle()));
+        OS_ASSERT(ensureMixerAndSplitter());
+        OS_ASSERT(oldOASystem);
+        OS_ASSERT(oldOASystem->getImpl<openstudio::epmodel::detail::AirLoopHVACOutdoorAirSystem_Impl>()->setDedicatedOutdoorAirSystemMode(true));
       } else {
         OS_ASSERT(doas.getImpl<detail::ModelObject_Impl>()->setPointer(
           openstudio::AirLoopHVAC_DedicatedOutdoorAirSystemFields::AirLoopHVAC_OutdoorAirSystemName, Handle(), false));
@@ -409,6 +435,11 @@ namespace epmodel {
 
     std::vector<openstudio::IdfObject> AirLoopHVACDedicatedOutdoorAirSystem_Impl::remove() {
       auto owningModel = model();
+      auto oaSystem = getObject<openstudio::epmodel::ModelObject>().getModelObjectTarget<openstudio::epmodel::AirLoopHVACOutdoorAirSystem>(
+        openstudio::AirLoopHVAC_DedicatedOutdoorAirSystemFields::AirLoopHVAC_OutdoorAirSystemName);
+      if (oaSystem && !oaSystem->getImpl<openstudio::epmodel::detail::AirLoopHVACOutdoorAirSystem_Impl>()->setDedicatedOutdoorAirSystemMode(false)) {
+        return {};
+      }
       auto mixer = airLoopHVACMixer();
       auto splitter = airLoopHVACSplitter();
       boost::optional<openstudio::epmodel::Node> mixerOutlet;
