@@ -69,10 +69,23 @@ namespace epmodel {
       return component.getImpl<detail::ModelObject_Impl>()->resolvedNodeTarget(outletPort);
     }
 
+    void reserveUniqueFourPipeFanCoilName(ZoneHVACFourPipeFanCoil& fanCoil, const Model& model) {
+      const auto internalNodeNameIsTaken = [&model](const std::string& fanCoilName) {
+        return static_cast<bool>(model.getConcreteModelObjectByName<Node>(fanCoilName + " Air Inlet Node"))
+               || static_cast<bool>(model.getConcreteModelObjectByName<Node>(fanCoilName + " Air Outlet Node"))
+               || static_cast<bool>(model.getConcreteModelObjectByName<Node>(fanCoilName + " Fan Outlet Node"))
+               || static_cast<bool>(model.getConcreteModelObjectByName<Node>(fanCoilName + " Cooling Coil Outlet Node"));
+      };
+      while (internalNodeNameIsTaken(fanCoil.nameString())) {
+        OS_ASSERT(fanCoil.setName(model.nextName(fanCoil.iddObjectType(), false)));
+      }
+    }
+
   }  // namespace
 
   ZoneHVACFourPipeFanCoil::ZoneHVACFourPipeFanCoil(const Model& model) : ZoneHVACComponent(ZoneHVACFourPipeFanCoil::iddObjectType(), model) {
     OS_ASSERT(getImpl<detail::ZoneHVACFourPipeFanCoil_Impl>());
+    reserveUniqueFourPipeFanCoilName(*this, model);
 
     ScheduleConstant alwaysOn(model);
     OS_ASSERT(alwaysOn.setValue(1.0));

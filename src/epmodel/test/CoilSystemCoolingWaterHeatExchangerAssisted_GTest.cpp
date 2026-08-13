@@ -54,6 +54,31 @@ TEST_F(EPModelFixture, CoilSystemCoolingWaterHeatExchangerAssisted_DefaultConstr
   EXPECT_TRUE(std::any_of(children.begin(), children.end(), [&](const auto& object) { return object.handle() == heatExchanger.handle(); }));
 }
 
+TEST_F(EPModelFixture, CoilSystemCoolingWaterHeatExchangerAssisted_RenamedSystemsKeepDistinctContainedAirPaths) {
+  Model model;
+  AirLoopHVAC firstAirLoop(model);
+  CoilSystemCoolingWaterHeatExchangerAssisted firstSystem(model);
+  auto firstSupplyOutletNode = firstAirLoop.supplyOutletNode();
+  ASSERT_TRUE(firstSystem.addToNode(firstSupplyOutletNode));
+  auto firstHeatExchanger = firstSystem.heatExchanger();
+  ASSERT_TRUE(firstHeatExchanger.primaryAirOutletModelObject());
+  ASSERT_TRUE(firstHeatExchanger.secondaryAirInletModelObject());
+  const auto firstSupplyConnectorHandle = firstHeatExchanger.primaryAirOutletModelObject()->handle();
+  const auto firstExhaustConnectorHandle = firstHeatExchanger.secondaryAirInletModelObject()->handle();
+  ASSERT_TRUE(firstSystem.setName("Renamed Assisted Water Coil System"));
+
+  AirLoopHVAC secondAirLoop(model);
+  CoilSystemCoolingWaterHeatExchangerAssisted secondSystem(model);
+  auto secondSupplyOutletNode = secondAirLoop.supplyOutletNode();
+  ASSERT_TRUE(secondSystem.addToNode(secondSupplyOutletNode));
+  auto secondHeatExchanger = secondSystem.heatExchanger();
+  ASSERT_TRUE(secondHeatExchanger.primaryAirOutletModelObject());
+  ASSERT_TRUE(secondHeatExchanger.secondaryAirInletModelObject());
+
+  EXPECT_NE(firstSupplyConnectorHandle, secondHeatExchanger.primaryAirOutletModelObject()->handle());
+  EXPECT_NE(firstExhaustConnectorHandle, secondHeatExchanger.secondaryAirInletModelObject()->handle());
+}
+
 TEST_F(EPModelFixture, CoilSystemCoolingWaterHeatExchangerAssisted_ScalarAccessors_RoundTrip) {
   Model model;
   CoilSystemCoolingWaterHeatExchangerAssisted coilSystem(model);

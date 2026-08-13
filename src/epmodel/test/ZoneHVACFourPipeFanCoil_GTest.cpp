@@ -35,6 +35,35 @@ TEST_F(EPModelFixture, API_ZoneHVACFourPipeFanCoil_DefaultConstructor) {
   EXPECT_FALSE(coil.nameString().empty());
 }
 
+TEST_F(EPModelFixture, ZoneHVACFourPipeFanCoil_RenamedSystemsKeepDistinctContainedAirPaths) {
+  Model model;
+  FanConstantVolume firstFan(model);
+  CoilCoolingWater firstCoolingCoil(model);
+  CoilHeatingWater firstHeatingCoil(model);
+  ZoneHVACFourPipeFanCoil firstFanCoil(model);
+  ASSERT_TRUE(firstFanCoil.setSupplyAirFan(firstFan));
+  ASSERT_TRUE(firstFanCoil.setCoolingCoil(firstCoolingCoil));
+  ASSERT_TRUE(firstFanCoil.setHeatingCoil(firstHeatingCoil));
+  ASSERT_TRUE(firstFanCoil.inletNode());
+  ASSERT_TRUE(firstFanCoil.fanOutletNode());
+  const auto firstInletHandle = firstFanCoil.inletNode()->handle();
+  const auto firstFanOutletHandle = firstFanCoil.fanOutletNode()->handle();
+  ASSERT_TRUE(firstFanCoil.setName("Renamed Four-Pipe Fan Coil"));
+
+  FanConstantVolume secondFan(model);
+  CoilCoolingWater secondCoolingCoil(model);
+  CoilHeatingWater secondHeatingCoil(model);
+  ZoneHVACFourPipeFanCoil secondFanCoil(model);
+  ASSERT_TRUE(secondFanCoil.setSupplyAirFan(secondFan));
+  ASSERT_TRUE(secondFanCoil.setCoolingCoil(secondCoolingCoil));
+  ASSERT_TRUE(secondFanCoil.setHeatingCoil(secondHeatingCoil));
+  ASSERT_TRUE(secondFanCoil.inletNode());
+  ASSERT_TRUE(secondFanCoil.fanOutletNode());
+
+  EXPECT_NE(firstInletHandle, secondFanCoil.inletNode()->handle());
+  EXPECT_NE(firstFanOutletHandle, secondFanCoil.fanOutletNode()->handle());
+}
+
 TEST_F(EPModelFixture, ZoneHVACFourPipeFanCoil_ScalarAccessors_RoundTrip) {
   Model model;
   ZoneHVACFourPipeFanCoil coil(model);

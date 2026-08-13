@@ -40,6 +40,33 @@ TEST_F(EPModelFixture, AirLoopHVACUnitarySystem_DefaultConstructor) {
   EXPECT_EQ(AirLoopHVACUnitarySystem::iddObjectType(), unitary.iddObject().type());
 }
 
+TEST_F(EPModelFixture, AirLoopHVACUnitarySystem_RenamedSystemsKeepDistinctContainedAirPaths) {
+  Model model;
+  FanConstantVolume firstFan(model);
+  CoilCoolingDXSingleSpeed firstCooling(model);
+  AirLoopHVACUnitarySystem firstUnitary(model);
+  ASSERT_TRUE(firstUnitary.setFanPlacement("BlowThrough"));
+  ASSERT_TRUE(firstUnitary.setSupplyFan(firstFan));
+  ASSERT_TRUE(firstUnitary.setCoolingCoil(firstCooling));
+  ASSERT_TRUE(firstUnitary.inletNode());
+  ASSERT_TRUE(firstUnitary.fanOutletNode());
+  const auto firstInletHandle = firstUnitary.inletNode()->handle();
+  const auto firstFanOutletHandle = firstUnitary.fanOutletNode()->handle();
+  ASSERT_TRUE(firstUnitary.setName("Renamed Unitary System"));
+
+  FanConstantVolume secondFan(model);
+  CoilCoolingDXSingleSpeed secondCooling(model);
+  AirLoopHVACUnitarySystem secondUnitary(model);
+  ASSERT_TRUE(secondUnitary.setFanPlacement("BlowThrough"));
+  ASSERT_TRUE(secondUnitary.setSupplyFan(secondFan));
+  ASSERT_TRUE(secondUnitary.setCoolingCoil(secondCooling));
+  ASSERT_TRUE(secondUnitary.inletNode());
+  ASSERT_TRUE(secondUnitary.fanOutletNode());
+
+  EXPECT_NE(firstInletHandle, secondUnitary.inletNode()->handle());
+  EXPECT_NE(firstFanOutletHandle, secondUnitary.fanOutletNode()->handle());
+}
+
 TEST_F(EPModelFixture, AirLoopHVACUnitarySystem_ScalarAccessors_RoundTrip) {
   Model model;
   AirLoopHVACUnitarySystem unitary(model);

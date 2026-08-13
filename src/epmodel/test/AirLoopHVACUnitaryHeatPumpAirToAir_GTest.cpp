@@ -27,6 +27,35 @@ TEST_F(EPModelFixture, AirLoopHVACUnitaryHeatPumpAirToAir_DefaultConstructor) {
   EXPECT_EQ(AirLoopHVACUnitaryHeatPumpAirToAir::iddObjectType(), unitary.iddObject().type());
 }
 
+TEST_F(EPModelFixture, AirLoopHVACUnitaryHeatPumpAirToAir_RenamedSystemsKeepDistinctContainedAirPaths) {
+  Model model;
+  FanOnOff firstFan(model);
+  CoilHeatingDXSingleSpeed firstHeating(model);
+  CoilCoolingDXSingleSpeed firstCooling(model);
+  AirLoopHVACUnitaryHeatPumpAirToAir firstUnitary(model);
+  ASSERT_TRUE(firstUnitary.setSupplyAirFan(firstFan));
+  ASSERT_TRUE(firstUnitary.setHeatingCoil(firstHeating));
+  ASSERT_TRUE(firstUnitary.setCoolingCoil(firstCooling));
+  ASSERT_TRUE(firstUnitary.inletModelObject());
+  ASSERT_TRUE(firstUnitary.coolingCoilOutletNode());
+  const auto firstInletHandle = firstUnitary.inletModelObject()->handle();
+  const auto firstCoolingOutletHandle = firstUnitary.coolingCoilOutletNode()->handle();
+  ASSERT_TRUE(firstUnitary.setName("Renamed Air-to-Air Unitary Heat Pump"));
+
+  FanOnOff secondFan(model);
+  CoilHeatingDXSingleSpeed secondHeating(model);
+  CoilCoolingDXSingleSpeed secondCooling(model);
+  AirLoopHVACUnitaryHeatPumpAirToAir secondUnitary(model);
+  ASSERT_TRUE(secondUnitary.setSupplyAirFan(secondFan));
+  ASSERT_TRUE(secondUnitary.setHeatingCoil(secondHeating));
+  ASSERT_TRUE(secondUnitary.setCoolingCoil(secondCooling));
+  ASSERT_TRUE(secondUnitary.inletModelObject());
+  ASSERT_TRUE(secondUnitary.coolingCoilOutletNode());
+
+  EXPECT_NE(firstInletHandle, secondUnitary.inletModelObject()->handle());
+  EXPECT_NE(firstCoolingOutletHandle, secondUnitary.coolingCoilOutletNode()->handle());
+}
+
 TEST_F(EPModelFixture, AirLoopHVACUnitaryHeatPumpAirToAir_RelationshipConstructorAndChildren) {
   Model model;
   ScheduleConstant availability(model);

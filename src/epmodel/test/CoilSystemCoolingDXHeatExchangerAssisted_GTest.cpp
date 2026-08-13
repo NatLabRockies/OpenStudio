@@ -46,6 +46,25 @@ TEST_F(EPModelFixture, CoilSystemCoolingDXHeatExchangerAssisted_DefaultConstruct
   EXPECT_TRUE(std::any_of(children.begin(), children.end(), [&](const auto& object) { return object.handle() == heatExchanger.handle(); }));
 }
 
+TEST_F(EPModelFixture, CoilSystemCoolingDXHeatExchangerAssisted_RenamedSystemsKeepDistinctContainedAirPaths) {
+  Model model;
+  CoilSystemCoolingDXHeatExchangerAssisted firstSystem(model);
+  auto firstHeatExchanger = firstSystem.heatExchanger();
+  ASSERT_TRUE(firstHeatExchanger.primaryAirOutletModelObject());
+  ASSERT_TRUE(firstHeatExchanger.secondaryAirInletModelObject());
+  const auto firstSupplyConnectorHandle = firstHeatExchanger.primaryAirOutletModelObject()->handle();
+  const auto firstExhaustConnectorHandle = firstHeatExchanger.secondaryAirInletModelObject()->handle();
+  ASSERT_TRUE(firstSystem.setName("Renamed Assisted DX Coil System"));
+
+  CoilSystemCoolingDXHeatExchangerAssisted secondSystem(model);
+  auto secondHeatExchanger = secondSystem.heatExchanger();
+  ASSERT_TRUE(secondHeatExchanger.primaryAirOutletModelObject());
+  ASSERT_TRUE(secondHeatExchanger.secondaryAirInletModelObject());
+
+  EXPECT_NE(firstSupplyConnectorHandle, secondHeatExchanger.primaryAirOutletModelObject()->handle());
+  EXPECT_NE(firstExhaustConnectorHandle, secondHeatExchanger.secondaryAirInletModelObject()->handle());
+}
+
 TEST_F(EPModelFixture, CoilSystemCoolingDXHeatExchangerAssisted_ScalarAccessors_RoundTrip) {
   Model model;
   CoilSystemCoolingDXHeatExchangerAssisted coilSystem(model);

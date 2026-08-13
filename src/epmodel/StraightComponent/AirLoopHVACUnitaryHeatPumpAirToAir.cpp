@@ -65,10 +65,24 @@ namespace epmodel {
       return component.getImpl<detail::ModelObject_Impl>()->resolvedNodeTarget(outletPort);
     }
 
+    void reserveUniqueUnitaryHeatPumpName(AirLoopHVACUnitaryHeatPumpAirToAir& unitary, const Model& model) {
+      const auto internalNodeNameIsTaken = [&model](const std::string& unitaryName) {
+        return static_cast<bool>(model.getConcreteModelObjectByName<Node>(unitaryName + " Air Inlet Node"))
+               || static_cast<bool>(model.getConcreteModelObjectByName<Node>(unitaryName + " Air Outlet Node"))
+               || static_cast<bool>(model.getConcreteModelObjectByName<Node>(unitaryName + " Fan Outlet Node"))
+               || static_cast<bool>(model.getConcreteModelObjectByName<Node>(unitaryName + " Cooling Coil Outlet Node"))
+               || static_cast<bool>(model.getConcreteModelObjectByName<Node>(unitaryName + " Heating Coil Outlet Node"));
+      };
+      while (internalNodeNameIsTaken(unitary.nameString())) {
+        OS_ASSERT(unitary.setName(model.nextName(unitary.iddObjectType(), false)));
+      }
+    }
+
   }  // namespace
 
   AirLoopHVACUnitaryHeatPumpAirToAir::AirLoopHVACUnitaryHeatPumpAirToAir(const Model& model)
     : StraightComponent(AirLoopHVACUnitaryHeatPumpAirToAir::iddObjectType(), model) {
+    reserveUniqueUnitaryHeatPumpName(*this, model);
     ScheduleConstant alwaysOn(model);
     OS_ASSERT(alwaysOn.setValue(1.0));
     OS_ASSERT(setAvailabilitySchedule(alwaysOn));

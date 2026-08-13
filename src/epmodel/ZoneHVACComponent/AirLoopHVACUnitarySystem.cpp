@@ -146,9 +146,23 @@ namespace epmodel {
       return true;
     }
 
+    void reserveUniqueUnitarySystemName(AirLoopHVACUnitarySystem& unitary, const Model& model) {
+      const auto internalNodeNameIsTaken = [&model](const std::string& unitaryName) {
+        return static_cast<bool>(model.getConcreteModelObjectByName<Node>(unitaryName + " Air Inlet Node"))
+               || static_cast<bool>(model.getConcreteModelObjectByName<Node>(unitaryName + " Air Outlet Node"))
+               || static_cast<bool>(model.getConcreteModelObjectByName<Node>(unitaryName + " Fan Outlet Node"))
+               || static_cast<bool>(model.getConcreteModelObjectByName<Node>(unitaryName + " Cooling Coil Outlet Node"))
+               || static_cast<bool>(model.getConcreteModelObjectByName<Node>(unitaryName + " Heating Coil Outlet Node"));
+      };
+      while (internalNodeNameIsTaken(unitary.nameString())) {
+        OS_ASSERT(unitary.setName(model.nextName(unitary.iddObjectType(), false)));
+      }
+    }
+
   }  // namespace
 
   AirLoopHVACUnitarySystem::AirLoopHVACUnitarySystem(const Model& model) : ZoneHVACComponent(AirLoopHVACUnitarySystem::iddObjectType(), model) {
+    reserveUniqueUnitarySystemName(*this, model);
     // Mirror model constructor defaults for scalar fields with strict/non-optional getters.
     OS_ASSERT(setControlType("Load"));
     OS_ASSERT(setDehumidificationControlType("None"));

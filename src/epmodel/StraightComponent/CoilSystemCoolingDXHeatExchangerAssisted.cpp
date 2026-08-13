@@ -36,10 +36,21 @@ namespace epmodel {
     constexpr auto kHeatExchangerObjectTypeField = openstudio::CoilSystem_Cooling_DX_HeatExchangerAssistedFields::HeatExchangerObjectType;
     constexpr auto kCoolingCoilObjectTypeField = openstudio::CoilSystem_Cooling_DX_HeatExchangerAssistedFields::CoolingCoilObjectType;
 
+    void reserveUniqueAssistedDXName(CoilSystemCoolingDXHeatExchangerAssisted& coilSystem, const Model& model) {
+      const auto internalNodeNameIsTaken = [&model](const std::string& coilSystemName) {
+        return static_cast<bool>(model.getConcreteModelObjectByName<Node>(coilSystemName + " HX Supply Air Outlet - Cooling Inlet Node"))
+               || static_cast<bool>(model.getConcreteModelObjectByName<Node>(coilSystemName + " HX Exhaust Air Inlet - Cooling Outlet Node"));
+      };
+      while (internalNodeNameIsTaken(coilSystem.nameString())) {
+        OS_ASSERT(coilSystem.setName(model.nextName(coilSystem.iddObjectType(), false)));
+      }
+    }
+
   }  // namespace
 
   CoilSystemCoolingDXHeatExchangerAssisted::CoilSystemCoolingDXHeatExchangerAssisted(const Model& model)
     : StraightComponent(CoilSystemCoolingDXHeatExchangerAssisted::iddObjectType(), model) {
+    reserveUniqueAssistedDXName(*this, model);
     CoilCoolingDXSingleSpeed coolingCoil(model);
     OS_ASSERT(setCoolingCoil(coolingCoil));
 
@@ -50,6 +61,7 @@ namespace epmodel {
 
   CoilSystemCoolingDXHeatExchangerAssisted::CoilSystemCoolingDXHeatExchangerAssisted(const Model& model, const AirToAirComponent& heatExchanger)
     : StraightComponent(CoilSystemCoolingDXHeatExchangerAssisted::iddObjectType(), model) {
+    reserveUniqueAssistedDXName(*this, model);
     if (heatExchanger.model() != model) {
       remove();
       throw std::invalid_argument("The assisted DX coil-system heat exchanger must belong to the same model.");
