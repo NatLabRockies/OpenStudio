@@ -546,17 +546,16 @@ The main remaining gaps are:
   behavior
 - adding regression coverage for zone reassignment and projection rebuilds
 
-### Deferred AirLoopHVAC Follow-On
+### Air-System Topology Roadmap
 
-The single-duct `AirLoopHVAC` anchor work is in a reasonably good stopping
-state. What remains here is mostly follow-on surface area rather than missing
-foundational structure.
+The `AirLoopHVAC` demand-side foundation supports ordinary and compound
+terminals, transactional branch mutation, and shared supply and return plenums
+across selected tested transitions. Remaining work is family breadth and
+higher-level workflow evidence, not replacement of the basic graph model.
 
-The main remaining gaps are:
-
-- dual-duct APIs
-- supply-splitter and multi-splitter surfaces
-- wider relationship conveniences around the existing air-loop anchors
+Current status and ordered work are maintained in
+`doc/epmodel-api-gap/roadmap.md`. Type-specific gaps remain beside their APIs in
+public-header `Schema Alignment Notes`.
 
 ### EnergyPlus-Only Wrapper Work
 
