@@ -202,6 +202,7 @@ namespace epmodel {
       class SingleDuctTerminalClonePlan;
       class DualDuctZoneAttachment;
       class DualDuctTerminalInsertionPlan;
+      class DualDuctPlenumRemovalPlan;
       class DemandTopologySnapshot;
       class DemandBranchComponentLocation;
       static boost::optional<openstudio::epmodel::ModelObject> resolveTerminalOnDemandBranchNodes(const openstudio::epmodel::Node& splitterOutletNode,

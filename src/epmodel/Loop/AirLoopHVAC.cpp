@@ -1722,6 +1722,101 @@ namespace epmodel {
       bool m_mutationSafe = true;
     };
 
+    // A dual-duct zone has three independently addressed plenum leaves: one
+    // on each supply path and one on the common return path. This plan proves
+    // all three owners before staging direct connector rows. Each leaf either
+    // preserves a shared plenum or deletes a last-served plenum, but all three
+    // decisions pass one commit barrier before any shared leaf is detached.
+    class AirLoopHVAC_Impl::DualDuctPlenumRemovalPlan
+    {
+     public:
+      static std::unique_ptr<DualDuctPlenumRemovalPlan> prepare(AirLoopHVAC_Impl& airLoopImpl, ThermalZone& zone,
+                                                                const DemandTopologySnapshot::EffectiveBranch& branch, Mixer& terminal);
+      bool commit();
+
+     private:
+      enum class PlenumDisposition
+      {
+        PreserveShared,
+        DeleteLast,
+      };
+
+      DualDuctPlenumRemovalPlan(AirLoopHVACZoneSplitter primarySplitter, AirLoopHVACZoneSplitter secondarySplitter, AirLoopHVACZoneMixer zoneMixer,
+                                AirLoopHVACSupplyPlenum primaryPlenum, AirLoopHVACSupplyPlenum secondaryPlenum, AirLoopHVACReturnPlenum returnPlenum,
+                                AirLoopHVACSupplyPath primarySupplyPath, AirLoopHVACSupplyPath secondarySupplyPath, AirLoopHVACReturnPath returnPath,
+                                ModelObject primaryInlet, ModelObject secondaryInlet, ModelObject zoneReturn, ModelObject primaryPlenumInlet,
+                                ModelObject secondaryPlenumInlet, ModelObject returnPlenumOutlet, std::vector<ModelObject> returnBypassNodes,
+                                unsigned primarySplitterOrdinal, unsigned secondarySplitterOrdinal, unsigned mixerOrdinal,
+                                unsigned primaryPlenumOrdinal, unsigned secondaryPlenumOrdinal, unsigned returnPlenumOrdinal,
+                                PlenumDisposition primaryDisposition, PlenumDisposition secondaryDisposition, PlenumDisposition returnDisposition)
+        : m_primarySplitter(std::move(primarySplitter)),
+          m_secondarySplitter(std::move(secondarySplitter)),
+          m_zoneMixer(std::move(zoneMixer)),
+          m_primaryPlenum(std::move(primaryPlenum)),
+          m_secondaryPlenum(std::move(secondaryPlenum)),
+          m_returnPlenum(std::move(returnPlenum)),
+          m_primarySupplyPath(std::move(primarySupplyPath)),
+          m_secondarySupplyPath(std::move(secondarySupplyPath)),
+          m_returnPath(std::move(returnPath)),
+          m_primaryInlet(std::move(primaryInlet)),
+          m_secondaryInlet(std::move(secondaryInlet)),
+          m_zoneReturn(std::move(zoneReturn)),
+          m_primaryPlenumInlet(std::move(primaryPlenumInlet)),
+          m_secondaryPlenumInlet(std::move(secondaryPlenumInlet)),
+          m_returnPlenumOutlet(std::move(returnPlenumOutlet)),
+          m_returnBypassNodes(std::move(returnBypassNodes)),
+          m_primarySplitterOrdinal(primarySplitterOrdinal),
+          m_secondarySplitterOrdinal(secondarySplitterOrdinal),
+          m_mixerOrdinal(mixerOrdinal),
+          m_primaryPlenumOrdinal(primaryPlenumOrdinal),
+          m_secondaryPlenumOrdinal(secondaryPlenumOrdinal),
+          m_returnPlenumOrdinal(returnPlenumOrdinal),
+          m_primaryDisposition(primaryDisposition),
+          m_secondaryDisposition(secondaryDisposition),
+          m_returnDisposition(returnDisposition) {}
+
+      bool stagePrimaryConnector();
+      bool stageSecondaryConnector();
+      bool stageReturnConnector();
+      bool stageReturnBypassConnectors();
+      void rollbackPrimaryConnector();
+      void rollbackSecondaryConnector();
+      void rollbackReturnConnector();
+      void rollbackReturnBypassConnectors();
+      void restorePathMemberships(bool primaryRemoved, bool secondaryRemoved, bool returnRemoved);
+      void removeOrphanConnectorNode(const ModelObject& connectorNode);
+
+      AirLoopHVACZoneSplitter m_primarySplitter;
+      AirLoopHVACZoneSplitter m_secondarySplitter;
+      AirLoopHVACZoneMixer m_zoneMixer;
+      AirLoopHVACSupplyPlenum m_primaryPlenum;
+      AirLoopHVACSupplyPlenum m_secondaryPlenum;
+      AirLoopHVACReturnPlenum m_returnPlenum;
+      AirLoopHVACSupplyPath m_primarySupplyPath;
+      AirLoopHVACSupplyPath m_secondarySupplyPath;
+      AirLoopHVACReturnPath m_returnPath;
+      ModelObject m_primaryInlet;
+      ModelObject m_secondaryInlet;
+      ModelObject m_zoneReturn;
+      ModelObject m_primaryPlenumInlet;
+      ModelObject m_secondaryPlenumInlet;
+      ModelObject m_returnPlenumOutlet;
+      std::vector<ModelObject> m_returnBypassNodes;
+      unsigned m_primarySplitterOrdinal;
+      unsigned m_secondarySplitterOrdinal;
+      unsigned m_mixerOrdinal;
+      unsigned m_primaryPlenumOrdinal;
+      unsigned m_secondaryPlenumOrdinal;
+      unsigned m_returnPlenumOrdinal;
+      PlenumDisposition m_primaryDisposition;
+      PlenumDisposition m_secondaryDisposition;
+      PlenumDisposition m_returnDisposition;
+      boost::optional<unsigned> m_primaryDirectOrdinal;
+      boost::optional<unsigned> m_secondaryDirectOrdinal;
+      boost::optional<unsigned> m_returnDirectOrdinal;
+      std::vector<unsigned> m_returnBypassDirectOrdinals;
+    };
+
     // Captures the connector-local owner of one effective demand-branch
     // start. The ordinal belongs either to the loop ZoneSplitter or to the
     // selected SupplyPlenum; it is never reused as an address in another
@@ -3173,6 +3268,543 @@ namespace epmodel {
 
     AirLoopHVAC_Impl::DemandTopologySnapshot AirLoopHVAC_Impl::demandTopologySnapshot() const {
       return DemandTopologySnapshot::resolve(*this);
+    }
+
+    std::unique_ptr<AirLoopHVAC_Impl::DualDuctPlenumRemovalPlan>
+      AirLoopHVAC_Impl::DualDuctPlenumRemovalPlan::prepare(AirLoopHVAC_Impl& airLoopImpl, ThermalZone& zone,
+                                                           const DemandTopologySnapshot::EffectiveBranch& branch, Mixer& terminal) {
+      auto airLoop = airLoopImpl.getObject<AirLoopHVAC>();
+      if (!airLoop.isDualDuct() || !branch.zone || (*branch.zone != zone) || !branch.zoneInletNode || !branch.zoneReturnNode
+          || !branch.supply.supplyPlenum || !branch.supply.plenumOrdinal || !branch.returnPath.returnPlenum || !branch.returnPath.plenumOrdinal
+          || !terminal.isRemovable()) {
+        return nullptr;
+      }
+
+      const auto terminalLoop = terminal.airLoopHVAC();
+      const auto primaryInlet = terminal.inletModelObject(0u);
+      const auto secondaryInlet = terminal.inletModelObject(1u);
+      const auto terminalOutlet = terminal.outletModelObject();
+      if (!terminalLoop || (*terminalLoop != airLoop) || !primaryInlet || !secondaryInlet || !terminalOutlet || !primaryInlet->optionalCast<Node>()
+          || !secondaryInlet->optionalCast<Node>() || !terminalOutlet->optionalCast<Node>()
+          || (*terminalOutlet != branch.zoneInletNode->cast<ModelObject>()) || (branch.supply.branchStart != *primaryInlet)
+          || (branch.returnPath.branchReturn != branch.zoneReturnNode->cast<ModelObject>())) {
+        return nullptr;
+      }
+
+      auto connections = zone.getImpl<detail::ThermalZone_Impl>()->zoneHVACEquipmentConnections();
+      if (!connections || (connections->zoneAirInletNodes() != std::vector<Node>{*branch.zoneInletNode})
+          || (connections->zoneReturnAirNodes() != std::vector<Node>{*branch.zoneReturnNode})) {
+        return nullptr;
+      }
+      auto equipmentList = connections->zoneHVACEquipmentList();
+      const auto equipment = equipmentList.equipment();
+      if ((equipment.size() != 1u) || (equipment.front() != terminal.cast<ModelObject>())) {
+        return nullptr;
+      }
+      const auto airDistributionUnitSources = terminal.getSources(openstudio::IddObjectType::ZoneHVAC_AirDistributionUnit);
+      if (airDistributionUnitSources.size() != 1u) {
+        return nullptr;
+      }
+      const auto airDistributionUnit = airDistributionUnitSources.front().optionalCast<ZoneHVACAirDistributionUnit>();
+      if (!airDistributionUnit || !airDistributionUnit->airTerminal() || (*airDistributionUnit->airTerminal() != terminal.cast<ModelObject>())
+          || !airDistributionUnit->outletNode() || (*airDistributionUnit->outletNode() != *branch.zoneInletNode)) {
+        return nullptr;
+      }
+
+      const auto demandInlets = airLoop.demandInletNodes();
+      if (demandInlets.size() != 2u) {
+        return nullptr;
+      }
+      auto primarySplitter = airLoopImpl.zoneSplitter();
+      auto secondarySplitter = airLoopImpl.zoneSplitterForDemandInletNode(demandInlets[1]);
+      const auto primarySplitterInlet = primarySplitter.getImpl<detail::AirLoopHVACZoneSplitter_Impl>()->inletNode();
+      if (!secondarySplitter || !primarySplitterInlet || (*primarySplitterInlet != demandInlets[0]) || (*secondarySplitter == primarySplitter)) {
+        return nullptr;
+      }
+
+      const auto primaryPlenum = *branch.supply.supplyPlenum;
+      const auto primaryPlenumInlet = primaryPlenum.inletModelObject();
+      const auto primaryPlenumOutlets = primaryPlenum.outletModelObjects();
+      const auto primarySplitterOutlets = primarySplitter.outletModelObjects();
+      if (!primaryPlenumInlet || !primaryPlenumInlet->optionalCast<Node>() || primaryPlenumOutlets.empty()
+          || (*branch.supply.plenumOrdinal >= primaryPlenumOutlets.size()) || (primaryPlenumOutlets[*branch.supply.plenumOrdinal] != *primaryInlet)
+          || (std::ranges::count(primaryPlenumOutlets, *primaryInlet) != 1) || (branch.supply.splitterOutlet != *primaryPlenumInlet)
+          || (branch.supply.splitterOrdinal >= primarySplitterOutlets.size())
+          || (primarySplitterOutlets[branch.supply.splitterOrdinal] != *primaryPlenumInlet)
+          || (std::ranges::count(primarySplitterOutlets, *primaryPlenumInlet) != 1)
+          || (std::ranges::count(primarySplitterOutlets, *primaryInlet) != 0)) {
+        return nullptr;
+      }
+
+      boost::optional<AirLoopHVACSupplyPlenum> secondaryPlenum;
+      unsigned secondaryPlenumOrdinal = 0u;
+      for (const auto& candidate : airLoop.model().getConcreteModelObjects<AirLoopHVACSupplyPlenum>()) {
+        const auto outlets = candidate.outletModelObjects();
+        const auto outlet = std::ranges::find(outlets, *secondaryInlet);
+        if (outlet == outlets.end()) {
+          continue;
+        }
+        if (secondaryPlenum || (std::ranges::count(outlets, *secondaryInlet) != 1)) {
+          return nullptr;
+        }
+        secondaryPlenum = candidate;
+        secondaryPlenumOrdinal = static_cast<unsigned>(std::distance(outlets.begin(), outlet));
+      }
+      if (!secondaryPlenum || (*secondaryPlenum == primaryPlenum)) {
+        return nullptr;
+      }
+      const auto secondaryPlenumInlet = secondaryPlenum->inletModelObject();
+      const auto secondaryPlenumOutlets = secondaryPlenum->outletModelObjects();
+      const auto secondarySplitterOutlets = secondarySplitter->outletModelObjects();
+      const auto secondarySplitterOutlet = std::ranges::find(secondarySplitterOutlets, *secondaryPlenumInlet);
+      if (!secondaryPlenumInlet || !secondaryPlenumInlet->optionalCast<Node>() || secondaryPlenumOutlets.empty()
+          || (secondaryPlenumOrdinal >= secondaryPlenumOutlets.size()) || (secondaryPlenumOutlets[secondaryPlenumOrdinal] != *secondaryInlet)
+          || (secondarySplitterOutlet == secondarySplitterOutlets.end()) || (std::ranges::count(secondarySplitterOutlets, *secondaryPlenumInlet) != 1)
+          || (std::ranges::count(secondarySplitterOutlets, *secondaryInlet) != 0)) {
+        return nullptr;
+      }
+      const auto secondarySplitterOrdinal = static_cast<unsigned>(std::distance(secondarySplitterOutlets.begin(), secondarySplitterOutlet));
+
+      boost::optional<AirLoopHVACSupplyPath> primarySupplyPath;
+      boost::optional<AirLoopHVACSupplyPath> secondarySupplyPath;
+      unsigned primaryPlenumMembershipCount = 0u;
+      unsigned secondaryPlenumMembershipCount = 0u;
+      unsigned primarySplitterMembershipCount = 0u;
+      unsigned secondarySplitterMembershipCount = 0u;
+      for (const auto& supplyPath : airLoop.model().getConcreteModelObjects<AirLoopHVACSupplyPath>()) {
+        const auto pathInlet = supplyPath.getImpl<detail::AirLoopHVACSupplyPath_Impl>()->supplyAirPathInletNode();
+        if (pathInlet && (*pathInlet == demandInlets[0])) {
+          if (primarySupplyPath) {
+            return nullptr;
+          }
+          primarySupplyPath = supplyPath;
+        }
+        if (pathInlet && (*pathInlet == demandInlets[1])) {
+          if (secondarySupplyPath) {
+            return nullptr;
+          }
+          secondarySupplyPath = supplyPath;
+        }
+
+        const auto components = supplyPath.components();
+        primaryPlenumMembershipCount += static_cast<unsigned>(std::ranges::count(components, primaryPlenum.cast<ModelObject>()));
+        secondaryPlenumMembershipCount += static_cast<unsigned>(std::ranges::count(components, secondaryPlenum->cast<ModelObject>()));
+        primarySplitterMembershipCount += static_cast<unsigned>(std::ranges::count(components, primarySplitter.cast<ModelObject>()));
+        secondarySplitterMembershipCount += static_cast<unsigned>(std::ranges::count(components, secondarySplitter->cast<ModelObject>()));
+      }
+      if (!primarySupplyPath || !secondarySupplyPath || (*primarySupplyPath == *secondarySupplyPath) || (primaryPlenumMembershipCount != 1u)
+          || (secondaryPlenumMembershipCount != 1u) || (primarySplitterMembershipCount != 1u) || (secondarySplitterMembershipCount != 1u)
+          || (std::ranges::count(primarySupplyPath->components(), primaryPlenum.cast<ModelObject>()) != 1)
+          || (std::ranges::count(primarySupplyPath->components(), primarySplitter.cast<ModelObject>()) != 1)
+          || (std::ranges::count(secondarySupplyPath->components(), secondaryPlenum->cast<ModelObject>()) != 1)
+          || (std::ranges::count(secondarySupplyPath->components(), secondarySplitter->cast<ModelObject>()) != 1)) {
+        return nullptr;
+      }
+
+      for (const auto& source : primaryInlet->sources()) {
+        if ((source != terminal.cast<ModelObject>()) && (source != primaryPlenum.cast<ModelObject>())) {
+          return nullptr;
+        }
+      }
+      for (const auto& source : secondaryInlet->sources()) {
+        if ((source != terminal.cast<ModelObject>()) && (source != secondaryPlenum->cast<ModelObject>())) {
+          return nullptr;
+        }
+      }
+
+      const auto returnPlenum = *branch.returnPath.returnPlenum;
+      const auto returnPlenumOutlet = returnPlenum.outletModelObject();
+      const auto returnPlenumInlets = returnPlenum.inletModelObjects();
+      auto zoneMixer = airLoopImpl.zoneMixer();
+      const auto mixerInlets = zoneMixer.inletModelObjects();
+      if (!returnPlenumOutlet || !returnPlenumOutlet->optionalCast<Node>() || returnPlenumInlets.empty()
+          || (*branch.returnPath.plenumOrdinal >= returnPlenumInlets.size())
+          || (returnPlenumInlets[*branch.returnPath.plenumOrdinal] != branch.zoneReturnNode->cast<ModelObject>())
+          || (std::ranges::count(returnPlenumInlets, branch.zoneReturnNode->cast<ModelObject>()) != 1)
+          || (branch.returnPath.mixerOrdinal >= mixerInlets.size()) || (mixerInlets[branch.returnPath.mixerOrdinal] != *returnPlenumOutlet)
+          || (branch.returnPath.mixerInlet != *returnPlenumOutlet) || (std::ranges::count(mixerInlets, *returnPlenumOutlet) != 1)
+          || (std::ranges::count(mixerInlets, branch.zoneReturnNode->cast<ModelObject>()) != 0)) {
+        return nullptr;
+      }
+
+      unsigned servedReturnCount = 0u;
+      for (const auto& inlet : returnPlenumInlets) {
+        const auto inletNode = inlet.optionalCast<Node>();
+        if (inletNode && AirLoopHVAC_Impl::resolveZoneServedByReturnNode(*inletNode)) {
+          ++servedReturnCount;
+        }
+      }
+      const auto primaryDisposition = primaryPlenumOutlets.size() == 1u ? PlenumDisposition::DeleteLast : PlenumDisposition::PreserveShared;
+      const auto secondaryDisposition = secondaryPlenumOutlets.size() == 1u ? PlenumDisposition::DeleteLast : PlenumDisposition::PreserveShared;
+      PlenumDisposition returnDisposition = PlenumDisposition::PreserveShared;
+      std::vector<ModelObject> returnBypassNodes;
+      if (servedReturnCount == 1u) {
+        returnDisposition = PlenumDisposition::DeleteLast;
+
+        std::vector<std::pair<AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass, Node>> bypassOwners;
+        for (const auto& unitary : airLoop.model().getConcreteModelObjects<AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass>()) {
+          const auto bypassNode = readOnlyNodeField(unitary.cast<ModelObject>(), unitary.plenumorMixerAirPort());
+          if (!bypassNode.valid) {
+            return nullptr;
+          }
+          if (bypassNode.node) {
+            bypassOwners.emplace_back(unitary, *bypassNode.node);
+          }
+        }
+
+        for (const auto& inlet : returnPlenumInlets) {
+          std::vector<AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass> matchingOwners;
+          for (const auto& [unitary, bypassNode] : bypassOwners) {
+            if (bypassNode.cast<ModelObject>() == inlet) {
+              matchingOwners.push_back(unitary);
+            }
+          }
+
+          if (inlet == branch.zoneReturnNode->cast<ModelObject>()) {
+            if (!matchingOwners.empty()) {
+              return nullptr;
+            }
+            continue;
+          }
+
+          const auto bypassNode = inlet.optionalCast<Node>();
+          if (!bypassNode || (matchingOwners.size() != 1u) || (std::ranges::count(returnPlenumInlets, inlet) != 1)) {
+            return nullptr;
+          }
+          const auto& owner = matchingOwners.front();
+          const auto ownerLoop = owner.airLoopHVAC();
+          const auto ownerMixer = owner.plenumorMixer();
+          if (!ownerLoop || (*ownerLoop != airLoop) || !ownerMixer || (ownerMixer->handle() != returnPlenum.handle())) {
+            return nullptr;
+          }
+
+          unsigned returnPlenumMembershipCount = 0u;
+          for (const auto& candidate : airLoop.model().getConcreteModelObjects<AirLoopHVACReturnPlenum>()) {
+            returnPlenumMembershipCount += static_cast<unsigned>(std::ranges::count(candidate.inletModelObjects(), inlet));
+          }
+          unsigned zoneMixerMembershipCount = 0u;
+          for (const auto& candidate : airLoop.model().getConcreteModelObjects<AirLoopHVACZoneMixer>()) {
+            zoneMixerMembershipCount += static_cast<unsigned>(std::ranges::count(candidate.inletModelObjects(), inlet));
+          }
+          if ((returnPlenumMembershipCount != 1u) || (zoneMixerMembershipCount != 0u)) {
+            return nullptr;
+          }
+          for (const auto& source : bypassNode->sources()) {
+            if ((source != owner.cast<ModelObject>()) && (source != returnPlenum.cast<ModelObject>())) {
+              return nullptr;
+            }
+          }
+          returnBypassNodes.push_back(inlet);
+        }
+      } else if (servedReturnCount < 1u) {
+        return nullptr;
+      }
+
+      const bool deletesAnyPlenum = (primaryDisposition == PlenumDisposition::DeleteLast) || (secondaryDisposition == PlenumDisposition::DeleteLast)
+                                    || (returnDisposition == PlenumDisposition::DeleteLast);
+      if (deletesAnyPlenum
+          && (std::set<Handle>{primaryInlet->handle(), secondaryInlet->handle(), branch.zoneReturnNode->handle(), primaryPlenumInlet->handle(),
+                               secondaryPlenumInlet->handle(), returnPlenumOutlet->handle()}
+                .size()
+              != 6u)) {
+        return nullptr;
+      }
+
+      boost::optional<AirLoopHVACReturnPath> selectedReturnPath;
+      unsigned returnPlenumMembershipCount = 0u;
+      for (const auto& returnPath : airLoop.model().getConcreteModelObjects<AirLoopHVACReturnPath>()) {
+        const auto components = returnPath.components();
+        returnPlenumMembershipCount += static_cast<unsigned>(std::ranges::count(components, returnPlenum.cast<ModelObject>()));
+        const auto pathLoop = returnPath.airLoopHVAC();
+        if (pathLoop && (*pathLoop == airLoop)) {
+          if (selectedReturnPath) {
+            return nullptr;
+          }
+          selectedReturnPath = returnPath;
+        }
+      }
+      if (!selectedReturnPath || (returnPlenumMembershipCount != 1u)
+          || (std::ranges::count(selectedReturnPath->components(), returnPlenum.cast<ModelObject>()) != 1)
+          || (std::ranges::count(selectedReturnPath->components(), zoneMixer.cast<ModelObject>()) != 1)) {
+        return nullptr;
+      }
+
+      if ((secondaryDisposition == PlenumDisposition::DeleteLast) && (secondarySplitterOutlets.size() == 1u)) {
+        auto demandInletNodeList = airLoop.getModelObjectTarget<NodeList>(AirLoopHVACFields::DemandSideInletNodeNames);
+        if (!demandInletNodeList || (std::ranges::count(demandInletNodeList->nodes(), demandInlets[1]) != 1)) {
+          return nullptr;
+        }
+      }
+      if (primaryDisposition == PlenumDisposition::DeleteLast) {
+        for (const auto& source : primaryPlenumInlet->sources()) {
+          if ((source != primarySplitter.cast<ModelObject>()) && (source != primaryPlenum.cast<ModelObject>())) {
+            return nullptr;
+          }
+        }
+      }
+      if (secondaryDisposition == PlenumDisposition::DeleteLast) {
+        for (const auto& source : secondaryPlenumInlet->sources()) {
+          if ((source != secondarySplitter->cast<ModelObject>()) && (source != secondaryPlenum->cast<ModelObject>())) {
+            return nullptr;
+          }
+        }
+      }
+      if (returnDisposition == PlenumDisposition::DeleteLast) {
+        for (const auto& source : returnPlenumOutlet->sources()) {
+          if ((source != zoneMixer.cast<ModelObject>()) && (source != returnPlenum.cast<ModelObject>())) {
+            return nullptr;
+          }
+        }
+      }
+
+      return std::unique_ptr<DualDuctPlenumRemovalPlan>(new DualDuctPlenumRemovalPlan(
+        primarySplitter, *secondarySplitter, zoneMixer, primaryPlenum, *secondaryPlenum, returnPlenum, *primarySupplyPath, *secondarySupplyPath,
+        *selectedReturnPath, *primaryInlet, *secondaryInlet, branch.zoneReturnNode->cast<ModelObject>(), *primaryPlenumInlet, *secondaryPlenumInlet,
+        *returnPlenumOutlet, std::move(returnBypassNodes), branch.supply.splitterOrdinal, secondarySplitterOrdinal, branch.returnPath.mixerOrdinal,
+        *branch.supply.plenumOrdinal, secondaryPlenumOrdinal, *branch.returnPath.plenumOrdinal, primaryDisposition, secondaryDisposition,
+        returnDisposition));
+    }
+
+    bool AirLoopHVAC_Impl::DualDuctPlenumRemovalPlan::stagePrimaryConnector() {
+      if (m_primaryDisposition == PlenumDisposition::DeleteLast) {
+        return m_primarySplitter.setOutletModelObject(m_primarySplitterOrdinal, m_primaryInlet);
+      }
+
+      m_primaryDirectOrdinal = m_primarySplitter.nextBranchIndex();
+      if (!m_primarySplitter.setOutletModelObject(*m_primaryDirectOrdinal, m_primaryInlet)) {
+        m_primarySplitter.removePortForBranch(*m_primaryDirectOrdinal);
+        m_primaryDirectOrdinal = boost::none;
+        return false;
+      }
+      return true;
+    }
+
+    bool AirLoopHVAC_Impl::DualDuctPlenumRemovalPlan::stageSecondaryConnector() {
+      if (m_secondaryDisposition == PlenumDisposition::DeleteLast) {
+        return m_secondarySplitter.setOutletModelObject(m_secondarySplitterOrdinal, m_secondaryInlet);
+      }
+
+      m_secondaryDirectOrdinal = m_secondarySplitter.nextBranchIndex();
+      if (!m_secondarySplitter.setOutletModelObject(*m_secondaryDirectOrdinal, m_secondaryInlet)) {
+        m_secondarySplitter.removePortForBranch(*m_secondaryDirectOrdinal);
+        m_secondaryDirectOrdinal = boost::none;
+        return false;
+      }
+      return true;
+    }
+
+    bool AirLoopHVAC_Impl::DualDuctPlenumRemovalPlan::stageReturnConnector() {
+      if (m_returnDisposition == PlenumDisposition::DeleteLast) {
+        return m_zoneMixer.setInletModelObject(m_mixerOrdinal, m_zoneReturn);
+      }
+
+      m_returnDirectOrdinal = m_zoneMixer.nextBranchIndex();
+      if (!m_zoneMixer.setInletModelObject(*m_returnDirectOrdinal, m_zoneReturn)) {
+        m_zoneMixer.removePortForBranch(*m_returnDirectOrdinal);
+        m_returnDirectOrdinal = boost::none;
+        return false;
+      }
+      return true;
+    }
+
+    bool AirLoopHVAC_Impl::DualDuctPlenumRemovalPlan::stageReturnBypassConnectors() {
+      for (const auto& bypassNode : m_returnBypassNodes) {
+        const auto directOrdinal = m_zoneMixer.nextBranchIndex();
+        if (!m_zoneMixer.setInletModelObject(directOrdinal, bypassNode)) {
+          m_zoneMixer.removePortForBranch(directOrdinal);
+          rollbackReturnBypassConnectors();
+          return false;
+        }
+        m_returnBypassDirectOrdinals.push_back(directOrdinal);
+      }
+      return true;
+    }
+
+    void AirLoopHVAC_Impl::DualDuctPlenumRemovalPlan::rollbackPrimaryConnector() {
+      if (m_primaryDisposition == PlenumDisposition::DeleteLast) {
+        const bool restored = m_primarySplitter.setOutletModelObject(m_primarySplitterOrdinal, m_primaryPlenumInlet);
+        OS_ASSERT(restored);
+        (void)restored;
+      } else {
+        OS_ASSERT(m_primaryDirectOrdinal);
+        m_primarySplitter.removePortForBranch(*m_primaryDirectOrdinal);
+        m_primaryDirectOrdinal = boost::none;
+      }
+    }
+
+    void AirLoopHVAC_Impl::DualDuctPlenumRemovalPlan::rollbackSecondaryConnector() {
+      if (m_secondaryDisposition == PlenumDisposition::DeleteLast) {
+        const bool restored = m_secondarySplitter.setOutletModelObject(m_secondarySplitterOrdinal, m_secondaryPlenumInlet);
+        OS_ASSERT(restored);
+        (void)restored;
+      } else {
+        OS_ASSERT(m_secondaryDirectOrdinal);
+        m_secondarySplitter.removePortForBranch(*m_secondaryDirectOrdinal);
+        m_secondaryDirectOrdinal = boost::none;
+      }
+    }
+
+    void AirLoopHVAC_Impl::DualDuctPlenumRemovalPlan::rollbackReturnConnector() {
+      if (m_returnDisposition == PlenumDisposition::DeleteLast) {
+        const bool restored = m_zoneMixer.setInletModelObject(m_mixerOrdinal, m_returnPlenumOutlet);
+        OS_ASSERT(restored);
+        (void)restored;
+      } else {
+        OS_ASSERT(m_returnDirectOrdinal);
+        m_zoneMixer.removePortForBranch(*m_returnDirectOrdinal);
+        m_returnDirectOrdinal = boost::none;
+      }
+    }
+
+    void AirLoopHVAC_Impl::DualDuctPlenumRemovalPlan::rollbackReturnBypassConnectors() {
+      for (auto it = m_returnBypassDirectOrdinals.rbegin(); it != m_returnBypassDirectOrdinals.rend(); ++it) {
+        m_zoneMixer.removePortForBranch(*it);
+      }
+      m_returnBypassDirectOrdinals.clear();
+    }
+
+    void AirLoopHVAC_Impl::DualDuctPlenumRemovalPlan::restorePathMemberships(bool primaryRemoved, bool secondaryRemoved, bool returnRemoved) {
+      if (returnRemoved) {
+        const bool restored = m_returnPath.addComponent(m_returnPlenum);
+        OS_ASSERT(restored);
+        (void)restored;
+      }
+      if (secondaryRemoved) {
+        auto pathImpl = m_secondarySupplyPath.getImpl<detail::AirLoopHVACSupplyPath_Impl>();
+        OS_ASSERT(pathImpl);
+        const bool restored = pathImpl->addComponent(m_secondaryPlenum);
+        OS_ASSERT(restored);
+        (void)restored;
+      }
+      if (primaryRemoved) {
+        auto pathImpl = m_primarySupplyPath.getImpl<detail::AirLoopHVACSupplyPath_Impl>();
+        OS_ASSERT(pathImpl);
+        const bool restored = pathImpl->addComponent(m_primaryPlenum);
+        OS_ASSERT(restored);
+        (void)restored;
+      }
+    }
+
+    void AirLoopHVAC_Impl::DualDuctPlenumRemovalPlan::removeOrphanConnectorNode(const ModelObject& connectorNode) {
+      auto model = connectorNode.model();
+      const auto node = model.getModelObject<Node>(connectorNode.handle());
+      OS_ASSERT(node);
+      if (!node) {
+        return;
+      }
+      OS_ASSERT(node->sources().empty());
+      const bool removed = model.removeObject(node->handle());
+      OS_ASSERT(removed);
+      (void)removed;
+    }
+
+    bool AirLoopHVAC_Impl::DualDuctPlenumRemovalPlan::commit() {
+      if (!stagePrimaryConnector()) {
+        return false;
+      }
+      if (!stageSecondaryConnector()) {
+        rollbackPrimaryConnector();
+        return false;
+      }
+      if (!stageReturnConnector()) {
+        rollbackSecondaryConnector();
+        rollbackPrimaryConnector();
+        return false;
+      }
+      if (!stageReturnBypassConnectors()) {
+        rollbackReturnConnector();
+        rollbackSecondaryConnector();
+        rollbackPrimaryConnector();
+        return false;
+      }
+
+      bool primaryPathRemoved = false;
+      bool secondaryPathRemoved = false;
+      bool returnPathRemoved = false;
+      if (m_primaryDisposition == PlenumDisposition::DeleteLast) {
+        primaryPathRemoved = m_primarySupplyPath.removeComponent(m_primaryPlenum);
+        if (!primaryPathRemoved) {
+          rollbackReturnBypassConnectors();
+          rollbackReturnConnector();
+          rollbackSecondaryConnector();
+          rollbackPrimaryConnector();
+          return false;
+        }
+      }
+      if (m_secondaryDisposition == PlenumDisposition::DeleteLast) {
+        secondaryPathRemoved = m_secondarySupplyPath.removeComponent(m_secondaryPlenum);
+        if (!secondaryPathRemoved) {
+          restorePathMemberships(primaryPathRemoved, false, false);
+          rollbackReturnBypassConnectors();
+          rollbackReturnConnector();
+          rollbackSecondaryConnector();
+          rollbackPrimaryConnector();
+          return false;
+        }
+      }
+      if (m_returnDisposition == PlenumDisposition::DeleteLast) {
+        returnPathRemoved = m_returnPath.removeComponent(m_returnPlenum);
+        if (!returnPathRemoved) {
+          restorePathMemberships(primaryPathRemoved, secondaryPathRemoved, false);
+          rollbackReturnBypassConnectors();
+          rollbackReturnConnector();
+          rollbackSecondaryConnector();
+          rollbackPrimaryConnector();
+          return false;
+        }
+      }
+
+      const auto primaryOutlets = m_primaryPlenum.outletModelObjects();
+      const auto secondaryOutlets = m_secondaryPlenum.outletModelObjects();
+      const auto returnInlets = m_returnPlenum.inletModelObjects();
+      const auto mixerInlets = m_zoneMixer.inletModelObjects();
+      bool bypassRowsIntact = m_returnBypassNodes.size() == m_returnBypassDirectOrdinals.size();
+      for (unsigned i = 0u; bypassRowsIntact && (i < m_returnBypassNodes.size()); ++i) {
+        const auto directOrdinal = m_returnBypassDirectOrdinals[i];
+        bypassRowsIntact = (std::ranges::count(returnInlets, m_returnBypassNodes[i]) == 1) && (directOrdinal < mixerInlets.size())
+                           && (mixerInlets[directOrdinal] == m_returnBypassNodes[i]);
+      }
+      if ((m_primaryPlenumOrdinal >= primaryOutlets.size()) || (primaryOutlets[m_primaryPlenumOrdinal] != m_primaryInlet)
+          || (m_secondaryPlenumOrdinal >= secondaryOutlets.size()) || (secondaryOutlets[m_secondaryPlenumOrdinal] != m_secondaryInlet)
+          || (m_returnPlenumOrdinal >= returnInlets.size()) || (returnInlets[m_returnPlenumOrdinal] != m_zoneReturn) || !bypassRowsIntact) {
+        restorePathMemberships(primaryPathRemoved, secondaryPathRemoved, returnPathRemoved);
+        rollbackReturnBypassConnectors();
+        rollbackReturnConnector();
+        rollbackSecondaryConnector();
+        rollbackPrimaryConnector();
+        return false;
+      }
+
+      if (m_primaryDisposition == PlenumDisposition::PreserveShared) {
+        m_primaryPlenum.removePortForBranch(m_primaryPlenumOrdinal);
+      }
+      if (m_secondaryDisposition == PlenumDisposition::PreserveShared) {
+        m_secondaryPlenum.removePortForBranch(m_secondaryPlenumOrdinal);
+      }
+      if (m_returnDisposition == PlenumDisposition::PreserveShared) {
+        m_returnPlenum.removePortForBranch(m_returnPlenumOrdinal);
+      }
+
+      auto model = m_primaryPlenum.model();
+      if (m_primaryDisposition == PlenumDisposition::DeleteLast) {
+        const auto plenumHandle = m_primaryPlenum.handle();
+        m_primaryPlenum.remove();
+        OS_ASSERT(!model.getObject(plenumHandle));
+        removeOrphanConnectorNode(m_primaryPlenumInlet);
+      }
+      if (m_secondaryDisposition == PlenumDisposition::DeleteLast) {
+        const auto plenumHandle = m_secondaryPlenum.handle();
+        m_secondaryPlenum.remove();
+        OS_ASSERT(!model.getObject(plenumHandle));
+        removeOrphanConnectorNode(m_secondaryPlenumInlet);
+      }
+      if (m_returnDisposition == PlenumDisposition::DeleteLast) {
+        const auto plenumHandle = m_returnPlenum.handle();
+        m_returnPlenum.remove();
+        OS_ASSERT(!model.getObject(plenumHandle));
+        removeOrphanConnectorNode(m_returnPlenumOutlet);
+      }
+      return true;
     }
 
     AirLoopHVAC_Impl::DemandBranchStartReservation::DemandBranchStartReservation(ModelObject connector, ConnectorKind connectorKind,
@@ -5219,12 +5851,16 @@ namespace epmodel {
                || componentType == openstudio::IddObjectType::AirTerminal_DualDuct_VAV
                || componentType == openstudio::IddObjectType::AirTerminal_DualDuct_VAV_OutdoorAir;
       };
-      const bool hasDualDuctTerminal = std::ranges::any_of(*branchPath, isDualDuctTerminal);
-      if (hasDualDuctTerminal && (effectiveBranch->supply.supplyPlenum || effectiveBranch->returnPath.returnPlenum)) {
-        // Plenum detachment is not transactional with dual-duct secondary-lane
-        // teardown yet. Refuse before mutation until the lane-aware removal
-        // plan can own both operations atomically.
-        return false;
+      boost::optional<Mixer> dualDuctTerminal;
+      for (const auto& component : *branchPath) {
+        if (!isDualDuctTerminal(component)) {
+          continue;
+        }
+        const auto terminal = component.optionalCast<Mixer>();
+        if (!terminal || dualDuctTerminal) {
+          return false;
+        }
+        dualDuctTerminal = *terminal;
       }
 
       // Match canonical Model behavior at the semantic level: first move the
@@ -5233,11 +5869,19 @@ namespace epmodel {
       // already preserve siblings and dismantle the plenum only for its last
       // served zone.
       auto airLoop = getObject<AirLoopHVAC>();
-      if (effectiveBranch->supply.supplyPlenum) {
-        thermalZone.removeSupplyPlenum();
-      }
-      if (effectiveBranch->returnPath.returnPlenum) {
-        thermalZone.removeReturnPlenum(airLoop);
+      const bool plenumWillBeDetached = effectiveBranch->supply.supplyPlenum || effectiveBranch->returnPath.returnPlenum;
+      if (dualDuctTerminal && plenumWillBeDetached) {
+        auto removalPlan = DualDuctPlenumRemovalPlan::prepare(*this, thermalZone, *effectiveBranch, *dualDuctTerminal);
+        if (!removalPlan || !removalPlan->commit()) {
+          return false;
+        }
+      } else {
+        if (effectiveBranch->supply.supplyPlenum) {
+          thermalZone.removeSupplyPlenum();
+        }
+        if (effectiveBranch->returnPath.returnPlenum) {
+          thermalZone.removeReturnPlenum(airLoop);
+        }
       }
 
       topology = demandTopologySnapshot();
