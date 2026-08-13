@@ -110,7 +110,11 @@ namespace epmodel {
       void clearConditioningForPlenum();
 
       bool setSupplyPlenum(const openstudio::epmodel::ThermalZone& plenumZone);
+      bool setSupplyPlenum(const openstudio::epmodel::ThermalZone& plenumZone, unsigned branchIndex);
       void removeSupplyPlenum();
+      void removeSupplyPlenum(const openstudio::epmodel::AirLoopHVAC& airLoop);
+      void removeSupplyPlenum(unsigned branchIndex);
+      void removeSupplyPlenum(const openstudio::epmodel::AirLoopHVAC& airLoop, unsigned branchIndex);
       bool setReturnPlenum(const openstudio::epmodel::ThermalZone& plenumZone);
       bool setReturnPlenum(const openstudio::epmodel::ThermalZone& plenumZone, openstudio::epmodel::AirLoopHVAC& airLoop);
       void removeReturnPlenum();

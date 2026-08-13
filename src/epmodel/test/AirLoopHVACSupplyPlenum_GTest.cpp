@@ -496,7 +496,119 @@ TEST_F(EPModelFixture, AirLoopHVAC_RemoveCrossedSupplyPlenumBranchWithParallelPI
   });
 }
 
-TEST_F(EPModelFixture, ThermalZone_SetSupplyPlenumRejectsDualDuctWithoutChangingEitherLane) {
+TEST_F(EPModelFixture, ThermalZone_SetSupplyPlenumSupportsDualDuctLanesIndependently) {
+  Model model;
+  AirLoopHVAC airLoop(model, true);
+  ThermalZone zone(model);
+  ThermalZone firstPlenumZone(model);
+  ThermalZone secondPlenumZone(model);
+  AirTerminalDualDuctConstantVolume terminal(model);
+
+  ASSERT_TRUE(airLoop.addBranchForZone(zone, terminal));
+  ASSERT_TRUE(terminal.inletModelObject(0u));
+  ASSERT_TRUE(terminal.inletModelObject(1u));
+  const auto firstTerminalInlet = *terminal.inletModelObject(0u);
+  const auto secondTerminalInlet = *terminal.inletModelObject(1u);
+
+  const auto splitters = model.getConcreteModelObjects<AirLoopHVACZoneSplitter>();
+  ASSERT_EQ(2u, splitters.size());
+  boost::optional<AirLoopHVACZoneSplitter> firstSplitter;
+  boost::optional<AirLoopHVACZoneSplitter> secondSplitter;
+  for (const auto& splitter : splitters) {
+    const auto outlets = splitter.outletModelObjects();
+    if (std::ranges::find(outlets, firstTerminalInlet) != outlets.end()) {
+      firstSplitter = splitter;
+    }
+    if (std::ranges::find(outlets, secondTerminalInlet) != outlets.end()) {
+      secondSplitter = splitter;
+    }
+  }
+  ASSERT_TRUE(firstSplitter);
+  ASSERT_TRUE(secondSplitter);
+  ASSERT_NE(*firstSplitter, *secondSplitter);
+  ASSERT_TRUE(firstSplitter->airLoopHVAC());
+  ASSERT_TRUE(secondSplitter->airLoopHVAC());
+  EXPECT_EQ(airLoop, *firstSplitter->airLoopHVAC());
+  EXPECT_EQ(airLoop, *secondSplitter->airLoopHVAC());
+
+  // Model declares this per-lane API but currently fails lane 1 after leaving
+  // an orphan plenum. EPModel preserves the intended public shape while
+  // making both independent lane operations transactional.
+  ASSERT_TRUE(zone.setSupplyPlenum(firstPlenumZone, 0u));
+  ASSERT_TRUE(zone.setSupplyPlenum(secondPlenumZone, 1u));
+
+  const auto plenums = model.getConcreteModelObjects<AirLoopHVACSupplyPlenum>();
+  ASSERT_EQ(2u, plenums.size());
+  boost::optional<AirLoopHVACSupplyPlenum> firstPlenum;
+  boost::optional<AirLoopHVACSupplyPlenum> secondPlenum;
+  for (const auto& plenum : plenums) {
+    ASSERT_TRUE(plenum.thermalZone());
+    if (*plenum.thermalZone() == firstPlenumZone) {
+      firstPlenum = plenum;
+    } else if (*plenum.thermalZone() == secondPlenumZone) {
+      secondPlenum = plenum;
+    }
+  }
+  ASSERT_TRUE(firstPlenum);
+  ASSERT_TRUE(secondPlenum);
+  ASSERT_TRUE(firstPlenum->inletModelObject());
+  ASSERT_TRUE(secondPlenum->inletModelObject());
+  EXPECT_NE(firstPlenum->inletModelObject()->handle(), secondPlenum->inletModelObject()->handle());
+  const auto firstPlenumSplitterOutlets = firstSplitter->outletModelObjects();
+  const auto secondPlenumSplitterOutlets = secondSplitter->outletModelObjects();
+  EXPECT_NE(std::ranges::find(firstPlenumSplitterOutlets, *firstPlenum->inletModelObject()), firstPlenumSplitterOutlets.end());
+  EXPECT_NE(std::ranges::find(secondPlenumSplitterOutlets, *secondPlenum->inletModelObject()), secondPlenumSplitterOutlets.end());
+  ASSERT_EQ(1u, firstPlenum->outletModelObjects().size());
+  ASSERT_EQ(1u, secondPlenum->outletModelObjects().size());
+  EXPECT_EQ(firstTerminalInlet, firstPlenum->outletModelObjects().front());
+  EXPECT_EQ(secondTerminalInlet, secondPlenum->outletModelObjects().front());
+  ASSERT_TRUE(firstPlenum->airLoopHVAC());
+  ASSERT_TRUE(secondPlenum->airLoopHVAC());
+  EXPECT_EQ(airLoop, *firstPlenum->airLoopHVAC());
+  EXPECT_EQ(airLoop, *secondPlenum->airLoopHVAC());
+
+  boost::optional<AirLoopHVACSupplyPath> firstSupplyPath;
+  boost::optional<AirLoopHVACSupplyPath> secondSupplyPath;
+  for (const auto& supplyPath : model.getConcreteModelObjects<AirLoopHVACSupplyPath>()) {
+    const auto components = supplyPath.components();
+    if (std::ranges::find(components, firstSplitter->cast<ModelObject>()) != components.end()) {
+      firstSupplyPath = supplyPath;
+      EXPECT_NE(std::ranges::find(components, firstPlenum->cast<ModelObject>()), components.end());
+    }
+    if (std::ranges::find(components, secondSplitter->cast<ModelObject>()) != components.end()) {
+      secondSupplyPath = supplyPath;
+      EXPECT_NE(std::ranges::find(components, secondPlenum->cast<ModelObject>()), components.end());
+    }
+  }
+  ASSERT_TRUE(firstSupplyPath);
+  ASSERT_TRUE(secondSupplyPath);
+  EXPECT_NE(*firstSupplyPath, *secondSupplyPath);
+
+  const auto firstSplitterOutlets = firstSplitter->outletModelObjects();
+  const auto secondSplitterOutlets = secondSplitter->outletModelObjects();
+  EXPECT_FALSE(zone.setSupplyPlenum(firstPlenumZone, 1u));
+  EXPECT_EQ(firstSplitterOutlets, firstSplitter->outletModelObjects());
+  EXPECT_EQ(secondSplitterOutlets, secondSplitter->outletModelObjects());
+  EXPECT_EQ(2u, model.getConcreteModelObjects<AirLoopHVACSupplyPlenum>().size());
+
+  zone.removeSupplyPlenum(airLoop, 1u);
+  ASSERT_EQ(1u, model.getConcreteModelObjects<AirLoopHVACSupplyPlenum>().size());
+  EXPECT_EQ(firstPlenumZone, *model.getConcreteModelObjects<AirLoopHVACSupplyPlenum>().front().thermalZone());
+  const auto firstLaneAfterSecondRemoval = firstSplitter->outletModelObjects();
+  const auto secondLaneAfterSecondRemoval = secondSplitter->outletModelObjects();
+  EXPECT_NE(std::ranges::find(firstLaneAfterSecondRemoval, *firstPlenum->inletModelObject()), firstLaneAfterSecondRemoval.end());
+  EXPECT_NE(std::ranges::find(secondLaneAfterSecondRemoval, secondTerminalInlet), secondLaneAfterSecondRemoval.end());
+
+  zone.removeSupplyPlenum();
+  EXPECT_TRUE(model.getConcreteModelObjects<AirLoopHVACSupplyPlenum>().empty());
+  const auto firstLaneAfterRemoval = firstSplitter->outletModelObjects();
+  const auto secondLaneAfterRemoval = secondSplitter->outletModelObjects();
+  EXPECT_NE(std::ranges::find(firstLaneAfterRemoval, firstTerminalInlet), firstLaneAfterRemoval.end());
+  EXPECT_NE(std::ranges::find(secondLaneAfterRemoval, secondTerminalInlet), secondLaneAfterRemoval.end());
+  EXPECT_EQ(0u, model.canonicalize().errorCount);
+}
+
+TEST_F(EPModelFixture, ThermalZone_SetSupplyPlenumRejectsUnknownDualDuctLaneWithoutChangingEitherLane) {
   Model model;
   AirLoopHVAC airLoop(model, true);
   ThermalZone zone(model);
@@ -509,13 +621,93 @@ TEST_F(EPModelFixture, ThermalZone_SetSupplyPlenumRejectsDualDuctWithoutChanging
   const auto firstLaneBefore = splitters[0].outletModelObjects();
   const auto secondLaneBefore = splitters[1].outletModelObjects();
 
-  EXPECT_FALSE(zone.setSupplyPlenum(plenumZone));
+  EXPECT_FALSE(zone.setSupplyPlenum(plenumZone, 2u));
 
   EXPECT_TRUE(model.getConcreteModelObjects<AirLoopHVACSupplyPlenum>().empty());
   EXPECT_EQ(firstLaneBefore, splitters[0].outletModelObjects());
   EXPECT_EQ(secondLaneBefore, splitters[1].outletModelObjects());
   ASSERT_EQ(1u, airLoop.thermalZones().size());
   EXPECT_EQ(zone, airLoop.thermalZones().front());
+}
+
+TEST_F(EPModelFixture, ThermalZone_MoveDualDuctSupplyPlenumRejectsMalformedTargetBeforeMutationAndRetries) {
+  Model model;
+  AirLoopHVAC airLoop(model, true);
+  ThermalZone firstZone(model);
+  ThermalZone secondZone(model);
+  ThermalZone currentPlenumZone(model);
+  ThermalZone targetPlenumZone(model);
+  AirTerminalDualDuctConstantVolume firstTerminal(model);
+  AirTerminalDualDuctConstantVolume secondTerminal(model);
+
+  ASSERT_TRUE(airLoop.addBranchForZone(firstZone, firstTerminal));
+  ASSERT_TRUE(airLoop.addBranchForZone(secondZone, secondTerminal));
+  ASSERT_TRUE(firstZone.setSupplyPlenum(currentPlenumZone, 0u));
+  ASSERT_TRUE(secondZone.setSupplyPlenum(targetPlenumZone, 0u));
+
+  const auto plenums = model.getConcreteModelObjects<AirLoopHVACSupplyPlenum>();
+  ASSERT_EQ(2u, plenums.size());
+  auto currentPlenum = std::ranges::find_if(plenums, [&](const auto& plenum) {
+    const auto zone = plenum.thermalZone();
+    return zone && (*zone == currentPlenumZone);
+  });
+  auto targetPlenum = std::ranges::find_if(plenums, [&](const auto& plenum) {
+    const auto zone = plenum.thermalZone();
+    return zone && (*zone == targetPlenumZone);
+  });
+  ASSERT_NE(currentPlenum, plenums.end());
+  ASSERT_NE(targetPlenum, plenums.end());
+
+  auto supplyPaths = model.getConcreteModelObjects<AirLoopHVACSupplyPath>();
+  ASSERT_EQ(2u, supplyPaths.size());
+  auto targetSupplyPath = std::ranges::find_if(supplyPaths, [&](const auto& path) {
+    const auto components = path.components();
+    return std::ranges::find(components, targetPlenum->cast<ModelObject>()) != components.end();
+  });
+  ASSERT_NE(targetSupplyPath, supplyPaths.end());
+  auto foreignSupplyPath = std::ranges::find_if(supplyPaths, [&](const auto& path) { return path != *targetSupplyPath; });
+  ASSERT_NE(foreignSupplyPath, supplyPaths.end());
+  auto foreignSupplyPathImpl = foreignSupplyPath->getImpl<detail::AirLoopHVACSupplyPath_Impl>();
+  ASSERT_TRUE(foreignSupplyPathImpl);
+  ASSERT_TRUE(foreignSupplyPathImpl->addComponent(*targetPlenum));
+
+  std::set<openstudio::Handle> handlesBefore;
+  for (const auto& object : model.objects()) {
+    handlesBefore.insert(object.handle());
+  }
+  const auto currentOutletsBefore = currentPlenum->outletModelObjects();
+  const auto targetOutletsBefore = targetPlenum->outletModelObjects();
+  const auto firstLaneBefore = airLoop.zoneSplitter().outletModelObjects();
+  const auto supplyPathsBefore = model.getConcreteModelObjects<AirLoopHVACSupplyPath>();
+  std::vector<std::vector<ModelObject>> supplyPathComponentsBefore;
+  for (const auto& path : supplyPathsBefore) {
+    supplyPathComponentsBefore.push_back(path.components());
+  }
+
+  EXPECT_FALSE(firstZone.setSupplyPlenum(targetPlenumZone, 0u));
+
+  std::set<openstudio::Handle> handlesAfter;
+  for (const auto& object : model.objects()) {
+    handlesAfter.insert(object.handle());
+  }
+  EXPECT_EQ(handlesBefore, handlesAfter);
+  EXPECT_EQ(currentOutletsBefore, currentPlenum->outletModelObjects());
+  EXPECT_EQ(targetOutletsBefore, targetPlenum->outletModelObjects());
+  EXPECT_EQ(firstLaneBefore, airLoop.zoneSplitter().outletModelObjects());
+  const auto supplyPathsAfter = model.getConcreteModelObjects<AirLoopHVACSupplyPath>();
+  ASSERT_EQ(supplyPathComponentsBefore.size(), supplyPathsAfter.size());
+  for (unsigned i = 0u; i < supplyPathsAfter.size(); ++i) {
+    EXPECT_EQ(supplyPathComponentsBefore[i], supplyPathsAfter[i].components());
+  }
+
+  ASSERT_TRUE(foreignSupplyPath->removeComponent(*targetPlenum));
+  ASSERT_TRUE(firstZone.setSupplyPlenum(targetPlenumZone, 0u));
+  const auto remainingPlenums = model.getConcreteModelObjects<AirLoopHVACSupplyPlenum>();
+  ASSERT_EQ(1u, remainingPlenums.size());
+  ASSERT_TRUE(remainingPlenums.front().thermalZone());
+  EXPECT_EQ(targetPlenumZone, *remainingPlenums.front().thermalZone());
+  EXPECT_EQ(2u, remainingPlenums.front().outletModelObjects().size());
+  EXPECT_EQ(0u, model.canonicalize().errorCount);
 }
 
 TEST_F(EPModelFixture, AirLoopHVAC_RemoveSupplyPlenumBranchRejectsMalformedPlantBeforeMutation) {
@@ -956,5 +1148,87 @@ TEST_F(EPModelFixture, AirLoopHVAC_RemovePlenumServedBranchAfterSaveLoad) {
   EXPECT_EQ(1u, loadedReturnPlenums.front().inletModelObjects().size());
   const auto report = loadedModel->canonicalize();
   EXPECT_EQ(0u, report.errorCount);
+  openstudio::filesystem::remove(idfPath);
+}
+
+TEST_F(EPModelFixture, ThermalZone_DualDuctSharedPlenumsPersistAndMutateByLane) {
+  const auto idfPath = openstudio::tempDir() / openstudio::toPath("epmodel-dual-duct-plenums-roundtrip.idf");
+  Model model;
+  AirLoopHVAC airLoop(model, true);
+  ThermalZone firstZone(model);
+  ThermalZone secondZone(model);
+  ThermalZone firstSupplyPlenumZone(model);
+  ThermalZone secondSupplyPlenumZone(model);
+  ThermalZone returnPlenumZone(model);
+  AirTerminalDualDuctConstantVolume firstTerminal(model);
+  AirTerminalDualDuctConstantVolume secondTerminal(model);
+
+  ASSERT_TRUE(airLoop.setName("Dual Duct Plenum Air Loop"));
+  ASSERT_TRUE(firstZone.setName("Dual Duct First Zone"));
+  ASSERT_TRUE(secondZone.setName("Dual Duct Second Zone"));
+  ASSERT_TRUE(firstSupplyPlenumZone.setName("Dual Duct First Supply Plenum Zone"));
+  ASSERT_TRUE(secondSupplyPlenumZone.setName("Dual Duct Second Supply Plenum Zone"));
+  ASSERT_TRUE(returnPlenumZone.setName("Dual Duct Return Plenum Zone"));
+  ASSERT_TRUE(firstTerminal.setName("Dual Duct First Terminal"));
+  ASSERT_TRUE(secondTerminal.setName("Dual Duct Second Terminal"));
+  ASSERT_TRUE(airLoop.addBranchForZone(firstZone, firstTerminal));
+  ASSERT_TRUE(airLoop.addBranchForZone(secondZone, secondTerminal));
+
+  ASSERT_TRUE(firstZone.setSupplyPlenum(firstSupplyPlenumZone, 0u));
+  ASSERT_TRUE(secondZone.setSupplyPlenum(firstSupplyPlenumZone, 0u));
+  ASSERT_TRUE(firstZone.setSupplyPlenum(secondSupplyPlenumZone, 1u));
+  ASSERT_TRUE(secondZone.setSupplyPlenum(secondSupplyPlenumZone, 1u));
+  ASSERT_TRUE(firstZone.setReturnPlenum(returnPlenumZone));
+  ASSERT_TRUE(secondZone.setReturnPlenum(returnPlenumZone));
+
+  const auto supplyPlenums = model.getConcreteModelObjects<AirLoopHVACSupplyPlenum>();
+  const auto returnPlenums = model.getConcreteModelObjects<AirLoopHVACReturnPlenum>();
+  ASSERT_EQ(2u, supplyPlenums.size());
+  ASSERT_EQ(1u, returnPlenums.size());
+  EXPECT_TRUE(std::ranges::all_of(supplyPlenums, [](const auto& plenum) { return plenum.outletModelObjects().size() == 2u; }));
+  EXPECT_EQ(2u, returnPlenums.front().inletModelObjects().size());
+  EXPECT_EQ(0u, model.canonicalize().errorCount);
+  ASSERT_TRUE(model.save(idfPath, true));
+
+  auto loadedModel = Model::load(idfPath);
+  ASSERT_TRUE(loadedModel);
+  auto loadedAirLoop = loadedModel->getConcreteModelObjectByName<AirLoopHVAC>("Dual Duct Plenum Air Loop");
+  auto loadedFirstZone = loadedModel->getConcreteModelObjectByName<ThermalZone>("Dual Duct First Zone");
+  auto loadedSecondZone = loadedModel->getConcreteModelObjectByName<ThermalZone>("Dual Duct Second Zone");
+  ASSERT_TRUE(loadedAirLoop);
+  ASSERT_TRUE(loadedFirstZone);
+  ASSERT_TRUE(loadedSecondZone);
+  ASSERT_EQ(2u, loadedModel->getConcreteModelObjects<AirLoopHVACSupplyPlenum>().size());
+  ASSERT_EQ(1u, loadedModel->getConcreteModelObjects<AirLoopHVACReturnPlenum>().size());
+
+  loadedFirstZone->removeSupplyPlenum(*loadedAirLoop, 1u);
+  auto loadedSupplyPlenums = loadedModel->getConcreteModelObjects<AirLoopHVACSupplyPlenum>();
+  ASSERT_EQ(2u, loadedSupplyPlenums.size());
+  auto secondDeckPlenum = std::ranges::find_if(loadedSupplyPlenums, [](const auto& plenum) {
+    const auto zone = plenum.thermalZone();
+    return zone && (zone->nameString() == "Dual Duct Second Supply Plenum Zone");
+  });
+  ASSERT_NE(secondDeckPlenum, loadedSupplyPlenums.end());
+  EXPECT_EQ(1u, secondDeckPlenum->outletModelObjects().size());
+
+  loadedFirstZone->removeSupplyPlenum(*loadedAirLoop, 0u);
+  loadedSupplyPlenums = loadedModel->getConcreteModelObjects<AirLoopHVACSupplyPlenum>();
+  ASSERT_EQ(2u, loadedSupplyPlenums.size());
+  auto firstDeckPlenum = std::ranges::find_if(loadedSupplyPlenums, [](const auto& plenum) {
+    const auto zone = plenum.thermalZone();
+    return zone && (zone->nameString() == "Dual Duct First Supply Plenum Zone");
+  });
+  ASSERT_NE(firstDeckPlenum, loadedSupplyPlenums.end());
+  EXPECT_EQ(1u, firstDeckPlenum->outletModelObjects().size());
+
+  loadedFirstZone->removeReturnPlenum(*loadedAirLoop);
+  const auto loadedReturnPlenums = loadedModel->getConcreteModelObjects<AirLoopHVACReturnPlenum>();
+  ASSERT_EQ(1u, loadedReturnPlenums.size());
+  EXPECT_EQ(1u, loadedReturnPlenums.front().inletModelObjects().size());
+  EXPECT_EQ(0u, loadedModel->canonicalize().errorCount);
+  const auto loadedZones = loadedAirLoop->thermalZones();
+  ASSERT_EQ(2u, loadedZones.size());
+  EXPECT_NE(std::ranges::find(loadedZones, *loadedFirstZone), loadedZones.end());
+  EXPECT_NE(std::ranges::find(loadedZones, *loadedSecondZone), loadedZones.end());
   openstudio::filesystem::remove(idfPath);
 }

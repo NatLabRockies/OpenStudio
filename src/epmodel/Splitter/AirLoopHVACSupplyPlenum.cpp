@@ -99,6 +99,14 @@ namespace epmodel {
     }
 
     bool AirLoopHVACSupplyPlenum_Impl::setThermalZone(const openstudio::epmodel::ThermalZone& thermalZone) {
+      if (!bindThermalZone(thermalZone)) {
+        return false;
+      }
+      clearThermalZoneConditioning();
+      return true;
+    }
+
+    bool AirLoopHVACSupplyPlenum_Impl::bindThermalZone(const openstudio::epmodel::ThermalZone& thermalZone) {
       auto plenum = getObject<openstudio::epmodel::AirLoopHVACSupplyPlenum>();
       if (thermalZone.model() != plenum.model()) {
         return false;
@@ -139,8 +147,15 @@ namespace epmodel {
         return false;
       }
 
-      thermalZoneImpl->clearConditioningForPlenum();
       return true;
+    }
+
+    void AirLoopHVACSupplyPlenum_Impl::clearThermalZoneConditioning() {
+      if (auto zone = thermalZone()) {
+        auto thermalZoneImpl = zone->getImpl<openstudio::epmodel::detail::ThermalZone_Impl>();
+        OS_ASSERT(thermalZoneImpl);
+        thermalZoneImpl->clearConditioningForPlenum();
+      }
     }
 
     void AirLoopHVACSupplyPlenum_Impl::resetThermalZone() {
@@ -171,18 +186,16 @@ namespace epmodel {
         return false;
       }
 
-      const auto airLoop = zoneSplitter->airLoopHVAC();
-      if (!airLoop) {
-        return false;
-      }
-
       boost::optional<openstudio::epmodel::AirLoopHVACSupplyPath> supplyPath;
       for (const auto& candidate : model().getConcreteModelObjects<openstudio::epmodel::AirLoopHVACSupplyPath>()) {
-        const auto candidateLoop = candidate.airLoopHVAC();
-        if (candidateLoop && (*candidateLoop == *airLoop)) {
-          supplyPath = candidate;
-          break;
+        const auto components = candidate.components();
+        if (std::ranges::find(components, zoneSplitter->cast<openstudio::epmodel::ModelObject>()) == components.end()) {
+          continue;
         }
+        if (supplyPath) {
+          return false;
+        }
+        supplyPath = candidate;
       }
       if (!supplyPath) {
         return false;
@@ -234,6 +247,23 @@ namespace epmodel {
       return true;
     }
 
+    boost::optional<openstudio::epmodel::AirLoopHVAC> AirLoopHVACSupplyPlenum_Impl::airLoopHVAC() const {
+      const auto plenum = getObject<openstudio::epmodel::AirLoopHVACSupplyPlenum>().cast<openstudio::epmodel::ModelObject>();
+      boost::optional<openstudio::epmodel::AirLoopHVAC> result;
+      for (const auto& supplyPath : model().getConcreteModelObjects<openstudio::epmodel::AirLoopHVACSupplyPath>()) {
+        const auto components = supplyPath.components();
+        if (std::ranges::find(components, plenum) == components.end()) {
+          continue;
+        }
+        const auto airLoop = supplyPath.airLoopHVAC();
+        if (!airLoop || (result && (*result != *airLoop))) {
+          return boost::none;
+        }
+        result = *airLoop;
+      }
+      return result;
+    }
+
     unsigned AirLoopHVACSupplyPlenum_Impl::inletPort() const {
       return static_cast<unsigned>(openstudio::AirLoopHVAC_SupplyPlenumFields::InletNodeName);
     }
@@ -255,6 +285,10 @@ namespace epmodel {
         return false;
       }
       return setPointer(openstudio::AirLoopHVAC_SupplyPlenumFields::InletNodeName, modelObject.handle(), false);
+    }
+
+    void AirLoopHVACSupplyPlenum_Impl::resetInletModelObject() {
+      setPointer(openstudio::AirLoopHVAC_SupplyPlenumFields::InletNodeName, Handle(), false);
     }
 
     bool AirLoopHVACSupplyPlenum_Impl::setOutletModelObject(unsigned branchIndex, const openstudio::epmodel::ModelObject& modelObject) {

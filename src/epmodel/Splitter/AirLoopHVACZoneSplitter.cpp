@@ -37,17 +37,19 @@ namespace epmodel {
 
   boost::optional<AirLoopHVAC> AirLoopHVACZoneSplitter::airLoopHVAC() const {
     const auto self = cast<ModelObject>();
-    const auto airLoops = model().getConcreteModelObjects<openstudio::epmodel::AirLoopHVAC>();
-    const auto it = std::ranges::find_if(airLoops, [&](const openstudio::epmodel::AirLoopHVAC& airLoop) {
-      auto impl = airLoop.getImpl<openstudio::epmodel::detail::AirLoopHVAC_Impl>();
-      const auto supplyPath = impl->airLoopHVACSupplyPath();
+    boost::optional<AirLoopHVAC> result;
+    for (const auto& supplyPath : model().getConcreteModelObjects<openstudio::epmodel::AirLoopHVACSupplyPath>()) {
       const auto components = supplyPath.components();
-      return std::ranges::find(components, self) != components.end();
-    });
-    if (it != airLoops.end()) {
-      return *it;
+      if (std::ranges::find(components, self) == components.end()) {
+        continue;
+      }
+      const auto airLoop = supplyPath.airLoopHVAC();
+      if (!airLoop || (result && (*result != *airLoop))) {
+        return boost::none;
+      }
+      result = *airLoop;
     }
-    return boost::none;
+    return result;
   }
 
   unsigned AirLoopHVACZoneSplitter::inletPort() const {

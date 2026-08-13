@@ -38,13 +38,16 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     // Schema Alignment Notes:
-    // - Status: Partial Parity. The supply plenum now has canonical Splitter behavior, a plenum-zone relationship, and insertion into existing AirLoopHVAC zone branches.
+    // - Status: Partial Parity. The supply plenum has canonical Splitter behavior, a plenum-zone relationship, and insertion into existing
+    //   single- or dual-duct AirLoopHVAC zone branches.
     // - Canonical Counterpart: openstudio::model::AirLoopHVACSupplyPlenum.
-    // - Implemented Parity: `thermalZone`, `setThermalZone`, `resetThermalZone`, `addToNode`, inlet/outlet port access, and Splitter branch mutation map directly to the EnergyPlus supply-plenum object.
-    // - Documented Delta: Adding a brand-new zone branch through the plenum, branch-index/multi-loop variants, and the AirflowNetwork convenience surface remain deferred.
+    // - Implemented Parity: `thermalZone`, `setThermalZone`, `resetThermalZone`, `addToNode`, inlet/outlet port access, and Splitter branch
+    //   mutation map directly to the EnergyPlus supply-plenum object. Supply-path ownership follows the selected demand inlet, including the
+    //   secondary path of a dual-duct loop.
+    // - Documented Delta: Adding a brand-new zone branch through the plenum and the AirflowNetwork convenience surface remain deferred.
     // - Field/Storage Mapping: The plenum zone relationship is maintained through EnergyPlus-backed node and branch topology rather than through a separate scalar field.
     // - Evidence: `src/model/AirLoopHVACSupplyPlenum.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirLoopHVACSupplyPlenum.cpp`, and `src/epmodel/test/AirLoopHVACSupplyPlenum_GTest.cpp` cover the same zone-plenum behavior.
-    // - Remaining Parity Work: Add new-zone branch creation through an installed plenum and explicit branch-index variants.
+    // - Remaining Parity Work: Add new-zone branch creation through an installed plenum.
     boost::optional<ThermalZone> thermalZone() const;
     bool setThermalZone(const ThermalZone& thermalZone);
     void resetThermalZone();
