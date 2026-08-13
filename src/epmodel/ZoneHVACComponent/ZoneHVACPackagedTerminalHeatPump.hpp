@@ -56,12 +56,13 @@ namespace epmodel {
     //   callers can inspect and rename the meaningful node roles owned by the compound, even when those roles alias each other or the parent
     //   outlet in a valid configuration. Outdoor-air mixer references and OA-mixer-only node roles remain outside the public wrapper.
     // - Field/Storage Mapping: Scalar values live directly on the EnergyPlus object while schedules and contained equipment are modeled
-    //   explicitly through child-object state and transient epmodel nodes.
+    //   explicitly through child-object state and transient epmodel nodes. A nonzero local outdoor-air path owns the required persisted
+    //   `OutdoorAir:Mixer` and outdoor-air node declaration; all-zero flow and parent removal clean up only that private companion.
     // - Evidence: `src/model/ZoneHVACPackagedTerminalHeatPump.hpp`, `src/model/ZoneHVACPackagedTerminalHeatPump.cpp`,
     //   `src/energyplus/ForwardTranslator/ForwardTranslateZoneHVACPackagedTerminalHeatPump.cpp`, and
     //   `src/epmodel/test/ZoneHVACPackagedTerminalHeatPump_GTest.cpp`.
-    // - Remaining Parity Work: Add any remaining canonical heat-pump relationship conveniences only if the model wrapper still exposes them as
-    //   public API.
+    // - Remaining Parity Work: Outdoor-air mixer references and mixer-only node roles remain internal. Add relationship conveniences only
+    //   when a real workflow needs the canonical public surface.
 
     unsigned inletPort() const;
     unsigned outletPort() const;

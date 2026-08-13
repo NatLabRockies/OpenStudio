@@ -50,6 +50,15 @@ namespace epmodel {
       bool setReturnPlenum(const ThermalZone& plenumZone);
       void removeReturnPlenum();
       boost::optional<AirLoopHVACReturnPlenum> returnPlenum() const;
+
+     protected:
+      // Some EnergyPlus zone equipment owns an OutdoorAir:Mixer that has no
+      // separate public Model object. Keep the persisted companion, its four
+      // nodes, and the outdoor-air node declaration aligned with the owner's
+      // local mixed-air path. Passing no mixed/return nodes removes only the
+      // companion owned by this object.
+      bool reconcileOwnedOutdoorAirMixer(unsigned objectTypeField, unsigned objectNameField, const boost::optional<Node>& mixedAirNode,
+                                         const boost::optional<Node>& returnAirNode, const std::string& baseName);
     };
 
   }  // namespace detail

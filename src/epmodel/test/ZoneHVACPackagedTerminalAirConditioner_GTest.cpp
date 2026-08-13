@@ -7,20 +7,45 @@
 
 #include "EPModelFixture.hpp"
 #include "../ZoneHVACComponent/ZoneHVACPackagedTerminalAirConditioner.hpp"
+#include "../ZoneHVACComponent/ZoneHVACPackagedTerminalAirConditioner_Impl.hpp"
 #include "../Loop/AirLoopHVAC.hpp"
 #include "../Loop/PlantLoop.hpp"
 #include "../Schedule/ScheduleCompact.hpp"
 #include "../Schedule/ScheduleConstant.hpp"
 #include "../Schedule/ScheduleConstant_Impl.hpp"
 #include "../StraightComponent/Node.hpp"
+#include "../ModelObject/OutdoorAirMixer.hpp"
+#include "../ModelObject/OutdoorAirMixer_Impl.hpp"
 #include "../StraightComponent/FanConstantVolume.hpp"
 #include "../StraightComponent/CoilCoolingDXSingleSpeed.hpp"
+#include "../StraightComponent/CoilCoolingDXSingleSpeed_Impl.hpp"
 #include "../WaterToAirComponent/CoilHeatingWater.hpp"
 #include "../HVACComponent/ThermalZone.hpp"
 
 #include <utilities/idd/ZoneHVAC_PackagedTerminalAirConditioner_FieldEnums.hxx>
+#include <utilities/idd/OutdoorAir_NodeList_FieldEnums.hxx>
+#include <utilities/idf/WorkspaceExtensibleGroup.hpp>
 
 using namespace openstudio::epmodel;
+
+namespace {
+unsigned ptacOutdoorAirNodeListEntryCount(const Model& model, const std::string& nodeName) {
+  unsigned result = 0u;
+  for (const auto& object : model.getObjectsByType(openstudio::IddObjectType::OutdoorAir_NodeList)) {
+    for (const auto& group : object.extensibleGroups()) {
+      auto workspaceGroup = group.optionalCast<openstudio::WorkspaceExtensibleGroup>();
+      if (!workspaceGroup) {
+        continue;
+      }
+      const auto listedNodeName = workspaceGroup->getString(openstudio::OutdoorAir_NodeListExtensibleFields::NodeorNodeListName);
+      if (listedNodeName && openstudio::istringEqual(*listedNodeName, nodeName)) {
+        ++result;
+      }
+    }
+  }
+  return result;
+}
+}  // namespace
 
 TEST_F(EPModelFixture, ZoneHVACPackagedTerminalAirConditioner_DefaultConstructor) {
   Model model;
@@ -380,4 +405,64 @@ TEST_F(EPModelFixture, ZoneHVACPackagedTerminalAirConditioner_HiddenMixedAirNode
   EXPECT_EQ(0u, report.errorCount);
   ASSERT_TRUE(coolingCoil.inletModelObject()->optionalCast<Node>());
   EXPECT_EQ(rogueRepairMixedAir, *coolingCoil.inletModelObject()->optionalCast<Node>());
+}
+
+TEST_F(EPModelFixture, ZoneHVACPackagedTerminalAirConditioner_OwnsPersistedOutdoorAirPath) {
+  const auto idfPath = openstudio::tempDir() / openstudio::toPath("epmodel-ptac-outdoor-air-path.idf");
+  Model model;
+  FanConstantVolume fan(model);
+  CoilHeatingWater heatingCoil(model);
+  CoilCoolingDXSingleSpeed coolingCoil(model);
+  ZoneHVACPackagedTerminalAirConditioner ptac(model);
+  ThermalZone zone(model);
+
+  ASSERT_TRUE(ptac.setName("Outdoor Air PTAC"));
+  ASSERT_TRUE(ptac.setFanPlacement("DrawThrough"));
+  ASSERT_TRUE(ptac.setSupplyAirFan(fan));
+  ASSERT_TRUE(ptac.setHeatingCoil(heatingCoil));
+  ASSERT_TRUE(ptac.setCoolingCoil(coolingCoil));
+  ASSERT_TRUE(ptac.setOutdoorAirFlowRateDuringCoolingOperation(0.09));
+  ASSERT_TRUE(ptac.setOutdoorAirFlowRateDuringHeatingOperation(0.06));
+  ASSERT_TRUE(ptac.setOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded(0.02));
+  ASSERT_TRUE(ptac.addToThermalZone(zone));
+
+  auto mixer = ptac.getModelObjectTarget<OutdoorAirMixer>(openstudio::ZoneHVAC_PackagedTerminalAirConditionerFields::OutdoorAirMixerName);
+  ASSERT_TRUE(mixer);
+  EXPECT_EQ("OutdoorAir:Mixer", ptac.getString(openstudio::ZoneHVAC_PackagedTerminalAirConditionerFields::OutdoorAirMixerObjectType).get());
+  ASSERT_TRUE(mixer->mixedAirNode());
+  ASSERT_TRUE(mixer->outdoorAirNode());
+  ASSERT_TRUE(mixer->reliefAirNode());
+  ASSERT_TRUE(mixer->returnAirNode());
+  ASSERT_TRUE(ptac.inletNode());
+  ASSERT_TRUE(coolingCoil.inletModelObject());
+  EXPECT_EQ(coolingCoil.inletModelObject()->handle(), mixer->mixedAirNode()->handle());
+  EXPECT_EQ(ptac.inletNode()->handle(), mixer->returnAirNode()->handle());
+  EXPECT_EQ(1u, ptacOutdoorAirNodeListEntryCount(model, mixer->outdoorAirNode()->nameString()));
+  EXPECT_EQ(4u, ptac.children().size());
+
+  ASSERT_TRUE(model.save(idfPath, true));
+  auto loadedModel = Model::load(idfPath);
+  ASSERT_TRUE(loadedModel);
+  auto loadedPTAC = loadedModel->getConcreteModelObjectByName<ZoneHVACPackagedTerminalAirConditioner>("Outdoor Air PTAC");
+  ASSERT_TRUE(loadedPTAC);
+  auto loadedMixer =
+    loadedPTAC->getModelObjectTarget<OutdoorAirMixer>(openstudio::ZoneHVAC_PackagedTerminalAirConditionerFields::OutdoorAirMixerName);
+  ASSERT_TRUE(loadedMixer);
+  ASSERT_TRUE(loadedMixer->outdoorAirNode());
+  EXPECT_EQ(1u, ptacOutdoorAirNodeListEntryCount(*loadedModel, loadedMixer->outdoorAirNode()->nameString()));
+
+  const auto outdoorAirNodeName = loadedMixer->outdoorAirNode()->nameString();
+  ASSERT_TRUE(loadedPTAC->setOutdoorAirFlowRateDuringCoolingOperation(0.0));
+  ASSERT_TRUE(loadedPTAC->setOutdoorAirFlowRateDuringHeatingOperation(0.0));
+  ASSERT_TRUE(loadedPTAC->setOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded(0.0));
+  EXPECT_FALSE(loadedPTAC->getModelObjectTarget<OutdoorAirMixer>(openstudio::ZoneHVAC_PackagedTerminalAirConditionerFields::OutdoorAirMixerName));
+  EXPECT_TRUE(loadedModel->getConcreteModelObjects<OutdoorAirMixer>().empty());
+  EXPECT_EQ(0u, ptacOutdoorAirNodeListEntryCount(*loadedModel, outdoorAirNodeName));
+  ASSERT_TRUE(loadedPTAC->inletNode());
+  auto loadedCoolingCoil = loadedPTAC->coolingCoil().optionalCast<CoilCoolingDXSingleSpeed>();
+  ASSERT_TRUE(loadedCoolingCoil);
+  ASSERT_TRUE(loadedCoolingCoil->inletModelObject());
+  EXPECT_EQ(loadedPTAC->inletNode()->handle(), loadedCoolingCoil->inletModelObject()->handle());
+
+  openstudio::filesystem::remove(idfPath);
 }

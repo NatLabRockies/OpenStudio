@@ -11,6 +11,8 @@
 #include "Model.hpp"
 #include "ModelObject/ModelObject.hpp"
 #include "ModelObject/ModelObject_Impl.hpp"
+#include "ModelObject/OutdoorAirMixer.hpp"
+#include "ModelObject/OutdoorAirMixer_Impl.hpp"
 #include "Schedule/Schedule.hpp"
 #include "Schedule/Schedule_Impl.hpp"
 #include "Schedule/ScheduleConstant.hpp"
@@ -422,6 +424,9 @@ namespace epmodel {
           result.push_back(*object);
         }
       }
+      if (auto child = getObject<ModelObject>().getModelObjectTarget<OutdoorAirMixer>(ZoneHVAC_PackagedTerminalHeatPumpFields::OutdoorAirMixerName)) {
+        result.push_back(*child);
+      }
       return result;
     }
 
@@ -741,12 +746,14 @@ namespace epmodel {
           ? setDouble(ZoneHVAC_PackagedTerminalHeatPumpFields::CoolingOutdoorAirFlowRate, outdoorAirFlowRateDuringCoolingOperation.get(), false)
           : setString(ZoneHVAC_PackagedTerminalHeatPumpFields::CoolingOutdoorAirFlowRate, "", false);
       OS_ASSERT(result);
+      maintainContainedAirPath();
       return result;
     }
 
     void ZoneHVACPackagedTerminalHeatPump_Impl::autosizeOutdoorAirFlowRateDuringCoolingOperation() {
       bool result = setString(ZoneHVAC_PackagedTerminalHeatPumpFields::CoolingOutdoorAirFlowRate, "Autosize", false);
       OS_ASSERT(result);
+      maintainContainedAirPath();
     }
 
     boost::optional<double> ZoneHVACPackagedTerminalHeatPump_Impl::autosizedOutdoorAirFlowRateDuringCoolingOperation() const {
@@ -773,12 +780,14 @@ namespace epmodel {
           ? setDouble(ZoneHVAC_PackagedTerminalHeatPumpFields::HeatingOutdoorAirFlowRate, outdoorAirFlowRateDuringHeatingOperation.get(), false)
           : setString(ZoneHVAC_PackagedTerminalHeatPumpFields::HeatingOutdoorAirFlowRate, "", false);
       OS_ASSERT(result);
+      maintainContainedAirPath();
       return result;
     }
 
     void ZoneHVACPackagedTerminalHeatPump_Impl::autosizeOutdoorAirFlowRateDuringHeatingOperation() {
       bool result = setString(ZoneHVAC_PackagedTerminalHeatPumpFields::HeatingOutdoorAirFlowRate, "Autosize", false);
       OS_ASSERT(result);
+      maintainContainedAirPath();
     }
 
     boost::optional<double> ZoneHVACPackagedTerminalHeatPump_Impl::autosizedOutdoorAirFlowRateDuringHeatingOperation() const {
@@ -805,17 +814,20 @@ namespace epmodel {
                                         outdoorAirFlowRateWhenNoCoolingorHeatingisNeeded.get(), false)
                             : setString(ZoneHVAC_PackagedTerminalHeatPumpFields::NoLoadOutdoorAirFlowRate, "", false);
       OS_ASSERT(result);
+      maintainContainedAirPath();
       return result;
     }
 
     void ZoneHVACPackagedTerminalHeatPump_Impl::resetOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded() {
       bool result = setString(ZoneHVAC_PackagedTerminalHeatPumpFields::NoLoadOutdoorAirFlowRate, "", false);
       OS_ASSERT(result);
+      maintainContainedAirPath();
     }
 
     void ZoneHVACPackagedTerminalHeatPump_Impl::autosizeOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded() {
       bool result = setString(ZoneHVAC_PackagedTerminalHeatPumpFields::NoLoadOutdoorAirFlowRate, "Autosize", false);
       OS_ASSERT(result);
+      maintainContainedAirPath();
     }
 
     boost::optional<double> ZoneHVACPackagedTerminalHeatPump_Impl::autosizedOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded() const {
@@ -980,6 +992,14 @@ namespace epmodel {
       maintainContainedAirPath();
     }
 
+    std::vector<IdfObject> ZoneHVACPackagedTerminalHeatPump_Impl::remove() {
+      ZoneHVACComponent_Impl::removeFromThermalZone();
+      const auto baseName = getObject<ModelObject>().nameString();
+      reconcileOwnedOutdoorAirMixer(ZoneHVAC_PackagedTerminalHeatPumpFields::OutdoorAirMixerObjectType,
+                                    ZoneHVAC_PackagedTerminalHeatPumpFields::OutdoorAirMixerName, boost::none, boost::none, baseName);
+      return HVACComponent_Impl::remove();
+    }
+
     void ZoneHVACPackagedTerminalHeatPump_Impl::doCanonicalize(LoadContext& context) {
       repairContainedAirPath(context);
     }
@@ -1072,6 +1092,10 @@ namespace epmodel {
       }
 
       if (!fan && !heating && !cooling && !supplemental) {
+        changed = reconcileOwnedOutdoorAirMixer(ZoneHVAC_PackagedTerminalHeatPumpFields::OutdoorAirMixerObjectType,
+                                                ZoneHVAC_PackagedTerminalHeatPumpFields::OutdoorAirMixerName, boost::none, boost::none,
+                                                thisObject.nameString())
+                  || changed;
         return changed;
       }
 
@@ -1123,6 +1147,11 @@ namespace epmodel {
           sourceNode = model().getOrCreateTransientByName<Node>(baseName + " Mixed Air Node");
         }
       }
+
+      changed = reconcileOwnedOutdoorAirMixer(ZoneHVAC_PackagedTerminalHeatPumpFields::OutdoorAirMixerObjectType,
+                                              ZoneHVAC_PackagedTerminalHeatPumpFields::OutdoorAirMixerName, sourceNode,
+                                              usesHiddenMixedAir ? boost::optional<Node>(inletNode) : boost::none, baseName)
+                || changed;
 
       std::vector<HVACComponent> orderedComponents;
       if (blowThrough) {

@@ -14,6 +14,8 @@
 #include "../Schedule/ScheduleConstant.hpp"
 #include "../Schedule/ScheduleConstant_Impl.hpp"
 #include "../StraightComponent/Node.hpp"
+#include "../ModelObject/OutdoorAirMixer.hpp"
+#include "../ModelObject/OutdoorAirMixer_Impl.hpp"
 #include "../StraightComponent/CoilCoolingDXSingleSpeed.hpp"
 #include "../StraightComponent/CoilHeatingDXSingleSpeed.hpp"
 #include "../StraightComponent/CoilHeatingElectric.hpp"
@@ -21,6 +23,7 @@
 #include "../WaterToAirComponent/CoilHeatingWater.hpp"
 
 #include <utilities/idd/ZoneHVAC_PackagedTerminalHeatPump_FieldEnums.hxx>
+#include <utilities/idd/IddEnums.hxx>
 
 using namespace openstudio::epmodel;
 
@@ -429,4 +432,56 @@ TEST_F(EPModelFixture, ZoneHVACPackagedTerminalHeatPump_HiddenMixedAirNodeMainte
   EXPECT_EQ(0u, report.errorCount);
   ASSERT_TRUE(coolingCoil.inletModelObject()->optionalCast<Node>());
   EXPECT_EQ(rogueRepairMixedAir, *coolingCoil.inletModelObject()->optionalCast<Node>());
+}
+
+TEST_F(EPModelFixture, ZoneHVACPackagedTerminalHeatPump_OutdoorAirPathFollowsFlowAndRemovalLifecycle) {
+  Model model;
+  FanOnOff fan(model);
+  CoilHeatingDXSingleSpeed heatingCoil(model);
+  CoilCoolingDXSingleSpeed coolingCoil(model);
+  CoilHeatingWater supplementalHeatingCoil(model);
+  ZoneHVACPackagedTerminalHeatPump pthp(model);
+  ThermalZone zone(model);
+
+  ASSERT_TRUE(pthp.setName("Outdoor Air PTHP"));
+  ASSERT_TRUE(pthp.setFanPlacement("BlowThrough"));
+  ASSERT_TRUE(pthp.setSupplyAirFan(fan));
+  ASSERT_TRUE(pthp.setHeatingCoil(heatingCoil));
+  ASSERT_TRUE(pthp.setCoolingCoil(coolingCoil));
+  ASSERT_TRUE(pthp.setSupplementalHeatingCoil(supplementalHeatingCoil));
+  ASSERT_TRUE(pthp.setOutdoorAirFlowRateDuringCoolingOperation(0.09));
+  ASSERT_TRUE(pthp.setOutdoorAirFlowRateDuringHeatingOperation(0.06));
+  ASSERT_TRUE(pthp.setOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded(0.02));
+  ASSERT_TRUE(pthp.addToThermalZone(zone));
+
+  auto mixer = pthp.getModelObjectTarget<OutdoorAirMixer>(openstudio::ZoneHVAC_PackagedTerminalHeatPumpFields::OutdoorAirMixerName);
+  ASSERT_TRUE(mixer);
+  EXPECT_EQ("OutdoorAir:Mixer", pthp.getString(openstudio::ZoneHVAC_PackagedTerminalHeatPumpFields::OutdoorAirMixerObjectType).get());
+  ASSERT_TRUE(mixer->mixedAirNode());
+  ASSERT_TRUE(mixer->outdoorAirNode());
+  ASSERT_TRUE(mixer->reliefAirNode());
+  ASSERT_TRUE(mixer->returnAirNode());
+  ASSERT_TRUE(pthp.inletNode());
+  ASSERT_TRUE(fan.inletModelObject());
+  EXPECT_EQ(fan.inletModelObject()->handle(), mixer->mixedAirNode()->handle());
+  EXPECT_EQ(pthp.inletNode()->handle(), mixer->returnAirNode()->handle());
+  EXPECT_EQ(1u, model.getObjectsByType(openstudio::IddObjectType::OutdoorAir_NodeList).size());
+  EXPECT_EQ(5u, pthp.children().size());
+
+  ASSERT_TRUE(pthp.setOutdoorAirFlowRateDuringCoolingOperation(0.0));
+  ASSERT_TRUE(pthp.setOutdoorAirFlowRateDuringHeatingOperation(0.0));
+  ASSERT_TRUE(pthp.setOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded(0.0));
+  EXPECT_FALSE(pthp.getModelObjectTarget<OutdoorAirMixer>(openstudio::ZoneHVAC_PackagedTerminalHeatPumpFields::OutdoorAirMixerName));
+  EXPECT_TRUE(model.getConcreteModelObjects<OutdoorAirMixer>().empty());
+  EXPECT_TRUE(model.getObjectsByType(openstudio::IddObjectType::OutdoorAir_NodeList).empty());
+  ASSERT_TRUE(pthp.inletNode());
+  ASSERT_TRUE(fan.inletModelObject());
+  EXPECT_EQ(pthp.inletNode()->handle(), fan.inletModelObject()->handle());
+
+  ASSERT_TRUE(pthp.setOutdoorAirFlowRateDuringCoolingOperation(0.09));
+  EXPECT_TRUE(pthp.getModelObjectTarget<OutdoorAirMixer>(openstudio::ZoneHVAC_PackagedTerminalHeatPumpFields::OutdoorAirMixerName));
+  EXPECT_EQ(1u, model.getObjectsByType(openstudio::IddObjectType::OutdoorAir_NodeList).size());
+  EXPECT_FALSE(pthp.remove().empty());
+  EXPECT_TRUE(model.getConcreteModelObjects<OutdoorAirMixer>().empty());
+  EXPECT_TRUE(model.getObjectsByType(openstudio::IddObjectType::OutdoorAir_NodeList).empty());
 }

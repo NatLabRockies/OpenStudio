@@ -86,6 +86,7 @@ namespace epmodel {
       unsigned outletPort() const override;
       bool addToThermalZone(ThermalZone& thermalZone) override;
       void removeFromThermalZone() override;
+      std::vector<IdfObject> remove() override;
       void doCanonicalize(LoadContext& context) override;
 
       HVACComponent supplyAirFan() const;
