@@ -464,16 +464,7 @@ namespace epmodel {
         openstudio::AirTerminal_SingleDuct_VAV_Reheat_VariableSpeedFanFields::HeatingCoilName);
       auto plantLoop = coil ? coil->plantLoop() : boost::optional<openstudio::epmodel::PlantLoop>{};
 
-      bool shouldRemoveTerminalInletNode = false;
-      if (auto terminal = thisObject.optionalCast<openstudio::epmodel::HVACComponent>()) {
-        if (auto airLoop = terminal->airLoopHVAC()) {
-          if (inletNode && outletNode) {
-            const auto splitter = airLoop->zoneSplitter();
-            const auto splitterBranchIndex = splitter.branchIndexForOutletModelObject(*inletNode);
-            shouldRemoveTerminalInletNode = splitter.outletModelObject(splitterBranchIndex) == *inletNode;
-          }
-        }
-      }
+      const bool shouldRemoveTerminalInletNode = inletNode && outletNode && isDemandBranchStartComponent();
 
       bool removedFromAirLoop = false;
       if (inletNode && outletNode) {

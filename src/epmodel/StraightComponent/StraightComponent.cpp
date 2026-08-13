@@ -547,6 +547,17 @@ namespace epmodel {
       return boost::none;
     }
 
+    bool StraightComponent_Impl::isDemandBranchStartComponent() const {
+      const auto component = getObject<openstudio::epmodel::ModelObject>().optionalCast<openstudio::epmodel::StraightComponent>();
+      const auto airLoop = component ? component->airLoopHVAC() : boost::optional<openstudio::epmodel::AirLoopHVAC>();
+      if (!component || !airLoop) {
+        return false;
+      }
+      auto airLoopImpl = airLoop->getImpl<openstudio::epmodel::detail::AirLoopHVAC_Impl>();
+      OS_ASSERT(airLoopImpl);
+      return airLoopImpl->isDemandBranchStartComponent(*component);
+    }
+
     bool StraightComponent_Impl::removeFromLoop() {
       auto thisObject = getObject<openstudio::epmodel::ModelObject>();
 
@@ -581,21 +592,17 @@ namespace epmodel {
       }
 
       if (auto loop = thisComponent->airLoopHVAC()) {
-        auto splitter = loop->zoneSplitter();
-
-        const auto splitterBranchIndex = splitter.branchIndexForOutletModelObject(inletNode->cast<ModelObject>());
-        // Air terminals are inserted immediately after a zone-splitter outlet.
-        // The terminal outlet is the zone inlet node, while the matching zone-
-        // mixer inlet is normally a distinct zone return node. Do not require
-        // those two nodes to be identical when recognizing the demand branch.
-        const bool isZoneBranch = splitter.outletModelObject(splitterBranchIndex) == inletNode->cast<ModelObject>();
-
-        if (isZoneBranch) {
-          if (!splitter.setOutletModelObject(splitterBranchIndex, outletNode->cast<ModelObject>())) {
+        auto loopImpl = loop->getImpl<openstudio::epmodel::detail::AirLoopHVAC_Impl>();
+        OS_ASSERT(loopImpl);
+        if (loopImpl->isDemandBranchStartComponent(*thisComponent)) {
+          // A terminal may start at a ZoneSplitter outlet or at a
+          // SupplyPlenum outlet. Let the effective demand graph replace the
+          // endpoint in the connector that actually owns it.
+          if (!loopImpl->bypassDemandBranchStartComponent(*thisComponent)) {
             return false;
           }
         } else {
-          auto branchList = loop->getImpl<openstudio::epmodel::detail::AirLoopHVAC_Impl>()->branchList();
+          auto branchList = loopImpl->branchList();
           const auto branches = branchList.branches();
           if (branches.empty()) {
             return false;
@@ -623,7 +630,6 @@ namespace epmodel {
           }
         }
 
-        auto loopImpl = loop->getImpl<openstudio::epmodel::detail::AirLoopHVAC_Impl>();
         loopImpl->syncControllerMechanicalVentilationZoneOutdoorAirEntries();
         loopImpl->syncSetpointManagerMixedAirFanNodes();
         return true;

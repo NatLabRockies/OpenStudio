@@ -35,6 +35,7 @@ namespace epmodel {
       virtual bool addToNode(Node& node) override;
 
      protected:
+      bool isDemandBranchStartComponent() const;
       bool addToOutdoorAirSystem(AirLoopHVACOutdoorAirSystem& oaSystem, Node& node);
       bool removeFromOutdoorAirSystem(AirLoopHVACOutdoorAirSystem& oaSystem);
     };

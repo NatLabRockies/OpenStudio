@@ -557,16 +557,7 @@ namespace epmodel {
         return false;
       }
 
-      bool shouldRemoveTerminalInletNode = false;
-      if (auto terminal = thisObject.optionalCast<openstudio::epmodel::HVACComponent>()) {
-        if (auto airLoop = terminal->airLoopHVAC()) {
-          if (inletNode && outletNode) {
-            const auto splitter = airLoop->zoneSplitter();
-            const auto splitterBranchIndex = splitter.branchIndexForOutletModelObject(*inletNode);
-            shouldRemoveTerminalInletNode = splitter.outletModelObject(splitterBranchIndex) == *inletNode;
-          }
-        }
-      }
+      const bool shouldRemoveTerminalInletNode = inletNode && outletNode && isDemandBranchStartComponent();
 
       // Preflight both plant sides before mutating either. Remove cooling then
       // heating to preserve the canonical model ordering.

@@ -557,24 +557,7 @@ namespace epmodel {
 
       bool shouldRemoveTerminalInletNode = false;
       if (inletNode || outletNode) {
-        if (!inletNode || !outletNode) {
-          return false;
-        }
-        auto terminal = thisObject.optionalCast<openstudio::epmodel::HVACComponent>();
-        auto airLoop = terminal ? terminal->airLoopHVAC() : boost::optional<openstudio::epmodel::AirLoopHVAC>{};
-        if (!airLoop) {
-          return false;
-        }
-        const auto splitter = airLoop->zoneSplitter();
-        const auto splitterOutlets = splitter.outletModelObjects();
-        const auto splitterIt = std::ranges::find(splitterOutlets, *inletNode);
-        if (splitterIt == splitterOutlets.end()) {
-          return false;
-        }
-        const auto mixerInlets = airLoop->zoneMixer().inletModelObjects();
-        const bool hasMatchingReturn = std::ranges::any_of(
-          mixerInlets, [&](const auto& mixerInlet) { return (mixerInlet == *outletNode) || isServedZoneReturnNode(thermalZone, mixerInlet); });
-        if (!hasMatchingReturn) {
+        if (!inletNode || !outletNode || !isDemandBranchStartComponent()) {
           return false;
         }
         shouldRemoveTerminalInletNode = true;
@@ -848,10 +831,83 @@ namespace epmodel {
         const bool hadExternalTopology = static_cast<bool>(inletModelObject()) || static_cast<bool>(outletModelObject())
                                          || static_cast<bool>(thermalZoneContainingTerminal(model(), terminal))
                                          || static_cast<bool>(zoneHVACAirDistributionUnit());
-        if (context && hadExternalTopology && !removeFromLoop()) {
-          detail::addLoadError(*context, "Could not detach incomplete AirTerminal:SingleDuct:ConstantVolume:Reheat '" + terminal.nameString()
-                                           + "' from its external topology.");
-          return false;
+        if (context && hadExternalTopology) {
+          boost::optional<StraightComponent> staleProjectedCoil;
+          boost::optional<Handle> staleCoilInletHandle;
+          boost::optional<Handle> staleCoilOutletHandle;
+          const auto terminalInlet = inletModelObject();
+          const auto terminalOutlet = outletModelObject();
+          if (terminalInlet && terminalOutlet && !previousType.empty()) {
+            // A lost parent pointer can leave the former child coil projected
+            // across the same air nodes. Only canonical repair may detach that
+            // exact, otherwise-unowned projection before strict loop removal.
+            std::vector<StraightComponent> directBranchComponents;
+            for (const auto& source : terminalInlet->sources()) {
+              auto candidate = source.optionalCast<StraightComponent>();
+              if (!candidate || candidate->iddObject().type() == IddObjectType::Node) {
+                continue;
+              }
+              const auto candidateInlet = candidate->inletModelObject();
+              if (candidateInlet && (*candidateInlet == *terminalInlet)) {
+                const auto owner = candidate->containingHVACComponent();
+                if (!owner || (owner->handle() != terminal.handle())) {
+                  directBranchComponents.push_back(*candidate);
+                }
+              }
+            }
+
+            if (directBranchComponents.size() == 2u) {
+              bool foundTerminal = false;
+              unsigned matchingCoilCount = 0u;
+              boost::optional<StraightComponent> matchingCoil;
+              for (const auto& candidate : directBranchComponents) {
+                if (candidate.handle() == terminal.handle()) {
+                  foundTerminal = true;
+                  continue;
+                }
+                const auto candidateType = candidate.iddObject().type();
+                const bool supportedType = (candidateType == IddObjectType::Coil_Heating_Electric)
+                                           || (candidateType == IddObjectType::Coil_Heating_Fuel)
+                                           || (candidateType == IddObjectType::Coil_Heating_Water);
+                const auto candidateOutlet = candidate.outletModelObject();
+                if (supportedType && openstudio::istringEqual(candidate.iddObject().name(), previousType) && candidateOutlet
+                    && (*candidateOutlet == *terminalOutlet) && !candidate.containingHVACComponent() && !candidate.plantLoop()) {
+                  matchingCoil = candidate;
+                  ++matchingCoilCount;
+                }
+              }
+              if (foundTerminal && (matchingCoilCount == 1u)) {
+                staleProjectedCoil = matchingCoil;
+                if (staleProjectedCoil) {
+                  staleCoilInletHandle = terminalInlet->handle();
+                  staleCoilOutletHandle = terminalOutlet->handle();
+                }
+              }
+            }
+          }
+
+          if (staleProjectedCoil) {
+            const bool inletCleared = staleProjectedCoil->setPointer(staleProjectedCoil->inletPort(), Handle());
+            const bool outletCleared = inletCleared && staleProjectedCoil->setPointer(staleProjectedCoil->outletPort(), Handle());
+            if (!outletCleared) {
+              if (inletCleared && staleCoilInletHandle) {
+                (void)staleProjectedCoil->setPointer(staleProjectedCoil->inletPort(), *staleCoilInletHandle);
+              }
+              detail::addLoadError(*context,
+                                   "Could not detach the stale reheat-coil air path from incomplete terminal '" + terminal.nameString() + "'.");
+              return false;
+            }
+          }
+
+          if (!removeFromLoop()) {
+            if (staleProjectedCoil && staleCoilInletHandle && staleCoilOutletHandle) {
+              (void)staleProjectedCoil->setPointer(staleProjectedCoil->inletPort(), *staleCoilInletHandle);
+              (void)staleProjectedCoil->setPointer(staleProjectedCoil->outletPort(), *staleCoilOutletHandle);
+            }
+            detail::addLoadError(*context, "Could not detach incomplete AirTerminal:SingleDuct:ConstantVolume:Reheat '" + terminal.nameString()
+                                             + "' from its external topology.");
+            return false;
+          }
         }
         OS_ASSERT(setString(openstudio::AirTerminal_SingleDuct_ConstantVolume_ReheatFields::ReheatCoilName, ""));
         OS_ASSERT(setString(openstudio::AirTerminal_SingleDuct_ConstantVolume_ReheatFields::ReheatCoilObjectType, ""));

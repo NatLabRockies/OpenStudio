@@ -472,18 +472,7 @@ namespace epmodel {
 
       bool shouldRemoveTerminalInletNode = false;
       if (inletNode || outletNode) {
-        if (!inletNode || !outletNode || !inletNode->optionalCast<openstudio::epmodel::Node>()
-            || !outletNode->optionalCast<openstudio::epmodel::Node>()) {
-          return false;
-        }
-        auto terminal = thisObject.optionalCast<openstudio::epmodel::HVACComponent>();
-        auto airLoop = terminal ? terminal->airLoopHVAC() : boost::optional<openstudio::epmodel::AirLoopHVAC>{};
-        if (!airLoop) {
-          return false;
-        }
-        const auto splitter = airLoop->zoneSplitter();
-        const auto splitterOutlets = splitter.outletModelObjects();
-        if (std::ranges::find(splitterOutlets, *inletNode) == splitterOutlets.end()) {
+        if (!inletNode || !outletNode || !isDemandBranchStartComponent()) {
           return false;
         }
         shouldRemoveTerminalInletNode = true;

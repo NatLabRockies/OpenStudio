@@ -674,16 +674,7 @@ namespace epmodel {
         return false;
       }
 
-      bool shouldRemoveTerminalInletNode = false;
-      if (auto terminal = thisObject.optionalCast<openstudio::epmodel::HVACComponent>()) {
-        if (auto airLoop = terminal->airLoopHVAC()) {
-          if (inletNode && outletNode) {
-            const auto splitter = airLoop->zoneSplitter();
-            const auto splitterBranchIndex = splitter.branchIndexForOutletModelObject(*inletNode);
-            shouldRemoveTerminalInletNode = splitter.outletModelObject(splitterBranchIndex) == *inletNode;
-          }
-        }
-      }
+      const bool shouldRemoveTerminalInletNode = inletNode && outletNode && isDemandBranchStartComponent();
 
       // Match the canonical removal ordering and leave the terminal and its
       // owned coil intact if the required plant topology cannot be removed.

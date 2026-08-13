@@ -520,24 +520,7 @@ namespace epmodel {
 
       bool shouldRemoveTerminalInletNode = false;
       if (inletNode || outletNode) {
-        if (!inletNode || !outletNode) {
-          return false;
-        }
-        auto terminal = thisObject.optionalCast<openstudio::epmodel::HVACComponent>();
-        auto airLoop = terminal ? terminal->airLoopHVAC() : boost::optional<openstudio::epmodel::AirLoopHVAC>{};
-        if (!airLoop) {
-          return false;
-        }
-        const auto splitter = airLoop->zoneSplitter();
-        const auto splitterOutlets = splitter.outletModelObjects();
-        const auto splitterIt = std::ranges::find(splitterOutlets, *inletNode);
-        if (splitterIt == splitterOutlets.end()) {
-          return false;
-        }
-        const auto mixerInlets = airLoop->zoneMixer().inletModelObjects();
-        const bool hasMatchingReturn = std::ranges::any_of(
-          mixerInlets, [&](const auto& mixerInlet) { return (mixerInlet == *outletNode) || isServedZoneReturnNode(thermalZone, mixerInlet); });
-        if (!hasMatchingReturn) {
+        if (!inletNode || !outletNode || !isDemandBranchStartComponent()) {
           return false;
         }
         shouldRemoveTerminalInletNode = true;

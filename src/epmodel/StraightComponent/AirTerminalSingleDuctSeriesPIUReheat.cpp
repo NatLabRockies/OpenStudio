@@ -1589,11 +1589,12 @@ namespace epmodel {
         thermalZone = thermalZoneContainingExhaustNode(model(), *secondaryNode);
       }
 
-      bool shouldRemoveTerminalInletNode = false;
-      if (inletNode) {
+      bool shouldRemoveTerminalInletNode = inletNode && outletNode && isDemandBranchStartComponent();
+      if (!shouldRemoveTerminalInletNode && inletNode) {
         if (auto terminalInletNode = inletNode->optionalCast<openstudio::epmodel::Node>()) {
-          // Resolve the loop from the still-canonical splitter outlet. The terminal's
-          // own loop lookup can fail when recovering a stale or detached zone outlet.
+          // Preserve direct-branch recovery when this terminal's outlet is stale.
+          // The effective topology resolver deliberately rejects an inconsistent
+          // graph, but the splitter outlet still identifies this legacy repair case.
           if (auto airLoop = terminalInletNode->airLoopHVAC()) {
             const auto splitter = airLoop->zoneSplitter();
             const auto splitterOutlets = splitter.outletModelObjects();

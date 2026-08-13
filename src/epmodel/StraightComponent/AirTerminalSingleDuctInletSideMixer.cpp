@@ -271,20 +271,7 @@ namespace epmodel {
         return false;
       }
 
-      bool shouldRemoveTerminalInletNode = false;
-      if (auto terminal = thisObject.optionalCast<openstudio::epmodel::HVACComponent>()) {
-        if (auto airLoop = terminal->airLoopHVAC()) {
-          if (inletNode && outletNode) {
-            const auto splitter = airLoop->zoneSplitter();
-            const auto splitterOutlets = splitter.outletModelObjects();
-            const auto splitterIt = std::ranges::find(splitterOutlets, *inletNode);
-            if (splitterIt != splitterOutlets.end()) {
-              const auto splitterBranchIndex = static_cast<unsigned>(std::distance(splitterOutlets.begin(), splitterIt));
-              shouldRemoveTerminalInletNode = splitter.outletModelObject(splitterBranchIndex) == *inletNode;
-            }
-          }
-        }
-      }
+      const bool shouldRemoveTerminalInletNode = inletNode && outletNode && isDemandBranchStartComponent();
 
       bool removedFromAirLoop = false;
       if (inletNode && outletNode) {

@@ -2365,6 +2365,287 @@ TEST_F(EPModelFixture, AirLoopHVAC_AddBranchForZoneUsesIndependentRowsAfterShare
   EXPECT_EQ(0u, report.errorCount);
 }
 
+TEST_F(EPModelFixture, AirLoopHVAC_RemoveTerminalPreservesSharedPlenumsAndBypass) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  ThermalZone firstZone(model);
+  ThermalZone secondZone(model);
+  ThermalZone supplyPlenumZone(model);
+  ThermalZone returnPlenumZone(model);
+  AirTerminalSingleDuctConstantVolumeNoReheat firstTerminal(model);
+  AirTerminalSingleDuctConstantVolumeNoReheat secondTerminal(model);
+  AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass unitary(model);
+
+  ASSERT_TRUE(airLoop.addBranchForZone(firstZone, firstTerminal));
+  ASSERT_TRUE(airLoop.addBranchForZone(secondZone, secondTerminal));
+  ASSERT_TRUE(firstZone.setSupplyPlenum(supplyPlenumZone));
+  ASSERT_TRUE(secondZone.setSupplyPlenum(supplyPlenumZone));
+  ASSERT_TRUE(firstZone.setReturnPlenum(returnPlenumZone));
+  ASSERT_TRUE(secondZone.setReturnPlenum(returnPlenumZone));
+
+  auto supplyOutletNode = airLoop.supplyOutletNode();
+  ASSERT_TRUE(unitary.addToNode(supplyOutletNode));
+  auto zoneMixer = airLoop.zoneMixer();
+  ASSERT_TRUE(unitary.setPlenumorMixer(zoneMixer));
+  const auto bypassNode = unitary.plenumorMixerNode();
+
+  const auto supplyPlenums = model.getConcreteModelObjects<AirLoopHVACSupplyPlenum>();
+  const auto returnPlenums = model.getConcreteModelObjects<AirLoopHVACReturnPlenum>();
+  ASSERT_EQ(1u, supplyPlenums.size());
+  ASSERT_EQ(1u, returnPlenums.size());
+  const auto supplyPlenumHandle = supplyPlenums.front().handle();
+  const auto returnPlenumHandle = returnPlenums.front().handle();
+
+  ASSERT_TRUE(firstTerminal.inletModelObject());
+  ASSERT_TRUE(firstTerminal.outletModelObject());
+  ASSERT_TRUE(secondTerminal.inletModelObject());
+  ASSERT_TRUE(secondTerminal.outletModelObject());
+  const auto firstInletHandle = firstTerminal.inletModelObject()->handle();
+  const auto firstOutletHandle = firstTerminal.outletModelObject()->handle();
+  const auto secondInletHandle = secondTerminal.inletModelObject()->handle();
+  const auto secondOutletHandle = secondTerminal.outletModelObject()->handle();
+
+  const auto supplyPlenumOutletsBefore = objectHandles(supplyPlenums.front().outletModelObjects());
+  const auto firstOutletIt = std::ranges::find(supplyPlenumOutletsBefore, firstInletHandle);
+  ASSERT_NE(supplyPlenumOutletsBefore.end(), firstOutletIt);
+  const auto firstPlenumOrdinal = static_cast<std::size_t>(std::distance(supplyPlenumOutletsBefore.begin(), firstOutletIt));
+  auto expectedSupplyPlenumOutlets = supplyPlenumOutletsBefore;
+  expectedSupplyPlenumOutlets[firstPlenumOrdinal] = firstOutletHandle;
+
+  const auto splitterBefore = objectHandles(airLoop.zoneSplitter().outletModelObjects());
+  const auto returnPlenumInletsBefore = objectHandles(returnPlenums.front().inletModelObjects());
+  const auto mixerBefore = objectHandles(zoneMixer.inletModelObjects());
+  const auto secondEquipmentBefore = objectHandles(secondZone.equipment());
+  const auto zonesBefore = zoneHandles(airLoop);
+  ASSERT_EQ(1u, splitterBefore.size());
+  ASSERT_EQ(2u, supplyPlenumOutletsBefore.size());
+  ASSERT_EQ(2u, returnPlenumInletsBefore.size());
+  ASSERT_EQ(2u, mixerBefore.size());
+  ASSERT_EQ(1u, std::ranges::count(mixerBefore, bypassNode.handle()));
+
+  auto firstAirDistributionUnit = firstTerminal.getImpl<detail::AirTerminalSingleDuctConstantVolumeNoReheat_Impl>()->zoneHVACAirDistributionUnit();
+  ASSERT_TRUE(firstAirDistributionUnit);
+  const auto firstAirDistributionUnitHandle = firstAirDistributionUnit->handle();
+
+  ASSERT_TRUE(firstTerminal.removeFromLoop());
+
+  EXPECT_TRUE(model.getObject(firstTerminal.handle()));
+  EXPECT_FALSE(firstTerminal.inletModelObject());
+  EXPECT_FALSE(firstTerminal.outletModelObject());
+  EXPECT_FALSE(model.getModelObject<Node>(firstInletHandle));
+  EXPECT_TRUE(firstZone.equipment().empty());
+  EXPECT_TRUE(model.getObject(firstAirDistributionUnitHandle));
+  EXPECT_FALSE(firstAirDistributionUnit->airTerminal());
+  EXPECT_FALSE(firstAirDistributionUnit->outletNode());
+
+  const auto remainingSupplyPlenums = model.getConcreteModelObjects<AirLoopHVACSupplyPlenum>();
+  const auto remainingReturnPlenums = model.getConcreteModelObjects<AirLoopHVACReturnPlenum>();
+  ASSERT_EQ(1u, remainingSupplyPlenums.size());
+  ASSERT_EQ(1u, remainingReturnPlenums.size());
+  EXPECT_EQ(supplyPlenumHandle, remainingSupplyPlenums.front().handle());
+  EXPECT_EQ(returnPlenumHandle, remainingReturnPlenums.front().handle());
+  EXPECT_EQ(expectedSupplyPlenumOutlets, objectHandles(remainingSupplyPlenums.front().outletModelObjects()));
+  EXPECT_EQ(returnPlenumInletsBefore, objectHandles(remainingReturnPlenums.front().inletModelObjects()));
+  EXPECT_EQ(splitterBefore, objectHandles(airLoop.zoneSplitter().outletModelObjects()));
+  EXPECT_EQ(mixerBefore, objectHandles(zoneMixer.inletModelObjects()));
+
+  ASSERT_TRUE(secondTerminal.inletModelObject());
+  ASSERT_TRUE(secondTerminal.outletModelObject());
+  EXPECT_EQ(secondInletHandle, secondTerminal.inletModelObject()->handle());
+  EXPECT_EQ(secondOutletHandle, secondTerminal.outletModelObject()->handle());
+  EXPECT_EQ(secondEquipmentBefore, objectHandles(secondZone.equipment()));
+  EXPECT_EQ(zonesBefore, zoneHandles(airLoop));
+  ASSERT_TRUE(unitary.plenumorMixer());
+  EXPECT_EQ(zoneMixer, unitary.plenumorMixer()->cast<AirLoopHVACZoneMixer>());
+  EXPECT_EQ(bypassNode, unitary.plenumorMixerNode());
+  EXPECT_EQ(1u, std::ranges::count(zoneMixer.inletModelObjects(), bypassNode.cast<ModelObject>()));
+
+  const auto report = model.canonicalize();
+  EXPECT_EQ(0u, report.errorCount);
+}
+
+TEST_F(EPModelFixture, AirLoopHVAC_RemoveReheatTerminalPreservesSharedReturnPlenum) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  ThermalZone firstZone(model);
+  ThermalZone secondZone(model);
+  ThermalZone returnPlenumZone(model);
+  auto availabilitySchedule = model.alwaysOnDiscreteSchedule();
+  CoilHeatingElectric firstCoil(model);
+  CoilHeatingElectric secondCoil(model);
+  AirTerminalSingleDuctConstantVolumeReheat firstTerminal(model, availabilitySchedule, firstCoil);
+  AirTerminalSingleDuctConstantVolumeReheat secondTerminal(model, availabilitySchedule, secondCoil);
+
+  ASSERT_TRUE(airLoop.addBranchForZone(firstZone, firstTerminal));
+  ASSERT_TRUE(airLoop.addBranchForZone(secondZone, secondTerminal));
+  ASSERT_TRUE(firstZone.setReturnPlenum(returnPlenumZone));
+  ASSERT_TRUE(secondZone.setReturnPlenum(returnPlenumZone));
+
+  const auto returnPlenums = model.getConcreteModelObjects<AirLoopHVACReturnPlenum>();
+  ASSERT_EQ(1u, returnPlenums.size());
+  const auto returnPlenumHandle = returnPlenums.front().handle();
+  const auto returnPlenumInletsBefore = objectHandles(returnPlenums.front().inletModelObjects());
+  const auto mixerBefore = objectHandles(airLoop.zoneMixer().inletModelObjects());
+
+  ASSERT_TRUE(firstTerminal.inletModelObject());
+  ASSERT_TRUE(firstTerminal.outletModelObject());
+  ASSERT_TRUE(secondTerminal.inletModelObject());
+  ASSERT_TRUE(secondTerminal.outletModelObject());
+  const auto firstInletHandle = firstTerminal.inletModelObject()->handle();
+  const auto firstOutletHandle = firstTerminal.outletModelObject()->handle();
+  const auto secondInletHandle = secondTerminal.inletModelObject()->handle();
+  const auto secondOutletHandle = secondTerminal.outletModelObject()->handle();
+
+  const auto splitterBefore = objectHandles(airLoop.zoneSplitter().outletModelObjects());
+  const auto firstOutletIt = std::ranges::find(splitterBefore, firstInletHandle);
+  ASSERT_NE(splitterBefore.end(), firstOutletIt);
+  const auto firstSplitterOrdinal = static_cast<std::size_t>(std::distance(splitterBefore.begin(), firstOutletIt));
+  auto expectedSplitter = splitterBefore;
+  expectedSplitter[firstSplitterOrdinal] = firstOutletHandle;
+  const auto secondEquipmentBefore = objectHandles(secondZone.equipment());
+  const auto zonesBefore = zoneHandles(airLoop);
+
+  ASSERT_TRUE(firstTerminal.removeFromLoop());
+
+  EXPECT_TRUE(model.getObject(firstTerminal.handle()));
+  EXPECT_TRUE(model.getObject(firstCoil.handle()));
+  EXPECT_EQ(firstCoil, firstTerminal.reheatCoil());
+  EXPECT_FALSE(firstTerminal.inletModelObject());
+  EXPECT_FALSE(firstTerminal.outletModelObject());
+  EXPECT_FALSE(model.getModelObject<Node>(firstInletHandle));
+  EXPECT_TRUE(firstZone.equipment().empty());
+  EXPECT_EQ(expectedSplitter, objectHandles(airLoop.zoneSplitter().outletModelObjects()));
+
+  const auto remainingReturnPlenums = model.getConcreteModelObjects<AirLoopHVACReturnPlenum>();
+  ASSERT_EQ(1u, remainingReturnPlenums.size());
+  EXPECT_EQ(returnPlenumHandle, remainingReturnPlenums.front().handle());
+  EXPECT_EQ(returnPlenumInletsBefore, objectHandles(remainingReturnPlenums.front().inletModelObjects()));
+  EXPECT_EQ(mixerBefore, objectHandles(airLoop.zoneMixer().inletModelObjects()));
+
+  ASSERT_TRUE(secondTerminal.inletModelObject());
+  ASSERT_TRUE(secondTerminal.outletModelObject());
+  EXPECT_EQ(secondInletHandle, secondTerminal.inletModelObject()->handle());
+  EXPECT_EQ(secondOutletHandle, secondTerminal.outletModelObject()->handle());
+  EXPECT_EQ(secondEquipmentBefore, objectHandles(secondZone.equipment()));
+  EXPECT_EQ(zonesBefore, zoneHandles(airLoop));
+
+  const auto report = model.canonicalize();
+  EXPECT_EQ(0u, report.errorCount);
+}
+
+TEST_F(EPModelFixture, AirLoopHVAC_RemoveTerminalIgnoresUnrelatedDanglingDemandRow) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  ThermalZone zone(model);
+  AirTerminalSingleDuctConstantVolumeNoReheat terminal(model);
+  ASSERT_TRUE(airLoop.addBranchForZone(zone, terminal));
+
+  ASSERT_TRUE(terminal.inletModelObject());
+  ASSERT_TRUE(terminal.outletModelObject());
+  const auto terminalInletHandle = terminal.inletModelObject()->handle();
+  const auto terminalOutletHandle = terminal.outletModelObject()->handle();
+  auto splitter = airLoop.zoneSplitter();
+  Node unmatchedSupplyNode(model);
+  ASSERT_TRUE(splitter.setOutletModelObject(splitter.nextBranchIndex(), unmatchedSupplyNode));
+  auto zoneMixer = airLoop.zoneMixer();
+  Node unmatchedReturnNode(model);
+  ASSERT_TRUE(zoneMixer.setInletModelObject(zoneMixer.nextBranchIndex(), unmatchedReturnNode));
+
+  const auto splitterBefore = objectHandles(splitter.outletModelObjects());
+  const auto terminalOutletIt = std::ranges::find(splitterBefore, terminalInletHandle);
+  ASSERT_NE(splitterBefore.end(), terminalOutletIt);
+  const auto terminalSplitterOrdinal = static_cast<std::size_t>(std::distance(splitterBefore.begin(), terminalOutletIt));
+  auto expectedSplitter = splitterBefore;
+  expectedSplitter[terminalSplitterOrdinal] = terminalOutletHandle;
+  const auto mixerBefore = objectHandles(airLoop.zoneMixer().inletModelObjects());
+
+  ASSERT_TRUE(terminal.removeFromLoop());
+
+  EXPECT_EQ(expectedSplitter, objectHandles(splitter.outletModelObjects()));
+  EXPECT_EQ(mixerBefore, objectHandles(zoneMixer.inletModelObjects()));
+  EXPECT_TRUE(model.getObject(unmatchedSupplyNode.handle()));
+  EXPECT_TRUE(model.getObject(unmatchedReturnNode.handle()));
+  EXPECT_FALSE(model.getModelObject<Node>(terminalInletHandle));
+  EXPECT_TRUE(model.getObject(terminal.handle()));
+  EXPECT_FALSE(terminal.inletModelObject());
+  EXPECT_FALSE(terminal.outletModelObject());
+  ASSERT_EQ(1u, airLoop.thermalZones().size());
+  EXPECT_EQ(zone, airLoop.thermalZones().front());
+}
+
+TEST_F(EPModelFixture, AirLoopHVAC_RemoveTerminalRejectsCompetingTerminalAtBranchStart) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  ThermalZone zone(model);
+  AirTerminalSingleDuctConstantVolumeNoReheat terminal(model);
+  AirTerminalSingleDuctConstantVolumeNoReheat competingTerminal(model);
+  ASSERT_TRUE(airLoop.addBranchForZone(zone, terminal));
+
+  ASSERT_TRUE(terminal.inletModelObject());
+  ASSERT_TRUE(terminal.outletModelObject());
+  const auto terminalInletHandle = terminal.inletModelObject()->handle();
+  const auto terminalOutletHandle = terminal.outletModelObject()->handle();
+  ASSERT_TRUE(competingTerminal.setPointer(competingTerminal.inletPort(), terminalInletHandle));
+  ASSERT_TRUE(competingTerminal.setPointer(competingTerminal.outletPort(), terminalOutletHandle));
+
+  const auto handlesBefore = workspaceHandles(model);
+  const auto splitterBefore = objectHandles(airLoop.zoneSplitter().outletModelObjects());
+  const auto mixerBefore = objectHandles(airLoop.zoneMixer().inletModelObjects());
+  const auto equipmentBefore = objectHandles(zone.equipment());
+
+  EXPECT_FALSE(terminal.removeFromLoop());
+
+  EXPECT_EQ(handlesBefore, workspaceHandles(model));
+  EXPECT_EQ(splitterBefore, objectHandles(airLoop.zoneSplitter().outletModelObjects()));
+  EXPECT_EQ(mixerBefore, objectHandles(airLoop.zoneMixer().inletModelObjects()));
+  EXPECT_EQ(equipmentBefore, objectHandles(zone.equipment()));
+  ASSERT_TRUE(terminal.inletModelObject());
+  ASSERT_TRUE(terminal.outletModelObject());
+  ASSERT_TRUE(competingTerminal.inletModelObject());
+  ASSERT_TRUE(competingTerminal.outletModelObject());
+  EXPECT_EQ(terminalInletHandle, terminal.inletModelObject()->handle());
+  EXPECT_EQ(terminalOutletHandle, terminal.outletModelObject()->handle());
+  EXPECT_EQ(terminalInletHandle, competingTerminal.inletModelObject()->handle());
+  EXPECT_EQ(terminalOutletHandle, competingTerminal.outletModelObject()->handle());
+}
+
+TEST_F(EPModelFixture, AirLoopHVAC_RemoveTerminalRejectsCompetingNonterminalAtBranchStart) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  ThermalZone zone(model);
+  AirTerminalSingleDuctConstantVolumeNoReheat terminal(model);
+  FanConstantVolume competingFan(model);
+  ASSERT_TRUE(airLoop.addBranchForZone(zone, terminal));
+
+  ASSERT_TRUE(terminal.inletModelObject());
+  ASSERT_TRUE(terminal.outletModelObject());
+  const auto terminalInletHandle = terminal.inletModelObject()->handle();
+  const auto terminalOutletHandle = terminal.outletModelObject()->handle();
+  Node competingFanOutlet(model);
+  ASSERT_TRUE(competingFan.setPointer(competingFan.inletPort(), terminalInletHandle));
+  ASSERT_TRUE(competingFan.setPointer(competingFan.outletPort(), competingFanOutlet.handle()));
+
+  const auto handlesBefore = workspaceHandles(model);
+  const auto splitterBefore = objectHandles(airLoop.zoneSplitter().outletModelObjects());
+  const auto mixerBefore = objectHandles(airLoop.zoneMixer().inletModelObjects());
+  const auto equipmentBefore = objectHandles(zone.equipment());
+
+  EXPECT_FALSE(terminal.removeFromLoop());
+
+  EXPECT_EQ(handlesBefore, workspaceHandles(model));
+  EXPECT_EQ(splitterBefore, objectHandles(airLoop.zoneSplitter().outletModelObjects()));
+  EXPECT_EQ(mixerBefore, objectHandles(airLoop.zoneMixer().inletModelObjects()));
+  EXPECT_EQ(equipmentBefore, objectHandles(zone.equipment()));
+  ASSERT_TRUE(terminal.inletModelObject());
+  ASSERT_TRUE(terminal.outletModelObject());
+  ASSERT_TRUE(competingFan.inletModelObject());
+  ASSERT_TRUE(competingFan.outletModelObject());
+  EXPECT_EQ(terminalInletHandle, terminal.inletModelObject()->handle());
+  EXPECT_EQ(terminalOutletHandle, terminal.outletModelObject()->handle());
+  EXPECT_EQ(terminalInletHandle, competingFan.inletModelObject()->handle());
+  EXPECT_EQ(competingFanOutlet.handle(), competingFan.outletModelObject()->handle());
+}
+
 TEST_F(EPModelFixture, AirLoopHVAC_AddBranchForZonePreservesChangeoverBypassMixerRow) {
   Model model;
   AirLoopHVAC airLoop(model);

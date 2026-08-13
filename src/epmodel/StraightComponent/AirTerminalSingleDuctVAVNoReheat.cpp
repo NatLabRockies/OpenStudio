@@ -277,16 +277,7 @@ namespace epmodel {
       auto thermalZone = thermalZoneContainingTerminal(model(), thisObject);
       auto inletNode = inletModelObject();
       auto outletNode = outletModelObject();
-      bool shouldRemoveTerminalInletNode = false;
-      if (auto terminal = thisObject.optionalCast<openstudio::epmodel::HVACComponent>()) {
-        if (auto airLoop = terminal->airLoopHVAC()) {
-          if (inletNode && outletNode) {
-            const auto splitter = airLoop->zoneSplitter();
-            const auto splitterBranchIndex = splitter.branchIndexForOutletModelObject(*inletNode);
-            shouldRemoveTerminalInletNode = splitter.outletModelObject(splitterBranchIndex) == *inletNode;
-          }
-        }
-      }
+      const bool shouldRemoveTerminalInletNode = inletNode && outletNode && isDemandBranchStartComponent();
 
       bool removedFromAirLoop = false;
       if (inletNode && outletNode) {

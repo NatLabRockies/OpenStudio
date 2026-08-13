@@ -751,6 +751,8 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeReheat_ConnectedCoilRe
   EXPECT_FALSE(loadedTerminal->inletModelObject());
   EXPECT_FALSE(loadedTerminal->outletModelObject());
   EXPECT_FALSE(loadedTerminal->airLoopHVAC());
+  EXPECT_FALSE(loadedCoil->inletModelObject());
+  EXPECT_FALSE(loadedCoil->outletModelObject());
 
   openstudio::filesystem::remove(idfPath);
 }

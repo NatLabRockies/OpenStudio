@@ -1591,6 +1591,20 @@ namespace epmodel {
       bool m_mutationSafe = true;
     };
 
+    // Captures the connector-local owner of one effective demand-branch
+    // start. The ordinal belongs either to the loop ZoneSplitter or to the
+    // selected SupplyPlenum; it is never reused as an address in another
+    // connector.
+    class AirLoopHVAC_Impl::DemandBranchComponentLocation
+    {
+     public:
+      DemandBranchComponentLocation(DemandTopologySnapshot::SupplyEndpoint supply_, Node outlet_)
+        : supply(std::move(supply_)), outlet(std::move(outlet_)) {}
+
+      DemandTopologySnapshot::SupplyEndpoint supply;
+      Node outlet;
+    };
+
     // Owns the whole provisional demand-branch attachment, not merely the
     // splitter/mixer row pair. A prepared transaction may also own a new
     // branch node and reversible zone-boundary wiring. Until commit, its
@@ -3017,6 +3031,89 @@ namespace epmodel {
         result = *returnNode;
       }
       return result;
+    }
+
+    std::unique_ptr<AirLoopHVAC_Impl::DemandBranchComponentLocation>
+      AirLoopHVAC_Impl::demandBranchComponentLocation(const StraightComponent& component) const {
+      const auto componentType = component.iddObject().name();
+      if (component.model() != model() || isDualDuct()
+          || (!componentType.starts_with("AirTerminal:") && !componentType.starts_with("OS:AirTerminal:"))) {
+        return nullptr;
+      }
+
+      const auto inletObject = component.inletModelObject();
+      const auto outletObject = component.outletModelObject();
+      const auto inletNode = inletObject ? inletObject->optionalCast<Node>() : boost::optional<Node>();
+      const auto outletNode = outletObject ? outletObject->optionalCast<Node>() : boost::optional<Node>();
+      if (!inletNode || !outletNode) {
+        return nullptr;
+      }
+
+      const auto topology = demandTopologySnapshot();
+      // This mutation is local to one proven connector row. Do not reject a
+      // sound target merely because an unrelated demand endpoint makes the
+      // whole snapshot unsafe for multi-row operations.
+
+      std::unique_ptr<DemandBranchComponentLocation> result;
+      for (const auto& branch : topology.branches()) {
+        const auto branchStartNode = branch.supply.branchStart.optionalCast<Node>();
+        if (!branchStartNode || (*branchStartNode != *inletNode)) {
+          continue;
+        }
+
+        boost::optional<Node> branchEndNode = branch.zoneInletNode;
+        if (!branchEndNode) {
+          branchEndNode = branch.returnPath.branchReturn.optionalCast<Node>();
+        }
+        if (!branchEndNode || (*branchEndNode != *outletNode)) {
+          continue;
+        }
+
+        std::vector<StraightComponent> branchStartComponents;
+        for (const auto& source : branchStartNode->sources()) {
+          auto candidate = source.optionalCast<StraightComponent>();
+          if (!candidate || candidate->iddObject().type() == openstudio::IddObjectType::Node) {
+            continue;
+          }
+          const auto candidateInlet = candidate->inletModelObject();
+          const auto candidateInletNode = candidateInlet ? candidateInlet->optionalCast<Node>() : boost::optional<Node>();
+          if (candidateInletNode && (*candidateInletNode == *branchStartNode)) {
+            const auto owner = candidate->containingHVACComponent();
+            if (!owner || (owner->handle() != component.handle())) {
+              branchStartComponents.push_back(*candidate);
+            }
+          }
+        }
+        if ((branchStartComponents.size() != 1u) || (branchStartComponents.front().handle() != component.handle())) {
+          return nullptr;
+        }
+
+        const auto resolvedComponent = resolveTerminalOnDemandBranchNodes(*branchStartNode, *branchEndNode);
+        if (!resolvedComponent || (resolvedComponent->handle() != component.handle()) || result) {
+          return nullptr;
+        }
+        result = std::make_unique<DemandBranchComponentLocation>(branch.supply, *outletNode);
+      }
+      return result;
+    }
+
+    bool AirLoopHVAC_Impl::isDemandBranchStartComponent(const StraightComponent& component) const {
+      return static_cast<bool>(demandBranchComponentLocation(component));
+    }
+
+    bool AirLoopHVAC_Impl::bypassDemandBranchStartComponent(const StraightComponent& component) {
+      auto location = demandBranchComponentLocation(component);
+      if (!location) {
+        return false;
+      }
+
+      if (location->supply.supplyPlenum) {
+        if (!location->supply.plenumOrdinal) {
+          return false;
+        }
+        return location->supply.supplyPlenum->setOutletModelObject(*location->supply.plenumOrdinal, location->outlet.cast<ModelObject>());
+      }
+      return zoneSplitter().setOutletModelObject(location->supply.splitterOrdinal, location->outlet.cast<ModelObject>());
     }
 
     boost::optional<ModelObject> AirLoopHVAC_Impl::effectiveDemandBranchStartForZone(const ThermalZone& thermalZone) const {
