@@ -1598,11 +1598,12 @@ namespace epmodel {
     class AirLoopHVAC_Impl::DemandBranchComponentLocation
     {
      public:
-      DemandBranchComponentLocation(DemandTopologySnapshot::SupplyEndpoint supply_, Node outlet_)
-        : supply(std::move(supply_)), outlet(std::move(outlet_)) {}
+      DemandBranchComponentLocation(DemandTopologySnapshot::SupplyEndpoint supply_, Node outlet_, boost::optional<ThermalZone> thermalZone_)
+        : supply(std::move(supply_)), outlet(std::move(outlet_)), thermalZone(std::move(thermalZone_)) {}
 
       DemandTopologySnapshot::SupplyEndpoint supply;
       Node outlet;
+      boost::optional<ThermalZone> thermalZone;
     };
 
     // Owns the whole provisional demand-branch attachment, not merely the
@@ -3006,6 +3007,97 @@ namespace epmodel {
       return DemandTopologySnapshot::resolve(*this);
     }
 
+    AirLoopHVAC_Impl::DemandBranchStartReservation::DemandBranchStartReservation(ModelObject connector, ConnectorKind connectorKind,
+                                                                                 unsigned connectorOrdinal, ModelObject originalTarget,
+                                                                                 boost::optional<ModelObject> thermalZone)
+      : m_connector(std::move(connector)),
+        m_connectorKind(connectorKind),
+        m_connectorOrdinal(connectorOrdinal),
+        m_originalTarget(std::move(originalTarget)),
+        m_thermalZone(std::move(thermalZone)) {}
+
+    AirLoopHVAC_Impl::DemandBranchStartReservation::~DemandBranchStartReservation() {
+      if (m_state == State::RewireAttempted || m_state == State::Rewired) {
+        const bool restored = restore();
+        OS_ASSERT(restored);
+        (void)restored;
+      }
+    }
+
+    boost::optional<ThermalZone> AirLoopHVAC_Impl::DemandBranchStartReservation::thermalZone() const {
+      return m_thermalZone ? m_thermalZone->optionalCast<ThermalZone>() : boost::none;
+    }
+
+    boost::optional<ModelObject> AirLoopHVAC_Impl::DemandBranchStartReservation::connectorTarget() const {
+      if (m_connectorKind == ConnectorKind::SupplyPlenum) {
+        auto plenum = m_connector.optionalCast<AirLoopHVACSupplyPlenum>();
+        return plenum ? plenum->outletModelObject(m_connectorOrdinal) : boost::none;
+      }
+      auto splitter = m_connector.optionalCast<AirLoopHVACZoneSplitter>();
+      return splitter ? splitter->outletModelObject(m_connectorOrdinal) : boost::none;
+    }
+
+    bool AirLoopHVAC_Impl::DemandBranchStartReservation::setConnectorTarget(const ModelObject& target) {
+      if (m_connectorKind == ConnectorKind::SupplyPlenum) {
+        auto plenum = m_connector.optionalCast<AirLoopHVACSupplyPlenum>();
+        return plenum && plenum->setOutletModelObject(m_connectorOrdinal, target);
+      }
+      auto splitter = m_connector.optionalCast<AirLoopHVACZoneSplitter>();
+      return splitter && splitter->setOutletModelObject(m_connectorOrdinal, target);
+    }
+
+    bool AirLoopHVAC_Impl::DemandBranchStartReservation::replaceWith(const Node& node) {
+      if (m_state != State::Prepared || node.model() != m_connector.model() || node.handle() == m_originalTarget.handle()) {
+        return false;
+      }
+      const auto currentTarget = connectorTarget();
+      if (!currentTarget || (*currentTarget != m_originalTarget)) {
+        return false;
+      }
+
+      // Enroll the row before calling the connector setter. Even if a setter
+      // reports failure after a partial write, destruction restores the exact
+      // captured target instead of leaving a provisional branch endpoint.
+      m_replacementTarget = node.cast<ModelObject>();
+      m_state = State::RewireAttempted;
+      if (!setConnectorTarget(*m_replacementTarget)) {
+        return false;
+      }
+      m_state = State::Rewired;
+      return true;
+    }
+
+    bool AirLoopHVAC_Impl::DemandBranchStartReservation::restore() {
+      if (m_state == State::Prepared || m_state == State::Restored) {
+        return true;
+      }
+      if (m_state == State::Committed || !m_replacementTarget) {
+        return false;
+      }
+      const auto currentTarget = connectorTarget();
+      if (!currentTarget) {
+        return false;
+      }
+      if (*currentTarget == m_originalTarget) {
+        m_state = State::Restored;
+        return true;
+      }
+      if ((*currentTarget != *m_replacementTarget) || !setConnectorTarget(m_originalTarget)) {
+        return false;
+      }
+      m_state = State::Restored;
+      return true;
+    }
+
+    bool AirLoopHVAC_Impl::DemandBranchStartReservation::commit() {
+      const auto currentTarget = connectorTarget();
+      if (m_state != State::Rewired || !m_replacementTarget || !currentTarget || (*currentTarget != *m_replacementTarget)) {
+        return false;
+      }
+      m_state = State::Committed;
+      return true;
+    }
+
     boost::optional<Node> AirLoopHVAC_Impl::effectiveDemandReturnNodeForBranchStart(const Node& branchStartNode) const {
       if (branchStartNode.model() != model()) {
         return boost::none;
@@ -3031,6 +3123,72 @@ namespace epmodel {
         result = *returnNode;
       }
       return result;
+    }
+
+    std::unique_ptr<AirLoopHVAC_Impl::DemandBranchStartReservation> AirLoopHVAC_Impl::reserveDemandBranchStart(const Node& branchStartNode) const {
+      if (branchStartNode.model() != model() || isDualDuct()) {
+        return nullptr;
+      }
+
+      const auto topology = demandTopologySnapshot();
+      boost::optional<DemandTopologySnapshot::EffectiveBranch> selectedBranch;
+      for (const auto& branch : topology.branches()) {
+        const auto effectiveStart = branch.supply.branchStart.optionalCast<Node>();
+        if (!effectiveStart || (*effectiveStart != branchStartNode)) {
+          continue;
+        }
+
+        const auto branchReturn = branch.returnPath.branchReturn.optionalCast<Node>();
+        const bool terminalFreeZoneBranch = branch.zone && branch.zoneInletNode && (*branch.zoneInletNode == branchStartNode);
+        const bool terminalFreeUnzonedBranch = !branch.zone && branchReturn && (*branchReturn == branchStartNode);
+        if ((!terminalFreeZoneBranch && !terminalFreeUnzonedBranch) || selectedBranch) {
+          return nullptr;
+        }
+        selectedBranch = branch;
+      }
+      if (!selectedBranch) {
+        return nullptr;
+      }
+
+      // A direct consumer would be replaced, not inserted ahead of, if this
+      // connector row were rewritten. A terminal-free single-duct branch has
+      // no StraightComponent whose inlet is the selected branch-start node.
+      for (const auto& source : branchStartNode.sources()) {
+        auto candidate = source.optionalCast<StraightComponent>();
+        if (!candidate || candidate->iddObject().type() == openstudio::IddObjectType::Node) {
+          continue;
+        }
+        const auto candidateInlet = candidate->inletModelObject();
+        const auto candidateInletNode = candidateInlet ? candidateInlet->optionalCast<Node>() : boost::optional<Node>();
+        if (candidateInletNode && (*candidateInletNode == branchStartNode)) {
+          return nullptr;
+        }
+      }
+
+      const auto& supply = selectedBranch->supply;
+      ModelObject connector = zoneSplitter().cast<ModelObject>();
+      auto connectorKind = DemandBranchStartReservation::ConnectorKind::ZoneSplitter;
+      auto connectorOrdinal = supply.splitterOrdinal;
+      if (supply.supplyPlenum) {
+        if (!supply.plenumOrdinal) {
+          return nullptr;
+        }
+        connector = supply.supplyPlenum->cast<ModelObject>();
+        connectorKind = DemandBranchStartReservation::ConnectorKind::SupplyPlenum;
+        connectorOrdinal = *supply.plenumOrdinal;
+      }
+
+      boost::optional<ModelObject> servedZone;
+      if (selectedBranch->zone) {
+        servedZone = selectedBranch->zone->cast<ModelObject>();
+      }
+      auto reservation = std::unique_ptr<DemandBranchStartReservation>(
+        new DemandBranchStartReservation(connector, connectorKind, connectorOrdinal, branchStartNode.cast<ModelObject>(), servedZone));
+      const auto currentTarget = reservation->connectorTarget();
+      if (!currentTarget || (*currentTarget != branchStartNode.cast<ModelObject>())) {
+        return nullptr;
+      }
+      return reservation;
     }
 
     std::unique_ptr<AirLoopHVAC_Impl::DemandBranchComponentLocation>
@@ -3092,9 +3250,43 @@ namespace epmodel {
         if (!resolvedComponent || (resolvedComponent->handle() != component.handle()) || result) {
           return nullptr;
         }
-        result = std::make_unique<DemandBranchComponentLocation>(branch.supply, *outletNode);
+        result = std::make_unique<DemandBranchComponentLocation>(branch.supply, *outletNode, branch.zone);
       }
       return result;
+    }
+
+    std::unique_ptr<AirLoopHVAC_Impl::DemandBranchStartReservation>
+      AirLoopHVAC_Impl::reserveDemandBranchStartBypass(const StraightComponent& component) const {
+      auto location = demandBranchComponentLocation(component);
+      const auto inletObject = component.inletModelObject();
+      const auto inletNode = inletObject ? inletObject->optionalCast<Node>() : boost::optional<Node>();
+      if (!location || !inletNode) {
+        return nullptr;
+      }
+
+      ModelObject connector = zoneSplitter().cast<ModelObject>();
+      auto connectorKind = DemandBranchStartReservation::ConnectorKind::ZoneSplitter;
+      auto connectorOrdinal = location->supply.splitterOrdinal;
+      if (location->supply.supplyPlenum) {
+        if (!location->supply.plenumOrdinal) {
+          return nullptr;
+        }
+        connector = location->supply.supplyPlenum->cast<ModelObject>();
+        connectorKind = DemandBranchStartReservation::ConnectorKind::SupplyPlenum;
+        connectorOrdinal = *location->supply.plenumOrdinal;
+      }
+
+      boost::optional<ModelObject> servedZone;
+      if (location->thermalZone) {
+        servedZone = location->thermalZone->cast<ModelObject>();
+      }
+      auto reservation = std::unique_ptr<DemandBranchStartReservation>(
+        new DemandBranchStartReservation(connector, connectorKind, connectorOrdinal, inletNode->cast<ModelObject>(), servedZone));
+      const auto currentTarget = reservation->connectorTarget();
+      if (!currentTarget || (*currentTarget != inletNode->cast<ModelObject>())) {
+        return nullptr;
+      }
+      return reservation;
     }
 
     bool AirLoopHVAC_Impl::isDemandBranchStartComponent(const StraightComponent& component) const {
@@ -3102,18 +3294,13 @@ namespace epmodel {
     }
 
     bool AirLoopHVAC_Impl::bypassDemandBranchStartComponent(const StraightComponent& component) {
-      auto location = demandBranchComponentLocation(component);
-      if (!location) {
+      auto reservation = reserveDemandBranchStartBypass(component);
+      const auto outletObject = component.outletModelObject();
+      const auto outletNode = outletObject ? outletObject->optionalCast<Node>() : boost::optional<Node>();
+      if (!reservation || !outletNode || !reservation->replaceWith(*outletNode)) {
         return false;
       }
-
-      if (location->supply.supplyPlenum) {
-        if (!location->supply.plenumOrdinal) {
-          return false;
-        }
-        return location->supply.supplyPlenum->setOutletModelObject(*location->supply.plenumOrdinal, location->outlet.cast<ModelObject>());
-      }
-      return zoneSplitter().setOutletModelObject(location->supply.splitterOrdinal, location->outlet.cast<ModelObject>());
+      return reservation->commit();
     }
 
     boost::optional<ModelObject> AirLoopHVAC_Impl::effectiveDemandBranchStartForZone(const ThermalZone& thermalZone) const {
@@ -3829,29 +4016,51 @@ namespace epmodel {
         if (failureStage != DemandBranchAttachmentFailureStage::None) {
           return false;
         }
-        // Removing an air terminal leaves the zone branch itself in place. If
-        // that surviving branch now runs directly from the splitter to one of
-        // this zone's inlet nodes, reuse it for the replacement terminal.
-        // A populated terminal branch has a transient terminal inlet at the
-        // splitter instead, so it will not match this condition.
+        // Removing an air terminal leaves the zone branch itself in place. A
+        // replacement may belong at a ZoneSplitter outlet or at a
+        // SupplyPlenum outlet, so prove the terminal-free effective endpoint
+        // instead of searching one raw connector.
         auto zoneConnections = thermalZone.getImpl<detail::ThermalZone_Impl>()->zoneHVACEquipmentConnections();
         if (!zoneConnections) {
           return false;
         }
         const auto zoneInletNodes = zoneConnections->zoneAirInletNodes();
-        const auto splitterOutlets = zoneSplitter().outletModelObjects();
-        for (const auto& splitterOutlet : splitterOutlets) {
-          auto splitterOutletNode = splitterOutlet.optionalCast<Node>();
-          if (splitterOutletNode && std::ranges::find(zoneInletNodes, *splitterOutletNode) != zoneInletNodes.end()) {
-            if (!airTerminal.addToNode(*splitterOutletNode)) {
-              return false;
+        if (isDualDuct()) {
+          // Dual-duct replacement owns a second supply splitter and remains a
+          // separate insertion transaction. Preserve its established primary
+          // splitter entry point here.
+          for (const auto& splitterOutlet : zoneSplitter().outletModelObjects()) {
+            auto splitterOutletNode = splitterOutlet.optionalCast<Node>();
+            if (splitterOutletNode && std::ranges::find(zoneInletNodes, *splitterOutletNode) != zoneInletNodes.end()) {
+              if (!airTerminal.addToNode(*splitterOutletNode)) {
+                return false;
+              }
+              syncControllerMechanicalVentilationZoneOutdoorAirEntries();
+              syncSetpointManagerMixedAirFanNodes();
+              return true;
             }
-            syncControllerMechanicalVentilationZoneOutdoorAirEntries();
-            syncSetpointManagerMixedAirFanNodes();
-            return true;
           }
+          return false;
         }
-        return false;
+
+        boost::optional<Node> terminalNode;
+        for (const auto& zoneInletNode : zoneInletNodes) {
+          auto branchReservation = reserveDemandBranchStart(zoneInletNode);
+          const auto servedZone = branchReservation ? branchReservation->thermalZone() : boost::none;
+          if (!servedZone || (*servedZone != thermalZone)) {
+            continue;
+          }
+          if (terminalNode) {
+            return false;
+          }
+          terminalNode = zoneInletNode;
+        }
+        if (!terminalNode || !airTerminal.addToNode(*terminalNode)) {
+          return false;
+        }
+        syncControllerMechanicalVentilationZoneOutdoorAirEntries();
+        syncSetpointManagerMixedAirFanNodes();
+        return true;
       }
 
       auto airLoop = getObject<AirLoopHVAC>();

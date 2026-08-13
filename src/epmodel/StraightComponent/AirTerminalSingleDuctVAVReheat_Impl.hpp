@@ -21,6 +21,12 @@ namespace epmodel {
     class EPMODEL_API AirTerminalSingleDuctVAVReheat_Impl : public StraightComponent_Impl
     {
      public:
+      enum class AddToNodeFailureStage
+      {
+        None,
+        AfterReheatCoilAirPathPrepared,
+      };
+
       using StraightComponent_Impl::StraightComponent_Impl;
       virtual ~AirTerminalSingleDuctVAVReheat_Impl() override = default;
 
@@ -31,6 +37,7 @@ namespace epmodel {
       bool removeFromLoop() override;
       boost::optional<ZoneHVACAirDistributionUnit> zoneHVACAirDistributionUnit() const;
       bool addToNode(Node& node) override;
+      bool addToNode(Node& node, AddToNodeFailureStage failureStage);
 
       HVACComponent reheatCoil() const;
       bool setReheatCoil(HVACComponent& coil);

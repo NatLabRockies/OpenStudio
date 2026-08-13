@@ -18,6 +18,12 @@ namespace epmodel {
     class EPMODEL_API AirTerminalSingleDuctConstantVolumeNoReheat_Impl : public StraightComponent_Impl
     {
      public:
+      enum class AddToNodeFailureStage
+      {
+        None,
+        AfterADUUpdateBeforeZoneRegistration,
+      };
+
       using StraightComponent_Impl::StraightComponent_Impl;
       virtual ~AirTerminalSingleDuctConstantVolumeNoReheat_Impl() override = default;
 
@@ -27,6 +33,7 @@ namespace epmodel {
       boost::optional<ZoneHVACAirDistributionUnit> zoneHVACAirDistributionUnit() const;
       bool removeFromLoop() override;
       bool addToNode(Node& node) override;
+      bool addToNode(Node& node, AddToNodeFailureStage failureStage);
 
       Schedule availabilitySchedule() const;
       bool setAvailabilitySchedule(Schedule& schedule);

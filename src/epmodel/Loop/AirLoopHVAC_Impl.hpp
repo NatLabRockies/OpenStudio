@@ -119,6 +119,51 @@ namespace epmodel {
         BeforeTerminalAttachment,
         AfterDualDuctTerminalPrepared,
       };
+      class DemandBranchStartReservation
+      {
+       public:
+        DemandBranchStartReservation(const DemandBranchStartReservation&) = delete;
+        DemandBranchStartReservation& operator=(const DemandBranchStartReservation&) = delete;
+        DemandBranchStartReservation(DemandBranchStartReservation&&) = delete;
+        DemandBranchStartReservation& operator=(DemandBranchStartReservation&&) = delete;
+        ~DemandBranchStartReservation();
+
+        boost::optional<openstudio::epmodel::ThermalZone> thermalZone() const;
+        bool replaceWith(const openstudio::epmodel::Node& node);
+        bool restore();
+        bool commit();
+
+       private:
+        friend class AirLoopHVAC_Impl;
+
+        enum class ConnectorKind
+        {
+          ZoneSplitter,
+          SupplyPlenum,
+        };
+
+        DemandBranchStartReservation(openstudio::epmodel::ModelObject connector, ConnectorKind connectorKind, unsigned connectorOrdinal,
+                                     openstudio::epmodel::ModelObject originalTarget, boost::optional<openstudio::epmodel::ModelObject> thermalZone);
+        enum class State
+        {
+          Prepared,
+          RewireAttempted,
+          Rewired,
+          Restored,
+          Committed,
+        };
+
+        bool setConnectorTarget(const openstudio::epmodel::ModelObject& target);
+        boost::optional<openstudio::epmodel::ModelObject> connectorTarget() const;
+
+        State m_state = State::Prepared;
+        openstudio::epmodel::ModelObject m_connector;
+        ConnectorKind m_connectorKind;
+        unsigned m_connectorOrdinal;
+        openstudio::epmodel::ModelObject m_originalTarget;
+        boost::optional<openstudio::epmodel::ModelObject> m_replacementTarget;
+        boost::optional<openstudio::epmodel::ModelObject> m_thermalZone;
+      };
       bool addBranchForZone(openstudio::epmodel::ThermalZone& thermalZone);
       bool addBranchForZone(openstudio::epmodel::ThermalZone& thermalZone, DualDuctZoneAttachmentFailureStage failureStage);
       bool addBranchForZone(openstudio::epmodel::ThermalZone& thermalZone, DemandBranchAttachmentFailureStage failureStage);
@@ -129,6 +174,8 @@ namespace epmodel {
       bool addBranchForHVACComponent(openstudio::epmodel::HVACComponent& hvacComponent, DemandBranchAttachmentFailureStage failureStage);
       bool removeBranchForZone(openstudio::epmodel::ThermalZone& thermalZone);
       boost::optional<openstudio::epmodel::Node> effectiveDemandReturnNodeForBranchStart(const openstudio::epmodel::Node& branchStartNode) const;
+      std::unique_ptr<DemandBranchStartReservation> reserveDemandBranchStart(const openstudio::epmodel::Node& branchStartNode) const;
+      std::unique_ptr<DemandBranchStartReservation> reserveDemandBranchStartBypass(const openstudio::epmodel::StraightComponent& component) const;
       bool isDemandBranchStartComponent(const openstudio::epmodel::StraightComponent& component) const;
       bool bypassDemandBranchStartComponent(const openstudio::epmodel::StraightComponent& component);
       void syncControllerMechanicalVentilationZoneOutdoorAirEntries();
