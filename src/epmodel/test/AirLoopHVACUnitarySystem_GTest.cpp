@@ -7,12 +7,20 @@
 
 #include "EPModelFixture.hpp"
 #include "../HVACComponent/ThermalZone.hpp"
+#include "../HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
+#include "../AirToAirComponent/HeatExchangerDesiccantBalancedFlow.hpp"
+#include "../AirToAirComponent/HeatExchangerDesiccantBalancedFlow_Impl.hpp"
+#include "../ResourceObject/HeatExchangerDesiccantBalancedFlowPerformanceDataType1.hpp"
+#include "../ResourceObject/HeatExchangerDesiccantBalancedFlowPerformanceDataType1_Impl.hpp"
 #include "../Loop/AirLoopHVAC.hpp"
 #include "../Loop/AirLoopHVAC_Impl.hpp"
 #include "../Loop/PlantLoop.hpp"
+#include "../ParentObject/ControllerOutdoorAir.hpp"
 #include "../Schedule/ScheduleConstant.hpp"
 #include "../StraightComponent/CoilCoolingDXSingleSpeed.hpp"
 #include "../StraightComponent/CoilCoolingDXSingleSpeed_Impl.hpp"
+#include "../StraightComponent/CoilSystemCoolingDXHeatExchangerAssisted.hpp"
+#include "../StraightComponent/CoilSystemCoolingDXHeatExchangerAssisted_Impl.hpp"
 #include "../StraightComponent/CoilHeatingElectric.hpp"
 #include "../StraightComponent/CoilHeatingElectric_Impl.hpp"
 #include "../StraightComponent/FanConstantVolume.hpp"
@@ -20,6 +28,9 @@
 #include "../StraightComponent/Node.hpp"
 #include "../ZoneHVACComponent/AirLoopHVACUnitarySystem.hpp"
 #include "../ZoneHVACComponent/AirLoopHVACUnitarySystem_Impl.hpp"
+
+#include <utilities/idd/AirLoopHVAC_UnitarySystem_FieldEnums.hxx>
+#include <utilities/idd/Controller_OutdoorAir_FieldEnums.hxx>
 
 using namespace openstudio::epmodel;
 
@@ -555,4 +566,134 @@ TEST_F(EPModelFixture, AirLoopHVACUnitarySystem_CanonicalizeRepairsContainedNode
   EXPECT_EQ(*expectedCoolingOutlet, *unitary.coolingCoilOutletNode());
   EXPECT_EQ(*expectedHeatingOutlet, *unitary.heatingCoilOutletNode());
   EXPECT_EQ(*expectedFanOutlet, *unitary.fanOutletNode());
+}
+
+TEST_F(EPModelFixture, AirLoopHVACUnitarySystem_AssistedDXCoolingPath) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  AirLoopHVACOutdoorAirSystem outdoorAirSystem(model);
+  HeatExchangerDesiccantBalancedFlow heatExchanger(model);
+  CoilSystemCoolingDXHeatExchangerAssisted coilSystem(model, heatExchanger);
+  auto coolingCoil = coilSystem.coolingCoil();
+  AirLoopHVACUnitarySystem unitary(model);
+
+  ASSERT_TRUE(coilSystem.setName("Unitary Assisted DX"));
+  ASSERT_TRUE(unitary.setName("Unitary with Assisted DX"));
+  ASSERT_TRUE(unitary.setCoolingCoil(coilSystem));
+  EXPECT_EQ("CoilSystem:Cooling:DX:HeatExchangerAssisted",
+            unitary.getString(openstudio::AirLoopHVAC_UnitarySystemFields::CoolingCoilObjectType).get());
+
+  ASSERT_TRUE(unitary.inletNode());
+  ASSERT_TRUE(unitary.outletNode());
+  ASSERT_TRUE(coilSystem.inletModelObject());
+  ASSERT_TRUE(coilSystem.outletModelObject());
+  ASSERT_TRUE(heatExchanger.primaryAirInletModelObject());
+  ASSERT_TRUE(heatExchanger.primaryAirOutletModelObject());
+  ASSERT_TRUE(heatExchanger.secondaryAirInletModelObject());
+  ASSERT_TRUE(heatExchanger.secondaryAirOutletModelObject());
+  ASSERT_TRUE(coolingCoil.inletModelObject());
+  ASSERT_TRUE(coolingCoil.outletModelObject());
+  EXPECT_EQ(unitary.inletNode()->handle(), heatExchanger.primaryAirInletModelObject()->handle());
+  EXPECT_EQ(heatExchanger.primaryAirOutletModelObject()->handle(), coolingCoil.inletModelObject()->handle());
+  EXPECT_EQ(coolingCoil.outletModelObject()->handle(), heatExchanger.secondaryAirInletModelObject()->handle());
+  EXPECT_EQ(heatExchanger.secondaryAirOutletModelObject()->handle(), unitary.outletNode()->handle());
+  EXPECT_EQ(coilSystem.inletModelObject()->handle(), unitary.inletNode()->handle());
+  EXPECT_EQ(coilSystem.outletModelObject()->handle(), unitary.outletNode()->handle());
+  ASSERT_TRUE(unitary.coolingCoilOutletNode());
+  EXPECT_EQ(unitary.outletNode()->handle(), unitary.coolingCoilOutletNode()->handle());
+
+  ASSERT_TRUE(coilSystem.containingHVACComponent());
+  EXPECT_EQ(unitary.handle(), coilSystem.containingHVACComponent()->handle());
+  ASSERT_TRUE(heatExchanger.containingHVACComponent());
+  EXPECT_EQ(coilSystem.handle(), heatExchanger.containingHVACComponent()->handle());
+  ASSERT_TRUE(coolingCoil.containingHVACComponent());
+  EXPECT_EQ(coilSystem.handle(), coolingCoil.containingHVACComponent()->handle());
+
+  AirLoopHVACUnitarySystem competingUnitary(model);
+  EXPECT_FALSE(competingUnitary.setCoolingCoil(coilSystem));
+  EXPECT_FALSE(competingUnitary.coolingCoil());
+  EXPECT_EQ(coilSystem.handle(), unitary.coolingCoil()->handle());
+  Model foreignModel;
+  CoilSystemCoolingDXHeatExchangerAssisted foreignCoilSystem(foreignModel);
+  EXPECT_FALSE(unitary.setCoolingCoil(foreignCoilSystem));
+  EXPECT_EQ(coilSystem.handle(), unitary.coolingCoil()->handle());
+
+  auto supplyOutlet = airLoop.supplyOutletNode();
+  ASSERT_TRUE(outdoorAirSystem.addToNode(supplyOutlet));
+  supplyOutlet = airLoop.supplyOutletNode();
+  ASSERT_TRUE(unitary.addToNode(supplyOutlet));
+  ASSERT_TRUE(outdoorAirSystem.mixedAirModelObject());
+  const auto controllerMixedAirNode = outdoorAirSystem.getControllerOutdoorAir().getTarget(openstudio::Controller_OutdoorAirFields::MixedAirNodeName);
+  ASSERT_TRUE(controllerMixedAirNode);
+  EXPECT_EQ(unitary.inletNode()->handle(), outdoorAirSystem.mixedAirModelObject()->handle());
+  EXPECT_EQ(unitary.inletNode()->handle(), controllerMixedAirNode->handle());
+  EXPECT_EQ(unitary.inletNode()->handle(), heatExchanger.primaryAirInletModelObject()->handle());
+  EXPECT_EQ(heatExchanger.secondaryAirOutletModelObject()->handle(), unitary.outletNode()->handle());
+
+  unitary.resetCoolingCoil();
+  EXPECT_FALSE(coilSystem.containingHVACComponent());
+  EXPECT_FALSE(coilSystem.inletModelObject());
+  EXPECT_FALSE(coilSystem.outletModelObject());
+  EXPECT_FALSE(heatExchanger.primaryAirOutletModelObject());
+  EXPECT_FALSE(heatExchanger.secondaryAirInletModelObject());
+  EXPECT_FALSE(coolingCoil.inletModelObject());
+  EXPECT_FALSE(coolingCoil.outletModelObject());
+}
+
+TEST_F(EPModelFixture, AirLoopHVACUnitarySystem_AssistedDXSurvivesReloadAndRemoval) {
+  const auto idfPath = openstudio::tempDir() / openstudio::toPath("epmodel-unitary-assisted-dx-roundtrip.idf");
+
+  Model model;
+  AirLoopHVAC airLoop(model);
+  HeatExchangerDesiccantBalancedFlow heatExchanger(model);
+  auto performance = heatExchanger.heatExchangerPerformance();
+  CoilSystemCoolingDXHeatExchangerAssisted coilSystem(model, heatExchanger);
+  auto coolingCoil = coilSystem.coolingCoil().cast<CoilCoolingDXSingleSpeed>();
+  AirLoopHVACUnitarySystem unitary(model);
+
+  ASSERT_TRUE(airLoop.setName("Assisted DX Air Loop"));
+  ASSERT_TRUE(heatExchanger.setName("Assisted DX Heat Exchanger"));
+  ASSERT_TRUE(performance.setName("Assisted DX Performance"));
+  ASSERT_TRUE(coilSystem.setName("Assisted DX Coil System"));
+  ASSERT_TRUE(coolingCoil.setName("Assisted DX Cooling Coil"));
+  ASSERT_TRUE(unitary.setName("Assisted DX Unitary"));
+  ASSERT_TRUE(unitary.setCoolingCoil(coilSystem));
+  auto supplyOutlet = airLoop.supplyOutletNode();
+  ASSERT_TRUE(unitary.addToNode(supplyOutlet));
+  ASSERT_TRUE(model.save(idfPath, true));
+
+  auto loadedModel = Model::load(idfPath);
+  ASSERT_TRUE(loadedModel);
+  auto loadedAirLoop = loadedModel->getConcreteModelObjectByName<AirLoopHVAC>("Assisted DX Air Loop");
+  auto loadedHeatExchanger = loadedModel->getConcreteModelObjectByName<HeatExchangerDesiccantBalancedFlow>("Assisted DX Heat Exchanger");
+  auto loadedCoilSystem = loadedModel->getConcreteModelObjectByName<CoilSystemCoolingDXHeatExchangerAssisted>("Assisted DX Coil System");
+  auto loadedCoolingCoil = loadedModel->getConcreteModelObjectByName<CoilCoolingDXSingleSpeed>("Assisted DX Cooling Coil");
+  auto loadedUnitary = loadedModel->getConcreteModelObjectByName<AirLoopHVACUnitarySystem>("Assisted DX Unitary");
+  ASSERT_TRUE(loadedAirLoop);
+  ASSERT_TRUE(loadedHeatExchanger);
+  ASSERT_TRUE(loadedCoilSystem);
+  ASSERT_TRUE(loadedCoolingCoil);
+  ASSERT_TRUE(loadedUnitary);
+
+  ASSERT_TRUE(loadedCoilSystem->inletModelObject());
+  ASSERT_TRUE(loadedCoilSystem->outletModelObject());
+  ASSERT_TRUE(loadedUnitary->inletNode());
+  ASSERT_TRUE(loadedUnitary->outletNode());
+  EXPECT_EQ(loadedUnitary->inletNode()->handle(), loadedCoilSystem->inletModelObject()->handle());
+  EXPECT_EQ(loadedUnitary->outletNode()->handle(), loadedCoilSystem->outletModelObject()->handle());
+  ASSERT_TRUE(loadedHeatExchanger->primaryAirOutletModelObject());
+  ASSERT_TRUE(loadedHeatExchanger->secondaryAirInletModelObject());
+  ASSERT_TRUE(loadedCoolingCoil->inletModelObject());
+  ASSERT_TRUE(loadedCoolingCoil->outletModelObject());
+  EXPECT_EQ(loadedHeatExchanger->primaryAirOutletModelObject()->handle(), loadedCoolingCoil->inletModelObject()->handle());
+  EXPECT_EQ(loadedCoolingCoil->outletModelObject()->handle(), loadedHeatExchanger->secondaryAirInletModelObject()->handle());
+
+  EXPECT_FALSE(loadedUnitary->remove().empty());
+  EXPECT_TRUE(loadedModel->getConcreteModelObjects<AirLoopHVACUnitarySystem>().empty());
+  EXPECT_TRUE(loadedModel->getConcreteModelObjects<CoilSystemCoolingDXHeatExchangerAssisted>().empty());
+  EXPECT_TRUE(loadedModel->getConcreteModelObjects<HeatExchangerDesiccantBalancedFlow>().empty());
+  EXPECT_TRUE(loadedModel->getConcreteModelObjects<HeatExchangerDesiccantBalancedFlowPerformanceDataType1>().empty());
+  EXPECT_TRUE(loadedModel->getConcreteModelObjects<CoilCoolingDXSingleSpeed>().empty());
+
+  openstudio::filesystem::remove(idfPath);
 }

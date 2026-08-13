@@ -49,11 +49,13 @@ namespace epmodel {
     static std::vector<std::string> supplyAirFlowRateMethodWhenNoCoolingorHeatingisRequiredValues();
 
     // Schema Alignment Notes:
-    // - Status: Partial Parity. The unitary-system scalar fields and direct object-link fields are aligned, and the owned internal air path is now maintained through parent-owned epmodel nodes.
+    // - Status: Near Parity for selected air-loop workloads. Scalar fields and direct object links are aligned, and the owned internal air
+    //   path is maintained through parent-owned epmodel nodes.
     // - Canonical Counterpart: openstudio::model::AirLoopHVACUnitarySystem.
     // - Implemented Parity: Controlling-zone, schedule, fan, heating/cooling/supplemental-heating coil, and the control/airflow scalar
-    //   fields preserve the main canonical wrapper contract. The owned fan/cooling/heating/supplemental chain now shares a stable
-    //   parent-maintained air path, with direct access to the meaningful outlet node roles on the compound.
+    //   fields preserve the main canonical wrapper contract. The owned fan/cooling/heating/supplemental chain shares a stable
+    //   parent-maintained air path, including the selected assisted DX/heat-exchanger cooling assembly, with direct access to the
+    //   meaningful outlet node roles on the compound.
     // - Documented Delta: `fanOutletNode()`, `coolingCoilOutletNode()`, and `heatingCoilOutletNode()` are additive epmodel conveniences for
     //   the owned serial air path. Broader node-level topology convenience and deeper child-family validation remain intentionally omitted.
     // - Field/Storage Mapping: Scalar values live directly on the EnergyPlus object while schedules, fan, coil, and internal-node

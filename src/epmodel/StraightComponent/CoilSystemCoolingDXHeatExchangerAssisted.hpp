@@ -41,18 +41,23 @@ namespace epmodel {
     static std::vector<std::string> coolingCoilObjectTypeValues();
 
     // Schema Alignment Notes:
-    // - Status: Partial Parity. The canonical child-object relationships and constructor defaults are now present, while standalone branch
-    //   insertion remains intentionally rejected and broader model-owned topology helpers remain out of scope.
+    // - Status: Near Parity for the selected unitary-system workload. The canonical child-object relationships, constructor defaults,
+    //   ownership lifecycle, and contained air path are present, while standalone branch insertion remains intentionally rejected.
     // - Canonical Counterpart: openstudio::model::CoilSystemCoolingDXHeatExchangerAssisted.
-    // - Implemented Parity: The default constructors, `heatExchanger`, `coolingCoil`, their relationship setters, child traversal, and
-    //   standalone `addToNode(...)` rejection preserve the bounded canonical slice for the assisted DX coil-system wrapper.
-    // - Documented Delta: Heat-exchanger name, cooling-coil name, and broader model-owned topology helpers from canonical
-    //   `openstudio::model::CoilSystemCoolingDXHeatExchangerAssisted` are not exposed yet.
-    // - Field/Storage Mapping: Relationship targets map directly to the EnergyPlus heat-exchanger and cooling-coil name fields, while the
-    //   object-type choices are synchronized from the linked targets' IDD object names.
-    // - Evidence: `src/model/CoilSystemCoolingDXHeatExchangerAssisted.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateCoilSystemCoolingDXHeatExchangerAssisted.cpp`, and `src/epmodel/test/CoilSystemCoolingDXHeatExchangerAssisted_GTest.cpp`.
-    // - Remaining Parity Work: Add the omitted name conveniences and any broader model-owned topology helpers without changing the preserved
-    //   relationship signatures.
+    // - Implemented Parity: The constructors, `heatExchanger`, `coolingCoil`, atomic relationship setters, child traversal, recursive
+    //   removal, and standalone `addToNode(...)` rejection preserve the bounded canonical slice. When owned by an
+    //   `AirLoopHVACUnitarySystem`, the heat-exchanger inlet, first-pass outlet, DX coil, second-pass inlet, and heat-exchanger outlet form
+    //   one persisted air path.
+    // - Documented Delta: EnergyPlus gives the wrapper no direct node fields, so `inletPort()` and `outletPort()` remain zero while the
+    //   inherited model-object getters resolve the heat exchanger's boundary nodes. Broader supported-parent coverage is not claimed.
+    // - Field/Storage Mapping: Relationship targets map directly to the EnergyPlus heat-exchanger and cooling-coil name fields and their
+    //   synchronized object types. Boundary and connector nodes live on the linked heat exchanger and DX coil.
+    // - Evidence: `src/model/CoilSystemCoolingDXHeatExchangerAssisted.hpp`,
+    //   `src/energyplus/ForwardTranslator/ForwardTranslateCoilSystemCoolingDXHeatExchangerAssisted.cpp`,
+    //   `src/epmodel/test/CoilSystemCoolingDXHeatExchangerAssisted_GTest.cpp`, and
+    //   `src/epmodel/test/AirLoopHVACUnitarySystem_GTest.cpp`.
+    // - Remaining Parity Work: Prove other canonical parent families only when a representative workflow requires them; do not generalize
+    //   this selected containment contract into recursive topology by inference.
 
     AirToAirComponent heatExchanger() const;
     bool setHeatExchanger(const AirToAirComponent& heatExchanger);
