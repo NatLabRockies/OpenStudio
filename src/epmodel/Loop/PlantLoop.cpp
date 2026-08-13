@@ -39,8 +39,6 @@
 #include "WaterToAirComponent/CoilCoolingWater_Impl.hpp"
 #include "WaterToAirComponent/CoilHeatingWater.hpp"
 #include "WaterToAirComponent/CoilHeatingWater_Impl.hpp"
-#include "WaterToAirComponent/CoilUserDefined.hpp"
-#include "WaterToAirComponent/CoilUserDefined_Impl.hpp"
 #include "StraightComponent/StraightComponent.hpp"
 #include "StraightComponent/CompoundTerminalTopologyInspection.hpp"
 #include "StraightComponent/CoilCoolingLowTempRadiantConstFlow.hpp"
@@ -2181,20 +2179,11 @@ namespace epmodel {
       if (hvacComponent.model() != model()) {
         return false;
       }
-      if (!hvacComponent.optionalCast<StraightComponent>() && !hvacComponent.optionalCast<CoilHeatingWater>()
-          && !hvacComponent.optionalCast<CoilCoolingWater>() && !hvacComponent.optionalCast<CoilUserDefined>()
-          && !hvacComponent.optionalCast<WaterToWaterComponent>()) {
+      const auto waterToAir = hvacComponent.optionalCast<WaterToAirComponent>();
+      if (!hvacComponent.optionalCast<StraightComponent>() && !waterToAir && !hvacComponent.optionalCast<WaterToWaterComponent>()) {
         return false;
       }
-      if (auto waterToAir = hvacComponent.optionalCast<CoilHeatingWater>()) {
-        if (tertiary || waterToAir->plantLoop()) {
-          return false;
-        }
-      } else if (auto waterToAir = hvacComponent.optionalCast<CoilCoolingWater>()) {
-        if (tertiary || waterToAir->plantLoop()) {
-          return false;
-        }
-      } else if (auto waterToAir = hvacComponent.optionalCast<CoilUserDefined>()) {
+      if (waterToAir) {
         if (tertiary || waterToAir->plantLoop()) {
           return false;
         }
@@ -2422,10 +2411,6 @@ namespace epmodel {
 
     std::unique_ptr<PlantLoop_Impl::WaterCoilDemandBranchRemovalPlan>
       PlantLoop_Impl::prepareWaterCoilDemandBranchRemoval(const WaterToAirComponent& coil) {
-      const auto coilType = coil.iddObject().type();
-      if (coilType != CoilHeatingWater::iddObjectType() && coilType != CoilCoolingWater::iddObjectType()) {
-        return nullptr;
-      }
       return prepareDemandBranchRemoval(coil, coil.waterInletPort(), coil.waterOutletPort(), true);
     }
 
@@ -2445,8 +2430,8 @@ namespace epmodel {
     }
 
     bool PlantLoop_Impl::removeDemandBranchWithComponent(HVACComponent hvacComponent) {
-      if (auto heatingWaterCoil = hvacComponent.optionalCast<CoilHeatingWater>()) {
-        auto plan = prepareCoilHeatingWaterDemandBranchRemoval(*heatingWaterCoil);
+      if (auto waterToAir = hvacComponent.optionalCast<WaterToAirComponent>()) {
+        auto plan = prepareWaterCoilDemandBranchRemoval(*waterToAir);
         if (!plan) {
           return false;
         }
@@ -2520,7 +2505,7 @@ namespace epmodel {
           // calling removeFromLoop() through disconnect().
           component.setPointer(straightComponent->inletPort(), Handle());
           component.setPointer(straightComponent->outletPort(), Handle());
-        } else if (auto waterToAir = component.optionalCast<CoilCoolingWater>()) {
+        } else if (auto waterToAir = component.optionalCast<WaterToAirComponent>()) {
           if (!waterToAir->removeFromPlantLoop()) {
             return false;
           }

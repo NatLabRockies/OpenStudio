@@ -38,6 +38,10 @@ TEST_F(EPModelFixture, CoilHeatingWaterToAirHeatPumpEquationFit_DefaultConstruct
   EXPECT_FALSE(coil.airOutletModelObject());
   EXPECT_FALSE(coil.waterInletModelObject());
   EXPECT_FALSE(coil.waterOutletModelObject());
+  EXPECT_TRUE(coil.isRatedAirFlowRateAutosized());
+  EXPECT_TRUE(coil.isRatedWaterFlowRateAutosized());
+  EXPECT_TRUE(coil.isRatedHeatingCapacityAutosized());
+  EXPECT_DOUBLE_EQ(3.0, coil.ratedHeatingCoefficientofPerformance());
 
   EXPECT_EQ(model.alwaysOnDiscreteSchedule(), coil.availabilitySchedule());
   auto heatingCapacityCurve = coil.heatingCapacityCurve().cast<CurveQuadLinear>();
@@ -177,7 +181,7 @@ TEST_F(EPModelFixture, CoilHeatingWaterToAirHeatPumpEquationFit_ScalarAccessors_
   EXPECT_TRUE(coil.isRatedHeatingCapacityDefaulted());
   EXPECT_FALSE(coil.autosizedRatedHeatingCapacity());
 
-  EXPECT_TRUE(coil.isRatedHeatingCoefficientofPerformanceDefaulted());
+  EXPECT_FALSE(coil.isRatedHeatingCoefficientofPerformanceDefaulted());
   EXPECT_TRUE(coil.setRatedHeatingCoefficientofPerformance(4.5));
   EXPECT_DOUBLE_EQ(4.5, coil.ratedHeatingCoefficientofPerformance());
   EXPECT_FALSE(coil.isRatedHeatingCoefficientofPerformanceDefaulted());

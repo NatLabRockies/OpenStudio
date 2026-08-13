@@ -138,6 +138,7 @@ namespace epmodel {
 
       bool addToThermalZone(ThermalZone& thermalZone) override;
       void removeFromThermalZone() override;
+      std::vector<IdfObject> remove() override;
       void doCanonicalize(LoadContext& context) override;
 
       double dXHeatingCoilSizingRatio() const;

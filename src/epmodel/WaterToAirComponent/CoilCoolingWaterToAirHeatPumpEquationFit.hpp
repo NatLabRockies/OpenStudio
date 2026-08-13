@@ -45,8 +45,8 @@ namespace epmodel {
     //   surface is preserved here.
     // - Canonical Counterpart: openstudio::model::CoilCoolingWaterToAirHeatPumpEquationFit.
     // - Implemented Parity: `availabilitySchedule`, the three required curve relationships, `partLoadFractionCorrelationCurve`, the canonical
-    //   constructors, the deprecated coefficient aliases that delegate through the stored curves, the scalar fit fields, and the autosized-value
-    //   query helpers preserve the canonical public contract.
+    //   constructors, the deprecated coefficient aliases that delegate through the stored curves, the scalar fit fields, the constructor's
+    //   autosized rating fields and 3.0 COP default, and the autosized-value query helpers preserve the canonical public contract.
     // - Implemented Parity: the canonical equivalent-duct helper surface lands on epmodel's
     //   `AirflowNetworkDistributionComponentCoil`, which is the EnergyPlus object written by the
     //   model-side `AirflowNetworkEquivalentDuct` translator path for coils.

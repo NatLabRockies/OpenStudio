@@ -85,51 +85,6 @@ namespace epmodel {
       return component.getImpl<detail::ModelObject_Impl>()->resolvedNodeTarget(outletPort);
     }
 
-    OutdoorAirMixer getOrCreateOwnedOutdoorAirMixer(ModelObject& owner, unsigned fieldIndex, const std::string& preferredName) {
-      if (auto existing = owner.getModelObjectTarget<OutdoorAirMixer>(fieldIndex)) {
-        return *existing;
-      }
-
-      auto currentName = owner.getString(fieldIndex, true);
-      if (currentName && !currentName->empty()) {
-        if (auto existing = owner.model().getConcreteModelObjectByName<OutdoorAirMixer>(*currentName)) {
-          return *existing;
-        }
-      }
-
-      if (!preferredName.empty()) {
-        if (auto existing = owner.model().getConcreteModelObjectByName<OutdoorAirMixer>(preferredName)) {
-          return *existing;
-        }
-      }
-
-      OutdoorAirMixer created(owner.model());
-      if (!preferredName.empty() && !created.setName(preferredName)) {
-        OS_ASSERT(created.setName(owner.model().nextName(OutdoorAirMixer::iddObjectType(), true)));
-      }
-      return created;
-    }
-
-    bool clearOwnedOutdoorAirMixer(ModelObject& owner, unsigned fieldIndex) {
-      auto current = owner.getModelObjectTarget<OutdoorAirMixer>(fieldIndex);
-      bool ownerIsOnlySource = false;
-      if (current) {
-        ownerIsOnlySource = true;
-        for (const auto& source : current->sources()) {
-          if (source.handle() != owner.handle()) {
-            ownerIsOnlySource = false;
-            break;
-          }
-        }
-      }
-
-      bool changed = owner.getImpl<detail::ModelObject_Impl>()->setPointer(fieldIndex, Handle(), false);
-      if (current && ownerIsOnlySource && !current->remove().empty()) {
-        changed = true;
-      }
-      return changed;
-    }
-
   }  // namespace
 
   ZoneHVACWaterToAirHeatPump::ZoneHVACWaterToAirHeatPump(const Model& model) : ZoneHVACComponent(ZoneHVACWaterToAirHeatPump::iddObjectType(), model) {
@@ -534,6 +489,14 @@ namespace epmodel {
       maintainContainedAirPath();
     }
 
+    std::vector<IdfObject> ZoneHVACWaterToAirHeatPump_Impl::remove() {
+      ZoneHVACComponent_Impl::removeFromThermalZone();
+      const auto baseName = getObject<ModelObject>().nameString();
+      reconcileOwnedOutdoorAirMixer(ZoneHVAC_WaterToAirHeatPumpFields::OutdoorAirMixerObjectType,
+                                    ZoneHVAC_WaterToAirHeatPumpFields::OutdoorAirMixerName, boost::none, boost::none, baseName);
+      return HVACComponent_Impl::remove();
+    }
+
     void ZoneHVACWaterToAirHeatPump_Impl::doCanonicalize(LoadContext& context) {
       repairContainedAirPath(context);
     }
@@ -877,29 +840,15 @@ namespace epmodel {
           sourceNode = model().getOrCreateTransientByName<Node>(baseName + " Mixed Air Node");
         }
 
-        outdoorAirMixer = getOrCreateOwnedOutdoorAirMixer(thisObject, ZoneHVAC_WaterToAirHeatPumpFields::OutdoorAirMixerName, baseName + " OA Mixer");
-        changed = setPointer(ZoneHVAC_WaterToAirHeatPumpFields::OutdoorAirMixerName, outdoorAirMixer->handle()) || changed;
-
-        const auto currentMixerType = thisObject.getString(ZoneHVAC_WaterToAirHeatPumpFields::OutdoorAirMixerObjectType, true);
-        const std::string expectedMixerType = outdoorAirMixer->iddObject().name();
-        if (!currentMixerType || !openstudio::istringEqual(*currentMixerType, expectedMixerType)) {
-          OS_ASSERT(thisObject.setString(ZoneHVAC_WaterToAirHeatPumpFields::OutdoorAirMixerObjectType, expectedMixerType));
-          changed = true;
-        }
-
-        auto outdoorAirNode = model().getOrCreateTransientByName<Node>(baseName + " OA Node");
-        auto reliefAirNode = model().getOrCreateTransientByName<Node>(baseName + " Relief Air Node");
-        changed = outdoorAirMixer->setPointer(OutdoorAir_MixerFields::MixedAirNodeName, sourceNode->handle()) || changed;
-        changed = outdoorAirMixer->setPointer(OutdoorAir_MixerFields::OutdoorAirStreamNodeName, outdoorAirNode.handle()) || changed;
-        changed = outdoorAirMixer->setPointer(OutdoorAir_MixerFields::ReliefAirStreamNodeName, reliefAirNode.handle()) || changed;
-        changed = outdoorAirMixer->setPointer(OutdoorAir_MixerFields::ReturnAirStreamNodeName, inletNode.handle()) || changed;
+        changed = reconcileOwnedOutdoorAirMixer(ZoneHVAC_WaterToAirHeatPumpFields::OutdoorAirMixerObjectType,
+                                                ZoneHVAC_WaterToAirHeatPumpFields::OutdoorAirMixerName, sourceNode, inletNode, baseName)
+                  || changed;
+        outdoorAirMixer = thisObject.getModelObjectTarget<OutdoorAirMixer>(ZoneHVAC_WaterToAirHeatPumpFields::OutdoorAirMixerName);
+        OS_ASSERT(outdoorAirMixer);
       } else {
-        const auto currentMixerType = thisObject.getString(ZoneHVAC_WaterToAirHeatPumpFields::OutdoorAirMixerObjectType, true);
-        if (currentMixerType && !currentMixerType->empty()) {
-          OS_ASSERT(thisObject.setString(ZoneHVAC_WaterToAirHeatPumpFields::OutdoorAirMixerObjectType, ""));
-          changed = true;
-        }
-        changed = clearOwnedOutdoorAirMixer(thisObject, ZoneHVAC_WaterToAirHeatPumpFields::OutdoorAirMixerName) || changed;
+        changed = reconcileOwnedOutdoorAirMixer(ZoneHVAC_WaterToAirHeatPumpFields::OutdoorAirMixerObjectType,
+                                                ZoneHVAC_WaterToAirHeatPumpFields::OutdoorAirMixerName, boost::none, boost::none, baseName)
+                  || changed;
       }
 
       std::vector<HVACComponent> orderedComponents;
