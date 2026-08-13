@@ -315,11 +315,36 @@ namespace epmodel {
     }
 
     bool ZoneHVACEquipmentConnections_Impl::addZoneAirExhaustNode(const openstudio::epmodel::Node& node) {
+      if (!hasExclusiveZoneAirExhaustNodeStorage()) {
+        return false;
+      }
       return addNodeToField(zoneAirExhaustNodes(), node, [this](const auto& nodes) { return setZoneAirExhaustNodes(nodes); });
     }
 
     bool ZoneHVACEquipmentConnections_Impl::removeZoneAirExhaustNode(const openstudio::epmodel::Node& node) {
+      if (!hasExclusiveZoneAirExhaustNodeStorage()) {
+        return false;
+      }
       return removeNodeFromField(zoneAirExhaustNodes(), node, [this](const auto& nodes) { return setZoneAirExhaustNodes(nodes); });
+    }
+
+    bool ZoneHVACEquipmentConnections_Impl::hasExclusiveZoneAirExhaustNodeStorage() const {
+      const auto connections = getObject<openstudio::epmodel::ZoneHVACEquipmentConnections>();
+      constexpr unsigned field = openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneAirExhaustNodeorNodeListName;
+      const auto target = connections.getTarget(field);
+      if (!target || !target->optionalCast<openstudio::epmodel::NodeList>()) {
+        return true;
+      }
+
+      std::size_t referenceCount = 0u;
+      bool foundExpectedReference = false;
+      for (const auto& source : target->sources()) {
+        for (const auto sourceField : source.getSourceIndices(target->handle())) {
+          ++referenceCount;
+          foundExpectedReference = foundExpectedReference || ((source.handle() == connections.handle()) && (sourceField == field));
+        }
+      }
+      return foundExpectedReference && (referenceCount == 1u);
     }
 
     bool ZoneHVACEquipmentConnections_Impl::setZoneAirExhaustNodes(const std::vector<openstudio::epmodel::Node>& nodes) {

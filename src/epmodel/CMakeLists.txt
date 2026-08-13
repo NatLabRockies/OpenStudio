@@ -1037,9 +1037,9 @@ set(${target_name}_src
   scaffolds/AirflowNetworkZoneControlPressureController.hpp
   scaffolds/AirflowNetworkZoneControlPressureController_Impl.hpp
   scaffolds/AirflowNetworkZoneControlPressureController.cpp
-  scaffolds/AirLoopHVACExhaustSystem.hpp
-  scaffolds/AirLoopHVACExhaustSystem_Impl.hpp
-  scaffolds/AirLoopHVACExhaustSystem.cpp
+  ModelObject/AirLoopHVACExhaustSystem.hpp
+  ModelObject/AirLoopHVACExhaustSystem_Impl.hpp
+  ModelObject/AirLoopHVACExhaustSystem.cpp
   scaffolds/AirLoopHVACUnitaryFurnaceHeatCool.hpp
   scaffolds/AirLoopHVACUnitaryFurnaceHeatCool_Impl.hpp
   scaffolds/AirLoopHVACUnitaryFurnaceHeatCool.cpp
@@ -1997,9 +1997,9 @@ set(${target_name}_src
   scaffolds/ZoneHVACBaseboardRadiantConvectiveSteamDesign.hpp
   scaffolds/ZoneHVACBaseboardRadiantConvectiveSteamDesign_Impl.hpp
   scaffolds/ZoneHVACBaseboardRadiantConvectiveSteamDesign.cpp
-  scaffolds/ZoneHVACExhaustControl.hpp
-  scaffolds/ZoneHVACExhaustControl_Impl.hpp
-  scaffolds/ZoneHVACExhaustControl.cpp
+  ModelObject/ZoneHVACExhaustControl.hpp
+  ModelObject/ZoneHVACExhaustControl_Impl.hpp
+  ModelObject/ZoneHVACExhaustControl.cpp
   scaffolds/ZoneHVACForcedAirUserDefined.hpp
   scaffolds/ZoneHVACForcedAirUserDefined_Impl.hpp
   scaffolds/ZoneHVACForcedAirUserDefined.cpp

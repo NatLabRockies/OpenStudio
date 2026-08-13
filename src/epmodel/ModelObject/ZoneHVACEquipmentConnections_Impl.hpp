@@ -38,6 +38,7 @@ namespace epmodel {
       bool removeZoneAirInletNode(const openstudio::epmodel::Node& node);
       bool addZoneAirExhaustNode(const openstudio::epmodel::Node& node);
       bool removeZoneAirExhaustNode(const openstudio::epmodel::Node& node);
+      bool hasExclusiveZoneAirExhaustNodeStorage() const;
       bool addZoneReturnAirNode(const openstudio::epmodel::Node& node);
       bool removeZoneReturnAirNode(const openstudio::epmodel::Node& node);
 

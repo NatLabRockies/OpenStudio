@@ -62,6 +62,7 @@ EPMODELOBJECT_WRAP(AirflowNetworkDistributionComponentLeakageRatio, <epmodel/Mod
 EPMODELOBJECT_WRAP(AirflowNetworkDistributionComponentOutdoorAirFlow, <epmodel/ModelObject/AirflowNetworkDistributionComponentOutdoorAirFlow.hpp>, 0, 1)
 EPMODELOBJECT_WRAP(AirflowNetworkDistributionComponentTerminalUnit, <epmodel/ModelObject/AirflowNetworkDistributionComponentTerminalUnit.hpp>, 0, 1)
 EPMODELOBJECT_WRAP(AirLoopHVACDedicatedOutdoorAirSystem, <epmodel/ModelObject/AirLoopHVACDedicatedOutdoorAirSystem.hpp>, 0, 1)
+EPMODELOBJECT_WRAP(AirLoopHVACExhaustSystem, <epmodel/ModelObject/AirLoopHVACExhaustSystem.hpp>, 0, 1)
 EPMODELOBJECT_WRAP(ZoneCapacitanceMultiplierResearchSpecial, <epmodel/ModelObject/ZoneCapacitanceMultiplierResearchSpecial.hpp>, 1, 1)
 EPMODELOBJECT_WRAP(ZoneAirContaminantBalance, <epmodel/ModelObject/ZoneAirContaminantBalance.hpp>, 1, 1)
 EPMODELOBJECT_WRAP(ZoneAirHeatBalanceAlgorithm, <epmodel/ModelObject/ZoneAirHeatBalanceAlgorithm.hpp>, 1, 1)
@@ -176,5 +177,6 @@ EPMODELOBJECT_WRAP(SizingZone, <epmodel/ModelObject/SizingZone.hpp>, 0, 1)
 EPMODELOBJECT_WRAP(ZoneHVACAirDistributionUnit, <epmodel/ModelObject/ZoneHVACAirDistributionUnit.hpp>, 0, 1)
 EPMODELOBJECT_WRAP(ZoneHVACEquipmentConnections, <epmodel/ModelObject/ZoneHVACEquipmentConnections.hpp>, 0, 1)
 EPMODELOBJECT_WRAP(ZoneHVACEquipmentList, <epmodel/ModelObject/ZoneHVACEquipmentList.hpp>, 0, 1)
+EPMODELOBJECT_WRAP(ZoneHVACExhaustControl, <epmodel/ModelObject/ZoneHVACExhaustControl.hpp>, 0, 1)
 
 #endif
