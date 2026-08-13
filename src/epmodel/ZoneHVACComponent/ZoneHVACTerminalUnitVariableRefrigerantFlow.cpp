@@ -1175,7 +1175,7 @@ namespace epmodel {
       }
 
       auto airLoop = node.airLoopHVAC();
-      if (!airLoop || airLoop->isDualDuct() || node.airLoopHVACOutdoorAirSystem() || airLoop->demandComponent(node.handle())) {
+      if (!airLoop || airLoop->isDualDuct() || airLoop->demandComponent(node.handle())) {
         return false;
       }
 

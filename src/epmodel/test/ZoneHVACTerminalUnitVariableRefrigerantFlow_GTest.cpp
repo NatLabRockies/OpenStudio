@@ -553,6 +553,41 @@ TEST_F(EPModelFixture, ZoneHVACTerminalUnitVariableRefrigerantFlow_AdjacentFanIn
   EXPECT_EQ(terminal.inletNode()->handle(), coolingCoil.inletModelObject()->handle());
 }
 
+TEST_F(EPModelFixture, ZoneHVACTerminalUnitVariableRefrigerantFlow_DirectPlacementAcceptsMainBranchOutdoorAirBoundary) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  AirLoopHVACOutdoorAirSystem oaSystem(model);
+  FanOnOff ownedFan(model);
+  CoilCoolingDXVariableRefrigerantFlow coolingCoil(model);
+  CoilHeatingDXVariableRefrigerantFlow heatingCoil(model);
+  ZoneHVACTerminalUnitVariableRefrigerantFlow terminal(model);
+
+  auto supplyOutletNode = airLoop.supplyOutletNode();
+  ASSERT_TRUE(oaSystem.addToNode(supplyOutletNode));
+  ASSERT_TRUE(terminal.setOutdoorAirFlowRateDuringCoolingOperation(0.0));
+  ASSERT_TRUE(terminal.setOutdoorAirFlowRateDuringHeatingOperation(0.0));
+  ASSERT_TRUE(terminal.setOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded(0.0));
+  ASSERT_TRUE(terminal.setSupplyAirFan(ownedFan));
+  ASSERT_TRUE(terminal.setCoolingCoil(coolingCoil));
+  ASSERT_TRUE(terminal.setHeatingCoil(heatingCoil));
+
+  ASSERT_TRUE(terminal.addToNode(supplyOutletNode));
+  const auto supplyComponents = airLoop.supplyComponents();
+  const auto oaPosition = std::ranges::find_if(supplyComponents, [&](const auto& component) { return component.handle() == oaSystem.handle(); });
+  const auto terminalPosition =
+    std::ranges::find_if(supplyComponents, [&](const auto& component) { return component.handle() == terminal.handle(); });
+  ASSERT_NE(supplyComponents.end(), oaPosition);
+  ASSERT_NE(supplyComponents.end(), terminalPosition);
+  EXPECT_LT(oaPosition, terminalPosition);
+  EXPECT_TRUE(std::ranges::none_of(supplyComponents, [&](const auto& component) {
+    return (component.handle() == ownedFan.handle()) || (component.handle() == coolingCoil.handle()) || (component.handle() == heatingCoil.handle());
+  }));
+  ASSERT_TRUE(terminal.inletNode());
+  ASSERT_TRUE(terminal.outletNode());
+  ASSERT_TRUE(coolingCoil.inletModelObject());
+  EXPECT_EQ(terminal.inletNode()->handle(), coolingCoil.inletModelObject()->handle());
+}
+
 TEST_F(EPModelFixture, ZoneHVACTerminalUnitVariableRefrigerantFlow_DirectDetachPreservesTerminalAndAllowsReattach) {
   Model model;
   AirLoopHVAC airLoop(model);
