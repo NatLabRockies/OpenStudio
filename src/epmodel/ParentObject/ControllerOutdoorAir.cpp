@@ -632,7 +632,11 @@ namespace epmodel {
         auto equipmentList = oaSystem->getModelObjectTarget<openstudio::epmodel::AirLoopHVACOutdoorAirSystemEquipmentList>(
           openstudio::AirLoopHVAC_OutdoorAirSystemFields::OutdoorAirEquipmentListName);
         if (equipmentList && !subsetCastVector<openstudio::epmodel::OutdoorAirMixer>(equipmentList->equipment()).empty()) {
-          if (auto node = oaSystem->outdoorAirModelObject()) {
+          if (oaSystem->airLoopHVACDedicatedOutdoorAirSystem()) {
+            if (auto node = oaSystem->outdoorAirModelObject()) {
+              OS_ASSERT(setPointer(openstudio::Controller_OutdoorAirFields::ActuatorNodeName, node->handle(), false));
+            }
+          } else if (auto node = oaSystem->outboardOANode()) {
             OS_ASSERT(setPointer(openstudio::Controller_OutdoorAirFields::ActuatorNodeName, node->handle(), false));
           }
           if (auto node = oaSystem->mixedAirModelObject()) {

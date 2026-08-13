@@ -8,6 +8,7 @@
 
 #include "HVACComponent.hpp"
 #include "HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
+#include "HVACComponent/AirLoopHVACOutdoorAirSystem_Impl.hpp"
 #include "HVACComponent/ThermalZone.hpp"
 #include "HVACComponent/ThermalZone_Impl.hpp"
 #include "Branch.hpp"
@@ -18,6 +19,8 @@
 #include "Model.hpp"
 #include "ModelObject.hpp"
 #include "ModelObject/ModelObject_Impl.hpp"
+#include "ModelObject/AirLoopHVACOutdoorAirSystemEquipmentList.hpp"
+#include "ModelObject/AirLoopHVACOutdoorAirSystemEquipmentList_Impl.hpp"
 #include "ModelObject/OutdoorAirMixer.hpp"
 #include "ModelObject/OutdoorAirMixer_Impl.hpp"
 #include "Schedule/Schedule.hpp"
@@ -39,6 +42,7 @@
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/OutdoorAir_Mixer_FieldEnums.hxx>
 #include <utilities/idd/ZoneHVAC_TerminalUnit_VariableRefrigerantFlow_FieldEnums.hxx>
+#include <utilities/idf/IdfExtensibleGroup.hpp>
 #include <utility>
 
 namespace openstudio {
@@ -1162,8 +1166,192 @@ namespace epmodel {
       return ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::TerminalUnitAirOutletNodeName;
     }
 
+    bool ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::addToOutdoorAirSystem(AirLoopHVACOutdoorAirSystem& oaSystem, Node& node) {
+      auto thisObject = getObject<ModelObject>();
+      if (!thisObject.name()) {
+        thisObject.createName();
+      }
+      if (!thisObject.name()) {
+        return false;
+      }
+      if (!detail::AirLoopHVACOutdoorAirSystemEquipmentList_Impl::isValidOASystemEquipment(thisObject)) {
+        return false;
+      }
+
+      auto oaSystemImpl = oaSystem.getImpl<detail::AirLoopHVACOutdoorAirSystem_Impl>();
+      OS_ASSERT(oaSystemImpl);
+      const auto path = oaSystemImpl->outdoorAirStreamComponents();
+      const auto nodeIt = std::ranges::find_if(path, [&](const auto& object) { return object.handle() == node.handle(); });
+      if (nodeIt == path.end() || !nodeIt->optionalCast<Node>()) {
+        return false;
+      }
+
+      auto equipmentList = oaSystemImpl->airLoopHVACOutdoorAirSystemEquipmentList();
+      auto equipmentListImpl = equipmentList.getImpl<detail::AirLoopHVACOutdoorAirSystemEquipmentList_Impl>();
+      OS_ASSERT(equipmentListImpl);
+      if (equipmentListImpl->containsEquipment(thisObject)) {
+        return false;
+      }
+      const auto priorEquipment = equipmentList.equipment();
+      const auto priorInlet = inletNode();
+      const auto priorOutlet = outletNode();
+
+      auto inletNode = node;
+      auto outletNode = node;
+      bool updateStreamBoundary = false;
+      boost::optional<ModelObject> updatedNeighbor;
+      bool updatedNeighborInlet = false;
+
+      if (path.size() == 1u) {
+        outletNode = model().getOrCreateTransientByName<Node>(node.nameString() + " - " + thisObject.nameString() + " Outlet");
+        updateStreamBoundary = true;
+      } else {
+        const auto index = static_cast<std::size_t>(std::distance(path.begin(), nodeIt));
+        const bool hasPreviousComponent = index >= 1u && !path[index - 1u].optionalCast<Node>();
+        const bool hasNextComponent = (index + 1u) < path.size() && !path[index + 1u].optionalCast<Node>();
+        if (!hasPreviousComponent && !hasNextComponent) {
+          return false;
+        }
+        const auto connectorName = hasNextComponent ? thisObject.nameString() + " Outlet - " + path[index + 1u].nameString() + " Inlet"
+                                                    : path[index - 1u].nameString() + " Outlet - " + thisObject.nameString() + " Inlet";
+        auto connector = model().getOrCreateTransientByName<Node>(connectorName);
+
+        if (!hasNextComponent && hasPreviousComponent) {
+          inletNode = connector;
+          updatedNeighbor = path[index - 1u];
+        } else {
+          outletNode = connector;
+          updatedNeighbor = path[index + 1u];
+          updatedNeighborInlet = true;
+        }
+      }
+
+      bool streamChanged = false;
+      bool success = equipmentListImpl->addEquipment(thisObject);
+      if (success) {
+        if (updateStreamBoundary) {
+          success = oaSystemImpl->setOutdoorAirStreamNode(outletNode);
+        } else if (updatedNeighborInlet) {
+          success = oaSystemImpl->updateOutdoorAirStreamInletNode(*updatedNeighbor, outletNode);
+        } else {
+          success = oaSystemImpl->updateOutdoorAirStreamOutletNode(*updatedNeighbor, inletNode);
+        }
+        streamChanged = success;
+      }
+      if (success) {
+        success = setPointer(inletPort(), inletNode.handle(), false) && setPointer(outletPort(), outletNode.handle(), false);
+      }
+      if (success) {
+        success = oaSystemImpl->rewriteEquipmentListOrder();
+      }
+
+      if (!success) {
+        OS_ASSERT(setPointer(inletPort(), priorInlet ? priorInlet->handle() : Handle(), false));
+        OS_ASSERT(setPointer(outletPort(), priorOutlet ? priorOutlet->handle() : Handle(), false));
+        if (streamChanged) {
+          if (updateStreamBoundary) {
+            OS_ASSERT(oaSystemImpl->setOutdoorAirStreamNode(node));
+          } else if (updatedNeighborInlet) {
+            OS_ASSERT(oaSystemImpl->updateOutdoorAirStreamInletNode(*updatedNeighbor, node));
+          } else {
+            OS_ASSERT(oaSystemImpl->updateOutdoorAirStreamOutletNode(*updatedNeighbor, node));
+          }
+        }
+        while (!equipmentList.extensibleGroups().empty()) {
+          equipmentList.eraseExtensibleGroup(static_cast<unsigned>(equipmentList.extensibleGroups().size() - 1u));
+        }
+        for (const auto& equipment : priorEquipment) {
+          OS_ASSERT(equipmentListImpl->addEquipment(equipment));
+        }
+        return false;
+      }
+
+      maintainContainedAirPath();
+      return true;
+    }
+
+    bool ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::removeFromOutdoorAirSystem(AirLoopHVACOutdoorAirSystem& oaSystem) {
+      auto inlet = inletNode();
+      auto outlet = outletNode();
+      if (!inlet || !outlet) {
+        return false;
+      }
+
+      auto oaSystemImpl = oaSystem.getImpl<detail::AirLoopHVACOutdoorAirSystem_Impl>();
+      OS_ASSERT(oaSystemImpl);
+      const auto path = oaSystemImpl->outdoorAirStreamComponents();
+      const auto thisObject = getObject<ModelObject>();
+      const auto it = std::ranges::find_if(path, [&](const auto& object) { return object.handle() == handle(); });
+      if (it == path.end()) {
+        return false;
+      }
+
+      auto equipmentList = oaSystemImpl->airLoopHVACOutdoorAirSystemEquipmentList();
+      auto equipmentListImpl = equipmentList.getImpl<detail::AirLoopHVACOutdoorAirSystemEquipmentList_Impl>();
+      OS_ASSERT(equipmentListImpl);
+      if (!equipmentListImpl->containsEquipment(thisObject)) {
+        return false;
+      }
+      const auto priorEquipment = equipmentList.equipment();
+
+      const auto index = static_cast<std::size_t>(std::distance(path.begin(), it));
+      if (index < 1u || (index + 1u) >= path.size()) {
+        return false;
+      }
+      const bool updateStreamBoundary = (path.size() == 3u) || ((index + 2u) >= path.size());
+      boost::optional<ModelObject> nextComponent;
+      if (!updateStreamBoundary) {
+        nextComponent = path[index + 2u];
+      }
+      auto previousNode = path[index - 1u].optionalCast<Node>();
+      auto nextNode = path[index + 1u].optionalCast<Node>();
+      if (!previousNode || !nextNode || (!updateStreamBoundary && !nextComponent)) {
+        return false;
+      }
+
+      bool streamChanged = updateStreamBoundary ? oaSystemImpl->setOutdoorAirStreamNode(*previousNode)
+                                                : oaSystemImpl->updateOutdoorAirStreamInletNode(*nextComponent, *previousNode);
+      bool success = streamChanged;
+      if (success) {
+        success = equipmentListImpl->removeEquipment(thisObject);
+      }
+      if (success) {
+        success = oaSystemImpl->rewriteEquipmentListOrder();
+      }
+
+      if (!success) {
+        if (streamChanged) {
+          if (updateStreamBoundary) {
+            OS_ASSERT(oaSystemImpl->setOutdoorAirStreamNode(*outlet));
+          } else {
+            OS_ASSERT(oaSystemImpl->updateOutdoorAirStreamInletNode(*nextComponent, *nextNode));
+          }
+        }
+        while (!equipmentList.extensibleGroups().empty()) {
+          equipmentList.eraseExtensibleGroup(static_cast<unsigned>(equipmentList.extensibleGroups().size() - 1u));
+        }
+        for (const auto& equipment : priorEquipment) {
+          OS_ASSERT(equipmentListImpl->addEquipment(equipment));
+        }
+        return false;
+      }
+
+      auto mutableObject = thisObject;
+      const auto ownedChildren = children();
+      clearVRFTerminalAirNodes(mutableObject, ownedChildren);
+      clearOwnedOutdoorAirMixer(mutableObject, ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::OutsideAirMixerObjectName);
+      OS_ASSERT(setString(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::OutsideAirMixerObjectType, ""));
+      return true;
+    }
+
     bool ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::addToNode(Node& node) {
       if (node.model() != model()) {
+        return false;
+      }
+
+      // A failed destination splice must not detach a live terminal from its
+      // current role. Callers can explicitly detach before moving it.
+      if (airLoopHVAC()) {
         return false;
       }
 
@@ -1172,6 +1360,23 @@ namespace epmodel {
       if (ZoneHVACComponent_Impl::addToNode(node)) {
         maintainContainedAirPath();
         return true;
+      }
+
+      if (auto oaSystem = node.airLoopHVACOutdoorAirSystem()) {
+        const auto outboardOANode = oaSystem->outboardOANode();
+        const bool onOutdoorAirStream = oaSystem->oaComponent(node.handle()).has_value() || (outboardOANode && (*outboardOANode == node));
+        if (onOutdoorAirStream) {
+          if (thermalZone()) {
+            return false;
+          }
+          return addToOutdoorAirSystem(*oaSystem, node);
+        }
+
+        const auto outboardReliefNode = oaSystem->outboardReliefNode();
+        const bool onReliefStream = oaSystem->reliefComponent(node.handle()).has_value() || (outboardReliefNode && (*outboardReliefNode == node));
+        if (onReliefStream) {
+          return false;
+        }
       }
 
       auto airLoop = node.airLoopHVAC();
@@ -1191,17 +1396,6 @@ namespace epmodel {
       }
       if (!thisObject.name()) {
         return false;
-      }
-
-      if (auto currentLoop = airLoopHVAC()) {
-        const auto currentInlet = inletNode();
-        const auto currentOutlet = outletNode();
-        if ((currentInlet && *currentInlet == node) || (currentOutlet && *currentOutlet == node)) {
-          return false;
-        }
-        if (!removeFromAirLoopHVAC()) {
-          return false;
-        }
       }
 
       auto airLoopImpl = airLoop->getImpl<AirLoopHVAC_Impl>();
@@ -1308,6 +1502,15 @@ namespace epmodel {
     }
 
     bool ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::removeFromAirLoopHVAC() {
+      if (auto oaSystem = airLoopHVACOutdoorAirSystem()) {
+        auto oaSystemImpl = oaSystem->getImpl<detail::AirLoopHVACOutdoorAirSystem_Impl>();
+        OS_ASSERT(oaSystemImpl);
+        if (oaSystemImpl->isOutdoorAirStreamComponent(handle())) {
+          return removeFromOutdoorAirSystem(*oaSystem);
+        }
+        return false;
+      }
+
       auto airLoop = airLoopHVAC();
       if (!airLoop) {
         return false;

@@ -42,6 +42,8 @@
 #include "StraightComponent/StraightComponent_Impl.hpp"
 #include "WaterToAirComponent/WaterToAirComponent.hpp"
 #include "WaterToAirComponent/WaterToAirComponent_Impl.hpp"
+#include "ZoneHVACComponent/ZoneHVACTerminalUnitVariableRefrigerantFlow.hpp"
+#include "ZoneHVACComponent/ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl.hpp"
 #include "WaterToAirComponent/CoilCoolingWater.hpp"
 #include "WaterToAirComponent/CoilCoolingWater_Impl.hpp"
 #include "WaterToAirComponent/CoilHeatingWater.hpp"
@@ -472,6 +474,11 @@ namespace epmodel {
         const auto port = updateInlet ? waterToAir->airInletPort() : waterToAir->airOutletPort();
         return waterToAir->setPointer(port, node.handle());
       }
+      if (auto terminal = mutableObject.optionalCast<openstudio::epmodel::ZoneHVACTerminalUnitVariableRefrigerantFlow>()) {
+        auto terminalImpl = terminal->getImpl<openstudio::epmodel::detail::ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl>();
+        OS_ASSERT(terminalImpl);
+        return terminalImpl->setAirBoundaryNode(node, updateInlet);
+      }
       return false;
     }
 
@@ -502,7 +509,11 @@ namespace epmodel {
           return false;
         }
       }
-      if (!controller.setPointer(openstudio::Controller_OutdoorAirFields::ActuatorNodeName, node.handle())) {
+      // An ordinary Controller:OutdoorAir actuates the true outdoor boundary,
+      // not the downstream node where conditioned outdoor air enters the
+      // mixer. The transient DOAS companion instead follows its splitter
+      // inlet and remains aligned here.
+      if (doas && !controller.setPointer(openstudio::Controller_OutdoorAirFields::ActuatorNodeName, node.handle())) {
         if (splitter) {
           OS_ASSERT(splitter->getImpl<detail::ModelObject_Impl>()->setPointer(openstudio::AirLoopHVAC_SplitterFields::InletNodeName,
                                                                               oldSplitterInlet ? oldSplitterInlet->handle() : Handle(), false));

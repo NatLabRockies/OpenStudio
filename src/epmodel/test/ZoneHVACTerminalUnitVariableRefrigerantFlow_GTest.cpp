@@ -7,6 +7,7 @@
 
 #include "EPModelFixture.hpp"
 #include "../HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
+#include "../HVACComponent/AirLoopHVACOutdoorAirSystem_Impl.hpp"
 #include "../StraightComponent/CoilCoolingDXVariableRefrigerantFlow.hpp"
 #include "../StraightComponent/CoilCoolingDXVariableRefrigerantFlow_Impl.hpp"
 #include "../StraightComponent/CoilHeatingDXVariableRefrigerantFlow.hpp"
@@ -588,6 +589,188 @@ TEST_F(EPModelFixture, ZoneHVACTerminalUnitVariableRefrigerantFlow_DirectPlaceme
   EXPECT_EQ(terminal.inletNode()->handle(), coolingCoil.inletModelObject()->handle());
 }
 
+TEST_F(EPModelFixture, ZoneHVACTerminalUnitVariableRefrigerantFlow_OutdoorAirPlacementKeepsOwnedAndAdjacentPathsAligned) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  AirLoopHVACOutdoorAirSystem oaSystem(model);
+  FanOnOff ownedFan(model);
+  CoilCoolingDXVariableRefrigerantFlow coolingCoil(model);
+  CoilHeatingDXVariableRefrigerantFlow heatingCoil(model);
+  ZoneHVACTerminalUnitVariableRefrigerantFlow terminal(model);
+  FanSystemModel adjacentFan(model);
+
+  auto supplyInletNode = airLoop.supplyInletNode();
+  ASSERT_TRUE(oaSystem.addToNode(supplyInletNode));
+  ASSERT_TRUE(terminal.setSupplyAirFanPlacement("DrawThrough"));
+  ASSERT_TRUE(terminal.setSupplyAirFan(ownedFan));
+  ASSERT_TRUE(terminal.setCoolingCoil(coolingCoil));
+  ASSERT_TRUE(terminal.setHeatingCoil(heatingCoil));
+
+  auto outboardOANode = oaSystem.outboardOANode();
+  ASSERT_TRUE(outboardOANode);
+  ASSERT_TRUE(terminal.addToNode(*outboardOANode));
+
+  auto oaComponents = oaSystem.oaComponents();
+  ASSERT_EQ(3u, oaComponents.size());
+  EXPECT_EQ(outboardOANode->handle(), oaComponents[0].handle());
+  EXPECT_EQ(terminal.handle(), oaComponents[1].handle());
+  ASSERT_TRUE(terminal.inletNode());
+  ASSERT_TRUE(terminal.outletNode());
+  EXPECT_EQ(terminal.inletNode()->handle(), oaComponents[0].handle());
+  EXPECT_EQ(terminal.outletNode()->handle(), oaComponents[2].handle());
+  ASSERT_TRUE(terminal.airLoopHVACOutdoorAirSystem());
+  EXPECT_EQ(oaSystem.handle(), terminal.airLoopHVACOutdoorAirSystem()->handle());
+  EXPECT_FALSE(terminal.outdoorAirMixer());
+
+  ASSERT_TRUE(coolingCoil.inletModelObject());
+  ASSERT_TRUE(coolingCoil.outletModelObject());
+  ASSERT_TRUE(heatingCoil.inletModelObject());
+  ASSERT_TRUE(heatingCoil.outletModelObject());
+  ASSERT_TRUE(ownedFan.inletModelObject());
+  ASSERT_TRUE(ownedFan.outletModelObject());
+  EXPECT_EQ(terminal.inletNode()->handle(), coolingCoil.inletModelObject()->handle());
+  EXPECT_EQ(coolingCoil.outletModelObject()->handle(), heatingCoil.inletModelObject()->handle());
+  EXPECT_EQ(heatingCoil.outletModelObject()->handle(), ownedFan.inletModelObject()->handle());
+  EXPECT_EQ(ownedFan.outletModelObject()->handle(), terminal.outletNode()->handle());
+
+  auto terminalOutletNode = *terminal.outletNode();
+  ASSERT_TRUE(adjacentFan.addToNode(terminalOutletNode));
+  oaComponents = oaSystem.oaComponents();
+  ASSERT_EQ(5u, oaComponents.size());
+  EXPECT_EQ(terminal.handle(), oaComponents[1].handle());
+  EXPECT_EQ(adjacentFan.handle(), oaComponents[3].handle());
+  ASSERT_TRUE(adjacentFan.inletModelObject());
+  ASSERT_TRUE(terminal.outletNode());
+  EXPECT_EQ(terminal.outletNode()->handle(), adjacentFan.inletModelObject()->handle());
+  ASSERT_TRUE(ownedFan.outletModelObject());
+  EXPECT_EQ(ownedFan.outletModelObject()->handle(), terminal.outletNode()->handle());
+
+  ASSERT_TRUE(terminal.removeFromAirLoopHVAC());
+  oaComponents = oaSystem.oaComponents();
+  ASSERT_EQ(3u, oaComponents.size());
+  EXPECT_EQ(adjacentFan.handle(), oaComponents[1].handle());
+  ASSERT_TRUE(adjacentFan.inletModelObject());
+  EXPECT_EQ(outboardOANode->handle(), adjacentFan.inletModelObject()->handle());
+  EXPECT_FALSE(terminal.inletNode());
+  EXPECT_FALSE(terminal.outletNode());
+  EXPECT_FALSE(coolingCoil.inletModelObject());
+  EXPECT_FALSE(heatingCoil.inletModelObject());
+  EXPECT_FALSE(ownedFan.inletModelObject());
+
+  ASSERT_TRUE(terminal.addToNode(*outboardOANode));
+  oaComponents = oaSystem.oaComponents();
+  ASSERT_EQ(5u, oaComponents.size());
+  EXPECT_EQ(terminal.handle(), oaComponents[1].handle());
+  EXPECT_EQ(adjacentFan.handle(), oaComponents[3].handle());
+
+  ASSERT_TRUE(terminal.removeFromAirLoopHVAC());
+  auto supplyOutletNode = airLoop.supplyOutletNode();
+  ASSERT_TRUE(terminal.addToNode(supplyOutletNode));
+  const auto oaComponentsBeforeRejectedMove = oaSystem.oaComponents();
+  const auto supplyComponentsBeforeRejectedMove = airLoop.supplyComponents();
+  ASSERT_TRUE(terminal.inletNode());
+  ASSERT_TRUE(terminal.outletNode());
+  const auto terminalInletBeforeRejectedMove = terminal.inletNode()->handle();
+  const auto terminalOutletBeforeRejectedMove = terminal.outletNode()->handle();
+
+  EXPECT_FALSE(terminal.addToNode(*outboardOANode));
+  EXPECT_EQ(oaComponentsBeforeRejectedMove, oaSystem.oaComponents());
+  EXPECT_EQ(supplyComponentsBeforeRejectedMove, airLoop.supplyComponents());
+  ASSERT_TRUE(terminal.inletNode());
+  ASSERT_TRUE(terminal.outletNode());
+  EXPECT_EQ(terminalInletBeforeRejectedMove, terminal.inletNode()->handle());
+  EXPECT_EQ(terminalOutletBeforeRejectedMove, terminal.outletNode()->handle());
+  EXPECT_TRUE(std::ranges::any_of(supplyComponentsBeforeRejectedMove, [&](const auto& object) { return object.handle() == terminal.handle(); }));
+  EXPECT_TRUE(std::ranges::none_of(supplyComponentsBeforeRejectedMove, [&](const auto& object) {
+    return (object.handle() == ownedFan.handle()) || (object.handle() == coolingCoil.handle()) || (object.handle() == heatingCoil.handle());
+  }));
+
+  ASSERT_TRUE(terminal.removeFromAirLoopHVAC());
+  ASSERT_TRUE(terminal.addToNode(*outboardOANode));
+  oaComponents = oaSystem.oaComponents();
+  ASSERT_EQ(5u, oaComponents.size());
+  EXPECT_EQ(terminal.handle(), oaComponents[1].handle());
+  EXPECT_EQ(adjacentFan.handle(), oaComponents[3].handle());
+}
+
+TEST_F(EPModelFixture, ZoneHVACTerminalUnitVariableRefrigerantFlow_OutdoorAirPlacementSurvivesReloadAndRemoval) {
+  const auto idfPath = openstudio::tempDir() / openstudio::toPath("epmodel-vrf-terminal-outdoor-air-roundtrip.idf");
+
+  Model model;
+  AirLoopHVAC airLoop(model);
+  AirLoopHVACOutdoorAirSystem oaSystem(model);
+  FanOnOff ownedFan(model);
+  CoilCoolingDXVariableRefrigerantFlow coolingCoil(model);
+  CoilHeatingDXVariableRefrigerantFlow heatingCoil(model);
+  ZoneHVACTerminalUnitVariableRefrigerantFlow terminal(model);
+
+  ASSERT_TRUE(oaSystem.setName("Roundtrip VRF OA System"));
+  ASSERT_TRUE(ownedFan.setName("Roundtrip OA VRF Owned Fan"));
+  ASSERT_TRUE(coolingCoil.setName("Roundtrip OA VRF Cooling Coil"));
+  ASSERT_TRUE(heatingCoil.setName("Roundtrip OA VRF Heating Coil"));
+  ASSERT_TRUE(terminal.setName("Roundtrip OA VRF Terminal"));
+  ASSERT_TRUE(terminal.setSupplyAirFanPlacement("DrawThrough"));
+  ASSERT_TRUE(terminal.setSupplyAirFan(ownedFan));
+  ASSERT_TRUE(terminal.setCoolingCoil(coolingCoil));
+  ASSERT_TRUE(terminal.setHeatingCoil(heatingCoil));
+
+  auto supplyInletNode = airLoop.supplyInletNode();
+  ASSERT_TRUE(oaSystem.addToNode(supplyInletNode));
+  auto outboardOANode = oaSystem.outboardOANode();
+  ASSERT_TRUE(outboardOANode);
+  ASSERT_TRUE(terminal.addToNode(*outboardOANode));
+  ASSERT_TRUE(model.save(idfPath, true));
+
+  auto loadedModel = Model::load(idfPath);
+  ASSERT_TRUE(loadedModel);
+  auto loadedOASystem = loadedModel->getConcreteModelObjectByName<AirLoopHVACOutdoorAirSystem>("Roundtrip VRF OA System");
+  auto loadedFan = loadedModel->getConcreteModelObjectByName<FanOnOff>("Roundtrip OA VRF Owned Fan");
+  auto loadedCoolingCoil = loadedModel->getConcreteModelObjectByName<CoilCoolingDXVariableRefrigerantFlow>("Roundtrip OA VRF Cooling Coil");
+  auto loadedHeatingCoil = loadedModel->getConcreteModelObjectByName<CoilHeatingDXVariableRefrigerantFlow>("Roundtrip OA VRF Heating Coil");
+  auto loadedTerminal = loadedModel->getConcreteModelObjectByName<ZoneHVACTerminalUnitVariableRefrigerantFlow>("Roundtrip OA VRF Terminal");
+  ASSERT_TRUE(loadedOASystem);
+  ASSERT_TRUE(loadedFan);
+  ASSERT_TRUE(loadedCoolingCoil);
+  ASSERT_TRUE(loadedHeatingCoil);
+  ASSERT_TRUE(loadedTerminal);
+
+  auto oaComponents = loadedOASystem->oaComponents();
+  ASSERT_EQ(3u, oaComponents.size());
+  EXPECT_EQ(loadedTerminal->handle(), oaComponents[1].handle());
+  ASSERT_TRUE(loadedTerminal->airLoopHVACOutdoorAirSystem());
+  EXPECT_EQ(loadedOASystem->handle(), loadedTerminal->airLoopHVACOutdoorAirSystem()->handle());
+  ASSERT_TRUE(loadedTerminal->inletNode());
+  ASSERT_TRUE(loadedTerminal->outletNode());
+  ASSERT_TRUE(loadedCoolingCoil->inletModelObject());
+  ASSERT_TRUE(loadedHeatingCoil->inletModelObject());
+  ASSERT_TRUE(loadedFan->inletModelObject());
+  EXPECT_EQ(loadedTerminal->inletNode()->handle(), loadedCoolingCoil->inletModelObject()->handle());
+  EXPECT_EQ(loadedCoolingCoil->outletModelObject()->handle(), loadedHeatingCoil->inletModelObject()->handle());
+  EXPECT_EQ(loadedHeatingCoil->outletModelObject()->handle(), loadedFan->inletModelObject()->handle());
+  EXPECT_EQ(loadedFan->outletModelObject()->handle(), loadedTerminal->outletNode()->handle());
+
+  ASSERT_TRUE(loadedTerminal->removeFromAirLoopHVAC());
+  EXPECT_EQ(1u, loadedOASystem->oaComponents().size());
+  EXPECT_TRUE(loadedModel->getObject(loadedTerminal->handle()));
+  EXPECT_TRUE(loadedModel->getObject(loadedFan->handle()));
+  auto loadedOutboardOANode = loadedOASystem->outboardOANode();
+  ASSERT_TRUE(loadedOutboardOANode);
+  ASSERT_TRUE(loadedTerminal->addToNode(*loadedOutboardOANode));
+
+  const auto terminalHandle = loadedTerminal->handle();
+  const auto fanHandle = loadedFan->handle();
+  const auto coolingHandle = loadedCoolingCoil->handle();
+  const auto heatingHandle = loadedHeatingCoil->handle();
+  EXPECT_FALSE(loadedTerminal->remove().empty());
+  EXPECT_FALSE(loadedModel->getObject(terminalHandle));
+  EXPECT_FALSE(loadedModel->getObject(fanHandle));
+  EXPECT_FALSE(loadedModel->getObject(coolingHandle));
+  EXPECT_FALSE(loadedModel->getObject(heatingHandle));
+  EXPECT_EQ(1u, loadedOASystem->oaComponents().size());
+
+  openstudio::filesystem::remove(idfPath);
+}
+
 TEST_F(EPModelFixture, ZoneHVACTerminalUnitVariableRefrigerantFlow_DirectDetachPreservesTerminalAndAllowsReattach) {
   Model model;
   AirLoopHVAC airLoop(model);
@@ -737,9 +920,9 @@ TEST_F(EPModelFixture, ZoneHVACTerminalUnitVariableRefrigerantFlow_DirectPlaceme
   EXPECT_FALSE(terminal.addToNode(demandInletNode));
   auto supplyInletNode = airLoop.supplyInletNode();
   ASSERT_TRUE(oaSystem.addToNode(supplyInletNode));
-  ASSERT_TRUE(oaSystem.outboardOANode());
-  auto outboardOANode = *oaSystem.outboardOANode();
-  EXPECT_FALSE(terminal.addToNode(outboardOANode));
+  ASSERT_TRUE(oaSystem.outboardReliefNode());
+  auto outboardReliefNode = *oaSystem.outboardReliefNode();
+  EXPECT_FALSE(terminal.addToNode(outboardReliefNode));
 
   ASSERT_TRUE(terminal.inletNode());
   ASSERT_TRUE(terminal.outletNode());

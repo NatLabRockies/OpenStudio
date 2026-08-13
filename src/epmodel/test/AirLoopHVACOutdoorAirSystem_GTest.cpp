@@ -9,6 +9,7 @@
 #include "../AirToAirComponent/HeatExchangerAirToAirSensibleAndLatent.hpp"
 #include "../Loop/AirLoopHVAC.hpp"
 #include "../HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
+#include "../HVACComponent/AirLoopHVACOutdoorAirSystem_Impl.hpp"
 #include "../ParentObject/ControllerOutdoorAir.hpp"
 #include "../StraightComponent/FanConstantVolume.hpp"
 #include "../StraightComponent/Node.hpp"
@@ -475,10 +476,12 @@ TEST_F(EPModelFixture, API_AirLoopHVACOutdoorAirSystem_ReliefSideSingleStreamIns
   EXPECT_EQ(outboardReliefNode->handle(), controllerRelief->handle());
 }
 
-TEST_F(EPModelFixture, API_AirLoopHVACOutdoorAirSystem_OutdoorStreamInsertionKeepsControllerActuatorAligned) {
+TEST_F(EPModelFixture, API_AirLoopHVACOutdoorAirSystem_OutdoorStreamInsertionKeepsControllerActuatorOnOutdoorBoundary) {
+  const auto idfPath = openstudio::tempDir() / openstudio::toPath("epmodel-oa-controller-outdoor-boundary.idf");
   Model model;
   AirLoopHVAC airLoop(model);
   AirLoopHVACOutdoorAirSystem oaSystem(model);
+  ASSERT_TRUE(oaSystem.setName("Outdoor Boundary OA System"));
   auto supplyInletNode = airLoop.supplyInletNode();
   ASSERT_TRUE(oaSystem.addToNode(supplyInletNode));
   auto outboardOANode = oaSystem.outboardOANode();
@@ -496,8 +499,22 @@ TEST_F(EPModelFixture, API_AirLoopHVACOutdoorAirSystem_OutdoorStreamInsertionKee
   controllerActuator = controller.getModelObjectTarget<Node>(openstudio::Controller_OutdoorAirFields::ActuatorNodeName);
   ASSERT_TRUE(controllerActuator);
   ASSERT_TRUE(oaSystem.outdoorAirModelObject());
-  EXPECT_EQ(oaSystem.outdoorAirModelObject()->handle(), controllerActuator->handle());
-  EXPECT_NE(outboardOANode->handle(), controllerActuator->handle());
+  EXPECT_NE(oaSystem.outdoorAirModelObject()->handle(), controllerActuator->handle());
+  EXPECT_EQ(outboardOANode->handle(), controllerActuator->handle());
+
+  ASSERT_TRUE(model.save(idfPath, true));
+  auto loadedModel = Model::load(idfPath);
+  ASSERT_TRUE(loadedModel);
+  auto loadedOASystem = loadedModel->getConcreteModelObjectByName<AirLoopHVACOutdoorAirSystem>("Outdoor Boundary OA System");
+  ASSERT_TRUE(loadedOASystem);
+  auto loadedOutboardOANode = loadedOASystem->outboardOANode();
+  ASSERT_TRUE(loadedOutboardOANode);
+  auto loadedController = loadedOASystem->getControllerOutdoorAir();
+  auto loadedActuator = loadedController.getModelObjectTarget<Node>(openstudio::Controller_OutdoorAirFields::ActuatorNodeName);
+  ASSERT_TRUE(loadedActuator);
+  ASSERT_TRUE(loadedOASystem->outdoorAirModelObject());
+  EXPECT_EQ(loadedOutboardOANode->handle(), loadedActuator->handle());
+  EXPECT_NE(loadedOASystem->outdoorAirModelObject()->handle(), loadedActuator->handle());
 
   outdoorFan.remove();
 
@@ -506,6 +523,8 @@ TEST_F(EPModelFixture, API_AirLoopHVACOutdoorAirSystem_OutdoorStreamInsertionKee
   ASSERT_TRUE(oaSystem.outdoorAirModelObject());
   EXPECT_EQ(oaSystem.outdoorAirModelObject()->handle(), controllerActuator->handle());
   EXPECT_EQ(outboardOANode->handle(), controllerActuator->handle());
+
+  openstudio::filesystem::remove(idfPath);
 }
 
 TEST_F(EPModelFixture, API_AirLoopHVACOutdoorAirSystem_MultipleAirToAirComponentsPreserveExactStreamOrder) {

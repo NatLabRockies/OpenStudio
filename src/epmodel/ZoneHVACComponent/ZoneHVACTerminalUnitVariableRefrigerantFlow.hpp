@@ -49,16 +49,19 @@ namespace epmodel {
     //   VRF terminal parity remains incomplete.
     // - Canonical Counterpart: openstudio::model::ZoneHVACTerminalUnitVariableRefrigerantFlow.
     // - Implemented Parity: Supply-air and outdoor-air flow scalars, parasitic electric loads, rated heating ratio, supplemental-heater limits,
-    //   fan-placement helpers, schedules, controlling-zone and standard VRF outdoor-unit links, direct air-loop placement, and contained
-    //   fan/coil child accessors preserve the canonical wrapper behavior. The contained supply fan, cooling coil, heating coil, and optional
-    //   supplemental heating coil share a parent-owned air path, with direct access to its meaningful internal node roles.
+    //   fan-placement helpers, schedules, controlling-zone and standard VRF outdoor-unit links, direct air-loop and outdoor-air-stream placement,
+    //   and contained fan/coil child accessors preserve the canonical wrapper behavior. The contained supply fan, cooling coil, heating coil, and
+    //   optional supplemental heating coil share a parent-owned air path, with direct access to its meaningful internal node roles.
     // - Documented Delta: `fanOutletNode()`, `coolingCoilOutletNode()`, and `heatingCoilOutletNode()` are exposed as additive conveniences so
     //   callers can inspect and rename the meaningful node roles owned by the compound, even when those roles alias each other or the parent
-    //   outlet in a valid configuration. The owned outdoor-air mixer is also exposed as an additive child convenience.
+    //   outlet in a valid configuration. The owned outdoor-air mixer is also exposed as an additive child convenience. Moving a live terminal
+    //   between a main branch and an outdoor-air stream requires an explicit `removeFromAirLoopHVAC()` so a rejected destination cannot detach
+    //   the established path.
     // - Field/Storage Mapping: Scalar values live directly on the EnergyPlus object while the fan/coil/schedule/node topology is represented
     //   through explicit child state, a persisted outdoor-air mixer whenever the unit owns its local OA path, and transient epmodel nodes.
     // - Evidence: `src/model/ZoneHVACTerminalUnitVariableRefrigerantFlow.hpp`, `src/model/ZoneHVACTerminalUnitVariableRefrigerantFlow.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateZoneHVACTerminalUnitVariableRefrigerantFlow.cpp`, and `src/epmodel/test/ZoneHVACTerminalUnitVariableRefrigerantFlow_GTest.cpp`.
-    // - Remaining Parity Work: Add the omitted relationship helpers only if the canonical wrapper still exposes them directly.
+    // - Remaining Parity Work: Align constructor defaults, clone and sizing conveniences, and the unselected relief-stream topology role; add
+    //   omitted relationship helpers only if the canonical wrapper still exposes them directly.
 
     Schedule terminalUnitAvailabilityschedule() const;
     bool setTerminalUnitAvailabilityschedule(Schedule& schedule);

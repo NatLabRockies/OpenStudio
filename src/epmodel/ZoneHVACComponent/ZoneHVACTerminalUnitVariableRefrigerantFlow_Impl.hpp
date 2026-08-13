@@ -16,6 +16,7 @@ namespace openstudio {
 namespace epmodel {
 
   class HVACComponent;
+  class AirLoopHVACOutdoorAirSystem;
   class Node;
   class OutdoorAirMixer;
   class Schedule;
@@ -149,6 +150,8 @@ namespace epmodel {
       boost::optional<double> autosizedOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded() const;
 
      private:
+      bool addToOutdoorAirSystem(AirLoopHVACOutdoorAirSystem& oaSystem, Node& node);
+      bool removeFromOutdoorAirSystem(AirLoopHVACOutdoorAirSystem& oaSystem);
       bool maintainContainedAirPath();
       bool repairContainedAirPath(LoadContext& context);
       bool reconcileContainedAirPath(bool allowChildNodeRecovery, LoadContext* context = nullptr);

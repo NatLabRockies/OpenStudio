@@ -191,6 +191,16 @@ TEST_F(EPModelFixture, AirLoopHVACDedicatedOutdoorAirSystem_ProjectsOnlyDedicate
   EXPECT_TRUE(loadedOA.getControllerOutdoorAir().getImpl<detail::ControllerOutdoorAir_Impl>()->isTransient());
   ASSERT_TRUE(loadedOA.getControllerOutdoorAir().airLoopHVACOutdoorAirSystem());
   EXPECT_EQ(loadedOA, *loadedOA.getControllerOutdoorAir().airLoopHVACOutdoorAirSystem());
+  auto loadedOutdoorNode = loadedOA.outdoorAirModelObject();
+  auto loadedActuator = loadedOA.getControllerOutdoorAir().getModelObjectTarget<Node>(openstudio::Controller_OutdoorAirFields::ActuatorNodeName);
+  auto loadedSplitters = loadedModel->getConcreteModelObjects<AirLoopHVACSplitter>();
+  ASSERT_TRUE(loadedOutdoorNode);
+  ASSERT_TRUE(loadedActuator);
+  ASSERT_EQ(1u, loadedSplitters.size());
+  auto loadedSplitterInlet = loadedSplitters.front().getModelObjectTarget<Node>(openstudio::AirLoopHVAC_SplitterFields::InletNodeName);
+  ASSERT_TRUE(loadedSplitterInlet);
+  EXPECT_EQ(loadedOutdoorNode->cast<Node>(), *loadedActuator);
+  EXPECT_EQ(*loadedSplitterInlet, *loadedActuator);
   EXPECT_EQ(1u, loadedModel->getConcreteModelObjects<OutdoorAirMixer>().size());
   EXPECT_TRUE(loadedModel->getConcreteModelObjects<OutdoorAirMixer>().front().getImpl<detail::OutdoorAirMixer_Impl>()->isTransient());
 
