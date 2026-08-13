@@ -1596,9 +1596,9 @@ TEST_F(EPModelFixture, AirLoopHVAC_CompoundCloneLast_FailureStagesRestoreExactTo
   const auto originalMixer = objectHandles(airLoop.zoneMixer().inletModelObjects());
   const auto originalPlant = objectHandles(plantLoop.demandComponents());
   using FailureStage = detail::AirLoopHVAC_Impl::DemandBranchAttachmentFailureStage;
-  const std::vector<FailureStage> failureStages = {
-    FailureStage::AfterTerminalClonePrepared, FailureStage::AfterPlantReconnectionPrepared, FailureStage::AfterReservationPrepared,
-    FailureStage::AfterZonePrepared, FailureStage::BeforeTerminalAttachment, FailureStage::AfterTerminalZoneProjectionPrepared};
+  const std::vector<FailureStage> failureStages = {FailureStage::AfterTerminalClonePrepared, FailureStage::AfterPlantReconnectionPrepared,
+                                                   FailureStage::AfterReservationPrepared,   FailureStage::AfterZonePrepared,
+                                                   FailureStage::BeforeTerminalAttachment,   FailureStage::AfterTerminalZoneProjectionPrepared};
   for (const auto failureStage : failureStages) {
     EXPECT_FALSE(airLoopImpl->addBranchForZone(zone2, failureStage));
     EXPECT_EQ(originalHandles, workspaceHandles(model));
@@ -1632,8 +1632,8 @@ TEST_F(EPModelFixture, AirLoopHVAC_CompoundCloneLast_TwoLoopPartialPlantFailureU
   const auto originalHot = objectHandles(hotLoop.demandComponents());
   auto airLoopImpl = airLoop.getImpl<detail::AirLoopHVAC_Impl>();
   ASSERT_TRUE(airLoopImpl);
-  EXPECT_FALSE(airLoopImpl->addBranchForZone(
-    zone2, detail::AirLoopHVAC_Impl::DemandBranchAttachmentFailureStage::AfterFirstPlantReconnectionPrepared));
+  EXPECT_FALSE(
+    airLoopImpl->addBranchForZone(zone2, detail::AirLoopHVAC_Impl::DemandBranchAttachmentFailureStage::AfterFirstPlantReconnectionPrepared));
   EXPECT_EQ(originalHandles, workspaceHandles(model));
   EXPECT_EQ(originalChilled, objectHandles(chilledLoop.demandComponents()));
   EXPECT_EQ(originalHot, objectHandles(hotLoop.demandComponents()));
@@ -1727,8 +1727,7 @@ TEST_F(EPModelFixture, AirLoopHVAC_CompoundCloneLast_ConnectedWaterReheatSurvive
   auto loadedPlantLoop = loadedModel->getConcreteModelObjectByName<PlantLoop>("Compound Clone Plant Loop");
   auto loadedSourceZone = loadedModel->getConcreteModelObjectByName<ThermalZone>("Compound Clone Source Zone");
   auto loadedTargetZone = loadedModel->getConcreteModelObjectByName<ThermalZone>("Compound Clone Target Zone");
-  auto loadedSourceTerminal =
-    loadedModel->getConcreteModelObjectByName<AirTerminalSingleDuctConstantVolumeReheat>("Compound Clone Source Terminal");
+  auto loadedSourceTerminal = loadedModel->getConcreteModelObjectByName<AirTerminalSingleDuctConstantVolumeReheat>("Compound Clone Source Terminal");
   auto loadedSourceCoil = loadedModel->getConcreteModelObjectByName<CoilHeatingWater>("Compound Clone Source Coil");
   ASSERT_TRUE(loadedAirLoop);
   ASSERT_TRUE(loadedPlantLoop);

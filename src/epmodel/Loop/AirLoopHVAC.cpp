@@ -549,8 +549,7 @@ namespace epmodel {
           if (!m_originalADUOutletTarget) {
             auto workspaceImpl = m_originalAirDistributionUnit->getImpl<openstudio::detail::WorkspaceObject_Impl>();
             OS_ASSERT(workspaceImpl);
-            m_originalADUOutletNodeName =
-              workspaceImpl->openstudio::detail::IdfObject_Impl::getString(outletField, false, true);
+            m_originalADUOutletNodeName = workspaceImpl->openstudio::detail::IdfObject_Impl::getString(outletField, false, true);
           }
         }
 
@@ -633,8 +632,8 @@ namespace epmodel {
               restored = aduImpl->setPointer(outletField, m_originalADUOutletTarget->handle(), false);
             } else {
               const bool pointerCleared = aduImpl->setPointer(outletField, Handle(), false);
-              const bool rawRestored = aduImpl->openstudio::detail::IdfObject_Impl::setString(
-                outletField, m_originalADUOutletNodeName.get_value_or(""), false);
+              const bool rawRestored =
+                aduImpl->openstudio::detail::IdfObject_Impl::setString(outletField, m_originalADUOutletNodeName.get_value_or(""), false);
               restored = pointerCleared && rawRestored;
             }
             OS_ASSERT(restored);
@@ -692,8 +691,7 @@ namespace epmodel {
       struct ZoneProjectionSnapshot;
 
      public:
-      static std::unique_ptr<SingleDuctTerminalClonePlan> prepare(StraightComponent source,
-                                                                  DemandBranchAttachmentFailureStage failureStage) {
+      static std::unique_ptr<SingleDuctTerminalClonePlan> prepare(StraightComponent source, DemandBranchAttachmentFailureStage failureStage) {
         auto plan = std::unique_ptr<SingleDuctTerminalClonePlan>(new SingleDuctTerminalClonePlan(std::move(source), failureStage));
         if (!plan->describeOwnedTopology()) {
           return nullptr;
@@ -711,8 +709,7 @@ namespace epmodel {
         }
         if (!plan->reconnectPlantTopology()) {
           LOG_FREE(Warn, "openstudio.epmodel.AirLoopHVAC",
-                   "Failed to reconnect an owned clone to the source plant topology for trailing terminal '"
-                     << plan->m_source.nameString() << "'.");
+                   "Failed to reconnect an owned clone to the source plant topology for trailing terminal '" << plan->m_source.nameString() << "'.");
           return nullptr;
         }
         if (failureStage == DemandBranchAttachmentFailureStage::AfterPlantReconnectionPrepared) {
@@ -779,12 +776,10 @@ namespace epmodel {
         if (!m_zoneProjection->originalExhaustTarget) {
           auto workspaceImpl = connections->getImpl<openstudio::detail::WorkspaceObject_Impl>();
           OS_ASSERT(workspaceImpl);
-          m_zoneProjection->originalExhaustRaw =
-            workspaceImpl->openstudio::detail::IdfObject_Impl::getString(exhaustField, false, true);
+          m_zoneProjection->originalExhaustRaw = workspaceImpl->openstudio::detail::IdfObject_Impl::getString(exhaustField, false, true);
         }
-        if (auto nodeList = m_zoneProjection->originalExhaustTarget
-                              ? m_zoneProjection->originalExhaustTarget->optionalCast<NodeList>()
-                              : boost::optional<NodeList>()) {
+        if (auto nodeList = m_zoneProjection->originalExhaustTarget ? m_zoneProjection->originalExhaustTarget->optionalCast<NodeList>()
+                                                                    : boost::optional<NodeList>()) {
           m_zoneProjection->originalExhaustNodes = nodeList->nodes();
         }
         return true;
@@ -872,44 +867,37 @@ namespace epmodel {
             || (type == openstudio::IddObjectType::AirTerminal_SingleDuct_VAV_HeatAndCool_NoReheat)) {
           // The existing childless clone-last families have no owned graph.
         } else if (type == AirTerminalSingleDuctConstantVolumeReheat::iddObjectType()) {
-          supported = addOwnedChild(ChildRole::ReheatCoil,
-                                    openstudio::AirTerminal_SingleDuct_ConstantVolume_ReheatFields::ReheatCoilName, true);
+          supported = addOwnedChild(ChildRole::ReheatCoil, openstudio::AirTerminal_SingleDuct_ConstantVolume_ReheatFields::ReheatCoilName, true);
         } else if (type == AirTerminalSingleDuctVAVReheat::iddObjectType()) {
-          supported =
-            addOwnedChild(ChildRole::ReheatCoil, openstudio::AirTerminal_SingleDuct_VAV_ReheatFields::ReheatCoilName, true);
+          supported = addOwnedChild(ChildRole::ReheatCoil, openstudio::AirTerminal_SingleDuct_VAV_ReheatFields::ReheatCoilName, true);
         } else if (type == AirTerminalSingleDuctVAVHeatAndCoolReheat::iddObjectType()) {
-          supported = addOwnedChild(ChildRole::ReheatCoil,
-                                    openstudio::AirTerminal_SingleDuct_VAV_HeatAndCool_ReheatFields::ReheatCoilName, true);
+          supported = addOwnedChild(ChildRole::ReheatCoil, openstudio::AirTerminal_SingleDuct_VAV_HeatAndCool_ReheatFields::ReheatCoilName, true);
         } else if (type == AirTerminalSingleDuctParallelPIUReheat::iddObjectType()) {
-          supported = addOwnedChild(ChildRole::ReheatCoil,
-                                    openstudio::AirTerminal_SingleDuct_ParallelPIU_ReheatFields::ReheatCoilName, true)
+          supported = addOwnedChild(ChildRole::ReheatCoil, openstudio::AirTerminal_SingleDuct_ParallelPIU_ReheatFields::ReheatCoilName, true)
                       && addOwnedChild(ChildRole::Fan, openstudio::AirTerminal_SingleDuct_ParallelPIU_ReheatFields::FanName, true);
         } else if (type == AirTerminalSingleDuctSeriesPIUReheat::iddObjectType()) {
-          supported = addOwnedChild(ChildRole::ReheatCoil,
-                                    openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::ReheatCoilName, true)
+          supported = addOwnedChild(ChildRole::ReheatCoil, openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::ReheatCoilName, true)
                       && addOwnedChild(ChildRole::Fan, openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::FanName, true);
         } else if (type == AirTerminalSingleDuctVAVReheatVariableSpeedFan::iddObjectType()) {
           // EnergyPlus has no canonical model wrapper for this family. Mirror
           // the established PIU owner contract for its required fan and coil.
-          supported = addOwnedChild(ChildRole::Fan,
-                                    openstudio::AirTerminal_SingleDuct_VAV_Reheat_VariableSpeedFanFields::FanName, true)
-                      && addOwnedChild(ChildRole::HeatingCoil,
-                                       openstudio::AirTerminal_SingleDuct_VAV_Reheat_VariableSpeedFanFields::HeatingCoilName, true);
+          supported =
+            addOwnedChild(ChildRole::Fan, openstudio::AirTerminal_SingleDuct_VAV_Reheat_VariableSpeedFanFields::FanName, true)
+            && addOwnedChild(ChildRole::HeatingCoil, openstudio::AirTerminal_SingleDuct_VAV_Reheat_VariableSpeedFanFields::HeatingCoilName, true);
         } else if (type == AirTerminalSingleDuctConstantVolumeCooledBeam::iddObjectType()) {
-          supported = addOwnedChild(ChildRole::CoolingCoil,
-                                    openstudio::OS_AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::CoolingCoilName, true);
+          supported =
+            addOwnedChild(ChildRole::CoolingCoil, openstudio::OS_AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::CoolingCoilName, true);
         } else if (type == AirTerminalSingleDuctConstantVolumeFourPipeBeam::iddObjectType()) {
           // Match canonical reconnection order: heating, then cooling.
-          supported = addOwnedChild(ChildRole::HeatingCoil,
-                                    openstudio::OS_AirTerminal_SingleDuct_ConstantVolume_FourPipeBeamFields::HeatingCoilName, false)
-                      && addOwnedChild(ChildRole::CoolingCoil,
-                                       openstudio::OS_AirTerminal_SingleDuct_ConstantVolume_FourPipeBeamFields::CoolingCoilName, false);
+          supported =
+            addOwnedChild(ChildRole::HeatingCoil, openstudio::OS_AirTerminal_SingleDuct_ConstantVolume_FourPipeBeamFields::HeatingCoilName, false)
+            && addOwnedChild(ChildRole::CoolingCoil, openstudio::OS_AirTerminal_SingleDuct_ConstantVolume_FourPipeBeamFields::CoolingCoilName, false);
         } else if (type == AirTerminalSingleDuctConstantVolumeFourPipeInduction::iddObjectType()) {
           // Match canonical reconnection order: required heating, then optional cooling.
-          supported = addOwnedChild(ChildRole::HeatingCoil,
-                                    openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeInductionFields::HeatingCoilName, true)
-                      && addOwnedChild(ChildRole::CoolingCoil,
-                                       openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeInductionFields::CoolingCoilName, false);
+          supported =
+            addOwnedChild(ChildRole::HeatingCoil, openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeInductionFields::HeatingCoilName, true)
+            && addOwnedChild(ChildRole::CoolingCoil, openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeInductionFields::CoolingCoilName,
+                             false);
         } else {
           supported = false;
         }
@@ -930,7 +918,7 @@ namespace epmodel {
           } else {
             LOG_FREE(Warn, "openstudio.epmodel.AirLoopHVAC",
                      "The trailing single-duct terminal '" << m_source.nameString()
-                                                            << "' does not have a safe owner-aware clone-last contract in epmodel.");
+                                                           << "' does not have a safe owner-aware clone-last contract in epmodel.");
           }
           return false;
         }
@@ -938,8 +926,7 @@ namespace epmodel {
         const auto declaredChildren = m_source.children();
         if (declaredChildren.size() != m_children.size()) {
           LOG_FREE(Warn, "openstudio.epmodel.AirLoopHVAC",
-                   "Refusing to clone trailing terminal '" << m_source.nameString()
-                                                            << "' because its owned-child graph is incomplete or ambiguous.");
+                   "Refusing to clone trailing terminal '" << m_source.nameString() << "' because its owned-child graph is incomplete or ambiguous.");
           return false;
         }
         std::set<Handle> expectedHandles;
@@ -959,8 +946,7 @@ namespace epmodel {
           return std::make_pair(waterToAir->waterInletPort(), waterToAir->waterOutletPort());
         }
         const auto type = child.iddObject().type();
-        if ((type == openstudio::IddObjectType::OS_Coil_Cooling_CooledBeam)
-            || (type == openstudio::IddObjectType::OS_Coil_Cooling_FourPipeBeam)
+        if ((type == openstudio::IddObjectType::OS_Coil_Cooling_CooledBeam) || (type == openstudio::IddObjectType::OS_Coil_Cooling_FourPipeBeam)
             || (type == openstudio::IddObjectType::OS_Coil_Heating_FourPipeBeam)) {
           auto straight = child.optionalCast<StraightComponent>();
           if (!straight) {
@@ -1057,8 +1043,7 @@ namespace epmodel {
           for (unsigned branchIndex = 0u; branchIndex < branches.size(); ++branchIndex) {
             const auto componentRows = branches[branchIndex].extensibleGroups();
             for (unsigned componentIndex = 0u; componentIndex < componentRows.size(); ++componentIndex) {
-              const auto componentField =
-                componentRows[componentIndex].getField(openstudio::BranchExtensibleFields::ComponentName, false);
+              const auto componentField = componentRows[componentIndex].getField(openstudio::BranchExtensibleFields::ComponentName, false);
               if (!componentField || toUUID(*componentField) != child.source.handle()) {
                 continue;
               }
@@ -1067,7 +1052,7 @@ namespace epmodel {
                   || !validatePlantConnectors(plantLoop, branches)) {
                 LOG_FREE(Warn, "openstudio.epmodel.AirLoopHVAC",
                          "Plant preflight rejected owned child '" << child.source.nameString()
-                                                                    << "' because its demand branch connector projection is malformed.");
+                                                                  << "' because its demand branch connector projection is malformed.");
                 return false;
               }
               const auto branchInletNode = branches[branchIndex].componentInletNode(componentIndex);
@@ -1077,11 +1062,11 @@ namespace epmodel {
               const auto inletBranch = inletNode ? plantLoopImpl->branchForNode(*inletNode) : boost::none;
               const auto outletBranch = outletNode ? plantLoopImpl->branchForNode(*outletNode) : boost::none;
               if (!branchInletNode || !branchOutletNode || !inletNode || !outletNode || !inletBranch || !outletBranch
-                  || (*branchInletNode != *inletNode) || (*branchOutletNode != *outletNode)
-                  || (*inletBranch != branches[branchIndex]) || (*outletBranch != branches[branchIndex])) {
+                  || (*branchInletNode != *inletNode) || (*branchOutletNode != *outletNode) || (*inletBranch != branches[branchIndex])
+                  || (*outletBranch != branches[branchIndex])) {
                 LOG_FREE(Warn, "openstudio.epmodel.AirLoopHVAC",
-                         "Plant preflight rejected owned child '" << child.source.nameString()
-                                                                    << "' because its water ports do not resolve to its authoritative demand branch row.");
+                         "Plant preflight rejected owned child '"
+                           << child.source.nameString() << "' because its water ports do not resolve to its authoritative demand branch row.");
                 return false;
               }
               child.plantConnection = PlantConnection(plantLoop, branches[branchIndex]);
@@ -1121,7 +1106,7 @@ namespace epmodel {
         if (occurrences > 1u || hasInlet != (occurrences == 1u)) {
           LOG_FREE(Warn, "openstudio.epmodel.AirLoopHVAC",
                    "Plant preflight rejected owned child '" << child.source.nameString() << "' because resolved ports=" << hasInlet
-                                                              << " and authoritative branch occurrences=" << occurrences << ".");
+                                                            << " and authoritative branch occurrences=" << occurrences << ".");
           return false;
         }
         return true;
@@ -1132,15 +1117,14 @@ namespace epmodel {
         for (auto& child : m_children) {
           if (!capturePlantConnection(child)) {
             LOG_FREE(Warn, "openstudio.epmodel.AirLoopHVAC",
-                     "Refusing to clone trailing terminal '" << m_source.nameString()
-                                                              << "' because an owned child has malformed plant topology.");
+                     "Refusing to clone trailing terminal '" << m_source.nameString() << "' because an owned child has malformed plant topology.");
             return false;
           }
           if (child.plantConnection
               && !occupiedBranches.emplace(child.plantConnection->plantLoop.handle(), child.plantConnection->branch.handle()).second) {
             LOG_FREE(Warn, "openstudio.epmodel.AirLoopHVAC",
                      "Refusing to clone trailing terminal '" << m_source.nameString()
-                                                              << "' because multiple owned children share one plant demand branch.");
+                                                             << "' because multiple owned children share one plant demand branch.");
             return false;
           }
         }
@@ -1152,8 +1136,7 @@ namespace epmodel {
         OS_ASSERT(idfImpl);
         for (unsigned fieldIndex = 0u; fieldIndex < idfObject.numFields(); ++fieldIndex) {
           const auto iddField = idfObject.iddObject().getField(fieldIndex);
-          if (iddField && iddField->properties().type == openstudio::IddFieldType::NodeType
-              && !idfImpl->setString(fieldIndex, "", false)) {
+          if (iddField && iddField->properties().type == openstudio::IddFieldType::NodeType && !idfImpl->setString(fieldIndex, "", false)) {
             return false;
           }
         }
@@ -1215,13 +1198,13 @@ namespace epmodel {
 
         auto cloneIdfObject = source.idfObject().clone(false);
         if (!cloneIdfObject.setName(source.model().nextName(source.iddObject().type(), true))) {
-          LOG_FREE(Warn, "openstudio.epmodel.AirLoopHVAC", "Failed to assign a distinct name to owned child clone type '"
-                                                               << source.iddObject().name() << "'.");
+          LOG_FREE(Warn, "openstudio.epmodel.AirLoopHVAC",
+                   "Failed to assign a distinct name to owned child clone type '" << source.iddObject().name() << "'.");
           return boost::none;
         }
         if (!clearNodeFields(cloneIdfObject)) {
-          LOG_FREE(Warn, "openstudio.epmodel.AirLoopHVAC", "Failed to clear node fields on owned child clone type '"
-                                                               << source.iddObject().name() << "'.");
+          LOG_FREE(Warn, "openstudio.epmodel.AirLoopHVAC",
+                   "Failed to clear node fields on owned child clone type '" << source.iddObject().name() << "'.");
           return boost::none;
         }
         auto cloneObject = source.model().addObject(cloneIdfObject);
@@ -1231,8 +1214,8 @@ namespace epmodel {
         }
         auto clone = cloneObject->optionalCast<HVACComponent>();
         if (!clone) {
-          LOG_FREE(Warn, "openstudio.epmodel.AirLoopHVAC", "Owned child clone type '" << source.iddObject().name()
-                                                                                       << "' did not resolve as an HVACComponent.");
+          LOG_FREE(Warn, "openstudio.epmodel.AirLoopHVAC",
+                   "Owned child clone type '" << source.iddObject().name() << "' did not resolve as an HVACComponent.");
           cloneObject->remove();
           return boost::none;
         }
@@ -1323,8 +1306,7 @@ namespace epmodel {
         for (auto& child : m_children) {
           child.clone = cloneComponentWithoutTopology(child.source);
           if (!child.clone) {
-            LOG_FREE(Warn, "openstudio.epmodel.AirLoopHVAC",
-                     "Failed to clone owned child type '" << child.source.iddObject().name() << "'.");
+            LOG_FREE(Warn, "openstudio.epmodel.AirLoopHVAC", "Failed to clone owned child type '" << child.source.iddObject().name() << "'.");
             return false;
           }
           if (!assignOwnedChild(child)) {
@@ -1427,9 +1409,8 @@ namespace epmodel {
           nodeList.remove();
         }
 
-        if (auto originalNodeList = m_zoneProjection->originalExhaustTarget
-                                      ? m_zoneProjection->originalExhaustTarget->optionalCast<NodeList>()
-                                      : boost::optional<NodeList>()) {
+        if (auto originalNodeList = m_zoneProjection->originalExhaustTarget ? m_zoneProjection->originalExhaustTarget->optionalCast<NodeList>()
+                                                                            : boost::optional<NodeList>()) {
           auto nodeListImpl = originalNodeList->getImpl<detail::NodeList_Impl>();
           OS_ASSERT(nodeListImpl);
           for (const auto& node : originalNodeList->nodes()) {

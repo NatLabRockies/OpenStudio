@@ -736,8 +736,7 @@ TEST_F(EPModelFixture, PlantLoop_MultiSideStraightComponentRemovalLifecycle) {
 
 namespace {
 template <typename CoilType>
-void runSharedWaterCoilRemovalLifecycle(const openstudio::path& idfPath, const std::string& coilLabel,
-                                        const std::string& expectedControllerAction) {
+void runSharedWaterCoilRemovalLifecycle(const openstudio::path& idfPath, const std::string& coilLabel, const std::string& expectedControllerAction) {
   const auto scheduleName = "Shared " + coilLabel + " Availability Schedule";
   const auto coilName = "Shared " + coilLabel;
   const auto airLoopName = "Surviving " + coilLabel + " Air Loop";
@@ -878,8 +877,7 @@ TEST_F(EPModelFixture, PlantLoop_DualLoopHeatExchangerRemovalLifecycle) {
   ASSERT_TRUE(loadedModel);
   auto loadedPrimary = loadedModel->getConcreteModelObjectByName<PlantLoop>("Removed Primary Heat Exchanger Loop");
   auto loadedSecondary = loadedModel->getConcreteModelObjectByName<PlantLoop>("Removed Secondary Heat Exchanger Loop");
-  auto loadedHeatExchanger =
-    loadedModel->getConcreteModelObjectByName<HeatExchangerFluidToFluid>("Surviving Dual Loop Heat Exchanger");
+  auto loadedHeatExchanger = loadedModel->getConcreteModelObjectByName<HeatExchangerFluidToFluid>("Surviving Dual Loop Heat Exchanger");
   ASSERT_TRUE(loadedPrimary);
   ASSERT_TRUE(loadedSecondary);
   ASSERT_TRUE(loadedHeatExchanger);
@@ -972,8 +970,7 @@ TEST_F(EPModelFixture, PlantLoop_DualLoopHeatExchangerRemovalLifecycle) {
 
   auto reloadedModel = Model::load(idfPath);
   ASSERT_TRUE(reloadedModel);
-  auto reloadedHeatExchanger =
-    reloadedModel->getConcreteModelObjectByName<HeatExchangerFluidToFluid>("Surviving Dual Loop Heat Exchanger");
+  auto reloadedHeatExchanger = reloadedModel->getConcreteModelObjectByName<HeatExchangerFluidToFluid>("Surviving Dual Loop Heat Exchanger");
   auto reloadedPrimary = reloadedModel->getConcreteModelObjectByName<PlantLoop>("Replacement Primary Heat Exchanger Loop");
   auto reloadedSecondary = reloadedModel->getConcreteModelObjectByName<PlantLoop>("Replacement Secondary Heat Exchanger Loop");
   ASSERT_TRUE(reloadedHeatExchanger);
