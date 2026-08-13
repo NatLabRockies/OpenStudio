@@ -22,6 +22,7 @@
 #include "StraightComponent/Node.hpp"
 
 #include <utilities/core/Assert.hpp>
+#include <utilities/core/StringHelpers.hpp>
 #include <utilities/idd/AirTerminal_SingleDuct_Mixer_FieldEnums.hxx>
 
 #include <algorithm>
@@ -304,6 +305,10 @@ namespace epmodel {
       for (const auto& source : node.sources()) {
         auto candidate = source.optionalCast<AirTerminalSingleDuctInletSideMixer>();
         if (!candidate) {
+          continue;
+        }
+        const auto connectionType = candidate->getString(openstudio::AirTerminal_SingleDuct_MixerFields::MixerConnectionType, true);
+        if (!connectionType || !openstudio::istringEqual(*connectionType, "InletSide")) {
           continue;
         }
         auto terminalOutlet = candidate->outletModelObject();

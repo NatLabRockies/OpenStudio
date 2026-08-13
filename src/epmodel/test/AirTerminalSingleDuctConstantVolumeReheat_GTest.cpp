@@ -7,6 +7,7 @@
 
 #include "EPModelFixture.hpp"
 #include "../HVACComponent/ThermalZone.hpp"
+#include "../HVACComponent/ControllerWaterCoil.hpp"
 #include "../Loop/AirLoopHVAC.hpp"
 #include "../Loop/PlantLoop.hpp"
 #include "../Mixer/AirLoopHVACZoneMixer.hpp"
@@ -22,6 +23,7 @@
 #include "../StraightComponent/AirTerminalSingleDuctConstantVolumeNoReheat.hpp"
 #include "../StraightComponent/CoilHeatingGas.hpp"
 #include "../StraightComponent/CoilHeatingElectric.hpp"
+#include "../StraightComponent/CoilHeatingElectric_Impl.hpp"
 #include "../StraightComponent/FanConstantVolume.hpp"
 #include "../StraightComponent/Node.hpp"
 #include "../Splitter/AirLoopHVACZoneSplitter.hpp"
@@ -29,6 +31,7 @@
 #include "../WaterToAirComponent/CoilHeatingWater_Impl.hpp"
 
 #include <utilities/idd/AirTerminal_SingleDuct_ConstantVolume_Reheat_FieldEnums.hxx>
+#include <utilities/idd/Coil_Heating_Electric_FieldEnums.hxx>
 #include <utilities/idd/ZoneHVAC_AirDistributionUnit_FieldEnums.hxx>
 #include <utilities/idf/WorkspaceObject_Impl.hpp>
 
@@ -226,6 +229,10 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeReheat_AddToNode_Resol
   auto outletNode = outletObject->optionalCast<Node>();
   ASSERT_TRUE(outletNode);
   EXPECT_EQ(zoneAirNode, *outletNode);
+  EXPECT_EQ(reheatCoil.iddObject().name(),
+            terminal.getString(openstudio::AirTerminal_SingleDuct_ConstantVolume_ReheatFields::ReheatCoilObjectType, true).get());
+  EXPECT_EQ(*inletNode, reheatCoil.getModelObjectTarget<Node>(openstudio::Coil_Heating_ElectricFields::AirInletNodeName).get());
+  EXPECT_EQ(*outletNode, reheatCoil.getModelObjectTarget<Node>(openstudio::Coil_Heating_ElectricFields::AirOutletNodeName).get());
 
   auto resolvedOutletNode = adu.outletNode();
   ASSERT_TRUE(resolvedOutletNode);
@@ -468,6 +475,7 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeReheat_Remove_Reconnec
   ASSERT_TRUE(airLoop.addBranchForZone(zone, terminal));
   ASSERT_TRUE(plantLoop.addDemandBranchForComponent(waterCoil));
   ASSERT_TRUE(waterCoil.plantLoop());
+  EXPECT_FALSE(waterCoil.controllerWaterCoil());
   const auto zoneAirNode = zone.zoneAirNode();
 
   auto inletObject = terminal.inletModelObject();
@@ -681,4 +689,68 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeReheat_RemoveFromLoop_
   EXPECT_FALSE(model.getModelObject<Node>(inletNodeHandle));
   EXPECT_FALSE(waterCoil.plantLoop());
   EXPECT_EQ(5u, plantLoop.demandComponents().size());
+}
+
+TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeReheat_ConnectedCoilReplacementAndReloadMaintainAirPath) {
+  const auto idfPath = openstudio::tempDir() / openstudio::toPath("epmodel-constant-volume-reheat-path.idf");
+
+  Model model;
+  AirLoopHVAC airLoop(model);
+  ThermalZone zone(model);
+  CoilHeatingElectric originalCoil(model);
+  CoilHeatingElectric replacementCoil(model);
+  ASSERT_TRUE(replacementCoil.setName("Replacement Constant Volume Reheat Coil"));
+  auto availability = model.alwaysOnDiscreteSchedule();
+  AirTerminalSingleDuctConstantVolumeReheat terminal(model, availability, originalCoil);
+  ASSERT_TRUE(terminal.setName("Reloaded Constant Volume Reheat Terminal"));
+  ASSERT_TRUE(airLoop.addBranchForZone(zone, terminal));
+
+  const auto terminalInlet = terminal.inletModelObject()->cast<Node>();
+  const auto terminalOutlet = terminal.outletModelObject()->cast<Node>();
+  ASSERT_TRUE(terminal.setReheatCoil(replacementCoil));
+  EXPECT_FALSE(originalCoil.getTarget(openstudio::Coil_Heating_ElectricFields::AirInletNodeName));
+  EXPECT_FALSE(originalCoil.getTarget(openstudio::Coil_Heating_ElectricFields::AirOutletNodeName));
+  EXPECT_EQ(terminalInlet, replacementCoil.getModelObjectTarget<Node>(openstudio::Coil_Heating_ElectricFields::AirInletNodeName).get());
+  EXPECT_EQ(terminalOutlet, replacementCoil.getModelObjectTarget<Node>(openstudio::Coil_Heating_ElectricFields::AirOutletNodeName).get());
+
+  Node wrongInlet(model);
+  Node wrongOutlet(model);
+  ASSERT_TRUE(wrongInlet.setName("Discarded CV Reheat Wrong Inlet"));
+  ASSERT_TRUE(wrongOutlet.setName("Discarded CV Reheat Wrong Outlet"));
+  ASSERT_TRUE(replacementCoil.setPointer(openstudio::Coil_Heating_ElectricFields::AirInletNodeName, wrongInlet.handle()));
+  ASSERT_TRUE(replacementCoil.setPointer(openstudio::Coil_Heating_ElectricFields::AirOutletNodeName, wrongOutlet.handle()));
+  ASSERT_TRUE(model.save(idfPath, true));
+
+  auto loadedModel = Model::load(idfPath);
+  ASSERT_TRUE(loadedModel);
+  auto loadedTerminal =
+    loadedModel->getConcreteModelObjectByName<AirTerminalSingleDuctConstantVolumeReheat>("Reloaded Constant Volume Reheat Terminal");
+  auto loadedCoil = loadedModel->getConcreteModelObjectByName<CoilHeatingElectric>("Replacement Constant Volume Reheat Coil");
+  ASSERT_TRUE(loadedTerminal);
+  ASSERT_TRUE(loadedCoil);
+  EXPECT_EQ(loadedTerminal->inletModelObject()->cast<Node>(),
+            loadedCoil->getModelObjectTarget<Node>(openstudio::Coil_Heating_ElectricFields::AirInletNodeName).get());
+  EXPECT_EQ(loadedTerminal->outletModelObject()->cast<Node>(),
+            loadedCoil->getModelObjectTarget<Node>(openstudio::Coil_Heating_ElectricFields::AirOutletNodeName).get());
+  EXPECT_FALSE(loadedModel->getConcreteModelObjectByName<Node>("Discarded CV Reheat Wrong Inlet"));
+  EXPECT_FALSE(loadedModel->getConcreteModelObjectByName<Node>("Discarded CV Reheat Wrong Outlet"));
+
+  auto loadedTerminalWorkspaceImpl = loadedTerminal->getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  ASSERT_TRUE(loadedTerminalWorkspaceImpl);
+  const auto reheatCoilField = openstudio::AirTerminal_SingleDuct_ConstantVolume_ReheatFields::ReheatCoilName;
+  ASSERT_TRUE(loadedTerminalWorkspaceImpl->setPointer(reheatCoilField, openstudio::Handle(), false));
+  ASSERT_TRUE(loadedTerminalWorkspaceImpl->openstudio::detail::IdfObject_Impl::setString(reheatCoilField, "Missing CV Reheat Coil", false));
+  EXPECT_FALSE(loadedTerminal->getTarget(openstudio::AirTerminal_SingleDuct_ConstantVolume_ReheatFields::ReheatCoilName));
+  ASSERT_TRUE(
+    loadedTerminal->setString(openstudio::AirTerminal_SingleDuct_ConstantVolume_ReheatFields::ReheatCoilObjectType, "Coil:Heating:Electric"));
+  loadedModel->canonicalize();
+  EXPECT_TRUE(
+    loadedTerminal->getString(openstudio::AirTerminal_SingleDuct_ConstantVolume_ReheatFields::ReheatCoilObjectType, true).value_or("").empty());
+  EXPECT_TRUE(
+    loadedTerminal->getString(openstudio::AirTerminal_SingleDuct_ConstantVolume_ReheatFields::ReheatCoilName, false, true).value_or("").empty());
+  EXPECT_FALSE(loadedTerminal->inletModelObject());
+  EXPECT_FALSE(loadedTerminal->outletModelObject());
+  EXPECT_FALSE(loadedTerminal->airLoopHVAC());
+
+  openstudio::filesystem::remove(idfPath);
 }

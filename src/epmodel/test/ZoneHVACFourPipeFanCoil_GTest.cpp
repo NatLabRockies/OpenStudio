@@ -7,16 +7,23 @@
 
 #include "EPModelFixture.hpp"
 #include "../HVACComponent/ThermalZone.hpp"
+#include "../HVACComponent/ThermalZone_Impl.hpp"
 #include "../Loop/AirLoopHVAC.hpp"
 #include "../Loop/PlantLoop.hpp"
 #include "../Schedule/ScheduleCompact.hpp"
 #include "../Schedule/ScheduleConstant.hpp"
 #include "../Schedule/ScheduleConstant_Impl.hpp"
+#include "../StraightComponent/AirTerminalSingleDuctInletSideMixer.hpp"
+#include "../StraightComponent/AirTerminalSingleDuctInletSideMixer_Impl.hpp"
 #include "../StraightComponent/FanConstantVolume.hpp"
+#include "../StraightComponent/FanConstantVolume_Impl.hpp"
 #include "../StraightComponent/Node.hpp"
 #include "../WaterToAirComponent/CoilCoolingWater.hpp"
+#include "../WaterToAirComponent/CoilCoolingWater_Impl.hpp"
 #include "../WaterToAirComponent/CoilHeatingWater.hpp"
+#include "../WaterToAirComponent/CoilHeatingWater_Impl.hpp"
 #include "../ZoneHVACComponent/ZoneHVACFourPipeFanCoil.hpp"
+#include "../ZoneHVACComponent/ZoneHVACFourPipeFanCoil_Impl.hpp"
 #include <utilities/idd/ZoneHVAC_FourPipeFanCoil_FieldEnums.hxx>
 
 using namespace openstudio::epmodel;
@@ -138,6 +145,211 @@ TEST_F(EPModelFixture, ZoneHVACFourPipeFanCoil_ChildrenAndZoneTopology) {
   EXPECT_TRUE(coil.outletNode());
   EXPECT_TRUE(coil.fanOutletNode());
   EXPECT_TRUE(coil.coolingCoilOutletNode());
+}
+
+TEST_F(EPModelFixture, ZoneHVACFourPipeFanCoil_InletSideMixerAttachmentRewiresContainedAirPath) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  ThermalZone zone(model);
+  AirTerminalSingleDuctInletSideMixer terminal(model);
+  FanConstantVolume fan(model);
+  CoilCoolingWater coolingCoil(model);
+  CoilHeatingWater heatingCoil(model);
+  ZoneHVACFourPipeFanCoil fanCoil(model);
+  ASSERT_TRUE(fanCoil.setCapacityControlMethod("ConstantFanVariableFlow"));
+  ASSERT_TRUE(fanCoil.setSupplyAirFan(fan));
+  ASSERT_TRUE(fanCoil.setCoolingCoil(coolingCoil));
+  ASSERT_TRUE(fanCoil.setHeatingCoil(heatingCoil));
+  ASSERT_TRUE(airLoop.addBranchForZone(zone, terminal));
+  auto terminalOutlet = terminal.outletModelObject();
+  ASSERT_TRUE(terminalOutlet);
+  auto terminalOutletNode = terminalOutlet->optionalCast<Node>();
+  ASSERT_TRUE(terminalOutletNode);
+
+  ASSERT_TRUE(fanCoil.addToNode(*terminalOutletNode));
+  ASSERT_TRUE(fanCoil.inletNode());
+  ASSERT_TRUE(fanCoil.outletNode());
+  ASSERT_TRUE(fan.inletModelObject());
+  ASSERT_TRUE(fan.outletModelObject());
+  ASSERT_TRUE(coolingCoil.airInletModelObject());
+  ASSERT_TRUE(coolingCoil.airOutletModelObject());
+  ASSERT_TRUE(heatingCoil.airInletModelObject());
+  ASSERT_TRUE(heatingCoil.airOutletModelObject());
+
+  EXPECT_EQ(fanCoil.inletNode()->cast<ModelObject>(), fan.inletModelObject().get());
+  EXPECT_EQ(fan.outletModelObject().get(), coolingCoil.airInletModelObject().get());
+  EXPECT_EQ(coolingCoil.airOutletModelObject().get(), heatingCoil.airInletModelObject().get());
+  EXPECT_EQ(fanCoil.outletNode()->cast<ModelObject>(), heatingCoil.airOutletModelObject().get());
+  ASSERT_TRUE(terminal.secondaryAirInletNode());
+  ASSERT_TRUE(fanCoil.thermalZone());
+  EXPECT_EQ(zone, fanCoil.thermalZone().get());
+}
+
+TEST_F(EPModelFixture, ZoneHVACFourPipeFanCoil_InletSideMixerAttachmentSurvivesReload) {
+  const auto idfPath = openstudio::tempDir() / openstudio::toPath("epmodel-inlet-side-mixer-fan-coil-path.idf");
+  Model model;
+  AirLoopHVAC airLoop(model);
+  ThermalZone zone(model);
+  AirTerminalSingleDuctInletSideMixer terminal(model);
+  FanConstantVolume fan(model);
+  CoilCoolingWater coolingCoil(model);
+  CoilHeatingWater heatingCoil(model);
+  ZoneHVACFourPipeFanCoil fanCoil(model);
+  ASSERT_TRUE(fanCoil.setCapacityControlMethod("ConstantFanVariableFlow"));
+  ASSERT_TRUE(fanCoil.setSupplyAirFan(fan));
+  ASSERT_TRUE(fanCoil.setCoolingCoil(coolingCoil));
+  ASSERT_TRUE(fanCoil.setHeatingCoil(heatingCoil));
+  ASSERT_TRUE(airLoop.addBranchForZone(zone, terminal));
+  auto terminalOutlet = terminal.outletModelObject();
+  ASSERT_TRUE(terminalOutlet);
+  auto terminalOutletNode = terminalOutlet->optionalCast<Node>();
+  ASSERT_TRUE(terminalOutletNode);
+  ASSERT_TRUE(fanCoil.addToNode(*terminalOutletNode));
+  ASSERT_TRUE(model.save(idfPath, true));
+
+  auto loadedModel = Model::load(idfPath);
+  ASSERT_TRUE(loadedModel);
+  const auto loadedTerminals = loadedModel->getConcreteModelObjects<AirTerminalSingleDuctInletSideMixer>();
+  const auto loadedFanCoils = loadedModel->getConcreteModelObjects<ZoneHVACFourPipeFanCoil>();
+  const auto loadedZones = loadedModel->getConcreteModelObjects<ThermalZone>();
+  ASSERT_EQ(1u, loadedTerminals.size());
+  ASSERT_EQ(1u, loadedFanCoils.size());
+  ASSERT_EQ(1u, loadedZones.size());
+  const auto loadedTerminal = loadedTerminals.front();
+  const auto loadedFanCoil = loadedFanCoils.front();
+  const auto loadedFan = loadedFanCoil.supplyAirFan().optionalCast<FanConstantVolume>();
+  const auto loadedCoolingCoil = loadedFanCoil.coolingCoil().optionalCast<CoilCoolingWater>();
+  const auto loadedHeatingCoil = loadedFanCoil.heatingCoil().optionalCast<CoilHeatingWater>();
+  ASSERT_TRUE(loadedFan);
+  ASSERT_TRUE(loadedCoolingCoil);
+  ASSERT_TRUE(loadedHeatingCoil);
+  ASSERT_TRUE(loadedTerminal.outletModelObject());
+  ASSERT_TRUE(loadedFanCoil.inletNode());
+  ASSERT_TRUE(loadedFanCoil.outletNode());
+  ASSERT_TRUE(loadedFan->inletModelObject());
+  ASSERT_TRUE(loadedFan->outletModelObject());
+  ASSERT_TRUE(loadedCoolingCoil->airInletModelObject());
+  ASSERT_TRUE(loadedCoolingCoil->airOutletModelObject());
+  ASSERT_TRUE(loadedHeatingCoil->airInletModelObject());
+  ASSERT_TRUE(loadedHeatingCoil->airOutletModelObject());
+
+  EXPECT_EQ(loadedTerminal.outletModelObject().get(), loadedFanCoil.inletNode()->cast<ModelObject>());
+  EXPECT_EQ(loadedFanCoil.inletNode()->cast<ModelObject>(), loadedFan->inletModelObject().get());
+  EXPECT_EQ(loadedFan->outletModelObject().get(), loadedCoolingCoil->airInletModelObject().get());
+  EXPECT_EQ(loadedCoolingCoil->airOutletModelObject().get(), loadedHeatingCoil->airInletModelObject().get());
+  EXPECT_EQ(loadedFanCoil.outletNode()->cast<ModelObject>(), loadedHeatingCoil->airOutletModelObject().get());
+  ASSERT_TRUE(loadedTerminal.secondaryAirInletNode());
+  ASSERT_TRUE(loadedFanCoil.thermalZone());
+  EXPECT_EQ(loadedZones.front(), loadedFanCoil.thermalZone().get());
+}
+
+TEST_F(EPModelFixture, ZoneHVACFourPipeFanCoil_RejectsAndRepairsSharedChildren) {
+  Model model;
+  ZoneHVACFourPipeFanCoil first(model);
+  ZoneHVACFourPipeFanCoil second(model);
+  FanConstantVolume firstFan(model);
+  FanConstantVolume secondFan(model);
+  CoilCoolingWater firstCoolingCoil(model);
+  CoilCoolingWater secondCoolingCoil(model);
+  CoilHeatingWater firstHeatingCoil(model);
+  CoilHeatingWater secondHeatingCoil(model);
+
+  ASSERT_TRUE(first.setCapacityControlMethod("ConstantFanVariableFlow"));
+  ASSERT_TRUE(second.setCapacityControlMethod("ConstantFanVariableFlow"));
+  ASSERT_TRUE(first.setSupplyAirFan(firstFan));
+  ASSERT_TRUE(first.setCoolingCoil(firstCoolingCoil));
+  ASSERT_TRUE(first.setHeatingCoil(firstHeatingCoil));
+  ASSERT_TRUE(second.setSupplyAirFan(secondFan));
+  ASSERT_TRUE(second.setCoolingCoil(secondCoolingCoil));
+  ASSERT_TRUE(second.setHeatingCoil(secondHeatingCoil));
+
+  EXPECT_FALSE(second.setSupplyAirFan(firstFan));
+  EXPECT_FALSE(second.setCoolingCoil(firstCoolingCoil));
+  EXPECT_FALSE(second.setHeatingCoil(firstHeatingCoil));
+  EXPECT_EQ(secondFan, second.supplyAirFan());
+  EXPECT_EQ(secondCoolingCoil, second.coolingCoil());
+  EXPECT_EQ(secondHeatingCoil, second.heatingCoil());
+
+  auto secondImpl = second.getImpl<detail::ZoneHVACFourPipeFanCoil_Impl>();
+  ASSERT_TRUE(secondImpl);
+  ASSERT_TRUE(secondImpl->setPointer(openstudio::ZoneHVAC_FourPipeFanCoilFields::SupplyAirFanName, firstFan.handle(), false));
+  ASSERT_TRUE(secondImpl->setPointer(openstudio::ZoneHVAC_FourPipeFanCoilFields::CoolingCoilName, firstCoolingCoil.handle(), false));
+  ASSERT_TRUE(secondImpl->setPointer(openstudio::ZoneHVAC_FourPipeFanCoilFields::HeatingCoilName, firstHeatingCoil.handle(), false));
+  const auto expectedOwner = firstFan.containingHVACComponent();
+  ASSERT_TRUE(expectedOwner);
+  ASSERT_TRUE(firstCoolingCoil.containingHVACComponent());
+  ASSERT_TRUE(firstHeatingCoil.containingHVACComponent());
+  ASSERT_EQ(expectedOwner->handle(), firstCoolingCoil.containingHVACComponent()->handle());
+  ASSERT_EQ(expectedOwner->handle(), firstHeatingCoil.containingHVACComponent()->handle());
+  model.canonicalize();
+
+  const auto otherFanCoil = expectedOwner->handle() == first.handle() ? second : first;
+  EXPECT_FALSE(otherFanCoil.getTarget(openstudio::ZoneHVAC_FourPipeFanCoilFields::SupplyAirFanName));
+  EXPECT_FALSE(otherFanCoil.getTarget(openstudio::ZoneHVAC_FourPipeFanCoilFields::CoolingCoilName));
+  EXPECT_FALSE(otherFanCoil.getTarget(openstudio::ZoneHVAC_FourPipeFanCoilFields::HeatingCoilName));
+  ASSERT_TRUE(firstFan.containingHVACComponent());
+  ASSERT_TRUE(firstCoolingCoil.containingHVACComponent());
+  ASSERT_TRUE(firstHeatingCoil.containingHVACComponent());
+  EXPECT_EQ(expectedOwner->handle(), firstFan.containingHVACComponent()->handle());
+  EXPECT_EQ(expectedOwner->handle(), firstCoolingCoil.containingHVACComponent()->handle());
+  EXPECT_EQ(expectedOwner->handle(), firstHeatingCoil.containingHVACComponent()->handle());
+}
+
+TEST_F(EPModelFixture, ZoneHVACFourPipeFanCoil_RejectsAirLoopChildrenWithoutRewiringThem) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  FanConstantVolume fan(model);
+  CoilCoolingWater coolingCoil(model);
+  CoilHeatingWater heatingCoil(model);
+  ZoneHVACFourPipeFanCoil fanCoil(model);
+  ASSERT_TRUE(fanCoil.setCapacityControlMethod("ConstantFanVariableFlow"));
+  auto supplyInletNode = airLoop.supplyInletNode();
+  auto supplyOutletNode = airLoop.supplyOutletNode();
+  ASSERT_TRUE(fan.addToNode(supplyInletNode));
+  ASSERT_TRUE(coolingCoil.addToNode(supplyOutletNode));
+  ASSERT_TRUE(heatingCoil.addToNode(supplyOutletNode));
+  const auto fanInlet = fan.inletModelObject();
+  const auto fanOutlet = fan.outletModelObject();
+  const auto coolingInlet = coolingCoil.airInletModelObject();
+  const auto coolingOutlet = coolingCoil.airOutletModelObject();
+  const auto heatingInlet = heatingCoil.airInletModelObject();
+  const auto heatingOutlet = heatingCoil.airOutletModelObject();
+  ASSERT_TRUE(fanInlet);
+  ASSERT_TRUE(fanOutlet);
+  ASSERT_TRUE(coolingInlet);
+  ASSERT_TRUE(coolingOutlet);
+  ASSERT_TRUE(heatingInlet);
+  ASSERT_TRUE(heatingOutlet);
+
+  EXPECT_FALSE(fanCoil.setSupplyAirFan(fan));
+  EXPECT_FALSE(fanCoil.setCoolingCoil(coolingCoil));
+  EXPECT_FALSE(fanCoil.setHeatingCoil(heatingCoil));
+  EXPECT_EQ(fanInlet.get(), fan.inletModelObject().get());
+  EXPECT_EQ(fanOutlet.get(), fan.outletModelObject().get());
+  EXPECT_EQ(coolingInlet.get(), coolingCoil.airInletModelObject().get());
+  EXPECT_EQ(coolingOutlet.get(), coolingCoil.airOutletModelObject().get());
+  EXPECT_EQ(heatingInlet.get(), heatingCoil.airInletModelObject().get());
+  EXPECT_EQ(heatingOutlet.get(), heatingCoil.airOutletModelObject().get());
+
+  auto fanCoilImpl = fanCoil.getImpl<detail::ZoneHVACFourPipeFanCoil_Impl>();
+  ASSERT_TRUE(fanCoilImpl);
+  ASSERT_TRUE(fanCoilImpl->setPointer(openstudio::ZoneHVAC_FourPipeFanCoilFields::SupplyAirFanName, fan.handle(), false));
+  ASSERT_TRUE(fanCoilImpl->setPointer(openstudio::ZoneHVAC_FourPipeFanCoilFields::CoolingCoilName, coolingCoil.handle(), false));
+  ASSERT_TRUE(fanCoilImpl->setPointer(openstudio::ZoneHVAC_FourPipeFanCoilFields::HeatingCoilName, heatingCoil.handle(), false));
+  model.canonicalize();
+
+  EXPECT_FALSE(fanCoil.getTarget(openstudio::ZoneHVAC_FourPipeFanCoilFields::SupplyAirFanName));
+  EXPECT_FALSE(fanCoil.getTarget(openstudio::ZoneHVAC_FourPipeFanCoilFields::CoolingCoilName));
+  EXPECT_FALSE(fanCoil.getTarget(openstudio::ZoneHVAC_FourPipeFanCoilFields::HeatingCoilName));
+  EXPECT_TRUE(airLoop.component(fan.handle()));
+  EXPECT_TRUE(airLoop.component(coolingCoil.handle()));
+  EXPECT_TRUE(airLoop.component(heatingCoil.handle()));
+  EXPECT_EQ(fanInlet.get(), fan.inletModelObject().get());
+  EXPECT_EQ(fanOutlet.get(), fan.outletModelObject().get());
+  EXPECT_EQ(coolingInlet.get(), coolingCoil.airInletModelObject().get());
+  EXPECT_EQ(coolingOutlet.get(), coolingCoil.airOutletModelObject().get());
+  EXPECT_EQ(heatingInlet.get(), heatingCoil.airInletModelObject().get());
+  EXPECT_EQ(heatingOutlet.get(), heatingCoil.airOutletModelObject().get());
 }
 
 TEST_F(EPModelFixture, ZoneHVACFourPipeFanCoil_ScheduleRelationships_RoundTrip) {

@@ -80,6 +80,11 @@ namespace epmodel {
       return boost::none;
     }
 
+    bool hasInletSideConnectionType(const ModelObject& terminal) {
+      const auto connectionType = terminal.getString(openstudio::AirTerminal_SingleDuct_MixerFields::MixerConnectionType, true);
+      return connectionType && openstudio::istringEqual(*connectionType, "InletSide");
+    }
+
     bool registerTerminalWithThermalZone(const ModelObject& terminal, ThermalZone& thermalZone) {
       auto zoneImpl = thermalZone.getImpl<detail::ThermalZone_Impl>();
       OS_ASSERT(zoneImpl);
@@ -219,6 +224,12 @@ namespace epmodel {
 
     std::vector<openstudio::IdfObject> AirTerminalSingleDuctInletSideMixer_Impl::remove() {
       const auto thisObject = getObject<openstudio::epmodel::ModelObject>();
+      if (!hasInletSideConnectionType(thisObject)) {
+        LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctInletSideMixer",
+                 "Refusing inlet-side removal semantics for AirTerminal:SingleDuct:Mixer '" << thisObject.nameString()
+                                                                                            << "' because it is not InletSide.");
+        return {};
+      }
       const auto inletNode = inletModelObject();
       const auto outletNode = outletModelObject();
       const auto thermalZone = thermalZoneContainingTerminal(model(), thisObject);
@@ -236,6 +247,12 @@ namespace epmodel {
 
     bool AirTerminalSingleDuctInletSideMixer_Impl::removeFromLoop() {
       auto thisObject = getObject<openstudio::epmodel::ModelObject>();
+      if (!hasInletSideConnectionType(thisObject)) {
+        LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctInletSideMixer",
+                 "Refusing inlet-side loop removal semantics for AirTerminal:SingleDuct:Mixer '" << thisObject.nameString()
+                                                                                                 << "' because it is not InletSide.");
+        return false;
+      }
       auto thermalZone = thermalZoneContainingTerminal(model(), thisObject);
       auto inletNode = inletModelObject();
       auto outletNode = outletModelObject();
@@ -312,6 +329,12 @@ namespace epmodel {
     }
 
     bool AirTerminalSingleDuctInletSideMixer_Impl::addToNode(Node& node) {
+      if (!hasInletSideConnectionType(getObject<openstudio::epmodel::ModelObject>())) {
+        LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctInletSideMixer",
+                 "addToNode only supports AirTerminal:SingleDuct:Mixer objects with an InletSide connection type.");
+        return false;
+      }
+
       if (node.model() != model()) {
         LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctInletSideMixer",
                  "addToNode requires a node in the same model as the inlet-side mixer terminal.");
@@ -403,6 +426,17 @@ namespace epmodel {
 
     bool AirTerminalSingleDuctInletSideMixer_Impl::setPerPersonVentilationRateMode(const std::string& perPersonVentilationRateMode) {
       return setString(openstudio::AirTerminal_SingleDuct_MixerFields::PerPersonVentilationRateMode, perPersonVentilationRateMode);
+    }
+
+    void AirTerminalSingleDuctInletSideMixer_Impl::doCanonicalize(LoadContext& context) {
+      StraightComponent_Impl::doCanonicalize(context);
+
+      const auto connectionType = getString(openstudio::AirTerminal_SingleDuct_MixerFields::MixerConnectionType, true);
+      if (!connectionType || connectionType->empty()) {
+        OS_ASSERT(setString(openstudio::AirTerminal_SingleDuct_MixerFields::MixerConnectionType, "InletSide"));
+        detail::addLoadInfo(context, "Set the required mixer connection type for AirTerminal:SingleDuct:Mixer '"
+                                       + getObject<ModelObject>().nameString() + "' to InletSide.");
+      }
     }
 
     std::vector<std::string> AirTerminalSingleDuctInletSideMixer_Impl::perPersonVentilationRateModeValues() const {

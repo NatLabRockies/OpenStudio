@@ -57,6 +57,8 @@ namespace epmodel {
     // - Field/Storage Mapping: The availability schedule and scalar design fields map directly to EnergyPlus
     //   `Coil:Heating:Water`. Controller linkage is inferred from the persisted `Controller:WaterCoil` actuator and
     //   sensor nodes because EnergyPlus stores the relationship through shared nodes rather than a direct back-reference.
+    //   Plant attachment suppresses and removes inferred controllers while the coil is owned by another HVAC component,
+    //   including compound air terminals, because the containing equipment governs the coil's air-side control.
     //   The equivalent-duct helper surface persists the linked `AirflowNetwork:Distribution:Component:Coil`
     //   relationship and its scalar geometry fields; the impl-level `children()` traversal includes those attached
     //   distribution components, and when reusing malformed imported data the helper repairs the stored `Coil Object
@@ -65,7 +67,7 @@ namespace epmodel {
     // - Evidence: `src/model/CoilHeatingWater.hpp`, `src/model/CoilHeatingWater.cpp`,
     //   `src/energyplus/ForwardTranslator/ForwardTranslateCoilHeatingWater.cpp`,
     //   `src/energyplus/ForwardTranslator/ForwardTranslateAirflowNetwork.cpp`, and
-    //   `src/model/test/CoilHeatingWater_GTest.cpp`.
+    //   `src/model/test/CoilHeatingWater_GTest.cpp`, and `src/epmodel/test/CoilHeatingWater_GTest.cpp`.
     Schedule availabilitySchedule() const;
 
     /** \deprecated */

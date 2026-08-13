@@ -433,6 +433,17 @@ namespace epmodel {
         return true;
       }
 
+      if (auto containingComponent = containingHVACComponent(); containingComponent) {
+        const auto containingType = containingComponent->iddObject().name();
+        if (containingType.starts_with("AirTerminal:") || containingType.starts_with("OS:AirTerminal:")) {
+          if (auto controller = inferControllerForCoil(thisCoil)) {
+            removeControllerWaterCoil(*controller);
+            syncAirLoopWaterCoilControllers(thisCoil);
+          }
+          return true;
+        }
+      }
+
       const auto waterInlet = thisCoil.waterInletModelObject();
       const auto airOutlet = thisCoil.airOutletModelObject();
       if (!waterInlet || !airOutlet) {

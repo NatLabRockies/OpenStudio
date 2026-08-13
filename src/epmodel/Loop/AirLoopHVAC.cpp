@@ -149,6 +149,20 @@ namespace epmodel {
   AirLoopHVAC::AirLoopHVAC(const Model& model, bool dualDuct) : Loop(openstudio::IddObjectType::AirLoopHVAC, model) {
     auto impl = getImpl<detail::AirLoopHVAC_Impl>();
     OS_ASSERT(impl);
+
+    // A renamed loop can leave its relationship-owned nodes under the
+    // constructor's original default name. Do not let a later loop reclaim
+    // those nodes merely because that default AirLoopHVAC name is available
+    // again: doing so aliases the loops' supply and return topology.
+    auto companionNameIsTaken = [&model](const std::string& loopName) {
+      return static_cast<bool>(model.getConcreteModelObjectByName<Node>(loopName + " Supply Inlet Node"))
+             || static_cast<bool>(model.getConcreteModelObjectByName<Node>(loopName + " Demand Outlet Node"))
+             || static_cast<bool>(model.getConcreteModelObjectByName<AvailabilityManagerAssignmentList>(loopName + " Availability Manager List"));
+    };
+    while (companionNameIsTaken(nameString())) {
+      OS_ASSERT(setName(model.nextName(iddObjectType(), false)));
+    }
+
     detail::LoadContext context{const_cast<Model&>(model), SanitizationPolicy::Repair, SanitizationReport{}, {}};  // NOLINT
     impl->canonicalize(context);
     autosizeDesignSupplyAirFlowRate();
@@ -1257,8 +1271,7 @@ namespace epmodel {
         }
         if (type == AirTerminalSingleDuctConstantVolumeFourPipeInduction::iddObjectType()) {
           auto terminal = m_terminal->cast<AirTerminalSingleDuctConstantVolumeFourPipeInduction>();
-          return child.role == ChildRole::HeatingCoil ? terminal.setHeatingCoil(clone)
-                                                      : terminal.setCoolingCoil(boost::optional<HVACComponent>(clone));
+          return child.role == ChildRole::HeatingCoil ? terminal.setHeatingCoil(clone) : terminal.setCoolingCoil(clone);
         }
         return false;
       }
@@ -1287,6 +1300,20 @@ namespace epmodel {
               LOG_FREE(Warn, "openstudio.epmodel.AirLoopHVAC", "Failed to clear a cloned terminal owned-child field.");
               return false;
             }
+          }
+
+          boost::optional<unsigned> containedMixerField;
+          const auto terminalType = m_source.iddObject().type();
+          if (terminalType == AirTerminalSingleDuctParallelPIUReheat::iddObjectType()) {
+            containedMixerField = openstudio::AirTerminal_SingleDuct_ParallelPIU_ReheatFields::ZoneMixerName;
+          } else if (terminalType == AirTerminalSingleDuctSeriesPIUReheat::iddObjectType()) {
+            containedMixerField = openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::ZoneMixerName;
+          } else if (terminalType == AirTerminalSingleDuctConstantVolumeFourPipeInduction::iddObjectType()) {
+            containedMixerField = openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeInductionFields::ZoneMixerName;
+          }
+          if (containedMixerField && !terminalIdfObject.setString(*containedMixerField, "")) {
+            LOG_FREE(Warn, "openstudio.epmodel.AirLoopHVAC", "Failed to clear a cloned terminal's contained zone mixer field.");
+            return false;
           }
 
           auto terminalObject = m_source.model().addObject(terminalIdfObject);
@@ -2614,12 +2641,20 @@ namespace epmodel {
     // node relationships.
     boost::optional<ModelObject> AirLoopHVAC_Impl::resolveTerminalOnDemandBranchNodes(const Node& splitterOutletNode, const Node& mixerInletNode) {
       if (auto branchComponents = resolveDemandBranchChain(splitterOutletNode, mixerInletNode)) {
-        if (!branchComponents->empty()) {
-          return branchComponents->back().cast<ModelObject>();
+        for (const auto& component : *branchComponents) {
+          auto candidate = component.cast<ModelObject>();
+          const auto iddName = candidate.iddObject().name();
+          if (iddName.starts_with("AirTerminal:") || iddName.starts_with("OS:AirTerminal:")) {
+            return candidate;
+          }
         }
       }
 
       for (const auto& sourceObject : splitterOutletNode.sources()) {
+        const auto iddName = sourceObject.iddObject().name();
+        if (!iddName.starts_with("AirTerminal:") && !iddName.starts_with("OS:AirTerminal:")) {
+          continue;
+        }
         if (auto straight = sourceObject.optionalCast<StraightComponent>()) {
           auto outletObject = straight->outletModelObject();
           auto outletNode = outletObject ? outletObject->optionalCast<Node>() : boost::none;
@@ -2657,14 +2692,6 @@ namespace epmodel {
           }
           continue;
         }
-        const auto objectType = sourceObject.iddObject().type();
-        if (objectType == openstudio::IddObjectType::AirLoopHVAC_ZoneSplitter || objectType == openstudio::IddObjectType::AirLoopHVAC_ZoneMixer
-            || objectType == openstudio::IddObjectType::Node) {
-          continue;
-        }
-        LOG_FREE(Debug, "openstudio.epmodel.AirLoopHVAC",
-                 "Non-StraightComponent object '" << sourceObject.nameString() << "' is not yet supported by resolveTerminalOnDemandBranchNodes.");
-        break;
       }
 
       return boost::none;

@@ -13,6 +13,7 @@
 #include "../Loop/AirLoopHVAC.hpp"
 #include "../Loop/PlantLoop.hpp"
 #include "../Mixer/AirLoopHVACZoneMixer.hpp"
+#include "../Mixer/AirLoopHVACZoneMixer_Impl.hpp"
 #include "../ModelObject/NodeList.hpp"
 #include "../ModelObject/NodeList_Impl.hpp"
 #include "../ModelObject/ZoneHVACAirDistributionUnit.hpp"
@@ -24,15 +25,21 @@
 #include "../Schedule/ScheduleConstant_Impl.hpp"
 #include "../Splitter/AirLoopHVACZoneSplitter.hpp"
 #include "../StraightComponent/CoilHeatingGas.hpp"
+#include "../StraightComponent/CoilHeatingGas_Impl.hpp"
 #include "../StraightComponent/CoilHeatingElectric.hpp"
 #include "../WaterToAirComponent/CoilHeatingWater.hpp"
 #include "../StraightComponent/FanConstantVolume.hpp"
 #include "../StraightComponent/FanSystemModel.hpp"
+#include "../StraightComponent/FanSystemModel_Impl.hpp"
 #include "../StraightComponent/FanVariableVolume.hpp"
 #include "../StraightComponent/Node.hpp"
 #include <utilities/idd/AirTerminal_SingleDuct_ParallelPIU_Reheat_FieldEnums.hxx>
+#include <utilities/idd/Coil_Heating_Fuel_FieldEnums.hxx>
+#include <utilities/idd/Coil_Heating_Water_FieldEnums.hxx>
+#include <utilities/idd/Fan_SystemModel_FieldEnums.hxx>
 #include <utilities/idd/ZoneHVAC_AirDistributionUnit_FieldEnums.hxx>
 #include <utilities/idd/ZoneHVAC_EquipmentConnections_FieldEnums.hxx>
+#include <utilities/idf/WorkspaceObject_Impl.hpp>
 #include "../StraightComponent/AirTerminalSingleDuctParallelPIUReheat.hpp"
 #include "../StraightComponent/AirTerminalSingleDuctParallelPIUReheat_Impl.hpp"
 
@@ -351,6 +358,27 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctParallelPIUReheat_AddToNode_ZoneBran
 
   EXPECT_EQ(availability.handle(), terminal.availabilitySchedule().handle());
   EXPECT_EQ(airLoop.availabilitySchedule().handle(), fan.availabilitySchedule().handle());
+
+  EXPECT_EQ(reheatCoil.iddObject().name(),
+            terminal.getString(openstudio::AirTerminal_SingleDuct_ParallelPIU_ReheatFields::ReheatCoilObjectType).get());
+  auto terminalMixer =
+    terminal.getModelObjectTarget<AirLoopHVACZoneMixer>(openstudio::AirTerminal_SingleDuct_ParallelPIU_ReheatFields::ZoneMixerName);
+  ASSERT_TRUE(terminalMixer);
+  ASSERT_EQ(2u, terminalMixer->inletModelObjects().size());
+
+  auto fanInlet = fan.getModelObjectTarget<Node>(openstudio::Fan_SystemModelFields::AirInletNodeName);
+  auto fanOutlet = fan.getModelObjectTarget<Node>(openstudio::Fan_SystemModelFields::AirOutletNodeName);
+  auto reheatInlet = reheatCoil.getModelObjectTarget<Node>(openstudio::Coil_Heating_FuelFields::AirInletNodeName);
+  auto reheatOutlet = reheatCoil.getModelObjectTarget<Node>(openstudio::Coil_Heating_FuelFields::AirOutletNodeName);
+  ASSERT_TRUE(fanInlet);
+  ASSERT_TRUE(fanOutlet);
+  ASSERT_TRUE(reheatInlet);
+  ASSERT_TRUE(reheatOutlet);
+  EXPECT_EQ(secondaryNode, *fanInlet);
+  EXPECT_EQ(fanOutlet->cast<ModelObject>(), terminalMixer->inletModelObjects()[0]);
+  EXPECT_EQ(inletNode->cast<ModelObject>(), terminalMixer->inletModelObjects()[1]);
+  EXPECT_EQ(reheatInlet->handle(), terminalMixer->getModelObjectTarget<Node>(terminalMixer->outletPort())->handle());
+  EXPECT_EQ(outletNode->handle(), reheatOutlet->handle());
 }
 
 TEST_F(EPModelFixture, AirTerminalSingleDuctParallelPIUReheat_AddToNode_ZoneBranchInsertion_SyncsConstantVolumeFanSchedule) {
@@ -850,4 +878,226 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctParallelPIUReheat_MissingRequiredChi
   CoilHeatingElectric reheatCoil(model);
   ASSERT_TRUE(terminal.setReheatCoil(reheatCoil));
   EXPECT_TRUE(airLoop.addBranchForHVACComponent(terminal));
+}
+
+TEST_F(EPModelFixture, AirTerminalSingleDuctParallelPIUReheat_ConnectedChildReplacementAndReloadMaintainAirPath) {
+  const auto idfPath = openstudio::tempDir() / openstudio::toPath("epmodel-parallel-piu-path.idf");
+
+  Model model;
+  AirLoopHVAC airLoop(model);
+  ThermalZone zone(model);
+  FanSystemModel originalFan(model);
+  CoilHeatingGas originalCoil(model);
+  auto availability = model.alwaysOnDiscreteSchedule();
+  AirTerminalSingleDuctParallelPIUReheat terminal(model, availability, originalFan, originalCoil);
+  ASSERT_TRUE(terminal.setName("Reloaded Parallel PIU Terminal"));
+  ASSERT_TRUE(airLoop.addBranchForZone(zone, terminal));
+
+  FanSystemModel replacementFan(model);
+  CoilHeatingGas replacementCoil(model);
+  ASSERT_TRUE(replacementFan.setName("Replacement Parallel PIU Fan"));
+  ASSERT_TRUE(replacementCoil.setName("Replacement Parallel PIU Coil"));
+  ASSERT_TRUE(terminal.setFan(replacementFan));
+  ASSERT_TRUE(terminal.setReheatCoil(replacementCoil));
+  EXPECT_FALSE(originalFan.getTarget(openstudio::Fan_SystemModelFields::AirInletNodeName));
+  EXPECT_FALSE(originalFan.getTarget(openstudio::Fan_SystemModelFields::AirOutletNodeName));
+  EXPECT_FALSE(originalCoil.getTarget(openstudio::Coil_Heating_FuelFields::AirInletNodeName));
+  EXPECT_FALSE(originalCoil.getTarget(openstudio::Coil_Heating_FuelFields::AirOutletNodeName));
+
+  auto mixer = terminal.getModelObjectTarget<AirLoopHVACZoneMixer>(openstudio::AirTerminal_SingleDuct_ParallelPIU_ReheatFields::ZoneMixerName);
+  auto fanOutlet = replacementFan.getModelObjectTarget<Node>(openstudio::Fan_SystemModelFields::AirOutletNodeName);
+  auto mixerOutlet = mixer ? mixer->getModelObjectTarget<Node>(mixer->outletPort()) : boost::optional<Node>{};
+  ASSERT_TRUE(mixer);
+  ASSERT_TRUE(fanOutlet);
+  ASSERT_TRUE(mixerOutlet);
+  ASSERT_TRUE(fanOutlet->setName("Custom Parallel Fan Outlet"));
+  ASSERT_TRUE(mixerOutlet->setName("Custom Parallel Mixer Outlet"));
+  Node extraMixerInlet(model);
+  ASSERT_TRUE(extraMixerInlet.setName("Discarded Parallel Extra Mixer Inlet"));
+  ASSERT_TRUE(mixer->setInletModelObject(2u, extraMixerInlet.cast<ModelObject>()));
+  ASSERT_TRUE(model.save(idfPath, true));
+
+  auto loadedModel = Model::load(idfPath);
+  ASSERT_TRUE(loadedModel);
+  auto loadedTerminal = loadedModel->getConcreteModelObjectByName<AirTerminalSingleDuctParallelPIUReheat>("Reloaded Parallel PIU Terminal");
+  auto loadedFan = loadedModel->getConcreteModelObjectByName<FanSystemModel>("Replacement Parallel PIU Fan");
+  auto loadedCoil = loadedModel->getConcreteModelObjectByName<CoilHeatingGas>("Replacement Parallel PIU Coil");
+  ASSERT_TRUE(loadedTerminal);
+  ASSERT_TRUE(loadedFan);
+  ASSERT_TRUE(loadedCoil);
+  auto loadedMixer =
+    loadedTerminal->getModelObjectTarget<AirLoopHVACZoneMixer>(openstudio::AirTerminal_SingleDuct_ParallelPIU_ReheatFields::ZoneMixerName);
+  auto loadedFanInlet = loadedFan->getModelObjectTarget<Node>(openstudio::Fan_SystemModelFields::AirInletNodeName);
+  auto loadedFanOutlet = loadedFan->getModelObjectTarget<Node>(openstudio::Fan_SystemModelFields::AirOutletNodeName);
+  auto loadedCoilInlet = loadedCoil->getModelObjectTarget<Node>(openstudio::Coil_Heating_FuelFields::AirInletNodeName);
+  auto loadedCoilOutlet = loadedCoil->getModelObjectTarget<Node>(openstudio::Coil_Heating_FuelFields::AirOutletNodeName);
+  ASSERT_TRUE(loadedMixer);
+  ASSERT_EQ(2u, loadedMixer->inletModelObjects().size());
+  ASSERT_TRUE(loadedFanInlet);
+  ASSERT_TRUE(loadedFanOutlet);
+  ASSERT_TRUE(loadedCoilInlet);
+  ASSERT_TRUE(loadedCoilOutlet);
+  EXPECT_EQ("Custom Parallel Fan Outlet", loadedFanOutlet->nameString());
+  EXPECT_EQ("Custom Parallel Mixer Outlet", loadedCoilInlet->nameString());
+  EXPECT_EQ(loadedTerminal->secondaryAirInletNode().get(), *loadedFanInlet);
+  EXPECT_EQ(loadedFanOutlet->cast<ModelObject>(), loadedMixer->inletModelObjects()[0]);
+  EXPECT_EQ(loadedTerminal->inletModelObject().get(), loadedMixer->inletModelObjects()[1]);
+  EXPECT_EQ(*loadedCoilInlet, loadedMixer->getModelObjectTarget<Node>(loadedMixer->outletPort()).get());
+  EXPECT_EQ(loadedTerminal->outletModelObject()->cast<Node>(), *loadedCoilOutlet);
+  EXPECT_FALSE(loadedModel->getConcreteModelObjectByName<Node>("Discarded Parallel Extra Mixer Inlet"));
+
+  Node wrongFanInlet(*loadedModel);
+  Node wrongFanOutlet(*loadedModel);
+  Node wrongMixerOutlet(*loadedModel);
+  Node wrongCoilInlet(*loadedModel);
+  Node wrongCoilOutlet(*loadedModel);
+  ASSERT_TRUE(wrongFanInlet.setName("Discarded Parallel Wrong Fan Inlet"));
+  ASSERT_TRUE(wrongFanOutlet.setName("Discarded Parallel Wrong Fan Outlet"));
+  ASSERT_TRUE(wrongMixerOutlet.setName("Discarded Parallel Wrong Mixer Outlet"));
+  ASSERT_TRUE(wrongCoilInlet.setName("Discarded Parallel Wrong Coil Inlet"));
+  ASSERT_TRUE(wrongCoilOutlet.setName("Discarded Parallel Wrong Coil Outlet"));
+  auto loadedMixerImpl = loadedMixer->getImpl<detail::AirLoopHVACZoneMixer_Impl>();
+  ASSERT_TRUE(loadedMixerImpl);
+  ASSERT_TRUE(loadedFan->setPointer(openstudio::Fan_SystemModelFields::AirInletNodeName, wrongFanInlet.handle()));
+  ASSERT_TRUE(loadedFan->setPointer(openstudio::Fan_SystemModelFields::AirOutletNodeName, wrongFanOutlet.handle()));
+  ASSERT_TRUE(loadedMixerImpl->setOutletNode(wrongMixerOutlet));
+  ASSERT_TRUE(loadedCoil->setPointer(openstudio::Coil_Heating_FuelFields::AirInletNodeName, wrongCoilInlet.handle()));
+  ASSERT_TRUE(loadedCoil->setPointer(openstudio::Coil_Heating_FuelFields::AirOutletNodeName, wrongCoilOutlet.handle()));
+  loadedModel->canonicalize();
+
+  EXPECT_FALSE(loadedModel->getConcreteModelObjectByName<Node>("Discarded Parallel Wrong Fan Inlet"));
+  EXPECT_FALSE(loadedModel->getConcreteModelObjectByName<Node>("Discarded Parallel Wrong Fan Outlet"));
+  EXPECT_FALSE(loadedModel->getConcreteModelObjectByName<Node>("Discarded Parallel Wrong Mixer Outlet"));
+  EXPECT_FALSE(loadedModel->getConcreteModelObjectByName<Node>("Discarded Parallel Wrong Coil Inlet"));
+  EXPECT_FALSE(loadedModel->getConcreteModelObjectByName<Node>("Discarded Parallel Wrong Coil Outlet"));
+  loadedFanInlet = loadedFan->getModelObjectTarget<Node>(openstudio::Fan_SystemModelFields::AirInletNodeName);
+  loadedFanOutlet = loadedFan->getModelObjectTarget<Node>(openstudio::Fan_SystemModelFields::AirOutletNodeName);
+  loadedCoilInlet = loadedCoil->getModelObjectTarget<Node>(openstudio::Coil_Heating_FuelFields::AirInletNodeName);
+  loadedCoilOutlet = loadedCoil->getModelObjectTarget<Node>(openstudio::Coil_Heating_FuelFields::AirOutletNodeName);
+  ASSERT_TRUE(loadedFanInlet);
+  ASSERT_TRUE(loadedFanOutlet);
+  ASSERT_TRUE(loadedCoilInlet);
+  ASSERT_TRUE(loadedCoilOutlet);
+  EXPECT_EQ(loadedTerminal->secondaryAirInletNode().get(), *loadedFanInlet);
+  EXPECT_EQ(loadedFanOutlet->cast<ModelObject>(), loadedMixer->inletModelObjects()[0]);
+  EXPECT_EQ(*loadedCoilInlet, loadedMixer->getModelObjectTarget<Node>(loadedMixer->outletPort()).get());
+  EXPECT_EQ(loadedTerminal->outletModelObject()->cast<Node>(), *loadedCoilOutlet);
+
+  auto loadedTerminalWorkspaceImpl = loadedTerminal->getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  ASSERT_TRUE(loadedTerminalWorkspaceImpl);
+  const auto fanField = openstudio::AirTerminal_SingleDuct_ParallelPIU_ReheatFields::FanName;
+  ASSERT_TRUE(loadedTerminalWorkspaceImpl->setPointer(fanField, openstudio::Handle(), false));
+  ASSERT_TRUE(loadedTerminalWorkspaceImpl->openstudio::detail::IdfObject_Impl::setString(fanField, "Missing Parallel PIU Fan", false));
+  EXPECT_FALSE(loadedTerminal->getTarget(openstudio::AirTerminal_SingleDuct_ParallelPIU_ReheatFields::FanName));
+  loadedModel->canonicalize();
+  EXPECT_FALSE(loadedCoil->getTarget(openstudio::Coil_Heating_FuelFields::AirInletNodeName));
+  EXPECT_FALSE(loadedCoil->getTarget(openstudio::Coil_Heating_FuelFields::AirOutletNodeName));
+  EXPECT_FALSE(loadedTerminal->getTarget(openstudio::AirTerminal_SingleDuct_ParallelPIU_ReheatFields::ZoneMixerName));
+  EXPECT_TRUE(loadedTerminal->getString(openstudio::AirTerminal_SingleDuct_ParallelPIU_ReheatFields::FanName, false, true).value_or("").empty());
+  EXPECT_FALSE(loadedTerminal->inletModelObject());
+  EXPECT_FALSE(loadedTerminal->secondaryAirInletNode());
+  EXPECT_FALSE(loadedTerminal->outletModelObject());
+  EXPECT_FALSE(loadedTerminal->airLoopHVAC());
+
+  openstudio::filesystem::remove(idfPath);
+}
+
+TEST_F(EPModelFixture, AirTerminalSingleDuctParallelPIUReheat_MissingFanRepairPreservesReheatPlantBranch) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  PlantLoop plantLoop(model);
+  ThermalZone zone(model);
+  FanSystemModel fan(model);
+  CoilHeatingWater reheatCoil(model);
+  auto availability = model.alwaysOnDiscreteSchedule();
+  AirTerminalSingleDuctParallelPIUReheat terminal(model, availability, fan, reheatCoil);
+  ASSERT_TRUE(airLoop.addBranchForZone(zone, terminal));
+  ASSERT_TRUE(plantLoop.addDemandBranchForComponent(reheatCoil));
+  ASSERT_TRUE(reheatCoil.waterInletModelObject());
+  ASSERT_TRUE(reheatCoil.waterOutletModelObject());
+  const auto waterInletHandle = reheatCoil.waterInletModelObject()->handle();
+  const auto waterOutletHandle = reheatCoil.waterOutletModelObject()->handle();
+
+  auto terminalWorkspaceImpl = terminal.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  ASSERT_TRUE(terminalWorkspaceImpl);
+  const auto fanField = openstudio::AirTerminal_SingleDuct_ParallelPIU_ReheatFields::FanName;
+  ASSERT_TRUE(terminalWorkspaceImpl->setPointer(fanField, openstudio::Handle(), false));
+  ASSERT_TRUE(terminalWorkspaceImpl->openstudio::detail::IdfObject_Impl::setString(fanField, "Missing Parallel PIU Fan", false));
+  model.canonicalize();
+
+  EXPECT_FALSE(terminal.airLoopHVAC());
+  EXPECT_FALSE(terminal.inletModelObject());
+  EXPECT_FALSE(terminal.outletModelObject());
+  EXPECT_FALSE(terminal.secondaryAirInletNode());
+  EXPECT_EQ(reheatCoil.handle(), terminal.reheatCoil().handle());
+  ASSERT_TRUE(reheatCoil.plantLoop());
+  EXPECT_EQ(plantLoop.handle(), reheatCoil.plantLoop()->handle());
+  EXPECT_EQ(waterInletHandle, reheatCoil.waterInletModelObject()->handle());
+  EXPECT_EQ(waterOutletHandle, reheatCoil.waterOutletModelObject()->handle());
+  EXPECT_EQ(1u, plantLoop.demandComponents(CoilHeatingWater::iddObjectType()).size());
+  EXPECT_FALSE(reheatCoil.getTarget(openstudio::Coil_Heating_WaterFields::AirInletNodeName));
+  EXPECT_FALSE(reheatCoil.getTarget(openstudio::Coil_Heating_WaterFields::AirOutletNodeName));
+}
+
+TEST_F(EPModelFixture, AirTerminalSingleDuctParallelPIUReheat_RemoveDoesNotDeleteSharedMalformedMixer) {
+  Model model;
+  FanSystemModel firstFan(model);
+  FanSystemModel secondFan(model);
+  CoilHeatingGas firstCoil(model);
+  CoilHeatingGas secondCoil(model);
+  auto availability = model.alwaysOnDiscreteSchedule();
+  AirTerminalSingleDuctParallelPIUReheat firstTerminal(model, availability, firstFan, firstCoil);
+  AirTerminalSingleDuctParallelPIUReheat secondTerminal(model, availability, secondFan, secondCoil);
+  AirLoopHVACZoneMixer sharedMixer(model);
+  ASSERT_TRUE(firstTerminal.setPointer(openstudio::AirTerminal_SingleDuct_ParallelPIU_ReheatFields::ZoneMixerName, sharedMixer.handle()));
+  ASSERT_TRUE(secondTerminal.setPointer(openstudio::AirTerminal_SingleDuct_ParallelPIU_ReheatFields::ZoneMixerName, sharedMixer.handle()));
+
+  EXPECT_FALSE(secondTerminal.remove().empty());
+  EXPECT_TRUE(model.getObject(sharedMixer.handle()));
+  EXPECT_EQ(sharedMixer.handle(), firstTerminal.getTarget(openstudio::AirTerminal_SingleDuct_ParallelPIU_ReheatFields::ZoneMixerName)->handle());
+  EXPECT_FALSE(firstTerminal.remove().empty());
+  EXPECT_FALSE(model.getObject(sharedMixer.handle()));
+}
+
+TEST_F(EPModelFixture, AirTerminalSingleDuctParallelPIUReheat_RejectsAndRepairsSharedChildren) {
+  Model model;
+  FanSystemModel firstFan(model);
+  FanSystemModel secondFan(model);
+  CoilHeatingGas firstCoil(model);
+  CoilHeatingGas secondCoil(model);
+  auto availability = model.alwaysOnDiscreteSchedule();
+  AirTerminalSingleDuctParallelPIUReheat firstTerminal(model, availability, firstFan, firstCoil);
+  AirTerminalSingleDuctParallelPIUReheat secondTerminal(model, availability, secondFan, secondCoil);
+
+  EXPECT_FALSE(secondTerminal.setFan(firstFan));
+  EXPECT_FALSE(secondTerminal.setReheatCoil(firstCoil));
+  EXPECT_EQ(secondFan, secondTerminal.fan());
+  EXPECT_EQ(secondCoil, secondTerminal.reheatCoil());
+
+  FanSystemModel wiredFan(model);
+  Node wiredFanInlet(model);
+  ASSERT_TRUE(wiredFan.setPointer(openstudio::Fan_SystemModelFields::AirInletNodeName, wiredFanInlet.handle()));
+  EXPECT_FALSE(secondTerminal.setFan(wiredFan));
+  EXPECT_EQ(secondFan, secondTerminal.fan());
+  EXPECT_EQ(wiredFanInlet, wiredFan.getModelObjectTarget<Node>(openstudio::Fan_SystemModelFields::AirInletNodeName).get());
+
+  auto secondTerminalImpl = secondTerminal.getImpl<detail::AirTerminalSingleDuctParallelPIUReheat_Impl>();
+  ASSERT_TRUE(secondTerminalImpl);
+  ASSERT_TRUE(secondTerminalImpl->setPointer(openstudio::AirTerminal_SingleDuct_ParallelPIU_ReheatFields::FanName, firstFan.handle(), false));
+  ASSERT_TRUE(secondTerminalImpl->setPointer(openstudio::AirTerminal_SingleDuct_ParallelPIU_ReheatFields::ReheatCoilName, firstCoil.handle(), false));
+  const auto expectedOwner = firstFan.containingHVACComponent();
+  ASSERT_TRUE(expectedOwner);
+  ASSERT_TRUE(firstCoil.containingHVACComponent());
+  ASSERT_EQ(expectedOwner->handle(), firstCoil.containingHVACComponent()->handle());
+  model.canonicalize();
+
+  const auto otherTerminal = expectedOwner->handle() == firstTerminal.handle() ? secondTerminal : firstTerminal;
+  EXPECT_EQ(firstFan.handle(), expectedOwner->getTarget(openstudio::AirTerminal_SingleDuct_ParallelPIU_ReheatFields::FanName)->handle());
+  EXPECT_EQ(firstCoil.handle(), expectedOwner->getTarget(openstudio::AirTerminal_SingleDuct_ParallelPIU_ReheatFields::ReheatCoilName)->handle());
+  EXPECT_FALSE(otherTerminal.getTarget(openstudio::AirTerminal_SingleDuct_ParallelPIU_ReheatFields::FanName));
+  EXPECT_FALSE(otherTerminal.getTarget(openstudio::AirTerminal_SingleDuct_ParallelPIU_ReheatFields::ReheatCoilName));
+  ASSERT_TRUE(firstFan.containingHVACComponent());
+  ASSERT_TRUE(firstCoil.containingHVACComponent());
+  EXPECT_EQ(expectedOwner->handle(), firstFan.containingHVACComponent()->handle());
+  EXPECT_EQ(expectedOwner->handle(), firstCoil.containingHVACComponent()->handle());
 }

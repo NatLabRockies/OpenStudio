@@ -33,6 +33,7 @@ namespace epmodel {
       std::vector<IdfObject> remove() override;
       unsigned inletPort() const override;
       unsigned outletPort() const override;
+      bool addToNode(Node& node) override;
       bool addToThermalZone(ThermalZone& thermalZone) override;
       void removeFromThermalZone() override;
       void doCanonicalize(LoadContext& context) override;

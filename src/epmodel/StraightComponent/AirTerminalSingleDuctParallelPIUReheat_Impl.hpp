@@ -108,6 +108,10 @@ namespace epmodel {
       std::vector<std::string> heatingControlTypeValues() const;
 
      private:
+      void doCanonicalize(LoadContext& context) override;
+      bool maintainContainedAirPath();
+      bool repairContainedAirPath(LoadContext& context);
+      bool reconcileContainedAirPath(bool allowChildNodeRecovery, LoadContext* context);
       class InsertionPlan;
     };
 

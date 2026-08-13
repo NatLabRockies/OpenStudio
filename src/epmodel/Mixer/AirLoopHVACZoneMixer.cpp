@@ -93,6 +93,13 @@ namespace epmodel {
       return getObject<openstudio::epmodel::AirLoopHVACZoneMixer>().numNonextensibleFields() + branchIndex;
     }
 
+    void AirLoopHVACZoneMixer_Impl::removePortForBranch(unsigned branchIndex) {
+      auto mixer = getObject<openstudio::epmodel::AirLoopHVACZoneMixer>();
+      if (branchIndex < mixer.extensibleGroups().size()) {
+        mixer.eraseExtensibleGroup(branchIndex);
+      }
+    }
+
     bool AirLoopHVACZoneMixer_Impl::setInletModelObject(unsigned branchIndex, const openstudio::epmodel::ModelObject& modelObject) {
       auto mixer = getObject<openstudio::epmodel::AirLoopHVACZoneMixer>();
       if (modelObject.model() != mixer.model()) {

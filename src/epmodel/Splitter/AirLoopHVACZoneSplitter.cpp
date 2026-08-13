@@ -93,6 +93,13 @@ namespace epmodel {
       return getObject<openstudio::epmodel::AirLoopHVACZoneSplitter>().numNonextensibleFields() + branchIndex;
     }
 
+    void AirLoopHVACZoneSplitter_Impl::removePortForBranch(unsigned branchIndex) {
+      auto splitter = getObject<openstudio::epmodel::AirLoopHVACZoneSplitter>();
+      if (branchIndex < splitter.extensibleGroups().size()) {
+        splitter.eraseExtensibleGroup(branchIndex);
+      }
+    }
+
     bool AirLoopHVACZoneSplitter_Impl::setOutletModelObject(unsigned branchIndex, const openstudio::epmodel::ModelObject& modelObject) {
       auto splitter = getObject<openstudio::epmodel::AirLoopHVACZoneSplitter>();
       if (modelObject.model() != splitter.model()) {

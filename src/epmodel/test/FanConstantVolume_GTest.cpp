@@ -32,6 +32,7 @@ TEST_F(EPModelFixture, FanConstantVolume_DefaultConstructor) {
   ASSERT_TRUE(constantSchedule);
   EXPECT_DOUBLE_EQ(1.0, constantSchedule->value());
   EXPECT_TRUE(fan.isMaximumFlowRateAutosized());
+  EXPECT_DOUBLE_EQ(250.0, fan.pressureRise());
   EXPECT_EQ("General", fan.endUseSubcategory());
 }
 

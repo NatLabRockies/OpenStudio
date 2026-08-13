@@ -36,6 +36,9 @@
 #include <utilities/core/StringHelpers.hpp>
 #include <utilities/core/UUID.hpp>
 #include <utilities/idd/AirTerminal_SingleDuct_ConstantVolume_Reheat_FieldEnums.hxx>
+#include <utilities/idd/Coil_Heating_Electric_FieldEnums.hxx>
+#include <utilities/idd/Coil_Heating_Fuel_FieldEnums.hxx>
+#include <utilities/idd/Coil_Heating_Water_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/ZoneHVAC_AirDistributionUnit_FieldEnums.hxx>
 #include <utilities/idf/WorkspaceObject_Impl.hpp>
@@ -248,8 +251,11 @@ namespace epmodel {
           m_zoneRegistered = true;
         }
 
-        m_committed = true;
         return true;
+      }
+
+      void commit() {
+        m_committed = true;
       }
 
      private:
@@ -607,6 +613,10 @@ namespace epmodel {
         }
       }
 
+      if (!maintainContainedAirPath()) {
+        return false;
+      }
+
       return removedFromAirLoop || static_cast<bool>(thermalZone) || cleanedADU || removedFromPlantLoop;
     }
 
@@ -669,9 +679,18 @@ namespace epmodel {
         }
       }
 
-      TerminalInsertionPlan plan(thisObject, zoneSplitter, splitterBranchIndex, node, inletPort(), outletPort(), zoneHVACAirDistributionUnit(),
-                                 thermalZone);
-      return plan.apply(failureStage == AddToNodeFailureStage::AfterADUUpdateBeforeZoneRegistration);
+      auto plan = std::make_unique<TerminalInsertionPlan>(thisObject, zoneSplitter, splitterBranchIndex, node, inletPort(), outletPort(),
+                                                          zoneHVACAirDistributionUnit(), thermalZone);
+      if (!plan->apply(failureStage == AddToNodeFailureStage::AfterADUUpdateBeforeZoneRegistration)) {
+        return false;
+      }
+      if (!maintainContainedAirPath()) {
+        plan.reset();
+        OS_ASSERT(maintainContainedAirPath());
+        return false;
+      }
+      plan->commit();
+      return true;
     }
 
     Schedule AirTerminalSingleDuctConstantVolumeReheat_Impl::availabilitySchedule() const {
@@ -708,19 +727,226 @@ namespace epmodel {
       }
 
       const auto iddObjectType = coil.iddObject().type();
-      if ((iddObjectType != IddObjectType::OS_Coil_Heating_Gas) && (iddObjectType != IddObjectType::OS_Coil_Heating_Electric)
-          && (iddObjectType != IddObjectType::OS_Coil_Heating_Water) && (iddObjectType != IddObjectType::Coil_Heating_Fuel)
-          && (iddObjectType != IddObjectType::Coil_Heating_Electric) && (iddObjectType != IddObjectType::Coil_Heating_Water)) {
+      if ((iddObjectType != IddObjectType::Coil_Heating_Fuel) && (iddObjectType != IddObjectType::Coil_Heating_Electric)
+          && (iddObjectType != IddObjectType::Coil_Heating_Water)) {
         LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctConstantVolumeReheat",
                  "Unsupported reheat coil type '" << coil.iddObject().name() << "' for AirTerminalSingleDuctConstantVolumeReheat.");
         return false;
       }
 
-      return setPointer(openstudio::AirTerminal_SingleDuct_ConstantVolume_ReheatFields::ReheatCoilName, coil.handle(), false);
+      auto terminal = getObject<ModelObject>();
+      auto previousCoil =
+        terminal.getModelObjectTarget<HVACComponent>(openstudio::AirTerminal_SingleDuct_ConstantVolume_ReheatFields::ReheatCoilName);
+      if (previousCoil && previousCoil->handle() == coil.handle()) {
+        return maintainContainedAirPath();
+      }
+      if (auto owner = coil.containingHVACComponent(); owner && owner->handle() != terminal.handle()) {
+        return false;
+      }
+      if (iddObjectType == IddObjectType::Coil_Heating_Electric) {
+        if (coil.getTarget(openstudio::Coil_Heating_ElectricFields::AirInletNodeName)
+            || coil.getTarget(openstudio::Coil_Heating_ElectricFields::AirOutletNodeName)) {
+          return false;
+        }
+      } else if (iddObjectType == IddObjectType::Coil_Heating_Fuel) {
+        if (coil.getTarget(openstudio::Coil_Heating_FuelFields::AirInletNodeName)
+            || coil.getTarget(openstudio::Coil_Heating_FuelFields::AirOutletNodeName)) {
+          return false;
+        }
+      } else if (iddObjectType == IddObjectType::Coil_Heating_Water) {
+        if (coil.getTarget(openstudio::Coil_Heating_WaterFields::AirInletNodeName)
+            || coil.getTarget(openstudio::Coil_Heating_WaterFields::AirOutletNodeName)) {
+          return false;
+        }
+      }
+
+      resetReheatCoil();
+      if (!setPointer(openstudio::AirTerminal_SingleDuct_ConstantVolume_ReheatFields::ReheatCoilName, coil.handle(), false)) {
+        if (previousCoil) {
+          OS_ASSERT(setPointer(openstudio::AirTerminal_SingleDuct_ConstantVolume_ReheatFields::ReheatCoilName, previousCoil->handle(), false));
+          OS_ASSERT(maintainContainedAirPath());
+        }
+        return false;
+      }
+      if (!maintainContainedAirPath()) {
+        resetReheatCoil();
+        if (previousCoil) {
+          OS_ASSERT(setPointer(openstudio::AirTerminal_SingleDuct_ConstantVolume_ReheatFields::ReheatCoilName, previousCoil->handle(), false));
+          OS_ASSERT(maintainContainedAirPath());
+        }
+        return false;
+      }
+      return true;
     }
 
     void AirTerminalSingleDuctConstantVolumeReheat_Impl::resetReheatCoil() {
+      if (auto previousCoil = getObject<ModelObject>().getModelObjectTarget<HVACComponent>(
+            openstudio::AirTerminal_SingleDuct_ConstantVolume_ReheatFields::ReheatCoilName)) {
+        const auto type = previousCoil->iddObject().type();
+        if (type == IddObjectType::Coil_Heating_Electric) {
+          OS_ASSERT(previousCoil->setPointer(openstudio::Coil_Heating_ElectricFields::AirInletNodeName, Handle()));
+          OS_ASSERT(previousCoil->setPointer(openstudio::Coil_Heating_ElectricFields::AirOutletNodeName, Handle()));
+        } else if (type == IddObjectType::Coil_Heating_Fuel) {
+          OS_ASSERT(previousCoil->setPointer(openstudio::Coil_Heating_FuelFields::AirInletNodeName, Handle()));
+          OS_ASSERT(previousCoil->setPointer(openstudio::Coil_Heating_FuelFields::AirOutletNodeName, Handle()));
+        } else if (type == IddObjectType::Coil_Heating_Water) {
+          OS_ASSERT(previousCoil->setPointer(openstudio::Coil_Heating_WaterFields::AirInletNodeName, Handle()));
+          OS_ASSERT(previousCoil->setPointer(openstudio::Coil_Heating_WaterFields::AirOutletNodeName, Handle()));
+        }
+      }
+      OS_ASSERT(setString(openstudio::AirTerminal_SingleDuct_ConstantVolume_ReheatFields::ReheatCoilObjectType, ""));
       OS_ASSERT(setString(openstudio::AirTerminal_SingleDuct_ConstantVolume_ReheatFields::ReheatCoilName, ""));
+    }
+
+    void AirTerminalSingleDuctConstantVolumeReheat_Impl::doCanonicalize(LoadContext& context) {
+      if (!repairContainedAirPath(context)) {
+        detail::addLoadError(context, "Failed to repair contained air path for AirTerminal:SingleDuct:ConstantVolume:Reheat '"
+                                        + getObject<ModelObject>().nameString() + "'.");
+      }
+    }
+
+    bool AirTerminalSingleDuctConstantVolumeReheat_Impl::maintainContainedAirPath() {
+      return reconcileContainedAirPath(nullptr);
+    }
+
+    bool AirTerminalSingleDuctConstantVolumeReheat_Impl::repairContainedAirPath(LoadContext& context) {
+      return reconcileContainedAirPath(&context);
+    }
+
+    bool AirTerminalSingleDuctConstantVolumeReheat_Impl::reconcileContainedAirPath(LoadContext* context) {
+      auto terminal = getObject<ModelObject>();
+      auto coil = terminal.getModelObjectTarget<HVACComponent>(openstudio::AirTerminal_SingleDuct_ConstantVolume_ReheatFields::ReheatCoilName);
+      if (coil && context) {
+        const auto type = coil->iddObject().type();
+        const bool supported =
+          (type == IddObjectType::Coil_Heating_Electric) || (type == IddObjectType::Coil_Heating_Fuel) || (type == IddObjectType::Coil_Heating_Water);
+        const auto owner = coil->containingHVACComponent();
+        if (!supported || (owner && owner->handle() != terminal.handle())) {
+          detail::addLoadWarning(*context, "Dropped " + std::string(supported ? "shared" : "unsupported")
+                                             + " reheat-coil reference from AirTerminal:SingleDuct:ConstantVolume:Reheat '" + terminal.nameString()
+                                             + "'.");
+          OS_ASSERT(setPointer(openstudio::AirTerminal_SingleDuct_ConstantVolume_ReheatFields::ReheatCoilName, Handle(), false));
+          coil = boost::none;
+        }
+      }
+      if (!coil) {
+        const auto previousName = getString(openstudio::AirTerminal_SingleDuct_ConstantVolume_ReheatFields::ReheatCoilName, false, true).value_or("");
+        const auto previousType =
+          getString(openstudio::AirTerminal_SingleDuct_ConstantVolume_ReheatFields::ReheatCoilObjectType, false, true).value_or("");
+        const bool hadExternalTopology = static_cast<bool>(inletModelObject()) || static_cast<bool>(outletModelObject())
+                                         || static_cast<bool>(thermalZoneContainingTerminal(model(), terminal))
+                                         || static_cast<bool>(zoneHVACAirDistributionUnit());
+        if (context && hadExternalTopology && !removeFromLoop()) {
+          detail::addLoadError(*context, "Could not detach incomplete AirTerminal:SingleDuct:ConstantVolume:Reheat '" + terminal.nameString()
+                                           + "' from its external topology.");
+          return false;
+        }
+        OS_ASSERT(setString(openstudio::AirTerminal_SingleDuct_ConstantVolume_ReheatFields::ReheatCoilName, ""));
+        OS_ASSERT(setString(openstudio::AirTerminal_SingleDuct_ConstantVolume_ReheatFields::ReheatCoilObjectType, ""));
+        OS_ASSERT(setPointer(inletPort(), Handle(), false));
+        OS_ASSERT(setPointer(outletPort(), Handle(), false));
+        if ((!previousName.empty() || !previousType.empty() || hadExternalTopology) && context) {
+          detail::addLoadWarning(*context, "Detached incomplete AirTerminal:SingleDuct:ConstantVolume:Reheat '" + terminal.nameString()
+                                             + "' and cleared its unresolved reheat-coil reference.");
+        }
+        return true;
+      }
+      const auto coilType = coil->iddObject().type();
+      if ((coilType != IddObjectType::Coil_Heating_Electric) && (coilType != IddObjectType::Coil_Heating_Fuel)
+          && (coilType != IddObjectType::Coil_Heating_Water)) {
+        return false;
+      }
+      bool changed =
+        !terminal.getString(openstudio::AirTerminal_SingleDuct_ConstantVolume_ReheatFields::ReheatCoilObjectType)
+        || !openstudio::istringEqual(terminal.getString(openstudio::AirTerminal_SingleDuct_ConstantVolume_ReheatFields::ReheatCoilObjectType).get(),
+                                     coil->iddObject().name());
+      if (!setString(openstudio::AirTerminal_SingleDuct_ConstantVolume_ReheatFields::ReheatCoilObjectType, coil->iddObject().name())) {
+        return false;
+      }
+
+      auto inletNode = resolvedNodeTarget(openstudio::AirTerminal_SingleDuct_ConstantVolume_ReheatFields::AirInletNodeName);
+      auto outletNode = resolvedNodeTarget(openstudio::AirTerminal_SingleDuct_ConstantVolume_ReheatFields::AirOutletNodeName);
+      if (!inletNode || !outletNode) {
+        const auto type = coil->iddObject().type();
+        if (type == IddObjectType::Coil_Heating_Electric) {
+          changed = changed || static_cast<bool>(coil->getTarget(openstudio::Coil_Heating_ElectricFields::AirInletNodeName))
+                    || static_cast<bool>(coil->getTarget(openstudio::Coil_Heating_ElectricFields::AirOutletNodeName));
+          OS_ASSERT(coil->setPointer(openstudio::Coil_Heating_ElectricFields::AirInletNodeName, Handle()));
+          OS_ASSERT(coil->setPointer(openstudio::Coil_Heating_ElectricFields::AirOutletNodeName, Handle()));
+        } else if (type == IddObjectType::Coil_Heating_Fuel) {
+          changed = changed || static_cast<bool>(coil->getTarget(openstudio::Coil_Heating_FuelFields::AirInletNodeName))
+                    || static_cast<bool>(coil->getTarget(openstudio::Coil_Heating_FuelFields::AirOutletNodeName));
+          OS_ASSERT(coil->setPointer(openstudio::Coil_Heating_FuelFields::AirInletNodeName, Handle()));
+          OS_ASSERT(coil->setPointer(openstudio::Coil_Heating_FuelFields::AirOutletNodeName, Handle()));
+        } else if (type == IddObjectType::Coil_Heating_Water) {
+          changed = changed || static_cast<bool>(coil->getTarget(openstudio::Coil_Heating_WaterFields::AirInletNodeName))
+                    || static_cast<bool>(coil->getTarget(openstudio::Coil_Heating_WaterFields::AirOutletNodeName));
+          OS_ASSERT(coil->setPointer(openstudio::Coil_Heating_WaterFields::AirInletNodeName, Handle()));
+          OS_ASSERT(coil->setPointer(openstudio::Coil_Heating_WaterFields::AirOutletNodeName, Handle()));
+        }
+        if (changed && context) {
+          detail::addLoadInfo(*context,
+                              "Reconciled contained air path for AirTerminal:SingleDuct:ConstantVolume:Reheat '" + terminal.nameString() + "'.");
+        }
+        return true;
+      }
+
+      const auto type = coil->iddObject().type();
+      if (type == IddObjectType::Coil_Heating_Electric) {
+        const auto previousInlet = coil->getModelObjectTarget<Node>(openstudio::Coil_Heating_ElectricFields::AirInletNodeName);
+        const auto previousOutlet = coil->getModelObjectTarget<Node>(openstudio::Coil_Heating_ElectricFields::AirOutletNodeName);
+        changed = changed || previousInlet != inletNode || previousOutlet != outletNode;
+        const bool result = coil->setPointer(openstudio::Coil_Heating_ElectricFields::AirInletNodeName, inletNode->handle())
+                            && coil->setPointer(openstudio::Coil_Heating_ElectricFields::AirOutletNodeName, outletNode->handle());
+        for (auto displacedNode : {previousInlet, previousOutlet}) {
+          if (result && displacedNode && *displacedNode != *inletNode && *displacedNode != *outletNode && displacedNode->sources().empty()
+              && model().getObject(displacedNode->handle())) {
+            displacedNode->remove();
+          }
+        }
+        if (result && changed && context) {
+          detail::addLoadInfo(*context,
+                              "Reconciled contained air path for AirTerminal:SingleDuct:ConstantVolume:Reheat '" + terminal.nameString() + "'.");
+        }
+        return result;
+      }
+      if (type == IddObjectType::Coil_Heating_Fuel) {
+        const auto previousInlet = coil->getModelObjectTarget<Node>(openstudio::Coil_Heating_FuelFields::AirInletNodeName);
+        const auto previousOutlet = coil->getModelObjectTarget<Node>(openstudio::Coil_Heating_FuelFields::AirOutletNodeName);
+        changed = changed || previousInlet != inletNode || previousOutlet != outletNode;
+        const bool result = coil->setPointer(openstudio::Coil_Heating_FuelFields::AirInletNodeName, inletNode->handle())
+                            && coil->setPointer(openstudio::Coil_Heating_FuelFields::AirOutletNodeName, outletNode->handle());
+        for (auto displacedNode : {previousInlet, previousOutlet}) {
+          if (result && displacedNode && *displacedNode != *inletNode && *displacedNode != *outletNode && displacedNode->sources().empty()
+              && model().getObject(displacedNode->handle())) {
+            displacedNode->remove();
+          }
+        }
+        if (result && changed && context) {
+          detail::addLoadInfo(*context,
+                              "Reconciled contained air path for AirTerminal:SingleDuct:ConstantVolume:Reheat '" + terminal.nameString() + "'.");
+        }
+        return result;
+      }
+      if (type == IddObjectType::Coil_Heating_Water) {
+        const auto previousInlet = coil->getModelObjectTarget<Node>(openstudio::Coil_Heating_WaterFields::AirInletNodeName);
+        const auto previousOutlet = coil->getModelObjectTarget<Node>(openstudio::Coil_Heating_WaterFields::AirOutletNodeName);
+        changed = changed || previousInlet != inletNode || previousOutlet != outletNode;
+        const bool result = coil->setPointer(openstudio::Coil_Heating_WaterFields::AirInletNodeName, inletNode->handle())
+                            && coil->setPointer(openstudio::Coil_Heating_WaterFields::AirOutletNodeName, outletNode->handle());
+        for (auto displacedNode : {previousInlet, previousOutlet}) {
+          if (result && displacedNode && *displacedNode != *inletNode && *displacedNode != *outletNode && displacedNode->sources().empty()
+              && model().getObject(displacedNode->handle())) {
+            displacedNode->remove();
+          }
+        }
+        if (result && changed && context) {
+          detail::addLoadInfo(*context,
+                              "Reconciled contained air path for AirTerminal:SingleDuct:ConstantVolume:Reheat '" + terminal.nameString() + "'.");
+        }
+        return result;
+      }
+      return false;
     }
 
     boost::optional<double> AirTerminalSingleDuctConstantVolumeReheat_Impl::maximumAirFlowRate() const {

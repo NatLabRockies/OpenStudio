@@ -268,11 +268,15 @@ namespace epmodel {
         return false;
       }
 
-      if (containingZoneHVACComponent()) {
+      auto thisCoil = getObject<openstudio::epmodel::CoilHeatingWater>();
+      if (containingHVACComponent() || containingZoneHVACComponent()) {
+        if (auto controller = inferControllerForCoil(thisCoil)) {
+          removeControllerWaterCoil(*controller);
+          syncAirLoopWaterCoilControllers(thisCoil);
+        }
         return true;
       }
 
-      auto thisCoil = getObject<openstudio::epmodel::CoilHeatingWater>();
       const auto waterInlet = thisCoil.waterInletModelObject();
       const auto airOutlet = thisCoil.airOutletModelObject();
       if (!waterInlet || !airOutlet) {

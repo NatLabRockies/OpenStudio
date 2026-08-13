@@ -8,6 +8,7 @@
 
 #include "HVACComponent.hpp"
 #include "HVACComponent/ThermalZone.hpp"
+#include "Loop/AirLoopHVAC.hpp"
 #include "Model.hpp"
 #include "ModelObject.hpp"
 #include "ModelObject/ModelObject_Impl.hpp"
@@ -424,6 +425,14 @@ namespace epmodel {
       return ZoneHVAC_FourPipeFanCoilFields::AirOutletNodeName;
     }
 
+    bool ZoneHVACFourPipeFanCoil_Impl::addToNode(Node& node) {
+      if (!ZoneHVACComponent_Impl::addToNode(node)) {
+        return false;
+      }
+      maintainContainedAirPath();
+      return true;
+    }
+
     bool ZoneHVACFourPipeFanCoil_Impl::addToThermalZone(ThermalZone& thermalZone) {
       if (!ZoneHVACComponent_Impl::addToThermalZone(thermalZone)) {
         return false;
@@ -642,6 +651,19 @@ namespace epmodel {
         return false;
       }
 
+      const auto thisObject = getObject<ModelObject>();
+      const auto currentFan = thisObject.getModelObjectTarget<HVACComponent>(ZoneHVAC_FourPipeFanCoilFields::SupplyAirFanName);
+      if (auto owner = fan.containingHVACComponent(); owner && owner->handle() != thisObject.handle()) {
+        return false;
+      }
+      if (fan.airLoopHVAC()) {
+        return false;
+      }
+      if (currentFan && currentFan->handle() == fan.handle()) {
+        maintainContainedAirPath();
+        return true;
+      }
+
       bool isAllowedType = false;
       const auto fanType = fan.iddObject().type();
       if (fanType == IddObjectType::OS_Fan_SystemModel || fanType == IddObjectType::Fan_SystemModel) {
@@ -678,6 +700,19 @@ namespace epmodel {
         return false;
       }
 
+      const auto thisObject = getObject<ModelObject>();
+      const auto currentCoolingCoil = thisObject.getModelObjectTarget<HVACComponent>(ZoneHVAC_FourPipeFanCoilFields::CoolingCoilName);
+      if (auto owner = coolingCoil.containingHVACComponent(); owner && owner->handle() != thisObject.handle()) {
+        return false;
+      }
+      if (coolingCoil.airLoopHVAC()) {
+        return false;
+      }
+      if (currentCoolingCoil && currentCoolingCoil->handle() == coolingCoil.handle()) {
+        maintainContainedAirPath();
+        return true;
+      }
+
       const auto coolingCoilType = coolingCoil.iddObject().type();
       const bool isAllowedType = (coolingCoilType == IddObjectType::OS_Coil_Cooling_Water)
                                  || (coolingCoilType == IddObjectType::OS_CoilSystem_Cooling_Water_HeatExchangerAssisted)
@@ -697,6 +732,19 @@ namespace epmodel {
     bool ZoneHVACFourPipeFanCoil_Impl::setHeatingCoil(const HVACComponent& heatingCoil) {
       if (heatingCoil.model() != model()) {
         return false;
+      }
+
+      const auto thisObject = getObject<ModelObject>();
+      const auto currentHeatingCoil = thisObject.getModelObjectTarget<HVACComponent>(ZoneHVAC_FourPipeFanCoilFields::HeatingCoilName);
+      if (auto owner = heatingCoil.containingHVACComponent(); owner && owner->handle() != thisObject.handle()) {
+        return false;
+      }
+      if (heatingCoil.airLoopHVAC()) {
+        return false;
+      }
+      if (currentHeatingCoil && currentHeatingCoil->handle() == heatingCoil.handle()) {
+        maintainContainedAirPath();
+        return true;
       }
 
       const auto heatingCoilType = heatingCoil.iddObject().type();
@@ -906,6 +954,33 @@ namespace epmodel {
       auto fanObject = thisObject.getModelObjectTarget<HVACComponent>(ZoneHVAC_FourPipeFanCoilFields::SupplyAirFanName);
       auto coolingObject = thisObject.getModelObjectTarget<HVACComponent>(ZoneHVAC_FourPipeFanCoilFields::CoolingCoilName);
       auto heatingObject = thisObject.getModelObjectTarget<HVACComponent>(ZoneHVAC_FourPipeFanCoilFields::HeatingCoilName);
+      if (context && fanObject) {
+        const auto owner = fanObject->containingHVACComponent();
+        if ((owner && owner->handle() != thisObject.handle()) || fanObject->airLoopHVAC()) {
+          detail::addLoadWarning(*context, "Dropped shared or externally connected fan reference from ZoneHVAC:FourPipeFanCoil '"
+                                             + thisObject.nameString() + "'.");
+          OS_ASSERT(setPointer(ZoneHVAC_FourPipeFanCoilFields::SupplyAirFanName, Handle(), false));
+          fanObject = boost::none;
+        }
+      }
+      if (context && coolingObject) {
+        const auto owner = coolingObject->containingHVACComponent();
+        if ((owner && owner->handle() != thisObject.handle()) || coolingObject->airLoopHVAC()) {
+          detail::addLoadWarning(*context, "Dropped shared or externally connected cooling-coil reference from ZoneHVAC:FourPipeFanCoil '"
+                                             + thisObject.nameString() + "'.");
+          OS_ASSERT(setPointer(ZoneHVAC_FourPipeFanCoilFields::CoolingCoilName, Handle(), false));
+          coolingObject = boost::none;
+        }
+      }
+      if (context && heatingObject) {
+        const auto owner = heatingObject->containingHVACComponent();
+        if ((owner && owner->handle() != thisObject.handle()) || heatingObject->airLoopHVAC()) {
+          detail::addLoadWarning(*context, "Dropped shared or externally connected heating-coil reference from ZoneHVAC:FourPipeFanCoil '"
+                                             + thisObject.nameString() + "'.");
+          OS_ASSERT(setPointer(ZoneHVAC_FourPipeFanCoilFields::HeatingCoilName, Handle(), false));
+          heatingObject = boost::none;
+        }
+      }
       auto fan = fanObject ? fanObject->optionalCast<StraightComponent>() : boost::none;
       auto cooling =
         (coolingObject && isFourPipeFanCoilAirPathComponent(*coolingObject)) ? boost::optional<HVACComponent>(*coolingObject) : boost::none;

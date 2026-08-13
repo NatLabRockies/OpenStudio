@@ -33,11 +33,27 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctInletSideMixer_DefaultConstructor) {
   EXPECT_EQ(AirTerminalSingleDuctInletSideMixer::iddObjectType(), terminal.iddObject().type());
   EXPECT_FALSE(terminal.nameString().empty());
 
+  auto connectionType = terminal.getString(openstudio::AirTerminal_SingleDuct_MixerFields::MixerConnectionType, true);
+  ASSERT_TRUE(connectionType);
+  EXPECT_EQ("InletSide", *connectionType);
+
   EXPECT_EQ("CurrentOccupancy", terminal.perPersonVentilationRateMode());
   auto persistedMode = terminal.getString(openstudio::AirTerminal_SingleDuct_MixerFields::PerPersonVentilationRateMode, true);
   ASSERT_TRUE(persistedMode);
   EXPECT_EQ("CurrentOccupancy", *persistedMode);
   EXPECT_FALSE(terminal.secondaryAirInletNode());
+
+  ASSERT_TRUE(terminal.setString(openstudio::AirTerminal_SingleDuct_MixerFields::MixerConnectionType, ""));
+  model.canonicalize();
+  connectionType = terminal.getString(openstudio::AirTerminal_SingleDuct_MixerFields::MixerConnectionType, true);
+  ASSERT_TRUE(connectionType);
+  EXPECT_EQ("InletSide", *connectionType);
+
+  ASSERT_TRUE(terminal.setString(openstudio::AirTerminal_SingleDuct_MixerFields::MixerConnectionType, "SupplySide"));
+  model.canonicalize();
+  connectionType = terminal.getString(openstudio::AirTerminal_SingleDuct_MixerFields::MixerConnectionType, true);
+  ASSERT_TRUE(connectionType);
+  EXPECT_EQ("SupplySide", *connectionType);
 }
 
 TEST_F(EPModelFixture, AirTerminalSingleDuctInletSideMixer_ScalarAccessors_RoundTrip) {
@@ -59,6 +75,29 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctInletSideMixer_ScalarAccessors_Round
   EXPECT_FALSE(values.empty());
   EXPECT_NE(values.end(), std::find(values.begin(), values.end(), "CurrentOccupancy"));
   EXPECT_NE(values.end(), std::find(values.begin(), values.end(), "DesignOccupancy"));
+}
+
+TEST_F(EPModelFixture, AirTerminalSingleDuctInletSideMixer_RejectsInletSideMutationsForSupplySideObject) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  ThermalZone zone(model);
+  AirTerminalSingleDuctInletSideMixer terminal(model);
+  ASSERT_TRUE(terminal.setString(openstudio::AirTerminal_SingleDuct_MixerFields::MixerConnectionType, "SupplySide"));
+
+  auto branchObject = airLoop.zoneSplitter().lastOutletModelObject();
+  ASSERT_TRUE(branchObject);
+  auto branchNode = branchObject->optionalCast<Node>();
+  ASSERT_TRUE(branchNode);
+  ASSERT_TRUE(zone.addToNode(*branchNode));
+
+  auto zoneAirNode = zone.zoneAirNode();
+  EXPECT_FALSE(terminal.addToNode(zoneAirNode));
+  EXPECT_FALSE(terminal.removeFromLoop());
+  EXPECT_TRUE(terminal.remove().empty());
+  EXPECT_TRUE(model.getObject(terminal.handle()));
+  EXPECT_FALSE(terminal.inletModelObject());
+  EXPECT_FALSE(terminal.outletModelObject());
+  EXPECT_TRUE(zone.equipment().empty());
 }
 
 TEST_F(EPModelFixture, AirTerminalSingleDuctInletSideMixer_PersistedFieldOrdinals_RoundTrip) {
@@ -549,4 +588,31 @@ TEST_F(EPModelFixture, ZoneHVACComponent_AddToNode_IntegratesWithInletSideMixer)
   EXPECT_EQ(std::ranges::find(remainingInletNodes, unitHeaterOutletNode), remainingInletNodes.end());
   const auto remainingExhaustNodes = connections->zoneAirExhaustNodes();
   EXPECT_EQ(std::ranges::find(remainingExhaustNodes, secondaryAirInlet.get()), remainingExhaustNodes.end());
+}
+
+TEST_F(EPModelFixture, ZoneHVACComponent_AddToNode_RejectsSupplySideMixerOutlet) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  ThermalZone zone(model);
+  AirTerminalSingleDuctInletSideMixer terminal(model);
+  ZoneHVACUnitHeater unitHeater(model);
+
+  auto branchObject = airLoop.zoneSplitter().lastOutletModelObject();
+  ASSERT_TRUE(branchObject);
+  auto branchNode = branchObject->optionalCast<Node>();
+  ASSERT_TRUE(branchNode);
+  ASSERT_TRUE(zone.addToNode(*branchNode));
+  auto zoneAirNode = zone.zoneAirNode();
+  ASSERT_TRUE(terminal.setPointer(openstudio::AirTerminal_SingleDuct_MixerFields::MixerOutletNodeName, zoneAirNode.handle()));
+  ASSERT_TRUE(terminal.setString(openstudio::AirTerminal_SingleDuct_MixerFields::MixerConnectionType, "SupplySide"));
+
+  EXPECT_FALSE(unitHeater.addToNode(zoneAirNode));
+  EXPECT_FALSE(unitHeater.inletNode());
+  EXPECT_FALSE(unitHeater.outletNode());
+  EXPECT_FALSE(unitHeater.thermalZone());
+  EXPECT_FALSE(terminal.secondaryAirInletNode());
+  EXPECT_TRUE(zone.equipment().empty());
+  const auto zoneHVACUnitName = terminal.getString(openstudio::AirTerminal_SingleDuct_MixerFields::ZoneHVACUnitObjectName, true);
+  ASSERT_TRUE(zoneHVACUnitName);
+  EXPECT_TRUE(zoneHVACUnitName->empty());
 }

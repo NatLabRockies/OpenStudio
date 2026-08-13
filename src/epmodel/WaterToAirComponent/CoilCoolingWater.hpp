@@ -62,7 +62,8 @@ namespace epmodel {
     //   nodes because the EnergyPlus controller object does not store a direct back-reference to the coil. `addToNode()`
     //   also mirrors the canonical wrapper's parent-system protections by rejecting direct AirLoop insertion when the
     //   coil is the primary child of `CoilSystemCoolingWater` or any `CoilSystemCoolingWaterHeatExchangerAssisted`,
-    //   and by suppressing/removing inferred controllers when the coil is used inside `CoilSystemCoolingWater`. The
+    //   and by suppressing/removing inferred controllers when the coil is used inside `CoilSystemCoolingWater` or a
+    //   compound air terminal. The
     //   equivalent-duct helper surface persists the linked `AirflowNetwork:Distribution:Component:Coil` relationship and
     //   its scalar geometry fields; when reusing malformed imported data, the helper also repairs the stored
     //   `Coil Object Type` field back to `Coil:Cooling:Water`. If malformed imported data omits the required
@@ -71,7 +72,7 @@ namespace epmodel {
     // - Evidence: `src/model/CoilCoolingWater.hpp`, `src/model/CoilCoolingWater.cpp`,
     //   `src/energyplus/ForwardTranslator/ForwardTranslateCoilCoolingWater.cpp`,
     //   `src/energyplus/ForwardTranslator/ForwardTranslateAirflowNetwork.cpp`, and
-    //   `src/model/test/CoilCoolingWater_GTest.cpp`.
+    //   `src/model/test/CoilCoolingWater_GTest.cpp`, and `src/epmodel/test/CoilCoolingWater_GTest.cpp`.
     Schedule availabilitySchedule() const;
 
     /** \deprecated */

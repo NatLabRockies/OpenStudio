@@ -54,7 +54,13 @@ namespace epmodel {
     // - Documented Delta: The legacy `(Model)` constructor remains available for incremental object assembly and does not establish the fan
     //   or reheat coil. epmodel still omits `secondaryAirInletPort`, `setInducedAirPlenumZone(ThermalZone&)`, `clone(...)`, autosized-result
     //   convenience helpers. AirLoop-level attachment of a zone to an already inserted single-duct terminal is shared AirLoopHVAC work.
-    // - Field/Storage Mapping: The preserved scalars map directly to EnergyPlus `AirTerminal:SingleDuct:SeriesPIU:Reheat` fields; epmodel rewires the zone branch through a terminal-owned inlet node, persists a distinct secondary inlet node on the same object, records that node on the owning zone exhaust-node list, on `addToNode` synchronizes the PIU fan availability to the serving air loop, and cleans zone, ADU, secondary-air, and plant references in the supported teardown paths.
+    //   Child replacement accepts supported, same-model EnergyPlus fan and coil wrappers only when they are not already owned or air-side
+    //   connected, so one persisted child cannot be stolen between compound parents.
+    // - Field/Storage Mapping: The preserved scalars map directly to EnergyPlus `AirTerminal:SingleDuct:SeriesPIU:Reheat` fields; epmodel
+    //   rewires the zone branch through a terminal-owned inlet node, persists a distinct secondary inlet node and terminal-owned zone mixer,
+    //   projects the fan and reheat-coil air nodes through that mixer, records the secondary node on the owning zone exhaust-node list,
+    //   synchronizes the PIU fan availability to the serving air loop, and cleans zone, ADU, mixer, child-node, and plant references in the
+    //   supported teardown paths.
     // - Evidence: `src/model/AirTerminalSingleDuctSeriesPIUReheat.hpp`, `src/model/AirTerminalSingleDuctSeriesPIUReheat.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirTerminalSingleDuctSeriesPIUReheat.cpp`, and `src/epmodel/test/AirTerminalSingleDuctSeriesPIUReheat_GTest.cpp`.
     // - Remaining Parity Work: Add the omitted plenum, clone, secondary-port, and autosized-result helpers if a later campaign needs the broader canonical surface.
     boost::optional<Schedule> availabilitySchedule() const;

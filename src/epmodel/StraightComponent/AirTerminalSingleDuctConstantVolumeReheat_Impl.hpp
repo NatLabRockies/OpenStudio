@@ -72,6 +72,12 @@ namespace epmodel {
       bool setMaximumReheatAirTemperature(double maximumReheatAirTemperature);
       void resetMaximumReheatAirTemperature();
       bool isMaximumReheatAirTemperatureDefaulted() const;
+
+     private:
+      void doCanonicalize(LoadContext& context) override;
+      bool maintainContainedAirPath();
+      bool repairContainedAirPath(LoadContext& context);
+      bool reconcileContainedAirPath(LoadContext* context);
     };
 
   }  // namespace detail

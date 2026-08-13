@@ -21,6 +21,7 @@ namespace epmodel {
 
       unsigned inletPort() const override;
       unsigned outletPort(unsigned branchIndex) const override;
+      void removePortForBranch(unsigned branchIndex) override;
       bool setOutletModelObject(unsigned branchIndex, const openstudio::epmodel::ModelObject& modelObject) override;
       boost::optional<openstudio::epmodel::Node> inletNode() const;
       bool setInletNode(const openstudio::epmodel::Node& node);
