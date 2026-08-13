@@ -82,6 +82,14 @@ namespace epmodel {
       return boost::none;
     }
 
+    bool fieldHasStoredValue(const ModelObject& object, unsigned field) {
+      const auto managedValue = object.getField(field, false);
+      auto workspaceImpl = object.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+      OS_ASSERT(workspaceImpl);
+      const auto rawValue = workspaceImpl->openstudio::detail::IdfObject_Impl::getString(field, false, true);
+      return (managedValue && !managedValue->empty()) || (rawValue && !rawValue->empty());
+    }
+
     class WorkspaceFieldSnapshot
     {
      public:
@@ -217,25 +225,22 @@ namespace epmodel {
           return nullptr;
         }
 
-        const auto fieldHasValue = [](const ModelObject& object, unsigned field) {
-          const auto value = object.getField(field, false);
-          return value && !value->empty();
-        };
-        const bool terminalInletIsSet = fieldHasValue(terminal, terminal.cast<StraightComponent>().inletPort());
-        const bool terminalOutletIsSet = fieldHasValue(terminal, terminal.cast<StraightComponent>().outletPort());
+        const auto terminalComponent = terminal.cast<StraightComponent>();
+        const bool terminalInletIsSet = fieldHasStoredValue(terminal, terminalComponent.inletPort());
+        const bool terminalOutletIsSet = fieldHasStoredValue(terminal, terminalComponent.outletPort());
         if (terminalInletIsSet != terminalOutletIsSet) {
           return nullptr;
         }
 
-        const auto terminalInlet = terminal.cast<StraightComponent>().inletModelObject();
-        const auto terminalOutlet = terminal.cast<StraightComponent>().outletModelObject();
+        const auto terminalInlet = managedFieldTarget(terminal, terminalComponent.inletPort());
+        const auto terminalOutlet = managedFieldTarget(terminal, terminalComponent.outletPort());
         if (terminalInletIsSet
             && (!terminalInlet || !terminalOutlet || !terminalInlet->optionalCast<Node>() || !terminalOutlet->optionalCast<Node>())) {
           return nullptr;
         }
 
         const auto coilObject = coil.cast<ModelObject>();
-        const bool coilOutletIsSet = fieldHasValue(coilObject, coilFields->outlet);
+        const bool coilOutletIsSet = fieldHasStoredValue(coilObject, coilFields->outlet);
         const auto coilOutlet = managedFieldTarget(coilObject, coilFields->outlet);
         if (terminalOutletIsSet) {
           if (!coilOutletIsSet || !coilOutlet || *coilOutlet != *terminalOutlet) {

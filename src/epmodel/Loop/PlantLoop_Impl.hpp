@@ -156,7 +156,7 @@ namespace epmodel {
 
      private:
       // Carries a fully validated CoilHeatingWater demand-branch teardown
-      // across the VAV reheat compound operation. It is private implementation
+      // across a compound terminal operation. It is private implementation
       // machinery, not part of the PlantLoop wrapper API.
       class CoilHeatingWaterDemandBranchRemovalPlan
       {
@@ -193,6 +193,7 @@ namespace epmodel {
       boost::optional<openstudio::epmodel::Branch> demandBranchForNode(const openstudio::epmodel::Node& node) const;
 
       friend class AirTerminalSingleDuctVAVReheat_Impl;
+      friend class AirTerminalSingleDuctConstantVolumeReheat_Impl;
     };
 
   }  // namespace detail

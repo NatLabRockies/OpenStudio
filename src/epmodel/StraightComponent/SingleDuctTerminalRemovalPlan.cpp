@@ -21,7 +21,9 @@
 
 #include <algorithm>
 #include <utilities/core/Assert.hpp>
+#include <utilities/core/UUID.hpp>
 #include <utilities/idd/ZoneHVAC_AirDistributionUnit_FieldEnums.hxx>
+#include <utilities/idf/WorkspaceObject_Impl.hpp>
 
 namespace openstudio {
 namespace epmodel {
@@ -31,6 +33,36 @@ namespace epmodel {
       void assertSuccessfulMutation(bool result) {
         OS_ASSERT(result);
         (void)result;
+      }
+
+      struct ExistingNodeField
+      {
+        bool set = false;
+        boost::optional<Node> node;
+      };
+
+      ExistingNodeField existingNodeField(const ModelObject& object, unsigned field) {
+        ExistingNodeField result;
+        const auto managedValue = object.getField(field, false);
+        auto workspaceImpl = object.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+        OS_ASSERT(workspaceImpl);
+        const auto rawValue = workspaceImpl->openstudio::detail::IdfObject_Impl::getString(field, false, true);
+        if ((!managedValue || managedValue->empty()) && (!rawValue || rawValue->empty())) {
+          return result;
+        }
+
+        result.set = true;
+        if (!managedValue || managedValue->empty()) {
+          return result;
+        }
+        const auto targetHandle = toUUID(*managedValue);
+        if (targetHandle.isNull()) {
+          return result;
+        }
+        if (auto target = object.model().getObject(targetHandle)) {
+          result.node = target->optionalCast<Node>();
+        }
+        return result;
       }
     }  // namespace
 
@@ -50,11 +82,7 @@ namespace epmodel {
 
     bool SingleDuctTerminalRemovalPlan::hasTopology(const StraightComponent& terminal) {
       const auto terminalObject = terminal.cast<ModelObject>();
-      const auto fieldHasValue = [&](unsigned field) {
-        const auto value = terminalObject.getField(field, false);
-        return value && !value->empty();
-      };
-      if (fieldHasValue(terminal.inletPort()) || fieldHasValue(terminal.outletPort())) {
+      if (existingNodeField(terminalObject, terminal.inletPort()).set || existingNodeField(terminalObject, terminal.outletPort()).set) {
         return true;
       }
 
@@ -68,7 +96,8 @@ namespace epmodel {
       return !terminalObject.getSources(openstudio::IddObjectType::ZoneHVAC_AirDistributionUnit).empty();
     }
 
-    std::unique_ptr<SingleDuctTerminalRemovalPlan> SingleDuctTerminalRemovalPlan::prepare(StraightComponent& terminal) {
+    std::unique_ptr<SingleDuctTerminalRemovalPlan> SingleDuctTerminalRemovalPlan::prepare(StraightComponent& terminal,
+                                                                                          const std::vector<ModelObject>& containedInletSources) {
       const auto inletPort = terminal.inletPort();
       const auto outletPort = terminal.outletPort();
       if (inletPort == 0u || outletPort == 0u || inletPort == outletPort) {
@@ -76,9 +105,21 @@ namespace epmodel {
       }
 
       auto terminalObject = terminal.cast<ModelObject>();
-      const auto inletObject = terminal.inletModelObject();
-      const auto outletObject = terminal.outletModelObject();
-      if (static_cast<bool>(inletObject) != static_cast<bool>(outletObject)) {
+      std::vector<Handle> containedInletSourceHandles;
+      containedInletSourceHandles.reserve(containedInletSources.size());
+      for (const auto& source : containedInletSources) {
+        const auto type = source.iddObject().type();
+        if (source.model() != terminal.model() || source.handle() == terminalObject.handle() || type == AirLoopHVACSupplyPlenum::iddObjectType()
+            || type == AirLoopHVACZoneSplitter::iddObjectType()
+            || std::ranges::find(containedInletSourceHandles, source.handle()) != containedInletSourceHandles.end()) {
+          return nullptr;
+        }
+        containedInletSourceHandles.push_back(source.handle());
+      }
+
+      const auto inletField = existingNodeField(terminalObject, inletPort);
+      const auto outletField = existingNodeField(terminalObject, outletPort);
+      if (inletField.set != outletField.set || (inletField.set && (!inletField.node || !outletField.node))) {
         return nullptr;
       }
 
@@ -86,9 +127,9 @@ namespace epmodel {
       boost::optional<ModelObject> outletNode;
       std::unique_ptr<AirLoopHVAC_Impl::DemandBranchStartReservation> branchReservation;
       boost::optional<ThermalZone> servedZone;
-      if (inletObject && outletObject) {
-        const auto typedInletNode = inletObject->optionalCast<Node>();
-        const auto typedOutletNode = outletObject->optionalCast<Node>();
+      if (inletField.node && outletField.node) {
+        const auto typedInletNode = inletField.node;
+        const auto typedOutletNode = outletField.node;
         const auto airLoop = terminal.airLoopHVAC();
         if (!typedInletNode || !typedOutletNode || !airLoop) {
           return nullptr;
@@ -110,7 +151,11 @@ namespace epmodel {
           const auto type = source.iddObject().type();
           return type == AirLoopHVACSupplyPlenum::iddObjectType() || type == AirLoopHVACZoneSplitter::iddObjectType();
         });
-        if (inletSources.size() != 2u || terminalSourceCount != 1u || connectorSourceCount != 1u) {
+        const bool hasEveryContainedSource = std::ranges::all_of(containedInletSourceHandles, [&](const auto& sourceHandle) {
+          return std::ranges::count_if(inletSources, [&](const auto& source) { return source.handle() == sourceHandle; }) == 1;
+        });
+        if (inletSources.size() != 2u + containedInletSourceHandles.size() || terminalSourceCount != 1u || connectorSourceCount != 1u
+            || !hasEveryContainedSource) {
           return nullptr;
         }
       } else if (terminal.loop()) {

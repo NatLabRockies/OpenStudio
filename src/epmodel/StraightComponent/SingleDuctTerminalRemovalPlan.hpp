@@ -10,6 +10,7 @@
 #include "ModelObject.hpp"
 
 #include <memory>
+#include <vector>
 
 namespace openstudio {
 namespace epmodel {
@@ -24,7 +25,8 @@ namespace epmodel {
     {
      public:
       static bool hasTopology(const StraightComponent& terminal);
-      static std::unique_ptr<SingleDuctTerminalRemovalPlan> prepare(StraightComponent& terminal);
+      static std::unique_ptr<SingleDuctTerminalRemovalPlan> prepare(StraightComponent& terminal,
+                                                                    const std::vector<ModelObject>& containedInletSources = {});
 
       SingleDuctTerminalRemovalPlan(const SingleDuctTerminalRemovalPlan&) = delete;
       SingleDuctTerminalRemovalPlan& operator=(const SingleDuctTerminalRemovalPlan&) = delete;

@@ -40,6 +40,7 @@
 
 #include <utilities/idd/AirTerminal_SingleDuct_VAV_Reheat_FieldEnums.hxx>
 #include <utilities/idd/Coil_Heating_Water_FieldEnums.hxx>
+#include <utilities/idf/WorkspaceObject_Impl.hpp>
 
 using namespace openstudio::epmodel;
 
@@ -885,4 +886,62 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctVAVReheat_RemoveFromLoopRejectsMalfo
   ASSERT_TRUE(terminal.getModelObjectTarget<Node>(openstudio::AirTerminal_SingleDuct_VAV_ReheatFields::DamperAirOutletNodeName));
   EXPECT_EQ(damperOutlet->handle(),
             terminal.getModelObjectTarget<Node>(openstudio::AirTerminal_SingleDuct_VAV_ReheatFields::DamperAirOutletNodeName)->handle());
+}
+
+TEST_F(EPModelFixture, AirTerminalSingleDuctVAVReheat_RemovePreflightDoesNotMaterializeRawPorts) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  PlantLoop plantLoop(model);
+  ThermalZone zone(model);
+  CoilHeatingWater waterCoil(model);
+  auto availability = model.alwaysOnDiscreteSchedule();
+  AirTerminalSingleDuctVAVReheat terminal(model, availability, waterCoil);
+  ZoneHVACAirDistributionUnit adu(model);
+  auto aduImpl = adu.getImpl<detail::ZoneHVACAirDistributionUnit_Impl>();
+  ASSERT_TRUE(aduImpl);
+  ASSERT_TRUE(aduImpl->setAirTerminal(terminal.cast<ModelObject>()));
+
+  ASSERT_TRUE(airLoop.addBranchForZone(zone, terminal));
+  ASSERT_TRUE(plantLoop.addDemandBranchForComponent(waterCoil));
+  auto terminalWorkspaceImpl = terminal.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  ASSERT_TRUE(terminalWorkspaceImpl);
+  const auto inletPort = terminal.inletPort();
+  const auto outletPort = terminal.outletPort();
+  ASSERT_TRUE(terminalWorkspaceImpl->setPointer(inletPort, openstudio::Handle(), false));
+  ASSERT_TRUE(terminalWorkspaceImpl->setPointer(outletPort, openstudio::Handle(), false));
+  ASSERT_TRUE(terminalWorkspaceImpl->openstudio::detail::IdfObject_Impl::setString(inletPort, "Unresolved VAV Reheat Inlet", false));
+  ASSERT_TRUE(terminalWorkspaceImpl->openstudio::detail::IdfObject_Impl::setString(outletPort, "Unresolved VAV Reheat Outlet", false));
+
+  const auto rawInletBefore = terminalWorkspaceImpl->openstudio::detail::IdfObject_Impl::getString(inletPort, false, true);
+  const auto rawOutletBefore = terminalWorkspaceImpl->openstudio::detail::IdfObject_Impl::getString(outletPort, false, true);
+  ASSERT_TRUE(rawInletBefore);
+  ASSERT_TRUE(rawOutletBefore);
+  std::set<openstudio::Handle> handlesBefore;
+  for (const auto& object : model.objects()) {
+    handlesBefore.insert(object.handle());
+  }
+  const auto splitterBefore = airLoop.zoneSplitter().outletModelObjects();
+  const auto mixerBefore = airLoop.zoneMixer().inletModelObjects();
+  const auto zoneEquipmentBefore = zone.equipment();
+  const auto plantComponentsBefore = plantLoop.demandComponents();
+  const auto nodeCountBefore = model.getConcreteModelObjects<Node>().size();
+
+  EXPECT_FALSE(terminal.removeFromLoop());
+
+  std::set<openstudio::Handle> handlesAfter;
+  for (const auto& object : model.objects()) {
+    handlesAfter.insert(object.handle());
+  }
+  EXPECT_EQ(handlesBefore, handlesAfter);
+  EXPECT_EQ(nodeCountBefore, model.getConcreteModelObjects<Node>().size());
+  EXPECT_EQ(splitterBefore, airLoop.zoneSplitter().outletModelObjects());
+  EXPECT_EQ(mixerBefore, airLoop.zoneMixer().inletModelObjects());
+  EXPECT_EQ(zoneEquipmentBefore, zone.equipment());
+  EXPECT_EQ(plantComponentsBefore, plantLoop.demandComponents());
+  EXPECT_EQ(*rawInletBefore, terminalWorkspaceImpl->openstudio::detail::IdfObject_Impl::getString(inletPort, false, true).value_or(""));
+  EXPECT_EQ(*rawOutletBefore, terminalWorkspaceImpl->openstudio::detail::IdfObject_Impl::getString(outletPort, false, true).value_or(""));
+  ASSERT_TRUE(waterCoil.plantLoop());
+  EXPECT_EQ(plantLoop.handle(), waterCoil.plantLoop()->handle());
+  ASSERT_TRUE(adu.airTerminal());
+  EXPECT_EQ(terminal.handle(), adu.airTerminal()->handle());
 }
