@@ -44,22 +44,22 @@ namespace epmodel {
     static std::vector<std::string> heatingControlTypeValues();
 
     // Schema Alignment Notes:
-    // - Status: Near Parity. Terminal-only and zone-serving demand-branch insertion/removal, child ownership, and secondary-air exhaust wiring
-    //   are implemented; the sizing-result and plenum helpers remain narrower.
+    // - Status: Near Parity. Terminal-only and zone-serving demand-branch insertion/removal, child ownership, secondary-air exhaust wiring,
+    //   shared-plenum teardown, and optional water-plant cleanup are implemented; sizing-result helpers remain narrower.
     // - Canonical Counterpart: openstudio::model::AirTerminalSingleDuctParallelPIUReheat.
     // - Implemented Parity: The `(Model, Schedule, HVACComponent fan, HVACComponent reheatCoil)` constructor, relationships and PIU control
     //   scalars follow canonical behavior. `addToNode` supports both terminal-only splitter-to-mixer branches and zone-serving branches; the
-    //   latter alone projects a secondary inlet into zone exhaust topology and registers zone equipment. Insertion is atomic, and
-    //   `removeFromLoop` preserves the terminal and owned children for reuse.
-    // - Documented Delta: epmodel currently omits the canonical autosized-result query helpers and `setInducedAirPlenumZone(ThermalZone&)`
-    //   until the shared sizing and plenum infrastructure are broad enough to support them without stubs or local workarounds. Child
-    //   replacement accepts supported, same-model EnergyPlus fan and coil wrappers only when they are not already owned or air-side connected,
-    //   so one persisted child cannot be stolen between compound parents.
+    //   latter alone projects a secondary inlet into zone exhaust topology and registers zone equipment. Insertion is atomic. Removal proves
+    //   the contained fan/mixer/coil path, external zone/ADU/plenum path, and optional water demand branch before mutation, then preserves the
+    //   terminal and owned children for reuse. Removal preflight inspects unresolved references without materializing new nodes or attachments.
+    // - Documented Delta: epmodel currently omits the canonical autosized-result query helpers. Child replacement accepts supported,
+    //   same-model EnergyPlus fan and coil wrappers only when they are not already owned or air-side connected, so one persisted child cannot
+    //   be stolen between compound parents.
     // - Field/Storage Mapping: The preserved scalars map directly to EnergyPlus `AirTerminal:SingleDuct:ParallelPIU:Reheat` fields; epmodel
     //   rewires the zone branch through a terminal-owned inlet node, persists a distinct secondary inlet node and terminal-owned zone mixer,
     //   projects the fan and reheat-coil air nodes through that mixer, records the secondary node on the zone exhaust `NodeList`, synchronizes
-    //   fan availability to the serving air loop, and cleans zone, ADU, mixer, child-node, and plant references in the supported
-    //   `remove()`/`removeFromLoop()` teardown paths, including the stale-zone cleanup regression path.
+    //   fan availability to the serving air loop, and cleans zone, ADU, mixer, child-node, plenum, and plant references in one prepared
+    //   `remove()`/`removeFromLoop()` teardown transaction, including the stale-zone cleanup regression path.
     // - Evidence: `src/model/AirTerminalSingleDuctParallelPIUReheat.hpp`, `src/model/AirTerminalSingleDuctParallelPIUReheat.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirTerminalSingleDuctParallelPIUReheat.cpp`, and `src/epmodel/test/AirTerminalSingleDuctParallelPIUReheat_GTest.cpp`.
     // - Remaining Parity Work: Add the omitted autosized-result helpers if a later campaign needs sizing-result convenience parity.
     Schedule availabilitySchedule() const;

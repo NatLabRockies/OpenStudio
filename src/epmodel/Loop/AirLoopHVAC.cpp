@@ -5174,6 +5174,7 @@ namespace epmodel {
         const auto terminalType = airTerminal->iddObject().type();
         const bool hasFamilyOwnedPlantPreflight = terminalType == AirTerminalSingleDuctConstantVolumeReheat::iddObjectType()
                                                   || terminalType == AirTerminalSingleDuctVAVHeatAndCoolReheat::iddObjectType()
+                                                  || terminalType == AirTerminalSingleDuctParallelPIUReheat::iddObjectType()
                                                   || terminalType == AirTerminalSingleDuctSeriesPIUReheat::iddObjectType();
         if (plenumWillBeDetached && ownsPlantTopology && !hasFamilyOwnedPlantPreflight) {
           // Plenum detachment cannot be rolled back without changing plenum

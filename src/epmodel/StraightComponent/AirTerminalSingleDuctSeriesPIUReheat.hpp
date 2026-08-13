@@ -45,15 +45,15 @@ namespace epmodel {
 
     // Schema Alignment Notes:
     // - Status: Near Parity. Terminal-only and zone-serving demand-branch insertion/removal are aligned, while the broader canonical
-    //   plenum/clone/autosized-result surface remains narrower.
+    //   clone/autosized-result surface remains narrower.
     // - Canonical Counterpart: openstudio::model::AirTerminalSingleDuctSeriesPIUReheat.
     // - Implemented Parity: The canonical `(Model, HVACComponent fan, HVACComponent reheatCoil)` constructor establishes both required child
     //   relationships. `availabilitySchedule`, validated `fan` and `reheatCoil` relationships, and PIU control scalars are preserved.
     //   `addToNode` atomically supports both terminal-only splitter-to-mixer branches and zone-serving branches; only a served zone receives
     //   secondary-air exhaust, equipment, and ADU projections. `remove()` and `removeFromLoop()` preserve canonical ownership semantics.
     // - Documented Delta: The legacy `(Model)` constructor remains available for incremental object assembly and does not establish the fan
-    //   or reheat coil. epmodel still omits `secondaryAirInletPort`, `setInducedAirPlenumZone(ThermalZone&)`, `clone(...)`, autosized-result
-    //   convenience helpers. AirLoop-level attachment of a zone to an already inserted single-duct terminal is shared AirLoopHVAC work.
+    //   or reheat coil. epmodel still omits `secondaryAirInletPort`, `clone(...)`, and autosized-result convenience helpers. AirLoop-level
+    //   attachment of a zone to an already inserted single-duct terminal is shared AirLoopHVAC work.
     //   Child replacement accepts supported, same-model EnergyPlus fan and coil wrappers only when they are not already owned or air-side
     //   connected, so one persisted child cannot be stolen between compound parents.
     // - Field/Storage Mapping: The preserved scalars map directly to EnergyPlus `AirTerminal:SingleDuct:SeriesPIU:Reheat` fields; epmodel
@@ -62,7 +62,7 @@ namespace epmodel {
     //   synchronizes the PIU fan availability to the serving air loop, and cleans zone, ADU, mixer, child-node, and plant references in the
     //   supported teardown paths.
     // - Evidence: `src/model/AirTerminalSingleDuctSeriesPIUReheat.hpp`, `src/model/AirTerminalSingleDuctSeriesPIUReheat.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirTerminalSingleDuctSeriesPIUReheat.cpp`, and `src/epmodel/test/AirTerminalSingleDuctSeriesPIUReheat_GTest.cpp`.
-    // - Remaining Parity Work: Add the omitted plenum, clone, secondary-port, and autosized-result helpers if a later campaign needs the broader canonical surface.
+    // - Remaining Parity Work: Add the omitted clone, secondary-port, and autosized-result helpers if a later campaign needs the broader canonical surface.
     boost::optional<Schedule> availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);
     void resetAvailabilitySchedule();

@@ -19,9 +19,10 @@ namespace epmodel {
 
   namespace detail {
 
-    // Preflights the common external topology for one childless single-duct
-    // terminal removal. After prepare(), commit() contains only invariant
-    // mutations and cannot report a partially completed teardown.
+    // Preflights the common external topology for one single-duct terminal.
+    // Compound terminals prepare their contained and plant topology beside
+    // this plan. After prepare(), commit() contains only invariant mutations
+    // and cannot report a partially completed teardown.
     class SingleDuctTerminalRemovalPlan
     {
      public:
