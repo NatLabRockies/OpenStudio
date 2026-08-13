@@ -3463,6 +3463,84 @@ TEST_F(EPModelFixture, AirLoopHVAC_RemoveTerminalRejectsCompetingNonterminalAtBr
   EXPECT_EQ(competingFanOutlet.handle(), competingFan.outletModelObject()->handle());
 }
 
+TEST_F(EPModelFixture, AirLoopHVAC_RemoveTerminalRejectsMultipleAirDistributionUnitsBeforeMutation) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  ThermalZone zone(model);
+  AirTerminalSingleDuctConstantVolumeNoReheat terminal(model);
+  ASSERT_TRUE(airLoop.addBranchForZone(zone, terminal));
+
+  ASSERT_TRUE(terminal.inletModelObject());
+  ASSERT_TRUE(terminal.outletModelObject());
+  const auto terminalInletHandle = terminal.inletModelObject()->handle();
+  const auto terminalOutletNode = terminal.outletModelObject()->cast<Node>();
+  ASSERT_EQ(1u, terminal.getSources(openstudio::IddObjectType::ZoneHVAC_AirDistributionUnit).size());
+
+  ZoneHVACAirDistributionUnit competingADU(model);
+  auto competingADUImpl = competingADU.getImpl<detail::ZoneHVACAirDistributionUnit_Impl>();
+  ASSERT_TRUE(competingADUImpl);
+  ASSERT_TRUE(competingADUImpl->setAirTerminal(terminal.cast<ModelObject>()));
+  ASSERT_TRUE(competingADUImpl->setOutletNode(terminalOutletNode));
+  ASSERT_EQ(2u, terminal.getSources(openstudio::IddObjectType::ZoneHVAC_AirDistributionUnit).size());
+
+  const auto handlesBefore = workspaceHandles(model);
+  const auto splitterBefore = objectHandles(airLoop.zoneSplitter().outletModelObjects());
+  const auto mixerBefore = objectHandles(airLoop.zoneMixer().inletModelObjects());
+  const auto equipmentBefore = objectHandles(zone.equipment());
+
+  EXPECT_FALSE(terminal.removeFromLoop());
+
+  EXPECT_EQ(handlesBefore, workspaceHandles(model));
+  EXPECT_EQ(splitterBefore, objectHandles(airLoop.zoneSplitter().outletModelObjects()));
+  EXPECT_EQ(mixerBefore, objectHandles(airLoop.zoneMixer().inletModelObjects()));
+  EXPECT_EQ(equipmentBefore, objectHandles(zone.equipment()));
+  ASSERT_TRUE(terminal.inletModelObject());
+  ASSERT_TRUE(terminal.outletModelObject());
+  EXPECT_EQ(terminalInletHandle, terminal.inletModelObject()->handle());
+  EXPECT_EQ(terminalOutletNode.handle(), terminal.outletModelObject()->handle());
+  ASSERT_TRUE(competingADU.airTerminal());
+  ASSERT_TRUE(competingADU.outletNode());
+  EXPECT_EQ(terminal.handle(), competingADU.airTerminal()->handle());
+  EXPECT_EQ(terminalOutletNode.handle(), competingADU.outletNode()->handle());
+}
+
+TEST_F(EPModelFixture, AirLoopHVAC_RemoveTerminalRejectsForeignInletNodeReferenceBeforeMutation) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  ThermalZone zone(model);
+  AirTerminalSingleDuctConstantVolumeNoReheat terminal(model);
+  ASSERT_TRUE(airLoop.addBranchForZone(zone, terminal));
+
+  ASSERT_TRUE(terminal.inletModelObject());
+  ASSERT_TRUE(terminal.outletModelObject());
+  const auto terminalInletNode = terminal.inletModelObject()->cast<Node>();
+  const auto terminalOutletHandle = terminal.outletModelObject()->handle();
+  NodeList foreignNodeList(model);
+  auto foreignNodeListImpl = foreignNodeList.getImpl<detail::NodeList_Impl>();
+  ASSERT_TRUE(foreignNodeListImpl);
+  ASSERT_TRUE(foreignNodeListImpl->addNode(terminalInletNode));
+  ASSERT_EQ(1u, foreignNodeList.nodes().size());
+  EXPECT_EQ(terminalInletNode.handle(), foreignNodeList.nodes().front().handle());
+
+  const auto handlesBefore = workspaceHandles(model);
+  const auto splitterBefore = objectHandles(airLoop.zoneSplitter().outletModelObjects());
+  const auto mixerBefore = objectHandles(airLoop.zoneMixer().inletModelObjects());
+  const auto equipmentBefore = objectHandles(zone.equipment());
+
+  EXPECT_FALSE(terminal.removeFromLoop());
+
+  EXPECT_EQ(handlesBefore, workspaceHandles(model));
+  EXPECT_EQ(splitterBefore, objectHandles(airLoop.zoneSplitter().outletModelObjects()));
+  EXPECT_EQ(mixerBefore, objectHandles(airLoop.zoneMixer().inletModelObjects()));
+  EXPECT_EQ(equipmentBefore, objectHandles(zone.equipment()));
+  ASSERT_TRUE(terminal.inletModelObject());
+  ASSERT_TRUE(terminal.outletModelObject());
+  EXPECT_EQ(terminalInletNode.handle(), terminal.inletModelObject()->handle());
+  EXPECT_EQ(terminalOutletHandle, terminal.outletModelObject()->handle());
+  ASSERT_EQ(1u, foreignNodeList.nodes().size());
+  EXPECT_EQ(terminalInletNode.handle(), foreignNodeList.nodes().front().handle());
+}
+
 TEST_F(EPModelFixture, AirLoopHVAC_AddBranchForZonePreservesChangeoverBypassMixerRow) {
   Model model;
   AirLoopHVAC airLoop(model);
