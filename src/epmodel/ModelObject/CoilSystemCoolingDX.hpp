@@ -56,7 +56,7 @@ namespace epmodel {
     // - Field/Storage Mapping: Scalars map directly to `CoilSystem:Cooling:DX`; inlet/outlet use StraightComponent ports, and sensor and cooling
     //   coil are read-only public relationships.
     // - Evidence: `src/epmodel/test/CoilCoolingDX_GTest.cpp`, `src/epmodel/test/CoilCoolingDXTwoSpeed_GTest.cpp`,
-    //   `src/epmodel/test/CoilSystemCoolingDX_GTest.cpp`, and the `resources/Examples/compact_osw/measures/EpModelDualDuct` workflow.
+    //   and `src/epmodel/test/CoilSystemCoolingDX_GTest.cpp`.
     // - Remaining Parity Work: Characterize curve-fit DX on dedicated outdoor air and other EnergyPlus-supported child coil families before
     //   widening the adapter's topology contract beyond `CoilCoolingDX` and `CoilCoolingDXTwoSpeed`.
     boost::optional<Node> sensorNode() const;

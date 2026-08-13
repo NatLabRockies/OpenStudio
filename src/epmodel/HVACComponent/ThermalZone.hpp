@@ -54,7 +54,7 @@ namespace epmodel {
     //   daylighting scalars preserve the main canonical HVAC-facing zone wrapper behavior that is already implemented in epmodel.
     // - Documented Delta: Multi-air-loop zone discovery plus daylighting-control and illuminance-map object conveniences remain deferred.
     // - Field/Storage Mapping: `addToNode` keeps the EnergyPlus `ZoneHVAC:EquipmentConnections` object aligned with the current demand branch node when the zone is connected to or moved between air-loop branches.
-    // - Evidence: `src/model/ThermalZone.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateThermalZone.cpp`, `src/energyplus/ReverseTranslator/ReverseTranslateSizingZone.cpp`, and `src/epmodel/test/IDF_SmallOffice_GTest.cpp` show the canonical and epmodel zone-link behavior being preserved or exercised.
+    // - Evidence: `src/model/ThermalZone.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateThermalZone.cpp`, `src/energyplus/ReverseTranslator/ReverseTranslateSizingZone.cpp`, and `src/epmodel/test/idf/IDF_SmallOffice_GTest.cpp` show the canonical and epmodel zone-link behavior being preserved or exercised.
     // - Remaining Parity Work: Close the remaining multi-air-loop and daylighting/illuminance-map convenience gaps.
     bool addToNode(Node& node);
     SizingZone sizingZone() const;

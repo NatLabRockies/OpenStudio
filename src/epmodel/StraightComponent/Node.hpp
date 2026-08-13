@@ -48,7 +48,7 @@ namespace epmodel {
     // - Implemented Parity: `setpointManagers` preserves the main canonical node control-surface behavior, and `Node` remains a topology object rather than a scalar wrapper.
     // - Documented Delta: epmodel exposes `airLoopHVACOutdoorAirSystem` as a direct topology convenience while omitting the canonical AirflowNetwork distribution-node helpers because epmodel does not yet carry the corresponding OpenStudio-side abstractions.
     // - Field/Storage Mapping: EnergyPlus has no persisted `Node` object, so epmodel keeps `Node` as transient topology connective tissue layered over EnergyPlus-backed branch/node-name relationships.
-    // - Evidence: `src/model/Node.hpp` defines the canonical wrapper surface, while `src/epmodel/test/IDF_SmallOffice_GTest.cpp` exercises node-adjacent topology traversal in the current epmodel implementation.
+    // - Evidence: `src/model/Node.hpp` defines the canonical wrapper surface, while `src/epmodel/test/idf/IDF_SmallOffice_GTest.cpp` exercises node-adjacent topology traversal in the current epmodel implementation.
     // - Remaining Parity Work: Add the missing airflow-network and richer node-link convenience APIs once the corresponding epmodel relationship abstractions exist.
 
    protected:

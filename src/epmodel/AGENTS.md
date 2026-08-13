@@ -7,14 +7,14 @@ These notes are specific to work under `src/epmodel/`.
 When working on epmodel parity or topology behavior, read these first:
 
 - `src/epmodel/README.md`
-- `doc/idd-schema-alignment/os_hvac_concepts.md`
+- `src/epmodel/AirSystemTopology.md` for air-system topology work
 
 Also keep these references available when needed:
 
-- `doc/idd-schema-alignment/InputOutputReference.pdf` for EnergyPlus field
-  semantics
 - `resources/energyplus/` for authoritative EnergyPlus schema shape, field
   order, extensibles, and object-list relationships
+- the Input Output Reference distributed with the configured EnergyPlus
+  version for field semantics
 
 Status, queue order, and next-task planning belong in campaign state or
 dedicated campaign notes, not in README documents.

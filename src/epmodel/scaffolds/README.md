@@ -1,8 +1,25 @@
-E+ Scaffold ModelObjects
-========================
+# EPModel scaffold objects
 
-This directory contains epmodel `ModelObject` types that are present as EnergyPlus IDD objects but are not produced by any `openstudio::model` object in the OpenStudio -> EnergyPlus mapping inventory and are not required by production epmodel topology or canonicalization code.
+This directory is a historical source grouping for wrappers that began as
+generated EnergyPlus-backed scaffolds. Some are still skeletal; others are
+factory-registered, tested, and used by production EPModel topology. Directory
+placement alone is therefore not an implementation-status signal.
 
-The classification is derived from `doc/idd-schema-alignment/idd_mapping.generated.md` by reversing the `EP IddObjectType(s) produced` column, not by comparing class names. Some OpenStudio model classes translate to differently named EnergyPlus objects, and those generated EnergyPlus outputs should stay with the main `ModelObject` sources.
+A generated scaffold is a starting point, not an implementation-status claim.
+It may have scalar accessors while still lacking the relationships,
+canonicalization, ownership rules, lifecycle behavior, tests, and bindings
+needed for normal use.
 
-These scaffold objects are candidates for expanding epmodel scope and EnergyPlus coverage as their relationships, canonicalization rules, and API surface become explicit.
+Promotion should be driven by a real API or workflow requirement. Before a
+skeletal wrapper is treated as production-ready:
+
+- identify any canonical `openstudio::model` counterpart and the behavior that
+  must be preserved;
+- identify its actual EnergyPlus owners and relationship fields;
+- implement repair and lifecycle rules at the owning type;
+- add type-local `Schema Alignment Notes` and focused tests; and
+- add public bindings only when the wrapper is ready to expose.
+
+Production references, factory registration, bindings, and tests are evidence
+that a wrapper has been promoted. This directory does not depend on a
+generated Model-to-EnergyPlus mapping report.

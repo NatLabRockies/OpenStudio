@@ -51,7 +51,7 @@ namespace epmodel {
     // - Implemented Parity: Typed constructors directly wire a supported central fan behind an owned zone mixer; `addZone` and control removal keep ordered mixer rows, zone exhaust-node registration, private nodes, persistence, and reverse ownership coherent. The required relationships remain available as read-only typed views.
     // - Documented Delta: The schema/import Model constructor remains topology-incomplete by design. The owning lifecycle retains and disconnects the caller-provided fan when the system is removed, and it does not expose independent mixer, fan, or node setters.
     // - Field/Storage Mapping: `Zone Mixer Name` targets `AirLoopHVAC:ZoneMixer`; `Fan Object Type` discriminates the `Fan Name` target between `Fan:SystemModel` and `Fan:ComponentModel`.
-    // - Evidence: `resources/energyplus/ProposedEnergy+.idd`, `src/epmodel/test/AirLoopHVACExhaustSystem_GTest.cpp`, and `resources/Examples/compact_osw/epmodel_central_exhaust_small_office_idf.osw`.
+    // - Evidence: `resources/energyplus/ProposedEnergy+.idd` and `src/epmodel/test/AirLoopHVACExhaustSystem_GTest.cpp`.
     // - Remaining Parity Work: Broaden malformed-import canonicalization only from observed cases.
     boost::optional<AirLoopHVACZoneMixer> zoneMixer() const;
     boost::optional<HVACComponent> fan() const;

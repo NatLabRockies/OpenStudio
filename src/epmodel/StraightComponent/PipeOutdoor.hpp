@@ -46,7 +46,7 @@ namespace epmodel {
     // - Field/Storage Mapping: The wrapper maps directly to EnergyPlus `Pipe:Outdoor` construction, outdoor-air-node, and scalar fields.
     //   The canonical forward translator synthesizes an `OutdoorAir:NodeList` when no ambient outdoor-air node is assigned.
     // - Evidence: `src/model/PipeOutdoor.hpp`, `src/model/PipeOutdoor.cpp`, `src/model/test/PipeOutdoor_GTest.cpp`,
-    //   `src/energyplus/ForwardTranslator/ForwardTranslatePipeOutdoor.cpp`, and `src/energyplus/Test/PipeOutdoor_GTest.cpp`
+    //   `src/energyplus/ForwardTranslator/ForwardTranslatePipeOutdoor.cpp`, and `src/epmodel/test/PipeOutdoor_GTest.cpp`
     //   define and exercise the canonical behavior this wrapper preserves.
     // - Remaining Parity Work: Close the remaining shared HVACComponent base-surface gaps so PipeOutdoor can inherit the missing canonical
     //   component/fuel-type conveniences without adding type-local divergence.

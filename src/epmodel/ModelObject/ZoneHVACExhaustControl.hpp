@@ -48,7 +48,7 @@ namespace epmodel {
     // - Implemented Parity: Direct scalar fields, schedule targets, zone and node targets, unique central-exhaust-system reverse ownership, and owner-controlled add/remove lifecycle are available without exposing relationship mutators on the control.
     // - Documented Delta: Zone registration, central mixer routing, and private-node cleanup are intentionally mutated only through `AirLoopHVACExhaustSystem`; the control itself exposes read-only topology relationships.
     // - Field/Storage Mapping: Zone, inlet/outlet nodes, optional supply node or NodeList, and schedules map directly to their EnergyPlus relationship fields; central-system ownership is derived from the control outlet's unique zone-mixer inlet membership.
-    // - Evidence: `resources/energyplus/ProposedEnergy+.idd`, `src/epmodel/test/ZoneHVACExhaustControl_GTest.cpp`, and `resources/Examples/compact_osw/epmodel_central_exhaust_small_office_idf.osw`.
+    // - Evidence: `resources/energyplus/ProposedEnergy+.idd` and `src/epmodel/test/ZoneHVACExhaustControl_GTest.cpp`.
     // - Remaining Parity Work: Characterize movement or malformed-import repair only when a representative workflow requires them.
     boost::optional<Schedule> availabilitySchedule() const;
     boost::optional<ThermalZone> thermalZone() const;
