@@ -21,6 +21,7 @@ namespace epmodel {
   class AvailabilityManager;
   class AvailabilityManagerScheduledOn;
   class AvailabilityManagerAssignmentList;
+  class AirLoopHVACDedicatedOutdoorAirSystem;
   class AirLoopHVACOutdoorAirSystem;
   class Schedule;
   class ThermalZone;
@@ -79,6 +80,7 @@ namespace epmodel {
       boost::optional<openstudio::epmodel::Node> mixedAirNode() const;
       boost::optional<openstudio::epmodel::Node> returnAirNode() const;
       boost::optional<openstudio::epmodel::AirLoopHVACOutdoorAirSystem> airLoopHVACOutdoorAirSystem() const;
+      boost::optional<openstudio::epmodel::AirLoopHVACDedicatedOutdoorAirSystem> airLoopHVACDedicatedOutdoorAirSystem() const;
       boost::optional<openstudio::epmodel::HVACComponent> supplyFan() const;
       boost::optional<openstudio::epmodel::HVACComponent> returnFan() const;
       boost::optional<openstudio::epmodel::HVACComponent> reliefFan() const;

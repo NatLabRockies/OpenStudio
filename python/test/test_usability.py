@@ -61,3 +61,19 @@ def test_epmodel_loop_returns_wrapped_nodes():
     assert isinstance(supply_outlet_nodes, tuple)
     assert len(supply_outlet_nodes) == 2
     assert all(isinstance(node, openstudio.epmodel.Node) for node in supply_outlet_nodes)
+
+
+def test_epmodel_doas_accepts_and_returns_wrapped_air_loops():
+    model = openstudio.epmodel.Model()
+    dedicated_oa = openstudio.epmodel.AirLoopHVACOutdoorAirSystem(model)
+    doas = openstudio.epmodel.AirLoopHVACDedicatedOutdoorAirSystem(dedicated_oa)
+    served_loop = openstudio.epmodel.AirLoopHVAC(model)
+    served_oa = openstudio.epmodel.AirLoopHVACOutdoorAirSystem(model)
+
+    assert served_oa.addToNode(served_loop.supplyOutletNode())
+    assert doas.addAirLoop(served_loop)
+
+    air_loops = doas.airLoops()
+    assert len(air_loops) == 1
+    assert isinstance(air_loops[0], openstudio.epmodel.AirLoopHVAC)
+    assert air_loops[0].handle() == served_loop.handle()

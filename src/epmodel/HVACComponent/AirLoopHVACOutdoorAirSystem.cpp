@@ -15,6 +15,8 @@
 #include "AirLoopHVACControllerList_Impl.hpp"
 #include "AirLoopHVACOutdoorAirSystemEquipmentList.hpp"
 #include "AirLoopHVACOutdoorAirSystemEquipmentList_Impl.hpp"
+#include "ModelObject/AirLoopHVACDedicatedOutdoorAirSystem.hpp"
+#include "ModelObject/AirLoopHVACDedicatedOutdoorAirSystem_Impl.hpp"
 #include "Branch.hpp"
 #include "Branch_Impl.hpp"
 #include "BranchList.hpp"
@@ -39,6 +41,7 @@
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/Compare.hpp>
 #include <utilities/idd/AirLoopHVAC_OutdoorAirSystem_FieldEnums.hxx>
+#include <utilities/idd/AirLoopHVAC_DedicatedOutdoorAirSystem_FieldEnums.hxx>
 #include <utilities/idd/Controller_OutdoorAir_FieldEnums.hxx>
 #include <utilities/idd/OutdoorAir_NodeList_FieldEnums.hxx>
 #include <utilities/idd/OutdoorAir_Mixer_FieldEnums.hxx>
@@ -144,6 +147,10 @@ namespace epmodel {
 
   boost::optional<Node> AirLoopHVACOutdoorAirSystem::outboardReliefNode() const {
     return getImpl<detail::AirLoopHVACOutdoorAirSystem_Impl>()->outboardReliefNode();
+  }
+
+  boost::optional<AirLoopHVACDedicatedOutdoorAirSystem> AirLoopHVACOutdoorAirSystem::airLoopHVACDedicatedOutdoorAirSystem() const {
+    return getImpl<detail::AirLoopHVACOutdoorAirSystem_Impl>()->airLoopHVACDedicatedOutdoorAirSystem();
   }
 
   bool AirLoopHVACOutdoorAirSystem::addToNode(Node& node) {
@@ -634,6 +641,23 @@ namespace epmodel {
         return path.back().optionalCast<openstudio::epmodel::Node>();
       }
       return boost::none;
+    }
+
+    boost::optional<openstudio::epmodel::AirLoopHVACDedicatedOutdoorAirSystem>
+      AirLoopHVACOutdoorAirSystem_Impl::airLoopHVACDedicatedOutdoorAirSystem() const {
+      boost::optional<openstudio::epmodel::AirLoopHVACDedicatedOutdoorAirSystem> result;
+      const auto thisSystem = getObject<openstudio::epmodel::AirLoopHVACOutdoorAirSystem>();
+      for (const auto& doas : model().getConcreteModelObjects<openstudio::epmodel::AirLoopHVACDedicatedOutdoorAirSystem>()) {
+        auto target = doas.getModelObjectTarget<openstudio::epmodel::AirLoopHVACOutdoorAirSystem>(
+          openstudio::AirLoopHVAC_DedicatedOutdoorAirSystemFields::AirLoopHVAC_OutdoorAirSystemName);
+        if (target && (*target == thisSystem)) {
+          if (result) {
+            return boost::none;
+          }
+          result = doas;
+        }
+      }
+      return result;
     }
 
     void AirLoopHVACOutdoorAirSystem_Impl::doCanonicalize(LoadContext& context) {

@@ -19,6 +19,7 @@ namespace epmodel {
   class AirLoopHVACOutdoorAirSystemEquipmentList;
   class AirLoopHVACControllerList;
   class ControllerOutdoorAir;
+  class AirLoopHVACDedicatedOutdoorAirSystem;
 
   namespace detail {
 
@@ -57,6 +58,7 @@ namespace epmodel {
 
       boost::optional<openstudio::epmodel::Node> outboardOANode() const;
       boost::optional<openstudio::epmodel::Node> outboardReliefNode() const;
+      boost::optional<openstudio::epmodel::AirLoopHVACDedicatedOutdoorAirSystem> airLoopHVACDedicatedOutdoorAirSystem() const;
 
       void doCanonicalize(LoadContext& context) override;
       bool addToNode(Node& node) override;

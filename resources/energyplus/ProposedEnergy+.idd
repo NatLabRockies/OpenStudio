@@ -41398,10 +41398,12 @@ AirLoopHVAC:DedicatedOutdoorAirSystem,
        \object-list ScheduleNames
   A4 , \field AirLoopHVAC:Mixer Name
        \note Name of AirLoopHVAC:Mixer.
+       \type object-list
        \object-list AirLoopHVACMixerNames
        \required-field
   A5 , \field AirLoopHVAC:Splitter Name
        \note Name of AirLoopHVAC:Splitter.
+       \type object-list
        \object-list AirLoopHVACSplitterNames
        \required-field
   N1 , \field Preheat Design Temperature

@@ -25,6 +25,8 @@
 #include "ModelObject/AirLoopHVACControllerList_Impl.hpp"
 #include "ModelObject/AirLoopHVACOutdoorAirSystemEquipmentList.hpp"
 #include "ModelObject/AirLoopHVACOutdoorAirSystemEquipmentList_Impl.hpp"
+#include "ModelObject/AirLoopHVACDedicatedOutdoorAirSystem.hpp"
+#include "ModelObject/AirLoopHVACDedicatedOutdoorAirSystem_Impl.hpp"
 #include "ModelObject/CoilSystemCoolingDX.hpp"
 #include "ModelObject/CoilSystemCoolingDX_Impl.hpp"
 #include "Mixer/AirLoopHVACZoneMixer.hpp"
@@ -307,6 +309,10 @@ namespace epmodel {
 
   boost::optional<AirLoopHVACOutdoorAirSystem> AirLoopHVAC::airLoopHVACOutdoorAirSystem() const {
     return getImpl<detail::AirLoopHVAC_Impl>()->airLoopHVACOutdoorAirSystem();
+  }
+
+  boost::optional<AirLoopHVACDedicatedOutdoorAirSystem> AirLoopHVAC::airLoopHVACDedicatedOutdoorAirSystem() const {
+    return getImpl<detail::AirLoopHVAC_Impl>()->airLoopHVACDedicatedOutdoorAirSystem();
   }
 
   boost::optional<HVACComponent> AirLoopHVAC::supplyFan() const {
@@ -6021,6 +6027,20 @@ namespace epmodel {
       return oaSystems.front();
     }
 
+    boost::optional<openstudio::epmodel::AirLoopHVACDedicatedOutdoorAirSystem> AirLoopHVAC_Impl::airLoopHVACDedicatedOutdoorAirSystem() const {
+      boost::optional<openstudio::epmodel::AirLoopHVACDedicatedOutdoorAirSystem> result;
+      const auto thisLoop = getObject<openstudio::epmodel::AirLoopHVAC>();
+      for (const auto& doas : model().getConcreteModelObjects<openstudio::epmodel::AirLoopHVACDedicatedOutdoorAirSystem>()) {
+        if (doas.airLoopIndex(thisLoop)) {
+          if (result) {
+            return boost::none;
+          }
+          result = doas;
+        }
+      }
+      return result;
+    }
+
     boost::optional<HVACComponent> AirLoopHVAC_Impl::supplyFan() const {
       boost::optional<HVACComponent> start = supplyInletNode();
       if (auto oaSystem = airLoopHVACOutdoorAirSystem()) {
@@ -6078,6 +6098,24 @@ namespace epmodel {
       std::vector<IdfObject> result;
       const auto thisLoop = getObject<AirLoopHVAC>();
       const auto thisLoopName = thisLoop.nameString();
+
+      // DOAS membership is stored in three aligned extensible rows. Refuse the
+      // loop removal before touching its topology if those rows cannot be
+      // detached coherently.
+      std::vector<AirLoopHVACDedicatedOutdoorAirSystem> dedicatedOwners;
+      for (const auto& doas : model().getConcreteModelObjects<AirLoopHVACDedicatedOutdoorAirSystem>()) {
+        if (doas.airLoopIndex(thisLoop)) {
+          dedicatedOwners.push_back(doas);
+        }
+      }
+      if (dedicatedOwners.size() > 1u) {
+        return {};
+      }
+      if (!dedicatedOwners.empty()) {
+        if (!dedicatedOwners.front().removeAirLoop(thisLoop)) {
+          return {};
+        }
+      }
 
       const auto appendRemoved = [&result](std::vector<IdfObject>&& removed) { result.insert(result.end(), removed.begin(), removed.end()); };
 

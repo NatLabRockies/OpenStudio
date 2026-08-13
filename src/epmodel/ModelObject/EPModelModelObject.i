@@ -7,6 +7,7 @@
 
 %include <epmodel/EPModel_Common_Include.i>
 %import <epmodel/EPModel.i>
+%import <epmodel/Loop/EPModelLoop.i>
 
 %include <epmodel/ModelObject/ModelObject.hpp>
 
