@@ -5155,9 +5155,10 @@ namespace epmodel {
           airTerminal = airDistributionUnit->airTerminal();
           outletNode = airDistributionUnit->outletNode();
         } else if (branchPathHandles.contains(equipment.handle())
-                   && equipment.iddObject().type() == AirTerminalSingleDuctConstantVolumeCooledBeam::iddObjectType()) {
-          // Cooled beams register the terminal itself with the zone instead
-          // of wrapping it in an AirDistributionUnit.
+                   && (equipment.iddObject().type() == AirTerminalSingleDuctConstantVolumeCooledBeam::iddObjectType()
+                       || equipment.iddObject().type() == AirTerminalSingleDuctConstantVolumeFourPipeBeam::iddObjectType())) {
+          // Beam terminals register themselves with the zone instead of
+          // wrapping themselves in an AirDistributionUnit.
           airTerminal = equipment;
         }
 
@@ -5180,6 +5181,7 @@ namespace epmodel {
         const auto terminalType = airTerminal->iddObject().type();
         const bool hasFamilyOwnedPlantPreflight = terminalType == AirTerminalSingleDuctConstantVolumeReheat::iddObjectType()
                                                   || terminalType == AirTerminalSingleDuctConstantVolumeCooledBeam::iddObjectType()
+                                                  || terminalType == AirTerminalSingleDuctConstantVolumeFourPipeBeam::iddObjectType()
                                                   || terminalType == AirTerminalSingleDuctConstantVolumeFourPipeInduction::iddObjectType()
                                                   || terminalType == AirTerminalSingleDuctVAVHeatAndCoolReheat::iddObjectType()
                                                   || terminalType == AirTerminalSingleDuctParallelPIUReheat::iddObjectType()

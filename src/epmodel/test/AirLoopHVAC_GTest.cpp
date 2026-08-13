@@ -1760,7 +1760,7 @@ TEST_F(EPModelFixture, AirLoopHVAC_CompoundCloneLast_BeamsReconnectOneAndTwoPlan
   EXPECT_EQ(2u, cooledPlantLoop.getImpl<detail::PlantLoop_Impl>()->demandEquipmentBranches().size());
 }
 
-TEST_F(EPModelFixture, AirLoopHVAC_PlenumRemovalRejectsPlantConnectedBeamWithoutFamilyPreflight) {
+TEST_F(EPModelFixture, AirLoopHVAC_PlenumRemovalSupportsPlantConnectedFourPipeBeam) {
   Model model;
   AirLoopHVAC airLoop(model);
   PlantLoop chilledLoop(model);
@@ -1777,25 +1777,14 @@ TEST_F(EPModelFixture, AirLoopHVAC_PlenumRemovalRejectsPlantConnectedBeamWithout
   ASSERT_TRUE(zone.setSupplyPlenum(plenumZone));
   ASSERT_EQ(1u, model.getObjectsByType(openstudio::IddObjectType::AirLoopHVAC_SupplyPlenum).size());
 
-  const auto originalHandles = workspaceHandles(model);
-  const auto originalSplitter = objectHandles(airLoop.zoneSplitter().outletModelObjects());
-  const auto originalMixer = objectHandles(airLoop.zoneMixer().inletModelObjects());
-  const auto originalEquipment = objectHandles(zone.equipment());
-  EXPECT_FALSE(airLoop.removeBranchForZone(zone));
-
-  EXPECT_EQ(originalHandles, workspaceHandles(model));
-  EXPECT_EQ(originalSplitter, objectHandles(airLoop.zoneSplitter().outletModelObjects()));
-  EXPECT_EQ(originalMixer, objectHandles(airLoop.zoneMixer().inletModelObjects()));
-  EXPECT_EQ(originalEquipment, objectHandles(zone.equipment()));
-  EXPECT_TRUE(model.getObject(terminal.handle()));
-  EXPECT_TRUE(model.getObject(coolingCoil.handle()));
-  EXPECT_TRUE(model.getObject(heatingCoil.handle()));
-
-  zone.removeSupplyPlenum();
   ASSERT_TRUE(airLoop.removeBranchForZone(zone));
   EXPECT_FALSE(model.getObject(terminal.handle()));
   EXPECT_FALSE(model.getObject(coolingCoil.handle()));
   EXPECT_FALSE(model.getObject(heatingCoil.handle()));
+  EXPECT_TRUE(chilledLoop.demandComponents(CoilCoolingFourPipeBeam::iddObjectType()).empty());
+  EXPECT_TRUE(hotLoop.demandComponents(CoilHeatingFourPipeBeam::iddObjectType()).empty());
+  EXPECT_TRUE(zone.equipment().empty());
+  EXPECT_TRUE(model.getObjectsByType(openstudio::IddObjectType::AirLoopHVAC_SupplyPlenum).empty());
 }
 
 TEST_F(EPModelFixture, AirLoopHVAC_CompoundCloneLast_VariableSpeedFanOwnsFanCoilAndPlantBranch) {

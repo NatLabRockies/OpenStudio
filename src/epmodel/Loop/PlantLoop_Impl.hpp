@@ -208,6 +208,7 @@ namespace epmodel {
       friend class AirTerminalSingleDuctParallelPIUReheat_Impl;
       friend class AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl;
       friend class AirTerminalSingleDuctConstantVolumeCooledBeam_Impl;
+      friend class AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl;
     };
 
   }  // namespace detail

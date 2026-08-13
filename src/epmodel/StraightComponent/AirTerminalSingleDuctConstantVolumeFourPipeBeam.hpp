@@ -51,12 +51,13 @@ namespace epmodel {
     //   child-coil handles for connectivity cleanup; broader child coil scalar helpers remain outside this campaign pass.
     // - Field/Storage Mapping: The availability schedules, preserved scalars, child coil relationships, and inherited straight-component inlet/outlet
     //   node fields retain the local epmodel field contract. `addToNode` uses the current epmodel zone-branch path and registers the terminal
-    //   on the owning thermal-zone equipment list when one is resolved. Terminal removal deletes its owned cooling and heating coils only after
-    //   air- and plant-side topology teardown and successful terminal removal.
+    //   on the owning thermal-zone equipment list when one is resolved. Terminal removal prepares the air, zone, plenum, owned-child, and separate
+    //   plant-loop graphs before mutation, then deletes its owned cooling and heating coils only after successful topology and parent removal.
     // - Evidence: `src/model/AirTerminalSingleDuctConstantVolumeFourPipeBeam.hpp`, `src/model/AirTerminalSingleDuctConstantVolumeFourPipeBeam.cpp`,
     //   `src/energyplus/ForwardTranslator/ForwardTranslateAirTerminalSingleDuctConstantVolumeFourPipeBeam.cpp`, and the focused epmodel tests.
-    // - Remaining Parity Work: Add canonical deep-clone behavior for owned coils and expose the family-specific autosized-result query helpers
-    //   once shared clone and sizing-result plumbing exists.
+    // - Remaining Parity Work: Resolve OS-prefixed child persistence and Branch identity when both projected endpoint links are absent, add a batch
+    //   plan for two coil branches on one PlantLoop, add canonical deep-clone behavior for owned coils, and expose the family-specific
+    //   autosized-result query helpers once shared plumbing exists.
     Schedule primaryAirAvailabilitySchedule() const;
     bool setPrimaryAirAvailabilitySchedule(Schedule& schedule);
 
