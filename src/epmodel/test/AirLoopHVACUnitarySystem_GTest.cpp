@@ -7,6 +7,7 @@
 
 #include "EPModelFixture.hpp"
 #include "../HVACComponent/ThermalZone.hpp"
+#include "../HVACComponent/ThermalZone_Impl.hpp"
 #include "../HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
 #include "../AirToAirComponent/HeatExchangerDesiccantBalancedFlow.hpp"
 #include "../AirToAirComponent/HeatExchangerDesiccantBalancedFlow_Impl.hpp"
@@ -242,6 +243,58 @@ TEST_F(EPModelFixture, AirLoopHVACUnitarySystem_OwnedChildLifecycle) {
   EXPECT_EQ(1u, model.getConcreteModelObjects<CoilHeatingElectric>().size());
 }
 
+TEST_F(EPModelFixture, AirLoopHVACUnitarySystem_ChildObjectTypesFollowRelationships) {
+  Model model;
+  FanConstantVolume fan(model);
+  CoilHeatingElectric heating(model);
+  CoilCoolingDXSingleSpeed cooling(model);
+  CoilHeatingElectric supplemental(model);
+  AirLoopHVACUnitarySystem unitary(model);
+
+  ASSERT_TRUE(unitary.setSupplyFan(fan));
+  ASSERT_TRUE(unitary.setHeatingCoil(heating));
+  ASSERT_TRUE(unitary.setCoolingCoil(cooling));
+  ASSERT_TRUE(unitary.setSupplementalHeatingCoil(supplemental));
+  EXPECT_EQ(fan.iddObject().name(), unitary.getString(openstudio::AirLoopHVAC_UnitarySystemFields::SupplyFanObjectType).get());
+  EXPECT_EQ(heating.iddObject().name(), unitary.getString(openstudio::AirLoopHVAC_UnitarySystemFields::HeatingCoilObjectType).get());
+  EXPECT_EQ(cooling.iddObject().name(), unitary.getString(openstudio::AirLoopHVAC_UnitarySystemFields::CoolingCoilObjectType).get());
+  EXPECT_EQ(supplemental.iddObject().name(), unitary.getString(openstudio::AirLoopHVAC_UnitarySystemFields::SupplementalHeatingCoilObjectType).get());
+
+  unitary.resetSupplyFan();
+  unitary.resetHeatingCoil();
+  unitary.resetCoolingCoil();
+  unitary.resetSupplementalHeatingCoil();
+  EXPECT_TRUE(unitary.getString(openstudio::AirLoopHVAC_UnitarySystemFields::SupplyFanObjectType, true)->empty());
+  EXPECT_TRUE(unitary.getString(openstudio::AirLoopHVAC_UnitarySystemFields::HeatingCoilObjectType, true)->empty());
+  EXPECT_TRUE(unitary.getString(openstudio::AirLoopHVAC_UnitarySystemFields::CoolingCoilObjectType, true)->empty());
+  EXPECT_TRUE(unitary.getString(openstudio::AirLoopHVAC_UnitarySystemFields::SupplementalHeatingCoilObjectType, true)->empty());
+}
+
+TEST_F(EPModelFixture, AirLoopHVACUnitarySystem_CanonicalizeRepairsChildObjectTypes) {
+  Model model;
+  FanConstantVolume fan(model);
+  CoilHeatingElectric heating(model);
+  CoilCoolingDXSingleSpeed cooling(model);
+  CoilHeatingElectric supplemental(model);
+  AirLoopHVACUnitarySystem unitary(model);
+
+  ASSERT_TRUE(unitary.setSupplyFan(fan));
+  ASSERT_TRUE(unitary.setHeatingCoil(heating));
+  ASSERT_TRUE(unitary.setCoolingCoil(cooling));
+  ASSERT_TRUE(unitary.setSupplementalHeatingCoil(supplemental));
+  ASSERT_TRUE(unitary.setString(openstudio::AirLoopHVAC_UnitarySystemFields::SupplyFanObjectType, ""));
+  ASSERT_TRUE(unitary.setString(openstudio::AirLoopHVAC_UnitarySystemFields::HeatingCoilObjectType, ""));
+  ASSERT_TRUE(unitary.setString(openstudio::AirLoopHVAC_UnitarySystemFields::CoolingCoilObjectType, ""));
+  ASSERT_TRUE(unitary.setString(openstudio::AirLoopHVAC_UnitarySystemFields::SupplementalHeatingCoilObjectType, ""));
+
+  const auto report = model.canonicalize();
+  EXPECT_EQ(0u, report.errorCount);
+  EXPECT_EQ(fan.iddObject().name(), unitary.getString(openstudio::AirLoopHVAC_UnitarySystemFields::SupplyFanObjectType).get());
+  EXPECT_EQ(heating.iddObject().name(), unitary.getString(openstudio::AirLoopHVAC_UnitarySystemFields::HeatingCoilObjectType).get());
+  EXPECT_EQ(cooling.iddObject().name(), unitary.getString(openstudio::AirLoopHVAC_UnitarySystemFields::CoolingCoilObjectType).get());
+  EXPECT_EQ(supplemental.iddObject().name(), unitary.getString(openstudio::AirLoopHVAC_UnitarySystemFields::SupplementalHeatingCoilObjectType).get());
+}
+
 TEST_F(EPModelFixture, AirLoopHVACUnitarySystem_ParentAirLoopLifecycle) {
   Model model;
   AirLoopHVAC airLoop(model);
@@ -297,6 +350,161 @@ TEST_F(EPModelFixture, AirLoopHVACUnitarySystem_ParentAirLoopLifecycle) {
   EXPECT_TRUE(model.getConcreteModelObjects<AirLoopHVACUnitarySystem>().empty());
   EXPECT_EQ(1u, model.getConcreteModelObjects<FanConstantVolume>().size());
   EXPECT_TRUE(model.getConcreteModelObjects<CoilHeatingElectric>().empty());
+}
+
+TEST_F(EPModelFixture, AirLoopHVACUnitarySystem_MovesBetweenAirLoopAndZoneAfterReload) {
+  const auto zonePath = openstudio::tempDir() / openstudio::toPath("epmodel-unitary-zone-owner-roundtrip.idf");
+  const auto airLoopPath = openstudio::tempDir() / openstudio::toPath("epmodel-unitary-air-loop-owner-roundtrip.idf");
+
+  Model model;
+  ThermalZone zone(model);
+  AirLoopHVAC airLoop(model);
+  FanConstantVolume fan(model);
+  CoilCoolingDXSingleSpeed cooling(model);
+  AirLoopHVACUnitarySystem unitary(model);
+
+  ASSERT_TRUE(zone.setName("Moving Unitary Zone"));
+  ASSERT_TRUE(airLoop.setName("Moving Unitary Air Loop"));
+  ASSERT_TRUE(fan.setName("Moving Unitary Fan"));
+  ASSERT_TRUE(cooling.setName("Moving Unitary Cooling Coil"));
+  ASSERT_TRUE(unitary.setName("Moving Unitary"));
+  ASSERT_TRUE(unitary.setFanPlacement("BlowThrough"));
+  ASSERT_TRUE(unitary.setSupplyFan(fan));
+  ASSERT_TRUE(unitary.setCoolingCoil(cooling));
+  auto supplyOutlet = airLoop.supplyOutletNode();
+  ASSERT_TRUE(unitary.addToNode(supplyOutlet));
+  ASSERT_TRUE(unitary.fanOutletNode());
+  const auto fanOutletBeforeMove = unitary.fanOutletNode()->handle();
+
+  ASSERT_TRUE(unitary.addToThermalZone(zone));
+  EXPECT_FALSE(unitary.airLoopHVAC());
+  ASSERT_TRUE(unitary.thermalZone());
+  EXPECT_EQ(zone, *unitary.thermalZone());
+  const auto supplyAfterZoneMove = airLoop.supplyComponents();
+  const auto equipmentAfterZoneMove = zone.equipment();
+  EXPECT_EQ(std::ranges::find(supplyAfterZoneMove, unitary.cast<ModelObject>()), supplyAfterZoneMove.end());
+  EXPECT_NE(std::ranges::find(equipmentAfterZoneMove, unitary.cast<ModelObject>()), equipmentAfterZoneMove.end());
+  EXPECT_EQ(fan, *unitary.supplyFan());
+  EXPECT_EQ(cooling, *unitary.coolingCoil());
+  ASSERT_TRUE(unitary.fanOutletNode());
+  EXPECT_EQ(fanOutletBeforeMove, unitary.fanOutletNode()->handle());
+  ASSERT_TRUE(model.save(zonePath, true));
+
+  auto loadedZoneModel = Model::load(zonePath);
+  ASSERT_TRUE(loadedZoneModel);
+  auto loadedZone = loadedZoneModel->getConcreteModelObjectByName<ThermalZone>("Moving Unitary Zone");
+  auto loadedAirLoop = loadedZoneModel->getConcreteModelObjectByName<AirLoopHVAC>("Moving Unitary Air Loop");
+  auto loadedFan = loadedZoneModel->getConcreteModelObjectByName<FanConstantVolume>("Moving Unitary Fan");
+  auto loadedCooling = loadedZoneModel->getConcreteModelObjectByName<CoilCoolingDXSingleSpeed>("Moving Unitary Cooling Coil");
+  auto loadedUnitary = loadedZoneModel->getConcreteModelObjectByName<AirLoopHVACUnitarySystem>("Moving Unitary");
+  ASSERT_TRUE(loadedZone);
+  ASSERT_TRUE(loadedAirLoop);
+  ASSERT_TRUE(loadedFan);
+  ASSERT_TRUE(loadedCooling);
+  ASSERT_TRUE(loadedUnitary);
+  ASSERT_TRUE(loadedUnitary->thermalZone());
+  ASSERT_TRUE(loadedUnitary->fanOutletNode());
+  const auto loadedFanOutlet = loadedUnitary->fanOutletNode()->handle();
+
+  auto loadedSupplyOutlet = loadedAirLoop->supplyOutletNode();
+  ASSERT_TRUE(loadedUnitary->addToNode(loadedSupplyOutlet));
+  ASSERT_TRUE(loadedUnitary->airLoopHVAC());
+  EXPECT_EQ(*loadedAirLoop, *loadedUnitary->airLoopHVAC());
+  EXPECT_FALSE(loadedUnitary->thermalZone());
+  const auto supplyAfterAirLoopMove = loadedAirLoop->supplyComponents();
+  const auto equipmentAfterAirLoopMove = loadedZone->equipment();
+  EXPECT_NE(std::ranges::find(supplyAfterAirLoopMove, loadedUnitary->cast<ModelObject>()), supplyAfterAirLoopMove.end());
+  EXPECT_EQ(std::ranges::find(equipmentAfterAirLoopMove, loadedUnitary->cast<ModelObject>()), equipmentAfterAirLoopMove.end());
+  EXPECT_EQ(*loadedFan, *loadedUnitary->supplyFan());
+  EXPECT_EQ(*loadedCooling, *loadedUnitary->coolingCoil());
+  ASSERT_TRUE(loadedUnitary->fanOutletNode());
+  EXPECT_EQ(loadedFanOutlet, loadedUnitary->fanOutletNode()->handle());
+  ASSERT_TRUE(loadedZoneModel->save(airLoopPath, true));
+
+  auto loadedAirLoopModel = Model::load(airLoopPath);
+  ASSERT_TRUE(loadedAirLoopModel);
+  auto finalZone = loadedAirLoopModel->getConcreteModelObjectByName<ThermalZone>("Moving Unitary Zone");
+  auto finalAirLoop = loadedAirLoopModel->getConcreteModelObjectByName<AirLoopHVAC>("Moving Unitary Air Loop");
+  auto finalFan = loadedAirLoopModel->getConcreteModelObjectByName<FanConstantVolume>("Moving Unitary Fan");
+  auto finalCooling = loadedAirLoopModel->getConcreteModelObjectByName<CoilCoolingDXSingleSpeed>("Moving Unitary Cooling Coil");
+  auto finalUnitary = loadedAirLoopModel->getConcreteModelObjectByName<AirLoopHVACUnitarySystem>("Moving Unitary");
+  ASSERT_TRUE(finalZone);
+  ASSERT_TRUE(finalAirLoop);
+  ASSERT_TRUE(finalFan);
+  ASSERT_TRUE(finalCooling);
+  ASSERT_TRUE(finalUnitary);
+  ASSERT_TRUE(finalUnitary->airLoopHVAC());
+  ASSERT_TRUE(finalUnitary->addToThermalZone(*finalZone));
+  EXPECT_FALSE(finalUnitary->airLoopHVAC());
+  ASSERT_TRUE(finalUnitary->thermalZone());
+  EXPECT_EQ(*finalZone, *finalUnitary->thermalZone());
+  const auto finalSupply = finalAirLoop->supplyComponents();
+  const auto finalEquipment = finalZone->equipment();
+  EXPECT_EQ(std::ranges::find(finalSupply, finalUnitary->cast<ModelObject>()), finalSupply.end());
+  EXPECT_NE(std::ranges::find(finalEquipment, finalUnitary->cast<ModelObject>()), finalEquipment.end());
+  EXPECT_EQ(*finalFan, *finalUnitary->supplyFan());
+  EXPECT_EQ(*finalCooling, *finalUnitary->coolingCoil());
+
+  openstudio::filesystem::remove(zonePath);
+  openstudio::filesystem::remove(airLoopPath);
+}
+
+TEST_F(EPModelFixture, AirLoopHVACUnitarySystem_RejectedOwnerMovesPreserveSource) {
+  {
+    Model model;
+    ThermalZone zone(model);
+    AirLoopHVAC airLoop(model);
+    FanConstantVolume fan(model);
+    AirLoopHVACUnitarySystem unitary(model);
+    ASSERT_TRUE(unitary.setSupplyFan(fan));
+    ASSERT_TRUE(unitary.addToThermalZone(zone));
+    ASSERT_TRUE(unitary.inletNode());
+    ASSERT_TRUE(unitary.outletNode());
+    const auto inlet = *unitary.inletNode();
+    const auto outlet = *unitary.outletNode();
+    const auto equipment = zone.equipment();
+    const auto supply = airLoop.supplyComponents();
+
+    auto demandOutlet = airLoop.demandOutletNode();
+    EXPECT_FALSE(unitary.addToNode(demandOutlet));
+    ASSERT_TRUE(unitary.thermalZone());
+    EXPECT_EQ(zone, *unitary.thermalZone());
+    EXPECT_FALSE(unitary.airLoopHVAC());
+    ASSERT_TRUE(unitary.inletNode());
+    ASSERT_TRUE(unitary.outletNode());
+    EXPECT_EQ(inlet, *unitary.inletNode());
+    EXPECT_EQ(outlet, *unitary.outletNode());
+    EXPECT_EQ(equipment, zone.equipment());
+    EXPECT_EQ(supply, airLoop.supplyComponents());
+  }
+
+  {
+    Model model;
+    Model otherModel;
+    AirLoopHVAC airLoop(model);
+    ThermalZone otherZone(otherModel);
+    FanConstantVolume fan(model);
+    AirLoopHVACUnitarySystem unitary(model);
+    ASSERT_TRUE(unitary.setSupplyFan(fan));
+    auto supplyOutlet = airLoop.supplyOutletNode();
+    ASSERT_TRUE(unitary.addToNode(supplyOutlet));
+    ASSERT_TRUE(unitary.inletNode());
+    ASSERT_TRUE(unitary.outletNode());
+    const auto inlet = *unitary.inletNode();
+    const auto outlet = *unitary.outletNode();
+    const auto supply = airLoop.supplyComponents();
+
+    EXPECT_FALSE(unitary.addToThermalZone(otherZone));
+    ASSERT_TRUE(unitary.airLoopHVAC());
+    EXPECT_EQ(airLoop, *unitary.airLoopHVAC());
+    EXPECT_FALSE(unitary.thermalZone());
+    ASSERT_TRUE(unitary.inletNode());
+    ASSERT_TRUE(unitary.outletNode());
+    EXPECT_EQ(inlet, *unitary.inletNode());
+    EXPECT_EQ(outlet, *unitary.outletNode());
+    EXPECT_EQ(supply, airLoop.supplyComponents());
+    EXPECT_TRUE(otherZone.equipment().empty());
+  }
 }
 
 TEST_F(EPModelFixture, AirLoopHVACUnitarySystem_OwnedChildTopologyMutationsAreRejected) {

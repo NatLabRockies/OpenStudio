@@ -824,6 +824,22 @@ namespace epmodel {
         }
       }
 
+      // A generic unitary has one public air-side owner. Clear an ordinary
+      // zone-equipment attachment only after the target supply branch has been
+      // validated, so a rejected move leaves the source topology untouched.
+      if (thermalZone()) {
+        removeFromThermalZone();
+        airLoop = node.airLoopHVAC();
+        if (!airLoop) {
+          return false;
+        }
+        airLoopImpl = airLoop->getImpl<detail::AirLoopHVAC_Impl>();
+        branch = airLoopImpl->branchForSupplyNode(node);
+        if (!branch) {
+          return false;
+        }
+      }
+
       if (auto currentLoop = airLoopHVAC()) {
         const auto inlet = inletNode();
         const auto outlet = outletNode();
@@ -973,6 +989,12 @@ namespace epmodel {
     }
 
     bool AirLoopHVACUnitarySystem_Impl::addToThermalZone(ThermalZone& thermalZone) {
+      if (thermalZone.model() != model()) {
+        return false;
+      }
+      if (airLoopHVAC() && !removeFromAirLoopHVAC()) {
+        return false;
+      }
       if (!ZoneHVACComponent_Impl::addToThermalZone(thermalZone)) {
         return false;
       }
@@ -1101,6 +1123,7 @@ namespace epmodel {
     bool AirLoopHVACUnitarySystem_Impl::setSupplyFan(const HVACComponent& supplyFan) {
       const bool result = setPointer(openstudio::AirLoopHVAC_UnitarySystemFields::SupplyFanName, supplyFan.handle());
       if (result) {
+        OS_ASSERT(setString(openstudio::AirLoopHVAC_UnitarySystemFields::SupplyFanObjectType, supplyFan.iddObject().name()));
         maintainContainedAirPath();
       }
       return result;
@@ -1108,6 +1131,7 @@ namespace epmodel {
 
     void AirLoopHVACUnitarySystem_Impl::resetSupplyFan() {
       OS_ASSERT(setString(openstudio::AirLoopHVAC_UnitarySystemFields::SupplyFanName, ""));
+      OS_ASSERT(setString(openstudio::AirLoopHVAC_UnitarySystemFields::SupplyFanObjectType, ""));
       maintainContainedAirPath();
     }
 
@@ -1152,6 +1176,9 @@ namespace epmodel {
 
     bool AirLoopHVACUnitarySystem_Impl::setHeatingCoil(const HVACComponent& heatingCoil) {
       const bool result = setPointer(openstudio::AirLoopHVAC_UnitarySystemFields::HeatingCoilName, heatingCoil.handle());
+      if (result) {
+        OS_ASSERT(setString(openstudio::AirLoopHVAC_UnitarySystemFields::HeatingCoilObjectType, heatingCoil.iddObject().name()));
+      }
       if (openstudio::istringEqual("None", supplyAirFlowRateMethodDuringHeatingOperation())) {
         autosizeSupplyAirFlowRateDuringHeatingOperation();
         OS_ASSERT(setSupplyAirFlowRateMethodDuringHeatingOperation("SupplyAirFlowRate"));
@@ -1164,6 +1191,7 @@ namespace epmodel {
 
     void AirLoopHVACUnitarySystem_Impl::resetHeatingCoil() {
       OS_ASSERT(setString(openstudio::AirLoopHVAC_UnitarySystemFields::HeatingCoilName, ""));
+      OS_ASSERT(setString(openstudio::AirLoopHVAC_UnitarySystemFields::HeatingCoilObjectType, ""));
       OS_ASSERT(setSupplyAirFlowRateMethodDuringHeatingOperation("None"));
       resetSupplyAirFlowRateDuringHeatingOperation();
       resetSupplyAirFlowRatePerFloorAreaduringHeatingOperation();
@@ -1340,6 +1368,8 @@ namespace epmodel {
     bool AirLoopHVACUnitarySystem_Impl::setSupplementalHeatingCoil(const HVACComponent& supplementalHeatingCoil) {
       const bool result = setPointer(openstudio::AirLoopHVAC_UnitarySystemFields::SupplementalHeatingCoilName, supplementalHeatingCoil.handle());
       if (result) {
+        OS_ASSERT(
+          setString(openstudio::AirLoopHVAC_UnitarySystemFields::SupplementalHeatingCoilObjectType, supplementalHeatingCoil.iddObject().name()));
         maintainContainedAirPath();
       }
       return result;
@@ -1347,6 +1377,7 @@ namespace epmodel {
 
     void AirLoopHVACUnitarySystem_Impl::resetSupplementalHeatingCoil() {
       OS_ASSERT(setString(openstudio::AirLoopHVAC_UnitarySystemFields::SupplementalHeatingCoilName, ""));
+      OS_ASSERT(setString(openstudio::AirLoopHVAC_UnitarySystemFields::SupplementalHeatingCoilObjectType, ""));
       maintainContainedAirPath();
     }
 
@@ -1786,6 +1817,24 @@ namespace epmodel {
         changed = changed || value;
         return value;
       };
+
+      const auto synchronizeObjectType = [&](unsigned objectTypeField, const boost::optional<HVACComponent>& component) {
+        const auto currentType = thisObject.getString(objectTypeField, true);
+        const auto expectedType = component ? boost::optional<std::string>(component->iddObject().name()) : boost::optional<std::string>();
+        if (expectedType) {
+          if (!currentType || !openstudio::istringEqual(*currentType, *expectedType)) {
+            OS_ASSERT(thisObject.setString(objectTypeField, *expectedType));
+            changed = true;
+          }
+        } else if (currentType && !currentType->empty()) {
+          OS_ASSERT(thisObject.setString(objectTypeField, ""));
+          changed = true;
+        }
+      };
+      synchronizeObjectType(openstudio::AirLoopHVAC_UnitarySystemFields::SupplyFanObjectType, fanObject);
+      synchronizeObjectType(openstudio::AirLoopHVAC_UnitarySystemFields::HeatingCoilObjectType, heatingObject);
+      synchronizeObjectType(openstudio::AirLoopHVAC_UnitarySystemFields::CoolingCoilObjectType, coolingObject);
+      synchronizeObjectType(openstudio::AirLoopHVAC_UnitarySystemFields::SupplementalHeatingCoilObjectType, supplementalObject);
 
       if (!fan && !cooling && !heating && !supplemental) {
         return changed;
