@@ -476,6 +476,7 @@ namespace epmodel {
     bool AirLoopHVACUnitaryHeatPumpAirToAir_Impl::setSupplyAirFan(HVACComponent& hvacComponent) {
       const bool result = setPointer(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAirFields::SupplyAirFanName, hvacComponent.handle());
       if (result) {
+        OS_ASSERT(setString(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAirFields::SupplyAirFanObjectType, hvacComponent.iddObject().name()));
         maintainContainedAirPath();
       }
       return result;
@@ -491,6 +492,7 @@ namespace epmodel {
     bool AirLoopHVACUnitaryHeatPumpAirToAir_Impl::setHeatingCoil(HVACComponent& hvacComponent) {
       const bool result = setPointer(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAirFields::HeatingCoilName, hvacComponent.handle());
       if (result) {
+        OS_ASSERT(setString(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAirFields::HeatingCoilObjectType, hvacComponent.iddObject().name()));
         maintainContainedAirPath();
       }
       return result;
@@ -506,6 +508,7 @@ namespace epmodel {
     bool AirLoopHVACUnitaryHeatPumpAirToAir_Impl::setCoolingCoil(HVACComponent& hvacComponent) {
       const bool result = setPointer(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAirFields::CoolingCoilName, hvacComponent.handle());
       if (result) {
+        OS_ASSERT(setString(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAirFields::CoolingCoilObjectType, hvacComponent.iddObject().name()));
         maintainContainedAirPath();
       }
       return result;
@@ -521,6 +524,8 @@ namespace epmodel {
     bool AirLoopHVACUnitaryHeatPumpAirToAir_Impl::setSupplementalHeatingCoil(HVACComponent& hvacComponent) {
       const bool result = setPointer(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAirFields::SupplementalHeatingCoilName, hvacComponent.handle());
       if (result) {
+        OS_ASSERT(
+          setString(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAirFields::SupplementalHeatingCoilObjectType, hvacComponent.iddObject().name()));
         maintainContainedAirPath();
       }
       return result;
@@ -708,6 +713,28 @@ namespace epmodel {
         changed = changed || value;
         return value;
       };
+
+      const auto synchronizeObjectType = [&](unsigned objectTypeField, const boost::optional<HVACComponent>& component) {
+        const auto currentType = thisObject.getString(objectTypeField, true);
+        const auto expectedType = component ? boost::optional<std::string>(component->iddObject().name()) : boost::optional<std::string>();
+        if (expectedType) {
+          if (!currentType || !openstudio::istringEqual(*currentType, *expectedType)) {
+            OS_ASSERT(thisObject.setString(objectTypeField, *expectedType));
+            changed = true;
+          }
+        } else if (currentType && !currentType->empty()) {
+          OS_ASSERT(thisObject.setString(objectTypeField, ""));
+          changed = true;
+        }
+      };
+      synchronizeObjectType(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAirFields::SupplyAirFanObjectType,
+                            fan ? boost::optional<HVACComponent>(fan->cast<HVACComponent>()) : boost::none);
+      synchronizeObjectType(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAirFields::HeatingCoilObjectType,
+                            heatingObject ? boost::optional<HVACComponent>(*heatingObject) : boost::none);
+      synchronizeObjectType(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAirFields::CoolingCoilObjectType,
+                            coolingObject ? boost::optional<HVACComponent>(*coolingObject) : boost::none);
+      synchronizeObjectType(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAirFields::SupplementalHeatingCoilObjectType,
+                            supplementalObject ? boost::optional<HVACComponent>(*supplementalObject) : boost::none);
 
       if (!fan && !heating && !cooling && !supplemental) {
         return changed;

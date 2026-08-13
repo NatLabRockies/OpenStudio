@@ -51,6 +51,18 @@ namespace epmodel {
   AirLoopHVACOutdoorAirSystem::AirLoopHVACOutdoorAirSystem(const Model& model) : HVACComponent(AirLoopHVACOutdoorAirSystem::iddObjectType(), model) {
     auto impl = getImpl<detail::AirLoopHVACOutdoorAirSystem_Impl>();
     OS_ASSERT(impl);
+
+    // Renaming an existing OA system does not rename its outboard stream
+    // nodes. Advance past that retained default-name prefix before creating a
+    // later system so the two mixers cannot share outdoor or relief nodes.
+    auto streamNodeNameIsTaken = [&model](const std::string& systemName) {
+      return static_cast<bool>(model.getConcreteModelObjectByName<Node>(systemName + " Outboard OA Node"))
+             || static_cast<bool>(model.getConcreteModelObjectByName<Node>(systemName + " Relief Node"));
+    };
+    while (streamNodeNameIsTaken(nameString())) {
+      OS_ASSERT(setName(model.nextName(iddObjectType(), false)));
+    }
+
     detail::LoadContext context{const_cast<Model&>(model), SanitizationPolicy::Repair, SanitizationReport{}, {}};  // NOLINT
     impl->canonicalize(context);
   }

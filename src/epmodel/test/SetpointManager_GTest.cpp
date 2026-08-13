@@ -726,4 +726,26 @@ TEST_F(EPModelFixture, SetpointManagerSingleZoneReheat_AddToNodeSetsControlZoneF
   auto controlZone = spm.controlZone();
   ASSERT_TRUE(controlZone);
   EXPECT_EQ(zone, *controlZone);
+
+  auto zoneNode = spm.getModelObjectTarget<Node>(openstudio::SetpointManager_SingleZone_ReheatFields::ZoneNodeName);
+  auto zoneInletNode = spm.getModelObjectTarget<Node>(openstudio::SetpointManager_SingleZone_ReheatFields::ZoneInletNodeName);
+  auto resolvedSetpointNode = spm.getModelObjectTarget<Node>(openstudio::SetpointManager_SingleZone_ReheatFields::SetpointNodeorNodeListName);
+  ASSERT_TRUE(zoneNode);
+  ASSERT_TRUE(zoneInletNode);
+  ASSERT_TRUE(resolvedSetpointNode);
+  EXPECT_EQ(zone.zoneAirNode(), *zoneNode);
+  EXPECT_EQ(zone.nameString() + " Demand Branch Node", zoneInletNode->nameString());
+  EXPECT_EQ(setpointNode, *resolvedSetpointNode);
+  const auto expectedZoneInletNode = *zoneInletNode;
+
+  ASSERT_TRUE(spm.setString(openstudio::SetpointManager_SingleZone_ReheatFields::ZoneNodeName, ""));
+  ASSERT_TRUE(spm.setString(openstudio::SetpointManager_SingleZone_ReheatFields::ZoneInletNodeName, ""));
+  const auto report = model.canonicalize();
+  EXPECT_EQ(0u, report.errorCount);
+  zoneNode = spm.getModelObjectTarget<Node>(openstudio::SetpointManager_SingleZone_ReheatFields::ZoneNodeName);
+  zoneInletNode = spm.getModelObjectTarget<Node>(openstudio::SetpointManager_SingleZone_ReheatFields::ZoneInletNodeName);
+  ASSERT_TRUE(zoneNode);
+  ASSERT_TRUE(zoneInletNode);
+  EXPECT_EQ(zone.zoneAirNode(), *zoneNode);
+  EXPECT_EQ(expectedZoneInletNode, *zoneInletNode);
 }

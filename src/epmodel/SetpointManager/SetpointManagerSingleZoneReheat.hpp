@@ -41,11 +41,10 @@ namespace epmodel {
     // - API: Preserves openstudio::model scalar accessor names/signatures for model-counterpart compatibility.
     // - Field Mapping: minimumSupplyAirTemperature and maximumSupplyAirTemperature map directly to
     //   E+ SetpointManager:SingleZone:Reheat scalar fields.
-    // - Field Mapping: Relationship fields Control Zone Name, Zone Node Name, Zone Inlet Node Name,
-    //   and Setpoint Node or NodeList Name are intentionally excluded from scalar-only scaffolding.
+    // - Field Mapping: addToNode projects the control zone, zone air node, zone inlet node, and setpoint node relationships
+    //   required by EnergyPlus, and canonicalization repairs those derived node fields from the control-zone relationship.
     // - Field Mapping: Control Variable is preserved through inherited SetpointManager API and maps to
     //   E+ SetpointManager:SingleZone:Reheat Control Variable.
-    // - TODO(parity): Add non-scalar relationship parity for control-zone and node linkage in a follow-up pass.
     double minimumSupplyAirTemperature() const;
     bool setMinimumSupplyAirTemperature(double minimumSupplyAirTemperature);
 

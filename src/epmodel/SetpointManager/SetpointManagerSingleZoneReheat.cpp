@@ -11,11 +11,14 @@
 #include "Node.hpp"
 #include "HVACComponent/ThermalZone.hpp"
 #include "HVACComponent/ThermalZone_Impl.hpp"
+#include "ModelObject/ZoneHVACEquipmentConnections.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/idd/IddFactory.hxx>
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/SetpointManager_SingleZone_Reheat_FieldEnums.hxx>
+
+#include <algorithm>
 
 namespace openstudio {
 namespace epmodel {
@@ -116,7 +119,36 @@ namespace epmodel {
     }
 
     bool SetpointManagerSingleZoneReheat_Impl::setControlZone(const ThermalZone& thermalZone) {
-      return getObject<ModelObject>().setPointer(openstudio::SetpointManager_SingleZone_ReheatFields::ControlZoneName, thermalZone.handle());
+      if (thermalZone.model() != model()) {
+        return false;
+      }
+
+      auto connections = thermalZone.getImpl<detail::ThermalZone_Impl>()->zoneHVACEquipmentConnections();
+      if (!connections) {
+        return false;
+      }
+
+      auto zoneInletNodes = connections->zoneAirInletNodes();
+      if (zoneInletNodes.empty()) {
+        return false;
+      }
+
+      auto zoneInletNode = zoneInletNodes.front();
+      if (auto terminal = thermalZone.airLoopHVACTerminal()) {
+        const auto terminalHandle = terminal->handle();
+        const auto terminalInlet = std::ranges::find_if(zoneInletNodes, [terminalHandle](const auto& candidate) {
+          auto inletObject = candidate.inletModelObject();
+          return inletObject && inletObject->handle() == terminalHandle;
+        });
+        if (terminalInlet != zoneInletNodes.end()) {
+          zoneInletNode = *terminalInlet;
+        }
+      }
+
+      auto thisObject = getObject<ModelObject>();
+      return thisObject.setPointer(openstudio::SetpointManager_SingleZone_ReheatFields::ControlZoneName, thermalZone.handle())
+             && thisObject.setPointer(openstudio::SetpointManager_SingleZone_ReheatFields::ZoneNodeName, connections->zoneAirNode().handle())
+             && thisObject.setPointer(openstudio::SetpointManager_SingleZone_ReheatFields::ZoneInletNodeName, zoneInletNode.handle());
     }
 
     boost::optional<openstudio::epmodel::Node> SetpointManagerSingleZoneReheat_Impl::setpointNode() const {
@@ -142,6 +174,14 @@ namespace epmodel {
     void SetpointManagerSingleZoneReheat_Impl::doCanonicalize(LoadContext& context) {
       SetpointManager_Impl::doCanonicalize(context);
       canonicalizeSetpointNodeField(context, openstudio::SetpointManager_SingleZone_ReheatFields::SetpointNodeorNodeListName);
+
+      if (auto thermalZone =
+            getObject<ModelObject>().getModelObjectTarget<ThermalZone>(openstudio::SetpointManager_SingleZone_ReheatFields::ControlZoneName)) {
+        if (!setControlZone(*thermalZone)) {
+          detail::addLoadWarning(context, "Could not reconcile control-zone nodes for SetpointManager:SingleZone:Reheat '"
+                                            + getObject<ModelObject>().nameString() + "'.");
+        }
+      }
 
       if (auto value = getString(openstudio::SetpointManager_SingleZone_ReheatFields::ControlVariable, true)) {
         if (!value->empty()) {

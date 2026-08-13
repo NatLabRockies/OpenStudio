@@ -12,6 +12,7 @@
 #include "../ParentObject/ControllerOutdoorAir.hpp"
 #include "../StraightComponent/FanConstantVolume.hpp"
 #include "../StraightComponent/Node.hpp"
+#include <utilities/idd/Controller_OutdoorAir_FieldEnums.hxx>
 #include <utilities/idd/OutdoorAir_NodeList_FieldEnums.hxx>
 #include <utilities/idd/OutdoorAir_Mixer_FieldEnums.hxx>
 #include <utilities/idf/WorkspaceExtensibleGroup.hpp>
@@ -114,6 +115,38 @@ TEST_F(EPModelFixture, API_AirLoopHVACOutdoorAirSystem_OutboardNodeAccessors) {
 
   EXPECT_EQ(*outboardOA, *outdoorNode);
   EXPECT_EQ(*outboardRelief, *reliefNode);
+}
+
+TEST_F(EPModelFixture, API_AirLoopHVACOutdoorAirSystem_SecondSystemDoesNotReuseRenamedSystemNodes) {
+  Model model;
+  AirLoopHVAC firstLoop(model);
+  ASSERT_TRUE(firstLoop.setName("First Air Loop"));
+  AirLoopHVACOutdoorAirSystem firstSystem(model);
+  auto firstOutboardOA = firstSystem.outboardOANode();
+  auto firstOutboardRelief = firstSystem.outboardReliefNode();
+  ASSERT_TRUE(firstOutboardOA);
+  ASSERT_TRUE(firstOutboardRelief);
+  ASSERT_TRUE(firstSystem.setName("First Outdoor Air System"));
+
+  AirLoopHVAC secondLoop(model);
+  AirLoopHVACOutdoorAirSystem secondSystem(model);
+  auto secondOutboardOA = secondSystem.outboardOANode();
+  auto secondOutboardRelief = secondSystem.outboardReliefNode();
+  ASSERT_TRUE(secondOutboardOA);
+  ASSERT_TRUE(secondOutboardRelief);
+  EXPECT_NE(*firstOutboardOA, *secondOutboardOA);
+  EXPECT_NE(*firstOutboardRelief, *secondOutboardRelief);
+
+  auto firstSupplyOutlet = firstLoop.supplyOutletNode();
+  auto secondSupplyOutlet = secondLoop.supplyOutletNode();
+  ASSERT_TRUE(firstSystem.addToNode(firstSupplyOutlet));
+  ASSERT_TRUE(secondSystem.addToNode(secondSupplyOutlet));
+  ASSERT_TRUE(firstSystem.returnAirModelObject());
+  ASSERT_TRUE(firstSystem.mixedAirModelObject());
+  ASSERT_TRUE(secondSystem.returnAirModelObject());
+  ASSERT_TRUE(secondSystem.mixedAirModelObject());
+  EXPECT_NE(*firstSystem.returnAirModelObject(), *secondSystem.returnAirModelObject());
+  EXPECT_NE(*firstSystem.mixedAirModelObject(), *secondSystem.mixedAirModelObject());
 }
 
 TEST_F(EPModelFixture, API_AirLoopHVACOutdoorAirSystem_DefaultCreatesOutdoorAirNodeList) {
@@ -225,6 +258,28 @@ TEST_F(EPModelFixture, API_AirLoopHVACOutdoorAirSystem_AddToNodeInsertsAfterLast
   ASSERT_TRUE(mixedAirObject);
   EXPECT_EQ(supplyOutletNode.cast<ModelObject>(), *mixedAirObject);
   EXPECT_NE(*returnAirObject, *mixedAirObject);
+}
+
+TEST_F(EPModelFixture, API_AirLoopHVACOutdoorAirSystem_StraightComponentInsertionUpdatesMixedAirNode) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  AirLoopHVACOutdoorAirSystem outdoorAirSystem(model);
+  FanConstantVolume fan(model);
+
+  auto supplyOutletNode = airLoop.supplyOutletNode();
+  ASSERT_TRUE(outdoorAirSystem.addToNode(supplyOutletNode));
+  ASSERT_TRUE(fan.addToNode(supplyOutletNode));
+
+  auto fanInlet = fan.inletModelObject();
+  auto mixedAirObject = outdoorAirSystem.mixedAirModelObject();
+  auto controllerMixedAirObject =
+    outdoorAirSystem.getControllerOutdoorAir().getModelObjectTarget<Node>(openstudio::Controller_OutdoorAirFields::MixedAirNodeName);
+  ASSERT_TRUE(fanInlet);
+  ASSERT_TRUE(mixedAirObject);
+  ASSERT_TRUE(controllerMixedAirObject);
+  EXPECT_EQ(*fanInlet, *mixedAirObject);
+  EXPECT_EQ(*fanInlet, *controllerMixedAirObject);
+  EXPECT_NE(supplyOutletNode.cast<ModelObject>(), *mixedAirObject);
 }
 
 TEST_F(EPModelFixture, API_AirLoopHVACOutdoorAirSystem_NodeRenamePreservesResolvedLinks) {
