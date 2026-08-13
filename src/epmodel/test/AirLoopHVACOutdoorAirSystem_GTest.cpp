@@ -445,6 +445,11 @@ TEST_F(EPModelFixture, API_AirLoopHVACOutdoorAirSystem_ReliefSideSingleStreamIns
 
   auto outboardReliefNode = oaSystem.outboardReliefNode();
   ASSERT_TRUE(outboardReliefNode);
+  auto controller = oaSystem.getControllerOutdoorAir();
+  auto controllerRelief = controller.getModelObjectTarget<Node>(openstudio::Controller_OutdoorAirFields::ReliefAirOutletNodeName);
+  ASSERT_TRUE(controllerRelief);
+  ASSERT_TRUE(oaSystem.reliefAirModelObject());
+  EXPECT_EQ(oaSystem.reliefAirModelObject()->handle(), controllerRelief->handle());
 
   FanConstantVolume reliefFan(model);
   ASSERT_TRUE(reliefFan.addToNode(*outboardReliefNode));
@@ -453,11 +458,54 @@ TEST_F(EPModelFixture, API_AirLoopHVACOutdoorAirSystem_ReliefSideSingleStreamIns
   ASSERT_EQ(3u, reliefPath.size());
   EXPECT_EQ((std::vector<ModelObject>{reliefFan.cast<ModelObject>()}), nonNodeObjects(reliefPath));
   EXPECT_EQ(1u, oaSystem.oaComponents().size());
+  controllerRelief = controller.getModelObjectTarget<Node>(openstudio::Controller_OutdoorAirFields::ReliefAirOutletNodeName);
+  ASSERT_TRUE(controllerRelief);
+  ASSERT_TRUE(oaSystem.reliefAirModelObject());
+  EXPECT_EQ(oaSystem.reliefAirModelObject()->handle(), controllerRelief->handle());
+  EXPECT_NE(outboardReliefNode->handle(), controllerRelief->handle());
 
   reliefFan.remove();
 
   EXPECT_EQ(1u, oaSystem.reliefComponents().size());
   EXPECT_TRUE(nonNodeObjects(oaSystem.reliefComponents()).empty());
+  controllerRelief = controller.getModelObjectTarget<Node>(openstudio::Controller_OutdoorAirFields::ReliefAirOutletNodeName);
+  ASSERT_TRUE(controllerRelief);
+  ASSERT_TRUE(oaSystem.reliefAirModelObject());
+  EXPECT_EQ(oaSystem.reliefAirModelObject()->handle(), controllerRelief->handle());
+  EXPECT_EQ(outboardReliefNode->handle(), controllerRelief->handle());
+}
+
+TEST_F(EPModelFixture, API_AirLoopHVACOutdoorAirSystem_OutdoorStreamInsertionKeepsControllerActuatorAligned) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  AirLoopHVACOutdoorAirSystem oaSystem(model);
+  auto supplyInletNode = airLoop.supplyInletNode();
+  ASSERT_TRUE(oaSystem.addToNode(supplyInletNode));
+  auto outboardOANode = oaSystem.outboardOANode();
+  ASSERT_TRUE(outboardOANode);
+  auto controller = oaSystem.getControllerOutdoorAir();
+  auto controllerActuator = controller.getModelObjectTarget<Node>(openstudio::Controller_OutdoorAirFields::ActuatorNodeName);
+  ASSERT_TRUE(controllerActuator);
+  ASSERT_TRUE(oaSystem.outdoorAirModelObject());
+  EXPECT_EQ(oaSystem.outdoorAirModelObject()->handle(), controllerActuator->handle());
+  EXPECT_EQ(outboardOANode->handle(), controllerActuator->handle());
+
+  FanConstantVolume outdoorFan(model);
+  ASSERT_TRUE(outdoorFan.addToNode(*outboardOANode));
+
+  controllerActuator = controller.getModelObjectTarget<Node>(openstudio::Controller_OutdoorAirFields::ActuatorNodeName);
+  ASSERT_TRUE(controllerActuator);
+  ASSERT_TRUE(oaSystem.outdoorAirModelObject());
+  EXPECT_EQ(oaSystem.outdoorAirModelObject()->handle(), controllerActuator->handle());
+  EXPECT_NE(outboardOANode->handle(), controllerActuator->handle());
+
+  outdoorFan.remove();
+
+  controllerActuator = controller.getModelObjectTarget<Node>(openstudio::Controller_OutdoorAirFields::ActuatorNodeName);
+  ASSERT_TRUE(controllerActuator);
+  ASSERT_TRUE(oaSystem.outdoorAirModelObject());
+  EXPECT_EQ(oaSystem.outdoorAirModelObject()->handle(), controllerActuator->handle());
+  EXPECT_EQ(outboardOANode->handle(), controllerActuator->handle());
 }
 
 TEST_F(EPModelFixture, API_AirLoopHVACOutdoorAirSystem_MultipleAirToAirComponentsPreserveExactStreamOrder) {

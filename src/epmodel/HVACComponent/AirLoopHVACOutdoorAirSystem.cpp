@@ -452,16 +452,14 @@ namespace epmodel {
       auto doas = airLoopHVACDedicatedOutdoorAirSystem();
       boost::optional<openstudio::epmodel::AirLoopHVACSplitter> splitter;
       boost::optional<WorkspaceObject> oldSplitterInlet;
-      boost::optional<openstudio::epmodel::ControllerOutdoorAir> controller;
-      boost::optional<WorkspaceObject> oldControllerActuator;
+      auto controller = getControllerOutdoorAir();
+      const auto oldControllerActuator = controller.getTarget(openstudio::Controller_OutdoorAirFields::ActuatorNodeName);
       if (doas) {
         splitter = doas->getImpl<openstudio::epmodel::detail::AirLoopHVACDedicatedOutdoorAirSystem_Impl>()->airLoopHVACSplitter();
-        controller = projectedControllerOutdoorAir();
-        if (!splitter || !controller) {
+        if (!splitter) {
           return false;
         }
         oldSplitterInlet = splitter->getTarget(openstudio::AirLoopHVAC_SplitterFields::InletNodeName);
-        oldControllerActuator = controller->getTarget(openstudio::Controller_OutdoorAirFields::ActuatorNodeName);
       }
 
       if (!mixer.setPointer(outdoorAirPort(), node.handle())) {
@@ -470,27 +468,40 @@ namespace epmodel {
 
       if (doas) {
         OS_ASSERT(splitter);
-        OS_ASSERT(controller);
         if (!splitter->setPointer(openstudio::AirLoopHVAC_SplitterFields::InletNodeName, node.handle())) {
-          if (oldNode) {
-            OS_ASSERT(mixer.setPointer(outdoorAirPort(), oldNode->handle()));
-          }
+          OS_ASSERT(mixer.getImpl<detail::ModelObject_Impl>()->setPointer(outdoorAirPort(), oldNode ? oldNode->handle() : Handle(), false));
           return false;
         }
-        if (!controller->setPointer(openstudio::Controller_OutdoorAirFields::ActuatorNodeName, node.handle())) {
+      }
+      if (!controller.setPointer(openstudio::Controller_OutdoorAirFields::ActuatorNodeName, node.handle())) {
+        if (splitter) {
           OS_ASSERT(splitter->getImpl<detail::ModelObject_Impl>()->setPointer(openstudio::AirLoopHVAC_SplitterFields::InletNodeName,
                                                                               oldSplitterInlet ? oldSplitterInlet->handle() : Handle(), false));
-          OS_ASSERT(mixer.getImpl<detail::ModelObject_Impl>()->setPointer(outdoorAirPort(), oldNode ? oldNode->handle() : Handle(), false));
-          OS_ASSERT(controller->getImpl<detail::ModelObject_Impl>()->setPointer(
-            openstudio::Controller_OutdoorAirFields::ActuatorNodeName, oldControllerActuator ? oldControllerActuator->handle() : Handle(), false));
-          return false;
         }
+        OS_ASSERT(mixer.getImpl<detail::ModelObject_Impl>()->setPointer(outdoorAirPort(), oldNode ? oldNode->handle() : Handle(), false));
+        OS_ASSERT(controller.getImpl<detail::ModelObject_Impl>()->setPointer(
+          openstudio::Controller_OutdoorAirFields::ActuatorNodeName, oldControllerActuator ? oldControllerActuator->handle() : Handle(), false));
+        return false;
       }
       return true;
     }
 
     bool AirLoopHVACOutdoorAirSystem_Impl::setReliefAirStreamNode(const Node& node) {
-      return outdoorAirMixer().setPointer(reliefAirPort(), node.handle());
+      auto mixer = outdoorAirMixer();
+      const auto oldNode = mixer.getTarget(reliefAirPort());
+      auto controller = getControllerOutdoorAir();
+      const auto oldControllerRelief = controller.getTarget(openstudio::Controller_OutdoorAirFields::ReliefAirOutletNodeName);
+
+      if (!mixer.setPointer(reliefAirPort(), node.handle())) {
+        return false;
+      }
+      if (!controller.setPointer(openstudio::Controller_OutdoorAirFields::ReliefAirOutletNodeName, node.handle())) {
+        OS_ASSERT(mixer.getImpl<detail::ModelObject_Impl>()->setPointer(reliefAirPort(), oldNode ? oldNode->handle() : Handle(), false));
+        OS_ASSERT(controller.getImpl<detail::ModelObject_Impl>()->setPointer(openstudio::Controller_OutdoorAirFields::ReliefAirOutletNodeName,
+                                                                             oldControllerRelief ? oldControllerRelief->handle() : Handle(), false));
+        return false;
+      }
+      return true;
     }
 
     bool AirLoopHVACOutdoorAirSystem_Impl::updateOutdoorAirStreamInletNode(const ModelObject& object, const Node& node) {
