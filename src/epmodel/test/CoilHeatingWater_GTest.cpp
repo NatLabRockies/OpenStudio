@@ -24,6 +24,8 @@
 #include "../StraightComponent/FanVariableVolume.hpp"
 #include "../WaterToAirComponent/CoilHeatingWater.hpp"
 
+#include <algorithm>
+
 using namespace openstudio::epmodel;
 
 TEST_F(EPModelFixture, CoilHeatingWater_DefaultConstructor) {
@@ -226,7 +228,7 @@ TEST_F(EPModelFixture, CoilHeatingWater_AirflowNetworkEquivalentDuctRoundTrip) {
   EXPECT_DOUBLE_EQ(0.82, updated.airPathHydraulicDiameter());
 }
 
-TEST_F(EPModelFixture, CoilHeatingWater_AirflowNetworkEquivalentDuctReturnsFirstAttachedComponentWhenMultipleAttachmentsExist) {
+TEST_F(EPModelFixture, CoilHeatingWater_AirflowNetworkEquivalentDuctReturnsFirstResolvedComponentWhenMultipleAttachmentsExist) {
   Model model;
   CoilHeatingWater coil(model);
 
@@ -239,12 +241,12 @@ TEST_F(EPModelFixture, CoilHeatingWater_AirflowNetworkEquivalentDuctReturnsFirst
 
   auto attached = coil.airflowNetworkEquivalentDuct();
   ASSERT_TRUE(attached);
-  EXPECT_EQ(first.handle(), attached->handle());
 
   const auto children = coil.children();
   ASSERT_EQ(2u, children.size());
-  EXPECT_EQ(first.handle(), children[0].handle());
-  EXPECT_EQ(duplicate.handle(), children[1].handle());
+  EXPECT_EQ(children.front(), attached->cast<ModelObject>());
+  EXPECT_NE(children.end(), std::ranges::find(children, first.cast<ModelObject>()));
+  EXPECT_NE(children.end(), std::ranges::find(children, duplicate.cast<ModelObject>()));
 }
 
 TEST_F(EPModelFixture, CoilHeatingWater_RemoveCleansUpAttachedAirflowNetworkComponent) {

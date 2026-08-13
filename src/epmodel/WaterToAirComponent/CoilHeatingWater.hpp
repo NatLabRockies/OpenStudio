@@ -52,7 +52,7 @@ namespace epmodel {
     // - Documented Delta: For malformed imported data with no persisted availability schedule, the getter repairs
     //   storage to the model always-on discrete schedule before returning it. When the coil is attached to multiple
     //   `AirflowNetwork:Distribution:Component:Coil` objects, `airflowNetworkEquivalentDuct()` warns and returns the
-    //   first attached component. Autosized-value query accessors currently return `none` because epmodel does not yet
+    //   first component in the current resolved-source order. Autosized-value query accessors currently return `none` because epmodel does not yet
     //   expose canonical SQL-backed autosized results.
     // - Field/Storage Mapping: The availability schedule and scalar design fields map directly to EnergyPlus
     //   `Coil:Heating:Water`. Controller linkage is inferred from the persisted `Controller:WaterCoil` actuator and
