@@ -8,6 +8,10 @@
 #include "EPModelFixture.hpp"
 #include "../Loop/AirLoopHVAC.hpp"
 #include "../Loop/PlantLoop.hpp"
+#include "../Mixer/AirLoopHVACZoneMixer.hpp"
+#include "../Mixer/AirLoopHVACZoneMixer_Impl.hpp"
+#include "../ModelObject/OutdoorAirMixer.hpp"
+#include "../ModelObject/OutdoorAirMixer_Impl.hpp"
 #include "../Schedule/ScheduleConstant.hpp"
 #include "../Splitter/AirLoopHVACZoneSplitter.hpp"
 #include "../StraightComponent/AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass.hpp"
@@ -16,12 +20,44 @@
 #include "../StraightComponent/FanConstantVolume.hpp"
 #include "../StraightComponent/Node.hpp"
 
+#include <utilities/idd/AirLoopHVAC_UnitaryHeatCool_VAVChangeoverBypass_FieldEnums.hxx>
+#include <utilities/idd/OutdoorAir_Mixer_FieldEnums.hxx>
+
 using namespace openstudio::epmodel;
 
 TEST_F(EPModelFixture, AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_DefaultConstructor) {
   Model model;
   AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass unitary(model);
   EXPECT_EQ(AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass::iddObjectType(), unitary.iddObject().type());
+}
+
+TEST_F(EPModelFixture, AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_SecondUnitaryDoesNotReuseRenamedInternalTopology) {
+  Model model;
+  AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass firstUnitary(model);
+  auto firstBypassMixerNode =
+    firstUnitary.getModelObjectTarget<Node>(openstudio::AirLoopHVAC_UnitaryHeatCool_VAVChangeoverBypassFields::BypassDuctMixerNodeName);
+  auto firstBypassSplitterNode =
+    firstUnitary.getModelObjectTarget<Node>(openstudio::AirLoopHVAC_UnitaryHeatCool_VAVChangeoverBypassFields::BypassDuctSplitterNodeName);
+  auto firstOutdoorAirMixer =
+    firstUnitary.getModelObjectTarget<OutdoorAirMixer>(openstudio::AirLoopHVAC_UnitaryHeatCool_VAVChangeoverBypassFields::OutdoorAirMixerName);
+  ASSERT_TRUE(firstBypassMixerNode);
+  ASSERT_TRUE(firstBypassSplitterNode);
+  ASSERT_TRUE(firstOutdoorAirMixer);
+  ASSERT_TRUE(firstUnitary.setName("First Changeover Bypass Unitary"));
+
+  AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass secondUnitary(model);
+  auto secondBypassMixerNode =
+    secondUnitary.getModelObjectTarget<Node>(openstudio::AirLoopHVAC_UnitaryHeatCool_VAVChangeoverBypassFields::BypassDuctMixerNodeName);
+  auto secondBypassSplitterNode =
+    secondUnitary.getModelObjectTarget<Node>(openstudio::AirLoopHVAC_UnitaryHeatCool_VAVChangeoverBypassFields::BypassDuctSplitterNodeName);
+  auto secondOutdoorAirMixer =
+    secondUnitary.getModelObjectTarget<OutdoorAirMixer>(openstudio::AirLoopHVAC_UnitaryHeatCool_VAVChangeoverBypassFields::OutdoorAirMixerName);
+  ASSERT_TRUE(secondBypassMixerNode);
+  ASSERT_TRUE(secondBypassSplitterNode);
+  ASSERT_TRUE(secondOutdoorAirMixer);
+  EXPECT_NE(*firstBypassMixerNode, *secondBypassMixerNode);
+  EXPECT_NE(*firstBypassSplitterNode, *secondBypassSplitterNode);
+  EXPECT_NE(*firstOutdoorAirMixer, *secondOutdoorAirMixer);
 }
 
 TEST_F(EPModelFixture, AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_RelationshipConstructorAndChildren) {
@@ -35,6 +71,16 @@ TEST_F(EPModelFixture, AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_Relationshi
   EXPECT_EQ(fan.handle(), unitary.supplyAirFan().handle());
   EXPECT_EQ(cooling.handle(), unitary.coolingCoil().handle());
   EXPECT_EQ(heating.handle(), unitary.heatingCoil().handle());
+  EXPECT_EQ(fan.iddObject().name(),
+            unitary.getString(openstudio::AirLoopHVAC_UnitaryHeatCool_VAVChangeoverBypassFields::SupplyAirFanObjectType).get());
+  EXPECT_EQ(cooling.iddObject().name(),
+            unitary.getString(openstudio::AirLoopHVAC_UnitaryHeatCool_VAVChangeoverBypassFields::CoolingCoilObjectType).get());
+  EXPECT_EQ(heating.iddObject().name(),
+            unitary.getString(openstudio::AirLoopHVAC_UnitaryHeatCool_VAVChangeoverBypassFields::HeatingCoilObjectType).get());
+  EXPECT_EQ(OutdoorAirMixer::iddObjectType().valueDescription(),
+            unitary.getString(openstudio::AirLoopHVAC_UnitaryHeatCool_VAVChangeoverBypassFields::OutdoorAirMixerObjectType).get());
+  EXPECT_TRUE(unitary.getModelObjectTarget<OutdoorAirMixer>(openstudio::AirLoopHVAC_UnitaryHeatCool_VAVChangeoverBypassFields::OutdoorAirMixerName));
+  EXPECT_EQ(1u, model.getObjectsByType(openstudio::IddObjectType::OutdoorAir_NodeList).size());
 
   const auto children = unitary.children();
   ASSERT_EQ(3u, children.size());
@@ -167,6 +213,46 @@ TEST_F(EPModelFixture, AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_AddToNodeSu
   EXPECT_FALSE(demandUnitary.airLoopHVAC());
 }
 
+TEST_F(EPModelFixture, AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_ConnectsBypassReturnToSameLoopZoneMixer) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  AirLoopHVAC otherAirLoop(model);
+  AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass unitary(model);
+
+  auto supplyOutletNode = airLoop.supplyOutletNode();
+  ASSERT_TRUE(unitary.addToNode(supplyOutletNode));
+  const auto plenumNode = unitary.plenumorMixerNode();
+  EXPECT_FALSE(unitary.getModelObjectTarget<Node>(unitary.plenumorMixerAirPort()));
+  EXPECT_FALSE(unitary.plenumorMixer());
+  EXPECT_FALSE(unitary.setPlenumorMixer(otherAirLoop.zoneMixer()));
+
+  auto zoneMixer = airLoop.zoneMixer();
+  const auto originalInletCount = zoneMixer.inletModelObjects().size();
+  ASSERT_TRUE(unitary.setPlenumorMixer(zoneMixer));
+  ASSERT_TRUE(unitary.plenumorMixer());
+  EXPECT_EQ(zoneMixer, unitary.plenumorMixer()->cast<AirLoopHVACZoneMixer>());
+  ASSERT_TRUE(unitary.getModelObjectTarget<Node>(unitary.plenumorMixerAirPort()));
+  EXPECT_EQ(plenumNode, *unitary.getModelObjectTarget<Node>(unitary.plenumorMixerAirPort()));
+  EXPECT_EQ(originalInletCount + 1u, zoneMixer.inletModelObjects().size());
+  EXPECT_EQ(plenumNode, zoneMixer.inletModelObjects().back().cast<Node>());
+
+  EXPECT_FALSE(unitary.setPlenumorMixer(otherAirLoop.zoneMixer()));
+  ASSERT_TRUE(unitary.plenumorMixer());
+  EXPECT_EQ(zoneMixer, unitary.plenumorMixer()->cast<AirLoopHVACZoneMixer>());
+  EXPECT_EQ(originalInletCount + 1u, zoneMixer.inletModelObjects().size());
+
+  auto report = model.canonicalize();
+  EXPECT_EQ(0u, report.errorCount);
+  ASSERT_TRUE(unitary.plenumorMixer());
+  EXPECT_EQ(zoneMixer, unitary.plenumorMixer()->cast<AirLoopHVACZoneMixer>());
+  EXPECT_EQ(originalInletCount + 1u, zoneMixer.inletModelObjects().size());
+
+  unitary.resetPlenumorMixer();
+  EXPECT_FALSE(unitary.getModelObjectTarget<Node>(unitary.plenumorMixerAirPort()));
+  EXPECT_FALSE(unitary.plenumorMixer());
+  EXPECT_EQ(originalInletCount, zoneMixer.inletModelObjects().size());
+}
+
 TEST_F(EPModelFixture, AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_TopologyAndInternalNodes) {
   Model model;
   AirLoopHVAC airLoop(model);
@@ -190,6 +276,12 @@ TEST_F(EPModelFixture, AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_TopologyAnd
   auto coolingOutlet = cooling.outletModelObject()->optionalCast<Node>();
   auto heatingInlet = heating.inletModelObject()->optionalCast<Node>();
   auto heatingOutlet = heating.outletModelObject()->optionalCast<Node>();
+  auto bypassMixerNode =
+    unitary.getModelObjectTarget<Node>(openstudio::AirLoopHVAC_UnitaryHeatCool_VAVChangeoverBypassFields::BypassDuctMixerNodeName);
+  auto bypassSplitterNode =
+    unitary.getModelObjectTarget<Node>(openstudio::AirLoopHVAC_UnitaryHeatCool_VAVChangeoverBypassFields::BypassDuctSplitterNodeName);
+  auto outdoorAirMixer =
+    unitary.getModelObjectTarget<OutdoorAirMixer>(openstudio::AirLoopHVAC_UnitaryHeatCool_VAVChangeoverBypassFields::OutdoorAirMixerName);
   ASSERT_TRUE(unitaryInlet);
   ASSERT_TRUE(unitaryOutlet);
   ASSERT_TRUE(fanInlet);
@@ -198,17 +290,25 @@ TEST_F(EPModelFixture, AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_TopologyAnd
   ASSERT_TRUE(coolingOutlet);
   ASSERT_TRUE(heatingInlet);
   ASSERT_TRUE(heatingOutlet);
+  ASSERT_TRUE(bypassMixerNode);
+  ASSERT_TRUE(bypassSplitterNode);
+  ASSERT_TRUE(outdoorAirMixer);
+  ASSERT_TRUE(outdoorAirMixer->mixedAirNode());
+  ASSERT_TRUE(outdoorAirMixer->returnAirNode());
   ASSERT_TRUE(unitary.fanOutletNode());
   ASSERT_TRUE(unitary.coolingCoilOutletNode());
   ASSERT_TRUE(unitary.heatingCoilOutletNode());
 
-  EXPECT_EQ(*unitaryInlet, *coolingInlet);
+  EXPECT_EQ(*outdoorAirMixer->mixedAirNode(), *coolingInlet);
   EXPECT_EQ(*unitary.coolingCoilOutletNode(), *coolingOutlet);
   EXPECT_EQ(*unitary.coolingCoilOutletNode(), *heatingInlet);
   EXPECT_EQ(*unitary.heatingCoilOutletNode(), *heatingOutlet);
   EXPECT_EQ(*unitary.heatingCoilOutletNode(), *fanInlet);
   EXPECT_EQ(*unitary.fanOutletNode(), *fanOutlet);
-  EXPECT_EQ(*unitaryOutlet, *fanOutlet);
+  EXPECT_EQ(*bypassMixerNode, *outdoorAirMixer->returnAirNode());
+  EXPECT_EQ(*bypassSplitterNode, *fanOutlet);
+  EXPECT_NE(*unitaryInlet, *coolingInlet);
+  EXPECT_NE(*unitaryOutlet, *fanOutlet);
 }
 
 TEST_F(EPModelFixture, AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_NodeRolesFollowBlowThroughOrder) {
@@ -227,10 +327,14 @@ TEST_F(EPModelFixture, AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_NodeRolesFo
   ASSERT_TRUE(unitary.coolingCoilOutletNode());
   ASSERT_TRUE(unitary.heatingCoilOutletNode());
   ASSERT_TRUE(unitary.outletModelObject());
+  auto bypassSplitterNode =
+    unitary.getModelObjectTarget<Node>(openstudio::AirLoopHVAC_UnitaryHeatCool_VAVChangeoverBypassFields::BypassDuctSplitterNodeName);
+  ASSERT_TRUE(bypassSplitterNode);
 
   EXPECT_EQ(*unitary.fanOutletNode(), *cooling.inletModelObject()->optionalCast<Node>());
   EXPECT_EQ(*unitary.coolingCoilOutletNode(), *heating.inletModelObject()->optionalCast<Node>());
-  EXPECT_EQ(*unitary.heatingCoilOutletNode(), *unitary.outletModelObject()->optionalCast<Node>());
+  EXPECT_EQ(*unitary.heatingCoilOutletNode(), *bypassSplitterNode);
+  EXPECT_NE(*unitary.heatingCoilOutletNode(), *unitary.outletModelObject()->optionalCast<Node>());
 }
 
 TEST_F(EPModelFixture, AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_InternalNodeRenamesSurviveCanonicalize) {
@@ -291,6 +395,14 @@ TEST_F(EPModelFixture, AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_Canonicaliz
   ASSERT_TRUE(heating.setPointer(heating.outletPort(), unitaryOutlet->handle()));
   ASSERT_TRUE(fan.setPointer(fan.inletPort(), unitaryOutlet->handle()));
   ASSERT_TRUE(fan.setPointer(fan.outletPort(), unitaryInlet->handle()));
+  auto outdoorAirMixer =
+    unitary.getModelObjectTarget<OutdoorAirMixer>(openstudio::AirLoopHVAC_UnitaryHeatCool_VAVChangeoverBypassFields::OutdoorAirMixerName);
+  ASSERT_TRUE(outdoorAirMixer);
+  ASSERT_TRUE(unitary.setString(openstudio::AirLoopHVAC_UnitaryHeatCool_VAVChangeoverBypassFields::SupplyAirFanObjectType, ""));
+  ASSERT_TRUE(unitary.setString(openstudio::AirLoopHVAC_UnitaryHeatCool_VAVChangeoverBypassFields::CoolingCoilObjectType, ""));
+  ASSERT_TRUE(unitary.setString(openstudio::AirLoopHVAC_UnitaryHeatCool_VAVChangeoverBypassFields::HeatingCoilObjectType, ""));
+  ASSERT_TRUE(unitary.setString(openstudio::AirLoopHVAC_UnitaryHeatCool_VAVChangeoverBypassFields::BypassDuctMixerNodeName, ""));
+  ASSERT_TRUE(outdoorAirMixer->setString(openstudio::OutdoorAir_MixerFields::ReturnAirStreamNodeName, ""));
 
   auto report = model.canonicalize();
   EXPECT_EQ(0u, report.errorCount);
@@ -301,4 +413,15 @@ TEST_F(EPModelFixture, AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_Canonicaliz
   EXPECT_EQ(*expectedCoolingOutlet, *unitary.coolingCoilOutletNode());
   EXPECT_EQ(*expectedHeatingOutlet, *unitary.heatingCoilOutletNode());
   EXPECT_EQ(*expectedFanOutlet, *unitary.fanOutletNode());
+  EXPECT_EQ(fan.iddObject().name(),
+            unitary.getString(openstudio::AirLoopHVAC_UnitaryHeatCool_VAVChangeoverBypassFields::SupplyAirFanObjectType).get());
+  EXPECT_EQ(cooling.iddObject().name(),
+            unitary.getString(openstudio::AirLoopHVAC_UnitaryHeatCool_VAVChangeoverBypassFields::CoolingCoilObjectType).get());
+  EXPECT_EQ(heating.iddObject().name(),
+            unitary.getString(openstudio::AirLoopHVAC_UnitaryHeatCool_VAVChangeoverBypassFields::HeatingCoilObjectType).get());
+  auto repairedBypassMixerNode =
+    unitary.getModelObjectTarget<Node>(openstudio::AirLoopHVAC_UnitaryHeatCool_VAVChangeoverBypassFields::BypassDuctMixerNodeName);
+  ASSERT_TRUE(repairedBypassMixerNode);
+  ASSERT_TRUE(outdoorAirMixer->returnAirNode());
+  EXPECT_EQ(*repairedBypassMixerNode, *outdoorAirMixer->returnAirNode());
 }

@@ -75,6 +75,8 @@
 #include "StraightComponent/AirTerminalSingleDuctVAVHeatAndCoolReheat_Impl.hpp"
 #include "StraightComponent/AirTerminalSingleDuctVAVReheat.hpp"
 #include "StraightComponent/AirTerminalSingleDuctVAVReheat_Impl.hpp"
+#include "StraightComponent/AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass.hpp"
+#include "StraightComponent/AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_Impl.hpp"
 #include "StraightComponent/CoilCoolingCooledBeam.hpp"
 #include "StraightComponent/CoilCoolingFourPipeBeam.hpp"
 #include "StraightComponent/CoilHeatingFourPipeBeam.hpp"
@@ -2873,31 +2875,64 @@ namespace epmodel {
         returnPath->getImpl<detail::AirLoopHVACReturnPath_Impl>()->canonicalize(context);
       }
 
-      {  // Ensure there is at least one Node between the zone splitter and mixer
+      {  // Ensure there is at least one Node between the zone splitter and mixer.
+         // A changeover-bypass unitary may add a mixer-only inlet for bypass
+         // return air. That inlet is not a demand branch and must not make the
+         // paired splitter/mixer branch counts appear inconsistent.
         auto zs = zoneSplitter();
         auto zm = zoneMixer();
+        const auto mixerInlets = zm.inletModelObjects();
+        std::set<Handle> bypassReturnHandles;
+        for (const auto& unitary : model().getConcreteModelObjects<AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass>()) {
+          const auto bypassReturnNode = unitary.getModelObjectTarget<Node>(unitary.plenumorMixerAirPort());
+          if (bypassReturnNode) {
+            bypassReturnHandles.insert(bypassReturnNode->handle());
+          }
+        }
 
-        if (zs.outletModelObjects().size() != zm.inletModelObjects().size()) {
+        std::vector<Node> bypassReturnNodes;
+        for (const auto& inlet : mixerInlets) {
+          if (bypassReturnHandles.contains(inlet.handle())) {
+            bypassReturnNodes.push_back(inlet.cast<Node>());
+          }
+        }
+
+        const auto demandMixerBranchCount = mixerInlets.size() - bypassReturnNodes.size();
+        bool rebuiltDemandBranches = false;
+
+        if (zs.outletModelObjects().size() != demandMixerBranchCount) {
           const auto splitterBranches = zs.outletModelObjects().size();
-          const auto mixerBranches = zm.inletModelObjects().size();
           while (!zs.outletModelObjects().empty()) {
             zs.removePortForBranch(static_cast<unsigned>(zs.outletModelObjects().size() - 1u));
           }
           while (!zm.inletModelObjects().empty()) {
             zm.removePortForBranch(static_cast<unsigned>(zm.inletModelObjects().size() - 1u));
           }
-          detail::addLoadWarning(context, "ZoneSplitter/ZoneMixer branch count mismatch for AirLoopHVAC '" + loopName
-                                            + "' (splitter=" + std::to_string(splitterBranches) + ", mixer=" + std::to_string(mixerBranches)
-                                            + "). Cleared branch node ports to rebuild.");
+          rebuiltDemandBranches = true;
+          detail::addLoadWarning(context,
+                                 "ZoneSplitter/ZoneMixer branch count mismatch for AirLoopHVAC '" + loopName
+                                   + "' (splitter=" + std::to_string(splitterBranches) + ", demand mixer=" + std::to_string(demandMixerBranchCount)
+                                   + ", bypass return=" + std::to_string(bypassReturnNodes.size()) + "). Cleared branch node ports to rebuild.");
         }
 
         if (zs.outletModelObjects().empty()) {
+          if (!rebuiltDemandBranches) {
+            while (!zm.inletModelObjects().empty()) {
+              zm.removePortForBranch(static_cast<unsigned>(zm.inletModelObjects().size() - 1u));
+            }
+          }
           Node branchNode(model());
           branchNode.setName(loopName + " Demand Branch Node");
           zs.setOutletModelObject(0u, branchNode);
           zm.setInletModelObject(0u, branchNode);
           detail::addLoadInfo(context, "Created demand branch node '" + branchNode.nameString()
                                          + "' between ZoneSplitter and ZoneMixer for AirLoopHVAC '" + loopName + "'.");
+        }
+
+        if (rebuiltDemandBranches || (mixerInlets.size() == bypassReturnNodes.size())) {
+          for (const auto& bypassReturnNode : bypassReturnNodes) {
+            zm.setInletModelObject(zm.nextBranchIndex(), bypassReturnNode);
+          }
         }
       }
 

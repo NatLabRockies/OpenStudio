@@ -8,9 +8,14 @@
 
 #include "HVACComponent.hpp"
 #include "Loop/AirLoopHVAC.hpp"
+#include "Mixer/AirLoopHVACZoneMixer.hpp"
+#include "Mixer/AirLoopHVACZoneMixer_Impl.hpp"
+#include "Mixer/Mixer.hpp"
 #include "Model.hpp"
 #include "ModelObject/ModelObject.hpp"
 #include "ModelObject/ModelObject_Impl.hpp"
+#include "ModelObject/OutdoorAirMixer.hpp"
+#include "ModelObject/OutdoorAirMixer_Impl.hpp"
 #include "Schedule/Schedule.hpp"
 #include "Schedule/Schedule_Impl.hpp"
 #include "StraightComponent/Node.hpp"
@@ -24,6 +29,10 @@
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/IddFactory.hxx>
 #include <utilities/idd/IddObject.hpp>
+#include <utilities/idd/OutdoorAir_NodeList_FieldEnums.hxx>
+#include <utilities/idf/WorkspaceExtensibleGroup.hpp>
+
+#include <algorithm>
 
 namespace openstudio {
 namespace epmodel {
@@ -66,6 +75,18 @@ namespace epmodel {
 
   AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass::AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass(const Model& model)
     : StraightComponent(AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass::iddObjectType(), model) {
+    // Renaming an existing unitary does not rename its internal bypass nodes.
+    // Advance past that retained default-name prefix before owner maintenance
+    // creates another internal path.
+    auto internalNodeNameIsTaken = [&model](const std::string& unitaryName) {
+      return static_cast<bool>(model.getConcreteModelObjectByName<Node>(unitaryName + " Bypass Duct Mixer Node"))
+             || static_cast<bool>(model.getConcreteModelObjectByName<Node>(unitaryName + " Bypass Duct Splitter Node"))
+             || static_cast<bool>(model.getConcreteModelObjectByName<Node>(unitaryName + " Mixed Air Node"));
+    };
+    while (internalNodeNameIsTaken(nameString())) {
+      OS_ASSERT(setName(model.nextName(iddObjectType(), false)));
+    }
+
     // Keep required scalar fields populated for strict non-optional getters.
     OS_ASSERT(setSupplyAirFanPlacement("DrawThrough"));
     OS_ASSERT(setPriorityControlMode("ZonePriority"));
@@ -350,6 +371,26 @@ namespace epmodel {
 
   bool AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass::setMinimumRuntimeBeforeOperatingModeChange(double runtime) {
     return getImpl<detail::AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_Impl>()->setMinimumRuntimeBeforeOperatingModeChange(runtime);
+  }
+
+  unsigned AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass::plenumorMixerAirPort() const {
+    return getImpl<detail::AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_Impl>()->plenumorMixerAirPort();
+  }
+
+  Node AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass::plenumorMixerNode() const {
+    return getImpl<detail::AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_Impl>()->plenumorMixerNode();
+  }
+
+  boost::optional<Mixer> AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass::plenumorMixer() const {
+    return getImpl<detail::AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_Impl>()->plenumorMixer();
+  }
+
+  bool AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass::setPlenumorMixer(const Mixer& returnPathComponent) {
+    return getImpl<detail::AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_Impl>()->setPlenumorMixer(returnPathComponent);
+  }
+
+  void AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass::resetPlenumorMixer() {
+    getImpl<detail::AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_Impl>()->resetPlenumorMixer();
   }
 
 }  // namespace epmodel
@@ -725,6 +766,68 @@ namespace epmodel {
       return setDouble(openstudio::AirLoopHVAC_UnitaryHeatCool_VAVChangeoverBypassFields::MinimumRuntimeBeforeOperatingModeChange, runtime);
     }
 
+    unsigned AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_Impl::plenumorMixerAirPort() const {
+      return openstudio::AirLoopHVAC_UnitaryHeatCool_VAVChangeoverBypassFields::PlenumorMixerInletNodeName;
+    }
+
+    Node AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_Impl::plenumorMixerNode() const {
+      if (auto node = resolvedNodeTarget(plenumorMixerAirPort())) {
+        return *node;
+      }
+      return model().getOrCreateTransientByName<Node>(getObject<ModelObject>().nameString() + " Plenum or Mixer Inlet Node");
+    }
+
+    boost::optional<Mixer> AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_Impl::plenumorMixer() const {
+      auto node = resolvedNodeTarget(plenumorMixerAirPort());
+      if (!node) {
+        return boost::none;
+      }
+
+      for (const auto& zoneMixer : model().getConcreteModelObjects<AirLoopHVACZoneMixer>()) {
+        const auto inlets = zoneMixer.inletModelObjects();
+        if (std::ranges::find(inlets, node->cast<ModelObject>()) != inlets.end()) {
+          return zoneMixer.cast<Mixer>();
+        }
+      }
+      return boost::none;
+    }
+
+    bool AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_Impl::setPlenumorMixer(const Mixer& returnPathComponent) {
+      auto zoneMixer = returnPathComponent.optionalCast<AirLoopHVACZoneMixer>();
+      auto thisLoop = getObject<AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass>().airLoopHVAC();
+      auto mixerLoop = zoneMixer ? zoneMixer->airLoopHVAC() : boost::none;
+      if (!(zoneMixer && thisLoop && mixerLoop && (*thisLoop == *mixerLoop))) {
+        return false;
+      }
+
+      resetPlenumorMixer();
+      auto node = plenumorMixerNode();
+      const auto branchIndex = zoneMixer->nextBranchIndex();
+      if (!zoneMixer->setInletModelObject(branchIndex, node)) {
+        return false;
+      }
+      if (!setPointer(plenumorMixerAirPort(), node.handle(), false)) {
+        zoneMixer->removePortForBranch(branchIndex);
+        return false;
+      }
+      return true;
+    }
+
+    void AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_Impl::resetPlenumorMixer() {
+      auto node = resolvedNodeTarget(plenumorMixerAirPort());
+      if (node) {
+        for (auto zoneMixer : model().getConcreteModelObjects<AirLoopHVACZoneMixer>()) {
+          const auto inlets = zoneMixer.inletModelObjects();
+          const auto inlet = std::ranges::find(inlets, node->cast<ModelObject>());
+          if (inlet != inlets.end()) {
+            zoneMixer.removePortForBranch(static_cast<unsigned>(std::distance(inlets.begin(), inlet)));
+            break;
+          }
+        }
+      }
+      setPointer(plenumorMixerAirPort(), Handle(), false);
+    }
+
     bool AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_Impl::maintainContainedAirPath() {
       return reconcileContainedAirPath(false, nullptr);
     }
@@ -760,15 +863,109 @@ namespace epmodel {
         return value;
       };
 
-      if (!fan && !cooling && !heating) {
-        return changed;
-      }
-
       const auto baseName = thisObject.nameString();
       auto inletNode = resolvedOrCreatedNodeTarget(inletPort(), baseName + " Air Inlet Node");
       auto outletNode = resolvedOrCreatedNodeTarget(outletPort(), baseName + " Air Outlet Node");
       trackNodeChange(setPointer(inletPort(), inletNode.handle(), false));
       trackNodeChange(setPointer(outletPort(), outletNode.handle(), false));
+
+      const auto synchronizeObjectType = [&](unsigned objectTypeField, const boost::optional<HVACComponent>& component) {
+        const auto currentType = thisObject.getString(objectTypeField, true);
+        const auto expectedType = component ? boost::optional<std::string>(component->iddObject().name()) : boost::optional<std::string>();
+        if (expectedType) {
+          if (!currentType || !openstudio::istringEqual(*currentType, *expectedType)) {
+            OS_ASSERT(thisObject.setString(objectTypeField, *expectedType));
+            changed = true;
+          }
+        } else if (currentType && !currentType->empty()) {
+          OS_ASSERT(thisObject.setString(objectTypeField, ""));
+          changed = true;
+        }
+      };
+      synchronizeObjectType(openstudio::AirLoopHVAC_UnitaryHeatCool_VAVChangeoverBypassFields::SupplyAirFanObjectType,
+                            fan ? boost::optional<HVACComponent>(fan->cast<HVACComponent>()) : boost::none);
+      synchronizeObjectType(openstudio::AirLoopHVAC_UnitaryHeatCool_VAVChangeoverBypassFields::CoolingCoilObjectType,
+                            coolingObject ? boost::optional<HVACComponent>(*coolingObject) : boost::none);
+      synchronizeObjectType(openstudio::AirLoopHVAC_UnitaryHeatCool_VAVChangeoverBypassFields::HeatingCoilObjectType,
+                            heatingObject ? boost::optional<HVACComponent>(*heatingObject) : boost::none);
+
+      auto bypassMixerNode = resolvedOrCreatedNodeTarget(openstudio::AirLoopHVAC_UnitaryHeatCool_VAVChangeoverBypassFields::BypassDuctMixerNodeName,
+                                                         baseName + " Bypass Duct Mixer Node");
+      auto bypassSplitterNode = resolvedOrCreatedNodeTarget(
+        openstudio::AirLoopHVAC_UnitaryHeatCool_VAVChangeoverBypassFields::BypassDuctSplitterNodeName, baseName + " Bypass Duct Splitter Node");
+
+      auto outdoorAirMixer =
+        thisObject.getModelObjectTarget<OutdoorAirMixer>(openstudio::AirLoopHVAC_UnitaryHeatCool_VAVChangeoverBypassFields::OutdoorAirMixerName);
+      if (!outdoorAirMixer) {
+        auto createdMixer = OutdoorAirMixer(model());
+        createdMixer.setName(baseName + " Outdoor Air Mixer");
+        OS_ASSERT(
+          thisObject.setPointer(openstudio::AirLoopHVAC_UnitaryHeatCool_VAVChangeoverBypassFields::OutdoorAirMixerName, createdMixer.handle()));
+        outdoorAirMixer = createdMixer;
+        changed = true;
+      }
+      OS_ASSERT(outdoorAirMixer);
+
+      const auto currentMixerType =
+        thisObject.getString(openstudio::AirLoopHVAC_UnitaryHeatCool_VAVChangeoverBypassFields::OutdoorAirMixerObjectType, true);
+      if (!currentMixerType || !openstudio::istringEqual(*currentMixerType, outdoorAirMixer->iddObject().name())) {
+        OS_ASSERT(thisObject.setString(openstudio::AirLoopHVAC_UnitaryHeatCool_VAVChangeoverBypassFields::OutdoorAirMixerObjectType,
+                                       outdoorAirMixer->iddObject().name()));
+        changed = true;
+      }
+
+      auto mixerImpl = outdoorAirMixer->getImpl<detail::OutdoorAirMixer_Impl>();
+      auto mixedAirNode = mixerImpl->mixedAirNode();
+      if (!mixedAirNode) {
+        mixedAirNode = model().getOrCreateTransientByName<Node>(baseName + " Mixed Air Node");
+        OS_ASSERT(mixerImpl->setMixedAirNode(*mixedAirNode));
+        changed = true;
+      }
+      auto outdoorAirNode = mixerImpl->outdoorAirNode();
+      if (!outdoorAirNode) {
+        outdoorAirNode = model().getOrCreateTransientByName<Node>(baseName + " OA Node");
+        OS_ASSERT(mixerImpl->setOutdoorAirNode(*outdoorAirNode));
+        changed = true;
+      }
+      auto reliefAirNode = mixerImpl->reliefAirNode();
+      if (!reliefAirNode) {
+        reliefAirNode = model().getOrCreateTransientByName<Node>(baseName + " Relief Air Node");
+        OS_ASSERT(mixerImpl->setReliefAirNode(*reliefAirNode));
+        changed = true;
+      }
+      if (!mixerImpl->returnAirNode() || (*mixerImpl->returnAirNode() != bypassMixerNode)) {
+        OS_ASSERT(mixerImpl->setReturnAirNode(bypassMixerNode));
+        changed = true;
+      }
+
+      bool outdoorAirNodeListed = false;
+      for (const auto& object : model().getObjectsByType(openstudio::IddObjectType::OutdoorAir_NodeList)) {
+        for (const auto& group : object.extensibleGroups()) {
+          auto workspaceGroup = group.optionalCast<openstudio::WorkspaceExtensibleGroup>();
+          if (!workspaceGroup) {
+            continue;
+          }
+          auto nodeName = workspaceGroup->getString(openstudio::OutdoorAir_NodeListExtensibleFields::NodeorNodeListName);
+          if (nodeName && openstudio::istringEqual(*nodeName, outdoorAirNode->nameString())) {
+            outdoorAirNodeListed = true;
+            break;
+          }
+        }
+        if (outdoorAirNodeListed) {
+          break;
+        }
+      }
+      if (!outdoorAirNodeListed) {
+        auto nodeList = ModelObject::create(openstudio::IddObjectType::OutdoorAir_NodeList, model());
+        auto group = nodeList.pushExtensibleGroup().optionalCast<openstudio::WorkspaceExtensibleGroup>();
+        OS_ASSERT(group);
+        OS_ASSERT(group->setString(openstudio::OutdoorAir_NodeListExtensibleFields::NodeorNodeListName, outdoorAirNode->nameString()));
+        changed = true;
+      }
+
+      if (!fan && !cooling && !heating) {
+        return changed;
+      }
 
       const bool blowThrough = openstudio::istringEqual(supplyAirFanPlacement(), "BlowThrough");
 
@@ -809,7 +1006,7 @@ namespace epmodel {
         return baseName + " Heating Coil Outlet Node";
       };
 
-      Node upstreamNode = inletNode;
+      Node upstreamNode = *mixedAirNode;
       for (std::size_t i = 0; i < orderedComponents.size(); ++i) {
         auto component = orderedComponents[i];
         const auto inletPort = changeoverBypassAirInletPort(component);
@@ -820,7 +1017,7 @@ namespace epmodel {
 
         trackNodeChange(component.getImpl<detail::ModelObject_Impl>()->setPointer(inletPort, upstreamNode.handle(), false));
 
-        Node downstreamNode = outletNode;
+        Node downstreamNode = bypassSplitterNode;
         if ((i + 1u) < orderedComponents.size()) {
           auto downstream = orderedComponents[i + 1u];
           boost::optional<Node> connectorNode;
