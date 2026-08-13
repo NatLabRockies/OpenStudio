@@ -47,6 +47,10 @@ namespace epmodel {
     return getImpl<detail::AirLoopHVACSupplyPath_Impl>()->components();
   }
 
+  bool AirLoopHVACSupplyPath::removeComponent(const openstudio::epmodel::ModelObject& component) {
+    return getImpl<detail::AirLoopHVACSupplyPath_Impl>()->removeComponent(component);
+  }
+
 }  // namespace epmodel
 }  // namespace openstudio
 
@@ -124,14 +128,39 @@ namespace epmodel {
       }
 
       auto group = supplyPath.pushExtensibleGroup();
+      const auto groupIndex = supplyPath.numExtensibleGroups() - 1u;
       auto workspaceGroup = group.optionalCast<openstudio::WorkspaceExtensibleGroup>();
       if (!workspaceGroup) {
+        supplyPath.eraseExtensibleGroup(groupIndex);
         return false;
       }
       if (!workspaceGroup->setString(openstudio::AirLoopHVAC_SupplyPathExtensibleFields::ComponentObjectType, component.iddObject().name())) {
+        supplyPath.eraseExtensibleGroup(groupIndex);
         return false;
       }
-      return workspaceGroup->setPointer(openstudio::AirLoopHVAC_SupplyPathExtensibleFields::ComponentName, component.handle());
+      if (!workspaceGroup->setPointer(openstudio::AirLoopHVAC_SupplyPathExtensibleFields::ComponentName, component.handle())) {
+        supplyPath.eraseExtensibleGroup(groupIndex);
+        return false;
+      }
+      return true;
+    }
+
+    bool AirLoopHVACSupplyPath_Impl::removeComponent(const openstudio::epmodel::ModelObject& component) {
+      auto supplyPath = getObject<openstudio::epmodel::AirLoopHVACSupplyPath>();
+      if (component.model() != supplyPath.model()) {
+        return false;
+      }
+
+      const auto groups = supplyPath.extensibleGroups();
+      for (unsigned i = 0u; i < groups.size(); ++i) {
+        const auto workspaceGroup = groups[i].optionalCast<openstudio::WorkspaceExtensibleGroup>();
+        const auto target =
+          workspaceGroup ? workspaceGroup->getTarget(openstudio::AirLoopHVAC_SupplyPathExtensibleFields::ComponentName) : boost::none;
+        if (target && (target->handle() == component.handle())) {
+          return !supplyPath.eraseExtensibleGroup(i).empty();
+        }
+      }
+      return false;
     }
 
     boost::optional<openstudio::epmodel::Node> AirLoopHVACSupplyPath_Impl::supplyAirPathInletNode() const {

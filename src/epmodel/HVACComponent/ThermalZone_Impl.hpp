@@ -106,7 +106,11 @@ namespace epmodel {
       boost::optional<openstudio::epmodel::ModelObject> returnAirModelObject() const;
       std::vector<openstudio::epmodel::ModelObject> returnAirModelObjects() const;
       openstudio::epmodel::Node zoneAirNode() const;
+      boost::optional<openstudio::epmodel::Node> plenumZoneNode();
+      void clearConditioningForPlenum();
 
+      bool setSupplyPlenum(const openstudio::epmodel::ThermalZone& plenumZone);
+      void removeSupplyPlenum();
       bool setReturnPlenum(const openstudio::epmodel::ThermalZone& plenumZone);
       bool setReturnPlenum(const openstudio::epmodel::ThermalZone& plenumZone, openstudio::epmodel::AirLoopHVAC& airLoop);
       void removeReturnPlenum();

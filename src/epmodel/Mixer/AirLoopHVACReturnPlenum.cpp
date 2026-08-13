@@ -14,18 +14,13 @@
 #include "Model.hpp"
 #include "ModelObject/AirLoopHVACReturnPath.hpp"
 #include "ModelObject/AirLoopHVACReturnPath_Impl.hpp"
-#include "ModelObject/NodeList.hpp"
-#include "ModelObject/NodeList_Impl.hpp"
-#include "ModelObject/SizingZone.hpp"
-#include "ModelObject/ZoneHVACEquipmentConnections.hpp"
-#include "ModelObject/ZoneHVACEquipmentConnections_Impl.hpp"
-#include "ModelObject/ZoneHVACEquipmentList.hpp"
+#include "Splitter/AirLoopHVACSupplyPlenum.hpp"
+#include "Splitter/AirLoopHVACSupplyPlenum_Impl.hpp"
 #include "StraightComponent/Node.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/idd/AirLoopHVAC_ReturnPlenum_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
-#include <utilities/idd/ZoneHVAC_EquipmentConnections_FieldEnums.hxx>
 #include <utilities/idf/WorkspaceExtensibleGroup.hpp>
 
 #include <algorithm>
@@ -116,37 +111,19 @@ namespace epmodel {
           return false;
         }
       }
+      for (const auto& candidate : model().getConcreteModelObjects<openstudio::epmodel::AirLoopHVACSupplyPlenum>()) {
+        const auto candidateZone = candidate.thermalZone();
+        if (candidateZone && (*candidateZone == thermalZone)) {
+          return false;
+        }
+      }
 
       auto thermalZoneImpl = thermalZone.getImpl<openstudio::epmodel::detail::ThermalZone_Impl>();
       OS_ASSERT(thermalZoneImpl);
-
-      auto connections = thermalZoneImpl->zoneHVACEquipmentConnections();
-      boost::optional<openstudio::epmodel::ZoneHVACEquipmentList> equipmentList;
-      std::vector<openstudio::epmodel::NodeList> ownedNodeLists;
-      boost::optional<openstudio::epmodel::Node> zoneNode;
-      if (connections) {
-        if (!connections->zoneAirInletNodes().empty() || !connections->zoneAirExhaustNodes().empty() || !connections->zoneReturnAirNodes().empty()) {
-          return false;
-        }
-        equipmentList = connections->zoneHVACEquipmentList();
-        if (!equipmentList->equipment().empty()) {
-          return false;
-        }
-        zoneNode = connections->zoneAirNode();
-        for (const unsigned field : {openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneAirInletNodeorNodeListName,
-                                     openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneAirExhaustNodeorNodeListName,
-                                     openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneReturnAirNodeorNodeListName}) {
-          if (auto target = connections->getTarget(field)) {
-            if (auto nodeList = target->optionalCast<openstudio::epmodel::NodeList>()) {
-              ownedNodeLists.push_back(*nodeList);
-            }
-          }
-        }
-      } else {
-        zoneNode = model().getOrCreateTransientByName<openstudio::epmodel::Node>(thermalZone.nameString() + " Air Node");
+      const auto zoneNode = thermalZoneImpl->plenumZoneNode();
+      if (!zoneNode) {
+        return false;
       }
-
-      OS_ASSERT(zoneNode);
       const auto oldZone = this->thermalZone();
       const auto oldZoneNode = plenum.getModelObjectTarget<openstudio::epmodel::Node>(openstudio::AirLoopHVAC_ReturnPlenumFields::ZoneNodeName);
       if (!setPointer(openstudio::AirLoopHVAC_ReturnPlenumFields::ZoneName, thermalZone.handle(), false)) {
@@ -158,25 +135,9 @@ namespace epmodel {
         return false;
       }
 
-      // Model keeps the thermostat relationship and sizing as authoring state,
-      // then the forward translator omits them for an unconditioned plenum.
-      // EPModel is already the EnergyPlus representation, so remove those
-      // inapplicable objects when the zone becomes a return plenum.
-      thermalZoneImpl->resetThermostat();
-      if (auto sizingZone = thermalZoneImpl->optionalSizingZone()) {
-        sizingZone->remove();
-      }
-      if (connections) {
-        connections->remove();
-      }
-      if (equipmentList && equipmentList->sources().empty()) {
-        equipmentList->remove();
-      }
-      for (auto& nodeList : ownedNodeLists) {
-        if (nodeList.sources().empty()) {
-          nodeList.remove();
-        }
-      }
+      // EPModel is already the EnergyPlus representation, so remove sizing,
+      // thermostat, and equipment connections that do not apply to plenums.
+      thermalZoneImpl->clearConditioningForPlenum();
       return true;
     }
 

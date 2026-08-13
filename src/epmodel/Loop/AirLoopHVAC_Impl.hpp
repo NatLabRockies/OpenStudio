@@ -139,6 +139,7 @@ namespace epmodel {
       void doCanonicalize(LoadContext& context) override;
 
      private:
+      friend class ThermalZone_Impl;
       class DemandBranchAttachmentPlan;
       class TerminalZoneProjectionPlan;
       class SingleDuctTerminalClonePlan;

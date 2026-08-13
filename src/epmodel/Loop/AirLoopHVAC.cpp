@@ -41,6 +41,8 @@
 #include "Splitter/ConnectorSplitter_Impl.hpp"
 #include "Splitter/AirLoopHVACZoneSplitter.hpp"
 #include "Splitter/AirLoopHVACZoneSplitter_Impl.hpp"
+#include "Splitter/AirLoopHVACSupplyPlenum.hpp"
+#include "Splitter/AirLoopHVACSupplyPlenum_Impl.hpp"
 #include "HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
 #include "HVACComponent/AirLoopHVACOutdoorAirSystem_Impl.hpp"
 #include "HVACComponent/ControllerWaterCoil.hpp"
@@ -2883,6 +2885,7 @@ namespace epmodel {
          // paired splitter/mixer branch counts appear inconsistent.
         auto zs = zoneSplitter();
         auto zm = zoneMixer();
+        const auto splitterOutlets = zs.outletModelObjects();
         const auto mixerInlets = zm.inletModelObjects();
         std::set<Handle> bypassReturnHandles;
         for (const auto& unitary : model().getConcreteModelObjects<AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass>()) {
@@ -2931,11 +2934,24 @@ namespace epmodel {
           }
         }
         const auto demandMixerBranchCount = directDemandBranchCount + returnPlenumBranchCount;
+
+        std::set<Handle> supplyPlenumInletHandles;
+        std::size_t supplyPlenumBranchCount = 0u;
+        for (const auto& plenum : model().getConcreteModelObjects<AirLoopHVACSupplyPlenum>()) {
+          const auto inlet = plenum.inletModelObject();
+          if (!inlet || (std::ranges::find(splitterOutlets, *inlet) == splitterOutlets.end()) || plenum.outletModelObjects().empty()) {
+            continue;
+          }
+          supplyPlenumInletHandles.insert(inlet->handle());
+          supplyPlenumBranchCount += plenum.outletModelObjects().size();
+        }
+        const auto directSupplyBranchCount = static_cast<std::size_t>(
+          std::ranges::count_if(splitterOutlets, [&](const auto& outlet) { return !supplyPlenumInletHandles.contains(outlet.handle()); }));
+        const auto demandSplitterBranchCount = directSupplyBranchCount + supplyPlenumBranchCount;
         bool rebuiltDemandBranches = false;
 
-        if (zs.outletModelObjects().size() != demandMixerBranchCount) {
-          const auto splitterBranches = zs.outletModelObjects().size();
-          if (returnPlenumOutletHandles.empty()) {
+        if (demandSplitterBranchCount != demandMixerBranchCount) {
+          if (returnPlenumOutletHandles.empty() && supplyPlenumInletHandles.empty()) {
             while (!zs.outletModelObjects().empty()) {
               zs.removePortForBranch(static_cast<unsigned>(zs.outletModelObjects().size() - 1u));
             }
@@ -2944,14 +2960,14 @@ namespace epmodel {
             }
             rebuiltDemandBranches = true;
             detail::addLoadWarning(context, "ZoneSplitter/ZoneMixer branch count mismatch for AirLoopHVAC '" + loopName
-                                              + "' (splitter=" + std::to_string(splitterBranches) + ", effective return branches="
-                                              + std::to_string(demandMixerBranchCount) + ", bypass return=" + std::to_string(bypassReturnNodes.size())
-                                              + "). Cleared branch node ports to rebuild.");
+                                              + "' (effective supply branches=" + std::to_string(demandSplitterBranchCount)
+                                              + ", effective return branches=" + std::to_string(demandMixerBranchCount) + ", bypass return="
+                                              + std::to_string(bypassReturnNodes.size()) + "). Cleared branch node ports to rebuild.");
           } else {
-            detail::addLoadWarning(context, "ZoneSplitter/effective return branch count mismatch for AirLoopHVAC '" + loopName
-                                              + "' (splitter=" + std::to_string(splitterBranches)
+            detail::addLoadWarning(context, "Effective supply/return branch count mismatch for AirLoopHVAC '" + loopName
+                                              + "' (effective supply branches=" + std::to_string(demandSplitterBranchCount)
                                               + ", effective return branches=" + std::to_string(demandMixerBranchCount)
-                                              + "). Preserved the return-plenum topology for explicit repair.");
+                                              + "). Preserved the plenum topology for explicit repair.");
           }
         }
 
@@ -4869,6 +4885,31 @@ namespace epmodel {
       const auto splitterOutlets = zoneSplitter.outletModelObjects();
       const auto mixerInlets = zoneMixer.inletModelObjects();
 
+      struct DemandSupplyEndpoint
+      {
+        ModelObject splitterOutlet;
+        ModelObject branchStart;
+        boost::optional<AirLoopHVACSupplyPlenum> supplyPlenum;
+      };
+      std::vector<DemandSupplyEndpoint> supplyEndpoints;
+      for (const auto& splitterOutlet : splitterOutlets) {
+        boost::optional<AirLoopHVACSupplyPlenum> attachedPlenum;
+        for (const auto& candidate : model().getConcreteModelObjects<AirLoopHVACSupplyPlenum>()) {
+          const auto inlet = candidate.inletModelObject();
+          if (inlet && (*inlet == splitterOutlet)) {
+            attachedPlenum = candidate;
+            break;
+          }
+        }
+        if (attachedPlenum) {
+          for (const auto& plenumOutlet : attachedPlenum->outletModelObjects()) {
+            supplyEndpoints.push_back(DemandSupplyEndpoint{splitterOutlet, plenumOutlet, attachedPlenum});
+          }
+        } else {
+          supplyEndpoints.push_back(DemandSupplyEndpoint{splitterOutlet, splitterOutlet, boost::none});
+        }
+      }
+
       std::set<Handle> bypassReturnHandles;
       for (const auto& unitary : model().getConcreteModelObjects<AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass>()) {
         if (const auto bypassReturnNode = unitary.getModelObjectTarget<Node>(unitary.plenumorMixerAirPort())) {
@@ -4912,7 +4953,7 @@ namespace epmodel {
         }
       }
 
-      std::vector<boost::optional<DemandReturnEndpoint>> endpointByBranch(splitterOutlets.size());
+      std::vector<boost::optional<DemandReturnEndpoint>> endpointByBranch(supplyEndpoints.size());
       std::vector<bool> endpointUsed(returnEndpoints.size(), false);
       for (unsigned endpointIndex = 0u; endpointIndex < returnEndpoints.size(); ++endpointIndex) {
         const auto returnNode = returnEndpoints[endpointIndex].branchReturn.optionalCast<Node>();
@@ -4925,10 +4966,21 @@ namespace epmodel {
           continue;
         }
         for (const auto& zoneInletNode : connections->zoneAirInletNodes()) {
-          const auto branchIndex = demandBranchIndexForZoneInletNode(zoneInletNode);
-          if (branchIndex && (*branchIndex < endpointByBranch.size()) && !endpointByBranch[*branchIndex]) {
-            endpointByBranch[*branchIndex] = returnEndpoints[endpointIndex];
-            endpointUsed[endpointIndex] = true;
+          for (unsigned supplyIndex = 0u; supplyIndex < supplyEndpoints.size(); ++supplyIndex) {
+            if (endpointByBranch[supplyIndex]) {
+              continue;
+            }
+            const auto branchStartNode = supplyEndpoints[supplyIndex].branchStart.optionalCast<Node>();
+            if (!branchStartNode) {
+              continue;
+            }
+            if ((*branchStartNode == zoneInletNode) || resolveDemandBranchChain(*branchStartNode, zoneInletNode)) {
+              endpointByBranch[supplyIndex] = returnEndpoints[endpointIndex];
+              endpointUsed[endpointIndex] = true;
+              break;
+            }
+          }
+          if (endpointUsed[endpointIndex]) {
             break;
           }
         }
@@ -4950,7 +5002,16 @@ namespace epmodel {
         }
 
         const auto& endpoint = *endpointByBranch[branchIndex];
-        auto chain = buildDemandBranchLeg(splitterOutlets[branchIndex], endpoint.branchReturn);
+        const auto& supplyEndpoint = supplyEndpoints[branchIndex];
+        if (supplyEndpoint.supplyPlenum) {
+          if (std::ranges::find(pathObjects, supplyEndpoint.splitterOutlet) == pathObjects.end()) {
+            pathObjects.push_back(supplyEndpoint.splitterOutlet);
+          }
+          if (std::ranges::find(pathObjects, supplyEndpoint.supplyPlenum->cast<ModelObject>()) == pathObjects.end()) {
+            pathObjects.push_back(supplyEndpoint.supplyPlenum->cast<ModelObject>());
+          }
+        }
+        auto chain = buildDemandBranchLeg(supplyEndpoint.branchStart, endpoint.branchReturn);
         for (const auto& object : chain) {
           if (std::ranges::find(pathObjects, object) == pathObjects.end()) {
             pathObjects.push_back(object);

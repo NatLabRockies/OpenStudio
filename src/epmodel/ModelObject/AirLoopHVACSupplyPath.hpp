@@ -41,9 +41,10 @@ namespace epmodel {
     // - Field Mapping: Supply Air Path Inlet Node Name is a node relationship field, excluded from scalar accessors.
     // - Field Mapping: Extensible Component Object Type / Component Name are relationship-like target links, excluded from scalar accessors.
     // - Field Mapping: Name remains available through base ModelObject scalar API.
-    // - TODO(parity): Add typed relationship APIs incrementally if needed beyond current behavior.
+    // - API: `components` and `removeComponent` expose the relationship operations needed to keep plenum topology synchronized.
     boost::optional<openstudio::epmodel::AirLoopHVAC> airLoopHVAC() const;
     std::vector<openstudio::epmodel::ModelObject> components() const;
+    bool removeComponent(const openstudio::epmodel::ModelObject& component);
 
    protected:
     using ImplType = detail::AirLoopHVACSupplyPath_Impl;
