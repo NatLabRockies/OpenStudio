@@ -9,8 +9,11 @@
 #include "HVACComponent/ThermalZone.hpp"
 #include "HVACComponent/ThermalZone_Impl.hpp"
 #include "HVACComponent.hpp"
+#include "Branch.hpp"
 #include "Loop/AirLoopHVAC.hpp"
+#include "Loop/AirLoopHVAC_Impl.hpp"
 #include "Loop/PlantLoop.hpp"
+#include "Loop/PlantLoop_Impl.hpp"
 #include "Mixer/AirLoopHVACZoneMixer.hpp"
 #include "Mixer/AirLoopHVACZoneMixer_Impl.hpp"
 #include "Model.hpp"
@@ -137,6 +140,61 @@ namespace epmodel {
       auto zoneImpl = thermalZone.getImpl<detail::ThermalZone_Impl>();
       OS_ASSERT(zoneImpl);
       return zoneImpl->getZoneHVACEquipmentList().removeEquipment(terminal);
+    }
+
+    struct DemandBranchRemovalPlan
+    {
+      bool valid = true;
+      boost::optional<PlantLoop> plantLoop;
+    };
+
+    DemandBranchRemovalPlan demandBranchRemovalPlan(const boost::optional<HVACComponent>& coil) {
+      DemandBranchRemovalPlan result;
+      if (!coil) {
+        return result;
+      }
+
+      auto plantLoop = coil->plantLoop();
+      if (!plantLoop) {
+        return result;
+      }
+
+      boost::optional<ModelObject> inletObject;
+      boost::optional<ModelObject> outletObject;
+      if (auto straightCoil = coil->optionalCast<StraightComponent>()) {
+        inletObject = straightCoil->inletModelObject();
+        outletObject = straightCoil->outletModelObject();
+      } else if (auto waterCoil = coil->optionalCast<WaterToAirComponent>()) {
+        inletObject = waterCoil->waterInletModelObject();
+        outletObject = waterCoil->waterOutletModelObject();
+      }
+      const auto inletNode = inletObject ? inletObject->optionalCast<Node>() : boost::none;
+      const auto outletNode = outletObject ? outletObject->optionalCast<Node>() : boost::none;
+      auto plantLoopImpl = plantLoop->getImpl<detail::PlantLoop_Impl>();
+      OS_ASSERT(plantLoopImpl);
+      const auto inletBranch = inletNode ? plantLoopImpl->branchForNode(*inletNode) : boost::none;
+      const auto outletBranch = outletNode ? plantLoopImpl->branchForNode(*outletNode) : boost::none;
+      const auto equipmentBranches = plantLoopImpl->demandEquipmentBranches();
+
+      boost::optional<Branch> targetBranch;
+      for (const auto& candidate : {inletBranch, outletBranch}) {
+        if (!candidate) {
+          continue;
+        }
+        if (std::ranges::find(equipmentBranches, *candidate) == equipmentBranches.end() || (targetBranch && (*targetBranch != *candidate))) {
+          result.valid = false;
+          return result;
+        }
+        targetBranch = *candidate;
+      }
+
+      if (!targetBranch) {
+        result.valid = false;
+        return result;
+      }
+
+      result.plantLoop = *plantLoop;
+      return result;
     }
 
     bool syncFanAvailabilityWithLoop(HVACComponent& fan, Schedule& schedule) {
@@ -1451,6 +1509,15 @@ namespace epmodel {
       return result;
     }
 
+    bool AirTerminalSingleDuctSeriesPIUReheat_Impl::isRemovable() const {
+      if (!HVACComponent_Impl::isRemovable()) {
+        return false;
+      }
+      const auto reheat =
+        getObject<ModelObject>().getModelObjectTarget<HVACComponent>(openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::ReheatCoilName);
+      return demandBranchRemovalPlan(reheat).valid;
+    }
+
     boost::optional<ZoneHVACAirDistributionUnit> AirTerminalSingleDuctSeriesPIUReheat_Impl::zoneHVACAirDistributionUnit() const {
       auto terminal = getObject<ModelObject>();
       for (const auto& source : terminal.getSources(openstudio::IddObjectType::ZoneHVAC_AirDistributionUnit)) {
@@ -1511,14 +1578,18 @@ namespace epmodel {
       }
       auto reheat = thisObject.getModelObjectTarget<openstudio::epmodel::HVACComponent>(
         openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::ReheatCoilName);
-      auto plantLoop = reheat ? reheat->plantLoop() : boost::optional<openstudio::epmodel::PlantLoop>{};
+      auto plantRemovalPlan = demandBranchRemovalPlan(reheat);
+      if (!plantRemovalPlan.valid) {
+        LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctSeriesPIUReheat",
+                 "Refusing to remove a terminal whose reheat coil does not belong to exactly one demand-equipment branch.");
+        return false;
+      }
       auto secondaryNode = secondaryAirInletNode();
       if (!thermalZone && secondaryNode) {
         thermalZone = thermalZoneContainingExhaustNode(model(), *secondaryNode);
       }
 
       bool shouldRemoveTerminalInletNode = false;
-      boost::optional<unsigned> terminalBranchIndex;
       if (inletNode) {
         if (auto terminalInletNode = inletNode->optionalCast<openstudio::epmodel::Node>()) {
           // Resolve the loop from the still-canonical splitter outlet. The terminal's
@@ -1528,11 +1599,10 @@ namespace epmodel {
             const auto splitterOutlets = splitter.outletModelObjects();
             const auto splitterIt = std::ranges::find(splitterOutlets, *inletNode);
             if (splitterIt != splitterOutlets.end()) {
-              terminalBranchIndex = static_cast<unsigned>(std::distance(splitterOutlets.begin(), splitterIt));
-              if (auto mixerInlet = airLoop->zoneMixer().inletModelObject(*terminalBranchIndex)) {
-                shouldRemoveTerminalInletNode =
-                  isServedZoneReturnNode(thermalZone, *mixerInlet) || (!thermalZone && outletNode && (*mixerInlet == *outletNode));
-              }
+              const auto mixerInlets = airLoop->zoneMixer().inletModelObjects();
+              shouldRemoveTerminalInletNode = std::ranges::any_of(mixerInlets, [&](const auto& mixerInlet) {
+                return isServedZoneReturnNode(thermalZone, mixerInlet) || (!thermalZone && outletNode && (mixerInlet == *outletNode));
+              });
             }
           }
         }
@@ -1655,8 +1725,8 @@ namespace epmodel {
       }
 
       bool removedFromPlantLoop = false;
-      if (plantLoop && reheat) {
-        if (!plantLoop->removeDemandBranchWithComponent(*reheat)) {
+      if (plantRemovalPlan.plantLoop && reheat) {
+        if (!plantRemovalPlan.plantLoop->removeDemandBranchWithComponent(*reheat)) {
           return false;
         }
         removedFromPlantLoop = true;
@@ -1694,7 +1764,6 @@ namespace epmodel {
       }
 
       auto zoneSplitter = airLoop->zoneSplitter();
-      auto zoneMixer = airLoop->zoneMixer();
       const auto thisNode = node.cast<ModelObject>();
       const auto splitterOutlets = zoneSplitter.outletModelObjects();
       const auto splitterIt = std::find(splitterOutlets.begin(), splitterOutlets.end(), thisNode);
@@ -1705,10 +1774,12 @@ namespace epmodel {
       }
       const auto splitterBranchIndex = static_cast<unsigned>(std::distance(splitterOutlets.begin(), splitterIt));
 
-      auto mixerInlet = zoneMixer.inletModelObject(splitterBranchIndex);
+      auto airLoopImpl = airLoop->getImpl<detail::AirLoopHVAC_Impl>();
+      OS_ASSERT(airLoopImpl);
+      auto mixerInlet = airLoopImpl->effectiveDemandReturnNodeForBranchStart(node);
       if (!mixerInlet) {
         LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctSeriesPIUReheat",
-                 "addToNode requires a corresponding ZoneMixer inlet for ZoneSplitter branch index " << splitterBranchIndex << ".");
+                 "addToNode requires one effective ZoneMixer return for the selected ZoneSplitter branch.");
         return false;
       }
       auto thermalZone = owningThermalZoneForZoneNode(model(), node);

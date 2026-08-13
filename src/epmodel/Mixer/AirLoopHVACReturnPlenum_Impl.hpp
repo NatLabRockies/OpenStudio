@@ -17,6 +17,8 @@ namespace epmodel {
 
   namespace detail {
 
+    class ThermalZone_Impl;
+
     class EPMODEL_API AirLoopHVACReturnPlenum_Impl : public Mixer_Impl
     {
      public:
@@ -32,6 +34,11 @@ namespace epmodel {
       unsigned inletPort(unsigned branchIndex) const override;
       void removePortForBranch(unsigned branchIndex) override;
       bool setInletModelObject(unsigned branchIndex, const openstudio::epmodel::ModelObject& modelObject) override;
+
+     private:
+      friend class ThermalZone_Impl;
+      bool bindThermalZone(const openstudio::epmodel::ThermalZone& thermalZone);
+      void clearThermalZoneConditioning();
     };
 
   }  // namespace detail

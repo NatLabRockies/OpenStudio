@@ -95,6 +95,14 @@ namespace epmodel {
     }
 
     bool AirLoopHVACReturnPlenum_Impl::setThermalZone(const openstudio::epmodel::ThermalZone& thermalZone) {
+      if (!bindThermalZone(thermalZone)) {
+        return false;
+      }
+      clearThermalZoneConditioning();
+      return true;
+    }
+
+    bool AirLoopHVACReturnPlenum_Impl::bindThermalZone(const openstudio::epmodel::ThermalZone& thermalZone) {
       auto plenum = getObject<openstudio::epmodel::AirLoopHVACReturnPlenum>();
       if (thermalZone.model() != plenum.model()) {
         return false;
@@ -135,10 +143,17 @@ namespace epmodel {
         return false;
       }
 
-      // EPModel is already the EnergyPlus representation, so remove sizing,
-      // thermostat, and equipment connections that do not apply to plenums.
-      thermalZoneImpl->clearConditioningForPlenum();
       return true;
+    }
+
+    void AirLoopHVACReturnPlenum_Impl::clearThermalZoneConditioning() {
+      if (auto zone = thermalZone()) {
+        auto thermalZoneImpl = zone->getImpl<openstudio::epmodel::detail::ThermalZone_Impl>();
+        OS_ASSERT(thermalZoneImpl);
+        // EPModel is already the EnergyPlus representation, so remove sizing,
+        // thermostat, and equipment connections that do not apply to plenums.
+        thermalZoneImpl->clearConditioningForPlenum();
+      }
     }
 
     void AirLoopHVACReturnPlenum_Impl::resetThermalZone() {
@@ -158,11 +173,15 @@ namespace epmodel {
       boost::optional<unsigned> branchIndex;
       for (const auto& candidate : model().getConcreteModelObjects<openstudio::epmodel::AirLoopHVACZoneMixer>()) {
         const auto inlets = candidate.inletModelObjects();
-        const auto inlet = std::ranges::find(inlets, node.cast<openstudio::epmodel::ModelObject>());
-        if (inlet != inlets.end()) {
+        const auto nodeObject = node.cast<openstudio::epmodel::ModelObject>();
+        const auto matchCount = std::ranges::count(inlets, nodeObject);
+        if (matchCount > 0) {
+          if ((matchCount != 1) || zoneMixer) {
+            return false;
+          }
+          const auto inlet = std::ranges::find(inlets, nodeObject);
           zoneMixer = candidate;
           branchIndex = static_cast<unsigned>(std::distance(inlets.begin(), inlet));
-          break;
         }
       }
       if (!(zoneMixer && branchIndex)) {

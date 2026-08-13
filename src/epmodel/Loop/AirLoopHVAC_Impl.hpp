@@ -127,6 +127,7 @@ namespace epmodel {
       bool addBranchForHVACComponent(openstudio::epmodel::HVACComponent& hvacComponent);
       bool addBranchForHVACComponent(openstudio::epmodel::HVACComponent& hvacComponent, DemandBranchAttachmentFailureStage failureStage);
       bool removeBranchForZone(openstudio::epmodel::ThermalZone& thermalZone);
+      boost::optional<openstudio::epmodel::Node> effectiveDemandReturnNodeForBranchStart(const openstudio::epmodel::Node& branchStartNode) const;
       void syncControllerMechanicalVentilationZoneOutdoorAirEntries();
       void syncSetpointManagerMixedAirFanNodes();
       void syncSupplyWaterCoilControllers();
@@ -145,6 +146,7 @@ namespace epmodel {
       class SingleDuctTerminalClonePlan;
       class DualDuctZoneAttachment;
       class DualDuctTerminalInsertionPlan;
+      class DemandTopologySnapshot;
       static boost::optional<openstudio::epmodel::ModelObject> resolveTerminalOnDemandBranchNodes(const openstudio::epmodel::Node& splitterOutletNode,
                                                                                                   const openstudio::epmodel::Node& mixerInletNode);
       static boost::optional<openstudio::epmodel::ModelObject> resolveTerminalOutletObject(const openstudio::epmodel::ModelObject& terminalObject);
@@ -154,11 +156,12 @@ namespace epmodel {
       boost::optional<openstudio::epmodel::HVACComponent> reusableSingleDuctTerminalForZone() const;
       boost::optional<openstudio::epmodel::StraightComponent> lastSingleDuctTerminalForClone() const;
       boost::optional<openstudio::epmodel::HVACComponent> cloneLastDualDuctTerminalForBranch() const;
-      boost::optional<unsigned> demandBranchIndexForZoneInletNode(const openstudio::epmodel::Node& zoneInletNode) const;
-      bool removeDemandBranchAtIndex(unsigned branchIndex);
+      DemandTopologySnapshot demandTopologySnapshot() const;
+      boost::optional<openstudio::epmodel::ModelObject> effectiveDemandBranchStartForZone(const openstudio::epmodel::ThermalZone& thermalZone) const;
+      boost::optional<openstudio::epmodel::Node> effectiveDemandReturnNodeForZone(const openstudio::epmodel::ThermalZone& thermalZone) const;
+      bool removeDemandBranch(const openstudio::epmodel::ModelObject& splitterOutlet, const openstudio::epmodel::ModelObject& mixerInlet);
       bool collapseSecondaryDemandPathIfEmpty(openstudio::epmodel::Node secondaryDemandInletNode,
                                               openstudio::epmodel::AirLoopHVACZoneSplitter secondarySplitter);
-      bool ensureDefaultDemandBranch();
       boost::optional<openstudio::epmodel::Mixer> reusableDualDuctTerminalForZone() const;
       bool detachZoneFromDemandNodes(openstudio::epmodel::ZoneHVACEquipmentConnections& connections);
       boost::optional<openstudio::epmodel::AirLoopHVACZoneSplitter>

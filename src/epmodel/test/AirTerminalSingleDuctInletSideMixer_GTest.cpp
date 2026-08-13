@@ -191,6 +191,8 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctInletSideMixer_AddToNode_RejectsAlre
   ASSERT_TRUE(branchNode);
   ASSERT_TRUE(zone.addToNode(*branchNode));
   auto zoneAirNode = zone.zoneAirNode();
+  auto originalMixerInlet = airLoop.zoneMixer().inletModelObject(0u);
+  ASSERT_TRUE(originalMixerInlet);
 
   Node mismatchedMixerNode(model);
   ASSERT_TRUE(airLoop.zoneMixer().setInletModelObject(0u, mismatchedMixerNode.cast<ModelObject>()));
@@ -204,7 +206,7 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctInletSideMixer_AddToNode_RejectsAlre
   ASSERT_TRUE(splitterOutlet);
   EXPECT_EQ(zoneAirNode.cast<ModelObject>(), *splitterOutlet);
 
-  ASSERT_TRUE(airLoop.zoneMixer().setInletModelObject(0u, zoneAirNode.cast<ModelObject>()));
+  ASSERT_TRUE(airLoop.zoneMixer().setInletModelObject(0u, *originalMixerInlet));
   ASSERT_TRUE(terminal.addToNode(zoneAirNode));
 
   auto inletObject = terminal.inletModelObject();

@@ -1541,6 +1541,56 @@ namespace epmodel {
       DemandBranchAttachmentFailureStage m_failureStage = DemandBranchAttachmentFailureStage::None;
     };
 
+    // A connector row is only meaningful inside the connector that owns it.
+    // This snapshot expands plenum fan-out/fan-in and joins the resulting
+    // supply and return leaves by zone identity. It is deliberately private:
+    // public traversal can project the graph into a vector, but mutations use
+    // these proven endpoints instead of treating two raw row numbers as one
+    // branch identifier.
+    class AirLoopHVAC_Impl::DemandTopologySnapshot
+    {
+     public:
+      struct SupplyEndpoint
+      {
+        ModelObject splitterOutlet;
+        ModelObject branchStart;
+        unsigned splitterOrdinal;
+        boost::optional<AirLoopHVACSupplyPlenum> supplyPlenum;
+        boost::optional<unsigned> plenumOrdinal;
+      };
+
+      struct ReturnEndpoint
+      {
+        ModelObject mixerInlet;
+        ModelObject branchReturn;
+        unsigned mixerOrdinal;
+        boost::optional<AirLoopHVACReturnPlenum> returnPlenum;
+        boost::optional<unsigned> plenumOrdinal;
+      };
+
+      struct EffectiveBranch
+      {
+        SupplyEndpoint supply;
+        ReturnEndpoint returnPath;
+        boost::optional<ThermalZone> zone;
+        boost::optional<Node> zoneInletNode;
+        boost::optional<Node> zoneReturnNode;
+      };
+
+      static DemandTopologySnapshot resolve(const AirLoopHVAC_Impl& airLoop);
+
+      boost::optional<EffectiveBranch> branchForZone(const ThermalZone& zone) const;
+      const std::vector<EffectiveBranch>& branches() const;
+      const std::vector<ReturnEndpoint>& returnEndpoints() const;
+      bool mutationSafe() const;
+
+     private:
+      std::vector<SupplyEndpoint> m_supplyEndpoints;
+      std::vector<ReturnEndpoint> m_returnEndpoints;
+      std::vector<EffectiveBranch> m_branches;
+      bool m_mutationSafe = true;
+    };
+
     // Owns the whole provisional demand-branch attachment, not merely the
     // splitter/mixer row pair. A prepared transaction may also own a new
     // branch node and reversible zone-boundary wiring. Until commit, its
@@ -1558,7 +1608,7 @@ namespace epmodel {
       ~DemandBranchAttachmentPlan();
 
       Node node() const;
-      unsigned branchIndex() const;
+      unsigned splitterBranchIndex() const;
       bool prepareZoneAttachment(ThermalZone& thermalZone);
       bool prepareTerminalAttachment(HVACComponent& terminal, Node& node);
       bool commit(DemandBranchAttachmentFailureStage failureStage = DemandBranchAttachmentFailureStage::None);
@@ -1586,12 +1636,13 @@ namespace epmodel {
         std::vector<Node> originalReturnNodes;
         std::set<Handle> originalNodeListHandles;
         std::vector<NodeList> createdNodeLists;
+        boost::optional<Node> createdZoneAirNode;
         boost::optional<Node> createdZoneInletNode;
         boost::optional<Node> createdZoneReturnNode;
       };
 
-      DemandBranchAttachmentPlan(AirLoopHVAC airLoop, AirLoopHVACZoneSplitter splitter, AirLoopHVACZoneMixer mixer, unsigned branchIndex,
-                                 Node branchNode, bool reusedBranch, bool createdBranchNode,
+      DemandBranchAttachmentPlan(AirLoopHVAC airLoop, AirLoopHVACZoneSplitter splitter, AirLoopHVACZoneMixer mixer, unsigned splitterBranchIndex,
+                                 unsigned mixerBranchIndex, Node branchNode, bool reusedBranch, bool createdBranchNode,
                                  boost::optional<ModelObject> originalSplitterOutlet = boost::none,
                                  boost::optional<ModelObject> originalMixerInlet = boost::none, bool preserveSplitterOutletForZone = false,
                                  boost::optional<ModelObject> existingTerminalForZone = boost::none);
@@ -1605,7 +1656,8 @@ namespace epmodel {
       AirLoopHVAC m_airLoop;
       AirLoopHVACZoneSplitter m_splitter;
       AirLoopHVACZoneMixer m_mixer;
-      unsigned m_branchIndex;
+      unsigned m_splitterBranchIndex;
+      unsigned m_mixerBranchIndex;
       Node m_branchNode;
       bool m_reusedBranch = false;
       bool m_createdBranchNode = false;
@@ -1763,13 +1815,14 @@ namespace epmodel {
     }
 
     AirLoopHVAC_Impl::DemandBranchAttachmentPlan::DemandBranchAttachmentPlan(
-      AirLoopHVAC airLoop, AirLoopHVACZoneSplitter splitter, AirLoopHVACZoneMixer mixer, unsigned branchIndex, Node branchNode, bool reusedBranch,
-      bool createdBranchNode, boost::optional<ModelObject> originalSplitterOutlet, boost::optional<ModelObject> originalMixerInlet,
-      bool preserveSplitterOutletForZone, boost::optional<ModelObject> existingTerminalForZone)
+      AirLoopHVAC airLoop, AirLoopHVACZoneSplitter splitter, AirLoopHVACZoneMixer mixer, unsigned splitterBranchIndex, unsigned mixerBranchIndex,
+      Node branchNode, bool reusedBranch, bool createdBranchNode, boost::optional<ModelObject> originalSplitterOutlet,
+      boost::optional<ModelObject> originalMixerInlet, bool preserveSplitterOutletForZone, boost::optional<ModelObject> existingTerminalForZone)
       : m_airLoop(std::move(airLoop)),
         m_splitter(std::move(splitter)),
         m_mixer(std::move(mixer)),
-        m_branchIndex(branchIndex),
+        m_splitterBranchIndex(splitterBranchIndex),
+        m_mixerBranchIndex(mixerBranchIndex),
         m_branchNode(std::move(branchNode)),
         m_reusedBranch(reusedBranch),
         m_createdBranchNode(createdBranchNode),
@@ -1783,7 +1836,8 @@ namespace epmodel {
         m_airLoop(std::move(other.m_airLoop)),
         m_splitter(std::move(other.m_splitter)),
         m_mixer(std::move(other.m_mixer)),
-        m_branchIndex(other.m_branchIndex),
+        m_splitterBranchIndex(other.m_splitterBranchIndex),
+        m_mixerBranchIndex(other.m_mixerBranchIndex),
         m_branchNode(std::move(other.m_branchNode)),
         m_reusedBranch(other.m_reusedBranch),
         m_createdBranchNode(other.m_createdBranchNode),
@@ -1825,31 +1879,30 @@ namespace epmodel {
           return nullptr;
         }
         return std::unique_ptr<DemandBranchAttachmentPlan>(
-          new DemandBranchAttachmentPlan(airLoop, splitter, mixer, 0u, *branchNode, true, false, splitterOutlets.front(), mixerInlets.front()));
+          new DemandBranchAttachmentPlan(airLoop, splitter, mixer, 0u, 0u, *branchNode, true, false, splitterOutlets.front(), mixerInlets.front()));
       }
 
-      const auto branchIndex = splitter.nextBranchIndex();
-      // Canonicalization guarantees paired demand rows. Refuse to overwrite a
-      // mismatched mixer row if malformed runtime state violates that contract.
-      if (mixer.nextBranchIndex() != branchIndex) {
-        return nullptr;
-      }
+      // Splitter and mixer rows are connector-local addresses. Supply and
+      // return plenums, and bypass returns, can legitimately make their raw
+      // row counts differ even though the effective demand graph is complete.
+      const auto splitterBranchIndex = splitter.nextBranchIndex();
+      const auto mixerBranchIndex = mixer.nextBranchIndex();
 
-      const auto branchNodeName = airLoop.nameString() + " Demand Branch Node " + std::to_string(branchIndex + 1u);
+      const auto branchNodeName = airLoop.nameString() + " Demand Branch Node " + std::to_string(splitterBranchIndex + 1u);
       const bool branchNodeExisted = static_cast<bool>(airLoop.model().getConcreteModelObjectByName<Node>(branchNodeName));
       auto branchNode = airLoop.model().getOrCreateTransientByName<Node>(branchNodeName);
       auto reservation = std::unique_ptr<DemandBranchAttachmentPlan>(
-        new DemandBranchAttachmentPlan(airLoop, splitter, mixer, branchIndex, branchNode, false, !branchNodeExisted));
+        new DemandBranchAttachmentPlan(airLoop, splitter, mixer, splitterBranchIndex, mixerBranchIndex, branchNode, false, !branchNodeExisted));
 
       // The setters push their extensible row before writing its final pointer.
       // Enroll each row first so a failed final write still removes the blank
       // row created by that setter.
       reservation->m_splitterRowAdded = true;
-      if (!reservation->m_splitter.setOutletModelObject(branchIndex, branchNode.cast<ModelObject>())) {
+      if (!reservation->m_splitter.setOutletModelObject(splitterBranchIndex, branchNode.cast<ModelObject>())) {
         return nullptr;
       }
       reservation->m_mixerRowAdded = true;
-      if (!reservation->m_mixer.setInletModelObject(branchIndex, branchNode.cast<ModelObject>())) {
+      if (!reservation->m_mixer.setInletModelObject(mixerBranchIndex, branchNode.cast<ModelObject>())) {
         return nullptr;
       }
       return reservation;
@@ -1863,22 +1916,26 @@ namespace epmodel {
         auto mixer = airLoop.zoneMixer();
         const auto splitterOutlets = splitter.outletModelObjects();
         const auto mixerInlets = mixer.inletModelObjects();
-        if (splitterOutlets.empty() || splitterOutlets.size() != mixerInlets.size()) {
+        const auto straightTerminal = terminal->optionalCast<StraightComponent>();
+        const auto terminalInlet = straightTerminal ? straightTerminal->inletModelObject() : boost::none;
+        const auto terminalOutlet = straightTerminal ? straightTerminal->outletModelObject() : boost::none;
+        const auto terminalOutletNode = terminalOutlet ? terminalOutlet->optionalCast<Node>() : boost::none;
+        if (!terminalInlet || !terminalOutletNode || (std::ranges::count(splitterOutlets, *terminalInlet) != 1u)
+            || (std::ranges::count(mixerInlets, *terminalOutlet) != 1u)) {
           return nullptr;
         }
 
-        const auto branchIndex = static_cast<unsigned>(splitterOutlets.size() - 1u);
-        auto terminalOutletNode = mixerInlets[branchIndex].optionalCast<Node>();
-        if (!terminalOutletNode) {
-          return nullptr;
-        }
+        const auto splitterIt = std::ranges::find(splitterOutlets, *terminalInlet);
+        const auto mixerIt = std::ranges::find(mixerInlets, *terminalOutlet);
+        const auto splitterBranchIndex = static_cast<unsigned>(std::distance(splitterOutlets.begin(), splitterIt));
+        const auto mixerBranchIndex = static_cast<unsigned>(std::distance(mixerInlets.begin(), mixerIt));
 
-        // The trailing terminal already owns the splitter-side inlet. Enroll
+        // The selected terminal already owns the splitter-side inlet. Enroll
         // its outlet node as the future zone inlet and leave that upstream
         // endpoint untouched throughout preparation.
         return std::unique_ptr<DemandBranchAttachmentPlan>(
-          new DemandBranchAttachmentPlan(airLoop, splitter, mixer, branchIndex, *terminalOutletNode, true, false, splitterOutlets[branchIndex],
-                                         mixerInlets[branchIndex], true, terminal->cast<ModelObject>()));
+          new DemandBranchAttachmentPlan(airLoop, splitter, mixer, splitterBranchIndex, mixerBranchIndex, *terminalOutletNode, true, false,
+                                         splitterOutlets[splitterBranchIndex], mixerInlets[mixerBranchIndex], true, terminal->cast<ModelObject>()));
       }
 
       return prepare(airLoop);
@@ -1888,8 +1945,8 @@ namespace epmodel {
       return m_branchNode;
     }
 
-    unsigned AirLoopHVAC_Impl::DemandBranchAttachmentPlan::branchIndex() const {
-      return m_branchIndex;
+    unsigned AirLoopHVAC_Impl::DemandBranchAttachmentPlan::splitterBranchIndex() const {
+      return m_splitterBranchIndex;
     }
 
     bool AirLoopHVAC_Impl::DemandBranchAttachmentPlan::prepareZoneAttachment(ThermalZone& thermalZone) {
@@ -1918,20 +1975,30 @@ namespace epmodel {
       auto connections = thermalZoneImpl->zoneHVACEquipmentConnections();
       zoneState.createdConnections = !connections;
 
-      const auto zoneInletNodeName = thermalZone.nameString() + " Demand Branch Node";
+      const auto originalInletNodes = connections ? connections->zoneAirInletNodes() : std::vector<Node>{};
+      const auto originalReturnNodes = connections ? connections->zoneReturnAirNodes() : std::vector<Node>{};
+      const auto multiLoopNodeStem = thermalZone.nameString() + " " + m_airLoop.nameString();
+      const auto zoneInletNodeName =
+        originalInletNodes.empty() ? thermalZone.nameString() + " Demand Branch Node" : multiLoopNodeStem + " Demand Branch Node";
+      const auto zoneAirNodeName = thermalZone.nameString() + " Demand Branch Node";
+      const bool zoneAirNodeExisted = static_cast<bool>(m_airLoop.model().getConcreteModelObjectByName<Node>(zoneAirNodeName));
       const bool zoneInletNodeExisted =
         m_preserveSplitterOutletForZone || static_cast<bool>(m_airLoop.model().getConcreteModelObjectByName<Node>(zoneInletNodeName));
-      const auto zoneReturnNodeName = thermalZone.nameString() + " Demand Return Node";
+      const auto zoneReturnNodeName =
+        originalReturnNodes.empty() ? thermalZone.nameString() + " Demand Return Node" : multiLoopNodeStem + " Demand Return Node";
       const bool zoneReturnNodeExisted = static_cast<bool>(m_airLoop.model().getConcreteModelObjectByName<Node>(zoneReturnNodeName));
 
       if (!connections) {
         connections = thermalZoneImpl->getZoneHVACEquipmentConnections();
         zoneState.createdEquipmentList = connections->zoneHVACEquipmentList();
+        if (!zoneAirNodeExisted) {
+          zoneState.createdZoneAirNode = connections->zoneAirNode();
+        }
       }
       captureCreatedZoneNodeLists();
       zoneState.connections = *connections;
-      zoneState.originalInletNodes = connections->zoneAirInletNodes();
-      zoneState.originalReturnNodes = connections->zoneReturnAirNodes();
+      zoneState.originalInletNodes = originalInletNodes;
+      zoneState.originalReturnNodes = originalReturnNodes;
       if (auto target = connections->getTarget(openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneAirInletNodeorNodeListName)) {
         zoneState.originalInletFieldTarget = target->optionalCast<ModelObject>();
       }
@@ -1948,8 +2015,8 @@ namespace epmodel {
         zoneState.createdZoneReturnNode = zoneReturnNode;
       }
 
-      if ((!m_preserveSplitterOutletForZone && !m_splitter.setOutletModelObject(m_branchIndex, zoneInletNode.cast<ModelObject>()))
-          || !m_mixer.setInletModelObject(m_branchIndex, zoneReturnNode.cast<ModelObject>())) {
+      if ((!m_preserveSplitterOutletForZone && !m_splitter.setOutletModelObject(m_splitterBranchIndex, zoneInletNode.cast<ModelObject>()))
+          || !m_mixer.setInletModelObject(m_mixerBranchIndex, zoneReturnNode.cast<ModelObject>())) {
         return false;
       }
 
@@ -2056,16 +2123,16 @@ namespace epmodel {
       // Restore or erase the branch rows first so no provisional zone node is
       // still referenced when its transaction-owned objects are removed.
       if (m_splitterRowAdded) {
-        m_splitter.removePortForBranch(m_branchIndex);
+        m_splitter.removePortForBranch(m_splitterBranchIndex);
       } else if (m_reusedBranch && m_originalSplitterOutlet) {
-        const bool splitterRestored = m_splitter.setOutletModelObject(m_branchIndex, *m_originalSplitterOutlet);
+        const bool splitterRestored = m_splitter.setOutletModelObject(m_splitterBranchIndex, *m_originalSplitterOutlet);
         OS_ASSERT(splitterRestored);
         (void)splitterRestored;
       }
       if (m_mixerRowAdded) {
-        m_mixer.removePortForBranch(m_branchIndex);
+        m_mixer.removePortForBranch(m_mixerBranchIndex);
       } else if (m_reusedBranch && m_originalMixerInlet) {
-        const bool mixerRestored = m_mixer.setInletModelObject(m_branchIndex, *m_originalMixerInlet);
+        const bool mixerRestored = m_mixer.setInletModelObject(m_mixerBranchIndex, *m_originalMixerInlet);
         OS_ASSERT(mixerRestored);
         (void)mixerRestored;
       }
@@ -2116,6 +2183,7 @@ namespace epmodel {
         }
         removeCreatedNode(zoneState.createdZoneReturnNode);
         removeCreatedNode(zoneState.createdZoneInletNode);
+        removeCreatedNode(zoneState.createdZoneAirNode);
       }
 
       if (m_createdBranchNode) {
@@ -2179,59 +2247,6 @@ namespace epmodel {
       return true;
     }
 
-    boost::optional<unsigned> AirLoopHVAC_Impl::demandBranchIndexForZoneInletNode(const openstudio::epmodel::Node& zoneInletNode) const {
-      if (zoneInletNode.model() != model()) {
-        return boost::none;
-      }
-
-      const auto splitterOutlets = zoneSplitter().outletModelObjects();
-      const auto mixerInlets = zoneMixer().inletModelObjects();
-      const auto servedZone = resolveZoneServedByInletNode(zoneInletNode);
-      for (unsigned i = 0; i < splitterOutlets.size(); ++i) {
-        if (splitterOutlets[i] == zoneInletNode.cast<ModelObject>()) {
-          return i;
-        }
-
-        if (i >= mixerInlets.size()) {
-          continue;
-        }
-        auto splitterOutletNode = splitterOutlets[i].optionalCast<Node>();
-        auto mixerInletNode = mixerInlets[i].optionalCast<Node>();
-        if (!splitterOutletNode || !mixerInletNode) {
-          continue;
-        }
-
-        if (auto terminal = resolveTerminalOnDemandBranchNodes(*splitterOutletNode, *mixerInletNode)) {
-          if (auto terminalOutlet = resolveTerminalOutletObject(*terminal)) {
-            if (*terminalOutlet == zoneInletNode.cast<ModelObject>()) {
-              return i;
-            }
-          }
-        }
-
-        if (servedZone) {
-          if (auto returnZone = resolveZoneServedByReturnNode(*mixerInletNode)) {
-            if (*servedZone == *returnZone) {
-              return i;
-            }
-          }
-        }
-      }
-
-      return boost::none;
-    }
-
-    bool AirLoopHVAC_Impl::ensureDefaultDemandBranch() {
-      auto splitter = zoneSplitter();
-      auto mixer = zoneMixer();
-      if (!splitter.outletModelObjects().empty()) {
-        return true;
-      }
-
-      auto defaultNode = model().getOrCreateTransientByName<openstudio::epmodel::Node>(getObject<AirLoopHVAC>().nameString() + " Demand Branch Node");
-      return splitter.setOutletModelObject(0u, defaultNode.cast<ModelObject>()) && mixer.setInletModelObject(0u, defaultNode.cast<ModelObject>());
-    }
-
     boost::optional<Mixer> AirLoopHVAC_Impl::reusableDualDuctTerminalForZone() const {
       auto splitter = zoneSplitter();
       auto mixer = zoneMixer();
@@ -2268,33 +2283,54 @@ namespace epmodel {
       return boost::none;
     }
 
-    bool AirLoopHVAC_Impl::removeDemandBranchAtIndex(unsigned branchIndex) {
+    bool AirLoopHVAC_Impl::removeDemandBranch(const openstudio::epmodel::ModelObject& splitterOutlet,
+                                              const openstudio::epmodel::ModelObject& mixerInlet) {
       auto splitter = zoneSplitter();
       auto mixer = zoneMixer();
       const auto splitterOutlets = splitter.outletModelObjects();
       const auto mixerInlets = mixer.inletModelObjects();
-      if (branchIndex >= splitterOutlets.size() || branchIndex >= mixerInlets.size()) {
+      const auto splitterOutletIt = std::ranges::find(splitterOutlets, splitterOutlet);
+      const auto mixerInletIt = std::ranges::find(mixerInlets, mixerInlet);
+      if (splitterOutletIt == splitterOutlets.end() || mixerInletIt == mixerInlets.end()) {
         return false;
       }
 
-      splitter.removePortForBranch(branchIndex);
-      mixer.removePortForBranch(branchIndex);
-
+      // Dual-duct terminal teardown owns its secondary lane. Reaching this
+      // helper with an empty secondary splitter means that teardown did not
+      // complete; refuse before changing the primary connector rows.
       const auto demandInlets = demandInletNodes();
       if (demandInlets.size() > 1u) {
-        if (auto secondarySplitter = zoneSplitterForDemandInletNode(demandInlets[1])) {
-          // Secondary demand branches belong to dual-duct terminals, not to
-          // primary zone-branch indices. The terminal teardown removes its
-          // own secondary branch by node identity before the primary zone
-          // branch reaches this helper. Removing the same numeric index here
-          // can delete a different terminal after secondary-row compaction.
-          if (!collapseSecondaryDemandPathIfEmpty(demandInlets[1], *secondarySplitter)) {
-            return false;
-          }
+        const auto secondarySplitter = zoneSplitterForDemandInletNode(demandInlets[1]);
+        if (!secondarySplitter || secondarySplitter->outletModelObjects().empty()) {
+          return false;
         }
       }
 
-      return ensureDefaultDemandBranch();
+      // Prepare the replacement before deleting the last demand branch. The
+      // mixer can also contain a changeover-bypass row, so append independently
+      // to each connector rather than selecting a shared numeric position.
+      if (splitterOutlets.size() == 1u) {
+        Node defaultNode(model());
+        defaultNode.setName(getObject<AirLoopHVAC>().nameString() + " Demand Branch Node");
+        const auto defaultSplitterIndex = splitter.nextBranchIndex();
+        const auto defaultMixerIndex = mixer.nextBranchIndex();
+        if (!splitter.setOutletModelObject(defaultSplitterIndex, defaultNode.cast<ModelObject>())) {
+          defaultNode.remove();
+          return false;
+        }
+        if (!mixer.setInletModelObject(defaultMixerIndex, defaultNode.cast<ModelObject>())) {
+          splitter.removePortForBranch(defaultSplitterIndex);
+          defaultNode.remove();
+          return false;
+        }
+      }
+
+      // Resolve each local row from its endpoint immediately before mutation.
+      // Removing a splitter row never supplies an index to the mixer, or vice
+      // versa; shared plenums allow those two orders to differ legitimately.
+      splitter.removePortForBranch(static_cast<unsigned>(std::distance(splitterOutlets.begin(), splitterOutletIt)));
+      mixer.removePortForBranch(static_cast<unsigned>(std::distance(mixerInlets.begin(), mixerInletIt)));
+      return true;
     }
 
     bool AirLoopHVAC_Impl::collapseSecondaryDemandPathIfEmpty(openstudio::epmodel::Node secondaryDemandInletNode,
@@ -2445,14 +2481,19 @@ namespace epmodel {
         return boost::none;
       }
 
-      const auto splitterOutlets = zoneSplitter().outletModelObjects();
-      const auto mixerInlets = zoneMixer().inletModelObjects();
-      if (splitterOutlets.empty() || splitterOutlets.size() != mixerInlets.size()) {
+      const auto topology = demandTopologySnapshot();
+      if (!topology.mutationSafe() || topology.branches().empty()) {
         return boost::none;
       }
 
-      auto splitterOutletNode = splitterOutlets.back().optionalCast<Node>();
-      auto mixerInletNode = mixerInlets.back().optionalCast<Node>();
+      const auto& branch = topology.branches().back();
+      if (branch.zone || branch.supply.supplyPlenum || branch.returnPath.returnPlenum || (branch.supply.splitterOutlet != branch.supply.branchStart)
+          || (branch.returnPath.mixerInlet != branch.returnPath.branchReturn)) {
+        return boost::none;
+      }
+
+      auto splitterOutletNode = branch.supply.branchStart.optionalCast<Node>();
+      auto mixerInletNode = branch.returnPath.branchReturn.optionalCast<Node>();
       if (!splitterOutletNode || !mixerInletNode) {
         return boost::none;
       }
@@ -2483,14 +2524,27 @@ namespace epmodel {
         return boost::none;
       }
 
-      const auto splitterOutlets = zoneSplitter().outletModelObjects();
-      const auto mixerInlets = zoneMixer().inletModelObjects();
-      if (splitterOutlets.empty() || splitterOutlets.size() != mixerInlets.size()) {
+      const auto topology = demandTopologySnapshot();
+      if (!topology.mutationSafe() || topology.branches().empty()) {
         return boost::none;
       }
 
-      auto splitterOutletNode = splitterOutlets.back().optionalCast<Node>();
-      auto mixerInletNode = mixerInlets.back().optionalCast<Node>();
+      // Canonical AirLoopHVAC disables clone-last when either demand path
+      // contains a plenum. A source terminal is otherwise selected from the
+      // last effective supply branch, not from a raw mixer-row ordinal.
+      if (std::ranges::any_of(topology.branches(), [](const auto& branch) {
+            return static_cast<bool>(branch.supply.supplyPlenum) || static_cast<bool>(branch.returnPath.returnPlenum);
+          })) {
+        return boost::none;
+      }
+
+      const auto& branch = topology.branches().back();
+      if (!branch.zone || !branch.zoneInletNode || !branch.zoneReturnNode) {
+        return boost::none;
+      }
+
+      auto splitterOutletNode = branch.supply.branchStart.optionalCast<Node>();
+      auto mixerInletNode = branch.returnPath.branchReturn.optionalCast<Node>();
       if (!splitterOutletNode || !mixerInletNode) {
         return boost::none;
       }
@@ -2503,9 +2557,7 @@ namespace epmodel {
 
       auto terminalOutletObject = sourceTerminal->outletModelObject();
       auto terminalOutletNode = terminalOutletObject ? terminalOutletObject->optionalCast<Node>() : boost::optional<Node>();
-      auto inletZone = terminalOutletNode ? resolveZoneServedByInletNode(*terminalOutletNode) : boost::optional<ThermalZone>();
-      auto returnZone = resolveZoneServedByReturnNode(*mixerInletNode);
-      if (!inletZone || !returnZone || *inletZone != *returnZone) {
+      if (!terminalOutletNode || (*terminalOutletNode != *branch.zoneInletNode)) {
         return boost::none;
       }
 
@@ -2703,6 +2755,294 @@ namespace epmodel {
       return boost::none;
     }
 
+    AirLoopHVAC_Impl::DemandTopologySnapshot AirLoopHVAC_Impl::DemandTopologySnapshot::resolve(const AirLoopHVAC_Impl& airLoop) {
+      DemandTopologySnapshot result;
+      const auto splitterOutlets = airLoop.zoneSplitter().outletModelObjects();
+      const auto mixerInlets = airLoop.zoneMixer().inletModelObjects();
+
+      const auto supplyPlenums = airLoop.model().getConcreteModelObjects<AirLoopHVACSupplyPlenum>();
+      for (unsigned splitterBranchIndex = 0u; splitterBranchIndex < splitterOutlets.size(); ++splitterBranchIndex) {
+        const auto& splitterOutlet = splitterOutlets[splitterBranchIndex];
+        std::vector<AirLoopHVACSupplyPlenum> attachedPlenums;
+        for (const auto& candidate : supplyPlenums) {
+          const auto inlet = candidate.inletModelObject();
+          if (inlet && (*inlet == splitterOutlet)) {
+            attachedPlenums.push_back(candidate);
+          }
+        }
+
+        if (attachedPlenums.size() > 1u) {
+          result.m_mutationSafe = false;
+          continue;
+        }
+        if (attachedPlenums.empty()) {
+          result.m_supplyEndpoints.push_back(SupplyEndpoint{splitterOutlet, splitterOutlet, splitterBranchIndex, boost::none, boost::none});
+          continue;
+        }
+
+        const auto& plenum = attachedPlenums.front();
+        const auto plenumOutlets = plenum.outletModelObjects();
+        if (plenumOutlets.empty()) {
+          result.m_mutationSafe = false;
+          continue;
+        }
+        for (unsigned plenumBranchIndex = 0u; plenumBranchIndex < plenumOutlets.size(); ++plenumBranchIndex) {
+          result.m_supplyEndpoints.push_back(
+            SupplyEndpoint{splitterOutlet, plenumOutlets[plenumBranchIndex], splitterBranchIndex, plenum, plenumBranchIndex});
+        }
+      }
+
+      std::set<Handle> bypassReturnHandles;
+      for (const auto& unitary : airLoop.model().getConcreteModelObjects<AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass>()) {
+        if (const auto bypassReturnNode = unitary.getModelObjectTarget<Node>(unitary.plenumorMixerAirPort())) {
+          bypassReturnHandles.insert(bypassReturnNode->handle());
+        }
+      }
+
+      const auto returnPlenums = airLoop.model().getConcreteModelObjects<AirLoopHVACReturnPlenum>();
+      for (unsigned mixerBranchIndex = 0u; mixerBranchIndex < mixerInlets.size(); ++mixerBranchIndex) {
+        const auto& mixerInlet = mixerInlets[mixerBranchIndex];
+        if (bypassReturnHandles.contains(mixerInlet.handle())) {
+          continue;
+        }
+
+        std::vector<AirLoopHVACReturnPlenum> attachedPlenums;
+        for (const auto& candidate : returnPlenums) {
+          const auto outlet = candidate.outletModelObject();
+          if (outlet && (*outlet == mixerInlet)) {
+            attachedPlenums.push_back(candidate);
+          }
+        }
+
+        if (attachedPlenums.size() > 1u) {
+          result.m_mutationSafe = false;
+          continue;
+        }
+        if (attachedPlenums.empty()) {
+          result.m_returnEndpoints.push_back(ReturnEndpoint{mixerInlet, mixerInlet, mixerBranchIndex, boost::none, boost::none});
+          continue;
+        }
+
+        const auto& plenum = attachedPlenums.front();
+        const auto plenumInlets = plenum.inletModelObjects();
+        if (plenumInlets.empty()) {
+          result.m_mutationSafe = false;
+          continue;
+        }
+        for (unsigned plenumBranchIndex = 0u; plenumBranchIndex < plenumInlets.size(); ++plenumBranchIndex) {
+          if (bypassReturnHandles.contains(plenumInlets[plenumBranchIndex].handle())) {
+            continue;
+          }
+          result.m_returnEndpoints.push_back(
+            ReturnEndpoint{mixerInlet, plenumInlets[plenumBranchIndex], mixerBranchIndex, plenum, plenumBranchIndex});
+        }
+      }
+
+      const auto supplyReachesZoneInlet = [&](const SupplyEndpoint& endpoint, const Node& zoneInletNode) {
+        const auto branchStartNode = endpoint.branchStart.optionalCast<Node>();
+        if (!branchStartNode) {
+          return false;
+        }
+        if (*branchStartNode == zoneInletNode) {
+          return true;
+        }
+        if (AirLoopHVAC_Impl::resolveDemandBranchChain(*branchStartNode, zoneInletNode)) {
+          return true;
+        }
+        const auto terminal = AirLoopHVAC_Impl::resolveTerminalOnDemandBranchNodes(*branchStartNode, zoneInletNode);
+        if (!terminal) {
+          return false;
+        }
+        const auto terminalOutlet = AirLoopHVAC_Impl::resolveTerminalOutletObject(*terminal);
+        const auto terminalOutletNode = terminalOutlet ? terminalOutlet->optionalCast<Node>() : boost::none;
+        return terminalOutletNode && (*terminalOutletNode == zoneInletNode);
+      };
+
+      std::vector<bool> supplyUsed(result.m_supplyEndpoints.size(), false);
+      std::vector<bool> returnUsed(result.m_returnEndpoints.size(), false);
+      for (const auto& connections : airLoop.model().getConcreteModelObjects<ZoneHVACEquipmentConnections>()) {
+        std::vector<std::pair<unsigned, Node>> supplyMatches;
+        for (unsigned supplyIndex = 0u; supplyIndex < result.m_supplyEndpoints.size(); ++supplyIndex) {
+          for (const auto& zoneInletNode : connections.zoneAirInletNodes()) {
+            if (supplyReachesZoneInlet(result.m_supplyEndpoints[supplyIndex], zoneInletNode)) {
+              supplyMatches.emplace_back(supplyIndex, zoneInletNode);
+            }
+          }
+        }
+
+        std::vector<std::pair<unsigned, Node>> returnMatches;
+        for (unsigned returnIndex = 0u; returnIndex < result.m_returnEndpoints.size(); ++returnIndex) {
+          const auto returnNode = result.m_returnEndpoints[returnIndex].branchReturn.optionalCast<Node>();
+          if (!returnNode) {
+            continue;
+          }
+          for (const auto& zoneReturnNode : connections.zoneReturnAirNodes()) {
+            if (*returnNode == zoneReturnNode) {
+              returnMatches.emplace_back(returnIndex, zoneReturnNode);
+            }
+          }
+        }
+
+        if (supplyMatches.empty() && returnMatches.empty()) {
+          continue;
+        }
+        if (supplyMatches.size() != 1u || returnMatches.size() != 1u) {
+          result.m_mutationSafe = false;
+          continue;
+        }
+
+        const auto supplyIndex = supplyMatches.front().first;
+        const auto returnIndex = returnMatches.front().first;
+        if (supplyUsed[supplyIndex] || returnUsed[returnIndex]) {
+          result.m_mutationSafe = false;
+          continue;
+        }
+        supplyUsed[supplyIndex] = true;
+        returnUsed[returnIndex] = true;
+        result.m_branches.push_back(EffectiveBranch{result.m_supplyEndpoints[supplyIndex], result.m_returnEndpoints[returnIndex],
+                                                    connections.thermalZone(), supplyMatches.front().second, returnMatches.front().second});
+      }
+
+      // A default branch or an unclaimed terminal-only branch has no zone
+      // relationship to join on. Pair it only when the graph itself proves a
+      // unique path. There is intentionally no ordinal fallback here.
+      for (unsigned supplyIndex = 0u; supplyIndex < result.m_supplyEndpoints.size(); ++supplyIndex) {
+        if (supplyUsed[supplyIndex]) {
+          continue;
+        }
+        const auto branchStartNode = result.m_supplyEndpoints[supplyIndex].branchStart.optionalCast<Node>();
+        if (!branchStartNode) {
+          continue;
+        }
+
+        std::vector<unsigned> connectedReturns;
+        for (unsigned returnIndex = 0u; returnIndex < result.m_returnEndpoints.size(); ++returnIndex) {
+          if (returnUsed[returnIndex]) {
+            continue;
+          }
+          const auto branchReturnNode = result.m_returnEndpoints[returnIndex].branchReturn.optionalCast<Node>();
+          if (!branchReturnNode) {
+            continue;
+          }
+
+          const bool connected = (*branchStartNode == *branchReturnNode)
+                                 || static_cast<bool>(AirLoopHVAC_Impl::resolveDemandBranchChain(*branchStartNode, *branchReturnNode))
+                                 || static_cast<bool>(AirLoopHVAC_Impl::resolveTerminalOnDemandBranchNodes(*branchStartNode, *branchReturnNode));
+          if (connected) {
+            connectedReturns.push_back(returnIndex);
+          }
+        }
+
+        if (connectedReturns.size() > 1u) {
+          result.m_mutationSafe = false;
+          continue;
+        }
+        if (connectedReturns.empty()) {
+          continue;
+        }
+
+        const auto returnIndex = connectedReturns.front();
+        supplyUsed[supplyIndex] = true;
+        returnUsed[returnIndex] = true;
+        result.m_branches.push_back(
+          EffectiveBranch{result.m_supplyEndpoints[supplyIndex], result.m_returnEndpoints[returnIndex], boost::none, boost::none, boost::none});
+      }
+
+      if (std::ranges::any_of(supplyUsed, [](bool used) { return !used; }) || std::ranges::any_of(returnUsed, [](bool used) { return !used; })) {
+        result.m_mutationSafe = false;
+      }
+
+      std::stable_sort(result.m_branches.begin(), result.m_branches.end(), [](const auto& left, const auto& right) {
+        if (left.supply.splitterOrdinal != right.supply.splitterOrdinal) {
+          return left.supply.splitterOrdinal < right.supply.splitterOrdinal;
+        }
+        return left.supply.plenumOrdinal.value_or(0u) < right.supply.plenumOrdinal.value_or(0u);
+      });
+      return result;
+    }
+
+    boost::optional<AirLoopHVAC_Impl::DemandTopologySnapshot::EffectiveBranch>
+      AirLoopHVAC_Impl::DemandTopologySnapshot::branchForZone(const ThermalZone& zone) const {
+      boost::optional<EffectiveBranch> result;
+      for (const auto& branch : m_branches) {
+        if (!branch.zone || (*branch.zone != zone)) {
+          continue;
+        }
+        if (result) {
+          return boost::none;
+        }
+        result = branch;
+      }
+      return result;
+    }
+
+    const std::vector<AirLoopHVAC_Impl::DemandTopologySnapshot::EffectiveBranch>& AirLoopHVAC_Impl::DemandTopologySnapshot::branches() const {
+      return m_branches;
+    }
+
+    const std::vector<AirLoopHVAC_Impl::DemandTopologySnapshot::ReturnEndpoint>& AirLoopHVAC_Impl::DemandTopologySnapshot::returnEndpoints() const {
+      return m_returnEndpoints;
+    }
+
+    bool AirLoopHVAC_Impl::DemandTopologySnapshot::mutationSafe() const {
+      return m_mutationSafe;
+    }
+
+    AirLoopHVAC_Impl::DemandTopologySnapshot AirLoopHVAC_Impl::demandTopologySnapshot() const {
+      return DemandTopologySnapshot::resolve(*this);
+    }
+
+    boost::optional<Node> AirLoopHVAC_Impl::effectiveDemandReturnNodeForBranchStart(const Node& branchStartNode) const {
+      if (branchStartNode.model() != model()) {
+        return boost::none;
+      }
+
+      const auto topology = demandTopologySnapshot();
+      if (!topology.mutationSafe()) {
+        return boost::none;
+      }
+
+      boost::optional<Node> result;
+      for (const auto& branch : topology.branches()) {
+        const auto effectiveStartNode = branch.supply.branchStart.optionalCast<Node>();
+        if ((!effectiveStartNode || (*effectiveStartNode != branchStartNode))
+            && (!branch.zoneInletNode || (*branch.zoneInletNode != branchStartNode))) {
+          continue;
+        }
+
+        const auto returnNode = branch.returnPath.branchReturn.optionalCast<Node>();
+        if (!returnNode || result) {
+          return boost::none;
+        }
+        result = *returnNode;
+      }
+      return result;
+    }
+
+    boost::optional<ModelObject> AirLoopHVAC_Impl::effectiveDemandBranchStartForZone(const ThermalZone& thermalZone) const {
+      const auto topology = demandTopologySnapshot();
+      if (!topology.mutationSafe()) {
+        return boost::none;
+      }
+      const auto branch = topology.branchForZone(thermalZone);
+      if (!branch) {
+        return boost::none;
+      }
+      return branch->supply.branchStart;
+    }
+
+    boost::optional<Node> AirLoopHVAC_Impl::effectiveDemandReturnNodeForZone(const ThermalZone& thermalZone) const {
+      const auto topology = demandTopologySnapshot();
+      if (!topology.mutationSafe()) {
+        return boost::none;
+      }
+      const auto branch = topology.branchForZone(thermalZone);
+      if (!branch || !branch->zoneReturnNode) {
+        return boost::none;
+      }
+      return branch->zoneReturnNode;
+    }
+
     void AirLoopHVAC_Impl::doCanonicalize(LoadContext& context) {
       auto airLoop = getObject<AirLoopHVAC>();
       OS_ASSERT(!airLoop.nameString().empty());
@@ -2710,7 +3050,8 @@ namespace epmodel {
 
       // Demand topology has distinct authoritative layers:
       //
-      // - ZoneSplitter and ZoneMixer ports define air-loop branch count and order.
+      // - ZoneSplitter, ZoneMixer, and plenum ports define connector-local
+      //   order; effective branch identity comes from the served zone.
       // - Terminal ports define equipment connectivity within each branch.
       // - ZoneHVACEquipmentConnections defines which inlet and return nodes belong
       //   to a ThermalZone.
@@ -3319,7 +3660,7 @@ namespace epmodel {
             return false;
           }
 
-          auto terminalNodeObject = zoneSplitter().outletModelObject(reservation->branchIndex());
+          auto terminalNodeObject = zoneSplitter().outletModelObject(reservation->splitterBranchIndex());
           auto terminalNode = terminalNodeObject ? terminalNodeObject->optionalCast<Node>() : boost::optional<Node>();
           if (!terminalNode || failureStage == DemandBranchAttachmentFailureStage::BeforeTerminalAttachment
               || failureStage == DemandBranchAttachmentFailureStage::AfterDualDuctTerminalPrepared) {
@@ -3431,7 +3772,7 @@ namespace epmodel {
         return false;
       }
 
-      auto terminalNodeObject = zoneSplitter().outletModelObject(reservation->branchIndex());
+      auto terminalNodeObject = zoneSplitter().outletModelObject(reservation->splitterBranchIndex());
       auto terminalNode = terminalNodeObject ? terminalNodeObject->optionalCast<Node>() : boost::optional<Node>();
       if (!terminalNode) {
         return false;
@@ -4120,70 +4461,59 @@ namespace epmodel {
         return false;
       }
 
-      const auto zoneNodes = conn->zoneAirInletNodes();
-      if (zoneNodes.empty()) {
+      auto topology = demandTopologySnapshot();
+      auto effectiveBranch = topology.branchForZone(thermalZone);
+      if (!topology.mutationSafe() || !effectiveBranch) {
         return false;
       }
 
-      boost::optional<Node> zoneNode;
-      boost::optional<unsigned> branchIndex;
-      std::set<Handle> branchZoneInletNodeHandles;
-      for (const auto& candidate : zoneNodes) {
-        auto candidateBranchIndex = demandBranchIndexForZoneInletNode(candidate);
-        if (candidateBranchIndex) {
-          branchZoneInletNodeHandles.insert(candidate.handle());
+      const auto resolveBranchPath = [&](const DemandTopologySnapshot::EffectiveBranch& branch) {
+        boost::optional<std::vector<ModelObject>> result{std::vector<ModelObject>{}};
+        if (!branch.zoneInletNode || !branch.zoneReturnNode) {
+          return boost::optional<std::vector<ModelObject>>{};
         }
-        if (candidateBranchIndex && !branchIndex) {
-          branchIndex = candidateBranchIndex;
-          zoneNode = candidate;
+        const auto branchStartNode = branch.supply.branchStart.optionalCast<Node>();
+        if (!branchStartNode) {
+          return boost::optional<std::vector<ModelObject>>{};
         }
-      }
-      if (!branchIndex) {
-        const auto mixerInlets = zoneMixer().inletModelObjects();
-        for (const auto& returnNode : conn->zoneReturnAirNodes()) {
-          for (unsigned i = 0; i < mixerInlets.size(); ++i) {
-            if (mixerInlets[i] == returnNode.cast<ModelObject>()) {
-              branchIndex = i;
-              zoneNode = zoneNodes.front();
-              break;
+
+        std::set<Handle> seen;
+        const auto append = [&](const ModelObject& object) {
+          if (seen.insert(object.handle()).second) {
+            result->push_back(object);
+          }
+        };
+        append(branch.supply.branchStart);
+
+        if (*branchStartNode != *branch.zoneInletNode) {
+          if (const auto branchComponents = resolveDemandBranchChain(*branchStartNode, *branch.zoneInletNode)) {
+            for (auto it = branchComponents->rbegin(); it != branchComponents->rend(); ++it) {
+              append(it->cast<ModelObject>());
             }
-          }
-          if (branchIndex) {
-            break;
+          } else if (const auto terminal = resolveTerminalOnDemandBranchNodes(*branchStartNode, *branch.zoneInletNode)) {
+            append(*terminal);
+          } else {
+            return boost::optional<std::vector<ModelObject>>{};
           }
         }
-      }
-      if (!branchIndex) {
-        return false;
-      }
+        append(branch.zoneInletNode->cast<ModelObject>());
+        append(thermalZone.cast<ModelObject>());
+        append(branch.zoneReturnNode->cast<ModelObject>());
+        return result;
+      };
 
-      const auto splitterOutlets = zoneSplitter().outletModelObjects();
-      if (*branchIndex >= splitterOutlets.size()) {
-        return false;
-      }
-      auto splitterOutletNode = splitterOutlets[*branchIndex].optionalCast<openstudio::epmodel::Node>();
-      if (!splitterOutletNode) {
-        return false;
-      }
-
-      auto branchPath = demandComponents(*splitterOutletNode, *zoneNode, openstudio::IddObjectType::Catchall);
-      if (branchPath.empty()) {
-        const auto mixerInletObject = zoneMixer().inletModelObject(*branchIndex);
-        auto mixerInletNode = mixerInletObject ? mixerInletObject->optionalCast<openstudio::epmodel::Node>() : boost::optional<Node>();
-        if (mixerInletNode) {
-          branchPath = demandComponents(*splitterOutletNode, *mixerInletNode, openstudio::IddObjectType::Catchall);
-        }
-      }
-      if (branchPath.empty()) {
+      auto branchPath = resolveBranchPath(*effectiveBranch);
+      if (!branchPath) {
         LOG_FREE(Warn, "openstudio.epmodel.AirLoopHVAC",
-                 "Unable to resolve branch-local demand components for zone '" << thermalZone.nameString() << "' during removeBranchForZone.");
+                 "Unable to prove the supply path for zone '" << thermalZone.nameString() << "' during removeBranchForZone.");
         return false;
       }
 
       std::set<Handle> branchPathHandles;
-      for (const auto& component : branchPath) {
+      for (const auto& component : *branchPath) {
         branchPathHandles.insert(component.handle());
       }
+      const std::set<Handle> branchZoneInletNodeHandles{effectiveBranch->zoneInletNode->handle()};
 
       auto equipmentList = conn->zoneHVACEquipmentList();
       struct BranchOwnedTerminal
@@ -4211,20 +4541,76 @@ namespace epmodel {
         if (!terminalComponent || !terminalComponent->isRemovable()) {
           return false;
         }
+
+        const bool plenumWillBeDetached = effectiveBranch->supply.supplyPlenum || effectiveBranch->returnPath.returnPlenum;
+        const bool ownsPlantTopology = std::ranges::any_of(terminalComponent->children(), [](const ModelObject& child) {
+          const auto childComponent = child.optionalCast<HVACComponent>();
+          return childComponent && childComponent->plantLoop();
+        });
+        const auto terminalType = airTerminal->iddObject().type();
+        const bool hasFamilyOwnedPlantPreflight = terminalType == AirTerminalSingleDuctConstantVolumeReheat::iddObjectType()
+                                                  || terminalType == AirTerminalSingleDuctVAVHeatAndCoolReheat::iddObjectType()
+                                                  || terminalType == AirTerminalSingleDuctSeriesPIUReheat::iddObjectType();
+        if (plenumWillBeDetached && ownsPlantTopology && !hasFamilyOwnedPlantPreflight) {
+          // Plenum detachment cannot be rolled back without changing plenum
+          // object identity. Until each compound family exposes a read-only
+          // teardown preflight, reject plant-connected families whose
+          // isRemovable() contract is still only the generic containment test.
+          return false;
+        }
         if (enrolledTerminalHandles.insert(airTerminal->handle()).second) {
           branchOwnedTerminals.push_back(BranchOwnedTerminal{*airTerminal, *airDistributionUnit});
         }
       }
 
+      const auto isDualDuctTerminal = [](const ModelObject& component) {
+        const auto componentType = component.iddObject().type();
+        return componentType == openstudio::IddObjectType::AirTerminal_DualDuct_ConstantVolume
+               || componentType == openstudio::IddObjectType::AirTerminal_DualDuct_VAV
+               || componentType == openstudio::IddObjectType::AirTerminal_DualDuct_VAV_OutdoorAir;
+      };
+      const bool hasDualDuctTerminal = std::ranges::any_of(*branchPath, isDualDuctTerminal);
+      if (hasDualDuctTerminal && (effectiveBranch->supply.supplyPlenum || effectiveBranch->returnPath.returnPlenum)) {
+        // Plenum detachment is not transactional with dual-duct secondary-lane
+        // teardown yet. Refuse before mutation until the lane-aware removal
+        // plan can own both operations atomically.
+        return false;
+      }
+
+      // Match canonical Model behavior at the semantic level: first move the
+      // target zone out of any shared plenums, then remove its now-direct
+      // ZoneSplitter and ZoneMixer rows independently. The plenum mutators
+      // already preserve siblings and dismantle the plenum only for its last
+      // served zone.
+      auto airLoop = getObject<AirLoopHVAC>();
+      if (effectiveBranch->supply.supplyPlenum) {
+        thermalZone.removeSupplyPlenum();
+      }
+      if (effectiveBranch->returnPath.returnPlenum) {
+        thermalZone.removeReturnPlenum(airLoop);
+      }
+
+      topology = demandTopologySnapshot();
+      effectiveBranch = topology.branchForZone(thermalZone);
+      if (!topology.mutationSafe() || !effectiveBranch || effectiveBranch->supply.supplyPlenum || effectiveBranch->returnPath.returnPlenum
+          || !effectiveBranch->zoneInletNode || !effectiveBranch->zoneReturnNode) {
+        return false;
+      }
+
+      branchPath = resolveBranchPath(*effectiveBranch);
+      if (!branchPath) {
+        return false;
+      }
+      branchPathHandles.clear();
+      for (const auto& component : *branchPath) {
+        branchPathHandles.insert(component.handle());
+      }
+
       // Dual-duct teardown validates both demand paths and is intentionally
       // failure-aware. Run it before changing zone equipment or ADU ownership
       // so malformed secondary topology leaves the entire zone branch intact.
-      for (auto& component : branchPath) {
-        const auto componentType = component.iddObject().type();
-        const bool isDualDuctTerminal = componentType == openstudio::IddObjectType::AirTerminal_DualDuct_ConstantVolume
-                                        || componentType == openstudio::IddObjectType::AirTerminal_DualDuct_VAV
-                                        || componentType == openstudio::IddObjectType::AirTerminal_DualDuct_VAV_OutdoorAir;
-        if (!isDualDuctTerminal) {
+      for (auto& component : *branchPath) {
+        if (!isDualDuctTerminal(component)) {
           continue;
         }
 
@@ -4279,7 +4665,7 @@ namespace epmodel {
         }
       }
 
-      for (auto& component : branchPath) {
+      for (auto& component : *branchPath) {
         if (!model().getObject(component.handle())) {
           continue;
         }
@@ -4292,7 +4678,13 @@ namespace epmodel {
         component.remove();
       }
 
-      if (!removeDemandBranchAtIndex(*branchIndex)) {
+      // Terminal removal can replace the splitter endpoint and compact local
+      // connector rows. Rebuild the snapshot and resolve both anchors by
+      // identity immediately before deleting either row.
+      topology = demandTopologySnapshot();
+      effectiveBranch = topology.branchForZone(thermalZone);
+      if (!topology.mutationSafe() || !effectiveBranch || effectiveBranch->supply.supplyPlenum || effectiveBranch->returnPath.returnPlenum
+          || !removeDemandBranch(effectiveBranch->supply.splitterOutlet, effectiveBranch->returnPath.mixerInlet)) {
         return false;
       }
 
@@ -4882,127 +5274,9 @@ namespace epmodel {
       pathObjects.emplace_back(demandInlet);
       pathObjects.emplace_back(zoneSplitter);
 
-      const auto splitterOutlets = zoneSplitter.outletModelObjects();
-      const auto mixerInlets = zoneMixer.inletModelObjects();
-
-      struct DemandSupplyEndpoint
-      {
-        ModelObject splitterOutlet;
-        ModelObject branchStart;
-        boost::optional<AirLoopHVACSupplyPlenum> supplyPlenum;
-      };
-      std::vector<DemandSupplyEndpoint> supplyEndpoints;
-      for (const auto& splitterOutlet : splitterOutlets) {
-        boost::optional<AirLoopHVACSupplyPlenum> attachedPlenum;
-        for (const auto& candidate : model().getConcreteModelObjects<AirLoopHVACSupplyPlenum>()) {
-          const auto inlet = candidate.inletModelObject();
-          if (inlet && (*inlet == splitterOutlet)) {
-            attachedPlenum = candidate;
-            break;
-          }
-        }
-        if (attachedPlenum) {
-          for (const auto& plenumOutlet : attachedPlenum->outletModelObjects()) {
-            supplyEndpoints.push_back(DemandSupplyEndpoint{splitterOutlet, plenumOutlet, attachedPlenum});
-          }
-        } else {
-          supplyEndpoints.push_back(DemandSupplyEndpoint{splitterOutlet, splitterOutlet, boost::none});
-        }
-      }
-
-      std::set<Handle> bypassReturnHandles;
-      for (const auto& unitary : model().getConcreteModelObjects<AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass>()) {
-        if (const auto bypassReturnNode = unitary.getModelObjectTarget<Node>(unitary.plenumorMixerAirPort())) {
-          bypassReturnHandles.insert(bypassReturnNode->handle());
-        }
-      }
-
-      struct DemandReturnEndpoint
-      {
-        ModelObject mixerInlet;
-        ModelObject branchReturn;
-        boost::optional<AirLoopHVACReturnPlenum> returnPlenum;
-      };
-      std::vector<DemandReturnEndpoint> returnEndpoints;
-      for (const auto& mixerInlet : mixerInlets) {
-        if (bypassReturnHandles.contains(mixerInlet.handle())) {
-          continue;
-        }
-
-        boost::optional<AirLoopHVACReturnPlenum> attachedPlenum;
-        for (const auto& candidate : model().getConcreteModelObjects<AirLoopHVACReturnPlenum>()) {
-          const auto outlet = candidate.outletModelObject();
-          if (outlet && (*outlet == mixerInlet)) {
-            attachedPlenum = candidate;
-            break;
-          }
-        }
-
-        if (attachedPlenum) {
-          for (const auto& plenumInlet : attachedPlenum->inletModelObjects()) {
-            if (bypassReturnHandles.contains(plenumInlet.handle())) {
-              continue;
-            }
-            auto inletNode = plenumInlet.optionalCast<Node>();
-            if (inletNode && resolveZoneServedByReturnNode(*inletNode)) {
-              returnEndpoints.push_back(DemandReturnEndpoint{mixerInlet, plenumInlet, attachedPlenum});
-            }
-          }
-        } else {
-          returnEndpoints.push_back(DemandReturnEndpoint{mixerInlet, mixerInlet, boost::none});
-        }
-      }
-
-      std::vector<boost::optional<DemandReturnEndpoint>> endpointByBranch(supplyEndpoints.size());
-      std::vector<bool> endpointUsed(returnEndpoints.size(), false);
-      for (unsigned endpointIndex = 0u; endpointIndex < returnEndpoints.size(); ++endpointIndex) {
-        const auto returnNode = returnEndpoints[endpointIndex].branchReturn.optionalCast<Node>();
-        const auto zone = returnNode ? resolveZoneServedByReturnNode(*returnNode) : boost::none;
-        if (!zone) {
-          continue;
-        }
-        const auto connections = zone->getImpl<detail::ThermalZone_Impl>()->zoneHVACEquipmentConnections();
-        if (!connections) {
-          continue;
-        }
-        for (const auto& zoneInletNode : connections->zoneAirInletNodes()) {
-          for (unsigned supplyIndex = 0u; supplyIndex < supplyEndpoints.size(); ++supplyIndex) {
-            if (endpointByBranch[supplyIndex]) {
-              continue;
-            }
-            const auto branchStartNode = supplyEndpoints[supplyIndex].branchStart.optionalCast<Node>();
-            if (!branchStartNode) {
-              continue;
-            }
-            if ((*branchStartNode == zoneInletNode) || resolveDemandBranchChain(*branchStartNode, zoneInletNode)) {
-              endpointByBranch[supplyIndex] = returnEndpoints[endpointIndex];
-              endpointUsed[endpointIndex] = true;
-              break;
-            }
-          }
-          if (endpointUsed[endpointIndex]) {
-            break;
-          }
-        }
-      }
-
-      unsigned nextUnusedEndpoint = 0u;
-      for (unsigned branchIndex = 0u; branchIndex < endpointByBranch.size(); ++branchIndex) {
-        if (!endpointByBranch[branchIndex]) {
-          while ((nextUnusedEndpoint < endpointUsed.size()) && endpointUsed[nextUnusedEndpoint]) {
-            ++nextUnusedEndpoint;
-          }
-          if (nextUnusedEndpoint < returnEndpoints.size()) {
-            endpointByBranch[branchIndex] = returnEndpoints[nextUnusedEndpoint];
-            endpointUsed[nextUnusedEndpoint] = true;
-          }
-        }
-        if (!endpointByBranch[branchIndex]) {
-          continue;
-        }
-
-        const auto& endpoint = *endpointByBranch[branchIndex];
-        const auto& supplyEndpoint = supplyEndpoints[branchIndex];
+      const auto topology = demandTopologySnapshot();
+      for (const auto& branch : topology.branches()) {
+        const auto& supplyEndpoint = branch.supply;
         if (supplyEndpoint.supplyPlenum) {
           if (std::ranges::find(pathObjects, supplyEndpoint.splitterOutlet) == pathObjects.end()) {
             pathObjects.push_back(supplyEndpoint.splitterOutlet);
@@ -5011,7 +5285,7 @@ namespace epmodel {
             pathObjects.push_back(supplyEndpoint.supplyPlenum->cast<ModelObject>());
           }
         }
-        auto chain = buildDemandBranchLeg(supplyEndpoint.branchStart, endpoint.branchReturn);
+        auto chain = buildDemandBranchLeg(supplyEndpoint.branchStart, branch.returnPath.branchReturn);
         for (const auto& object : chain) {
           if (std::ranges::find(pathObjects, object) == pathObjects.end()) {
             pathObjects.push_back(object);
@@ -5022,7 +5296,7 @@ namespace epmodel {
       // A linear API view cannot represent the converging demand graph
       // directly. Put shared plenums and their mixer inlet nodes after all
       // branch-local objects so every served zone precedes its return plenum.
-      for (const auto& endpoint : returnEndpoints) {
+      for (const auto& endpoint : topology.returnEndpoints()) {
         if (endpoint.returnPlenum && (std::ranges::find(pathObjects, endpoint.returnPlenum->cast<ModelObject>()) == pathObjects.end())) {
           pathObjects.push_back(endpoint.returnPlenum->cast<ModelObject>());
         }

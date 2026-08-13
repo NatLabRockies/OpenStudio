@@ -410,11 +410,12 @@ namespace epmodel {
     }
     const auto splitterBranchIndex = static_cast<unsigned>(std::distance(splitterOutlets.begin(), splitterIt));
 
-    auto zoneMixer = airLoop->zoneMixer();
-    auto mixerInlet = zoneMixer.inletModelObject(splitterBranchIndex);
+    auto airLoopImpl = airLoop->getImpl<detail::AirLoopHVAC_Impl>();
+    OS_ASSERT(airLoopImpl);
+    auto mixerInlet = airLoopImpl->effectiveDemandReturnNodeForBranchStart(node);
     if (!mixerInlet) {
       LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctConstantVolumeFourPipeBeam",
-               "addToNode requires a corresponding ZoneMixer inlet for ZoneSplitter branch index " << splitterBranchIndex << ".");
+               "addToNode requires one effective ZoneMixer return for the selected ZoneSplitter branch.");
       return false;
     }
     auto thermalZone = owningThermalZoneForBranchNode(model(), node);

@@ -10,6 +10,7 @@
 #include "HVACComponent/ThermalZone.hpp"
 #include "HVACComponent/ThermalZone_Impl.hpp"
 #include "Loop/AirLoopHVAC.hpp"
+#include "Loop/AirLoopHVAC_Impl.hpp"
 #include "Mixer/AirLoopHVACZoneMixer.hpp"
 #include "Model.hpp"
 #include "ModelObject.hpp"
@@ -342,7 +343,6 @@ namespace epmodel {
       }
 
       auto zoneSplitter = airLoop->zoneSplitter();
-      auto zoneMixer = airLoop->zoneMixer();
       const auto thisNode = node.cast<ModelObject>();
       const auto splitterOutlets = zoneSplitter.outletModelObjects();
       const auto splitterIt = std::ranges::find(splitterOutlets, thisNode);
@@ -353,10 +353,12 @@ namespace epmodel {
       }
       const auto splitterBranchIndex = static_cast<unsigned>(std::distance(splitterOutlets.begin(), splitterIt));
 
-      auto mixerInlet = zoneMixer.inletModelObject(splitterBranchIndex);
+      auto airLoopImpl = airLoop->getImpl<detail::AirLoopHVAC_Impl>();
+      OS_ASSERT(airLoopImpl);
+      auto mixerInlet = airLoopImpl->effectiveDemandReturnNodeForBranchStart(node);
       if (!mixerInlet) {
         LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctVAVNoReheat",
-                 "addToNode requires a corresponding ZoneMixer inlet for ZoneSplitter branch index " << splitterBranchIndex << ".");
+                 "addToNode requires one effective ZoneMixer return for the selected ZoneSplitter branch.");
         return false;
       }
       auto thermalZone = owningThermalZoneForBranchNode(model(), node);
