@@ -64,6 +64,7 @@ namespace epmodel {
       // outdoor-air controller as transient companion views. EnergyPlus must
       // see only the dedicated equipment/controller projection.
       bool setDedicatedOutdoorAirSystemMode(bool enabled);
+      bool syncWaterCoilControllers();
 
       void doCanonicalize(LoadContext& context) override;
       bool addToNode(Node& node) override;
@@ -88,6 +89,8 @@ namespace epmodel {
       };
 
       openstudio::epmodel::AirLoopHVACControllerList airLoopHVACControllerList() const;
+      boost::optional<openstudio::epmodel::AirLoopHVACControllerList> projectedAirLoopHVACControllerList() const;
+      bool syncWaterCoilControllers(bool dedicated);
       boost::optional<std::pair<Node, Node>> streamNodesFor(const ModelObject& object, OAStream stream) const;
       std::vector<openstudio::epmodel::ModelObject> walkOutdoorAirStream() const;
       std::vector<openstudio::epmodel::ModelObject> walkReliefAirStream() const;

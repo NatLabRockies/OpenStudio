@@ -40,11 +40,11 @@ namespace epmodel {
     // Schema Alignment Notes:
     // - Status: Partial Parity. The outdoor-air-system topology surface is present, but the canonical wrapper still exposes additional convenience and distribution-node behavior.
     // - Canonical Counterpart: openstudio::model::AirLoopHVACOutdoorAirSystem.
-    // - Implemented Parity: Return/outdoor/relief/mixed air ports, node accessors, component traversal, controller wiring, DOAS reverse lookup, and `addToNode` preserve the main canonical OA-system topology behavior on single- and dual-duct main supply branches.
+    // - Implemented Parity: Return/outdoor/relief/mixed air ports, node accessors, component traversal, controller wiring, water-coil controller projection, DOAS reverse lookup, and `addToNode` preserve the main canonical OA-system topology behavior on single- and dual-duct main supply branches.
     // - Documented Delta: EPModel accepts `addToNode` on a dual-duct loop only along the common main supply branch. Canonical Model also accepts the first deck outlet, but EPModel's OA relationship is owned by the common branch and rejects either deck rather than silently moving a deck-requested system. EPModel also omits the canonical airloop convenience helpers and AirflowNetwork distribution-node surface exposed on this class.
-    // - Field/Storage Mapping: Controller List Name and Outdoor Air Equipment List Name map to companion objects and are intentionally exposed via relationship APIs, not scalar string accessors.
-    // - Evidence: `src/model/AirLoopHVACOutdoorAirSystem.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirLoopHVACOutdoorAirSystem.cpp`, and `src/epmodel/test/AirLoopHVACOutdoorAirSystem_GTest.cpp` show the canonical API shape and the node-level topology path.
-    // - Remaining Parity Work: Add the remaining airloop convenience and distribution-node APIs, and project dedicated-OA equipment without the ordinary OutdoorAir:Mixer/controller representation.
+    // - Field/Storage Mapping: Controller List Name and Outdoor Air Equipment List Name map to companion objects and are intentionally exposed via relationship APIs, not scalar string accessors. A dedicated system keeps its conceptual Controller:OutdoorAir in a transient controller list while the persisted EnergyPlus list contains only water-coil controllers in airflow order.
+    // - Evidence: `src/model/AirLoopHVACOutdoorAirSystem.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirLoopHVACOutdoorAirSystem.cpp`, `src/epmodel/test/AirLoopHVACOutdoorAirSystem_GTest.cpp`, and `src/epmodel/test/AirLoopHVACDedicatedOutdoorAirSystem_GTest.cpp` show the canonical API shape, node-level topology, persistence, and controller projection.
+    // - Remaining Parity Work: Add the remaining airloop convenience and distribution-node APIs; two-stream heat recovery remains a separate topology boundary.
     // Mirroring openstudio::model API shape.
     unsigned returnAirPort() const;
     boost::optional<ModelObject> returnAirModelObject() const;

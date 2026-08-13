@@ -15,6 +15,11 @@
 #include "Loop/AirLoopHVAC.hpp"
 #include "Loop/AirLoopHVAC_Impl.hpp"
 #include "Model.hpp"
+#include "ModelObject/AirLoopHVACControllerList.hpp"
+#include "ModelObject/AirLoopHVACControllerList_Impl.hpp"
+#include "ModelObject/ControllerMechanicalVentilation.hpp"
+#include "ParentObject/ControllerOutdoorAir.hpp"
+#include "ParentObject/ControllerOutdoorAir_Impl.hpp"
 #include "Schedule/Schedule.hpp"
 #include "Schedule/Schedule_Impl.hpp"
 #include "StraightComponent/Node.hpp"
@@ -24,6 +29,7 @@
 #include <utilities/core/Assert.hpp>
 #include <utilities/idd/AirLoopHVAC_DedicatedOutdoorAirSystem_FieldEnums.hxx>
 #include <utilities/idd/AirLoopHVAC_Mixer_FieldEnums.hxx>
+#include <utilities/idd/AirLoopHVAC_OutdoorAirSystem_FieldEnums.hxx>
 #include <utilities/idd/AirLoopHVAC_Splitter_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idf/WorkspaceExtensibleGroup.hpp>
@@ -316,6 +322,24 @@ namespace epmodel {
       // mixer and controller required by that loop's own OA branch.
       if (airLoopHVACOutdoorAirSystem.airLoopHVAC()) {
         return false;
+      }
+      auto candidateControllerList = airLoopHVACOutdoorAirSystem.getModelObjectTarget<openstudio::epmodel::AirLoopHVACControllerList>(
+        openstudio::AirLoopHVAC_OutdoorAirSystemFields::ControllerListName);
+      if (candidateControllerList) {
+        auto candidateController = candidateControllerList->optionalControllerOutdoorAir();
+        if (candidateController) {
+          for (const auto& source : candidateController->getModelObjectSources<openstudio::epmodel::AirLoopHVACControllerList>()) {
+            if (source != *candidateControllerList) {
+              return false;
+            }
+          }
+          auto mechanicalVentilation = candidateController->controllerMechanicalVentilation();
+          for (const auto& source : mechanicalVentilation.getModelObjectSources<openstudio::epmodel::ControllerOutdoorAir>()) {
+            if (source != *candidateController) {
+              return false;
+            }
+          }
+        }
       }
       for (const auto& doas : model().getConcreteModelObjects<openstudio::epmodel::AirLoopHVACDedicatedOutdoorAirSystem>()) {
         auto target = doas.getModelObjectTarget<openstudio::epmodel::AirLoopHVACOutdoorAirSystem>(

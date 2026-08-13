@@ -285,8 +285,9 @@ namespace epmodel {
           if (controllerList) {
             auto oaController = controllerList->optionalControllerOutdoorAir();
             matches = oaController && (*oaController == controller);
-          } else if (controllerImpl && controllerImpl->isTransient() && hasUniqueTransientList(controller)
-                     && oaSystem.airLoopHVACDedicatedOutdoorAirSystem()) {
+          }
+          if (!matches && controllerImpl && controllerImpl->isTransient() && hasUniqueTransientList(controller)
+              && oaSystem.airLoopHVACDedicatedOutdoorAirSystem()) {
             auto actuatorNode = controller.getModelObjectTarget<openstudio::epmodel::Node>(openstudio::Controller_OutdoorAirFields::ActuatorNodeName);
             if (actuatorNode) {
               auto outdoorModelObject = oaSystem.outdoorAirModelObject();

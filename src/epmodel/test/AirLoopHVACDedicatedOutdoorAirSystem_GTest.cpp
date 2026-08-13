@@ -30,6 +30,13 @@
 #include "../StraightComponent/FanSystemModel.hpp"
 #include "../StraightComponent/FanSystemModel_Impl.hpp"
 #include "../StraightComponent/Node.hpp"
+#include "../WaterToAirComponent/CoilCoolingWater.hpp"
+#include "../WaterToAirComponent/CoilCoolingWater_Impl.hpp"
+#include "../WaterToAirComponent/CoilHeatingWater.hpp"
+#include "../WaterToAirComponent/CoilHeatingWater_Impl.hpp"
+#include "../HVACComponent/ControllerWaterCoil.hpp"
+#include "../HVACComponent/ControllerWaterCoil_Impl.hpp"
+#include "../Loop/PlantLoop.hpp"
 #include <utilities/idd/AirLoopHVAC_DedicatedOutdoorAirSystem_FieldEnums.hxx>
 #include <utilities/idd/AirLoopHVAC_Mixer_FieldEnums.hxx>
 #include <utilities/idd/AirLoopHVAC_OutdoorAirSystem_FieldEnums.hxx>
@@ -218,6 +225,192 @@ TEST_F(EPModelFixture, AirLoopHVACDedicatedOutdoorAirSystem_ReplacesProjectedOut
   EXPECT_TRUE(serialized.getObjectsByType(openstudio::IddObjectType::Controller_MechanicalVentilation).empty());
 }
 
+TEST_F(EPModelFixture, AirLoopHVACDedicatedOutdoorAirSystem_ProjectsWaterCoilControllers) {
+  const auto idfPath = openstudio::tempDir() / openstudio::toPath("epmodel-doas-water-coil-projection.idf");
+  Model model;
+  AirLoopHVACOutdoorAirSystem dedicatedOA(model);
+  AirLoopHVACDedicatedOutdoorAirSystem doas(dedicatedOA);
+  CoilCoolingWater coolingCoil(model);
+  CoilHeatingWater heatingCoil(model);
+  ASSERT_TRUE(coolingCoil.setName("Dedicated Cooling Coil"));
+  ASSERT_TRUE(heatingCoil.setName("Dedicated Heating Coil"));
+
+  auto outdoorNode = dedicatedOA.outboardOANode();
+  ASSERT_TRUE(outdoorNode);
+  ASSERT_TRUE(coolingCoil.addToNode(*outdoorNode));
+  outdoorNode = dedicatedOA.outboardOANode();
+  ASSERT_TRUE(outdoorNode);
+  ASSERT_TRUE(heatingCoil.addToNode(*outdoorNode));
+  EXPECT_FALSE(coolingCoil.controllerWaterCoil());
+  EXPECT_FALSE(heatingCoil.controllerWaterCoil());
+  EXPECT_FALSE(dedicatedOA.getTarget(openstudio::AirLoopHVAC_OutdoorAirSystemFields::ControllerListName));
+
+  PlantLoop chilledWaterLoop(model);
+  PlantLoop hotWaterLoop(model);
+  ASSERT_TRUE(chilledWaterLoop.addDemandBranchForComponent(coolingCoil));
+  ASSERT_TRUE(hotWaterLoop.addDemandBranchForComponent(heatingCoil));
+  auto coolingController = coolingCoil.controllerWaterCoil();
+  auto heatingController = heatingCoil.controllerWaterCoil();
+  ASSERT_TRUE(coolingController);
+  ASSERT_TRUE(heatingController);
+
+  auto controllerList =
+    dedicatedOA.getModelObjectTarget<AirLoopHVACControllerList>(openstudio::AirLoopHVAC_OutdoorAirSystemFields::ControllerListName);
+  ASSERT_TRUE(controllerList);
+  EXPECT_FALSE(controllerList->getImpl<detail::AirLoopHVACControllerList_Impl>()->isTransient());
+  ASSERT_EQ(2u, controllerList->controllers().size());
+  EXPECT_EQ(*heatingController, controllerList->controllers()[0]);
+  EXPECT_EQ(*coolingController, controllerList->controllers()[1]);
+  EXPECT_FALSE(controllerList->optionalControllerOutdoorAir());
+  EXPECT_TRUE(dedicatedOA.getControllerOutdoorAir().getImpl<detail::ControllerOutdoorAir_Impl>()->isTransient());
+  ASSERT_TRUE(dedicatedOA.getControllerOutdoorAir().airLoopHVACOutdoorAirSystem());
+  EXPECT_EQ(dedicatedOA, *dedicatedOA.getControllerOutdoorAir().airLoopHVACOutdoorAirSystem());
+
+  ASSERT_TRUE(doas.setAirLoopHVACOutdoorAirSystem(dedicatedOA));
+  auto idempotentControllerList =
+    dedicatedOA.getModelObjectTarget<AirLoopHVACControllerList>(openstudio::AirLoopHVAC_OutdoorAirSystemFields::ControllerListName);
+  ASSERT_TRUE(idempotentControllerList);
+  EXPECT_EQ(*controllerList, *idempotentControllerList);
+  EXPECT_EQ(2u, model.getConcreteModelObjects<AirLoopHVACControllerList>().size());
+  EXPECT_EQ(1u, model.toIdfFile().getObjectsByType(openstudio::IddObjectType::AirLoopHVAC_ControllerList).size());
+
+  auto serialized = model.toIdfFile();
+  EXPECT_EQ(1u, serialized.getObjectsByType(openstudio::IddObjectType::AirLoopHVAC_ControllerList).size());
+  EXPECT_EQ(2u, serialized.getObjectsByType(openstudio::IddObjectType::Controller_WaterCoil).size());
+  EXPECT_TRUE(serialized.getObjectsByType(openstudio::IddObjectType::Controller_OutdoorAir).empty());
+  ASSERT_TRUE(model.save(idfPath, true));
+
+  auto loadedModel = Model::load(idfPath);
+  ASSERT_TRUE(loadedModel);
+  auto loadedDOAS = loadedModel->getConcreteModelObjects<AirLoopHVACDedicatedOutdoorAirSystem>();
+  ASSERT_EQ(1u, loadedDOAS.size());
+  auto loadedOA = loadedDOAS.front().airLoopHVACOutdoorAirSystem();
+  auto loadedControllerList =
+    loadedOA.getModelObjectTarget<AirLoopHVACControllerList>(openstudio::AirLoopHVAC_OutdoorAirSystemFields::ControllerListName);
+  ASSERT_TRUE(loadedControllerList);
+  EXPECT_EQ(2u, loadedControllerList->controllers().size());
+  EXPECT_FALSE(loadedControllerList->optionalControllerOutdoorAir());
+  EXPECT_TRUE(loadedOA.getControllerOutdoorAir().getImpl<detail::ControllerOutdoorAir_Impl>()->isTransient());
+  const auto loadedControllerLists = loadedModel->getConcreteModelObjects<AirLoopHVACControllerList>();
+  ASSERT_EQ(2u, loadedControllerLists.size());
+  const auto transientControllerList = std::ranges::find_if(
+    loadedControllerLists, [](const auto& list) { return list.template getImpl<detail::AirLoopHVACControllerList_Impl>()->isTransient(); });
+  ASSERT_NE(loadedControllerLists.end(), transientControllerList);
+  ASSERT_EQ(1u, transientControllerList->controllers().size());
+  EXPECT_TRUE(transientControllerList->optionalControllerOutdoorAir());
+  ASSERT_TRUE(loadedOA.getControllerOutdoorAir().airLoopHVACOutdoorAirSystem());
+  EXPECT_EQ(loadedOA, *loadedOA.getControllerOutdoorAir().airLoopHVACOutdoorAirSystem());
+  auto loadedCoolingCoil = loadedModel->getConcreteModelObjectByName<CoilCoolingWater>("Dedicated Cooling Coil");
+  auto loadedHeatingCoil = loadedModel->getConcreteModelObjectByName<CoilHeatingWater>("Dedicated Heating Coil");
+  ASSERT_TRUE(loadedCoolingCoil);
+  ASSERT_TRUE(loadedHeatingCoil);
+  EXPECT_TRUE(loadedCoolingCoil->controllerWaterCoil());
+  EXPECT_TRUE(loadedHeatingCoil->controllerWaterCoil());
+
+  EXPECT_FALSE(loadedHeatingCoil->remove().empty());
+  EXPECT_EQ(1u, loadedOA.oaComponents(openstudio::IddObjectType::Coil_Cooling_Water).size());
+  EXPECT_TRUE(loadedOA.oaComponents(openstudio::IddObjectType::Coil_Heating_Water).empty());
+  loadedControllerList = loadedOA.getModelObjectTarget<AirLoopHVACControllerList>(openstudio::AirLoopHVAC_OutdoorAirSystemFields::ControllerListName);
+  ASSERT_TRUE(loadedControllerList);
+  ASSERT_EQ(1u, loadedControllerList->controllers().size());
+  EXPECT_EQ(*loadedCoolingCoil->controllerWaterCoil(), loadedControllerList->controllers().front());
+
+  EXPECT_FALSE(loadedDOAS.front().remove().empty());
+  EXPECT_FALSE(loadedOA.airLoopHVACDedicatedOutdoorAirSystem());
+  auto restoredControllerList =
+    loadedOA.getModelObjectTarget<AirLoopHVACControllerList>(openstudio::AirLoopHVAC_OutdoorAirSystemFields::ControllerListName);
+  ASSERT_TRUE(restoredControllerList);
+  EXPECT_FALSE(restoredControllerList->getImpl<detail::AirLoopHVACControllerList_Impl>()->isTransient());
+  EXPECT_TRUE(restoredControllerList->optionalControllerOutdoorAir());
+  ASSERT_EQ(2u, restoredControllerList->controllers().size());
+  EXPECT_TRUE(loadedOA.getControllerOutdoorAir().airLoopHVACOutdoorAirSystem());
+
+  openstudio::filesystem::remove(idfPath);
+}
+
+TEST_F(EPModelFixture, AirLoopHVACOutdoorAirSystem_ProjectsWaterCoilControllerWithOutdoorAirController) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  AirLoopHVACOutdoorAirSystem oaSystem(model);
+  CoilCoolingWater coolingCoil(model);
+  PlantLoop chilledWaterLoop(model);
+
+  auto supplyOutlet = airLoop.supplyOutletNode();
+  ASSERT_TRUE(oaSystem.addToNode(supplyOutlet));
+  auto outdoorNode = oaSystem.outboardOANode();
+  ASSERT_TRUE(outdoorNode);
+  ASSERT_TRUE(coolingCoil.addToNode(*outdoorNode));
+  ASSERT_TRUE(chilledWaterLoop.addDemandBranchForComponent(coolingCoil));
+  auto waterController = coolingCoil.controllerWaterCoil();
+  ASSERT_TRUE(waterController);
+
+  auto controllerList = oaSystem.getModelObjectTarget<AirLoopHVACControllerList>(openstudio::AirLoopHVAC_OutdoorAirSystemFields::ControllerListName);
+  ASSERT_TRUE(controllerList);
+  ASSERT_EQ(2u, controllerList->controllers().size());
+  EXPECT_EQ(oaSystem.getControllerOutdoorAir(), controllerList->controllers()[0]);
+  EXPECT_EQ(*waterController, controllerList->controllers()[1]);
+
+  auto serialized = model.toIdfFile();
+  EXPECT_EQ(1u, serialized.getObjectsByType(openstudio::IddObjectType::Controller_OutdoorAir).size());
+  EXPECT_EQ(1u, serialized.getObjectsByType(openstudio::IddObjectType::Controller_WaterCoil).size());
+}
+
+TEST_F(EPModelFixture, AirLoopHVACDedicatedOutdoorAirSystem_ProjectsReliefStreamWaterCoilController) {
+  Model model;
+  AirLoopHVACOutdoorAirSystem dedicatedOA(model);
+  AirLoopHVACDedicatedOutdoorAirSystem doas(dedicatedOA);
+  CoilHeatingWater heatingCoil(model);
+  PlantLoop hotWaterLoop(model);
+
+  auto reliefNode = dedicatedOA.outboardReliefNode();
+  ASSERT_TRUE(reliefNode);
+  ASSERT_TRUE(heatingCoil.addToNode(*reliefNode));
+  ASSERT_TRUE(hotWaterLoop.addDemandBranchForComponent(heatingCoil));
+  auto waterController = heatingCoil.controllerWaterCoil();
+  ASSERT_TRUE(waterController);
+
+  auto controllerList =
+    dedicatedOA.getModelObjectTarget<AirLoopHVACControllerList>(openstudio::AirLoopHVAC_OutdoorAirSystemFields::ControllerListName);
+  ASSERT_TRUE(controllerList);
+  ASSERT_EQ(1u, controllerList->controllers().size());
+  EXPECT_EQ(*waterController, controllerList->controllers().front());
+  EXPECT_FALSE(controllerList->optionalControllerOutdoorAir());
+}
+
+TEST_F(EPModelFixture, AirLoopHVACDedicatedOutdoorAirSystem_PreservesWaterCoilControllerAcrossMove) {
+  Model model;
+  AirLoopHVACOutdoorAirSystem firstOA(model);
+  AirLoopHVACOutdoorAirSystem secondOA(model);
+  AirLoopHVACDedicatedOutdoorAirSystem firstDOAS(firstOA);
+  AirLoopHVACDedicatedOutdoorAirSystem secondDOAS(secondOA);
+  CoilCoolingWater coolingCoil(model);
+  PlantLoop chilledWaterLoop(model);
+
+  auto firstOutdoorNode = firstOA.outboardOANode();
+  ASSERT_TRUE(firstOutdoorNode);
+  ASSERT_TRUE(coolingCoil.addToNode(*firstOutdoorNode));
+  ASSERT_TRUE(chilledWaterLoop.addDemandBranchForComponent(coolingCoil));
+  auto originalController = coolingCoil.controllerWaterCoil();
+  ASSERT_TRUE(originalController);
+
+  ASSERT_TRUE(coolingCoil.removeFromAirLoopHVAC());
+  ASSERT_TRUE(coolingCoil.controllerWaterCoil());
+  EXPECT_EQ(*originalController, *coolingCoil.controllerWaterCoil());
+  EXPECT_FALSE(firstOA.getTarget(openstudio::AirLoopHVAC_OutdoorAirSystemFields::ControllerListName));
+
+  auto secondOutdoorNode = secondOA.outboardOANode();
+  ASSERT_TRUE(secondOutdoorNode);
+  ASSERT_TRUE(coolingCoil.addToNode(*secondOutdoorNode));
+  ASSERT_TRUE(coolingCoil.controllerWaterCoil());
+  EXPECT_EQ(*originalController, *coolingCoil.controllerWaterCoil());
+  EXPECT_EQ(1u, model.getConcreteModelObjects<ControllerWaterCoil>().size());
+  auto secondControllerList =
+    secondOA.getModelObjectTarget<AirLoopHVACControllerList>(openstudio::AirLoopHVAC_OutdoorAirSystemFields::ControllerListName);
+  ASSERT_TRUE(secondControllerList);
+  ASSERT_EQ(1u, secondControllerList->controllers().size());
+  EXPECT_EQ(*originalController, secondControllerList->controllers().front());
+}
+
 TEST_F(EPModelFixture, AirLoopHVACDedicatedOutdoorAirSystem_RejectsSharedMechanicalVentilationController) {
   Model model;
   AirLoopHVACOutdoorAirSystem ordinaryOA(model);
@@ -239,6 +432,61 @@ TEST_F(EPModelFixture, AirLoopHVACDedicatedOutdoorAirSystem_RejectsSharedMechani
   EXPECT_FALSE(ordinaryMechanicalVentilation.getImpl<detail::ControllerMechanicalVentilation_Impl>()->isTransient());
   ASSERT_TRUE(ordinaryController.airLoopHVACOutdoorAirSystem());
   EXPECT_EQ(ordinaryOA, *ordinaryController.airLoopHVACOutdoorAirSystem());
+}
+
+TEST_F(EPModelFixture, AirLoopHVACDedicatedOutdoorAirSystem_RejectsSharedOutdoorAirControllerWithoutMutation) {
+  Model model;
+  AirLoopHVACOutdoorAirSystem firstOA(model);
+  AirLoopHVACOutdoorAirSystem secondOA(model);
+  auto sharedController = firstOA.getControllerOutdoorAir();
+  ASSERT_TRUE(secondOA.setControllerOutdoorAir(sharedController));
+
+  AirLoopHVACDedicatedOutdoorAirSystem doas(model);
+  EXPECT_FALSE(doas.setAirLoopHVACOutdoorAirSystem(firstOA));
+  EXPECT_TRUE(model.getConcreteModelObjects<AirLoopHVACMixer>().empty());
+  EXPECT_TRUE(model.getConcreteModelObjects<AirLoopHVACSplitter>().empty());
+  EXPECT_EQ(sharedController, firstOA.getControllerOutdoorAir());
+  EXPECT_EQ(sharedController, secondOA.getControllerOutdoorAir());
+  EXPECT_FALSE(sharedController.getImpl<detail::ControllerOutdoorAir_Impl>()->isTransient());
+  EXPECT_TRUE(firstOA.getTarget(openstudio::AirLoopHVAC_OutdoorAirSystemFields::ControllerListName));
+  EXPECT_TRUE(secondOA.getTarget(openstudio::AirLoopHVAC_OutdoorAirSystemFields::ControllerListName));
+}
+
+TEST_F(EPModelFixture, AirLoopHVACDedicatedOutdoorAirSystem_CanonicalizeClonesSharedOutdoorAirController) {
+  const auto idfPath = openstudio::tempDir() / openstudio::toPath("epmodel-doas-shared-controller-load.idf");
+  Model model;
+  AirLoopHVACOutdoorAirSystem dedicatedOA(model);
+  AirLoopHVACOutdoorAirSystem ordinaryOA(model);
+  auto sharedController = ordinaryOA.getControllerOutdoorAir();
+  AirLoopHVACDedicatedOutdoorAirSystem doas(dedicatedOA);
+
+  AirLoopHVACControllerList importedList(model);
+  importedList.setName("Imported Shared Dedicated Controllers");
+  ASSERT_TRUE(importedList.getImpl<detail::AirLoopHVACControllerList_Impl>()->setControllerOutdoorAir(sharedController));
+  ASSERT_TRUE(dedicatedOA.setPointer(openstudio::AirLoopHVAC_OutdoorAirSystemFields::ControllerListName, importedList.handle()));
+  ASSERT_TRUE(model.toIdfFile().save(idfPath, true));
+
+  auto loadedModel = Model::load(idfPath);
+  ASSERT_TRUE(loadedModel);
+  auto loadedDOAS = loadedModel->getConcreteModelObjects<AirLoopHVACDedicatedOutdoorAirSystem>();
+  ASSERT_EQ(1u, loadedDOAS.size());
+  auto loadedDedicatedOA = loadedDOAS.front().airLoopHVACOutdoorAirSystem();
+  auto loadedOrdinaryOA = loadedModel->getConcreteModelObjectByName<AirLoopHVACOutdoorAirSystem>(ordinaryOA.nameString());
+  ASSERT_TRUE(loadedOrdinaryOA);
+
+  auto projectedController = loadedDedicatedOA.getControllerOutdoorAir();
+  auto ordinaryController = loadedOrdinaryOA->getControllerOutdoorAir();
+  EXPECT_NE(ordinaryController, projectedController);
+  EXPECT_NE(ordinaryController.controllerMechanicalVentilation(), projectedController.controllerMechanicalVentilation());
+  EXPECT_FALSE(ordinaryController.getImpl<detail::ControllerOutdoorAir_Impl>()->isTransient());
+  EXPECT_TRUE(projectedController.getImpl<detail::ControllerOutdoorAir_Impl>()->isTransient());
+  ASSERT_TRUE(ordinaryController.airLoopHVACOutdoorAirSystem());
+  EXPECT_EQ(*loadedOrdinaryOA, *ordinaryController.airLoopHVACOutdoorAirSystem());
+
+  auto serialized = loadedModel->toIdfFile();
+  EXPECT_EQ(1u, serialized.getObjectsByType(openstudio::IddObjectType::Controller_OutdoorAir).size());
+  EXPECT_EQ(ordinaryController.nameString(), serialized.getObjectsByType(openstudio::IddObjectType::Controller_OutdoorAir).front().nameString());
+  openstudio::filesystem::remove(idfPath);
 }
 
 TEST_F(EPModelFixture, AirLoopHVACDedicatedOutdoorAirSystem_ConstructorRejectsOwnedOutdoorAirSystemWithoutResidue) {

@@ -8,6 +8,9 @@
 
 #include "HVACComponent/ControllerWaterCoil.hpp"
 #include "HVACComponent/ControllerWaterCoil_Impl.hpp"
+#include "HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
+#include "HVACComponent/AirLoopHVACOutdoorAirSystem_Impl.hpp"
+#include "ModelObject/AirLoopHVACDedicatedOutdoorAirSystem.hpp"
 #include "Loop/AirLoopHVAC.hpp"
 #include "Loop/AirLoopHVAC_Impl.hpp"
 #include "Model.hpp"
@@ -39,25 +42,33 @@ namespace epmodel {
   namespace {
 
     // EnergyPlus stores the controller-side relationship only through nodes.
-    // Matching the controller's actuator and sensor nodes against the coil's
-    // water inlet and air outlet gives us the same user-facing association
-    // without inventing a separate epmodel-only back-reference.
+    // The actuator node is stable while a plant-connected coil is detached or
+    // moved on the air side. Prefer the exact two-node match, then accept one
+    // unambiguous actuator-node match so the same controller survives the move.
     boost::optional<ControllerWaterCoil> inferControllerForCoil(const CoilCoolingWater& coil) {
       const auto waterInlet = coil.waterInletModelObject();
       const auto airOutlet = coil.airOutletModelObject();
-      if (!waterInlet || !airOutlet) {
+      if (!waterInlet) {
         return boost::none;
       }
 
+      boost::optional<ControllerWaterCoil> actuatorMatch;
       for (const auto& controller : coil.model().getConcreteModelObjects<ControllerWaterCoil>()) {
         const auto actuatorNode = controller.actuatorNode();
         const auto sensorNode = controller.sensorNode();
-        if (actuatorNode && sensorNode && actuatorNode->handle() == waterInlet->handle() && sensorNode->handle() == airOutlet->handle()) {
+        if (!actuatorNode || actuatorNode->handle() != waterInlet->handle()) {
+          continue;
+        }
+        if (airOutlet && sensorNode && sensorNode->handle() == airOutlet->handle()) {
           return controller;
         }
+        if (actuatorMatch) {
+          return boost::none;
+        }
+        actuatorMatch = controller;
       }
 
-      return boost::none;
+      return actuatorMatch;
     }
 
     // Canonical OpenStudio suppresses a dedicated ControllerWaterCoil when the
@@ -140,6 +151,10 @@ namespace epmodel {
     }
 
     void syncAirLoopWaterCoilControllers(const CoilCoolingWater& coil) {
+      if (auto oaSystem = coil.airLoopHVACOutdoorAirSystem()) {
+        OS_ASSERT(oaSystem->getImpl<detail::AirLoopHVACOutdoorAirSystem_Impl>()->syncWaterCoilControllers());
+        return;
+      }
       if (auto airLoop = coil.airLoopHVAC()) {
         airLoop->getImpl<detail::AirLoopHVAC_Impl>()->syncSupplyWaterCoilControllers();
       }

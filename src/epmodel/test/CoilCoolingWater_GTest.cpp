@@ -145,6 +145,24 @@ TEST_F(EPModelFixture, CoilCoolingWater_AddToNodeSupportsOutboardOANode) {
   EXPECT_EQ(coil.handle(), oaComponents[1].handle());
 }
 
+TEST_F(EPModelFixture, CoilCoolingWater_AddToNodeSupportsMixedAirEndpoint) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  AirLoopHVACOutdoorAirSystem oaSystem(model);
+  CoilCoolingWater coil(model);
+
+  auto supplyOutletNode = airLoop.supplyOutletNode();
+  ASSERT_TRUE(oaSystem.addToNode(supplyOutletNode));
+  ASSERT_TRUE(coil.addToNode(supplyOutletNode));
+
+  const auto coilInlet = coil.airInletModelObject();
+  const auto mixedAirObject = oaSystem.mixedAirModelObject();
+  ASSERT_TRUE(coilInlet);
+  ASSERT_TRUE(mixedAirObject);
+  EXPECT_EQ(coilInlet->handle(), mixedAirObject->handle());
+  EXPECT_NE(supplyOutletNode.handle(), mixedAirObject->handle());
+}
+
 TEST_F(EPModelFixture, CoilCoolingWater_RemoveDetachesFromOutdoorAirSystem) {
   Model model;
   AirLoopHVAC airLoop(model);

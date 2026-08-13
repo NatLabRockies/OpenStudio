@@ -10,6 +10,9 @@
 #include "HVACComponent/ControllerWaterCoil_Impl.hpp"
 #include "Loop/AirLoopHVAC.hpp"
 #include "Loop/AirLoopHVAC_Impl.hpp"
+#include "HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
+#include "HVACComponent/AirLoopHVACOutdoorAirSystem_Impl.hpp"
+#include "ModelObject/AirLoopHVACDedicatedOutdoorAirSystem.hpp"
 #include "Model.hpp"
 #include "ModelObject/AirflowNetworkDistributionComponentCoil.hpp"
 #include "ModelObject/AirflowNetworkDistributionComponentCoil_Impl.hpp"
@@ -32,25 +35,33 @@ namespace epmodel {
 
   namespace {
 
-    // EnergyPlus stores the heating-coil controller relationship only through the
-    // shared actuator and sensor nodes. Matching those nodes back to the coil gives
-    // us the same user-facing association without inventing an epmodel-only link.
+    // The actuator node is stable while a plant-connected coil is detached or
+    // moved on the air side. Prefer the exact two-node match, then accept one
+    // unambiguous actuator-node match so the same controller survives the move.
     boost::optional<ControllerWaterCoil> inferControllerForCoil(const CoilHeatingWater& coil) {
       const auto waterInlet = coil.waterInletModelObject();
       const auto airOutlet = coil.airOutletModelObject();
-      if (!waterInlet || !airOutlet) {
+      if (!waterInlet) {
         return boost::none;
       }
 
+      boost::optional<ControllerWaterCoil> actuatorMatch;
       for (const auto& controller : coil.model().getConcreteModelObjects<ControllerWaterCoil>()) {
         const auto actuatorNode = controller.actuatorNode();
         const auto sensorNode = controller.sensorNode();
-        if (actuatorNode && sensorNode && actuatorNode->handle() == waterInlet->handle() && sensorNode->handle() == airOutlet->handle()) {
+        if (!actuatorNode || actuatorNode->handle() != waterInlet->handle()) {
+          continue;
+        }
+        if (airOutlet && sensorNode && sensorNode->handle() == airOutlet->handle()) {
           return controller;
         }
+        if (actuatorMatch) {
+          return boost::none;
+        }
+        actuatorMatch = controller;
       }
 
-      return boost::none;
+      return actuatorMatch;
     }
 
     std::vector<AirflowNetworkDistributionComponentCoil> attachedAirflowNetworkDistributionComponentCoils(const ModelObject& object) {
@@ -64,6 +75,10 @@ namespace epmodel {
     }
 
     void syncAirLoopWaterCoilControllers(const CoilHeatingWater& coil) {
+      if (auto oaSystem = coil.airLoopHVACOutdoorAirSystem()) {
+        OS_ASSERT(oaSystem->getImpl<detail::AirLoopHVACOutdoorAirSystem_Impl>()->syncWaterCoilControllers());
+        return;
+      }
       if (auto airLoop = coil.airLoopHVAC()) {
         airLoop->getImpl<detail::AirLoopHVAC_Impl>()->syncSupplyWaterCoilControllers();
       }
