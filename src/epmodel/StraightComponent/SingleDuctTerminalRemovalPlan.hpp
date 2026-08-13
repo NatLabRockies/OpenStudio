@@ -23,6 +23,7 @@ namespace epmodel {
     class SingleDuctTerminalRemovalPlan
     {
      public:
+      static bool hasTopology(const StraightComponent& terminal);
       static std::unique_ptr<SingleDuctTerminalRemovalPlan> prepare(StraightComponent& terminal);
 
       SingleDuctTerminalRemovalPlan(const SingleDuctTerminalRemovalPlan&) = delete;

@@ -48,6 +48,26 @@ namespace epmodel {
         m_equipmentList(std::move(equipmentList)),
         m_airDistributionUnit(std::move(airDistributionUnit)) {}
 
+    bool SingleDuctTerminalRemovalPlan::hasTopology(const StraightComponent& terminal) {
+      const auto terminalObject = terminal.cast<ModelObject>();
+      const auto fieldHasValue = [&](unsigned field) {
+        const auto value = terminalObject.getField(field, false);
+        return value && !value->empty();
+      };
+      if (fieldHasValue(terminal.inletPort()) || fieldHasValue(terminal.outletPort())) {
+        return true;
+      }
+
+      for (const auto& zone : terminal.model().getConcreteModelObjects<ThermalZone>()) {
+        const auto equipment = zone.equipment();
+        if (std::ranges::find(equipment, terminalObject) != equipment.end()) {
+          return true;
+        }
+      }
+
+      return !terminalObject.getSources(openstudio::IddObjectType::ZoneHVAC_AirDistributionUnit).empty();
+    }
+
     std::unique_ptr<SingleDuctTerminalRemovalPlan> SingleDuctTerminalRemovalPlan::prepare(StraightComponent& terminal) {
       const auto inletPort = terminal.inletPort();
       const auto outletPort = terminal.outletPort();

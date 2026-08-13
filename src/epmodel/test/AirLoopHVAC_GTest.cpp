@@ -104,6 +104,7 @@
 #include <utilities/idd/AirTerminal_SingleDuct_SeriesPIU_Reheat_FieldEnums.hxx>
 #include <utilities/idd/AirTerminal_SingleDuct_VAV_Reheat_FieldEnums.hxx>
 #include <utilities/idd/Coil_Heating_Electric_FieldEnums.hxx>
+#include <utilities/idd/Coil_Heating_Water_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/Sizing_System_FieldEnums.hxx>
 #include <utilities/idd/ZoneHVAC_EquipmentConnections_FieldEnums.hxx>
@@ -2807,6 +2808,129 @@ TEST_F(EPModelFixture, AirLoopHVAC_ReplacesVAVReheatTerminalAtSharedSupplyPlenum
   EXPECT_EQ(targetZoneInlet.handle(), coilOutlet->handle());
   EXPECT_EQ(replacementCoil.iddObject().name(),
             replacement.getString(openstudio::AirTerminal_SingleDuct_VAV_ReheatFields::ReheatCoilObjectType, true).value_or(""));
+
+  const auto report = model.canonicalize();
+  EXPECT_EQ(0u, report.errorCount);
+}
+
+TEST_F(EPModelFixture, AirLoopHVAC_RemovesAndReaddsVAVReheatTerminalAtSharedSupplyPlenumOutlet) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  PlantLoop plantLoop(model);
+  ThermalZone firstZone(model);
+  ThermalZone targetZone(model);
+  ThermalZone supplyPlenumZone(model);
+  AirTerminalSingleDuctConstantVolumeNoReheat firstTerminal(model);
+  AirTerminalSingleDuctConstantVolumeNoReheat originalTerminal(model);
+
+  ASSERT_TRUE(airLoop.addBranchForZone(firstZone, firstTerminal));
+  ASSERT_TRUE(airLoop.addBranchForZone(targetZone, originalTerminal));
+  ASSERT_TRUE(firstZone.setSupplyPlenum(supplyPlenumZone));
+  ASSERT_TRUE(targetZone.setSupplyPlenum(supplyPlenumZone));
+  const auto supplyPlenums = model.getConcreteModelObjects<AirLoopHVACSupplyPlenum>();
+  ASSERT_EQ(1u, supplyPlenums.size());
+  ASSERT_TRUE(firstTerminal.inletModelObject());
+  ASSERT_TRUE(firstTerminal.outletModelObject());
+  ASSERT_TRUE(originalTerminal.outletModelObject());
+
+  const auto firstInletHandle = firstTerminal.inletModelObject()->handle();
+  const auto firstOutletHandle = firstTerminal.outletModelObject()->handle();
+  auto targetZoneInlet = originalTerminal.outletModelObject()->cast<Node>();
+  ASSERT_TRUE(originalTerminal.removeFromLoop());
+
+  const auto splitterBaseline = objectHandles(airLoop.zoneSplitter().outletModelObjects());
+  const auto mixerBaseline = objectHandles(airLoop.zoneMixer().inletModelObjects());
+  const auto plenumBaseline = objectHandles(supplyPlenums.front().outletModelObjects());
+  const auto targetOutletIt = std::ranges::find(plenumBaseline, targetZoneInlet.handle());
+  ASSERT_NE(plenumBaseline.end(), targetOutletIt);
+  const auto targetPlenumOrdinal = static_cast<std::size_t>(std::distance(plenumBaseline.begin(), targetOutletIt));
+  ASSERT_EQ(1u, targetPlenumOrdinal);
+
+  auto availabilitySchedule = model.alwaysOnDiscreteSchedule();
+  CoilHeatingWater reheatCoil(model);
+  AirTerminalSingleDuctVAVReheat terminal(model, availabilitySchedule, reheatCoil);
+  ZoneHVACAirDistributionUnit adu(model);
+  auto aduImpl = adu.getImpl<detail::ZoneHVACAirDistributionUnit_Impl>();
+  ASSERT_TRUE(aduImpl);
+  ASSERT_TRUE(aduImpl->setAirTerminal(terminal.cast<ModelObject>()));
+  ASSERT_TRUE(airLoop.addBranchForZone(targetZone, terminal));
+  ASSERT_TRUE(plantLoop.addDemandBranchForComponent(reheatCoil));
+
+  ASSERT_TRUE(terminal.inletModelObject());
+  ASSERT_TRUE(terminal.outletModelObject());
+  const auto terminalInletHandle = terminal.inletModelObject()->handle();
+  const auto damperOutlet = terminal.getModelObjectTarget<Node>(openstudio::AirTerminal_SingleDuct_VAV_ReheatFields::DamperAirOutletNodeName);
+  const auto coilInlet = reheatCoil.getModelObjectTarget<Node>(openstudio::Coil_Heating_WaterFields::AirInletNodeName);
+  const auto coilOutlet = reheatCoil.getModelObjectTarget<Node>(openstudio::Coil_Heating_WaterFields::AirOutletNodeName);
+  ASSERT_TRUE(damperOutlet);
+  ASSERT_TRUE(coilInlet);
+  ASSERT_TRUE(coilOutlet);
+  EXPECT_FALSE(reheatCoil.controllerWaterCoil());
+  EXPECT_EQ(damperOutlet->handle(), coilInlet->handle());
+  EXPECT_EQ(targetZoneInlet.handle(), coilOutlet->handle());
+  EXPECT_EQ(2u, damperOutlet->sources().size());
+
+  auto expectedAttachedPlenum = plenumBaseline;
+  expectedAttachedPlenum[targetPlenumOrdinal] = terminalInletHandle;
+  EXPECT_EQ(expectedAttachedPlenum, objectHandles(supplyPlenums.front().outletModelObjects()));
+
+  ASSERT_TRUE(terminal.removeFromLoop());
+
+  EXPECT_EQ(plenumBaseline, objectHandles(supplyPlenums.front().outletModelObjects()));
+  EXPECT_EQ(splitterBaseline, objectHandles(airLoop.zoneSplitter().outletModelObjects()));
+  EXPECT_EQ(mixerBaseline, objectHandles(airLoop.zoneMixer().inletModelObjects()));
+  ASSERT_TRUE(firstTerminal.inletModelObject());
+  ASSERT_TRUE(firstTerminal.outletModelObject());
+  EXPECT_EQ(firstInletHandle, firstTerminal.inletModelObject()->handle());
+  EXPECT_EQ(firstOutletHandle, firstTerminal.outletModelObject()->handle());
+  EXPECT_FALSE(model.getObject(terminalInletHandle));
+  EXPECT_TRUE(targetZone.equipment().empty());
+  EXPECT_FALSE(adu.airTerminal());
+  EXPECT_FALSE(adu.outletNode());
+  EXPECT_FALSE(terminal.inletModelObject());
+  EXPECT_FALSE(terminal.outletModelObject());
+  EXPECT_TRUE(model.getObject(terminal.handle()));
+  EXPECT_TRUE(model.getObject(reheatCoil.handle()));
+  EXPECT_FALSE(reheatCoil.plantLoop());
+  EXPECT_FALSE(reheatCoil.controllerWaterCoil());
+  EXPECT_EQ(reheatCoil.handle(), terminal.reheatCoil().handle());
+  const auto retainedDamperOutlet = terminal.getModelObjectTarget<Node>(openstudio::AirTerminal_SingleDuct_VAV_ReheatFields::DamperAirOutletNodeName);
+  const auto retainedCoilInlet = reheatCoil.getModelObjectTarget<Node>(openstudio::Coil_Heating_WaterFields::AirInletNodeName);
+  ASSERT_TRUE(retainedDamperOutlet);
+  ASSERT_TRUE(retainedCoilInlet);
+  EXPECT_EQ(damperOutlet->handle(), retainedDamperOutlet->handle());
+  EXPECT_EQ(damperOutlet->handle(), retainedCoilInlet->handle());
+  EXPECT_FALSE(reheatCoil.getModelObjectTarget<Node>(openstudio::Coil_Heating_WaterFields::AirOutletNodeName));
+
+  ASSERT_TRUE(aduImpl->setAirTerminal(terminal.cast<ModelObject>()));
+  ASSERT_TRUE(airLoop.addBranchForZone(targetZone, terminal));
+
+  ASSERT_TRUE(terminal.inletModelObject());
+  ASSERT_TRUE(terminal.outletModelObject());
+  auto expectedReattachedPlenum = plenumBaseline;
+  expectedReattachedPlenum[targetPlenumOrdinal] = terminal.inletModelObject()->handle();
+  EXPECT_EQ(expectedReattachedPlenum, objectHandles(supplyPlenums.front().outletModelObjects()));
+  EXPECT_EQ(splitterBaseline, objectHandles(airLoop.zoneSplitter().outletModelObjects()));
+  EXPECT_EQ(mixerBaseline, objectHandles(airLoop.zoneMixer().inletModelObjects()));
+  EXPECT_EQ(targetZoneInlet.handle(), terminal.outletModelObject()->handle());
+  ASSERT_TRUE(adu.airTerminal());
+  ASSERT_TRUE(adu.outletNode());
+  EXPECT_EQ(terminal.handle(), adu.airTerminal()->handle());
+  EXPECT_EQ(targetZoneInlet.handle(), adu.outletNode()->handle());
+  ASSERT_EQ(1u, targetZone.equipment().size());
+  EXPECT_EQ(terminal.cast<ModelObject>(), targetZone.equipment().front());
+
+  const auto reattachedDamperOutlet =
+    terminal.getModelObjectTarget<Node>(openstudio::AirTerminal_SingleDuct_VAV_ReheatFields::DamperAirOutletNodeName);
+  const auto reattachedCoilInlet = reheatCoil.getModelObjectTarget<Node>(openstudio::Coil_Heating_WaterFields::AirInletNodeName);
+  const auto reattachedCoilOutlet = reheatCoil.getModelObjectTarget<Node>(openstudio::Coil_Heating_WaterFields::AirOutletNodeName);
+  ASSERT_TRUE(reattachedDamperOutlet);
+  ASSERT_TRUE(reattachedCoilInlet);
+  ASSERT_TRUE(reattachedCoilOutlet);
+  EXPECT_EQ(damperOutlet->handle(), reattachedDamperOutlet->handle());
+  EXPECT_EQ(damperOutlet->handle(), reattachedCoilInlet->handle());
+  EXPECT_EQ(targetZoneInlet.handle(), reattachedCoilOutlet->handle());
+  EXPECT_FALSE(reheatCoil.plantLoop());
 
   const auto report = model.canonicalize();
   EXPECT_EQ(0u, report.errorCount);

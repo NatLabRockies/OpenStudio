@@ -6,6 +6,7 @@
 #include <gtest/gtest.h>
 
 #include <algorithm>
+#include <set>
 #include <utilities/core/Exception.hpp>
 
 #include "EPModelFixture.hpp"
@@ -14,11 +15,15 @@
 #include "../Schedule/ScheduleConstant_Impl.hpp"
 #include "../HVACComponent/ThermalZone.hpp"
 #include "../HVACComponent/ThermalZone_Impl.hpp"
+#include "../HVACComponent/ControllerWaterCoil.hpp"
 #include "../Loop/AirLoopHVAC.hpp"
 #include "../Loop/AirLoopHVAC_Impl.hpp"
 #include "../Loop/PlantLoop.hpp"
 #include "../Loop/PlantLoop_Impl.hpp"
 #include "../Mixer/AirLoopHVACZoneMixer.hpp"
+#include "../ModelObject/Branch_Impl.hpp"
+#include "../ModelObject/NodeList.hpp"
+#include "../ModelObject/NodeList_Impl.hpp"
 #include "../ModelObject/ZoneHVACAirDistributionUnit.hpp"
 #include "../ModelObject/ZoneHVACAirDistributionUnit_Impl.hpp"
 #include "../ModelObject/ZoneHVACEquipmentConnections.hpp"
@@ -29,6 +34,7 @@
 #include "../StraightComponent/AirTerminalSingleDuctVAVReheat_Impl.hpp"
 #include "../StraightComponent/CoilHeatingElectric.hpp"
 #include "../StraightComponent/FanConstantVolume.hpp"
+#include "../StraightComponent/PipeAdiabatic.hpp"
 #include "../WaterToAirComponent/CoilHeatingWater.hpp"
 #include "../WaterToAirComponent/CoilHeatingWater_Impl.hpp"
 
@@ -173,11 +179,43 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctVAVReheat_Remove_DisconnectedDeletes
   AirTerminalSingleDuctVAVReheat terminal(model, availability, reheatCoil);
   const auto terminalHandle = terminal.handle();
   const auto coilHandle = reheatCoil.handle();
+  const auto damperOutlet = terminal.getModelObjectTarget<Node>(openstudio::AirTerminal_SingleDuct_VAV_ReheatFields::DamperAirOutletNodeName);
+  ASSERT_TRUE(damperOutlet);
+  const auto damperOutletHandle = damperOutlet->handle();
 
   const auto removedObjects = terminal.remove();
   EXPECT_FALSE(removedObjects.empty());
   EXPECT_FALSE(model.getObject(terminalHandle));
   EXPECT_FALSE(model.getObject(coilHandle));
+  EXPECT_FALSE(model.getObject(damperOutletHandle));
+}
+
+TEST_F(EPModelFixture, AirTerminalSingleDuctVAVReheat_Remove_DisconnectedLeavesSharedDamperNode) {
+  Model model;
+  ScheduleCompact availability(model);
+  ASSERT_TRUE(availability.setToConstantValue(1.0));
+  CoilHeatingElectric reheatCoil(model);
+  AirTerminalSingleDuctVAVReheat terminal(model, availability, reheatCoil);
+  const auto terminalHandle = terminal.handle();
+  const auto coilHandle = reheatCoil.handle();
+  const auto damperOutlet = terminal.getModelObjectTarget<Node>(openstudio::AirTerminal_SingleDuct_VAV_ReheatFields::DamperAirOutletNodeName);
+  ASSERT_TRUE(damperOutlet);
+  const auto damperOutletHandle = damperOutlet->handle();
+
+  NodeList foreignNodeList(model);
+  auto foreignNodeListImpl = foreignNodeList.getImpl<detail::NodeList_Impl>();
+  ASSERT_TRUE(foreignNodeListImpl);
+  ASSERT_TRUE(foreignNodeListImpl->addNode(*damperOutlet));
+  ASSERT_EQ(1u, foreignNodeList.nodes().size());
+
+  const auto removedObjects = terminal.remove();
+
+  EXPECT_FALSE(removedObjects.empty());
+  EXPECT_FALSE(model.getObject(terminalHandle));
+  EXPECT_FALSE(model.getObject(coilHandle));
+  ASSERT_TRUE(model.getModelObject<Node>(damperOutletHandle));
+  ASSERT_EQ(1u, foreignNodeList.nodes().size());
+  EXPECT_EQ(damperOutletHandle, foreignNodeList.nodes().front().handle());
 }
 
 TEST_F(EPModelFixture, AirTerminalSingleDuctVAVReheat_ScalarAccessors_RoundTrip) {
@@ -694,4 +732,157 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctVAVReheat_RemoveFromLoop_CleansConne
   EXPECT_FALSE(waterCoil.plantLoop());
   EXPECT_TRUE(plantLoop.demandComponents(CoilHeatingWater::iddObjectType()).empty());
   EXPECT_FALSE(terminal.removeFromLoop());
+}
+
+TEST_F(EPModelFixture, AirTerminalSingleDuctVAVReheat_RemoveFromLoopRejectsMalformedPlantBranchBeforeMutation) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  PlantLoop plantLoop(model);
+  ThermalZone zone(model);
+  CoilHeatingWater waterCoil(model);
+  auto availability = model.alwaysOnDiscreteSchedule();
+  AirTerminalSingleDuctVAVReheat terminal(model, availability, waterCoil);
+  ZoneHVACAirDistributionUnit adu(model);
+
+  auto aduImpl = adu.getImpl<detail::ZoneHVACAirDistributionUnit_Impl>();
+  ASSERT_TRUE(aduImpl);
+  ASSERT_TRUE(aduImpl->setAirTerminal(terminal.cast<ModelObject>()));
+  ASSERT_TRUE(airLoop.addBranchForZone(zone, terminal));
+  ASSERT_TRUE(plantLoop.addDemandBranchForComponent(waterCoil));
+  EXPECT_FALSE(waterCoil.controllerWaterCoil());
+  ASSERT_TRUE(terminal.inletModelObject());
+  ASSERT_TRUE(terminal.outletModelObject());
+  ASSERT_TRUE(waterCoil.waterInletModelObject());
+  ASSERT_TRUE(waterCoil.waterOutletModelObject());
+
+  auto plantLoopImpl = plantLoop.getImpl<detail::PlantLoop_Impl>();
+  ASSERT_TRUE(plantLoopImpl);
+  auto equipmentBranches = plantLoopImpl->demandEquipmentBranches();
+  ASSERT_EQ(1u, equipmentBranches.size());
+  auto targetBranch = equipmentBranches.front();
+  PipeAdiabatic competingPipe(model);
+  ASSERT_TRUE(
+    targetBranch.getImpl<detail::Branch_Impl>()->appendComponent(competingPipe.cast<ModelObject>(), "Competing Pipe Inlet", "Competing Pipe Outlet"));
+  ASSERT_EQ(2u, targetBranch.components().size());
+
+  std::set<openstudio::Handle> handlesBefore;
+  for (const auto& object : model.objects()) {
+    handlesBefore.insert(object.handle());
+  }
+  const auto splitterBefore = airLoop.zoneSplitter().outletModelObjects();
+  const auto mixerBefore = airLoop.zoneMixer().inletModelObjects();
+  const auto zoneEquipmentBefore = zone.equipment();
+  const auto plantComponentsBefore = plantLoop.demandComponents();
+  const auto branchComponentsBefore = targetBranch.components();
+  const auto terminalInletHandle = terminal.inletModelObject()->handle();
+  const auto terminalOutletHandle = terminal.outletModelObject()->handle();
+  const auto waterInletHandle = waterCoil.waterInletModelObject()->handle();
+  const auto waterOutletHandle = waterCoil.waterOutletModelObject()->handle();
+  const auto damperOutlet = terminal.getModelObjectTarget<Node>(openstudio::AirTerminal_SingleDuct_VAV_ReheatFields::DamperAirOutletNodeName);
+  const auto coilAirInlet = waterCoil.getModelObjectTarget<Node>(openstudio::Coil_Heating_WaterFields::AirInletNodeName);
+  const auto coilAirOutlet = waterCoil.getModelObjectTarget<Node>(openstudio::Coil_Heating_WaterFields::AirOutletNodeName);
+  ASSERT_TRUE(damperOutlet);
+  ASSERT_TRUE(coilAirInlet);
+  ASSERT_TRUE(coilAirOutlet);
+
+  EXPECT_FALSE(terminal.removeFromLoop());
+
+  std::set<openstudio::Handle> handlesAfter;
+  for (const auto& object : model.objects()) {
+    handlesAfter.insert(object.handle());
+  }
+  EXPECT_EQ(handlesBefore, handlesAfter);
+  EXPECT_EQ(splitterBefore, airLoop.zoneSplitter().outletModelObjects());
+  EXPECT_EQ(mixerBefore, airLoop.zoneMixer().inletModelObjects());
+  EXPECT_EQ(zoneEquipmentBefore, zone.equipment());
+  EXPECT_EQ(plantComponentsBefore, plantLoop.demandComponents());
+  EXPECT_EQ(branchComponentsBefore, targetBranch.components());
+  ASSERT_TRUE(terminal.inletModelObject());
+  ASSERT_TRUE(terminal.outletModelObject());
+  EXPECT_EQ(terminalInletHandle, terminal.inletModelObject()->handle());
+  EXPECT_EQ(terminalOutletHandle, terminal.outletModelObject()->handle());
+  ASSERT_TRUE(waterCoil.waterInletModelObject());
+  ASSERT_TRUE(waterCoil.waterOutletModelObject());
+  EXPECT_EQ(waterInletHandle, waterCoil.waterInletModelObject()->handle());
+  EXPECT_EQ(waterOutletHandle, waterCoil.waterOutletModelObject()->handle());
+  ASSERT_TRUE(waterCoil.plantLoop());
+  EXPECT_EQ(plantLoop.handle(), waterCoil.plantLoop()->handle());
+  EXPECT_FALSE(waterCoil.controllerWaterCoil());
+  ASSERT_TRUE(adu.airTerminal());
+  ASSERT_TRUE(adu.outletNode());
+  EXPECT_EQ(terminal.handle(), adu.airTerminal()->handle());
+  EXPECT_EQ(terminalOutletHandle, adu.outletNode()->handle());
+  ASSERT_TRUE(terminal.getModelObjectTarget<Node>(openstudio::AirTerminal_SingleDuct_VAV_ReheatFields::DamperAirOutletNodeName));
+  ASSERT_TRUE(waterCoil.getModelObjectTarget<Node>(openstudio::Coil_Heating_WaterFields::AirInletNodeName));
+  ASSERT_TRUE(waterCoil.getModelObjectTarget<Node>(openstudio::Coil_Heating_WaterFields::AirOutletNodeName));
+  EXPECT_EQ(damperOutlet->handle(),
+            terminal.getModelObjectTarget<Node>(openstudio::AirTerminal_SingleDuct_VAV_ReheatFields::DamperAirOutletNodeName)->handle());
+  EXPECT_EQ(coilAirInlet->handle(), waterCoil.getModelObjectTarget<Node>(openstudio::Coil_Heating_WaterFields::AirInletNodeName)->handle());
+  EXPECT_EQ(coilAirOutlet->handle(), waterCoil.getModelObjectTarget<Node>(openstudio::Coil_Heating_WaterFields::AirOutletNodeName)->handle());
+}
+
+TEST_F(EPModelFixture, AirTerminalSingleDuctVAVReheat_RemoveFromLoopRejectsMalformedContainedPathBeforeMutation) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  PlantLoop plantLoop(model);
+  ThermalZone zone(model);
+  CoilHeatingWater waterCoil(model);
+  auto availability = model.alwaysOnDiscreteSchedule();
+  AirTerminalSingleDuctVAVReheat terminal(model, availability, waterCoil);
+
+  ASSERT_TRUE(airLoop.addBranchForZone(zone, terminal));
+  ASSERT_TRUE(plantLoop.addDemandBranchForComponent(waterCoil));
+  ASSERT_TRUE(terminal.inletModelObject());
+  ASSERT_TRUE(terminal.outletModelObject());
+  ASSERT_TRUE(waterCoil.waterInletModelObject());
+  ASSERT_TRUE(waterCoil.waterOutletModelObject());
+  const auto damperOutlet = terminal.getModelObjectTarget<Node>(openstudio::AirTerminal_SingleDuct_VAV_ReheatFields::DamperAirOutletNodeName);
+  const auto coilAirOutlet = waterCoil.getModelObjectTarget<Node>(openstudio::Coil_Heating_WaterFields::AirOutletNodeName);
+  ASSERT_TRUE(damperOutlet);
+  ASSERT_TRUE(coilAirOutlet);
+
+  Node foreignCoilInlet(model);
+  ASSERT_TRUE(waterCoil.setPointer(openstudio::Coil_Heating_WaterFields::AirInletNodeName, foreignCoilInlet.handle()));
+
+  std::set<openstudio::Handle> handlesBefore;
+  for (const auto& object : model.objects()) {
+    handlesBefore.insert(object.handle());
+  }
+  const auto splitterBefore = airLoop.zoneSplitter().outletModelObjects();
+  const auto mixerBefore = airLoop.zoneMixer().inletModelObjects();
+  const auto zoneEquipmentBefore = zone.equipment();
+  const auto plantComponentsBefore = plantLoop.demandComponents();
+  const auto terminalInletHandle = terminal.inletModelObject()->handle();
+  const auto terminalOutletHandle = terminal.outletModelObject()->handle();
+  const auto waterInletHandle = waterCoil.waterInletModelObject()->handle();
+  const auto waterOutletHandle = waterCoil.waterOutletModelObject()->handle();
+
+  EXPECT_FALSE(terminal.removeFromLoop());
+
+  std::set<openstudio::Handle> handlesAfter;
+  for (const auto& object : model.objects()) {
+    handlesAfter.insert(object.handle());
+  }
+  EXPECT_EQ(handlesBefore, handlesAfter);
+  EXPECT_EQ(splitterBefore, airLoop.zoneSplitter().outletModelObjects());
+  EXPECT_EQ(mixerBefore, airLoop.zoneMixer().inletModelObjects());
+  EXPECT_EQ(zoneEquipmentBefore, zone.equipment());
+  EXPECT_EQ(plantComponentsBefore, plantLoop.demandComponents());
+  ASSERT_TRUE(terminal.inletModelObject());
+  ASSERT_TRUE(terminal.outletModelObject());
+  EXPECT_EQ(terminalInletHandle, terminal.inletModelObject()->handle());
+  EXPECT_EQ(terminalOutletHandle, terminal.outletModelObject()->handle());
+  ASSERT_TRUE(waterCoil.waterInletModelObject());
+  ASSERT_TRUE(waterCoil.waterOutletModelObject());
+  EXPECT_EQ(waterInletHandle, waterCoil.waterInletModelObject()->handle());
+  EXPECT_EQ(waterOutletHandle, waterCoil.waterOutletModelObject()->handle());
+  ASSERT_TRUE(waterCoil.plantLoop());
+  EXPECT_EQ(plantLoop.handle(), waterCoil.plantLoop()->handle());
+  ASSERT_TRUE(waterCoil.getModelObjectTarget<Node>(openstudio::Coil_Heating_WaterFields::AirInletNodeName));
+  ASSERT_TRUE(waterCoil.getModelObjectTarget<Node>(openstudio::Coil_Heating_WaterFields::AirOutletNodeName));
+  EXPECT_EQ(foreignCoilInlet.handle(), waterCoil.getModelObjectTarget<Node>(openstudio::Coil_Heating_WaterFields::AirInletNodeName)->handle());
+  EXPECT_EQ(coilAirOutlet->handle(), waterCoil.getModelObjectTarget<Node>(openstudio::Coil_Heating_WaterFields::AirOutletNodeName)->handle());
+  ASSERT_TRUE(terminal.getModelObjectTarget<Node>(openstudio::AirTerminal_SingleDuct_VAV_ReheatFields::DamperAirOutletNodeName));
+  EXPECT_EQ(damperOutlet->handle(),
+            terminal.getModelObjectTarget<Node>(openstudio::AirTerminal_SingleDuct_VAV_ReheatFields::DamperAirOutletNodeName)->handle());
 }
