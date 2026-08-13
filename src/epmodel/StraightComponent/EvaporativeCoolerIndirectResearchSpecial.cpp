@@ -19,6 +19,8 @@
 #include <utilities/core/StringHelpers.hpp>
 #include <utilities/idd/EvaporativeCooler_Indirect_ResearchSpecial_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
+#include <utilities/idd/OutdoorAir_NodeList_FieldEnums.hxx>
+#include <utilities/idf/WorkspaceExtensibleGroup.hpp>
 
 namespace openstudio {
 namespace epmodel {
@@ -36,6 +38,7 @@ namespace epmodel {
     setWaterPumpPowerSizingFactor(0.1);
     setSecondaryAirFlowScalingFactor(1.0);
     resetBlowdownConcentrationRatio();
+    OS_ASSERT(getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->initializeSecondaryAirNodes());
   }
 
   EvaporativeCoolerIndirectResearchSpecial::EvaporativeCoolerIndirectResearchSpecial(
@@ -314,6 +317,34 @@ namespace epmodel {
         m_secondaryFanTotalEfficiency(other.m_secondaryFanTotalEfficiency),
         m_secondaryFanDeltaPressure(other.m_secondaryFanDeltaPressure) {}
 
+    boost::optional<std::string> EvaporativeCoolerIndirectResearchSpecial_Impl::setName(const std::string& newName, bool checkValidity) {
+      const auto oldName = getObject<ModelObject>().nameString();
+      const auto oldSecondaryInlet = getString(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::SecondaryAirInletNodeName).value_or("");
+      const auto oldSecondaryOutlet =
+        getString(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::SecondaryAirOutletNodeName).value_or("");
+      const bool renameSecondaryInlet = openstudio::istringEqual(oldSecondaryInlet, oldName + " Secondary Air Inlet");
+      const bool renameSecondaryOutlet = openstudio::istringEqual(oldSecondaryOutlet, oldName + " Secondary Air Outlet");
+
+      auto result = openstudio::detail::WorkspaceObject_Impl::setName(newName, checkValidity);
+      if (!result) {
+        return boost::none;
+      }
+
+      if (renameSecondaryInlet && !setSecondaryAirInletNodeName(*result + " Secondary Air Inlet")) {
+        OS_ASSERT(openstudio::detail::WorkspaceObject_Impl::setName(oldName, false));
+        return boost::none;
+      }
+      if (renameSecondaryOutlet && !setSecondaryAirOutletNodeName(*result + " Secondary Air Outlet")) {
+        if (renameSecondaryInlet) {
+          OS_ASSERT(setSecondaryAirInletNodeName(oldSecondaryInlet));
+        }
+        OS_ASSERT(openstudio::detail::WorkspaceObject_Impl::setName(oldName, false));
+        return boost::none;
+      }
+
+      return result;
+    }
+
     bool EvaporativeCoolerIndirectResearchSpecial_Impl::addToNode(Node& node) {
       if (node.airLoopHVACOutdoorAirSystem()) {
         if (StraightComponent_Impl::addToNode(node)) {
@@ -338,6 +369,180 @@ namespace epmodel {
       }
 
       return false;
+    }
+
+    std::vector<IdfObject> EvaporativeCoolerIndirectResearchSpecial_Impl::remove() {
+      if (!isRemovable()) {
+        return {};
+      }
+      const auto secondaryInlet = getString(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::SecondaryAirInletNodeName).value_or("");
+      removeUnusedSecondaryInletOutdoorAirNode(secondaryInlet);
+      return StraightComponent_Impl::remove();
+    }
+
+    bool EvaporativeCoolerIndirectResearchSpecial_Impl::initializeSecondaryAirNodes() {
+      const auto coolerName = getObject<ModelObject>().nameString();
+      auto secondaryInlet = getString(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::SecondaryAirInletNodeName);
+      if (!(secondaryInlet && !secondaryInlet->empty()) && !setSecondaryAirInletNodeName(coolerName + " Secondary Air Inlet")) {
+        return false;
+      }
+      if (secondaryInlet && !secondaryInlet->empty() && !maintainSecondaryInletOutdoorAirNode()) {
+        return false;
+      }
+
+      auto secondaryOutlet = getString(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::SecondaryAirOutletNodeName);
+      if (!(secondaryOutlet && !secondaryOutlet->empty())) {
+        return setSecondaryAirOutletNodeName(coolerName + " Secondary Air Outlet");
+      }
+      resolvedOrCreatedNodeTarget(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::SecondaryAirOutletNodeName, *secondaryOutlet);
+      return true;
+    }
+
+    bool EvaporativeCoolerIndirectResearchSpecial_Impl::setSecondaryAirInletNodeName(const std::string& nodeName) {
+      if (nodeName.empty()) {
+        return false;
+      }
+
+      const auto field = openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::SecondaryAirInletNodeName;
+      const auto previousNodeName = getString(field).value_or("");
+      const auto previousNode = resolvedNodeTarget(field);
+      auto node = model().getOrCreateTransientByName<Node>(nodeName);
+      if (!setPointer(field, node.handle(), false)) {
+        return false;
+      }
+      if (maintainSecondaryInletOutdoorAirNode(previousNodeName)) {
+        return true;
+      }
+
+      OS_ASSERT(setPointer(field, previousNode ? previousNode->handle() : Handle(), false));
+      return false;
+    }
+
+    bool EvaporativeCoolerIndirectResearchSpecial_Impl::setSecondaryAirOutletNodeName(const std::string& nodeName) {
+      if (nodeName.empty()) {
+        return false;
+      }
+      auto node = model().getOrCreateTransientByName<Node>(nodeName);
+      return setPointer(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::SecondaryAirOutletNodeName, node.handle(), false);
+    }
+
+    bool EvaporativeCoolerIndirectResearchSpecial_Impl::maintainSecondaryInletOutdoorAirNode(const std::string& previousNodeName) {
+      const auto currentNodeName = getString(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::SecondaryAirInletNodeName);
+      if (!(currentNodeName && !currentNodeName->empty())) {
+        return false;
+      }
+
+      bool declaredByOutdoorAirNode = false;
+      for (const auto& object : model().getObjectsByType(openstudio::IddObjectType::OutdoorAir_Node)) {
+        if (openstudio::istringEqual(object.nameString(), *currentNodeName)) {
+          declaredByOutdoorAirNode = true;
+          break;
+        }
+      }
+
+      bool declaredAsOutdoorAir = declaredByOutdoorAirNode;
+      if (declaredByOutdoorAirNode) {
+        removeSecondaryInletOutdoorAirNodeListEntries(*currentNodeName);
+      } else {
+        for (const auto& object : model().getObjectsByType(openstudio::IddObjectType::OutdoorAir_NodeList)) {
+          for (const auto& group : object.extensibleGroups()) {
+            auto workspaceGroup = group.optionalCast<openstudio::WorkspaceExtensibleGroup>();
+            if (!workspaceGroup) {
+              continue;
+            }
+            auto listedNodeName = workspaceGroup->getString(openstudio::OutdoorAir_NodeListExtensibleFields::NodeorNodeListName);
+            if (listedNodeName && openstudio::istringEqual(*listedNodeName, *currentNodeName)) {
+              declaredAsOutdoorAir = true;
+              break;
+            }
+          }
+          if (declaredAsOutdoorAir) {
+            break;
+          }
+        }
+      }
+
+      if (!declaredAsOutdoorAir) {
+        auto nodeList = ModelObject::create(openstudio::IddObjectType::OutdoorAir_NodeList, model());
+        auto group = nodeList.pushExtensibleGroup().optionalCast<openstudio::WorkspaceExtensibleGroup>();
+        if (!(group && group->setString(openstudio::OutdoorAir_NodeListExtensibleFields::NodeorNodeListName, *currentNodeName))) {
+          nodeList.remove();
+          return false;
+        }
+      }
+
+      if (!previousNodeName.empty() && !openstudio::istringEqual(previousNodeName, *currentNodeName)) {
+        removeUnusedSecondaryInletOutdoorAirNode(previousNodeName);
+      }
+      return true;
+    }
+
+    unsigned EvaporativeCoolerIndirectResearchSpecial_Impl::removeSecondaryInletOutdoorAirNodeListEntries(const std::string& nodeName) {
+      unsigned removedEntries = 0;
+      for (auto object : model().getObjectsByType(openstudio::IddObjectType::OutdoorAir_NodeList)) {
+        const auto groups = object.extensibleGroups();
+        std::vector<unsigned> matchingGroups;
+        for (const auto& group : groups) {
+          auto workspaceGroup = group.optionalCast<openstudio::WorkspaceExtensibleGroup>();
+          if (!workspaceGroup) {
+            continue;
+          }
+          auto listedNodeName = workspaceGroup->getString(openstudio::OutdoorAir_NodeListExtensibleFields::NodeorNodeListName);
+          if (listedNodeName && openstudio::istringEqual(*listedNodeName, nodeName)) {
+            matchingGroups.push_back(workspaceGroup->groupIndex());
+          }
+        }
+
+        removedEntries += static_cast<unsigned>(matchingGroups.size());
+        if (!matchingGroups.empty() && matchingGroups.size() == groups.size()) {
+          object.remove();
+          continue;
+        }
+        for (auto it = matchingGroups.rbegin(); it != matchingGroups.rend(); ++it) {
+          object.eraseExtensibleGroup(*it);
+        }
+      }
+      return removedEntries;
+    }
+
+    void EvaporativeCoolerIndirectResearchSpecial_Impl::removeUnusedSecondaryInletOutdoorAirNode(const std::string& nodeName) {
+      if (nodeName.empty()) {
+        return;
+      }
+
+      for (const auto& object : model().objects()) {
+        if ((object.handle() == handle()) || (object.iddObject().type() == openstudio::IddObjectType::OutdoorAir_NodeList)) {
+          continue;
+        }
+        for (unsigned fieldIndex = 0; fieldIndex < object.numFields(); ++fieldIndex) {
+          const auto iddField = object.iddObject().getField(fieldIndex);
+          if (!(iddField && iddField->properties().type == openstudio::IddFieldType::NodeType)) {
+            continue;
+          }
+          const auto fieldValue = object.getString(fieldIndex);
+          if (fieldValue && openstudio::istringEqual(*fieldValue, nodeName)) {
+            return;
+          }
+        }
+      }
+
+      removeSecondaryInletOutdoorAirNodeListEntries(nodeName);
+    }
+
+    void EvaporativeCoolerIndirectResearchSpecial_Impl::doCanonicalize(LoadContext& context) {
+      StraightComponent_Impl::doCanonicalize(context);
+
+      const auto coolerName = getObject<ModelObject>().nameString();
+      const auto secondaryInlet = getString(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::SecondaryAirInletNodeName);
+      const auto secondaryOutlet = getString(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::SecondaryAirOutletNodeName);
+      if (!(secondaryInlet && !secondaryInlet->empty())) {
+        detail::addLoadInfo(context, "Created missing secondary air inlet node for EvaporativeCooler:Indirect:ResearchSpecial '" + coolerName + "'.");
+      }
+      if (!(secondaryOutlet && !secondaryOutlet->empty())) {
+        detail::addLoadInfo(context,
+                            "Created missing secondary air outlet node for EvaporativeCooler:Indirect:ResearchSpecial '" + coolerName + "'.");
+      }
+      OS_ASSERT(initializeSecondaryAirNodes());
     }
 
     unsigned EvaporativeCoolerIndirectResearchSpecial_Impl::inletPort() const {

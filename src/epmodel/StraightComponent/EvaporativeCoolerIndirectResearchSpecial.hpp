@@ -43,7 +43,9 @@ namespace epmodel {
     //   secondary-fan pair storage gap and autosized-value lookup still documented.
     // - Canonical Counterpart: openstudio::model::EvaporativeCoolerIndirectResearchSpecial.
     // - Implemented Parity: Availability schedule, curve relationships, scalar field accessors, and `addToNode(...)` now follow the canonical
-    //   indirect-research evaporative-cooler behavior, including outlet-sensor propagation on supply-side and OA-system placement.
+    //   indirect-research evaporative-cooler behavior, including outlet-sensor propagation on supply-side and OA-system placement. Required
+    //   EnergyPlus-only secondary inlet/outlet nodes and the inlet outdoor-air declaration are created, renamed, restored on load, and removed with
+    //   the cooler.
     // - Documented Delta: EnergyPlus persists only `Secondary Air Fan Sizing Specific Power`, so wrappers rebuilt only from bare persisted storage must
     //   reconstruct the legacy `secondaryFanTotalEfficiency()` / `secondaryFanDeltaPressure()` pair from that single value; and
     //   `autosizedRecirculatingWaterPumpPowerConsumption()` / `autosizedSecondaryFanFlowRate()` / `autosizedSecondaryAirFanDesignPower()` /
