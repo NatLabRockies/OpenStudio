@@ -735,6 +735,8 @@ TEST_F(EPModelFixture, AirLoopHVACDedicatedOutdoorAirSystem_RemoveCleansOwnedCon
 
   auto mixerOutlet = model.getConcreteModelObjects<AirLoopHVACMixer>().front().getTarget(openstudio::AirLoopHVAC_MixerFields::OutletNodeName);
   ASSERT_TRUE(mixerOutlet);
+  ASSERT_TRUE(dedicatedOA.reliefAirModelObject());
+  EXPECT_EQ(mixerOutlet->handle(), dedicatedOA.reliefAirModelObject()->handle());
 
   EXPECT_FALSE(doas.remove().empty());
   EXPECT_TRUE(model.getConcreteModelObjects<AirLoopHVACDedicatedOutdoorAirSystem>().empty());
@@ -742,7 +744,9 @@ TEST_F(EPModelFixture, AirLoopHVACDedicatedOutdoorAirSystem_RemoveCleansOwnedCon
   EXPECT_TRUE(model.getConcreteModelObjects<AirLoopHVACSplitter>().empty());
   EXPECT_FALSE(dedicatedOA.airLoopHVACDedicatedOutdoorAirSystem());
   EXPECT_FALSE(servedLoop.airLoopHVACDedicatedOutdoorAirSystem());
-  EXPECT_FALSE(model.getObject(mixerOutlet->handle()));
+  EXPECT_TRUE(model.getObject(mixerOutlet->handle()));
+  ASSERT_TRUE(dedicatedOA.reliefAirModelObject());
+  EXPECT_EQ(mixerOutlet->handle(), dedicatedOA.reliefAirModelObject()->handle());
   EXPECT_EQ(2u, model.getConcreteModelObjects<AirLoopHVACOutdoorAirSystem>().size());
 
   auto restoredControllerList =

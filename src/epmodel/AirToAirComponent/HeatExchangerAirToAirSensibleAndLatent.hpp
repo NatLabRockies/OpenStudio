@@ -42,11 +42,11 @@ namespace epmodel {
     // Schema Alignment Notes:
     // - Status: Partial Parity. Scalar effectiveness and control fields are aligned, but the canonical relationship/performance-surface is still incomplete.
     // - Canonical Counterpart: openstudio::model::HeatExchangerAirToAirSensibleAndLatent.
-    // - Implemented Parity: The scalar effectiveness, frost-control, defrost, and economizer-lockout accessors preserve the canonical model-facing field semantics.
+    // - Implemented Parity: The scalar effectiveness, frost-control, defrost, and economizer-lockout accessors preserve the canonical model-facing field semantics. Outdoor-air-system placement and removal coordinate all four air ports as one component; a dedicated system keeps its mixer outlet on the secondary inlet through save/load and later mutation.
     // - Documented Delta: Epmodel does not yet expose the canonical availability schedule, curve/table relationship APIs, or the historical 75% effectiveness compatibility helpers that remain part of `openstudio::model`.
-    // - Field/Storage Mapping: Preserved scalar APIs map directly to `HeatExchanger:AirToAir:SensibleAndLatent` fields in EnergyPlus storage.
-    // - Evidence: `src/model/HeatExchangerAirToAirSensibleAndLatent.hpp`, `src/model/HeatExchangerAirToAirSensibleAndLatent.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateHeatExchangerAirToAirSensibleAndLatent.cpp` define the canonical surface and scalar translation behavior.
-    // - Remaining Parity Work: Add the schedule and curve/table relationship APIs, plus any remaining compatibility helpers, when the epmodel relationship surface is ready for them.
+    // - Field/Storage Mapping: Preserved scalar APIs map directly to `HeatExchanger:AirToAir:SensibleAndLatent` fields in EnergyPlus storage. One outdoor-air equipment-list row participates in both the outdoor and relief traversals through its primary and secondary node fields.
+    // - Evidence: `src/model/HeatExchangerAirToAirSensibleAndLatent.hpp`, `src/model/HeatExchangerAirToAirSensibleAndLatent.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateHeatExchangerAirToAirSensibleAndLatent.cpp`, `src/epmodel/test/HeatExchangerAirToAirSensibleAndLatent_GTest.cpp`, and `resources/Examples/compact_osw/epmodel_dedicated_heat_recovery_small_office_idf.osw` define and exercise the selected scalar and two-stream behavior.
+    // - Remaining Parity Work: Add the schedule and curve/table relationship APIs, compatibility helpers, arbitrary multi-heat-exchanger ordering evidence, and performance/numerical validation when the corresponding workflows require them.
     /** @name Field Accessors */
     //@{
 

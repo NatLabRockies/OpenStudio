@@ -17,6 +17,7 @@
 #include "AirLoopHVACOutdoorAirSystemEquipmentList_Impl.hpp"
 #include "ModelObject/AirLoopHVACDedicatedOutdoorAirSystem.hpp"
 #include "ModelObject/AirLoopHVACDedicatedOutdoorAirSystem_Impl.hpp"
+#include "ModelObject/AirLoopHVACMixer.hpp"
 #include "ModelObject/AirLoopHVACSplitter.hpp"
 #include "ModelObject/AirLoopHVACSplitter_Impl.hpp"
 #include "Branch.hpp"
@@ -53,6 +54,7 @@
 #include <utilities/core/Compare.hpp>
 #include <utilities/idd/AirLoopHVAC_OutdoorAirSystem_FieldEnums.hxx>
 #include <utilities/idd/AirLoopHVAC_DedicatedOutdoorAirSystem_FieldEnums.hxx>
+#include <utilities/idd/AirLoopHVAC_Mixer_FieldEnums.hxx>
 #include <utilities/idd/AirLoopHVAC_Splitter_FieldEnums.hxx>
 #include <utilities/idd/Controller_OutdoorAir_FieldEnums.hxx>
 #include <utilities/idd/OutdoorAir_NodeList_FieldEnums.hxx>
@@ -491,11 +493,28 @@ namespace epmodel {
       const auto oldNode = mixer.getTarget(reliefAirPort());
       auto controller = getControllerOutdoorAir();
       const auto oldControllerRelief = controller.getTarget(openstudio::Controller_OutdoorAirFields::ReliefAirOutletNodeName);
+      boost::optional<openstudio::epmodel::AirLoopHVACMixer> dedicatedMixer;
+      boost::optional<WorkspaceObject> oldDedicatedMixerOutlet;
+      if (auto doas = airLoopHVACDedicatedOutdoorAirSystem()) {
+        dedicatedMixer = doas->getImpl<openstudio::epmodel::detail::AirLoopHVACDedicatedOutdoorAirSystem_Impl>()->airLoopHVACMixer();
+        if (!dedicatedMixer) {
+          return false;
+        }
+        oldDedicatedMixerOutlet = dedicatedMixer->getTarget(openstudio::AirLoopHVAC_MixerFields::OutletNodeName);
+      }
 
       if (!mixer.setPointer(reliefAirPort(), node.handle())) {
         return false;
       }
+      if (dedicatedMixer && !dedicatedMixer->setPointer(openstudio::AirLoopHVAC_MixerFields::OutletNodeName, node.handle())) {
+        OS_ASSERT(mixer.getImpl<detail::ModelObject_Impl>()->setPointer(reliefAirPort(), oldNode ? oldNode->handle() : Handle(), false));
+        return false;
+      }
       if (!controller.setPointer(openstudio::Controller_OutdoorAirFields::ReliefAirOutletNodeName, node.handle())) {
+        if (dedicatedMixer) {
+          OS_ASSERT(dedicatedMixer->getImpl<detail::ModelObject_Impl>()->setPointer(
+            openstudio::AirLoopHVAC_MixerFields::OutletNodeName, oldDedicatedMixerOutlet ? oldDedicatedMixerOutlet->handle() : Handle(), false));
+        }
         OS_ASSERT(mixer.getImpl<detail::ModelObject_Impl>()->setPointer(reliefAirPort(), oldNode ? oldNode->handle() : Handle(), false));
         OS_ASSERT(controller.getImpl<detail::ModelObject_Impl>()->setPointer(openstudio::Controller_OutdoorAirFields::ReliefAirOutletNodeName,
                                                                              oldControllerRelief ? oldControllerRelief->handle() : Handle(), false));
@@ -832,6 +851,19 @@ namespace epmodel {
       }
 
       auto reliefNode = mixerImpl->reliefAirNode();
+      if (auto doas = airLoopHVACDedicatedOutdoorAirSystem()) {
+        if (auto dedicatedMixer = doas->getImpl<openstudio::epmodel::detail::AirLoopHVACDedicatedOutdoorAirSystem_Impl>()->airLoopHVACMixer()) {
+          if (auto dedicatedMixerOutlet =
+                dedicatedMixer->getModelObjectTarget<openstudio::epmodel::Node>(openstudio::AirLoopHVAC_MixerFields::OutletNodeName)) {
+            if (!reliefNode || (*reliefNode != *dedicatedMixerOutlet)) {
+              if (!mixerImpl->setReliefAirNode(*dedicatedMixerOutlet)) {
+                return false;
+              }
+            }
+            reliefNode = dedicatedMixerOutlet;
+          }
+        }
+      }
       if (!reliefNode) {
         reliefNode = model().getOrCreateTransientByName<openstudio::epmodel::Node>(oaSystem.nameString() + " Relief Node");
         if (!mixerImpl->setReliefAirNode(*reliefNode)) {

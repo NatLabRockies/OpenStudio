@@ -257,7 +257,8 @@ namespace epmodel {
         return false;
       }
       auto splitterInlet = oaSystem->outdoorAirModelObject();
-      if (!splitterInlet) {
+      auto mixerOutlet = oaSystem->reliefAirModelObject();
+      if (!splitterInlet || !mixerOutlet) {
         return false;
       }
 
@@ -267,8 +268,7 @@ namespace epmodel {
         mixer = openstudio::epmodel::AirLoopHVACMixer(model());
         mixer->setName(doas.nameString() + " Mixer");
         createdMixer = true;
-        auto outletNode = model().getOrCreateTransientByName<openstudio::epmodel::Node>(doas.nameString() + " Mixer Outlet");
-        if (!mixer->getImpl<detail::ModelObject_Impl>()->setPointer(openstudio::AirLoopHVAC_MixerFields::OutletNodeName, outletNode.handle(),
+        if (!mixer->getImpl<detail::ModelObject_Impl>()->setPointer(openstudio::AirLoopHVAC_MixerFields::OutletNodeName, mixerOutlet->handle(),
                                                                     false)) {
           mixer->remove();
           return false;
@@ -277,12 +277,9 @@ namespace epmodel {
           mixer->remove();
           return false;
         }
-      } else if (!mixer->getModelObjectTarget<openstudio::epmodel::Node>(openstudio::AirLoopHVAC_MixerFields::OutletNodeName)) {
-        auto outletNode = model().getOrCreateTransientByName<openstudio::epmodel::Node>(doas.nameString() + " Mixer Outlet");
-        if (!mixer->getImpl<detail::ModelObject_Impl>()->setPointer(openstudio::AirLoopHVAC_MixerFields::OutletNodeName, outletNode.handle(),
-                                                                    false)) {
-          return false;
-        }
+      } else if (!mixer->getImpl<detail::ModelObject_Impl>()->setPointer(openstudio::AirLoopHVAC_MixerFields::OutletNodeName, mixerOutlet->handle(),
+                                                                         false)) {
+        return false;
       }
 
       auto splitter = airLoopHVACSplitter();
