@@ -8,6 +8,7 @@
 
 #include "Loop/AirLoopHVAC_Impl.hpp"
 #include "ModelObject.hpp"
+#include "Node.hpp"
 
 #include <memory>
 #include <vector>
@@ -26,7 +27,9 @@ namespace epmodel {
      public:
       static bool hasTopology(const StraightComponent& terminal);
       static std::unique_ptr<SingleDuctTerminalRemovalPlan> prepare(StraightComponent& terminal,
-                                                                    const std::vector<ModelObject>& containedInletSources = {});
+                                                                    const std::vector<ModelObject>& containedInletSources = {},
+                                                                    const boost::optional<Node>& authoritativeOutlet = boost::none,
+                                                                    bool allowMissingZoneRegistration = false);
 
       SingleDuctTerminalRemovalPlan(const SingleDuctTerminalRemovalPlan&) = delete;
       SingleDuctTerminalRemovalPlan& operator=(const SingleDuctTerminalRemovalPlan&) = delete;

@@ -97,7 +97,9 @@ namespace epmodel {
     }
 
     std::unique_ptr<SingleDuctTerminalRemovalPlan> SingleDuctTerminalRemovalPlan::prepare(StraightComponent& terminal,
-                                                                                          const std::vector<ModelObject>& containedInletSources) {
+                                                                                          const std::vector<ModelObject>& containedInletSources,
+                                                                                          const boost::optional<Node>& authoritativeOutlet,
+                                                                                          bool allowMissingZoneRegistration) {
       const auto inletPort = terminal.inletPort();
       const auto outletPort = terminal.outletPort();
       if (inletPort == 0u || outletPort == 0u || inletPort == outletPort) {
@@ -119,7 +121,11 @@ namespace epmodel {
 
       const auto inletField = existingNodeField(terminalObject, inletPort);
       const auto outletField = existingNodeField(terminalObject, outletPort);
-      if (inletField.set != outletField.set || (inletField.set && (!inletField.node || !outletField.node))) {
+      if (authoritativeOutlet && authoritativeOutlet->model() != terminal.model()) {
+        return nullptr;
+      }
+      if ((!authoritativeOutlet && (inletField.set != outletField.set || (inletField.set && (!inletField.node || !outletField.node))))
+          || (authoritativeOutlet && (!inletField.set || !inletField.node))) {
         return nullptr;
       }
 
@@ -127,16 +133,31 @@ namespace epmodel {
       boost::optional<ModelObject> outletNode;
       std::unique_ptr<AirLoopHVAC_Impl::DemandBranchStartReservation> branchReservation;
       boost::optional<ThermalZone> servedZone;
-      if (inletField.node && outletField.node) {
+      const auto effectiveOutletNode = authoritativeOutlet ? authoritativeOutlet : outletField.node;
+      if (inletField.node && effectiveOutletNode) {
         const auto typedInletNode = inletField.node;
-        const auto typedOutletNode = outletField.node;
-        const auto airLoop = terminal.airLoopHVAC();
-        if (!typedInletNode || !typedOutletNode || !airLoop) {
+        const auto typedOutletNode = effectiveOutletNode;
+        if (!typedInletNode || !typedOutletNode) {
           return nullptr;
         }
-        auto airLoopImpl = airLoop->getImpl<AirLoopHVAC_Impl>();
-        OS_ASSERT(airLoopImpl);
-        branchReservation = airLoopImpl->reserveDemandBranchStartBypass(terminal);
+        if (authoritativeOutlet) {
+          for (const auto& candidateAirLoop : terminal.model().getConcreteModelObjects<AirLoopHVAC>()) {
+            auto airLoopImpl = candidateAirLoop.getImpl<AirLoopHVAC_Impl>();
+            OS_ASSERT(airLoopImpl);
+            auto candidateReservation = airLoopImpl->reserveDemandBranchStartBypass(terminal, *authoritativeOutlet, outletField.node);
+            if (!candidateReservation) {
+              continue;
+            }
+            if (branchReservation) {
+              return nullptr;
+            }
+            branchReservation = std::move(candidateReservation);
+          }
+        } else if (const auto airLoop = terminal.airLoopHVAC()) {
+          auto airLoopImpl = airLoop->getImpl<AirLoopHVAC_Impl>();
+          OS_ASSERT(airLoopImpl);
+          branchReservation = airLoopImpl->reserveDemandBranchStartBypass(terminal);
+        }
         if (!branchReservation) {
           return nullptr;
         }
@@ -178,7 +199,8 @@ namespace epmodel {
       }
       if (branchReservation) {
         if (servedZone) {
-          if (registeredZones.size() != 1u || (registeredZones.front() != *servedZone)) {
+          if ((!allowMissingZoneRegistration && registeredZones.size() != 1u) || (allowMissingZoneRegistration && registeredZones.size() > 1u)
+              || (!registeredZones.empty() && registeredZones.front() != *servedZone)) {
             return nullptr;
           }
         } else if (!registeredZones.empty()) {

@@ -176,6 +176,10 @@ namespace epmodel {
       boost::optional<openstudio::epmodel::Node> effectiveDemandReturnNodeForBranchStart(const openstudio::epmodel::Node& branchStartNode) const;
       std::unique_ptr<DemandBranchStartReservation> reserveDemandBranchStart(const openstudio::epmodel::Node& branchStartNode) const;
       std::unique_ptr<DemandBranchStartReservation> reserveDemandBranchStartBypass(const openstudio::epmodel::StraightComponent& component) const;
+      std::unique_ptr<DemandBranchStartReservation>
+        reserveDemandBranchStartBypass(const openstudio::epmodel::StraightComponent& component,
+                                       const openstudio::epmodel::Node& authoritativeBranchEnd,
+                                       const boost::optional<openstudio::epmodel::Node>& declaredBranchEnd) const;
       bool isDemandBranchStartComponent(const openstudio::epmodel::StraightComponent& component) const;
       bool bypassDemandBranchStartComponent(const openstudio::epmodel::StraightComponent& component);
       void syncControllerMechanicalVentilationZoneOutdoorAirEntries();
@@ -209,6 +213,10 @@ namespace epmodel {
       boost::optional<openstudio::epmodel::HVACComponent> cloneLastDualDuctTerminalForBranch() const;
       DemandTopologySnapshot demandTopologySnapshot() const;
       std::unique_ptr<DemandBranchComponentLocation> demandBranchComponentLocation(const openstudio::epmodel::StraightComponent& component) const;
+      std::unique_ptr<DemandBranchComponentLocation>
+        demandBranchComponentLocation(const openstudio::epmodel::StraightComponent& component,
+                                      const boost::optional<openstudio::epmodel::Node>& authoritativeBranchEnd,
+                                      const boost::optional<openstudio::epmodel::Node>& declaredBranchEnd) const;
       boost::optional<openstudio::epmodel::ModelObject> effectiveDemandBranchStartForZone(const openstudio::epmodel::ThermalZone& thermalZone) const;
       boost::optional<openstudio::epmodel::Node> effectiveDemandReturnNodeForZone(const openstudio::epmodel::ThermalZone& thermalZone) const;
       bool removeDemandBranch(const openstudio::epmodel::ModelObject& splitterOutlet, const openstudio::epmodel::ModelObject& mixerInlet);

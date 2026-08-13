@@ -6,6 +6,7 @@
 #include <gtest/gtest.h>
 
 #include <algorithm>
+#include <set>
 #include <utilities/core/Exception.hpp>
 
 #include "EPModelFixture.hpp"
@@ -14,13 +15,18 @@
 #include "../Loop/AirLoopHVAC.hpp"
 #include "../Mixer/AirLoopHVACZoneMixer.hpp"
 #include "../Mixer/AirLoopHVACZoneMixer_Impl.hpp"
+#include "../ModelObject/NodeList.hpp"
+#include "../ModelObject/NodeList_Impl.hpp"
 #include "../ModelObject/ZoneHVACEquipmentConnections.hpp"
 #include "../ModelObject/ZoneHVACEquipmentConnections_Impl.hpp"
 #include "../Splitter/AirLoopHVACZoneSplitter.hpp"
+#include "../Splitter/AirLoopHVACSupplyPlenum.hpp"
+#include "../Splitter/AirLoopHVACSupplyPlenum_Impl.hpp"
 #include "../Loop/PlantLoop.hpp"
 #include "../ModelObject/ZoneHVACAirDistributionUnit.hpp"
 #include "../ModelObject/ZoneHVACAirDistributionUnit_Impl.hpp"
 #include <utilities/idd/ZoneHVAC_AirDistributionUnit_FieldEnums.hxx>
+#include <utilities/idd/ZoneHVAC_EquipmentConnections_FieldEnums.hxx>
 #include "../Schedule/ScheduleCompact.hpp"
 #include "../StraightComponent/AirTerminalSingleDuctSeriesPIUReheat.hpp"
 #include "../StraightComponent/AirTerminalSingleDuctSeriesPIUReheat_Impl.hpp"
@@ -39,6 +45,9 @@
 #include <utilities/idd/Coil_Heating_Water_FieldEnums.hxx>
 #include <utilities/idd/Fan_ConstantVolume_FieldEnums.hxx>
 #include <utilities/idd/Fan_SystemModel_FieldEnums.hxx>
+#include <utilities/idd/ExtensibleIndex.hpp>
+#include <utilities/idd/NodeList_FieldEnums.hxx>
+#include <utilities/idf/IdfExtensibleGroup.hpp>
 #include <utilities/idf/WorkspaceObject_Impl.hpp>
 
 using namespace openstudio::epmodel;
@@ -603,6 +612,503 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctSeriesPIUReheat_RemoveFromLoop_Recov
 
   const auto exhaustNodesAfter = zone.getImpl<detail::ThermalZone_Impl>()->zoneHVACEquipmentConnections()->zoneAirExhaustNodes();
   EXPECT_EQ(std::ranges::find_if(exhaustNodesAfter, [&](const auto& node) { return node.handle() == secondaryNodeHandle; }), exhaustNodesAfter.end());
+}
+
+TEST_F(EPModelFixture, AirTerminalSingleDuctSeriesPIUReheat_RemoveFromSharedSupplyPlenumRecoversStaleOutlet) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  ThermalZone firstZone(model);
+  ThermalZone secondZone(model);
+  ThermalZone plenumZone(model);
+  FanSystemModel firstFan(model);
+  FanSystemModel secondFan(model);
+  CoilHeatingElectric firstCoil(model);
+  CoilHeatingElectric secondCoil(model);
+  AirTerminalSingleDuctSeriesPIUReheat firstTerminal(model, firstFan, firstCoil);
+  AirTerminalSingleDuctSeriesPIUReheat secondTerminal(model, secondFan, secondCoil);
+
+  ASSERT_TRUE(airLoop.addBranchForZone(firstZone, firstTerminal));
+  ASSERT_TRUE(airLoop.addBranchForZone(secondZone, secondTerminal));
+  ASSERT_TRUE(firstZone.setSupplyPlenum(plenumZone));
+  ASSERT_TRUE(secondZone.setSupplyPlenum(plenumZone));
+  const auto plenums = model.getConcreteModelObjects<AirLoopHVACSupplyPlenum>();
+  ASSERT_EQ(1u, plenums.size());
+  auto supplyPlenum = plenums.front();
+  ASSERT_EQ(2u, supplyPlenum.outletModelObjects().size());
+  ASSERT_TRUE(firstTerminal.inletModelObject());
+  ASSERT_TRUE(secondTerminal.inletModelObject());
+  ASSERT_TRUE(secondTerminal.outletModelObject());
+  const auto firstTerminalInletHandle = firstTerminal.inletModelObject()->handle();
+  const auto secondTerminalInletHandle = secondTerminal.inletModelObject()->handle();
+  const auto canonicalSecondOutletHandle = secondTerminal.outletModelObject()->handle();
+  const auto plenumOutletsBefore = supplyPlenum.outletModelObjects();
+  const auto secondOutletIt =
+    std::ranges::find_if(plenumOutletsBefore, [&](const auto& outlet) { return outlet.handle() == secondTerminalInletHandle; });
+  ASSERT_NE(plenumOutletsBefore.end(), secondOutletIt);
+  const auto secondPlenumOrdinal = static_cast<unsigned>(std::distance(plenumOutletsBefore.begin(), secondOutletIt));
+
+  ASSERT_TRUE(secondZone.removeEquipment(secondTerminal));
+  Node staleOutlet(model);
+  ASSERT_TRUE(secondTerminal.setPointer(openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::OutletNodeName, staleOutlet.handle()));
+
+  ASSERT_TRUE(secondTerminal.removeFromLoop());
+
+  ASSERT_EQ(2u, supplyPlenum.outletModelObjects().size());
+  ASSERT_TRUE(supplyPlenum.outletModelObject(secondPlenumOrdinal));
+  EXPECT_EQ(canonicalSecondOutletHandle, supplyPlenum.outletModelObject(secondPlenumOrdinal)->handle());
+  EXPECT_NE(staleOutlet.handle(), supplyPlenum.outletModelObject(secondPlenumOrdinal)->handle());
+  const auto plenumOutletsAfter = supplyPlenum.outletModelObjects();
+  EXPECT_NE(std::ranges::find_if(plenumOutletsAfter, [&](const auto& outlet) { return outlet.handle() == firstTerminalInletHandle; }),
+            plenumOutletsAfter.end());
+  EXPECT_TRUE(firstTerminal.inletModelObject());
+  EXPECT_EQ(firstTerminalInletHandle, firstTerminal.inletModelObject()->handle());
+  EXPECT_FALSE(secondTerminal.inletModelObject());
+  EXPECT_FALSE(secondTerminal.outletModelObject());
+  EXPECT_FALSE(secondTerminal.secondaryAirInletNode());
+}
+
+TEST_F(EPModelFixture, AirTerminalSingleDuctSeriesPIUReheat_SharedSupplyPlenumRejectsOutletFromAnotherZone) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  ThermalZone firstZone(model);
+  ThermalZone secondZone(model);
+  ThermalZone plenumZone(model);
+  FanSystemModel firstFan(model);
+  FanSystemModel secondFan(model);
+  CoilHeatingElectric firstCoil(model);
+  CoilHeatingElectric secondCoil(model);
+  AirTerminalSingleDuctSeriesPIUReheat firstTerminal(model, firstFan, firstCoil);
+  AirTerminalSingleDuctSeriesPIUReheat secondTerminal(model, secondFan, secondCoil);
+
+  ASSERT_TRUE(airLoop.addBranchForZone(firstZone, firstTerminal));
+  ASSERT_TRUE(airLoop.addBranchForZone(secondZone, secondTerminal));
+  ASSERT_TRUE(firstZone.setSupplyPlenum(plenumZone));
+  ASSERT_TRUE(secondZone.setSupplyPlenum(plenumZone));
+  ASSERT_TRUE(firstTerminal.outletModelObject());
+  ASSERT_TRUE(secondTerminal.outletModelObject());
+  const auto canonicalSecondOutlet = secondTerminal.outletModelObject()->cast<Node>();
+  const auto firstZoneOutlet = firstTerminal.outletModelObject()->cast<Node>();
+  const auto plenum = model.getConcreteModelObjects<AirLoopHVACSupplyPlenum>().front();
+  const auto plenumOutletsBefore = plenum.outletModelObjects();
+  const auto splitterOutletsBefore = airLoop.zoneSplitter().outletModelObjects();
+  const auto mixerInletsBefore = airLoop.zoneMixer().inletModelObjects();
+  const auto firstZoneEquipmentBefore = firstZone.equipment();
+  const auto secondZoneEquipmentBefore = secondZone.equipment();
+  std::set<openstudio::Handle> handlesBefore;
+  for (const auto& object : model.objects()) {
+    handlesBefore.insert(object.handle());
+  }
+
+  ASSERT_TRUE(secondTerminal.setPointer(openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::OutletNodeName, firstZoneOutlet.handle()));
+
+  EXPECT_FALSE(secondTerminal.isRemovable());
+  EXPECT_FALSE(secondTerminal.removeFromLoop());
+  EXPECT_FALSE(airLoop.removeBranchForZone(secondZone));
+
+  std::set<openstudio::Handle> handlesAfter;
+  for (const auto& object : model.objects()) {
+    handlesAfter.insert(object.handle());
+  }
+  EXPECT_EQ(handlesBefore, handlesAfter);
+  EXPECT_EQ(plenumOutletsBefore, plenum.outletModelObjects());
+  EXPECT_EQ(splitterOutletsBefore, airLoop.zoneSplitter().outletModelObjects());
+  EXPECT_EQ(mixerInletsBefore, airLoop.zoneMixer().inletModelObjects());
+  EXPECT_EQ(firstZoneEquipmentBefore, firstZone.equipment());
+  EXPECT_EQ(secondZoneEquipmentBefore, secondZone.equipment());
+  ASSERT_TRUE(secondTerminal.outletModelObject());
+  EXPECT_EQ(firstZoneOutlet.handle(), secondTerminal.outletModelObject()->handle());
+
+  ASSERT_TRUE(secondTerminal.setPointer(openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::OutletNodeName, canonicalSecondOutlet.handle()));
+  EXPECT_TRUE(secondTerminal.isRemovable());
+}
+
+TEST_F(EPModelFixture, AirTerminalSingleDuctSeriesPIUReheat_IsRemovableDoesNotAttachRawZoneReturnNodeList) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  ThermalZone zone(model);
+  FanSystemModel fan(model);
+  CoilHeatingElectric reheatCoil(model);
+  AirTerminalSingleDuctSeriesPIUReheat terminal(model, fan, reheatCoil);
+
+  ASSERT_TRUE(airLoop.addBranchForZone(zone, terminal));
+  auto connections = zone.getImpl<detail::ThermalZone_Impl>()->zoneHVACEquipmentConnections();
+  ASSERT_TRUE(connections);
+  const auto returnField = openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneReturnAirNodeorNodeListName;
+  const auto returnTarget = connections->getTarget(returnField);
+  ASSERT_TRUE(returnTarget);
+  const auto returnNodeList = returnTarget->optionalCast<NodeList>();
+  ASSERT_TRUE(returnNodeList);
+  const auto returnNodeListName = returnNodeList->nameString();
+  const auto returnNodesBefore = returnNodeList->nodes();
+  ASSERT_EQ(1u, returnNodesBefore.size());
+  const auto returnNode = returnNodesBefore.front();
+  ASSERT_EQ(1u, returnNodeList->extensibleGroups().size());
+  const auto returnNodeField = returnNodeList->iddObject().index(openstudio::ExtensibleIndex(0u, openstudio::NodeListExtensibleFields::NodeName));
+  auto returnNodeListImpl = returnNodeList->getImpl<detail::NodeList_Impl>();
+  ASSERT_TRUE(returnNodeListImpl);
+  ASSERT_TRUE(returnNodeListImpl->setPointer(returnNodeField, openstudio::Handle(), false));
+  ASSERT_TRUE(returnNodeListImpl->openstudio::detail::IdfObject_Impl::setString(returnNodeField, returnNode.nameString(), false));
+
+  auto connectionsImpl = connections->getImpl<detail::ZoneHVACEquipmentConnections_Impl>();
+  ASSERT_TRUE(connectionsImpl);
+  ASSERT_TRUE(connectionsImpl->setPointer(returnField, openstudio::Handle(), false));
+  ASSERT_TRUE(connectionsImpl->openstudio::detail::IdfObject_Impl::setString(returnField, returnNodeListName, false));
+  const auto returnListSourcesBefore = returnNodeList->sources();
+  EXPECT_EQ(returnListSourcesBefore.end(),
+            std::ranges::find_if(returnListSourcesBefore, [&](const auto& source) { return source.handle() == connections->handle(); }));
+  const auto rawReturnNameBefore = connectionsImpl->openstudio::detail::IdfObject_Impl::getString(returnField, false, true);
+  ASSERT_TRUE(rawReturnNameBefore);
+  EXPECT_EQ(returnNodeListName, *rawReturnNameBefore);
+  const auto rawReturnNodeNameBefore = returnNodeListImpl->openstudio::detail::IdfObject_Impl::getString(returnNodeField, false, true);
+  ASSERT_TRUE(rawReturnNodeNameBefore);
+  EXPECT_EQ(returnNode.nameString(), *rawReturnNodeNameBefore);
+  const auto returnNodeSourcesBefore = returnNode.sources();
+  EXPECT_EQ(returnNodeSourcesBefore.end(),
+            std::ranges::find_if(returnNodeSourcesBefore, [&](const auto& source) { return source.handle() == returnNodeList->handle(); }));
+  std::set<openstudio::Handle> handlesBefore;
+  for (const auto& object : model.objects()) {
+    handlesBefore.insert(object.handle());
+  }
+
+  EXPECT_TRUE(terminal.isRemovable());
+
+  std::set<openstudio::Handle> handlesAfter;
+  for (const auto& object : model.objects()) {
+    handlesAfter.insert(object.handle());
+  }
+  EXPECT_EQ(handlesBefore, handlesAfter);
+  const auto returnListSourcesAfter = returnNodeList->sources();
+  EXPECT_EQ(returnListSourcesAfter.end(),
+            std::ranges::find_if(returnListSourcesAfter, [&](const auto& source) { return source.handle() == connections->handle(); }));
+  const auto rawReturnNameAfter = connectionsImpl->openstudio::detail::IdfObject_Impl::getString(returnField, false, true);
+  ASSERT_TRUE(rawReturnNameAfter);
+  EXPECT_EQ(returnNodeListName, *rawReturnNameAfter);
+  const auto rawReturnNodeNameAfter = returnNodeListImpl->openstudio::detail::IdfObject_Impl::getString(returnNodeField, false, true);
+  ASSERT_TRUE(rawReturnNodeNameAfter);
+  EXPECT_EQ(returnNode.nameString(), *rawReturnNodeNameAfter);
+  const auto returnNodeSourcesAfter = returnNode.sources();
+  EXPECT_EQ(returnNodeSourcesAfter.end(),
+            std::ranges::find_if(returnNodeSourcesAfter, [&](const auto& source) { return source.handle() == returnNodeList->handle(); }));
+
+  const std::string missingReturnNodeName = "Missing Raw Series PIU Return Node";
+  ASSERT_TRUE(returnNodeListImpl->openstudio::detail::IdfObject_Impl::setString(returnNodeField, missingReturnNodeName, false));
+  EXPECT_FALSE(model.getConcreteModelObjectByName<Node>(missingReturnNodeName));
+  handlesBefore.clear();
+  for (const auto& object : model.objects()) {
+    handlesBefore.insert(object.handle());
+  }
+
+  EXPECT_FALSE(terminal.isRemovable());
+
+  handlesAfter.clear();
+  for (const auto& object : model.objects()) {
+    handlesAfter.insert(object.handle());
+  }
+  EXPECT_EQ(handlesBefore, handlesAfter);
+  EXPECT_FALSE(model.getConcreteModelObjectByName<Node>(missingReturnNodeName));
+  const auto missingReturnNodeNameAfter = returnNodeListImpl->openstudio::detail::IdfObject_Impl::getString(returnNodeField, false, true);
+  ASSERT_TRUE(missingReturnNodeNameAfter);
+  EXPECT_EQ(missingReturnNodeName, *missingReturnNodeNameAfter);
+}
+
+TEST_F(EPModelFixture, AirTerminalSingleDuctSeriesPIUReheat_IsRemovableDoesNotAttachRawSupplyPlenumOutlet) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  ThermalZone zone(model);
+  ThermalZone plenumZone(model);
+  FanSystemModel fan(model);
+  CoilHeatingElectric reheatCoil(model);
+  AirTerminalSingleDuctSeriesPIUReheat terminal(model, fan, reheatCoil);
+
+  ASSERT_TRUE(airLoop.addBranchForZone(zone, terminal));
+  ASSERT_TRUE(zone.setSupplyPlenum(plenumZone));
+  const auto plenums = model.getConcreteModelObjects<AirLoopHVACSupplyPlenum>();
+  ASSERT_EQ(1u, plenums.size());
+  auto plenum = plenums.front();
+  ASSERT_TRUE(terminal.inletModelObject());
+  const auto terminalInlet = terminal.inletModelObject()->cast<Node>();
+  const auto outlets = plenum.outletModelObjects();
+  const auto outlet = std::ranges::find(outlets, terminalInlet.cast<ModelObject>());
+  ASSERT_NE(outlets.end(), outlet);
+  const auto outletOrdinal = static_cast<unsigned>(std::distance(outlets.begin(), outlet));
+  const auto outletField = plenum.outletPort(outletOrdinal);
+  auto plenumImpl = plenum.getImpl<detail::AirLoopHVACSupplyPlenum_Impl>();
+  ASSERT_TRUE(plenumImpl);
+  ASSERT_TRUE(plenumImpl->setPointer(outletField, openstudio::Handle(), false));
+  ASSERT_TRUE(plenumImpl->openstudio::detail::IdfObject_Impl::setString(outletField, terminalInlet.nameString(), false));
+  const auto inletSourcesBefore = terminalInlet.sources();
+  EXPECT_EQ(inletSourcesBefore.end(),
+            std::ranges::find_if(inletSourcesBefore, [&](const auto& source) { return source.handle() == plenum.handle(); }));
+  std::set<openstudio::Handle> handlesBefore;
+  for (const auto& object : model.objects()) {
+    handlesBefore.insert(object.handle());
+  }
+
+  EXPECT_FALSE(terminal.isRemovable());
+
+  std::set<openstudio::Handle> handlesAfter;
+  for (const auto& object : model.objects()) {
+    handlesAfter.insert(object.handle());
+  }
+  EXPECT_EQ(handlesBefore, handlesAfter);
+  const auto rawOutletName = plenumImpl->openstudio::detail::IdfObject_Impl::getString(outletField, false, true);
+  ASSERT_TRUE(rawOutletName);
+  EXPECT_EQ(terminalInlet.nameString(), *rawOutletName);
+  const auto inletSourcesAfter = terminalInlet.sources();
+  EXPECT_EQ(inletSourcesAfter.end(), std::ranges::find_if(inletSourcesAfter, [&](const auto& source) { return source.handle() == plenum.handle(); }));
+
+  const std::string missingOutletName = "Missing Raw Series PIU Supply Plenum Outlet";
+  ASSERT_TRUE(plenumImpl->openstudio::detail::IdfObject_Impl::setString(outletField, missingOutletName, false));
+  EXPECT_FALSE(model.getConcreteModelObjectByName<Node>(missingOutletName));
+  handlesBefore.clear();
+  for (const auto& object : model.objects()) {
+    handlesBefore.insert(object.handle());
+  }
+
+  EXPECT_FALSE(terminal.isRemovable());
+
+  handlesAfter.clear();
+  for (const auto& object : model.objects()) {
+    handlesAfter.insert(object.handle());
+  }
+  EXPECT_EQ(handlesBefore, handlesAfter);
+  EXPECT_FALSE(model.getConcreteModelObjectByName<Node>(missingOutletName));
+  const auto missingOutletNameAfter = plenumImpl->openstudio::detail::IdfObject_Impl::getString(outletField, false, true);
+  ASSERT_TRUE(missingOutletNameAfter);
+  EXPECT_EQ(missingOutletName, *missingOutletNameAfter);
+}
+
+TEST_F(EPModelFixture, AirTerminalSingleDuctSeriesPIUReheat_IsRemovableDoesNotAttachRawContainedMixerInlet) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  ThermalZone zone(model);
+  FanSystemModel fan(model);
+  CoilHeatingElectric reheatCoil(model);
+  AirTerminalSingleDuctSeriesPIUReheat terminal(model, fan, reheatCoil);
+
+  ASSERT_TRUE(airLoop.addBranchForZone(zone, terminal));
+  auto mixer = terminal.getModelObjectTarget<AirLoopHVACZoneMixer>(openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::ZoneMixerName);
+  ASSERT_TRUE(mixer);
+  ASSERT_TRUE(terminal.secondaryAirInletNode());
+  const auto secondary = *terminal.secondaryAirInletNode();
+  const auto inletField = mixer->inletPort(0u);
+  auto mixerImpl = mixer->getImpl<detail::AirLoopHVACZoneMixer_Impl>();
+  ASSERT_TRUE(mixerImpl);
+  ASSERT_TRUE(mixerImpl->setPointer(inletField, openstudio::Handle(), false));
+  ASSERT_TRUE(mixerImpl->openstudio::detail::IdfObject_Impl::setString(inletField, secondary.nameString(), false));
+  const auto secondarySourcesBefore = secondary.sources();
+  EXPECT_EQ(secondarySourcesBefore.end(),
+            std::ranges::find_if(secondarySourcesBefore, [&](const auto& source) { return source.handle() == mixer->handle(); }));
+  std::set<openstudio::Handle> handlesBefore;
+  for (const auto& object : model.objects()) {
+    handlesBefore.insert(object.handle());
+  }
+
+  EXPECT_FALSE(terminal.isRemovable());
+
+  std::set<openstudio::Handle> handlesAfter;
+  for (const auto& object : model.objects()) {
+    handlesAfter.insert(object.handle());
+  }
+  EXPECT_EQ(handlesBefore, handlesAfter);
+  const auto rawInletName = mixerImpl->openstudio::detail::IdfObject_Impl::getString(inletField, false, true);
+  ASSERT_TRUE(rawInletName);
+  EXPECT_EQ(secondary.nameString(), *rawInletName);
+  const auto secondarySourcesAfter = secondary.sources();
+  EXPECT_EQ(secondarySourcesAfter.end(),
+            std::ranges::find_if(secondarySourcesAfter, [&](const auto& source) { return source.handle() == mixer->handle(); }));
+
+  const std::string missingInletName = "Missing Raw Series PIU Contained Mixer Inlet";
+  ASSERT_TRUE(mixerImpl->openstudio::detail::IdfObject_Impl::setString(inletField, missingInletName, false));
+  EXPECT_FALSE(model.getConcreteModelObjectByName<Node>(missingInletName));
+  handlesBefore.clear();
+  for (const auto& object : model.objects()) {
+    handlesBefore.insert(object.handle());
+  }
+
+  EXPECT_FALSE(terminal.isRemovable());
+
+  handlesAfter.clear();
+  for (const auto& object : model.objects()) {
+    handlesAfter.insert(object.handle());
+  }
+  EXPECT_EQ(handlesBefore, handlesAfter);
+  EXPECT_FALSE(model.getConcreteModelObjectByName<Node>(missingInletName));
+  const auto missingInletNameAfter = mixerImpl->openstudio::detail::IdfObject_Impl::getString(inletField, false, true);
+  ASSERT_TRUE(missingInletNameAfter);
+  EXPECT_EQ(missingInletName, *missingInletNameAfter);
+}
+
+TEST_F(EPModelFixture, AirTerminalSingleDuctSeriesPIUReheat_IsRemovableDoesNotAttachRawTerminalInlet) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  ThermalZone rawZone(model);
+  ThermalZone targetZone(model);
+  FanSystemModel rawFan(model);
+  FanSystemModel targetFan(model);
+  CoilHeatingElectric rawCoil(model);
+  CoilHeatingElectric targetCoil(model);
+  AirTerminalSingleDuctSeriesPIUReheat rawTerminal(model, rawFan, rawCoil);
+  AirTerminalSingleDuctSeriesPIUReheat targetTerminal(model, targetFan, targetCoil);
+
+  ASSERT_TRUE(airLoop.addBranchForZone(rawZone, rawTerminal));
+  ASSERT_TRUE(airLoop.addBranchForZone(targetZone, targetTerminal));
+  ASSERT_TRUE(rawTerminal.inletModelObject());
+  const auto terminalInlet = rawTerminal.inletModelObject()->cast<Node>();
+  const auto inletField = rawTerminal.inletPort();
+  auto terminalImpl = rawTerminal.getImpl<detail::AirTerminalSingleDuctSeriesPIUReheat_Impl>();
+  ASSERT_TRUE(terminalImpl);
+  ASSERT_TRUE(terminalImpl->setPointer(inletField, openstudio::Handle(), false));
+  ASSERT_TRUE(terminalImpl->openstudio::detail::IdfObject_Impl::setString(inletField, terminalInlet.nameString(), false));
+  const auto inletSourcesBefore = terminalInlet.sources();
+  EXPECT_EQ(inletSourcesBefore.end(),
+            std::ranges::find_if(inletSourcesBefore, [&](const auto& source) { return source.handle() == rawTerminal.handle(); }));
+  std::set<openstudio::Handle> handlesBefore;
+  for (const auto& object : model.objects()) {
+    handlesBefore.insert(object.handle());
+  }
+
+  EXPECT_TRUE(targetTerminal.isRemovable());
+
+  std::set<openstudio::Handle> handlesAfter;
+  for (const auto& object : model.objects()) {
+    handlesAfter.insert(object.handle());
+  }
+  EXPECT_EQ(handlesBefore, handlesAfter);
+  const auto rawInletName = terminalImpl->openstudio::detail::IdfObject_Impl::getString(inletField, false, true);
+  ASSERT_TRUE(rawInletName);
+  EXPECT_EQ(terminalInlet.nameString(), *rawInletName);
+  const auto inletSourcesAfter = terminalInlet.sources();
+  EXPECT_EQ(inletSourcesAfter.end(),
+            std::ranges::find_if(inletSourcesAfter, [&](const auto& source) { return source.handle() == rawTerminal.handle(); }));
+
+  const std::string missingInletName = "Missing Raw Series PIU Terminal Inlet";
+  ASSERT_TRUE(terminalImpl->openstudio::detail::IdfObject_Impl::setString(inletField, missingInletName, false));
+  EXPECT_FALSE(model.getConcreteModelObjectByName<Node>(missingInletName));
+  handlesBefore.clear();
+  for (const auto& object : model.objects()) {
+    handlesBefore.insert(object.handle());
+  }
+
+  EXPECT_TRUE(targetTerminal.isRemovable());
+
+  handlesAfter.clear();
+  for (const auto& object : model.objects()) {
+    handlesAfter.insert(object.handle());
+  }
+  EXPECT_EQ(handlesBefore, handlesAfter);
+  EXPECT_FALSE(model.getConcreteModelObjectByName<Node>(missingInletName));
+  const auto missingInletNameAfter = terminalImpl->openstudio::detail::IdfObject_Impl::getString(inletField, false, true);
+  ASSERT_TRUE(missingInletNameAfter);
+  EXPECT_EQ(missingInletName, *missingInletNameAfter);
+}
+
+TEST_F(EPModelFixture, AirTerminalSingleDuctSeriesPIUReheat_RemoveAcceptsDirectZoneExhaustNode) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  ThermalZone zone(model);
+  FanSystemModel fan(model);
+  CoilHeatingElectric reheatCoil(model);
+  AirTerminalSingleDuctSeriesPIUReheat terminal(model, fan, reheatCoil);
+
+  ASSERT_TRUE(airLoop.addBranchForZone(zone, terminal));
+  ASSERT_TRUE(terminal.secondaryAirInletNode());
+  const auto secondary = *terminal.secondaryAirInletNode();
+  auto connections = zone.getImpl<detail::ThermalZone_Impl>()->zoneHVACEquipmentConnections();
+  ASSERT_TRUE(connections);
+  const auto exhaustField = openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneAirExhaustNodeorNodeListName;
+  const auto exhaustTarget = connections->getTarget(exhaustField);
+  ASSERT_TRUE(exhaustTarget);
+  auto exhaustList = exhaustTarget->optionalCast<NodeList>();
+  ASSERT_TRUE(exhaustList);
+  auto exhaustListImpl = exhaustList->getImpl<detail::NodeList_Impl>();
+  ASSERT_TRUE(exhaustListImpl);
+  ASSERT_TRUE(exhaustListImpl->removeNode(secondary));
+  ASSERT_TRUE(connections->setPointer(exhaustField, secondary.handle()));
+  const auto exhaustListHandle = exhaustList->handle();
+  exhaustList->remove();
+  EXPECT_FALSE(model.getObject(exhaustListHandle));
+
+  EXPECT_TRUE(terminal.isRemovable());
+  EXPECT_TRUE(terminal.removeFromLoop());
+  EXPECT_TRUE(model.getObject(terminal.handle()));
+  EXPECT_FALSE(terminal.inletModelObject());
+  EXPECT_FALSE(terminal.outletModelObject());
+  EXPECT_FALSE(terminal.secondaryAirInletNode());
+  EXPECT_FALSE(connections->getTarget(exhaustField));
+  EXPECT_FALSE(model.getObject(secondary.handle()));
+}
+
+TEST_F(EPModelFixture, AirTerminalSingleDuctSeriesPIUReheat_MalformedContainedPathPreservesAllTopology) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  PlantLoop plantLoop(model);
+  ThermalZone zone(model);
+  ThermalZone plenumZone(model);
+  FanSystemModel fan(model);
+  CoilHeatingWater reheatCoil(model);
+  AirTerminalSingleDuctSeriesPIUReheat terminal(model, fan, reheatCoil);
+
+  ASSERT_TRUE(airLoop.addBranchForZone(zone, terminal));
+  ASSERT_TRUE(plantLoop.addDemandBranchForComponent(reheatCoil));
+  ASSERT_TRUE(zone.setSupplyPlenum(plenumZone));
+  ASSERT_TRUE(fan.outletModelObject());
+  const auto canonicalFanOutlet = fan.outletModelObject()->cast<Node>();
+  Node wrongFanOutlet(model);
+  ASSERT_TRUE(fan.setPointer(fan.outletPort(), wrongFanOutlet.handle()));
+
+  const auto plenums = model.getConcreteModelObjects<AirLoopHVACSupplyPlenum>();
+  ASSERT_EQ(1u, plenums.size());
+  const auto plenumHandle = plenums.front().handle();
+  const auto plenumInletBefore = plenums.front().inletModelObject();
+  const auto plenumOutletsBefore = plenums.front().outletModelObjects();
+  const auto splitterOutletsBefore = airLoop.zoneSplitter().outletModelObjects();
+  const auto mixerInletsBefore = airLoop.zoneMixer().inletModelObjects();
+  const auto zoneEquipmentBefore = zone.equipment();
+  const auto plantComponentsBefore = plantLoop.demandComponents();
+  const auto exhaustNodesBefore = zone.getImpl<detail::ThermalZone_Impl>()->zoneHVACEquipmentConnections()->zoneAirExhaustNodes();
+  const auto terminalMixerBefore =
+    terminal.getModelObjectTarget<AirLoopHVACZoneMixer>(openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::ZoneMixerName);
+  ASSERT_TRUE(plenumInletBefore);
+  ASSERT_TRUE(terminalMixerBefore);
+  std::set<openstudio::Handle> handlesBefore;
+  for (const auto& object : model.objects()) {
+    handlesBefore.insert(object.handle());
+  }
+
+  EXPECT_FALSE(terminal.isRemovable());
+  EXPECT_FALSE(terminal.removeFromLoop());
+  EXPECT_FALSE(airLoop.removeBranchForZone(zone));
+
+  std::set<openstudio::Handle> handlesAfter;
+  for (const auto& object : model.objects()) {
+    handlesAfter.insert(object.handle());
+  }
+  EXPECT_EQ(handlesBefore, handlesAfter);
+  EXPECT_TRUE(model.getObject(plenumHandle));
+  ASSERT_EQ(1u, model.getConcreteModelObjects<AirLoopHVACSupplyPlenum>().size());
+  ASSERT_TRUE(model.getConcreteModelObjects<AirLoopHVACSupplyPlenum>().front().inletModelObject());
+  EXPECT_EQ(plenumInletBefore->handle(), model.getConcreteModelObjects<AirLoopHVACSupplyPlenum>().front().inletModelObject()->handle());
+  EXPECT_EQ(plenumOutletsBefore, model.getConcreteModelObjects<AirLoopHVACSupplyPlenum>().front().outletModelObjects());
+  EXPECT_EQ(splitterOutletsBefore, airLoop.zoneSplitter().outletModelObjects());
+  EXPECT_EQ(mixerInletsBefore, airLoop.zoneMixer().inletModelObjects());
+  EXPECT_EQ(zoneEquipmentBefore, zone.equipment());
+  EXPECT_EQ(plantComponentsBefore, plantLoop.demandComponents());
+  EXPECT_EQ(exhaustNodesBefore, zone.getImpl<detail::ThermalZone_Impl>()->zoneHVACEquipmentConnections()->zoneAirExhaustNodes());
+  const auto terminalMixerAfter =
+    terminal.getModelObjectTarget<AirLoopHVACZoneMixer>(openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::ZoneMixerName);
+  ASSERT_TRUE(terminalMixerAfter);
+  EXPECT_EQ(terminalMixerBefore->handle(), terminalMixerAfter->handle());
+  ASSERT_TRUE(fan.outletModelObject());
+  EXPECT_EQ(wrongFanOutlet.handle(), fan.outletModelObject()->handle());
+  EXPECT_TRUE(reheatCoil.plantLoop());
+
+  ASSERT_TRUE(fan.setPointer(fan.outletPort(), canonicalFanOutlet.handle()));
+  EXPECT_TRUE(terminal.isRemovable());
+  ASSERT_TRUE(airLoop.removeBranchForZone(zone));
+  EXPECT_FALSE(model.getObject(terminal.handle()));
+  EXPECT_FALSE(model.getObject(reheatCoil.handle()));
+  EXPECT_TRUE(model.getConcreteModelObjects<AirLoopHVACSupplyPlenum>().empty());
 }
 
 TEST_F(EPModelFixture, AirTerminalSingleDuctSeriesPIUReheat_TerminalOnlyDirectLifecycle) {

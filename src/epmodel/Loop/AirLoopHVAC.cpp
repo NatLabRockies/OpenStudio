@@ -116,7 +116,9 @@
 #include <utilities/idd/AirLoopHVAC_FieldEnums.hxx>
 #include <utilities/idd/AirLoopHVAC_OutdoorAirSystem_FieldEnums.hxx>
 #include <utilities/idd/AirLoopHVAC_ReturnPath_FieldEnums.hxx>
+#include <utilities/idd/AirLoopHVAC_ReturnPlenum_FieldEnums.hxx>
 #include <utilities/idd/AirLoopHVAC_SupplyPath_FieldEnums.hxx>
+#include <utilities/idd/AirLoopHVAC_SupplyPlenum_FieldEnums.hxx>
 #include <utilities/idd/AirLoopHVAC_ZoneMixer_FieldEnums.hxx>
 #include <utilities/idd/AirLoopHVAC_ZoneSplitter_FieldEnums.hxx>
 #include <utilities/idd/AirTerminal_SingleDuct_ConstantVolume_FourPipeInduction_FieldEnums.hxx>
@@ -140,6 +142,7 @@
 #include <utilities/idd/Sizing_Zone_FieldEnums.hxx>
 #include <utilities/core/Logger.hpp>
 #include <utilities/core/Assert.hpp>
+#include <utilities/idf/WorkspaceObject_Impl.hpp>
 #include <utilities/idf/WorkspaceExtensibleGroup.hpp>
 
 #include <algorithm>
@@ -422,6 +425,122 @@ namespace epmodel {
           }
         }
         return boost::none;
+      }
+
+      struct ReadOnlyNodeField
+      {
+        bool valid = true;
+        bool set = false;
+        boost::optional<Node> node;
+      };
+
+      ReadOnlyNodeField readOnlyNodeField(const ModelObject& owner, unsigned field) {
+        ReadOnlyNodeField result;
+        const auto managedValue = owner.getField(field, false);
+        auto workspaceImpl = owner.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+        OS_ASSERT(workspaceImpl);
+        const auto rawValue = workspaceImpl->openstudio::detail::IdfObject_Impl::getString(field, false, true);
+        if ((!managedValue || managedValue->empty()) && (!rawValue || rawValue->empty())) {
+          return result;
+        }
+        result.set = true;
+
+        if (managedValue && !managedValue->empty()) {
+          const auto targetHandle = toUUID(*managedValue);
+          if (!targetHandle.isNull()) {
+            if (auto target = owner.model().getObject(targetHandle)) {
+              result.node = target->optionalCast<Node>();
+            }
+          }
+        }
+        if (!result.node && rawValue && !rawValue->empty()) {
+          result.node = owner.model().getConcreteModelObjectByName<Node>(*rawValue);
+        }
+        result.valid = static_cast<bool>(result.node);
+        return result;
+      }
+
+      struct ReadOnlyNodeRows
+      {
+        bool valid = true;
+        std::vector<std::pair<unsigned, Node>> rows;
+      };
+
+      ReadOnlyNodeRows readOnlyNodeRows(const ModelObject& owner, unsigned extensibleField) {
+        ReadOnlyNodeRows result;
+        const auto groups = owner.extensibleGroups();
+        result.rows.reserve(groups.size());
+        for (unsigned groupIndex = 0u; groupIndex < groups.size(); ++groupIndex) {
+          const auto absoluteIndex = owner.iddObject().index(openstudio::ExtensibleIndex(groupIndex, extensibleField));
+          const auto nodeField = readOnlyNodeField(owner, absoluteIndex);
+          if (!nodeField.valid || !nodeField.set || !nodeField.node) {
+            result.valid = false;
+            continue;
+          }
+          result.rows.emplace_back(groupIndex, *nodeField.node);
+        }
+        return result;
+      }
+
+      struct ReadOnlyNodeCollectionField
+      {
+        bool valid = true;
+        std::vector<Node> nodes;
+      };
+
+      ReadOnlyNodeCollectionField readOnlyNodeCollectionField(const ModelObject& owner, unsigned field) {
+        ReadOnlyNodeCollectionField result;
+        const auto managedValue = owner.getField(field, false);
+        auto workspaceImpl = owner.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+        OS_ASSERT(workspaceImpl);
+        const auto rawValue = workspaceImpl->openstudio::detail::IdfObject_Impl::getString(field, false, true);
+        if ((!managedValue || managedValue->empty()) && (!rawValue || rawValue->empty())) {
+          return result;
+        }
+        boost::optional<ModelObject> target;
+        if (managedValue && !managedValue->empty()) {
+          const auto targetHandle = toUUID(*managedValue);
+          if (!targetHandle.isNull()) {
+            if (auto candidate = owner.model().getObject(targetHandle)) {
+              target = candidate->optionalCast<ModelObject>();
+            }
+          }
+        }
+
+        if (!target) {
+          const auto targetName = (rawValue && !rawValue->empty()) ? rawValue : managedValue;
+          if (!targetName || targetName->empty()) {
+            result.valid = false;
+            return result;
+          }
+          const auto nodeObject = owner.model().getObjectByTypeAndName(openstudio::IddObjectType::Node, *targetName);
+          const auto nodeListObject = owner.model().getObjectByTypeAndName(openstudio::IddObjectType::NodeList, *targetName);
+          if (static_cast<bool>(nodeObject) == static_cast<bool>(nodeListObject)) {
+            result.valid = false;
+            return result;
+          }
+          target = nodeObject ? nodeObject->optionalCast<ModelObject>() : nodeListObject->optionalCast<ModelObject>();
+        }
+        if (!target) {
+          result.valid = false;
+          return result;
+        }
+
+        if (auto node = target->optionalCast<Node>()) {
+          result.nodes.push_back(*node);
+          return result;
+        }
+        if (auto nodeList = target->optionalCast<NodeList>()) {
+          const auto nodeRows = readOnlyNodeRows(nodeList->cast<ModelObject>(), openstudio::NodeListExtensibleFields::NodeName);
+          result.valid = nodeRows.valid;
+          result.nodes.reserve(nodeRows.rows.size());
+          for (const auto& row : nodeRows.rows) {
+            result.nodes.push_back(row.second);
+          }
+          return result;
+        }
+        result.valid = false;
+        return result;
       }
     }  // namespace
 
@@ -1580,6 +1699,7 @@ namespace epmodel {
       static DemandTopologySnapshot resolve(const AirLoopHVAC_Impl& airLoop);
 
       boost::optional<EffectiveBranch> branchForZone(const ThermalZone& zone) const;
+      const std::vector<SupplyEndpoint>& supplyEndpoints() const;
       const std::vector<EffectiveBranch>& branches() const;
       const std::vector<ReturnEndpoint>& returnEndpoints() const;
       bool mutationSafe() const;
@@ -2423,8 +2543,9 @@ namespace epmodel {
       std::vector<ThermalZone> zones;
 
       const auto inletNameMatches = [&](const ZoneHVACEquipmentConnections& conn) -> bool {
-        const auto inletNodes = conn.zoneAirInletNodes();
-        return std::ranges::find(inletNodes, zoneInletNode) != inletNodes.end();
+        const auto inletField =
+          readOnlyNodeCollectionField(conn.cast<ModelObject>(), openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneAirInletNodeorNodeListName);
+        return inletField.valid && std::ranges::find(inletField.nodes, zoneInletNode) != inletField.nodes.end();
       };
 
       for (const auto& conn : m.getConcreteModelObjects<ZoneHVACEquipmentConnections>()) {
@@ -2455,8 +2576,9 @@ namespace epmodel {
       std::vector<ThermalZone> zones;
 
       const auto outletNameMatches = [&](const ZoneHVACEquipmentConnections& conn) -> bool {
-        const auto returnNodes = conn.zoneReturnAirNodes();
-        return std::ranges::find(returnNodes, zoneReturnNode) != returnNodes.end();
+        const auto returnField =
+          readOnlyNodeCollectionField(conn.cast<ModelObject>(), openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneReturnAirNodeorNodeListName);
+        return returnField.valid && std::ranges::find(returnField.nodes, zoneReturnNode) != returnField.nodes.end();
       };
 
       for (const auto& conn : m.getConcreteModelObjects<ZoneHVACEquipmentConnections>()) {
@@ -2570,7 +2692,7 @@ namespace epmodel {
         return boost::none;
       }
 
-      auto terminalOutletObject = sourceTerminal->outletModelObject();
+      auto terminalOutletObject = resolveTerminalOutletObject(sourceTerminal->cast<ModelObject>());
       auto terminalOutletNode = terminalOutletObject ? terminalOutletObject->optionalCast<Node>() : boost::optional<Node>();
       if (!terminalOutletNode || (*terminalOutletNode != *branch.zoneInletNode)) {
         return boost::none;
@@ -2628,10 +2750,17 @@ namespace epmodel {
     // because they have two upstream duct inlets and one outlet.
     boost::optional<ModelObject> AirLoopHVAC_Impl::resolveTerminalOutletObject(const ModelObject& terminalObject) {
       if (auto component = terminalObject.optionalCast<StraightComponent>()) {
-        return component->outletModelObject();
+        const auto outlet = readOnlyNodeField(terminalObject, component->outletPort());
+        if (outlet.valid && outlet.node) {
+          return outlet.node->cast<ModelObject>();
+        }
+        return boost::none;
       }
       if (auto mixer = terminalObject.optionalCast<Mixer>()) {
-        return mixer->outletModelObject();
+        const auto outlet = readOnlyNodeField(terminalObject, mixer->outletPort());
+        if (outlet.valid && outlet.node) {
+          return outlet.node->cast<ModelObject>();
+        }
       }
       return boost::none;
     }
@@ -2658,14 +2787,14 @@ namespace epmodel {
             continue;
           }
 
-          auto outletObject = candidate->outletModelObject();
-          auto outletNode = outletObject ? outletObject->optionalCast<Node>() : boost::none;
+          const auto outlet = readOnlyNodeField(candidate->cast<ModelObject>(), candidate->outletPort());
+          const auto outletNode = outlet.valid ? outlet.node : boost::optional<Node>();
           if (!outletNode || !(*outletNode == currentNode)) {
             continue;
           }
 
-          auto inletObject = candidate->inletModelObject();
-          auto inletNode = inletObject ? inletObject->optionalCast<Node>() : boost::none;
+          const auto inlet = readOnlyNodeField(candidate->cast<ModelObject>(), candidate->inletPort());
+          const auto inletNode = inlet.valid ? inlet.node : boost::optional<Node>();
           if (!inletNode) {
             continue;
           }
@@ -2729,8 +2858,8 @@ namespace epmodel {
           continue;
         }
         if (auto straight = sourceObject.optionalCast<StraightComponent>()) {
-          auto outletObject = straight->outletModelObject();
-          auto outletNode = outletObject ? outletObject->optionalCast<Node>() : boost::none;
+          const auto outlet = readOnlyNodeField(sourceObject.cast<ModelObject>(), straight->outletPort());
+          const auto outletNode = outlet.valid ? outlet.node : boost::optional<Node>();
           if (!outletNode) {
             continue;
           }
@@ -2746,21 +2875,20 @@ namespace epmodel {
           continue;
         }
         if (auto mixer = sourceObject.optionalCast<Mixer>()) {
-          if (auto outletObject = mixer->outletModelObject()) {
-            if (auto outletNode = outletObject->optionalCast<Node>()) {
-              if (*outletNode == mixerInletNode) {
-                return sourceObject.cast<ModelObject>();
-              }
+          const auto outlet = readOnlyNodeField(sourceObject.cast<ModelObject>(), mixer->outletPort());
+          if (outlet.valid && outlet.node) {
+            if (*outlet.node == mixerInletNode) {
+              return sourceObject.cast<ModelObject>();
+            }
 
-              // An attached zone separates its inlet and return nodes. The
-              // dual-duct terminal discharges to the former while the branch
-              // ends at the latter, so recognize the terminal when both nodes
-              // belong to the same served zone.
-              auto inletZone = resolveZoneServedByInletNode(*outletNode);
-              auto returnZone = resolveZoneServedByReturnNode(mixerInletNode);
-              if (inletZone && returnZone && *inletZone == *returnZone) {
-                return sourceObject.cast<ModelObject>();
-              }
+            // An attached zone separates its inlet and return nodes. The
+            // dual-duct terminal discharges to the former while the branch
+            // ends at the latter, so recognize the terminal when both nodes
+            // belong to the same served zone.
+            auto inletZone = resolveZoneServedByInletNode(*outlet.node);
+            auto returnZone = resolveZoneServedByReturnNode(mixerInletNode);
+            if (inletZone && returnZone && *inletZone == *returnZone) {
+              return sourceObject.cast<ModelObject>();
             }
           }
           continue;
@@ -2772,16 +2900,22 @@ namespace epmodel {
 
     AirLoopHVAC_Impl::DemandTopologySnapshot AirLoopHVAC_Impl::DemandTopologySnapshot::resolve(const AirLoopHVAC_Impl& airLoop) {
       DemandTopologySnapshot result;
-      const auto splitterOutlets = airLoop.zoneSplitter().outletModelObjects();
-      const auto mixerInlets = airLoop.zoneMixer().inletModelObjects();
+      const auto splitter = airLoop.zoneSplitter().cast<ModelObject>();
+      const auto splitterOutlets = readOnlyNodeRows(splitter, openstudio::AirLoopHVAC_ZoneSplitterExtensibleFields::OutletNodeName);
+      const auto mixer = airLoop.zoneMixer().cast<ModelObject>();
+      const auto mixerInlets = readOnlyNodeRows(mixer, openstudio::AirLoopHVAC_ZoneMixerExtensibleFields::InletNodeName);
+      result.m_mutationSafe = splitterOutlets.valid && mixerInlets.valid;
 
       const auto supplyPlenums = airLoop.model().getConcreteModelObjects<AirLoopHVACSupplyPlenum>();
-      for (unsigned splitterBranchIndex = 0u; splitterBranchIndex < splitterOutlets.size(); ++splitterBranchIndex) {
-        const auto& splitterOutlet = splitterOutlets[splitterBranchIndex];
+      for (const auto& [splitterBranchIndex, splitterOutlet] : splitterOutlets.rows) {
         std::vector<AirLoopHVACSupplyPlenum> attachedPlenums;
         for (const auto& candidate : supplyPlenums) {
-          const auto inlet = candidate.inletModelObject();
-          if (inlet && (*inlet == splitterOutlet)) {
+          const auto inlet = readOnlyNodeField(candidate.cast<ModelObject>(), openstudio::AirLoopHVAC_SupplyPlenumFields::InletNodeName);
+          if (!inlet.valid) {
+            result.m_mutationSafe = false;
+            continue;
+          }
+          if (inlet.node && (*inlet.node == splitterOutlet)) {
             attachedPlenums.push_back(candidate);
           }
         }
@@ -2796,35 +2930,43 @@ namespace epmodel {
         }
 
         const auto& plenum = attachedPlenums.front();
-        const auto plenumOutlets = plenum.outletModelObjects();
-        if (plenumOutlets.empty()) {
+        const auto plenumOutlets = readOnlyNodeRows(plenum.cast<ModelObject>(), openstudio::AirLoopHVAC_SupplyPlenumExtensibleFields::OutletNodeName);
+        if (!plenumOutlets.valid) {
+          result.m_mutationSafe = false;
+        }
+        if (plenumOutlets.rows.empty()) {
           result.m_mutationSafe = false;
           continue;
         }
-        for (unsigned plenumBranchIndex = 0u; plenumBranchIndex < plenumOutlets.size(); ++plenumBranchIndex) {
-          result.m_supplyEndpoints.push_back(
-            SupplyEndpoint{splitterOutlet, plenumOutlets[plenumBranchIndex], splitterBranchIndex, plenum, plenumBranchIndex});
+        for (const auto& [plenumBranchIndex, plenumOutlet] : plenumOutlets.rows) {
+          result.m_supplyEndpoints.push_back(SupplyEndpoint{splitterOutlet, plenumOutlet, splitterBranchIndex, plenum, plenumBranchIndex});
         }
       }
 
       std::set<Handle> bypassReturnHandles;
       for (const auto& unitary : airLoop.model().getConcreteModelObjects<AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass>()) {
-        if (const auto bypassReturnNode = unitary.getModelObjectTarget<Node>(unitary.plenumorMixerAirPort())) {
-          bypassReturnHandles.insert(bypassReturnNode->handle());
+        const auto bypassReturnNode = readOnlyNodeField(unitary.cast<ModelObject>(), unitary.plenumorMixerAirPort());
+        if (!bypassReturnNode.valid) {
+          result.m_mutationSafe = false;
+        } else if (bypassReturnNode.node) {
+          bypassReturnHandles.insert(bypassReturnNode.node->handle());
         }
       }
 
       const auto returnPlenums = airLoop.model().getConcreteModelObjects<AirLoopHVACReturnPlenum>();
-      for (unsigned mixerBranchIndex = 0u; mixerBranchIndex < mixerInlets.size(); ++mixerBranchIndex) {
-        const auto& mixerInlet = mixerInlets[mixerBranchIndex];
+      for (const auto& [mixerBranchIndex, mixerInlet] : mixerInlets.rows) {
         if (bypassReturnHandles.contains(mixerInlet.handle())) {
           continue;
         }
 
         std::vector<AirLoopHVACReturnPlenum> attachedPlenums;
         for (const auto& candidate : returnPlenums) {
-          const auto outlet = candidate.outletModelObject();
-          if (outlet && (*outlet == mixerInlet)) {
+          const auto outlet = readOnlyNodeField(candidate.cast<ModelObject>(), openstudio::AirLoopHVAC_ReturnPlenumFields::OutletNodeName);
+          if (!outlet.valid) {
+            result.m_mutationSafe = false;
+            continue;
+          }
+          if (outlet.node && (*outlet.node == mixerInlet)) {
             attachedPlenums.push_back(candidate);
           }
         }
@@ -2839,17 +2981,19 @@ namespace epmodel {
         }
 
         const auto& plenum = attachedPlenums.front();
-        const auto plenumInlets = plenum.inletModelObjects();
-        if (plenumInlets.empty()) {
+        const auto plenumInlets = readOnlyNodeRows(plenum.cast<ModelObject>(), openstudio::AirLoopHVAC_ReturnPlenumExtensibleFields::InletNodeName);
+        if (!plenumInlets.valid) {
+          result.m_mutationSafe = false;
+        }
+        if (plenumInlets.rows.empty()) {
           result.m_mutationSafe = false;
           continue;
         }
-        for (unsigned plenumBranchIndex = 0u; plenumBranchIndex < plenumInlets.size(); ++plenumBranchIndex) {
-          if (bypassReturnHandles.contains(plenumInlets[plenumBranchIndex].handle())) {
+        for (const auto& [plenumBranchIndex, plenumInlet] : plenumInlets.rows) {
+          if (bypassReturnHandles.contains(plenumInlet.handle())) {
             continue;
           }
-          result.m_returnEndpoints.push_back(
-            ReturnEndpoint{mixerInlet, plenumInlets[plenumBranchIndex], mixerBranchIndex, plenum, plenumBranchIndex});
+          result.m_returnEndpoints.push_back(ReturnEndpoint{mixerInlet, plenumInlet, mixerBranchIndex, plenum, plenumBranchIndex});
         }
       }
 
@@ -2876,9 +3020,18 @@ namespace epmodel {
       std::vector<bool> supplyUsed(result.m_supplyEndpoints.size(), false);
       std::vector<bool> returnUsed(result.m_returnEndpoints.size(), false);
       for (const auto& connections : airLoop.model().getConcreteModelObjects<ZoneHVACEquipmentConnections>()) {
+        const auto inletField = readOnlyNodeCollectionField(connections.cast<ModelObject>(),
+                                                            openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneAirInletNodeorNodeListName);
+        const auto returnField = readOnlyNodeCollectionField(connections.cast<ModelObject>(),
+                                                             openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneReturnAirNodeorNodeListName);
+        if (!inletField.valid || !returnField.valid) {
+          result.m_mutationSafe = false;
+          continue;
+        }
+
         std::vector<std::pair<unsigned, Node>> supplyMatches;
         for (unsigned supplyIndex = 0u; supplyIndex < result.m_supplyEndpoints.size(); ++supplyIndex) {
-          for (const auto& zoneInletNode : connections.zoneAirInletNodes()) {
+          for (const auto& zoneInletNode : inletField.nodes) {
             if (supplyReachesZoneInlet(result.m_supplyEndpoints[supplyIndex], zoneInletNode)) {
               supplyMatches.emplace_back(supplyIndex, zoneInletNode);
             }
@@ -2891,7 +3044,7 @@ namespace epmodel {
           if (!returnNode) {
             continue;
           }
-          for (const auto& zoneReturnNode : connections.zoneReturnAirNodes()) {
+          for (const auto& zoneReturnNode : returnField.nodes) {
             if (*returnNode == zoneReturnNode) {
               returnMatches.emplace_back(returnIndex, zoneReturnNode);
             }
@@ -2991,6 +3144,10 @@ namespace epmodel {
       return result;
     }
 
+    const std::vector<AirLoopHVAC_Impl::DemandTopologySnapshot::SupplyEndpoint>& AirLoopHVAC_Impl::DemandTopologySnapshot::supplyEndpoints() const {
+      return m_supplyEndpoints;
+    }
+
     const std::vector<AirLoopHVAC_Impl::DemandTopologySnapshot::EffectiveBranch>& AirLoopHVAC_Impl::DemandTopologySnapshot::branches() const {
       return m_branches;
     }
@@ -3029,12 +3186,26 @@ namespace epmodel {
     }
 
     boost::optional<ModelObject> AirLoopHVAC_Impl::DemandBranchStartReservation::connectorTarget() const {
+      unsigned field = 0u;
       if (m_connectorKind == ConnectorKind::SupplyPlenum) {
         auto plenum = m_connector.optionalCast<AirLoopHVACSupplyPlenum>();
-        return plenum ? plenum->outletModelObject(m_connectorOrdinal) : boost::none;
+        if (!plenum || m_connectorOrdinal >= plenum->extensibleGroups().size()) {
+          return boost::none;
+        }
+        field = plenum->outletPort(m_connectorOrdinal);
+      } else {
+        auto splitter = m_connector.optionalCast<AirLoopHVACZoneSplitter>();
+        if (!splitter || m_connectorOrdinal >= splitter->extensibleGroups().size()) {
+          return boost::none;
+        }
+        field = splitter->outletPort(m_connectorOrdinal);
       }
-      auto splitter = m_connector.optionalCast<AirLoopHVACZoneSplitter>();
-      return splitter ? splitter->outletModelObject(m_connectorOrdinal) : boost::none;
+
+      const auto target = readOnlyNodeField(m_connector, field);
+      if (target.valid && target.node) {
+        return target.node->cast<ModelObject>();
+      }
+      return boost::none;
     }
 
     bool AirLoopHVAC_Impl::DemandBranchStartReservation::setConnectorTarget(const ModelObject& target) {
@@ -3192,18 +3363,23 @@ namespace epmodel {
     }
 
     std::unique_ptr<AirLoopHVAC_Impl::DemandBranchComponentLocation>
-      AirLoopHVAC_Impl::demandBranchComponentLocation(const StraightComponent& component) const {
+      AirLoopHVAC_Impl::demandBranchComponentLocation(const StraightComponent& component, const boost::optional<Node>& authoritativeBranchEnd,
+                                                      const boost::optional<Node>& declaredBranchEnd) const {
       const auto componentType = component.iddObject().name();
       if (component.model() != model() || isDualDuct()
           || (!componentType.starts_with("AirTerminal:") && !componentType.starts_with("OS:AirTerminal:"))) {
         return nullptr;
       }
 
-      const auto inletObject = component.inletModelObject();
-      const auto outletObject = component.outletModelObject();
-      const auto inletNode = inletObject ? inletObject->optionalCast<Node>() : boost::optional<Node>();
-      const auto outletNode = outletObject ? outletObject->optionalCast<Node>() : boost::optional<Node>();
-      if (!inletNode || !outletNode) {
+      const auto componentObject = component.cast<ModelObject>();
+      const auto inletField = readOnlyNodeField(componentObject, component.inletPort());
+      const auto inletNode = inletField.valid ? inletField.node : boost::optional<Node>();
+      boost::optional<Node> outletNode = authoritativeBranchEnd;
+      if (!outletNode) {
+        const auto outletField = readOnlyNodeField(componentObject, component.outletPort());
+        outletNode = outletField.valid ? outletField.node : boost::optional<Node>();
+      }
+      if (!inletNode || !outletNode || outletNode->model() != model()) {
         return nullptr;
       }
 
@@ -3211,6 +3387,120 @@ namespace epmodel {
       // This mutation is local to one proven connector row. Do not reject a
       // sound target merely because an unrelated demand endpoint makes the
       // whole snapshot unsafe for multi-row operations.
+
+      const auto provesOnlyTopLevelComponent = [&](const Node& branchStartNode) {
+        std::vector<StraightComponent> branchStartComponents;
+        for (const auto& source : branchStartNode.sources()) {
+          auto candidate = source.optionalCast<StraightComponent>();
+          if (!candidate || candidate->iddObject().type() == openstudio::IddObjectType::Node) {
+            continue;
+          }
+          const auto candidateInletField = readOnlyNodeField(candidate->cast<ModelObject>(), candidate->inletPort());
+          const auto candidateInletNode = candidateInletField.valid ? candidateInletField.node : boost::optional<Node>();
+          if (candidateInletNode && (*candidateInletNode == branchStartNode)) {
+            const auto owner = candidate->containingHVACComponent();
+            if (!owner || (owner->handle() != component.handle())) {
+              branchStartComponents.push_back(*candidate);
+            }
+          }
+        }
+        return (branchStartComponents.size() == 1u) && (branchStartComponents.front().handle() == component.handle());
+      };
+
+      if (authoritativeBranchEnd) {
+        std::vector<ZoneHVACEquipmentConnections> servedConnections;
+        for (const auto& connections : model().getConcreteModelObjects<ZoneHVACEquipmentConnections>()) {
+          const auto inletField = readOnlyNodeCollectionField(connections.cast<ModelObject>(),
+                                                              openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneAirInletNodeorNodeListName);
+          if (inletField.valid && std::ranges::find(inletField.nodes, *authoritativeBranchEnd) != inletField.nodes.end()) {
+            servedConnections.push_back(connections);
+          }
+        }
+        if (servedConnections.size() != 1u) {
+          return nullptr;
+        }
+        const auto servedZone = servedConnections.front().thermalZone();
+
+        // Prefer the ordinary topology proof. The supply row, zone inlet, and
+        // return path must all belong to one effective branch; matching a raw
+        // connector ordinal across different connectors is never sufficient.
+        std::unique_ptr<DemandBranchComponentLocation> result;
+        for (const auto& branch : topology.branches()) {
+          const auto branchStartNode = branch.supply.branchStart.optionalCast<Node>();
+          if (!branchStartNode || (*branchStartNode != *inletNode)) {
+            continue;
+          }
+          if (!branch.zone || (*branch.zone != servedZone) || !branch.zoneInletNode || (*branch.zoneInletNode != *authoritativeBranchEnd)
+              || !provesOnlyTopLevelComponent(*branchStartNode) || result) {
+            return nullptr;
+          }
+          result = std::make_unique<DemandBranchComponentLocation>(branch.supply, *authoritativeBranchEnd, servedZone);
+        }
+        if (result) {
+          return result;
+        }
+
+        // A persisted Series PIU can have a stale declared outlet while its
+        // owned mixer/fan/coil path still proves the zone inlet. Recover that
+        // case without mutating the terminal during preflight, but only from
+        // the constructor-created branch identity and an unclaimed return path
+        // for the same zone. A declared outlet owned by another zone is a
+        // cross-zone conflict, not a stale value.
+        if (declaredBranchEnd && (*declaredBranchEnd != *authoritativeBranchEnd)) {
+          for (const auto& connections : model().getConcreteModelObjects<ZoneHVACEquipmentConnections>()) {
+            const auto inletField = readOnlyNodeCollectionField(connections.cast<ModelObject>(),
+                                                                openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneAirInletNodeorNodeListName);
+            if (inletField.valid && std::ranges::find(inletField.nodes, *declaredBranchEnd) != inletField.nodes.end()) {
+              return nullptr;
+            }
+          }
+        }
+        const auto expectedInletName = authoritativeBranchEnd->nameString() + " - " + component.nameString() + " Inlet Node";
+        if (inletNode->nameString() != expectedInletName) {
+          return nullptr;
+        }
+
+        for (const auto& branch : topology.branches()) {
+          const auto branchStartNode = branch.supply.branchStart.optionalCast<Node>();
+          if (branchStartNode && (*branchStartNode == *inletNode)) {
+            return nullptr;
+          }
+        }
+
+        const auto zoneReturnField = readOnlyNodeCollectionField(servedConnections.front().cast<ModelObject>(),
+                                                                 openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneReturnAirNodeorNodeListName);
+        if (!zoneReturnField.valid) {
+          return nullptr;
+        }
+        std::vector<DemandTopologySnapshot::ReturnEndpoint> matchingReturns;
+        for (const auto& returnPath : topology.returnEndpoints()) {
+          const auto returnNode = returnPath.branchReturn.optionalCast<Node>();
+          if (returnNode && std::ranges::find(zoneReturnField.nodes, *returnNode) != zoneReturnField.nodes.end()) {
+            matchingReturns.push_back(returnPath);
+          }
+        }
+        if (matchingReturns.size() != 1u) {
+          return nullptr;
+        }
+        for (const auto& branch : topology.branches()) {
+          if (branch.returnPath.mixerInlet == matchingReturns.front().mixerInlet
+              && branch.returnPath.branchReturn == matchingReturns.front().branchReturn) {
+            return nullptr;
+          }
+        }
+
+        for (const auto& supply : topology.supplyEndpoints()) {
+          const auto branchStartNode = supply.branchStart.optionalCast<Node>();
+          if (!branchStartNode || (*branchStartNode != *inletNode)) {
+            continue;
+          }
+          if (!provesOnlyTopLevelComponent(*branchStartNode) || result) {
+            return nullptr;
+          }
+          result = std::make_unique<DemandBranchComponentLocation>(supply, *authoritativeBranchEnd, servedZone);
+        }
+        return result;
+      }
 
       std::unique_ptr<DemandBranchComponentLocation> result;
       for (const auto& branch : topology.branches()) {
@@ -3227,27 +3517,17 @@ namespace epmodel {
           continue;
         }
 
-        std::vector<StraightComponent> branchStartComponents;
-        for (const auto& source : branchStartNode->sources()) {
-          auto candidate = source.optionalCast<StraightComponent>();
-          if (!candidate || candidate->iddObject().type() == openstudio::IddObjectType::Node) {
-            continue;
-          }
-          const auto candidateInlet = candidate->inletModelObject();
-          const auto candidateInletNode = candidateInlet ? candidateInlet->optionalCast<Node>() : boost::optional<Node>();
-          if (candidateInletNode && (*candidateInletNode == *branchStartNode)) {
-            const auto owner = candidate->containingHVACComponent();
-            if (!owner || (owner->handle() != component.handle())) {
-              branchStartComponents.push_back(*candidate);
-            }
-          }
-        }
-        if ((branchStartComponents.size() != 1u) || (branchStartComponents.front().handle() != component.handle())) {
+        if (!provesOnlyTopLevelComponent(*branchStartNode)) {
           return nullptr;
         }
 
-        const auto resolvedComponent = resolveTerminalOnDemandBranchNodes(*branchStartNode, *branchEndNode);
-        if (!resolvedComponent || (resolvedComponent->handle() != component.handle()) || result) {
+        if (!authoritativeBranchEnd) {
+          const auto resolvedComponent = resolveTerminalOnDemandBranchNodes(*branchStartNode, *branchEndNode);
+          if (!resolvedComponent || (resolvedComponent->handle() != component.handle())) {
+            return nullptr;
+          }
+        }
+        if (result) {
           return nullptr;
         }
         result = std::make_unique<DemandBranchComponentLocation>(branch.supply, *outletNode, branch.zone);
@@ -3255,11 +3535,49 @@ namespace epmodel {
       return result;
     }
 
+    std::unique_ptr<AirLoopHVAC_Impl::DemandBranchComponentLocation>
+      AirLoopHVAC_Impl::demandBranchComponentLocation(const StraightComponent& component) const {
+      return demandBranchComponentLocation(component, boost::none, boost::none);
+    }
+
     std::unique_ptr<AirLoopHVAC_Impl::DemandBranchStartReservation>
       AirLoopHVAC_Impl::reserveDemandBranchStartBypass(const StraightComponent& component) const {
       auto location = demandBranchComponentLocation(component);
-      const auto inletObject = component.inletModelObject();
-      const auto inletNode = inletObject ? inletObject->optionalCast<Node>() : boost::optional<Node>();
+      const auto inletNode = location ? location->supply.branchStart.optionalCast<Node>() : boost::optional<Node>();
+      if (!location || !inletNode) {
+        return nullptr;
+      }
+
+      ModelObject connector = zoneSplitter().cast<ModelObject>();
+      auto connectorKind = DemandBranchStartReservation::ConnectorKind::ZoneSplitter;
+      auto connectorOrdinal = location->supply.splitterOrdinal;
+      if (location->supply.supplyPlenum) {
+        if (!location->supply.plenumOrdinal) {
+          return nullptr;
+        }
+        connector = location->supply.supplyPlenum->cast<ModelObject>();
+        connectorKind = DemandBranchStartReservation::ConnectorKind::SupplyPlenum;
+        connectorOrdinal = *location->supply.plenumOrdinal;
+      }
+
+      boost::optional<ModelObject> servedZone;
+      if (location->thermalZone) {
+        servedZone = location->thermalZone->cast<ModelObject>();
+      }
+      auto reservation = std::unique_ptr<DemandBranchStartReservation>(
+        new DemandBranchStartReservation(connector, connectorKind, connectorOrdinal, inletNode->cast<ModelObject>(), servedZone));
+      const auto currentTarget = reservation->connectorTarget();
+      if (!currentTarget || (*currentTarget != inletNode->cast<ModelObject>())) {
+        return nullptr;
+      }
+      return reservation;
+    }
+
+    std::unique_ptr<AirLoopHVAC_Impl::DemandBranchStartReservation>
+      AirLoopHVAC_Impl::reserveDemandBranchStartBypass(const StraightComponent& component, const Node& authoritativeBranchEnd,
+                                                       const boost::optional<Node>& declaredBranchEnd) const {
+      auto location = demandBranchComponentLocation(component, authoritativeBranchEnd, declaredBranchEnd);
+      const auto inletNode = location ? location->supply.branchStart.optionalCast<Node>() : boost::optional<Node>();
       if (!location || !inletNode) {
         return nullptr;
       }
