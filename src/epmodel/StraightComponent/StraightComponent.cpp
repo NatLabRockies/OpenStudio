@@ -20,6 +20,8 @@
 #include "ModelObject/CoilSystemCoolingDX_Impl.hpp"
 #include "ModelObject/OutdoorAirMixer.hpp"
 #include "ParentObject/ControllerOutdoorAir.hpp"
+#include "StraightComponent/CoilHeatingGas.hpp"
+#include "StraightComponent/CoilHeatingGas_Impl.hpp"
 #include "Splitter/AirLoopHVACZoneSplitter.hpp"
 #include "Mixer/AirLoopHVACZoneMixer.hpp"
 #include "Branch.hpp"
@@ -49,6 +51,15 @@ namespace epmodel {
         auto mutableObject = object;
 
         if (airSide) {
+          if (auto heatingCoil = mutableObject.optionalCast<CoilHeatingGas>()) {
+            auto heatingCoilImpl = heatingCoil->getImpl<CoilHeatingGas_Impl>();
+            OS_ASSERT(heatingCoilImpl);
+            if (!heatingCoilImpl->setPointer(inlet ? heatingCoil->inletPort() : heatingCoil->outletPort(), node.handle(), false)) {
+              return false;
+            }
+            heatingCoilImpl->syncTemperatureSetpointNode();
+            return true;
+          }
           if (auto coilSystem = mutableObject.optionalCast<CoilSystemCoolingDX>()) {
             auto coilSystemImpl = coilSystem->getImpl<CoilSystemCoolingDX_Impl>();
             OS_ASSERT(coilSystemImpl);

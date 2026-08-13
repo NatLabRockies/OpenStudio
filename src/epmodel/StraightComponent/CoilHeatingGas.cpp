@@ -182,17 +182,50 @@ namespace epmodel {
     }
 
     bool CoilHeatingGas_Impl::addToNode(Node& node) {
+      bool added = false;
       if (node.airLoopHVACOutdoorAirSystem()) {
-        return StraightComponent_Impl::addToNode(node);
+        added = StraightComponent_Impl::addToNode(node);
+      } else {
+        auto airLoop = node.airLoopHVAC();
+        if (!(airLoop && airLoop->supplyComponent(node.handle()))) {
+          return false;
+        }
+        added = StraightComponent_Impl::addToNode(node);
       }
 
-      auto airLoop = node.airLoopHVAC();
-
-      if (!(airLoop && airLoop->supplyComponent(node.handle()))) {
+      if (!added) {
         return false;
       }
 
-      return StraightComponent_Impl::addToNode(node);
+      // Successful direct placement always supplies a same-model Node in this
+      // IDD node field. Treat synchronization as a topology invariant: there
+      // is no recoverable failure to report after the branch has mutated.
+      syncTemperatureSetpointNode();
+      return true;
+    }
+
+    bool CoilHeatingGas_Impl::removeFromLoop() {
+      if (!StraightComponent_Impl::removeFromLoop()) {
+        return false;
+      }
+      clearTemperatureSetpointNode();
+      return true;
+    }
+
+    void CoilHeatingGas_Impl::syncTemperatureSetpointNode() {
+      const auto outletObject = outletModelObject();
+      const auto outletNode = outletObject ? outletObject->optionalCast<Node>() : boost::optional<Node>();
+      if (!outletNode) {
+        OS_ASSERT(false);
+        return;
+      }
+      const bool result = setPointer(openstudio::Coil_Heating_FuelFields::TemperatureSetpointNodeName, outletNode->handle(), false);
+      OS_ASSERT(result);
+    }
+
+    void CoilHeatingGas_Impl::clearTemperatureSetpointNode() {
+      const bool result = setPointer(openstudio::Coil_Heating_FuelFields::TemperatureSetpointNodeName, Handle(), false);
+      OS_ASSERT(result);
     }
 
     Schedule CoilHeatingGas_Impl::availabilitySchedule() const {
