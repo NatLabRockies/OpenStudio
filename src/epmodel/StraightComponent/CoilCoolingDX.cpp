@@ -22,10 +22,13 @@
 #include "ThermalZone_Impl.hpp"
 
 #include <utilities/core/Assert.hpp>
+#include <utilities/core/StringHelpers.hpp>
 #include <utilities/idd/Coil_Cooling_DX_FieldEnums.hxx>
 #include <utilities/idd/Coil_Cooling_DX_CurveFit_Performance_FieldEnums.hxx>
 #include <utilities/idd/CoilSystem_Cooling_DX_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
+#include <utilities/idd/OutdoorAir_NodeList_FieldEnums.hxx>
+#include <utilities/idf/WorkspaceExtensibleGroup.hpp>
 
 namespace openstudio {
 namespace epmodel {
@@ -47,6 +50,8 @@ namespace epmodel {
       ScheduleConstant alwaysOn(coil.model());
       OS_ASSERT(alwaysOn.setValue(1.0));
       OS_ASSERT(coil.setAvailabilitySchedule(alwaysOn));
+      OS_ASSERT(coil.setCondenserInletNodeName(coil.nameString() + " Condenser Inlet Node"));
+      OS_ASSERT(coil.setCondenserOutletNodeName(coil.nameString() + " Condenser Outlet Node"));
     }
 
     void applyDefaultPerformanceDefaults(CoilCoolingDXCurveFitPerformance& performance, const Model& model) {
@@ -163,6 +168,33 @@ namespace epmodel {
 
     unsigned CoilCoolingDX_Impl::outletPort() const {
       return openstudio::Coil_Cooling_DXFields::EvaporatorOutletNodeName;
+    }
+
+    boost::optional<std::string> CoilCoolingDX_Impl::setName(const std::string& newName, bool checkValidity) {
+      const auto oldName = getObject<ModelObject>().nameString();
+      const auto oldCondenserInletNodeName = condenserInletNodeName();
+      const auto oldCondenserOutletNodeName = condenserOutletNodeName();
+      const bool renameCondenserInlet = openstudio::istringEqual(oldCondenserInletNodeName, oldName + " Condenser Inlet Node");
+      const bool renameCondenserOutlet = openstudio::istringEqual(oldCondenserOutletNodeName, oldName + " Condenser Outlet Node");
+
+      auto result = openstudio::detail::WorkspaceObject_Impl::setName(newName, checkValidity);
+      if (!result) {
+        return boost::none;
+      }
+
+      if (renameCondenserInlet && !setCondenserInletNodeName(*result + " Condenser Inlet Node")) {
+        OS_ASSERT(openstudio::detail::WorkspaceObject_Impl::setName(oldName, false));
+        return boost::none;
+      }
+      if (renameCondenserOutlet && !setCondenserOutletNodeName(*result + " Condenser Outlet Node")) {
+        if (renameCondenserInlet) {
+          OS_ASSERT(setCondenserInletNodeName(oldCondenserInletNodeName));
+        }
+        OS_ASSERT(openstudio::detail::WorkspaceObject_Impl::setName(oldName, false));
+        return boost::none;
+      }
+
+      return result;
     }
 
     bool CoilCoolingDX_Impl::addToNode(Node& node) {
@@ -294,6 +326,8 @@ namespace epmodel {
         result.insert(result.end(), removedSystem.begin(), removedSystem.end());
       }
 
+      const auto condenserInlet = condenserInletNodeName();
+      removeUnusedCondenserOutdoorAirNode(condenserInlet);
       auto removedCoil = HVACComponent_Impl::remove();
       result.insert(result.end(), removedCoil.begin(), removedCoil.end());
       return result;
@@ -369,9 +403,22 @@ namespace epmodel {
     }
 
     bool CoilCoolingDX_Impl::setCondenserInletNodeName(const std::string& condenserInletNodeName) {
-      const bool result = setString(openstudio::Coil_Cooling_DXFields::CondenserInletNodeName, condenserInletNodeName);
-      OS_ASSERT(result);
-      return result;
+      if (condenserInletNodeName.empty()) {
+        return false;
+      }
+
+      const auto previousNodeName = getString(openstudio::Coil_Cooling_DXFields::CondenserInletNodeName).value_or("");
+      const auto previousNode = resolvedNodeTarget(openstudio::Coil_Cooling_DXFields::CondenserInletNodeName);
+      auto condenserInletNode = model().getOrCreateTransientByName<Node>(condenserInletNodeName);
+      if (!setPointer(openstudio::Coil_Cooling_DXFields::CondenserInletNodeName, condenserInletNode.handle(), false)) {
+        return false;
+      }
+      if (maintainCondenserOutdoorAirNode(previousNodeName)) {
+        return true;
+      }
+
+      OS_ASSERT(setPointer(openstudio::Coil_Cooling_DXFields::CondenserInletNodeName, previousNode ? previousNode->handle() : Handle(), false));
+      return false;
     }
 
     // Condenser outlet node name
@@ -382,9 +429,168 @@ namespace epmodel {
     }
 
     bool CoilCoolingDX_Impl::setCondenserOutletNodeName(const std::string& condenserOutletNodeName) {
-      const bool result = setString(openstudio::Coil_Cooling_DXFields::CondenserOutletNodeName, condenserOutletNodeName);
-      OS_ASSERT(result);
-      return result;
+      if (condenserOutletNodeName.empty()) {
+        return false;
+      }
+      auto condenserOutletNode = model().getOrCreateTransientByName<Node>(condenserOutletNodeName);
+      return setPointer(openstudio::Coil_Cooling_DXFields::CondenserOutletNodeName, condenserOutletNode.handle(), false);
+    }
+
+    bool CoilCoolingDX_Impl::maintainCondenserOutdoorAirNode(const std::string& previousNodeName) {
+      const auto currentNodeName = getString(openstudio::Coil_Cooling_DXFields::CondenserInletNodeName);
+      if (!(currentNodeName && !currentNodeName->empty())) {
+        return false;
+      }
+
+      bool declaredByOutdoorAirNode = false;
+      for (const auto& object : model().getObjectsByType(openstudio::IddObjectType::OutdoorAir_Node)) {
+        if (openstudio::istringEqual(object.nameString(), *currentNodeName)) {
+          declaredByOutdoorAirNode = true;
+          break;
+        }
+      }
+
+      bool declaredAsOutdoorAir = declaredByOutdoorAirNode;
+      if (declaredByOutdoorAirNode) {
+        // OutdoorAir:Node carries height and local-weather inputs that a node
+        // list cannot preserve. Prefer it when both forms declare this node.
+        removeCondenserOutdoorAirNodeListEntries(*currentNodeName);
+      } else {
+        for (const auto& object : model().getObjectsByType(openstudio::IddObjectType::OutdoorAir_NodeList)) {
+          for (const auto& group : object.extensibleGroups()) {
+            auto workspaceGroup = group.optionalCast<openstudio::WorkspaceExtensibleGroup>();
+            if (!workspaceGroup) {
+              continue;
+            }
+            auto nodeName = workspaceGroup->getString(openstudio::OutdoorAir_NodeListExtensibleFields::NodeorNodeListName);
+            if (nodeName && openstudio::istringEqual(*nodeName, *currentNodeName)) {
+              declaredAsOutdoorAir = true;
+              break;
+            }
+          }
+          if (declaredAsOutdoorAir) {
+            break;
+          }
+        }
+      }
+
+      if (!declaredAsOutdoorAir) {
+        auto nodeList = ModelObject::create(openstudio::IddObjectType::OutdoorAir_NodeList, model());
+        auto group = nodeList.pushExtensibleGroup().optionalCast<openstudio::WorkspaceExtensibleGroup>();
+        if (!(group && group->setString(openstudio::OutdoorAir_NodeListExtensibleFields::NodeorNodeListName, *currentNodeName))) {
+          nodeList.remove();
+          return false;
+        }
+      }
+
+      if (!previousNodeName.empty() && !openstudio::istringEqual(previousNodeName, *currentNodeName)) {
+        removeUnusedCondenserOutdoorAirNode(previousNodeName);
+      }
+      return true;
+    }
+
+    unsigned CoilCoolingDX_Impl::removeCondenserOutdoorAirNodeListEntries(const std::string& nodeName) {
+      unsigned removedEntries = 0;
+      for (auto object : model().getObjectsByType(openstudio::IddObjectType::OutdoorAir_NodeList)) {
+        const auto groups = object.extensibleGroups();
+        std::vector<unsigned> matchingGroups;
+        for (const auto& group : groups) {
+          auto workspaceGroup = group.optionalCast<openstudio::WorkspaceExtensibleGroup>();
+          if (!workspaceGroup) {
+            continue;
+          }
+          auto listedNodeName = workspaceGroup->getString(openstudio::OutdoorAir_NodeListExtensibleFields::NodeorNodeListName);
+          if (listedNodeName && openstudio::istringEqual(*listedNodeName, nodeName)) {
+            matchingGroups.push_back(workspaceGroup->groupIndex());
+          }
+        }
+
+        removedEntries += static_cast<unsigned>(matchingGroups.size());
+        if (!matchingGroups.empty() && (matchingGroups.size() == groups.size())) {
+          object.remove();
+          continue;
+        }
+        for (auto it = matchingGroups.rbegin(); it != matchingGroups.rend(); ++it) {
+          object.eraseExtensibleGroup(*it);
+        }
+      }
+      return removedEntries;
+    }
+
+    void CoilCoolingDX_Impl::removeUnusedCondenserOutdoorAirNode(const std::string& nodeName) {
+      if (nodeName.empty()) {
+        return;
+      }
+
+      // Outdoor-air declarations are shared model state. Remove an old entry
+      // only after every non-declaration NodeType field has stopped using it.
+      for (const auto& object : model().objects()) {
+        if ((object.handle() == handle()) || (object.iddObject().type() == openstudio::IddObjectType::OutdoorAir_NodeList)) {
+          continue;
+        }
+        for (unsigned fieldIndex = 0; fieldIndex < object.numFields(); ++fieldIndex) {
+          const auto iddField = object.iddObject().getField(fieldIndex);
+          if (!(iddField && (iddField->properties().type == openstudio::IddFieldType::NodeType))) {
+            continue;
+          }
+          const auto fieldValue = object.getString(fieldIndex);
+          if (fieldValue && openstudio::istringEqual(*fieldValue, nodeName)) {
+            return;
+          }
+        }
+      }
+
+      removeCondenserOutdoorAirNodeListEntries(nodeName);
+    }
+
+    void CoilCoolingDX_Impl::doCanonicalize(LoadContext& context) {
+      StraightComponent_Impl::doCanonicalize(context);
+
+      const auto coilName = getObject<ModelObject>().nameString();
+      auto condenserInlet = getString(openstudio::Coil_Cooling_DXFields::CondenserInletNodeName);
+      if (!(condenserInlet && !condenserInlet->empty())) {
+        detail::addLoadInfo(context, "Created missing condenser inlet node name for Coil:Cooling:DX '" + coilName + "'.");
+      }
+      resolvedOrCreatedNodeTarget(openstudio::Coil_Cooling_DXFields::CondenserInletNodeName, coilName + " Condenser Inlet Node");
+
+      auto condenserOutlet = getString(openstudio::Coil_Cooling_DXFields::CondenserOutletNodeName);
+      if (!(condenserOutlet && !condenserOutlet->empty())) {
+        detail::addLoadInfo(context, "Created missing condenser outlet node name for Coil:Cooling:DX '" + coilName + "'.");
+      }
+      resolvedOrCreatedNodeTarget(openstudio::Coil_Cooling_DXFields::CondenserOutletNodeName, coilName + " Condenser Outlet Node");
+
+      bool declaredByOutdoorAirNode = false;
+      const auto repairedInlet = condenserInletNodeName();
+      for (const auto& object : model().getObjectsByType(openstudio::IddObjectType::OutdoorAir_Node)) {
+        if (openstudio::istringEqual(object.nameString(), repairedInlet)) {
+          declaredByOutdoorAirNode = true;
+          break;
+        }
+      }
+
+      unsigned nodeListEntryCount = 0;
+      for (const auto& object : model().getObjectsByType(openstudio::IddObjectType::OutdoorAir_NodeList)) {
+        for (const auto& group : object.extensibleGroups()) {
+          auto workspaceGroup = group.optionalCast<openstudio::WorkspaceExtensibleGroup>();
+          if (!workspaceGroup) {
+            continue;
+          }
+          auto listedNodeName = workspaceGroup->getString(openstudio::OutdoorAir_NodeListExtensibleFields::NodeorNodeListName);
+          if (listedNodeName && openstudio::istringEqual(*listedNodeName, repairedInlet)) {
+            ++nodeListEntryCount;
+          }
+        }
+      }
+
+      OS_ASSERT(maintainCondenserOutdoorAirNode());
+      if (declaredByOutdoorAirNode && (nodeListEntryCount > 0u)) {
+        detail::addLoadInfo(context, "Removed " + std::to_string(nodeListEntryCount)
+                                       + " conflicting OutdoorAir:NodeList entry or entries for condenser inlet node '" + repairedInlet
+                                       + "' on Coil:Cooling:DX '" + coilName + "'; preserved the richer OutdoorAir:Node declaration.");
+      } else if (!declaredByOutdoorAirNode && (nodeListEntryCount == 0u)) {
+        detail::addLoadInfo(context, "Created OutdoorAir:NodeList entry for condenser inlet node '" + repairedInlet + "' on Coil:Cooling:DX '"
+                                       + coilName + "'.");
+      }
     }
 
   }  // namespace detail

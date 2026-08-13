@@ -27,6 +27,7 @@ namespace epmodel {
 
       unsigned inletPort() const override;
       unsigned outletPort() const override;
+      boost::optional<std::string> setName(const std::string& newName, bool checkValidity) override;
       bool addToNode(Node& node) override;
       bool removeFromLoop() override;
       void disconnect() override;
@@ -49,6 +50,14 @@ namespace epmodel {
 
       std::string condenserOutletNodeName() const;
       bool setCondenserOutletNodeName(const std::string& condenserOutletNodeName);
+
+     protected:
+      void doCanonicalize(LoadContext& context) override;
+
+     private:
+      bool maintainCondenserOutdoorAirNode(const std::string& previousNodeName = {});
+      unsigned removeCondenserOutdoorAirNodeListEntries(const std::string& nodeName);
+      void removeUnusedCondenserOutdoorAirNode(const std::string& nodeName);
     };
 
   }  // namespace detail

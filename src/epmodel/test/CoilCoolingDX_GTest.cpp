@@ -30,9 +30,33 @@
 #include <utilities/idd/Coil_Cooling_DX_FieldEnums.hxx>
 #include <utilities/idd/Coil_Cooling_DX_CurveFit_Performance_FieldEnums.hxx>
 #include <utilities/idd/CoilSystem_Cooling_DX_FieldEnums.hxx>
+#include <utilities/idd/OutdoorAir_NodeList_FieldEnums.hxx>
 #include <utilities/core/PathHelpers.hpp>
+#include <utilities/core/StringHelpers.hpp>
+#include <utilities/idf/WorkspaceExtensibleGroup.hpp>
 
 using namespace openstudio::epmodel;
+
+namespace {
+
+unsigned outdoorAirNodeListEntryCount(const Model& model, const std::string& nodeName) {
+  unsigned result = 0;
+  for (const auto& object : model.getObjectsByType(openstudio::IddObjectType::OutdoorAir_NodeList)) {
+    for (const auto& group : object.extensibleGroups()) {
+      auto workspaceGroup = group.optionalCast<openstudio::WorkspaceExtensibleGroup>();
+      if (!workspaceGroup) {
+        continue;
+      }
+      auto listedNodeName = workspaceGroup->getString(openstudio::OutdoorAir_NodeListExtensibleFields::NodeorNodeListName);
+      if (listedNodeName && openstudio::istringEqual(*listedNodeName, nodeName)) {
+        ++result;
+      }
+    }
+  }
+  return result;
+}
+
+}  // namespace
 
 TEST_F(EPModelFixture, CoilCoolingDX_DefaultConstructor) {
   Model model;
@@ -49,16 +73,115 @@ TEST_F(EPModelFixture, CoilCoolingDX_DefaultConstructor) {
   ASSERT_EQ(1u, children.size());
   EXPECT_EQ(coil.performanceObject().handle(), children.front().handle());
   EXPECT_FALSE(coil.condenserZone());
+  EXPECT_EQ(coil.nameString() + " Condenser Inlet Node", coil.condenserInletNodeName());
+  EXPECT_EQ(coil.nameString() + " Condenser Outlet Node", coil.condenserOutletNodeName());
+  EXPECT_EQ(1u, outdoorAirNodeListEntryCount(model, coil.condenserInletNodeName()));
 }
 
 TEST_F(EPModelFixture, CoilCoolingDX_ScalarAccessors_RoundTrip) {
   Model model;
   CoilCoolingDX coil(model);
 
+  const auto defaultCondenserInlet = coil.condenserInletNodeName();
   EXPECT_TRUE(coil.setCondenserInletNodeName("DX Condenser Inlet"));
   EXPECT_TRUE(coil.setCondenserOutletNodeName("DX Condenser Outlet"));
   EXPECT_EQ("DX Condenser Inlet", coil.condenserInletNodeName());
   EXPECT_EQ("DX Condenser Outlet", coil.condenserOutletNodeName());
+  EXPECT_EQ(0u, outdoorAirNodeListEntryCount(model, defaultCondenserInlet));
+  EXPECT_EQ(1u, outdoorAirNodeListEntryCount(model, "DX Condenser Inlet"));
+
+  EXPECT_FALSE(coil.setCondenserInletNodeName(""));
+  EXPECT_FALSE(coil.setCondenserOutletNodeName(""));
+  EXPECT_EQ("DX Condenser Inlet", coil.condenserInletNodeName());
+  EXPECT_EQ("DX Condenser Outlet", coil.condenserOutletNodeName());
+}
+
+TEST_F(EPModelFixture, CoilCoolingDX_DefaultCondenserNodeNamesTrackCoilRename) {
+  Model model;
+  CoilCoolingDX coil(model);
+
+  const auto originalInlet = coil.condenserInletNodeName();
+  ASSERT_TRUE(coil.setName("Renamed Curve Fit DX Coil"));
+  EXPECT_EQ("Renamed Curve Fit DX Coil Condenser Inlet Node", coil.condenserInletNodeName());
+  EXPECT_EQ("Renamed Curve Fit DX Coil Condenser Outlet Node", coil.condenserOutletNodeName());
+  EXPECT_EQ(0u, outdoorAirNodeListEntryCount(model, originalInlet));
+  EXPECT_EQ(1u, outdoorAirNodeListEntryCount(model, coil.condenserInletNodeName()));
+
+  ASSERT_TRUE(coil.setCondenserInletNodeName("Custom Condenser Inlet"));
+  ASSERT_TRUE(coil.setCondenserOutletNodeName("Custom Condenser Outlet"));
+  ASSERT_TRUE(coil.setName("Renamed Again"));
+  EXPECT_EQ("Custom Condenser Inlet", coil.condenserInletNodeName());
+  EXPECT_EQ("Custom Condenser Outlet", coil.condenserOutletNodeName());
+  EXPECT_EQ(1u, outdoorAirNodeListEntryCount(model, "Custom Condenser Inlet"));
+}
+
+TEST_F(EPModelFixture, CoilCoolingDX_SharedCondenserOutdoorAirDeclarationSurvivesUntilLastUse) {
+  Model model;
+  CoilCoolingDX firstCoil(model);
+  CoilCoolingDX secondCoil(model);
+
+  ASSERT_TRUE(firstCoil.setCondenserInletNodeName("Shared DX Condenser Inlet"));
+  ASSERT_TRUE(secondCoil.setCondenserInletNodeName("Shared DX Condenser Inlet"));
+  EXPECT_EQ(1u, outdoorAirNodeListEntryCount(model, "Shared DX Condenser Inlet"));
+
+  EXPECT_FALSE(firstCoil.remove().empty());
+  EXPECT_EQ(1u, outdoorAirNodeListEntryCount(model, "Shared DX Condenser Inlet"));
+  EXPECT_FALSE(secondCoil.remove().empty());
+  EXPECT_EQ(0u, outdoorAirNodeListEntryCount(model, "Shared DX Condenser Inlet"));
+}
+
+TEST_F(EPModelFixture, CoilCoolingDX_ExistingOutdoorAirNodeAvoidsConflictingNodeList) {
+  Model model;
+  CoilCoolingDX coil(model);
+  ModelObject outdoorAirNode = ModelObject::create(openstudio::IddObjectType::OutdoorAir_Node, model);
+  ASSERT_TRUE(outdoorAirNode.setName("Weather Height Condenser Inlet"));
+
+  ASSERT_TRUE(coil.setCondenserInletNodeName("Weather Height Condenser Inlet"));
+  EXPECT_EQ(0u, outdoorAirNodeListEntryCount(model, "Weather Height Condenser Inlet"));
+}
+
+TEST_F(EPModelFixture, CoilCoolingDX_CanonicalizationPrefersOutdoorAirNodeOverConflictingNodeList) {
+  Model model;
+  CoilCoolingDX coil(model);
+  ModelObject outdoorAirNode = ModelObject::create(openstudio::IddObjectType::OutdoorAir_Node, model);
+  ASSERT_TRUE(outdoorAirNode.setName("Detailed Condenser Inlet"));
+  ASSERT_TRUE(coil.setCondenserInletNodeName("Detailed Condenser Inlet"));
+
+  auto conflictingNodeList = ModelObject::create(openstudio::IddObjectType::OutdoorAir_NodeList, model);
+  auto conflictingGroup = conflictingNodeList.pushExtensibleGroup().optionalCast<openstudio::WorkspaceExtensibleGroup>();
+  ASSERT_TRUE(conflictingGroup);
+  ASSERT_TRUE(conflictingGroup->setString(openstudio::OutdoorAir_NodeListExtensibleFields::NodeorNodeListName, "Detailed Condenser Inlet"));
+  ASSERT_EQ(1u, outdoorAirNodeListEntryCount(model, "Detailed Condenser Inlet"));
+
+  const auto report = model.canonicalize();
+  EXPECT_GT(report.infoCount, 0u);
+  EXPECT_EQ(0u, outdoorAirNodeListEntryCount(model, "Detailed Condenser Inlet"));
+  const auto outdoorAirNodes = model.getObjectsByType(openstudio::IddObjectType::OutdoorAir_Node);
+  ASSERT_EQ(1u, outdoorAirNodes.size());
+  EXPECT_EQ("Detailed Condenser Inlet", outdoorAirNodes.front().nameString());
+  EXPECT_EQ("Detailed Condenser Inlet", coil.condenserInletNodeName());
+}
+
+TEST_F(EPModelFixture, CoilCoolingDX_CanonicalizationRepairsRequiredCondenserStorage) {
+  Model model;
+  CoilCoolingDX coil(model);
+  ASSERT_TRUE(coil.setName("Repairable Curve Fit DX Coil"));
+
+  for (auto object : model.getObjectsByType(openstudio::IddObjectType::OutdoorAir_NodeList)) {
+    object.remove();
+  }
+  auto coilImpl = coil.getImpl<detail::CoilCoolingDX_Impl>();
+  ASSERT_TRUE(coilImpl->setPointer(openstudio::Coil_Cooling_DXFields::CondenserInletNodeName, openstudio::Handle(), false));
+  ASSERT_TRUE(coilImpl->setPointer(openstudio::Coil_Cooling_DXFields::CondenserOutletNodeName, openstudio::Handle(), false));
+
+  const auto report = model.canonicalize();
+  EXPECT_GT(report.infoCount, 0u);
+  EXPECT_EQ("Repairable Curve Fit DX Coil Condenser Inlet Node", coil.condenserInletNodeName());
+  EXPECT_EQ("Repairable Curve Fit DX Coil Condenser Outlet Node", coil.condenserOutletNodeName());
+  EXPECT_EQ(1u, outdoorAirNodeListEntryCount(model, coil.condenserInletNodeName()));
+
+  model.canonicalize();
+  EXPECT_EQ(1u, outdoorAirNodeListEntryCount(model, coil.condenserInletNodeName()));
 }
 
 TEST_F(EPModelFixture, CoilCoolingDX_RelationshipSetters_RoundTrip) {
@@ -133,6 +256,8 @@ TEST_F(EPModelFixture, CoilCoolingDX_FourSpeedPerformanceGraphPersistsOnAirLoop)
   ASSERT_TRUE(performance.setName("Curve Fit Four Speed Performance"));
   CoilCoolingDX coil(model, performance);
   ASSERT_TRUE(coil.setName("Curve Fit Four Speed Coil"));
+  EXPECT_EQ("Curve Fit Four Speed Coil Condenser Inlet Node", coil.condenserInletNodeName());
+  EXPECT_EQ(1u, outdoorAirNodeListEntryCount(model, coil.condenserInletNodeName()));
   AirLoopHVAC airLoop(model);
   ASSERT_TRUE(airLoop.setName("Curve Fit Four Speed Air Loop"));
   auto supplyInletNode = airLoop.supplyInletNode();
@@ -150,6 +275,9 @@ TEST_F(EPModelFixture, CoilCoolingDX_FourSpeedPerformanceGraphPersistsOnAirLoop)
   ASSERT_TRUE(loadedAirLoop);
   ASSERT_TRUE(loadedCoil);
   EXPECT_TRUE(loadedAirLoop->supplyComponent(loadedCoil->handle()));
+  EXPECT_EQ("Curve Fit Four Speed Coil Condenser Inlet Node", loadedCoil->condenserInletNodeName());
+  EXPECT_EQ("Curve Fit Four Speed Coil Condenser Outlet Node", loadedCoil->condenserOutletNodeName());
+  EXPECT_EQ(1u, outdoorAirNodeListEntryCount(*loadedModel, loadedCoil->condenserInletNodeName()));
 
   const auto loadedPerformance = loadedCoil->performanceObject();
   EXPECT_EQ("Curve Fit Four Speed Performance", loadedPerformance.nameString());
