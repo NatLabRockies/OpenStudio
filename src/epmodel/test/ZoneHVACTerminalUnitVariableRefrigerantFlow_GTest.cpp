@@ -28,10 +28,12 @@
 #include "../StraightComponent/AirConditionerVariableRefrigerantFlow.hpp"
 #include "../StraightComponent/AirConditionerVariableRefrigerantFlow_Impl.hpp"
 #include "../StraightComponent/CoilHeatingElectric.hpp"
+#include "../StraightComponent/FanConstantVolume.hpp"
 #include "../StraightComponent/FanOnOff.hpp"
 #include "../StraightComponent/FanOnOff_Impl.hpp"
 #include "../StraightComponent/FanSystemModel.hpp"
 #include "../StraightComponent/FanSystemModel_Impl.hpp"
+#include "../StraightComponent/FanVariableVolume.hpp"
 #include "../StraightComponent/Node.hpp"
 #include "../ZoneHVACComponent/ZoneHVACTerminalUnitVariableRefrigerantFlow.hpp"
 #include "../ZoneHVACComponent/ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl.hpp"
@@ -147,6 +149,119 @@ TEST_F(EPModelFixture, ZoneHVACTerminalUnitVariableRefrigerantFlow_FluidTemperat
   ASSERT_TRUE(terminal.heatingCoil());
   EXPECT_TRUE(terminal.coolingCoil()->optionalCast<CoilCoolingDXVariableRefrigerantFlowFluidTemperatureControl>());
   EXPECT_TRUE(terminal.heatingCoil()->optionalCast<CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl>());
+}
+
+TEST_F(EPModelFixture, ZoneHVACTerminalUnitVariableRefrigerantFlow_StandardChildConstructorAdoptsSuppliedObjects) {
+  const auto idfPath = openstudio::tempDir() / openstudio::toPath("epmodel-vrf-terminal-explicit-children.idf");
+  Model model;
+  FanSystemModel fan(model);
+  CoilCoolingDXVariableRefrigerantFlow coolingCoil(model);
+  CoilHeatingDXVariableRefrigerantFlow heatingCoil(model);
+  ASSERT_TRUE(fan.setName("Supplied VRF Fan"));
+  ASSERT_TRUE(coolingCoil.setName("Supplied VRF Cooling Coil"));
+  ASSERT_TRUE(heatingCoil.setName("Supplied VRF Heating Coil"));
+
+  EXPECT_EQ(1u, model.getConcreteModelObjects<FanSystemModel>().size());
+  EXPECT_EQ(1u, model.getConcreteModelObjects<CoilCoolingDXVariableRefrigerantFlow>().size());
+  EXPECT_EQ(1u, model.getConcreteModelObjects<CoilHeatingDXVariableRefrigerantFlow>().size());
+  ZoneHVACTerminalUnitVariableRefrigerantFlow terminal(model, coolingCoil, heatingCoil, fan);
+  ASSERT_TRUE(terminal.setName("Explicit Child VRF Terminal"));
+
+  EXPECT_EQ(fan, terminal.supplyAirFan());
+  ASSERT_TRUE(terminal.coolingCoil());
+  ASSERT_TRUE(terminal.heatingCoil());
+  EXPECT_EQ(coolingCoil, *terminal.coolingCoil());
+  EXPECT_EQ(heatingCoil, *terminal.heatingCoil());
+  EXPECT_EQ(1u, model.getConcreteModelObjects<FanSystemModel>().size());
+  EXPECT_EQ(1u, model.getConcreteModelObjects<CoilCoolingDXVariableRefrigerantFlow>().size());
+  EXPECT_EQ(1u, model.getConcreteModelObjects<CoilHeatingDXVariableRefrigerantFlow>().size());
+  EXPECT_TRUE(model.getConcreteModelObjects<FanOnOff>().empty());
+  EXPECT_EQ("DrawThrough", terminal.supplyAirFanPlacement());
+  EXPECT_EQ(model.alwaysOnDiscreteSchedule(), terminal.terminalUnitAvailabilityschedule());
+  EXPECT_EQ(model.alwaysOnDiscreteSchedule(), terminal.supplyAirFanOperatingModeSchedule());
+  EXPECT_TRUE(terminal.isSupplyAirFlowRateDuringCoolingOperationAutosized());
+  EXPECT_TRUE(terminal.isOutdoorAirFlowRateDuringCoolingOperationAutosized());
+
+  ThermalZone zone(model);
+  AirConditionerVariableRefrigerantFlow outdoorUnit(model);
+  ASSERT_TRUE(zone.setName("Explicit Child VRF Zone"));
+  ASSERT_TRUE(outdoorUnit.setName("Explicit Child VRF Outdoor Unit"));
+  ASSERT_TRUE(terminal.addToThermalZone(zone));
+  ASSERT_TRUE(outdoorUnit.addTerminal(terminal));
+  EXPECT_EQ(fan, terminal.supplyAirFan());
+  EXPECT_EQ(coolingCoil, *terminal.coolingCoil());
+  EXPECT_EQ(heatingCoil, *terminal.heatingCoil());
+  ASSERT_TRUE(terminal.outdoorAirMixer());
+  ASSERT_TRUE(terminal.outdoorAirMixer()->mixedAirNode());
+  ASSERT_TRUE(coolingCoil.inletModelObject());
+  ASSERT_TRUE(coolingCoil.outletModelObject());
+  ASSERT_TRUE(heatingCoil.inletModelObject());
+  ASSERT_TRUE(heatingCoil.outletModelObject());
+  ASSERT_TRUE(fan.inletModelObject());
+  ASSERT_TRUE(fan.outletModelObject());
+  EXPECT_EQ(terminal.outdoorAirMixer()->mixedAirNode()->handle(), coolingCoil.inletModelObject()->handle());
+  EXPECT_EQ(coolingCoil.outletModelObject()->handle(), heatingCoil.inletModelObject()->handle());
+  EXPECT_EQ(heatingCoil.outletModelObject()->handle(), fan.inletModelObject()->handle());
+  ASSERT_TRUE(terminal.outletNode());
+  EXPECT_EQ(fan.outletModelObject()->handle(), terminal.outletNode()->handle());
+
+  ASSERT_TRUE(model.save(idfPath, true));
+  auto loadedModel = Model::load(idfPath);
+  ASSERT_TRUE(loadedModel);
+  auto loadedTerminal = loadedModel->getConcreteModelObjectByName<ZoneHVACTerminalUnitVariableRefrigerantFlow>("Explicit Child VRF Terminal");
+  auto loadedFan = loadedModel->getConcreteModelObjectByName<FanSystemModel>("Supplied VRF Fan");
+  auto loadedCoolingCoil = loadedModel->getConcreteModelObjectByName<CoilCoolingDXVariableRefrigerantFlow>("Supplied VRF Cooling Coil");
+  auto loadedHeatingCoil = loadedModel->getConcreteModelObjectByName<CoilHeatingDXVariableRefrigerantFlow>("Supplied VRF Heating Coil");
+  ASSERT_TRUE(loadedTerminal);
+  ASSERT_TRUE(loadedFan);
+  ASSERT_TRUE(loadedCoolingCoil);
+  ASSERT_TRUE(loadedHeatingCoil);
+  EXPECT_EQ(*loadedFan, loadedTerminal->supplyAirFan());
+  ASSERT_TRUE(loadedTerminal->coolingCoil());
+  ASSERT_TRUE(loadedTerminal->heatingCoil());
+  EXPECT_EQ(*loadedCoolingCoil, *loadedTerminal->coolingCoil());
+  EXPECT_EQ(*loadedHeatingCoil, *loadedTerminal->heatingCoil());
+  ASSERT_TRUE(loadedTerminal->thermalZone());
+  EXPECT_EQ("Explicit Child VRF Zone", loadedTerminal->thermalZone()->nameString());
+  ASSERT_TRUE(loadedTerminal->vrfSystem());
+  EXPECT_EQ("Explicit Child VRF Outdoor Unit", loadedTerminal->vrfSystem()->nameString());
+  EXPECT_EQ(1u, loadedModel->getConcreteModelObjects<FanSystemModel>().size());
+  EXPECT_EQ(1u, loadedModel->getConcreteModelObjects<CoilCoolingDXVariableRefrigerantFlow>().size());
+  EXPECT_EQ(1u, loadedModel->getConcreteModelObjects<CoilHeatingDXVariableRefrigerantFlow>().size());
+  EXPECT_TRUE(loadedModel->getConcreteModelObjects<FanOnOff>().empty());
+  openstudio::filesystem::remove(idfPath);
+}
+
+TEST_F(EPModelFixture, ZoneHVACTerminalUnitVariableRefrigerantFlow_StandardChildConstructorValidatesBeforeMutation) {
+  Model model;
+  Model foreignModel;
+  FanVariableVolume invalidFan(model);
+  FanSystemModel validFan(model);
+  CoilCoolingDXVariableRefrigerantFlow coolingCoil(model);
+  CoilHeatingDXVariableRefrigerantFlow heatingCoil(model);
+  CoilCoolingDXVariableRefrigerantFlow foreignCoolingCoil(foreignModel);
+
+  const auto modelObjectCount = model.numObjects();
+  EXPECT_ANY_THROW(ZoneHVACTerminalUnitVariableRefrigerantFlow(model, coolingCoil, heatingCoil, invalidFan));
+  EXPECT_EQ(modelObjectCount, model.numObjects());
+  EXPECT_TRUE(model.getObject(invalidFan.handle()));
+  EXPECT_TRUE(model.getObject(coolingCoil.handle()));
+  EXPECT_TRUE(model.getObject(heatingCoil.handle()));
+  EXPECT_TRUE(model.getConcreteModelObjects<ZoneHVACTerminalUnitVariableRefrigerantFlow>().empty());
+
+  EXPECT_ANY_THROW(ZoneHVACTerminalUnitVariableRefrigerantFlow(model, foreignCoolingCoil, heatingCoil, validFan));
+  EXPECT_EQ(modelObjectCount, model.numObjects());
+  EXPECT_TRUE(foreignModel.getObject(foreignCoolingCoil.handle()));
+  EXPECT_TRUE(model.getObject(validFan.handle()));
+  EXPECT_TRUE(model.getObject(heatingCoil.handle()));
+  EXPECT_TRUE(model.getConcreteModelObjects<ZoneHVACTerminalUnitVariableRefrigerantFlow>().empty());
+
+  FanOnOff onOffFan(model);
+  FanConstantVolume constantVolumeFan(model);
+  EXPECT_NO_THROW(ZoneHVACTerminalUnitVariableRefrigerantFlow(model, CoilCoolingDXVariableRefrigerantFlow(model),
+                                                              CoilHeatingDXVariableRefrigerantFlow(model), onOffFan));
+  EXPECT_NO_THROW(ZoneHVACTerminalUnitVariableRefrigerantFlow(model, CoilCoolingDXVariableRefrigerantFlow(model),
+                                                              CoilHeatingDXVariableRefrigerantFlow(model), constantVolumeFan));
 }
 
 TEST_F(EPModelFixture, ZoneHVACTerminalUnitVariableRefrigerantFlow_LocalOutdoorAirDeclarationIsSharedSafely) {

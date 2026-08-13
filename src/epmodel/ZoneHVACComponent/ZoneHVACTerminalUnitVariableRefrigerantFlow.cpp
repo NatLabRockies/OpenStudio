@@ -42,6 +42,7 @@
 
 #include "../utilities/core/Assert.hpp"
 #include "../utilities/core/Compare.hpp"
+#include "../utilities/core/Logger.hpp"
 #include "../utilities/core/StringHelpers.hpp"
 
 #include <utilities/idd/IddFactory.hxx>
@@ -56,26 +57,51 @@
 namespace openstudio {
 namespace epmodel {
 
+  namespace {
+
+    const Model& validateStandardVRFTerminalChildren(const Model& model, const CoilCoolingDXVariableRefrigerantFlow& coolingCoil,
+                                                     const CoilHeatingDXVariableRefrigerantFlow& heatingCoil, const HVACComponent& fan) {
+      if ((coolingCoil.model() != model) || (heatingCoil.model() != model) || (fan.model() != model)) {
+        LOG_FREE_AND_THROW("openstudio.epmodel.ZoneHVACTerminalUnitVariableRefrigerantFlow",
+                           "The supplied fan and coils must belong to the terminal's model.");
+      }
+
+      const auto fanType = fan.iddObject().type();
+      if ((fanType != IddObjectType::OS_Fan_ConstantVolume) && (fanType != IddObjectType::OS_Fan_OnOff)
+          && (fanType != IddObjectType::OS_Fan_SystemModel) && (fanType != IddObjectType::Fan_ConstantVolume) && (fanType != IddObjectType::Fan_OnOff)
+          && (fanType != IddObjectType::Fan_SystemModel)) {
+        LOG_FREE_AND_THROW("openstudio.epmodel.ZoneHVACTerminalUnitVariableRefrigerantFlow",
+                           "A standard VRF terminal requires a FanConstantVolume, FanOnOff, or FanSystemModel supply fan, not "
+                             << fan.briefDescription() << ".");
+      }
+      return model;
+    }
+
+    void initializeVRFTerminalDefaults(ZoneHVACTerminalUnitVariableRefrigerantFlow& terminal, const Model& model) {
+      auto alwaysOn = model.alwaysOnDiscreteSchedule();
+      OS_ASSERT(terminal.setTerminalUnitAvailabilityschedule(alwaysOn));
+      OS_ASSERT(terminal.setSupplyAirFanOperatingModeSchedule(alwaysOn));
+      terminal.autosizeSupplyAirFlowRateDuringCoolingOperation();
+      terminal.autosizeSupplyAirFlowRateWhenNoCoolingisNeeded();
+      terminal.autosizeSupplyAirFlowRateDuringHeatingOperation();
+      terminal.autosizeSupplyAirFlowRateWhenNoHeatingisNeeded();
+      terminal.autosizeOutdoorAirFlowRateDuringCoolingOperation();
+      terminal.autosizeOutdoorAirFlowRateDuringHeatingOperation();
+      terminal.autosizeOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded();
+      OS_ASSERT(terminal.setZoneTerminalUnitOnParasiticElectricEnergyUse(30.0));
+      OS_ASSERT(terminal.setZoneTerminalUnitOffParasiticElectricEnergyUse(20.0));
+      OS_ASSERT(terminal.setRatedTotalHeatingCapacitySizingRatio(1.0));
+      terminal.autosizeMaximumSupplyAirTemperaturefromSupplementalHeater();
+      OS_ASSERT(terminal.setMaximumOutdoorDryBulbTemperatureforSupplementalHeaterOperation(21.0));
+      OS_ASSERT(terminal.setSupplyAirFanPlacement("DrawThrough"));
+    }
+
+  }  // namespace
+
   ZoneHVACTerminalUnitVariableRefrigerantFlow::ZoneHVACTerminalUnitVariableRefrigerantFlow(const Model& model, bool isFluidTemperatureControl)
     : ZoneHVACComponent(ZoneHVACTerminalUnitVariableRefrigerantFlow::iddObjectType(), model) {
     OS_ASSERT(getImpl<detail::ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl>());
-    auto alwaysOn = model.alwaysOnDiscreteSchedule();
-    OS_ASSERT(setTerminalUnitAvailabilityschedule(alwaysOn));
-    OS_ASSERT(setSupplyAirFanOperatingModeSchedule(alwaysOn));
-
-    autosizeSupplyAirFlowRateDuringCoolingOperation();
-    autosizeSupplyAirFlowRateWhenNoCoolingisNeeded();
-    autosizeSupplyAirFlowRateDuringHeatingOperation();
-    autosizeSupplyAirFlowRateWhenNoHeatingisNeeded();
-    autosizeOutdoorAirFlowRateDuringCoolingOperation();
-    autosizeOutdoorAirFlowRateDuringHeatingOperation();
-    autosizeOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded();
-    OS_ASSERT(setZoneTerminalUnitOnParasiticElectricEnergyUse(30.0));
-    OS_ASSERT(setZoneTerminalUnitOffParasiticElectricEnergyUse(20.0));
-    OS_ASSERT(setRatedTotalHeatingCapacitySizingRatio(1.0));
-    autosizeMaximumSupplyAirTemperaturefromSupplementalHeater();
-    OS_ASSERT(setMaximumOutdoorDryBulbTemperatureforSupplementalHeaterOperation(21.0));
-    OS_ASSERT(setSupplyAirFanPlacement("DrawThrough"));
+    initializeVRFTerminalDefaults(*this, model);
 
     // A caller may rename a terminal while its constructor-owned node names
     // remain unchanged. Do not let a later terminal reuse that vacated
@@ -100,6 +126,7 @@ namespace epmodel {
       OS_ASSERT(setHeatingCoil(heatingCoil));
       OS_ASSERT(setSupplyAirFan(fan));
     } else {
+      auto alwaysOn = model.alwaysOnDiscreteSchedule();
       CoilCoolingDXVariableRefrigerantFlow coolingCoil(model);
       coolingCoil.setName(baseName + " Cooling Coil");
       CoilHeatingDXVariableRefrigerantFlow heatingCoil(model);
@@ -110,6 +137,19 @@ namespace epmodel {
       OS_ASSERT(setHeatingCoil(heatingCoil));
       OS_ASSERT(setSupplyAirFan(fan));
     }
+  }
+
+  ZoneHVACTerminalUnitVariableRefrigerantFlow::ZoneHVACTerminalUnitVariableRefrigerantFlow(const Model& model,
+                                                                                           const CoilCoolingDXVariableRefrigerantFlow& coolingCoil,
+                                                                                           const CoilHeatingDXVariableRefrigerantFlow& heatingCoil,
+                                                                                           const HVACComponent& fan)
+    : ZoneHVACComponent(ZoneHVACTerminalUnitVariableRefrigerantFlow::iddObjectType(),
+                        validateStandardVRFTerminalChildren(model, coolingCoil, heatingCoil, fan)) {
+    OS_ASSERT(getImpl<detail::ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl>());
+    initializeVRFTerminalDefaults(*this, model);
+    OS_ASSERT(setCoolingCoil(coolingCoil));
+    OS_ASSERT(setHeatingCoil(heatingCoil));
+    OS_ASSERT(setSupplyAirFan(fan));
   }
 
   ZoneHVACTerminalUnitVariableRefrigerantFlow::ZoneHVACTerminalUnitVariableRefrigerantFlow(

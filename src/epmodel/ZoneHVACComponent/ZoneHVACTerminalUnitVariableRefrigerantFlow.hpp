@@ -19,6 +19,8 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class CoilCoolingDXVariableRefrigerantFlow;
+  class CoilHeatingDXVariableRefrigerantFlow;
   class HVACComponent;
   class ModelObject;
   class Node;
@@ -34,6 +36,8 @@ namespace epmodel {
   {
    public:
     explicit ZoneHVACTerminalUnitVariableRefrigerantFlow(const Model& model, bool isFluidTemperatureControl = false);
+    explicit ZoneHVACTerminalUnitVariableRefrigerantFlow(const Model& model, const CoilCoolingDXVariableRefrigerantFlow& coolingCoil,
+                                                         const CoilHeatingDXVariableRefrigerantFlow& heatingCoil, const HVACComponent& fan);
 
     virtual ~ZoneHVACTerminalUnitVariableRefrigerantFlow() override = default;
     ZoneHVACTerminalUnitVariableRefrigerantFlow(const ZoneHVACTerminalUnitVariableRefrigerantFlow& other) = default;
@@ -62,8 +66,8 @@ namespace epmodel {
     // - Field/Storage Mapping: Scalar values live directly on the EnergyPlus object while the fan/coil/schedule/node topology is represented
     //   through explicit child state, a persisted outdoor-air mixer whenever the unit owns its local OA path, and transient epmodel nodes.
     // - Evidence: `src/model/ZoneHVACTerminalUnitVariableRefrigerantFlow.hpp`, `src/model/ZoneHVACTerminalUnitVariableRefrigerantFlow.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateZoneHVACTerminalUnitVariableRefrigerantFlow.cpp`, and `src/epmodel/test/ZoneHVACTerminalUnitVariableRefrigerantFlow_GTest.cpp`.
-    // - Remaining Parity Work: Align the explicit child-injection constructor overloads, clone and sizing conveniences, and the unselected
-    //   relief-stream topology role; add omitted relationship helpers only if the canonical wrapper still exposes them directly.
+    // - Remaining Parity Work: Align the fluid-temperature-control child-injection constructor overload, clone and sizing conveniences, and the
+    //   unselected relief-stream topology role; add omitted relationship helpers only if the canonical wrapper still exposes them directly.
 
     Schedule terminalUnitAvailabilityschedule() const;
     bool setTerminalUnitAvailabilityschedule(Schedule& schedule);
