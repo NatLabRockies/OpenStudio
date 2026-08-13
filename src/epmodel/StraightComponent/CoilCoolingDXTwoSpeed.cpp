@@ -13,6 +13,8 @@
 #include "Curve/CurveQuadratic_Impl.hpp"
 #include "Loop/AirLoopHVAC.hpp"
 #include "HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
+#include "ModelObject/CoilSystemCoolingDX.hpp"
+#include "ModelObject/CoilSystemCoolingDX_Impl.hpp"
 #include "Model.hpp"
 #include "Node.hpp"
 #include "Schedule/Schedule.hpp"
@@ -22,6 +24,7 @@
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
 #include <utilities/idd/Coil_Cooling_DX_TwoSpeed_FieldEnums.hxx>
+#include <utilities/idd/CoilSystem_Cooling_DX_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/IddFactory.hxx>
 #include <utilities/idd/IddObject.hpp>
@@ -30,6 +33,17 @@ namespace openstudio {
 namespace epmodel {
 
   namespace {
+
+    std::vector<CoilSystemCoolingDX> coilSystemsFor(const Model& model, const Handle& coilHandle) {
+      std::vector<CoilSystemCoolingDX> result;
+      for (const auto& system : model.getConcreteModelObjects<CoilSystemCoolingDX>()) {
+        auto linkedCoil = system.coolingCoil();
+        if (linkedCoil && linkedCoil->handle() == coilHandle) {
+          result.push_back(system);
+        }
+      }
+      return result;
+    }
 
     void applyConstructorDefaults(CoilCoolingDXTwoSpeed& coil) {
       const auto& model = coil.model();
@@ -577,7 +591,25 @@ namespace epmodel {
     }
 
     bool CoilCoolingDXTwoSpeed_Impl::setAvailabilitySchedule(Schedule& schedule) {
-      return setPointer(openstudio::Coil_Cooling_DX_TwoSpeedFields::AvailabilityScheduleName, schedule.handle(), false);
+      if (schedule.model() != model()) {
+        return false;
+      }
+      auto systems = coilSystemsFor(model(), handle());
+      if (systems.size() > 1u) {
+        return false;
+      }
+
+      const auto thisCoil = getObject<ModelObject>();
+      const auto oldSchedule = thisCoil.getTarget(openstudio::Coil_Cooling_DX_TwoSpeedFields::AvailabilityScheduleName);
+      if (!setPointer(openstudio::Coil_Cooling_DX_TwoSpeedFields::AvailabilityScheduleName, schedule.handle(), false)) {
+        return false;
+      }
+      if (systems.size() == 1u && !systems.front().setPointer(openstudio::CoilSystem_Cooling_DXFields::AvailabilityScheduleName, schedule.handle())) {
+        OS_ASSERT(
+          setPointer(openstudio::Coil_Cooling_DX_TwoSpeedFields::AvailabilityScheduleName, oldSchedule ? oldSchedule->handle() : Handle(), false));
+        return false;
+      }
+      return true;
     }
 
     Curve CoilCoolingDXTwoSpeed_Impl::totalCoolingCapacityFunctionOfTemperatureCurve() const {
@@ -1012,13 +1044,138 @@ namespace epmodel {
     }
 
     bool CoilCoolingDXTwoSpeed_Impl::addToNode(Node& node) {
+      auto thisCoil = getObject<CoilCoolingDXTwoSpeed>();
+      if (thisCoil.containingHVACComponent()) {
+        return false;
+      }
+
       auto airLoop = node.airLoopHVAC();
 
       if (!(airLoop && airLoop->supplyComponent(node.handle()))) {
         return false;
       }
 
-      return StraightComponent_Impl::addToNode(node);
+      auto systems = coilSystemsFor(model(), handle());
+      if (systems.size() > 1u) {
+        return false;
+      }
+
+      boost::optional<CoilSystemCoolingDX> system;
+      bool createdSystem = false;
+      if (systems.empty()) {
+        // A bare DX coil is not valid branch equipment in EnergyPlus. Refuse
+        // to layer an adapter over legacy live topology that we cannot replace
+        // as one transaction.
+        if (StraightComponent_Impl::airLoopHVAC()) {
+          return false;
+        }
+
+        CoilSystemCoolingDX newSystem(model());
+        if (!newSystem.setName(thisCoil.nameString() + " CoilSystem")) {
+          newSystem.remove();
+          return false;
+        }
+        auto systemImpl = newSystem.getImpl<CoilSystemCoolingDX_Impl>();
+        OS_ASSERT(systemImpl);
+        if (!systemImpl->configureForCoolingCoil(thisCoil)) {
+          newSystem.remove();
+          return false;
+        }
+        system = newSystem;
+        createdSystem = true;
+      } else {
+        system = systems.front();
+        auto systemImpl = system->getImpl<CoilSystemCoolingDX_Impl>();
+        OS_ASSERT(systemImpl);
+        if (!systemImpl->isCoherentForCoolingCoil(thisCoil)) {
+          return false;
+        }
+      }
+
+      if (system->addToNode(node)) {
+        return true;
+      }
+      if (createdSystem) {
+        system->remove();
+      }
+      return false;
+    }
+
+    boost::optional<CoilSystemCoolingDX> CoilCoolingDXTwoSpeed_Impl::coilSystemCoolingDX() const {
+      auto systems = coilSystemsFor(model(), handle());
+      if (systems.size() == 1u) {
+        return systems.front();
+      }
+      return boost::none;
+    }
+
+    bool CoilCoolingDXTwoSpeed_Impl::removeFromLoop() {
+      auto systems = coilSystemsFor(model(), handle());
+      if (systems.size() > 1u) {
+        return false;
+      }
+      if (systems.empty()) {
+        return StraightComponent_Impl::removeFromLoop();
+      }
+      auto thisCoil = getObject<CoilCoolingDXTwoSpeed>();
+      auto systemImpl = systems.front().getImpl<CoilSystemCoolingDX_Impl>();
+      OS_ASSERT(systemImpl);
+      if (!systemImpl->isCoherentForCoolingCoil(thisCoil)) {
+        return false;
+      }
+      return systems.front().removeFromLoop();
+    }
+
+    void CoilCoolingDXTwoSpeed_Impl::disconnect() {
+      auto systems = coilSystemsFor(model(), handle());
+      if (systems.size() > 1u) {
+        return;
+      }
+      if (systems.size() == 1u) {
+        auto thisCoil = getObject<CoilCoolingDXTwoSpeed>();
+        auto systemImpl = systems.front().getImpl<CoilSystemCoolingDX_Impl>();
+        OS_ASSERT(systemImpl);
+        if (!systemImpl->isCoherentForCoolingCoil(thisCoil)) {
+          return;
+        }
+        systems.front().disconnect();
+        return;
+      }
+      StraightComponent_Impl::disconnect();
+    }
+
+    std::vector<IdfObject> CoilCoolingDXTwoSpeed_Impl::remove() {
+      if (!isRemovable()) {
+        return {};
+      }
+
+      auto systems = coilSystemsFor(model(), handle());
+      if (systems.size() > 1u) {
+        return {};
+      }
+
+      std::vector<IdfObject> result;
+      if (systems.size() == 1u) {
+        auto system = systems.front();
+        auto thisCoil = getObject<CoilCoolingDXTwoSpeed>();
+        auto systemImpl = system.getImpl<CoilSystemCoolingDX_Impl>();
+        OS_ASSERT(systemImpl);
+        if (!systemImpl->isCoherentForCoolingCoil(thisCoil)) {
+          return {};
+        }
+        if (system.airLoopHVAC() && !system.removeFromLoop()) {
+          return {};
+        }
+        auto removedSystem = system.remove();
+        if (model().getObject(system.handle())) {
+          return {};
+        }
+        result.insert(result.end(), removedSystem.begin(), removedSystem.end());
+      }
+
+      auto removedCoil = HVACComponent_Impl::remove();
+      result.insert(result.end(), removedCoil.begin(), removedCoil.end());
+      return result;
     }
 
   }  // namespace detail

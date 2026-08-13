@@ -104,6 +104,7 @@ EPMODELOBJECT_WRAP(CoilHeatingElectric, <epmodel/StraightComponent/CoilHeatingEl
 EPMODELOBJECT_WRAP(CoilHeatingElectricMultiStage, <epmodel/StraightComponent/CoilHeatingElectricMultiStage.hpp>, 0, 1)
 EPMODELOBJECT_WRAP(CoilHeatingGasMultiStage, <epmodel/StraightComponent/CoilHeatingGasMultiStage.hpp>, 0, 1)
 EPMODELOBJECT_WRAP(CoilHeatingGas, <epmodel/StraightComponent/CoilHeatingGas.hpp>, 0, 1)
+EPMODELOBJECT_WRAP(CoilSystemCoolingDX, <epmodel/ModelObject/CoilSystemCoolingDX.hpp>, 0, 1)
 EPMODELOBJECT_WRAP(CoilSystemCoolingDXHeatExchangerAssisted, <epmodel/StraightComponent/CoilSystemCoolingDXHeatExchangerAssisted.hpp>, 0, 1)
 EPMODELOBJECT_WRAP(CoilSystemIntegratedHeatPumpAirSource, <epmodel/StraightComponent/CoilSystemIntegratedHeatPumpAirSource.hpp>, 0, 1)
 EPMODELOBJECT_WRAP(CoilSystemCoolingWater, <epmodel/StraightComponent/CoilSystemCoolingWater.hpp>, 0, 1)

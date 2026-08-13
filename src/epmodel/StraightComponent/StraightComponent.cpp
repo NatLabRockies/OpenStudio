@@ -16,6 +16,8 @@
 #include "AirToAirComponent/AirToAirComponent_Impl.hpp"
 #include "ModelObject/AirLoopHVACOutdoorAirSystemEquipmentList.hpp"
 #include "ModelObject/AirLoopHVACOutdoorAirSystemEquipmentList_Impl.hpp"
+#include "ModelObject/CoilSystemCoolingDX.hpp"
+#include "ModelObject/CoilSystemCoolingDX_Impl.hpp"
 #include "ModelObject/OutdoorAirMixer.hpp"
 #include "ParentObject/ControllerOutdoorAir.hpp"
 #include "Splitter/AirLoopHVACZoneSplitter.hpp"
@@ -47,6 +49,14 @@ namespace epmodel {
         auto mutableObject = object;
 
         if (airSide) {
+          if (auto coilSystem = mutableObject.optionalCast<CoilSystemCoolingDX>()) {
+            auto coilSystemImpl = coilSystem->getImpl<CoilSystemCoolingDX_Impl>();
+            OS_ASSERT(coilSystemImpl);
+            if (!coilSystemImpl->setPointer(inlet ? coilSystem->inletPort() : coilSystem->outletPort(), node.handle(), false)) {
+              return false;
+            }
+            return coilSystemImpl->syncCoolingCoilNodes();
+          }
           if (auto oaSystem = mutableObject.optionalCast<AirLoopHVACOutdoorAirSystem>()) {
             auto mixer = oaSystem->getImpl<AirLoopHVACOutdoorAirSystem_Impl>()->outdoorAirMixer();
             auto controller = oaSystem->getControllerOutdoorAir();
@@ -610,11 +620,23 @@ namespace epmodel {
         } else {
           auto branchList = loopImpl->branchList();
           const auto branches = branchList.branches();
-          if (branches.empty()) {
+          boost::optional<openstudio::epmodel::Branch> owningBranch;
+          std::vector<ModelObject> components;
+          unsigned matchingBranches = 0u;
+          for (const auto& candidate : branches) {
+            const auto candidateComponents = candidate.components();
+            if (std::ranges::find(candidateComponents, thisObject) == candidateComponents.end()) {
+              continue;
+            }
+            owningBranch = candidate;
+            components = candidateComponents;
+            ++matchingBranches;
+          }
+          if (!owningBranch || matchingBranches != 1u) {
             return false;
           }
-          auto branch = branches.front();
-          auto components = branch.components();
+
+          auto branch = *owningBranch;
           bool removedFromSupplyBranch = false;
           for (unsigned i = 0; i < components.size(); ++i) {
             if (components[i] != thisObject) {
@@ -622,6 +644,16 @@ namespace epmodel {
             }
             if (i + 1u < components.size()) {
               if (!branch.getImpl<openstudio::epmodel::detail::Branch_Impl>()->setComponentInletNode(i + 1u, *inletNode)) {
+                return false;
+              }
+              if (!updateAdjacentBranchComponentNode(components[i + 1u], *inletNode, true, true)) {
+                return false;
+              }
+            } else if (i > 0u) {
+              if (!branch.getImpl<openstudio::epmodel::detail::Branch_Impl>()->setComponentOutletNode(i - 1u, *outletNode)) {
+                return false;
+              }
+              if (!updateAdjacentBranchComponentNode(components[i - 1u], *outletNode, false, true)) {
                 return false;
               }
             }

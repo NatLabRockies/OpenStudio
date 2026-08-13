@@ -65,6 +65,8 @@
 #include "HVACComponent/HVACComponent.hpp"
 #include "ModelObject.hpp"
 #include "StraightComponent/StraightComponent.hpp"
+#include "StraightComponent/CoilCoolingDXTwoSpeed.hpp"
+#include "StraightComponent/CoilCoolingDXTwoSpeed_Impl.hpp"
 #include "StraightComponent/AirTerminalSingleDuctConstantVolumeCooledBeam.hpp"
 #include "StraightComponent/AirTerminalSingleDuctConstantVolumeCooledBeam_Impl.hpp"
 #include "StraightComponent/AirTerminalSingleDuctConstantVolumeFourPipeBeam.hpp"
@@ -5752,7 +5754,18 @@ namespace epmodel {
         ModelObject previousObject = startObject;
         const auto components = branch.components();
         for (unsigned index = 0; index < components.size(); ++index) {
-          const auto& component = components[index];
+          auto component = components[index];
+          if (auto coilSystem = component.optionalCast<CoilSystemCoolingDX>()) {
+            if (auto coolingCoilObject = coilSystem->coolingCoil()) {
+              if (auto coolingCoil = coolingCoilObject->optionalCast<CoilCoolingDXTwoSpeed>()) {
+                auto coilSystemImpl = coilSystem->getImpl<detail::CoilSystemCoolingDX_Impl>();
+                OS_ASSERT(coilSystemImpl);
+                if (coilSystemImpl->isCoherentForCoolingCoil(*coolingCoil)) {
+                  component = *coolingCoil;
+                }
+              }
+            }
+          }
           builder.addLink(previousObject, component);
           previousObject = component;
 
@@ -6214,8 +6227,11 @@ namespace epmodel {
         }
 
         if (auto coilSystem = object.optionalCast<CoilSystemCoolingDX>()) {
-          if (auto coolingCoil = coilSystem->getImpl<detail::CoilSystemCoolingDX_Impl>()->coolingCoil()) {
-            collectRemovalObject(*coolingCoil);
+          if (auto coolingCoilObject = coilSystem->coolingCoil()) {
+            // The persisted coil system owns its referenced coil for whole-loop
+            // teardown, even when that coil family is not projected publicly.
+            // Preserving it would leave an invalid orphan with no air nodes.
+            collectRemovalObject(*coolingCoilObject);
           }
         }
       };
@@ -6236,6 +6252,19 @@ namespace epmodel {
 
       if (auto branchListTarget = thisLoop.getModelObjectTarget<BranchList>(openstudio::AirLoopHVACFields::BranchListName)) {
         for (const auto& branch : branchListTarget->branches()) {
+          for (const auto& component : branch.components()) {
+            auto coilSystem = component.optionalCast<CoilSystemCoolingDX>();
+            auto coolingCoilObject = coilSystem ? coilSystem->coolingCoil() : boost::optional<ModelObject>();
+            auto coolingCoil =
+              coolingCoilObject ? coolingCoilObject->optionalCast<CoilCoolingDXTwoSpeed>() : boost::optional<CoilCoolingDXTwoSpeed>();
+            if (coilSystem && coolingCoil) {
+              auto coilSystemImpl = coilSystem->getImpl<detail::CoilSystemCoolingDX_Impl>();
+              OS_ASSERT(coilSystemImpl);
+              if (coilSystemImpl->isCoherentForCoolingCoil(*coolingCoil)) {
+                collectRemovalObject(component);
+              }
+            }
+          }
           collectRemovalObject(branch.cast<ModelObject>());
         }
         collectRemovalObject(branchListTarget->cast<ModelObject>());

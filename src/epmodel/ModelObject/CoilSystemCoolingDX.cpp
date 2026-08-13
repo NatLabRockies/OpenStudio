@@ -8,9 +8,18 @@
 
 #include "Model.hpp"
 #include "ModelObject.hpp"
+#include "Node.hpp"
+#include "Branch.hpp"
+#include "BranchList.hpp"
+#include "Loop/AirLoopHVAC.hpp"
+#include "Loop/AirLoopHVAC_Impl.hpp"
+#include "StraightComponent/CoilCoolingDXTwoSpeed.hpp"
+#include "StraightComponent/CoilCoolingDXTwoSpeed_Impl.hpp"
+#include "Schedule/Schedule.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
+#include <utilities/idd/Coil_Cooling_DX_TwoSpeed_FieldEnums.hxx>
 #include <utilities/idd/CoilSystem_Cooling_DX_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/IddFactory.hxx>
@@ -19,9 +28,9 @@
 namespace openstudio {
 namespace epmodel {
 
-  CoilSystemCoolingDX::CoilSystemCoolingDX(const Model& model) : ModelObject(CoilSystemCoolingDX::iddObjectType(), model) {}
+  CoilSystemCoolingDX::CoilSystemCoolingDX(const Model& model) : StraightComponent(CoilSystemCoolingDX::iddObjectType(), model) {}
 
-  CoilSystemCoolingDX::CoilSystemCoolingDX(std::shared_ptr<detail::CoilSystemCoolingDX_Impl> impl) : ModelObject(std::move(impl)) {}
+  CoilSystemCoolingDX::CoilSystemCoolingDX(std::shared_ptr<detail::CoilSystemCoolingDX_Impl> impl) : StraightComponent(std::move(impl)) {}
 
   IddObjectType CoilSystemCoolingDX::iddObjectType() {
     return IddObjectType::CoilSystem_Cooling_DX;
@@ -34,6 +43,14 @@ namespace epmodel {
   std::vector<std::string> CoilSystemCoolingDX::dehumidificationControlTypeValues() {
     return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
                           openstudio::CoilSystem_Cooling_DXFields::DehumidificationControlType);
+  }
+
+  boost::optional<Node> CoilSystemCoolingDX::sensorNode() const {
+    return getImpl<detail::CoilSystemCoolingDX_Impl>()->sensorNode();
+  }
+
+  boost::optional<ModelObject> CoilSystemCoolingDX::coolingCoil() const {
+    return getImpl<detail::CoilSystemCoolingDX_Impl>()->coolingCoil();
   }
 
   std::string CoilSystemCoolingDX::coolingCoilObjectType() const {
@@ -145,6 +162,167 @@ namespace epmodel {
       }
 
     }  // namespace
+
+    unsigned CoilSystemCoolingDX_Impl::inletPort() const {
+      return openstudio::CoilSystem_Cooling_DXFields::DXCoolingCoilSystemInletNodeName;
+    }
+
+    unsigned CoilSystemCoolingDX_Impl::outletPort() const {
+      return openstudio::CoilSystem_Cooling_DXFields::DXCoolingCoilSystemOutletNodeName;
+    }
+
+    boost::optional<AirLoopHVAC> CoilSystemCoolingDX_Impl::airLoopHVAC() const {
+      const auto thisObject = getObject<ModelObject>();
+      for (const auto& airLoop : model().getConcreteModelObjects<AirLoopHVAC>()) {
+        const auto branches = airLoop.getImpl<AirLoopHVAC_Impl>()->branchList().branches();
+        for (const auto& branch : branches) {
+          const auto components = branch.components();
+          if (std::ranges::find(components, thisObject) != components.end()) {
+            return airLoop;
+          }
+        }
+      }
+      return boost::none;
+    }
+
+    bool CoilSystemCoolingDX_Impl::configureForCoolingCoil(CoilCoolingDXTwoSpeed& coil) {
+      if (coil.model() != model()) {
+        return false;
+      }
+      if (auto existing = coolingCoil(); existing && existing->handle() != coil.handle()) {
+        return false;
+      }
+
+      auto schedule = coil.availabilitySchedule();
+      const auto adapter = getObject<ModelObject>();
+      const auto oldType = getString(openstudio::CoilSystem_Cooling_DXFields::CoolingCoilObjectType);
+      const auto oldCoil = adapter.getTarget(openstudio::CoilSystem_Cooling_DXFields::CoolingCoilName);
+      const auto oldSchedule = adapter.getTarget(openstudio::CoilSystem_Cooling_DXFields::AvailabilityScheduleName);
+
+      if (!setString(openstudio::CoilSystem_Cooling_DXFields::CoolingCoilObjectType, coil.iddObject().name())
+          || !setPointer(openstudio::CoilSystem_Cooling_DXFields::CoolingCoilName, coil.handle(), false)
+          || !setPointer(openstudio::CoilSystem_Cooling_DXFields::AvailabilityScheduleName, schedule.handle(), false)) {
+        OS_ASSERT(setString(openstudio::CoilSystem_Cooling_DXFields::CoolingCoilObjectType, oldType.value_or("")));
+        OS_ASSERT(setPointer(openstudio::CoilSystem_Cooling_DXFields::CoolingCoilName, oldCoil ? oldCoil->handle() : Handle(), false));
+        OS_ASSERT(
+          setPointer(openstudio::CoilSystem_Cooling_DXFields::AvailabilityScheduleName, oldSchedule ? oldSchedule->handle() : Handle(), false));
+        return false;
+      }
+      return true;
+    }
+
+    bool CoilSystemCoolingDX_Impl::isCoherentForCoolingCoil(const CoilCoolingDXTwoSpeed& coil) const {
+      const auto linkedCoil = coolingCoil();
+      if (!linkedCoil || linkedCoil->handle() != coil.handle() || !openstudio::istringEqual(coolingCoilObjectType(), coil.iddObject().name())) {
+        return false;
+      }
+      const auto schedule = getObject<ModelObject>().getTarget(openstudio::CoilSystem_Cooling_DXFields::AvailabilityScheduleName);
+      const auto coilSchedule = coil.getTarget(openstudio::Coil_Cooling_DX_TwoSpeedFields::AvailabilityScheduleName);
+      if (!schedule || !coilSchedule || schedule->handle() != coilSchedule->handle()) {
+        return false;
+      }
+
+      const auto adapterInlet = inletModelObject();
+      const auto adapterOutlet = outletModelObject();
+      const auto coilInlet = coil.inletModelObject();
+      const auto coilOutlet = coil.outletModelObject();
+      const auto sensor = sensorNode();
+      const bool adapterHasTopology = adapterInlet || adapterOutlet || sensor;
+      const bool coilHasTopology = coilInlet || coilOutlet;
+      if (!adapterHasTopology && !coilHasTopology) {
+        return true;
+      }
+      return adapterInlet && adapterOutlet && sensor && coilInlet && coilOutlet && adapterInlet->handle() == coilInlet->handle()
+             && adapterOutlet->handle() == coilOutlet->handle() && sensor->handle() == adapterOutlet->handle();
+    }
+
+    bool CoilSystemCoolingDX_Impl::syncCoolingCoilNodes() {
+      auto linkedCoil = coolingCoil();
+      auto inlet = inletModelObject();
+      auto outlet = outletModelObject();
+      if (!linkedCoil || !inlet || !outlet) {
+        return false;
+      }
+      auto coil = linkedCoil->optionalCast<CoilCoolingDXTwoSpeed>();
+      if (!coil) {
+        return false;
+      }
+      auto coilImpl = coil->getImpl<CoilCoolingDXTwoSpeed_Impl>();
+      OS_ASSERT(coilImpl);
+      return coilImpl->setPointer(coilImpl->inletPort(), inlet->handle(), false)
+             && coilImpl->setPointer(coilImpl->outletPort(), outlet->handle(), false)
+             && setPointer(openstudio::CoilSystem_Cooling_DXFields::DXCoolingCoilSystemSensorNodeName, outlet->handle(), false);
+    }
+
+    void CoilSystemCoolingDX_Impl::clearTopologyPointers() {
+      if (auto linkedCoil = coolingCoil()) {
+        if (auto coil = linkedCoil->optionalCast<CoilCoolingDXTwoSpeed>()) {
+          auto coilImpl = coil->getImpl<CoilCoolingDXTwoSpeed_Impl>();
+          OS_ASSERT(coilImpl);
+          OS_ASSERT(coilImpl->setPointer(coilImpl->inletPort(), Handle(), false));
+          OS_ASSERT(coilImpl->setPointer(coilImpl->outletPort(), Handle(), false));
+        }
+      }
+      OS_ASSERT(setPointer(inletPort(), Handle(), false));
+      OS_ASSERT(setPointer(outletPort(), Handle(), false));
+      OS_ASSERT(setPointer(openstudio::CoilSystem_Cooling_DXFields::DXCoolingCoilSystemSensorNodeName, Handle(), false));
+    }
+
+    bool CoilSystemCoolingDX_Impl::addToNode(Node& node) {
+      auto linkedCoil = coolingCoil();
+      auto coil = linkedCoil ? linkedCoil->optionalCast<CoilCoolingDXTwoSpeed>() : boost::none;
+      if (!coil || !isCoherentForCoolingCoil(*coil)) {
+        return false;
+      }
+      auto airLoop = node.airLoopHVAC();
+      if (!(airLoop && airLoop->supplyComponent(node.handle()))) {
+        return false;
+      }
+      if (!StraightComponent_Impl::addToNode(node)) {
+        return false;
+      }
+      if (syncCoolingCoilNodes()) {
+        return true;
+      }
+      (void)StraightComponent_Impl::removeFromLoop();
+      clearTopologyPointers();
+      return false;
+    }
+
+    bool CoilSystemCoolingDX_Impl::removeFromLoop() {
+      if (!airLoopHVAC()) {
+        return false;
+      }
+      auto linkedCoil = coolingCoil();
+      auto coil = linkedCoil ? linkedCoil->optionalCast<CoilCoolingDXTwoSpeed>() : boost::none;
+      if (!coil || !isCoherentForCoolingCoil(*coil)) {
+        return false;
+      }
+      if (!StraightComponent_Impl::removeFromLoop()) {
+        return false;
+      }
+      clearTopologyPointers();
+      return true;
+    }
+
+    void CoilSystemCoolingDX_Impl::disconnect() {
+      if (airLoopHVAC()) {
+        (void)removeFromLoop();
+      } else {
+        clearTopologyPointers();
+      }
+    }
+
+    std::vector<IdfObject> CoilSystemCoolingDX_Impl::remove() {
+      if (airLoopHVAC()) {
+        auto linkedCoil = coolingCoil();
+        auto coil = linkedCoil ? linkedCoil->optionalCast<CoilCoolingDXTwoSpeed>() : boost::none;
+        if (!coil || !isCoherentForCoolingCoil(*coil)) {
+          return {};
+        }
+      }
+      return HVACComponent_Impl::remove();
+    }
 
     std::string CoilSystemCoolingDX_Impl::coolingCoilObjectType() const {
       const auto value = getString(openstudio::CoilSystem_Cooling_DXFields::CoolingCoilObjectType, true);
@@ -259,6 +437,10 @@ namespace epmodel {
 
     boost::optional<ModelObject> CoilSystemCoolingDX_Impl::coolingCoil() const {
       return getObject<ModelObject>().getModelObjectTarget<ModelObject>(openstudio::CoilSystem_Cooling_DXFields::CoolingCoilName);
+    }
+
+    boost::optional<Node> CoilSystemCoolingDX_Impl::sensorNode() const {
+      return getObject<ModelObject>().getModelObjectTarget<Node>(openstudio::CoilSystem_Cooling_DXFields::DXCoolingCoilSystemSensorNodeName);
     }
 
   }  // namespace detail

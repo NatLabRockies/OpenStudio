@@ -44,17 +44,17 @@ namespace epmodel {
     static std::vector<std::string> condenserTypeValues();
 
     // Schema Alignment Notes:
-    // - Status: Partial Parity. The core two-speed DX scalar surface, required schedule / curve relationships, and the current epmodel
-    //   supply-side air-loop insertion path are present, while AFN, condenser-air-node, tank-link, and broader OA / DOAS topology helpers
-    //   remain out of scope.
+    // - Status: Partial Parity. The core two-speed DX scalar surface, required schedule / curve relationships, and direct branch-adapter lifecycle
+    //   are present, while AFN, condenser-air-node, tank-link, and broader OA / DOAS topology helpers remain out of scope.
     // - Canonical Counterpart: openstudio::model::CoilCoolingDXTwoSpeed.
     // - Implemented Parity: `availabilitySchedule`, the high/low-speed performance curves, and `basinHeaterOperatingSchedule` preserve the
-    //   canonical naming and child-ownership slice; the relationship constructor and the current supply-side air-loop `addToNode` path are
-    //   preserved for the bounded epmodel topology slice; and the high- and low-speed capacity, COP, airflow, fan-power, and condenser controls
-    //   preserve the canonical scalar naming and autosize behavior.
+    //   canonical naming and child-ownership slice; direct supply-side `addToNode`, `removeFromLoop`, removal, public traversal, schedule alignment,
+    //   and reload use one persisted `CoilSystem:Cooling:DX` adapter; and the high- and low-speed capacity, COP, airflow, fan-power, and condenser
+    //   controls preserve the canonical scalar naming and autosize behavior.
     // - Documented Delta: AFN equivalent-duct parity, condenser-air-node helpers, and tank-link helpers from canonical
     //   `openstudio::model::CoilCoolingDXTwoSpeed` remain deferred.
-    // - Field/Storage Mapping: Preserved scalars map directly to EnergyPlus `Coil:Cooling:DX:TwoSpeed` fields.
+    // - Field/Storage Mapping: Preserved scalars map directly to EnergyPlus `Coil:Cooling:DX:TwoSpeed` fields. Direct AirLoopHVAC branches store
+    //   `CoilSystem:Cooling:DX`, while public traversal projects this coil and keeps both objects' node fields synchronized.
     // - Evidence: `src/model/CoilCoolingDXTwoSpeed.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateCoilCoolingDXTwoSpeed.cpp`, and `src/epmodel/test/CoilCoolingDXTwoSpeed_GTest.cpp`.
     // - Remaining Parity Work: Add the deferred AFN, condenser-air-node, tank-link, and broader OA / DOAS topology helpers without changing the
     //   preserved scalar signatures.

@@ -169,7 +169,6 @@ EPMODELOBJECT_WRAP(AvailabilityManagerAssignmentList, <epmodel/ModelObject/Avail
 EPMODELOBJECT_WRAP(MaterialPropertyMoisturePenetrationDepthSettings, <epmodel/ModelObject/MaterialPropertyMoisturePenetrationDepthSettings.hpp>, 0, 1)
 EPMODELOBJECT_WRAP(MaterialPropertyPhaseChange, <epmodel/ModelObject/MaterialPropertyPhaseChange.hpp>, 0, 1)
 EPMODELOBJECT_WRAP(MaterialPropertyPhaseChangeHysteresis, <epmodel/ModelObject/MaterialPropertyPhaseChangeHysteresis.hpp>, 0, 1)
-EPMODELOBJECT_WRAP(CoilSystemCoolingDX, <epmodel/ModelObject/CoilSystemCoolingDX.hpp>, 0, 1)
 EPMODELOBJECT_WRAP(CoilSystemHeatingDX, <epmodel/ModelObject/CoilSystemHeatingDX.hpp>, 0, 1)
 EPMODELOBJECT_WRAP(OutdoorAirMixer, <epmodel/ModelObject/OutdoorAirMixer.hpp>, 0, 1)
 EPMODELOBJECT_WRAP(NodeList, <epmodel/ModelObject/NodeList.hpp>, 0, 1)

@@ -12,6 +12,7 @@
 
 namespace openstudio {
 namespace epmodel {
+  class CoilSystemCoolingDX;
   class Node;
   class Schedule;
   class Curve;
@@ -146,6 +147,10 @@ namespace epmodel {
       bool setUnitInternalStaticAirPressure(double unitInternalStaticAirPressure);
 
       bool addToNode(Node& node) override;
+      bool removeFromLoop() override;
+      void disconnect() override;
+      std::vector<IdfObject> remove() override;
+      boost::optional<CoilSystemCoolingDX> coilSystemCoolingDX() const;
     };
 
   }  // namespace detail
