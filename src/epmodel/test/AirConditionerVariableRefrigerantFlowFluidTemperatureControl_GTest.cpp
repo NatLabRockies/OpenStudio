@@ -32,6 +32,13 @@ TEST_F(EPModelFixture, AirConditionerVariableRefrigerantFlowFluidTemperatureCont
   EXPECT_EQ(AirConditionerVariableRefrigerantFlowFluidTemperatureControl::iddObjectType(), vrf.iddObject().type());
   EXPECT_FALSE(vrf.nameString().empty());
   EXPECT_EQ(model.alwaysOnDiscreteSchedule(), vrf.availabilitySchedule());
+  EXPECT_EQ("R410a", vrf.refrigerantType());
+  EXPECT_EQ((std::vector<std::string>{"R11", "R12", "R22", "R123", "R134a", "R404a", "R407a", "R410a", "NH3", "R507a", "R744"}),
+            AirConditionerVariableRefrigerantFlowFluidTemperatureControl::refrigerantTypeValues());
+  EXPECT_EQ(1u, model.getObjectsByType(openstudio::IddObjectType::FluidProperties_Name).size());
+  EXPECT_EQ(2u, model.getObjectsByType(openstudio::IddObjectType::FluidProperties_Temperatures).size());
+  EXPECT_EQ(7u, model.getObjectsByType(openstudio::IddObjectType::FluidProperties_Saturated).size());
+  EXPECT_EQ(88u, model.getObjectsByType(openstudio::IddObjectType::FluidProperties_Superheated).size());
   EXPECT_TRUE(vrf.terminals().empty());
   const auto lists = model.getObjectsByType(openstudio::IddObjectType::ZoneTerminalUnitList);
   ASSERT_EQ(1u, lists.size());
@@ -103,6 +110,33 @@ TEST_F(EPModelFixture, AirConditionerVariableRefrigerantFlowFluidTemperatureCont
     EXPECT_DOUBLE_EQ(-30.0, curve.minimumValueofy());
     EXPECT_DOUBLE_EQ(15.0, curve.maximumValueofy());
   }
+}
+
+TEST_F(EPModelFixture, AirConditionerVariableRefrigerantFlowFluidTemperatureControl_RefrigerantLifecycle) {
+  Model model;
+  AirConditionerVariableRefrigerantFlowFluidTemperatureControl firstSystem(model);
+  const auto r410aObjectCount = model.numObjects();
+
+  AirConditionerVariableRefrigerantFlowFluidTemperatureControl secondSystem(model);
+  EXPECT_EQ(r410aObjectCount + 10u, model.numObjects());  // parent, list, and eight performance curves only
+  EXPECT_EQ(1u, model.getObjectsByType(openstudio::IddObjectType::FluidProperties_Name).size());
+
+  EXPECT_TRUE(firstSystem.setRefrigerantType("r11"));
+  EXPECT_EQ("R11", firstSystem.refrigerantType());
+  EXPECT_EQ(2u, model.getObjectsByType(openstudio::IddObjectType::FluidProperties_Name).size());
+
+  const auto twoRefrigerantObjectCount = model.numObjects();
+  EXPECT_TRUE(firstSystem.setRefrigerantType("R410A"));
+  EXPECT_EQ("R410a", firstSystem.refrigerantType());
+  EXPECT_EQ(twoRefrigerantObjectCount, model.numObjects());
+
+  EXPECT_FALSE(firstSystem.setRefrigerantType("Unsupported"));
+  EXPECT_EQ("R410a", firstSystem.refrigerantType());
+  EXPECT_EQ(twoRefrigerantObjectCount, model.numObjects());
+
+  EXPECT_FALSE(firstSystem.remove().empty());
+  EXPECT_FALSE(secondSystem.remove().empty());
+  EXPECT_EQ(2u, model.getObjectsByType(openstudio::IddObjectType::FluidProperties_Name).size());
 }
 
 TEST_F(EPModelFixture, AirConditionerVariableRefrigerantFlowFluidTemperatureControl_TerminalLifecycleSurvivesReload) {

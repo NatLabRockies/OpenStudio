@@ -27,6 +27,7 @@
 #include <utilities/idf/IdfObject.hpp>
 #include <utilities/idf/WorkspaceExtensibleGroup.hpp>
 
+#include <algorithm>
 #include <array>
 #include <set>
 
@@ -35,6 +36,7 @@ namespace epmodel {
 
   AirConditionerVariableRefrigerantFlowFluidTemperatureControl::AirConditionerVariableRefrigerantFlowFluidTemperatureControl(const Model& model)
     : HVACComponent(AirConditionerVariableRefrigerantFlowFluidTemperatureControl::iddObjectType(), model) {
+    OS_ASSERT(setRefrigerantType("R410a"));
     auto alwaysOn = model.alwaysOnDiscreteSchedule();
     OS_ASSERT(setAvailabilitySchedule(alwaysOn));
     auto impl = getImpl<detail::AirConditionerVariableRefrigerantFlowFluidTemperatureControl_Impl>();
@@ -51,8 +53,7 @@ namespace epmodel {
   }
 
   std::vector<std::string> AirConditionerVariableRefrigerantFlowFluidTemperatureControl::refrigerantTypeValues() {
-    return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
-                          openstudio::AirConditioner_VariableRefrigerantFlow_FluidTemperatureControlFields::RefrigerantType);
+    return {"R11", "R12", "R22", "R123", "R134a", "R404a", "R407a", "R410a", "NH3", "R507a", "R744"};
   }
 
   std::vector<std::string> AirConditionerVariableRefrigerantFlowFluidTemperatureControl::refrigerantTemperatureControlAlgorithmforIndoorUnitValues() {
@@ -745,7 +746,15 @@ namespace epmodel {
     }
 
     bool AirConditionerVariableRefrigerantFlowFluidTemperatureControl_Impl::setRefrigerantType(const std::string& refrigerantType) {
-      return setString(openstudio::AirConditioner_VariableRefrigerantFlow_FluidTemperatureControlFields::RefrigerantType, refrigerantType);
+      const auto values = openstudio::epmodel::AirConditionerVariableRefrigerantFlowFluidTemperatureControl::refrigerantTypeValues();
+      const auto canonical = std::find_if(values.cbegin(), values.cend(),
+                                          [&refrigerantType](const auto& candidate) { return openstudio::istringEqual(refrigerantType, candidate); });
+      if (canonical == values.cend()) {
+        return false;
+      }
+      auto owningModel = model();
+      return owningModel.ensureRefrigerantProperties(*canonical)
+             && setString(openstudio::AirConditioner_VariableRefrigerantFlow_FluidTemperatureControlFields::RefrigerantType, *canonical);
     }
 
     boost::optional<double> AirConditionerVariableRefrigerantFlowFluidTemperatureControl_Impl::ratedEvaporativeCapacity() const {

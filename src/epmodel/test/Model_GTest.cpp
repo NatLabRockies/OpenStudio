@@ -15,6 +15,7 @@
 #include "../ModelObject/BranchList.hpp"
 #include "../ModelObject/BranchList_Impl.hpp"
 #include "../ModelObject/Branch_Impl.hpp"
+#include "../ModelObject/FluidPropertiesName.hpp"
 #include "../Model.hpp"
 #include "../ResourceObject/ScheduleTypeLimits.hpp"
 #include "../StraightComponent/Node.hpp"
@@ -30,6 +31,51 @@
 #include <utilities/idd/IddEnums.hxx>
 
 using namespace openstudio::epmodel;
+
+TEST_F(EPModelFixture, Model_EnsuresSharedRefrigerantProperties) {
+  Model model;
+
+  EXPECT_FALSE(model.ensureRefrigerantProperties("NotARefrigerant"));
+  EXPECT_TRUE(model.getObjectsByType(openstudio::IddObjectType::FluidProperties_Name).empty());
+
+  EXPECT_TRUE(model.ensureRefrigerantProperties("r410A"));
+  ASSERT_TRUE(model.getObjectByTypeAndName(openstudio::IddObjectType::FluidProperties_Name, "R410a"));
+  EXPECT_EQ(2u, model.getObjectsByType(openstudio::IddObjectType::FluidProperties_Temperatures).size());
+  EXPECT_EQ(7u, model.getObjectsByType(openstudio::IddObjectType::FluidProperties_Saturated).size());
+  EXPECT_EQ(88u, model.getObjectsByType(openstudio::IddObjectType::FluidProperties_Superheated).size());
+
+  const auto objectCount = model.numObjects();
+  EXPECT_TRUE(model.ensureRefrigerantProperties("R410a"));
+  EXPECT_EQ(objectCount, model.numObjects());
+
+  EXPECT_TRUE(model.ensureRefrigerantProperties("R11"));
+  EXPECT_EQ(2u, model.getObjectsByType(openstudio::IddObjectType::FluidProperties_Name).size());
+  EXPECT_TRUE(model.getObjectByTypeAndName(openstudio::IddObjectType::FluidProperties_Name, "R11"));
+}
+
+TEST_F(EPModelFixture, Model_ProvidesEverySupportedRefrigerantDataset) {
+  for (const char* refrigerant : {"R11", "R12", "R22", "R123", "R134a", "R404a", "R407a", "R410a", "NH3", "R507a", "R744"}) {
+    Model model;
+    EXPECT_TRUE(model.ensureRefrigerantProperties(refrigerant)) << refrigerant;
+    EXPECT_TRUE(model.getObjectByTypeAndName(openstudio::IddObjectType::FluidProperties_Name, refrigerant)) << refrigerant;
+    EXPECT_GT(model.getObjectsByType(openstudio::IddObjectType::FluidProperties_Temperatures).size(), 0u) << refrigerant;
+    EXPECT_GT(model.getObjectsByType(openstudio::IddObjectType::FluidProperties_Saturated).size(), 0u) << refrigerant;
+    EXPECT_GT(model.getObjectsByType(openstudio::IddObjectType::FluidProperties_Superheated).size(), 0u) << refrigerant;
+  }
+}
+
+TEST_F(EPModelFixture, Model_TrustsCallerOwnedRefrigerantProperties) {
+  Model model;
+  FluidPropertiesName customProperties(model);
+  ASSERT_TRUE(customProperties.setFluidName("R410a"));
+  ASSERT_TRUE(customProperties.setFluidType("Refrigerant"));
+
+  const auto objectCount = model.numObjects();
+  EXPECT_TRUE(model.ensureRefrigerantProperties("R410a"));
+  EXPECT_EQ(objectCount, model.numObjects());
+  EXPECT_TRUE(model.getObjectsByType(openstudio::IddObjectType::FluidProperties_Saturated).empty());
+  EXPECT_TRUE(model.getObjectsByType(openstudio::IddObjectType::FluidProperties_Superheated).empty());
+}
 
 TEST_F(EPModelFixture, Model_TransientNodeFactory) {
   Model model;

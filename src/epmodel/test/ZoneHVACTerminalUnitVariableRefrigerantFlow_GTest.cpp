@@ -152,6 +152,35 @@ TEST_F(EPModelFixture, ZoneHVACTerminalUnitVariableRefrigerantFlow_FluidTemperat
   EXPECT_TRUE(terminal.heatingCoil()->optionalCast<CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl>());
 }
 
+TEST_F(EPModelFixture, ZoneHVACTerminalUnitVariableRefrigerantFlow_ExplicitFluidTerminalsKeepRenamedAirPathsDistinct) {
+  Model model;
+  CoilCoolingDXVariableRefrigerantFlowFluidTemperatureControl firstCoolingCoil(model);
+  CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl firstHeatingCoil(model);
+  FanSystemModel firstFan(model);
+  ZoneHVACTerminalUnitVariableRefrigerantFlow firstTerminal(model, firstCoolingCoil, firstHeatingCoil, firstFan);
+
+  ASSERT_TRUE(firstTerminal.inletNode());
+  ASSERT_TRUE(firstTerminal.coolingCoilOutletNode());
+  ASSERT_TRUE(firstTerminal.outdoorAirMixer());
+  const auto firstInletHandle = firstTerminal.inletNode()->handle();
+  const auto firstCoolingOutletHandle = firstTerminal.coolingCoilOutletNode()->handle();
+  const auto firstMixerHandle = firstTerminal.outdoorAirMixer()->handle();
+  ASSERT_TRUE(firstTerminal.setName("Renamed Explicit FTC Terminal"));
+
+  CoilCoolingDXVariableRefrigerantFlowFluidTemperatureControl secondCoolingCoil(model);
+  CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl secondHeatingCoil(model);
+  FanSystemModel secondFan(model);
+  ZoneHVACTerminalUnitVariableRefrigerantFlow secondTerminal(model, secondCoolingCoil, secondHeatingCoil, secondFan);
+
+  EXPECT_NE(firstTerminal.nameString(), secondTerminal.nameString());
+  ASSERT_TRUE(secondTerminal.inletNode());
+  ASSERT_TRUE(secondTerminal.coolingCoilOutletNode());
+  ASSERT_TRUE(secondTerminal.outdoorAirMixer());
+  EXPECT_NE(firstInletHandle, secondTerminal.inletNode()->handle());
+  EXPECT_NE(firstCoolingOutletHandle, secondTerminal.coolingCoilOutletNode()->handle());
+  EXPECT_NE(firstMixerHandle, secondTerminal.outdoorAirMixer()->handle());
+}
+
 TEST_F(EPModelFixture, ZoneHVACTerminalUnitVariableRefrigerantFlow_StandardChildConstructorAdoptsSuppliedObjects) {
   const auto idfPath = openstudio::tempDir() / openstudio::toPath("epmodel-vrf-terminal-explicit-children.idf");
   Model model;

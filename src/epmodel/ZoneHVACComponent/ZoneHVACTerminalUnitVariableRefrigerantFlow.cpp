@@ -11,6 +11,8 @@
 #include "HVACComponent/AirLoopHVACOutdoorAirSystem_Impl.hpp"
 #include "HVACComponent/AirConditionerVariableRefrigerantFlowFluidTemperatureControl.hpp"
 #include "HVACComponent/AirConditionerVariableRefrigerantFlowFluidTemperatureControl_Impl.hpp"
+#include "HVACComponent/AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR.hpp"
+#include "HVACComponent/AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR_Impl.hpp"
 #include "HVACComponent/ThermalZone.hpp"
 #include "HVACComponent/ThermalZone_Impl.hpp"
 #include "Branch.hpp"
@@ -118,24 +120,27 @@ namespace epmodel {
       OS_ASSERT(terminal.setSupplyAirFanPlacement("DrawThrough"));
     }
 
+    void reserveUniqueVRFTerminalName(ZoneHVACTerminalUnitVariableRefrigerantFlow& terminal, const Model& model) {
+      // A caller may rename a terminal while its constructor-owned node names
+      // remain unchanged. Do not let a later terminal reuse that vacated
+      // default name and alias the first terminal's internal air path.
+      const auto companionNameIsTaken = [&model](const std::string& terminalName) {
+        return static_cast<bool>(model.getConcreteModelObjectByName<Node>(terminalName + " Air Inlet Node"))
+               || static_cast<bool>(model.getConcreteModelObjectByName<Node>(terminalName + " Cooling Coil Outlet Node"))
+               || static_cast<bool>(model.getConcreteModelObjectByName<OutdoorAirMixer>(terminalName + " OA Mixer"));
+      };
+      while (companionNameIsTaken(terminal.nameString())) {
+        OS_ASSERT(terminal.setName(model.nextName(terminal.iddObjectType(), false)));
+      }
+    }
+
   }  // namespace
 
   ZoneHVACTerminalUnitVariableRefrigerantFlow::ZoneHVACTerminalUnitVariableRefrigerantFlow(const Model& model, bool isFluidTemperatureControl)
     : ZoneHVACComponent(ZoneHVACTerminalUnitVariableRefrigerantFlow::iddObjectType(), model) {
     OS_ASSERT(getImpl<detail::ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl>());
     initializeVRFTerminalDefaults(*this, model);
-
-    // A caller may rename a terminal while its constructor-owned node names
-    // remain unchanged. Do not let a later terminal reuse that vacated
-    // default name and alias the first terminal's internal air path.
-    const auto companionNameIsTaken = [&model](const std::string& terminalName) {
-      return static_cast<bool>(model.getConcreteModelObjectByName<Node>(terminalName + " Air Inlet Node"))
-             || static_cast<bool>(model.getConcreteModelObjectByName<Node>(terminalName + " Cooling Coil Outlet Node"))
-             || static_cast<bool>(model.getConcreteModelObjectByName<OutdoorAirMixer>(terminalName + " OA Mixer"));
-    };
-    while (companionNameIsTaken(nameString())) {
-      OS_ASSERT(setName(model.nextName(iddObjectType(), false)));
-    }
+    reserveUniqueVRFTerminalName(*this, model);
     const auto baseName = nameString();
     if (isFluidTemperatureControl) {
       CoilCoolingDXVariableRefrigerantFlowFluidTemperatureControl coolingCoil(model);
@@ -169,6 +174,7 @@ namespace epmodel {
                         validateStandardVRFTerminalChildren(model, coolingCoil, heatingCoil, fan)) {
     OS_ASSERT(getImpl<detail::ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl>());
     initializeVRFTerminalDefaults(*this, model);
+    reserveUniqueVRFTerminalName(*this, model);
     OS_ASSERT(setCoolingCoil(coolingCoil));
     OS_ASSERT(setHeatingCoil(heatingCoil));
     OS_ASSERT(setSupplyAirFan(fan));
@@ -181,6 +187,7 @@ namespace epmodel {
                         validateFluidVRFTerminalChildren(model, coolingCoil, heatingCoil, fan)) {
     OS_ASSERT(getImpl<detail::ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl>());
     initializeVRFTerminalDefaults(*this, model);
+    reserveUniqueVRFTerminalName(*this, model);
     OS_ASSERT(setCoolingCoil(coolingCoil));
     OS_ASSERT(setHeatingCoil(heatingCoil));
     OS_ASSERT(setSupplyAirFan(fan));
@@ -1366,6 +1373,13 @@ namespace epmodel {
           }
         }
       }
+      for (const auto& system : model().getConcreteModelObjects<AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR>()) {
+        for (const auto& terminal : system.terminals()) {
+          if (terminal.handle() == handle()) {
+            return system.cast<HVACComponent>();
+          }
+        }
+      }
       return boost::none;
     }
 
@@ -1828,6 +1842,9 @@ namespace epmodel {
         } else if (auto fluidSystem = system->optionalCast<AirConditionerVariableRefrigerantFlowFluidTemperatureControl>()) {
           auto terminal = getObject<ZoneHVACTerminalUnitVariableRefrigerantFlow>();
           fluidSystem->removeTerminal(terminal);
+        } else if (auto heatRecoverySystem = system->optionalCast<AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR>()) {
+          auto terminal = getObject<ZoneHVACTerminalUnitVariableRefrigerantFlow>();
+          heatRecoverySystem->removeTerminal(terminal);
         }
       }
       const auto ownerModel = model();

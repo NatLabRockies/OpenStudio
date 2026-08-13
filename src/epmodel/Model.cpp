@@ -6,6 +6,8 @@
 #include "Model.hpp"
 #include "Model_Impl.hpp"
 
+#include <src/epmodel/embedded_files.hxx>
+
 #include <utilities/core/Compare.hpp>
 #include <utilities/math/FloatCompare.hpp>
 #include <utilities/idd/Refrigeration_Subcooler_FieldEnums.hxx>
@@ -876,7 +878,28 @@
 #include "../utilities/idf/IdfFile.hpp"
 #include "../utilities/idf/IdfObject.hpp"
 
+#include <algorithm>
+#include <array>
 #include <sstream>
+#include <utility>
+
+namespace {
+
+constexpr std::array<std::pair<const char*, const char*>, 11> refrigerantPropertyResources = {{
+  {"R11", ":/Resources/R11_FluidPropertiesDataSet.idf"},
+  {"R12", ":/Resources/R12_FluidPropertiesDataSet.idf"},
+  {"R22", ":/Resources/R22_FluidPropertiesDataSet.idf"},
+  {"R123", ":/Resources/R123_FluidPropertiesDataSet.idf"},
+  {"R134a", ":/Resources/R134a_FluidPropertiesDataSet.idf"},
+  {"R404a", ":/Resources/R404a_FluidPropertiesDataSet.idf"},
+  {"R407a", ":/Resources/R407a_FluidPropertiesDataSet.idf"},
+  {"R410a", ":/Resources/R410a_FluidPropertiesDataSet.idf"},
+  {"NH3", ":/Resources/NH3_FluidPropertiesDataSet.idf"},
+  {"R507a", ":/Resources/R507a_FluidPropertiesDataSet.idf"},
+  {"R744", ":/Resources/R744_FluidPropertiesDataSet.idf"},
+}};
+
+}  // namespace
 
 namespace openstudio {
 namespace epmodel {
@@ -959,6 +982,37 @@ namespace epmodel {
     }
 
     return Model(*idfFile);
+  }
+
+  bool Model::ensureRefrigerantProperties(const std::string& refrigerantType) const {
+    const auto resource =
+      std::find_if(refrigerantPropertyResources.cbegin(), refrigerantPropertyResources.cend(),
+                   [&refrigerantType](const auto& candidate) { return openstudio::istringEqual(refrigerantType, candidate.first); });
+    if (resource == refrigerantPropertyResources.cend()) {
+      LOG_FREE(Warn, "openstudio.epmodel.Model", "Unsupported refrigerant type '" << refrigerantType << "'.");
+      return false;
+    }
+
+    if (getObjectByTypeAndName(openstudio::IddObjectType::FluidProperties_Name, resource->first)) {
+      return true;
+    }
+
+    std::stringstream stream;
+    stream << ::epmodel::embedded_files::getFileAsString(resource->second);
+    auto idfFile = openstudio::IdfFile::load(stream, openstudio::IddFileType::EnergyPlus);
+    if (!idfFile) {
+      LOG_FREE(Error, "openstudio.epmodel.Model", "Could not load the built-in " << resource->first << " property dataset.");
+      return false;
+    }
+
+    const auto sourceObjects = idfFile->objects();
+    Model owningModel = *this;
+    const auto importedObjects = owningModel.addObjects(sourceObjects);
+    if (importedObjects.size() != sourceObjects.size()) {
+      LOG_FREE(Error, "openstudio.epmodel.Model", "Could not import the complete built-in " << resource->first << " property dataset.");
+      return false;
+    }
+    return true;
   }
 
   Schedule Model::alwaysOnDiscreteSchedule() const {

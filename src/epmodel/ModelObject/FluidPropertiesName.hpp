@@ -43,7 +43,7 @@ namespace epmodel {
     // - Field Mapping: fluidName and fluidType map directly to EnergyPlus FluidProperties:Name scalar fields.
     // - ForwardTranslator evidence: ForwardTranslator::createFluidProperties writes FluidProperties_NameFields::FluidName and
     //   FluidProperties_NameFields::FluidType directly, including "Glycol" for glycol-backed generated fluids.
-    // - TODO(parity): Add helper APIs for translator-managed fluid datasets if needed after scalar saturation.
+    // - Shared Data: `Model::ensureRefrigerantProperties` adds complete built-in refrigerant datasets idempotently and preserves any caller-owned same-name dataset.
     std::string fluidName() const;
     bool setFluidName(const std::string& fluidName);
 

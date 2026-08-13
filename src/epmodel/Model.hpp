@@ -78,6 +78,10 @@ namespace epmodel {
     std::string alwaysOnDiscreteScheduleName() const;
     Schedule alwaysOnContinuousSchedule() const;
     std::string alwaysOnContinuousScheduleName() const;
+    /** Ensures that the complete built-in EnergyPlus property dataset for a
+     *  supported refrigerant is present. An existing FluidProperties:Name is
+     *  treated as caller-owned and is not replaced or supplemented. */
+    bool ensureRefrigerantProperties(const std::string& refrigerantType) const;
     SanitizationReport canonicalize(SanitizationPolicy policy = SanitizationPolicy::Repair);
     boost::optional<SqlFile> sqlFile() const;
     bool setSqlFile(const SqlFile& sqlFile);

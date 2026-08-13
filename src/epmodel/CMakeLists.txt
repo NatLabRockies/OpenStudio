@@ -2790,9 +2790,41 @@ set(${target_name}_sub_swig_src
 
 list(APPEND ${target_name}_swig_src ${${target_name}_sub_swig_src})
 
+set(epmodel_refrigerant_files
+  "${PROJECT_SOURCE_DIR}/src/energyplus/Resources/R11_FluidPropertiesDataSet.idf"
+  "${PROJECT_SOURCE_DIR}/src/energyplus/Resources/R12_FluidPropertiesDataSet.idf"
+  "${PROJECT_SOURCE_DIR}/src/energyplus/Resources/R22_FluidPropertiesDataSet.idf"
+  "${PROJECT_SOURCE_DIR}/src/energyplus/Resources/R123_FluidPropertiesDataSet.idf"
+  "${PROJECT_SOURCE_DIR}/src/energyplus/Resources/R134a_FluidPropertiesDataSet.idf"
+  "${PROJECT_SOURCE_DIR}/src/energyplus/Resources/R404a_FluidPropertiesDataSet.idf"
+  "${PROJECT_SOURCE_DIR}/src/energyplus/Resources/R407a_FluidPropertiesDataSet.idf"
+  "${PROJECT_SOURCE_DIR}/src/energyplus/Resources/R410a_FluidPropertiesDataSet.idf"
+  "${PROJECT_SOURCE_DIR}/src/energyplus/Resources/NH3_FluidPropertiesDataSet.idf"
+  "${PROJECT_SOURCE_DIR}/src/energyplus/Resources/R507a_FluidPropertiesDataSet.idf"
+  "${PROJECT_SOURCE_DIR}/src/energyplus/Resources/R744_FluidPropertiesDataSet.idf"
+)
+
+set(epmodel_refrigerant_embedded_paths
+  Resources/R11_FluidPropertiesDataSet.idf
+  Resources/R12_FluidPropertiesDataSet.idf
+  Resources/R22_FluidPropertiesDataSet.idf
+  Resources/R123_FluidPropertiesDataSet.idf
+  Resources/R134a_FluidPropertiesDataSet.idf
+  Resources/R404a_FluidPropertiesDataSet.idf
+  Resources/R407a_FluidPropertiesDataSet.idf
+  Resources/R410a_FluidPropertiesDataSet.idf
+  Resources/NH3_FluidPropertiesDataSet.idf
+  Resources/R507a_FluidPropertiesDataSet.idf
+  Resources/R744_FluidPropertiesDataSet.idf
+)
+
+include("${PROJECT_SOURCE_DIR}/embedded/EmbedFiles.cmake")
+embed_files("${epmodel_refrigerant_files}" "${epmodel_refrigerant_embedded_paths}" EPMODEL_EMBEDDED_OUTPUT epmodel)
+
 add_library(${target_name}
   OBJECT
   ${${target_name}_src}
+  ${EPMODEL_EMBEDDED_OUTPUT}
   )
 
 set(${target_name}_depends
@@ -2801,7 +2833,7 @@ set(${target_name}_depends
 set(${target_name}_depends ${${target_name}_depends} PARENT_SCOPE)
 
 target_compile_definitions(${target_name} PRIVATE openstudio_epmodel_EXPORTS SHARED_OS_LIBS)
-target_include_directories(${target_name} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/HVACComponent
+target_include_directories(${target_name} PUBLIC ${PROJECT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/HVACComponent
   ${CMAKE_CURRENT_SOURCE_DIR}/ModelObject
   ${CMAKE_CURRENT_SOURCE_DIR}/scaffolds
   ${CMAKE_CURRENT_SOURCE_DIR}/StraightComponent

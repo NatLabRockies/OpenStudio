@@ -7,7 +7,7 @@
 #define EPMODEL_AIRCONDITIONERVARIABLEREFRIGERANTFLOWFLUIDTEMPERATURECONTROLHR_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "HVACComponent.hpp"
 
 #include <memory>
 #include <vector>
@@ -16,12 +16,15 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class Curve;
+  class Schedule;
+  class ZoneHVACTerminalUnitVariableRefrigerantFlow;
 
   namespace detail {
     class AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR_Impl;
   }
 
-  class EPMODEL_API AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR : public ModelObject
+  class EPMODEL_API AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR : public HVACComponent
   {
    public:
     explicit AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR(const Model& model);
@@ -43,13 +46,21 @@ namespace epmodel {
     static std::vector<std::string> defrostControlValues();
 
     // Schema Alignment Notes:
-    // - Status: Scalar Parity. The long scalar VRF heat-recovery surface is aligned, while terminal, loading-index, and other relationship APIs are still omitted.
+    // - Status: Partial Parity. The long scalar VRF heat-recovery surface, terminal ownership, and required outdoor-unit curve relationships are aligned. Canonical loading rows exist in EnergyPlus storage but do not yet have a Model-shaped public API.
     // - Canonical Counterpart: openstudio::model::AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR.
-    // - Implemented Parity: The preserved scalar API surface mirrors the canonical heat-recovery, refrigerant, defrost, pipe, and compressor-field contract exposed in the model type.
-    // - Documented Delta: epmodel currently models this object as a `ModelObject` wrapper and does not expose terminal, loading-index, or curve/list relationship APIs yet.
-    // - Field/Storage Mapping: The preserved scalars map directly to EnergyPlus `AirConditioner:VariableRefrigerantFlow:FluidTemperatureControl:HR` storage.
+    // - Implemented Parity: The preserved scalar API surface mirrors the canonical heat-recovery, refrigerant, defrost, pipe, and compressor-field contract exposed in the model type. The constructor creates the two required outdoor-unit curves, three complete compressor-loading rows, and one shared built-in refrigerant dataset through `Model`.
+    // - Documented Delta: epmodel does not expose a Model-shaped `LoadingIndex` API, the optional defrost-curve relationship, or autosized-result conveniences yet.
+    // - Field/Storage Mapping: The preserved scalars map directly to EnergyPlus `AirConditioner:VariableRefrigerantFlow:FluidTemperatureControl:HR` storage. Terminal ownership is stored in the referenced `ZoneTerminalUnitList`; refrigerant tables remain model-owned EnergyPlus objects and survive consumer removal.
     // - Evidence: `src/model/AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR.hpp`, `src/model/AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirConditionerVariableRefrigerantFlowFluidTemperatureControlHR.cpp`, `src/epmodel/test/AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR_GTest.cpp`, and `src/model/test/AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR_GTest.cpp`.
-    // - Remaining Parity Work: Add the omitted terminal, loading-index, and curve/list relationship APIs after the relationship layer is available.
+    // - Remaining Parity Work: Add the omitted loading-index and optional defrost-curve APIs when a workflow requires mutation beyond the complete default graph.
+    Schedule availabilitySchedule() const;
+    bool setAvailabilitySchedule(Schedule& schedule);
+
+    bool addTerminal(ZoneHVACTerminalUnitVariableRefrigerantFlow& terminal);
+    void removeTerminal(ZoneHVACTerminalUnitVariableRefrigerantFlow& terminal);
+    void removeAllTerminals();
+    std::vector<ZoneHVACTerminalUnitVariableRefrigerantFlow> terminals() const;
+
     std::string refrigerantType() const;
     bool setRefrigerantType(const std::string& refrigerantType);
 
@@ -124,6 +135,12 @@ namespace epmodel {
 
     double outdoorUnitFanFlowRatePerUnitofRatedEvaporativeCapacity() const;
     bool setOutdoorUnitFanFlowRatePerUnitofRatedEvaporativeCapacity(double outdoorUnitFanFlowRatePerUnitofRatedEvaporativeCapacity);
+
+    Curve outdoorUnitEvaporatingTemperatureFunctionofSuperheatingCurve() const;
+    bool setOutdoorUnitEvaporatingTemperatureFunctionofSuperheatingCurve(const Curve& curve);
+
+    Curve outdoorUnitCondensingTemperatureFunctionofSubcoolingCurve() const;
+    bool setOutdoorUnitCondensingTemperatureFunctionofSubcoolingCurve(const Curve& curve);
 
     double diameterofMainPipeforSuctionGas() const;
     bool setDiameterofMainPipeforSuctionGas(double diameterofMainPipeforSuctionGas);
