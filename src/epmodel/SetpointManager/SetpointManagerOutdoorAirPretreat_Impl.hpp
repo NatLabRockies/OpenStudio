@@ -38,6 +38,22 @@ namespace epmodel {
       bool setMaximumSetpointHumidityRatio(double maximumSetpointHumidityRatio);
       void resetMaximumSetpointHumidityRatio();
 
+      boost::optional<openstudio::epmodel::Node> referenceSetpointNode() const;
+      bool setReferenceSetpointNode(const openstudio::epmodel::Node& node);
+      void resetReferenceSetpointNode();
+
+      boost::optional<openstudio::epmodel::Node> mixedAirStreamNode() const;
+      bool setMixedAirStreamNode(const openstudio::epmodel::Node& node);
+      void resetMixedAirStreamNode();
+
+      boost::optional<openstudio::epmodel::Node> outdoorAirStreamNode() const;
+      bool setOutdoorAirStreamNode(const openstudio::epmodel::Node& node);
+      void resetOutdoorAirStreamNode();
+
+      boost::optional<openstudio::epmodel::Node> returnAirStreamNode() const;
+      bool setReturnAirStreamNode(const openstudio::epmodel::Node& node);
+      void resetReturnAirStreamNode();
+
       boost::optional<openstudio::epmodel::Node> setpointNode() const override;
       std::string controlVariable() const override;
       bool setControlVariable(const std::string& value) override;

@@ -17,6 +17,8 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class Schedule;
+  class HeatExchangerDesiccantBalancedFlowPerformanceDataType1;
 
   namespace detail {
     class HeatExchangerDesiccantBalancedFlow_Impl;
@@ -26,6 +28,8 @@ namespace epmodel {
   {
    public:
     explicit HeatExchangerDesiccantBalancedFlow(const Model& model);
+    explicit HeatExchangerDesiccantBalancedFlow(const Model& model,
+                                                const HeatExchangerDesiccantBalancedFlowPerformanceDataType1& heatExchangerPerformance);
 
     virtual ~HeatExchangerDesiccantBalancedFlow() override = default;
     HeatExchangerDesiccantBalancedFlow(const HeatExchangerDesiccantBalancedFlow& other) = default;
@@ -36,13 +40,22 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     // Schema Alignment Notes:
-    // - Status: Partial Parity. The core economizer-lockout scalar is aligned, but the canonical performance-object and topology surface is still missing.
+    // - Status: Near Parity. The selected schedule, performance-object, economizer-lockout, and two-stream topology behavior is aligned.
     // - Canonical Counterpart: openstudio::model::HeatExchangerDesiccantBalancedFlow.
-    // - Implemented Parity: `economizerLockout` preserves the canonical scalar control behavior for the desiccant heat exchanger wrapper.
-    // - Documented Delta: Epmodel does not yet expose the canonical availability schedule, performance-object linkage, or airflow-network equivalent-duct helpers present in `openstudio::model`.
-    // - Field/Storage Mapping: The implemented scalar maps directly to `HeatExchanger:Desiccant:BalancedFlow` storage.
+    // - Implemented Parity: Construction supplies the required availability schedule and performance data; relationship replacement, validation,
+    //   shared-child removal, `economizerLockout`, and coordinated outdoor/relief placement follow the selected canonical behavior.
+    // - Documented Delta: Epmodel does not yet expose the airflow-network equivalent-duct helpers present in `openstudio::model`.
+    // - Field/Storage Mapping: The schedule, performance type/name pair, and economizer lockout map directly to
+    //   `HeatExchanger:Desiccant:BalancedFlow` storage; the two air streams use its four node fields.
     // - Evidence: `src/model/HeatExchangerDesiccantBalancedFlow.hpp`, `src/model/HeatExchangerDesiccantBalancedFlow.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateHeatExchangerDesiccantBalancedFlow.cpp` anchor the canonical API and translator behavior.
-    // - Remaining Parity Work: Add the performance-object, schedule, and airflow-network relationship APIs when the epmodel relationship layer can represent them canonically.
+    // - Remaining Parity Work: Add airflow-network equivalent-duct helpers and numerical performance comparison when a workflow requires them.
+
+    Schedule availabilitySchedule() const;
+    bool setAvailabilitySchedule(Schedule& schedule);
+
+    HeatExchangerDesiccantBalancedFlowPerformanceDataType1 heatExchangerPerformance() const;
+    bool setHeatExchangerPerformance(const HeatExchangerDesiccantBalancedFlowPerformanceDataType1& heatExchangerPerformance);
+
     /** @name Economizer Lockout */
     //@{
     bool economizerLockout() const;
