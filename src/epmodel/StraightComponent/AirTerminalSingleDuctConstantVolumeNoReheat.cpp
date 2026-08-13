@@ -157,6 +157,14 @@ namespace epmodel {
       return boost::none;
     }
 
+    bool AirTerminalSingleDuctConstantVolumeNoReheat_Impl::isRemovable() const {
+      if (!HVACComponent_Impl::isRemovable()) {
+        return false;
+      }
+      auto terminal = getObject<openstudio::epmodel::ModelObject>().cast<StraightComponent>();
+      return !SingleDuctTerminalRemovalPlan::hasTopology(terminal) || static_cast<bool>(SingleDuctTerminalRemovalPlan::prepare(terminal));
+    }
+
     bool AirTerminalSingleDuctConstantVolumeNoReheat_Impl::removeFromLoop() {
       auto terminal = getObject<openstudio::epmodel::ModelObject>().cast<StraightComponent>();
       auto plan = SingleDuctTerminalRemovalPlan::prepare(terminal);
