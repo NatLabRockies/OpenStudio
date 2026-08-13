@@ -7,7 +7,7 @@
 #define EPMODEL_AIRCONDITIONERVARIABLEREFRIGERANTFLOWFLUIDTEMPERATURECONTROL_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "HVACComponent.hpp"
 
 #include <memory>
 #include <vector>
@@ -16,12 +16,15 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class Curve;
+  class Schedule;
+  class ZoneHVACTerminalUnitVariableRefrigerantFlow;
 
   namespace detail {
     class AirConditionerVariableRefrigerantFlowFluidTemperatureControl_Impl;
   }
 
-  class EPMODEL_API AirConditionerVariableRefrigerantFlowFluidTemperatureControl : public ModelObject
+  class EPMODEL_API AirConditionerVariableRefrigerantFlowFluidTemperatureControl : public HVACComponent
   {
    public:
     explicit AirConditionerVariableRefrigerantFlowFluidTemperatureControl(const Model& model);
@@ -41,13 +44,24 @@ namespace epmodel {
     static std::vector<std::string> defrostControlValues();
 
     // Schema Alignment Notes:
-    // - Status: Scalar Parity. The long scalar VRF surface is aligned, while terminal, loading-index, and other relationship APIs are still omitted.
+    // - Status: Partial Parity. The long scalar VRF surface, terminal ownership, required outdoor-unit curves, and constructor-default compressor
+    //   loading rows are aligned.
     // - Canonical Counterpart: openstudio::model::AirConditionerVariableRefrigerantFlowFluidTemperatureControl.
     // - Implemented Parity: The preserved scalar API surface mirrors the canonical VRF cooling/heating, refrigerant, defrost, pipe, and heat-recovery fields exposed in the model type.
-    // - Documented Delta: epmodel currently models this object as a `ModelObject` wrapper and does not expose terminal, loading-index, or curve/list relationship APIs yet.
-    // - Field/Storage Mapping: The preserved scalars map directly to EnergyPlus `AirConditioner:VariableRefrigerantFlow:FluidTemperatureControl` storage.
+    // - Documented Delta: Loading indexes are stored directly as EnergyPlus extensible rows rather than transient Model `LoadingIndex` objects.
+    // - Field/Storage Mapping: Scalars and the two public outdoor-unit curve relationships map directly to EnergyPlus
+    //   `AirConditioner:VariableRefrigerantFlow:FluidTemperatureControl` storage; the constructor creates three loading rows referencing six
+    //   `Curve:Biquadratic` objects.
     // - Evidence: `src/model/AirConditionerVariableRefrigerantFlowFluidTemperatureControl.hpp`, `src/model/AirConditionerVariableRefrigerantFlowFluidTemperatureControl.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirConditionerVariableRefrigerantFlowFluidTemperatureControl.cpp`, `src/epmodel/test/AirConditionerVariableRefrigerantFlowFluidTemperatureControl_GTest.cpp`, and `src/model/test/AirConditionerVariableRefrigerantFlowFluidTemperatureControl_GTest.cpp`.
-    // - Remaining Parity Work: Add the omitted terminal, loading-index, and curve/list relationship APIs after the relationship layer is available.
+    // - Remaining Parity Work: Add a Model-shaped public loading-index API, the optional defrost curve relationship, and autosized-result conveniences.
+
+    Schedule availabilitySchedule() const;
+    bool setAvailabilitySchedule(Schedule& schedule);
+
+    bool addTerminal(ZoneHVACTerminalUnitVariableRefrigerantFlow& terminal);
+    void removeTerminal(ZoneHVACTerminalUnitVariableRefrigerantFlow& terminal);
+    void removeAllTerminals();
+    std::vector<ZoneHVACTerminalUnitVariableRefrigerantFlow> terminals() const;
 
     std::string refrigerantType() const;
     bool setRefrigerantType(const std::string& refrigerantType);
@@ -104,6 +118,12 @@ namespace epmodel {
 
     double outdoorUnitFanFlowRatePerUnitofRatedEvaporativeCapacity() const;
     bool setOutdoorUnitFanFlowRatePerUnitofRatedEvaporativeCapacity(double outdoorUnitFanFlowRatePerUnitofRatedEvaporativeCapacity);
+
+    Curve outdoorUnitEvaporatingTemperatureFunctionofSuperheatingCurve() const;
+    bool setOutdoorUnitEvaporatingTemperatureFunctionofSuperheatingCurve(const Curve& curve);
+
+    Curve outdoorUnitCondensingTemperatureFunctionofSubcoolingCurve() const;
+    bool setOutdoorUnitCondensingTemperatureFunctionofSubcoolingCurve(const Curve& curve);
 
     double diameterofMainPipeConnectingOutdoorUnittotheFirstBranchJoint() const;
     bool setDiameterofMainPipeConnectingOutdoorUnittotheFirstBranchJoint(double diameterofMainPipeConnectingOutdoorUnittotheFirstBranchJoint);

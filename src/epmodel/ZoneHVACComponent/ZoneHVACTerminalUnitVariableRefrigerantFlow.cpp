@@ -9,6 +9,8 @@
 #include "HVACComponent.hpp"
 #include "HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
 #include "HVACComponent/AirLoopHVACOutdoorAirSystem_Impl.hpp"
+#include "HVACComponent/AirConditionerVariableRefrigerantFlowFluidTemperatureControl.hpp"
+#include "HVACComponent/AirConditionerVariableRefrigerantFlowFluidTemperatureControl_Impl.hpp"
 #include "HVACComponent/ThermalZone.hpp"
 #include "HVACComponent/ThermalZone_Impl.hpp"
 #include "Branch.hpp"
@@ -34,6 +36,8 @@
 #include "StraightComponent/CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl.hpp"
 #include "StraightComponent/FanOnOff.hpp"
 #include "StraightComponent/FanSystemModel.hpp"
+#include "StraightComponent/FanVariableVolume.hpp"
+#include "StraightComponent/FanVariableVolume_Impl.hpp"
 #include "StraightComponent/Node.hpp"
 #include "StraightComponent/StraightComponent.hpp"
 #include "StraightComponent/StraightComponent_Impl.hpp"
@@ -72,6 +76,24 @@ namespace epmodel {
           && (fanType != IddObjectType::Fan_SystemModel)) {
         LOG_FREE_AND_THROW("openstudio.epmodel.ZoneHVACTerminalUnitVariableRefrigerantFlow",
                            "A standard VRF terminal requires a FanConstantVolume, FanOnOff, or FanSystemModel supply fan, not "
+                             << fan.briefDescription() << ".");
+      }
+      return model;
+    }
+
+    const Model& validateFluidVRFTerminalChildren(const Model& model, const CoilCoolingDXVariableRefrigerantFlowFluidTemperatureControl& coolingCoil,
+                                                  const CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl& heatingCoil,
+                                                  const HVACComponent& fan) {
+      if ((coolingCoil.model() != model) || (heatingCoil.model() != model) || (fan.model() != model)) {
+        LOG_FREE_AND_THROW("openstudio.epmodel.ZoneHVACTerminalUnitVariableRefrigerantFlow",
+                           "The supplied fan and coils must belong to the terminal's model.");
+      }
+
+      const auto fanType = fan.iddObject().type();
+      if ((fanType != IddObjectType::OS_Fan_SystemModel) && (fanType != IddObjectType::OS_Fan_VariableVolume)
+          && (fanType != IddObjectType::Fan_SystemModel) && (fanType != IddObjectType::Fan_VariableVolume)) {
+        LOG_FREE_AND_THROW("openstudio.epmodel.ZoneHVACTerminalUnitVariableRefrigerantFlow",
+                           "A fluid-temperature-control VRF terminal requires a FanSystemModel or FanVariableVolume supply fan, not "
                              << fan.briefDescription() << ".");
       }
       return model;
@@ -145,6 +167,18 @@ namespace epmodel {
                                                                                            const HVACComponent& fan)
     : ZoneHVACComponent(ZoneHVACTerminalUnitVariableRefrigerantFlow::iddObjectType(),
                         validateStandardVRFTerminalChildren(model, coolingCoil, heatingCoil, fan)) {
+    OS_ASSERT(getImpl<detail::ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl>());
+    initializeVRFTerminalDefaults(*this, model);
+    OS_ASSERT(setCoolingCoil(coolingCoil));
+    OS_ASSERT(setHeatingCoil(heatingCoil));
+    OS_ASSERT(setSupplyAirFan(fan));
+  }
+
+  ZoneHVACTerminalUnitVariableRefrigerantFlow::ZoneHVACTerminalUnitVariableRefrigerantFlow(
+    const Model& model, const CoilCoolingDXVariableRefrigerantFlowFluidTemperatureControl& coolingCoil,
+    const CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl& heatingCoil, const HVACComponent& fan)
+    : ZoneHVACComponent(ZoneHVACTerminalUnitVariableRefrigerantFlow::iddObjectType(),
+                        validateFluidVRFTerminalChildren(model, coolingCoil, heatingCoil, fan)) {
     OS_ASSERT(getImpl<detail::ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl>());
     initializeVRFTerminalDefaults(*this, model);
     OS_ASSERT(setCoolingCoil(coolingCoil));
@@ -1118,6 +1152,14 @@ namespace epmodel {
             && (iddObjectType != IddObjectType::Fan_SystemModel) && (iddObjectType != IddObjectType::Fan_VariableVolume)) {
           return false;
         }
+        if (auto variableVolumeFan = fan.optionalCast<FanVariableVolume>()) {
+          auto convertedFan = variableVolumeFan->convertToFanSystemModel();
+          const bool result = setPointer(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::SupplyAirFanObjectName, convertedFan.handle(), false);
+          if (result) {
+            maintainContainedAirPath();
+          }
+          return result;
+        }
       } else if ((iddObjectType != IddObjectType::OS_Fan_ConstantVolume) && (iddObjectType != IddObjectType::OS_Fan_OnOff)
                  && (iddObjectType != IddObjectType::OS_Fan_SystemModel) && (iddObjectType != IddObjectType::Fan_ConstantVolume)
                  && (iddObjectType != IddObjectType::Fan_OnOff) && (iddObjectType != IddObjectType::Fan_SystemModel)) {
@@ -1311,6 +1353,13 @@ namespace epmodel {
 
     boost::optional<HVACComponent> ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::vrfSystem() const {
       for (const auto& system : model().getConcreteModelObjects<AirConditionerVariableRefrigerantFlow>()) {
+        for (const auto& terminal : system.terminals()) {
+          if (terminal.handle() == handle()) {
+            return system.cast<HVACComponent>();
+          }
+        }
+      }
+      for (const auto& system : model().getConcreteModelObjects<AirConditionerVariableRefrigerantFlowFluidTemperatureControl>()) {
         for (const auto& terminal : system.terminals()) {
           if (terminal.handle() == handle()) {
             return system.cast<HVACComponent>();
@@ -1776,6 +1825,9 @@ namespace epmodel {
         if (auto standardSystem = system->optionalCast<AirConditionerVariableRefrigerantFlow>()) {
           auto terminal = getObject<ZoneHVACTerminalUnitVariableRefrigerantFlow>();
           standardSystem->removeTerminal(terminal);
+        } else if (auto fluidSystem = system->optionalCast<AirConditionerVariableRefrigerantFlowFluidTemperatureControl>()) {
+          auto terminal = getObject<ZoneHVACTerminalUnitVariableRefrigerantFlow>();
+          fluidSystem->removeTerminal(terminal);
         }
       }
       const auto ownerModel = model();
