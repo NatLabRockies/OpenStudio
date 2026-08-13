@@ -69,6 +69,8 @@
 #include "StraightComponent/CoilCoolingDX_Impl.hpp"
 #include "StraightComponent/CoilCoolingDXTwoSpeed.hpp"
 #include "StraightComponent/CoilCoolingDXTwoSpeed_Impl.hpp"
+#include "StraightComponent/CoilSystemCoolingWaterHeatExchangerAssisted.hpp"
+#include "StraightComponent/CoilSystemCoolingWaterHeatExchangerAssisted_Impl.hpp"
 #include "StraightComponent/AirTerminalSingleDuctConstantVolumeCooledBeam.hpp"
 #include "StraightComponent/AirTerminalSingleDuctConstantVolumeCooledBeam_Impl.hpp"
 #include "StraightComponent/AirTerminalSingleDuctConstantVolumeFourPipeBeam.hpp"
@@ -4016,6 +4018,10 @@ namespace epmodel {
           addController(coolingCoil->controllerWaterCoil());
         } else if (const auto heatingCoil = supplyComponent.optionalCast<CoilHeatingWater>()) {
           addController(heatingCoil->controllerWaterCoil());
+        } else if (const auto assistedSystem = supplyComponent.optionalCast<CoilSystemCoolingWaterHeatExchangerAssisted>()) {
+          if (const auto coolingCoil = assistedSystem->coolingCoil().optionalCast<CoilCoolingWater>()) {
+            addController(coolingCoil->controllerWaterCoil());
+          }
         }
       }
 
@@ -5394,6 +5400,12 @@ namespace epmodel {
 
     void AirLoopHVAC_Impl::syncSetpointManagerMixedAirFanNodes() {
       auto supplyPath = supplyComponents(openstudio::IddObjectType::Catchall);
+
+      for (const auto& component : supplyPath) {
+        if (auto assistedSystem = component.optionalCast<CoilSystemCoolingWaterHeatExchangerAssisted>()) {
+          assistedSystem->getImpl<CoilSystemCoolingWaterHeatExchangerAssisted_Impl>()->syncStorageSetpointManager();
+        }
+      }
 
       // Mirror model intent: choose the last supply fan encountered on the
       // supply path (the one closest to supply outlet in path order).

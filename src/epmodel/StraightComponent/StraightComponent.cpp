@@ -22,6 +22,8 @@
 #include "ParentObject/ControllerOutdoorAir.hpp"
 #include "StraightComponent/CoilHeatingGas.hpp"
 #include "StraightComponent/CoilHeatingGas_Impl.hpp"
+#include "StraightComponent/CoilSystemCoolingWaterHeatExchangerAssisted.hpp"
+#include "StraightComponent/CoilSystemCoolingWaterHeatExchangerAssisted_Impl.hpp"
 #include "Splitter/AirLoopHVACZoneSplitter.hpp"
 #include "Mixer/AirLoopHVACZoneMixer.hpp"
 #include "Branch.hpp"
@@ -77,6 +79,10 @@ namespace epmodel {
             }
             return mixer.setPointer(oaSystem->mixedAirPort(), node.handle())
                    && controller.setPointer(openstudio::Controller_OutdoorAirFields::MixedAirNodeName, node.handle());
+          }
+          if (auto coilSystem = mutableObject.optionalCast<CoilSystemCoolingWaterHeatExchangerAssisted>()) {
+            auto impl = coilSystem->getImpl<CoilSystemCoolingWaterHeatExchangerAssisted_Impl>();
+            return inlet ? impl->setAirInletNode(node) : impl->setAirOutletNode(node);
           }
           if (auto waterToAir = mutableObject.optionalCast<WaterToAirComponent>()) {
             return waterToAir->setPointer(inlet ? waterToAir->airInletPort() : waterToAir->airOutletPort(), node.handle());

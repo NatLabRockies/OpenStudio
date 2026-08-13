@@ -42,17 +42,20 @@ namespace epmodel {
     static std::vector<std::string> coolingCoilObjectTypeValues();
 
     // Schema Alignment Notes:
-    // - Status: Partial Parity. The canonical child-object relationships, object-type helpers, and topology gate used by this wrapper are
-    //   present, while the heat-exchanger link remains a raw-name/object-type field per the underlying schema.
+    // - Status: Near Parity for the selected direct air-loop workload. The canonical child relationships, direct branch identity,
+    //   contained air path, plant-connected water coil, and controller/setpoint projection are present.
     // - Canonical Counterpart: openstudio::model::CoilSystemCoolingWaterHeatExchangerAssisted.
-    // - Implemented Parity: The default constructors, `coolingCoil`, its tracked relationship setter, `heatExchanger`, and child traversal
-    //   preserve the wrapper slice that the EnergyPlus schema supports for this object.
-    // - Documented Delta: The heat-exchanger slot is stored as a schema-valid name plus object-type pair rather than a tracked object-list
-    //   relationship; broader model-owned behavior outside this wrapper remains out of scope.
-    // - Field/Storage Mapping: Cooling-coil targets map through the EnergyPlus object-list field, while the heat-exchanger target is resolved
-    //   by name and synchronized through the companion object-type field.
+    // - Implemented Parity: The constructors, atomic relationship setters, child traversal, direct supply-branch placement, adjacent
+    //   rewiring, persistence, and recursive removal preserve the bounded canonical slice. The heat exchanger's two passes and enclosed
+    //   water coil form one path, while the water coil remains independently connected to its plant demand branch.
+    // - Documented Delta: EnergyPlus gives the wrapper no direct node fields, so inherited boundary getters resolve the heat exchanger's
+    //   first inlet and second outlet. A storage-only mixed-air setpoint manager mirrors canonical translation behavior when a supply fan is
+    //   present. Other wrapper parents and numerical heat-recovery performance are not claimed.
+    // - Field/Storage Mapping: Child targets map through the EnergyPlus object-type/name pairs. Boundary and connector nodes live on the
+    //   linked heat exchanger and water coil; the water controller senses the internal cooling-coil outlet.
     // - Evidence: `src/model/CoilSystemCoolingWaterHeatExchangerAssisted.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateCoilSystemCoolingWaterHeatExchangerAssisted.cpp`, and `src/epmodel/test/CoilSystemCoolingWaterHeatExchangerAssisted_GTest.cpp`.
-    // - Remaining Parity Work: Extend the wrapper only if additional canonical surfaces are explicitly needed.
+    // - Remaining Parity Work: Prove additional parent families only from representative workflows; do not infer a generic recursive
+    //   topology contract from this selected direct-placement path.
     AirToAirComponent heatExchanger() const;
     bool setHeatExchanger(const AirToAirComponent& heatExchanger);
 

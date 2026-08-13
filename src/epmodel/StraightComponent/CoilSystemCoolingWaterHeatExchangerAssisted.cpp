@@ -9,12 +9,21 @@
 #include "AirToAirComponent/AirToAirComponent.hpp"
 #include "AirToAirComponent/AirToAirComponent_Impl.hpp"
 #include "AirToAirComponent/HeatExchangerAirToAirSensibleAndLatent.hpp"
-#include "Model.hpp"
+#include "Branch.hpp"
+#include "Branch_Impl.hpp"
+#include "BranchList.hpp"
 #include "Loop/AirLoopHVAC.hpp"
+#include "Loop/AirLoopHVAC_Impl.hpp"
+#include "Model.hpp"
 #include "ModelObject.hpp"
+#include "ModelObject/ModelObject_Impl.hpp"
 #include "Node.hpp"
+#include "SetpointManager/SetpointManagerMixedAir.hpp"
+#include "SetpointManager/SetpointManagerMixedAir_Impl.hpp"
 #include "HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
+#include "StraightComponent/StraightComponent.hpp"
 #include "WaterToAirComponent/CoilCoolingWater.hpp"
+#include "WaterToAirComponent/CoilCoolingWater_Impl.hpp"
 #include "WaterToAirComponent/WaterToAirComponent.hpp"
 #include "WaterToAirComponent/WaterToAirComponent_Impl.hpp"
 
@@ -27,6 +36,7 @@
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/IddFactory.hxx>
 #include <utilities/idd/IddObject.hpp>
+#include <utilities/idd/SetpointManager_MixedAir_FieldEnums.hxx>
 
 namespace openstudio {
 namespace epmodel {
@@ -51,6 +61,11 @@ namespace epmodel {
 
   CoilSystemCoolingWaterHeatExchangerAssisted::CoilSystemCoolingWaterHeatExchangerAssisted(const Model& model, const AirToAirComponent& heatExchanger)
     : StraightComponent(CoilSystemCoolingWaterHeatExchangerAssisted::iddObjectType(), model) {
+    if (heatExchanger.model() != model) {
+      remove();
+      throw std::invalid_argument("The assisted water coil-system heat exchanger must belong to the same model.");
+    }
+
     if (!setHeatExchanger(heatExchanger)) {
       remove();
       std::ostringstream message;
@@ -126,8 +141,13 @@ namespace epmodel {
     namespace {
 
       template <typename T>
+      boost::optional<T> optionalPointerTarget(const ModelObject_Impl& impl, unsigned fieldIndex) {
+        return impl.getObject<ModelObject>().getModelObjectTarget<T>(fieldIndex);
+      }
+
+      template <typename T>
       T requiredPointerTarget(const ModelObject_Impl& impl, unsigned fieldIndex, const char* label) {
-        auto value = impl.getObject<ModelObject>().getModelObjectTarget<T>(fieldIndex);
+        auto value = optionalPointerTarget<T>(impl, fieldIndex);
         if (!value) {
           std::ostringstream message;
           message << impl.briefDescription() << " does not have a " << label << " attached.";
@@ -138,25 +158,93 @@ namespace epmodel {
 
       template <typename T>
       bool setPointerRelationship(ModelObject_Impl& impl, unsigned objectTypeField, unsigned objectField, const T& target) {
-        if (!impl.setString(objectTypeField, target.iddObject().name())) {
+        if (target.model() != impl.model()) {
           return false;
         }
-        return impl.setPointer(objectField, target.handle(), false);
+
+        const auto oldType = impl.getString(objectTypeField).value_or("");
+        const auto oldTarget = impl.getObject<ModelObject>().getTarget(objectField);
+        if (!impl.setString(objectTypeField, target.iddObject().name()) || !impl.setPointer(objectField, target.handle(), false)) {
+          OS_ASSERT(impl.setString(objectTypeField, oldType));
+          OS_ASSERT(impl.setPointer(objectField, oldTarget ? oldTarget->handle() : Handle(), false));
+          return false;
+        }
+        return true;
+      }
+
+      bool clearHeatExchangerAirNodes(AirToAirComponent heatExchanger) {
+        auto impl = heatExchanger.getImpl<ModelObject_Impl>();
+        return impl->setPointer(heatExchanger.primaryAirInletPort(), Handle(), false)
+               && impl->setPointer(heatExchanger.primaryAirOutletPort(), Handle(), false)
+               && impl->setPointer(heatExchanger.secondaryAirInletPort(), Handle(), false)
+               && impl->setPointer(heatExchanger.secondaryAirOutletPort(), Handle(), false);
+      }
+
+      bool clearCoolingCoilAirNodes(WaterToAirComponent coolingCoil) {
+        auto impl = coolingCoil.getImpl<ModelObject_Impl>();
+        const bool result =
+          impl->setPointer(coolingCoil.airInletPort(), Handle(), false) && impl->setPointer(coolingCoil.airOutletPort(), Handle(), false);
+        if (auto coil = coolingCoil.optionalCast<CoilCoolingWater>()) {
+          coil->getImpl<CoilCoolingWater_Impl>()->syncControllerAfterAirTopologyChange();
+        }
+        return result;
       }
 
     }  // namespace
 
     bool CoilSystemCoolingWaterHeatExchangerAssisted_Impl::addToNode(Node& node) {
-      if (node.airLoopHVACOutdoorAirSystem()) {
-        return StraightComponent_Impl::addToNode(node);
-      }
-
       auto airLoop = node.airLoopHVAC();
       if (!(airLoop && airLoop->supplyComponent(node.handle()))) {
         return false;
       }
 
-      return StraightComponent_Impl::addToNode(node);
+      if (!StraightComponent_Impl::addToNode(node)) {
+        return false;
+      }
+
+      const auto boundaries = branchBoundaryNodes();
+      return boundaries && reconcileContainedAirPath(boundaries->first, boundaries->second);
+    }
+
+    boost::optional<std::pair<Node, Node>> CoilSystemCoolingWaterHeatExchangerAssisted_Impl::branchBoundaryNodes() const {
+      const auto thisObject = getObject<ModelObject>();
+      const auto thisComponent = thisObject.optionalCast<HVACComponent>();
+      const auto airLoop = thisComponent ? thisComponent->airLoopHVAC() : boost::none;
+      if (!airLoop) {
+        return boost::none;
+      }
+
+      const auto branches = airLoop->getImpl<AirLoopHVAC_Impl>()->branchList().branches();
+      boost::optional<std::pair<Node, Node>> result;
+      for (const auto& branch : branches) {
+        const auto components = branch.components();
+        for (unsigned i = 0; i < components.size(); ++i) {
+          if (components[i].handle() != handle()) {
+            continue;
+          }
+          const auto inletNode = branch.componentInletNode(i);
+          const auto outletNode = branch.componentOutletNode(i);
+          if (!inletNode || !outletNode || result) {
+            return boost::none;
+          }
+          result = std::make_pair(*inletNode, *outletNode);
+        }
+      }
+      return result;
+    }
+
+    boost::optional<ModelObject> CoilSystemCoolingWaterHeatExchangerAssisted_Impl::inletModelObject() const {
+      if (auto heatExchanger = optionalPointerTarget<AirToAirComponent>(*this, kHeatExchangerField)) {
+        return heatExchanger->primaryAirInletModelObject();
+      }
+      return boost::none;
+    }
+
+    boost::optional<ModelObject> CoilSystemCoolingWaterHeatExchangerAssisted_Impl::outletModelObject() const {
+      if (auto heatExchanger = optionalPointerTarget<AirToAirComponent>(*this, kHeatExchangerField)) {
+        return heatExchanger->secondaryAirOutletModelObject();
+      }
+      return boost::none;
     }
 
     std::vector<ModelObject> CoilSystemCoolingWaterHeatExchangerAssisted_Impl::children() const {
@@ -174,6 +262,10 @@ namespace epmodel {
     }
 
     std::vector<IdfObject> CoilSystemCoolingWaterHeatExchangerAssisted_Impl::remove() {
+      if (!isRemovable()) {
+        return {};
+      }
+
       const auto ownedChildren = children();
       auto removedParent = StraightComponent_Impl::remove();
       if (removedParent.empty()) {
@@ -193,6 +285,16 @@ namespace epmodel {
       return result;
     }
 
+    void CoilSystemCoolingWaterHeatExchangerAssisted_Impl::disconnect() {
+      removeStorageSetpointManager();
+      if (auto heatExchanger = optionalPointerTarget<AirToAirComponent>(*this, kHeatExchangerField)) {
+        clearHeatExchangerAirNodes(*heatExchanger);
+      }
+      if (auto coolingCoil = optionalPointerTarget<WaterToAirComponent>(*this, kCoolingCoilField)) {
+        clearCoolingCoilAirNodes(*coolingCoil);
+      }
+    }
+
     unsigned CoilSystemCoolingWaterHeatExchangerAssisted_Impl::inletPort() const {
       // EnergyPlus CoilSystem:Cooling:Water:HeatExchangerAssisted has no direct inlet/outlet node fields.
       return 0;
@@ -201,6 +303,147 @@ namespace epmodel {
     unsigned CoilSystemCoolingWaterHeatExchangerAssisted_Impl::outletPort() const {
       // Node connectivity is delegated to the referenced heat exchanger/cooling coil.
       return 0;
+    }
+
+    bool CoilSystemCoolingWaterHeatExchangerAssisted_Impl::setAirInletNode(const Node& node) {
+      if (node.model() != model()) {
+        return false;
+      }
+      return reconcileContainedAirPath(node, outletModelObject() ? outletModelObject()->optionalCast<Node>() : boost::none);
+    }
+
+    bool CoilSystemCoolingWaterHeatExchangerAssisted_Impl::setAirOutletNode(const Node& node) {
+      if (node.model() != model()) {
+        return false;
+      }
+      return reconcileContainedAirPath(inletModelObject() ? inletModelObject()->optionalCast<Node>() : boost::none, node);
+    }
+
+    bool CoilSystemCoolingWaterHeatExchangerAssisted_Impl::reconcileContainedAirPath(const boost::optional<Node>& inletNode,
+                                                                                     const boost::optional<Node>& outletNode) {
+      auto heatExchanger = optionalPointerTarget<AirToAirComponent>(*this, kHeatExchangerField);
+      auto coolingCoil = optionalPointerTarget<WaterToAirComponent>(*this, kCoolingCoilField);
+      if (!heatExchanger || !coolingCoil) {
+        return false;
+      }
+
+      auto thisObject = getObject<ModelObject>();
+      if (!thisObject.name()) {
+        thisObject.createName();
+      }
+      const auto baseName = thisObject.nameString();
+      const auto matchingConnector = [&](const boost::optional<ModelObject>& first, const boost::optional<ModelObject>& second) {
+        const auto firstNode = first ? first->optionalCast<Node>() : boost::none;
+        const auto secondNode = second ? second->optionalCast<Node>() : boost::none;
+        if (!firstNode || !secondNode || firstNode->handle() != secondNode->handle()) {
+          return boost::optional<Node>();
+        }
+        if ((inletNode && firstNode->handle() == inletNode->handle()) || (outletNode && firstNode->handle() == outletNode->handle())) {
+          return boost::optional<Node>();
+        }
+        return firstNode;
+      };
+
+      auto supplyOutletNode = matchingConnector(heatExchanger->primaryAirOutletModelObject(), coolingCoil->airInletModelObject());
+      if (!supplyOutletNode) {
+        supplyOutletNode = model().getOrCreateTransientByName<Node>(baseName + " HX Supply Air Outlet - Cooling Inlet Node");
+      }
+      auto exhaustInletNode = matchingConnector(coolingCoil->airOutletModelObject(), heatExchanger->secondaryAirInletModelObject());
+      if (!exhaustInletNode) {
+        exhaustInletNode = model().getOrCreateTransientByName<Node>(baseName + " HX Exhaust Air Inlet - Cooling Outlet Node");
+      }
+
+      bool result = true;
+      auto heatExchangerImpl = heatExchanger->getImpl<ModelObject_Impl>();
+      auto coolingCoilImpl = coolingCoil->getImpl<ModelObject_Impl>();
+      if (inletNode) {
+        result = heatExchangerImpl->setPointer(heatExchanger->primaryAirInletPort(), inletNode->handle(), false) && result;
+      }
+      result = heatExchangerImpl->setPointer(heatExchanger->primaryAirOutletPort(), supplyOutletNode->handle(), false) && result;
+      result = coolingCoilImpl->setPointer(coolingCoil->airInletPort(), supplyOutletNode->handle(), false) && result;
+      result = coolingCoilImpl->setPointer(coolingCoil->airOutletPort(), exhaustInletNode->handle(), false) && result;
+      result = heatExchangerImpl->setPointer(heatExchanger->secondaryAirInletPort(), exhaustInletNode->handle(), false) && result;
+      if (outletNode) {
+        result = heatExchangerImpl->setPointer(heatExchanger->secondaryAirOutletPort(), outletNode->handle(), false) && result;
+      }
+      if (auto coil = coolingCoil->optionalCast<CoilCoolingWater>()) {
+        coil->getImpl<CoilCoolingWater_Impl>()->syncControllerAfterAirTopologyChange();
+      }
+      syncStorageSetpointManager();
+      return result;
+    }
+
+    void CoilSystemCoolingWaterHeatExchangerAssisted_Impl::syncStorageSetpointManager() {
+      const auto thisComponent = getObject<ModelObject>().optionalCast<HVACComponent>();
+      const auto airLoop = thisComponent ? thisComponent->airLoopHVAC() : boost::none;
+      const auto coolingCoil = optionalPointerTarget<WaterToAirComponent>(*this, kCoolingCoilField);
+      const auto setpointNodeObject = coolingCoil ? coolingCoil->airOutletModelObject() : boost::none;
+      const auto setpointNode = setpointNodeObject ? setpointNodeObject->optionalCast<Node>() : boost::none;
+      if (!airLoop || !setpointNode) {
+        return;
+      }
+
+      boost::optional<StraightComponent> selectedFan;
+      const auto supplyComponents = airLoop->supplyComponents();
+      for (auto it = supplyComponents.rbegin(); it != supplyComponents.rend(); ++it) {
+        const auto type = it->iddObject().type();
+        const bool supportedFan = type == IddObjectType::Fan_ConstantVolume || type == IddObjectType::Fan_VariableVolume
+                                  || type == IddObjectType::Fan_SystemModel || type == IddObjectType::Fan_ComponentModel;
+        if (supportedFan) {
+          selectedFan = it->optionalCast<StraightComponent>();
+          break;
+        }
+      }
+      if (!selectedFan) {
+        removeStorageSetpointManager();
+        return;
+      }
+
+      const auto fanInletObject = selectedFan->inletModelObject();
+      const auto fanOutletObject = selectedFan->outletModelObject();
+      const auto fanInletNode = fanInletObject ? fanInletObject->optionalCast<Node>() : boost::none;
+      const auto fanOutletNode = fanOutletObject ? fanOutletObject->optionalCast<Node>() : boost::none;
+      if (!fanInletNode || !fanOutletNode) {
+        return;
+      }
+
+      const auto expectedName = setpointNode->nameString() + " OS Default SPM";
+      auto setpointManager = model().getConcreteModelObjectByName<SetpointManagerMixedAir>(expectedName);
+      if (!setpointManager) {
+        for (const auto& candidate : model().getConcreteModelObjects<SetpointManagerMixedAir>()) {
+          const auto candidateNode = candidate.setpointNode();
+          if (candidateNode && candidateNode->handle() == setpointNode->handle() && candidate.nameString().ends_with(" OS Default SPM")) {
+            setpointManager = candidate;
+            break;
+          }
+        }
+      }
+      if (!setpointManager) {
+        setpointManager = SetpointManagerMixedAir(model());
+        OS_ASSERT(setpointManager->setName(expectedName));
+      }
+
+      OS_ASSERT(setpointManager->setControlVariable("Temperature"));
+      OS_ASSERT(
+        setpointManager->setPointer(openstudio::SetpointManager_MixedAirFields::ReferenceSetpointNodeName, airLoop->supplyOutletNode().handle()));
+      OS_ASSERT(setpointManager->setPointer(openstudio::SetpointManager_MixedAirFields::FanInletNodeName, fanInletNode->handle()));
+      OS_ASSERT(setpointManager->setPointer(openstudio::SetpointManager_MixedAirFields::FanOutletNodeName, fanOutletNode->handle()));
+      OS_ASSERT(setpointManager->setPointer(openstudio::SetpointManager_MixedAirFields::SetpointNodeorNodeListName, setpointNode->handle()));
+    }
+
+    void CoilSystemCoolingWaterHeatExchangerAssisted_Impl::removeStorageSetpointManager() {
+      const auto coolingCoil = optionalPointerTarget<WaterToAirComponent>(*this, kCoolingCoilField);
+      const auto setpointNodeObject = coolingCoil ? coolingCoil->airOutletModelObject() : boost::none;
+      const auto setpointNode = setpointNodeObject ? setpointNodeObject->optionalCast<Node>() : boost::none;
+      if (!setpointNode) {
+        return;
+      }
+      for (auto& candidate : model().getConcreteModelObjects<SetpointManagerMixedAir>()) {
+        const auto candidateNode = candidate.setpointNode();
+        if (candidateNode && candidateNode->handle() == setpointNode->handle() && candidate.nameString().ends_with(" OS Default SPM")) {
+          candidate.remove();
+        }
+      }
     }
 
     AirToAirComponent CoilSystemCoolingWaterHeatExchangerAssisted_Impl::heatExchanger() const {
@@ -215,7 +458,29 @@ namespace epmodel {
       if (std::find(allowedTypes.begin(), allowedTypes.end(), heatExchanger.iddObject().name()) == allowedTypes.end()) {
         return false;
       }
-      return setPointerRelationship(*this, kHeatExchangerObjectTypeField, kHeatExchangerField, heatExchanger);
+      if (auto owner = heatExchanger.containingHVACComponent(); owner && owner->handle() != handle()) {
+        return false;
+      }
+      if (heatExchanger.airLoopHVAC() || heatExchanger.airLoopHVACOutdoorAirSystem()) {
+        return false;
+      }
+
+      const auto oldHeatExchanger = optionalPointerTarget<AirToAirComponent>(*this, kHeatExchangerField);
+      const auto inletNode = inletModelObject() ? inletModelObject()->optionalCast<Node>() : boost::none;
+      const auto outletNode = outletModelObject() ? outletModelObject()->optionalCast<Node>() : boost::none;
+      if (!setPointerRelationship(*this, kHeatExchangerObjectTypeField, kHeatExchangerField, heatExchanger)) {
+        return false;
+      }
+      if (oldHeatExchanger && oldHeatExchanger->handle() != heatExchanger.handle()) {
+        clearHeatExchangerAirNodes(*oldHeatExchanger);
+      }
+      if (!optionalPointerTarget<WaterToAirComponent>(*this, kCoolingCoilField)) {
+        return true;
+      }
+      if (!inletNode && !outletNode) {
+        return true;
+      }
+      return reconcileContainedAirPath(inletNode, outletNode);
     }
 
     WaterToAirComponent CoilSystemCoolingWaterHeatExchangerAssisted_Impl::coolingCoil() const {
@@ -223,7 +488,66 @@ namespace epmodel {
     }
 
     bool CoilSystemCoolingWaterHeatExchangerAssisted_Impl::setCoolingCoil(const WaterToAirComponent& coolingCoil) {
-      return setPointerRelationship(*this, kCoolingCoilObjectTypeField, kCoolingCoilField, coolingCoil);
+      if (coolingCoil.model() != model()) {
+        return false;
+      }
+      const auto allowedTypes = coolingCoilObjectTypeValues();
+      if (std::find(allowedTypes.begin(), allowedTypes.end(), coolingCoil.iddObject().name()) == allowedTypes.end()) {
+        return false;
+      }
+      if (auto owner = coolingCoil.containingHVACComponent(); owner && owner->handle() != handle()) {
+        return false;
+      }
+      if (coolingCoil.airLoopHVAC() || coolingCoil.airLoopHVACOutdoorAirSystem()) {
+        return false;
+      }
+
+      const auto oldCoolingCoil = optionalPointerTarget<WaterToAirComponent>(*this, kCoolingCoilField);
+      const auto inletNode = inletModelObject() ? inletModelObject()->optionalCast<Node>() : boost::none;
+      const auto outletNode = outletModelObject() ? outletModelObject()->optionalCast<Node>() : boost::none;
+      if (!setPointerRelationship(*this, kCoolingCoilObjectTypeField, kCoolingCoilField, coolingCoil)) {
+        return false;
+      }
+      if (oldCoolingCoil && oldCoolingCoil->handle() != coolingCoil.handle()) {
+        clearCoolingCoilAirNodes(*oldCoolingCoil);
+      }
+      if (!optionalPointerTarget<AirToAirComponent>(*this, kHeatExchangerField)) {
+        return true;
+      }
+      if (!inletNode && !outletNode) {
+        return true;
+      }
+      return reconcileContainedAirPath(inletNode, outletNode);
+    }
+
+    void CoilSystemCoolingWaterHeatExchangerAssisted_Impl::doCanonicalize(LoadContext& context) {
+      StraightComponent_Impl::doCanonicalize(context);
+
+      auto heatExchanger = optionalPointerTarget<AirToAirComponent>(*this, kHeatExchangerField);
+      if (!heatExchanger) {
+        heatExchanger = HeatExchangerAirToAirSensibleAndLatent(model());
+        detail::addLoadInfo(context,
+                            "Created the missing heat exchanger for assisted water coil system '" + getObject<ModelObject>().nameString() + "'.");
+      }
+      OS_ASSERT(setPointerRelationship(*this, kHeatExchangerObjectTypeField, kHeatExchangerField, *heatExchanger));
+
+      auto coolingCoil = optionalPointerTarget<WaterToAirComponent>(*this, kCoolingCoilField);
+      if (!coolingCoil) {
+        coolingCoil = CoilCoolingWater(model());
+        detail::addLoadInfo(context,
+                            "Created the missing cooling coil for assisted water coil system '" + getObject<ModelObject>().nameString() + "'.");
+      }
+      OS_ASSERT(setPointerRelationship(*this, kCoolingCoilObjectTypeField, kCoolingCoilField, *coolingCoil));
+
+      if (const auto boundaries = branchBoundaryNodes()) {
+        reconcileContainedAirPath(boundaries->first, boundaries->second);
+      } else {
+        const auto inletNode = inletModelObject() ? inletModelObject()->optionalCast<Node>() : boost::none;
+        const auto outletNode = outletModelObject() ? outletModelObject()->optionalCast<Node>() : boost::none;
+        if (inletNode || outletNode) {
+          reconcileContainedAirPath(inletNode, outletNode);
+        }
+      }
     }
 
     std::string CoilSystemCoolingWaterHeatExchangerAssisted_Impl::heatExchangerObjectType() const {

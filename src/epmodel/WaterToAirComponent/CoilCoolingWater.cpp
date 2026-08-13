@@ -157,6 +157,18 @@ namespace epmodel {
       }
       if (auto airLoop = coil.airLoopHVAC()) {
         airLoop->getImpl<detail::AirLoopHVAC_Impl>()->syncSupplyWaterCoilControllers();
+        return;
+      }
+      for (const auto& assistedSystem : coil.model().getConcreteModelObjects<CoilSystemCoolingWaterHeatExchangerAssisted>()) {
+        const auto coolingCoil =
+          assistedSystem.getModelObjectTarget<ModelObject>(openstudio::CoilSystem_Cooling_Water_HeatExchangerAssistedFields::CoolingCoilName);
+        if (!coolingCoil || coolingCoil->handle() != coil.handle()) {
+          continue;
+        }
+        if (auto airLoop = assistedSystem.airLoopHVAC()) {
+          airLoop->getImpl<detail::AirLoopHVAC_Impl>()->syncSupplyWaterCoilControllers();
+        }
+        return;
       }
     }
 
@@ -436,8 +448,14 @@ namespace epmodel {
         return false;
       }
 
+      syncControllerAfterAirTopologyChange();
+      return true;
+    }
+
+    void CoilCoolingWater_Impl::syncControllerAfterAirTopologyChange() {
+      auto thisCoil = getObject<openstudio::epmodel::CoilCoolingWater>();
       if (containingZoneHVACComponent()) {
-        return true;
+        return;
       }
 
       if (isContainedByCoolingWaterSystem(thisCoil)) {
@@ -445,7 +463,7 @@ namespace epmodel {
           removeControllerWaterCoil(*controller);
           syncAirLoopWaterCoilControllers(thisCoil);
         }
-        return true;
+        return;
       }
 
       if (auto containingComponent = containingHVACComponent(); containingComponent) {
@@ -455,19 +473,23 @@ namespace epmodel {
             removeControllerWaterCoil(*controller);
             syncAirLoopWaterCoilControllers(thisCoil);
           }
-          return true;
+          return;
         }
       }
 
       const auto waterInlet = thisCoil.waterInletModelObject();
       const auto airOutlet = thisCoil.airOutletModelObject();
       if (!waterInlet || !airOutlet) {
-        return true;
+        if (auto controller = inferControllerForCoil(thisCoil)) {
+          removeControllerWaterCoil(*controller);
+          syncAirLoopWaterCoilControllers(thisCoil);
+        }
+        return;
       }
       const auto actuatorNode = waterInlet->optionalCast<Node>();
       const auto sensorNode = airOutlet->optionalCast<Node>();
       if (!actuatorNode || !sensorNode) {
-        return true;
+        return;
       }
 
       if (auto controller = inferControllerForCoil(thisCoil)) {
@@ -478,7 +500,7 @@ namespace epmodel {
         OS_ASSERT(controller->setActuatorNode(*actuatorNode));
         OS_ASSERT(controller->setSensorNode(*sensorNode));
         syncAirLoopWaterCoilControllers(thisCoil);
-        return true;
+        return;
       }
 
       ControllerWaterCoil controller(model());
@@ -486,7 +508,6 @@ namespace epmodel {
       OS_ASSERT(controller.setActuatorNode(*actuatorNode));
       OS_ASSERT(controller.setSensorNode(*sensorNode));
       syncAirLoopWaterCoilControllers(thisCoil);
-      return true;
     }
 
     std::vector<ModelObject> CoilCoolingWater_Impl::children() const {

@@ -32,6 +32,7 @@ namespace epmodel {
       bool addToNode(Node& node) override;
       std::vector<IdfObject> remove() override;
       bool removeFromPlantLoop() override;
+      void syncControllerAfterAirTopologyChange();
 
       std::vector<ModelObject> children() const override;
 
