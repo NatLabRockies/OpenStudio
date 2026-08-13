@@ -30,6 +30,7 @@ namespace epmodel {
       unsigned inletPort() const override;
       unsigned outletPort() const override;
       bool addToNode(Node& node) override;
+      bool isRemovable() const override;
       bool removeFromLoop() override;
       std::vector<openstudio::IdfObject> remove() override;
       std::vector<ModelObject> children() const override;

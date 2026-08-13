@@ -10,6 +10,7 @@
 #include "Model.hpp"
 #include "ModelObject.hpp"
 #include "ModelObject/NodeList.hpp"
+#include "ModelObject/NodeList_Impl.hpp"
 #include "Node.hpp"
 
 #include <algorithm>

@@ -5143,18 +5143,24 @@ namespace epmodel {
       struct BranchOwnedTerminal
       {
         ModelObject terminal;
-        ZoneHVACAirDistributionUnit airDistributionUnit;
+        boost::optional<ZoneHVACAirDistributionUnit> airDistributionUnit;
       };
       std::vector<BranchOwnedTerminal> branchOwnedTerminals;
       std::set<Handle> enrolledTerminalHandles;
       for (const auto& equipment : equipmentList.equipment()) {
         auto airDistributionUnit = airDistributionUnitForZoneEquipment(equipment);
-        if (!airDistributionUnit) {
-          continue;
+        boost::optional<ModelObject> airTerminal;
+        boost::optional<Node> outletNode;
+        if (airDistributionUnit) {
+          airTerminal = airDistributionUnit->airTerminal();
+          outletNode = airDistributionUnit->outletNode();
+        } else if (branchPathHandles.contains(equipment.handle())
+                   && equipment.iddObject().type() == AirTerminalSingleDuctConstantVolumeCooledBeam::iddObjectType()) {
+          // Cooled beams register the terminal itself with the zone instead
+          // of wrapping it in an AirDistributionUnit.
+          airTerminal = equipment;
         }
 
-        auto airTerminal = airDistributionUnit->airTerminal();
-        auto outletNode = airDistributionUnit->outletNode();
         const bool equipmentOnBranch = branchPathHandles.contains(equipment.handle());
         const bool terminalOnBranch = airTerminal && branchPathHandles.contains(airTerminal->handle());
         const bool outletOnBranch = outletNode && branchZoneInletNodeHandles.contains(outletNode->handle());
@@ -5173,6 +5179,7 @@ namespace epmodel {
         });
         const auto terminalType = airTerminal->iddObject().type();
         const bool hasFamilyOwnedPlantPreflight = terminalType == AirTerminalSingleDuctConstantVolumeReheat::iddObjectType()
+                                                  || terminalType == AirTerminalSingleDuctConstantVolumeCooledBeam::iddObjectType()
                                                   || terminalType == AirTerminalSingleDuctConstantVolumeFourPipeInduction::iddObjectType()
                                                   || terminalType == AirTerminalSingleDuctVAVHeatAndCoolReheat::iddObjectType()
                                                   || terminalType == AirTerminalSingleDuctParallelPIUReheat::iddObjectType()
@@ -5185,7 +5192,7 @@ namespace epmodel {
           return false;
         }
         if (enrolledTerminalHandles.insert(airTerminal->handle()).second) {
-          branchOwnedTerminals.push_back(BranchOwnedTerminal{*airTerminal, *airDistributionUnit});
+          branchOwnedTerminals.push_back(BranchOwnedTerminal{*airTerminal, airDistributionUnit});
         }
       }
 
@@ -5260,12 +5267,12 @@ namespace epmodel {
             return false;
           }
         }
-        if (model().getObject(owned.airDistributionUnit.handle())) {
+        if (owned.airDistributionUnit && model().getObject(owned.airDistributionUnit->handle())) {
           // Family teardown normally unregisters itself. Remove by the ADU
           // target as an idempotent cleanup for imported or partial topology.
-          (void)equipmentList.removeEquipment(owned.airDistributionUnit.cast<ModelObject>());
-          owned.airDistributionUnit.remove();
-          if (model().getObject(owned.airDistributionUnit.handle())) {
+          (void)equipmentList.removeEquipment(owned.airDistributionUnit->cast<ModelObject>());
+          owned.airDistributionUnit->remove();
+          if (model().getObject(owned.airDistributionUnit->handle())) {
             return false;
           }
         }
