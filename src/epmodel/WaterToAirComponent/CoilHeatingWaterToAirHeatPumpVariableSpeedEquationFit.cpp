@@ -19,6 +19,7 @@
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
+#include <utilities/core/UUID.hpp>
 #include <utilities/idd/AirflowNetwork_Distribution_Component_Coil_FieldEnums.hxx>
 #include <utilities/idd/Coil_Heating_WaterToAirHeatPump_VariableSpeedEquationFit_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
@@ -441,6 +442,33 @@ namespace epmodel {
       for (unsigned i = 0; i < groups.size(); ++i) {
         if (openstudio::istringEqual(*thisName, detail::transientSpeedDataName(parent, i))) {
           const auto previousCount = static_cast<unsigned>(groups.size());
+          auto detachedSpeed = speed;
+          bool detached = true;
+          detached = detachedSpeed.setReferenceUnitGrossRatedHeatingCapacity(detachedSpeed.referenceUnitGrossRatedHeatingCapacity()) && detached;
+          detached = detachedSpeed.setReferenceUnitGrossRatedHeatingCOP(detachedSpeed.referenceUnitGrossRatedHeatingCOP()) && detached;
+          detached = detachedSpeed.setReferenceUnitRatedAirFlow(detachedSpeed.referenceUnitRatedAirFlow()) && detached;
+          detached = detachedSpeed.setReferenceUnitRatedWaterFlowRate(detachedSpeed.referenceUnitRatedWaterFlowRate()) && detached;
+          detached =
+            detachedSpeed.setHeatingCapacityFunctionofTemperatureCurve(detachedSpeed.heatingCapacityFunctionofTemperatureCurve()) && detached;
+          detached =
+            detachedSpeed.setTotalHeatingCapacityFunctionofAirFlowFractionCurve(detachedSpeed.totalHeatingCapacityFunctionofAirFlowFractionCurve())
+            && detached;
+          detached = detachedSpeed.setHeatingCapacityFunctionofWaterFlowFractionCurve(detachedSpeed.heatingCapacityFunctionofWaterFlowFractionCurve())
+                     && detached;
+          detached =
+            detachedSpeed.setEnergyInputRatioFunctionofTemperatureCurve(detachedSpeed.energyInputRatioFunctionofTemperatureCurve()) && detached;
+          detached = detachedSpeed.setEnergyInputRatioFunctionofAirFlowFractionCurve(detachedSpeed.energyInputRatioFunctionofAirFlowFractionCurve())
+                     && detached;
+          detached =
+            detachedSpeed.setEnergyInputRatioFunctionofWaterFlowFractionCurve(detachedSpeed.energyInputRatioFunctionofWaterFlowFractionCurve())
+            && detached;
+          detached = detachedSpeed.setReferenceUnitWasteHeatFractionofInputPowerAtRatedConditions(
+                       detachedSpeed.referenceUnitWasteHeatFractionofInputPowerAtRatedConditions())
+                     && detached;
+          detached = detachedSpeed.setWasteHeatFunctionofTemperatureCurve(detachedSpeed.wasteHeatFunctionofTemperatureCurve()) && detached;
+          detached = detachedSpeed.setName("__transient__heating_wtahp_vs_speed_data_" + openstudio::toString(openstudio::createUUID())).has_value()
+                     && detached;
+          OS_ASSERT(detached);
           getObject<ModelObject>().eraseExtensibleGroup(i);
           const auto remainingSpeeds = static_cast<int>(getObject<ModelObject>().numExtensibleGroups());
           for (unsigned oldIndex = i + 1; oldIndex < previousCount; ++oldIndex) {
@@ -460,8 +488,10 @@ namespace epmodel {
     }
 
     void CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit_Impl::removeAllSpeeds() {
-      getObject<ModelObject>().clearExtensibleGroups();
-      OS_ASSERT(setString(Fields::NumberofSpeeds, ""));
+      const auto attachedSpeeds = speeds();
+      for (const auto& speed : attachedSpeeds) {
+        removeSpeed(speed);
+      }
     }
 
     std::vector<ModelObject> CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit_Impl::children() const {
