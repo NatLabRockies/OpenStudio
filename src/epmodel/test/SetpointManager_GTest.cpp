@@ -12,6 +12,8 @@
 #include "../Loop/PlantLoop.hpp"
 #include "../Loop/PlantLoop_Impl.hpp"
 #include "../HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
+#include "../ModelObject/ZoneHVACEquipmentConnections.hpp"
+#include "../ModelObject/ZoneHVACEquipmentConnections_Impl.hpp"
 #include "../Splitter/AirLoopHVACZoneSplitter.hpp"
 #include "../StraightComponent/FanConstantVolume.hpp"
 #include "../StraightComponent/Node.hpp"
@@ -28,6 +30,7 @@
 #include "../SetpointManager/SetpointManagerSingleZoneOneStageHeating.hpp"
 #include "../SetpointManager/SetpointManagerSingleZoneHeating.hpp"
 #include "../SetpointManager/SetpointManagerSingleZoneReheat.hpp"
+#include "../SetpointManager/SetpointManagerSingleZoneReheat_Impl.hpp"
 #include "../SetpointManager/SetpointManagerWarmest.hpp"
 #include "../SetpointManager/SetpointManagerWarmestTemperatureFlow.hpp"
 #include "../HVACComponent/ThermalZone.hpp"
@@ -38,6 +41,7 @@
 #include <utilities/core/Filesystem.hpp>
 #include <utilities/idd/SetpointManager_Scheduled_FieldEnums.hxx>
 #include <utilities/idd/SetpointManager_SingleZone_Reheat_FieldEnums.hxx>
+#include <utilities/idd/ZoneHVAC_EquipmentConnections_FieldEnums.hxx>
 
 using namespace openstudio::epmodel;
 
@@ -748,4 +752,59 @@ TEST_F(EPModelFixture, SetpointManagerSingleZoneReheat_AddToNodeSetsControlZoneF
   ASSERT_TRUE(zoneInletNode);
   EXPECT_EQ(zone.zoneAirNode(), *zoneNode);
   EXPECT_EQ(expectedZoneInletNode, *zoneInletNode);
+
+  Node unrelatedZoneNode(model);
+  Node unrelatedZoneInletNode(model);
+  ASSERT_TRUE(spm.setPointer(openstudio::SetpointManager_SingleZone_ReheatFields::ZoneNodeName, unrelatedZoneNode.handle()));
+  ASSERT_TRUE(spm.setPointer(openstudio::SetpointManager_SingleZone_ReheatFields::ZoneInletNodeName, unrelatedZoneInletNode.handle()));
+  const auto mismatchReport = model.canonicalize();
+  EXPECT_EQ(0u, mismatchReport.errorCount);
+  zoneNode = spm.getModelObjectTarget<Node>(openstudio::SetpointManager_SingleZone_ReheatFields::ZoneNodeName);
+  zoneInletNode = spm.getModelObjectTarget<Node>(openstudio::SetpointManager_SingleZone_ReheatFields::ZoneInletNodeName);
+  ASSERT_TRUE(zoneNode);
+  ASSERT_TRUE(zoneInletNode);
+  EXPECT_EQ(zone.zoneAirNode(), *zoneNode);
+  EXPECT_EQ(expectedZoneInletNode, *zoneInletNode);
+}
+
+TEST_F(EPModelFixture, SetpointManagerSingleZoneReheat_LoadRepairsMissingControlZoneNodes) {
+  const auto idfPath = openstudio::tempDir() / openstudio::toPath("epmodel-single-zone-reheat-missing-control-zone-nodes.idf");
+
+  Model model;
+  AirLoopHVAC airLoop(model);
+  auto splitterOutletObject = airLoop.zoneSplitter().lastOutletModelObject();
+  ASSERT_TRUE(splitterOutletObject);
+  auto demandBranchNode = splitterOutletObject->optionalCast<Node>();
+  ASSERT_TRUE(demandBranchNode);
+
+  ThermalZone zone(model);
+  ASSERT_TRUE(zone.addToNode(*demandBranchNode));
+
+  SetpointManagerSingleZoneReheat spm(model);
+  ASSERT_TRUE(spm.setName("Missing Node Setpoint Manager"));
+  auto setpointNode = airLoop.supplyOutletNode();
+  ASSERT_TRUE(spm.addToNode(setpointNode));
+
+  const auto expectedZoneNodeName = zone.zoneAirNode().nameString();
+  auto expectedZoneInletNode = spm.getModelObjectTarget<Node>(openstudio::SetpointManager_SingleZone_ReheatFields::ZoneInletNodeName);
+  ASSERT_TRUE(expectedZoneInletNode);
+  const auto expectedZoneInletNodeName = expectedZoneInletNode->nameString();
+  auto equipmentConnections = model.getConcreteModelObjects<ZoneHVACEquipmentConnections>();
+  ASSERT_EQ(1u, equipmentConnections.size());
+
+  ASSERT_TRUE(spm.setString(openstudio::SetpointManager_SingleZone_ReheatFields::ZoneNodeName, ""));
+  ASSERT_TRUE(spm.setString(openstudio::SetpointManager_SingleZone_ReheatFields::ZoneInletNodeName, ""));
+  ASSERT_TRUE(equipmentConnections.front().setString(openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneAirNodeName, ""));
+  ASSERT_TRUE(model.save(idfPath, true));
+
+  auto loadedModel = Model::load(idfPath);
+  ASSERT_TRUE(loadedModel);
+  auto loadedSpm = loadedModel->getConcreteModelObjectByName<SetpointManagerSingleZoneReheat>("Missing Node Setpoint Manager");
+  ASSERT_TRUE(loadedSpm);
+  auto loadedZoneNode = loadedSpm->getModelObjectTarget<Node>(openstudio::SetpointManager_SingleZone_ReheatFields::ZoneNodeName);
+  auto loadedZoneInletNode = loadedSpm->getModelObjectTarget<Node>(openstudio::SetpointManager_SingleZone_ReheatFields::ZoneInletNodeName);
+  ASSERT_TRUE(loadedZoneNode);
+  ASSERT_TRUE(loadedZoneInletNode);
+  EXPECT_EQ(expectedZoneNodeName, loadedZoneNode->nameString());
+  EXPECT_EQ(expectedZoneInletNodeName, loadedZoneInletNode->nameString());
 }
