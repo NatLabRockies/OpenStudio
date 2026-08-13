@@ -17,6 +17,7 @@ namespace epmodel {
 
   class Model;
   class Node;
+  class ZoneHVACTerminalUnitVariableRefrigerantFlow;
 
   namespace detail {
     class AirConditionerVariableRefrigerantFlow_Impl;
@@ -41,14 +42,25 @@ namespace epmodel {
 
     bool addToNode(Node& node);
 
+    bool addTerminal(ZoneHVACTerminalUnitVariableRefrigerantFlow& terminal);
+    void removeTerminal(ZoneHVACTerminalUnitVariableRefrigerantFlow& terminal);
+    void removeAllTerminals();
+    std::vector<ZoneHVACTerminalUnitVariableRefrigerantFlow> terminals() const;
+
     // Schema Alignment Notes:
-    // - Status: Partial Parity. Core VRF scalar controls and sizing/performance fields are aligned, but terminal, schedule, curve, and zone-link APIs remain intentionally hidden.
+    // - Status: Partial Parity. Core VRF scalar controls, sizing/performance fields, and the standard VRF terminal relationship are aligned,
+    //   but schedule, curve, and zone-link APIs remain intentionally hidden.
     // - Canonical Counterpart: openstudio::model::AirConditionerVariableRefrigerantFlow.
-    // - Implemented Parity: `grossRatedTotalCoolingCapacity`, `grossRatedCoolingCOP`, `grossRatedHeatingCapacity`, `ratedHeatingCapacitySizingRatio`, `heatingPerformanceCurveOutdoorTemperatureType`, `heatPumpWasteHeatRecovery`, `numberofCompressors`, `defrostStrategy`, `condenserType`, and demand-side `addToNode` preserve the canonical scalar contract and current plant-loop insertion behavior.
-    // - Documented Delta: Terminal attachments, schedules, curves, and other relationship-style helpers are not exposed yet. `addToNode` is intentionally limited to PlantLoop demand-side insertion, and no broader VRF topology parity is claimed here.
-    // - Field/Storage Mapping: Most preserved scalar methods map directly to EnergyPlus `AirConditioner:VariableRefrigerantFlow` fields. `condenserType()` follows the canonical defaulted readback behavior by deriving `AirCooled` versus `WaterCooled` from current plant-loop attachment when the stored field is blank.
+    // - Implemented Parity: The selected scalar methods, terminal relationship, and demand-side `addToNode` preserve the canonical contract and
+    //   current plant-loop insertion behavior. Terminal membership is deliberately exclusive and duplicate-safe rather than reproducing the
+    //   canonical wrapper's duplicate and competing-list inconsistencies.
+    // - Documented Delta: Schedules, curves, and other relationship-style helpers are not exposed yet. `addToNode` is intentionally limited to
+    //   PlantLoop demand-side insertion, and no broader VRF topology parity is claimed here.
+    // - Field/Storage Mapping: Most preserved scalar methods map directly to EnergyPlus `AirConditioner:VariableRefrigerantFlow` fields. Terminal
+    //   membership uses the EnergyPlus `ZoneTerminalUnitList` object with pointer-backed extensible entries. `condenserType()` follows the
+    //   canonical defaulted readback behavior by deriving `AirCooled` versus `WaterCooled` from current plant-loop attachment when blank.
     // - Evidence: `src/model/AirConditionerVariableRefrigerantFlow.hpp`, `src/model/AirConditionerVariableRefrigerantFlow.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirConditionerVariableRefrigerantFlow.cpp`, and `src/epmodel/test/AirConditionerVariableRefrigerantFlow_GTest.cpp`.
-    // - Remaining Parity Work: Add the omitted terminal, schedule, curve, and zone-link accessors when relationship parity is in scope.
+    // - Remaining Parity Work: Add the omitted schedule, curve, and zone-link accessors when relationship parity is in scope.
     boost::optional<double> grossRatedTotalCoolingCapacity() const;
     bool setGrossRatedTotalCoolingCapacity(double grossRatedTotalCoolingCapacity);
     bool isGrossRatedTotalCoolingCapacityAutosized() const;

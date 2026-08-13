@@ -122,14 +122,21 @@ namespace epmodel {
       boost::optional<ThermalZone> controllingZoneorThermostatLocation() const;
       bool setControllingZoneorThermostatLocation(const ThermalZone& thermalZone);
       void resetControllingZoneorThermostatLocation();
+      boost::optional<HVACComponent> vrfSystem() const;
 
       std::vector<ModelObject> children() const override;
 
       unsigned inletPort() const override;
       unsigned outletPort() const override;
+      bool addToNode(Node& node) override;
       bool addToThermalZone(ThermalZone& thermalZone) override;
       void removeFromThermalZone() override;
+      bool removeFromAirLoopHVAC() override;
+      void disconnect() override;
+      std::vector<IdfObject> remove() override;
       void doCanonicalize(LoadContext& context) override;
+
+      bool setAirBoundaryNode(const Node& node, bool inlet);
 
       bool isFluidTemperatureControl() const;
 

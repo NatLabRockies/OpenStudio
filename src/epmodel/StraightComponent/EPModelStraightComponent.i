@@ -9,6 +9,12 @@
 %import <epmodel/EPModel.i>
 %import <epmodel/HVACComponent/EPModelHVACComponent.i>
 
+// The standard VRF outdoor unit exposes its terminal collection from this
+// module while the concrete terminal wrapper is emitted by the zone-HVAC
+// module. Instantiate the collection here so scripting languages receive a
+// real vector instead of an opaque SWIG pointer.
+EPMODELOBJECT_TEMPLATES(ZoneHVACTerminalUnitVariableRefrigerantFlow, 0)
+
 EPMODELOBJECT_WRAP(StraightComponent, <epmodel/StraightComponent/StraightComponent.hpp>, 0, 0)
 EPMODELOBJECT_WRAP(AirConditionerVariableRefrigerantFlow, <epmodel/StraightComponent/AirConditionerVariableRefrigerantFlow.hpp>, 0, 1)
 EPMODELOBJECT_WRAP(SolarCollectorFlatPlatePhotovoltaicThermal, <epmodel/StraightComponent/SolarCollectorFlatPlatePhotovoltaicThermal.hpp>, 0, 1)

@@ -7,17 +7,27 @@
 #include "ZoneHVACComponent/ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl.hpp"
 
 #include "HVACComponent.hpp"
+#include "HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
 #include "HVACComponent/ThermalZone.hpp"
 #include "HVACComponent/ThermalZone_Impl.hpp"
+#include "Branch.hpp"
+#include "Branch_Impl.hpp"
+#include "BranchList.hpp"
+#include "Loop/AirLoopHVAC.hpp"
+#include "Loop/AirLoopHVAC_Impl.hpp"
 #include "Model.hpp"
 #include "ModelObject.hpp"
+#include "ModelObject/ModelObject_Impl.hpp"
 #include "ModelObject/OutdoorAirMixer.hpp"
 #include "ModelObject/OutdoorAirMixer_Impl.hpp"
 #include "Schedule/Schedule.hpp"
 #include "Schedule/Schedule_Impl.hpp"
 #include "Schedule/ScheduleConstant.hpp"
+#include "StraightComponent/AirConditionerVariableRefrigerantFlow.hpp"
+#include "StraightComponent/AirConditionerVariableRefrigerantFlow_Impl.hpp"
 #include "StraightComponent/Node.hpp"
 #include "StraightComponent/StraightComponent.hpp"
+#include "StraightComponent/StraightComponent_Impl.hpp"
 #include "WaterToAirComponent/WaterToAirComponent.hpp"
 #include "WaterToAirComponent/WaterToAirComponent_Impl.hpp"
 
@@ -170,6 +180,30 @@ namespace epmodel {
         changed = true;
       }
       return changed;
+    }
+
+    void clearVRFTerminalAirNodes(ModelObject& owner, const std::vector<ModelObject>& children) {
+      auto ownerImpl = owner.getImpl<detail::ModelObject_Impl>();
+      OS_ASSERT(ownerImpl);
+      OS_ASSERT(ownerImpl->setPointer(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::TerminalUnitAirInletNodeName, Handle(), false));
+      OS_ASSERT(ownerImpl->setPointer(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::TerminalUnitAirOutletNodeName, Handle(), false));
+
+      for (const auto& child : children) {
+        auto component = child.optionalCast<HVACComponent>();
+        if (!component || !isVRFTerminalAirPathComponent(*component)) {
+          continue;
+        }
+        auto childImpl = component->getImpl<detail::ModelObject_Impl>();
+        OS_ASSERT(childImpl);
+        const auto inlet = vrfTerminalAirInletPort(*component);
+        const auto outlet = vrfTerminalAirOutletPort(*component);
+        if (inlet != 0u) {
+          OS_ASSERT(childImpl->setPointer(inlet, Handle(), false));
+        }
+        if (outlet != 0u) {
+          OS_ASSERT(childImpl->setPointer(outlet, Handle(), false));
+        }
+      }
     }
 
   }  // namespace
@@ -486,6 +520,10 @@ namespace epmodel {
 
   void ZoneHVACTerminalUnitVariableRefrigerantFlow::resetControllingZoneorThermostatLocation() {
     impl(this)->resetControllingZoneorThermostatLocation();
+  }
+
+  boost::optional<HVACComponent> ZoneHVACTerminalUnitVariableRefrigerantFlow::vrfSystem() const {
+    return impl(this)->vrfSystem();
   }
 
   std::vector<ModelObject> ZoneHVACTerminalUnitVariableRefrigerantFlow::children() const {
@@ -1078,6 +1116,17 @@ namespace epmodel {
       OS_ASSERT(setString(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::ControllingZoneorThermostatLocation, ""));
     }
 
+    boost::optional<HVACComponent> ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::vrfSystem() const {
+      for (const auto& system : model().getConcreteModelObjects<AirConditionerVariableRefrigerantFlow>()) {
+        for (const auto& terminal : system.terminals()) {
+          if (terminal.handle() == handle()) {
+            return system.cast<HVACComponent>();
+          }
+        }
+      }
+      return boost::none;
+    }
+
     std::vector<ModelObject> ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::children() const {
       std::vector<ModelObject> result;
 
@@ -1113,6 +1162,135 @@ namespace epmodel {
       return ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::TerminalUnitAirOutletNodeName;
     }
 
+    bool ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::addToNode(Node& node) {
+      if (node.model() != model()) {
+        return false;
+      }
+
+      // Preserve the established inlet-side-mixer role. Direct supply-branch
+      // placement is the separate fallback below.
+      if (ZoneHVACComponent_Impl::addToNode(node)) {
+        maintainContainedAirPath();
+        return true;
+      }
+
+      auto airLoop = node.airLoopHVAC();
+      if (!airLoop || airLoop->isDualDuct() || node.airLoopHVACOutdoorAirSystem() || airLoop->demandComponent(node.handle())) {
+        return false;
+      }
+
+      // Moving ordinary zone equipment onto a main branch is outside this
+      // selected role. Require callers to detach it explicitly first.
+      if (thermalZone()) {
+        return false;
+      }
+
+      auto thisObject = getObject<ModelObject>();
+      if (!thisObject.name()) {
+        thisObject.createName();
+      }
+      if (!thisObject.name()) {
+        return false;
+      }
+
+      if (auto currentLoop = airLoopHVAC()) {
+        const auto currentInlet = inletNode();
+        const auto currentOutlet = outletNode();
+        if ((currentInlet && *currentInlet == node) || (currentOutlet && *currentOutlet == node)) {
+          return false;
+        }
+        if (!removeFromAirLoopHVAC()) {
+          return false;
+        }
+      }
+
+      auto airLoopImpl = airLoop->getImpl<AirLoopHVAC_Impl>();
+      OS_ASSERT(airLoopImpl);
+      auto branch = airLoopImpl->branchForSupplyNode(node);
+      if (!branch) {
+        return false;
+      }
+
+      const auto nodeName = node.name();
+      if (!nodeName) {
+        return false;
+      }
+      const auto thisName = thisObject.nameString();
+      const auto components = branch->components();
+      auto branchImpl = branch->getImpl<Branch_Impl>();
+      OS_ASSERT(branchImpl);
+
+      if (components.empty()) {
+        const auto inletName = airLoop->supplyInletNode().nameString();
+        const auto outletName = airLoop->supplyOutletNode().nameString();
+        if (!branchImpl->appendComponent(thisObject, inletName, outletName)) {
+          return false;
+        }
+        auto inlet = model().getOrCreateTransientByName<Node>(inletName);
+        auto outlet = model().getOrCreateTransientByName<Node>(outletName);
+        if (!setPointer(inletPort(), inlet.handle(), false) || !setPointer(outletPort(), outlet.handle(), false)) {
+          return false;
+        }
+        maintainContainedAirPath();
+        airLoopImpl->syncSetpointManagerMixedAirFanNodes();
+        return true;
+      }
+
+      for (std::size_t i = 0; i < components.size(); ++i) {
+        const auto componentInlet = branch->componentInletNode(static_cast<unsigned>(i));
+        const auto componentOutlet = branch->componentOutletNode(static_cast<unsigned>(i));
+        const bool matchesInlet = componentInlet && openstudio::istringEqual(componentInlet->nameString(), *nodeName);
+        const bool matchesOutlet = componentOutlet && openstudio::istringEqual(componentOutlet->nameString(), *nodeName);
+        if (!matchesInlet && !matchesOutlet) {
+          continue;
+        }
+
+        const auto connectorName = matchesInlet ? thisName + " Outlet - " + components[i].nameString() + " Inlet"
+                                                : components[i].nameString() + " Outlet - " + thisName + " Inlet";
+        const auto insertIndex = matchesInlet ? static_cast<unsigned>(i) : static_cast<unsigned>(i + 1u);
+        const bool appendingAtOutlet = matchesOutlet && (i + 1u == components.size());
+        const auto inletName = appendingAtOutlet ? connectorName : *nodeName;
+        const auto outletName = appendingAtOutlet ? *nodeName : connectorName;
+        if (!branchImpl->insertComponent(insertIndex, thisObject, inletName, outletName)) {
+          return false;
+        }
+
+        auto inlet = model().getOrCreateTransientByName<Node>(inletName);
+        auto outlet = model().getOrCreateTransientByName<Node>(outletName);
+        if (!setPointer(inletPort(), inlet.handle(), false) || !setPointer(outletPort(), outlet.handle(), false)) {
+          return false;
+        }
+
+        auto connector = model().getOrCreateTransientByName<Node>(connectorName);
+        if (matchesInlet) {
+          if (!branchImpl->setComponentInletNode(insertIndex + 1u, connector)
+              || !StraightComponent_Impl::updateAdjacentBranchComponentNode(components[i], connector, true, true)) {
+            return false;
+          }
+        } else if (!branchImpl->setComponentOutletNode(insertIndex - 1u, connector)
+                   || !StraightComponent_Impl::updateAdjacentBranchComponentNode(components[i], connector, false, true)) {
+          return false;
+        }
+
+        maintainContainedAirPath();
+        airLoopImpl->syncSetpointManagerMixedAirFanNodes();
+        return true;
+      }
+
+      return false;
+    }
+
+    bool ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::setAirBoundaryNode(const Node& node, bool inlet) {
+      if (node.model() != model()) {
+        return false;
+      }
+      if (!setPointer(inlet ? inletPort() : outletPort(), node.handle(), false)) {
+        return false;
+      }
+      maintainContainedAirPath();
+      return true;
+    }
+
     bool ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::addToThermalZone(ThermalZone& thermalZone) {
       if (!ZoneHVACComponent_Impl::addToThermalZone(thermalZone)) {
         return false;
@@ -1122,8 +1300,105 @@ namespace epmodel {
     }
 
     void ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::removeFromThermalZone() {
+      const bool wasZoneEquipment = static_cast<bool>(thermalZone());
       ZoneHVACComponent_Impl::removeFromThermalZone();
-      maintainContainedAirPath();
+      if (wasZoneEquipment) {
+        maintainContainedAirPath();
+      }
+    }
+
+    bool ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::removeFromAirLoopHVAC() {
+      auto airLoop = airLoopHVAC();
+      if (!airLoop) {
+        return false;
+      }
+
+      auto airLoopImpl = airLoop->getImpl<AirLoopHVAC_Impl>();
+      OS_ASSERT(airLoopImpl);
+      boost::optional<Branch> owningBranch;
+      std::vector<ModelObject> components;
+      unsigned componentIndex = 0u;
+      unsigned occurrences = 0u;
+      for (const auto& candidate : airLoopImpl->branchList().branches()) {
+        const auto candidateComponents = candidate.components();
+        for (unsigned i = 0u; i < candidateComponents.size(); ++i) {
+          if (candidateComponents[i].handle() != handle()) {
+            continue;
+          }
+          owningBranch = candidate;
+          components = candidateComponents;
+          componentIndex = i;
+          ++occurrences;
+        }
+      }
+      if (!owningBranch || occurrences != 1u) {
+        return false;
+      }
+
+      const auto inlet = owningBranch->componentInletNode(componentIndex);
+      const auto outlet = owningBranch->componentOutletNode(componentIndex);
+      if (!inlet || !outlet) {
+        return false;
+      }
+
+      auto branchImpl = owningBranch->getImpl<Branch_Impl>();
+      OS_ASSERT(branchImpl);
+      if (componentIndex + 1u < components.size()) {
+        if (!branchImpl->setComponentInletNode(componentIndex + 1u, *inlet)
+            || !StraightComponent_Impl::updateAdjacentBranchComponentNode(components[componentIndex + 1u], *inlet, true, true)) {
+          return false;
+        }
+      } else if (componentIndex > 0u) {
+        if (!branchImpl->setComponentOutletNode(componentIndex - 1u, *outlet)
+            || !StraightComponent_Impl::updateAdjacentBranchComponentNode(components[componentIndex - 1u], *outlet, false, true)) {
+          return false;
+        }
+      }
+      if (!branchImpl->removeComponent(componentIndex)) {
+        return false;
+      }
+
+      auto thisObject = getObject<ModelObject>();
+      const auto ownedChildren = children();
+      clearVRFTerminalAirNodes(thisObject, ownedChildren);
+      clearOwnedOutdoorAirMixer(thisObject, ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::OutsideAirMixerObjectName);
+      OS_ASSERT(setString(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::OutsideAirMixerObjectType, ""));
+      airLoopImpl->syncSetpointManagerMixedAirFanNodes();
+      return true;
+    }
+
+    void ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::disconnect() {
+      if (removeFromAirLoopHVAC()) {
+        return;
+      }
+      auto thisObject = getObject<ModelObject>();
+      const auto ownedChildren = children();
+      clearVRFTerminalAirNodes(thisObject, ownedChildren);
+    }
+
+    std::vector<IdfObject> ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::remove() {
+      if (!isRemovable()) {
+        return {};
+      }
+      if (auto system = vrfSystem()) {
+        if (auto standardSystem = system->optionalCast<AirConditionerVariableRefrigerantFlow>()) {
+          auto terminal = getObject<ZoneHVACTerminalUnitVariableRefrigerantFlow>();
+          standardSystem->removeTerminal(terminal);
+        }
+      }
+      const auto ownedChildren = children();
+      auto removedParent = ZoneHVACComponent_Impl::remove();
+      if (removedParent.empty()) {
+        return {};
+      }
+
+      std::vector<IdfObject> result;
+      for (auto child : ownedChildren) {
+        auto removed = child.remove();
+        result.insert(result.end(), removed.begin(), removed.end());
+      }
+      result.insert(result.end(), removedParent.begin(), removedParent.end());
+      return result;
     }
 
     void ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::doCanonicalize(LoadContext& context) {

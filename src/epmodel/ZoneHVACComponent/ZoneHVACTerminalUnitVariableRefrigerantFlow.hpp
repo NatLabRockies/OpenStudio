@@ -45,14 +45,13 @@ namespace epmodel {
     static std::vector<std::string> supplyAirFanPlacementValues();
 
     // Schema Alignment Notes:
-    // - Status: Partial Parity. The scalar VRF terminal fields are aligned, and the contained fan/coil air path is now kept consistent through
-    //   parent-owned epmodel nodes, but broader VRF terminal parity remains incomplete.
+    // - Status: Partial Parity. The scalar fields, standard outdoor-unit relationship, and contained fan/coil air path are aligned, but broader
+    //   VRF terminal parity remains incomplete.
     // - Canonical Counterpart: openstudio::model::ZoneHVACTerminalUnitVariableRefrigerantFlow.
     // - Implemented Parity: Supply-air and outdoor-air flow scalars, parasitic electric loads, rated heating ratio, supplemental-heater limits,
-    //   fan-placement helpers, schedules, controlling-zone links, and contained fan/coil child accessors preserve the canonical wrapper
-    //   behavior. The contained supply fan, cooling coil, heating coil, and optional supplemental heating coil now share a parent-owned air
-    //   path, with direct access to the meaningful fan-outlet, cooling-coil-outlet, heating-coil-outlet, and outdoor-air-mixer node roles on
-    //   the compound.
+    //   fan-placement helpers, schedules, controlling-zone and standard VRF outdoor-unit links, direct air-loop placement, and contained
+    //   fan/coil child accessors preserve the canonical wrapper behavior. The contained supply fan, cooling coil, heating coil, and optional
+    //   supplemental heating coil share a parent-owned air path, with direct access to its meaningful internal node roles.
     // - Documented Delta: `fanOutletNode()`, `coolingCoilOutletNode()`, and `heatingCoilOutletNode()` are exposed as additive conveniences so
     //   callers can inspect and rename the meaningful node roles owned by the compound, even when those roles alias each other or the parent
     //   outlet in a valid configuration. The owned outdoor-air mixer is also exposed as an additive child convenience.
@@ -153,6 +152,8 @@ namespace epmodel {
     boost::optional<ThermalZone> controllingZoneorThermostatLocation() const;
     bool setControllingZoneorThermostatLocation(const ThermalZone& thermalZone);
     void resetControllingZoneorThermostatLocation();
+
+    boost::optional<HVACComponent> vrfSystem() const;
 
     std::vector<ModelObject> children() const;
 

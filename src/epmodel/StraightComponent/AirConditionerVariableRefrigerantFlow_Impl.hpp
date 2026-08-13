@@ -13,6 +13,9 @@
 namespace openstudio {
 namespace epmodel {
 
+  class ModelObject;
+  class ZoneHVACTerminalUnitVariableRefrigerantFlow;
+
   namespace detail {
 
     class EPMODEL_API AirConditionerVariableRefrigerantFlow_Impl : public StraightComponent_Impl
@@ -24,6 +27,14 @@ namespace epmodel {
       unsigned inletPort() const override;
       unsigned outletPort() const override;
       bool addToNode(Node& node) override;
+      std::vector<IdfObject> remove() override;
+
+      bool addTerminal(ZoneHVACTerminalUnitVariableRefrigerantFlow& terminal);
+      void removeTerminal(ZoneHVACTerminalUnitVariableRefrigerantFlow& terminal);
+      void removeAllTerminals();
+      std::vector<ZoneHVACTerminalUnitVariableRefrigerantFlow> terminals() const;
+
+      boost::optional<ModelObject> ensureTerminalUnitList();
 
       boost::optional<double> grossRatedTotalCoolingCapacity() const;
       bool isGrossRatedTotalCoolingCapacityAutosized() const;
@@ -61,6 +72,9 @@ namespace epmodel {
       std::vector<std::string> heatingPerformanceCurveOutdoorTemperatureTypeValues() const;
       std::vector<std::string> defrostStrategyValues() const;
       std::vector<std::string> condenserTypeValues() const;
+
+     private:
+      boost::optional<ModelObject> terminalUnitList() const;
     };
 
   }  // namespace detail

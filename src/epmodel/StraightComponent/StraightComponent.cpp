@@ -33,6 +33,8 @@
 #include "Node.hpp"
 #include "WaterToAirComponent/WaterToAirComponent.hpp"
 #include "WaterToAirComponent/WaterToAirComponent_Impl.hpp"
+#include "ZoneHVACComponent/ZoneHVACTerminalUnitVariableRefrigerantFlow.hpp"
+#include "ZoneHVACComponent/ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/Compare.hpp>
@@ -47,61 +49,61 @@ namespace openstudio {
 namespace epmodel {
   namespace detail {
 
-    namespace {
+    bool StraightComponent_Impl::updateAdjacentBranchComponentNode(const ModelObject& object, const Node& node, bool inlet, bool airSide) {
+      auto mutableObject = object;
 
-      bool updateAdjacentBranchComponentNode(const ModelObject& object, const Node& node, bool inlet, bool airSide) {
-        auto mutableObject = object;
-
-        if (airSide) {
-          if (auto heatingCoil = mutableObject.optionalCast<CoilHeatingGas>()) {
-            auto heatingCoilImpl = heatingCoil->getImpl<CoilHeatingGas_Impl>();
-            OS_ASSERT(heatingCoilImpl);
-            if (!heatingCoilImpl->setPointer(inlet ? heatingCoil->inletPort() : heatingCoil->outletPort(), node.handle(), false)) {
-              return false;
-            }
-            heatingCoilImpl->syncTemperatureSetpointNode();
-            return true;
+      if (airSide) {
+        if (auto heatingCoil = mutableObject.optionalCast<CoilHeatingGas>()) {
+          auto heatingCoilImpl = heatingCoil->getImpl<CoilHeatingGas_Impl>();
+          OS_ASSERT(heatingCoilImpl);
+          if (!heatingCoilImpl->setPointer(inlet ? heatingCoil->inletPort() : heatingCoil->outletPort(), node.handle(), false)) {
+            return false;
           }
-          if (auto coilSystem = mutableObject.optionalCast<CoilSystemCoolingDX>()) {
-            auto coilSystemImpl = coilSystem->getImpl<CoilSystemCoolingDX_Impl>();
-            OS_ASSERT(coilSystemImpl);
-            if (!coilSystemImpl->setPointer(inlet ? coilSystem->inletPort() : coilSystem->outletPort(), node.handle(), false)) {
-              return false;
-            }
-            return coilSystemImpl->syncCoolingCoilNodes();
-          }
-          if (auto oaSystem = mutableObject.optionalCast<AirLoopHVACOutdoorAirSystem>()) {
-            auto mixer = oaSystem->getImpl<AirLoopHVACOutdoorAirSystem_Impl>()->outdoorAirMixer();
-            auto controller = oaSystem->getControllerOutdoorAir();
-            if (inlet) {
-              return mixer.setPointer(oaSystem->returnAirPort(), node.handle())
-                     && controller.setPointer(openstudio::Controller_OutdoorAirFields::ReturnAirNodeName, node.handle());
-            }
-            return mixer.setPointer(oaSystem->mixedAirPort(), node.handle())
-                   && controller.setPointer(openstudio::Controller_OutdoorAirFields::MixedAirNodeName, node.handle());
-          }
-          if (auto coilSystem = mutableObject.optionalCast<CoilSystemCoolingWaterHeatExchangerAssisted>()) {
-            auto impl = coilSystem->getImpl<CoilSystemCoolingWaterHeatExchangerAssisted_Impl>();
-            return inlet ? impl->setAirInletNode(node) : impl->setAirOutletNode(node);
-          }
-          if (auto waterToAir = mutableObject.optionalCast<WaterToAirComponent>()) {
-            return waterToAir->setPointer(inlet ? waterToAir->airInletPort() : waterToAir->airOutletPort(), node.handle());
-          }
-          if (auto airToAir = mutableObject.optionalCast<AirToAirComponent>()) {
-            return airToAir->setPointer(inlet ? airToAir->primaryAirInletPort() : airToAir->primaryAirOutletPort(), node.handle());
-          }
-        } else if (auto waterToAir = mutableObject.optionalCast<WaterToAirComponent>()) {
-          return waterToAir->setPointer(inlet ? waterToAir->waterInletPort() : waterToAir->waterOutletPort(), node.handle());
+          heatingCoilImpl->syncTemperatureSetpointNode();
+          return true;
         }
-
-        if (auto straight = mutableObject.optionalCast<StraightComponent>()) {
-          return straight->setPointer(inlet ? straight->inletPort() : straight->outletPort(), node.handle());
+        if (auto coilSystem = mutableObject.optionalCast<CoilSystemCoolingDX>()) {
+          auto coilSystemImpl = coilSystem->getImpl<CoilSystemCoolingDX_Impl>();
+          OS_ASSERT(coilSystemImpl);
+          if (!coilSystemImpl->setPointer(inlet ? coilSystem->inletPort() : coilSystem->outletPort(), node.handle(), false)) {
+            return false;
+          }
+          return coilSystemImpl->syncCoolingCoilNodes();
         }
-
-        return true;
+        if (auto oaSystem = mutableObject.optionalCast<AirLoopHVACOutdoorAirSystem>()) {
+          auto mixer = oaSystem->getImpl<AirLoopHVACOutdoorAirSystem_Impl>()->outdoorAirMixer();
+          auto controller = oaSystem->getControllerOutdoorAir();
+          if (inlet) {
+            return mixer.setPointer(oaSystem->returnAirPort(), node.handle())
+                   && controller.setPointer(openstudio::Controller_OutdoorAirFields::ReturnAirNodeName, node.handle());
+          }
+          return mixer.setPointer(oaSystem->mixedAirPort(), node.handle())
+                 && controller.setPointer(openstudio::Controller_OutdoorAirFields::MixedAirNodeName, node.handle());
+        }
+        if (auto coilSystem = mutableObject.optionalCast<CoilSystemCoolingWaterHeatExchangerAssisted>()) {
+          auto impl = coilSystem->getImpl<CoilSystemCoolingWaterHeatExchangerAssisted_Impl>();
+          return inlet ? impl->setAirInletNode(node) : impl->setAirOutletNode(node);
+        }
+        if (auto terminal = mutableObject.optionalCast<ZoneHVACTerminalUnitVariableRefrigerantFlow>()) {
+          auto impl = terminal->getImpl<ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl>();
+          return impl->setAirBoundaryNode(node, inlet);
+        }
+        if (auto waterToAir = mutableObject.optionalCast<WaterToAirComponent>()) {
+          return waterToAir->setPointer(inlet ? waterToAir->airInletPort() : waterToAir->airOutletPort(), node.handle());
+        }
+        if (auto airToAir = mutableObject.optionalCast<AirToAirComponent>()) {
+          return airToAir->setPointer(inlet ? airToAir->primaryAirInletPort() : airToAir->primaryAirOutletPort(), node.handle());
+        }
+      } else if (auto waterToAir = mutableObject.optionalCast<WaterToAirComponent>()) {
+        return waterToAir->setPointer(inlet ? waterToAir->waterInletPort() : waterToAir->waterOutletPort(), node.handle());
       }
 
-    }  // namespace
+      if (auto straight = mutableObject.optionalCast<StraightComponent>()) {
+        return straight->setPointer(inlet ? straight->inletPort() : straight->outletPort(), node.handle());
+      }
+
+      return true;
+    }
 
     bool StraightComponent_Impl::addToOutdoorAirSystem(AirLoopHVACOutdoorAirSystem& oaSystem, Node& node) {
       auto thisObject = getObject<ModelObject>();
