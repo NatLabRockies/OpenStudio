@@ -27,6 +27,8 @@
 #include "ModelObject/BranchList_Impl.hpp"
 #include "Mixer/ConnectorMixer.hpp"
 #include "Mixer/ConnectorMixer_Impl.hpp"
+#include "HVACComponent/ControllerWaterCoil.hpp"
+#include "HVACComponent/ControllerWaterCoil_Impl.hpp"
 #include "HVACComponent/HVACComponent.hpp"
 #include "ModelObject.hpp"
 #include "Splitter/Splitter.hpp"
@@ -637,6 +639,68 @@ namespace epmodel {
       }
 
     }  // namespace
+
+    struct PlantLoop_Impl::CoilHeatingWaterDemandBranchRemovalPlan::State
+    {
+      PlantLoop plantLoop;
+      CoilHeatingWater coil;
+      Branch branch;
+      BranchList branchList;
+      ConnectorSplitter splitter;
+      ConnectorMixer mixer;
+      bool keepAsDefaultBranch;
+    };
+
+    PlantLoop_Impl::CoilHeatingWaterDemandBranchRemovalPlan::CoilHeatingWaterDemandBranchRemovalPlan(std::unique_ptr<State> state)
+      : m_state(std::move(state)) {
+      OS_ASSERT(m_state);
+    }
+
+    PlantLoop_Impl::CoilHeatingWaterDemandBranchRemovalPlan::~CoilHeatingWaterDemandBranchRemovalPlan() = default;
+
+    void PlantLoop_Impl::CoilHeatingWaterDemandBranchRemovalPlan::commit() {
+      OS_ASSERT(m_state);
+      OS_ASSERT(!m_committed);
+
+      auto plantLoopImpl = m_state->plantLoop.getImpl<PlantLoop_Impl>();
+      OS_ASSERT(plantLoopImpl);
+
+      const bool removedCoilFromBranch = m_state->coil.removeFromPlantLoop();
+      OS_ASSERT(removedCoilFromBranch);
+      m_state->coil.disconnectWaterSide();
+      if (!m_state->coil.airLoopHVAC() && !m_state->coil.containingHVACComponent()) {
+        m_state->coil.remove();
+      }
+
+      if (!m_state->keepAsDefaultBranch) {
+        auto branchListImpl = m_state->branchList.getImpl<BranchList_Impl>();
+        OS_ASSERT(branchListImpl);
+        const bool removedBranchFromList = branchListImpl->removeBranch(m_state->branch);
+        OS_ASSERT(removedBranchFromList);
+      }
+
+      auto branchImpl = m_state->branch.getImpl<Branch_Impl>();
+      OS_ASSERT(branchImpl);
+      branchImpl->clearComponents();
+
+      if (!m_state->keepAsDefaultBranch) {
+        m_state->branch.remove();
+        OS_ASSERT(!m_state->plantLoop.model().getObject(m_state->branch.handle()));
+      }
+
+      const bool synchronizedConnectors =
+        plantLoopImpl->syncConnectorPorts(m_state->splitter, m_state->mixer, plantLoopImpl->demandInletBranch(), plantLoopImpl->demandOutletBranch(),
+                                          plantLoopImpl->demandEquipmentBranches());
+      OS_ASSERT(synchronizedConnectors);
+
+      if (!m_state->plantLoop.getModelObjectTarget<Node>(openstudio::PlantLoopFields::LoopTemperatureSetpointNodeName)) {
+        const bool repairedSetpointNode =
+          plantLoopImpl->setPointer(openstudio::PlantLoopFields::LoopTemperatureSetpointNodeName, plantLoopImpl->supplyOutletNode().handle(), false);
+        OS_ASSERT(repairedSetpointNode);
+      }
+
+      m_committed = true;
+    }
 
     // PlantLoop stores its topology in EnergyPlus branch/connective-tissue objects,
     // but the API we are trying to preserve is the higher-level OpenStudio loop API.
@@ -2200,7 +2264,114 @@ namespace epmodel {
       return true;
     }
 
+    std::unique_ptr<PlantLoop_Impl::CoilHeatingWaterDemandBranchRemovalPlan>
+      PlantLoop_Impl::prepareCoilHeatingWaterDemandBranchRemoval(const CoilHeatingWater& coil) {
+      if (coil.model() != model()) {
+        return nullptr;
+      }
+
+      const auto thisLoop = getObject<PlantLoop>();
+      const auto plantLoop = coil.plantLoop();
+      if (!plantLoop || plantLoop->handle() != thisLoop.handle()) {
+        return nullptr;
+      }
+
+      const auto waterInletObject = coil.waterInletModelObject();
+      const auto waterOutletObject = coil.waterOutletModelObject();
+      const auto waterInletNode = waterInletObject ? waterInletObject->optionalCast<Node>() : boost::optional<Node>();
+      const auto waterOutletNode = waterOutletObject ? waterOutletObject->optionalCast<Node>() : boost::optional<Node>();
+      if (!waterInletNode || !waterOutletNode) {
+        return nullptr;
+      }
+
+      const auto targetObject = coil.cast<ModelObject>();
+      const auto equipmentBranches = demandEquipmentBranches();
+      boost::optional<Branch> targetBranch;
+      unsigned targetOccurrences = 0u;
+      for (const auto& branch : equipmentBranches) {
+        const auto components = branch.components();
+        const auto occurrences = static_cast<unsigned>(std::ranges::count(components, targetObject));
+        targetOccurrences += occurrences;
+        if (occurrences == 1u) {
+          targetBranch = branch;
+        }
+      }
+      if (targetOccurrences != 1u || !targetBranch) {
+        return nullptr;
+      }
+
+      const auto targetComponents = targetBranch->components();
+      if (targetComponents.size() != 1u || targetComponents.front() != targetObject) {
+        return nullptr;
+      }
+
+      const auto branchInletNode = targetBranch->componentInletNode(0u);
+      const auto branchOutletNode = targetBranch->componentOutletNode(0u);
+      if (!branchInletNode || !branchOutletNode || *branchInletNode != *waterInletNode || *branchOutletNode != *waterOutletNode) {
+        return nullptr;
+      }
+
+      auto branchList = demandBranchList();
+      const auto listedBranches = branchList.branches();
+      if (listedBranches.size() != equipmentBranches.size() + 2u || listedBranches.front() != demandInletBranch()
+          || listedBranches.back() != demandOutletBranch()) {
+        return nullptr;
+      }
+      for (unsigned i = 0; i < equipmentBranches.size(); ++i) {
+        if (listedBranches[i + 1u] != equipmentBranches[i]) {
+          return nullptr;
+        }
+      }
+      if (std::ranges::count(listedBranches, *targetBranch) != 1) {
+        return nullptr;
+      }
+
+      auto splitter = demandSplitter().cast<ConnectorSplitter>();
+      auto mixer = demandMixer().cast<ConnectorMixer>();
+      const auto splitterInletBranch = splitter.getModelObjectTarget<Branch>(splitter.inletPort());
+      const auto mixerOutletBranch = mixer.getModelObjectTarget<Branch>(mixer.outletPort());
+      if (!splitterInletBranch || *splitterInletBranch != listedBranches.front() || !mixerOutletBranch || *mixerOutletBranch != listedBranches.back()
+          || splitter.nextBranchIndex() != equipmentBranches.size() || mixer.nextBranchIndex() != equipmentBranches.size()) {
+        return nullptr;
+      }
+      for (unsigned i = 0; i < equipmentBranches.size(); ++i) {
+        const auto splitterBranch = splitter.getModelObjectTarget<Branch>(splitter.outletPort(i));
+        const auto mixerBranch = mixer.getModelObjectTarget<Branch>(mixer.inletPort(i));
+        if (!splitterBranch || *splitterBranch != equipmentBranches[i] || !mixerBranch || *mixerBranch != equipmentBranches[i]) {
+          return nullptr;
+        }
+      }
+
+      unsigned matchingControllerCount = 0u;
+      const auto airOutletObject = coil.airOutletModelObject();
+      if (airOutletObject) {
+        for (const auto& controller : model().getConcreteModelObjects<ControllerWaterCoil>()) {
+          const auto actuatorNode = controller.actuatorNode();
+          const auto sensorNode = controller.sensorNode();
+          if (actuatorNode && sensorNode && actuatorNode->handle() == waterInletNode->handle() && sensorNode->handle() == airOutletObject->handle()) {
+            ++matchingControllerCount;
+          }
+        }
+      }
+      if (matchingControllerCount > 1u) {
+        return nullptr;
+      }
+
+      auto state = std::make_unique<CoilHeatingWaterDemandBranchRemovalPlan::State>(
+        CoilHeatingWaterDemandBranchRemovalPlan::State{thisLoop, coil, *targetBranch, branchList, splitter, mixer, equipmentBranches.size() == 1u});
+      return std::unique_ptr<CoilHeatingWaterDemandBranchRemovalPlan>(new CoilHeatingWaterDemandBranchRemovalPlan(std::move(state)));
+    }
+
     bool PlantLoop_Impl::removeDemandBranchWithComponent(HVACComponent hvacComponent) {
+      if (auto heatingWaterCoil = hvacComponent.optionalCast<CoilHeatingWater>()) {
+        auto plan = prepareCoilHeatingWaterDemandBranchRemoval(*heatingWaterCoil);
+        if (!plan) {
+          return false;
+        }
+        plan->commit();
+        return true;
+      }
+
       if (!demandComponent(hvacComponent.handle()) && !isBeamDemandBranchComponent(hvacComponent)) {
         return false;
       }
@@ -2267,14 +2438,6 @@ namespace epmodel {
           // calling removeFromLoop() through disconnect().
           component.setPointer(straightComponent->inletPort(), Handle());
           component.setPointer(straightComponent->outletPort(), Handle());
-        } else if (auto waterToAir = component.optionalCast<CoilHeatingWater>()) {
-          if (!waterToAir->removeFromPlantLoop()) {
-            return false;
-          }
-          waterToAir->disconnectWaterSide();
-          if (!waterToAir->airLoopHVAC() && !waterToAir->containingHVACComponent()) {
-            waterToAir->remove();
-          }
         } else if (auto waterToAir = component.optionalCast<CoilCoolingWater>()) {
           if (!waterToAir->removeFromPlantLoop()) {
             return false;

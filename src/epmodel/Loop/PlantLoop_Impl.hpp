@@ -9,6 +9,7 @@
 #include "Loop/Loop_Impl.hpp"
 
 #include <boost/optional.hpp>
+#include <memory>
 #include <string>
 
 namespace openstudio {
@@ -18,6 +19,7 @@ namespace epmodel {
   class BranchList;
   class AvailabilityManager;
   class AvailabilityManagerAssignmentList;
+  class CoilHeatingWater;
   class ConnectorMixer;
   class ConnectorSplitter;
   class HVACComponent;
@@ -33,6 +35,7 @@ namespace epmodel {
 
   namespace detail {
     struct LoadContext;
+    class AirTerminalSingleDuctVAVReheat_Impl;
 
     class EPMODEL_API PlantLoop_Impl : public Loop_Impl
     {
@@ -152,6 +155,35 @@ namespace epmodel {
       void doCanonicalize(LoadContext& context) override;
 
      private:
+      // Carries a fully validated CoilHeatingWater demand-branch teardown
+      // across the VAV reheat compound operation. It is private implementation
+      // machinery, not part of the PlantLoop wrapper API.
+      class CoilHeatingWaterDemandBranchRemovalPlan
+      {
+       public:
+        ~CoilHeatingWaterDemandBranchRemovalPlan();
+
+        CoilHeatingWaterDemandBranchRemovalPlan(const CoilHeatingWaterDemandBranchRemovalPlan&) = delete;
+        CoilHeatingWaterDemandBranchRemovalPlan& operator=(const CoilHeatingWaterDemandBranchRemovalPlan&) = delete;
+        CoilHeatingWaterDemandBranchRemovalPlan(CoilHeatingWaterDemandBranchRemovalPlan&&) = delete;
+        CoilHeatingWaterDemandBranchRemovalPlan& operator=(CoilHeatingWaterDemandBranchRemovalPlan&&) = delete;
+
+        void commit();
+
+       private:
+        struct State;
+
+        explicit CoilHeatingWaterDemandBranchRemovalPlan(std::unique_ptr<State> state);
+
+        std::unique_ptr<State> m_state;
+        bool m_committed = false;
+
+        friend class PlantLoop_Impl;
+      };
+
+      std::unique_ptr<CoilHeatingWaterDemandBranchRemovalPlan>
+        prepareCoilHeatingWaterDemandBranchRemoval(const openstudio::epmodel::CoilHeatingWater& coil);
+
       openstudio::epmodel::PlantEquipmentOperationSchemes plantEquipmentOperationSchemes() const;
       bool syncConnectorPorts(openstudio::epmodel::ConnectorSplitter& splitter, openstudio::epmodel::ConnectorMixer& mixer,
                               const openstudio::epmodel::Branch& inletBranch, const openstudio::epmodel::Branch& outletBranch,
@@ -159,6 +191,8 @@ namespace epmodel {
 
       boost::optional<openstudio::epmodel::Branch> supplyBranchForNode(const openstudio::epmodel::Node& node) const;
       boost::optional<openstudio::epmodel::Branch> demandBranchForNode(const openstudio::epmodel::Node& node) const;
+
+      friend class AirTerminalSingleDuctVAVReheat_Impl;
     };
 
   }  // namespace detail

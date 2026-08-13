@@ -20,6 +20,7 @@
 #include "../Splitter/Splitter.hpp"
 #include "../ModelObject/ModelObject.hpp"
 #include "../ModelObject/Branch.hpp"
+#include "../ModelObject/Branch_Impl.hpp"
 #include "../ModelObject/BranchList.hpp"
 #include "../ModelObject/BranchList_Impl.hpp"
 #include "../HVACComponent/ControllerWaterCoil.hpp"
@@ -1255,6 +1256,151 @@ TEST_F(EPModelFixture, PlantLoop_AddRemoveDemandBranchForWaterToAirComponent) {
 
   EXPECT_TRUE(plantLoop.removeDemandBranchWithComponent(coil));
   EXPECT_EQ(5u, plantLoop.demandComponents().size());
+}
+
+TEST_F(EPModelFixture, PlantLoop_RemoveHeatingWaterCoilRemovesOnlyItsParallelDemandBranch) {
+  Model model;
+  PlantLoop plantLoop(model);
+  AirLoopHVAC airLoop(model);
+  PipeAdiabatic siblingPipe(model);
+  CoilHeatingWater coil(model);
+
+  ASSERT_TRUE(plantLoop.addDemandBranchForComponent(siblingPipe));
+  auto supplyOutletNode = airLoop.supplyOutletNode();
+  ASSERT_TRUE(coil.addToNode(supplyOutletNode));
+  ASSERT_TRUE(plantLoop.addDemandBranchForComponent(coil));
+  const auto controller = coil.controllerWaterCoil();
+  ASSERT_TRUE(controller);
+
+  auto plantLoopImpl = plantLoop.getImpl<detail::PlantLoop_Impl>();
+  ASSERT_TRUE(plantLoopImpl);
+  const auto equipmentBranchesBefore = plantLoopImpl->demandEquipmentBranches();
+  ASSERT_EQ(2u, equipmentBranchesBefore.size());
+  const auto targetBranchIt = std::ranges::find_if(equipmentBranchesBefore, [&](const auto& branch) {
+    const auto components = branch.components();
+    return components.size() == 1u && components.front() == coil.cast<ModelObject>();
+  });
+  ASSERT_NE(equipmentBranchesBefore.end(), targetBranchIt);
+  const auto targetBranchHandle = targetBranchIt->handle();
+  const auto siblingBranchIt = std::ranges::find_if(equipmentBranchesBefore, [&](const auto& branch) {
+    const auto components = branch.components();
+    return components.size() == 1u && components.front() == siblingPipe.cast<ModelObject>();
+  });
+  ASSERT_NE(equipmentBranchesBefore.end(), siblingBranchIt);
+  const auto siblingBranchHandle = siblingBranchIt->handle();
+
+  ASSERT_TRUE(plantLoop.removeDemandBranchWithComponent(coil));
+
+  EXPECT_FALSE(coil.plantLoop());
+  EXPECT_TRUE(coil.airLoopHVAC());
+  EXPECT_FALSE(model.getObject(controller->handle()));
+  EXPECT_FALSE(model.getObject(targetBranchHandle));
+  EXPECT_TRUE(model.getObject(siblingBranchHandle));
+  const auto equipmentBranchesAfter = plantLoopImpl->demandEquipmentBranches();
+  ASSERT_EQ(1u, equipmentBranchesAfter.size());
+  EXPECT_EQ(siblingBranchHandle, equipmentBranchesAfter.front().handle());
+  EXPECT_EQ(1u, plantLoop.demandSplitter().outletModelObjects().size());
+  EXPECT_EQ(1u, plantLoop.demandMixer().inletModelObjects().size());
+
+  const auto report = model.canonicalize();
+  EXPECT_EQ(0u, report.errorCount);
+}
+
+TEST_F(EPModelFixture, PlantLoop_RemoveHeatingWaterCoilClearsTheDefaultDemandBranch) {
+  Model model;
+  PlantLoop plantLoop(model);
+  AirLoopHVAC airLoop(model);
+  CoilHeatingWater coil(model);
+
+  auto supplyOutletNode = airLoop.supplyOutletNode();
+  ASSERT_TRUE(coil.addToNode(supplyOutletNode));
+  ASSERT_TRUE(plantLoop.addDemandBranchForComponent(coil));
+  const auto controller = coil.controllerWaterCoil();
+  ASSERT_TRUE(controller);
+  ASSERT_TRUE(coil.waterInletModelObject());
+  ASSERT_TRUE(coil.waterOutletModelObject());
+
+  auto plantLoopImpl = plantLoop.getImpl<detail::PlantLoop_Impl>();
+  ASSERT_TRUE(plantLoopImpl);
+  const auto equipmentBranchesBefore = plantLoopImpl->demandEquipmentBranches();
+  ASSERT_EQ(1u, equipmentBranchesBefore.size());
+  const auto defaultBranchHandle = equipmentBranchesBefore.front().handle();
+
+  ASSERT_TRUE(plantLoop.removeDemandBranchWithComponent(coil));
+
+  EXPECT_TRUE(model.getObject(coil.handle()));
+  EXPECT_FALSE(coil.plantLoop());
+  EXPECT_TRUE(coil.airLoopHVAC());
+  EXPECT_FALSE(coil.waterInletModelObject());
+  EXPECT_FALSE(coil.waterOutletModelObject());
+  EXPECT_FALSE(model.getObject(controller->handle()));
+  EXPECT_FALSE(coil.controllerWaterCoil());
+  const auto equipmentBranchesAfter = plantLoopImpl->demandEquipmentBranches();
+  ASSERT_EQ(1u, equipmentBranchesAfter.size());
+  EXPECT_EQ(defaultBranchHandle, equipmentBranchesAfter.front().handle());
+  EXPECT_TRUE(equipmentBranchesAfter.front().components().empty());
+  EXPECT_EQ(1u, plantLoop.demandSplitter().outletModelObjects().size());
+  EXPECT_EQ(1u, plantLoop.demandMixer().inletModelObjects().size());
+
+  const auto report = model.canonicalize();
+  EXPECT_EQ(0u, report.errorCount);
+}
+
+TEST_F(EPModelFixture, PlantLoop_RemoveHeatingWaterCoilRejectsMultiComponentBranchBeforeMutation) {
+  Model model;
+  PlantLoop plantLoop(model);
+  AirLoopHVAC airLoop(model);
+  CoilHeatingWater coil(model);
+
+  auto supplyOutletNode = airLoop.supplyOutletNode();
+  ASSERT_TRUE(coil.addToNode(supplyOutletNode));
+  ASSERT_TRUE(plantLoop.addDemandBranchForComponent(coil));
+  const auto controller = coil.controllerWaterCoil();
+  ASSERT_TRUE(controller);
+  ASSERT_TRUE(coil.waterInletModelObject());
+  ASSERT_TRUE(coil.waterOutletModelObject());
+
+  auto plantLoopImpl = plantLoop.getImpl<detail::PlantLoop_Impl>();
+  ASSERT_TRUE(plantLoopImpl);
+  auto equipmentBranches = plantLoopImpl->demandEquipmentBranches();
+  ASSERT_EQ(1u, equipmentBranches.size());
+  auto targetBranch = equipmentBranches.front();
+  PipeAdiabatic competingPipe(model);
+  ASSERT_TRUE(
+    targetBranch.getImpl<detail::Branch_Impl>()->appendComponent(competingPipe.cast<ModelObject>(), "Competing Pipe Inlet", "Competing Pipe Outlet"));
+  ASSERT_EQ(2u, targetBranch.components().size());
+
+  std::set<openstudio::Handle> handlesBefore;
+  for (const auto& object : model.objects()) {
+    handlesBefore.insert(object.handle());
+  }
+  const auto branchComponentsBefore = targetBranch.components();
+  const auto listedBranchesBefore = plantLoopImpl->demandBranchList().branches();
+  const auto splitterOutletsBefore = plantLoop.demandSplitter().outletModelObjects();
+  const auto mixerInletsBefore = plantLoop.demandMixer().inletModelObjects();
+  const auto waterInletHandle = coil.waterInletModelObject()->handle();
+  const auto waterOutletHandle = coil.waterOutletModelObject()->handle();
+
+  EXPECT_FALSE(plantLoop.removeDemandBranchWithComponent(coil));
+
+  std::set<openstudio::Handle> handlesAfter;
+  for (const auto& object : model.objects()) {
+    handlesAfter.insert(object.handle());
+  }
+  EXPECT_EQ(handlesBefore, handlesAfter);
+  EXPECT_EQ(branchComponentsBefore, targetBranch.components());
+  EXPECT_EQ(listedBranchesBefore, plantLoopImpl->demandBranchList().branches());
+  EXPECT_EQ(splitterOutletsBefore, plantLoop.demandSplitter().outletModelObjects());
+  EXPECT_EQ(mixerInletsBefore, plantLoop.demandMixer().inletModelObjects());
+  ASSERT_TRUE(coil.waterInletModelObject());
+  ASSERT_TRUE(coil.waterOutletModelObject());
+  EXPECT_EQ(waterInletHandle, coil.waterInletModelObject()->handle());
+  EXPECT_EQ(waterOutletHandle, coil.waterOutletModelObject()->handle());
+  ASSERT_TRUE(coil.plantLoop());
+  EXPECT_EQ(plantLoop.handle(), coil.plantLoop()->handle());
+  ASSERT_TRUE(model.getObject(controller->handle()));
+  ASSERT_TRUE(coil.controllerWaterCoil());
+  EXPECT_EQ(controller->handle(), coil.controllerWaterCoil()->handle());
 }
 
 TEST_F(EPModelFixture, PlantLoop_SupplyComponents_IncludeMultipleEquipmentBranchesInOrder) {
