@@ -8,8 +8,6 @@
 #include "EPModelFixture.hpp"
 #include "../StraightComponent/AirConditionerVariableRefrigerantFlow.hpp"
 #include "../StraightComponent/AirConditionerVariableRefrigerantFlow_Impl.hpp"
-#include "../StraightComponent/CoilCoolingDXVariableRefrigerantFlowFluidTemperatureControl.hpp"
-#include "../StraightComponent/CoilCoolingDXVariableRefrigerantFlowFluidTemperatureControl_Impl.hpp"
 #include "../Loop/PlantLoop.hpp"
 #include "../ModelObject/ModelObject_Impl.hpp"
 #include "../StraightComponent/Node.hpp"
@@ -175,10 +173,8 @@ TEST_F(EPModelFixture, AirConditionerVariableRefrigerantFlow_TerminalRelationshi
   Model foreignModel;
   AirConditionerVariableRefrigerantFlow system(model);
   ZoneHVACTerminalUnitVariableRefrigerantFlow foreignTerminal(foreignModel);
-  ZoneHVACTerminalUnitVariableRefrigerantFlow fluidTerminal(model);
-  CoilCoolingDXVariableRefrigerantFlowFluidTemperatureControl fluidCoolingCoil(model);
+  ZoneHVACTerminalUnitVariableRefrigerantFlow fluidTerminal(model, true);
 
-  ASSERT_TRUE(fluidTerminal.setCoolingCoil(fluidCoolingCoil));
   EXPECT_FALSE(system.addTerminal(foreignTerminal));
   EXPECT_FALSE(system.addTerminal(fluidTerminal));
   EXPECT_TRUE(system.terminals().empty());

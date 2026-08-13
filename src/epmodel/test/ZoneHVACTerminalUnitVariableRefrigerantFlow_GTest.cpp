@@ -10,20 +10,28 @@
 #include "../HVACComponent/AirLoopHVACOutdoorAirSystem_Impl.hpp"
 #include "../StraightComponent/CoilCoolingDXVariableRefrigerantFlow.hpp"
 #include "../StraightComponent/CoilCoolingDXVariableRefrigerantFlow_Impl.hpp"
+#include "../StraightComponent/CoilCoolingDXVariableRefrigerantFlowFluidTemperatureControl.hpp"
+#include "../StraightComponent/CoilCoolingDXVariableRefrigerantFlowFluidTemperatureControl_Impl.hpp"
 #include "../StraightComponent/CoilHeatingDXVariableRefrigerantFlow.hpp"
 #include "../StraightComponent/CoilHeatingDXVariableRefrigerantFlow_Impl.hpp"
+#include "../StraightComponent/CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl.hpp"
+#include "../StraightComponent/CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl_Impl.hpp"
 #include "../HVACComponent/ThermalZone.hpp"
 #include "../HVACComponent/ThermalZone_Impl.hpp"
 #include "../Loop/AirLoopHVAC.hpp"
 #include "../Loop/AirLoopHVAC_Impl.hpp"
 #include "../ModelObject/OutdoorAirMixer.hpp"
+#include "../ModelObject/ZoneHVACEquipmentConnections.hpp"
 #include "../Schedule/ScheduleCompact.hpp"
 #include "../Schedule/ScheduleConstant.hpp"
 #include "../Schedule/ScheduleConstant_Impl.hpp"
+#include "../StraightComponent/AirConditionerVariableRefrigerantFlow.hpp"
+#include "../StraightComponent/AirConditionerVariableRefrigerantFlow_Impl.hpp"
 #include "../StraightComponent/CoilHeatingElectric.hpp"
 #include "../StraightComponent/FanOnOff.hpp"
 #include "../StraightComponent/FanOnOff_Impl.hpp"
 #include "../StraightComponent/FanSystemModel.hpp"
+#include "../StraightComponent/FanSystemModel_Impl.hpp"
 #include "../StraightComponent/Node.hpp"
 #include "../ZoneHVACComponent/ZoneHVACTerminalUnitVariableRefrigerantFlow.hpp"
 #include "../ZoneHVACComponent/ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl.hpp"
@@ -31,30 +39,149 @@
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/Coil_Cooling_DX_VariableRefrigerantFlow_FieldEnums.hxx>
 #include <utilities/idd/Coil_Heating_DX_VariableRefrigerantFlow_FieldEnums.hxx>
+#include <utilities/idd/OutdoorAir_NodeList_FieldEnums.hxx>
+#include <utilities/idd/OutdoorAir_Mixer_FieldEnums.hxx>
 #include <utilities/idd/ZoneHVAC_TerminalUnit_VariableRefrigerantFlow_FieldEnums.hxx>
+#include <utilities/idf/WorkspaceExtensibleGroup.hpp>
 
 using namespace openstudio::epmodel;
+
+namespace {
+unsigned outdoorAirNodeListEntryCount(const Model& model, const std::string& nodeName) {
+  unsigned result = 0u;
+  for (const auto& object : model.getObjectsByType(openstudio::IddObjectType::OutdoorAir_NodeList)) {
+    for (const auto& group : object.extensibleGroups()) {
+      auto workspaceGroup = group.optionalCast<openstudio::WorkspaceExtensibleGroup>();
+      if (!workspaceGroup) {
+        continue;
+      }
+      auto listedNodeName = workspaceGroup->getString(openstudio::OutdoorAir_NodeListExtensibleFields::NodeorNodeListName);
+      if (listedNodeName && openstudio::istringEqual(*listedNodeName, nodeName)) {
+        ++result;
+      }
+    }
+  }
+  return result;
+}
+}  // namespace
 
 TEST_F(EPModelFixture, ZoneHVACTerminalUnitVariableRefrigerantFlow_DefaultConstructor) {
   Model model;
   ZoneHVACTerminalUnitVariableRefrigerantFlow vrf(model);
 
   EXPECT_FALSE(vrf.supplyAirFlowRateDuringCoolingOperation());
-  EXPECT_FALSE(vrf.isSupplyAirFlowRateDuringCoolingOperationAutosized());
+  EXPECT_TRUE(vrf.isSupplyAirFlowRateDuringCoolingOperationAutosized());
   EXPECT_FALSE(vrf.supplyAirFlowRateWhenNoCoolingisNeeded());
-  EXPECT_FALSE(vrf.isSupplyAirFlowRateWhenNoCoolingisNeededAutosized());
+  EXPECT_TRUE(vrf.isSupplyAirFlowRateWhenNoCoolingisNeededAutosized());
   EXPECT_FALSE(vrf.supplyAirFlowRateDuringHeatingOperation());
-  EXPECT_FALSE(vrf.isSupplyAirFlowRateDuringHeatingOperationAutosized());
+  EXPECT_TRUE(vrf.isSupplyAirFlowRateDuringHeatingOperationAutosized());
   EXPECT_FALSE(vrf.supplyAirFlowRateWhenNoHeatingisNeeded());
-  EXPECT_FALSE(vrf.isSupplyAirFlowRateWhenNoHeatingisNeededAutosized());
+  EXPECT_TRUE(vrf.isSupplyAirFlowRateWhenNoHeatingisNeededAutosized());
   EXPECT_FALSE(vrf.outdoorAirFlowRateDuringCoolingOperation());
-  EXPECT_FALSE(vrf.isOutdoorAirFlowRateDuringCoolingOperationAutosized());
+  EXPECT_TRUE(vrf.isOutdoorAirFlowRateDuringCoolingOperationAutosized());
   EXPECT_FALSE(vrf.outdoorAirFlowRateDuringHeatingOperation());
-  EXPECT_FALSE(vrf.isOutdoorAirFlowRateDuringHeatingOperationAutosized());
+  EXPECT_TRUE(vrf.isOutdoorAirFlowRateDuringHeatingOperationAutosized());
   EXPECT_FALSE(vrf.outdoorAirFlowRateWhenNoCoolingorHeatingisNeeded());
-  EXPECT_FALSE(vrf.isOutdoorAirFlowRateWhenNoCoolingorHeatingisNeededAutosized());
-  EXPECT_TRUE(vrf.isSupplyAirFanPlacementDefaulted());
-  EXPECT_EQ("", vrf.supplyAirFanPlacement());
+  EXPECT_TRUE(vrf.isOutdoorAirFlowRateWhenNoCoolingorHeatingisNeededAutosized());
+  EXPECT_DOUBLE_EQ(30.0, vrf.zoneTerminalUnitOnParasiticElectricEnergyUse());
+  EXPECT_DOUBLE_EQ(20.0, vrf.zoneTerminalUnitOffParasiticElectricEnergyUse());
+  EXPECT_DOUBLE_EQ(1.0, vrf.ratedTotalHeatingCapacitySizingRatio());
+  EXPECT_TRUE(vrf.isMaximumSupplyAirTemperaturefromSupplementalHeaterAutosized());
+  EXPECT_DOUBLE_EQ(21.0, vrf.maximumOutdoorDryBulbTemperatureforSupplementalHeaterOperation());
+  EXPECT_FALSE(vrf.isSupplyAirFanPlacementDefaulted());
+  EXPECT_EQ("DrawThrough", vrf.supplyAirFanPlacement());
+  EXPECT_EQ(model.alwaysOnDiscreteSchedule(), vrf.terminalUnitAvailabilityschedule());
+  EXPECT_EQ(model.alwaysOnDiscreteSchedule(), vrf.supplyAirFanOperatingModeSchedule());
+  EXPECT_TRUE(vrf.supplyAirFan().optionalCast<FanOnOff>());
+  auto coolingCoil = vrf.coolingCoil();
+  auto heatingCoil = vrf.heatingCoil();
+  ASSERT_TRUE(coolingCoil);
+  ASSERT_TRUE(heatingCoil);
+  EXPECT_TRUE(coolingCoil->optionalCast<CoilCoolingDXVariableRefrigerantFlow>());
+  EXPECT_TRUE(heatingCoil->optionalCast<CoilHeatingDXVariableRefrigerantFlow>());
+  EXPECT_FALSE(vrf.supplementalHeatingCoil());
+  EXPECT_TRUE(vrf.outdoorAirMixer());
+  ASSERT_TRUE(vrf.outdoorAirNode());
+  EXPECT_EQ(1u, outdoorAirNodeListEntryCount(model, vrf.outdoorAirNode()->nameString()));
+  const auto originalOutdoorAirNodeName = vrf.outdoorAirNode()->nameString();
+  ASSERT_TRUE(vrf.setName("Renamed Default VRF Terminal"));
+  ASSERT_TRUE(vrf.setSupplyAirFanPlacement("DrawThrough"));
+  ASSERT_TRUE(vrf.outdoorAirNode());
+  EXPECT_EQ(0u, outdoorAirNodeListEntryCount(model, originalOutdoorAirNodeName));
+  EXPECT_EQ(1u, outdoorAirNodeListEntryCount(model, vrf.outdoorAirNode()->nameString()));
+  EXPECT_NE(originalOutdoorAirNodeName, vrf.outdoorAirNode()->nameString());
+
+  ZoneHVACTerminalUnitVariableRefrigerantFlow second(model);
+  EXPECT_NE(vrf.nameString(), second.nameString());
+  ASSERT_TRUE(vrf.inletNode());
+  ASSERT_TRUE(second.inletNode());
+  EXPECT_NE(vrf.inletNode()->handle(), second.inletNode()->handle());
+  ASSERT_TRUE(vrf.coolingCoilOutletNode());
+  ASSERT_TRUE(second.coolingCoilOutletNode());
+  EXPECT_NE(vrf.coolingCoilOutletNode()->handle(), second.coolingCoilOutletNode()->handle());
+  ASSERT_TRUE(second.outdoorAirNode());
+  EXPECT_EQ(1u, outdoorAirNodeListEntryCount(model, second.outdoorAirNode()->nameString()));
+}
+
+TEST_F(EPModelFixture, ZoneHVACTerminalUnitVariableRefrigerantFlow_FluidTemperatureControlConstructor) {
+  Model model;
+  ZoneHVACTerminalUnitVariableRefrigerantFlow terminal(model, true);
+
+  EXPECT_EQ(model.alwaysOnDiscreteSchedule(), terminal.terminalUnitAvailabilityschedule());
+  EXPECT_EQ(model.alwaysOnDiscreteSchedule(), terminal.supplyAirFanOperatingModeSchedule());
+  EXPECT_TRUE(terminal.isSupplyAirFlowRateDuringCoolingOperationAutosized());
+  EXPECT_TRUE(terminal.isSupplyAirFlowRateWhenNoCoolingisNeededAutosized());
+  EXPECT_TRUE(terminal.isSupplyAirFlowRateDuringHeatingOperationAutosized());
+  EXPECT_TRUE(terminal.isSupplyAirFlowRateWhenNoHeatingisNeededAutosized());
+  EXPECT_TRUE(terminal.isOutdoorAirFlowRateDuringCoolingOperationAutosized());
+  EXPECT_TRUE(terminal.isOutdoorAirFlowRateDuringHeatingOperationAutosized());
+  EXPECT_TRUE(terminal.isOutdoorAirFlowRateWhenNoCoolingorHeatingisNeededAutosized());
+  EXPECT_DOUBLE_EQ(30.0, terminal.zoneTerminalUnitOnParasiticElectricEnergyUse());
+  EXPECT_DOUBLE_EQ(20.0, terminal.zoneTerminalUnitOffParasiticElectricEnergyUse());
+  EXPECT_DOUBLE_EQ(1.0, terminal.ratedTotalHeatingCapacitySizingRatio());
+  EXPECT_TRUE(terminal.isMaximumSupplyAirTemperaturefromSupplementalHeaterAutosized());
+  EXPECT_DOUBLE_EQ(21.0, terminal.maximumOutdoorDryBulbTemperatureforSupplementalHeaterOperation());
+  EXPECT_EQ("DrawThrough", terminal.supplyAirFanPlacement());
+  EXPECT_TRUE(terminal.supplyAirFan().optionalCast<FanSystemModel>());
+  ASSERT_TRUE(terminal.coolingCoil());
+  ASSERT_TRUE(terminal.heatingCoil());
+  EXPECT_TRUE(terminal.coolingCoil()->optionalCast<CoilCoolingDXVariableRefrigerantFlowFluidTemperatureControl>());
+  EXPECT_TRUE(terminal.heatingCoil()->optionalCast<CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl>());
+}
+
+TEST_F(EPModelFixture, ZoneHVACTerminalUnitVariableRefrigerantFlow_LocalOutdoorAirDeclarationIsSharedSafely) {
+  Model model;
+  ZoneHVACTerminalUnitVariableRefrigerantFlow terminal(model);
+  ASSERT_TRUE(terminal.outdoorAirNode());
+  const auto outdoorAirNode = *terminal.outdoorAirNode();
+  const auto outdoorAirNodeName = outdoorAirNode.nameString();
+  EXPECT_EQ(1u, outdoorAirNodeListEntryCount(model, outdoorAirNodeName));
+
+  OutdoorAirMixer sharedMixer(model);
+  ASSERT_TRUE(sharedMixer.setPointer(openstudio::OutdoorAir_MixerFields::OutdoorAirStreamNodeName, outdoorAirNode.handle()));
+  EXPECT_FALSE(terminal.remove().empty());
+  EXPECT_EQ(1u, outdoorAirNodeListEntryCount(model, outdoorAirNodeName));
+  ASSERT_TRUE(sharedMixer.outdoorAirNode());
+  EXPECT_EQ(outdoorAirNodeName, sharedMixer.outdoorAirNode()->nameString());
+}
+
+TEST_F(EPModelFixture, ZoneHVACTerminalUnitVariableRefrigerantFlow_PrefersImportedOutdoorAirNodeDeclaration) {
+  Model model;
+  ZoneHVACTerminalUnitVariableRefrigerantFlow terminal(model);
+  ASSERT_TRUE(terminal.outdoorAirNode());
+  const auto outdoorAirNodeName = terminal.outdoorAirNode()->nameString();
+  EXPECT_EQ(1u, outdoorAirNodeListEntryCount(model, outdoorAirNodeName));
+
+  auto outdoorAirDeclaration = ModelObject::create(openstudio::IddObjectType::OutdoorAir_Node, model);
+  ASSERT_TRUE(outdoorAirDeclaration.setName(outdoorAirNodeName));
+  ASSERT_TRUE(terminal.setSupplyAirFanPlacement("BlowThrough"));
+  EXPECT_EQ(0u, outdoorAirNodeListEntryCount(model, outdoorAirNodeName));
+  ASSERT_EQ(1u, model.getObjectsByType(openstudio::IddObjectType::OutdoorAir_Node).size());
+
+  EXPECT_FALSE(terminal.remove().empty());
+  EXPECT_EQ(0u, outdoorAirNodeListEntryCount(model, outdoorAirNodeName));
+  ASSERT_EQ(1u, model.getObjectsByType(openstudio::IddObjectType::OutdoorAir_Node).size());
+  EXPECT_EQ(outdoorAirNodeName, model.getObjectsByType(openstudio::IddObjectType::OutdoorAir_Node).front().nameString());
 }
 
 TEST_F(EPModelFixture, ZoneHVACTerminalUnitVariableRefrigerantFlow_ScalarAccessors_RoundTrip) {
@@ -224,6 +351,94 @@ TEST_F(EPModelFixture, ZoneHVACTerminalUnitVariableRefrigerantFlow_TopologyAndCh
   EXPECT_TRUE(vrf.mixedAirNode());
   EXPECT_TRUE(vrf.outdoorAirNode());
   EXPECT_TRUE(vrf.reliefAirNode());
+}
+
+TEST_F(EPModelFixture, ZoneHVACTerminalUnitVariableRefrigerantFlow_OrdinaryZoneLifecycleSurvivesReload) {
+  const auto idfPath = openstudio::tempDir() / openstudio::toPath("epmodel-vrf-terminal-zone-lifecycle.idf");
+  Model model;
+  ThermalZone firstZone(model);
+  ThermalZone secondZone(model);
+  ZoneHVACTerminalUnitVariableRefrigerantFlow terminal(model);
+  AirConditionerVariableRefrigerantFlow outdoorUnit(model);
+  ASSERT_TRUE(firstZone.setName("First VRF Zone"));
+  ASSERT_TRUE(secondZone.setName("Second VRF Zone"));
+  ASSERT_TRUE(terminal.setName("Ordinary Zone VRF Terminal"));
+  ASSERT_TRUE(outdoorUnit.setName("Ordinary Zone VRF Outdoor Unit"));
+  ASSERT_TRUE(outdoorUnit.addTerminal(terminal));
+
+  ASSERT_TRUE(terminal.addToThermalZone(firstZone));
+  ASSERT_TRUE(terminal.thermalZone());
+  EXPECT_EQ(firstZone, *terminal.thermalZone());
+  ASSERT_EQ(1u, firstZone.equipment().size());
+  EXPECT_EQ(terminal, firstZone.equipment().front());
+  auto firstConnections = firstZone.getImpl<detail::ThermalZone_Impl>()->zoneHVACEquipmentConnections();
+  ASSERT_TRUE(firstConnections);
+  ASSERT_EQ(1u, firstConnections->zoneAirInletNodes().size());
+  ASSERT_EQ(1u, firstConnections->zoneAirExhaustNodes().size());
+  EXPECT_EQ(*terminal.outletNode(), firstConnections->zoneAirInletNodes().front());
+  EXPECT_EQ(*terminal.inletNode(), firstConnections->zoneAirExhaustNodes().front());
+
+  ASSERT_TRUE(model.save(idfPath, true));
+  auto loadedModel = Model::load(idfPath);
+  ASSERT_TRUE(loadedModel);
+  auto loadedFirstZone = loadedModel->getConcreteModelObjectByName<ThermalZone>("First VRF Zone");
+  auto loadedSecondZone = loadedModel->getConcreteModelObjectByName<ThermalZone>("Second VRF Zone");
+  auto loadedTerminal = loadedModel->getConcreteModelObjectByName<ZoneHVACTerminalUnitVariableRefrigerantFlow>("Ordinary Zone VRF Terminal");
+  auto loadedOutdoorUnit = loadedModel->getConcreteModelObjectByName<AirConditionerVariableRefrigerantFlow>("Ordinary Zone VRF Outdoor Unit");
+  ASSERT_TRUE(loadedFirstZone);
+  ASSERT_TRUE(loadedSecondZone);
+  ASSERT_TRUE(loadedTerminal);
+  ASSERT_TRUE(loadedOutdoorUnit);
+  ASSERT_TRUE(loadedTerminal->thermalZone());
+  EXPECT_EQ(*loadedFirstZone, *loadedTerminal->thermalZone());
+  ASSERT_TRUE(loadedTerminal->vrfSystem());
+  EXPECT_EQ(*loadedOutdoorUnit, *loadedTerminal->vrfSystem());
+  EXPECT_TRUE(loadedTerminal->supplyAirFan().optionalCast<FanOnOff>());
+  ASSERT_TRUE(loadedTerminal->coolingCoil());
+  ASSERT_TRUE(loadedTerminal->heatingCoil());
+  EXPECT_TRUE(loadedTerminal->outdoorAirMixer());
+
+  auto loadedFirstConnections = loadedFirstZone->getImpl<detail::ThermalZone_Impl>()->zoneHVACEquipmentConnections();
+  ASSERT_TRUE(loadedFirstConnections);
+  ASSERT_EQ(1u, loadedFirstConnections->zoneAirInletNodes().size());
+  ASSERT_EQ(1u, loadedFirstConnections->zoneAirExhaustNodes().size());
+  EXPECT_EQ(*loadedTerminal->outletNode(), loadedFirstConnections->zoneAirInletNodes().front());
+  EXPECT_EQ(*loadedTerminal->inletNode(), loadedFirstConnections->zoneAirExhaustNodes().front());
+
+  ASSERT_TRUE(loadedTerminal->addToThermalZone(*loadedSecondZone));
+  EXPECT_TRUE(loadedFirstZone->equipment().empty());
+  EXPECT_TRUE(loadedFirstConnections->zoneAirInletNodes().empty());
+  EXPECT_TRUE(loadedFirstConnections->zoneAirExhaustNodes().empty());
+  ASSERT_TRUE(loadedTerminal->thermalZone());
+  EXPECT_EQ(*loadedSecondZone, *loadedTerminal->thermalZone());
+  ASSERT_EQ(1u, loadedSecondZone->equipment().size());
+  EXPECT_EQ(*loadedTerminal, loadedSecondZone->equipment().front());
+  auto loadedSecondConnections = loadedSecondZone->getImpl<detail::ThermalZone_Impl>()->zoneHVACEquipmentConnections();
+  ASSERT_TRUE(loadedSecondConnections);
+  ASSERT_EQ(1u, loadedSecondConnections->zoneAirInletNodes().size());
+  ASSERT_EQ(1u, loadedSecondConnections->zoneAirExhaustNodes().size());
+  EXPECT_EQ(*loadedTerminal->outletNode(), loadedSecondConnections->zoneAirInletNodes().front());
+  EXPECT_EQ(*loadedTerminal->inletNode(), loadedSecondConnections->zoneAirExhaustNodes().front());
+
+  std::vector<openstudio::Handle> ownedHandles;
+  for (const auto& child : loadedTerminal->children()) {
+    ownedHandles.push_back(child.handle());
+  }
+  ASSERT_TRUE(loadedTerminal->outdoorAirNode());
+  const auto localOutdoorAirNodeName = loadedTerminal->outdoorAirNode()->nameString();
+  EXPECT_EQ(1u, outdoorAirNodeListEntryCount(*loadedModel, localOutdoorAirNodeName));
+  ASSERT_FALSE(ownedHandles.empty());
+  EXPECT_FALSE(loadedTerminal->remove().empty());
+  EXPECT_TRUE(loadedSecondZone->equipment().empty());
+  EXPECT_TRUE(loadedSecondConnections->zoneAirInletNodes().empty());
+  EXPECT_TRUE(loadedSecondConnections->zoneAirExhaustNodes().empty());
+  EXPECT_TRUE(loadedOutdoorUnit->terminals().empty());
+  for (const auto& handle : ownedHandles) {
+    EXPECT_FALSE(loadedModel->getObject(handle));
+  }
+  EXPECT_EQ(0u, outdoorAirNodeListEntryCount(*loadedModel, localOutdoorAirNodeName));
+
+  openstudio::filesystem::remove(idfPath);
 }
 
 TEST_F(EPModelFixture, ZoneHVACTerminalUnitVariableRefrigerantFlow_OutdoorAirMixerIsExposedWhenUsed) {

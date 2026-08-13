@@ -28,6 +28,12 @@
 #include "Schedule/ScheduleConstant.hpp"
 #include "StraightComponent/AirConditionerVariableRefrigerantFlow.hpp"
 #include "StraightComponent/AirConditionerVariableRefrigerantFlow_Impl.hpp"
+#include "StraightComponent/CoilCoolingDXVariableRefrigerantFlow.hpp"
+#include "StraightComponent/CoilCoolingDXVariableRefrigerantFlowFluidTemperatureControl.hpp"
+#include "StraightComponent/CoilHeatingDXVariableRefrigerantFlow.hpp"
+#include "StraightComponent/CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl.hpp"
+#include "StraightComponent/FanOnOff.hpp"
+#include "StraightComponent/FanSystemModel.hpp"
 #include "StraightComponent/Node.hpp"
 #include "StraightComponent/StraightComponent.hpp"
 #include "StraightComponent/StraightComponent_Impl.hpp"
@@ -41,20 +47,69 @@
 #include <utilities/idd/IddFactory.hxx>
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/OutdoorAir_Mixer_FieldEnums.hxx>
+#include <utilities/idd/OutdoorAir_NodeList_FieldEnums.hxx>
 #include <utilities/idd/ZoneHVAC_TerminalUnit_VariableRefrigerantFlow_FieldEnums.hxx>
 #include <utilities/idf/IdfExtensibleGroup.hpp>
+#include <utilities/idf/WorkspaceExtensibleGroup.hpp>
 #include <utility>
 
 namespace openstudio {
 namespace epmodel {
 
-  ZoneHVACTerminalUnitVariableRefrigerantFlow::ZoneHVACTerminalUnitVariableRefrigerantFlow(const Model& model)
+  ZoneHVACTerminalUnitVariableRefrigerantFlow::ZoneHVACTerminalUnitVariableRefrigerantFlow(const Model& model, bool isFluidTemperatureControl)
     : ZoneHVACComponent(ZoneHVACTerminalUnitVariableRefrigerantFlow::iddObjectType(), model) {
     OS_ASSERT(getImpl<detail::ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl>());
-    ScheduleConstant alwaysOn(model);
-    OS_ASSERT(alwaysOn.setValue(1.0));
+    auto alwaysOn = model.alwaysOnDiscreteSchedule();
     OS_ASSERT(setTerminalUnitAvailabilityschedule(alwaysOn));
     OS_ASSERT(setSupplyAirFanOperatingModeSchedule(alwaysOn));
+
+    autosizeSupplyAirFlowRateDuringCoolingOperation();
+    autosizeSupplyAirFlowRateWhenNoCoolingisNeeded();
+    autosizeSupplyAirFlowRateDuringHeatingOperation();
+    autosizeSupplyAirFlowRateWhenNoHeatingisNeeded();
+    autosizeOutdoorAirFlowRateDuringCoolingOperation();
+    autosizeOutdoorAirFlowRateDuringHeatingOperation();
+    autosizeOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded();
+    OS_ASSERT(setZoneTerminalUnitOnParasiticElectricEnergyUse(30.0));
+    OS_ASSERT(setZoneTerminalUnitOffParasiticElectricEnergyUse(20.0));
+    OS_ASSERT(setRatedTotalHeatingCapacitySizingRatio(1.0));
+    autosizeMaximumSupplyAirTemperaturefromSupplementalHeater();
+    OS_ASSERT(setMaximumOutdoorDryBulbTemperatureforSupplementalHeaterOperation(21.0));
+    OS_ASSERT(setSupplyAirFanPlacement("DrawThrough"));
+
+    // A caller may rename a terminal while its constructor-owned node names
+    // remain unchanged. Do not let a later terminal reuse that vacated
+    // default name and alias the first terminal's internal air path.
+    const auto companionNameIsTaken = [&model](const std::string& terminalName) {
+      return static_cast<bool>(model.getConcreteModelObjectByName<Node>(terminalName + " Air Inlet Node"))
+             || static_cast<bool>(model.getConcreteModelObjectByName<Node>(terminalName + " Cooling Coil Outlet Node"))
+             || static_cast<bool>(model.getConcreteModelObjectByName<OutdoorAirMixer>(terminalName + " OA Mixer"));
+    };
+    while (companionNameIsTaken(nameString())) {
+      OS_ASSERT(setName(model.nextName(iddObjectType(), false)));
+    }
+    const auto baseName = nameString();
+    if (isFluidTemperatureControl) {
+      CoilCoolingDXVariableRefrigerantFlowFluidTemperatureControl coolingCoil(model);
+      coolingCoil.setName(baseName + " Cooling Coil");
+      CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl heatingCoil(model);
+      heatingCoil.setName(baseName + " Heating Coil");
+      FanSystemModel fan(model);
+      fan.setName(baseName + " Fan");
+      OS_ASSERT(setCoolingCoil(coolingCoil));
+      OS_ASSERT(setHeatingCoil(heatingCoil));
+      OS_ASSERT(setSupplyAirFan(fan));
+    } else {
+      CoilCoolingDXVariableRefrigerantFlow coolingCoil(model);
+      coolingCoil.setName(baseName + " Cooling Coil");
+      CoilHeatingDXVariableRefrigerantFlow heatingCoil(model);
+      heatingCoil.setName(baseName + " Heating Coil");
+      FanOnOff fan(model, alwaysOn);
+      fan.setName(baseName + " Fan");
+      OS_ASSERT(setCoolingCoil(coolingCoil));
+      OS_ASSERT(setHeatingCoil(heatingCoil));
+      OS_ASSERT(setSupplyAirFan(fan));
+    }
   }
 
   ZoneHVACTerminalUnitVariableRefrigerantFlow::ZoneHVACTerminalUnitVariableRefrigerantFlow(
@@ -184,6 +239,100 @@ namespace epmodel {
         changed = true;
       }
       return changed;
+    }
+
+    unsigned removeOutdoorAirNodeListEntries(const Model& model, const std::string& nodeName);
+
+    bool ensureOutdoorAirNodeListEntry(const Model& model, const std::string& nodeName) {
+      for (const auto& object : model.getObjectsByType(openstudio::IddObjectType::OutdoorAir_Node)) {
+        if (openstudio::istringEqual(object.nameString(), nodeName)) {
+          return removeOutdoorAirNodeListEntries(model, nodeName) > 0u;
+        }
+      }
+
+      unsigned existingEntries = 0u;
+      for (const auto& object : model.getObjectsByType(openstudio::IddObjectType::OutdoorAir_NodeList)) {
+        for (const auto& group : object.extensibleGroups()) {
+          auto workspaceGroup = group.optionalCast<openstudio::WorkspaceExtensibleGroup>();
+          if (!workspaceGroup) {
+            continue;
+          }
+          auto listedNodeName = workspaceGroup->getString(openstudio::OutdoorAir_NodeListExtensibleFields::NodeorNodeListName);
+          if (listedNodeName && openstudio::istringEqual(*listedNodeName, nodeName)) {
+            ++existingEntries;
+          }
+        }
+      }
+
+      if (existingEntries == 1u) {
+        return false;
+      }
+      if (existingEntries > 1u) {
+        removeOutdoorAirNodeListEntries(model, nodeName);
+      }
+
+      auto nodeList = ModelObject::create(openstudio::IddObjectType::OutdoorAir_NodeList, model);
+      auto group = nodeList.pushExtensibleGroup().optionalCast<openstudio::WorkspaceExtensibleGroup>();
+      if (!(group && group->setString(openstudio::OutdoorAir_NodeListExtensibleFields::NodeorNodeListName, nodeName))) {
+        nodeList.remove();
+        return false;
+      }
+      return true;
+    }
+
+    unsigned removeOutdoorAirNodeListEntries(const Model& model, const std::string& nodeName) {
+      unsigned removedEntries = 0u;
+      for (auto object : model.getObjectsByType(openstudio::IddObjectType::OutdoorAir_NodeList)) {
+        const auto groups = object.extensibleGroups();
+        std::vector<unsigned> matchingGroups;
+        for (const auto& group : groups) {
+          auto workspaceGroup = group.optionalCast<openstudio::WorkspaceExtensibleGroup>();
+          if (!workspaceGroup) {
+            continue;
+          }
+          auto listedNodeName = workspaceGroup->getString(openstudio::OutdoorAir_NodeListExtensibleFields::NodeorNodeListName);
+          if (listedNodeName && openstudio::istringEqual(*listedNodeName, nodeName)) {
+            matchingGroups.push_back(workspaceGroup->groupIndex());
+          }
+        }
+
+        removedEntries += static_cast<unsigned>(matchingGroups.size());
+        if (!matchingGroups.empty() && (matchingGroups.size() == groups.size())) {
+          object.remove();
+          continue;
+        }
+        for (auto it = matchingGroups.rbegin(); it != matchingGroups.rend(); ++it) {
+          object.eraseExtensibleGroup(*it);
+        }
+      }
+      return removedEntries;
+    }
+
+    unsigned removeUnusedOutdoorAirNodeListEntries(const Model& model, const std::string& nodeName) {
+      if (nodeName.empty()) {
+        return 0u;
+      }
+
+      // Outdoor-air declarations are shared model state. Remove the local
+      // list entry only after every non-declaration NodeType field has stopped
+      // using the same node.
+      for (const auto& object : model.objects()) {
+        if (object.iddObject().type() == openstudio::IddObjectType::OutdoorAir_NodeList) {
+          continue;
+        }
+        for (unsigned fieldIndex = 0u; fieldIndex < object.numFields(); ++fieldIndex) {
+          const auto iddField = object.iddObject().getField(fieldIndex);
+          if (!(iddField && (iddField->properties().type == openstudio::IddFieldType::NodeType))) {
+            continue;
+          }
+          const auto fieldValue = object.getString(fieldIndex);
+          if (fieldValue && openstudio::istringEqual(*fieldValue, nodeName)) {
+            return 0u;
+          }
+        }
+      }
+
+      return removeOutdoorAirNodeListEntries(model, nodeName);
     }
 
     void clearVRFTerminalAirNodes(ModelObject& owner, const std::vector<ModelObject>& children) {
@@ -1589,7 +1738,14 @@ namespace epmodel {
           standardSystem->removeTerminal(terminal);
         }
       }
+      const auto ownerModel = model();
       const auto ownedChildren = children();
+      boost::optional<std::string> localOutdoorAirNodeName;
+      if (auto mixer = outdoorAirMixer()) {
+        if (auto node = mixer->outdoorAirNode()) {
+          localOutdoorAirNodeName = node->nameString();
+        }
+      }
       auto removedParent = ZoneHVACComponent_Impl::remove();
       if (removedParent.empty()) {
         return {};
@@ -1599,6 +1755,9 @@ namespace epmodel {
       for (auto child : ownedChildren) {
         auto removed = child.remove();
         result.insert(result.end(), removed.begin(), removed.end());
+      }
+      if (localOutdoorAirNodeName) {
+        removeUnusedOutdoorAirNodeListEntries(ownerModel, *localOutdoorAirNodeName);
       }
       result.insert(result.end(), removedParent.begin(), removedParent.end());
       return result;
@@ -1710,6 +1869,10 @@ namespace epmodel {
         sourceNode = model().getOrCreateTransientByName<Node>(baseName + " Mixer Outlet Node");
         outdoorAirMixer = getOrCreateOwnedOutdoorAirMixer(thisObject, ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::OutsideAirMixerObjectName,
                                                           baseName + " OA Mixer");
+        boost::optional<std::string> previousOutdoorAirNodeName;
+        if (auto node = outdoorAirMixer->outdoorAirNode()) {
+          previousOutdoorAirNodeName = node->nameString();
+        }
         changed = setPointer(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::OutsideAirMixerObjectName, outdoorAirMixer->handle()) || changed;
 
         const auto currentMixerType = thisObject.getString(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::OutsideAirMixerObjectType, true);
@@ -1725,13 +1888,27 @@ namespace epmodel {
         changed = outdoorAirMixer->setPointer(OutdoorAir_MixerFields::ReturnAirStreamNodeName, inletNode.handle()) || changed;
         changed = outdoorAirMixer->setPointer(OutdoorAir_MixerFields::OutdoorAirStreamNodeName, outdoorAirNode.handle()) || changed;
         changed = outdoorAirMixer->setPointer(OutdoorAir_MixerFields::ReliefAirStreamNodeName, reliefAirNode.handle()) || changed;
+        changed = ensureOutdoorAirNodeListEntry(model(), outdoorAirNode.nameString()) || changed;
+        if (previousOutdoorAirNodeName && !openstudio::istringEqual(*previousOutdoorAirNodeName, outdoorAirNode.nameString())) {
+          changed = (removeUnusedOutdoorAirNodeListEntries(model(), *previousOutdoorAirNodeName) > 0u) || changed;
+        }
       } else {
+        boost::optional<std::string> oldOutdoorAirNodeName;
+        if (auto mixer =
+              thisObject.getModelObjectTarget<OutdoorAirMixer>(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::OutsideAirMixerObjectName)) {
+          if (auto node = mixer->outdoorAirNode()) {
+            oldOutdoorAirNodeName = node->nameString();
+          }
+        }
         const auto currentMixerType = thisObject.getString(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::OutsideAirMixerObjectType, true);
         if (currentMixerType && !currentMixerType->empty()) {
           OS_ASSERT(thisObject.setString(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::OutsideAirMixerObjectType, ""));
           changed = true;
         }
         changed = clearOwnedOutdoorAirMixer(thisObject, ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::OutsideAirMixerObjectName) || changed;
+        if (oldOutdoorAirNodeName) {
+          changed = (removeUnusedOutdoorAirNodeListEntries(model(), *oldOutdoorAirNodeName) > 0u) || changed;
+        }
       }
 
       const bool blowThrough = openstudio::istringEqual(supplyAirFanPlacement(), "BlowThrough");

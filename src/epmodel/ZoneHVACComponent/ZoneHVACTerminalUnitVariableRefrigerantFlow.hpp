@@ -33,7 +33,7 @@ namespace epmodel {
   class EPMODEL_API ZoneHVACTerminalUnitVariableRefrigerantFlow : public ZoneHVACComponent
   {
    public:
-    explicit ZoneHVACTerminalUnitVariableRefrigerantFlow(const Model& model);
+    explicit ZoneHVACTerminalUnitVariableRefrigerantFlow(const Model& model, bool isFluidTemperatureControl = false);
 
     virtual ~ZoneHVACTerminalUnitVariableRefrigerantFlow() override = default;
     ZoneHVACTerminalUnitVariableRefrigerantFlow(const ZoneHVACTerminalUnitVariableRefrigerantFlow& other) = default;
@@ -56,12 +56,14 @@ namespace epmodel {
     //   callers can inspect and rename the meaningful node roles owned by the compound, even when those roles alias each other or the parent
     //   outlet in a valid configuration. The owned outdoor-air mixer is also exposed as an additive child convenience. Moving a live terminal
     //   between a main branch and an outdoor-air stream requires an explicit `removeFromAirLoopHVAC()` so a rejected destination cannot detach
-    //   the established path.
+    //   the established path. Unlike Model, a detached EPModel terminal retains materialized boundary nodes and its local mixer so its
+    //   EnergyPlus-native child path remains internally valid; Model creates the boundary nodes on zone attachment and synthesizes the mixer
+    //   during translation.
     // - Field/Storage Mapping: Scalar values live directly on the EnergyPlus object while the fan/coil/schedule/node topology is represented
     //   through explicit child state, a persisted outdoor-air mixer whenever the unit owns its local OA path, and transient epmodel nodes.
     // - Evidence: `src/model/ZoneHVACTerminalUnitVariableRefrigerantFlow.hpp`, `src/model/ZoneHVACTerminalUnitVariableRefrigerantFlow.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateZoneHVACTerminalUnitVariableRefrigerantFlow.cpp`, and `src/epmodel/test/ZoneHVACTerminalUnitVariableRefrigerantFlow_GTest.cpp`.
-    // - Remaining Parity Work: Align constructor defaults, clone and sizing conveniences, and the unselected relief-stream topology role; add
-    //   omitted relationship helpers only if the canonical wrapper still exposes them directly.
+    // - Remaining Parity Work: Align the explicit child-injection constructor overloads, clone and sizing conveniences, and the unselected
+    //   relief-stream topology role; add omitted relationship helpers only if the canonical wrapper still exposes them directly.
 
     Schedule terminalUnitAvailabilityschedule() const;
     bool setTerminalUnitAvailabilityschedule(Schedule& schedule);
