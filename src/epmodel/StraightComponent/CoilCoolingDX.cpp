@@ -74,8 +74,7 @@ namespace epmodel {
         openstudio::Coil_Cooling_DX_CurveFit_PerformanceFields::EvaporativeCondenserBasinHeaterOperatingScheduleName, heaterSchedule.handle(),
         false));
       OS_ASSERT(performance.setCompressorFuelType("Electricity"));
-      OS_ASSERT(performance.getImpl<detail::CoilCoolingDXCurveFitPerformance_Impl>()->setPointer(
-        openstudio::Coil_Cooling_DX_CurveFit_PerformanceFields::BaseOperatingMode, baseOperatingMode.handle()));
+      OS_ASSERT(performance.setBaseOperatingMode(baseOperatingMode));
     }
 
   }  // namespace
@@ -358,7 +357,8 @@ namespace epmodel {
     }
 
     bool CoilCoolingDX_Impl::setPerformanceObject(const CoilCoolingDXCurveFitPerformance& coilCoolingDXCurveFitPerformance) {
-      return setPointer(openstudio::Coil_Cooling_DXFields::PerformanceObjectName, coilCoolingDXCurveFitPerformance.handle());
+      return coilCoolingDXCurveFitPerformance.model() == model()
+             && setPointer(openstudio::Coil_Cooling_DXFields::PerformanceObjectName, coilCoolingDXCurveFitPerformance.handle());
     }
 
     // Condenser inlet node name

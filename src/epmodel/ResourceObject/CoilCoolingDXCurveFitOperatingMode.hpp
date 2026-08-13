@@ -15,6 +15,7 @@
 namespace openstudio {
 namespace epmodel {
 
+  class CoilCoolingDXCurveFitSpeed;
   class Model;
 
   namespace detail {
@@ -37,10 +38,16 @@ namespace epmodel {
     static std::vector<std::string> condenserTypeValues();
 
     // Schema Alignment Notes:
-    // - API: Preserve openstudio::model scalar accessor names/signatures for this model-counterpart class.
-    // - Field Mapping: Preserved scalar APIs map directly to matching E+ Coil:Cooling:DX:CurveFit:OperatingMode fields.
-    // - Field Mapping: Relationship/extensible Speed Name links are intentionally excluded in this scalar scaffold phase.
-    // - TODO(parity): Add non-scalar speed/performance relationship API parity incrementally after scalar saturation.
+    // - Status: Partial Parity.
+    // - Canonical Counterpart: openstudio::model::CoilCoolingDXCurveFitOperatingMode.
+    // - Implemented Parity: Canonical constructor defaults, scalar fields, and ordered speed lookup, insertion, reordering, replacement, and
+    //   removal use the canonical public signatures. Invalid cross-model speed mutations leave the stored list unchanged.
+    // - Field/Storage Mapping: Scalar values and ordered `CoilCoolingDXCurveFitSpeed` relationships map directly to
+    //   `Coil:Cooling:DX:CurveFit:OperatingMode` fields and extensible speed-name rows.
+    // - Evidence: `src/model/CoilCoolingDXCurveFitOperatingMode.hpp` and
+    //   `src/epmodel/test/CoilCoolingDXCurveFitOperatingMode_GTest.cpp`.
+    // - Remaining Parity Work: Add performance reverse navigation, sizing-result helpers, clone/removal equivalence, and broader scripting
+    //   evidence outside the curve-fit air-loop workflow.
     boost::optional<double> ratedGrossTotalCoolingCapacity() const;
     bool isRatedGrossTotalCoolingCapacityAutosized() const;
     bool setRatedGrossTotalCoolingCapacity(double ratedGrossTotalCoolingCapacity);
@@ -84,6 +91,17 @@ namespace epmodel {
     bool isNominalSpeedNumberDefaulted() const;
     bool setNominalSpeedNumber(unsigned nominalSpeedNumber);
     void resetNominalSpeedNumber();
+
+    std::vector<CoilCoolingDXCurveFitSpeed> speeds() const;
+    unsigned numberOfSpeeds() const;
+    boost::optional<unsigned> speedIndex(const CoilCoolingDXCurveFitSpeed& speed) const;
+    bool addSpeed(const CoilCoolingDXCurveFitSpeed& speed);
+    bool addSpeed(const CoilCoolingDXCurveFitSpeed& speed, unsigned index);
+    bool setSpeedIndex(const CoilCoolingDXCurveFitSpeed& speed, unsigned index);
+    bool setSpeeds(const std::vector<CoilCoolingDXCurveFitSpeed>& speeds);
+    void removeAllSpeeds();
+    bool removeSpeed(const CoilCoolingDXCurveFitSpeed& speed);
+    bool removeSpeed(unsigned index);
 
    protected:
     using ImplType = detail::CoilCoolingDXCurveFitOperatingMode_Impl;

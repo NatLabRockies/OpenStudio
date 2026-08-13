@@ -6,6 +6,8 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
+#include "../Curve/CurveBiquadratic.hpp"
+#include "../Curve/CurveQuadratic.hpp"
 #include "../Loop/AirLoopHVAC.hpp"
 #include "../Loop/AirLoopHVAC_Impl.hpp"
 #include "../HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
@@ -13,7 +15,9 @@
 #include "../ModelObject/BranchList.hpp"
 #include "../ModelObject/CoilSystemCoolingDX.hpp"
 #include "../ModelObject/CoilSystemCoolingDX_Impl.hpp"
+#include "../ResourceObject/CoilCoolingDXCurveFitOperatingMode.hpp"
 #include "../ResourceObject/CoilCoolingDXCurveFitPerformance.hpp"
+#include "../ResourceObject/CoilCoolingDXCurveFitSpeed.hpp"
 #include "../Schedule/ScheduleConstant.hpp"
 #include "../Schedule/ScheduleConstant_Impl.hpp"
 #include "../StraightComponent/CoilCoolingDX.hpp"
@@ -24,6 +28,7 @@
 #include "../HVACComponent/ThermalZone.hpp"
 
 #include <utilities/idd/Coil_Cooling_DX_FieldEnums.hxx>
+#include <utilities/idd/Coil_Cooling_DX_CurveFit_Performance_FieldEnums.hxx>
 #include <utilities/idd/CoilSystem_Cooling_DX_FieldEnums.hxx>
 #include <utilities/core/PathHelpers.hpp>
 
@@ -69,6 +74,11 @@ TEST_F(EPModelFixture, CoilCoolingDX_RelationshipSetters_RoundTrip) {
   EXPECT_TRUE(coil.setPerformanceObject(performance));
   EXPECT_EQ(performance.handle(), coil.performanceObject().handle());
 
+  Model otherModel;
+  CoilCoolingDXCurveFitPerformance foreignPerformance(otherModel);
+  EXPECT_FALSE(coil.setPerformanceObject(foreignPerformance));
+  EXPECT_EQ(performance.handle(), coil.performanceObject().handle());
+
   const auto performanceChildren = coil.children();
   ASSERT_EQ(1u, performanceChildren.size());
   EXPECT_EQ(performance.handle(), performanceChildren.front().handle());
@@ -80,6 +90,98 @@ TEST_F(EPModelFixture, CoilCoolingDX_RelationshipSetters_RoundTrip) {
   EXPECT_EQ(zone.handle(), coil.condenserZone()->handle());
   coil.resetCondenserZone();
   EXPECT_FALSE(coil.condenserZone());
+}
+
+TEST_F(EPModelFixture, CoilCoolingDX_FourSpeedPerformanceGraphPersistsOnAirLoop) {
+  const auto idfPath = openstudio::tempDir() / openstudio::toPath("epmodel-curve-fit-dx-four-speed-graph.idf");
+
+  Model model;
+  CurveBiquadratic temperatureCurve(model);
+  CurveQuadratic flowCurve(model);
+  CurveQuadratic partLoadFractionCurve(model);
+  ASSERT_TRUE(temperatureCurve.setName("Curve Fit Shared Temperature Curve"));
+  ASSERT_TRUE(flowCurve.setName("Curve Fit Shared Flow Curve"));
+  ASSERT_TRUE(partLoadFractionCurve.setName("Curve Fit Shared Part Load Curve"));
+
+  CoilCoolingDXCurveFitSpeed firstSpeed(model);
+  CoilCoolingDXCurveFitSpeed secondSpeed(model);
+  CoilCoolingDXCurveFitSpeed thirdSpeed(model);
+  CoilCoolingDXCurveFitSpeed fourthSpeed(model);
+  ASSERT_TRUE(firstSpeed.setName("Curve Fit Speed 1"));
+  ASSERT_TRUE(secondSpeed.setName("Curve Fit Speed 2"));
+  ASSERT_TRUE(thirdSpeed.setName("Curve Fit Speed 3"));
+  ASSERT_TRUE(fourthSpeed.setName("Curve Fit Speed 4"));
+
+  for (auto* speed : {&firstSpeed, &secondSpeed, &thirdSpeed, &fourthSpeed}) {
+    ASSERT_TRUE(speed->setTotalCoolingCapacityModifierFunctionofTemperatureCurve(temperatureCurve));
+    ASSERT_TRUE(speed->setTotalCoolingCapacityModifierFunctionofAirFlowFractionCurve(flowCurve));
+    ASSERT_TRUE(speed->setEnergyInputRatioModifierFunctionofTemperatureCurve(temperatureCurve));
+    ASSERT_TRUE(speed->setEnergyInputRatioModifierFunctionofAirFlowFractionCurve(flowCurve));
+    ASSERT_TRUE(speed->setPartLoadFractionCorrelationCurve(partLoadFractionCurve));
+    ASSERT_TRUE(speed->setWasteHeatModifierFunctionofTemperatureCurve(temperatureCurve));
+  }
+
+  CoilCoolingDXCurveFitOperatingMode operatingMode(model);
+  ASSERT_TRUE(operatingMode.setName("Curve Fit Four Speed Operating Mode"));
+  ASSERT_TRUE(operatingMode.addSpeed(firstSpeed));
+  ASSERT_TRUE(operatingMode.addSpeed(secondSpeed));
+  ASSERT_TRUE(operatingMode.addSpeed(thirdSpeed));
+  ASSERT_TRUE(operatingMode.addSpeed(fourthSpeed));
+  ASSERT_TRUE(operatingMode.setNominalSpeedNumber(1));
+
+  CoilCoolingDXCurveFitPerformance performance(model, operatingMode);
+  ASSERT_TRUE(performance.setName("Curve Fit Four Speed Performance"));
+  CoilCoolingDX coil(model, performance);
+  ASSERT_TRUE(coil.setName("Curve Fit Four Speed Coil"));
+  AirLoopHVAC airLoop(model);
+  ASSERT_TRUE(airLoop.setName("Curve Fit Four Speed Air Loop"));
+  auto supplyInletNode = airLoop.supplyInletNode();
+  ASSERT_TRUE(coil.addToNode(supplyInletNode));
+  EXPECT_TRUE(airLoop.supplyComponent(coil.handle()));
+  EXPECT_EQ(performance.handle(), coil.performanceObject().handle());
+  EXPECT_EQ(operatingMode.handle(), performance.baseOperatingMode().handle());
+  EXPECT_EQ(4u, operatingMode.numberOfSpeeds());
+  ASSERT_TRUE(model.save(idfPath, true));
+
+  auto loadedModel = Model::load(idfPath);
+  ASSERT_TRUE(loadedModel);
+  auto loadedAirLoop = loadedModel->getConcreteModelObjectByName<AirLoopHVAC>("Curve Fit Four Speed Air Loop");
+  auto loadedCoil = loadedModel->getConcreteModelObjectByName<CoilCoolingDX>("Curve Fit Four Speed Coil");
+  ASSERT_TRUE(loadedAirLoop);
+  ASSERT_TRUE(loadedCoil);
+  EXPECT_TRUE(loadedAirLoop->supplyComponent(loadedCoil->handle()));
+
+  const auto loadedPerformance = loadedCoil->performanceObject();
+  EXPECT_EQ("Curve Fit Four Speed Performance", loadedPerformance.nameString());
+  const auto loadedBasinHeaterSchedule =
+    loadedPerformance.getTarget(openstudio::Coil_Cooling_DX_CurveFit_PerformanceFields::EvaporativeCondenserBasinHeaterOperatingScheduleName);
+  ASSERT_TRUE(loadedBasinHeaterSchedule);
+  EXPECT_EQ(loadedModel->alwaysOnDiscreteSchedule().handle(), loadedBasinHeaterSchedule->handle());
+  const auto loadedOperatingMode = loadedPerformance.baseOperatingMode();
+  EXPECT_EQ("Curve Fit Four Speed Operating Mode", loadedOperatingMode.nameString());
+  const auto loadedSpeeds = loadedOperatingMode.speeds();
+  ASSERT_EQ(4u, loadedSpeeds.size());
+  EXPECT_EQ("Curve Fit Speed 1", loadedSpeeds[0].nameString());
+  EXPECT_EQ("Curve Fit Speed 2", loadedSpeeds[1].nameString());
+  EXPECT_EQ("Curve Fit Speed 3", loadedSpeeds[2].nameString());
+  EXPECT_EQ("Curve Fit Speed 4", loadedSpeeds[3].nameString());
+  EXPECT_EQ(1u, loadedOperatingMode.nominalSpeedNumber());
+  for (const auto& loadedSpeed : loadedSpeeds) {
+    ASSERT_TRUE(loadedSpeed.totalCoolingCapacityModifierFunctionofTemperatureCurve());
+    ASSERT_TRUE(loadedSpeed.totalCoolingCapacityModifierFunctionofAirFlowFractionCurve());
+    ASSERT_TRUE(loadedSpeed.energyInputRatioModifierFunctionofTemperatureCurve());
+    ASSERT_TRUE(loadedSpeed.energyInputRatioModifierFunctionofAirFlowFractionCurve());
+    ASSERT_TRUE(loadedSpeed.partLoadFractionCorrelationCurve());
+    ASSERT_TRUE(loadedSpeed.wasteHeatModifierFunctionofTemperatureCurve());
+    EXPECT_EQ("Curve Fit Shared Temperature Curve", loadedSpeed.totalCoolingCapacityModifierFunctionofTemperatureCurve()->nameString());
+    EXPECT_EQ("Curve Fit Shared Flow Curve", loadedSpeed.totalCoolingCapacityModifierFunctionofAirFlowFractionCurve()->nameString());
+    EXPECT_EQ("Curve Fit Shared Temperature Curve", loadedSpeed.energyInputRatioModifierFunctionofTemperatureCurve()->nameString());
+    EXPECT_EQ("Curve Fit Shared Flow Curve", loadedSpeed.energyInputRatioModifierFunctionofAirFlowFractionCurve()->nameString());
+    EXPECT_EQ("Curve Fit Shared Part Load Curve", loadedSpeed.partLoadFractionCorrelationCurve()->nameString());
+    EXPECT_EQ("Curve Fit Shared Temperature Curve", loadedSpeed.wasteHeatModifierFunctionofTemperatureCurve()->nameString());
+  }
+
+  openstudio::filesystem::remove(idfPath);
 }
 
 TEST_F(EPModelFixture, CoilCoolingDX_StraightComponentPortsWithoutLoopPlacement) {

@@ -13,6 +13,8 @@
 namespace openstudio {
 namespace epmodel {
 
+  class CoilCoolingDXCurveFitOperatingMode;
+
   namespace detail {
 
     class EPMODEL_API CoilCoolingDXCurveFitPerformance_Impl : public ModelObject_Impl
@@ -46,6 +48,9 @@ namespace epmodel {
       std::string compressorFuelType() const;
       bool setCompressorFuelType(const std::string& compressorFuelType);
       std::vector<std::string> compressorFuelTypeValues() const;
+
+      CoilCoolingDXCurveFitOperatingMode baseOperatingMode() const;
+      bool setBaseOperatingMode(const CoilCoolingDXCurveFitOperatingMode& baseOperatingMode);
     };
 
   }  // namespace detail

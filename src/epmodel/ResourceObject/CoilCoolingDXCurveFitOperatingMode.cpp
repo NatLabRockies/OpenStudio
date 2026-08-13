@@ -7,6 +7,8 @@
 #include "ResourceObject/CoilCoolingDXCurveFitOperatingMode_Impl.hpp"
 
 #include "Model.hpp"
+#include "ResourceObject/CoilCoolingDXCurveFitSpeed.hpp"
+#include "ResourceObject/CoilCoolingDXCurveFitSpeed_Impl.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
@@ -14,12 +16,26 @@
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/IddFactory.hxx>
 #include <utilities/idd/IddObject.hpp>
+#include <utilities/idf/WorkspaceExtensibleGroup.hpp>
+
+#include <algorithm>
 
 namespace openstudio {
 namespace epmodel {
 
   CoilCoolingDXCurveFitOperatingMode::CoilCoolingDXCurveFitOperatingMode(const Model& model)
-    : ModelObject(CoilCoolingDXCurveFitOperatingMode::iddObjectType(), model) {}
+    : ModelObject(CoilCoolingDXCurveFitOperatingMode::iddObjectType(), model) {
+    autosizeRatedGrossTotalCoolingCapacity();
+    autosizeRatedEvaporatorAirFlowRate();
+    autosizeRatedCondenserAirFlowRate();
+    OS_ASSERT(setMaximumCyclingRate(0.0));
+    OS_ASSERT(setRatioofInitialMoistureEvaporationRateandSteadyStateLatentCapacity(0.0));
+    OS_ASSERT(setLatentCapacityTimeConstant(0.0));
+    OS_ASSERT(setNominalTimeforCondensateRemovaltoBegin(0.0));
+    OS_ASSERT(setApplyLatentDegradationtoSpeedsGreaterthan1(false));
+    OS_ASSERT(setCondenserType("AirCooled"));
+    autosizeNominalEvaporativeCondenserPumpPower();
+  }
 
   CoilCoolingDXCurveFitOperatingMode::CoilCoolingDXCurveFitOperatingMode(std::shared_ptr<detail::CoilCoolingDXCurveFitOperatingMode_Impl> impl)
     : ModelObject(std::move(impl)) {}
@@ -163,6 +179,46 @@ namespace epmodel {
 
   void CoilCoolingDXCurveFitOperatingMode::resetNominalSpeedNumber() {
     getImpl<detail::CoilCoolingDXCurveFitOperatingMode_Impl>()->resetNominalSpeedNumber();
+  }
+
+  std::vector<CoilCoolingDXCurveFitSpeed> CoilCoolingDXCurveFitOperatingMode::speeds() const {
+    return getImpl<detail::CoilCoolingDXCurveFitOperatingMode_Impl>()->speeds();
+  }
+
+  unsigned CoilCoolingDXCurveFitOperatingMode::numberOfSpeeds() const {
+    return getImpl<detail::CoilCoolingDXCurveFitOperatingMode_Impl>()->numberOfSpeeds();
+  }
+
+  boost::optional<unsigned> CoilCoolingDXCurveFitOperatingMode::speedIndex(const CoilCoolingDXCurveFitSpeed& speed) const {
+    return getImpl<detail::CoilCoolingDXCurveFitOperatingMode_Impl>()->speedIndex(speed);
+  }
+
+  bool CoilCoolingDXCurveFitOperatingMode::addSpeed(const CoilCoolingDXCurveFitSpeed& speed) {
+    return getImpl<detail::CoilCoolingDXCurveFitOperatingMode_Impl>()->addSpeed(speed);
+  }
+
+  bool CoilCoolingDXCurveFitOperatingMode::addSpeed(const CoilCoolingDXCurveFitSpeed& speed, unsigned index) {
+    return getImpl<detail::CoilCoolingDXCurveFitOperatingMode_Impl>()->addSpeed(speed, index);
+  }
+
+  bool CoilCoolingDXCurveFitOperatingMode::setSpeedIndex(const CoilCoolingDXCurveFitSpeed& speed, unsigned index) {
+    return getImpl<detail::CoilCoolingDXCurveFitOperatingMode_Impl>()->setSpeedIndex(speed, index);
+  }
+
+  bool CoilCoolingDXCurveFitOperatingMode::setSpeeds(const std::vector<CoilCoolingDXCurveFitSpeed>& speeds) {
+    return getImpl<detail::CoilCoolingDXCurveFitOperatingMode_Impl>()->setSpeeds(speeds);
+  }
+
+  void CoilCoolingDXCurveFitOperatingMode::removeAllSpeeds() {
+    getImpl<detail::CoilCoolingDXCurveFitOperatingMode_Impl>()->removeAllSpeeds();
+  }
+
+  bool CoilCoolingDXCurveFitOperatingMode::removeSpeed(const CoilCoolingDXCurveFitSpeed& speed) {
+    return getImpl<detail::CoilCoolingDXCurveFitOperatingMode_Impl>()->removeSpeed(speed);
+  }
+
+  bool CoilCoolingDXCurveFitOperatingMode::removeSpeed(unsigned index) {
+    return getImpl<detail::CoilCoolingDXCurveFitOperatingMode_Impl>()->removeSpeed(index);
   }
 
 }  // namespace epmodel
@@ -317,7 +373,11 @@ namespace epmodel {
     }
 
     unsigned CoilCoolingDXCurveFitOperatingMode_Impl::nominalSpeedNumber() const {
-      const auto value = getInt(openstudio::Coil_Cooling_DX_CurveFit_OperatingModeFields::NominalSpeedNumber, true);
+      if (isNominalSpeedNumberDefaulted()) {
+        return numberOfSpeeds();
+      }
+
+      const auto value = getInt(openstudio::Coil_Cooling_DX_CurveFit_OperatingModeFields::NominalSpeedNumber, false);
       OS_ASSERT(value);
       return static_cast<unsigned>(*value);
     }
@@ -327,11 +387,137 @@ namespace epmodel {
     }
 
     bool CoilCoolingDXCurveFitOperatingMode_Impl::setNominalSpeedNumber(unsigned nominalSpeedNumber) {
+      if (nominalSpeedNumber > numberOfSpeeds()) {
+        return false;
+      }
       return setInt(openstudio::Coil_Cooling_DX_CurveFit_OperatingModeFields::NominalSpeedNumber, static_cast<int>(nominalSpeedNumber));
     }
 
     void CoilCoolingDXCurveFitOperatingMode_Impl::resetNominalSpeedNumber() {
       OS_ASSERT(setString(openstudio::Coil_Cooling_DX_CurveFit_OperatingModeFields::NominalSpeedNumber, ""));
+    }
+
+    std::vector<CoilCoolingDXCurveFitSpeed> CoilCoolingDXCurveFitOperatingMode_Impl::speeds() const {
+      std::vector<CoilCoolingDXCurveFitSpeed> result;
+      for (const auto& extensibleGroup : extensibleGroups()) {
+        const auto group = extensibleGroup.cast<WorkspaceExtensibleGroup>();
+        if (auto target = group.getTarget(openstudio::Coil_Cooling_DX_CurveFit_OperatingModeExtensibleFields::SpeedName)) {
+          if (auto speed = target->optionalCast<CoilCoolingDXCurveFitSpeed>()) {
+            result.push_back(*speed);
+          }
+        }
+      }
+      return result;
+    }
+
+    unsigned CoilCoolingDXCurveFitOperatingMode_Impl::numberOfSpeeds() const {
+      return numExtensibleGroups();
+    }
+
+    boost::optional<unsigned> CoilCoolingDXCurveFitOperatingMode_Impl::speedIndex(const CoilCoolingDXCurveFitSpeed& speed) const {
+      if (speed.model() != model()) {
+        return boost::none;
+      }
+
+      const auto groups = extensibleGroups();
+      for (unsigned i = 0; i < groups.size(); ++i) {
+        const auto group = groups[i].cast<WorkspaceExtensibleGroup>();
+        if (auto target = group.getTarget(openstudio::Coil_Cooling_DX_CurveFit_OperatingModeExtensibleFields::SpeedName)) {
+          if (target->handle() == speed.handle()) {
+            return i + 1;
+          }
+        }
+      }
+      return boost::none;
+    }
+
+    bool CoilCoolingDXCurveFitOperatingMode_Impl::addSpeed(const CoilCoolingDXCurveFitSpeed& speed) {
+      auto newSpeeds = speeds();
+      newSpeeds.push_back(speed);
+      return setSpeeds(newSpeeds);
+    }
+
+    bool CoilCoolingDXCurveFitOperatingMode_Impl::addSpeed(const CoilCoolingDXCurveFitSpeed& speed, unsigned index) {
+      if (speed.model() != model() || speedIndex(speed)) {
+        return false;
+      }
+
+      auto newSpeeds = speeds();
+      index = std::max(1u, std::min(index, static_cast<unsigned>(newSpeeds.size() + 1u)));
+      newSpeeds.insert(newSpeeds.begin() + index - 1u, speed);
+      return setSpeeds(newSpeeds);
+    }
+
+    bool CoilCoolingDXCurveFitOperatingMode_Impl::setSpeedIndex(const CoilCoolingDXCurveFitSpeed& speed, unsigned index) {
+      const auto oldIndex = speedIndex(speed);
+      if (!oldIndex) {
+        return false;
+      }
+
+      auto newSpeeds = speeds();
+      index = std::max(1u, std::min(index, static_cast<unsigned>(newSpeeds.size())));
+      newSpeeds.erase(newSpeeds.begin() + *oldIndex - 1u);
+      newSpeeds.insert(newSpeeds.begin() + index - 1u, speed);
+      return setSpeeds(newSpeeds);
+    }
+
+    bool CoilCoolingDXCurveFitOperatingMode_Impl::setSpeeds(const std::vector<CoilCoolingDXCurveFitSpeed>& newSpeeds) {
+      for (unsigned i = 0; i < newSpeeds.size(); ++i) {
+        if (newSpeeds[i].model() != model()) {
+          return false;
+        }
+        for (unsigned j = 0; j < i; ++j) {
+          if (newSpeeds[i].handle() == newSpeeds[j].handle()) {
+            return false;
+          }
+        }
+      }
+
+      const auto oldSpeeds = speeds();
+      const auto oldNominalSpeedNumber = getInt(openstudio::Coil_Cooling_DX_CurveFit_OperatingModeFields::NominalSpeedNumber, false);
+      auto operatingMode = getObject<ModelObject>();
+      operatingMode.clearExtensibleGroups();
+
+      for (const auto& speed : newSpeeds) {
+        auto group = operatingMode.pushExtensibleGroup().optionalCast<WorkspaceExtensibleGroup>();
+        if (!group || !group->setPointer(openstudio::Coil_Cooling_DX_CurveFit_OperatingModeExtensibleFields::SpeedName, speed.handle())) {
+          operatingMode.clearExtensibleGroups();
+          for (const auto& oldSpeed : oldSpeeds) {
+            auto restoredGroup = operatingMode.pushExtensibleGroup().cast<WorkspaceExtensibleGroup>();
+            OS_ASSERT(restoredGroup.setPointer(openstudio::Coil_Cooling_DX_CurveFit_OperatingModeExtensibleFields::SpeedName, oldSpeed.handle()));
+          }
+          if (oldNominalSpeedNumber) {
+            OS_ASSERT(setInt(openstudio::Coil_Cooling_DX_CurveFit_OperatingModeFields::NominalSpeedNumber, *oldNominalSpeedNumber));
+          } else {
+            resetNominalSpeedNumber();
+          }
+          return false;
+        }
+      }
+
+      if (oldNominalSpeedNumber && static_cast<unsigned>(*oldNominalSpeedNumber) > newSpeeds.size()) {
+        resetNominalSpeedNumber();
+      }
+      return true;
+    }
+
+    void CoilCoolingDXCurveFitOperatingMode_Impl::removeAllSpeeds() {
+      getObject<ModelObject>().clearExtensibleGroups();
+      resetNominalSpeedNumber();
+    }
+
+    bool CoilCoolingDXCurveFitOperatingMode_Impl::removeSpeed(const CoilCoolingDXCurveFitSpeed& speed) {
+      const auto index = speedIndex(speed);
+      return index && removeSpeed(*index);
+    }
+
+    bool CoilCoolingDXCurveFitOperatingMode_Impl::removeSpeed(unsigned index) {
+      auto newSpeeds = speeds();
+      if (index == 0u || index > newSpeeds.size()) {
+        return false;
+      }
+      newSpeeds.erase(newSpeeds.begin() + index - 1u);
+      return setSpeeds(newSpeeds);
     }
 
     std::vector<std::string> CoilCoolingDXCurveFitOperatingMode_Impl::condenserTypeValues() const {

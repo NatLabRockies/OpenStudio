@@ -15,6 +15,7 @@
 namespace openstudio {
 namespace epmodel {
 
+  class CoilCoolingDXCurveFitOperatingMode;
   class Model;
 
   namespace detail {
@@ -25,6 +26,7 @@ namespace epmodel {
   {
    public:
     explicit CoilCoolingDXCurveFitPerformance(const Model& model);
+    explicit CoilCoolingDXCurveFitPerformance(const Model& model, const CoilCoolingDXCurveFitOperatingMode& baseOperatingMode);
 
     virtual ~CoilCoolingDXCurveFitPerformance() override = default;
     CoilCoolingDXCurveFitPerformance(const CoilCoolingDXCurveFitPerformance& other) = default;
@@ -40,10 +42,15 @@ namespace epmodel {
     static std::vector<std::string> validCompressorFuelTypeValues();
 
     // Schema Alignment Notes:
-    // - API: Preserves openstudio::model scalar accessor names/signatures for this model-counterpart class.
-    // - Field Mapping: Preserved scalar APIs map directly to matching E+ Coil:Cooling:DX:CurveFit:Performance fields.
-    // - ForwardTranslator evidence: ForwardTranslateCoilCoolingDXCurveFitPerformance writes these scalar fields one-to-one.
-    // - TODO(parity): Add relationship/object-link APIs (operating modes, schedule, curve) in a dedicated non-scalar pass.
+    // - Status: Partial Parity.
+    // - Canonical Counterpart: openstudio::model::CoilCoolingDXCurveFitPerformance.
+    // - Implemented Parity: Scalar fields plus the required base-operating-mode constructor, getter, and setter preserve the public API needed
+    //   to construct a curve-fit DX air-loop performance graph.
+    // - Documented Delta: The existing one-argument constructor remains available for internal/default EPModel construction.
+    // - Field/Storage Mapping: Scalars and the required base mode map directly to `Coil:Cooling:DX:CurveFit:Performance` fields.
+    // - Evidence: `src/model/CoilCoolingDXCurveFitPerformance.hpp` and
+    //   `src/epmodel/test/CoilCoolingDXCurveFitPerformance_GTest.cpp`.
+    // - Remaining Parity Work: Add optional modes, basin-heater schedule, crankcase curve, reverse navigation, and removal/clone equivalence.
     double crankcaseHeaterCapacity() const;
     bool setCrankcaseHeaterCapacity(double crankcaseHeaterCapacity);
 
@@ -67,6 +74,9 @@ namespace epmodel {
 
     std::string compressorFuelType() const;
     bool setCompressorFuelType(const std::string& compressorFuelType);
+
+    CoilCoolingDXCurveFitOperatingMode baseOperatingMode() const;
+    bool setBaseOperatingMode(const CoilCoolingDXCurveFitOperatingMode& baseOperatingMode);
 
    protected:
     using ImplType = detail::CoilCoolingDXCurveFitPerformance_Impl;

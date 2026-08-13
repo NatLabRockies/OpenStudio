@@ -13,6 +13,8 @@
 namespace openstudio {
 namespace epmodel {
 
+  class CoilCoolingDXCurveFitSpeed;
+
   namespace detail {
 
     class EPMODEL_API CoilCoolingDXCurveFitOperatingMode_Impl : public ModelObject_Impl
@@ -64,6 +66,17 @@ namespace epmodel {
       bool isNominalSpeedNumberDefaulted() const;
       bool setNominalSpeedNumber(unsigned nominalSpeedNumber);
       void resetNominalSpeedNumber();
+
+      std::vector<CoilCoolingDXCurveFitSpeed> speeds() const;
+      unsigned numberOfSpeeds() const;
+      boost::optional<unsigned> speedIndex(const CoilCoolingDXCurveFitSpeed& speed) const;
+      bool addSpeed(const CoilCoolingDXCurveFitSpeed& speed);
+      bool addSpeed(const CoilCoolingDXCurveFitSpeed& speed, unsigned index);
+      bool setSpeedIndex(const CoilCoolingDXCurveFitSpeed& speed, unsigned index);
+      bool setSpeeds(const std::vector<CoilCoolingDXCurveFitSpeed>& speeds);
+      void removeAllSpeeds();
+      bool removeSpeed(const CoilCoolingDXCurveFitSpeed& speed);
+      bool removeSpeed(unsigned index);
 
       std::vector<std::string> condenserTypeValues() const;
     };

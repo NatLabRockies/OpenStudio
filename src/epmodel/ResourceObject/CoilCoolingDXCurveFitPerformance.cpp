@@ -7,6 +7,9 @@
 #include "ResourceObject/CoilCoolingDXCurveFitPerformance_Impl.hpp"
 
 #include "Model.hpp"
+#include "ResourceObject/CoilCoolingDXCurveFitOperatingMode.hpp"
+#include "ResourceObject/CoilCoolingDXCurveFitOperatingMode_Impl.hpp"
+#include "Schedule/Schedule.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/idd/Coil_Cooling_DX_CurveFit_Performance_FieldEnums.hxx>
@@ -14,11 +17,38 @@
 #include <utilities/idd/IddFactory.hxx>
 #include <utilities/idd/IddObject.hpp>
 
+#include <stdexcept>
+
 namespace openstudio {
 namespace epmodel {
 
   CoilCoolingDXCurveFitPerformance::CoilCoolingDXCurveFitPerformance(const Model& model)
     : ModelObject(CoilCoolingDXCurveFitPerformance::iddObjectType(), model) {}
+
+  CoilCoolingDXCurveFitPerformance::CoilCoolingDXCurveFitPerformance(const Model& model, const CoilCoolingDXCurveFitOperatingMode& baseOperatingMode)
+    : ModelObject(CoilCoolingDXCurveFitPerformance::iddObjectType(), model) {
+    if (baseOperatingMode.model() != model) {
+      remove();
+      throw std::invalid_argument("The base operating mode must belong to the same model as the curve-fit performance object.");
+    }
+
+    OS_ASSERT(setCrankcaseHeaterCapacity(0.0));
+    OS_ASSERT(setMinimumOutdoorDryBulbTemperatureforCompressorOperation(-25.0));
+    OS_ASSERT(setMaximumOutdoorDryBulbTemperatureforCrankcaseHeaterOperation(10.0));
+    OS_ASSERT(setUnitInternalStaticAirPressure(773.3));
+    OS_ASSERT(setCapacityControlMethod("Discrete"));
+    OS_ASSERT(setEvaporativeCondenserBasinHeaterCapacity(0.0));
+    OS_ASSERT(setEvaporativeCondenserBasinHeaterSetpointTemperature(2.0));
+    const auto basinHeaterSchedule = model.alwaysOnDiscreteSchedule();
+    OS_ASSERT(getImpl<detail::CoilCoolingDXCurveFitPerformance_Impl>()->setPointer(
+      openstudio::Coil_Cooling_DX_CurveFit_PerformanceFields::EvaporativeCondenserBasinHeaterOperatingScheduleName, basinHeaterSchedule.handle(),
+      false));
+    OS_ASSERT(setCompressorFuelType("Electricity"));
+    if (!setBaseOperatingMode(baseOperatingMode)) {
+      remove();
+      throw std::runtime_error("Unable to attach the base operating mode to the curve-fit performance object.");
+    }
+  }
 
   CoilCoolingDXCurveFitPerformance::CoilCoolingDXCurveFitPerformance(std::shared_ptr<detail::CoilCoolingDXCurveFitPerformance_Impl> impl)
     : ModelObject(std::move(impl)) {}
@@ -116,6 +146,14 @@ namespace epmodel {
     return getImpl<detail::CoilCoolingDXCurveFitPerformance_Impl>()->setCompressorFuelType(compressorFuelType);
   }
 
+  CoilCoolingDXCurveFitOperatingMode CoilCoolingDXCurveFitPerformance::baseOperatingMode() const {
+    return getImpl<detail::CoilCoolingDXCurveFitPerformance_Impl>()->baseOperatingMode();
+  }
+
+  bool CoilCoolingDXCurveFitPerformance::setBaseOperatingMode(const CoilCoolingDXCurveFitOperatingMode& baseOperatingMode) {
+    return getImpl<detail::CoilCoolingDXCurveFitPerformance_Impl>()->setBaseOperatingMode(baseOperatingMode);
+  }
+
 }  // namespace epmodel
 }  // namespace openstudio
 
@@ -210,6 +248,20 @@ namespace epmodel {
 
     bool CoilCoolingDXCurveFitPerformance_Impl::setCompressorFuelType(const std::string& compressorFuelType) {
       return setString(openstudio::Coil_Cooling_DX_CurveFit_PerformanceFields::CompressorFuelType, compressorFuelType);
+    }
+
+    CoilCoolingDXCurveFitOperatingMode CoilCoolingDXCurveFitPerformance_Impl::baseOperatingMode() const {
+      const auto value = getObject<ModelObject>().getModelObjectTarget<CoilCoolingDXCurveFitOperatingMode>(
+        openstudio::Coil_Cooling_DX_CurveFit_PerformanceFields::BaseOperatingMode);
+      if (!value) {
+        throw std::runtime_error("Curve-fit performance object does not have a valid base operating mode.");
+      }
+      return *value;
+    }
+
+    bool CoilCoolingDXCurveFitPerformance_Impl::setBaseOperatingMode(const CoilCoolingDXCurveFitOperatingMode& baseOperatingMode) {
+      return baseOperatingMode.model() == model()
+             && setPointer(openstudio::Coil_Cooling_DX_CurveFit_PerformanceFields::BaseOperatingMode, baseOperatingMode.handle(), false);
     }
 
     std::vector<std::string> CoilCoolingDXCurveFitPerformance_Impl::capacityControlMethodValues() const {

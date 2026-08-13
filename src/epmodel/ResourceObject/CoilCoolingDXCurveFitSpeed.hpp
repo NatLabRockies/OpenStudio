@@ -14,6 +14,7 @@
 namespace openstudio {
 namespace epmodel {
 
+  class Curve;
   class Model;
 
   namespace detail {
@@ -34,11 +35,13 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     // Schema Alignment Notes:
-    // - API: Preserves openstudio::model scalar accessor names/signatures for this model-counterpart class.
-    // - Field Mapping: Preserved scalar APIs map directly to matching E+ Coil:Cooling:DX:CurveFit:Speed fields.
-    // - Field Mapping: Relationship object-link fields (all curve references and operating-mode back-links) are intentionally excluded.
-    // - ForwardTranslator evidence: ForwardTranslateCoilCoolingDXCurveFitSpeed writes these scalar fields one-to-one.
-    // - TODO(parity): Add relationship/object-link APIs in a dedicated non-scalar parity pass.
+    // - Status: Partial Parity.
+    // - Canonical Counterpart: openstudio::model::CoilCoolingDXCurveFitSpeed.
+    // - Implemented Parity: Canonical constructor defaults, scalar fields, and all eight optional curve relationships expose the canonical
+    //   getter, setter, and reset signatures.
+    // - Field/Storage Mapping: Scalars and curve pointers map directly to `Coil:Cooling:DX:CurveFit:Speed` fields.
+    // - Evidence: `src/model/CoilCoolingDXCurveFitSpeed.hpp` and `src/epmodel/test/CoilCoolingDXCurveFitSpeed_GTest.cpp`.
+    // - Remaining Parity Work: Add operating-mode reverse navigation, clone/removal equivalence, autosized results, and broader scripting evidence.
 
     /** @name Field Accessors */
     //@{
@@ -79,8 +82,40 @@ namespace epmodel {
     double evaporativeCondenserEffectiveness() const;
     bool setEvaporativeCondenserEffectiveness(double evaporativeCondenserEffectiveness);
 
+    boost::optional<Curve> totalCoolingCapacityModifierFunctionofTemperatureCurve() const;
+    bool setTotalCoolingCapacityModifierFunctionofTemperatureCurve(const Curve& curve);
+    void resetTotalCoolingCapacityModifierFunctionofTemperatureCurve();
+
+    boost::optional<Curve> totalCoolingCapacityModifierFunctionofAirFlowFractionCurve() const;
+    bool setTotalCoolingCapacityModifierFunctionofAirFlowFractionCurve(const Curve& curve);
+    void resetTotalCoolingCapacityModifierFunctionofAirFlowFractionCurve();
+
+    boost::optional<Curve> energyInputRatioModifierFunctionofTemperatureCurve() const;
+    bool setEnergyInputRatioModifierFunctionofTemperatureCurve(const Curve& curve);
+    void resetEnergyInputRatioModifierFunctionofTemperatureCurve();
+
+    boost::optional<Curve> energyInputRatioModifierFunctionofAirFlowFractionCurve() const;
+    bool setEnergyInputRatioModifierFunctionofAirFlowFractionCurve(const Curve& curve);
+    void resetEnergyInputRatioModifierFunctionofAirFlowFractionCurve();
+
+    boost::optional<Curve> partLoadFractionCorrelationCurve() const;
+    bool setPartLoadFractionCorrelationCurve(const Curve& curve);
+    void resetPartLoadFractionCorrelationCurve();
+
+    boost::optional<Curve> wasteHeatModifierFunctionofTemperatureCurve() const;
+    bool setWasteHeatModifierFunctionofTemperatureCurve(const Curve& curve);
+    void resetWasteHeatModifierFunctionofTemperatureCurve();
+
     double ratedWasteHeatFractionofPowerInput() const;
     bool setRatedWasteHeatFractionofPowerInput(double ratedWasteHeatFractionofPowerInput);
+
+    boost::optional<Curve> sensibleHeatRatioModifierFunctionofTemperatureCurve() const;
+    bool setSensibleHeatRatioModifierFunctionofTemperatureCurve(const Curve& curve);
+    void resetSensibleHeatRatioModifierFunctionofTemperatureCurve();
+
+    boost::optional<Curve> sensibleHeatRatioModifierFunctionofFlowFractionCurve() const;
+    bool setSensibleHeatRatioModifierFunctionofFlowFractionCurve(const Curve& curve);
+    void resetSensibleHeatRatioModifierFunctionofFlowFractionCurve();
 
     //@}
 
