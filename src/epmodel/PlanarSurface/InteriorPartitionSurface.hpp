@@ -37,12 +37,21 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::InteriorPartitionSurface scalar accessor names/signatures.
-    // - Field Mapping: surfaceArea -> InternalMass, Surface Area.
-    // - Field Mapping: Construction Name, Zone or ZoneList Name, and Space or SpaceList Name are relationship fields and are excluded.
-    // - API: converttoInternalMass and numberofVertices are retained compatibility shims; InternalMass has no direct scalar fields for these.
-    // - ForwardTranslator evidence: ForwardTranslateInteriorPartitionSurface.cpp writes only InternalMass scalar SurfaceArea (and relationship targets).
-    // - TODO(parity): Revisit drifted compatibility shims if epmodel introduces OS-schema-level geometry conversion state.
+    // - Status: Partial Parity.
+    // - Canonical Counterpart: openstudio::model::InteriorPartitionSurface.
+    // - Implemented Parity: Preserves the canonical vertex constructor and scalar accessor names. Constructor and
+    //   `setVertices()` input is validated and projected to the persisted `InternalMass` surface area.
+    // - Documented Delta: EnergyPlus `InternalMass` does not persist vertices or distinguish geometry-derived gross
+    //   area from the canonical optional surface-area override. Epmodel therefore collapses constructor/setter vertex
+    //   input and explicit surface-area input onto the one required persisted Surface Area field. `resetSurfaceArea()`
+    //   is a no-op and `setSurfaceArea(none)` returns false so the EnergyPlus object cannot be left without its required
+    //   positive area. Exact vertex geometry and derived orientation queries cannot round-trip. `converttoInternalMass`
+    //   and `numberofVertices` remain compatibility shims.
+    // - Field/Storage Mapping: `surfaceArea()` and `grossArea()` both read the EnergyPlus `InternalMass` Surface Area
+    //   field. Construction Name, Zone or ZoneList Name, and Space or SpaceList Name are relationship fields.
+    // - Evidence: `src/model/InteriorPartitionSurface.cpp` and
+    //   `src/energyplus/ForwardTranslator/ForwardTranslateInteriorPartitionSurface.cpp`.
+    // - Remaining Parity Work: Revisit geometry-dependent APIs only if epmodel adopts explicit non-persisted geometry state.
     bool converttoInternalMass() const;
     bool isConverttoInternalMassDefaulted() const;
     bool setConverttoInternalMass(bool converttoInternalMass);
@@ -69,6 +78,9 @@ namespace epmodel {
     friend class openstudio::detail::IdfObject_Impl;
 
     explicit InteriorPartitionSurface(std::shared_ptr<detail::InteriorPartitionSurface_Impl> impl);
+
+   private:
+    REGISTER_LOGGER("openstudio.epmodel.InteriorPartitionSurface");
   };
 
 }  // namespace epmodel

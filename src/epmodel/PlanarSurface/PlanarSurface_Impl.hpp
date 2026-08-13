@@ -56,7 +56,7 @@ namespace epmodel {
       /** @name Queries */
       //@{
 
-      double grossArea() const;
+      virtual double grossArea() const;
 
       virtual bool subtractFromGrossArea() const = 0;
 

@@ -24,6 +24,8 @@ namespace epmodel {
 
       virtual boost::optional<Space> space() const override;
       virtual bool subtractFromGrossArea() const override;
+      bool setVertices(const std::vector<Point3d>& vertices) override;
+      double grossArea() const override;
 
       boost::optional<ConstructionBase> construction() const override;
       bool setConstruction(const ConstructionBase& construction) override;
@@ -46,6 +48,9 @@ namespace epmodel {
       bool setNumberofVertices(double numberofVertices);
       void resetNumberofVertices();
       void autocalculateNumberofVertices();
+
+     private:
+      REGISTER_LOGGER("openstudio.epmodel.InteriorPartitionSurface");
     };
 
   }  // namespace detail
