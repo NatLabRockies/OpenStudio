@@ -129,9 +129,10 @@ The transactional branch evidence is deliberately exact rather than generic:
   connection after load, source, and heat-recovery owners make that role
   unambiguous. The load and heat-recovery paths, companion graph, curves,
   settings, `WaterSource` state, and staged initial-attachment behavior remain
-  unchanged. Whole moved-source-loop removal returns the retained heat pump to
-  `AirSource` and allows reattachment; direct demand-branch removal parity is
-  still a separate operation.
+  unchanged. Exact direct source-branch removal and whole moved-source-loop
+  removal both retain the load and heat-recovery paths, return the heat pump to
+  `AirSource`, and allow source reattachment. Direct heat-recovery removal keeps
+  the source path and `WaterSource` state unchanged.
 
 The representative C++ hot-water, chilled-water, and condenser-water vertical
 slice covers construction, typed `SizingPlant` loop types, equipment and
@@ -183,11 +184,11 @@ or the presence of a scalar test.
 
 ## Ordered plant roadmap
 
-1. **Direct source-removal state parity.** Make exact PlantLoop EIR source-side
-   branch removal clear the source ports and restore `AirSource` while retaining
-   load and heat-recovery owners. Then treat heat-recovery moves, other
-   families, branch replacement, clone/remove, and cross-model transfer as
-   separately proven operations.
+1. **Heat-recovery movement and remaining multi-loop families.** Make exact
+   PlantLoop EIR heat-recovery movement transactional through the explicit
+   tertiary operation while retaining its load and source owners. Then treat
+   other families, branch replacement, standalone clone/remove, and cross-model
+   transfer as separately proven operations.
 2. **Additional contained owners.** Apply the private relocation boundary to
    another selected compound owner only after its child roles, internal air or
    zone path, controller behavior, and removal lifetime have exact rejection,

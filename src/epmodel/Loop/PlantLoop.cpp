@@ -2084,6 +2084,8 @@ namespace epmodel {
       }
 
      private:
+      friend class PlantLoop_Impl::PlantLoopEIRHeatPumpSourceDemandBranchRemovalPlan;
+
       struct Descriptor
       {
         IddObjectType componentType;
@@ -2377,6 +2379,251 @@ namespace epmodel {
       PlantLoop m_primaryOwner;
       PlantLoop m_heatRecoveryOwner;
       Node m_primarySetpointTarget;
+      Node m_heatRecoverySetpointTarget;
+      bool m_committed = false;
+    };
+
+    // Direct removal of a fully three-owned PlantLoop EIR heat pump must
+    // distinguish its SourceSide demand row from its HeatRecovery demand row.
+    // The existing single-branch teardown owns the plant mutation; this
+    // wrapper proves the two retained owners and the selected SourceSide role.
+    class PlantLoop_Impl::PlantLoopEIRHeatPumpSourceDemandBranchRemovalPlan : private PlantLoop_Impl::ExactPlantBranchTopologyInspection
+    {
+     public:
+      static bool requiresExactRemovalDispatch(PlantLoop_Impl& receiver, const HeatPumpPlantLoopEIRHeating& heatPump) {
+        return requiresExactRemovalDispatch(receiver, heatPump.cast<HVACComponent>(), AttachmentPlan::heatingDescriptor());
+      }
+
+      static bool requiresExactRemovalDispatch(PlantLoop_Impl& receiver, const HeatPumpPlantLoopEIRCooling& heatPump) {
+        return requiresExactRemovalDispatch(receiver, heatPump.cast<HVACComponent>(), AttachmentPlan::coolingDescriptor());
+      }
+
+      static std::unique_ptr<PlantLoopEIRHeatPumpSourceDemandBranchRemovalPlan> prepare(PlantLoop_Impl& receiver,
+                                                                                        HeatPumpPlantLoopEIRHeating heatPump) {
+        return prepareProven(receiver, heatPump.cast<HVACComponent>(), AttachmentPlan::heatingDescriptor());
+      }
+
+      static std::unique_ptr<PlantLoopEIRHeatPumpSourceDemandBranchRemovalPlan> prepare(PlantLoop_Impl& receiver,
+                                                                                        HeatPumpPlantLoopEIRCooling heatPump) {
+        return prepareProven(receiver, heatPump.cast<HVACComponent>(), AttachmentPlan::coolingDescriptor());
+      }
+
+      PlantLoopEIRHeatPumpSourceDemandBranchRemovalPlan(const PlantLoopEIRHeatPumpSourceDemandBranchRemovalPlan&) = delete;
+      PlantLoopEIRHeatPumpSourceDemandBranchRemovalPlan& operator=(const PlantLoopEIRHeatPumpSourceDemandBranchRemovalPlan&) = delete;
+      PlantLoopEIRHeatPumpSourceDemandBranchRemovalPlan(PlantLoopEIRHeatPumpSourceDemandBranchRemovalPlan&&) = delete;
+      PlantLoopEIRHeatPumpSourceDemandBranchRemovalPlan& operator=(PlantLoopEIRHeatPumpSourceDemandBranchRemovalPlan&&) = delete;
+      ~PlantLoopEIRHeatPumpSourceDemandBranchRemovalPlan() = default;
+
+      void commit() {
+        OS_ASSERT(m_branchRemoval && !m_committed);
+        assertSetpointIdentity();
+        m_branchRemoval->commit();
+        assertSetpointIdentity();
+        m_committed = true;
+      }
+
+     private:
+      using AttachmentPlan = PlantLoopEIRHeatPumpSourceDemandBranchAttachmentPlan;
+      using Descriptor = AttachmentPlan::Descriptor;
+      using ProvenOccurrenceOwner = AttachmentPlan::ProvenOccurrenceOwner;
+
+      struct ProvenFullyOwnedTopology
+      {
+        ProvenOccurrenceOwner primary;
+        ProvenOccurrenceOwner source;
+        ProvenOccurrenceOwner heatRecovery;
+      };
+
+      static bool hasAllOwnershipFieldEvidence(const HVACComponent& heatPump, const Descriptor& descriptor) {
+        return fieldHasEvidence(heatPump, descriptor.loadInletPort) && fieldHasEvidence(heatPump, descriptor.loadOutletPort)
+               && fieldHasEvidence(heatPump, descriptor.sourceInletPort) && fieldHasEvidence(heatPump, descriptor.sourceOutletPort)
+               && fieldHasEvidence(heatPump, descriptor.heatRecoveryInletPort) && fieldHasEvidence(heatPump, descriptor.heatRecoveryOutletPort);
+      }
+
+      static boost::optional<ProvenFullyOwnedTopology> inspectFullyOwned(const HVACComponent& heatPump, const Descriptor& descriptor) {
+        if (heatPump.iddObject().type() != descriptor.componentType || !hasUniqueName(heatPump)
+            || !AttachmentPlan::companionEvidenceIsExact(heatPump, descriptor)
+            || !AttachmentPlan::persistedCondenserTypeIs(heatPump, descriptor, "WaterSource")
+            || !hasAllOwnershipFieldEvidence(heatPump, descriptor)) {
+          return boost::none;
+        }
+
+        const auto loadInlet = exactNodeField(heatPump, descriptor.loadInletPort);
+        const auto loadOutlet = exactNodeField(heatPump, descriptor.loadOutletPort);
+        const auto sourceInlet = exactNodeField(heatPump, descriptor.sourceInletPort);
+        const auto sourceOutlet = exactNodeField(heatPump, descriptor.sourceOutletPort);
+        const auto heatRecoveryInlet = exactNodeField(heatPump, descriptor.heatRecoveryInletPort);
+        const auto heatRecoveryOutlet = exactNodeField(heatPump, descriptor.heatRecoveryOutletPort);
+        if (!loadInlet || !loadOutlet || !sourceInlet || !sourceOutlet || !heatRecoveryInlet || !heatRecoveryOutlet) {
+          return boost::none;
+        }
+
+        const std::array<Node, 6> ports{*loadInlet, *loadOutlet, *sourceInlet, *sourceOutlet, *heatRecoveryInlet, *heatRecoveryOutlet};
+        std::set<Handle> portHandles;
+        for (const auto& port : ports) {
+          if (!hasUniqueName(port) || !portHandles.insert(port.handle()).second) {
+            return boost::none;
+          }
+        }
+
+        std::vector<BranchOccurrence> occurrences;
+        if (!collectOccurrences(heatPump, occurrences) || occurrences.size() != 3u) {
+          return boost::none;
+        }
+        boost::optional<BranchOccurrence> primaryOccurrence;
+        boost::optional<BranchOccurrence> sourceOccurrence;
+        boost::optional<BranchOccurrence> heatRecoveryOccurrence;
+        for (const auto& occurrence : occurrences) {
+          if (occurrence.branch.extensibleGroups().size() != 1u || !hasUniqueName(occurrence.branch)) {
+            return boost::none;
+          }
+          if (occurrence.inlet == *loadInlet && occurrence.outlet == *loadOutlet) {
+            if (primaryOccurrence) {
+              return boost::none;
+            }
+            primaryOccurrence = occurrence;
+          } else if (occurrence.inlet == *sourceInlet && occurrence.outlet == *sourceOutlet) {
+            if (sourceOccurrence) {
+              return boost::none;
+            }
+            sourceOccurrence = occurrence;
+          } else if (occurrence.inlet == *heatRecoveryInlet && occurrence.outlet == *heatRecoveryOutlet) {
+            if (heatRecoveryOccurrence) {
+              return boost::none;
+            }
+            heatRecoveryOccurrence = occurrence;
+          } else {
+            return boost::none;
+          }
+        }
+        if (!primaryOccurrence || !sourceOccurrence || !heatRecoveryOccurrence) {
+          return boost::none;
+        }
+
+        const auto primary = AttachmentPlan::provenOwnerForOccurrence(*primaryOccurrence, true, true);
+        const auto source = AttachmentPlan::provenOwnerForOccurrence(*sourceOccurrence, false, false);
+        const auto heatRecovery = AttachmentPlan::provenOwnerForOccurrence(*heatRecoveryOccurrence, false, false);
+        if (!primary || !source || !heatRecovery || primary->branchList == source->branchList || primary->branchList == heatRecovery->branchList
+            || source->branchList == heatRecovery->branchList || primary->plantLoop == source->plantLoop
+            || primary->plantLoop == heatRecovery->plantLoop || source->plantLoop == heatRecovery->plantLoop) {
+          return boost::none;
+        }
+        return ProvenFullyOwnedTopology{*primary, *source, *heatRecovery};
+      }
+
+      static bool requiresExactRemovalDispatch(PlantLoop_Impl& receiver, const HVACComponent& heatPump, const Descriptor& descriptor) {
+        if (heatPump.model() != receiver.model() || heatPump.iddObject().type() != descriptor.componentType) {
+          return false;
+        }
+        if (const auto proven = inspectFullyOwned(heatPump, descriptor)) {
+          // A proven HeatRecovery receiver intentionally falls through to the
+          // existing tertiary removal behavior.
+          const auto receiverLoop = receiver.getObject<PlantLoop>();
+          if (proven->heatRecovery.plantLoop == receiverLoop) {
+            return false;
+          }
+          if (proven->source.plantLoop == receiverLoop) {
+            return true;
+          }
+        }
+        // Preserve the established generic lifecycle for observationally exact
+        // unattached and staged (primary-only or exact two-owner) shapes.
+        if (!AttachmentPlan::requiresExactAttachmentDispatch(heatPump, descriptor)) {
+          return false;
+        }
+        // Classification is observational: any managed or raw HP row reached
+        // through this receiver's persisted demand BranchList is claimed, so
+        // malformed Source/HeatRecovery evidence cannot reach generic removal.
+        return receiverDemandSideReferencesComponent(receiver, heatPump);
+      }
+
+      static bool branchReferencesComponent(const Branch& branch, const HVACComponent& component) {
+        for (unsigned row = 0u; row < branch.extensibleGroups().size(); ++row) {
+          const auto componentNameField =
+            branch.iddObject().index(openstudio::ExtensibleIndex(row, openstudio::BranchExtensibleFields::ComponentName));
+          if (referencesObject(branch, componentNameField, component)) {
+            return true;
+          }
+        }
+        return false;
+      }
+
+      static bool receiverDemandSideReferencesComponent(PlantLoop_Impl& receiver, const HVACComponent& component) {
+        const auto receiverLoop = receiver.getObject<PlantLoop>();
+        const auto branches = receiver.model().getConcreteModelObjects<Branch>();
+        const auto demandBranchListField = openstudio::PlantLoopFields::DemandSideBranchListName;
+
+        // Include a malformed direct Branch target/name in the BranchList field.
+        for (const auto& branch : branches) {
+          if (referencesObject(receiverLoop, demandBranchListField, branch) && branchReferencesComponent(branch, component)) {
+            return true;
+          }
+        }
+
+        // Scan every managed or raw BranchList alias of the receiver and every
+        // managed or raw Branch alias in its extensible rows without traversal.
+        for (const auto& branchList : receiver.model().getConcreteModelObjects<BranchList>()) {
+          if (!referencesObject(receiverLoop, demandBranchListField, branchList)) {
+            continue;
+          }
+          for (unsigned row = 0u; row < branchList.extensibleGroups().size(); ++row) {
+            const auto branchField =
+              branchList.iddObject().index(openstudio::ExtensibleIndex(row, openstudio::BranchListExtensibleFields::BranchName));
+            for (const auto& branch : branches) {
+              if (referencesObject(branchList, branchField, branch) && branchReferencesComponent(branch, component)) {
+                return true;
+              }
+            }
+          }
+        }
+        return false;
+      }
+
+      static std::unique_ptr<PlantLoopEIRHeatPumpSourceDemandBranchRemovalPlan> prepareProven(PlantLoop_Impl& receiver, HVACComponent heatPump,
+                                                                                              const Descriptor& descriptor) {
+        const auto proven = inspectFullyOwned(heatPump, descriptor);
+        const auto receiverLoop = receiver.getObject<PlantLoop>();
+        if (!proven || proven->source.plantLoop != receiverLoop) {
+          return nullptr;
+        }
+
+        auto branchRemoval = receiver.prepareDemandBranchRemoval(heatPump, descriptor.sourceInletPort, descriptor.sourceOutletPort, false,
+                                                                 DemandBranchPostDisconnectUpdate::PlantLoopEIRHeatPumpAirSource);
+        if (!branchRemoval) {
+          return nullptr;
+        }
+        return std::unique_ptr<PlantLoopEIRHeatPumpSourceDemandBranchRemovalPlan>(new PlantLoopEIRHeatPumpSourceDemandBranchRemovalPlan(
+          std::move(branchRemoval), proven->primary.plantLoop, proven->source.plantLoop, proven->heatRecovery.plantLoop,
+          proven->primary.topology.setpointTarget, proven->source.topology.setpointTarget, proven->heatRecovery.topology.setpointTarget));
+      }
+
+      PlantLoopEIRHeatPumpSourceDemandBranchRemovalPlan(std::unique_ptr<DemandBranchRemovalPlan> branchRemoval, PlantLoop primaryOwner,
+                                                        PlantLoop sourceOwner, PlantLoop heatRecoveryOwner, Node primarySetpointTarget,
+                                                        Node sourceSetpointTarget, Node heatRecoverySetpointTarget)
+        : m_branchRemoval(std::move(branchRemoval)),
+          m_primaryOwner(std::move(primaryOwner)),
+          m_sourceOwner(std::move(sourceOwner)),
+          m_heatRecoveryOwner(std::move(heatRecoveryOwner)),
+          m_primarySetpointTarget(std::move(primarySetpointTarget)),
+          m_sourceSetpointTarget(std::move(sourceSetpointTarget)),
+          m_heatRecoverySetpointTarget(std::move(heatRecoverySetpointTarget)) {}
+
+      void assertSetpointIdentity() const {
+        const auto primarySetpoint = m_primaryOwner.getModelObjectTarget<Node>(openstudio::PlantLoopFields::LoopTemperatureSetpointNodeName);
+        const auto sourceSetpoint = m_sourceOwner.getModelObjectTarget<Node>(openstudio::PlantLoopFields::LoopTemperatureSetpointNodeName);
+        const auto heatRecoverySetpoint =
+          m_heatRecoveryOwner.getModelObjectTarget<Node>(openstudio::PlantLoopFields::LoopTemperatureSetpointNodeName);
+        OS_ASSERT(primarySetpoint && *primarySetpoint == m_primarySetpointTarget);
+        OS_ASSERT(sourceSetpoint && *sourceSetpoint == m_sourceSetpointTarget);
+        OS_ASSERT(heatRecoverySetpoint && *heatRecoverySetpoint == m_heatRecoverySetpointTarget);
+      }
+
+      std::unique_ptr<DemandBranchRemovalPlan> m_branchRemoval;
+      PlantLoop m_primaryOwner;
+      PlantLoop m_sourceOwner;
+      PlantLoop m_heatRecoveryOwner;
+      Node m_primarySetpointTarget;
+      Node m_sourceSetpointTarget;
       Node m_heatRecoverySetpointTarget;
       bool m_committed = false;
     };
@@ -3969,7 +4216,7 @@ namespace epmodel {
       unsigned inletPort;
       unsigned outletPort;
       bool waterToAirComponent;
-      bool resetChillerCondenserType;
+      DemandBranchPostDisconnectUpdate postDisconnectUpdate;
       Branch branch;
       BranchList branchList;
       ConnectorSplitter splitter;
@@ -4002,9 +4249,21 @@ namespace epmodel {
         const bool inletCleared = m_state->component.setPointer(m_state->inletPort, Handle());
         const bool outletCleared = m_state->component.setPointer(m_state->outletPort, Handle());
         OS_ASSERT(inletCleared && outletCleared);
-        if (m_state->resetChillerCondenserType) {
+        if (m_state->postDisconnectUpdate == DemandBranchPostDisconnectUpdate::ChillerCondenserAirCooled) {
           auto chiller = m_state->component.cast<ChillerElectricEIR>();
           const bool resetCondenserType = chiller.setCondenserType("AirCooled");
+          OS_ASSERT(resetCondenserType);
+        } else if (m_state->postDisconnectUpdate == DemandBranchPostDisconnectUpdate::PlantLoopEIRHeatPumpAirSource) {
+          bool resetCondenserType = false;
+          if (m_state->component.iddObject().type() == HeatPumpPlantLoopEIRHeating::iddObjectType()) {
+            resetCondenserType = m_state->component.cast<HeatPumpPlantLoopEIRHeating>().setCondenserType("AirSource");
+          } else {
+            OS_ASSERT(m_state->component.iddObject().type() == HeatPumpPlantLoopEIRCooling::iddObjectType());
+            resetCondenserType = m_state->component.cast<HeatPumpPlantLoopEIRCooling>().setCondenserType("AirSource");
+          }
+          // Exact preparation proved the same-model concrete heat-pump type
+          // and SourceSide fields. Once those fields are cleared, AirSource is
+          // the concrete setter's canonical no-fail state transition.
           OS_ASSERT(resetCondenserType);
         }
       }
@@ -5011,6 +5270,10 @@ namespace epmodel {
       // removed after its final branch and ports are cleared; the selected
       // water-heater paths also own their WaterHeaterSizing companions.
       for (auto selectedComponent : selectedWaterToWaterComponents) {
+        const bool exactPlantLoopEIRSourceRemovalOwnsState = (selectedComponent.owner == SelectedWaterToWaterOwner::SecondaryDemand)
+                                                             && selectedComponent.component.tertiaryPlantLoop()
+                                                             && (selectedComponent.component.optionalCast<HeatPumpPlantLoopEIRHeating>()
+                                                                 || selectedComponent.component.optionalCast<HeatPumpPlantLoopEIRCooling>());
         const bool supplyOwner =
           (selectedComponent.owner == SelectedWaterToWaterOwner::Supply) || (selectedComponent.owner == SelectedWaterToWaterOwner::SecondarySupply);
         const bool removed = (selectedComponent.owner == SelectedWaterToWaterOwner::TertiarySupply)
@@ -5020,7 +5283,7 @@ namespace epmodel {
         if (!removed) {
           return {};
         }
-        if (selectedComponent.owner == SelectedWaterToWaterOwner::SecondaryDemand) {
+        if ((selectedComponent.owner == SelectedWaterToWaterOwner::SecondaryDemand) && !exactPlantLoopEIRSourceRemovalOwnsState) {
           if (auto heatPump = selectedComponent.component.optionalCast<HeatPumpPlantLoopEIRHeating>();
               heatPump && !heatPump->setCondenserType("AirSource")) {
             return {};
@@ -5923,10 +6186,9 @@ namespace epmodel {
       return true;
     }
 
-    std::unique_ptr<PlantLoop_Impl::DemandBranchRemovalPlan> PlantLoop_Impl::prepareDemandBranchRemoval(const HVACComponent& component,
-                                                                                                        unsigned inletPort, unsigned outletPort,
-                                                                                                        bool waterToAirComponent,
-                                                                                                        bool resetChillerCondenserType) {
+    std::unique_ptr<PlantLoop_Impl::DemandBranchRemovalPlan>
+      PlantLoop_Impl::prepareDemandBranchRemoval(const HVACComponent& component, unsigned inletPort, unsigned outletPort, bool waterToAirComponent,
+                                                 DemandBranchPostDisconnectUpdate postDisconnectUpdate) {
       if (component.model() != model()) {
         return nullptr;
       }
@@ -6066,7 +6328,7 @@ namespace epmodel {
       }
 
       auto state = std::make_unique<DemandBranchRemovalPlan::State>(
-        DemandBranchRemovalPlan::State{thisLoop, component, inletPort, outletPort, waterToAirComponent, resetChillerCondenserType, *targetBranch,
+        DemandBranchRemovalPlan::State{thisLoop, component, inletPort, outletPort, waterToAirComponent, postDisconnectUpdate, *targetBranch,
                                        branchList, splitter, mixer, equipmentBranches.size() == 1u});
       return std::unique_ptr<DemandBranchRemovalPlan>(new DemandBranchRemovalPlan(std::move(state)));
     }
@@ -6100,10 +6362,51 @@ namespace epmodel {
           || !openstudio::istringEqual(chiller.condenserType(), "WaterCooled")) {
         return nullptr;
       }
-      return prepareDemandBranchRemoval(chiller, chiller.demandInletPort(), chiller.demandOutletPort(), false, true);
+      return prepareDemandBranchRemoval(chiller, chiller.demandInletPort(), chiller.demandOutletPort(), false,
+                                        DemandBranchPostDisconnectUpdate::ChillerCondenserAirCooled);
     }
 
     bool PlantLoop_Impl::removeDemandBranchWithComponent(HVACComponent hvacComponent) {
+      if (hvacComponent.iddObject().type() == HeatPumpPlantLoopEIRHeating::iddObjectType()) {
+        const auto heatPump = hvacComponent.cast<HeatPumpPlantLoopEIRHeating>();
+        if (PlantLoopEIRHeatPumpSourceDemandBranchRemovalPlan::requiresExactRemovalDispatch(*this, heatPump)) {
+          auto plan = PlantLoopEIRHeatPumpSourceDemandBranchRemovalPlan::prepare(*this, heatPump);
+          if (!plan) {
+            LOG_FREE(Warn, "openstudio.epmodel.PlantLoop",
+                     "Refusing to remove " << hvacComponent.briefDescription() << " from the source-side demand of "
+                                           << getObject<PlantLoop>().briefDescription()
+                                           << " because its exact fully three-owned LoadSide, SourceSide, and HeatRecovery topology could not be "
+                                              "validated.");
+            return false;
+          }
+          if (testFailurePointReached(model(), TestFailurePoint::PlantLoopAfterPlantLoopEIRHeatPumpSourceBranchRemovalPrepared)) {
+            return false;
+          }
+          plan->commit();
+          return true;
+        }
+      }
+
+      if (hvacComponent.iddObject().type() == HeatPumpPlantLoopEIRCooling::iddObjectType()) {
+        const auto heatPump = hvacComponent.cast<HeatPumpPlantLoopEIRCooling>();
+        if (PlantLoopEIRHeatPumpSourceDemandBranchRemovalPlan::requiresExactRemovalDispatch(*this, heatPump)) {
+          auto plan = PlantLoopEIRHeatPumpSourceDemandBranchRemovalPlan::prepare(*this, heatPump);
+          if (!plan) {
+            LOG_FREE(Warn, "openstudio.epmodel.PlantLoop",
+                     "Refusing to remove " << hvacComponent.briefDescription() << " from the source-side demand of "
+                                           << getObject<PlantLoop>().briefDescription()
+                                           << " because its exact fully three-owned LoadSide, SourceSide, and HeatRecovery topology could not be "
+                                              "validated.");
+            return false;
+          }
+          if (testFailurePointReached(model(), TestFailurePoint::PlantLoopAfterPlantLoopEIRHeatPumpSourceBranchRemovalPrepared)) {
+            return false;
+          }
+          plan->commit();
+          return true;
+        }
+      }
+
       if (auto waterToAir = hvacComponent.optionalCast<WaterToAirComponent>()) {
         auto plan = prepareWaterCoilDemandBranchRemoval(*waterToAir);
         if (!plan) {

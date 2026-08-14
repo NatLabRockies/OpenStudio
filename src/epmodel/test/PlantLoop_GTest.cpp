@@ -521,6 +521,18 @@ void expectPlantLoopEIRFieldsExceptSourcePortsEqual(const std::vector<boost::opt
   }
 }
 
+void expectPlantLoopEIRFieldsExceptSourcePortsAndCondenserEqual(const std::vector<boost::optional<std::string>>& expected,
+                                                                const WaterToWaterComponent& heatPump, unsigned sourceInletField,
+                                                                unsigned sourceOutletField, unsigned condenserTypeField) {
+  ASSERT_EQ(expected.size(), heatPump.numFields());
+  for (unsigned field = 0u; field < expected.size(); ++field) {
+    if (field == sourceInletField || field == sourceOutletField || field == condenserTypeField) {
+      continue;
+    }
+    EXPECT_TRUE(expected[field] == rawField(heatPump, field)) << "field " << field;
+  }
+}
+
 struct EquationFitHeatPumpMoveSnapshot
 {
   PlantAttachmentTopologySnapshot plantTopology;
@@ -5684,6 +5696,392 @@ TEST_F(EPModelFixture, PlantLoop_PlantLoopEIRHeatPumpSourceMoveRejectsMalformedS
     EXPECT_FALSE(targetLoop.addDemandBranchForComponent(heatPump));
     EXPECT_EQ(before, capturePlantLoopEIRHeatPumpMove(model, primaryLoop, heatRecoveryLoop, sourceLoop, targetLoop, heatPump, false));
   }
+}
+
+TEST_F(EPModelFixture, PlantLoop_PlantLoopEIRHeatingSourceDefaultRemovalIsTransactionalAndReattaches) {
+  const auto idfPath =
+    openstudio::tempDir()
+    / openstudio::toPath("epmodel-plant-loop-eir-heating-source-removal-" + openstudio::toString(openstudio::createUUID()) + ".idf");
+  ScopedFileRemoval cleanup(idfPath);
+
+  Model model;
+  PlantLoop primaryLoop(model);
+  PlantLoop sourceLoop(model);
+  PlantLoop heatRecoveryLoop(model);
+  PlantLoop unusedTargetLoop(model);
+  HeatPumpPlantLoopEIRHeating heatPump(model);
+  HeatPumpPlantLoopEIRCooling companion(model);
+  ASSERT_TRUE(primaryLoop.setName("PlantLoop EIR Heating Removal Load Owner"));
+  ASSERT_TRUE(sourceLoop.setName("PlantLoop EIR Heating Removal Source Owner"));
+  ASSERT_TRUE(heatRecoveryLoop.setName("PlantLoop EIR Heating Removal Recovery Owner"));
+  ASSERT_TRUE(unusedTargetLoop.setName("PlantLoop EIR Heating Removal Unused Target"));
+  ASSERT_TRUE(heatPump.setName("Removed PlantLoop EIR Heating Source Heat Pump"));
+  ASSERT_TRUE(companion.setName("Removed PlantLoop EIR Heating Companion"));
+  ASSERT_TRUE(heatPump.setReferenceCapacity(28750.0));
+  ASSERT_TRUE(heatPump.setSourceSideReferenceFlowRate(0.0057));
+  ASSERT_TRUE(heatPump.setCompanionCoolingHeatPump(companion));
+  ASSERT_TRUE(companion.setCompanionHeatingHeatPump(heatPump));
+  ASSERT_TRUE(primaryLoop.addSupplyBranchForComponent(heatPump));
+  ASSERT_TRUE(sourceLoop.addDemandBranchForComponent(heatPump));
+  ASSERT_TRUE(heatRecoveryLoop.addDemandBranchForComponent(heatPump));
+
+  auto primarySetpoint = primaryLoop.supplyInletNode();
+  auto sourceSetpoint = sourceLoop.supplyInletNode();
+  auto heatRecoverySetpoint = heatRecoveryLoop.supplyInletNode();
+  auto unusedTargetSetpoint = unusedTargetLoop.supplyInletNode();
+  ASSERT_TRUE(primaryLoop.setLoopTemperatureSetpointNode(primarySetpoint));
+  ASSERT_TRUE(sourceLoop.setLoopTemperatureSetpointNode(sourceSetpoint));
+  ASSERT_TRUE(heatRecoveryLoop.setLoopTemperatureSetpointNode(heatRecoverySetpoint));
+  ASSERT_TRUE(unusedTargetLoop.setLoopTemperatureSetpointNode(unusedTargetSetpoint));
+
+  ASSERT_TRUE(heatPump.sourceSideWaterInletNode());
+  ASSERT_TRUE(heatPump.sourceSideWaterOutletNode());
+  const auto oldSourceInletHandle = heatPump.sourceSideWaterInletNode()->handle();
+  const auto oldSourceOutletHandle = heatPump.sourceSideWaterOutletNode()->handle();
+  const auto loadInletHandle = heatPump.loadSideWaterInletNode()->handle();
+  const auto loadOutletHandle = heatPump.loadSideWaterOutletNode()->handle();
+  const auto heatRecoveryInletHandle = heatPump.heatRecoveryInletNode()->handle();
+  const auto heatRecoveryOutletHandle = heatPump.heatRecoveryOutletNode()->handle();
+  const auto companionFieldsBefore = plantLoopEIRCompanionRawFields(model);
+  auto sourceBranchList = sourceLoop.getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::DemandSideBranchListName);
+  ASSERT_TRUE(sourceBranchList);
+  const auto sourceBranchHandles = objectHandles(sourceBranchList->branches());
+  ASSERT_EQ(3u, sourceBranchHandles.size());
+  const auto originalDefaultBranchHandle = sourceBranchHandles[1];
+
+  const auto before = capturePlantLoopEIRHeatPumpMove(model, primaryLoop, heatRecoveryLoop, sourceLoop, unusedTargetLoop, heatPump);
+  {
+    test::ScopedTestFailure failure(model, detail::TestFailurePoint::PlantLoopAfterPlantLoopEIRHeatPumpSourceBranchRemovalPrepared);
+    EXPECT_FALSE(sourceLoop.removeDemandBranchWithComponent(heatPump));
+  }
+  EXPECT_EQ(before, capturePlantLoopEIRHeatPumpMove(model, primaryLoop, heatRecoveryLoop, sourceLoop, unusedTargetLoop, heatPump));
+
+  ASSERT_TRUE(sourceLoop.removeDemandBranchWithComponent(heatPump));
+  EXPECT_FALSE(heatPump.sourceSideWaterLoop());
+  EXPECT_FALSE(heatPump.sourceSideWaterInletNode());
+  EXPECT_FALSE(heatPump.sourceSideWaterOutletNode());
+  EXPECT_EQ("AirSource", heatPump.condenserType());
+  ASSERT_TRUE(heatPump.loadSideWaterLoop());
+  ASSERT_TRUE(heatPump.heatRecoveryLoop());
+  EXPECT_EQ(primaryLoop, *heatPump.loadSideWaterLoop());
+  EXPECT_EQ(heatRecoveryLoop, *heatPump.heatRecoveryLoop());
+  EXPECT_EQ(loadInletHandle, heatPump.loadSideWaterInletNode()->handle());
+  EXPECT_EQ(loadOutletHandle, heatPump.loadSideWaterOutletNode()->handle());
+  EXPECT_EQ(heatRecoveryInletHandle, heatPump.heatRecoveryInletNode()->handle());
+  EXPECT_EQ(heatRecoveryOutletHandle, heatPump.heatRecoveryOutletNode()->handle());
+  EXPECT_TRUE(model.getObject(oldSourceInletHandle));
+  EXPECT_TRUE(model.getObject(oldSourceOutletHandle));
+  EXPECT_TRUE(companionFieldsBefore == plantLoopEIRCompanionRawFields(model));
+  expectPlantLoopEIRFieldsExceptSourcePortsAndCondenserEqual(
+    before.heatPumpRawFields, heatPump, openstudio::HeatPump_PlantLoop_EIR_HeatingFields::SourceSideInletNodeName,
+    openstudio::HeatPump_PlantLoop_EIR_HeatingFields::SourceSideOutletNodeName, openstudio::HeatPump_PlantLoop_EIR_HeatingFields::CondenserType);
+  EXPECT_DOUBLE_EQ(28750.0, *heatPump.referenceCapacity());
+  EXPECT_DOUBLE_EQ(0.0057, *heatPump.sourceSideReferenceFlowRate());
+  EXPECT_EQ(primarySetpoint.handle(), primaryLoop.loopTemperatureSetpointNode().handle());
+  EXPECT_EQ(sourceSetpoint.handle(), sourceLoop.loopTemperatureSetpointNode().handle());
+  EXPECT_EQ(heatRecoverySetpoint.handle(), heatRecoveryLoop.loopTemperatureSetpointNode().handle());
+
+  sourceBranchList = sourceLoop.getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::DemandSideBranchListName);
+  ASSERT_TRUE(sourceBranchList);
+  EXPECT_EQ(sourceBranchHandles, objectHandles(sourceBranchList->branches()));
+  EXPECT_EQ(originalDefaultBranchHandle, sourceBranchList->branches()[1].handle());
+  EXPECT_TRUE(sourceBranchList->branches()[1].components().empty());
+  expectDemandBranchAndConnectorOrder(sourceLoop, sourceBranchHandles);
+
+  ASSERT_TRUE(model.save(idfPath, true));
+  auto loadedModel = Model::load(idfPath);
+  ASSERT_TRUE(loadedModel);
+  auto loadedPrimary = loadedModel->getConcreteModelObjectByName<PlantLoop>("PlantLoop EIR Heating Removal Load Owner");
+  auto loadedSource = loadedModel->getConcreteModelObjectByName<PlantLoop>("PlantLoop EIR Heating Removal Source Owner");
+  auto loadedHeatRecovery = loadedModel->getConcreteModelObjectByName<PlantLoop>("PlantLoop EIR Heating Removal Recovery Owner");
+  auto loadedHeatPump = loadedModel->getConcreteModelObjectByName<HeatPumpPlantLoopEIRHeating>("Removed PlantLoop EIR Heating Source Heat Pump");
+  auto loadedCompanion = loadedModel->getConcreteModelObjectByName<HeatPumpPlantLoopEIRCooling>("Removed PlantLoop EIR Heating Companion");
+  ASSERT_TRUE(loadedPrimary);
+  ASSERT_TRUE(loadedSource);
+  ASSERT_TRUE(loadedHeatRecovery);
+  ASSERT_TRUE(loadedHeatPump);
+  ASSERT_TRUE(loadedCompanion);
+  EXPECT_EQ("AirSource", loadedHeatPump->condenserType());
+  EXPECT_FALSE(loadedHeatPump->sourceSideWaterLoop());
+  EXPECT_FALSE(loadedHeatPump->sourceSideWaterInletNode());
+  EXPECT_FALSE(loadedHeatPump->sourceSideWaterOutletNode());
+  ASSERT_TRUE(loadedHeatPump->loadSideWaterLoop());
+  ASSERT_TRUE(loadedHeatPump->heatRecoveryLoop());
+  EXPECT_EQ(*loadedPrimary, *loadedHeatPump->loadSideWaterLoop());
+  EXPECT_EQ(*loadedHeatRecovery, *loadedHeatPump->heatRecoveryLoop());
+  EXPECT_FALSE(loadedSource->demandComponent(loadedHeatPump->handle()));
+  ASSERT_TRUE(loadedHeatPump->companionCoolingHeatPump());
+  ASSERT_TRUE(loadedCompanion->companionHeatingHeatPump());
+  EXPECT_EQ(*loadedCompanion, *loadedHeatPump->companionCoolingHeatPump());
+  EXPECT_EQ(*loadedHeatPump, *loadedCompanion->companionHeatingHeatPump());
+
+  ASSERT_TRUE(sourceLoop.addDemandBranchForComponent(heatPump));
+  ASSERT_TRUE(heatPump.sourceSideWaterLoop());
+  EXPECT_EQ(sourceLoop, *heatPump.sourceSideWaterLoop());
+  EXPECT_EQ("WaterSource", heatPump.condenserType());
+  EXPECT_EQ(oldSourceInletHandle, heatPump.sourceSideWaterInletNode()->handle());
+  EXPECT_EQ(oldSourceOutletHandle, heatPump.sourceSideWaterOutletNode()->handle());
+  EXPECT_EQ(sourceBranchHandles, objectHandles(sourceBranchList->branches()));
+  EXPECT_EQ(std::vector<ModelObject>{heatPump.cast<ModelObject>()}, sourceBranchList->branches()[1].components());
+  expectDemandBranchAndConnectorOrder(sourceLoop, sourceBranchHandles);
+}
+
+TEST_F(EPModelFixture, PlantLoop_PlantLoopEIRCoolingSourceParallelRemovalIsTransactionalAndReattaches) {
+  Model model;
+  PlantLoop primaryLoop(model);
+  PlantLoop sourceLoop(model);
+  PlantLoop heatRecoveryLoop(model);
+  PlantLoop unusedTargetLoop(model);
+  HeatPumpPlantLoopEIRCooling heatPump(model);
+  HeatPumpPlantLoopEIRHeating companion(model);
+  PipeAdiabatic retainedPipe(model);
+  ASSERT_TRUE(heatPump.setReferenceCapacity(31800.0));
+  ASSERT_TRUE(companion.setCompanionCoolingHeatPump(heatPump));
+  ASSERT_TRUE(primaryLoop.addSupplyBranchForComponent(heatPump));
+  ASSERT_TRUE(sourceLoop.addDemandBranchForComponent(retainedPipe));
+  ASSERT_TRUE(sourceLoop.addDemandBranchForComponent(heatPump));
+  ASSERT_TRUE(heatRecoveryLoop.addDemandBranchForComponent(heatPump));
+
+  auto primarySetpoint = primaryLoop.supplyInletNode();
+  auto sourceSetpoint = sourceLoop.supplyInletNode();
+  auto heatRecoverySetpoint = heatRecoveryLoop.supplyInletNode();
+  auto unusedTargetSetpoint = unusedTargetLoop.supplyInletNode();
+  ASSERT_TRUE(primaryLoop.setLoopTemperatureSetpointNode(primarySetpoint));
+  ASSERT_TRUE(sourceLoop.setLoopTemperatureSetpointNode(sourceSetpoint));
+  ASSERT_TRUE(heatRecoveryLoop.setLoopTemperatureSetpointNode(heatRecoverySetpoint));
+  ASSERT_TRUE(unusedTargetLoop.setLoopTemperatureSetpointNode(unusedTargetSetpoint));
+
+  const auto oldSourceInletHandle = heatPump.sourceSideWaterInletNode()->handle();
+  const auto oldSourceOutletHandle = heatPump.sourceSideWaterOutletNode()->handle();
+  const auto companionFieldsBefore = plantLoopEIRCompanionRawFields(model);
+  auto sourceBranchList = sourceLoop.getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::DemandSideBranchListName);
+  ASSERT_TRUE(sourceBranchList);
+  const auto sourceBranchesBefore = sourceBranchList->branches();
+  const auto sourceBranchHandlesBefore = objectHandles(sourceBranchesBefore);
+  ASSERT_EQ(4u, sourceBranchHandlesBefore.size());
+  const auto removedBranch = std::ranges::find_if(sourceBranchesBefore, [&heatPump](const auto& branch) {
+    const auto components = branch.components();
+    return std::ranges::find(components, heatPump.cast<ModelObject>()) != components.end();
+  });
+  ASSERT_NE(sourceBranchesBefore.end(), removedBranch);
+  const auto removedBranchHandle = removedBranch->handle();
+  auto expectedSourceBranchHandles = sourceBranchHandlesBefore;
+  const auto removedHandle = std::ranges::find(expectedSourceBranchHandles, removedBranchHandle);
+  ASSERT_NE(expectedSourceBranchHandles.end(), removedHandle);
+  expectedSourceBranchHandles.erase(removedHandle);
+
+  const auto before = capturePlantLoopEIRHeatPumpMove(model, primaryLoop, heatRecoveryLoop, sourceLoop, unusedTargetLoop, heatPump);
+  {
+    test::ScopedTestFailure failure(model, detail::TestFailurePoint::PlantLoopAfterPlantLoopEIRHeatPumpSourceBranchRemovalPrepared);
+    EXPECT_FALSE(sourceLoop.removeDemandBranchWithComponent(heatPump));
+  }
+  EXPECT_EQ(before, capturePlantLoopEIRHeatPumpMove(model, primaryLoop, heatRecoveryLoop, sourceLoop, unusedTargetLoop, heatPump));
+
+  ASSERT_TRUE(sourceLoop.removeDemandBranchWithComponent(heatPump));
+  EXPECT_FALSE(model.getObject(removedBranchHandle));
+  EXPECT_TRUE(model.getObject(retainedPipe.handle()));
+  EXPECT_TRUE(model.getObject(oldSourceInletHandle));
+  EXPECT_TRUE(model.getObject(oldSourceOutletHandle));
+  EXPECT_FALSE(heatPump.sourceSideWaterLoop());
+  EXPECT_EQ("AirSource", heatPump.condenserType());
+  ASSERT_TRUE(heatPump.loadSideWaterLoop());
+  ASSERT_TRUE(heatPump.heatRecoveryLoop());
+  EXPECT_EQ(primaryLoop, *heatPump.loadSideWaterLoop());
+  EXPECT_EQ(heatRecoveryLoop, *heatPump.heatRecoveryLoop());
+  EXPECT_TRUE(companionFieldsBefore == plantLoopEIRCompanionRawFields(model));
+  expectPlantLoopEIRFieldsExceptSourcePortsAndCondenserEqual(
+    before.heatPumpRawFields, heatPump, openstudio::HeatPump_PlantLoop_EIR_CoolingFields::SourceSideInletNodeName,
+    openstudio::HeatPump_PlantLoop_EIR_CoolingFields::SourceSideOutletNodeName, openstudio::HeatPump_PlantLoop_EIR_CoolingFields::CondenserType);
+  EXPECT_DOUBLE_EQ(31800.0, *heatPump.referenceCapacity());
+  EXPECT_EQ(primarySetpoint.handle(), primaryLoop.loopTemperatureSetpointNode().handle());
+  EXPECT_EQ(sourceSetpoint.handle(), sourceLoop.loopTemperatureSetpointNode().handle());
+  EXPECT_EQ(heatRecoverySetpoint.handle(), heatRecoveryLoop.loopTemperatureSetpointNode().handle());
+
+  sourceBranchList = sourceLoop.getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::DemandSideBranchListName);
+  ASSERT_TRUE(sourceBranchList);
+  EXPECT_EQ(expectedSourceBranchHandles, objectHandles(sourceBranchList->branches()));
+  expectDemandBranchAndConnectorOrder(sourceLoop, expectedSourceBranchHandles);
+
+  ASSERT_TRUE(sourceLoop.addDemandBranchForComponent(heatPump));
+  ASSERT_TRUE(heatPump.sourceSideWaterLoop());
+  EXPECT_EQ(sourceLoop, *heatPump.sourceSideWaterLoop());
+  EXPECT_EQ("WaterSource", heatPump.condenserType());
+  EXPECT_EQ(oldSourceInletHandle, heatPump.sourceSideWaterInletNode()->handle());
+  EXPECT_EQ(oldSourceOutletHandle, heatPump.sourceSideWaterOutletNode()->handle());
+  sourceBranchList = sourceLoop.getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::DemandSideBranchListName);
+  ASSERT_TRUE(sourceBranchList);
+  const auto sourceBranchHandlesAfterReattach = objectHandles(sourceBranchList->branches());
+  ASSERT_EQ(4u, sourceBranchHandlesAfterReattach.size());
+  EXPECT_EQ(expectedSourceBranchHandles[0], sourceBranchHandlesAfterReattach[0]);
+  EXPECT_EQ(expectedSourceBranchHandles[1], sourceBranchHandlesAfterReattach[1]);
+  EXPECT_EQ(expectedSourceBranchHandles[2], sourceBranchHandlesAfterReattach[3]);
+  EXPECT_NE(removedBranchHandle, sourceBranchHandlesAfterReattach[2]);
+  expectDemandBranchAndConnectorOrder(sourceLoop, sourceBranchHandlesAfterReattach);
+}
+
+TEST_F(EPModelFixture, PlantLoop_PlantLoopEIRHeatRecoveryDirectRemovalRetainsSourceRoleAndWaterSourceState) {
+  Model model;
+  PlantLoop primaryLoop(model);
+  PlantLoop sourceLoop(model);
+  PlantLoop heatRecoveryLoop(model);
+  HeatPumpPlantLoopEIRHeating heatPump(model);
+  HeatPumpPlantLoopEIRCooling companion(model);
+  ASSERT_TRUE(heatPump.setCompanionCoolingHeatPump(companion));
+  ASSERT_TRUE(primaryLoop.addSupplyBranchForComponent(heatPump));
+  ASSERT_TRUE(sourceLoop.addDemandBranchForComponent(heatPump));
+  ASSERT_TRUE(heatRecoveryLoop.addDemandBranchForComponent(heatPump));
+  const auto sourceInletHandle = heatPump.sourceSideWaterInletNode()->handle();
+  const auto sourceOutletHandle = heatPump.sourceSideWaterOutletNode()->handle();
+  const auto companionFieldsBefore = plantLoopEIRCompanionRawFields(model);
+
+  ASSERT_TRUE(heatRecoveryLoop.removeDemandBranchWithComponent(heatPump));
+  EXPECT_FALSE(heatPump.heatRecoveryLoop());
+  EXPECT_FALSE(heatPump.heatRecoveryInletNode());
+  EXPECT_FALSE(heatPump.heatRecoveryOutletNode());
+  ASSERT_TRUE(heatPump.sourceSideWaterLoop());
+  EXPECT_EQ(sourceLoop, *heatPump.sourceSideWaterLoop());
+  EXPECT_EQ(sourceInletHandle, heatPump.sourceSideWaterInletNode()->handle());
+  EXPECT_EQ(sourceOutletHandle, heatPump.sourceSideWaterOutletNode()->handle());
+  EXPECT_EQ("WaterSource", heatPump.condenserType());
+  EXPECT_TRUE(companionFieldsBefore == plantLoopEIRCompanionRawFields(model));
+
+  auto heatRecoveryBranchList = heatRecoveryLoop.getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::DemandSideBranchListName);
+  ASSERT_TRUE(heatRecoveryBranchList);
+  const auto heatRecoveryBranchHandles = objectHandles(heatRecoveryBranchList->branches());
+  ASSERT_EQ(3u, heatRecoveryBranchHandles.size());
+  EXPECT_TRUE(heatRecoveryBranchList->branches()[1].components().empty());
+  expectDemandBranchAndConnectorOrder(heatRecoveryLoop, heatRecoveryBranchHandles);
+
+  ASSERT_TRUE(heatRecoveryLoop.addDemandBranchForComponent(heatPump));
+  ASSERT_TRUE(heatPump.heatRecoveryLoop());
+  EXPECT_EQ(heatRecoveryLoop, *heatPump.heatRecoveryLoop());
+  EXPECT_EQ(sourceLoop, *heatPump.sourceSideWaterLoop());
+  EXPECT_EQ("WaterSource", heatPump.condenserType());
+}
+
+TEST_F(EPModelFixture, PlantLoop_PlantLoopEIRSourceRemovalRejectsWrongRoleAndMalformedSerialSourceWithoutMutation) {
+  Model model;
+  PlantLoop primaryLoop(model);
+  PlantLoop sourceLoop(model);
+  PlantLoop heatRecoveryLoop(model);
+  PlantLoop unusedTargetLoop(model);
+  HeatPumpPlantLoopEIRCooling heatPump(model);
+  ASSERT_TRUE(primaryLoop.addSupplyBranchForComponent(heatPump));
+  ASSERT_TRUE(sourceLoop.addDemandBranchForComponent(heatPump));
+  ASSERT_TRUE(heatRecoveryLoop.addDemandBranchForComponent(heatPump));
+
+  const auto canonicalBefore = capturePlantLoopEIRHeatPumpMove(model, primaryLoop, heatRecoveryLoop, sourceLoop, unusedTargetLoop, heatPump);
+  EXPECT_FALSE(primaryLoop.removeDemandBranchWithComponent(heatPump));
+  EXPECT_EQ(canonicalBefore, capturePlantLoopEIRHeatPumpMove(model, primaryLoop, heatRecoveryLoop, sourceLoop, unusedTargetLoop, heatPump));
+
+  PipeAdiabatic serialPipe(model);
+  auto sourceOutlet = *heatPump.sourceSideWaterOutletNode();
+  ASSERT_TRUE(serialPipe.addToNode(sourceOutlet));
+  const auto malformedBefore = capturePlantLoopEIRHeatPumpMove(model, primaryLoop, heatRecoveryLoop, sourceLoop, unusedTargetLoop, heatPump);
+  EXPECT_FALSE(sourceLoop.removeDemandBranchWithComponent(heatPump));
+  EXPECT_EQ(malformedBefore, capturePlantLoopEIRHeatPumpMove(model, primaryLoop, heatRecoveryLoop, sourceLoop, unusedTargetLoop, heatPump));
+}
+
+TEST_F(EPModelFixture, PlantLoop_PlantLoopEIRSourceRemovalClaimsPartialAndRawReceiverRoleEvidenceWithoutMutation) {
+  enum class MalformedCase
+  {
+    PartialSourcePort,
+    PartialHeatRecoveryPort,
+    RawDuplicateReceiverBranchRow,
+    RawSourceHeatRecoveryRoleAlias,
+  };
+
+  for (const auto malformedCase : {MalformedCase::PartialSourcePort, MalformedCase::PartialHeatRecoveryPort,
+                                   MalformedCase::RawDuplicateReceiverBranchRow, MalformedCase::RawSourceHeatRecoveryRoleAlias}) {
+    SCOPED_TRACE(static_cast<int>(malformedCase));
+    Model model;
+    PlantLoop primaryLoop(model);
+    PlantLoop sourceLoop(model);
+    PlantLoop heatRecoveryLoop(model);
+    PlantLoop wrongReceiverLoop(model);
+    HeatPumpPlantLoopEIRHeating heating(model);
+    HeatPumpPlantLoopEIRCooling cooling(model);
+    const bool selectedCooling =
+      malformedCase == MalformedCase::PartialHeatRecoveryPort || malformedCase == MalformedCase::RawSourceHeatRecoveryRoleAlias;
+    auto heatPump = selectedCooling ? cooling.cast<WaterToWaterComponent>() : heating.cast<WaterToWaterComponent>();
+    ASSERT_TRUE(heatPump.setName(selectedCooling ? "Malformed Removal PlantLoop EIR Cooling" : "Malformed Removal PlantLoop EIR Heating"));
+    ASSERT_TRUE(primaryLoop.addSupplyBranchForComponent(heatPump));
+    ASSERT_TRUE(sourceLoop.addDemandBranchForComponent(heatPump));
+    ASSERT_TRUE(heatRecoveryLoop.addDemandBranchForComponent(heatPump));
+    ASSERT_TRUE(heatPump.demandInletModelObject());
+    ASSERT_TRUE(heatPump.demandOutletModelObject());
+    ASSERT_TRUE(heatPump.tertiaryInletModelObject());
+    ASSERT_TRUE(heatPump.tertiaryOutletModelObject());
+    auto heatPumpWorkspaceImpl = heatPump.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+    ASSERT_TRUE(heatPumpWorkspaceImpl);
+
+    PlantLoop removalReceiver = sourceLoop;
+    if (malformedCase == MalformedCase::PartialSourcePort) {
+      ASSERT_TRUE(heatPumpWorkspaceImpl->setPointer(heatPump.demandOutletPort(), openstudio::Handle(), false));
+    } else if (malformedCase == MalformedCase::PartialHeatRecoveryPort) {
+      ASSERT_TRUE(heatPumpWorkspaceImpl->setPointer(heatPump.tertiaryOutletPort(), openstudio::Handle(), false));
+    } else if (malformedCase == MalformedCase::RawDuplicateReceiverBranchRow) {
+      auto wrongBranchList = wrongReceiverLoop.getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::DemandSideBranchListName);
+      ASSERT_TRUE(wrongBranchList);
+      ASSERT_EQ(3u, wrongBranchList->branches().size());
+      auto wrongBranch = wrongBranchList->branches()[1];
+      auto aliasRow = wrongBranch.pushExtensibleGroup();
+      ASSERT_FALSE(aliasRow.empty());
+      ASSERT_TRUE(aliasRow.setString(openstudio::BranchExtensibleFields::ComponentObjectType, heatPump.iddObject().name(), false));
+      ASSERT_TRUE(aliasRow.setString(openstudio::BranchExtensibleFields::ComponentName, heatPump.nameString(), false));
+      ASSERT_TRUE(
+        aliasRow.setString(openstudio::BranchExtensibleFields::ComponentInletNodeName, heatPump.demandInletModelObject()->nameString(), false));
+      ASSERT_TRUE(
+        aliasRow.setString(openstudio::BranchExtensibleFields::ComponentOutletNodeName, heatPump.demandOutletModelObject()->nameString(), false));
+      removalReceiver = wrongReceiverLoop;
+    } else if (malformedCase == MalformedCase::RawSourceHeatRecoveryRoleAlias) {
+      ASSERT_TRUE(heatPumpWorkspaceImpl->setPointer(heatPump.demandOutletPort(), openstudio::Handle(), false));
+      ASSERT_TRUE(heatPumpWorkspaceImpl->openstudio::detail::IdfObject_Impl::setString(heatPump.demandOutletPort(),
+                                                                                       heatPump.tertiaryOutletModelObject()->nameString(), false));
+    }
+
+    const auto before = capturePlantLoopEIRHeatPumpMove(model, primaryLoop, heatRecoveryLoop, sourceLoop, wrongReceiverLoop, heatPump, false);
+    EXPECT_FALSE(removalReceiver.removeDemandBranchWithComponent(heatPump));
+    EXPECT_EQ(before, capturePlantLoopEIRHeatPumpMove(model, primaryLoop, heatRecoveryLoop, sourceLoop, wrongReceiverLoop, heatPump, false));
+  }
+}
+
+TEST_F(EPModelFixture, PlantLoop_PlantLoopEIRFullyOwnedSourceLoopRemovalWritesAirSourceOnceAndReattaches) {
+  Model model;
+  PlantLoop primaryLoop(model);
+  PlantLoop sourceLoop(model);
+  PlantLoop heatRecoveryLoop(model);
+  HeatPumpPlantLoopEIRHeating heatPump(model);
+  HeatPumpPlantLoopEIRCooling companion(model);
+  ASSERT_TRUE(heatPump.setCompanionCoolingHeatPump(companion));
+  ASSERT_TRUE(companion.setCompanionHeatingHeatPump(heatPump));
+  ASSERT_TRUE(primaryLoop.addSupplyBranchForComponent(heatPump));
+  ASSERT_TRUE(sourceLoop.addDemandBranchForComponent(heatPump));
+  ASSERT_TRUE(heatRecoveryLoop.addDemandBranchForComponent(heatPump));
+  const auto heatPumpHandle = heatPump.handle();
+  const auto companionFieldsBefore = plantLoopEIRCompanionRawFields(model);
+
+  const auto sourceLoopHandle = sourceLoop.handle();
+  EXPECT_FALSE(sourceLoop.remove().empty());
+  EXPECT_FALSE(model.getObject(sourceLoopHandle));
+  EXPECT_TRUE(model.getObject(heatPumpHandle));
+  EXPECT_FALSE(heatPump.sourceSideWaterLoop());
+  EXPECT_FALSE(heatPump.sourceSideWaterInletNode());
+  EXPECT_FALSE(heatPump.sourceSideWaterOutletNode());
+  EXPECT_EQ("AirSource", heatPump.condenserType());
+  ASSERT_TRUE(heatPump.loadSideWaterLoop());
+  ASSERT_TRUE(heatPump.heatRecoveryLoop());
+  EXPECT_EQ(primaryLoop, *heatPump.loadSideWaterLoop());
+  EXPECT_EQ(heatRecoveryLoop, *heatPump.heatRecoveryLoop());
+  EXPECT_TRUE(companionFieldsBefore == plantLoopEIRCompanionRawFields(model));
+
+  PlantLoop replacementSourceLoop(model);
+  ASSERT_TRUE(replacementSourceLoop.addDemandBranchForComponent(heatPump));
+  ASSERT_TRUE(heatPump.sourceSideWaterLoop());
+  EXPECT_EQ(replacementSourceLoop, *heatPump.sourceSideWaterLoop());
+  EXPECT_EQ("WaterSource", heatPump.condenserType());
+  ASSERT_TRUE(heatPump.companionCoolingHeatPump());
+  ASSERT_TRUE(companion.companionHeatingHeatPump());
 }
 
 TEST_F(EPModelFixture, PlantLoop_ChillerElectricEIRHeatRecoveryMoveDefaultToOccupiedIsTransactionalAcrossReload) {

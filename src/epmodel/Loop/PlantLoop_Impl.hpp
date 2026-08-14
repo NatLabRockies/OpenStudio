@@ -164,6 +164,7 @@ namespace epmodel {
       class ExactPlantBranchTopologyInspection;
       class ChillerElectricEIRHeatRecoveryDemandBranchAttachmentPlan;
       class PlantLoopEIRHeatPumpSourceDemandBranchAttachmentPlan;
+      class PlantLoopEIRHeatPumpSourceDemandBranchRemovalPlan;
       class FluidToFluidHeatExchangerDemandBranchAttachmentPlan;
       class ThermalStorageChilledWaterStratifiedDemandBranchAttachmentPlan;
       class EquationFitHeatPumpDemandBranchAttachmentPlan;
@@ -202,14 +203,22 @@ namespace epmodel {
       using BeamCoilDemandBranchRemovalPlan = DemandBranchRemovalPlan;
       using ChillerCondenserDemandBranchRemovalPlan = DemandBranchRemovalPlan;
 
+      enum class DemandBranchPostDisconnectUpdate
+      {
+        None,
+        ChillerCondenserAirCooled,
+        PlantLoopEIRHeatPumpAirSource,
+      };
+
       std::unique_ptr<WaterCoilDemandBranchRemovalPlan> prepareWaterCoilDemandBranchRemoval(const openstudio::epmodel::WaterToAirComponent& coil);
       std::unique_ptr<WaterCoilDemandBranchRemovalPlan> prepareCoilHeatingWaterDemandBranchRemoval(const openstudio::epmodel::CoilHeatingWater& coil);
       std::unique_ptr<BeamCoilDemandBranchRemovalPlan> prepareBeamCoilDemandBranchRemoval(const openstudio::epmodel::StraightComponent& coil);
       std::unique_ptr<ChillerCondenserDemandBranchRemovalPlan>
         prepareChillerCondenserDemandBranchRemoval(const openstudio::epmodel::ChillerElectricEIR& chiller);
-      std::unique_ptr<DemandBranchRemovalPlan> prepareDemandBranchRemoval(const openstudio::epmodel::HVACComponent& component, unsigned inletPort,
-                                                                          unsigned outletPort, bool waterToAirComponent,
-                                                                          bool resetChillerCondenserType = false);
+      std::unique_ptr<DemandBranchRemovalPlan>
+        prepareDemandBranchRemoval(const openstudio::epmodel::HVACComponent& component, unsigned inletPort, unsigned outletPort,
+                                   bool waterToAirComponent,
+                                   DemandBranchPostDisconnectUpdate postDisconnectUpdate = DemandBranchPostDisconnectUpdate::None);
 
       openstudio::epmodel::PlantEquipmentOperationSchemes plantEquipmentOperationSchemes() const;
       bool syncConnectorPorts(openstudio::epmodel::ConnectorSplitter& splitter, openstudio::epmodel::ConnectorMixer& mixer,
