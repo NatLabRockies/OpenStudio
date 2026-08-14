@@ -8,10 +8,13 @@
 
 #include "ModelObject_Impl.hpp"
 
+#include <boost/optional.hpp>
+
 namespace openstudio {
 namespace epmodel {
 
   class PlantLoop;
+  class SizingPlant;
 
   namespace detail {
 
@@ -43,6 +46,10 @@ namespace epmodel {
       bool setPlantLoop(const openstudio::epmodel::PlantLoop& plantLoop);
 
      private:
+      friend class ::openstudio::epmodel::SizingPlant;
+
+      boost::optional<openstudio::epmodel::PlantLoop> optionalPlantLoop() const;
+      bool setPlantLoopPointer(const openstudio::epmodel::PlantLoop& plantLoop);
       void doCanonicalize(LoadContext& context) override;
     };
 

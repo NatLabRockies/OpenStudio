@@ -77,3 +77,17 @@ def test_epmodel_doas_accepts_and_returns_wrapped_air_loops():
     assert len(air_loops) == 1
     assert isinstance(air_loops[0], openstudio.epmodel.AirLoopHVAC)
     assert air_loops[0].handle() == served_loop.handle()
+
+
+def test_epmodel_sizing_plant_retarget_swaps_companions():
+    model = openstudio.epmodel.Model()
+    source_loop = openstudio.epmodel.PlantLoop(model)
+    target_loop = openstudio.epmodel.PlantLoop(model)
+    source_sizing = source_loop.sizingPlant()
+    target_sizing = target_loop.sizingPlant()
+
+    assert source_sizing.setPlantLoop(target_loop)
+    assert source_sizing.plantLoop().handle() == target_loop.handle()
+    assert target_sizing.plantLoop().handle() == source_loop.handle()
+    assert target_loop.sizingPlant().handle() == source_sizing.handle()
+    assert source_loop.sizingPlant().handle() == target_sizing.handle()

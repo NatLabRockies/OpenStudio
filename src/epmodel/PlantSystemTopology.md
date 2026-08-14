@@ -114,16 +114,19 @@ reset, invalid-target rejection, and save/load identity.
 
 `SizingPlant` has a total, read-only `PlantLoop` back-reference after
 canonicalization, with save/load identity and canonical removal of orphan and
-duplicate companions covered. An atomic public `setPlantLoop` retarget remains
-deferred until it can preserve exactly one `Sizing:Plant` companion per loop.
+duplicate companions covered. On proven canonical source and target loops, its
+public `setPlantLoop` operation atomically exchanges the loops' existing sizing
+companions. Each sizing object's identity and settings stay together, each
+affected loop retains one companion, and injected mid-swap failure restores the
+original relationships before a successful retry.
 
 These results establish supported topology paths, not blanket parity. Broad
 `StraightComponent`, `WaterToAirComponent`, and `WaterToWaterComponent`
 generalization remains incomplete; contained water coils beyond the
 exact reheat-terminal and ordinary-zone four-pipe fan-coil paths remain outside
 the move contract; and unusual malformed imports, broad clone or cross-model
-operations, atomic sizing retarget, and numerical parity beyond the delivered
-workflow remain separate work.
+operations, and numerical parity beyond the delivered workflow remain separate
+work.
 
 ## Uneven maturity and evidence levels
 
@@ -143,21 +146,17 @@ or the presence of a scalar test.
 
 ## Ordered plant roadmap
 
-1. **Atomic sizing-loop retarget.** Add a public `SizingPlant` retarget that
-   preserves exactly one sizing companion per loop, keeps each sizing object's
-   identity and settings together, and restores both loop relationships if a
-   multi-object write fails.
-2. **Broader multi-owner and component topology.** Extend the proven paths to
+1. **Broader multi-owner and component topology.** Extend the proven paths to
    broader `WaterToWaterComponent` ownership and secondary/tertiary ports,
    then to additional `StraightComponent` and `WaterToAirComponent` families,
    including branch replacement, equipment-list ownership, clone/remove, and
    cross-model transfer. Keep unsupported mutators out of wrappers until their
    ownership is defined.
-3. **Additional contained owners.** Apply the private relocation boundary to
+2. **Additional contained owners.** Apply the private relocation boundary to
    another selected compound owner only after its child roles, internal air or
    zone path, controller behavior, and removal lifetime have exact rejection,
    rollback, reload, and post-load mutation evidence.
-4. **Language and numerical expansion.** Extend Ruby/Python coverage and
+3. **Language and numerical expansion.** Extend Ruby/Python coverage and
    EnergyPlus/numerical comparison workflows beyond the delivered
    OpenStudio-resources slice. Add broader parity matrices and SQL/autosizing
    evidence only as concrete use cases require them; keep unusual malformed

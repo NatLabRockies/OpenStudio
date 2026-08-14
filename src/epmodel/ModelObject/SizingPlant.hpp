@@ -45,11 +45,13 @@ namespace epmodel {
     // Schema Alignment Notes:
     // - Status: Partial Parity.
     // - Canonical Counterpart: openstudio::model::SizingPlant.
-    // - Implemented Parity: Scalar accessors and the read-only, total PlantLoop back-reference are available.
+    // - Implemented Parity: Scalar accessors and the total PlantLoop back-reference are available.
     // - Field/Storage Mapping: PlantorCondenserLoopName is stored as a typed Sizing:Plant target to its owning PlantLoop.
-    // - Remaining Parity Work: Public setPlantLoop remains omitted until EPModel can provide an atomic retarget operation that preserves one
-    //   Sizing:Plant companion per PlantLoop.
+    // - Retarget Semantics: Retargeting exchanges the owning PlantLoops of the two existing Sizing:Plant companions. The receiving object
+    //   and its field values therefore move to the requested PlantLoop while preserving exactly one companion for each affected source
+    //   and target loop.
     PlantLoop plantLoop() const;
+    bool setPlantLoop(const PlantLoop& plantLoop);
 
     std::string loopType() const;
     bool setLoopType(const std::string& loopType);
