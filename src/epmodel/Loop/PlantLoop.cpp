@@ -112,6 +112,7 @@
 #include "HVACComponent/ThermalZone_Impl.hpp"
 
 #include <algorithm>
+#include <iterator>
 #include <set>
 
 #include <utilities/core/Assert.hpp>
@@ -1009,25 +1010,29 @@ namespace epmodel {
       bool m_committed = false;
     };
 
-    // Exact standalone heating- and cooling-water coils can retain their
-    // air-side owner and controller while their single-component demand branch
-    // moves between PlantLoops. Target representation is provisional until
-    // commit; source plant, air, and controller state remain untouched during
-    // preparation.
-    class PlantLoop_Impl::WaterCoilDemandBranchAttachmentPlan
+    // Private one-shot demand-branch relocation shared only by the exact
+    // standalone and contained water-coil ownership plans below. Callers
+    // retain all air/controller/compound-owner validation; this plan owns only
+    // the proven plant representation and the two water-port writes.
+    class PlantLoop_Impl::DemandBranchRelocationPlan
     {
      public:
-      static std::unique_ptr<WaterCoilDemandBranchAttachmentPlan> prepare(PlantLoop_Impl& targetLoopImpl, WaterToAirComponent coil) {
-        const auto coilType = coil.iddObject().type();
-        if ((coilType != CoilHeatingWater::iddObjectType() && coilType != CoilCoolingWater::iddObjectType())
-            || (coil.model() != targetLoopImpl.model()) || !coil.name() || coil.containingHVACComponent()) {
+      using ExternalRow = std::pair<Handle, unsigned>;
+
+      static std::unique_ptr<DemandBranchRelocationPlan> prepare(PlantLoop_Impl& targetLoopImpl, WaterToAirComponent coil,
+                                                                 const std::vector<ExternalRow>& validatedExternalRows) {
+        if ((coil.model() != targetLoopImpl.model()) || !coil.name()) {
           return nullptr;
+        }
+        for (auto row = validatedExternalRows.begin(); row != validatedExternalRows.end(); ++row) {
+          if (std::ranges::find(row + 1, validatedExternalRows.end(), *row) != validatedExternalRows.end()) {
+            return nullptr;
+          }
         }
 
         const auto targetLoop = targetLoopImpl.getObject<PlantLoop>();
         const auto sourceLoop = coil.plantLoop();
-        const auto airLoop = coil.airLoopHVAC();
-        if (!sourceLoop || (*sourceLoop == targetLoop) || !airLoop || !sourceLoop->demandComponent(coil.handle())
+        if (!sourceLoop || (*sourceLoop == targetLoop) || !sourceLoop->demandComponent(coil.handle())
             || targetLoopImpl.demandComponent(coil.handle())) {
           return nullptr;
         }
@@ -1042,24 +1047,13 @@ namespace epmodel {
 
         const auto waterInletField = existingNodeField(coil, coil.waterInletPort());
         const auto waterOutletField = existingNodeField(coil, coil.waterOutletPort());
-        const auto airInletField = existingNodeField(coil, coil.airInletPort());
-        const auto airOutletField = existingNodeField(coil, coil.airOutletPort());
-        if (!waterInletField.set || !waterInletField.node || !waterOutletField.set || !waterOutletField.node || !airInletField.set
-            || !airInletField.node || !airOutletField.set || !airOutletField.node) {
+        if (!waterInletField.set || !waterInletField.node || !waterOutletField.set || !waterOutletField.node) {
           return nullptr;
         }
 
-        const auto airSupplyComponents = airLoop->supplyComponents();
-        if (std::ranges::count_if(airSupplyComponents, [&coil](const auto& component) { return component.handle() == coil.handle(); }) != 1) {
-          return nullptr;
-        }
-
-        auto airLoopImpl = airLoop->getImpl<AirLoopHVAC_Impl>();
-        OS_ASSERT(airLoopImpl);
-        const auto airBranches = airLoopImpl->branchList().branches();
         boost::optional<Branch> sourceBranch;
         unsigned sourceOccurrences = 0u;
-        unsigned airOccurrences = 0u;
+        std::vector<unsigned> externalOccurrences(validatedExternalRows.size(), 0u);
         for (const auto& branch : targetLoopImpl.model().getConcreteModelObjects<Branch>()) {
           const auto groups = branch.extensibleGroups();
           for (unsigned groupIndex = 0u; groupIndex < groups.size(); ++groupIndex) {
@@ -1083,72 +1077,36 @@ namespace epmodel {
               return nullptr;
             }
 
+            const ExternalRow rowIdentity{branch.handle(), groupIndex};
+            const auto externalRow = std::ranges::find(validatedExternalRows, rowIdentity);
+            if (externalRow != validatedExternalRows.end()) {
+              const auto externalIndex = static_cast<unsigned>(std::distance(validatedExternalRows.begin(), externalRow));
+              ++externalOccurrences[externalIndex];
+              if (std::ranges::find(sourceTopology->equipmentBranches, branch) != sourceTopology->equipmentBranches.end()) {
+                return nullptr;
+              }
+              continue;
+            }
+
+            if (std::ranges::find(sourceTopology->equipmentBranches, branch) == sourceTopology->equipmentBranches.end()) {
+              return nullptr;
+            }
             const auto branchInletNodeIndex =
               branch.iddObject().index(openstudio::ExtensibleIndex(groupIndex, openstudio::BranchExtensibleFields::ComponentInletNodeName));
             const auto branchOutletNodeIndex =
               branch.iddObject().index(openstudio::ExtensibleIndex(groupIndex, openstudio::BranchExtensibleFields::ComponentOutletNodeName));
             const auto branchInletField = existingNodeField(branch, branchInletNodeIndex);
             const auto branchOutletField = existingNodeField(branch, branchOutletNodeIndex);
-            if (!branchInletField.set || !branchInletField.node || !branchOutletField.set || !branchOutletField.node) {
+            ++sourceOccurrences;
+            if (groups.size() != 1u || !branchInletField.set || !branchInletField.node || !branchOutletField.set || !branchOutletField.node
+                || *branchInletField.node != *waterInletField.node || *branchOutletField.node != *waterOutletField.node) {
               return nullptr;
             }
-
-            if (std::ranges::find(sourceTopology->equipmentBranches, branch) != sourceTopology->equipmentBranches.end()) {
-              ++sourceOccurrences;
-              if (groups.size() != 1u || *branchInletField.node != *waterInletField.node || *branchOutletField.node != *waterOutletField.node) {
-                return nullptr;
-              }
-              sourceBranch = branch;
-            } else if (std::ranges::find(airBranches, branch) != airBranches.end()) {
-              ++airOccurrences;
-              if (*branchInletField.node != *airInletField.node || *branchOutletField.node != *airOutletField.node) {
-                return nullptr;
-              }
-            } else {
-              // The same persisted component may occur once on its air branch
-              // and once on its source plant branch, but nowhere else.
-              return nullptr;
-            }
+            sourceBranch = branch;
           }
         }
-        if (sourceOccurrences != 1u || airOccurrences != 1u || !sourceBranch) {
-          return nullptr;
-        }
-
-        boost::optional<ControllerWaterCoil> controller;
-        unsigned actuatorMatches = 0u;
-        unsigned controllerMatches = 0u;
-        for (const auto& candidate : targetLoopImpl.model().getConcreteModelObjects<ControllerWaterCoil>()) {
-          const auto actuatorNode = candidate.actuatorNode();
-          const auto sensorNode = candidate.sensorNode();
-          if (actuatorNode && *actuatorNode == *waterInletField.node) {
-            ++actuatorMatches;
-            if (sensorNode && *sensorNode == *airOutletField.node) {
-              ++controllerMatches;
-              controller = candidate;
-            }
-          }
-        }
-        if (actuatorMatches != 1u || controllerMatches != 1u || !controller) {
-          return nullptr;
-        }
-        const auto controlledCoil = controller->waterCoil();
-        if (!controlledCoil || controlledCoil->handle() != coil.handle()) {
-          return nullptr;
-        }
-
-        const auto controllerList = airLoop->getModelObjectTarget<AirLoopHVACControllerList>(openstudio::AirLoopHVACFields::ControllerListName);
-        if (!controllerList || std::ranges::count_if(controllerList->controllers(), [&controller](const auto& candidate) {
-                                 return candidate.handle() == controller->handle();
-                               }) != 1) {
-          return nullptr;
-        }
-        unsigned controllerListOccurrences = 0u;
-        for (const auto& candidateList : targetLoopImpl.model().getConcreteModelObjects<AirLoopHVACControllerList>()) {
-          controllerListOccurrences += static_cast<unsigned>(std::ranges::count_if(
-            candidateList.controllers(), [&controller](const auto& candidate) { return candidate.handle() == controller->handle(); }));
-        }
-        if (controllerListOccurrences != 1u) {
+        if (sourceOccurrences != 1u || !sourceBranch
+            || std::ranges::any_of(externalOccurrences, [](unsigned occurrences) { return occurrences != 1u; })) {
           return nullptr;
         }
 
@@ -1171,11 +1129,11 @@ namespace epmodel {
         OS_ASSERT(targetBranch);
         const auto targetBranchInsertIndex = static_cast<unsigned>(targetTopology->branchList.branches().size() - 1u);
         const auto originalTargetBranchCount = static_cast<unsigned>(targetTopology->branchList.extensibleGroups().size());
-        auto plan = std::unique_ptr<WaterCoilDemandBranchAttachmentPlan>(new WaterCoilDemandBranchAttachmentPlan(
-          targetLoop, *sourceLoop, coil, *airLoop, *controller, *sourceBranch, sourceTopology->branchList, sourceTopology->splitter,
-          sourceTopology->mixer, sourceTopology->equipmentBranches.size() == 1u, sourceTopology->setpointTarget, targetTopology->branchList,
-          targetTopology->splitter, targetTopology->mixer, *targetBranch, createdTargetBranch, targetTopology->setpointTarget,
-          originalTargetBranchCount, targetBranchInsertIndex));
+        auto plan = std::unique_ptr<DemandBranchRelocationPlan>(
+          new DemandBranchRelocationPlan(targetLoop, *sourceLoop, coil, *sourceBranch, sourceTopology->branchList, sourceTopology->splitter,
+                                         sourceTopology->mixer, sourceTopology->equipmentBranches.size() == 1u, sourceTopology->setpointTarget,
+                                         targetTopology->branchList, targetTopology->splitter, targetTopology->mixer, *targetBranch,
+                                         createdTargetBranch, targetTopology->setpointTarget, originalTargetBranchCount, targetBranchInsertIndex));
 
         if (createdTargetBranch) {
           plan->m_targetBranchInsertionAttempted = true;
@@ -1214,12 +1172,12 @@ namespace epmodel {
         return plan;
       }
 
-      WaterCoilDemandBranchAttachmentPlan(const WaterCoilDemandBranchAttachmentPlan&) = delete;
-      WaterCoilDemandBranchAttachmentPlan& operator=(const WaterCoilDemandBranchAttachmentPlan&) = delete;
-      WaterCoilDemandBranchAttachmentPlan(WaterCoilDemandBranchAttachmentPlan&&) = delete;
-      WaterCoilDemandBranchAttachmentPlan& operator=(WaterCoilDemandBranchAttachmentPlan&&) = delete;
+      DemandBranchRelocationPlan(const DemandBranchRelocationPlan&) = delete;
+      DemandBranchRelocationPlan& operator=(const DemandBranchRelocationPlan&) = delete;
+      DemandBranchRelocationPlan(DemandBranchRelocationPlan&&) = delete;
+      DemandBranchRelocationPlan& operator=(DemandBranchRelocationPlan&&) = delete;
 
-      ~WaterCoilDemandBranchAttachmentPlan() {
+      ~DemandBranchRelocationPlan() {
         if (m_committed) {
           return;
         }
@@ -1233,7 +1191,8 @@ namespace epmodel {
             OS_ASSERT(!removedFields.empty());
           }
           auto targetLoopImpl = m_targetLoop.getImpl<PlantLoop_Impl>();
-          // Canonical connector shape was proven before preparation; only this plan's same-model exact Branch was added, so rollback resync is no-fail.
+          // Canonical connector shape was proven before preparation; only this
+          // plan's same-model exact Branch was added, so rollback resync is no-fail.
           const bool synchronized =
             targetLoopImpl->syncConnectorPorts(m_targetSplitter, m_targetMixer, targetLoopImpl->demandInletBranch(),
                                                targetLoopImpl->demandOutletBranch(), targetLoopImpl->demandEquipmentBranches());
@@ -1248,6 +1207,16 @@ namespace epmodel {
             OS_ASSERT(!m_targetLoop.model().getObject(nodeHandle));
           }
         }
+      }
+
+      Node targetInletNode() const {
+        OS_ASSERT(m_prepared && m_targetInletNode);
+        return *m_targetInletNode;
+      }
+
+      Node targetOutletNode() const {
+        OS_ASSERT(m_prepared && m_targetOutletNode);
+        return *m_targetOutletNode;
       }
 
       void commit() {
@@ -1276,14 +1245,11 @@ namespace epmodel {
                                                                      sourceLoopImpl->demandOutletBranch(), sourceLoopImpl->demandEquipmentBranches());
         OS_ASSERT(synchronized);
 
-        // Prepare proved the exact coil/controller fields and live same-model Nodes, so these NodeType pointer writes are no-fail.
+        // Prepare proved the exact live water NodeType fields and target Nodes,
+        // so these two pointer writes are no-fail after source teardown.
         const bool inletSet = m_coil.setPointer(m_coil.waterInletPort(), m_targetInletNode->handle());
         const bool outletSet = m_coil.setPointer(m_coil.waterOutletPort(), m_targetOutletNode->handle());
-        const bool actuatorSet = m_controller.setActuatorNode(*m_targetInletNode);
-        OS_ASSERT(inletSet && outletSet && actuatorSet);
-
-        OS_ASSERT(m_coil.airLoopHVAC() && *m_coil.airLoopHVAC() == m_airLoop);
-        OS_ASSERT(m_controller.sensorNode());
+        OS_ASSERT(inletSet && outletSet);
         m_committed = true;
       }
 
@@ -1338,17 +1304,14 @@ namespace epmodel {
         return DemandSideTopology{branchList, splitter, mixer, equipmentBranches, *setpointTarget};
       }
 
-      WaterCoilDemandBranchAttachmentPlan(PlantLoop targetLoop, PlantLoop sourceLoop, WaterToAirComponent coil, AirLoopHVAC airLoop,
-                                          ControllerWaterCoil controller, Branch sourceBranch, BranchList sourceBranchList,
-                                          ConnectorSplitter sourceSplitter, ConnectorMixer sourceMixer, bool keepSourceAsDefaultBranch,
-                                          Node sourceSetpointTarget, BranchList targetBranchList, ConnectorSplitter targetSplitter,
-                                          ConnectorMixer targetMixer, Branch targetBranch, bool createdTargetBranch, Node targetSetpointTarget,
-                                          unsigned originalTargetBranchCount, unsigned targetBranchInsertIndex)
+      DemandBranchRelocationPlan(PlantLoop targetLoop, PlantLoop sourceLoop, WaterToAirComponent coil, Branch sourceBranch,
+                                 BranchList sourceBranchList, ConnectorSplitter sourceSplitter, ConnectorMixer sourceMixer,
+                                 bool keepSourceAsDefaultBranch, Node sourceSetpointTarget, BranchList targetBranchList,
+                                 ConnectorSplitter targetSplitter, ConnectorMixer targetMixer, Branch targetBranch, bool createdTargetBranch,
+                                 Node targetSetpointTarget, unsigned originalTargetBranchCount, unsigned targetBranchInsertIndex)
         : m_targetLoop(std::move(targetLoop)),
           m_sourceLoop(std::move(sourceLoop)),
           m_coil(std::move(coil)),
-          m_airLoop(std::move(airLoop)),
-          m_controller(std::move(controller)),
           m_sourceBranch(std::move(sourceBranch)),
           m_sourceBranchList(std::move(sourceBranchList)),
           m_sourceSplitter(std::move(sourceSplitter)),
@@ -1367,8 +1330,6 @@ namespace epmodel {
       PlantLoop m_targetLoop;
       PlantLoop m_sourceLoop;
       WaterToAirComponent m_coil;
-      AirLoopHVAC m_airLoop;
-      ControllerWaterCoil m_controller;
       Branch m_sourceBranch;
       BranchList m_sourceBranchList;
       ConnectorSplitter m_sourceSplitter;
@@ -1389,6 +1350,177 @@ namespace epmodel {
       bool m_targetBranchInsertionAttempted = false;
       bool m_targetRowAttempted = false;
       bool m_prepared = false;
+      bool m_committed = false;
+    };
+
+    // Exact standalone heating- and cooling-water coils can retain their
+    // air-side owner and controller while their single-component demand branch
+    // moves between PlantLoops. Target representation is provisional until
+    // commit; source plant, air, and controller state remain untouched during
+    // preparation.
+    class PlantLoop_Impl::WaterCoilDemandBranchAttachmentPlan
+    {
+     public:
+      static std::unique_ptr<WaterCoilDemandBranchAttachmentPlan> prepare(PlantLoop_Impl& targetLoopImpl, WaterToAirComponent coil) {
+        const auto coilType = coil.iddObject().type();
+        if ((coilType != CoilHeatingWater::iddObjectType() && coilType != CoilCoolingWater::iddObjectType())
+            || (coil.model() != targetLoopImpl.model()) || !coil.name() || coil.containingHVACComponent()) {
+          return nullptr;
+        }
+
+        const auto targetLoop = targetLoopImpl.getObject<PlantLoop>();
+        const auto sourceLoop = coil.plantLoop();
+        const auto airLoop = coil.airLoopHVAC();
+        if (!sourceLoop || (*sourceLoop == targetLoop) || !airLoop || !sourceLoop->demandComponent(coil.handle())
+            || targetLoopImpl.demandComponent(coil.handle())) {
+          return nullptr;
+        }
+
+        const auto waterInletField = existingNodeField(coil, coil.waterInletPort());
+        const auto waterOutletField = existingNodeField(coil, coil.waterOutletPort());
+        const auto airInletField = existingNodeField(coil, coil.airInletPort());
+        const auto airOutletField = existingNodeField(coil, coil.airOutletPort());
+        if (!waterInletField.set || !waterInletField.node || !waterOutletField.set || !waterOutletField.node || !airInletField.set
+            || !airInletField.node || !airOutletField.set || !airOutletField.node) {
+          return nullptr;
+        }
+
+        const auto airSupplyComponents = airLoop->supplyComponents();
+        if (std::ranges::count_if(airSupplyComponents, [&coil](const auto& component) { return component.handle() == coil.handle(); }) != 1) {
+          return nullptr;
+        }
+
+        auto airLoopImpl = airLoop->getImpl<AirLoopHVAC_Impl>();
+        OS_ASSERT(airLoopImpl);
+        const auto airBranches = airLoopImpl->branchList().branches();
+        std::vector<DemandBranchRelocationPlan::ExternalRow> validatedExternalRows;
+        unsigned airOccurrences = 0u;
+        for (const auto& branch : targetLoopImpl.model().getConcreteModelObjects<Branch>()) {
+          const auto groups = branch.extensibleGroups();
+          for (unsigned groupIndex = 0u; groupIndex < groups.size(); ++groupIndex) {
+            const auto componentNameIndex =
+              branch.iddObject().index(openstudio::ExtensibleIndex(groupIndex, openstudio::BranchExtensibleFields::ComponentName));
+            const auto relationship = existingObjectField(branch, componentNameIndex);
+            auto branchWorkspaceImpl = branch.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+            OS_ASSERT(branchWorkspaceImpl);
+            const auto rawComponentName = branchWorkspaceImpl->openstudio::detail::IdfObject_Impl::getString(componentNameIndex, false, true);
+            const auto rawComponentHandle = rawComponentName ? openstudio::toUUID(*rawComponentName) : Handle();
+            const auto componentType = groups[groupIndex].getString(openstudio::BranchExtensibleFields::ComponentObjectType, false);
+            const bool referencesCoil = (relationship.object && relationship.object->handle() == coil.handle())
+                                        || (!rawComponentHandle.isNull() && rawComponentHandle == coil.handle())
+                                        || (componentType && openstudio::istringEqual(*componentType, coil.iddObject().name()) && rawComponentName
+                                            && openstudio::istringEqual(*rawComponentName, coil.nameString()));
+            if (!referencesCoil) {
+              continue;
+            }
+            if (std::ranges::find(airBranches, branch) == airBranches.end()) {
+              continue;
+            }
+            if (!relationship.set || !relationship.object || relationship.object->handle() != coil.handle() || !componentType
+                || !openstudio::istringEqual(*componentType, coil.iddObject().name())) {
+              return nullptr;
+            }
+
+            const auto branchInletNodeIndex =
+              branch.iddObject().index(openstudio::ExtensibleIndex(groupIndex, openstudio::BranchExtensibleFields::ComponentInletNodeName));
+            const auto branchOutletNodeIndex =
+              branch.iddObject().index(openstudio::ExtensibleIndex(groupIndex, openstudio::BranchExtensibleFields::ComponentOutletNodeName));
+            const auto branchInletField = existingNodeField(branch, branchInletNodeIndex);
+            const auto branchOutletField = existingNodeField(branch, branchOutletNodeIndex);
+            if (!branchInletField.set || !branchInletField.node || !branchOutletField.set || !branchOutletField.node) {
+              return nullptr;
+            }
+
+            ++airOccurrences;
+            if (*branchInletField.node != *airInletField.node || *branchOutletField.node != *airOutletField.node) {
+              return nullptr;
+            }
+            validatedExternalRows.emplace_back(branch.handle(), groupIndex);
+          }
+        }
+        if (airOccurrences != 1u) {
+          return nullptr;
+        }
+
+        boost::optional<ControllerWaterCoil> controller;
+        unsigned actuatorMatches = 0u;
+        unsigned controllerMatches = 0u;
+        for (const auto& candidate : targetLoopImpl.model().getConcreteModelObjects<ControllerWaterCoil>()) {
+          const auto actuatorNode = candidate.actuatorNode();
+          const auto sensorNode = candidate.sensorNode();
+          if (actuatorNode && *actuatorNode == *waterInletField.node) {
+            ++actuatorMatches;
+            if (sensorNode && *sensorNode == *airOutletField.node) {
+              ++controllerMatches;
+              controller = candidate;
+            }
+          }
+        }
+        if (actuatorMatches != 1u || controllerMatches != 1u || !controller) {
+          return nullptr;
+        }
+        const auto controlledCoil = controller->waterCoil();
+        if (!controlledCoil || controlledCoil->handle() != coil.handle()) {
+          return nullptr;
+        }
+
+        const auto controllerList = airLoop->getModelObjectTarget<AirLoopHVACControllerList>(openstudio::AirLoopHVACFields::ControllerListName);
+        if (!controllerList || std::ranges::count_if(controllerList->controllers(), [&controller](const auto& candidate) {
+                                 return candidate.handle() == controller->handle();
+                               }) != 1) {
+          return nullptr;
+        }
+        unsigned controllerListOccurrences = 0u;
+        for (const auto& candidateList : targetLoopImpl.model().getConcreteModelObjects<AirLoopHVACControllerList>()) {
+          controllerListOccurrences += static_cast<unsigned>(std::ranges::count_if(
+            candidateList.controllers(), [&controller](const auto& candidate) { return candidate.handle() == controller->handle(); }));
+        }
+        if (controllerListOccurrences != 1u) {
+          return nullptr;
+        }
+
+        auto plantRelocation = DemandBranchRelocationPlan::prepare(targetLoopImpl, coil, validatedExternalRows);
+        if (!plantRelocation) {
+          return nullptr;
+        }
+        return std::unique_ptr<WaterCoilDemandBranchAttachmentPlan>(
+          new WaterCoilDemandBranchAttachmentPlan(coil, *airLoop, *controller, std::move(plantRelocation)));
+      }
+
+      WaterCoilDemandBranchAttachmentPlan(const WaterCoilDemandBranchAttachmentPlan&) = delete;
+      WaterCoilDemandBranchAttachmentPlan& operator=(const WaterCoilDemandBranchAttachmentPlan&) = delete;
+      WaterCoilDemandBranchAttachmentPlan(WaterCoilDemandBranchAttachmentPlan&&) = delete;
+      WaterCoilDemandBranchAttachmentPlan& operator=(WaterCoilDemandBranchAttachmentPlan&&) = delete;
+
+      ~WaterCoilDemandBranchAttachmentPlan() = default;
+
+      void commit() {
+        OS_ASSERT(!m_committed && m_plantRelocation);
+        const auto targetInletNode = m_plantRelocation->targetInletNode();
+        m_plantRelocation->commit();
+        // Owner-local prepare proved this controller and its exact live
+        // same-model actuator field; plant relocation has just set the coil's
+        // water inlet to this Node, so the post-water write is no-fail.
+        const bool actuatorSet = m_controller.setActuatorNode(targetInletNode);
+        OS_ASSERT(actuatorSet);
+
+        OS_ASSERT(m_coil.airLoopHVAC() && *m_coil.airLoopHVAC() == m_airLoop);
+        OS_ASSERT(m_controller.sensorNode());
+        m_committed = true;
+      }
+
+     private:
+      WaterCoilDemandBranchAttachmentPlan(WaterToAirComponent coil, AirLoopHVAC airLoop, ControllerWaterCoil controller,
+                                          std::unique_ptr<DemandBranchRelocationPlan> plantRelocation)
+        : m_coil(std::move(coil)),
+          m_airLoop(std::move(airLoop)),
+          m_controller(std::move(controller)),
+          m_plantRelocation(std::move(plantRelocation)) {}
+
+      WaterToAirComponent m_coil;
+      AirLoopHVAC m_airLoop;
+      ControllerWaterCoil m_controller;
+      std::unique_ptr<DemandBranchRelocationPlan> m_plantRelocation;
       bool m_committed = false;
     };
 
@@ -1423,14 +1555,6 @@ namespace epmodel {
         const auto sourceLoop = coil.plantLoop();
         if (!sourceLoop || (*sourceLoop == targetLoop) || !sourceLoop->demandComponent(coil.handle())
             || targetLoopImpl.demandComponent(coil.handle())) {
-          return nullptr;
-        }
-
-        auto sourceLoopImpl = sourceLoop->getImpl<PlantLoop_Impl>();
-        OS_ASSERT(sourceLoopImpl);
-        auto sourceTopology = validatedDemandSideTopology(*sourceLoopImpl);
-        auto targetTopology = validatedDemandSideTopology(targetLoopImpl);
-        if (!sourceTopology || !targetTopology) {
           return nullptr;
         }
 
@@ -1511,111 +1635,13 @@ namespace epmodel {
           }
         }
 
-        boost::optional<Branch> sourceBranch;
-        unsigned sourceOccurrences = 0u;
-        for (const auto& branch : targetLoopImpl.model().getConcreteModelObjects<Branch>()) {
-          const auto groups = branch.extensibleGroups();
-          for (unsigned groupIndex = 0u; groupIndex < groups.size(); ++groupIndex) {
-            const auto componentNameIndex =
-              branch.iddObject().index(openstudio::ExtensibleIndex(groupIndex, openstudio::BranchExtensibleFields::ComponentName));
-            const auto relationship = existingObjectField(branch, componentNameIndex);
-            auto branchWorkspaceImpl = branch.getImpl<openstudio::detail::WorkspaceObject_Impl>();
-            OS_ASSERT(branchWorkspaceImpl);
-            const auto rawComponentName = branchWorkspaceImpl->openstudio::detail::IdfObject_Impl::getString(componentNameIndex, false, true);
-            const auto rawComponentHandle = rawComponentName ? openstudio::toUUID(*rawComponentName) : Handle();
-            const auto componentType = groups[groupIndex].getString(openstudio::BranchExtensibleFields::ComponentObjectType, false);
-            const bool referencesCoil = (relationship.object && relationship.object->handle() == coil.handle())
-                                        || (!rawComponentHandle.isNull() && rawComponentHandle == coil.handle())
-                                        || (componentType && openstudio::istringEqual(*componentType, coil.iddObject().name()) && rawComponentName
-                                            && openstudio::istringEqual(*rawComponentName, coil.nameString()));
-            if (!referencesCoil) {
-              continue;
-            }
-            if (!relationship.set || !relationship.object || relationship.object->handle() != coil.handle() || !componentType
-                || !openstudio::istringEqual(*componentType, coil.iddObject().name())
-                || std::ranges::find(sourceTopology->equipmentBranches, branch) == sourceTopology->equipmentBranches.end()) {
-              return nullptr;
-            }
-
-            const auto branchInletNodeIndex =
-              branch.iddObject().index(openstudio::ExtensibleIndex(groupIndex, openstudio::BranchExtensibleFields::ComponentInletNodeName));
-            const auto branchOutletNodeIndex =
-              branch.iddObject().index(openstudio::ExtensibleIndex(groupIndex, openstudio::BranchExtensibleFields::ComponentOutletNodeName));
-            const auto branchInletField = existingNodeField(branch, branchInletNodeIndex);
-            const auto branchOutletField = existingNodeField(branch, branchOutletNodeIndex);
-            ++sourceOccurrences;
-            if (groups.size() != 1u || !branchInletField.set || !branchInletField.node || !branchOutletField.set || !branchOutletField.node
-                || *branchInletField.node != *waterInletField.node || *branchOutletField.node != *waterOutletField.node) {
-              return nullptr;
-            }
-            sourceBranch = branch;
-          }
-        }
-        if (sourceOccurrences != 1u || !sourceBranch) {
+        auto plantRelocation = DemandBranchRelocationPlan::prepare(targetLoopImpl, coil, {});
+        if (!plantRelocation) {
           return nullptr;
         }
-
-        bool createdTargetBranch = false;
-        boost::optional<Branch> targetBranch;
-        if (targetTopology->equipmentBranches.size() == 1u && targetTopology->equipmentBranches.front().extensibleGroups().empty()) {
-          targetBranch = targetTopology->equipmentBranches.front();
-        } else {
-          Branch branch(targetLoopImpl.model());
-          const auto branchName =
-            targetLoop.nameString() + " Demand Branch " + std::to_string(static_cast<unsigned>(targetTopology->equipmentBranches.size() + 1u));
-          if (!branch.setName(branchName) && !branch.setName(targetLoopImpl.model().nextName(openstudio::IddObjectType::Branch, true))) {
-            branch.remove();
-            return nullptr;
-          }
-          targetBranch = branch;
-          createdTargetBranch = true;
-        }
-
-        OS_ASSERT(targetBranch);
-        const auto targetBranchInsertIndex = static_cast<unsigned>(targetTopology->branchList.branches().size() - 1u);
-        const auto originalTargetBranchCount = static_cast<unsigned>(targetTopology->branchList.extensibleGroups().size());
-        auto plan = std::unique_ptr<ContainedReheatCoilDemandBranchAttachmentPlan>(new ContainedReheatCoilDemandBranchAttachmentPlan(
-          targetLoop, *sourceLoop, coil, *terminal, *airLoop, *thermalZone, *airDistributionUnit, *sourceBranch, sourceTopology->branchList,
-          sourceTopology->splitter, sourceTopology->mixer, sourceTopology->equipmentBranches.size() == 1u, sourceTopology->setpointTarget,
-          targetTopology->branchList, targetTopology->splitter, targetTopology->mixer, *targetBranch, createdTargetBranch,
-          targetTopology->setpointTarget, originalTargetBranchCount, targetBranchInsertIndex, *terminalAirInletField.node,
-          *terminalAirOutletField.node, std::move(terminalTopologyProof)));
-
-        if (createdTargetBranch) {
-          plan->m_targetBranchInsertionAttempted = true;
-          if (!targetTopology->branchList.getImpl<BranchList_Impl>()->insertBranch(targetBranchInsertIndex, *targetBranch)) {
-            return nullptr;
-          }
-          const auto targetEquipmentBranches = targetLoopImpl.demandEquipmentBranches();
-          if (!targetLoopImpl.syncConnectorPorts(targetTopology->splitter, targetTopology->mixer, targetLoopImpl.demandInletBranch(),
-                                                 targetLoopImpl.demandOutletBranch(), targetEquipmentBranches)) {
-            return nullptr;
-          }
-        }
-
-        const auto targetNodeName = targetBranch->nameString() + " Node";
-        const auto targetOutletNodeName = targetNodeName + " - " + coil.nameString() + " Outlet";
-        if (!targetLoopImpl.model().getConcreteModelObjectByName<Node>(targetNodeName)) {
-          plan->m_createdNodeNames.push_back(targetNodeName);
-        }
-        if (targetOutletNodeName != targetNodeName && !targetLoopImpl.model().getConcreteModelObjectByName<Node>(targetOutletNodeName)) {
-          plan->m_createdNodeNames.push_back(targetOutletNodeName);
-        }
-
-        auto targetBranchImpl = targetBranch->getImpl<Branch_Impl>();
-        OS_ASSERT(targetBranchImpl);
-        plan->m_targetRowAttempted = true;
-        if (!targetBranchImpl->appendComponent(coil.cast<ModelObject>(), targetNodeName, targetOutletNodeName)) {
-          return nullptr;
-        }
-        plan->m_targetInletNode = targetBranch->componentInletNode(0u);
-        plan->m_targetOutletNode = targetBranch->componentOutletNode(0u);
-        if (!plan->m_targetInletNode || !plan->m_targetOutletNode) {
-          return nullptr;
-        }
-
-        plan->m_prepared = true;
-        return plan;
+        return std::unique_ptr<ContainedReheatCoilDemandBranchAttachmentPlan>(new ContainedReheatCoilDemandBranchAttachmentPlan(
+          coil, *terminal, *airLoop, *thermalZone, *airDistributionUnit, *terminalAirInletField.node, *terminalAirOutletField.node,
+          std::move(terminalTopologyProof), std::move(plantRelocation)));
       }
 
       ContainedReheatCoilDemandBranchAttachmentPlan(const ContainedReheatCoilDemandBranchAttachmentPlan&) = delete;
@@ -1623,69 +1649,11 @@ namespace epmodel {
       ContainedReheatCoilDemandBranchAttachmentPlan(ContainedReheatCoilDemandBranchAttachmentPlan&&) = delete;
       ContainedReheatCoilDemandBranchAttachmentPlan& operator=(ContainedReheatCoilDemandBranchAttachmentPlan&&) = delete;
 
-      ~ContainedReheatCoilDemandBranchAttachmentPlan() {
-        if (m_committed) {
-          return;
-        }
-
-        if (m_targetRowAttempted) {
-          m_targetBranch.getImpl<Branch_Impl>()->clearComponents();
-        }
-        if (m_createdTargetBranch) {
-          if (m_targetBranchInsertionAttempted && m_targetBranchList.extensibleGroups().size() > m_originalTargetBranchCount) {
-            const auto removedFields = m_targetBranchList.eraseExtensibleGroup(m_targetBranchInsertIndex);
-            OS_ASSERT(!removedFields.empty());
-          }
-          auto targetLoopImpl = m_targetLoop.getImpl<PlantLoop_Impl>();
-          const bool synchronized =
-            targetLoopImpl->syncConnectorPorts(m_targetSplitter, m_targetMixer, targetLoopImpl->demandInletBranch(),
-                                               targetLoopImpl->demandOutletBranch(), targetLoopImpl->demandEquipmentBranches());
-          OS_ASSERT(synchronized);
-          m_targetBranch.remove();
-          OS_ASSERT(!m_targetLoop.model().getObject(m_targetBranch.handle()));
-        }
-        for (auto nodeName = m_createdNodeNames.rbegin(); nodeName != m_createdNodeNames.rend(); ++nodeName) {
-          if (auto node = m_targetLoop.model().getConcreteModelObjectByName<Node>(*nodeName)) {
-            const auto nodeHandle = node->handle();
-            node->remove();
-            OS_ASSERT(!m_targetLoop.model().getObject(nodeHandle));
-          }
-        }
-        // The nested terminal-removal plan was used only for canonical
-        // observation; its untouched reservation destructs without writes.
-      }
+      ~ContainedReheatCoilDemandBranchAttachmentPlan() = default;
 
       void commit() {
-        OS_ASSERT(m_prepared && !m_committed && m_targetInletNode && m_targetOutletNode);
-        const auto currentSourceSetpoint = m_sourceLoop.getModelObjectTarget<Node>(openstudio::PlantLoopFields::LoopTemperatureSetpointNodeName);
-        const auto currentTargetSetpoint = m_targetLoop.getModelObjectTarget<Node>(openstudio::PlantLoopFields::LoopTemperatureSetpointNodeName);
-        OS_ASSERT(currentSourceSetpoint && *currentSourceSetpoint == m_sourceSetpointTarget);
-        OS_ASSERT(currentTargetSetpoint && *currentTargetSetpoint == m_targetSetpointTarget);
-
-        if (!m_keepSourceAsDefaultBranch) {
-          auto sourceBranchListImpl = m_sourceBranchList.getImpl<BranchList_Impl>();
-          OS_ASSERT(sourceBranchListImpl);
-          const bool removedSourceBranch = sourceBranchListImpl->removeBranch(m_sourceBranch);
-          OS_ASSERT(removedSourceBranch);
-        }
-        auto sourceBranchImpl = m_sourceBranch.getImpl<Branch_Impl>();
-        OS_ASSERT(sourceBranchImpl);
-        sourceBranchImpl->clearComponents();
-        if (!m_keepSourceAsDefaultBranch) {
-          m_sourceBranch.remove();
-          OS_ASSERT(!m_sourceLoop.model().getObject(m_sourceBranch.handle()));
-        }
-
-        auto sourceLoopImpl = m_sourceLoop.getImpl<PlantLoop_Impl>();
-        const bool synchronized = sourceLoopImpl->syncConnectorPorts(m_sourceSplitter, m_sourceMixer, sourceLoopImpl->demandInletBranch(),
-                                                                     sourceLoopImpl->demandOutletBranch(), sourceLoopImpl->demandEquipmentBranches());
-        OS_ASSERT(synchronized);
-
-        // Prepare proved exact live Coil:Heating:Water NodeType fields; only
-        // those water pointers change after source removal, so writes cannot fail.
-        const bool inletSet = m_coil.setPointer(m_coil.waterInletPort(), m_targetInletNode->handle());
-        const bool outletSet = m_coil.setPointer(m_coil.waterOutletPort(), m_targetOutletNode->handle());
-        OS_ASSERT(inletSet && outletSet);
+        OS_ASSERT(!m_committed && m_plantRelocation && m_terminalTopologyProof);
+        m_plantRelocation->commit();
 
         const auto currentOwner = m_coil.containingHVACComponent();
         OS_ASSERT(currentOwner && currentOwner->handle() == m_terminal.handle());
@@ -1701,120 +1669,31 @@ namespace epmodel {
       }
 
      private:
-      struct DemandSideTopology
-      {
-        BranchList branchList;
-        ConnectorSplitter splitter;
-        ConnectorMixer mixer;
-        std::vector<Branch> equipmentBranches;
-        Node setpointTarget;
-      };
-
-      static boost::optional<DemandSideTopology> validatedDemandSideTopology(PlantLoop_Impl& plantLoopImpl) {
-        const auto plantLoop = plantLoopImpl.getObject<PlantLoop>();
-        const auto setpointTarget = plantLoop.getModelObjectTarget<Node>(openstudio::PlantLoopFields::LoopTemperatureSetpointNodeName);
-        auto branchList = plantLoopImpl.demandBranchList();
-        const auto equipmentBranches = plantLoopImpl.demandEquipmentBranches();
-        if (!setpointTarget || equipmentBranches.empty()) {
-          return boost::none;
-        }
-
-        const auto listedBranches = branchList.branches();
-        const auto inletBranch = plantLoopImpl.demandInletBranch();
-        const auto outletBranch = plantLoopImpl.demandOutletBranch();
-        if (listedBranches.size() != equipmentBranches.size() + 2u || listedBranches.front() != inletBranch
-            || listedBranches.back() != outletBranch) {
-          return boost::none;
-        }
-        for (unsigned i = 0u; i < equipmentBranches.size(); ++i) {
-          if (listedBranches[i + 1u] != equipmentBranches[i]) {
-            return boost::none;
-          }
-        }
-
-        auto splitter = plantLoopImpl.demandSplitter().cast<ConnectorSplitter>();
-        auto mixer = plantLoopImpl.demandMixer().cast<ConnectorMixer>();
-        const auto splitterInletBranch = splitter.getModelObjectTarget<Branch>(splitter.inletPort());
-        const auto mixerOutletBranch = mixer.getModelObjectTarget<Branch>(mixer.outletPort());
-        if (!splitterInletBranch || *splitterInletBranch != inletBranch || !mixerOutletBranch || *mixerOutletBranch != outletBranch
-            || splitter.nextBranchIndex() != equipmentBranches.size() || mixer.nextBranchIndex() != equipmentBranches.size()) {
-          return boost::none;
-        }
-        for (unsigned i = 0u; i < equipmentBranches.size(); ++i) {
-          const auto splitterBranch = splitter.getModelObjectTarget<Branch>(splitter.outletPort(i));
-          const auto mixerBranch = mixer.getModelObjectTarget<Branch>(mixer.inletPort(i));
-          if (!splitterBranch || *splitterBranch != equipmentBranches[i] || !mixerBranch || *mixerBranch != equipmentBranches[i]) {
-            return boost::none;
-          }
-        }
-
-        return DemandSideTopology{branchList, splitter, mixer, equipmentBranches, *setpointTarget};
-      }
-
-      ContainedReheatCoilDemandBranchAttachmentPlan(PlantLoop targetLoop, PlantLoop sourceLoop, CoilHeatingWater coil,
-                                                    AirTerminalSingleDuctConstantVolumeReheat terminal, AirLoopHVAC airLoop, ThermalZone thermalZone,
-                                                    ZoneHVACAirDistributionUnit airDistributionUnit, Branch sourceBranch, BranchList sourceBranchList,
-                                                    ConnectorSplitter sourceSplitter, ConnectorMixer sourceMixer, bool keepSourceAsDefaultBranch,
-                                                    Node sourceSetpointTarget, BranchList targetBranchList, ConnectorSplitter targetSplitter,
-                                                    ConnectorMixer targetMixer, Branch targetBranch, bool createdTargetBranch,
-                                                    Node targetSetpointTarget, unsigned originalTargetBranchCount, unsigned targetBranchInsertIndex,
-                                                    Node airInletNode, Node airOutletNode,
-                                                    std::unique_ptr<SingleDuctTerminalRemovalPlan> terminalTopologyProof)
-        : m_targetLoop(std::move(targetLoop)),
-          m_sourceLoop(std::move(sourceLoop)),
-          m_coil(std::move(coil)),
+      ContainedReheatCoilDemandBranchAttachmentPlan(CoilHeatingWater coil, AirTerminalSingleDuctConstantVolumeReheat terminal, AirLoopHVAC airLoop,
+                                                    ThermalZone thermalZone, ZoneHVACAirDistributionUnit airDistributionUnit, Node airInletNode,
+                                                    Node airOutletNode, std::unique_ptr<SingleDuctTerminalRemovalPlan> terminalTopologyProof,
+                                                    std::unique_ptr<DemandBranchRelocationPlan> plantRelocation)
+        : m_coil(std::move(coil)),
           m_terminal(std::move(terminal)),
           m_airLoop(std::move(airLoop)),
           m_thermalZone(std::move(thermalZone)),
           m_airDistributionUnit(std::move(airDistributionUnit)),
-          m_sourceBranch(std::move(sourceBranch)),
-          m_sourceBranchList(std::move(sourceBranchList)),
-          m_sourceSplitter(std::move(sourceSplitter)),
-          m_sourceMixer(std::move(sourceMixer)),
-          m_keepSourceAsDefaultBranch(keepSourceAsDefaultBranch),
-          m_sourceSetpointTarget(std::move(sourceSetpointTarget)),
-          m_targetBranchList(std::move(targetBranchList)),
-          m_targetSplitter(std::move(targetSplitter)),
-          m_targetMixer(std::move(targetMixer)),
-          m_targetBranch(std::move(targetBranch)),
-          m_createdTargetBranch(createdTargetBranch),
-          m_targetSetpointTarget(std::move(targetSetpointTarget)),
-          m_originalTargetBranchCount(originalTargetBranchCount),
-          m_targetBranchInsertIndex(targetBranchInsertIndex),
           m_airInletNode(std::move(airInletNode)),
           m_airOutletNode(std::move(airOutletNode)),
-          m_terminalTopologyProof(std::move(terminalTopologyProof)) {}
+          m_terminalTopologyProof(std::move(terminalTopologyProof)),
+          m_plantRelocation(std::move(plantRelocation)) {}
 
-      PlantLoop m_targetLoop;
-      PlantLoop m_sourceLoop;
       CoilHeatingWater m_coil;
       AirTerminalSingleDuctConstantVolumeReheat m_terminal;
       AirLoopHVAC m_airLoop;
       ThermalZone m_thermalZone;
       ZoneHVACAirDistributionUnit m_airDistributionUnit;
-      Branch m_sourceBranch;
-      BranchList m_sourceBranchList;
-      ConnectorSplitter m_sourceSplitter;
-      ConnectorMixer m_sourceMixer;
-      bool m_keepSourceAsDefaultBranch;
-      Node m_sourceSetpointTarget;
-      BranchList m_targetBranchList;
-      ConnectorSplitter m_targetSplitter;
-      ConnectorMixer m_targetMixer;
-      Branch m_targetBranch;
-      bool m_createdTargetBranch;
-      Node m_targetSetpointTarget;
-      boost::optional<Node> m_targetInletNode;
-      boost::optional<Node> m_targetOutletNode;
-      std::vector<std::string> m_createdNodeNames;
-      unsigned m_originalTargetBranchCount;
-      unsigned m_targetBranchInsertIndex;
       Node m_airInletNode;
       Node m_airOutletNode;
+      // Declared before relocation so rollback completes while the uncommitted
+      // read-only terminal topology proof is still alive.
       std::unique_ptr<SingleDuctTerminalRemovalPlan> m_terminalTopologyProof;
-      bool m_targetBranchInsertionAttempted = false;
-      bool m_targetRowAttempted = false;
-      bool m_prepared = false;
+      std::unique_ptr<DemandBranchRelocationPlan> m_plantRelocation;
       bool m_committed = false;
     };
 

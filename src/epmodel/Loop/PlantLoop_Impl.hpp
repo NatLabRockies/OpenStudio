@@ -160,6 +160,7 @@ namespace epmodel {
      private:
       class PipeBranchAttachmentPlan;
       class PipeBranchRemovalPlan;
+      class DemandBranchRelocationPlan;
       class WaterCoilDemandBranchAttachmentPlan;
       class ContainedReheatCoilDemandBranchAttachmentPlan;
 
