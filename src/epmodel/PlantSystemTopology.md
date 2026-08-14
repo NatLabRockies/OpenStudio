@@ -124,6 +124,14 @@ The transactional branch evidence is deliberately exact rather than generic:
   Both branch shapes have rollback, retry, reload, rejection, and heat-recovery
   owner-removal evidence. This does not imply a generic condenser move or
   tertiary support for other chiller families.
+- Fully connected `HeatPumpPlantLoopEIRHeating` and
+  `HeatPumpPlantLoopEIRCooling` objects can move their source-side demand
+  connection after load, source, and heat-recovery owners make that role
+  unambiguous. The load and heat-recovery paths, companion graph, curves,
+  settings, `WaterSource` state, and staged initial-attachment behavior remain
+  unchanged. Whole moved-source-loop removal returns the retained heat pump to
+  `AirSource` and allows reattachment; direct demand-branch removal parity is
+  still a separate operation.
 
 The representative C++ hot-water, chilled-water, and condenser-water vertical
 slice covers construction, typed `SizingPlant` loop types, equipment and
@@ -175,11 +183,11 @@ or the presence of a scalar test.
 
 ## Ordered plant roadmap
 
-1. **Next three-owner heat-pump boundary.** Apply the exact multi-owner proof to
-   `HeatPumpPlantLoopEIR` source-side moves only when its load, source, and heat
-   recovery owners already make that role unambiguous. Keep heat-recovery moves,
-   direct-removal state parity, other families, branch replacement,
-   clone/remove, and cross-model transfer as separately proven operations.
+1. **Direct source-removal state parity.** Make exact PlantLoop EIR source-side
+   branch removal clear the source ports and restore `AirSource` while retaining
+   load and heat-recovery owners. Then treat heat-recovery moves, other
+   families, branch replacement, clone/remove, and cross-model transfer as
+   separately proven operations.
 2. **Additional contained owners.** Apply the private relocation boundary to
    another selected compound owner only after its child roles, internal air or
    zone path, controller behavior, and removal lifetime have exact rejection,

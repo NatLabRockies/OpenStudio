@@ -40,6 +40,7 @@ namespace epmodel {
       PlantLoopAfterPipeBranchRemovalPrepared,
       PlantLoopAfterWaterCoilBranchAttachmentPrepared,
       PlantLoopAfterChillerElectricEIRHeatRecoveryBranchAttachmentPrepared,
+      PlantLoopAfterPlantLoopEIRHeatPumpSourceBranchAttachmentPrepared,
       PlantLoopAfterFluidToFluidHeatExchangerBranchAttachmentPrepared,
       PlantLoopAfterThermalStorageSourceBranchAttachmentPrepared,
       PlantLoopAfterEquationFitHeatPumpBranchAttachmentPrepared,
