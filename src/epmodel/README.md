@@ -1,239 +1,190 @@
 # EPModel
 
-`openstudio::epmodel` is an EnergyPlus-backed model layer. Its long-term goal is
-to reproduce the useful public behavior of `openstudio::model` while storing
-the model directly in EnergyPlus IDD/IDF structures.
+`openstudio::epmodel` stores an OpenStudio model directly in EnergyPlus
+IDD/IDF objects. The goal is to support the parts of the established
+`openstudio::model` API that applications and measures rely on without keeping
+a second OSM representation in memory.
 
-EPModel is deliberately separate from the established Model library. That
-keeps the stable OpenStudio API available while the project works through the
-places where OpenStudio concepts and EnergyPlus storage do not line up. HVAC
-topology is the most developed example, but the same problem appears in
-relationships, reusable definitions, schedules, geometry, and other domains.
+EPModel is still under development. It has broad object coverage, but many
+classes do not yet behave exactly like their Model counterparts. HVAC
+connections are farther along than most other areas.
 
-EPModel is active development, not a complete alternative to Model. Broad
-object coverage or matching method names do not establish behavioral parity.
+## What compatibility means
 
-## Compatibility target
+Model is the reference because it reflects years of real use. It is not always
+consistent, and EPModel does not copy behavior that would leave an invalid
+EnergyPlus model. When Model behavior is unclear:
 
-The target is equivalent public behavior where that behavior is coherent and
-useful, not identical implementation or serialized text.
+1. write a test that shows what callers can observe;
+2. keep the object graph valid if a change is rejected;
+3. document any intentional difference; and
+4. review Model production changes separately.
 
-`openstudio::model` is the compatibility reference because it embodies years
-of real use. It is not an infallible specification. When the reference has
-ambiguous or internally inconsistent ownership behavior, EPModel should:
+A matching class or method name is not enough. Compatibility can include:
 
-1. characterize the behavior through public observations;
-2. preserve graph integrity and reject mutations atomically;
-3. document a deliberate difference when copying the reference would make the
-   EnergyPlus-backed model contradictory; and
-4. leave changes to Model production behavior for separate human review.
+- constructors, overloads, inheritance, and Ruby/Python bindings;
+- defaults, optional values, reset methods, autosizing, and autocalculation;
+- references, ownership, replacement, removal, and cloning;
+- HVAC connection changes and traversal order;
+- save/load behavior;
+- execution from Ruby or Python; and
+- successful EnergyPlus simulation and comparable results.
 
-Parity must be stated for a bounded capability. It includes more than the C++
-surface:
+## Storage and conversion
 
-- constructors, methods, overloads, inheritance, and bindings;
-- values, defaults, optionality, reset, autosize, and autocalculate behavior;
-- relationships, ownership, replacement, removal, and cloning;
-- topology mutation and ordered traversal;
-- save/load reconstruction and canonicalization;
-- workflow execution through Ruby or Python; and
-- EnergyPlus execution and numerical behavior.
+`epmodel::Model` derives from `Workspace` and uses the EnergyPlus IDD. It loads
+and saves IDF directly. EnergyPlus objects and their references are the saved
+model.
 
-Evidence for one dimension does not prove another.
+An OSM can be brought into EPModel through the existing translators:
 
-## EnergyPlus is the persisted schema
+1. `openstudio::osversion::VersionTranslator` updates the OSM.
+2. `openstudio::energyplus::ForwardTranslator` converts it to IDF.
+3. EPModel loads the IDF.
 
-`epmodel::Model` derives from `Workspace` and uses
-`IddFileType::EnergyPlus`. It loads and saves IDF content directly. EnergyPlus
-objects and relationships are therefore the persisted source of truth; EPModel
-does not maintain a second OSM representation behind its API.
+This conversion does not guarantee that every Model convenience is available
+or that simulation results are identical.
 
-Existing OSM assets still have a migration path:
+## Loading and repair
 
-1. `openstudio::osversion::VersionTranslator` upgrades older OSM content into
-   the current `openstudio::model` schema.
-2. The EnergyPlus `ForwardTranslator` converts that Model to IDF.
-3. EPModel loads the IDF and materializes the concrete wrappers it supports.
+Construction from `IdfFile` and `Model::load(...)` creates concrete EPModel
+wrappers for registered EnergyPlus object types. Other objects remain usable
+through the generic workspace wrapper. Construction from an existing
+`Workspace` preserves EPModel wrapper types already present in that workspace;
+generic workspace objects remain generic.
 
-This is a migration boundary, not proof that the resulting EPModel has every
-Model convenience or produces numerically identical results.
+EPModel canonicalizes imported data after loading. Canonicalization repairs
+missing or inconsistent references when the intended connection is clear. If
+repair would require guessing, it removes the smallest invalid piece and logs
+what happened.
 
-## Import and canonicalization
+Normal API calls assume the model has already been canonicalized. Repair code
+belongs with the class that owns the affected relationship. See
+[AGENTS.md](AGENTS.md) for the implementation rules.
 
-Construction from `IdfFile` and `Model::load(...)` materialize concrete
-EPModel implementation types where a factory registration exists. Imported
-objects that do not have a concrete wrapper remain usable as generic
-workspace-backed objects. Construction from an existing `Workspace` preserves
-concrete EPModel runtime types when they are already present; objects from a
-generic workspace use the generic wrapper fallback.
+## HVAC connections
 
-Those import paths run canonicalization with repair enabled. Canonicalization
-is the boundary that converts incomplete or inconsistent IDF relationships
-into the coherent state normal APIs expect. Object-specific implementations
-may repair recoverable structure, normalize competing representations, or
-drop the minimum unsalvageable content.
+Model saves a general connection graph made from `OS:Connection` objects and
+numbered ports. EnergyPlus instead uses component node fields, branches,
+connector lists, splitters, mixers, supply and return paths, equipment lists,
+and node lists.
 
-Canonicalization is not a general runtime fallback. Normal API methods should
-operate on established invariants. Repair decisions belong to the object that
-owns the relationship, and cross-object ordering belongs at a scope that can
-guarantee it. The implementation policy is in [AGENTS.md](AGENTS.md).
+EPModel implements connection and traversal methods by reading the EnergyPlus
+branches, connectors, paths, and node fields. It does not add `OS:Connection`
+objects to the IDF.
 
-## Model topology and EnergyPlus topology
+The base classes describe common connection shapes:
 
-Canonical Model persists a general graph built from concrete `OS:Connection`
-objects and numbered ports. `Node`, `PortList`, `Splitter`, and `Mixer` objects
-participate in that graph.
-
-EnergyPlus stores the same physical intent differently. Component node-name
-fields coexist with connective objects such as `Branch`, `BranchList`,
-`ConnectorList`, `Connector:Splitter`, `Connector:Mixer`, supply paths, return
-paths, equipment connections, equipment lists, and node lists.
-
-EPModel preserves familiar public traversal and mutation over the EnergyPlus
-representation. It does not recreate an OSM connection graph in the saved
-file. Equivalent inlet/outlet adjacency, loop membership, ordering, and
-ownership can therefore be backed by different persisted objects.
-
-The base families describe useful shapes, not universal placement permission:
-
-| Family | General shape |
+| Class | Usual shape |
 | --- | --- |
 | `StraightComponent` | One air or plant stream |
 | `WaterToAirComponent` | One air stream and one water stream |
-| `WaterToWaterComponent` | Multiple plant roles, sometimes including heat recovery |
+| `WaterToWaterComponent` | Two or more plant connections |
 | `AirToAirComponent` | Two air streams |
 | `ZoneHVACComponent` | Equipment owned by a thermal zone |
-| `Mixer` / `Splitter` | Fan-in and fan-out relationships |
+| `Mixer` / `Splitter` | Several inlets or outlets |
 
-Concrete types still decide supported loop sides, ownership, contained paths,
-and lifecycle. Current air-system coverage and priorities are summarized in
-[AirSystemTopology.md](AirSystemTopology.md).
+Each concrete class still decides where it may be connected, which object owns
+the connection, and what is removed with it. Air-system support and remaining
+work are summarized in [AirSystemTopology.md](AirSystemTopology.md).
 
-## Identity and relationships
+## Identity and ownership
 
-EnergyPlus IDF does not persist OpenStudio handles. Handles remain useful
-runtime identity, but they are regenerated across save/load. Persisted identity
-must come from object relationships and, where EnergyPlus requires it, names.
+EnergyPlus does not save OpenStudio handles, so handles change after save/load.
+Names and object references carry saved identity. Names can be missing or
+duplicated, so relationship code should use typed targets and pointer APIs
+instead of searching by name. Node fields should use the shared node helpers so
+renames update every live reference.
 
-Names need defensive handling. They may be absent or duplicated, so normal
-relationship code should prefer typed targets and pointer APIs over string
-search. Node fields should use the shared node resolvers so a named node becomes
-a live, tracked relationship that follows later renames.
+For relationships stored in more than one place, one object must own the
+change and the other views must follow it. Examples include:
 
-For relationship-heavy concepts, EPModel chooses one authoritative owner and
-treats other representations as projections. Examples include:
+- outdoor-air assignments stored through zone sizing and per-space lists;
+- fans and coils contained by packaged HVAC equipment;
+- radiant surfaces stored through EnergyPlus surface groups; and
+- plant components represented by rows on an EnergyPlus branch.
 
-- zone outdoor-air assignments owned through zone sizing and per-space lists;
-- compound HVAC parents that own their internal fan/coil air paths;
-- radiant surface selectors projected into persisted EnergyPlus surface
-  groups; and
-- loop traversal that projects an EnergyPlus branch row back to the canonical
-  child wrapper callers attached.
+A contained child must not be able to rewire its parent's internal air path on
+its own.
 
-The owning API must keep the persisted relationship and all public views in
-agreement. A child controlled by a compound owner must not be able to rewire
-the owner's path independently.
+## Objects that EnergyPlus does not save directly
 
-## Transient ModelObjects
+Some Model objects have no standalone EnergyPlus object. EPModel keeps these
+as runtime-only `ModelObject` wrappers. Current examples include nodes, child
+coils whose fields live on zone equipment, and speed data stored in parent
+extensible rows.
 
-Some canonical OpenStudio concepts need runtime object identity even though
-EnergyPlus does not persist them as standalone objects. EPModel represents
-those concepts as transient `ModelObject` wrappers.
+Types marked `is_transient` are found or created by type and name. Some owning
+classes also mark ordinary companion objects as runtime-only while presenting
+a larger object, as the dedicated outdoor-air system does. Attached child
+wrappers read and write their parent's saved fields. If they can be removed and
+kept by the caller, they must retain their values after detachment.
 
-The recurring patterns are:
+`Model.hpp` contains the creation methods. `Model.cpp` maps EnergyPlus object
+types to concrete wrappers.
 
-- virtual nodes over EnergyPlus node-name fields;
-- canonical child coils projected from fields on a persisted zone-equipment
-  parent; and
-- speed-data children projected from extensible rows on a persisted parent
-  coil.
+## Finding current implementation status
 
-Name-keyed transient view types are created and recovered by typed name so
-repeated traversal returns the same runtime concept. Their `is_transient`
-markers and the public creation APIs in `Model.hpp` identify this mechanism.
-Owning APIs may also mark normally persisted companion wrappers transient when
-projecting runtime topology, as the dedicated outdoor-air system does.
+There is no generated Model/EPModel comparison table in the repository. Such a
+table becomes stale quickly, and declarations alone do not show behavior.
 
-Projected wrappers read and write through to their persisted owner while
-attached, and must retain coherent detached state when removed. Factory
-registration in `Model.cpp` determines which concrete wrapper is materialized;
-it is not an inventory of every transient runtime state.
+For a particular class, check:
 
-## Where status and evidence live
-
-There is intentionally no checked-in generated table that claims repository-
-wide Model/EPModel parity. Such tables go stale quickly and declaration or IDD
-mapping alone cannot establish behavior.
-
-Use these sources, in this order:
-
-1. Public headers under `src/epmodel`, especially type-local `Schema Alignment
-   Notes`, for the intended current contract and documented deltas.
-2. Source and focused tests under `src/epmodel/test` for implemented behavior.
-3. Registered workflow and translation tests for binding, migration, and
-   execution evidence.
+1. its public header and `Schema Alignment Notes`;
+2. its implementation and tests under `src/epmodel/test`;
+3. any translator, Ruby, Python, or simulation test that uses it;
 4. `resources/energyplus/ProposedEnergy+.idd` and
-   `resources/model/OpenStudio.idd` for current schema facts.
-5. Git history for rationale and superseded campaign evidence.
+   `resources/model/OpenStudio.idd`; and
+5. Git history when the reason for a design choice is not clear from the code.
 
-Use the Input Output Reference distributed with the configured EnergyPlus
-version for field semantics. Do not rely on a separately checked-in PDF that
-can drift from the schema in this repository.
+Use the Input Output Reference shipped with the configured EnergyPlus version.
+A separately checked-in PDF can easily be the wrong version.
 
-Current maturity is uneven:
+HVAC has the most complete connection, ownership, and reload support. Many
+classes in other areas currently provide only their EnergyPlus fields and a
+subset of Model behavior. Ruby/Python use and numerical agreement must be
+tested separately.
 
-- EnergyPlus-backed wrappers exist across many domains.
-- HVAC has the deepest relationship, topology, ownership, and persistence
-  work.
-- Many wrappers outside HVAC still have only scalar or partial parity.
-- Binding presence, workflow execution, and numerical equivalence remain
-  separately evidenced capabilities.
+## Integration workflows
 
-## External workflow corpus
+The larger EPModel workflow collection lives in
+[OpenStudio-resources](https://github.com/NatLabRockies/OpenStudio-resources/tree/develop/epmodel).
+It contains OSWs, their supporting measures, and shared input files. This
+repository should keep only examples intended to ship with OpenStudio and
+tests that belong in the normal build.
 
-Broad EPModel integration and simulation workflows are maintained in the
-[OpenStudio-resources EPModel corpus](https://github.com/NatLabRockies/OpenStudio-resources/tree/develop/epmodel).
-That repository owns the growing OSW collection, its supporting measures, and
-shared seed files. This source repository should contain only deliberately
-selected user-facing examples and tests that belong in the normal OpenStudio
-build. A successful external workflow is evidence for the transitions it
-exercises; it is not a repository-wide parity claim.
+A workflow shows that its particular path works. It does not prove that every
+method on the classes it touches is complete.
 
-## Type-local schema alignment notes
+## Header notes
 
-Public wrapper headers use `Schema Alignment Notes` to keep class-level status
-beside the API it describes. Notes should state:
+Public wrapper headers use `Schema Alignment Notes` for class-specific facts.
+They should identify the Model counterpart, say what works, explain unusual
+EnergyPlus storage, list intentional differences, and state what is still
+missing. EnergyPlus-only wrappers should simply say that no Model counterpart
+exists.
 
-- status and canonical counterpart, if one exists;
-- implemented public behavior;
-- intentional API or storage differences;
-- non-obvious EnergyPlus field or relationship mapping; and
-- remaining work at a meaningful behavioral boundary.
+## Ruby and Python bindings
 
-EnergyPlus-only wrappers should say that they have no canonical counterpart
-rather than inventing a parity claim.
+To expose a production wrapper through SWIG:
 
-## Binding checklist
-
-When a production wrapper should be exposed through SWIG:
-
-- add its C++ source and headers to `src/epmodel/CMakeLists.txt`;
+- add its source and headers to `src/epmodel/CMakeLists.txt`;
 - add the public header to `EPModelObjectIncludes.hpp`;
 - add its forward declaration to `EPModel_Common_Include.i`;
-- add the wrapper to the appropriate EPModel SWIG submodule;
+- add it to the appropriate EPModel SWIG submodule; and
 - wire a new submodule into CMake, Python imports, and Ruby initialization when
-  necessary; and
-- do not expose scaffold-only types as production bindings.
+  necessary.
 
-SWIG registration proves only that binding machinery exists. Execute the
-required Ruby or Python path before claiming scripting behavior.
+Do not bind unfinished generated wrappers. A SWIG entry only shows that the
+binding was generated; run the Ruby or Python code before claiming it works.
 
-## Working documents
+## Other useful files
 
 - [AGENTS.md](AGENTS.md): implementation and review rules.
-- [AirSystemTopology.md](AirSystemTopology.md): current air-system topology coverage,
-  evidence levels, and next priorities.
-- `src/epmodel/scaffolds/README.md`: meaning of scaffold-only wrappers.
+- [AirSystemTopology.md](AirSystemTopology.md): air-system support and next
+  work.
+- [scaffolds/README.md](scaffolds/README.md): the historical scaffold source
+  directory.
 - `resources/energyplus/ProposedEnergy+.idd`: EnergyPlus schema used by
   EPModel.
-- `resources/model/OpenStudio.idd`: canonical Model persistence schema.
+- `resources/model/OpenStudio.idd`: schema used by Model.

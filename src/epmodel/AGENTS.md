@@ -1,27 +1,22 @@
-# epmodel Agent Notes
+# EPModel development rules
 
-These notes are specific to work under `src/epmodel/`.
+These rules apply to work under `src/epmodel/`.
 
-## Read First
+## Start here
 
 When working on epmodel parity or topology behavior, read these first:
 
 - `src/epmodel/README.md`
 - `src/epmodel/AirSystemTopology.md` for air-system topology work
 
-Also keep these references available when needed:
+Use these references when needed:
 
-- `resources/energyplus/` for authoritative EnergyPlus schema shape, field
+- `resources/energyplus/` for EnergyPlus schema shape, field
   order, extensibles, and object-list relationships
 - the Input Output Reference distributed with the configured EnergyPlus
   version for field semantics
 
-Status, queue order, and next-task planning belong in campaign state or
-dedicated campaign notes, not in README documents.
-
-## Working Style Preferences
-
-Apply these preferences unless the user asks otherwise.
+## Implementation
 
 - Preserve public `openstudio::model` API shape for parity work. Do not add
   new public APIs unless divergence is intentional and explicitly documented.
@@ -41,7 +36,7 @@ Apply these preferences unless the user asks otherwise.
   logic. Inline the code unless a helper clearly improves readability.
 - Reduce layers and duplicate naming. Do not introduce separate impl-only
   names for the same conceptual object when the public name already works.
-- Keep public wrapper classes thin. For parity-oriented types, put
+- Keep public wrapper classes thin. For classes that follow the Model API, put
   substantive behavior, relationship mutation, and helper logic in `*_Impl`.
 - In public wrapper headers, group accessors by field or concept. Prefer
   getter / setter / reset blocks for one field at a time over separate
@@ -66,8 +61,8 @@ Apply these preferences unless the user asks otherwise.
 - Do not reach into raw extensible-group mechanics from unrelated code. If a
   caller needs structured extensible mutation, add a private impl-level API on
   the owning type and keep storage manipulation there.
-- Add short intent comments where code depends on topology assumptions,
-  canonicalization contracts, or parity-driven invariants.
+- Add short comments where code depends on topology assumptions, repair rules,
+  or API invariants.
 - Prefer object-level identity comparisons over raw handle comparisons when
   the wrappers already express the relationship clearly.
 - In epmodel tests, prefer public wrapper APIs and typed `Model` queries.
@@ -76,10 +71,10 @@ Apply these preferences unless the user asks otherwise.
 - In epmodel tests, construct the concrete wrapper under test rather than
   using `ModelObject::create(...)` as a shortcut.
 
-## Canonicalization Policy
+## Canonicalization
 
-- Canonicalization is the central repair and assurance phase. It should run at
-  model construction and load boundaries, not as an ad hoc runtime crutch.
+- Canonicalization repairs imported models. It should run during construction
+  and loading, not as an ad hoc runtime fallback.
 - Canonicalizers must converge the model to a valid epmodel state.
 - Prefer repair over rejection when the intended structure can be recovered
   reasonably from persisted EnergyPlus-backed storage.
@@ -89,13 +84,12 @@ Apply these preferences unless the user asks otherwise.
 - Outside canonicalizers, normal API methods should not invoke
   canonicalization. They should assume canonical state and rely on established
   invariants.
-- When cross-type ordering is not guaranteed, refactor canonicalization scope
-  upward so ordering is guaranteed there instead of adding runtime fallback
-  paths.
+- When one type must be repaired before another, put that ordering in a common
+  owner such as the Model canonicalizer. Do not add runtime fallback paths.
 - After canonicalization, prefer assertions and direct logic over fallback
   branches for guaranteed states.
-- Canonicalizers must log meaningful repairs, drops, normalizations, and
-  failed repair attempts through `addLoadInfo`, `addLoadWarning`, and
+- Canonicalizers must log repairs, removals, normalization, and failed repair
+  attempts through `addLoadInfo`, `addLoadWarning`, and
   `addLoadError`.
 - Keep canonicalization logic close to the owning type so repair decisions
   remain local, explicit, and reviewable.
@@ -115,12 +109,12 @@ Apply these preferences unless the user asks otherwise.
   node-field helpers so resolved nodes are linked back to the owning field and
   later renames stay tracked.
 - When canonical `openstudio::model` exposes OS-only companion objects that do
-  not exist as standalone EnergyPlus objects, epmodel may model them additively
-  as transient child wrappers backed by persisted parent storage. Keep that
+  not exist as standalone EnergyPlus objects, epmodel may represent them as
+  transient child wrappers backed by persisted parent storage. Keep that
   write-through mapping explicit, document it in the type notes, and avoid
   inventing fake persisted children.
 
-## Schema Alignment Notes Convention
+## Schema Alignment Notes
 
 Type-local parity status belongs in `Schema Alignment Notes` blocks in
 `src/epmodel/**/*.hpp`.
@@ -148,11 +142,10 @@ Status vocabulary:
 - `Near Parity`
 - `Parity with documented deltas`
 
-## Review Guidlines
+## Review
 
-For any non trivial code changes use dedicated sub agents to review for *at minimum* the following items.
+Have separate agents review nontrivial code changes. At minimum, check:
 
-- Adherence to the agent notes in this file
-- Adherence to the epmodel/README.md
-- Any required updates to epmodel/README.md to maintain consistency between code and README.
-- Consistency with prior art in similar data types and bodies of code.
+- these rules and `epmodel/README.md`;
+- whether the README needs to change with the code; and
+- similar EPModel classes and tests.
