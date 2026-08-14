@@ -83,6 +83,13 @@ The transactional branch evidence is deliberately exact rather than generic:
   nodes, settings, and zone/air-loop membership survive failure injection,
   rollback, save/load, and retry; the contained path correctly has no
   `ControllerWaterCoil`.
+- An exact `CoilHeatingWater` or `CoilCoolingWater` child of a fully configured
+  `ZoneHVACFourPipeFanCoil` can move between plant demand loops when the parent
+  is ordinary `ThermalZone` equipment. The parent retains its fan, sibling
+  coil, complete air path, zone boundary, settings, and equipment-list
+  membership across rejection, rollback, save/load, and retry. Air-loop,
+  outdoor-air-system, inlet-side-mixer, ambiguous-owner, and controller-owned
+  variants remain rejected.
 - A configured `ChillerElectricEIR` can detach from a condenser loop without
   losing its chilled-water ownership. Removing the condenser loop removes only
   condenser-owned branch, operation, and companion objects; a replacement
@@ -113,10 +120,10 @@ deferred until it can preserve exactly one `Sizing:Plant` companion per loop.
 These results establish supported topology paths, not blanket parity. Broad
 `StraightComponent`, `WaterToAirComponent`, and `WaterToWaterComponent`
 generalization remains incomplete; contained water coils beyond the
-`AirTerminalSingleDuctConstantVolumeReheat` path remain outside the move
-contract; and unusual malformed imports, broad clone or cross-model operations,
-atomic sizing retarget, and numerical parity beyond the delivered workflow
-remain separate work.
+exact reheat-terminal and ordinary-zone four-pipe fan-coil paths remain outside
+the move contract; and unusual malformed imports, broad clone or cross-model
+operations, atomic sizing retarget, and numerical parity beyond the delivered
+workflow remain separate work.
 
 ## Uneven maturity and evidence levels
 
@@ -136,22 +143,20 @@ or the presence of a scalar test.
 
 ## Ordered plant roadmap
 
-1. **Private relocation boundary before a third movable owner.** Extract and
-   reuse a private exact demand-branch relocation boundary, fed by
-   owner-specific topology, endpoint, controller, and lifetime proofs. Keep
-   those proofs owner-local; this is implementation reuse, not a new public
-   mutator or an assumption that all water coils share one topology.
-2. **Next contained-owner bridge.** Apply that boundary to
-   `ZoneHVACUnitVentilator`, `ZoneHVACFourPipeFanCoil`, or another selected
-   compound owner. The parent must remain the owner of its internal air or zone
-   path while the plant operation validates child role, branch ownership,
-   rejection safety, save/load, and post-load mutation.
-3. **Broader multi-owner and component topology.** Extend the proven paths to
+1. **Atomic sizing-loop retarget.** Add a public `SizingPlant` retarget that
+   preserves exactly one sizing companion per loop, keeps each sizing object's
+   identity and settings together, and restores both loop relationships if a
+   multi-object write fails.
+2. **Broader multi-owner and component topology.** Extend the proven paths to
    broader `WaterToWaterComponent` ownership and secondary/tertiary ports,
    then to additional `StraightComponent` and `WaterToAirComponent` families,
    including branch replacement, equipment-list ownership, clone/remove, and
    cross-model transfer. Keep unsupported mutators out of wrappers until their
    ownership is defined.
+3. **Additional contained owners.** Apply the private relocation boundary to
+   another selected compound owner only after its child roles, internal air or
+   zone path, controller behavior, and removal lifetime have exact rejection,
+   rollback, reload, and post-load mutation evidence.
 4. **Language and numerical expansion.** Extend Ruby/Python coverage and
    EnergyPlus/numerical comparison workflows beyond the delivered
    OpenStudio-resources slice. Add broader parity matrices and SQL/autosizing

@@ -33,6 +33,13 @@
 #include "../ModelObject/AirLoopHVACControllerList_Impl.hpp"
 #include "../ModelObject/ZoneHVACAirDistributionUnit.hpp"
 #include "../ModelObject/ZoneHVACAirDistributionUnit_Impl.hpp"
+#include "../ModelObject/ZoneHVACEquipmentConnections.hpp"
+#include "../ModelObject/ZoneHVACEquipmentList.hpp"
+#include "../ModelObject/NodeList.hpp"
+#include "../ModelObject/AirLoopHVACOutdoorAirSystemEquipmentList.hpp"
+#include "../ModelObject/AirLoopHVACOutdoorAirSystemEquipmentList_Impl.hpp"
+#include "../ModelObject/OutdoorAirMixer.hpp"
+#include "../ModelObject/OutdoorAirMixer_Impl.hpp"
 #include "../HVACComponent/ControllerWaterCoil.hpp"
 #include "../HVACComponent/ControllerWaterCoil_Impl.hpp"
 #include "../HVACComponent/ThermalZone.hpp"
@@ -55,8 +62,11 @@
 #include "../StraightComponent/PipeAdiabatic_Impl.hpp"
 #include "../StraightComponent/PumpVariableSpeed.hpp"
 #include "../StraightComponent/PumpVariableSpeed_Impl.hpp"
+#include "../StraightComponent/FanConstantVolume.hpp"
+#include "../StraightComponent/FanConstantVolume_Impl.hpp"
 #include "../StraightComponent/AirTerminalSingleDuctConstantVolumeReheat.hpp"
 #include "../StraightComponent/AirTerminalSingleDuctConstantVolumeReheat_Impl.hpp"
+#include "../StraightComponent/AirTerminalSingleDuctInletSideMixer.hpp"
 #include "../WaterToAirComponent/WaterToAirComponent.hpp"
 #include "../WaterToAirComponent/CoilHeatingWater.hpp"
 #include "../WaterToAirComponent/CoilHeatingWater_Impl.hpp"
@@ -66,8 +76,12 @@
 #include "../WaterToWaterComponent/HeatExchangerFluidToFluid_Impl.hpp"
 #include "../WaterToWaterComponent/ChillerElectricEIR.hpp"
 #include "../WaterToWaterComponent/ChillerElectricEIR_Impl.hpp"
+#include "../ZoneHVACComponent/ZoneHVACFourPipeFanCoil.hpp"
+#include "../ZoneHVACComponent/ZoneHVACFourPipeFanCoil_Impl.hpp"
+#include "../ZoneHVACComponent/ZoneHVACUnitVentilator.hpp"
 #include "../Loop/AirLoopHVAC.hpp"
 #include "../Loop/AirLoopHVAC_Impl.hpp"
+#include "../HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
 #include "../Splitter/AirLoopHVACZoneSplitter.hpp"
 #include "../Mixer/AirLoopHVACZoneMixer.hpp"
 
@@ -77,8 +91,18 @@
 #include <utilities/idd/AirLoopHVAC_FieldEnums.hxx>
 #include <utilities/idd/PlantLoop_FieldEnums.hxx>
 #include <utilities/idd/Sizing_Plant_FieldEnums.hxx>
+#include <utilities/idd/Controller_WaterCoil_FieldEnums.hxx>
+#include <utilities/idd/ZoneHVAC_FourPipeFanCoil_FieldEnums.hxx>
+#include <utilities/idd/ZoneHVAC_EquipmentConnections_FieldEnums.hxx>
+#include <utilities/idd/ZoneHVAC_EquipmentList_FieldEnums.hxx>
+#include <utilities/idd/AirLoopHVAC_OutdoorAirSystem_FieldEnums.hxx>
+#include <utilities/idd/NodeList_FieldEnums.hxx>
+#include <utilities/idd/OutdoorAir_Mixer_FieldEnums.hxx>
+#include <utilities/idf/WorkspaceObject_Impl.hpp>
 
 #include <algorithm>
+#include <array>
+#include <set>
 #include <utility>
 
 using namespace openstudio::epmodel;
@@ -443,6 +467,274 @@ ContainedReheatMoveTopologySnapshot captureContainedReheatMoveTopology(const Mod
     result.waterOutletHandle = node->handle();
   }
   return result;
+}
+
+struct FourPipeFanCoilMoveTopologySnapshot
+{
+  PlantAttachmentTopologySnapshot plantTopology;
+  std::vector<openstudio::Handle> modelObjectHandles;
+  openstudio::Handle fanCoilHandle;
+  openstudio::Handle zoneHandle;
+  std::vector<openstudio::Handle> childHandles;
+  std::vector<openstudio::Handle> zoneEquipmentHandles;
+  std::vector<openstudio::Handle> zoneInletNodeHandles;
+  std::vector<openstudio::Handle> zoneExhaustNodeHandles;
+  boost::optional<openstudio::Handle> fanCoilZoneHandle;
+  boost::optional<std::string> fanCoilZoneName;
+  std::array<boost::optional<openstudio::Handle>, 4> airLoopOwnerHandles;
+  std::array<boost::optional<openstudio::Handle>, 4> outdoorAirSystemOwnerHandles;
+  std::array<boost::optional<std::string>, 4> airLoopOwnerNames;
+  std::array<boost::optional<std::string>, 4> outdoorAirSystemOwnerNames;
+  std::array<boost::optional<openstudio::Handle>, 3> roleTargetHandles;
+  std::array<boost::optional<std::string>, 3> roleTargetNames;
+  std::array<boost::optional<std::string>, 3> roleTargetTypes;
+  std::array<boost::optional<std::string>, 3> rawRoleNames;
+  std::array<boost::optional<std::string>, 3> rawRoleTypes;
+  std::array<boost::optional<openstudio::Handle>, 8> airNodeHandles;
+  boost::optional<openstudio::Handle> coolingPlantLoopHandle;
+  boost::optional<openstudio::Handle> heatingPlantLoopHandle;
+  boost::optional<std::string> coolingPlantLoopName;
+  boost::optional<std::string> heatingPlantLoopName;
+  std::array<boost::optional<openstudio::Handle>, 4> waterNodeHandles;
+  std::vector<openstudio::Handle> controllerHandles;
+  std::vector<boost::optional<openstudio::Handle>> controllerActuatorHandles;
+  std::vector<boost::optional<std::string>> rawControllerActuatorNames;
+  openstudio::Handle availabilityScheduleHandle;
+  std::string availabilityScheduleName;
+  std::string capacityControlMethod;
+  boost::optional<double> maximumSupplyAirFlowRate;
+  boost::optional<double> maximumColdWaterFlowRate;
+  double minimumColdWaterFlowRate;
+  double coolingConvergenceTolerance;
+  boost::optional<double> maximumHotWaterFlowRate;
+  double minimumHotWaterFlowRate;
+  double heatingConvergenceTolerance;
+  boost::optional<double> fanPressureRise;
+  boost::optional<double> coolingDesignWaterFlowRate;
+  boost::optional<double> coolingDesignInletWaterTemperature;
+  boost::optional<double> coolingDesignOutletAirTemperature;
+  boost::optional<double> heatingMaximumWaterFlowRate;
+  double heatingRatedInletWaterTemperature;
+  double heatingRatedOutletAirTemperature;
+
+  bool operator==(const FourPipeFanCoilMoveTopologySnapshot&) const = default;
+};
+
+FourPipeFanCoilMoveTopologySnapshot captureFourPipeFanCoilMoveTopology(const Model& model, const PlantLoop& sourceLoop, const PlantLoop& targetLoop,
+                                                                       const ThermalZone& zone, const ZoneHVACFourPipeFanCoil& fanCoil,
+                                                                       const StraightComponent& fan, const CoilCoolingWater& cooling,
+                                                                       const CoilHeatingWater& heating) {
+  FourPipeFanCoilMoveTopologySnapshot result;
+  result.plantTopology = capturePlantTopology(model, sourceLoop, targetLoop, false);
+  const auto modelObjects = model.objects();
+  result.modelObjectHandles.reserve(modelObjects.size());
+  for (const auto& object : modelObjects) {
+    result.modelObjectHandles.push_back(object.handle());
+  }
+  std::ranges::sort(result.modelObjectHandles);
+
+  result.fanCoilHandle = fanCoil.handle();
+  result.zoneHandle = zone.handle();
+  result.childHandles = objectHandles(fanCoil.children());
+  result.zoneEquipmentHandles = objectHandles(zone.equipment());
+  const auto connections = zone.getImpl<detail::ThermalZone_Impl>()->zoneHVACEquipmentConnections();
+  if (connections) {
+    result.zoneInletNodeHandles = objectHandles(connections->zoneAirInletNodes());
+    result.zoneExhaustNodeHandles = objectHandles(connections->zoneAirExhaustNodes());
+  }
+  if (auto owner = fanCoil.thermalZone()) {
+    result.fanCoilZoneHandle = owner->handle();
+    result.fanCoilZoneName = owner->nameString();
+  }
+  const std::array<HVACComponent, 4> airComponents = {fanCoil.cast<HVACComponent>(), fan.cast<HVACComponent>(), cooling.cast<HVACComponent>(),
+                                                      heating.cast<HVACComponent>()};
+  for (unsigned i = 0u; i < airComponents.size(); ++i) {
+    if (auto owner = airComponents[i].airLoopHVAC()) {
+      result.airLoopOwnerHandles[i] = owner->handle();
+      result.airLoopOwnerNames[i] = owner->nameString();
+    }
+    if (auto owner = airComponents[i].airLoopHVACOutdoorAirSystem()) {
+      result.outdoorAirSystemOwnerHandles[i] = owner->handle();
+      result.outdoorAirSystemOwnerNames[i] = owner->nameString();
+    }
+  }
+
+  const std::array<std::pair<unsigned, unsigned>, 3> roleFields = {
+    std::pair{openstudio::ZoneHVAC_FourPipeFanCoilFields::SupplyAirFanName, openstudio::ZoneHVAC_FourPipeFanCoilFields::SupplyAirFanObjectType},
+    std::pair{openstudio::ZoneHVAC_FourPipeFanCoilFields::CoolingCoilName, openstudio::ZoneHVAC_FourPipeFanCoilFields::CoolingCoilObjectType},
+    std::pair{openstudio::ZoneHVAC_FourPipeFanCoilFields::HeatingCoilName, openstudio::ZoneHVAC_FourPipeFanCoilFields::HeatingCoilObjectType}};
+  auto fanCoilWorkspaceImpl = fanCoil.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  OS_ASSERT(fanCoilWorkspaceImpl);
+  for (unsigned i = 0u; i < roleFields.size(); ++i) {
+    const auto& [nameField, typeField] = roleFields[i];
+    if (auto target = fanCoil.getModelObjectTarget<ModelObject>(nameField)) {
+      result.roleTargetHandles[i] = target->handle();
+      result.roleTargetNames[i] = target->nameString();
+      result.roleTargetTypes[i] = target->iddObject().name();
+    }
+    result.rawRoleNames[i] = fanCoilWorkspaceImpl->openstudio::detail::IdfObject_Impl::getString(nameField, false, true);
+    result.rawRoleTypes[i] = fanCoilWorkspaceImpl->openstudio::detail::IdfObject_Impl::getString(typeField, false, true);
+  }
+
+  const std::array<boost::optional<ModelObject>, 8> airNodes = {
+    fanCoil.inletNode() ? boost::optional<ModelObject>(fanCoil.inletNode()->cast<ModelObject>()) : boost::none,
+    fan.inletModelObject(),
+    fan.outletModelObject(),
+    cooling.airInletModelObject(),
+    cooling.airOutletModelObject(),
+    heating.airInletModelObject(),
+    heating.airOutletModelObject(),
+    fanCoil.outletNode() ? boost::optional<ModelObject>(fanCoil.outletNode()->cast<ModelObject>()) : boost::none};
+  for (unsigned i = 0u; i < airNodes.size(); ++i) {
+    if (airNodes[i]) {
+      result.airNodeHandles[i] = airNodes[i]->handle();
+    }
+  }
+
+  if (auto owner = cooling.plantLoop()) {
+    result.coolingPlantLoopHandle = owner->handle();
+    result.coolingPlantLoopName = owner->nameString();
+  }
+  if (auto owner = heating.plantLoop()) {
+    result.heatingPlantLoopHandle = owner->handle();
+    result.heatingPlantLoopName = owner->nameString();
+  }
+  const std::array<boost::optional<ModelObject>, 4> waterNodes = {cooling.waterInletModelObject(), cooling.waterOutletModelObject(),
+                                                                  heating.waterInletModelObject(), heating.waterOutletModelObject()};
+  for (unsigned i = 0u; i < waterNodes.size(); ++i) {
+    if (waterNodes[i]) {
+      result.waterNodeHandles[i] = waterNodes[i]->handle();
+    }
+  }
+
+  auto controllers = model.getConcreteModelObjects<ControllerWaterCoil>();
+  std::ranges::sort(controllers, {}, [](const auto& controller) { return controller.handle(); });
+  result.controllerHandles = objectHandles(controllers);
+  for (const auto& controller : controllers) {
+    const auto actuator = controller.actuatorNode();
+    result.controllerActuatorHandles.push_back(actuator ? boost::optional<openstudio::Handle>(actuator->handle()) : boost::none);
+    auto workspaceImpl = controller.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+    OS_ASSERT(workspaceImpl);
+    result.rawControllerActuatorNames.push_back(
+      workspaceImpl->openstudio::detail::IdfObject_Impl::getString(openstudio::Controller_WaterCoilFields::ActuatorNodeName, false, true));
+  }
+  result.availabilityScheduleHandle = fanCoil.availabilitySchedule().handle();
+  result.availabilityScheduleName = fanCoil.availabilitySchedule().nameString();
+  result.capacityControlMethod = fanCoil.capacityControlMethod();
+  result.maximumSupplyAirFlowRate = fanCoil.maximumSupplyAirFlowRate();
+  result.maximumColdWaterFlowRate = fanCoil.maximumColdWaterFlowRate();
+  result.minimumColdWaterFlowRate = fanCoil.minimumColdWaterFlowRate();
+  result.coolingConvergenceTolerance = fanCoil.coolingConvergenceTolerance();
+  result.maximumHotWaterFlowRate = fanCoil.maximumHotWaterFlowRate();
+  result.minimumHotWaterFlowRate = fanCoil.minimumHotWaterFlowRate();
+  result.heatingConvergenceTolerance = fanCoil.heatingConvergenceTolerance();
+  if (auto constantFan = fan.optionalCast<FanConstantVolume>()) {
+    result.fanPressureRise = constantFan->pressureRise();
+  }
+  result.coolingDesignWaterFlowRate = cooling.designWaterFlowRate();
+  result.coolingDesignInletWaterTemperature = cooling.designInletWaterTemperature();
+  result.coolingDesignOutletAirTemperature = cooling.designOutletAirTemperature();
+  result.heatingMaximumWaterFlowRate = heating.maximumWaterFlowRate();
+  result.heatingRatedInletWaterTemperature = heating.ratedInletWaterTemperature();
+  result.heatingRatedOutletAirTemperature = heating.ratedOutletAirTemperature();
+  return result;
+}
+
+void expectFourPipeFanCoilExternalTopologyPreserved(const FourPipeFanCoilMoveTopologySnapshot& expected,
+                                                    const FourPipeFanCoilMoveTopologySnapshot& actual, bool selectedHeating) {
+  EXPECT_EQ(expected.fanCoilHandle, actual.fanCoilHandle);
+  EXPECT_EQ(expected.zoneHandle, actual.zoneHandle);
+  EXPECT_EQ(expected.childHandles, actual.childHandles);
+  EXPECT_EQ(expected.zoneEquipmentHandles, actual.zoneEquipmentHandles);
+  EXPECT_EQ(expected.zoneInletNodeHandles, actual.zoneInletNodeHandles);
+  EXPECT_EQ(expected.zoneExhaustNodeHandles, actual.zoneExhaustNodeHandles);
+  EXPECT_TRUE(expected.fanCoilZoneHandle == actual.fanCoilZoneHandle);
+  EXPECT_TRUE(expected.fanCoilZoneName == actual.fanCoilZoneName);
+  EXPECT_TRUE(expected.airLoopOwnerHandles == actual.airLoopOwnerHandles);
+  EXPECT_TRUE(expected.outdoorAirSystemOwnerHandles == actual.outdoorAirSystemOwnerHandles);
+  EXPECT_TRUE(expected.airLoopOwnerNames == actual.airLoopOwnerNames);
+  EXPECT_TRUE(expected.outdoorAirSystemOwnerNames == actual.outdoorAirSystemOwnerNames);
+  EXPECT_TRUE(expected.roleTargetHandles == actual.roleTargetHandles);
+  EXPECT_TRUE(expected.roleTargetNames == actual.roleTargetNames);
+  EXPECT_TRUE(expected.roleTargetTypes == actual.roleTargetTypes);
+  EXPECT_TRUE(expected.rawRoleNames == actual.rawRoleNames);
+  EXPECT_TRUE(expected.rawRoleTypes == actual.rawRoleTypes);
+  EXPECT_TRUE(expected.airNodeHandles == actual.airNodeHandles);
+  EXPECT_EQ(expected.controllerHandles, actual.controllerHandles);
+  EXPECT_TRUE(expected.controllerActuatorHandles == actual.controllerActuatorHandles);
+  EXPECT_TRUE(expected.rawControllerActuatorNames == actual.rawControllerActuatorNames);
+  EXPECT_EQ(expected.availabilityScheduleHandle, actual.availabilityScheduleHandle);
+  EXPECT_EQ(expected.availabilityScheduleName, actual.availabilityScheduleName);
+  EXPECT_EQ(expected.capacityControlMethod, actual.capacityControlMethod);
+  EXPECT_TRUE(expected.maximumSupplyAirFlowRate == actual.maximumSupplyAirFlowRate);
+  EXPECT_TRUE(expected.maximumColdWaterFlowRate == actual.maximumColdWaterFlowRate);
+  EXPECT_DOUBLE_EQ(expected.minimumColdWaterFlowRate, actual.minimumColdWaterFlowRate);
+  EXPECT_DOUBLE_EQ(expected.coolingConvergenceTolerance, actual.coolingConvergenceTolerance);
+  EXPECT_TRUE(expected.maximumHotWaterFlowRate == actual.maximumHotWaterFlowRate);
+  EXPECT_DOUBLE_EQ(expected.minimumHotWaterFlowRate, actual.minimumHotWaterFlowRate);
+  EXPECT_DOUBLE_EQ(expected.heatingConvergenceTolerance, actual.heatingConvergenceTolerance);
+  EXPECT_TRUE(expected.fanPressureRise == actual.fanPressureRise);
+  EXPECT_TRUE(expected.coolingDesignWaterFlowRate == actual.coolingDesignWaterFlowRate);
+  EXPECT_TRUE(expected.coolingDesignInletWaterTemperature == actual.coolingDesignInletWaterTemperature);
+  EXPECT_TRUE(expected.coolingDesignOutletAirTemperature == actual.coolingDesignOutletAirTemperature);
+  EXPECT_TRUE(expected.heatingMaximumWaterFlowRate == actual.heatingMaximumWaterFlowRate);
+  EXPECT_DOUBLE_EQ(expected.heatingRatedInletWaterTemperature, actual.heatingRatedInletWaterTemperature);
+  EXPECT_DOUBLE_EQ(expected.heatingRatedOutletAirTemperature, actual.heatingRatedOutletAirTemperature);
+  if (selectedHeating) {
+    EXPECT_TRUE(expected.coolingPlantLoopHandle == actual.coolingPlantLoopHandle);
+    EXPECT_TRUE(expected.waterNodeHandles[0] == actual.waterNodeHandles[0]);
+    EXPECT_TRUE(expected.waterNodeHandles[1] == actual.waterNodeHandles[1]);
+  } else {
+    EXPECT_TRUE(expected.heatingPlantLoopHandle == actual.heatingPlantLoopHandle);
+    EXPECT_TRUE(expected.waterNodeHandles[2] == actual.waterNodeHandles[2]);
+    EXPECT_TRUE(expected.waterNodeHandles[3] == actual.waterNodeHandles[3]);
+  }
+}
+
+void expectFourPipeFanCoilExternalTopologySurvivesReload(const FourPipeFanCoilMoveTopologySnapshot& expected,
+                                                         const FourPipeFanCoilMoveTopologySnapshot& actual) {
+  EXPECT_EQ(expected.childHandles.size(), actual.childHandles.size());
+  EXPECT_EQ(expected.zoneEquipmentHandles.size(), actual.zoneEquipmentHandles.size());
+  EXPECT_EQ(expected.zoneInletNodeHandles.size(), actual.zoneInletNodeHandles.size());
+  EXPECT_EQ(expected.zoneExhaustNodeHandles.size(), actual.zoneExhaustNodeHandles.size());
+  EXPECT_TRUE(expected.fanCoilZoneName == actual.fanCoilZoneName);
+  EXPECT_TRUE(expected.airLoopOwnerNames == actual.airLoopOwnerNames);
+  EXPECT_TRUE(expected.outdoorAirSystemOwnerNames == actual.outdoorAirSystemOwnerNames);
+  EXPECT_TRUE(expected.roleTargetNames == actual.roleTargetNames);
+  EXPECT_TRUE(expected.roleTargetTypes == actual.roleTargetTypes);
+  EXPECT_TRUE(expected.rawRoleNames == actual.rawRoleNames);
+  EXPECT_TRUE(expected.rawRoleTypes == actual.rawRoleTypes);
+  EXPECT_TRUE(expected.coolingPlantLoopName == actual.coolingPlantLoopName);
+  EXPECT_TRUE(expected.heatingPlantLoopName == actual.heatingPlantLoopName);
+  EXPECT_EQ(expected.controllerHandles.size(), actual.controllerHandles.size());
+  EXPECT_TRUE(expected.rawControllerActuatorNames == actual.rawControllerActuatorNames);
+  EXPECT_EQ(expected.availabilityScheduleName, actual.availabilityScheduleName);
+  EXPECT_EQ(expected.capacityControlMethod, actual.capacityControlMethod);
+  EXPECT_TRUE(expected.maximumSupplyAirFlowRate == actual.maximumSupplyAirFlowRate);
+  EXPECT_TRUE(expected.maximumColdWaterFlowRate == actual.maximumColdWaterFlowRate);
+  EXPECT_DOUBLE_EQ(expected.minimumColdWaterFlowRate, actual.minimumColdWaterFlowRate);
+  EXPECT_DOUBLE_EQ(expected.coolingConvergenceTolerance, actual.coolingConvergenceTolerance);
+  EXPECT_TRUE(expected.maximumHotWaterFlowRate == actual.maximumHotWaterFlowRate);
+  EXPECT_DOUBLE_EQ(expected.minimumHotWaterFlowRate, actual.minimumHotWaterFlowRate);
+  EXPECT_DOUBLE_EQ(expected.heatingConvergenceTolerance, actual.heatingConvergenceTolerance);
+  EXPECT_TRUE(expected.fanPressureRise == actual.fanPressureRise);
+  EXPECT_TRUE(expected.coolingDesignWaterFlowRate == actual.coolingDesignWaterFlowRate);
+  EXPECT_TRUE(expected.coolingDesignInletWaterTemperature == actual.coolingDesignInletWaterTemperature);
+  EXPECT_TRUE(expected.coolingDesignOutletAirTemperature == actual.coolingDesignOutletAirTemperature);
+  EXPECT_TRUE(expected.heatingMaximumWaterFlowRate == actual.heatingMaximumWaterFlowRate);
+  EXPECT_DOUBLE_EQ(expected.heatingRatedInletWaterTemperature, actual.heatingRatedInletWaterTemperature);
+  EXPECT_DOUBLE_EQ(expected.heatingRatedOutletAirTemperature, actual.heatingRatedOutletAirTemperature);
+
+  ASSERT_TRUE(std::ranges::all_of(actual.airNodeHandles, [](const auto& handle) { return static_cast<bool>(handle); }));
+  EXPECT_TRUE(actual.airNodeHandles[0] == actual.airNodeHandles[1]);
+  EXPECT_TRUE(actual.airNodeHandles[2] == actual.airNodeHandles[3]);
+  EXPECT_TRUE(actual.airNodeHandles[4] == actual.airNodeHandles[5]);
+  EXPECT_TRUE(actual.airNodeHandles[6] == actual.airNodeHandles[7]);
+  EXPECT_EQ(1, std::ranges::count(actual.zoneInletNodeHandles, *actual.airNodeHandles[7]));
+  EXPECT_EQ(1, std::ranges::count(actual.zoneExhaustNodeHandles, *actual.airNodeHandles[0]));
+  const std::set<openstudio::Handle> boundaryHandles = {*actual.airNodeHandles[0], *actual.airNodeHandles[2], *actual.airNodeHandles[4],
+                                                        *actual.airNodeHandles[6]};
+  EXPECT_EQ(4u, boundaryHandles.size());
 }
 
 void expectDemandBranchAndConnectorOrder(PlantLoop plantLoop, const std::vector<openstudio::Handle>& expectedBranchHandles) {
@@ -2126,6 +2418,609 @@ TEST_F(EPModelFixture, PlantLoop_ContainedReheatCoilDemandMoveRejectsSameLoopAnd
   const auto serialBefore = captureContainedReheatMoveTopology(model, serialSource, serialTarget, serialAir, serialZone, serialTerminal, serialCoil);
   EXPECT_FALSE(serialTarget.addDemandBranchForComponent(serialCoil));
   EXPECT_EQ(serialBefore, captureContainedReheatMoveTopology(model, serialSource, serialTarget, serialAir, serialZone, serialTerminal, serialCoil));
+}
+
+TEST_F(EPModelFixture, PlantLoop_FourPipeFanCoilHeatingDemandMoveDefaultSourceToOccupiedTargetIsTransactionalAcrossReload) {
+  const auto idfPath = openstudio::tempDir()
+                       / openstudio::toPath("epmodel-four-pipe-fan-coil-heating-move-" + openstudio::removeBraces(openstudio::createUUID()) + ".idf");
+  const ScopedFileRemoval removeIdf(idfPath);
+
+  Model seedModel;
+  PlantLoop seedSourceLoop(seedModel);
+  PlantLoop seedTargetLoop(seedModel);
+  PlantLoop seedCoolingLoop(seedModel);
+  ThermalZone seedZone(seedModel);
+  ZoneHVACFourPipeFanCoil seedFanCoil(seedModel);
+  FanConstantVolume seedFan(seedModel);
+  CoilCoolingWater seedCooling(seedModel);
+  CoilHeatingWater seedHeating(seedModel);
+  PipeAdiabatic seedTargetPipe(seedModel);
+  ASSERT_TRUE(seedSourceLoop.setName("Four Pipe Heating Move Source"));
+  ASSERT_TRUE(seedTargetLoop.setName("Four Pipe Heating Move Target"));
+  ASSERT_TRUE(seedCoolingLoop.setName("Four Pipe Heating Move Cooling Loop"));
+  ASSERT_TRUE(seedZone.setName("Four Pipe Heating Move Zone"));
+  ASSERT_TRUE(seedFanCoil.setName("Four Pipe Heating Move Fan Coil"));
+  ASSERT_TRUE(seedFan.setName("Four Pipe Heating Move Fan"));
+  ASSERT_TRUE(seedCooling.setName("Four Pipe Heating Move Cooling Coil"));
+  ASSERT_TRUE(seedHeating.setName("Four Pipe Heating Move Heating Coil"));
+  ASSERT_TRUE(seedTargetPipe.setName("Four Pipe Heating Move Target Pipe"));
+  ASSERT_TRUE(seedFanCoil.setCapacityControlMethod("ConstantFanVariableFlow"));
+  ASSERT_TRUE(seedFanCoil.setSupplyAirFan(seedFan));
+  ASSERT_TRUE(seedFanCoil.setCoolingCoil(seedCooling));
+  ASSERT_TRUE(seedFanCoil.setHeatingCoil(seedHeating));
+  ASSERT_TRUE(seedFanCoil.setMaximumSupplyAirFlowRate(1.35));
+  ASSERT_TRUE(seedFanCoil.setMaximumColdWaterFlowRate(0.42));
+  ASSERT_TRUE(seedFanCoil.setMinimumColdWaterFlowRate(0.04));
+  ASSERT_TRUE(seedFanCoil.setCoolingConvergenceTolerance(0.0022));
+  ASSERT_TRUE(seedFanCoil.setMaximumHotWaterFlowRate(0.31));
+  ASSERT_TRUE(seedFanCoil.setMinimumHotWaterFlowRate(0.03));
+  ASSERT_TRUE(seedFanCoil.setHeatingConvergenceTolerance(0.0018));
+  ASSERT_TRUE(seedFan.setPressureRise(525.0));
+  ASSERT_TRUE(seedCooling.setDesignWaterFlowRate(0.27));
+  ASSERT_TRUE(seedCooling.setDesignInletWaterTemperature(6.75));
+  ASSERT_TRUE(seedCooling.setDesignOutletAirTemperature(13.2));
+  ASSERT_TRUE(seedHeating.setMaximumWaterFlowRate(0.19));
+  ASSERT_TRUE(seedHeating.setRatedInletWaterTemperature(62.25));
+  ASSERT_TRUE(seedHeating.setRatedOutletAirTemperature(37.4));
+  ASSERT_TRUE(seedFanCoil.addToThermalZone(seedZone));
+  ASSERT_TRUE(seedCoolingLoop.addDemandBranchForComponent(seedCooling));
+  ASSERT_TRUE(seedSourceLoop.addDemandBranchForComponent(seedHeating));
+  ASSERT_TRUE(seedTargetLoop.addDemandBranchForComponent(seedTargetPipe));
+  auto seedSourceSetpoint = seedSourceLoop.supplyInletNode();
+  auto seedTargetSetpoint = seedTargetLoop.supplyInletNode();
+  ASSERT_TRUE(seedSourceLoop.setLoopTemperatureSetpointNode(seedSourceSetpoint));
+  ASSERT_TRUE(seedTargetLoop.setLoopTemperatureSetpointNode(seedTargetSetpoint));
+  EXPECT_FALSE(seedCooling.controllerWaterCoil());
+  EXPECT_FALSE(seedHeating.controllerWaterCoil());
+  ASSERT_TRUE(seedModel.save(idfPath, true));
+
+  auto model = Model::load(idfPath);
+  ASSERT_TRUE(model);
+  auto sourceLoop = model->getConcreteModelObjectByName<PlantLoop>("Four Pipe Heating Move Source");
+  auto targetLoop = model->getConcreteModelObjectByName<PlantLoop>("Four Pipe Heating Move Target");
+  auto coolingLoop = model->getConcreteModelObjectByName<PlantLoop>("Four Pipe Heating Move Cooling Loop");
+  auto zone = model->getConcreteModelObjectByName<ThermalZone>("Four Pipe Heating Move Zone");
+  auto fanCoil = model->getConcreteModelObjectByName<ZoneHVACFourPipeFanCoil>("Four Pipe Heating Move Fan Coil");
+  auto fan = model->getConcreteModelObjectByName<FanConstantVolume>("Four Pipe Heating Move Fan");
+  auto cooling = model->getConcreteModelObjectByName<CoilCoolingWater>("Four Pipe Heating Move Cooling Coil");
+  auto heating = model->getConcreteModelObjectByName<CoilHeatingWater>("Four Pipe Heating Move Heating Coil");
+  auto targetPipe = model->getConcreteModelObjectByName<PipeAdiabatic>("Four Pipe Heating Move Target Pipe");
+  ASSERT_TRUE(sourceLoop);
+  ASSERT_TRUE(targetLoop);
+  ASSERT_TRUE(coolingLoop);
+  ASSERT_TRUE(zone);
+  ASSERT_TRUE(fanCoil);
+  ASSERT_TRUE(fan);
+  ASSERT_TRUE(cooling);
+  ASSERT_TRUE(heating);
+  ASSERT_TRUE(targetPipe);
+
+  auto sourceBranchList = sourceLoop->getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::DemandSideBranchListName);
+  auto targetBranchList = targetLoop->getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::DemandSideBranchListName);
+  ASSERT_TRUE(sourceBranchList);
+  ASSERT_TRUE(targetBranchList);
+  const auto sourceBranchHandlesBefore = objectHandles(sourceBranchList->branches());
+  const auto targetBranchHandlesBefore = objectHandles(targetBranchList->branches());
+  ASSERT_EQ(3u, sourceBranchHandlesBefore.size());
+  ASSERT_EQ(3u, targetBranchHandlesBefore.size());
+  const auto sourceDefaultBranchHandle = sourceBranchHandlesBefore[1];
+  ASSERT_TRUE(heating->waterInletModelObject());
+  ASSERT_TRUE(heating->waterOutletModelObject());
+  const auto oldHeatingInlet = heating->waterInletModelObject()->handle();
+  const auto oldHeatingOutlet = heating->waterOutletModelObject()->handle();
+  const auto before = captureFourPipeFanCoilMoveTopology(*model, *sourceLoop, *targetLoop, *zone, *fanCoil, *fan, *cooling, *heating);
+
+  {
+    test::ScopedTestFailure failure(*model, detail::TestFailurePoint::PlantLoopAfterWaterCoilBranchAttachmentPrepared);
+    EXPECT_FALSE(targetLoop->addDemandBranchForComponent(*heating));
+  }
+  EXPECT_EQ(before, captureFourPipeFanCoilMoveTopology(*model, *sourceLoop, *targetLoop, *zone, *fanCoil, *fan, *cooling, *heating));
+
+  ASSERT_TRUE(targetLoop->addDemandBranchForComponent(*heating));
+  EXPECT_FALSE(sourceLoop->demandComponent(heating->handle()));
+  EXPECT_TRUE(targetLoop->demandComponent(heating->handle()));
+  EXPECT_TRUE(targetLoop->demandComponent(targetPipe->handle()));
+  EXPECT_TRUE(coolingLoop->demandComponent(cooling->handle()));
+  EXPECT_TRUE(model->getObject(oldHeatingInlet));
+  EXPECT_TRUE(model->getObject(oldHeatingOutlet));
+  const auto after = captureFourPipeFanCoilMoveTopology(*model, *sourceLoop, *targetLoop, *zone, *fanCoil, *fan, *cooling, *heating);
+  expectFourPipeFanCoilExternalTopologyPreserved(before, after, true);
+  EXPECT_TRUE(before.plantTopology.sourceSetpointTargetHandle == after.plantTopology.sourceSetpointTargetHandle);
+  EXPECT_TRUE(before.plantTopology.targetSetpointTargetHandle == after.plantTopology.targetSetpointTargetHandle);
+
+  sourceBranchList = sourceLoop->getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::DemandSideBranchListName);
+  targetBranchList = targetLoop->getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::DemandSideBranchListName);
+  ASSERT_TRUE(sourceBranchList);
+  ASSERT_TRUE(targetBranchList);
+  EXPECT_EQ(sourceBranchHandlesBefore, objectHandles(sourceBranchList->branches()));
+  EXPECT_EQ(sourceDefaultBranchHandle, sourceBranchList->branches()[1].handle());
+  EXPECT_TRUE(sourceBranchList->branches()[1].components().empty());
+  expectDemandBranchAndConnectorOrder(*sourceLoop, sourceBranchHandlesBefore);
+  const auto targetBranchHandlesAfter = objectHandles(targetBranchList->branches());
+  ASSERT_EQ(4u, targetBranchHandlesAfter.size());
+  EXPECT_EQ(targetBranchHandlesBefore[0], targetBranchHandlesAfter[0]);
+  EXPECT_EQ(targetBranchHandlesBefore[1], targetBranchHandlesAfter[1]);
+  EXPECT_EQ(targetBranchHandlesBefore[2], targetBranchHandlesAfter[3]);
+  expectDemandBranchAndConnectorOrder(*targetLoop, targetBranchHandlesAfter);
+
+  ASSERT_TRUE(model->save(idfPath, true));
+  auto reloaded = Model::load(idfPath);
+  ASSERT_TRUE(reloaded);
+  auto reloadedSource = reloaded->getConcreteModelObjectByName<PlantLoop>("Four Pipe Heating Move Source");
+  auto reloadedTarget = reloaded->getConcreteModelObjectByName<PlantLoop>("Four Pipe Heating Move Target");
+  auto reloadedCoolingLoop = reloaded->getConcreteModelObjectByName<PlantLoop>("Four Pipe Heating Move Cooling Loop");
+  auto reloadedZone = reloaded->getConcreteModelObjectByName<ThermalZone>("Four Pipe Heating Move Zone");
+  auto reloadedFanCoil = reloaded->getConcreteModelObjectByName<ZoneHVACFourPipeFanCoil>("Four Pipe Heating Move Fan Coil");
+  auto reloadedFan = reloaded->getConcreteModelObjectByName<FanConstantVolume>("Four Pipe Heating Move Fan");
+  auto reloadedCooling = reloaded->getConcreteModelObjectByName<CoilCoolingWater>("Four Pipe Heating Move Cooling Coil");
+  auto reloadedHeating = reloaded->getConcreteModelObjectByName<CoilHeatingWater>("Four Pipe Heating Move Heating Coil");
+  ASSERT_TRUE(reloadedSource);
+  ASSERT_TRUE(reloadedTarget);
+  ASSERT_TRUE(reloadedCoolingLoop);
+  ASSERT_TRUE(reloadedZone);
+  ASSERT_TRUE(reloadedFanCoil);
+  ASSERT_TRUE(reloadedFan);
+  ASSERT_TRUE(reloadedCooling);
+  ASSERT_TRUE(reloadedHeating);
+  EXPECT_FALSE(reloadedSource->demandComponent(reloadedHeating->handle()));
+  EXPECT_TRUE(reloadedTarget->demandComponent(reloadedHeating->handle()));
+  EXPECT_TRUE(reloadedCoolingLoop->demandComponent(reloadedCooling->handle()));
+  EXPECT_EQ(1u, std::ranges::count_if(reloadedZone->equipment(),
+                                      [&reloadedFanCoil](const auto& equipment) { return equipment.handle() == reloadedFanCoil->handle(); }));
+  EXPECT_EQ((std::vector<ModelObject>{reloadedFan->cast<ModelObject>(), reloadedCooling->cast<ModelObject>(), reloadedHeating->cast<ModelObject>()}),
+            reloadedFanCoil->children());
+  EXPECT_FALSE(reloadedCooling->controllerWaterCoil());
+  EXPECT_FALSE(reloadedHeating->controllerWaterCoil());
+  const auto reloadedAfter = captureFourPipeFanCoilMoveTopology(*reloaded, *reloadedSource, *reloadedTarget, *reloadedZone, *reloadedFanCoil,
+                                                                *reloadedFan, *reloadedCooling, *reloadedHeating);
+  expectFourPipeFanCoilExternalTopologySurvivesReload(after, reloadedAfter);
+
+  const auto fanCoilHandle = reloadedFanCoil->handle();
+  const auto fanHandle = reloadedFan->handle();
+  const auto coolingHandle = reloadedCooling->handle();
+  const auto heatingHandle = reloadedHeating->handle();
+  EXPECT_FALSE(reloadedFanCoil->remove().empty());
+  EXPECT_FALSE(reloaded->getObject(fanCoilHandle));
+  EXPECT_FALSE(reloaded->getObject(fanHandle));
+  EXPECT_FALSE(reloaded->getObject(coolingHandle));
+  EXPECT_FALSE(reloaded->getObject(heatingHandle));
+  EXPECT_FALSE(reloadedCoolingLoop->demandComponent(coolingHandle));
+  EXPECT_FALSE(reloadedTarget->demandComponent(heatingHandle));
+  EXPECT_TRUE(reloaded->getObject(reloadedSource->handle()));
+  EXPECT_TRUE(reloaded->getObject(reloadedTarget->handle()));
+  EXPECT_TRUE(reloaded->getObject(reloadedCoolingLoop->handle()));
+}
+
+TEST_F(EPModelFixture, PlantLoop_FourPipeFanCoilCoolingDemandMoveParallelSourceToDefaultTargetIsTransactional) {
+  Model model;
+  PlantLoop sourceLoop(model);
+  PlantLoop targetLoop(model);
+  PlantLoop heatingLoop(model);
+  ThermalZone zone(model);
+  ZoneHVACFourPipeFanCoil fanCoil(model);
+  FanConstantVolume fan(model);
+  CoilCoolingWater cooling(model);
+  CoilHeatingWater heating(model);
+  PipeAdiabatic retainedSourcePipe(model);
+  ASSERT_TRUE(fanCoil.setCapacityControlMethod("ConstantFanVariableFlow"));
+  ASSERT_TRUE(fanCoil.setSupplyAirFan(fan));
+  ASSERT_TRUE(fanCoil.setCoolingCoil(cooling));
+  ASSERT_TRUE(fanCoil.setHeatingCoil(heating));
+  ASSERT_TRUE(fanCoil.setMaximumSupplyAirFlowRate(1.15));
+  ASSERT_TRUE(fanCoil.setMaximumColdWaterFlowRate(0.39));
+  ASSERT_TRUE(fanCoil.setMinimumColdWaterFlowRate(0.035));
+  ASSERT_TRUE(fanCoil.setCoolingConvergenceTolerance(0.0024));
+  ASSERT_TRUE(fanCoil.setMaximumHotWaterFlowRate(0.29));
+  ASSERT_TRUE(fanCoil.setMinimumHotWaterFlowRate(0.025));
+  ASSERT_TRUE(fanCoil.setHeatingConvergenceTolerance(0.0016));
+  ASSERT_TRUE(fan.setPressureRise(485.0));
+  ASSERT_TRUE(cooling.setDesignWaterFlowRate(0.24));
+  ASSERT_TRUE(cooling.setDesignInletWaterTemperature(7.25));
+  ASSERT_TRUE(cooling.setDesignOutletAirTemperature(13.8));
+  ASSERT_TRUE(heating.setMaximumWaterFlowRate(0.17));
+  ASSERT_TRUE(heating.setRatedInletWaterTemperature(61.75));
+  ASSERT_TRUE(heating.setRatedOutletAirTemperature(36.9));
+  ASSERT_TRUE(fanCoil.addToThermalZone(zone));
+  ASSERT_TRUE(sourceLoop.addDemandBranchForComponent(retainedSourcePipe));
+  ASSERT_TRUE(sourceLoop.addDemandBranchForComponent(cooling));
+  ASSERT_TRUE(heatingLoop.addDemandBranchForComponent(heating));
+  auto sourceSetpoint = sourceLoop.supplyInletNode();
+  auto targetSetpoint = targetLoop.supplyInletNode();
+  ASSERT_TRUE(sourceLoop.setLoopTemperatureSetpointNode(sourceSetpoint));
+  ASSERT_TRUE(targetLoop.setLoopTemperatureSetpointNode(targetSetpoint));
+
+  auto sourceBranchList = sourceLoop.getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::DemandSideBranchListName);
+  auto targetBranchList = targetLoop.getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::DemandSideBranchListName);
+  ASSERT_TRUE(sourceBranchList);
+  ASSERT_TRUE(targetBranchList);
+  const auto sourceBranchesBefore = sourceBranchList->branches();
+  const auto sourceBranchHandlesBefore = objectHandles(sourceBranchesBefore);
+  const auto targetBranchHandlesBefore = objectHandles(targetBranchList->branches());
+  ASSERT_EQ(4u, sourceBranchHandlesBefore.size());
+  ASSERT_EQ(3u, targetBranchHandlesBefore.size());
+  const auto coolingBranch = std::ranges::find_if(sourceBranchesBefore, [&cooling](const auto& branch) {
+    const auto components = branch.components();
+    return std::ranges::find(components, cooling.cast<ModelObject>()) != components.end();
+  });
+  ASSERT_NE(sourceBranchesBefore.end(), coolingBranch);
+  const auto removedBranchHandle = coolingBranch->handle();
+  auto expectedSourceBranchHandlesAfter = sourceBranchHandlesBefore;
+  expectedSourceBranchHandlesAfter.erase(std::ranges::find(expectedSourceBranchHandlesAfter, removedBranchHandle));
+  const auto targetDefaultBranchHandle = targetBranchHandlesBefore[1];
+  ASSERT_TRUE(cooling.waterInletModelObject());
+  ASSERT_TRUE(cooling.waterOutletModelObject());
+  const auto oldCoolingInlet = cooling.waterInletModelObject()->handle();
+  const auto oldCoolingOutlet = cooling.waterOutletModelObject()->handle();
+  const auto before = captureFourPipeFanCoilMoveTopology(model, sourceLoop, targetLoop, zone, fanCoil, fan, cooling, heating);
+
+  {
+    test::ScopedTestFailure failure(model, detail::TestFailurePoint::PlantLoopAfterWaterCoilBranchAttachmentPrepared);
+    EXPECT_FALSE(targetLoop.addDemandBranchForComponent(cooling));
+  }
+  EXPECT_EQ(before, captureFourPipeFanCoilMoveTopology(model, sourceLoop, targetLoop, zone, fanCoil, fan, cooling, heating));
+
+  ASSERT_TRUE(targetLoop.addDemandBranchForComponent(cooling));
+  EXPECT_FALSE(model.getObject(removedBranchHandle));
+  EXPECT_TRUE(model.getObject(oldCoolingInlet));
+  EXPECT_TRUE(model.getObject(oldCoolingOutlet));
+  EXPECT_FALSE(sourceLoop.demandComponent(cooling.handle()));
+  EXPECT_TRUE(sourceLoop.demandComponent(retainedSourcePipe.handle()));
+  EXPECT_TRUE(targetLoop.demandComponent(cooling.handle()));
+  EXPECT_TRUE(heatingLoop.demandComponent(heating.handle()));
+  const auto after = captureFourPipeFanCoilMoveTopology(model, sourceLoop, targetLoop, zone, fanCoil, fan, cooling, heating);
+  expectFourPipeFanCoilExternalTopologyPreserved(before, after, false);
+  EXPECT_TRUE(before.plantTopology.sourceSetpointTargetHandle == after.plantTopology.sourceSetpointTargetHandle);
+  EXPECT_TRUE(before.plantTopology.targetSetpointTargetHandle == after.plantTopology.targetSetpointTargetHandle);
+
+  sourceBranchList = sourceLoop.getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::DemandSideBranchListName);
+  targetBranchList = targetLoop.getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::DemandSideBranchListName);
+  ASSERT_TRUE(sourceBranchList);
+  ASSERT_TRUE(targetBranchList);
+  EXPECT_EQ(expectedSourceBranchHandlesAfter, objectHandles(sourceBranchList->branches()));
+  expectDemandBranchAndConnectorOrder(sourceLoop, expectedSourceBranchHandlesAfter);
+  EXPECT_EQ(targetBranchHandlesBefore, objectHandles(targetBranchList->branches()));
+  EXPECT_EQ(targetDefaultBranchHandle, targetBranchList->branches()[1].handle());
+  EXPECT_EQ(std::vector<ModelObject>{cooling.cast<ModelObject>()}, targetBranchList->branches()[1].components());
+  expectDemandBranchAndConnectorOrder(targetLoop, targetBranchHandlesBefore);
+}
+
+TEST_F(EPModelFixture, PlantLoop_FourPipeFanCoilDemandMoveRejectsSameLoopSerialDetachedAndWrongOwnerWithoutMutation) {
+  Model model;
+  PlantLoop sourceLoop(model);
+  PlantLoop targetLoop(model);
+  PlantLoop coolingLoop(model);
+  ThermalZone zone(model);
+  ZoneHVACFourPipeFanCoil fanCoil(model);
+  FanConstantVolume fan(model);
+  CoilCoolingWater cooling(model);
+  CoilHeatingWater heating(model);
+  ASSERT_TRUE(fanCoil.setCapacityControlMethod("ConstantFanVariableFlow"));
+  ASSERT_TRUE(fanCoil.setSupplyAirFan(fan));
+  ASSERT_TRUE(fanCoil.setCoolingCoil(cooling));
+  ASSERT_TRUE(fanCoil.setHeatingCoil(heating));
+  ASSERT_TRUE(fanCoil.addToThermalZone(zone));
+  ASSERT_TRUE(coolingLoop.addDemandBranchForComponent(cooling));
+  ASSERT_TRUE(sourceLoop.addDemandBranchForComponent(heating));
+
+  const auto sameLoopBefore = captureFourPipeFanCoilMoveTopology(model, sourceLoop, sourceLoop, zone, fanCoil, fan, cooling, heating);
+  EXPECT_FALSE(sourceLoop.addDemandBranchForComponent(heating));
+  EXPECT_EQ(sameLoopBefore, captureFourPipeFanCoilMoveTopology(model, sourceLoop, sourceLoop, zone, fanCoil, fan, cooling, heating));
+
+  ASSERT_TRUE(heating.waterOutletModelObject());
+  PipeAdiabatic serialPipe(model);
+  auto serialInsertionNode = heating.waterOutletModelObject()->cast<Node>();
+  ASSERT_TRUE(serialPipe.addToNode(serialInsertionNode));
+  const auto serialBefore = captureFourPipeFanCoilMoveTopology(model, sourceLoop, targetLoop, zone, fanCoil, fan, cooling, heating);
+  EXPECT_FALSE(targetLoop.addDemandBranchForComponent(heating));
+  EXPECT_EQ(serialBefore, captureFourPipeFanCoilMoveTopology(model, sourceLoop, targetLoop, zone, fanCoil, fan, cooling, heating));
+
+  PlantLoop detachedSource(model);
+  PlantLoop detachedTarget(model);
+  PlantLoop detachedCoolingLoop(model);
+  ZoneHVACFourPipeFanCoil detachedFanCoil(model);
+  FanConstantVolume detachedFan(model);
+  CoilCoolingWater detachedCooling(model);
+  CoilHeatingWater detachedHeating(model);
+  ASSERT_TRUE(detachedFanCoil.setCapacityControlMethod("ConstantFanVariableFlow"));
+  ASSERT_TRUE(detachedFanCoil.setSupplyAirFan(detachedFan));
+  ASSERT_TRUE(detachedFanCoil.setCoolingCoil(detachedCooling));
+  ASSERT_TRUE(detachedFanCoil.setHeatingCoil(detachedHeating));
+  ASSERT_TRUE(detachedCoolingLoop.addDemandBranchForComponent(detachedCooling));
+  ASSERT_TRUE(detachedSource.addDemandBranchForComponent(detachedHeating));
+  const auto detachedBefore = capturePlantTopology(model, detachedSource, detachedTarget, false);
+  const auto detachedObjectsBefore = objectHandles(model.objects());
+  EXPECT_FALSE(detachedTarget.addDemandBranchForComponent(detachedHeating));
+  EXPECT_EQ(detachedBefore, capturePlantTopology(model, detachedSource, detachedTarget, false));
+  EXPECT_EQ(detachedObjectsBefore, objectHandles(model.objects()));
+
+  PlantLoop wrongSource(model);
+  PlantLoop wrongTarget(model);
+  ThermalZone wrongZone(model);
+  ZoneHVACUnitVentilator wrongOwner(model);
+  FanConstantVolume wrongFan(model);
+  CoilHeatingWater wrongHeating(model);
+  ASSERT_TRUE(wrongOwner.setSupplyAirFan(wrongFan));
+  ASSERT_TRUE(wrongOwner.setHeatingCoil(wrongHeating));
+  ASSERT_TRUE(wrongOwner.addToThermalZone(wrongZone));
+  ASSERT_TRUE(wrongSource.addDemandBranchForComponent(wrongHeating));
+  const auto wrongBefore = capturePlantTopology(model, wrongSource, wrongTarget, false);
+  const auto wrongObjectsBefore = objectHandles(model.objects());
+  EXPECT_FALSE(wrongTarget.addDemandBranchForComponent(wrongHeating));
+  EXPECT_EQ(wrongBefore, capturePlantTopology(model, wrongSource, wrongTarget, false));
+  EXPECT_EQ(wrongObjectsBefore, objectHandles(model.objects()));
+}
+
+TEST_F(EPModelFixture, PlantLoop_FourPipeFanCoilDemandMoveRejectsInletSideMixerAirLoopOwnershipWithoutMutation) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  ThermalZone zone(model);
+  AirTerminalSingleDuctInletSideMixer inletSideMixer(model);
+  ZoneHVACFourPipeFanCoil fanCoil(model);
+  FanConstantVolume fan(model);
+  CoilCoolingWater cooling(model);
+  CoilHeatingWater heating(model);
+  PlantLoop sourceLoop(model);
+  PlantLoop targetLoop(model);
+  PlantLoop coolingLoop(model);
+  ASSERT_TRUE(fanCoil.setCapacityControlMethod("ConstantFanVariableFlow"));
+  ASSERT_TRUE(fanCoil.setSupplyAirFan(fan));
+  ASSERT_TRUE(fanCoil.setCoolingCoil(cooling));
+  ASSERT_TRUE(fanCoil.setHeatingCoil(heating));
+  ASSERT_TRUE(airLoop.addBranchForZone(zone, inletSideMixer));
+  ASSERT_TRUE(inletSideMixer.outletModelObject());
+  auto mixerOutlet = inletSideMixer.outletModelObject()->optionalCast<Node>();
+  ASSERT_TRUE(mixerOutlet);
+  ASSERT_TRUE(fanCoil.addToNode(*mixerOutlet));
+  ASSERT_TRUE(sourceLoop.addDemandBranchForComponent(heating));
+  ASSERT_TRUE(coolingLoop.addDemandBranchForComponent(cooling));
+
+  const auto before = captureFourPipeFanCoilMoveTopology(model, sourceLoop, targetLoop, zone, fanCoil, fan, cooling, heating);
+  EXPECT_FALSE(targetLoop.addDemandBranchForComponent(heating));
+  EXPECT_EQ(before, captureFourPipeFanCoilMoveTopology(model, sourceLoop, targetLoop, zone, fanCoil, fan, cooling, heating));
+  EXPECT_TRUE(airLoop.demandComponent(inletSideMixer.handle()));
+  ASSERT_TRUE(fanCoil.thermalZone());
+  EXPECT_EQ(zone.handle(), fanCoil.thermalZone()->handle());
+}
+
+TEST_F(EPModelFixture, PlantLoop_FourPipeFanCoilDemandMoveRejectsTypedAndRawControllerActuatorCollisionsForSelectedAndSiblingChildren) {
+  struct ControllerCollisionCase
+  {
+    bool selectedHeating;
+    bool rawOnly;
+    bool collideWithSibling;
+  };
+  const std::array cases = {ControllerCollisionCase{true, false, false},  ControllerCollisionCase{true, true, false},
+                            ControllerCollisionCase{false, false, false}, ControllerCollisionCase{false, true, false},
+                            ControllerCollisionCase{true, false, true},   ControllerCollisionCase{true, true, true},
+                            ControllerCollisionCase{false, false, true},  ControllerCollisionCase{false, true, true}};
+  for (const auto& testCase : cases) {
+    const bool selectedHeating = testCase.selectedHeating;
+    const bool rawOnly = testCase.rawOnly;
+    Model model;
+    ThermalZone zone(model);
+    ZoneHVACFourPipeFanCoil fanCoil(model);
+    FanConstantVolume fan(model);
+    CoilCoolingWater cooling(model);
+    CoilHeatingWater heating(model);
+    PlantLoop sourceLoop(model);
+    PlantLoop targetLoop(model);
+    PlantLoop siblingLoop(model);
+    ASSERT_TRUE(fanCoil.setCapacityControlMethod("ConstantFanVariableFlow"));
+    ASSERT_TRUE(fanCoil.setSupplyAirFan(fan));
+    ASSERT_TRUE(fanCoil.setCoolingCoil(cooling));
+    ASSERT_TRUE(fanCoil.setHeatingCoil(heating));
+    ASSERT_TRUE(fanCoil.addToThermalZone(zone));
+    auto selected = selectedHeating ? heating.cast<WaterToAirComponent>() : cooling.cast<WaterToAirComponent>();
+    auto sibling = selectedHeating ? cooling.cast<WaterToAirComponent>() : heating.cast<WaterToAirComponent>();
+    ASSERT_TRUE(sourceLoop.addDemandBranchForComponent(selected));
+    ASSERT_TRUE(siblingLoop.addDemandBranchForComponent(sibling));
+    const auto controlled = testCase.collideWithSibling ? sibling : selected;
+    ASSERT_TRUE(controlled.waterInletModelObject());
+    ASSERT_TRUE(controlled.airOutletModelObject());
+    auto waterInlet = controlled.waterInletModelObject()->optionalCast<Node>();
+    auto airOutlet = controlled.airOutletModelObject()->optionalCast<Node>();
+    ASSERT_TRUE(waterInlet);
+    ASSERT_TRUE(airOutlet);
+
+    ControllerWaterCoil controller(model);
+    if (rawOnly) {
+      auto workspaceImpl = controller.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+      ASSERT_TRUE(workspaceImpl);
+      ASSERT_TRUE(workspaceImpl->openstudio::detail::IdfObject_Impl::setString(openstudio::Controller_WaterCoilFields::ActuatorNodeName,
+                                                                               waterInlet->nameString(), false));
+    } else {
+      ASSERT_TRUE(controller.setActuatorNode(*waterInlet));
+      ASSERT_TRUE(controller.setSensorNode(*airOutlet));
+      const bool controllerOnHeating = selectedHeating != testCase.collideWithSibling;
+      const auto inferredController = controllerOnHeating ? heating.controllerWaterCoil() : cooling.controllerWaterCoil();
+      ASSERT_TRUE(inferredController);
+      EXPECT_EQ(controller.handle(), inferredController->handle());
+    }
+
+    const auto before = captureFourPipeFanCoilMoveTopology(model, sourceLoop, targetLoop, zone, fanCoil, fan, cooling, heating);
+    EXPECT_FALSE(targetLoop.addDemandBranchForComponent(selected))
+      << (selectedHeating ? "heating" : "cooling") << " move, " << (rawOnly ? "raw" : "typed") << " actuator on "
+      << (testCase.collideWithSibling ? "sibling" : "selected") << " child";
+    EXPECT_EQ(before, captureFourPipeFanCoilMoveTopology(model, sourceLoop, targetLoop, zone, fanCoil, fan, cooling, heating));
+  }
+}
+
+TEST_F(EPModelFixture, PlantLoop_FourPipeFanCoilDemandMoveRejectsMalformedFanRolesAirPathAndDuplicateZoneOrRoleWithoutMutation) {
+  Model model;
+  ThermalZone zone(model);
+  ZoneHVACFourPipeFanCoil fanCoil(model);
+  FanConstantVolume fan(model);
+  CoilCoolingWater cooling(model);
+  CoilHeatingWater heating(model);
+  PlantLoop sourceLoop(model);
+  PlantLoop targetLoop(model);
+  PlantLoop coolingLoop(model);
+  ASSERT_TRUE(fanCoil.setCapacityControlMethod("ConstantFanVariableFlow"));
+  ASSERT_TRUE(fanCoil.setSupplyAirFan(fan));
+  ASSERT_TRUE(fanCoil.setCoolingCoil(cooling));
+  ASSERT_TRUE(fanCoil.setHeatingCoil(heating));
+  ASSERT_TRUE(fanCoil.addToThermalZone(zone));
+  ASSERT_TRUE(sourceLoop.addDemandBranchForComponent(heating));
+  ASSERT_TRUE(coolingLoop.addDemandBranchForComponent(cooling));
+
+  const auto expectRejectedUnchanged = [&]() {
+    const auto before = captureFourPipeFanCoilMoveTopology(model, sourceLoop, targetLoop, zone, fanCoil, fan, cooling, heating);
+    EXPECT_FALSE(targetLoop.addDemandBranchForComponent(heating));
+    EXPECT_EQ(before, captureFourPipeFanCoilMoveTopology(model, sourceLoop, targetLoop, zone, fanCoil, fan, cooling, heating));
+  };
+
+  // Seed an impossible unsupported fan role while retaining the otherwise
+  // canonical fan-to-cooling adjacency.
+  ASSERT_TRUE(fan.inletModelObject());
+  ASSERT_TRUE(fan.outletModelObject());
+  PipeAdiabatic unsupportedFan(model);
+  ASSERT_TRUE(unsupportedFan.setPointer(unsupportedFan.inletPort(), fan.inletModelObject()->handle()));
+  ASSERT_TRUE(unsupportedFan.setPointer(unsupportedFan.outletPort(), fan.outletModelObject()->handle()));
+  auto fanCoilWorkspaceImpl = fanCoil.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  ASSERT_TRUE(fanCoilWorkspaceImpl);
+  ASSERT_TRUE(fanCoilWorkspaceImpl->setPointer(openstudio::ZoneHVAC_FourPipeFanCoilFields::SupplyAirFanName, unsupportedFan.handle(), false));
+  ASSERT_TRUE(fanCoilWorkspaceImpl->openstudio::detail::IdfObject_Impl::setString(openstudio::ZoneHVAC_FourPipeFanCoilFields::SupplyAirFanObjectType,
+                                                                                  unsupportedFan.iddObject().name(), false));
+  expectRejectedUnchanged();
+  ASSERT_TRUE(fanCoil.setPointer(openstudio::ZoneHVAC_FourPipeFanCoilFields::SupplyAirFanName, fan.handle()));
+  ASSERT_TRUE(fanCoil.setString(openstudio::ZoneHVAC_FourPipeFanCoilFields::SupplyAirFanObjectType, fan.iddObject().name()));
+
+  ASSERT_TRUE(fanCoilWorkspaceImpl->openstudio::detail::IdfObject_Impl::setString(openstudio::ZoneHVAC_FourPipeFanCoilFields::HeatingCoilObjectType,
+                                                                                  cooling.iddObject().name(), false));
+  expectRejectedUnchanged();
+  ASSERT_TRUE(fanCoilWorkspaceImpl->openstudio::detail::IdfObject_Impl::setString(openstudio::ZoneHVAC_FourPipeFanCoilFields::HeatingCoilObjectType,
+                                                                                  heating.iddObject().name(), false));
+
+  ASSERT_TRUE(cooling.airInletModelObject());
+  const auto coolingAirInlet = cooling.airInletModelObject()->cast<Node>();
+  Node brokenAirPathNode(model);
+  ASSERT_TRUE(cooling.setPointer(cooling.airInletPort(), brokenAirPathNode.handle()));
+  expectRejectedUnchanged();
+  ASSERT_TRUE(cooling.setPointer(cooling.airInletPort(), coolingAirInlet.handle()));
+
+  // Collapse one internal boundary while retaining exact component-to-
+  // component adjacency.
+  ASSERT_TRUE(fanCoil.inletNode());
+  ASSERT_TRUE(fan.outletModelObject());
+  const auto fanCoilInlet = *fanCoil.inletNode();
+  const auto fanOutlet = fan.outletModelObject()->cast<Node>();
+  ASSERT_TRUE(fan.setPointer(fan.outletPort(), fanCoilInlet.handle()));
+  ASSERT_TRUE(cooling.setPointer(cooling.airInletPort(), fanCoilInlet.handle()));
+  expectRejectedUnchanged();
+  ASSERT_TRUE(fan.setPointer(fan.outletPort(), fanOutlet.handle()));
+  ASSERT_TRUE(cooling.setPointer(cooling.airInletPort(), fanOutlet.handle()));
+
+  // An inlet-side mixer source is rejected even without an AirLoop owner.
+  AirTerminalSingleDuctInletSideMixer detachedMixer(model);
+  auto detachedMixerWorkspaceImpl = detachedMixer.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  ASSERT_TRUE(detachedMixerWorkspaceImpl);
+  ASSERT_TRUE(detachedMixerWorkspaceImpl->setPointer(detachedMixer.outletPort(), fanCoilInlet.handle(), false));
+  EXPECT_FALSE(fanCoil.airLoopHVAC());
+  EXPECT_FALSE(detachedMixer.airLoopHVAC());
+  expectRejectedUnchanged();
+  ASSERT_TRUE(detachedMixerWorkspaceImpl->setPointer(detachedMixer.outletPort(), openstudio::Handle(), false));
+
+  // Seed an impossible OA equipment-list owner without changing the fan's
+  // canonical FourPipe nodes.
+  AirLoopHVACOutdoorAirSystem oaSystem(model);
+  auto oaEquipmentList = oaSystem.getModelObjectTarget<AirLoopHVACOutdoorAirSystemEquipmentList>(
+    openstudio::AirLoopHVAC_OutdoorAirSystemFields::OutdoorAirEquipmentListName);
+  ASSERT_TRUE(oaEquipmentList);
+  auto oaEquipmentListImpl = oaEquipmentList->getImpl<detail::AirLoopHVACOutdoorAirSystemEquipmentList_Impl>();
+  ASSERT_TRUE(oaEquipmentListImpl);
+  const auto oaMixers = subsetCastVector<OutdoorAirMixer>(oaEquipmentList->equipment());
+  ASSERT_EQ(1u, oaMixers.size());
+  auto oaMixer = oaMixers.front();
+  const auto originalOAMixerOutdoorNode = oaMixer.getModelObjectTarget<Node>(openstudio::OutdoorAir_MixerFields::OutdoorAirStreamNodeName);
+  ASSERT_TRUE(originalOAMixerOutdoorNode);
+  ASSERT_TRUE(oaEquipmentListImpl->addEquipment(fan));
+  ASSERT_TRUE(oaMixer.setPointer(openstudio::OutdoorAir_MixerFields::OutdoorAirStreamNodeName, fanOutlet.handle()));
+  ASSERT_TRUE(fan.airLoopHVACOutdoorAirSystem());
+  EXPECT_EQ(oaSystem.handle(), fan.airLoopHVACOutdoorAirSystem()->handle());
+  expectRejectedUnchanged();
+  ASSERT_TRUE(oaEquipmentListImpl->removeEquipment(fan));
+  ASSERT_TRUE(oaMixer.setPointer(openstudio::OutdoorAir_MixerFields::OutdoorAirStreamNodeName, originalOAMixerOutdoorNode->handle()));
+
+  auto connections = zone.getImpl<detail::ThermalZone_Impl>()->zoneHVACEquipmentConnections();
+  ASSERT_TRUE(connections);
+  auto equipmentList = connections->zoneHVACEquipmentList();
+  const auto originalEquipmentRows = equipmentList.extensibleGroups().size();
+  auto duplicateEquipmentRow = equipmentList.pushExtensibleGroup();
+  ASSERT_FALSE(duplicateEquipmentRow.empty());
+  ASSERT_TRUE(
+    duplicateEquipmentRow.setString(openstudio::ZoneHVAC_EquipmentListExtensibleFields::ZoneEquipmentObjectType, fanCoil.iddObject().name(), false));
+  ASSERT_TRUE(duplicateEquipmentRow.setString(openstudio::ZoneHVAC_EquipmentListExtensibleFields::ZoneEquipmentName, fanCoil.nameString(), false));
+  ASSERT_TRUE(duplicateEquipmentRow.setUnsigned(openstudio::ZoneHVAC_EquipmentListExtensibleFields::ZoneEquipmentCoolingSequence, 2u));
+  ASSERT_TRUE(duplicateEquipmentRow.setUnsigned(openstudio::ZoneHVAC_EquipmentListExtensibleFields::ZoneEquipmentHeatingorNoLoadSequence, 2u));
+  expectRejectedUnchanged();
+  EXPECT_EQ(originalEquipmentRows + 1u, equipmentList.extensibleGroups().size());
+  EXPECT_FALSE(equipmentList.popExtensibleGroup().empty());
+
+  // Other zones' raw direct-node and raw NodeList aliases are rejected even
+  // though they belong to different equipment lists and are unresolved by the
+  // canonical collection accessor.
+  ThermalZone aliasZone(model);
+  auto aliasConnections = aliasZone.getImpl<detail::ThermalZone_Impl>()->getZoneHVACEquipmentConnections();
+  auto aliasConnectionsWorkspaceImpl = aliasConnections.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  ASSERT_TRUE(aliasConnectionsWorkspaceImpl);
+  constexpr unsigned exhaustField = openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneAirExhaustNodeorNodeListName;
+  constexpr unsigned inletField = openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneAirInletNodeorNodeListName;
+  ASSERT_TRUE(aliasConnectionsWorkspaceImpl->setPointer(exhaustField, openstudio::Handle(), false));
+  ASSERT_TRUE(aliasConnectionsWorkspaceImpl->openstudio::detail::IdfObject_Impl::setString(exhaustField, fanCoilInlet.nameString(), false));
+  const auto rawDirectAliasBefore = aliasConnectionsWorkspaceImpl->openstudio::detail::IdfObject_Impl::getString(exhaustField, false, true);
+  expectRejectedUnchanged();
+  EXPECT_TRUE(rawDirectAliasBefore == aliasConnectionsWorkspaceImpl->openstudio::detail::IdfObject_Impl::getString(exhaustField, false, true));
+  ASSERT_TRUE(aliasConnectionsWorkspaceImpl->openstudio::detail::IdfObject_Impl::setString(exhaustField, "", false));
+
+  ASSERT_TRUE(fanCoil.outletNode());
+  NodeList rawAliasNodeList(model);
+  auto rawAliasNodeRow = rawAliasNodeList.pushExtensibleGroup();
+  ASSERT_FALSE(rawAliasNodeRow.empty());
+  ASSERT_TRUE(rawAliasNodeRow.setString(openstudio::NodeListExtensibleFields::NodeName, fanCoil.outletNode()->nameString(), false));
+  ASSERT_TRUE(aliasConnectionsWorkspaceImpl->setPointer(inletField, openstudio::Handle(), false));
+  ASSERT_TRUE(aliasConnectionsWorkspaceImpl->openstudio::detail::IdfObject_Impl::setString(inletField, rawAliasNodeList.nameString(), false));
+  const auto rawNodeListAliasBefore = aliasConnectionsWorkspaceImpl->openstudio::detail::IdfObject_Impl::getString(inletField, false, true);
+  expectRejectedUnchanged();
+  EXPECT_TRUE(rawNodeListAliasBefore == aliasConnectionsWorkspaceImpl->openstudio::detail::IdfObject_Impl::getString(inletField, false, true));
+  ASSERT_TRUE(aliasConnectionsWorkspaceImpl->openstudio::detail::IdfObject_Impl::setString(inletField, "", false));
+
+  ZoneHVACFourPipeFanCoil managedAliasParent(model);
+  auto managedAliasWorkspaceImpl = managedAliasParent.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  ASSERT_TRUE(managedAliasWorkspaceImpl);
+  ASSERT_TRUE(managedAliasWorkspaceImpl->setPointer(openstudio::ZoneHVAC_FourPipeFanCoilFields::HeatingCoilName, heating.handle(), false));
+  ASSERT_TRUE(managedAliasWorkspaceImpl->openstudio::detail::IdfObject_Impl::setString(
+    openstudio::ZoneHVAC_FourPipeFanCoilFields::HeatingCoilObjectType, heating.iddObject().name(), false));
+  expectRejectedUnchanged();
+  ASSERT_TRUE(managedAliasWorkspaceImpl->setPointer(openstudio::ZoneHVAC_FourPipeFanCoilFields::HeatingCoilName, openstudio::Handle(), false));
+  ASSERT_TRUE(managedAliasWorkspaceImpl->openstudio::detail::IdfObject_Impl::setString(
+    openstudio::ZoneHVAC_FourPipeFanCoilFields::HeatingCoilObjectType, "", false));
+
+  struct RawRoleAliasCase
+  {
+    ModelObject child;
+    unsigned nameField;
+    unsigned typeField;
+  };
+  const std::array rawRoleAliasCases = {RawRoleAliasCase{fan.cast<ModelObject>(), openstudio::ZoneHVAC_FourPipeFanCoilFields::SupplyAirFanName,
+                                                         openstudio::ZoneHVAC_FourPipeFanCoilFields::SupplyAirFanObjectType},
+                                        RawRoleAliasCase{cooling.cast<ModelObject>(), openstudio::ZoneHVAC_FourPipeFanCoilFields::CoolingCoilName,
+                                                         openstudio::ZoneHVAC_FourPipeFanCoilFields::CoolingCoilObjectType},
+                                        RawRoleAliasCase{heating.cast<ModelObject>(), openstudio::ZoneHVAC_FourPipeFanCoilFields::CoolingCoilName,
+                                                         openstudio::ZoneHVAC_FourPipeFanCoilFields::CoolingCoilObjectType}};
+  for (const auto& aliasCase : rawRoleAliasCases) {
+    ZoneHVACFourPipeFanCoil rawAliasParent(model);
+    auto aliasWorkspaceImpl = rawAliasParent.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+    ASSERT_TRUE(aliasWorkspaceImpl);
+    ASSERT_TRUE(aliasWorkspaceImpl->openstudio::detail::IdfObject_Impl::setString(aliasCase.typeField, aliasCase.child.iddObject().name(), false));
+    ASSERT_TRUE(aliasWorkspaceImpl->openstudio::detail::IdfObject_Impl::setString(aliasCase.nameField, aliasCase.child.nameString(), false));
+    const auto rawAliasTypeBefore = aliasWorkspaceImpl->openstudio::detail::IdfObject_Impl::getString(aliasCase.typeField, false, true);
+    const auto rawAliasNameBefore = aliasWorkspaceImpl->openstudio::detail::IdfObject_Impl::getString(aliasCase.nameField, false, true);
+    expectRejectedUnchanged();
+    EXPECT_TRUE(rawAliasTypeBefore == aliasWorkspaceImpl->openstudio::detail::IdfObject_Impl::getString(aliasCase.typeField, false, true));
+    EXPECT_TRUE(rawAliasNameBefore == aliasWorkspaceImpl->openstudio::detail::IdfObject_Impl::getString(aliasCase.nameField, false, true));
+    ASSERT_TRUE(aliasWorkspaceImpl->openstudio::detail::IdfObject_Impl::setString(aliasCase.nameField, "", false));
+    ASSERT_TRUE(aliasWorkspaceImpl->openstudio::detail::IdfObject_Impl::setString(aliasCase.typeField, "", false));
+  }
 }
 
 TEST_F(EPModelFixture, PlantLoop_ConfiguredChillerCondenserLoopRemovalPreservesPrimaryOwnerAndControls) {

@@ -163,6 +163,7 @@ namespace epmodel {
       class DemandBranchRelocationPlan;
       class WaterCoilDemandBranchAttachmentPlan;
       class ContainedReheatCoilDemandBranchAttachmentPlan;
+      class FourPipeFanCoilDemandBranchAttachmentPlan;
 
       // Carries a fully validated single-component demand-branch teardown
       // across retained-component ownership operations. It is private

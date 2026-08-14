@@ -19,6 +19,10 @@
 #include "ModelObject/AirLoopHVACControllerList_Impl.hpp"
 #include "ModelObject/ZoneHVACAirDistributionUnit.hpp"
 #include "ModelObject/ZoneHVACAirDistributionUnit_Impl.hpp"
+#include "ModelObject/ZoneHVACEquipmentConnections.hpp"
+#include "ModelObject/ZoneHVACEquipmentConnections_Impl.hpp"
+#include "ModelObject/ZoneHVACEquipmentList.hpp"
+#include "ModelObject/ZoneHVACEquipmentList_Impl.hpp"
 #include "ModelObject/SizingPlant.hpp"
 #include "ModelObject/SizingPlant_Impl.hpp"
 #include "ModelObject/WaterHeaterSizing.hpp"
@@ -35,6 +39,7 @@
 #include "HVACComponent/ControllerWaterCoil.hpp"
 #include "HVACComponent/ControllerWaterCoil_Impl.hpp"
 #include "HVACComponent/HVACComponent.hpp"
+#include "HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
 #include "Loop/AirLoopHVAC.hpp"
 #include "Loop/AirLoopHVAC_Impl.hpp"
 #include "ModelObject.hpp"
@@ -52,6 +57,8 @@
 #include "StraightComponent/PipeAdiabatic_Impl.hpp"
 #include "StraightComponent/AirTerminalSingleDuctConstantVolumeReheat.hpp"
 #include "StraightComponent/AirTerminalSingleDuctConstantVolumeReheat_Impl.hpp"
+#include "StraightComponent/AirTerminalSingleDuctInletSideMixer.hpp"
+#include "StraightComponent/AirTerminalSingleDuctInletSideMixer_Impl.hpp"
 #include "StraightComponent/CompoundTerminalTopologyInspection.hpp"
 #include "StraightComponent/SingleDuctTerminalRemovalPlan.hpp"
 #include "StraightComponent/CoilCoolingLowTempRadiantConstFlow.hpp"
@@ -108,10 +115,13 @@
 #include "ZoneHVACComponent/ZoneHVACLowTempRadiantConstFlow_Impl.hpp"
 #include "ZoneHVACComponent/ZoneHVACLowTempRadiantVarFlow.hpp"
 #include "ZoneHVACComponent/ZoneHVACLowTempRadiantVarFlow_Impl.hpp"
+#include "ZoneHVACComponent/ZoneHVACFourPipeFanCoil.hpp"
+#include "ZoneHVACComponent/ZoneHVACFourPipeFanCoil_Impl.hpp"
 #include "HVACComponent/ThermalZone.hpp"
 #include "HVACComponent/ThermalZone_Impl.hpp"
 
 #include <algorithm>
+#include <array>
 #include <iterator>
 #include <set>
 
@@ -121,11 +131,15 @@
 #include <utilities/idd/AirTerminal_SingleDuct_ConstantVolume_Reheat_FieldEnums.hxx>
 #include <utilities/idd/Branch_FieldEnums.hxx>
 #include <utilities/idd/ConnectorList_FieldEnums.hxx>
+#include <utilities/idd/Controller_WaterCoil_FieldEnums.hxx>
 #include <utilities/idd/GroundHeatExchanger_System_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/OS_PlantLoop_FieldEnums.hxx>
 #include <utilities/idd/PlantLoop_FieldEnums.hxx>
 #include <utilities/idd/Sizing_Plant_FieldEnums.hxx>
+#include <utilities/idd/ZoneHVAC_FourPipeFanCoil_FieldEnums.hxx>
+#include <utilities/idd/ZoneHVAC_EquipmentConnections_FieldEnums.hxx>
+#include <utilities/idd/ZoneHVAC_EquipmentList_FieldEnums.hxx>
 #include <utilities/idf/WorkspaceExtensibleGroup.hpp>
 
 namespace openstudio {
@@ -1693,6 +1707,376 @@ namespace epmodel {
       // Declared before relocation so rollback completes while the uncommitted
       // read-only terminal topology proof is still alive.
       std::unique_ptr<SingleDuctTerminalRemovalPlan> m_terminalTopologyProof;
+      std::unique_ptr<DemandBranchRelocationPlan> m_plantRelocation;
+      bool m_committed = false;
+    };
+
+    struct FourPipeZoneOwnershipSnapshot
+    {
+      ThermalZone zone;
+      ZoneHVACEquipmentConnections connections;
+      ZoneHVACEquipmentList equipmentList;
+    };
+
+    // Observe the one canonical zone registration without invoking accessors
+    // that may repair missing EquipmentConnections or materialize node fields.
+    boost::optional<FourPipeZoneOwnershipSnapshot> fourPipeZoneOwnershipSnapshot(const Model& model, const ZoneHVACFourPipeFanCoil& fanCoil,
+                                                                                 const Node& fanCoilInlet, const Node& fanCoilOutlet) {
+      const auto rawField = [](const ModelObject& owner, unsigned field) {
+        auto workspaceImpl = owner.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+        OS_ASSERT(workspaceImpl);
+        return workspaceImpl->openstudio::detail::IdfObject_Impl::getString(field, false, true);
+      };
+      const auto rawReferences = [](const boost::optional<std::string>& rawValue, const ModelObject& object) {
+        if (!rawValue || rawValue->empty()) {
+          return false;
+        }
+        const auto rawHandle = openstudio::toUUID(*rawValue);
+        return (!rawHandle.isNull() && rawHandle == object.handle()) || openstudio::istringEqual(*rawValue, object.nameString());
+      };
+      const auto rawAgrees = [&rawReferences](const boost::optional<std::string>& rawValue, const ModelObject& object) {
+        return !rawValue || rawValue->empty() || rawReferences(rawValue, object);
+      };
+      const auto nodeAliasOccurrences = [&](const ZoneHVACEquipmentConnections& connections, unsigned field, const Node& node) {
+        const auto relationship = existingObjectField(connections, field);
+        const auto rawTarget = rawField(connections, field);
+        unsigned occurrences = 0u;
+        if ((relationship.object && relationship.object->handle() == node.handle()) || rawReferences(rawTarget, node)) {
+          ++occurrences;
+        }
+
+        std::set<Handle> referencedNodeLists;
+        if (relationship.object) {
+          if (auto nodeList = relationship.object->optionalCast<NodeList>()) {
+            referencedNodeLists.insert(nodeList->handle());
+          }
+        }
+        for (const auto& nodeList : model.getConcreteModelObjects<NodeList>()) {
+          if (rawReferences(rawTarget, nodeList)) {
+            referencedNodeLists.insert(nodeList.handle());
+          }
+        }
+        for (const auto& nodeListHandle : referencedNodeLists) {
+          const auto nodeListObject = model.getObject(nodeListHandle);
+          const auto nodeList = nodeListObject ? nodeListObject->optionalCast<NodeList>() : boost::optional<NodeList>();
+          if (!nodeList) {
+            continue;
+          }
+          const auto groups = nodeList->extensibleGroups();
+          for (unsigned groupIndex = 0u; groupIndex < groups.size(); ++groupIndex) {
+            const auto nodeField =
+              nodeList->iddObject().index(openstudio::ExtensibleIndex(groupIndex, openstudio::NodeListExtensibleFields::NodeName));
+            const auto nodeRelationship = existingObjectField(*nodeList, nodeField);
+            const auto rawNode = rawField(*nodeList, nodeField);
+            if ((nodeRelationship.object && nodeRelationship.object->handle() == node.handle()) || rawReferences(rawNode, node)) {
+              ++occurrences;
+            }
+          }
+        }
+        return occurrences;
+      };
+
+      struct EquipmentOccurrence
+      {
+        ZoneHVACEquipmentList list;
+      };
+      std::vector<EquipmentOccurrence> equipmentOccurrences;
+      for (const auto& list : model.getConcreteModelObjects<ZoneHVACEquipmentList>()) {
+        const auto groups = list.extensibleGroups();
+        for (unsigned groupIndex = 0u; groupIndex < groups.size(); ++groupIndex) {
+          const auto nameField =
+            list.iddObject().index(openstudio::ExtensibleIndex(groupIndex, openstudio::ZoneHVAC_EquipmentListExtensibleFields::ZoneEquipmentName));
+          const auto relationship = existingObjectField(list, nameField);
+          const auto rawName = rawField(list, nameField);
+          const auto rawType = groups[groupIndex].getString(openstudio::ZoneHVAC_EquipmentListExtensibleFields::ZoneEquipmentObjectType, false);
+          if ((!relationship.object || relationship.object->handle() != fanCoil.handle()) && !rawReferences(rawName, fanCoil)) {
+            continue;
+          }
+          if (!relationship.set || !relationship.object || relationship.object->handle() != fanCoil.handle() || !rawAgrees(rawName, fanCoil)
+              || !rawType || !openstudio::istringEqual(*rawType, fanCoil.iddObject().name())) {
+            return boost::none;
+          }
+          equipmentOccurrences.push_back(EquipmentOccurrence{list});
+        }
+      }
+      if (equipmentOccurrences.size() != 1u) {
+        return boost::none;
+      }
+
+      const auto equipmentList = equipmentOccurrences.front().list;
+      std::vector<FourPipeZoneOwnershipSnapshot> ownershipMatches;
+      unsigned inletOccurrences = 0u;
+      unsigned exhaustOccurrences = 0u;
+      for (const auto& connections : model.getConcreteModelObjects<ZoneHVACEquipmentConnections>()) {
+        const auto zoneRelationship = existingObjectField(connections, openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneName);
+        const auto listRelationship =
+          existingObjectField(connections, openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneConditioningEquipmentListName);
+        const auto rawZone = rawField(connections, openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneName);
+        const auto rawList = rawField(connections, openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneConditioningEquipmentListName);
+        const auto inletNodes =
+          existingNodeCollectionField(connections, openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneAirInletNodeorNodeListName);
+        const auto exhaustNodes =
+          existingNodeCollectionField(connections, openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneAirExhaustNodeorNodeListName);
+
+        inletOccurrences +=
+          nodeAliasOccurrences(connections, openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneAirInletNodeorNodeListName, fanCoilOutlet);
+        exhaustOccurrences +=
+          nodeAliasOccurrences(connections, openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneAirExhaustNodeorNodeListName, fanCoilInlet);
+
+        if ((!listRelationship.object || listRelationship.object->handle() != equipmentList.handle()) && !rawReferences(rawList, equipmentList)) {
+          continue;
+        }
+        const auto zone = zoneRelationship.object ? zoneRelationship.object->optionalCast<ThermalZone>() : boost::optional<ThermalZone>();
+        if (!listRelationship.set || !listRelationship.object || listRelationship.object->handle() != equipmentList.handle()
+            || !rawAgrees(rawList, equipmentList) || !zoneRelationship.set || !zone || !rawAgrees(rawZone, *zone) || !inletNodes.valid
+            || !inletNodes.target || !exhaustNodes.valid || !exhaustNodes.target || std::ranges::count(inletNodes.nodes, fanCoilOutlet) != 1
+            || std::ranges::count(exhaustNodes.nodes, fanCoilInlet) != 1) {
+          return boost::none;
+        }
+        ownershipMatches.push_back(FourPipeZoneOwnershipSnapshot{*zone, connections, equipmentList});
+      }
+      if (ownershipMatches.size() != 1u || inletOccurrences != 1u || exhaustOccurrences != 1u) {
+        return boost::none;
+      }
+
+      unsigned zoneConnectionOccurrences = 0u;
+      for (const auto& connections : model.getConcreteModelObjects<ZoneHVACEquipmentConnections>()) {
+        const auto zoneRelationship = existingObjectField(connections, openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneName);
+        const auto rawZone = rawField(connections, openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneName);
+        if ((zoneRelationship.object && zoneRelationship.object->handle() == ownershipMatches.front().zone.handle())
+            || rawReferences(rawZone, ownershipMatches.front().zone)) {
+          ++zoneConnectionOccurrences;
+        }
+      }
+      if (zoneConnectionOccurrences != 1u) {
+        return boost::none;
+      }
+      return ownershipMatches.front();
+    }
+
+    // Exact heating- and cooling-water children of an ordinary zone-owned
+    // four-pipe fan coil can relocate independently. FourPipe role aliases
+    // and zone registration are inspected read-only; the shared plan owns
+    // only plant topology and the selected child's two water ports.
+    class PlantLoop_Impl::FourPipeFanCoilDemandBranchAttachmentPlan
+    {
+     public:
+      static std::unique_ptr<FourPipeFanCoilDemandBranchAttachmentPlan> prepare(PlantLoop_Impl& targetLoopImpl, const WaterToAirComponent& coil) {
+        const auto coilType = coil.iddObject().type();
+        const bool selectedHeating = coilType == CoilHeatingWater::iddObjectType();
+        if ((!selectedHeating && coilType != CoilCoolingWater::iddObjectType()) || (coil.model() != targetLoopImpl.model()) || !coil.name()) {
+          return nullptr;
+        }
+
+        const auto containingComponent = coil.containingHVACComponent();
+        const auto fanCoil =
+          containingComponent ? containingComponent->optionalCast<ZoneHVACFourPipeFanCoil>() : boost::optional<ZoneHVACFourPipeFanCoil>();
+        if (!fanCoil || !fanCoil->name()) {
+          return nullptr;
+        }
+
+        const auto fanField = existingObjectField(*fanCoil, openstudio::ZoneHVAC_FourPipeFanCoilFields::SupplyAirFanName);
+        const auto coolingField = existingObjectField(*fanCoil, openstudio::ZoneHVAC_FourPipeFanCoilFields::CoolingCoilName);
+        const auto heatingField = existingObjectField(*fanCoil, openstudio::ZoneHVAC_FourPipeFanCoilFields::HeatingCoilName);
+        const auto fanType = fanCoil->getString(openstudio::ZoneHVAC_FourPipeFanCoilFields::SupplyAirFanObjectType, false, true);
+        const auto coolingType = fanCoil->getString(openstudio::ZoneHVAC_FourPipeFanCoilFields::CoolingCoilObjectType, false, true);
+        const auto heatingType = fanCoil->getString(openstudio::ZoneHVAC_FourPipeFanCoilFields::HeatingCoilObjectType, false, true);
+        const auto fan = fanField.object ? fanField.object->optionalCast<StraightComponent>() : boost::optional<StraightComponent>();
+        const auto cooling = coolingField.object ? coolingField.object->optionalCast<CoilCoolingWater>() : boost::optional<CoilCoolingWater>();
+        const auto heating = heatingField.object ? heatingField.object->optionalCast<CoilHeatingWater>() : boost::optional<CoilHeatingWater>();
+        if (!fanField.set || !fan || !fanType || !openstudio::istringEqual(*fanType, fan->iddObject().name()) || !coolingField.set || !cooling
+            || !coolingType || !openstudio::istringEqual(*coolingType, cooling->iddObject().name()) || !heatingField.set || !heating || !heatingType
+            || !openstudio::istringEqual(*heatingType, heating->iddObject().name())
+            || (selectedHeating ? heating->handle() != coil.handle() : cooling->handle() != coil.handle())) {
+          return nullptr;
+        }
+
+        const auto expectedChildren = std::vector<ModelObject>{fan->cast<ModelObject>(), cooling->cast<ModelObject>(), heating->cast<ModelObject>()};
+        if (fanCoil->children() != expectedChildren || !isSoleOwnedChild(fanCoil->cast<ModelObject>(), *fan)
+            || !isSoleOwnedChild(fanCoil->cast<ModelObject>(), *cooling) || !isSoleOwnedChild(fanCoil->cast<ModelObject>(), *heating)) {
+          return nullptr;
+        }
+
+        const std::array<std::pair<unsigned, unsigned>, 3> roleFields = {
+          std::pair{openstudio::ZoneHVAC_FourPipeFanCoilFields::SupplyAirFanName, openstudio::ZoneHVAC_FourPipeFanCoilFields::SupplyAirFanObjectType},
+          std::pair{openstudio::ZoneHVAC_FourPipeFanCoilFields::CoolingCoilName, openstudio::ZoneHVAC_FourPipeFanCoilFields::CoolingCoilObjectType},
+          std::pair{openstudio::ZoneHVAC_FourPipeFanCoilFields::HeatingCoilName, openstudio::ZoneHVAC_FourPipeFanCoilFields::HeatingCoilObjectType}};
+        const std::array<std::pair<ModelObject, unsigned>, 3> expectedRoles = {
+          std::pair{fan->cast<ModelObject>(), openstudio::ZoneHVAC_FourPipeFanCoilFields::SupplyAirFanName},
+          std::pair{cooling->cast<ModelObject>(), openstudio::ZoneHVAC_FourPipeFanCoilFields::CoolingCoilName},
+          std::pair{heating->cast<ModelObject>(), openstudio::ZoneHVAC_FourPipeFanCoilFields::HeatingCoilName}};
+        for (const auto& [expectedChild, expectedField] : expectedRoles) {
+          unsigned roleOccurrences = 0u;
+          for (const auto& candidate : targetLoopImpl.model().getConcreteModelObjects<ZoneHVACFourPipeFanCoil>()) {
+            auto workspaceImpl = candidate.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+            OS_ASSERT(workspaceImpl);
+            for (const auto& [nameField, typeField] : roleFields) {
+              const auto relationship = existingObjectField(candidate, nameField);
+              const auto rawName = workspaceImpl->openstudio::detail::IdfObject_Impl::getString(nameField, false, true);
+              const auto rawHandle = rawName ? openstudio::toUUID(*rawName) : Handle();
+              const auto rawType = candidate.getString(typeField, false, true);
+              const bool rawNameSet = rawName && !rawName->empty();
+              const bool rawNameMatches =
+                rawName
+                && ((!rawHandle.isNull() && rawHandle == expectedChild.handle()) || openstudio::istringEqual(*rawName, expectedChild.nameString()));
+              if ((!relationship.object || relationship.object->handle() != expectedChild.handle()) && !rawNameMatches) {
+                continue;
+              }
+              ++roleOccurrences;
+              if (candidate.handle() != fanCoil->handle() || nameField != expectedField || !relationship.set || !relationship.object
+                  || relationship.object->handle() != expectedChild.handle() || (rawNameSet && !rawNameMatches) || !rawType
+                  || !openstudio::istringEqual(*rawType, expectedChild.iddObject().name())) {
+                return nullptr;
+              }
+            }
+          }
+          if (roleOccurrences != 1u) {
+            return nullptr;
+          }
+        }
+
+        // Keep this allowlist in lockstep with
+        // ZoneHVACFourPipeFanCoil_Impl::setSupplyAirFan.
+        const auto fanObjectType = fan->iddObject().type();
+        bool fanTypeAllowed = fanObjectType == IddObjectType::OS_Fan_SystemModel || fanObjectType == IddObjectType::Fan_SystemModel;
+        if (openstudio::istringEqual(fanCoil->capacityControlMethod(), "ConstantFanVariableFlow")) {
+          fanTypeAllowed = fanTypeAllowed || fanObjectType == IddObjectType::OS_Fan_ConstantVolume || fanObjectType == IddObjectType::OS_Fan_OnOff
+                           || fanObjectType == IddObjectType::Fan_ConstantVolume || fanObjectType == IddObjectType::Fan_OnOff;
+        } else if (openstudio::istringEqual(fanCoil->capacityControlMethod(), "CyclingFan")) {
+          fanTypeAllowed = fanTypeAllowed || fanObjectType == IddObjectType::OS_Fan_OnOff || fanObjectType == IddObjectType::Fan_OnOff;
+        } else if (openstudio::istringEqual(fanCoil->capacityControlMethod(), "VariableFanVariableFlow")
+                   || openstudio::istringEqual(fanCoil->capacityControlMethod(), "VariableFanConstantFlow")) {
+          fanTypeAllowed =
+            fanTypeAllowed || fanObjectType == IddObjectType::OS_Fan_VariableVolume || fanObjectType == IddObjectType::Fan_VariableVolume;
+        }
+        if (!fanTypeAllowed) {
+          return nullptr;
+        }
+
+        const auto fanCoilInlet = existingNodeField(*fanCoil, fanCoil->inletPort());
+        const auto fanCoilOutlet = existingNodeField(*fanCoil, fanCoil->outletPort());
+        const auto fanInlet = existingNodeField(*fan, fan->inletPort());
+        const auto fanOutlet = existingNodeField(*fan, fan->outletPort());
+        const auto coolingAirInlet = existingNodeField(*cooling, cooling->airInletPort());
+        const auto coolingAirOutlet = existingNodeField(*cooling, cooling->airOutletPort());
+        const auto heatingAirInlet = existingNodeField(*heating, heating->airInletPort());
+        const auto heatingAirOutlet = existingNodeField(*heating, heating->airOutletPort());
+        if (!fanCoilInlet.set || !fanCoilInlet.node || !fanCoilOutlet.set || !fanCoilOutlet.node || !fanInlet.set || !fanInlet.node || !fanOutlet.set
+            || !fanOutlet.node || !coolingAirInlet.set || !coolingAirInlet.node || !coolingAirOutlet.set || !coolingAirOutlet.node
+            || !heatingAirInlet.set || !heatingAirInlet.node || !heatingAirOutlet.set || !heatingAirOutlet.node
+            || *fanCoilInlet.node != *fanInlet.node || *fanOutlet.node != *coolingAirInlet.node || *coolingAirOutlet.node != *heatingAirInlet.node
+            || *heatingAirOutlet.node != *fanCoilOutlet.node
+            || std::set<Handle>{fanCoilInlet.node->handle(), fanOutlet.node->handle(), coolingAirOutlet.node->handle(), fanCoilOutlet.node->handle()}
+                   .size()
+                 != 4u) {
+          return nullptr;
+        }
+
+        if (fanCoil->airLoopHVAC() || fanCoil->airLoopHVACOutdoorAirSystem() || fan->airLoopHVAC() || fan->airLoopHVACOutdoorAirSystem()
+            || cooling->airLoopHVAC() || cooling->airLoopHVACOutdoorAirSystem() || heating->airLoopHVAC() || heating->airLoopHVACOutdoorAirSystem()
+            || std::ranges::any_of(fanCoilInlet.node->sources(), [](const openstudio::WorkspaceObject& source) {
+                 return static_cast<bool>(source.optionalCast<AirTerminalSingleDuctInletSideMixer>());
+               })) {
+          return nullptr;
+        }
+
+        const auto zoneOwnership = fourPipeZoneOwnershipSnapshot(targetLoopImpl.model(), *fanCoil, *fanCoilInlet.node, *fanCoilOutlet.node);
+        if (!zoneOwnership) {
+          return nullptr;
+        }
+
+        const auto coolingWaterInlet = existingNodeField(*cooling, cooling->waterInletPort());
+        const auto heatingWaterInlet = existingNodeField(*heating, heating->waterInletPort());
+        if (!coolingWaterInlet.set || !coolingWaterInlet.node || !heatingWaterInlet.set || !heatingWaterInlet.node || cooling->controllerWaterCoil()
+            || heating->controllerWaterCoil()) {
+          return nullptr;
+        }
+        for (const auto& controller : targetLoopImpl.model().getConcreteModelObjects<ControllerWaterCoil>()) {
+          const auto actuatorField = existingObjectField(controller, openstudio::Controller_WaterCoilFields::ActuatorNodeName);
+          auto workspaceImpl = controller.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+          OS_ASSERT(workspaceImpl);
+          const auto rawActuator =
+            workspaceImpl->openstudio::detail::IdfObject_Impl::getString(openstudio::Controller_WaterCoilFields::ActuatorNodeName, false, true);
+          const auto rawActuatorHandle = rawActuator ? openstudio::toUUID(*rawActuator) : Handle();
+          const auto referencesWaterInlet = [&](const Node& waterInlet) {
+            return (actuatorField.object && actuatorField.object->handle() == waterInlet.handle())
+                   || (!rawActuatorHandle.isNull() && rawActuatorHandle == waterInlet.handle())
+                   || (rawActuator && openstudio::istringEqual(*rawActuator, waterInlet.nameString()));
+          };
+          if (referencesWaterInlet(*coolingWaterInlet.node) || referencesWaterInlet(*heatingWaterInlet.node)) {
+            return nullptr;
+          }
+        }
+
+        auto plantRelocation = DemandBranchRelocationPlan::prepare(targetLoopImpl, coil, {});
+        if (!plantRelocation) {
+          return nullptr;
+        }
+        return std::unique_ptr<FourPipeFanCoilDemandBranchAttachmentPlan>(new FourPipeFanCoilDemandBranchAttachmentPlan(
+          coil, *fanCoil, zoneOwnership->zone, zoneOwnership->connections, zoneOwnership->equipmentList, *fan, *cooling, *heating, *fanCoilInlet.node,
+          *fanOutlet.node, *coolingAirOutlet.node, *fanCoilOutlet.node, std::move(plantRelocation)));
+      }
+
+      FourPipeFanCoilDemandBranchAttachmentPlan(const FourPipeFanCoilDemandBranchAttachmentPlan&) = delete;
+      FourPipeFanCoilDemandBranchAttachmentPlan& operator=(const FourPipeFanCoilDemandBranchAttachmentPlan&) = delete;
+      FourPipeFanCoilDemandBranchAttachmentPlan(FourPipeFanCoilDemandBranchAttachmentPlan&&) = delete;
+      FourPipeFanCoilDemandBranchAttachmentPlan& operator=(FourPipeFanCoilDemandBranchAttachmentPlan&&) = delete;
+
+      ~FourPipeFanCoilDemandBranchAttachmentPlan() = default;
+
+      void commit() {
+        OS_ASSERT(!m_committed && m_plantRelocation);
+        m_plantRelocation->commit();
+
+        OS_ASSERT(m_fanCoil.model().getObject(m_thermalZone.handle()) && m_fanCoil.model().getObject(m_zoneConnections.handle())
+                  && m_fanCoil.model().getObject(m_zoneEquipmentList.handle()));
+        OS_ASSERT(m_coil.containingHVACComponent() && m_coil.containingHVACComponent()->handle() == m_fanCoil.handle());
+        OS_ASSERT((m_coil.iddObject().type() == CoilHeatingWater::iddObjectType() && m_heating.handle() == m_coil.handle())
+                  || (m_coil.iddObject().type() == CoilCoolingWater::iddObjectType() && m_cooling.handle() == m_coil.handle()));
+        OS_ASSERT((m_fanCoil.children()
+                   == std::vector<ModelObject>{m_fan.cast<ModelObject>(), m_cooling.cast<ModelObject>(), m_heating.cast<ModelObject>()}));
+        OS_ASSERT(m_fan.inletModelObject() && m_fan.inletModelObject()->handle() == m_fanCoilInlet.handle());
+        OS_ASSERT(m_fan.outletModelObject() && m_fan.outletModelObject()->handle() == m_fanOutlet.handle());
+        OS_ASSERT(m_cooling.airInletModelObject() && m_cooling.airInletModelObject()->handle() == m_fanOutlet.handle());
+        OS_ASSERT(m_cooling.airOutletModelObject() && m_cooling.airOutletModelObject()->handle() == m_coolingOutlet.handle());
+        OS_ASSERT(m_heating.airInletModelObject() && m_heating.airInletModelObject()->handle() == m_coolingOutlet.handle());
+        OS_ASSERT(m_heating.airOutletModelObject() && m_heating.airOutletModelObject()->handle() == m_fanCoilOutlet.handle());
+        OS_ASSERT(!m_cooling.controllerWaterCoil() && !m_heating.controllerWaterCoil());
+        m_committed = true;
+      }
+
+     private:
+      FourPipeFanCoilDemandBranchAttachmentPlan(WaterToAirComponent coil, ZoneHVACFourPipeFanCoil fanCoil, ThermalZone thermalZone,
+                                                ZoneHVACEquipmentConnections zoneConnections, ZoneHVACEquipmentList zoneEquipmentList,
+                                                StraightComponent fan, CoilCoolingWater cooling, CoilHeatingWater heating, Node fanCoilInlet,
+                                                Node fanOutlet, Node coolingOutlet, Node fanCoilOutlet,
+                                                std::unique_ptr<DemandBranchRelocationPlan> plantRelocation)
+        : m_coil(std::move(coil)),
+          m_fanCoil(std::move(fanCoil)),
+          m_thermalZone(std::move(thermalZone)),
+          m_zoneConnections(std::move(zoneConnections)),
+          m_zoneEquipmentList(std::move(zoneEquipmentList)),
+          m_fan(std::move(fan)),
+          m_cooling(std::move(cooling)),
+          m_heating(std::move(heating)),
+          m_fanCoilInlet(std::move(fanCoilInlet)),
+          m_fanOutlet(std::move(fanOutlet)),
+          m_coolingOutlet(std::move(coolingOutlet)),
+          m_fanCoilOutlet(std::move(fanCoilOutlet)),
+          m_plantRelocation(std::move(plantRelocation)) {}
+
+      WaterToAirComponent m_coil;
+      ZoneHVACFourPipeFanCoil m_fanCoil;
+      ThermalZone m_thermalZone;
+      ZoneHVACEquipmentConnections m_zoneConnections;
+      ZoneHVACEquipmentList m_zoneEquipmentList;
+      StraightComponent m_fan;
+      CoilCoolingWater m_cooling;
+      CoilHeatingWater m_heating;
+      Node m_fanCoilInlet;
+      Node m_fanOutlet;
+      Node m_coolingOutlet;
+      Node m_fanCoilOutlet;
       std::unique_ptr<DemandBranchRelocationPlan> m_plantRelocation;
       bool m_committed = false;
     };
@@ -3483,24 +3867,40 @@ namespace epmodel {
             return false;
           }
           if (const auto containingComponent = waterToAir->containingHVACComponent()) {
-            if (waterToAir->iddObject().type() != CoilHeatingWater::iddObjectType()
-                || containingComponent->iddObject().type() != AirTerminalSingleDuctConstantVolumeReheat::iddObjectType()) {
-              return false;
+            if (waterToAir->iddObject().type() == CoilHeatingWater::iddObjectType()
+                && containingComponent->iddObject().type() == AirTerminalSingleDuctConstantVolumeReheat::iddObjectType()) {
+              auto plan = ContainedReheatCoilDemandBranchAttachmentPlan::prepare(*this, waterToAir->cast<CoilHeatingWater>());
+              if (!plan) {
+                LOG_FREE(Warn, "openstudio.epmodel.PlantLoop",
+                         "Refusing to move " << hvacComponent.briefDescription() << " to the demand side of "
+                                             << getObject<PlantLoop>().briefDescription()
+                                             << " because its exact constant-volume reheat owner, canonical air/zone topology, single-row source "
+                                                "demand branch, or target topology could not be validated.");
+                return false;
+              }
+              if (testFailurePointReached(model(), TestFailurePoint::PlantLoopAfterWaterCoilBranchAttachmentPrepared)) {
+                return false;
+              }
+              plan->commit();
+              return true;
             }
-            auto plan = ContainedReheatCoilDemandBranchAttachmentPlan::prepare(*this, waterToAir->cast<CoilHeatingWater>());
-            if (!plan) {
-              LOG_FREE(Warn, "openstudio.epmodel.PlantLoop",
-                       "Refusing to move " << hvacComponent.briefDescription() << " to the demand side of "
-                                           << getObject<PlantLoop>().briefDescription()
-                                           << " because its exact constant-volume reheat owner, canonical air/zone topology, single-row source "
-                                              "demand branch, or target topology could not be validated.");
-              return false;
+            if (containingComponent->iddObject().type() == ZoneHVACFourPipeFanCoil::iddObjectType()) {
+              auto plan = FourPipeFanCoilDemandBranchAttachmentPlan::prepare(*this, *waterToAir);
+              if (!plan) {
+                LOG_FREE(Warn, "openstudio.epmodel.PlantLoop",
+                         "Refusing to move " << hvacComponent.briefDescription() << " to the demand side of "
+                                             << getObject<PlantLoop>().briefDescription()
+                                             << " because its exact four-pipe fan-coil role ownership, ordinary zone topology, controller-free water "
+                                                "children, single-row source demand branch, or target topology could not be validated.");
+                return false;
+              }
+              if (testFailurePointReached(model(), TestFailurePoint::PlantLoopAfterWaterCoilBranchAttachmentPrepared)) {
+                return false;
+              }
+              plan->commit();
+              return true;
             }
-            if (testFailurePointReached(model(), TestFailurePoint::PlantLoopAfterWaterCoilBranchAttachmentPrepared)) {
-              return false;
-            }
-            plan->commit();
-            return true;
+            return false;
           }
           auto plan = WaterCoilDemandBranchAttachmentPlan::prepare(*this, *waterToAir);
           if (!plan) {
