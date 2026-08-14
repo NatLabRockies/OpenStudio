@@ -74,7 +74,13 @@
 #include "../WaterToAirComponent/CoilCoolingWater_Impl.hpp"
 #include "../WaterToWaterComponent/HeatExchangerFluidToFluid.hpp"
 #include "../WaterToWaterComponent/HeatExchangerFluidToFluid_Impl.hpp"
+#include "../scaffolds/ThermalStorageChilledWaterMixed.hpp"
+#include "../WaterToWaterComponent/ThermalStorageChilledWaterStratified.hpp"
+#include "../WaterToWaterComponent/ThermalStorageChilledWaterStratified_Impl.hpp"
 #include "../WaterToWaterComponent/WaterToWaterComponent.hpp"
+#include "../WaterToWaterComponent/WaterHeaterMixed.hpp"
+#include "../ModelObject/WaterHeaterSizing.hpp"
+#include "../ModelObject/WaterHeaterSizing_Impl.hpp"
 #include "../WaterToWaterComponent/HeatPumpWaterToWaterEquationFitCooling.hpp"
 #include "../WaterToWaterComponent/HeatPumpWaterToWaterEquationFitCooling_Impl.hpp"
 #include "../WaterToWaterComponent/HeatPumpWaterToWaterEquationFitHeating.hpp"
@@ -103,6 +109,10 @@
 #include <utilities/idd/HeatExchanger_FluidToFluid_FieldEnums.hxx>
 #include <utilities/idd/HeatPump_WaterToWater_EquationFit_Cooling_FieldEnums.hxx>
 #include <utilities/idd/HeatPump_WaterToWater_EquationFit_Heating_FieldEnums.hxx>
+#include <utilities/idd/ThermalStorage_ChilledWater_Mixed_FieldEnums.hxx>
+#include <utilities/idd/ThermalStorage_ChilledWater_Stratified_FieldEnums.hxx>
+#include <utilities/idd/WaterHeater_Mixed_FieldEnums.hxx>
+#include <utilities/idd/WaterHeater_Sizing_FieldEnums.hxx>
 #include <utilities/idd/ZoneHVAC_FourPipeFanCoil_FieldEnums.hxx>
 #include <utilities/idd/ZoneHVAC_EquipmentConnections_FieldEnums.hxx>
 #include <utilities/idd/ZoneHVAC_EquipmentList_FieldEnums.hxx>
@@ -351,6 +361,110 @@ struct EquationFitHeatPumpMoveSnapshot
 
   bool operator==(const EquationFitHeatPumpMoveSnapshot&) const = default;
 };
+
+struct ThermalStorageMoveSnapshot
+{
+  PlantAttachmentTopologySnapshot plantTopology;
+  std::vector<openstudio::Handle> modelObjectHandles;
+  std::vector<std::pair<openstudio::Handle, std::vector<boost::optional<std::string>>>> modelRawFields;
+  std::vector<openstudio::Handle> primarySupplyComponentHandles;
+  boost::optional<openstudio::Handle> primarySetpointTargetHandle;
+  boost::optional<openstudio::Handle> primaryOwnerHandle;
+  boost::optional<openstudio::Handle> secondaryOwnerHandle;
+  boost::optional<openstudio::Handle> supplyInletHandle;
+  boost::optional<openstudio::Handle> supplyOutletHandle;
+  boost::optional<openstudio::Handle> demandInletHandle;
+  boost::optional<openstudio::Handle> demandOutletHandle;
+  boost::optional<openstudio::Handle> sizingHandle;
+  boost::optional<openstudio::Handle> setpointScheduleHandle;
+  boost::optional<openstudio::Handle> ambientScheduleHandle;
+  boost::optional<openstudio::Handle> useSideScheduleHandle;
+  boost::optional<openstudio::Handle> sourceSideScheduleHandle;
+  boost::optional<openstudio::Handle> ambientZoneHandle;
+  boost::optional<std::string> ambientOutdoorAirNodeName;
+  std::vector<boost::optional<std::string>> storageRawFields;
+  std::vector<boost::optional<std::string>> sizingRawFields;
+  std::array<boost::optional<std::string>, 3> setpointRawFields;
+
+  bool operator==(const ThermalStorageMoveSnapshot&) const = default;
+};
+
+ThermalStorageMoveSnapshot captureThermalStorageMove(const Model& model, const PlantLoop& primaryLoop, const PlantLoop& sourceLoop,
+                                                     const PlantLoop& targetLoop, const ThermalStorageChilledWaterStratified& storage,
+                                                     bool observeOwners = true) {
+  ThermalStorageMoveSnapshot result;
+  if (observeOwners) {
+    result.plantTopology = capturePlantTopology(model, sourceLoop, targetLoop, false);
+    result.primarySupplyComponentHandles = objectHandles(primaryLoop.supplyComponents());
+  }
+  auto objects = model.objects();
+  std::ranges::sort(objects, {}, [](const auto& object) { return object.handle(); });
+  for (const auto& object : objects) {
+    result.modelObjectHandles.push_back(object.handle());
+    std::vector<boost::optional<std::string>> fields;
+    for (unsigned field = 0u; field < object.numFields(); ++field) {
+      fields.push_back(rawField(object, field));
+    }
+    while (!fields.empty() && !fields.back()) {
+      fields.pop_back();
+    }
+    result.modelRawFields.emplace_back(object.handle(), std::move(fields));
+  }
+  if (auto setpointTarget = primaryLoop.getModelObjectTarget<Node>(openstudio::PlantLoopFields::LoopTemperatureSetpointNodeName)) {
+    result.primarySetpointTargetHandle = setpointTarget->handle();
+  }
+  if (observeOwners) {
+    if (auto owner = storage.plantLoop()) {
+      result.primaryOwnerHandle = owner->handle();
+    }
+    if (auto owner = storage.secondaryPlantLoop()) {
+      result.secondaryOwnerHandle = owner->handle();
+    }
+  }
+  if (auto node = storage.supplyInletModelObject()) {
+    result.supplyInletHandle = node->handle();
+  }
+  if (auto node = storage.supplyOutletModelObject()) {
+    result.supplyOutletHandle = node->handle();
+  }
+  if (auto node = storage.demandInletModelObject()) {
+    result.demandInletHandle = node->handle();
+  }
+  if (auto node = storage.demandOutletModelObject()) {
+    result.demandOutletHandle = node->handle();
+  }
+  try {
+    const auto sizing = storage.waterHeaterSizing();
+    result.sizingHandle = sizing.handle();
+    for (unsigned field = 0u; field < sizing.numFields(); ++field) {
+      result.sizingRawFields.push_back(rawField(sizing, field));
+    }
+  } catch (const std::exception&) {
+  }
+  if (auto schedule = storage.setpointTemperatureSchedule()) {
+    result.setpointScheduleHandle = schedule->handle();
+  }
+  if (auto schedule = storage.ambientTemperatureSchedule()) {
+    result.ambientScheduleHandle = schedule->handle();
+  }
+  if (auto schedule = storage.useSideAvailabilitySchedule()) {
+    result.useSideScheduleHandle = schedule->handle();
+  }
+  if (auto schedule = storage.sourceSideAvailabilitySchedule()) {
+    result.sourceSideScheduleHandle = schedule->handle();
+  }
+  if (auto zone = storage.ambientTemperatureThermalZone()) {
+    result.ambientZoneHandle = zone->handle();
+  }
+  result.ambientOutdoorAirNodeName = storage.ambientTemperatureOutdoorAirNodeName();
+  for (unsigned field = 0u; field < storage.numFields(); ++field) {
+    result.storageRawFields.push_back(rawField(storage, field));
+  }
+  result.setpointRawFields = {rawField(primaryLoop, openstudio::PlantLoopFields::LoopTemperatureSetpointNodeName),
+                              rawField(sourceLoop, openstudio::PlantLoopFields::LoopTemperatureSetpointNodeName),
+                              rawField(targetLoop, openstudio::PlantLoopFields::LoopTemperatureSetpointNodeName)};
+  return result;
+}
 
 EquationFitHeatPumpMoveSnapshot captureEquationFitHeatPumpMove(const Model& model, const PlantLoop& primaryLoop, const PlantLoop& sourceLoop,
                                                                const PlantLoop& targetLoop, const WaterToWaterComponent& heatPump,
@@ -3206,6 +3320,571 @@ TEST_F(EPModelFixture, PlantLoop_FourPipeFanCoilDemandMoveRejectsMalformedFanRol
     EXPECT_TRUE(rawAliasNameBefore == aliasWorkspaceImpl->openstudio::detail::IdfObject_Impl::getString(aliasCase.nameField, false, true));
     ASSERT_TRUE(aliasWorkspaceImpl->openstudio::detail::IdfObject_Impl::setString(aliasCase.nameField, "", false));
     ASSERT_TRUE(aliasWorkspaceImpl->openstudio::detail::IdfObject_Impl::setString(aliasCase.typeField, "", false));
+  }
+}
+
+TEST_F(EPModelFixture, PlantLoop_ThermalStorageSourceDemandMoveDefaultToOccupiedIsTransactionalAcrossReload) {
+  const auto idfPath =
+    openstudio::tempDir() / openstudio::toPath("epmodel-thermal-storage-source-move-" + openstudio::toString(openstudio::createUUID()) + ".idf");
+  ScopedFileRemoval cleanup(idfPath);
+
+  Model model;
+  PlantLoop primaryLoop(model);
+  PlantLoop sourceLoop(model);
+  PlantLoop targetLoop(model);
+  ThermalStorageChilledWaterStratified storage(model);
+  PipeAdiabatic targetPipe(model);
+  ScheduleConstant setpointSchedule(model);
+  ScheduleConstant ambientSchedule(model);
+  ScheduleConstant useSchedule(model);
+  ScheduleConstant sourceSchedule(model);
+  ThermalZone ambientZone(model);
+  ASSERT_TRUE(primaryLoop.setName("Thermal Storage UseSide Loop"));
+  ASSERT_TRUE(sourceLoop.setName("Thermal Storage Original SourceSide Loop"));
+  ASSERT_TRUE(targetLoop.setName("Thermal Storage Moved SourceSide Loop"));
+  ASSERT_TRUE(storage.setName("Moved Stratified Chilled Water Storage"));
+  ASSERT_TRUE(targetPipe.setName("Retained Thermal Storage Target Pipe"));
+  ASSERT_TRUE(setpointSchedule.setName("Thermal Storage Setpoint Schedule"));
+  ASSERT_TRUE(ambientSchedule.setName("Thermal Storage Ambient Schedule"));
+  ASSERT_TRUE(useSchedule.setName("Thermal Storage Use Schedule"));
+  ASSERT_TRUE(sourceSchedule.setName("Thermal Storage Source Schedule"));
+  ASSERT_TRUE(ambientZone.setName("Thermal Storage Ambient Zone"));
+  ASSERT_TRUE(setpointSchedule.setValue(6.5));
+  ASSERT_TRUE(ambientSchedule.setValue(22.0));
+  ASSERT_TRUE(useSchedule.setValue(0.8));
+  ASSERT_TRUE(sourceSchedule.setValue(0.6));
+  ASSERT_TRUE(storage.setSetpointTemperatureSchedule(setpointSchedule));
+  ASSERT_TRUE(storage.setAmbientTemperatureSchedule(ambientSchedule));
+  ASSERT_TRUE(storage.setUseSideAvailabilitySchedule(useSchedule));
+  ASSERT_TRUE(storage.setSourceSideAvailabilitySchedule(sourceSchedule));
+  ASSERT_TRUE(storage.setAmbientTemperatureThermalZone(ambientZone));
+  ASSERT_TRUE(storage.setAmbientTemperatureOutdoorAirNodeName("Preserved Storage Ambient OA Node"));
+  ASSERT_TRUE(storage.setTankVolume(73.25));
+  ASSERT_TRUE(storage.setSourceSideHeatTransferEffectiveness(0.87));
+  auto sizing = storage.waterHeaterSizing();
+  ASSERT_TRUE(sizing.setTimeStorageCanMeetPeakDraw(1.75));
+  ASSERT_TRUE(sizing.setTimeforTankRecovery(3.25));
+  ASSERT_TRUE(primaryLoop.addSupplyBranchForComponent(storage));
+  ASSERT_TRUE(sourceLoop.addDemandBranchForComponent(storage));
+  ASSERT_TRUE(targetLoop.addDemandBranchForComponent(targetPipe));
+  auto primarySetpoint = primaryLoop.supplyInletNode();
+  auto sourceSetpoint = sourceLoop.supplyInletNode();
+  auto targetSetpoint = targetLoop.supplyInletNode();
+  ASSERT_TRUE(primaryLoop.setLoopTemperatureSetpointNode(primarySetpoint));
+  ASSERT_TRUE(sourceLoop.setLoopTemperatureSetpointNode(sourceSetpoint));
+  ASSERT_TRUE(targetLoop.setLoopTemperatureSetpointNode(targetSetpoint));
+
+  ASSERT_TRUE(storage.supplyInletModelObject());
+  ASSERT_TRUE(storage.supplyOutletModelObject());
+  ASSERT_TRUE(storage.demandInletModelObject());
+  ASSERT_TRUE(storage.demandOutletModelObject());
+  const auto primaryInletHandle = storage.supplyInletModelObject()->handle();
+  const auto primaryOutletHandle = storage.supplyOutletModelObject()->handle();
+  const auto oldSourceInletHandle = storage.demandInletModelObject()->handle();
+  const auto oldSourceOutletHandle = storage.demandOutletModelObject()->handle();
+  const auto sizingHandle = sizing.handle();
+
+  auto sourceBranchList = sourceLoop.getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::DemandSideBranchListName);
+  auto targetBranchList = targetLoop.getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::DemandSideBranchListName);
+  ASSERT_TRUE(sourceBranchList);
+  ASSERT_TRUE(targetBranchList);
+  const auto sourceBranchHandlesBefore = objectHandles(sourceBranchList->branches());
+  const auto targetBranchHandlesBefore = objectHandles(targetBranchList->branches());
+  ASSERT_EQ(3u, sourceBranchHandlesBefore.size());
+  ASSERT_EQ(3u, targetBranchHandlesBefore.size());
+  const auto sourceDefaultBranch = sourceBranchHandlesBefore[1];
+
+  const auto before = captureThermalStorageMove(model, primaryLoop, sourceLoop, targetLoop, storage);
+  {
+    test::ScopedTestFailure failure(model, detail::TestFailurePoint::PlantLoopAfterThermalStorageSourceBranchAttachmentPrepared);
+    EXPECT_FALSE(targetLoop.addDemandBranchForComponent(storage));
+  }
+  EXPECT_EQ(before, captureThermalStorageMove(model, primaryLoop, sourceLoop, targetLoop, storage));
+
+  ASSERT_TRUE(targetLoop.addDemandBranchForComponent(storage));
+  ASSERT_TRUE(storage.plantLoop());
+  ASSERT_TRUE(storage.secondaryPlantLoop());
+  EXPECT_EQ(primaryLoop, *storage.plantLoop());
+  EXPECT_EQ(targetLoop, *storage.secondaryPlantLoop());
+  EXPECT_FALSE(sourceLoop.demandComponent(storage.handle()));
+  EXPECT_TRUE(targetLoop.demandComponent(storage.handle()));
+  ASSERT_TRUE(storage.supplyInletModelObject());
+  ASSERT_TRUE(storage.supplyOutletModelObject());
+  ASSERT_TRUE(storage.demandInletModelObject());
+  ASSERT_TRUE(storage.demandOutletModelObject());
+  EXPECT_EQ(primaryInletHandle, storage.supplyInletModelObject()->handle());
+  EXPECT_EQ(primaryOutletHandle, storage.supplyOutletModelObject()->handle());
+  EXPECT_NE(oldSourceInletHandle, storage.demandInletModelObject()->handle());
+  EXPECT_NE(oldSourceOutletHandle, storage.demandOutletModelObject()->handle());
+  EXPECT_TRUE(model.getObject(oldSourceInletHandle));
+  EXPECT_TRUE(model.getObject(oldSourceOutletHandle));
+  EXPECT_EQ(sizingHandle, storage.waterHeaterSizing().handle());
+  EXPECT_DOUBLE_EQ(1.75, *storage.waterHeaterSizing().timeStorageCanMeetPeakDraw());
+  EXPECT_DOUBLE_EQ(3.25, *storage.waterHeaterSizing().timeforTankRecovery());
+  ASSERT_TRUE(storage.setpointTemperatureSchedule());
+  ASSERT_TRUE(storage.ambientTemperatureSchedule());
+  ASSERT_TRUE(storage.useSideAvailabilitySchedule());
+  ASSERT_TRUE(storage.sourceSideAvailabilitySchedule());
+  ASSERT_TRUE(storage.ambientTemperatureThermalZone());
+  ASSERT_TRUE(storage.ambientTemperatureOutdoorAirNodeName());
+  EXPECT_EQ(setpointSchedule, *storage.setpointTemperatureSchedule());
+  EXPECT_EQ(ambientSchedule, *storage.ambientTemperatureSchedule());
+  EXPECT_EQ(useSchedule, *storage.useSideAvailabilitySchedule());
+  EXPECT_EQ(sourceSchedule, *storage.sourceSideAvailabilitySchedule());
+  EXPECT_EQ(ambientZone, *storage.ambientTemperatureThermalZone());
+  EXPECT_EQ("Preserved Storage Ambient OA Node", *storage.ambientTemperatureOutdoorAirNodeName());
+  EXPECT_DOUBLE_EQ(73.25, storage.tankVolume());
+  EXPECT_DOUBLE_EQ(0.87, storage.sourceSideHeatTransferEffectiveness());
+  for (unsigned field = 0u; field < storage.numFields(); ++field) {
+    if (field == storage.demandInletPort() || field == storage.demandOutletPort()) {
+      continue;
+    }
+    ASSERT_LT(field, before.storageRawFields.size());
+    EXPECT_TRUE(before.storageRawFields[field] == rawField(storage, field));
+  }
+  EXPECT_TRUE(before.sizingRawFields == captureThermalStorageMove(model, primaryLoop, sourceLoop, targetLoop, storage).sizingRawFields);
+  EXPECT_EQ(primarySetpoint.handle(), primaryLoop.loopTemperatureSetpointNode().handle());
+  EXPECT_EQ(sourceSetpoint.handle(), sourceLoop.loopTemperatureSetpointNode().handle());
+  EXPECT_EQ(targetSetpoint.handle(), targetLoop.loopTemperatureSetpointNode().handle());
+
+  sourceBranchList = sourceLoop.getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::DemandSideBranchListName);
+  targetBranchList = targetLoop.getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::DemandSideBranchListName);
+  ASSERT_TRUE(sourceBranchList);
+  ASSERT_TRUE(targetBranchList);
+  EXPECT_EQ(sourceBranchHandlesBefore, objectHandles(sourceBranchList->branches()));
+  EXPECT_EQ(sourceDefaultBranch, sourceBranchList->branches()[1].handle());
+  EXPECT_TRUE(sourceBranchList->branches()[1].components().empty());
+  expectDemandBranchAndConnectorOrder(sourceLoop, sourceBranchHandlesBefore);
+  const auto targetBranchHandlesAfter = objectHandles(targetBranchList->branches());
+  ASSERT_EQ(4u, targetBranchHandlesAfter.size());
+  EXPECT_EQ(targetBranchHandlesBefore[0], targetBranchHandlesAfter[0]);
+  EXPECT_EQ(targetBranchHandlesBefore[1], targetBranchHandlesAfter[1]);
+  EXPECT_EQ(targetBranchHandlesBefore[2], targetBranchHandlesAfter[3]);
+  expectDemandBranchAndConnectorOrder(targetLoop, targetBranchHandlesAfter);
+
+  ASSERT_TRUE(model.save(idfPath, true));
+  auto loadedModel = Model::load(idfPath);
+  ASSERT_TRUE(loadedModel);
+  const auto report = loadedModel->canonicalize();
+  EXPECT_EQ(0u, report.errorCount);
+  auto loadedPrimary = loadedModel->getConcreteModelObjectByName<PlantLoop>("Thermal Storage UseSide Loop");
+  auto loadedSource = loadedModel->getConcreteModelObjectByName<PlantLoop>("Thermal Storage Original SourceSide Loop");
+  auto loadedTarget = loadedModel->getConcreteModelObjectByName<PlantLoop>("Thermal Storage Moved SourceSide Loop");
+  auto loadedStorage = loadedModel->getConcreteModelObjectByName<ThermalStorageChilledWaterStratified>("Moved Stratified Chilled Water Storage");
+  auto loadedTargetPipe = loadedModel->getConcreteModelObjectByName<PipeAdiabatic>("Retained Thermal Storage Target Pipe");
+  auto loadedZone = loadedModel->getConcreteModelObjectByName<ThermalZone>("Thermal Storage Ambient Zone");
+  ASSERT_TRUE(loadedPrimary);
+  ASSERT_TRUE(loadedSource);
+  ASSERT_TRUE(loadedTarget);
+  ASSERT_TRUE(loadedStorage);
+  ASSERT_TRUE(loadedTargetPipe);
+  ASSERT_TRUE(loadedZone);
+  ASSERT_TRUE(loadedStorage->plantLoop());
+  ASSERT_TRUE(loadedStorage->secondaryPlantLoop());
+  EXPECT_EQ(*loadedPrimary, *loadedStorage->plantLoop());
+  EXPECT_EQ(*loadedTarget, *loadedStorage->secondaryPlantLoop());
+  EXPECT_FALSE(loadedSource->demandComponent(loadedStorage->handle()));
+  EXPECT_EQ(1u, loadedModel->getConcreteModelObjects<WaterHeaterSizing>().size());
+  EXPECT_EQ(loadedStorage->handle(), loadedStorage->waterHeaterSizing().waterHeater().handle());
+  EXPECT_DOUBLE_EQ(1.75, *loadedStorage->waterHeaterSizing().timeStorageCanMeetPeakDraw());
+  EXPECT_DOUBLE_EQ(3.25, *loadedStorage->waterHeaterSizing().timeforTankRecovery());
+  ASSERT_TRUE(loadedStorage->ambientTemperatureThermalZone());
+  ASSERT_TRUE(loadedStorage->ambientTemperatureOutdoorAirNodeName());
+  EXPECT_EQ(*loadedZone, *loadedStorage->ambientTemperatureThermalZone());
+  EXPECT_EQ("Preserved Storage Ambient OA Node", *loadedStorage->ambientTemperatureOutdoorAirNodeName());
+  EXPECT_DOUBLE_EQ(73.25, loadedStorage->tankVolume());
+  EXPECT_DOUBLE_EQ(0.87, loadedStorage->sourceSideHeatTransferEffectiveness());
+
+  const auto loadedStorageHandle = loadedStorage->handle();
+  const auto loadedSizingHandle = loadedStorage->waterHeaterSizing().handle();
+  const auto loadedPrimaryComponents = objectHandles(loadedPrimary->supplyComponents());
+  ASSERT_TRUE(loadedStorage->supplyInletModelObject());
+  ASSERT_TRUE(loadedStorage->supplyOutletModelObject());
+  const auto loadedPrimaryInletHandle = loadedStorage->supplyInletModelObject()->handle();
+  const auto loadedPrimaryOutletHandle = loadedStorage->supplyOutletModelObject()->handle();
+  std::set<openstudio::Handle> removedTargetHandles{loadedTarget->handle(), loadedTarget->sizingPlant().handle(), loadedTargetPipe->handle()};
+  const auto addTargetOwner = [&removedTargetHandles, &loadedStorage](const ModelObject& object) {
+    if (object.handle() != loadedStorage->handle()) {
+      removedTargetHandles.insert(object.handle());
+    }
+  };
+  const auto loadedSupplyBranchList = loadedTarget->getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::PlantSideBranchListName);
+  const auto loadedDemandBranchList = loadedTarget->getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::DemandSideBranchListName);
+  const auto loadedSupplyConnectorList = loadedTarget->getModelObjectTarget<ModelObject>(openstudio::PlantLoopFields::PlantSideConnectorListName);
+  const auto loadedDemandConnectorList = loadedTarget->getModelObjectTarget<ModelObject>(openstudio::PlantLoopFields::DemandSideConnectorListName);
+  const auto loadedAssignmentList =
+    loadedTarget->getModelObjectTarget<AvailabilityManagerAssignmentList>(openstudio::PlantLoopFields::AvailabilityManagerListName);
+  const auto loadedOperationSchemes =
+    loadedTarget->getModelObjectTarget<PlantEquipmentOperationSchemes>(openstudio::PlantLoopFields::PlantEquipmentOperationSchemeName);
+  ASSERT_TRUE(loadedSupplyBranchList);
+  ASSERT_TRUE(loadedDemandBranchList);
+  ASSERT_TRUE(loadedSupplyConnectorList);
+  ASSERT_TRUE(loadedDemandConnectorList);
+  ASSERT_TRUE(loadedAssignmentList);
+  ASSERT_TRUE(loadedOperationSchemes);
+  addTargetOwner(*loadedSupplyBranchList);
+  addTargetOwner(*loadedDemandBranchList);
+  addTargetOwner(*loadedSupplyConnectorList);
+  addTargetOwner(*loadedDemandConnectorList);
+  addTargetOwner(*loadedAssignmentList);
+  addTargetOwner(*loadedOperationSchemes);
+  for (const auto& branches : {loadedSupplyBranchList->branches(), loadedDemandBranchList->branches()}) {
+    for (const auto& branch : branches) {
+      addTargetOwner(branch);
+      for (unsigned row = 0u; row < branch.extensibleGroups().size(); ++row) {
+        if (auto inlet = branch.componentInletNode(row)) {
+          addTargetOwner(*inlet);
+        }
+        if (auto outlet = branch.componentOutletNode(row)) {
+          addTargetOwner(*outlet);
+        }
+      }
+    }
+  }
+  addTargetOwner(loadedTarget->supplySplitter());
+  addTargetOwner(loadedTarget->supplyMixer());
+  addTargetOwner(loadedTarget->demandSplitter());
+  addTargetOwner(loadedTarget->demandMixer());
+  addTargetOwner(loadedTarget->supplyInletNode());
+  addTargetOwner(loadedTarget->supplyOutletNode());
+  addTargetOwner(loadedTarget->demandInletNode());
+  addTargetOwner(loadedTarget->demandOutletNode());
+
+  EXPECT_FALSE(loadedTarget->remove().empty());
+  for (const auto& handle : removedTargetHandles) {
+    EXPECT_FALSE(loadedModel->getObject(handle));
+  }
+  EXPECT_TRUE(loadedModel->getObject(loadedPrimary->handle()));
+  EXPECT_TRUE(loadedModel->getObject(loadedSource->handle()));
+  EXPECT_TRUE(loadedModel->getObject(loadedStorageHandle));
+  EXPECT_TRUE(loadedModel->getObject(loadedSizingHandle));
+  EXPECT_EQ(loadedPrimaryComponents, objectHandles(loadedPrimary->supplyComponents()));
+  ASSERT_TRUE(loadedStorage->plantLoop());
+  EXPECT_EQ(*loadedPrimary, *loadedStorage->plantLoop());
+  EXPECT_FALSE(loadedStorage->secondaryPlantLoop());
+  EXPECT_FALSE(loadedStorage->demandInletModelObject());
+  EXPECT_FALSE(loadedStorage->demandOutletModelObject());
+  ASSERT_TRUE(loadedStorage->supplyInletModelObject());
+  ASSERT_TRUE(loadedStorage->supplyOutletModelObject());
+  EXPECT_EQ(loadedPrimaryInletHandle, loadedStorage->supplyInletModelObject()->handle());
+  EXPECT_EQ(loadedPrimaryOutletHandle, loadedStorage->supplyOutletModelObject()->handle());
+  EXPECT_EQ(loadedSizingHandle, loadedStorage->waterHeaterSizing().handle());
+}
+
+TEST_F(EPModelFixture, PlantLoop_ThermalStorageSourceDemandMoveParallelToDefaultIsTransactionalAndDirectRemovalReattaches) {
+  Model model;
+  PlantLoop primaryLoop(model);
+  PlantLoop sourceLoop(model);
+  PlantLoop targetLoop(model);
+  ThermalStorageChilledWaterStratified storage(model);
+  PipeAdiabatic retainedSourcePipe(model);
+  ASSERT_TRUE(primaryLoop.addSupplyBranchForComponent(storage));
+  ASSERT_TRUE(sourceLoop.addDemandBranchForComponent(retainedSourcePipe));
+  ASSERT_TRUE(sourceLoop.addDemandBranchForComponent(storage));
+  ASSERT_TRUE(storage.demandInletModelObject());
+  ASSERT_TRUE(storage.demandOutletModelObject());
+  auto primarySetpoint = primaryLoop.supplyInletNode();
+  auto sourceSetpoint = sourceLoop.supplyInletNode();
+  auto targetSetpoint = targetLoop.supplyInletNode();
+  ASSERT_TRUE(primaryLoop.setLoopTemperatureSetpointNode(primarySetpoint));
+  ASSERT_TRUE(sourceLoop.setLoopTemperatureSetpointNode(sourceSetpoint));
+  ASSERT_TRUE(targetLoop.setLoopTemperatureSetpointNode(targetSetpoint));
+
+  const auto sizingHandle = storage.waterHeaterSizing().handle();
+  const auto oldSourceInletHandle = storage.demandInletModelObject()->handle();
+  const auto oldSourceOutletHandle = storage.demandOutletModelObject()->handle();
+  auto sourceBranchList = sourceLoop.getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::DemandSideBranchListName);
+  auto targetBranchList = targetLoop.getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::DemandSideBranchListName);
+  ASSERT_TRUE(sourceBranchList);
+  ASSERT_TRUE(targetBranchList);
+  const auto sourceBranchesBefore = sourceBranchList->branches();
+  const auto sourceBranchHandlesBefore = objectHandles(sourceBranchesBefore);
+  const auto targetBranchHandlesBefore = objectHandles(targetBranchList->branches());
+  ASSERT_EQ(4u, sourceBranchHandlesBefore.size());
+  ASSERT_EQ(3u, targetBranchHandlesBefore.size());
+  const auto removedBranch = std::ranges::find_if(sourceBranchesBefore, [&storage](const auto& branch) {
+    const auto components = branch.components();
+    return std::ranges::find(components, storage.cast<ModelObject>()) != components.end();
+  });
+  ASSERT_NE(sourceBranchesBefore.end(), removedBranch);
+  const auto removedBranchHandle = removedBranch->handle();
+  auto expectedSourceBranches = sourceBranchHandlesBefore;
+  expectedSourceBranches.erase(std::ranges::find(expectedSourceBranches, removedBranchHandle));
+  const auto targetDefaultBranch = targetBranchHandlesBefore[1];
+
+  const auto before = captureThermalStorageMove(model, primaryLoop, sourceLoop, targetLoop, storage);
+  {
+    test::ScopedTestFailure failure(model, detail::TestFailurePoint::PlantLoopAfterThermalStorageSourceBranchAttachmentPrepared);
+    EXPECT_FALSE(targetLoop.addDemandBranchForComponent(storage));
+  }
+  EXPECT_EQ(before, captureThermalStorageMove(model, primaryLoop, sourceLoop, targetLoop, storage));
+
+  ASSERT_TRUE(targetLoop.addDemandBranchForComponent(storage));
+  EXPECT_FALSE(model.getObject(removedBranchHandle));
+  EXPECT_TRUE(model.getObject(oldSourceInletHandle));
+  EXPECT_TRUE(model.getObject(oldSourceOutletHandle));
+  EXPECT_EQ(sizingHandle, storage.waterHeaterSizing().handle());
+  sourceBranchList = sourceLoop.getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::DemandSideBranchListName);
+  targetBranchList = targetLoop.getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::DemandSideBranchListName);
+  ASSERT_TRUE(sourceBranchList);
+  ASSERT_TRUE(targetBranchList);
+  EXPECT_EQ(expectedSourceBranches, objectHandles(sourceBranchList->branches()));
+  EXPECT_EQ(targetBranchHandlesBefore, objectHandles(targetBranchList->branches()));
+  EXPECT_EQ(targetDefaultBranch, targetBranchList->branches()[1].handle());
+  expectDemandBranchAndConnectorOrder(sourceLoop, expectedSourceBranches);
+  expectDemandBranchAndConnectorOrder(targetLoop, targetBranchHandlesBefore);
+  EXPECT_EQ(primarySetpoint.handle(), primaryLoop.loopTemperatureSetpointNode().handle());
+  EXPECT_EQ(sourceSetpoint.handle(), sourceLoop.loopTemperatureSetpointNode().handle());
+  EXPECT_EQ(targetSetpoint.handle(), targetLoop.loopTemperatureSetpointNode().handle());
+
+  ASSERT_TRUE(targetLoop.removeDemandBranchWithComponent(storage));
+  EXPECT_TRUE(storage.plantLoop());
+  EXPECT_FALSE(storage.secondaryPlantLoop());
+  EXPECT_FALSE(storage.demandInletModelObject());
+  EXPECT_FALSE(storage.demandOutletModelObject());
+  EXPECT_EQ(sizingHandle, storage.waterHeaterSizing().handle());
+  targetBranchList = targetLoop.getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::DemandSideBranchListName);
+  ASSERT_TRUE(targetBranchList);
+  EXPECT_EQ(targetBranchHandlesBefore, objectHandles(targetBranchList->branches()));
+  EXPECT_TRUE(targetBranchList->branches()[1].components().empty());
+
+  ASSERT_TRUE(targetLoop.addDemandBranchForComponent(storage));
+  ASSERT_TRUE(storage.secondaryPlantLoop());
+  EXPECT_EQ(targetLoop, *storage.secondaryPlantLoop());
+  EXPECT_EQ(sizingHandle, storage.waterHeaterSizing().handle());
+  EXPECT_EQ(targetBranchHandlesBefore, objectHandles(targetBranchList->branches()));
+  EXPECT_EQ(targetDefaultBranch, targetBranchList->branches()[1].handle());
+  expectDemandBranchAndConnectorOrder(targetLoop, targetBranchHandlesBefore);
+}
+
+TEST_F(EPModelFixture, PlantLoop_ThermalStorageOwnerRemovalRetainsSizingUntilFinalOwnerInEitherOrder) {
+  const auto runRemovalOrder = [](bool primaryFirst) {
+    SCOPED_TRACE(primaryFirst ? "primary-first" : "source-first");
+    Model model;
+    PlantLoop primaryLoop(model);
+    PlantLoop sourceLoop(model);
+    ThermalStorageChilledWaterStratified storage(model);
+    ScheduleConstant preservedSchedule(model);
+    ThermalZone preservedZone(model);
+    ASSERT_TRUE(preservedSchedule.setValue(19.0));
+    ASSERT_TRUE(storage.setAmbientTemperatureSchedule(preservedSchedule));
+    ASSERT_TRUE(storage.setAmbientTemperatureThermalZone(preservedZone));
+    ASSERT_TRUE(primaryLoop.addSupplyBranchForComponent(storage));
+    ASSERT_TRUE(sourceLoop.addDemandBranchForComponent(storage));
+    PipeAdiabatic finalOwnerPipe(model);
+    ASSERT_TRUE(primaryFirst ? sourceLoop.addDemandBranchForComponent(finalOwnerPipe) : primaryLoop.addSupplyBranchForComponent(finalOwnerPipe));
+
+    const auto storageHandle = storage.handle();
+    const auto sizingHandle = storage.waterHeaterSizing().handle();
+    const auto scheduleHandle = preservedSchedule.handle();
+    const auto zoneHandle = preservedZone.handle();
+    const auto primaryHandle = primaryLoop.handle();
+    const auto sourceHandle = sourceLoop.handle();
+    const auto finalOwnerPipeHandle = finalOwnerPipe.handle();
+    auto& firstLoop = primaryFirst ? primaryLoop : sourceLoop;
+    auto& secondLoop = primaryFirst ? sourceLoop : primaryLoop;
+    EXPECT_FALSE(firstLoop.remove().empty());
+    EXPECT_FALSE(model.getObject(primaryFirst ? primaryHandle : sourceHandle));
+    EXPECT_TRUE(model.getObject(storageHandle));
+    EXPECT_TRUE(model.getObject(sizingHandle));
+    EXPECT_EQ(sizingHandle, storage.waterHeaterSizing().handle());
+    EXPECT_EQ(storageHandle, storage.waterHeaterSizing().waterHeater().handle());
+    EXPECT_EQ(primaryFirst, !storage.plantLoop());
+    EXPECT_EQ(!primaryFirst, !storage.secondaryPlantLoop());
+    EXPECT_TRUE(model.getObject(scheduleHandle));
+    EXPECT_TRUE(model.getObject(zoneHandle));
+    EXPECT_TRUE(model.getObject(finalOwnerPipeHandle));
+
+    EXPECT_FALSE(secondLoop.remove().empty());
+    EXPECT_FALSE(model.getObject(primaryFirst ? sourceHandle : primaryHandle));
+    EXPECT_FALSE(model.getObject(storageHandle));
+    EXPECT_FALSE(model.getObject(sizingHandle));
+    EXPECT_FALSE(model.getObject(finalOwnerPipeHandle));
+    EXPECT_TRUE(model.getObject(scheduleHandle));
+    EXPECT_TRUE(model.getObject(zoneHandle));
+  };
+
+  runRemovalOrder(false);
+  runRemovalOrder(true);
+}
+
+TEST_F(EPModelFixture, PlantLoop_ThermalStorageInitialDemandAttachmentAndOwnerRejectionsRemainExact) {
+  Model model;
+  PlantLoop unattachedTarget(model);
+  ThermalStorageChilledWaterStratified unattachedStorage(model);
+  EXPECT_TRUE(unattachedTarget.addDemandBranchForComponent(unattachedStorage));
+  EXPECT_FALSE(unattachedStorage.plantLoop());
+  ASSERT_TRUE(unattachedStorage.secondaryPlantLoop());
+  EXPECT_EQ(unattachedTarget, *unattachedStorage.secondaryPlantLoop());
+
+  PlantLoop primaryLoop(model);
+  PlantLoop sourceLoop(model);
+  PlantLoop targetLoop(model);
+  ThermalStorageChilledWaterStratified storage(model);
+  ASSERT_TRUE(primaryLoop.addSupplyBranchForComponent(storage));
+  EXPECT_TRUE(sourceLoop.addDemandBranchForComponent(storage));
+  ASSERT_TRUE(storage.plantLoop());
+  ASSERT_TRUE(storage.secondaryPlantLoop());
+  EXPECT_EQ(primaryLoop, *storage.plantLoop());
+  EXPECT_EQ(sourceLoop, *storage.secondaryPlantLoop());
+
+  const auto before = captureThermalStorageMove(model, primaryLoop, sourceLoop, targetLoop, storage);
+  EXPECT_FALSE(primaryLoop.addDemandBranchForComponent(storage));
+  EXPECT_EQ(before, captureThermalStorageMove(model, primaryLoop, sourceLoop, targetLoop, storage));
+  EXPECT_FALSE(sourceLoop.addDemandBranchForComponent(storage));
+  EXPECT_EQ(before, captureThermalStorageMove(model, primaryLoop, sourceLoop, targetLoop, storage));
+  EXPECT_FALSE(targetLoop.addDemandBranchForComponent(storage, true));
+  EXPECT_EQ(before, captureThermalStorageMove(model, primaryLoop, sourceLoop, targetLoop, storage));
+
+  Model foreignModel;
+  PlantLoop foreignTarget(foreignModel);
+  EXPECT_FALSE(foreignTarget.addDemandBranchForComponent(storage));
+  EXPECT_EQ(before, captureThermalStorageMove(model, primaryLoop, sourceLoop, targetLoop, storage));
+}
+
+TEST_F(EPModelFixture, PlantLoop_ThermalStorageMoveAndOwnerRemovalRejectMalformedSizingEvidenceWithoutMutation) {
+  enum class SizingCase
+  {
+    Missing,
+    Duplicate,
+    RawOnlyAlias,
+    WrongTarget,
+    AmbiguousMixedStorageName,
+    AmbiguousWaterHeaterName,
+  };
+
+  for (const auto sizingCase : {SizingCase::Missing, SizingCase::Duplicate, SizingCase::RawOnlyAlias, SizingCase::WrongTarget,
+                                SizingCase::AmbiguousMixedStorageName, SizingCase::AmbiguousWaterHeaterName}) {
+    SCOPED_TRACE(static_cast<int>(sizingCase));
+    Model model;
+    PlantLoop primaryLoop(model);
+    PlantLoop sourceLoop(model);
+    PlantLoop targetLoop(model);
+    ThermalStorageChilledWaterStratified storage(model);
+    ASSERT_TRUE(storage.setName("Sizing Evidence Storage"));
+    ASSERT_TRUE(primaryLoop.addSupplyBranchForComponent(storage));
+    ASSERT_TRUE(sourceLoop.addDemandBranchForComponent(storage));
+
+    if (sizingCase == SizingCase::Missing) {
+      storage.waterHeaterSizing().remove();
+    } else if (sizingCase == SizingCase::Duplicate) {
+      WaterHeaterSizing duplicate(storage);
+      ASSERT_EQ(storage.handle(), duplicate.waterHeater().handle());
+    } else if (sizingCase == SizingCase::RawOnlyAlias) {
+      WaterHeaterSizing rawAlias(model);
+      auto rawAliasImpl = rawAlias.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+      ASSERT_TRUE(rawAliasImpl);
+      ASSERT_TRUE(rawAliasImpl->setPointer(openstudio::WaterHeater_SizingFields::WaterHeaterName, openstudio::Handle(), false));
+      ASSERT_TRUE(rawAliasImpl->openstudio::detail::IdfObject_Impl::setString(openstudio::WaterHeater_SizingFields::WaterHeaterName,
+                                                                              storage.nameString(), false));
+    } else if (sizingCase == SizingCase::WrongTarget) {
+      HeatExchangerFluidToFluid wrongTarget(model);
+      ASSERT_TRUE(wrongTarget.setName("Wrong Sizing Target"));
+      auto sizingImpl = storage.waterHeaterSizing().getImpl<openstudio::detail::WorkspaceObject_Impl>();
+      ASSERT_TRUE(sizingImpl);
+      ASSERT_TRUE(sizingImpl->openstudio::detail::IdfObject_Impl::setString(openstudio::WaterHeater_SizingFields::WaterHeaterName,
+                                                                            wrongTarget.nameString(), false));
+    } else if (sizingCase == SizingCase::AmbiguousMixedStorageName) {
+      ThermalStorageChilledWaterMixed ambiguousStorageName(model);
+      auto ambiguousImpl = ambiguousStorageName.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+      ASSERT_TRUE(ambiguousImpl);
+      ASSERT_TRUE(ambiguousImpl->openstudio::detail::IdfObject_Impl::setString(openstudio::ThermalStorage_ChilledWater_MixedFields::Name,
+                                                                               storage.nameString(), false));
+    } else {
+      WaterHeaterMixed ambiguousWaterHeaterName(model);
+      auto ambiguousImpl = ambiguousWaterHeaterName.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+      ASSERT_TRUE(ambiguousImpl);
+      ASSERT_TRUE(
+        ambiguousImpl->openstudio::detail::IdfObject_Impl::setString(openstudio::WaterHeater_MixedFields::Name, storage.nameString(), false));
+    }
+
+    const auto before = captureThermalStorageMove(model, primaryLoop, sourceLoop, targetLoop, storage, false);
+    EXPECT_FALSE(targetLoop.addDemandBranchForComponent(storage));
+    EXPECT_EQ(before, captureThermalStorageMove(model, primaryLoop, sourceLoop, targetLoop, storage, false));
+    std::vector<openstudio::IdfObject> removed;
+    EXPECT_NO_THROW(removed = primaryLoop.remove());
+    EXPECT_TRUE(removed.empty());
+    EXPECT_TRUE(model.getObject(primaryLoop.handle()));
+    EXPECT_EQ(before, captureThermalStorageMove(model, primaryLoop, sourceLoop, targetLoop, storage, false));
+  }
+}
+
+TEST_F(EPModelFixture, PlantLoop_ThermalStorageMoveRejectsMalformedPortsRowsScaffoldsAndNodeCollisionsWithoutMutation) {
+  enum class MalformedCase
+  {
+    PartialPort,
+    SerialPrimary,
+    SerialSource,
+    RawDuplicateRow,
+    TargetScaffoldAlias,
+    TargetNodeCollision,
+  };
+
+  for (const auto malformedCase : {MalformedCase::PartialPort, MalformedCase::SerialPrimary, MalformedCase::SerialSource,
+                                   MalformedCase::RawDuplicateRow, MalformedCase::TargetScaffoldAlias, MalformedCase::TargetNodeCollision}) {
+    SCOPED_TRACE(static_cast<int>(malformedCase));
+    Model model;
+    PlantLoop primaryLoop(model);
+    PlantLoop sourceLoop(model);
+    PlantLoop targetLoop(model);
+    ThermalStorageChilledWaterStratified storage(model);
+    ASSERT_TRUE(targetLoop.setName("Storage Malformed Target"));
+    ASSERT_TRUE(storage.setName("Storage Malformed Component"));
+    ASSERT_TRUE(primaryLoop.addSupplyBranchForComponent(storage));
+    ASSERT_TRUE(sourceLoop.addDemandBranchForComponent(storage));
+
+    if (malformedCase == MalformedCase::PartialPort) {
+      auto storageImpl = storage.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+      ASSERT_TRUE(storageImpl);
+      ASSERT_TRUE(storageImpl->setPointer(storage.demandOutletPort(), openstudio::Handle(), false));
+    } else if (malformedCase == MalformedCase::SerialPrimary) {
+      PipeAdiabatic serialPipe(model);
+      ASSERT_TRUE(storage.supplyOutletModelObject());
+      auto insertionNode = storage.supplyOutletModelObject()->cast<Node>();
+      ASSERT_TRUE(serialPipe.addToNode(insertionNode));
+    } else if (malformedCase == MalformedCase::SerialSource) {
+      PipeAdiabatic serialPipe(model);
+      ASSERT_TRUE(storage.demandOutletModelObject());
+      auto insertionNode = storage.demandOutletModelObject()->cast<Node>();
+      ASSERT_TRUE(serialPipe.addToNode(insertionNode));
+    } else if (malformedCase == MalformedCase::RawDuplicateRow) {
+      Branch rawAliasBranch(model);
+      auto rawAliasRow = rawAliasBranch.pushExtensibleGroup();
+      ASSERT_FALSE(rawAliasRow.empty());
+      ASSERT_TRUE(rawAliasRow.setString(openstudio::BranchExtensibleFields::ComponentObjectType, storage.iddObject().name(), false));
+      ASSERT_TRUE(rawAliasRow.setString(openstudio::BranchExtensibleFields::ComponentName, storage.nameString(), false));
+      ASSERT_TRUE(
+        rawAliasRow.setString(openstudio::BranchExtensibleFields::ComponentInletNodeName, storage.demandInletModelObject()->nameString(), false));
+      ASSERT_TRUE(
+        rawAliasRow.setString(openstudio::BranchExtensibleFields::ComponentOutletNodeName, storage.demandOutletModelObject()->nameString(), false));
+    } else if (malformedCase == MalformedCase::TargetScaffoldAlias) {
+      PlantLoop aliasLoop(model);
+      auto targetBranchList = targetLoop.getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::DemandSideBranchListName);
+      ASSERT_TRUE(targetBranchList);
+      auto aliasLoopImpl = aliasLoop.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+      ASSERT_TRUE(aliasLoopImpl);
+      ASSERT_TRUE(aliasLoopImpl->setPointer(openstudio::PlantLoopFields::PlantSideBranchListName, targetBranchList->handle(), false));
+    } else {
+      auto targetBranchList = targetLoop.getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::DemandSideBranchListName);
+      ASSERT_TRUE(targetBranchList);
+      ASSERT_EQ(3u, targetBranchList->branches().size());
+      Node collision(model);
+      ASSERT_TRUE(collision.setName(targetBranchList->branches()[1].nameString() + " Node - " + storage.nameString() + " Outlet"));
+    }
+
+    const bool canObserveOwners = malformedCase != MalformedCase::PartialPort;
+    const auto before = captureThermalStorageMove(model, primaryLoop, sourceLoop, targetLoop, storage, canObserveOwners);
+    EXPECT_FALSE(targetLoop.addDemandBranchForComponent(storage));
+    EXPECT_EQ(before, captureThermalStorageMove(model, primaryLoop, sourceLoop, targetLoop, storage, canObserveOwners));
+    if (malformedCase == MalformedCase::PartialPort || malformedCase == MalformedCase::SerialPrimary || malformedCase == MalformedCase::SerialSource
+        || malformedCase == MalformedCase::RawDuplicateRow) {
+      auto& malformedOwner = malformedCase == MalformedCase::SerialPrimary ? primaryLoop : sourceLoop;
+      std::vector<openstudio::IdfObject> removed;
+      EXPECT_NO_THROW(removed = malformedOwner.remove());
+      EXPECT_TRUE(removed.empty());
+      EXPECT_TRUE(model.getObject(malformedOwner.handle()));
+      EXPECT_EQ(before, captureThermalStorageMove(model, primaryLoop, sourceLoop, targetLoop, storage, canObserveOwners));
+    }
   }
 }
 

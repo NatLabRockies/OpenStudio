@@ -105,6 +105,13 @@ The transactional branch evidence is deliberately exact rather than generic:
   reciprocal companion links. Both mappings have failure rollback, retry,
   save/load, branch-shape, malformed-state rejection, and owner-removal
   evidence. This is per-object demand movement, not a companion-pair move.
+- An exact `ThermalStorageChilledWaterStratified` can move its source-side
+  demand connection while retaining its use-side primary loop, schedules,
+  ambient relationship, settings, and owned `WaterHeaterSizing` object. Loop
+  removal retains the storage and sizing while the other water-side owner
+  survives and removes both with the final owner, including loops that also
+  own ordinary straight equipment. Standalone storage removal remains outside
+  this exact lifecycle contract.
 - A configured `ChillerElectricEIR` can detach from a condenser loop without
   losing its chilled-water ownership. Removing the condenser loop removes only
   condenser-owned branch, operation, and companion objects; a replacement
@@ -161,10 +168,11 @@ or the presence of a scalar test.
 
 ## Ordered plant roadmap
 
-1. **Additional multi-owner and tertiary topology.** Extend the exact
-   water-to-water evidence to another selected secondary or tertiary owner,
-   then address branch replacement, clone/remove, and cross-model transfer.
-   Keep unsupported mutators out of wrappers until their ownership is defined.
+1. **Chiller heat-recovery and tertiary topology.** Add an exact
+   `ChillerElectricEIR` heat-recovery move through the explicit tertiary plant
+   operation while retaining chilled-water and condenser owners. Then extend
+   the proven tertiary boundary to another selected family before addressing
+   branch replacement, clone/remove, and cross-model transfer.
 2. **Additional contained owners.** Apply the private relocation boundary to
    another selected compound owner only after its child roles, internal air or
    zone path, controller behavior, and removal lifetime have exact rejection,

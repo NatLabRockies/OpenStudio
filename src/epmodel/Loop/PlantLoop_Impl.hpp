@@ -163,6 +163,7 @@ namespace epmodel {
       class DemandBranchRelocationPlan;
       class ExactPlantBranchTopologyInspection;
       class FluidToFluidHeatExchangerDemandBranchAttachmentPlan;
+      class ThermalStorageChilledWaterStratifiedDemandBranchAttachmentPlan;
       class EquationFitHeatPumpDemandBranchAttachmentPlan;
       class WaterCoilDemandBranchAttachmentPlan;
       class ContainedReheatCoilDemandBranchAttachmentPlan;

@@ -26,6 +26,7 @@
 #include "ModelObject/SizingPlant.hpp"
 #include "ModelObject/SizingPlant_Impl.hpp"
 #include "ModelObject/WaterHeaterSizing.hpp"
+#include "ModelObject/WaterHeaterSizing_Impl.hpp"
 #include "PlantEquipmentOperationScheme/PlantEquipmentOperationCoolingLoad.hpp"
 #include "PlantEquipmentOperationScheme/PlantEquipmentOperationHeatingLoad.hpp"
 #include "Schedule/Schedule.hpp"
@@ -101,6 +102,8 @@
 #include "WaterToWaterComponent/HeatPumpWaterToWaterEquationFitHeating_Impl.hpp"
 #include "WaterToWaterComponent/HeatExchangerFluidToFluid.hpp"
 #include "WaterToWaterComponent/HeatExchangerFluidToFluid_Impl.hpp"
+#include "WaterToWaterComponent/ThermalStorageChilledWaterStratified.hpp"
+#include "WaterToWaterComponent/ThermalStorageChilledWaterStratified_Impl.hpp"
 #include "WaterToWaterComponent/WaterHeaterMixed.hpp"
 #include "WaterToWaterComponent/WaterHeaterMixed_Impl.hpp"
 #include "WaterToWaterComponent/WaterHeaterStratified.hpp"
@@ -140,6 +143,8 @@
 #include <utilities/idd/OS_PlantLoop_FieldEnums.hxx>
 #include <utilities/idd/PlantLoop_FieldEnums.hxx>
 #include <utilities/idd/Sizing_Plant_FieldEnums.hxx>
+#include <utilities/idd/ThermalStorage_ChilledWater_Stratified_FieldEnums.hxx>
+#include <utilities/idd/WaterHeater_Sizing_FieldEnums.hxx>
 #include <utilities/idd/ZoneHVAC_FourPipeFanCoil_FieldEnums.hxx>
 #include <utilities/idd/ZoneHVAC_EquipmentConnections_FieldEnums.hxx>
 #include <utilities/idd/ZoneHVAC_EquipmentList_FieldEnums.hxx>
@@ -1029,9 +1034,10 @@ namespace epmodel {
 
     // Private one-shot demand-branch relocation shared only by the exact
     // owner-proven water-coil plans, the exact fluid-to-fluid heat exchanger,
-    // and the two exact EquationFit heat-pump plans below. Callers retain all
-    // component-specific ownership validation; this plan owns only the proven
-    // plant representation and two explicit component-port writes.
+    // the exact stratified chilled-water storage, and the two exact EquationFit
+    // heat-pump plans below. Callers retain all component-specific ownership
+    // validation; this plan owns only the proven plant representation and two
+    // explicit component-port writes.
     class PlantLoop_Impl::DemandBranchRelocationPlan
     {
      public:
@@ -1056,6 +1062,18 @@ namespace epmodel {
         }
         return prepareProven(targetLoopImpl, heatExchanger.cast<HVACComponent>(), std::move(sourceLoop), heatExchanger.demandInletPort(),
                              heatExchanger.demandOutletPort(), {validatedPrimaryRow});
+      }
+
+      static std::unique_ptr<DemandBranchRelocationPlan> prepareThermalStorageChilledWaterStratified(PlantLoop_Impl& targetLoopImpl,
+                                                                                                     ThermalStorageChilledWaterStratified storage,
+                                                                                                     PlantLoop sourceLoop,
+                                                                                                     const ExternalRow& validatedPrimaryRow) {
+        if (storage.iddObject().type() != ThermalStorageChilledWaterStratified::iddObjectType()) {
+          return nullptr;
+        }
+        return prepareProven(targetLoopImpl, storage.cast<HVACComponent>(), std::move(sourceLoop),
+                             openstudio::ThermalStorage_ChilledWater_StratifiedFields::SourceSideInletNodeName,
+                             openstudio::ThermalStorage_ChilledWater_StratifiedFields::SourceSideOutletNodeName, {validatedPrimaryRow});
       }
 
       static std::unique_ptr<DemandBranchRelocationPlan> prepareEquationFitHeatingHeatPump(PlantLoop_Impl& targetLoopImpl,
@@ -1907,6 +1925,246 @@ namespace epmodel {
 
      private:
       explicit FluidToFluidHeatExchangerDemandBranchAttachmentPlan(std::unique_ptr<DemandBranchRelocationPlan> plantRelocation)
+        : m_plantRelocation(std::move(plantRelocation)) {}
+
+      std::unique_ptr<DemandBranchRelocationPlan> m_plantRelocation;
+      bool m_committed = false;
+    };
+
+    // Exact ThermalStorage:ChilledWater:Stratified source-side moves retain
+    // their proven UseSide owner and canonical WaterHeater:Sizing child. The
+    // plan never reads or writes schedules, ambient relationships, or storage
+    // fields outside the two explicit SourceSide ports.
+    class PlantLoop_Impl::ThermalStorageChilledWaterStratifiedDemandBranchAttachmentPlan : private PlantLoop_Impl::ExactPlantBranchTopologyInspection
+    {
+     public:
+      struct ProvenOwnership
+      {
+        boost::optional<PlantLoop> primaryOwner;
+        boost::optional<PlantLoop> sourceOwner;
+        boost::optional<BranchOccurrence> primaryOccurrence;
+        boost::optional<BranchOccurrence> sourceOccurrence;
+        WaterHeaterSizing sizing;
+      };
+
+      static bool requiresExactAttachmentDispatch(const ThermalStorageChilledWaterStratified& storage) {
+        if (storage.iddObject().type() != ThermalStorageChilledWaterStratified::iddObjectType() || !hasUniqueEligibleStorageName(storage)
+            || !exactSizingChild(storage)) {
+          return true;
+        }
+
+        const bool supplyInletEvidence = fieldHasEvidence(storage, storage.supplyInletPort());
+        const bool supplyOutletEvidence = fieldHasEvidence(storage, storage.supplyOutletPort());
+        const bool demandInletEvidence = fieldHasEvidence(storage, storage.demandInletPort());
+        const bool demandOutletEvidence = fieldHasEvidence(storage, storage.demandOutletPort());
+        std::vector<BranchOccurrence> occurrences;
+        if (!collectOccurrences(storage, occurrences)) {
+          return true;
+        }
+
+        const bool anyFieldEvidence = supplyInletEvidence || supplyOutletEvidence || demandInletEvidence || demandOutletEvidence;
+        if (!anyFieldEvidence && occurrences.empty()) {
+          return false;
+        }
+
+        const auto ownership = provenOwnership(storage, false, false);
+        return !ownership || !ownership->primaryOwner || ownership->sourceOwner;
+      }
+
+      static bool targetIsPrimaryOwner(const PlantLoop_Impl& targetLoopImpl, const ThermalStorageChilledWaterStratified& storage) {
+        const auto ownership = provenOwnership(storage, false, false);
+        return ownership && ownership->primaryOwner && *ownership->primaryOwner == targetLoopImpl.getObject<PlantLoop>();
+      }
+
+      static boost::optional<ProvenOwnership> provenOwnershipForRemoval(const ThermalStorageChilledWaterStratified& storage) {
+        return provenOwnership(storage, false, false);
+      }
+
+      static bool hasBranchEvidence(const ThermalStorageChilledWaterStratified& storage, const std::vector<Branch>& branches) {
+        for (const auto& branch : branches) {
+          for (unsigned row = 0u; row < branch.extensibleGroups().size(); ++row) {
+            const auto componentNameField =
+              branch.iddObject().index(openstudio::ExtensibleIndex(row, openstudio::BranchExtensibleFields::ComponentName));
+            if (referencesObject(branch, componentNameField, storage)) {
+              return true;
+            }
+          }
+        }
+        return false;
+      }
+
+      static std::unique_ptr<ThermalStorageChilledWaterStratifiedDemandBranchAttachmentPlan> prepare(PlantLoop_Impl& targetLoopImpl,
+                                                                                                     ThermalStorageChilledWaterStratified storage) {
+        if (storage.model() != targetLoopImpl.model()) {
+          return nullptr;
+        }
+        const auto ownership = provenOwnership(storage, true, true);
+        if (!ownership || !ownership->primaryOwner || !ownership->sourceOwner || !ownership->primaryOccurrence) {
+          return nullptr;
+        }
+
+        const auto targetLoop = targetLoopImpl.getObject<PlantLoop>();
+        if (targetLoop == *ownership->primaryOwner || targetLoop == *ownership->sourceOwner || !observedPlantSideTopology(targetLoop, false)) {
+          return nullptr;
+        }
+
+        auto plantRelocation = DemandBranchRelocationPlan::prepareThermalStorageChilledWaterStratified(
+          targetLoopImpl, storage, *ownership->sourceOwner, {ownership->primaryOccurrence->branch.handle(), ownership->primaryOccurrence->row});
+        if (!plantRelocation) {
+          return nullptr;
+        }
+        return std::unique_ptr<ThermalStorageChilledWaterStratifiedDemandBranchAttachmentPlan>(
+          new ThermalStorageChilledWaterStratifiedDemandBranchAttachmentPlan(std::move(plantRelocation)));
+      }
+
+      ThermalStorageChilledWaterStratifiedDemandBranchAttachmentPlan(const ThermalStorageChilledWaterStratifiedDemandBranchAttachmentPlan&) = delete;
+      ThermalStorageChilledWaterStratifiedDemandBranchAttachmentPlan&
+        operator=(const ThermalStorageChilledWaterStratifiedDemandBranchAttachmentPlan&) = delete;
+      ThermalStorageChilledWaterStratifiedDemandBranchAttachmentPlan(ThermalStorageChilledWaterStratifiedDemandBranchAttachmentPlan&&) = delete;
+      ThermalStorageChilledWaterStratifiedDemandBranchAttachmentPlan&
+        operator=(ThermalStorageChilledWaterStratifiedDemandBranchAttachmentPlan&&) = delete;
+      ~ThermalStorageChilledWaterStratifiedDemandBranchAttachmentPlan() = default;
+
+      void commit() {
+        OS_ASSERT(m_plantRelocation && !m_committed);
+        m_plantRelocation->commit();
+        m_committed = true;
+      }
+
+     private:
+      static bool hasUniqueEligibleStorageName(const ThermalStorageChilledWaterStratified& storage) {
+        const auto name = storage.name();
+        if (!name || name->empty()) {
+          return false;
+        }
+        return std::ranges::count_if(storage.model().objects(),
+                                     [&name](const auto& candidate) {
+                                       const auto references = candidate.iddObject().references();
+                                       const bool isEligible = std::ranges::any_of(references, [](const auto& reference) {
+                                         return openstudio::istringEqual(reference, "ThermalStorageWaterNames")
+                                                || openstudio::istringEqual(reference, "WaterHeaterNames");
+                                       });
+                                       const auto candidateName = candidate.name();
+                                       return isEligible && candidateName && openstudio::istringEqual(*candidateName, *name);
+                                     })
+               == 1;
+      }
+
+      static boost::optional<WaterHeaterSizing> exactSizingChild(const ThermalStorageChilledWaterStratified& storage) {
+        if (!hasUniqueEligibleStorageName(storage)) {
+          return boost::none;
+        }
+
+        boost::optional<WaterHeaterSizing> result;
+        unsigned occurrences = 0u;
+        for (const auto& sizing : storage.model().getConcreteModelObjects<WaterHeaterSizing>()) {
+          if (!referencesObject(sizing, openstudio::WaterHeater_SizingFields::WaterHeaterName, storage)) {
+            continue;
+          }
+          const auto target = exactObjectField(sizing, openstudio::WaterHeater_SizingFields::WaterHeaterName);
+          if (!target || target->handle() != storage.handle() || target->iddObject().type() != storage.iddObject().type()) {
+            return boost::none;
+          }
+          ++occurrences;
+          result = sizing;
+        }
+        return occurrences == 1u ? result : boost::none;
+      }
+
+      static boost::optional<ProvenOwnership> provenOwnership(const ThermalStorageChilledWaterStratified& storage, bool requirePrimary,
+                                                              bool requireSource) {
+        if (storage.iddObject().type() != ThermalStorageChilledWaterStratified::iddObjectType() || !hasUniqueEligibleStorageName(storage)) {
+          return boost::none;
+        }
+        const auto sizing = exactSizingChild(storage);
+        if (!sizing) {
+          return boost::none;
+        }
+
+        const bool supplyInletEvidence = fieldHasEvidence(storage, storage.supplyInletPort());
+        const bool supplyOutletEvidence = fieldHasEvidence(storage, storage.supplyOutletPort());
+        const bool demandInletEvidence = fieldHasEvidence(storage, storage.demandInletPort());
+        const bool demandOutletEvidence = fieldHasEvidence(storage, storage.demandOutletPort());
+        if (supplyInletEvidence != supplyOutletEvidence || demandInletEvidence != demandOutletEvidence || (requirePrimary && !supplyInletEvidence)
+            || (requireSource && !demandInletEvidence) || (!supplyInletEvidence && !demandInletEvidence)) {
+          return boost::none;
+        }
+
+        const auto supplyInlet = supplyInletEvidence ? exactNodeField(storage, storage.supplyInletPort()) : boost::none;
+        const auto supplyOutlet = supplyOutletEvidence ? exactNodeField(storage, storage.supplyOutletPort()) : boost::none;
+        const auto demandInlet = demandInletEvidence ? exactNodeField(storage, storage.demandInletPort()) : boost::none;
+        const auto demandOutlet = demandOutletEvidence ? exactNodeField(storage, storage.demandOutletPort()) : boost::none;
+        if ((supplyInletEvidence && (!supplyInlet || !supplyOutlet)) || (demandInletEvidence && (!demandInlet || !demandOutlet))) {
+          return boost::none;
+        }
+
+        std::set<Handle> portHandles;
+        for (const auto& port : {supplyInlet, supplyOutlet, demandInlet, demandOutlet}) {
+          if (port && (!hasUniqueName(*port) || !portHandles.insert(port->handle()).second)) {
+            return boost::none;
+          }
+        }
+
+        std::vector<BranchOccurrence> occurrences;
+        const unsigned expectedOccurrences = static_cast<unsigned>(supplyInletEvidence) + static_cast<unsigned>(demandInletEvidence);
+        if (!collectOccurrences(storage, occurrences) || occurrences.size() != expectedOccurrences) {
+          return boost::none;
+        }
+
+        boost::optional<BranchOccurrence> primaryOccurrence;
+        boost::optional<BranchOccurrence> sourceOccurrence;
+        for (const auto& occurrence : occurrences) {
+          if (occurrence.branch.extensibleGroups().size() != 1u || !hasUniqueName(occurrence.branch)) {
+            return boost::none;
+          }
+          if (supplyInlet && supplyOutlet && occurrence.inlet == *supplyInlet && occurrence.outlet == *supplyOutlet) {
+            if (primaryOccurrence) {
+              return boost::none;
+            }
+            primaryOccurrence = occurrence;
+          } else if (demandInlet && demandOutlet && occurrence.inlet == *demandInlet && occurrence.outlet == *demandOutlet) {
+            if (sourceOccurrence) {
+              return boost::none;
+            }
+            sourceOccurrence = occurrence;
+          } else {
+            return boost::none;
+          }
+        }
+        if (static_cast<bool>(primaryOccurrence) != supplyInletEvidence || static_cast<bool>(sourceOccurrence) != demandInletEvidence) {
+          return boost::none;
+        }
+
+        boost::optional<PlantLoop> primaryOwner;
+        boost::optional<PlantLoop> sourceOwner;
+        boost::optional<BranchList> primaryBranchList;
+        boost::optional<BranchList> sourceBranchList;
+        if (primaryOccurrence) {
+          primaryBranchList = uniqueBranchListForBranch(storage.model(), primaryOccurrence->branch);
+          primaryOwner = primaryBranchList ? uniquePlantLoopForBranchList(storage.model(), *primaryBranchList, true) : boost::none;
+          const auto topology = primaryOwner ? observedPlantSideTopology(*primaryOwner, true) : boost::none;
+          if (!primaryBranchList || !primaryOwner || !topology || topology->branchList != *primaryBranchList
+              || std::ranges::count(topology->equipmentBranches, primaryOccurrence->branch) != 1) {
+            return boost::none;
+          }
+        }
+        if (sourceOccurrence) {
+          sourceBranchList = uniqueBranchListForBranch(storage.model(), sourceOccurrence->branch);
+          sourceOwner = sourceBranchList ? uniquePlantLoopForBranchList(storage.model(), *sourceBranchList, false) : boost::none;
+          const auto topology = sourceOwner ? observedPlantSideTopology(*sourceOwner, false) : boost::none;
+          if (!sourceBranchList || !sourceOwner || !topology || topology->branchList != *sourceBranchList
+              || std::ranges::count(topology->equipmentBranches, sourceOccurrence->branch) != 1) {
+            return boost::none;
+          }
+        }
+        if (primaryOwner && sourceOwner && (*primaryOwner == *sourceOwner || *primaryBranchList == *sourceBranchList)) {
+          return boost::none;
+        }
+
+        return ProvenOwnership{primaryOwner, sourceOwner, primaryOccurrence, sourceOccurrence, *sizing};
+      }
+
+      explicit ThermalStorageChilledWaterStratifiedDemandBranchAttachmentPlan(std::unique_ptr<DemandBranchRelocationPlan> plantRelocation)
         : m_plantRelocation(std::move(plantRelocation)) {}
 
       std::unique_ptr<DemandBranchRelocationPlan> m_plantRelocation;
@@ -3722,6 +3980,14 @@ namespace epmodel {
 
       const auto supplyBranches = supplyBranchList().branches();
       const auto demandBranches = demandBranchList().branches();
+      for (const auto& storage : model().getConcreteModelObjects<ThermalStorageChilledWaterStratified>()) {
+        const bool selectedStorageEvidence =
+          ThermalStorageChilledWaterStratifiedDemandBranchAttachmentPlan::hasBranchEvidence(storage, supplyBranches)
+          || ThermalStorageChilledWaterStratifiedDemandBranchAttachmentPlan::hasBranchEvidence(storage, demandBranches);
+        if (selectedStorageEvidence && !ThermalStorageChilledWaterStratifiedDemandBranchAttachmentPlan::provenOwnershipForRemoval(storage)) {
+          return {};
+        }
+      }
       enum class SelectedWaterToWaterOwner
       {
         Supply,
@@ -3735,12 +4001,14 @@ namespace epmodel {
         WaterToWaterComponent component;
         SelectedWaterToWaterOwner owner;
         bool retained;
+        boost::optional<WaterHeaterSizing> ownedSizing;
       };
       std::vector<WaterToAirComponent> retainedWaterCoils;
       std::vector<SelectedWaterToWaterComponent> selectedWaterToWaterComponents;
       size_t ownedSupplyStraightComponentCount = 0u;
       size_t ownedDemandStraightComponentCount = 0u;
       size_t selectedSpecializedComponentCount = 0u;
+      bool rejectedExactThermalStorage = false;
       const auto hasOnlySelectedComponents = [&](const auto& branches, bool supplySide) {
         for (const auto& branch : branches) {
           for (const auto& component : branch.components()) {
@@ -3784,19 +4052,42 @@ namespace epmodel {
             const auto waterHeaterMixed = component.template optionalCast<WaterHeaterMixed>();
             const auto waterHeaterStratified = component.template optionalCast<WaterHeaterStratified>();
             const bool isSelectedWaterHeater = waterHeaterMixed || waterHeaterStratified;
-            const auto children = waterToWaterComponent ? waterToWaterComponent->children() : std::vector<ModelObject>{};
+            const auto thermalStorage = component.template optionalCast<ThermalStorageChilledWaterStratified>();
+            const auto thermalStorageOwnership =
+              thermalStorage ? ThermalStorageChilledWaterStratifiedDemandBranchAttachmentPlan::provenOwnershipForRemoval(*thermalStorage)
+                             : boost::none;
+            if (thermalStorage && !thermalStorageOwnership) {
+              rejectedExactThermalStorage = true;
+              return false;
+            }
+            const auto children = thermalStorage ? std::vector<ModelObject>{thermalStorageOwnership->sizing.template cast<ModelObject>()}
+                                                 : (waterToWaterComponent ? waterToWaterComponent->children() : std::vector<ModelObject>{});
             const bool hasSelectedWaterHeaterChild =
               isSelectedWaterHeater && (children.size() == 1u) && (children.front().iddObject().type() == WaterHeaterSizing::iddObjectType());
-            if (!waterToWaterComponent || waterToWaterComponent->containingHVACComponent() || (!children.empty() && !hasSelectedWaterHeaterChild)) {
+            const bool hasSelectedThermalStorageChild =
+              thermalStorage && (children.size() == 1u) && (children.front().iddObject().type() == WaterHeaterSizing::iddObjectType());
+            if (!waterToWaterComponent || (!thermalStorage && waterToWaterComponent->containingHVACComponent())
+                || (!children.empty() && !hasSelectedWaterHeaterChild && !hasSelectedThermalStorageChild)) {
               return false;
             }
 
-            auto primaryLoop = waterToWaterComponent->plantLoop();
-            auto secondaryLoop = waterToWaterComponent->secondaryPlantLoop();
-            auto tertiaryLoop = waterToWaterComponent->tertiaryPlantLoop();
+            auto primaryLoop = thermalStorage ? thermalStorageOwnership->primaryOwner : waterToWaterComponent->plantLoop();
+            auto secondaryLoop = thermalStorage ? thermalStorageOwnership->sourceOwner : waterToWaterComponent->secondaryPlantLoop();
+            auto tertiaryLoop = thermalStorage ? boost::optional<PlantLoop>{} : waterToWaterComponent->tertiaryPlantLoop();
             bool retained = false;
             auto selectedOwner = supplySide ? SelectedWaterToWaterOwner::Supply : SelectedWaterToWaterOwner::SecondaryDemand;
-            if (component.template optionalCast<HeatExchangerFluidToFluid>()) {
+            if (thermalStorage) {
+              if (supplySide && primaryLoop && (*primaryLoop == plantLoop)) {
+                selectedOwner = SelectedWaterToWaterOwner::Supply;
+                retained = static_cast<bool>(secondaryLoop);
+              } else if (!supplySide && secondaryLoop && (*secondaryLoop == plantLoop)) {
+                selectedOwner = SelectedWaterToWaterOwner::SecondaryDemand;
+                retained = static_cast<bool>(primaryLoop);
+              } else {
+                rejectedExactThermalStorage = true;
+                return false;
+              }
+            } else if (component.template optionalCast<HeatExchangerFluidToFluid>()) {
               if (tertiaryLoop) {
                 return false;
               }
@@ -3963,7 +4254,9 @@ namespace epmodel {
             if (std::ranges::none_of(selectedWaterToWaterComponents, [&waterToWaterComponent](const auto& existing) {
                   return existing.component.handle() == waterToWaterComponent->handle();
                 })) {
-              selectedWaterToWaterComponents.push_back({*waterToWaterComponent, selectedOwner, retained});
+              selectedWaterToWaterComponents.push_back(
+                {*waterToWaterComponent, selectedOwner, retained,
+                 thermalStorage ? boost::optional<WaterHeaterSizing>(thermalStorageOwnership->sizing) : boost::none});
             }
           }
         }
@@ -3971,6 +4264,9 @@ namespace epmodel {
       };
       const bool hasOnlySelectedSupplyComponents = hasOnlySelectedComponents(supplyBranches, true);
       const bool hasOnlySelectedDemandComponents = hasOnlySelectedComponents(demandBranches, false);
+      if (rejectedExactThermalStorage) {
+        return {};
+      }
       bool isSelectedEquationFitCompanionPair = false;
       if (hasOnlySelectedSupplyComponents && hasOnlySelectedDemandComponents && retainedWaterCoils.empty()
           && (selectedSpecializedComponentCount == 2u) && (selectedWaterToWaterComponents.size() == 2u)
@@ -4006,10 +4302,23 @@ namespace epmodel {
           chiller && selected.retained && (selected.owner == SelectedWaterToWaterOwner::SecondaryDemand) && primaryLoop && (*primaryLoop != plantLoop)
           && condenserLoop && (*condenserLoop == plantLoop) && !chiller->tertiaryPlantLoop();
       }
+      bool isSelectedThermalStorageWithOwnedStraightEquipment = false;
+      // One exact storage owner can share its loop with ordinary equipment.
+      // Its validated sizing child remains selected even when this is the last
+      // owner; no other specialized family enters this exception.
+      if ((selectedSpecializedComponentCount == 1u) && retainedWaterCoils.empty() && (selectedWaterToWaterComponents.size() == 1u)
+          && ((ownedSupplyStraightComponentCount + ownedDemandStraightComponentCount) > 0u)) {
+        const auto& selected = selectedWaterToWaterComponents.front();
+        const auto storage = selected.component.optionalCast<ThermalStorageChilledWaterStratified>();
+        isSelectedThermalStorageWithOwnedStraightEquipment =
+          storage && selected.ownedSizing
+          && ((selected.owner == SelectedWaterToWaterOwner::Supply) || (selected.owner == SelectedWaterToWaterOwner::SecondaryDemand));
+      }
       const bool hasSelectedSpecializedCardinality =
         (selectedSpecializedComponentCount == 0u)
         || ((selectedSpecializedComponentCount == 1u) && ((ownedSupplyStraightComponentCount + ownedDemandStraightComponentCount) == 0u))
-        || isSelectedEquationFitCompanionPair || isSelectedChillerCondenserWithOwnedSupplyEquipment;
+        || isSelectedEquationFitCompanionPair || isSelectedChillerCondenserWithOwnedSupplyEquipment
+        || isSelectedThermalStorageWithOwnedStraightEquipment;
       if (!hasOnlySelectedSupplyComponents || !hasOnlySelectedDemandComponents || !hasSelectedSpecializedCardinality) {
         // Specialized branch members are separate ownership lifecycles.
         // Preserve the pre-existing generic behavior until each has a paired
@@ -4100,7 +4409,9 @@ namespace epmodel {
           }
         }
         if (!selectedComponent.retained) {
-          if (auto waterHeater = selectedComponent.component.optionalCast<WaterHeaterMixed>()) {
+          if (selectedComponent.ownedSizing) {
+            appendRemoved(selectedComponent.ownedSizing->remove());
+          } else if (auto waterHeater = selectedComponent.component.optionalCast<WaterHeaterMixed>()) {
             appendRemoved(waterHeater->waterHeaterSizing().remove());
           } else if (auto waterHeater = selectedComponent.component.optionalCast<WaterHeaterStratified>()) {
             appendRemoved(waterHeater->waterHeaterSizing().remove());
@@ -4782,6 +5093,33 @@ namespace epmodel {
             return false;
           }
           if (testFailurePointReached(model(), TestFailurePoint::PlantLoopAfterEquationFitHeatPumpBranchAttachmentPrepared)) {
+            return false;
+          }
+          plan->commit();
+          return true;
+        }
+      }
+      if (hvacComponent.iddObject().type() == ThermalStorageChilledWaterStratified::iddObjectType()) {
+        const auto storage = hvacComponent.cast<ThermalStorageChilledWaterStratified>();
+        if (tertiary) {
+          return false;
+        }
+        if (ThermalStorageChilledWaterStratifiedDemandBranchAttachmentPlan::targetIsPrimaryOwner(*this, storage)) {
+          LOG_FREE(Warn, "openstudio.epmodel.PlantLoop",
+                   "Refusing to attach " << hvacComponent.briefDescription() << " to the demand side of " << getObject<PlantLoop>().briefDescription()
+                                         << " because that PlantLoop is its proven UseSide primary owner.");
+          return false;
+        }
+        if (ThermalStorageChilledWaterStratifiedDemandBranchAttachmentPlan::requiresExactAttachmentDispatch(storage)) {
+          auto plan = ThermalStorageChilledWaterStratifiedDemandBranchAttachmentPlan::prepare(*this, storage);
+          if (!plan) {
+            LOG_FREE(Warn, "openstudio.epmodel.PlantLoop",
+                     "Refusing to move " << hvacComponent.briefDescription() << " to the demand side of " << getObject<PlantLoop>().briefDescription()
+                                         << " because its exact UseSide primary owner, SourceSide secondary owner, WaterHeater:Sizing child, "
+                                            "single-row branches, live ports, or target topology could not be validated.");
+            return false;
+          }
+          if (testFailurePointReached(model(), TestFailurePoint::PlantLoopAfterThermalStorageSourceBranchAttachmentPrepared)) {
             return false;
           }
           plan->commit();
