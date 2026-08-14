@@ -178,6 +178,11 @@ Status vocabulary:
 - `Near Parity`
 - `Parity with documented deltas`
 
+## Build
+
+- Use `-j24` for local compilation and build commands during EPModel work;
+  otherwise follow the repository's normal build invocation.
+
 ## Review
 
 Have separate agents review nontrivial code changes. At minimum, check:
