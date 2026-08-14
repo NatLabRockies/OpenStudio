@@ -134,6 +134,7 @@
 #include <utilities/idd/AirTerminal_SingleDuct_ConstantVolume_Reheat_FieldEnums.hxx>
 #include <utilities/idd/Branch_FieldEnums.hxx>
 #include <utilities/idd/BranchList_FieldEnums.hxx>
+#include <utilities/idd/Chiller_Electric_EIR_FieldEnums.hxx>
 #include <utilities/idd/ConnectorList_FieldEnums.hxx>
 #include <utilities/idd/Controller_WaterCoil_FieldEnums.hxx>
 #include <utilities/idd/GroundHeatExchanger_System_FieldEnums.hxx>
@@ -1034,8 +1035,9 @@ namespace epmodel {
 
     // Private one-shot demand-branch relocation shared only by the exact
     // owner-proven water-coil plans, the exact fluid-to-fluid heat exchanger,
-    // the exact stratified chilled-water storage, and the two exact EquationFit
-    // heat-pump plans below. Callers retain all component-specific ownership
+    // the exact stratified chilled-water storage, the exact Electric EIR chiller
+    // heat-recovery plan, and the two exact EquationFit heat-pump plans below.
+    // Callers retain all component-specific ownership
     // validation; this plan owns only the proven plant representation and two
     // explicit component-port writes.
     class PlantLoop_Impl::DemandBranchRelocationPlan
@@ -1062,6 +1064,18 @@ namespace epmodel {
         }
         return prepareProven(targetLoopImpl, heatExchanger.cast<HVACComponent>(), std::move(sourceLoop), heatExchanger.demandInletPort(),
                              heatExchanger.demandOutletPort(), {validatedPrimaryRow});
+      }
+
+      static std::unique_ptr<DemandBranchRelocationPlan> prepareChillerElectricEIRHeatRecovery(PlantLoop_Impl& targetLoopImpl,
+                                                                                               ChillerElectricEIR chiller, PlantLoop sourceLoop,
+                                                                                               const ExternalRow& validatedPrimaryRow,
+                                                                                               const ExternalRow& validatedCondenserRow) {
+        if (chiller.iddObject().type() != ChillerElectricEIR::iddObjectType()) {
+          return nullptr;
+        }
+        return prepareProven(targetLoopImpl, chiller.cast<HVACComponent>(), std::move(sourceLoop),
+                             openstudio::Chiller_Electric_EIRFields::HeatRecoveryInletNodeName,
+                             openstudio::Chiller_Electric_EIRFields::HeatRecoveryOutletNodeName, {validatedPrimaryRow, validatedCondenserRow});
       }
 
       static std::unique_ptr<DemandBranchRelocationPlan> prepareThermalStorageChilledWaterStratified(PlantLoop_Impl& targetLoopImpl,
@@ -1757,6 +1771,245 @@ namespace epmodel {
         }
         return ObservedPlantSideTopology{*branchList, *splitter, *mixer, equipmentBranches, branches.back(), *setpointTarget};
       }
+    };
+
+    // Exact Chiller:Electric:EIR heat-recovery moves retain their proven
+    // chilled-water and WaterCooled condenser owners. This plan observes all
+    // three plant representations before the generic tertiary path can remove
+    // the current heat-recovery row.
+    class PlantLoop_Impl::ChillerElectricEIRHeatRecoveryDemandBranchAttachmentPlan : private PlantLoop_Impl::ExactPlantBranchTopologyInspection
+    {
+     public:
+      static bool requiresExactAttachmentDispatch(const ChillerElectricEIR& chiller) {
+        if (chiller.iddObject().type() != ChillerElectricEIR::iddObjectType() || !hasUniqueName(chiller)) {
+          return true;
+        }
+
+        const bool heatRecoveryInletEvidence = fieldHasEvidence(chiller, openstudio::Chiller_Electric_EIRFields::HeatRecoveryInletNodeName);
+        const bool heatRecoveryOutletEvidence = fieldHasEvidence(chiller, openstudio::Chiller_Electric_EIRFields::HeatRecoveryOutletNodeName);
+        if (heatRecoveryInletEvidence || heatRecoveryOutletEvidence) {
+          return true;
+        }
+
+        // Preserve the existing initial tertiary attachment only when every
+        // existing non-HR row is an exact canonical chilled/condenser row.
+        return !hasCanonicalNoHeatRecoveryAttachment(chiller);
+      }
+
+      static std::unique_ptr<ChillerElectricEIRHeatRecoveryDemandBranchAttachmentPlan> prepare(PlantLoop_Impl& targetLoopImpl,
+                                                                                               ChillerElectricEIR chiller) {
+        if (chiller.iddObject().type() != ChillerElectricEIR::iddObjectType() || chiller.model() != targetLoopImpl.model() || !hasUniqueName(chiller)
+            || !persistedCondenserIsWaterCooled(chiller)) {
+          return nullptr;
+        }
+
+        const auto chilledInlet = exactNodeField(chiller, openstudio::Chiller_Electric_EIRFields::ChilledWaterInletNodeName);
+        const auto chilledOutlet = exactNodeField(chiller, openstudio::Chiller_Electric_EIRFields::ChilledWaterOutletNodeName);
+        const auto condenserInlet = exactNodeField(chiller, openstudio::Chiller_Electric_EIRFields::CondenserInletNodeName);
+        const auto condenserOutlet = exactNodeField(chiller, openstudio::Chiller_Electric_EIRFields::CondenserOutletNodeName);
+        const auto heatRecoveryInlet = exactNodeField(chiller, openstudio::Chiller_Electric_EIRFields::HeatRecoveryInletNodeName);
+        const auto heatRecoveryOutlet = exactNodeField(chiller, openstudio::Chiller_Electric_EIRFields::HeatRecoveryOutletNodeName);
+        if (!chilledInlet || !chilledOutlet || !condenserInlet || !condenserOutlet || !heatRecoveryInlet || !heatRecoveryOutlet) {
+          return nullptr;
+        }
+
+        const std::array<Node, 6> ports{*chilledInlet, *chilledOutlet, *condenserInlet, *condenserOutlet, *heatRecoveryInlet, *heatRecoveryOutlet};
+        std::set<Handle> portHandles;
+        for (const auto& port : ports) {
+          if (!hasUniqueName(port) || !portHandles.insert(port.handle()).second) {
+            return nullptr;
+          }
+        }
+
+        std::vector<BranchOccurrence> occurrences;
+        if (!collectOccurrences(chiller, occurrences) || occurrences.size() != 3u) {
+          return nullptr;
+        }
+        boost::optional<BranchOccurrence> primaryOccurrence;
+        boost::optional<BranchOccurrence> condenserOccurrence;
+        boost::optional<BranchOccurrence> sourceOccurrence;
+        for (const auto& occurrence : occurrences) {
+          if (occurrence.branch.extensibleGroups().size() != 1u || !hasUniqueName(occurrence.branch)) {
+            return nullptr;
+          }
+          if (occurrence.inlet == *chilledInlet && occurrence.outlet == *chilledOutlet) {
+            if (primaryOccurrence) {
+              return nullptr;
+            }
+            primaryOccurrence = occurrence;
+          } else if (occurrence.inlet == *condenserInlet && occurrence.outlet == *condenserOutlet) {
+            if (condenserOccurrence) {
+              return nullptr;
+            }
+            condenserOccurrence = occurrence;
+          } else if (occurrence.inlet == *heatRecoveryInlet && occurrence.outlet == *heatRecoveryOutlet) {
+            if (sourceOccurrence) {
+              return nullptr;
+            }
+            sourceOccurrence = occurrence;
+          } else {
+            return nullptr;
+          }
+        }
+        if (!primaryOccurrence || !condenserOccurrence || !sourceOccurrence) {
+          return nullptr;
+        }
+
+        const auto primaryBranchList = uniqueBranchListForBranch(chiller.model(), primaryOccurrence->branch);
+        const auto condenserBranchList = uniqueBranchListForBranch(chiller.model(), condenserOccurrence->branch);
+        const auto sourceBranchList = uniqueBranchListForBranch(chiller.model(), sourceOccurrence->branch);
+        if (!primaryBranchList || !condenserBranchList || !sourceBranchList || *primaryBranchList == *condenserBranchList
+            || *primaryBranchList == *sourceBranchList || *condenserBranchList == *sourceBranchList) {
+          return nullptr;
+        }
+
+        const auto primaryOwner = uniquePlantLoopForBranchList(chiller.model(), *primaryBranchList, true);
+        const auto condenserOwner = uniquePlantLoopForBranchList(chiller.model(), *condenserBranchList, false);
+        const auto sourceOwner = uniquePlantLoopForBranchList(chiller.model(), *sourceBranchList, false);
+        if (!primaryOwner || !condenserOwner || !sourceOwner || *primaryOwner == *condenserOwner || *primaryOwner == *sourceOwner
+            || *condenserOwner == *sourceOwner) {
+          return nullptr;
+        }
+
+        const auto targetLoop = targetLoopImpl.getObject<PlantLoop>();
+        if (targetLoop == *primaryOwner || targetLoop == *condenserOwner || targetLoop == *sourceOwner) {
+          return nullptr;
+        }
+        const auto primaryTopology = observedPlantSideTopology(*primaryOwner, true);
+        const auto condenserTopology = observedPlantSideTopology(*condenserOwner, false);
+        const auto sourceTopology = observedPlantSideTopology(*sourceOwner, false);
+        const auto targetTopology = observedPlantSideTopology(targetLoop, false);
+        if (!primaryTopology || !condenserTopology || !sourceTopology || !targetTopology || primaryTopology->branchList != *primaryBranchList
+            || condenserTopology->branchList != *condenserBranchList || sourceTopology->branchList != *sourceBranchList
+            || std::ranges::count(primaryTopology->equipmentBranches, primaryOccurrence->branch) != 1
+            || std::ranges::count(condenserTopology->equipmentBranches, condenserOccurrence->branch) != 1
+            || std::ranges::count(sourceTopology->equipmentBranches, sourceOccurrence->branch) != 1) {
+          return nullptr;
+        }
+
+        auto plantRelocation = DemandBranchRelocationPlan::prepareChillerElectricEIRHeatRecovery(
+          targetLoopImpl, chiller, *sourceOwner, {primaryOccurrence->branch.handle(), primaryOccurrence->row},
+          {condenserOccurrence->branch.handle(), condenserOccurrence->row});
+        if (!plantRelocation) {
+          return nullptr;
+        }
+        return std::unique_ptr<ChillerElectricEIRHeatRecoveryDemandBranchAttachmentPlan>(new ChillerElectricEIRHeatRecoveryDemandBranchAttachmentPlan(
+          std::move(plantRelocation), *primaryOwner, *condenserOwner, primaryTopology->setpointTarget, condenserTopology->setpointTarget));
+      }
+
+      ChillerElectricEIRHeatRecoveryDemandBranchAttachmentPlan(const ChillerElectricEIRHeatRecoveryDemandBranchAttachmentPlan&) = delete;
+      ChillerElectricEIRHeatRecoveryDemandBranchAttachmentPlan& operator=(const ChillerElectricEIRHeatRecoveryDemandBranchAttachmentPlan&) = delete;
+      ChillerElectricEIRHeatRecoveryDemandBranchAttachmentPlan(ChillerElectricEIRHeatRecoveryDemandBranchAttachmentPlan&&) = delete;
+      ChillerElectricEIRHeatRecoveryDemandBranchAttachmentPlan& operator=(ChillerElectricEIRHeatRecoveryDemandBranchAttachmentPlan&&) = delete;
+      ~ChillerElectricEIRHeatRecoveryDemandBranchAttachmentPlan() = default;
+
+      void commit() {
+        OS_ASSERT(m_plantRelocation && !m_committed);
+        const auto primarySetpoint = m_primaryOwner.getModelObjectTarget<Node>(openstudio::PlantLoopFields::LoopTemperatureSetpointNodeName);
+        const auto condenserSetpoint = m_condenserOwner.getModelObjectTarget<Node>(openstudio::PlantLoopFields::LoopTemperatureSetpointNodeName);
+        OS_ASSERT(primarySetpoint && *primarySetpoint == m_primarySetpointTarget);
+        OS_ASSERT(condenserSetpoint && *condenserSetpoint == m_condenserSetpointTarget);
+        m_plantRelocation->commit();
+        m_committed = true;
+      }
+
+     private:
+      static bool persistedCondenserIsWaterCooled(const ChillerElectricEIR& chiller) {
+        auto workspaceImpl = chiller.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+        OS_ASSERT(workspaceImpl);
+        const auto raw =
+          workspaceImpl->openstudio::detail::IdfObject_Impl::getString(openstudio::Chiller_Electric_EIRFields::CondenserType, false, true);
+        return raw && openstudio::istringEqual(*raw, "WaterCooled");
+      }
+
+      static bool hasCanonicalNoHeatRecoveryAttachment(const ChillerElectricEIR& chiller) {
+        const bool chilledInletEvidence = fieldHasEvidence(chiller, openstudio::Chiller_Electric_EIRFields::ChilledWaterInletNodeName);
+        const bool chilledOutletEvidence = fieldHasEvidence(chiller, openstudio::Chiller_Electric_EIRFields::ChilledWaterOutletNodeName);
+        const bool condenserInletEvidence = fieldHasEvidence(chiller, openstudio::Chiller_Electric_EIRFields::CondenserInletNodeName);
+        const bool condenserOutletEvidence = fieldHasEvidence(chiller, openstudio::Chiller_Electric_EIRFields::CondenserOutletNodeName);
+        if (chilledInletEvidence != chilledOutletEvidence || condenserInletEvidence != condenserOutletEvidence) {
+          return false;
+        }
+
+        std::vector<BranchOccurrence> occurrences;
+        if (!collectOccurrences(chiller, occurrences)) {
+          return false;
+        }
+        if (!chilledInletEvidence && !condenserInletEvidence) {
+          return occurrences.empty();
+        }
+
+        const auto chilledInlet =
+          chilledInletEvidence ? exactNodeField(chiller, openstudio::Chiller_Electric_EIRFields::ChilledWaterInletNodeName) : boost::none;
+        const auto chilledOutlet =
+          chilledOutletEvidence ? exactNodeField(chiller, openstudio::Chiller_Electric_EIRFields::ChilledWaterOutletNodeName) : boost::none;
+        const auto condenserInlet =
+          condenserInletEvidence ? exactNodeField(chiller, openstudio::Chiller_Electric_EIRFields::CondenserInletNodeName) : boost::none;
+        const auto condenserOutlet =
+          condenserOutletEvidence ? exactNodeField(chiller, openstudio::Chiller_Electric_EIRFields::CondenserOutletNodeName) : boost::none;
+        if ((chilledInletEvidence && (!chilledInlet || !chilledOutlet)) || (condenserInletEvidence && (!condenserInlet || !condenserOutlet))
+            || (condenserInletEvidence && !persistedCondenserIsWaterCooled(chiller))) {
+          return false;
+        }
+
+        std::set<Handle> portHandles;
+        for (const auto& port : {chilledInlet, chilledOutlet, condenserInlet, condenserOutlet}) {
+          if (port && (!hasUniqueName(*port) || !portHandles.insert(port->handle()).second)) {
+            return false;
+          }
+        }
+        const unsigned expectedOccurrences = static_cast<unsigned>(chilledInletEvidence) + static_cast<unsigned>(condenserInletEvidence);
+        if (occurrences.size() != expectedOccurrences) {
+          return false;
+        }
+
+        boost::optional<PlantLoop> primaryOwner;
+        boost::optional<PlantLoop> condenserOwner;
+        for (const auto& occurrence : occurrences) {
+          if (occurrence.branch.extensibleGroups().size() != 1u || !hasUniqueName(occurrence.branch)) {
+            return false;
+          }
+          const bool isPrimary = chilledInlet && chilledOutlet && occurrence.inlet == *chilledInlet && occurrence.outlet == *chilledOutlet;
+          const bool isCondenser = condenserInlet && condenserOutlet && occurrence.inlet == *condenserInlet && occurrence.outlet == *condenserOutlet;
+          if (isPrimary == isCondenser) {
+            return false;
+          }
+          const auto branchList = uniqueBranchListForBranch(chiller.model(), occurrence.branch);
+          const auto owner = branchList ? uniquePlantLoopForBranchList(chiller.model(), *branchList, isPrimary) : boost::none;
+          const auto topology = owner ? observedPlantSideTopology(*owner, isPrimary) : boost::none;
+          if (!branchList || !owner || !topology || topology->branchList != *branchList
+              || std::ranges::count(topology->equipmentBranches, occurrence.branch) != 1) {
+            return false;
+          }
+          if (isPrimary) {
+            if (primaryOwner) {
+              return false;
+            }
+            primaryOwner = *owner;
+          } else {
+            if (condenserOwner) {
+              return false;
+            }
+            condenserOwner = *owner;
+          }
+        }
+        return !primaryOwner || !condenserOwner || *primaryOwner != *condenserOwner;
+      }
+
+      ChillerElectricEIRHeatRecoveryDemandBranchAttachmentPlan(std::unique_ptr<DemandBranchRelocationPlan> plantRelocation, PlantLoop primaryOwner,
+                                                               PlantLoop condenserOwner, Node primarySetpointTarget, Node condenserSetpointTarget)
+        : m_plantRelocation(std::move(plantRelocation)),
+          m_primaryOwner(std::move(primaryOwner)),
+          m_condenserOwner(std::move(condenserOwner)),
+          m_primarySetpointTarget(std::move(primarySetpointTarget)),
+          m_condenserSetpointTarget(std::move(condenserSetpointTarget)) {}
+
+      std::unique_ptr<DemandBranchRelocationPlan> m_plantRelocation;
+      PlantLoop m_primaryOwner;
+      PlantLoop m_condenserOwner;
+      Node m_primarySetpointTarget;
+      Node m_condenserSetpointTarget;
+      bool m_committed = false;
     };
 
     // Exact HeatExchanger:FluidToFluid demand-side moves retain their proven
@@ -5039,6 +5292,25 @@ namespace epmodel {
             return false;
           }
           if (testFailurePointReached(model(), TestFailurePoint::PlantLoopAfterWaterCoilBranchAttachmentPrepared)) {
+            return false;
+          }
+          plan->commit();
+          return true;
+        }
+      }
+      if (tertiary && hvacComponent.iddObject().type() == ChillerElectricEIR::iddObjectType()) {
+        const auto chiller = hvacComponent.cast<ChillerElectricEIR>();
+        if (ChillerElectricEIRHeatRecoveryDemandBranchAttachmentPlan::requiresExactAttachmentDispatch(chiller)) {
+          auto plan = ChillerElectricEIRHeatRecoveryDemandBranchAttachmentPlan::prepare(*this, chiller);
+          if (!plan) {
+            LOG_FREE(Warn, "openstudio.epmodel.PlantLoop",
+                     "Refusing to move " << hvacComponent.briefDescription() << " to the heat-recovery demand side of "
+                                         << getObject<PlantLoop>().briefDescription()
+                                         << " because its exact chilled-water, WaterCooled condenser, and heat-recovery owners, six live ports, "
+                                            "single-row branches, or target topology could not be validated.");
+            return false;
+          }
+          if (testFailurePointReached(model(), TestFailurePoint::PlantLoopAfterChillerElectricEIRHeatRecoveryBranchAttachmentPrepared)) {
             return false;
           }
           plan->commit();

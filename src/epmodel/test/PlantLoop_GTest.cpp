@@ -103,6 +103,7 @@
 #include <utilities/idd/AirLoopHVAC_FieldEnums.hxx>
 #include <utilities/idd/Branch_FieldEnums.hxx>
 #include <utilities/idd/BranchList_FieldEnums.hxx>
+#include <utilities/idd/Chiller_Electric_EIR_FieldEnums.hxx>
 #include <utilities/idd/PlantLoop_FieldEnums.hxx>
 #include <utilities/idd/Sizing_Plant_FieldEnums.hxx>
 #include <utilities/idd/Controller_WaterCoil_FieldEnums.hxx>
@@ -342,6 +343,85 @@ FluidToFluidHeatExchangerMoveSnapshot captureFluidToFluidHeatExchangerMove(const
                               rawField(sourceLoop, openstudio::PlantLoopFields::LoopTemperatureSetpointNodeName),
                               rawField(targetLoop, openstudio::PlantLoopFields::LoopTemperatureSetpointNodeName)};
   return result;
+}
+
+struct ChillerHeatRecoveryMoveSnapshot
+{
+  PlantAttachmentTopologySnapshot plantTopology;
+  std::vector<openstudio::Handle> modelObjectHandles;
+  std::vector<std::pair<openstudio::Handle, std::vector<boost::optional<std::string>>>> modelRawFields;
+  std::vector<openstudio::Handle> primarySupplyComponentHandles;
+  std::vector<openstudio::Handle> condenserDemandComponentHandles;
+  boost::optional<openstudio::Handle> primaryOwnerHandle;
+  boost::optional<openstudio::Handle> condenserOwnerHandle;
+  boost::optional<openstudio::Handle> heatRecoveryOwnerHandle;
+  std::array<boost::optional<openstudio::Handle>, 6> portHandles;
+  std::vector<boost::optional<std::string>> chillerRawFields;
+  std::array<boost::optional<std::string>, 4> setpointRawFields;
+
+  bool operator==(const ChillerHeatRecoveryMoveSnapshot&) const = default;
+};
+
+ChillerHeatRecoveryMoveSnapshot captureChillerHeatRecoveryMove(const Model& model, const PlantLoop& primaryLoop, const PlantLoop& condenserLoop,
+                                                               const PlantLoop& sourceLoop, const PlantLoop& targetLoop,
+                                                               const ChillerElectricEIR& chiller, bool observeTopology = true) {
+  ChillerHeatRecoveryMoveSnapshot result;
+  if (observeTopology) {
+    result.plantTopology = capturePlantTopology(model, sourceLoop, targetLoop, false);
+    result.primarySupplyComponentHandles = objectHandles(primaryLoop.supplyComponents());
+    result.condenserDemandComponentHandles = objectHandles(condenserLoop.demandComponents());
+    if (auto owner = chiller.plantLoop()) {
+      result.primaryOwnerHandle = owner->handle();
+    }
+    if (auto owner = chiller.secondaryPlantLoop()) {
+      result.condenserOwnerHandle = owner->handle();
+    }
+    if (auto owner = chiller.tertiaryPlantLoop()) {
+      result.heatRecoveryOwnerHandle = owner->handle();
+    }
+  }
+  auto objects = model.objects();
+  std::ranges::sort(objects, {}, [](const auto& object) { return object.handle(); });
+  for (const auto& object : objects) {
+    result.modelObjectHandles.push_back(object.handle());
+    std::vector<boost::optional<std::string>> fields;
+    for (unsigned field = 0u; field < object.numFields(); ++field) {
+      fields.push_back(rawField(object, field));
+    }
+    while (!fields.empty() && !fields.back()) {
+      fields.pop_back();
+    }
+    result.modelRawFields.emplace_back(object.handle(), std::move(fields));
+  }
+  const std::array<unsigned, 6> portFields{
+    openstudio::Chiller_Electric_EIRFields::ChilledWaterInletNodeName, openstudio::Chiller_Electric_EIRFields::ChilledWaterOutletNodeName,
+    openstudio::Chiller_Electric_EIRFields::CondenserInletNodeName,    openstudio::Chiller_Electric_EIRFields::CondenserOutletNodeName,
+    openstudio::Chiller_Electric_EIRFields::HeatRecoveryInletNodeName, openstudio::Chiller_Electric_EIRFields::HeatRecoveryOutletNodeName,
+  };
+  for (unsigned i = 0u; i < portFields.size(); ++i) {
+    if (auto node = chiller.getModelObjectTarget<Node>(portFields[i])) {
+      result.portHandles[i] = node->handle();
+    }
+  }
+  for (unsigned field = 0u; field < chiller.numFields(); ++field) {
+    result.chillerRawFields.push_back(rawField(chiller, field));
+  }
+  result.setpointRawFields = {rawField(primaryLoop, openstudio::PlantLoopFields::LoopTemperatureSetpointNodeName),
+                              rawField(condenserLoop, openstudio::PlantLoopFields::LoopTemperatureSetpointNodeName),
+                              rawField(sourceLoop, openstudio::PlantLoopFields::LoopTemperatureSetpointNodeName),
+                              rawField(targetLoop, openstudio::PlantLoopFields::LoopTemperatureSetpointNodeName)};
+  return result;
+}
+
+void expectChillerFieldsExceptHeatRecoveryPortsEqual(const std::vector<boost::optional<std::string>>& expected, const ChillerElectricEIR& chiller) {
+  ASSERT_EQ(expected.size(), chiller.numFields());
+  for (unsigned field = 0u; field < expected.size(); ++field) {
+    if (field == openstudio::Chiller_Electric_EIRFields::HeatRecoveryInletNodeName
+        || field == openstudio::Chiller_Electric_EIRFields::HeatRecoveryOutletNodeName) {
+      continue;
+    }
+    EXPECT_TRUE(expected[field] == rawField(chiller, field)) << "field " << field;
+  }
 }
 
 struct EquationFitHeatPumpMoveSnapshot
@@ -4946,6 +5026,440 @@ TEST_F(EPModelFixture, PlantLoop_EquationFitHeatPumpDemandMoveRejectsMalformedPo
     EXPECT_FALSE(targetLoop.addDemandBranchForComponent(heatPump));
     EXPECT_EQ(before, captureEquationFitHeatPumpMove(model, primaryLoop, sourceLoop, targetLoop, heatPump));
   }
+}
+
+TEST_F(EPModelFixture, PlantLoop_ChillerElectricEIRHeatRecoveryMoveDefaultToOccupiedIsTransactionalAcrossReload) {
+  const auto idfPath =
+    openstudio::tempDir()
+    / openstudio::toPath("epmodel-chiller-electric-eir-heat-recovery-move-" + openstudio::toString(openstudio::createUUID()) + ".idf");
+  ScopedFileRemoval cleanup(idfPath);
+
+  Model model;
+  PlantLoop primaryLoop(model);
+  PlantLoop condenserLoop(model);
+  PlantLoop sourceLoop(model);
+  PlantLoop targetLoop(model);
+  ChillerElectricEIR chiller(model);
+  PipeAdiabatic targetPipe(model);
+  ScheduleConstant basinSchedule(model);
+  ScheduleConstant heatRecoveryLimitSchedule(model);
+  ASSERT_TRUE(primaryLoop.setName("Chiller HR Chilled Water Primary"));
+  ASSERT_TRUE(condenserLoop.setName("Chiller HR Condenser Owner"));
+  ASSERT_TRUE(sourceLoop.setName("Chiller HR Original Source"));
+  ASSERT_TRUE(targetLoop.setName("Chiller HR Moved Target"));
+  ASSERT_TRUE(chiller.setName("Moved Electric EIR Heat Recovery Chiller"));
+  ASSERT_TRUE(targetPipe.setName("Chiller HR Occupied Target Pipe"));
+  ASSERT_TRUE(basinSchedule.setName("Chiller HR Basin Schedule"));
+  ASSERT_TRUE(heatRecoveryLimitSchedule.setName("Chiller HR Limit Schedule"));
+  ASSERT_TRUE(chiller.setReferenceCOP(6.35));
+  ASSERT_TRUE(chiller.setSizingFactor(1.17));
+  ASSERT_TRUE(chiller.setBasinHeaterSchedule(basinSchedule));
+  ASSERT_TRUE(chiller.setHeatRecoveryInletHighTemperatureLimitSchedule(heatRecoveryLimitSchedule));
+  ASSERT_TRUE(chiller.setCondenserHeatRecoveryRelativeCapacityFraction(0.82));
+  ASSERT_TRUE(primaryLoop.addSupplyBranchForComponent(chiller));
+  ASSERT_TRUE(condenserLoop.addDemandBranchForComponent(chiller));
+  ASSERT_TRUE(sourceLoop.addDemandBranchForComponent(chiller, true));
+  ASSERT_TRUE(targetLoop.addDemandBranchForComponent(targetPipe));
+  ASSERT_TRUE(chiller.setDesignHeatRecoveryWaterFlowRate(0.0047));
+  auto heatRecoverySetpoint = sourceLoop.supplyInletNode();
+  ASSERT_TRUE(chiller.setHeatRecoveryLeavingTemperatureSetpointNode(heatRecoverySetpoint));
+  auto primarySetpoint = primaryLoop.supplyInletNode();
+  auto condenserSetpoint = condenserLoop.supplyInletNode();
+  auto sourceSetpoint = sourceLoop.supplyInletNode();
+  auto targetSetpoint = targetLoop.supplyInletNode();
+  ASSERT_TRUE(primaryLoop.setLoopTemperatureSetpointNode(primarySetpoint));
+  ASSERT_TRUE(condenserLoop.setLoopTemperatureSetpointNode(condenserSetpoint));
+  ASSERT_TRUE(sourceLoop.setLoopTemperatureSetpointNode(sourceSetpoint));
+  ASSERT_TRUE(targetLoop.setLoopTemperatureSetpointNode(targetSetpoint));
+
+  ASSERT_TRUE(chiller.chilledWaterInletNode());
+  ASSERT_TRUE(chiller.chilledWaterOutletNode());
+  ASSERT_TRUE(chiller.condenserInletNode());
+  ASSERT_TRUE(chiller.condenserOutletNode());
+  ASSERT_TRUE(chiller.heatRecoveryInletNode());
+  ASSERT_TRUE(chiller.heatRecoveryOutletNode());
+  const auto chilledInletHandle = chiller.chilledWaterInletNode()->handle();
+  const auto chilledOutletHandle = chiller.chilledWaterOutletNode()->handle();
+  const auto condenserInletHandle = chiller.condenserInletNode()->handle();
+  const auto condenserOutletHandle = chiller.condenserOutletNode()->handle();
+  const auto oldHeatRecoveryInletHandle = chiller.heatRecoveryInletNode()->handle();
+  const auto oldHeatRecoveryOutletHandle = chiller.heatRecoveryOutletNode()->handle();
+
+  auto sourceBranchList = sourceLoop.getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::DemandSideBranchListName);
+  auto targetBranchList = targetLoop.getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::DemandSideBranchListName);
+  ASSERT_TRUE(sourceBranchList);
+  ASSERT_TRUE(targetBranchList);
+  const auto sourceBranchHandlesBefore = objectHandles(sourceBranchList->branches());
+  const auto targetBranchHandlesBefore = objectHandles(targetBranchList->branches());
+  ASSERT_EQ(3u, sourceBranchHandlesBefore.size());
+  ASSERT_EQ(3u, targetBranchHandlesBefore.size());
+  const auto sourceDefaultBranchHandle = sourceBranchHandlesBefore[1];
+
+  const auto before = captureChillerHeatRecoveryMove(model, primaryLoop, condenserLoop, sourceLoop, targetLoop, chiller);
+  {
+    test::ScopedTestFailure failure(model, detail::TestFailurePoint::PlantLoopAfterChillerElectricEIRHeatRecoveryBranchAttachmentPrepared);
+    EXPECT_FALSE(targetLoop.addDemandBranchForComponent(chiller, true));
+  }
+  EXPECT_EQ(before, captureChillerHeatRecoveryMove(model, primaryLoop, condenserLoop, sourceLoop, targetLoop, chiller));
+
+  ASSERT_TRUE(targetLoop.addDemandBranchForComponent(chiller, true));
+  ASSERT_TRUE(chiller.chilledWaterLoop());
+  ASSERT_TRUE(chiller.condenserWaterLoop());
+  ASSERT_TRUE(chiller.heatRecoveryLoop());
+  EXPECT_EQ(primaryLoop, *chiller.chilledWaterLoop());
+  EXPECT_EQ(condenserLoop, *chiller.condenserWaterLoop());
+  EXPECT_EQ(targetLoop, *chiller.heatRecoveryLoop());
+  EXPECT_EQ("WaterCooled", chiller.condenserType());
+  EXPECT_FALSE(chiller.isDesignHeatRecoveryWaterFlowRateAutosized());
+  ASSERT_TRUE(chiller.designHeatRecoveryWaterFlowRate());
+  EXPECT_DOUBLE_EQ(0.0047, *chiller.designHeatRecoveryWaterFlowRate());
+  EXPECT_DOUBLE_EQ(6.35, chiller.referenceCOP());
+  EXPECT_DOUBLE_EQ(1.17, chiller.sizingFactor());
+  EXPECT_DOUBLE_EQ(0.82, chiller.condenserHeatRecoveryRelativeCapacityFraction());
+  ASSERT_TRUE(chiller.basinHeaterSchedule());
+  ASSERT_TRUE(chiller.heatRecoveryInletHighTemperatureLimitSchedule());
+  ASSERT_TRUE(chiller.heatRecoveryLeavingTemperatureSetpointNode());
+  EXPECT_EQ(basinSchedule, *chiller.basinHeaterSchedule());
+  EXPECT_EQ(heatRecoveryLimitSchedule, *chiller.heatRecoveryInletHighTemperatureLimitSchedule());
+  EXPECT_EQ(heatRecoverySetpoint, *chiller.heatRecoveryLeavingTemperatureSetpointNode());
+  EXPECT_EQ(chilledInletHandle, chiller.chilledWaterInletNode()->handle());
+  EXPECT_EQ(chilledOutletHandle, chiller.chilledWaterOutletNode()->handle());
+  EXPECT_EQ(condenserInletHandle, chiller.condenserInletNode()->handle());
+  EXPECT_EQ(condenserOutletHandle, chiller.condenserOutletNode()->handle());
+  EXPECT_NE(oldHeatRecoveryInletHandle, chiller.heatRecoveryInletNode()->handle());
+  EXPECT_NE(oldHeatRecoveryOutletHandle, chiller.heatRecoveryOutletNode()->handle());
+  EXPECT_TRUE(model.getObject(oldHeatRecoveryInletHandle));
+  EXPECT_TRUE(model.getObject(oldHeatRecoveryOutletHandle));
+  expectChillerFieldsExceptHeatRecoveryPortsEqual(before.chillerRawFields, chiller);
+  EXPECT_EQ(primarySetpoint.handle(), primaryLoop.loopTemperatureSetpointNode().handle());
+  EXPECT_EQ(condenserSetpoint.handle(), condenserLoop.loopTemperatureSetpointNode().handle());
+  EXPECT_EQ(sourceSetpoint.handle(), sourceLoop.loopTemperatureSetpointNode().handle());
+  EXPECT_EQ(targetSetpoint.handle(), targetLoop.loopTemperatureSetpointNode().handle());
+
+  sourceBranchList = sourceLoop.getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::DemandSideBranchListName);
+  targetBranchList = targetLoop.getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::DemandSideBranchListName);
+  ASSERT_TRUE(sourceBranchList);
+  ASSERT_TRUE(targetBranchList);
+  EXPECT_EQ(sourceBranchHandlesBefore, objectHandles(sourceBranchList->branches()));
+  EXPECT_EQ(sourceDefaultBranchHandle, sourceBranchList->branches()[1].handle());
+  EXPECT_TRUE(sourceBranchList->branches()[1].components().empty());
+  expectDemandBranchAndConnectorOrder(sourceLoop, sourceBranchHandlesBefore);
+  const auto targetBranchHandlesAfter = objectHandles(targetBranchList->branches());
+  ASSERT_EQ(4u, targetBranchHandlesAfter.size());
+  EXPECT_EQ(targetBranchHandlesBefore[0], targetBranchHandlesAfter[0]);
+  EXPECT_EQ(targetBranchHandlesBefore[1], targetBranchHandlesAfter[1]);
+  EXPECT_EQ(targetBranchHandlesBefore[2], targetBranchHandlesAfter[3]);
+  EXPECT_EQ(std::vector<ModelObject>{chiller.cast<ModelObject>()}, targetBranchList->branches()[2].components());
+  expectDemandBranchAndConnectorOrder(targetLoop, targetBranchHandlesAfter);
+
+  ASSERT_TRUE(model.save(idfPath, true));
+  auto loadedModel = Model::load(idfPath);
+  ASSERT_TRUE(loadedModel);
+  auto loadedPrimary = loadedModel->getConcreteModelObjectByName<PlantLoop>("Chiller HR Chilled Water Primary");
+  auto loadedCondenser = loadedModel->getConcreteModelObjectByName<PlantLoop>("Chiller HR Condenser Owner");
+  auto loadedSource = loadedModel->getConcreteModelObjectByName<PlantLoop>("Chiller HR Original Source");
+  auto loadedTarget = loadedModel->getConcreteModelObjectByName<PlantLoop>("Chiller HR Moved Target");
+  auto loadedChiller = loadedModel->getConcreteModelObjectByName<ChillerElectricEIR>("Moved Electric EIR Heat Recovery Chiller");
+  ASSERT_TRUE(loadedPrimary);
+  ASSERT_TRUE(loadedCondenser);
+  ASSERT_TRUE(loadedSource);
+  ASSERT_TRUE(loadedTarget);
+  ASSERT_TRUE(loadedChiller);
+  ASSERT_TRUE(loadedChiller->chilledWaterLoop());
+  ASSERT_TRUE(loadedChiller->condenserWaterLoop());
+  ASSERT_TRUE(loadedChiller->heatRecoveryLoop());
+  EXPECT_EQ(*loadedPrimary, *loadedChiller->chilledWaterLoop());
+  EXPECT_EQ(*loadedCondenser, *loadedChiller->condenserWaterLoop());
+  EXPECT_EQ(*loadedTarget, *loadedChiller->heatRecoveryLoop());
+  EXPECT_FALSE(loadedSource->demandComponent(loadedChiller->handle()));
+  EXPECT_EQ("WaterCooled", loadedChiller->condenserType());
+  EXPECT_FALSE(loadedChiller->isDesignHeatRecoveryWaterFlowRateAutosized());
+  ASSERT_TRUE(loadedChiller->designHeatRecoveryWaterFlowRate());
+  EXPECT_DOUBLE_EQ(0.0047, *loadedChiller->designHeatRecoveryWaterFlowRate());
+  ASSERT_TRUE(loadedChiller->basinHeaterSchedule());
+  ASSERT_TRUE(loadedChiller->heatRecoveryInletHighTemperatureLimitSchedule());
+  ASSERT_TRUE(loadedChiller->heatRecoveryLeavingTemperatureSetpointNode());
+  EXPECT_EQ("Chiller HR Basin Schedule", loadedChiller->basinHeaterSchedule()->nameString());
+  EXPECT_EQ("Chiller HR Limit Schedule", loadedChiller->heatRecoveryInletHighTemperatureLimitSchedule()->nameString());
+  EXPECT_EQ(heatRecoverySetpoint.nameString(), loadedChiller->heatRecoveryLeavingTemperatureSetpointNode()->nameString());
+}
+
+TEST_F(EPModelFixture, PlantLoop_ChillerElectricEIRHeatRecoveryMoveParallelToDefaultIsTransactionalAndDirectRemovalReattaches) {
+  Model model;
+  PlantLoop primaryLoop(model);
+  PlantLoop condenserLoop(model);
+  PlantLoop sourceLoop(model);
+  PlantLoop targetLoop(model);
+  ChillerElectricEIR chiller(model);
+  PipeAdiabatic sourcePipe(model);
+  ASSERT_TRUE(primaryLoop.addSupplyBranchForComponent(chiller));
+  ASSERT_TRUE(condenserLoop.addDemandBranchForComponent(chiller));
+  ASSERT_TRUE(sourceLoop.addDemandBranchForComponent(sourcePipe));
+  ASSERT_TRUE(sourceLoop.addDemandBranchForComponent(chiller, true));
+  ASSERT_TRUE(chiller.isDesignHeatRecoveryWaterFlowRateAutosized());
+  auto primarySetpoint = primaryLoop.supplyInletNode();
+  auto condenserSetpoint = condenserLoop.supplyInletNode();
+  auto sourceSetpoint = sourceLoop.supplyInletNode();
+  auto targetSetpoint = targetLoop.supplyInletNode();
+  ASSERT_TRUE(primaryLoop.setLoopTemperatureSetpointNode(primarySetpoint));
+  ASSERT_TRUE(condenserLoop.setLoopTemperatureSetpointNode(condenserSetpoint));
+  ASSERT_TRUE(sourceLoop.setLoopTemperatureSetpointNode(sourceSetpoint));
+  ASSERT_TRUE(targetLoop.setLoopTemperatureSetpointNode(targetSetpoint));
+
+  ASSERT_TRUE(chiller.heatRecoveryInletNode());
+  ASSERT_TRUE(chiller.heatRecoveryOutletNode());
+  const auto oldHeatRecoveryInletHandle = chiller.heatRecoveryInletNode()->handle();
+  const auto oldHeatRecoveryOutletHandle = chiller.heatRecoveryOutletNode()->handle();
+  const auto flowRateRaw = rawField(chiller, openstudio::Chiller_Electric_EIRFields::DesignHeatRecoveryWaterFlowRate);
+  auto sourceBranchList = sourceLoop.getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::DemandSideBranchListName);
+  auto targetBranchList = targetLoop.getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::DemandSideBranchListName);
+  ASSERT_TRUE(sourceBranchList);
+  ASSERT_TRUE(targetBranchList);
+  const auto sourceBranchesBefore = sourceBranchList->branches();
+  const auto sourceBranchHandlesBefore = objectHandles(sourceBranchesBefore);
+  const auto targetBranchHandlesBefore = objectHandles(targetBranchList->branches());
+  ASSERT_EQ(4u, sourceBranchHandlesBefore.size());
+  ASSERT_EQ(3u, targetBranchHandlesBefore.size());
+  const auto removedBranch = std::ranges::find_if(sourceBranchesBefore, [&chiller](const auto& branch) {
+    const auto components = branch.components();
+    return std::ranges::find(components, chiller.cast<ModelObject>()) != components.end();
+  });
+  ASSERT_NE(sourceBranchesBefore.end(), removedBranch);
+  const auto removedBranchHandle = removedBranch->handle();
+  auto expectedSourceBranchHandles = sourceBranchHandlesBefore;
+  const auto removedHandle = std::ranges::find(expectedSourceBranchHandles, removedBranchHandle);
+  ASSERT_NE(expectedSourceBranchHandles.end(), removedHandle);
+  expectedSourceBranchHandles.erase(removedHandle);
+  const auto targetDefaultBranchHandle = targetBranchHandlesBefore[1];
+
+  const auto before = captureChillerHeatRecoveryMove(model, primaryLoop, condenserLoop, sourceLoop, targetLoop, chiller);
+  {
+    test::ScopedTestFailure failure(model, detail::TestFailurePoint::PlantLoopAfterChillerElectricEIRHeatRecoveryBranchAttachmentPrepared);
+    EXPECT_FALSE(targetLoop.addDemandBranchForComponent(chiller, true));
+  }
+  EXPECT_EQ(before, captureChillerHeatRecoveryMove(model, primaryLoop, condenserLoop, sourceLoop, targetLoop, chiller));
+
+  ASSERT_TRUE(targetLoop.addDemandBranchForComponent(chiller, true));
+  EXPECT_FALSE(model.getObject(removedBranchHandle));
+  EXPECT_TRUE(model.getObject(oldHeatRecoveryInletHandle));
+  EXPECT_TRUE(model.getObject(oldHeatRecoveryOutletHandle));
+  ASSERT_TRUE(chiller.heatRecoveryLoop());
+  EXPECT_EQ(targetLoop, *chiller.heatRecoveryLoop());
+  EXPECT_EQ("WaterCooled", chiller.condenserType());
+  EXPECT_TRUE(chiller.isDesignHeatRecoveryWaterFlowRateAutosized());
+  EXPECT_TRUE(flowRateRaw == rawField(chiller, openstudio::Chiller_Electric_EIRFields::DesignHeatRecoveryWaterFlowRate));
+  expectChillerFieldsExceptHeatRecoveryPortsEqual(before.chillerRawFields, chiller);
+
+  sourceBranchList = sourceLoop.getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::DemandSideBranchListName);
+  targetBranchList = targetLoop.getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::DemandSideBranchListName);
+  ASSERT_TRUE(sourceBranchList);
+  ASSERT_TRUE(targetBranchList);
+  EXPECT_EQ(expectedSourceBranchHandles, objectHandles(sourceBranchList->branches()));
+  expectDemandBranchAndConnectorOrder(sourceLoop, expectedSourceBranchHandles);
+  EXPECT_EQ(targetBranchHandlesBefore, objectHandles(targetBranchList->branches()));
+  EXPECT_EQ(targetDefaultBranchHandle, targetBranchList->branches()[1].handle());
+  EXPECT_EQ(std::vector<ModelObject>{chiller.cast<ModelObject>()}, targetBranchList->branches()[1].components());
+  expectDemandBranchAndConnectorOrder(targetLoop, targetBranchHandlesBefore);
+
+  ASSERT_TRUE(targetLoop.removeDemandBranchWithComponent(chiller));
+  EXPECT_FALSE(chiller.heatRecoveryLoop());
+  EXPECT_FALSE(chiller.heatRecoveryInletNode());
+  EXPECT_FALSE(chiller.heatRecoveryOutletNode());
+  ASSERT_TRUE(chiller.chilledWaterLoop());
+  ASSERT_TRUE(chiller.condenserWaterLoop());
+  EXPECT_EQ(primaryLoop, *chiller.chilledWaterLoop());
+  EXPECT_EQ(condenserLoop, *chiller.condenserWaterLoop());
+  EXPECT_EQ("WaterCooled", chiller.condenserType());
+  EXPECT_TRUE(chiller.isDesignHeatRecoveryWaterFlowRateAutosized());
+  EXPECT_TRUE(flowRateRaw == rawField(chiller, openstudio::Chiller_Electric_EIRFields::DesignHeatRecoveryWaterFlowRate));
+  targetBranchList = targetLoop.getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::DemandSideBranchListName);
+  ASSERT_TRUE(targetBranchList);
+  EXPECT_EQ(targetBranchHandlesBefore, objectHandles(targetBranchList->branches()));
+  EXPECT_TRUE(targetBranchList->branches()[1].components().empty());
+  expectDemandBranchAndConnectorOrder(targetLoop, targetBranchHandlesBefore);
+
+  ASSERT_TRUE(targetLoop.addDemandBranchForComponent(chiller, true));
+  ASSERT_TRUE(chiller.heatRecoveryLoop());
+  EXPECT_EQ(targetLoop, *chiller.heatRecoveryLoop());
+  EXPECT_TRUE(chiller.isDesignHeatRecoveryWaterFlowRateAutosized());
+  EXPECT_TRUE(flowRateRaw == rawField(chiller, openstudio::Chiller_Electric_EIRFields::DesignHeatRecoveryWaterFlowRate));
+}
+
+TEST_F(EPModelFixture, PlantLoop_ChillerElectricEIRExplicitInitialHeatRecoveryAttachmentStillAutosizes) {
+  Model model;
+  PlantLoop unattachedTarget(model);
+  ChillerElectricEIR unattachedChiller(model);
+  ASSERT_TRUE(unattachedChiller.setDesignHeatRecoveryWaterFlowRate(0.003));
+  ASSERT_TRUE(unattachedTarget.addDemandBranchForComponent(unattachedChiller, true));
+  EXPECT_FALSE(unattachedChiller.chilledWaterLoop());
+  EXPECT_FALSE(unattachedChiller.condenserWaterLoop());
+  ASSERT_TRUE(unattachedChiller.heatRecoveryLoop());
+  EXPECT_EQ(unattachedTarget, *unattachedChiller.heatRecoveryLoop());
+  EXPECT_TRUE(unattachedChiller.isDesignHeatRecoveryWaterFlowRateAutosized());
+
+  PlantLoop primaryLoop(model);
+  PlantLoop condenserLoop(model);
+  PlantLoop heatRecoveryLoop(model);
+  ChillerElectricEIR configuredChiller(model);
+  ASSERT_TRUE(primaryLoop.addSupplyBranchForComponent(configuredChiller));
+  ASSERT_TRUE(condenserLoop.addDemandBranchForComponent(configuredChiller));
+  ASSERT_TRUE(configuredChiller.setDesignHeatRecoveryWaterFlowRate(0.006));
+  ASSERT_TRUE(heatRecoveryLoop.addDemandBranchForComponent(configuredChiller, true));
+  ASSERT_TRUE(configuredChiller.chilledWaterLoop());
+  ASSERT_TRUE(configuredChiller.condenserWaterLoop());
+  ASSERT_TRUE(configuredChiller.heatRecoveryLoop());
+  EXPECT_EQ(primaryLoop, *configuredChiller.chilledWaterLoop());
+  EXPECT_EQ(condenserLoop, *configuredChiller.condenserWaterLoop());
+  EXPECT_EQ(heatRecoveryLoop, *configuredChiller.heatRecoveryLoop());
+  EXPECT_EQ("WaterCooled", configuredChiller.condenserType());
+  EXPECT_TRUE(configuredChiller.isDesignHeatRecoveryWaterFlowRateAutosized());
+}
+
+TEST_F(EPModelFixture, PlantLoop_ChillerElectricEIRHeatRecoveryMoveRejectsOwnersForeignAndSerialSourceWithoutMutation) {
+  Model model;
+  PlantLoop primaryLoop(model);
+  PlantLoop condenserLoop(model);
+  PlantLoop sourceLoop(model);
+  PlantLoop targetLoop(model);
+  ChillerElectricEIR chiller(model);
+  ASSERT_TRUE(primaryLoop.addSupplyBranchForComponent(chiller));
+  ASSERT_TRUE(condenserLoop.addDemandBranchForComponent(chiller));
+  ASSERT_TRUE(sourceLoop.addDemandBranchForComponent(chiller, true));
+
+  const auto before = captureChillerHeatRecoveryMove(model, primaryLoop, condenserLoop, sourceLoop, targetLoop, chiller);
+  EXPECT_FALSE(sourceLoop.addDemandBranchForComponent(chiller, true));
+  EXPECT_EQ(before, captureChillerHeatRecoveryMove(model, primaryLoop, condenserLoop, sourceLoop, targetLoop, chiller));
+  EXPECT_FALSE(primaryLoop.addDemandBranchForComponent(chiller, true));
+  EXPECT_EQ(before, captureChillerHeatRecoveryMove(model, primaryLoop, condenserLoop, sourceLoop, targetLoop, chiller));
+  EXPECT_FALSE(condenserLoop.addDemandBranchForComponent(chiller, true));
+  EXPECT_EQ(before, captureChillerHeatRecoveryMove(model, primaryLoop, condenserLoop, sourceLoop, targetLoop, chiller));
+
+  Model foreignModel;
+  PlantLoop foreignTarget(foreignModel);
+  EXPECT_FALSE(foreignTarget.addDemandBranchForComponent(chiller, true));
+  EXPECT_EQ(before, captureChillerHeatRecoveryMove(model, primaryLoop, condenserLoop, sourceLoop, targetLoop, chiller));
+
+  ASSERT_TRUE(chiller.heatRecoveryOutletNode());
+  PipeAdiabatic serialPipe(model);
+  auto serialInsertionNode = *chiller.heatRecoveryOutletNode();
+  ASSERT_TRUE(serialPipe.addToNode(serialInsertionNode));
+  const auto serialBefore = captureChillerHeatRecoveryMove(model, primaryLoop, condenserLoop, sourceLoop, targetLoop, chiller);
+  EXPECT_FALSE(targetLoop.addDemandBranchForComponent(chiller, true));
+  EXPECT_EQ(serialBefore, captureChillerHeatRecoveryMove(model, primaryLoop, condenserLoop, sourceLoop, targetLoop, chiller));
+}
+
+TEST_F(EPModelFixture, PlantLoop_ChillerElectricEIRHeatRecoveryMoveRejectsMalformedEvidenceAndNodeCollisionWithoutMutation) {
+  enum class MalformedCase
+  {
+    PartialHeatRecoveryPort,
+    CollapsedHeatRecoveryPorts,
+    DuplicateRawBranchRow,
+    NonWaterCooled,
+    DuplicateScaffoldOwner,
+    TargetOutletNodeCollision,
+  };
+
+  for (const auto malformedCase :
+       {MalformedCase::PartialHeatRecoveryPort, MalformedCase::CollapsedHeatRecoveryPorts, MalformedCase::DuplicateRawBranchRow,
+        MalformedCase::NonWaterCooled, MalformedCase::DuplicateScaffoldOwner, MalformedCase::TargetOutletNodeCollision}) {
+    Model model;
+    PlantLoop primaryLoop(model);
+    PlantLoop condenserLoop(model);
+    PlantLoop sourceLoop(model);
+    PlantLoop targetLoop(model);
+    ChillerElectricEIR chiller(model);
+    ASSERT_TRUE(chiller.setName("Malformed Heat Recovery Chiller"));
+    ASSERT_TRUE(primaryLoop.addSupplyBranchForComponent(chiller));
+    ASSERT_TRUE(condenserLoop.addDemandBranchForComponent(chiller));
+    auto chillerWorkspaceImpl = chiller.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+    ASSERT_TRUE(chillerWorkspaceImpl);
+
+    if (malformedCase == MalformedCase::PartialHeatRecoveryPort) {
+      Node partialInlet(model);
+      ASSERT_TRUE(chillerWorkspaceImpl->setPointer(openstudio::Chiller_Electric_EIRFields::HeatRecoveryInletNodeName, partialInlet.handle(), false));
+    } else {
+      ASSERT_TRUE(sourceLoop.addDemandBranchForComponent(chiller, true));
+      if (malformedCase == MalformedCase::CollapsedHeatRecoveryPorts) {
+        ASSERT_TRUE(chiller.heatRecoveryInletNode());
+        ASSERT_TRUE(chillerWorkspaceImpl->setPointer(openstudio::Chiller_Electric_EIRFields::HeatRecoveryOutletNodeName,
+                                                     chiller.heatRecoveryInletNode()->handle(), false));
+      } else if (malformedCase == MalformedCase::DuplicateRawBranchRow) {
+        ASSERT_TRUE(chiller.heatRecoveryInletNode());
+        ASSERT_TRUE(chiller.heatRecoveryOutletNode());
+        Branch aliasBranch(model);
+        auto aliasRow = aliasBranch.pushExtensibleGroup();
+        ASSERT_FALSE(aliasRow.empty());
+        ASSERT_TRUE(aliasRow.setString(openstudio::BranchExtensibleFields::ComponentObjectType, chiller.iddObject().name(), false));
+        ASSERT_TRUE(aliasRow.setString(openstudio::BranchExtensibleFields::ComponentName, chiller.nameString(), false));
+        ASSERT_TRUE(
+          aliasRow.setString(openstudio::BranchExtensibleFields::ComponentInletNodeName, chiller.heatRecoveryInletNode()->nameString(), false));
+        ASSERT_TRUE(
+          aliasRow.setString(openstudio::BranchExtensibleFields::ComponentOutletNodeName, chiller.heatRecoveryOutletNode()->nameString(), false));
+      } else if (malformedCase == MalformedCase::NonWaterCooled) {
+        ASSERT_TRUE(chillerWorkspaceImpl->openstudio::detail::IdfObject_Impl::setString(openstudio::Chiller_Electric_EIRFields::CondenserType,
+                                                                                        "AirCooled", false));
+      } else if (malformedCase == MalformedCase::DuplicateScaffoldOwner) {
+        PlantLoop aliasOwner(model);
+        const auto sourceBranchList = sourceLoop.getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::DemandSideBranchListName);
+        ASSERT_TRUE(sourceBranchList);
+        auto aliasOwnerImpl = aliasOwner.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+        ASSERT_TRUE(aliasOwnerImpl);
+        ASSERT_TRUE(aliasOwnerImpl->setPointer(openstudio::PlantLoopFields::DemandSideBranchListName, sourceBranchList->handle(), false));
+      } else if (malformedCase == MalformedCase::TargetOutletNodeCollision) {
+        const auto targetBranchList = targetLoop.getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::DemandSideBranchListName);
+        ASSERT_TRUE(targetBranchList);
+        ASSERT_EQ(3u, targetBranchList->branches().size());
+        Node collision(model);
+        ASSERT_TRUE(collision.setName(targetBranchList->branches()[1].nameString() + " Node - " + chiller.nameString() + " Outlet"));
+      }
+    }
+
+    const bool observeTopology = malformedCase != MalformedCase::CollapsedHeatRecoveryPorts && malformedCase != MalformedCase::DuplicateRawBranchRow
+                                 && malformedCase != MalformedCase::DuplicateScaffoldOwner;
+    const auto before = captureChillerHeatRecoveryMove(model, primaryLoop, condenserLoop, sourceLoop, targetLoop, chiller, observeTopology);
+    EXPECT_FALSE(targetLoop.addDemandBranchForComponent(chiller, true));
+    EXPECT_EQ(before, captureChillerHeatRecoveryMove(model, primaryLoop, condenserLoop, sourceLoop, targetLoop, chiller, observeTopology));
+  }
+}
+
+TEST_F(EPModelFixture, PlantLoop_MovedChillerHeatRecoveryLoopRemovalRetainsOtherOwnersAndCondenserDetachContract) {
+  Model model;
+  PlantLoop primaryLoop(model);
+  PlantLoop condenserLoop(model);
+  PlantLoop sourceLoop(model);
+  PlantLoop targetLoop(model);
+  ChillerElectricEIR chiller(model);
+  ASSERT_TRUE(primaryLoop.addSupplyBranchForComponent(chiller));
+  ASSERT_TRUE(condenserLoop.addDemandBranchForComponent(chiller));
+  ASSERT_TRUE(sourceLoop.addDemandBranchForComponent(chiller, true));
+  ASSERT_TRUE(chiller.setDesignHeatRecoveryWaterFlowRate(0.0052));
+  ASSERT_TRUE(targetLoop.addDemandBranchForComponent(chiller, true));
+  ASSERT_TRUE(chiller.heatRecoveryLoop());
+  EXPECT_EQ(targetLoop, *chiller.heatRecoveryLoop());
+
+  const auto targetHandle = targetLoop.handle();
+  EXPECT_FALSE(targetLoop.remove().empty());
+  EXPECT_FALSE(model.getObject(targetHandle));
+  EXPECT_TRUE(model.getObject(chiller.handle()));
+  EXPECT_FALSE(chiller.heatRecoveryLoop());
+  EXPECT_FALSE(chiller.heatRecoveryInletNode());
+  EXPECT_FALSE(chiller.heatRecoveryOutletNode());
+  ASSERT_TRUE(chiller.chilledWaterLoop());
+  ASSERT_TRUE(chiller.condenserWaterLoop());
+  EXPECT_EQ(primaryLoop, *chiller.chilledWaterLoop());
+  EXPECT_EQ(condenserLoop, *chiller.condenserWaterLoop());
+  EXPECT_EQ("WaterCooled", chiller.condenserType());
+  ASSERT_TRUE(chiller.designHeatRecoveryWaterFlowRate());
+  EXPECT_DOUBLE_EQ(0.0052, *chiller.designHeatRecoveryWaterFlowRate());
+
+  ASSERT_TRUE(condenserLoop.removeDemandBranchWithComponent(chiller));
+  EXPECT_TRUE(model.getObject(chiller.handle()));
+  ASSERT_TRUE(chiller.chilledWaterLoop());
+  EXPECT_EQ(primaryLoop, *chiller.chilledWaterLoop());
+  EXPECT_FALSE(chiller.condenserWaterLoop());
+  EXPECT_FALSE(chiller.condenserInletNode());
+  EXPECT_FALSE(chiller.condenserOutletNode());
+  EXPECT_EQ("AirCooled", chiller.condenserType());
 }
 
 TEST_F(EPModelFixture, PlantLoop_ConfiguredChillerCondenserLoopRemovalPreservesPrimaryOwnerAndControls) {

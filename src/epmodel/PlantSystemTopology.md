@@ -117,6 +117,13 @@ The transactional branch evidence is deliberately exact rather than generic:
   condenser-owned branch, operation, and companion objects; a replacement
   condenser loop can then be attached and saved/reloaded without disturbing
   the chiller's surviving chilled-water path.
+- A fully configured `ChillerElectricEIR` can move its heat-recovery connection
+  through the explicit `tertiary=true` plant operation. The chilled-water and
+  condenser owners, `WaterCooled` state, heat-recovery flow sizing mode,
+  curves, schedules, setpoint relationship, and other fields remain unchanged.
+  Both branch shapes have rollback, retry, reload, rejection, and heat-recovery
+  owner-removal evidence. This does not imply a generic condenser move or
+  tertiary support for other chiller families.
 
 The representative C++ hot-water, chilled-water, and condenser-water vertical
 slice covers construction, typed `SizingPlant` loop types, equipment and
@@ -168,11 +175,11 @@ or the presence of a scalar test.
 
 ## Ordered plant roadmap
 
-1. **Chiller heat-recovery and tertiary topology.** Add an exact
-   `ChillerElectricEIR` heat-recovery move through the explicit tertiary plant
-   operation while retaining chilled-water and condenser owners. Then extend
-   the proven tertiary boundary to another selected family before addressing
-   branch replacement, clone/remove, and cross-model transfer.
+1. **Next three-owner heat-pump boundary.** Apply the exact multi-owner proof to
+   `HeatPumpPlantLoopEIR` source-side moves only when its load, source, and heat
+   recovery owners already make that role unambiguous. Keep heat-recovery moves,
+   direct-removal state parity, other families, branch replacement,
+   clone/remove, and cross-model transfer as separately proven operations.
 2. **Additional contained owners.** Apply the private relocation boundary to
    another selected compound owner only after its child roles, internal air or
    zone path, controller behavior, and removal lifetime have exact rejection,
