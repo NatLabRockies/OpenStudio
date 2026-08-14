@@ -244,11 +244,16 @@ namespace epmodel {
     }
 
     void SingleDuctTerminalRemovalPlan::commit() {
+      OS_ASSERT(m_state == State::Prepared);
+      if (m_state != State::Prepared) {
+        return;
+      }
+
       if (m_branchReservation) {
         const auto outletNode = m_outletNode ? m_outletNode->optionalCast<Node>() : boost::optional<Node>();
         OS_ASSERT(outletNode);
         assertSuccessfulMutation(m_branchReservation->replaceWith(*outletNode));
-        assertSuccessfulMutation(m_branchReservation->commit());
+        m_branchReservation->commit();
       }
 
       if (m_equipmentList) {
@@ -283,6 +288,7 @@ namespace epmodel {
           OS_ASSERT(!m_terminal.model().getObject(m_inletNode->handle()));
         }
       }
+      m_state = State::Committed;
     }
 
   }  // namespace detail

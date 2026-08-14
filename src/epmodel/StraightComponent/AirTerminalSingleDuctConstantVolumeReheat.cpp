@@ -532,7 +532,8 @@ namespace epmodel {
         OS_ASSERT(maintainContainedAirPath());
         return false;
       }
-      return plan->commit();
+      plan->commit();
+      return true;
     }
 
     Schedule AirTerminalSingleDuctConstantVolumeReheat_Impl::availabilitySchedule() const {

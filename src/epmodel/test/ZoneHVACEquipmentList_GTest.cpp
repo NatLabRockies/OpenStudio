@@ -149,6 +149,39 @@ TEST_F(EPModelFixture, ZoneHVACEquipmentList_AddEquipment_SynchronizesUnsetExist
   EXPECT_EQ(actualOutletNode, *adu.outletNode());
 }
 
+TEST_F(EPModelFixture, ZoneHVACEquipmentList_AddEquipmentRejectsAmbiguousDuplicateADUsBeforeMutation) {
+  Model model;
+  ZoneHVACEquipmentList equipmentList(model);
+  AirTerminalSingleDuctConstantVolumeReheat terminal(model);
+  Node actualOutletNode(model);
+  Node firstStaleOutlet(model);
+  Node secondStaleOutlet(model);
+  ASSERT_TRUE(terminal.setPointer(terminal.outletPort(), actualOutletNode.handle()));
+
+  ZoneHVACAirDistributionUnit firstADU(model);
+  ZoneHVACAirDistributionUnit secondADU(model);
+  auto firstImpl = firstADU.getImpl<detail::ZoneHVACAirDistributionUnit_Impl>();
+  auto secondImpl = secondADU.getImpl<detail::ZoneHVACAirDistributionUnit_Impl>();
+  ASSERT_TRUE(firstImpl);
+  ASSERT_TRUE(secondImpl);
+  ASSERT_TRUE(firstImpl->setAirTerminal(terminal.cast<ModelObject>()));
+  ASSERT_TRUE(secondImpl->setAirTerminal(terminal.cast<ModelObject>()));
+  ASSERT_TRUE(firstImpl->setOutletNode(firstStaleOutlet));
+  ASSERT_TRUE(secondImpl->setOutletNode(secondStaleOutlet));
+  const auto baselineObjectCount = model.objects().size();
+
+  EXPECT_FALSE(equipmentList.addEquipment(terminal.cast<ModelObject>()));
+
+  EXPECT_EQ(baselineObjectCount, model.objects().size());
+  EXPECT_TRUE(equipmentList.extensibleGroups().empty());
+  EXPECT_TRUE(equipmentList.equipment().empty());
+  ASSERT_TRUE(firstADU.outletNode());
+  ASSERT_TRUE(secondADU.outletNode());
+  EXPECT_EQ(firstStaleOutlet, *firstADU.outletNode());
+  EXPECT_EQ(secondStaleOutlet, *secondADU.outletNode());
+  EXPECT_EQ(2u, terminal.getSources(openstudio::IddObjectType::ZoneHVAC_AirDistributionUnit).size());
+}
+
 TEST_F(EPModelFixture, API_ZoneHVACEquipmentList_ThermalZoneConstructor_LinksConnections) {
   Model model;
   ThermalZone zone(model);

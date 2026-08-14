@@ -38,7 +38,7 @@ namespace epmodel {
       ModelObject terminal, std::unique_ptr<AirLoopHVAC_Impl::DemandBranchStartReservation> branchReservation, ModelObject outletNode,
       ModelObject inletNode, bool createdInletNode, unsigned inletPort, unsigned outletPort, boost::optional<ModelObject> airDistributionUnit,
       boost::optional<ModelObject> equipmentList, boost::optional<ModelObject> previousAirDistributionUnitOutletTarget,
-      boost::optional<std::string> previousAirDistributionUnitOutletNodeName)
+      boost::optional<std::string> previousAirDistributionUnitOutletNodeName, bool assignedTerminalName)
       : m_terminal(std::move(terminal)),
         m_branchReservation(std::move(branchReservation)),
         m_outletNode(std::move(outletNode)),
@@ -49,7 +49,8 @@ namespace epmodel {
         m_equipmentList(std::move(equipmentList)),
         m_previousAirDistributionUnitOutletTarget(std::move(previousAirDistributionUnitOutletTarget)),
         m_previousAirDistributionUnitOutletNodeName(std::move(previousAirDistributionUnitOutletNodeName)),
-        m_createdInletNode(createdInletNode) {}
+        m_createdInletNode(createdInletNode),
+        m_assignedTerminalName(assignedTerminalName) {}
 
     SingleDuctTerminalInsertionPlan::~SingleDuctTerminalInsertionPlan() {
       if (!m_committed) {
@@ -136,7 +137,9 @@ namespace epmodel {
         }
       }
 
-      if (!terminalObject.name()) {
+      const auto originalTerminalName = terminalObject.name();
+      const bool assignedTerminalName = !originalTerminalName || originalTerminalName->empty();
+      if (assignedTerminalName) {
         terminalObject.createName();
         if (!terminalObject.name()) {
           return nullptr;
@@ -150,7 +153,8 @@ namespace epmodel {
         airDistributionUnits.empty() ? boost::none : boost::optional<ModelObject>(airDistributionUnits.front());
       return std::unique_ptr<SingleDuctTerminalInsertionPlan>(new SingleDuctTerminalInsertionPlan(
         terminalObject, std::move(branchReservation), outletNode.cast<ModelObject>(), inletNode.cast<ModelObject>(), !inletNodeExisted, inletPort,
-        outletPort, airDistributionUnit, equipmentList, previousAirDistributionUnitOutletTarget, previousAirDistributionUnitOutletNodeName));
+        outletPort, airDistributionUnit, equipmentList, previousAirDistributionUnitOutletTarget, previousAirDistributionUnitOutletNodeName,
+        assignedTerminalName));
     }
 
     bool SingleDuctTerminalInsertionPlan::setTerminalPointer(unsigned fieldIndex, const Handle& targetHandle) {
@@ -212,12 +216,13 @@ namespace epmodel {
       return true;
     }
 
-    bool SingleDuctTerminalInsertionPlan::commit() {
-      if (!m_applySucceeded || !m_branchReservation->commit()) {
-        return false;
+    void SingleDuctTerminalInsertionPlan::commit() {
+      OS_ASSERT(m_applySucceeded && !m_committed);
+      if (!m_applySucceeded || m_committed) {
+        return;
       }
+      m_branchReservation->commit();
       m_committed = true;
-      return true;
     }
 
     void SingleDuctTerminalInsertionPlan::rollback() {
@@ -269,6 +274,11 @@ namespace epmodel {
         if (inletNode) {
           inletNode->remove();
         }
+      }
+      if (m_assignedTerminalName) {
+        auto workspaceImpl = m_terminal.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+        OS_ASSERT(workspaceImpl);
+        assertSuccessfulMutation(static_cast<bool>(workspaceImpl->setName("", false)));
       }
     }
 

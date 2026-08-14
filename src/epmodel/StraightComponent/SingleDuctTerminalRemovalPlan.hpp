@@ -40,6 +40,12 @@ namespace epmodel {
       void commit();
 
      private:
+      enum class State
+      {
+        Prepared,
+        Committed,
+      };
+
       SingleDuctTerminalRemovalPlan(ModelObject terminal, unsigned inletPort, unsigned outletPort,
                                     std::unique_ptr<AirLoopHVAC_Impl::DemandBranchStartReservation> branchReservation,
                                     boost::optional<ModelObject> inletNode, boost::optional<ModelObject> outletNode,
@@ -53,6 +59,7 @@ namespace epmodel {
       boost::optional<ModelObject> m_outletNode;
       boost::optional<ModelObject> m_equipmentList;
       boost::optional<ModelObject> m_airDistributionUnit;
+      State m_state = State::Prepared;
     };
 
   }  // namespace detail

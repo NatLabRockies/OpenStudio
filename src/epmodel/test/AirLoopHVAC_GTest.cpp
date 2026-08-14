@@ -109,6 +109,7 @@
 #include <utilities/idd/Coil_Heating_Water_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/Sizing_System_FieldEnums.hxx>
+#include <utilities/idd/ZoneHVAC_AirDistributionUnit_FieldEnums.hxx>
 #include <utilities/idd/ZoneHVAC_EquipmentConnections_FieldEnums.hxx>
 #include <utilities/idf/WorkspaceObject_Impl.hpp>
 #include <fmt/format.h>
@@ -2214,7 +2215,7 @@ TEST_F(EPModelFixture, AirLoopHVAC_TerminalOnlySingleDuctBranch_AttachesZoneWith
   expectDemandBranchParity(airLoop);
 }
 
-TEST_F(EPModelFixture, AirLoopHVAC_TerminalFirstZoneAttachment_ProjectsPIUAndInductionSecondaryAirTopology) {
+TEST_F(EPModelFixture, AirLoopHVAC_TerminalFirstZoneAttachment_AddsPIUAndInductionSecondaryAirTopology) {
   {
     Model model;
     AirLoopHVAC airLoop(model);
@@ -2282,7 +2283,7 @@ TEST_F(EPModelFixture, AirLoopHVAC_TerminalFirstZoneAttachment_ProjectsPIUAndInd
   }
 }
 
-TEST_F(EPModelFixture, AirLoopHVAC_TerminalFirstZoneProjectionFailure_RestoresExactPIUExhaustEquipmentAndStaleADUThenRetries) {
+TEST_F(EPModelFixture, AirLoopHVAC_TerminalFirstZoneAttachmentFailure_RestoresExactPIUExhaustEquipmentAndStaleADUThenRetries) {
   Model model;
   AirLoopHVAC airLoop(model);
   ThermalZone zone(model);
@@ -2319,7 +2320,7 @@ TEST_F(EPModelFixture, AirLoopHVAC_TerminalFirstZoneProjectionFailure_RestoresEx
   auto airLoopImpl = airLoop.getImpl<detail::AirLoopHVAC_Impl>();
   ASSERT_TRUE(airLoopImpl);
   EXPECT_FALSE(
-    airLoopImpl->addBranchForZone(zone, detail::AirLoopHVAC_Impl::DemandBranchAttachmentFailureStage::AfterTerminalZoneProjectionPrepared));
+    airLoopImpl->addBranchForZone(zone, detail::AirLoopHVAC_Impl::DemandBranchAttachmentFailureStage::AfterTerminalFirstZoneAttachmentPrepared));
 
   EXPECT_EQ(*originalSplitterOutlet, *airLoop.zoneSplitter().outletModelObject(0u));
   EXPECT_EQ(*originalMixerInlet, *airLoop.zoneMixer().inletModelObject(0u));
@@ -2341,6 +2342,65 @@ TEST_F(EPModelFixture, AirLoopHVAC_TerminalFirstZoneProjectionFailure_RestoresEx
   EXPECT_NE(exhaustNodes.end(), std::ranges::find(exhaustNodes, *secondaryNode));
   ASSERT_EQ(1u, zone.equipment().size());
   EXPECT_EQ(terminal.cast<ModelObject>(), zone.equipment().front());
+  ASSERT_TRUE(adu.outletNode());
+  EXPECT_EQ(terminalOutlet, *adu.outletNode());
+}
+
+TEST_F(EPModelFixture, AirLoopHVAC_TerminalFirstZoneAttachmentFailure_RestoresUnresolvedExhaustAndADUBackingTextThenRetries) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  ThermalZone zone(model);
+  auto availability = airLoop.availabilitySchedule();
+  FanConstantVolume fan(model);
+  CoilHeatingElectric reheatCoil(model);
+  AirTerminalSingleDuctParallelPIUReheat terminal(model, availability, fan, reheatCoil);
+  ASSERT_TRUE(airLoop.addBranchForHVACComponent(terminal));
+  ASSERT_TRUE(terminal.outletModelObject());
+  const auto terminalOutlet = terminal.outletModelObject()->cast<Node>();
+
+  auto connections = zone.getImpl<detail::ThermalZone_Impl>()->getZoneHVACEquipmentConnections();
+  auto connectionsImpl = connections.getImpl<detail::ZoneHVACEquipmentConnections_Impl>();
+  ASSERT_TRUE(connectionsImpl);
+  constexpr unsigned exhaustField = openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneAirExhaustNodeorNodeListName;
+  const std::string unresolvedExhaust = "Unresolved Existing Zone Exhaust";
+  ASSERT_TRUE(connectionsImpl->openstudio::detail::IdfObject_Impl::setString(exhaustField, unresolvedExhaust, false));
+  EXPECT_FALSE(connections.getField(exhaustField, false));
+  EXPECT_FALSE(model.getConcreteModelObjectByName<Node>(unresolvedExhaust));
+
+  ZoneHVACAirDistributionUnit adu(model);
+  auto aduImpl = adu.getImpl<detail::ZoneHVACAirDistributionUnit_Impl>();
+  ASSERT_TRUE(aduImpl);
+  ASSERT_TRUE(aduImpl->setAirTerminal(terminal.cast<ModelObject>()));
+  constexpr unsigned aduOutletField = openstudio::ZoneHVAC_AirDistributionUnitFields::AirDistributionUnitOutletNodeName;
+  const std::string unresolvedADUOutlet = "Unresolved Existing ADU Outlet";
+  ASSERT_TRUE(aduImpl->openstudio::detail::IdfObject_Impl::setString(aduOutletField, unresolvedADUOutlet, false));
+  EXPECT_FALSE(adu.getField(aduOutletField, false));
+  EXPECT_FALSE(model.getConcreteModelObjectByName<Node>(unresolvedADUOutlet));
+  const auto baselineHandles = workspaceHandles(model);
+
+  auto airLoopImpl = airLoop.getImpl<detail::AirLoopHVAC_Impl>();
+  ASSERT_TRUE(airLoopImpl);
+  EXPECT_FALSE(
+    airLoopImpl->addBranchForZone(zone, detail::AirLoopHVAC_Impl::DemandBranchAttachmentFailureStage::AfterTerminalFirstZoneAttachmentPrepared));
+
+  EXPECT_EQ(baselineHandles, workspaceHandles(model));
+  EXPECT_FALSE(connections.getField(exhaustField, false));
+  const auto restoredExhaust = connectionsImpl->openstudio::detail::IdfObject_Impl::getString(exhaustField, false, true);
+  ASSERT_TRUE(restoredExhaust);
+  EXPECT_EQ(unresolvedExhaust, *restoredExhaust);
+  EXPECT_FALSE(adu.getField(aduOutletField, false));
+  const auto restoredADUOutlet = aduImpl->openstudio::detail::IdfObject_Impl::getString(aduOutletField, false, true);
+  ASSERT_TRUE(restoredADUOutlet);
+  EXPECT_EQ(unresolvedADUOutlet, *restoredADUOutlet);
+  EXPECT_FALSE(model.getConcreteModelObjectByName<Node>(unresolvedExhaust));
+  EXPECT_FALSE(model.getConcreteModelObjectByName<Node>(unresolvedADUOutlet));
+  EXPECT_FALSE(terminal.secondaryAirInletNode());
+  EXPECT_TRUE(zone.equipment().empty());
+  EXPECT_TRUE(airLoop.thermalZones().empty());
+
+  ASSERT_TRUE(airLoop.addBranchForZone(zone));
+  ASSERT_TRUE(terminal.secondaryAirInletNode());
+  ASSERT_TRUE(connections.getField(exhaustField, false));
   ASSERT_TRUE(adu.outletNode());
   EXPECT_EQ(terminalOutlet, *adu.outletNode());
 }
@@ -2527,7 +2587,7 @@ TEST_F(EPModelFixture, AirLoopHVAC_CompoundCloneLast_PIUProjectsDistinctSecondar
   auto airLoopImpl = airLoop.getImpl<detail::AirLoopHVAC_Impl>();
   ASSERT_TRUE(airLoopImpl);
   EXPECT_FALSE(
-    airLoopImpl->addBranchForZone(zone2, detail::AirLoopHVAC_Impl::DemandBranchAttachmentFailureStage::AfterTerminalZoneProjectionPrepared));
+    airLoopImpl->addBranchForZone(zone2, detail::AirLoopHVAC_Impl::DemandBranchAttachmentFailureStage::AfterTerminalFirstZoneAttachmentPrepared));
   EXPECT_EQ(originalHandles, workspaceHandles(model));
   EXPECT_EQ(originalSplitter, objectHandles(airLoop.zoneSplitter().outletModelObjects()));
   EXPECT_EQ(originalMixer, objectHandles(airLoop.zoneMixer().inletModelObjects()));
@@ -2828,7 +2888,7 @@ TEST_F(EPModelFixture, AirLoopHVAC_CompoundCloneLast_FailureStagesRestoreExactTo
   using FailureStage = detail::AirLoopHVAC_Impl::DemandBranchAttachmentFailureStage;
   const std::vector<FailureStage> failureStages = {FailureStage::AfterTerminalClonePrepared, FailureStage::AfterPlantReconnectionPrepared,
                                                    FailureStage::AfterReservationPrepared,   FailureStage::AfterZonePrepared,
-                                                   FailureStage::BeforeTerminalAttachment,   FailureStage::AfterTerminalZoneProjectionPrepared};
+                                                   FailureStage::BeforeTerminalAttachment,   FailureStage::AfterTerminalFirstZoneAttachmentPrepared};
   for (const auto failureStage : failureStages) {
     EXPECT_FALSE(airLoopImpl->addBranchForZone(zone2, failureStage));
     EXPECT_EQ(originalHandles, workspaceHandles(model));
@@ -4968,6 +5028,14 @@ TEST_F(EPModelFixture, AirLoopHVAC_CompositeDemandBranchPreparationFailurePreser
   EXPECT_TRUE(zone.useIdealAirLoads());
   EXPECT_TRUE(airLoop.thermalZones().empty());
   EXPECT_FALSE(terminal.airLoopHVAC());
+
+  ASSERT_TRUE(airLoop.addBranchForZone(zone, terminal));
+  EXPECT_FALSE(model.getObject(idealLoadsHandle));
+  EXPECT_FALSE(zone.useIdealAirLoads());
+  ASSERT_EQ(1u, zone.equipment().size());
+  EXPECT_EQ(terminal.cast<ModelObject>(), zone.equipment().front());
+  ASSERT_EQ(1u, airLoop.thermalZones().size());
+  EXPECT_EQ(zone, airLoop.thermalZones().front());
 }
 
 TEST_F(EPModelFixture, AirLoopHVAC_DemandBranchZonePreparationFailurePreservesExistingNodeListsExactly) {
@@ -5006,6 +5074,51 @@ TEST_F(EPModelFixture, AirLoopHVAC_DemandBranchZonePreparationFailurePreservesEx
   EXPECT_EQ(returnTargetHandle, connections.getTarget(openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneReturnAirNodeorNodeListName)->handle());
   EXPECT_EQ(baselineNodeHandles, nodeHandles(model));
   EXPECT_TRUE(airLoop.thermalZones().empty());
+}
+
+TEST_F(EPModelFixture, AirLoopHVAC_DemandBranchZonePreparationFailurePreservesUnresolvedInletAndReturnBackingTextThenRetries) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  ThermalZone zone(model);
+  auto connections = zone.getImpl<detail::ThermalZone_Impl>()->getZoneHVACEquipmentConnections();
+  auto connectionsImpl = connections.getImpl<detail::ZoneHVACEquipmentConnections_Impl>();
+  ASSERT_TRUE(connectionsImpl);
+
+  constexpr unsigned inletField = openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneAirInletNodeorNodeListName;
+  constexpr unsigned returnField = openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneReturnAirNodeorNodeListName;
+  const std::string unresolvedInlet = "Unresolved Existing Zone Inlet";
+  const std::string unresolvedReturn = "Unresolved Existing Zone Return";
+  ASSERT_TRUE(connectionsImpl->setPointer(inletField, openstudio::Handle(), false));
+  ASSERT_TRUE(connectionsImpl->setPointer(returnField, openstudio::Handle(), false));
+  ASSERT_TRUE(connectionsImpl->openstudio::detail::IdfObject_Impl::setString(inletField, unresolvedInlet, false));
+  ASSERT_TRUE(connectionsImpl->openstudio::detail::IdfObject_Impl::setString(returnField, unresolvedReturn, false));
+  ASSERT_FALSE(connections.getField(inletField, false));
+  ASSERT_FALSE(connections.getField(returnField, false));
+  ASSERT_FALSE(model.getConcreteModelObjectByName<Node>(unresolvedInlet));
+  ASSERT_FALSE(model.getConcreteModelObjectByName<Node>(unresolvedReturn));
+  const auto baselineHandles = workspaceHandles(model);
+
+  auto airLoopImpl = airLoop.getImpl<detail::AirLoopHVAC_Impl>();
+  ASSERT_TRUE(airLoopImpl);
+  EXPECT_FALSE(airLoopImpl->addBranchForZone(zone, detail::AirLoopHVAC_Impl::DemandBranchAttachmentFailureStage::AfterZonePrepared));
+
+  EXPECT_EQ(baselineHandles, workspaceHandles(model));
+  EXPECT_FALSE(connections.getField(inletField, false));
+  EXPECT_FALSE(connections.getField(returnField, false));
+  const auto restoredInlet = connectionsImpl->openstudio::detail::IdfObject_Impl::getString(inletField, false, true);
+  const auto restoredReturn = connectionsImpl->openstudio::detail::IdfObject_Impl::getString(returnField, false, true);
+  ASSERT_TRUE(restoredInlet);
+  ASSERT_TRUE(restoredReturn);
+  EXPECT_EQ(unresolvedInlet, *restoredInlet);
+  EXPECT_EQ(unresolvedReturn, *restoredReturn);
+  EXPECT_FALSE(model.getConcreteModelObjectByName<Node>(unresolvedInlet));
+  EXPECT_FALSE(model.getConcreteModelObjectByName<Node>(unresolvedReturn));
+  EXPECT_TRUE(airLoop.thermalZones().empty());
+
+  ASSERT_TRUE(airLoop.addBranchForZone(zone));
+  EXPECT_TRUE(connections.getField(inletField, false));
+  EXPECT_TRUE(connections.getField(returnField, false));
+  EXPECT_EQ(std::vector<ThermalZone>{zone}, airLoop.thermalZones());
 }
 
 TEST_F(EPModelFixture, AirLoopHVAC_CompositeDemandBranchBeforeStraightTerminalInsertionRestoresOwnedBranchAndZoneState) {

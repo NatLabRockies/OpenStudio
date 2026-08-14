@@ -613,21 +613,26 @@ namespace epmodel {
       return true;
     }
 
-    bool syncFanAvailabilityWithLoop(HVACComponent& fan, Schedule& schedule) {
+    boost::optional<unsigned> fanAvailabilityScheduleField(const HVACComponent& fan) {
       const auto type = fan.iddObject().type();
       if (type == IddObjectType::Fan_ConstantVolume || type == IddObjectType::OS_Fan_ConstantVolume) {
-        return fan.setPointer(openstudio::Fan_ConstantVolumeFields::AvailabilityScheduleName, schedule.handle());
+        return openstudio::Fan_ConstantVolumeFields::AvailabilityScheduleName;
       }
       if (type == IddObjectType::Fan_SystemModel || type == IddObjectType::OS_Fan_SystemModel) {
-        return fan.setPointer(openstudio::Fan_SystemModelFields::AvailabilityScheduleName, schedule.handle());
+        return openstudio::Fan_SystemModelFields::AvailabilityScheduleName;
       }
       if (type == IddObjectType::Fan_OnOff || type == IddObjectType::OS_Fan_OnOff) {
-        return fan.setPointer(openstudio::Fan_OnOffFields::AvailabilityScheduleName, schedule.handle());
+        return openstudio::Fan_OnOffFields::AvailabilityScheduleName;
       }
       if (type == IddObjectType::Fan_VariableVolume || type == IddObjectType::OS_Fan_VariableVolume) {
-        return fan.setPointer(openstudio::Fan_VariableVolumeFields::AvailabilityScheduleName, schedule.handle());
+        return openstudio::Fan_VariableVolumeFields::AvailabilityScheduleName;
       }
-      return false;
+      return boost::none;
+    }
+
+    bool syncFanAvailabilityWithLoop(HVACComponent& fan, Schedule& schedule) {
+      const auto field = fanAvailabilityScheduleField(fan);
+      return field && fan.setPointer(*field, schedule.handle());
     }
 
     void applyConstructorDefaults(AirTerminalSingleDuctSeriesPIUReheat& terminal) {
@@ -875,7 +880,7 @@ namespace epmodel {
      public:
       static std::unique_ptr<InsertionPlan> prepare(AirTerminalSingleDuctSeriesPIUReheat_Impl& terminalImpl, AirLoopHVAC airLoop,
                                                     AirLoopHVACZoneSplitter splitter, unsigned branchIndex, Node outletNode,
-                                                    boost::optional<ThermalZone> thermalZone) {
+                                                    boost::optional<ThermalZone> thermalZone, bool terminalNameAssigned) {
         auto terminal = terminalImpl.getObject<ModelObject>();
         const std::string inletNodeName = outletNode.nameString() + " - " + terminal.nameString() + " Inlet Node";
         const bool inletNodeExisted = static_cast<bool>(terminalImpl.model().getConcreteModelObjectByName<Node>(inletNodeName));
@@ -891,7 +896,8 @@ namespace epmodel {
 
         auto plan = std::unique_ptr<InsertionPlan>(new InsertionPlan(terminalImpl, std::move(airLoop), std::move(splitter), branchIndex,
                                                                      std::move(outletNode), std::move(inletNode), !inletNodeExisted,
-                                                                     std::move(thermalZone), std::move(secondaryNode), !secondaryNodeExisted));
+                                                                     std::move(thermalZone), std::move(secondaryNode), !secondaryNodeExisted,
+                                                                     terminalNameAssigned));
         if (!plan->prepareTopology()) {
           return nullptr;
         }
@@ -916,6 +922,11 @@ namespace epmodel {
           m_airDistributionUnit(std::move(other.m_airDistributionUnit)),
           m_previousADUOutletTarget(std::move(other.m_previousADUOutletTarget)),
           m_previousADUOutletNodeName(std::move(other.m_previousADUOutletNodeName)),
+          m_previousFanAvailabilityTarget(std::move(other.m_previousFanAvailabilityTarget)),
+          m_previousFanAvailabilityRaw(std::move(other.m_previousFanAvailabilityRaw)),
+          m_fanAvailabilityField(other.m_fanAvailabilityField),
+          m_terminalNameAssigned(other.m_terminalNameAssigned),
+          m_fanAvailabilityUpdateAttempted(other.m_fanAvailabilityUpdateAttempted),
           m_splitterRewired(other.m_splitterRewired),
           m_inletAssigned(other.m_inletAssigned),
           m_outletAssigned(other.m_outletAssigned),
@@ -933,15 +944,9 @@ namespace epmodel {
         }
       }
 
-      bool commit() {
+      void commit() {
         OS_ASSERT(m_state == State::Prepared);
-        auto fanObject = m_terminalImpl->fan();
-        auto loopAvailability = m_airLoop.availabilitySchedule();
-        if (!syncFanAvailabilityWithLoop(fanObject, loopAvailability)) {
-          return false;
-        }
         m_state = State::Committed;
-        return true;
       }
 
      private:
@@ -954,7 +959,7 @@ namespace epmodel {
 
       InsertionPlan(AirTerminalSingleDuctSeriesPIUReheat_Impl& terminalImpl, AirLoopHVAC airLoop, AirLoopHVACZoneSplitter splitter,
                     unsigned branchIndex, Node outletNode, Node inletNode, bool inletNodeCreated, boost::optional<ThermalZone> thermalZone,
-                    boost::optional<Node> secondaryNode, bool secondaryNodeCreated)
+                    boost::optional<Node> secondaryNode, bool secondaryNodeCreated, bool terminalNameAssigned)
         : m_terminalImpl(&terminalImpl),
           m_airLoop(std::move(airLoop)),
           m_splitter(std::move(splitter)),
@@ -964,7 +969,8 @@ namespace epmodel {
           m_inletNodeCreated(inletNodeCreated),
           m_thermalZone(std::move(thermalZone)),
           m_secondaryNode(std::move(secondaryNode)),
-          m_secondaryNodeCreated(secondaryNodeCreated) {}
+          m_secondaryNodeCreated(secondaryNodeCreated),
+          m_terminalNameAssigned(terminalNameAssigned) {}
 
       bool prepareTopology() {
         auto terminal = m_terminalImpl->getObject<ModelObject>();
@@ -982,29 +988,54 @@ namespace epmodel {
           }
         }
 
+        m_splitterRewired = true;
         if (!m_splitter.setOutletModelObject(m_branchIndex, m_inletNode.cast<ModelObject>())) {
           return false;
         }
-        m_splitterRewired = true;
+        m_inletAssigned = true;
         if (!m_terminalImpl->setPointer(m_terminalImpl->inletPort(), m_inletNode.handle(), false)) {
           return false;
         }
-        m_inletAssigned = true;
+        m_outletAssigned = true;
         if (!m_terminalImpl->setPointer(m_terminalImpl->outletPort(), m_outletNode.handle(), false)) {
           return false;
         }
-        m_outletAssigned = true;
+
+        auto fanObject = m_terminalImpl->fan();
+        m_fanAvailabilityField = fanAvailabilityScheduleField(fanObject);
+        if (!m_fanAvailabilityField) {
+          return false;
+        }
+        if (const auto originalField = fanObject.getField(*m_fanAvailabilityField, false)) {
+          const auto targetHandle = toUUID(*originalField);
+          if (!targetHandle.isNull()) {
+            if (auto target = fanObject.model().getObject(targetHandle)) {
+              m_previousFanAvailabilityTarget = target->optionalCast<ModelObject>();
+            }
+          }
+        }
+        if (!m_previousFanAvailabilityTarget) {
+          auto workspaceImpl = fanObject.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+          OS_ASSERT(workspaceImpl);
+          m_previousFanAvailabilityRaw =
+            workspaceImpl->openstudio::detail::IdfObject_Impl::getString(*m_fanAvailabilityField, false, true);
+        }
+        m_fanAvailabilityUpdateAttempted = true;
+        auto loopAvailability = m_airLoop.availabilitySchedule();
+        if (!syncFanAvailabilityWithLoop(fanObject, loopAvailability)) {
+          return false;
+        }
 
         if (!m_thermalZone) {
           return true;
         }
 
         OS_ASSERT(m_secondaryNode && m_zoneConnections);
+        m_secondaryAssigned = true;
         if (!m_terminalImpl->setPointer(openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::SecondaryAirInletNodeName,
                                         m_secondaryNode->handle(), false)) {
           return false;
         }
-        m_secondaryAssigned = true;
 
         const auto originalExhaustNodes = m_zoneConnections->zoneAirExhaustNodes();
         const bool wasExhaustRegistered = std::ranges::find(originalExhaustNodes, *m_secondaryNode) != originalExhaustNodes.end();
@@ -1016,10 +1047,10 @@ namespace epmodel {
         }
 
         if (m_airDistributionUnit) {
+          m_aduUpdated = true;
           if (!m_airDistributionUnit->getImpl<detail::ZoneHVACAirDistributionUnit_Impl>()->setOutletNode(m_outletNode)) {
             return false;
           }
-          m_aduUpdated = true;
         }
 
         const auto originalEquipment = m_thermalZone->equipment();
@@ -1082,6 +1113,31 @@ namespace epmodel {
         if (m_inletNodeCreated && m_terminalImpl->model().getObject(m_inletNode.handle())) {
           m_inletNode.remove();
         }
+        if (m_fanAvailabilityUpdateAttempted && m_fanAvailabilityField) {
+          auto fanObject = m_terminalImpl->fan();
+          auto fanImpl = fanObject.getImpl<detail::ModelObject_Impl>();
+          OS_ASSERT(fanImpl);
+          bool restored = false;
+          if (m_previousFanAvailabilityTarget) {
+            restored = fanImpl->setPointer(*m_fanAvailabilityField, m_previousFanAvailabilityTarget->handle(), false);
+          } else if (m_previousFanAvailabilityRaw) {
+            const bool cleared = fanImpl->setPointer(*m_fanAvailabilityField, Handle(), false);
+            const bool rawRestored = fanImpl->openstudio::detail::IdfObject_Impl::setString(
+              *m_fanAvailabilityField, *m_previousFanAvailabilityRaw, false);
+            restored = cleared && rawRestored;
+          } else {
+            restored = fanImpl->setPointer(*m_fanAvailabilityField, Handle(), false);
+          }
+          OS_ASSERT(restored);
+          (void)restored;
+        }
+        if (m_terminalNameAssigned) {
+          auto workspaceImpl = terminal.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+          OS_ASSERT(workspaceImpl);
+          const bool restored = static_cast<bool>(workspaceImpl->setName("", false));
+          OS_ASSERT(restored);
+          (void)restored;
+        }
       }
 
       State m_state = State::Prepared;
@@ -1099,6 +1155,11 @@ namespace epmodel {
       boost::optional<ZoneHVACAirDistributionUnit> m_airDistributionUnit;
       boost::optional<ModelObject> m_previousADUOutletTarget;
       boost::optional<std::string> m_previousADUOutletNodeName;
+      boost::optional<ModelObject> m_previousFanAvailabilityTarget;
+      boost::optional<std::string> m_previousFanAvailabilityRaw;
+      boost::optional<unsigned> m_fanAvailabilityField;
+      bool m_terminalNameAssigned = false;
+      bool m_fanAvailabilityUpdateAttempted = false;
       bool m_splitterRewired = false;
       bool m_inletAssigned = false;
       bool m_outletAssigned = false;
@@ -2105,14 +2166,16 @@ namespace epmodel {
                  "addToNode requires both the fan and reheat coil relationships to be established before insertion.");
         return false;
       }
-      if (!thisObject.name()) {
+      const auto originalName = thisObject.name();
+      const bool terminalNameAssigned = !originalName || originalName->empty();
+      if (terminalNameAssigned) {
         thisObject.createName();
         if (!thisObject.name()) {
           return false;
         }
       }
 
-      auto insertion = InsertionPlan::prepare(*this, *airLoop, zoneSplitter, splitterBranchIndex, node, thermalZone);
+      auto insertion = InsertionPlan::prepare(*this, *airLoop, zoneSplitter, splitterBranchIndex, node, thermalZone, terminalNameAssigned);
       if (!insertion) {
         return false;
       }
@@ -2124,11 +2187,7 @@ namespace epmodel {
         OS_ASSERT(maintainContainedAirPath());
         return false;
       }
-      if (!insertion->commit()) {
-        insertion.reset();
-        OS_ASSERT(maintainContainedAirPath());
-        return false;
-      }
+      insertion->commit();
       return true;
     }
 

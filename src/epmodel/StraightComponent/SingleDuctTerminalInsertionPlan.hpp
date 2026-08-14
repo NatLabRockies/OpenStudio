@@ -33,14 +33,14 @@ namespace epmodel {
       ~SingleDuctTerminalInsertionPlan();
 
       bool apply(bool failAfterAirDistributionUnitUpdate = false);
-      bool commit();
+      void commit();
 
      private:
       SingleDuctTerminalInsertionPlan(ModelObject terminal, std::unique_ptr<AirLoopHVAC_Impl::DemandBranchStartReservation> branchReservation,
                                       ModelObject outletNode, ModelObject inletNode, bool createdInletNode, unsigned inletPort, unsigned outletPort,
                                       boost::optional<ModelObject> airDistributionUnit, boost::optional<ModelObject> equipmentList,
                                       boost::optional<ModelObject> previousAirDistributionUnitOutletTarget,
-                                      boost::optional<std::string> previousAirDistributionUnitOutletNodeName);
+                                      boost::optional<std::string> previousAirDistributionUnitOutletNodeName, bool assignedTerminalName);
 
       bool setTerminalPointer(unsigned fieldIndex, const Handle& targetHandle);
       void rollback();
@@ -56,6 +56,7 @@ namespace epmodel {
       boost::optional<ModelObject> m_previousAirDistributionUnitOutletTarget;
       boost::optional<std::string> m_previousAirDistributionUnitOutletNodeName;
       bool m_createdInletNode = false;
+      bool m_assignedTerminalName = false;
       bool m_applyAttempted = false;
       bool m_applySucceeded = false;
       bool m_inletAssignmentAttempted = false;

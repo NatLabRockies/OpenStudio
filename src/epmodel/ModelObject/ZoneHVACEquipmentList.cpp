@@ -256,15 +256,15 @@ namespace epmodel {
         return outletObject->optionalCast<openstudio::epmodel::Node>();
       }
 
-      boost::optional<openstudio::epmodel::ZoneHVACAirDistributionUnit>
-        existingAirDistributionUnitForTerminal(const openstudio::epmodel::ModelObject& terminal) {
+      std::vector<openstudio::epmodel::ZoneHVACAirDistributionUnit>
+        existingAirDistributionUnitsForTerminal(const openstudio::epmodel::ModelObject& terminal) {
+        std::vector<openstudio::epmodel::ZoneHVACAirDistributionUnit> result;
         for (const auto& source : terminal.getSources(openstudio::IddObjectType::ZoneHVAC_AirDistributionUnit)) {
           if (auto airDistributionUnit = source.optionalCast<openstudio::epmodel::ZoneHVACAirDistributionUnit>()) {
-            return *airDistributionUnit;
+            result.push_back(*airDistributionUnit);
           }
         }
-
-        return boost::none;
+        return result;
       }
 
       class EquipmentRegistrationPlan
@@ -345,8 +345,11 @@ namespace epmodel {
             return true;
           }
 
-          m_airDistributionUnit = existingAirDistributionUnitForTerminal(m_component);
-          if (!m_airDistributionUnit) {
+          const auto existingAirDistributionUnits = existingAirDistributionUnitsForTerminal(m_component);
+          if (existingAirDistributionUnits.size() > 1u) {
+            return false;
+          }
+          if (existingAirDistributionUnits.empty()) {
             m_airDistributionUnit = openstudio::epmodel::ZoneHVACAirDistributionUnit(m_component.model());
             m_createdAirDistributionUnit = true;
             if (!m_component.nameString().empty()) {
@@ -359,6 +362,7 @@ namespace epmodel {
               return false;
             }
           } else {
+            m_airDistributionUnit = existingAirDistributionUnits.front();
             const auto outletField = openstudio::ZoneHVAC_AirDistributionUnitFields::AirDistributionUnitOutletNodeName;
             if (auto managedField = m_airDistributionUnit->getField(outletField, false)) {
               const auto targetHandle = toUUID(*managedField);
@@ -378,10 +382,10 @@ namespace epmodel {
           if (auto outletNode = airTerminalOutletNode(m_component)) {
             auto airDistributionUnitImpl = m_airDistributionUnit->getImpl<openstudio::epmodel::detail::ZoneHVACAirDistributionUnit_Impl>();
             OS_ASSERT(airDistributionUnitImpl);
+            m_outletSynchronizationAttempted = true;
             if (!airDistributionUnitImpl->setOutletNode(*outletNode)) {
               return false;
             }
-            m_outletSynchronized = true;
           }
 
           m_equipmentListTarget = m_airDistributionUnit->cast<openstudio::epmodel::ModelObject>();
@@ -402,7 +406,7 @@ namespace epmodel {
             }
             return;
           }
-          if (m_outletSynchronized) {
+          if (m_outletSynchronizationAttempted) {
             auto impl = m_airDistributionUnit->getImpl<openstudio::epmodel::detail::ZoneHVACAirDistributionUnit_Impl>();
             OS_ASSERT(impl);
             const auto outletField = openstudio::ZoneHVAC_AirDistributionUnitFields::AirDistributionUnitOutletNodeName;
@@ -430,7 +434,7 @@ namespace epmodel {
         boost::optional<unsigned> m_groupIndex;
         bool m_alreadyRegistered = false;
         bool m_createdAirDistributionUnit = false;
-        bool m_outletSynchronized = false;
+        bool m_outletSynchronizationAttempted = false;
       };
 
       bool equipmentListTargetMatches(const openstudio::epmodel::ModelObject& equipmentListTarget,

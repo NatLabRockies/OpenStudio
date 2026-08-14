@@ -741,9 +741,7 @@ namespace epmodel {
       if (failureStage == AddToNodeFailureStage::AfterReheatCoilAirPathPrepared) {
         return false;
       }
-      if (!plan->commit()) {
-        return false;
-      }
+      plan->commit();
 
       coilPathSnapshot.commit();
       return true;

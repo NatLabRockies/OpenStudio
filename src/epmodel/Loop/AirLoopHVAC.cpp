@@ -555,31 +555,30 @@ namespace epmodel {
       }
     }  // namespace
 
-    // Owns the translator-facing projection that is required when a terminal
-    // is placed on a demand branch before its zone is known. The terminal and
-    // primary branch remain authoritative; this transaction owns only the
-    // late-created secondary/induced-air, exhaust, equipment-list, and ADU
-    // state. An abandoned projection restores the exact preexisting ADU outlet
-    // and zone exhaust representation.
-    class AirLoopHVAC_Impl::TerminalZoneProjectionPlan
+    // Completes the terminal-first attachment order: the terminal is already
+    // on a demand branch, and the zone is being added afterward. This plan owns
+    // the secondary/induced-air node, zone exhaust entry, equipment-list row,
+    // and ADU state created while attaching that zone. Abandoning the plan
+    // restores the exact preexisting ADU outlet and zone exhaust state.
+    class AirLoopHVAC_Impl::TerminalFirstZoneAttachmentPlan
     {
      public:
-      static std::unique_ptr<TerminalZoneProjectionPlan> prepare(ModelObject terminal, ZoneHVACEquipmentConnections connections,
-                                                                 Node terminalOutlet) {
-        auto plan = std::unique_ptr<TerminalZoneProjectionPlan>(
-          new TerminalZoneProjectionPlan(std::move(terminal), std::move(connections), std::move(terminalOutlet)));
-        if (!plan->prepareProjection()) {
+      static std::unique_ptr<TerminalFirstZoneAttachmentPlan> prepare(ModelObject terminal, ZoneHVACEquipmentConnections connections,
+                                                                      Node terminalOutlet) {
+        auto plan = std::unique_ptr<TerminalFirstZoneAttachmentPlan>(
+          new TerminalFirstZoneAttachmentPlan(std::move(terminal), std::move(connections), std::move(terminalOutlet)));
+        if (!plan->prepareAttachment()) {
           return nullptr;
         }
         return plan;
       }
 
-      TerminalZoneProjectionPlan(const TerminalZoneProjectionPlan&) = delete;
-      TerminalZoneProjectionPlan& operator=(const TerminalZoneProjectionPlan&) = delete;
-      TerminalZoneProjectionPlan(TerminalZoneProjectionPlan&&) = delete;
-      TerminalZoneProjectionPlan& operator=(TerminalZoneProjectionPlan&&) = delete;
+      TerminalFirstZoneAttachmentPlan(const TerminalFirstZoneAttachmentPlan&) = delete;
+      TerminalFirstZoneAttachmentPlan& operator=(const TerminalFirstZoneAttachmentPlan&) = delete;
+      TerminalFirstZoneAttachmentPlan(TerminalFirstZoneAttachmentPlan&&) = delete;
+      TerminalFirstZoneAttachmentPlan& operator=(TerminalFirstZoneAttachmentPlan&&) = delete;
 
-      ~TerminalZoneProjectionPlan() {
+      ~TerminalFirstZoneAttachmentPlan() {
         if (m_state == State::Prepared) {
           cleanupPreparedState();
         }
@@ -597,7 +596,7 @@ namespace epmodel {
         Committed,
       };
 
-      TerminalZoneProjectionPlan(ModelObject terminal, ZoneHVACEquipmentConnections connections, Node terminalOutlet)
+      TerminalFirstZoneAttachmentPlan(ModelObject terminal, ZoneHVACEquipmentConnections connections, Node terminalOutlet)
         : m_terminal(std::move(terminal)), m_connections(std::move(connections)), m_terminalOutlet(std::move(terminalOutlet)) {}
 
       boost::optional<unsigned> secondaryOrInducedAirField() const {
@@ -632,7 +631,7 @@ namespace epmodel {
         }
       }
 
-      bool prepareSecondaryOrInducedAirProjection() {
+      bool prepareSecondaryOrInducedAirConnection() {
         m_secondaryOrInducedAirField = secondaryOrInducedAirField();
         if (!m_secondaryOrInducedAirField) {
           return true;
@@ -641,9 +640,21 @@ namespace epmodel {
         for (const auto& nodeList : m_terminal.model().getConcreteModelObjects<NodeList>()) {
           m_originalNodeListHandles.insert(nodeList.handle());
         }
-        m_originalExhaustNodes = m_connections.zoneAirExhaustNodes();
-        if (auto target = m_connections.getTarget(openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneAirExhaustNodeorNodeListName)) {
-          m_originalExhaustTarget = target->optionalCast<ModelObject>();
+        const auto exhaustField = openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneAirExhaustNodeorNodeListName;
+        if (auto managedField = m_connections.getField(exhaustField, false)) {
+          const auto targetHandle = toUUID(*managedField);
+          if (!targetHandle.isNull()) {
+            if (auto target = m_connections.model().getObject(targetHandle)) {
+              m_originalExhaustTarget = target->optionalCast<ModelObject>();
+            }
+          }
+        }
+        if (!m_originalExhaustTarget) {
+          auto workspaceImpl = m_connections.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+          OS_ASSERT(workspaceImpl);
+          m_originalExhaustRaw = workspaceImpl->openstudio::detail::IdfObject_Impl::getString(exhaustField, false, true);
+        } else {
+          m_originalExhaustNodes = m_connections.zoneAirExhaustNodes();
         }
 
         const auto originalTarget = m_terminal.getTarget(*m_secondaryOrInducedAirField);
@@ -672,12 +683,21 @@ namespace epmodel {
 
         auto connectionsImpl = m_connections.getImpl<detail::ZoneHVACEquipmentConnections_Impl>();
         OS_ASSERT(connectionsImpl);
+        if (!m_originalExhaustTarget && m_originalExhaustRaw && !m_originalExhaustRaw->empty()) {
+          // Do not let the node-list accessor materialize an unresolved raw
+          // name as a transient Node. The plan already owns restoration of the
+          // backing text, so stage from an explicitly empty field instead.
+          m_zoneExhaustChanged = true;
+          if (!connectionsImpl->openstudio::detail::IdfObject_Impl::setString(exhaustField, "", false)) {
+            return false;
+          }
+        }
         if (!connectionsImpl->addZoneAirExhaustNode(*m_secondaryOrInducedAirNode)) {
           captureCreatedNodeLists();
           return false;
         }
         captureCreatedNodeLists();
-        m_exhaustProjectionChanged = true;
+        m_zoneExhaustChanged = true;
         return true;
       }
 
@@ -708,19 +728,19 @@ namespace epmodel {
         }
         m_terminalRegistered = !m_terminalWasRegistered;
 
-        m_projectedAirDistributionUnit = airDistributionUnitForTerminal(m_terminal);
-        if (!m_projectedAirDistributionUnit) {
+        m_registeredAirDistributionUnit = airDistributionUnitForTerminal(m_terminal);
+        if (!m_registeredAirDistributionUnit) {
           return false;
         }
         m_createdAirDistributionUnit = !m_originalAirDistributionUnit;
         return true;
       }
 
-      bool prepareProjection() {
-        return prepareSecondaryOrInducedAirProjection() && prepareEquipmentRegistration();
+      bool prepareAttachment() {
+        return prepareSecondaryOrInducedAirConnection() && prepareEquipmentRegistration();
       }
 
-      void restoreExhaustProjection() {
+      void restoreZoneExhaust() {
         if (!m_secondaryOrInducedAirField) {
           return;
         }
@@ -742,8 +762,16 @@ namespace epmodel {
 
         auto connectionsImpl = m_connections.getImpl<detail::ZoneHVACEquipmentConnections_Impl>();
         OS_ASSERT(connectionsImpl);
-        const bool restored = connectionsImpl->setPointer(openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneAirExhaustNodeorNodeListName,
-                                                          m_originalExhaustTarget ? m_originalExhaustTarget->handle() : Handle(), false);
+        const auto exhaustField = openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneAirExhaustNodeorNodeListName;
+        bool restored = false;
+        if (m_originalExhaustTarget) {
+          restored = connectionsImpl->setPointer(exhaustField, m_originalExhaustTarget->handle(), false);
+        } else {
+          const bool pointerCleared = connectionsImpl->setPointer(exhaustField, Handle(), false);
+          const bool rawRestored = connectionsImpl->openstudio::detail::IdfObject_Impl::setString(
+            exhaustField, m_originalExhaustRaw.get_value_or(""), false);
+          restored = pointerCleared && rawRestored;
+        }
         OS_ASSERT(restored);
         (void)restored;
 
@@ -768,10 +796,10 @@ namespace epmodel {
           OS_ASSERT(removed);
           (void)removed;
         }
-        if (m_projectedAirDistributionUnit) {
+        if (m_registeredAirDistributionUnit) {
           if (m_createdAirDistributionUnit) {
-            if (m_terminal.model().getObject(m_projectedAirDistributionUnit->handle())) {
-              m_projectedAirDistributionUnit->remove();
+            if (m_terminal.model().getObject(m_registeredAirDistributionUnit->handle())) {
+              m_registeredAirDistributionUnit->remove();
             }
           } else if (m_originalAirDistributionUnit) {
             auto aduImpl = m_originalAirDistributionUnit->getImpl<detail::ZoneHVACAirDistributionUnit_Impl>();
@@ -791,8 +819,8 @@ namespace epmodel {
           }
         }
 
-        if (m_exhaustProjectionChanged || !m_createdNodeLists.empty()) {
-          restoreExhaustProjection();
+        if (m_zoneExhaustChanged || !m_createdNodeLists.empty()) {
+          restoreZoneExhaust();
         }
         if (m_secondaryOrInducedAirPointerChanged && m_secondaryOrInducedAirField) {
           auto terminalImpl = m_terminal.getImpl<detail::ModelObject_Impl>();
@@ -816,17 +844,18 @@ namespace epmodel {
       boost::optional<ModelObject> m_originalSecondaryOrInducedAirTarget;
       boost::optional<Node> m_secondaryOrInducedAirNode;
       boost::optional<ModelObject> m_originalExhaustTarget;
+      boost::optional<std::string> m_originalExhaustRaw;
       std::vector<Node> m_originalExhaustNodes;
       std::set<Handle> m_originalNodeListHandles;
       std::vector<NodeList> m_createdNodeLists;
       boost::optional<ZoneHVACEquipmentList> m_equipmentList;
       boost::optional<ZoneHVACAirDistributionUnit> m_originalAirDistributionUnit;
-      boost::optional<ZoneHVACAirDistributionUnit> m_projectedAirDistributionUnit;
+      boost::optional<ZoneHVACAirDistributionUnit> m_registeredAirDistributionUnit;
       boost::optional<ModelObject> m_originalADUOutletTarget;
       boost::optional<std::string> m_originalADUOutletNodeName;
       bool m_createdSecondaryOrInducedAirNode = false;
       bool m_secondaryOrInducedAirPointerChanged = false;
-      bool m_exhaustProjectionChanged = false;
+      bool m_zoneExhaustChanged = false;
       bool m_terminalWasRegistered = false;
       bool m_terminalRegistered = false;
       bool m_createdAirDistributionUnit = false;
@@ -838,7 +867,7 @@ namespace epmodel {
     // objects and branches, leaving the source terminal graph untouched.
     class AirLoopHVAC_Impl::SingleDuctTerminalClonePlan
     {
-      struct ZoneProjectionSnapshot;
+      struct ZoneStateSnapshot;
 
      public:
       static std::unique_ptr<SingleDuctTerminalClonePlan> prepare(StraightComponent source, DemandBranchAttachmentFailureStage failureStage) {
@@ -876,7 +905,7 @@ namespace epmodel {
           m_source(std::move(other.m_source)),
           m_terminal(std::move(other.m_terminal)),
           m_children(std::move(other.m_children)),
-          m_zoneProjection(std::move(other.m_zoneProjection)),
+          m_zoneState(std::move(other.m_zoneState)),
           m_failureStage(other.m_failureStage) {
         other.m_state = State::MovedFrom;
       }
@@ -893,8 +922,8 @@ namespace epmodel {
         return *m_terminal;
       }
 
-      bool prepareZoneProjectionSnapshot(ThermalZone& thermalZone) {
-        if (m_zoneProjection || thermalZone.model() != m_source.model()) {
+      bool prepareZoneStateSnapshot(ThermalZone& thermalZone) {
+        if (m_zoneState || thermalZone.model() != m_source.model()) {
           return false;
         }
         auto connections = thermalZone.getImpl<detail::ThermalZone_Impl>()->zoneHVACEquipmentConnections();
@@ -902,16 +931,16 @@ namespace epmodel {
           return false;
         }
         auto equipmentList = connections->zoneHVACEquipmentList();
-        m_zoneProjection = std::make_unique<ZoneProjectionSnapshot>(*connections, equipmentList);
+        m_zoneState = std::make_unique<ZoneStateSnapshot>(*connections, equipmentList);
 
         for (const auto& group : equipmentList.extensibleGroups()) {
-          m_zoneProjection->equipmentRows.push_back(group.fieldsWithHandles(false));
+          m_zoneState->equipmentRows.push_back(group.fieldsWithHandles(false));
         }
         for (const auto& node : m_source.model().getConcreteModelObjects<Node>()) {
-          m_zoneProjection->originalNodeHandles.insert(node.handle());
+          m_zoneState->originalNodeHandles.insert(node.handle());
         }
         for (const auto& nodeList : m_source.model().getConcreteModelObjects<NodeList>()) {
-          m_zoneProjection->originalNodeListHandles.insert(nodeList.handle());
+          m_zoneState->originalNodeListHandles.insert(nodeList.handle());
         }
 
         const auto exhaustField = openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneAirExhaustNodeorNodeListName;
@@ -919,18 +948,18 @@ namespace epmodel {
           const auto targetHandle = toUUID(*managedField);
           if (!targetHandle.isNull()) {
             if (auto target = m_source.model().getObject(targetHandle)) {
-              m_zoneProjection->originalExhaustTarget = target->optionalCast<ModelObject>();
+              m_zoneState->originalExhaustTarget = target->optionalCast<ModelObject>();
             }
           }
         }
-        if (!m_zoneProjection->originalExhaustTarget) {
+        if (!m_zoneState->originalExhaustTarget) {
           auto workspaceImpl = connections->getImpl<openstudio::detail::WorkspaceObject_Impl>();
           OS_ASSERT(workspaceImpl);
-          m_zoneProjection->originalExhaustRaw = workspaceImpl->openstudio::detail::IdfObject_Impl::getString(exhaustField, false, true);
+          m_zoneState->originalExhaustRaw = workspaceImpl->openstudio::detail::IdfObject_Impl::getString(exhaustField, false, true);
         }
-        if (auto nodeList = m_zoneProjection->originalExhaustTarget ? m_zoneProjection->originalExhaustTarget->optionalCast<NodeList>()
-                                                                    : boost::optional<NodeList>()) {
-          m_zoneProjection->originalExhaustNodes = nodeList->nodes();
+        if (auto nodeList = m_zoneState->originalExhaustTarget ? m_zoneState->originalExhaustTarget->optionalCast<NodeList>()
+                                                               : boost::optional<NodeList>()) {
+          m_zoneState->originalExhaustNodes = nodeList->nodes();
         }
         return true;
       }
@@ -979,9 +1008,9 @@ namespace epmodel {
         boost::optional<PlantConnection> plantConnection;
       };
 
-      struct ZoneProjectionSnapshot
+      struct ZoneStateSnapshot
       {
-        ZoneProjectionSnapshot(ZoneHVACEquipmentConnections connections_, ZoneHVACEquipmentList equipmentList_)
+        ZoneStateSnapshot(ZoneHVACEquipmentConnections connections_, ZoneHVACEquipmentList equipmentList_)
           : connections(std::move(connections_)), equipmentList(std::move(equipmentList_)) {}
 
         ZoneHVACEquipmentConnections connections;
@@ -1202,7 +1231,7 @@ namespace epmodel {
                   || !validatePlantConnectors(plantLoop, branches)) {
                 LOG_FREE(Warn, "openstudio.epmodel.AirLoopHVAC",
                          "Plant preflight rejected owned child '" << child.source.nameString()
-                                                                  << "' because its demand branch connector projection is malformed.");
+                                                                  << "' because its demand branch connectors are malformed.");
                 return false;
               }
               const auto branchInletNode = branches[branchIndex].componentInletNode(componentIndex);
@@ -1528,38 +1557,38 @@ namespace epmodel {
       }
 
       void restoreEquipmentRows() {
-        if (!m_zoneProjection || !m_source.model().getObject(m_zoneProjection->equipmentList.handle())) {
+        if (!m_zoneState || !m_source.model().getObject(m_zoneState->equipmentList.handle())) {
           return;
         }
-        auto groups = m_zoneProjection->equipmentList.extensibleGroups();
-        while (groups.size() > m_zoneProjection->equipmentRows.size()) {
-          m_zoneProjection->equipmentList.eraseExtensibleGroup(static_cast<unsigned>(groups.size() - 1u));
-          groups = m_zoneProjection->equipmentList.extensibleGroups();
+        auto groups = m_zoneState->equipmentList.extensibleGroups();
+        while (groups.size() > m_zoneState->equipmentRows.size()) {
+          m_zoneState->equipmentList.eraseExtensibleGroup(static_cast<unsigned>(groups.size() - 1u));
+          groups = m_zoneState->equipmentList.extensibleGroups();
         }
-        OS_ASSERT(groups.size() == m_zoneProjection->equipmentRows.size());
-        if (groups.size() != m_zoneProjection->equipmentRows.size()) {
+        OS_ASSERT(groups.size() == m_zoneState->equipmentRows.size());
+        if (groups.size() != m_zoneState->equipmentRows.size()) {
           return;
         }
         for (unsigned i = 0u; i < groups.size(); ++i) {
-          const bool restored = groups[i].setFields(m_zoneProjection->equipmentRows[i]);
+          const bool restored = groups[i].setFields(m_zoneState->equipmentRows[i]);
           OS_ASSERT(restored);
           (void)restored;
         }
       }
 
-      void restoreExhaustProjection() {
-        if (!m_zoneProjection || !m_source.model().getObject(m_zoneProjection->connections.handle())) {
+      void restoreZoneExhaustState() {
+        if (!m_zoneState || !m_source.model().getObject(m_zoneState->connections.handle())) {
           return;
         }
         const auto exhaustField = openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneAirExhaustNodeorNodeListName;
-        auto connectionsImpl = m_zoneProjection->connections.getImpl<detail::ZoneHVACEquipmentConnections_Impl>();
+        auto connectionsImpl = m_zoneState->connections.getImpl<detail::ZoneHVACEquipmentConnections_Impl>();
         OS_ASSERT(connectionsImpl);
         const bool cleared = connectionsImpl->setPointer(exhaustField, Handle(), false);
         OS_ASSERT(cleared);
         (void)cleared;
 
         for (auto& nodeList : m_source.model().getConcreteModelObjects<NodeList>()) {
-          if (m_zoneProjection->originalNodeListHandles.contains(nodeList.handle())) {
+          if (m_zoneState->originalNodeListHandles.contains(nodeList.handle())) {
             continue;
           }
           auto nodeListImpl = nodeList.getImpl<detail::NodeList_Impl>();
@@ -1572,8 +1601,8 @@ namespace epmodel {
           nodeList.remove();
         }
 
-        if (auto originalNodeList = m_zoneProjection->originalExhaustTarget ? m_zoneProjection->originalExhaustTarget->optionalCast<NodeList>()
-                                                                            : boost::optional<NodeList>()) {
+        if (auto originalNodeList = m_zoneState->originalExhaustTarget ? m_zoneState->originalExhaustTarget->optionalCast<NodeList>()
+                                                                       : boost::optional<NodeList>()) {
           auto nodeListImpl = originalNodeList->getImpl<detail::NodeList_Impl>();
           OS_ASSERT(nodeListImpl);
           for (const auto& node : originalNodeList->nodes()) {
@@ -1581,7 +1610,7 @@ namespace epmodel {
             OS_ASSERT(removed);
             (void)removed;
           }
-          for (const auto& node : m_zoneProjection->originalExhaustNodes) {
+          for (const auto& node : m_zoneState->originalExhaustNodes) {
             const bool added = nodeListImpl->addNode(node);
             OS_ASSERT(added);
             (void)added;
@@ -1589,12 +1618,12 @@ namespace epmodel {
         }
 
         bool restored = false;
-        if (m_zoneProjection->originalExhaustTarget) {
-          restored = connectionsImpl->setPointer(exhaustField, m_zoneProjection->originalExhaustTarget->handle(), false);
+        if (m_zoneState->originalExhaustTarget) {
+          restored = connectionsImpl->setPointer(exhaustField, m_zoneState->originalExhaustTarget->handle(), false);
         } else {
           const bool pointerCleared = connectionsImpl->setPointer(exhaustField, Handle(), false);
           const bool rawRestored = connectionsImpl->openstudio::detail::IdfObject_Impl::setString(
-            exhaustField, m_zoneProjection->originalExhaustRaw.get_value_or(""), false);
+            exhaustField, m_zoneState->originalExhaustRaw.get_value_or(""), false);
           restored = pointerCleared && rawRestored;
         }
         OS_ASSERT(restored);
@@ -1643,7 +1672,7 @@ namespace epmodel {
           }
         }
         restoreEquipmentRows();
-        restoreExhaustProjection();
+        restoreZoneExhaustState();
         for (auto& child : m_children) {
           if (child.clone && m_source.model().getObject(child.clone->handle())) {
             const auto childHandle = child.clone->handle();
@@ -1651,9 +1680,9 @@ namespace epmodel {
             OS_ASSERT(!m_source.model().getObject(childHandle));
           }
         }
-        if (m_zoneProjection) {
+        if (m_zoneState) {
           for (auto& node : m_source.model().getConcreteModelObjects<Node>()) {
-            if (m_zoneProjection->originalNodeHandles.contains(node.handle())) {
+            if (m_zoneState->originalNodeHandles.contains(node.handle())) {
               continue;
             }
             const bool removed = m_source.model().removeObject(node.handle());
@@ -1667,7 +1696,7 @@ namespace epmodel {
       StraightComponent m_source;
       boost::optional<HVACComponent> m_terminal;
       std::vector<OwnedChild> m_children;
-      std::unique_ptr<ZoneProjectionSnapshot> m_zoneProjection;
+      std::unique_ptr<ZoneStateSnapshot> m_zoneState;
       DemandBranchAttachmentFailureStage m_failureStage = DemandBranchAttachmentFailureStage::None;
     };
 
@@ -1732,9 +1761,25 @@ namespace epmodel {
      public:
       static std::unique_ptr<DualDuctPlenumRemovalPlan> prepare(AirLoopHVAC_Impl& airLoopImpl, ThermalZone& zone,
                                                                 const DemandTopologySnapshot::EffectiveBranch& branch, Mixer& terminal);
-      bool commit();
+
+      DualDuctPlenumRemovalPlan(const DualDuctPlenumRemovalPlan&) = delete;
+      DualDuctPlenumRemovalPlan& operator=(const DualDuctPlenumRemovalPlan&) = delete;
+      DualDuctPlenumRemovalPlan(DualDuctPlenumRemovalPlan&&) = delete;
+      DualDuctPlenumRemovalPlan& operator=(DualDuctPlenumRemovalPlan&&) = delete;
+
+      ~DualDuctPlenumRemovalPlan();
+
+      bool apply();
+      void commit();
 
      private:
+      enum class State
+      {
+        Prepared,
+        Applied,
+        Committed,
+      };
+
       enum class PlenumDisposition
       {
         PreserveShared,
@@ -1783,6 +1828,7 @@ namespace epmodel {
       void rollbackSecondaryConnector();
       void rollbackReturnConnector();
       void rollbackReturnBypassConnectors();
+      void rollbackAppliedState();
       void restorePathMemberships(bool primaryRemoved, bool secondaryRemoved, bool returnRemoved);
       void removeOrphanConnectorNode(const ModelObject& connectorNode);
 
@@ -1815,6 +1861,19 @@ namespace epmodel {
       boost::optional<unsigned> m_secondaryDirectOrdinal;
       boost::optional<unsigned> m_returnDirectOrdinal;
       std::vector<unsigned> m_returnBypassDirectOrdinals;
+      bool m_primaryPathRemoved = false;
+      bool m_secondaryPathRemoved = false;
+      bool m_returnPathRemoved = false;
+      boost::optional<unsigned> m_primaryPathOrdinal;
+      boost::optional<unsigned> m_secondaryPathOrdinal;
+      boost::optional<unsigned> m_returnPathOrdinal;
+      std::vector<std::string> m_primaryPathRow;
+      std::vector<std::string> m_secondaryPathRow;
+      std::vector<std::string> m_returnPathRow;
+      bool m_primaryPlenumPortRemoved = false;
+      bool m_secondaryPlenumPortRemoved = false;
+      bool m_returnPlenumPortRemoved = false;
+      State m_state = State::Prepared;
     };
 
     // Captures the connector-local owner of one effective demand-branch
@@ -1852,7 +1911,8 @@ namespace epmodel {
       unsigned splitterBranchIndex() const;
       bool prepareZoneAttachment(ThermalZone& thermalZone);
       bool prepareTerminalAttachment(HVACComponent& terminal, Node& node);
-      bool commit(DemandBranchAttachmentFailureStage failureStage = DemandBranchAttachmentFailureStage::None);
+      bool terminalFirstZoneAttachmentPrepared() const;
+      void commit();
 
      private:
       enum class State
@@ -1873,6 +1933,8 @@ namespace epmodel {
         boost::optional<ZoneHVACEquipmentList> createdEquipmentList;
         boost::optional<ModelObject> originalInletFieldTarget;
         boost::optional<ModelObject> originalReturnFieldTarget;
+        boost::optional<std::string> originalInletFieldRaw;
+        boost::optional<std::string> originalReturnFieldRaw;
         std::vector<Node> originalInletNodes;
         std::vector<Node> originalReturnNodes;
         std::set<Handle> originalNodeListHandles;
@@ -1890,7 +1952,8 @@ namespace epmodel {
 
       void cleanupPreparedState();
       void captureCreatedZoneNodeLists();
-      void restoreZoneNodeField(unsigned field, const boost::optional<ModelObject>& originalTarget, const std::vector<Node>& originalNodes);
+      void restoreZoneNodeField(unsigned field, const boost::optional<ModelObject>& originalTarget,
+                                const boost::optional<std::string>& originalRaw, const std::vector<Node>& originalNodes);
       void removeCreatedNode(const boost::optional<Node>& node);
 
       State m_state = State::Prepared;
@@ -1910,6 +1973,7 @@ namespace epmodel {
       boost::optional<ModelObject> m_existingTerminalForZone;
       bool m_terminalAttachmentAttempted = false;
       std::unique_ptr<ProvisionalZoneAttachment> m_zoneAttachment;
+      std::unique_ptr<TerminalFirstZoneAttachmentPlan> m_terminalFirstZoneAttachmentPlan;
       std::unique_ptr<DualDuctTerminalInsertionPlan> m_dualDuctTerminalInsertionPlan;
     };
 
@@ -2090,6 +2154,7 @@ namespace epmodel {
         m_existingTerminalForZone(std::move(other.m_existingTerminalForZone)),
         m_terminalAttachmentAttempted(other.m_terminalAttachmentAttempted),
         m_zoneAttachment(std::move(other.m_zoneAttachment)),
+        m_terminalFirstZoneAttachmentPlan(std::move(other.m_terminalFirstZoneAttachmentPlan)),
         m_dualDuctTerminalInsertionPlan(std::move(other.m_dualDuctTerminalInsertionPlan)) {
       other.m_state = State::MovedFrom;
       other.m_reusedBranch = false;
@@ -2216,8 +2281,42 @@ namespace epmodel {
       auto connections = thermalZoneImpl->zoneHVACEquipmentConnections();
       zoneState.createdConnections = !connections;
 
-      const auto originalInletNodes = connections ? connections->zoneAirInletNodes() : std::vector<Node>{};
-      const auto originalReturnNodes = connections ? connections->zoneReturnAirNodes() : std::vector<Node>{};
+      const auto inletField = openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneAirInletNodeorNodeListName;
+      const auto returnField = openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneReturnAirNodeorNodeListName;
+      std::vector<Node> originalInletNodes;
+      std::vector<Node> originalReturnNodes;
+      if (connections) {
+        if (auto managedField = connections->getField(inletField, false)) {
+          const auto targetHandle = toUUID(*managedField);
+          if (!targetHandle.isNull()) {
+            if (auto target = connections->model().getObject(targetHandle)) {
+              zoneState.originalInletFieldTarget = target->optionalCast<ModelObject>();
+            }
+          }
+        }
+        if (auto managedField = connections->getField(returnField, false)) {
+          const auto targetHandle = toUUID(*managedField);
+          if (!targetHandle.isNull()) {
+            if (auto target = connections->model().getObject(targetHandle)) {
+              zoneState.originalReturnFieldTarget = target->optionalCast<ModelObject>();
+            }
+          }
+        }
+        auto connectionsWorkspaceImpl = connections->getImpl<openstudio::detail::WorkspaceObject_Impl>();
+        OS_ASSERT(connectionsWorkspaceImpl);
+        if (zoneState.originalInletFieldTarget) {
+          originalInletNodes = connections->zoneAirInletNodes();
+        } else {
+          zoneState.originalInletFieldRaw =
+            connectionsWorkspaceImpl->openstudio::detail::IdfObject_Impl::getString(inletField, false, true);
+        }
+        if (zoneState.originalReturnFieldTarget) {
+          originalReturnNodes = connections->zoneReturnAirNodes();
+        } else {
+          zoneState.originalReturnFieldRaw =
+            connectionsWorkspaceImpl->openstudio::detail::IdfObject_Impl::getString(returnField, false, true);
+        }
+      }
       const auto multiLoopNodeStem = thermalZone.nameString() + " " + m_airLoop.nameString();
       const auto zoneInletNodeName =
         originalInletNodes.empty() ? thermalZone.nameString() + " Demand Branch Node" : multiLoopNodeStem + " Demand Branch Node";
@@ -2240,12 +2339,6 @@ namespace epmodel {
       zoneState.connections = *connections;
       zoneState.originalInletNodes = originalInletNodes;
       zoneState.originalReturnNodes = originalReturnNodes;
-      if (auto target = connections->getTarget(openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneAirInletNodeorNodeListName)) {
-        zoneState.originalInletFieldTarget = target->optionalCast<ModelObject>();
-      }
-      if (auto target = connections->getTarget(openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneReturnAirNodeorNodeListName)) {
-        zoneState.originalReturnFieldTarget = target->optionalCast<ModelObject>();
-      }
 
       auto zoneInletNode = m_preserveSplitterOutletForZone ? m_branchNode : m_airLoop.model().getOrCreateTransientByName<Node>(zoneInletNodeName);
       auto zoneReturnNode = m_airLoop.model().getOrCreateTransientByName<Node>(zoneReturnNodeName);
@@ -2263,16 +2356,31 @@ namespace epmodel {
 
       auto connectionsImpl = connections->getImpl<detail::ZoneHVACEquipmentConnections_Impl>();
       OS_ASSERT(connectionsImpl);
+      if (!zoneState.originalInletFieldTarget && zoneState.originalInletFieldRaw && !zoneState.originalInletFieldRaw->empty()
+          && !connectionsImpl->openstudio::detail::IdfObject_Impl::setString(inletField, "", false)) {
+        return false;
+      }
       const bool inletAdded = connectionsImpl->addZoneAirInletNode(zoneInletNode);
       captureCreatedZoneNodeLists();
       if (!inletAdded) {
         return false;
       }
 
+      if (!zoneState.originalReturnFieldTarget && zoneState.originalReturnFieldRaw && !zoneState.originalReturnFieldRaw->empty()
+          && !connectionsImpl->openstudio::detail::IdfObject_Impl::setString(returnField, "", false)) {
+        return false;
+      }
       const bool returnAdded = connectionsImpl->addZoneReturnAirNode(zoneReturnNode);
       captureCreatedZoneNodeLists();
       if (!returnAdded) {
         return false;
+      }
+
+      if (m_existingTerminalForZone) {
+        m_terminalFirstZoneAttachmentPlan = TerminalFirstZoneAttachmentPlan::prepare(*m_existingTerminalForZone, *connections, m_branchNode);
+        if (!m_terminalFirstZoneAttachmentPlan) {
+          return false;
+        }
       }
 
       return true;
@@ -2311,13 +2419,18 @@ namespace epmodel {
 
       // Straight-terminal addToNode implementations own their family-specific
       // atomicity (extra ports, contained components, ADUs, and zone exhaust
-      // projections). This plan owns only the branch and optional zone
-      // attachment around that call; it intentionally does not invent a
-      // second, incomplete inverse for terminal-family topology.
+      // entries). This plan owns only the branch and optional zone attachment
+      // around that call; it intentionally does not invent a second,
+      // incomplete inverse for terminal-family topology.
       return terminal.addToNode(node);
     }
 
+    bool AirLoopHVAC_Impl::DemandBranchAttachmentPlan::terminalFirstZoneAttachmentPrepared() const {
+      return static_cast<bool>(m_terminalFirstZoneAttachmentPlan);
+    }
+
     void AirLoopHVAC_Impl::DemandBranchAttachmentPlan::restoreZoneNodeField(unsigned field, const boost::optional<ModelObject>& originalTarget,
+                                                                            const boost::optional<std::string>& originalRaw,
                                                                             const std::vector<Node>& originalNodes) {
       OS_ASSERT(m_zoneAttachment && m_zoneAttachment->connections);
       auto& connections = *m_zoneAttachment->connections;
@@ -2342,9 +2455,18 @@ namespace epmodel {
         }
       }
 
-      const bool pointerRestored = connections.setPointer(field, originalTarget ? originalTarget->handle() : Handle());
-      OS_ASSERT(pointerRestored);
-      (void)pointerRestored;
+      bool restored = false;
+      if (originalTarget) {
+        restored = connections.setPointer(field, originalTarget->handle());
+      } else {
+        auto connectionsImpl = connections.getImpl<detail::ModelObject_Impl>();
+        OS_ASSERT(connectionsImpl);
+        const bool pointerCleared = connectionsImpl->setPointer(field, Handle(), false);
+        const bool rawRestored = connectionsImpl->openstudio::detail::IdfObject_Impl::setString(field, originalRaw.get_value_or(""), false);
+        restored = pointerCleared && rawRestored;
+      }
+      OS_ASSERT(restored);
+      (void)restored;
     }
 
     void AirLoopHVAC_Impl::DemandBranchAttachmentPlan::removeCreatedNode(const boost::optional<Node>& node) {
@@ -2357,8 +2479,10 @@ namespace epmodel {
     }
 
     void AirLoopHVAC_Impl::DemandBranchAttachmentPlan::cleanupPreparedState() {
-      // The nested plan must release the secondary demand path and terminal
-      // wiring while the outer branch and zone boundary still exist.
+      // Nested plans must release terminal-first zone state, secondary demand
+      // paths, and terminal wiring while the outer branch and zone boundary
+      // still exist.
+      m_terminalFirstZoneAttachmentPlan.reset();
       m_dualDuctTerminalInsertionPlan.reset();
 
       // Restore or erase the branch rows first so no provisional zone node is
@@ -2398,9 +2522,9 @@ namespace epmodel {
           }
         } else {
           restoreZoneNodeField(openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneAirInletNodeorNodeListName, zoneState.originalInletFieldTarget,
-                               zoneState.originalInletNodes);
+                               zoneState.originalInletFieldRaw, zoneState.originalInletNodes);
           restoreZoneNodeField(openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneReturnAirNodeorNodeListName, zoneState.originalReturnFieldTarget,
-                               zoneState.originalReturnNodes);
+                               zoneState.originalReturnFieldRaw, zoneState.originalReturnNodes);
         }
 
         for (auto& nodeList : zoneState.createdNodeLists) {
@@ -2432,11 +2556,12 @@ namespace epmodel {
       }
     }
 
-    bool AirLoopHVAC_Impl::DemandBranchAttachmentPlan::commit(DemandBranchAttachmentFailureStage failureStage) {
+    void AirLoopHVAC_Impl::DemandBranchAttachmentPlan::commit() {
       if (m_state != State::Prepared) {
         OS_ASSERT(false);
-        return false;
+        return;
       }
+      OS_ASSERT(!(m_terminalFirstZoneAttachmentPlan && m_dualDuctTerminalInsertionPlan));
 
       std::vector<ModelObject> idealAirLoadsToRemove;
       const bool removeUnusedBranchNode = m_zoneAttachment && m_createdBranchNode;
@@ -2447,17 +2572,8 @@ namespace epmodel {
       if (m_dualDuctTerminalInsertionPlan) {
         m_dualDuctTerminalInsertionPlan->commit();
       }
-
-      std::unique_ptr<TerminalZoneProjectionPlan> terminalZoneProjection;
-      if (m_existingTerminalForZone) {
-        OS_ASSERT(m_zoneAttachment && m_zoneAttachment->connections);
-        terminalZoneProjection = TerminalZoneProjectionPlan::prepare(*m_existingTerminalForZone, *m_zoneAttachment->connections, m_branchNode);
-        if (!terminalZoneProjection) {
-          return false;
-        }
-        if (failureStage == DemandBranchAttachmentFailureStage::AfterTerminalZoneProjectionPrepared) {
-          return false;
-        }
+      if (m_terminalFirstZoneAttachmentPlan) {
+        m_terminalFirstZoneAttachmentPlan->commit();
       }
 
       // Every removable ideal-load object was preflighted during preparation.
@@ -2465,10 +2581,8 @@ namespace epmodel {
       // after this point the branch is authoritative and must not be rolled
       // back even if an internal removal contract is violated in release code.
       m_state = State::Committed;
-      if (terminalZoneProjection) {
-        terminalZoneProjection->commit();
-      }
       m_zoneAttachment.reset();
+      m_terminalFirstZoneAttachmentPlan.reset();
       m_dualDuctTerminalInsertionPlan.reset();
 
       // A non-default reservation node is only the common row endpoint used
@@ -2485,7 +2599,6 @@ namespace epmodel {
         OS_ASSERT(removed);
         (void)removed;
       }
-      return true;
     }
 
     boost::optional<Mixer> AirLoopHVAC_Impl::reusableDualDuctTerminalForZone() const {
@@ -3567,7 +3680,13 @@ namespace epmodel {
 
     bool AirLoopHVAC_Impl::DualDuctPlenumRemovalPlan::stagePrimaryConnector() {
       if (m_primaryDisposition == PlenumDisposition::DeleteLast) {
-        return m_primarySplitter.setOutletModelObject(m_primarySplitterOrdinal, m_primaryInlet);
+        if (!m_primarySplitter.setOutletModelObject(m_primarySplitterOrdinal, m_primaryInlet)) {
+          const bool restored = m_primarySplitter.setOutletModelObject(m_primarySplitterOrdinal, m_primaryPlenumInlet);
+          OS_ASSERT(restored);
+          (void)restored;
+          return false;
+        }
+        return true;
       }
 
       m_primaryDirectOrdinal = m_primarySplitter.nextBranchIndex();
@@ -3581,7 +3700,13 @@ namespace epmodel {
 
     bool AirLoopHVAC_Impl::DualDuctPlenumRemovalPlan::stageSecondaryConnector() {
       if (m_secondaryDisposition == PlenumDisposition::DeleteLast) {
-        return m_secondarySplitter.setOutletModelObject(m_secondarySplitterOrdinal, m_secondaryInlet);
+        if (!m_secondarySplitter.setOutletModelObject(m_secondarySplitterOrdinal, m_secondaryInlet)) {
+          const bool restored = m_secondarySplitter.setOutletModelObject(m_secondarySplitterOrdinal, m_secondaryPlenumInlet);
+          OS_ASSERT(restored);
+          (void)restored;
+          return false;
+        }
+        return true;
       }
 
       m_secondaryDirectOrdinal = m_secondarySplitter.nextBranchIndex();
@@ -3595,7 +3720,13 @@ namespace epmodel {
 
     bool AirLoopHVAC_Impl::DualDuctPlenumRemovalPlan::stageReturnConnector() {
       if (m_returnDisposition == PlenumDisposition::DeleteLast) {
-        return m_zoneMixer.setInletModelObject(m_mixerOrdinal, m_zoneReturn);
+        if (!m_zoneMixer.setInletModelObject(m_mixerOrdinal, m_zoneReturn)) {
+          const bool restored = m_zoneMixer.setInletModelObject(m_mixerOrdinal, m_returnPlenumOutlet);
+          OS_ASSERT(restored);
+          (void)restored;
+          return false;
+        }
+        return true;
       }
 
       m_returnDirectOrdinal = m_zoneMixer.nextBranchIndex();
@@ -3663,23 +3794,62 @@ namespace epmodel {
       m_returnBypassDirectOrdinals.clear();
     }
 
+    void AirLoopHVAC_Impl::DualDuctPlenumRemovalPlan::rollbackAppliedState() {
+      OS_ASSERT(m_state == State::Prepared || m_state == State::Applied);
+      restorePathMemberships(m_primaryPathRemoved, m_secondaryPathRemoved, m_returnPathRemoved);
+      m_primaryPathRemoved = false;
+      m_secondaryPathRemoved = false;
+      m_returnPathRemoved = false;
+      if (m_primaryPlenumPortRemoved) {
+        const auto group = m_primaryPlenum.insertExtensibleGroup(m_primaryPlenumOrdinal);
+        OS_ASSERT(!group.empty());
+        const bool restored = m_primaryPlenum.setOutletModelObject(m_primaryPlenumOrdinal, m_primaryInlet);
+        OS_ASSERT(restored);
+        (void)restored;
+        m_primaryPlenumPortRemoved = false;
+      }
+      if (m_secondaryPlenumPortRemoved) {
+        const auto group = m_secondaryPlenum.insertExtensibleGroup(m_secondaryPlenumOrdinal);
+        OS_ASSERT(!group.empty());
+        const bool restored = m_secondaryPlenum.setOutletModelObject(m_secondaryPlenumOrdinal, m_secondaryInlet);
+        OS_ASSERT(restored);
+        (void)restored;
+        m_secondaryPlenumPortRemoved = false;
+      }
+      if (m_returnPlenumPortRemoved) {
+        const auto group = m_returnPlenum.insertExtensibleGroup(m_returnPlenumOrdinal);
+        OS_ASSERT(!group.empty());
+        const bool restored = m_returnPlenum.setInletModelObject(m_returnPlenumOrdinal, m_zoneReturn);
+        OS_ASSERT(restored);
+        (void)restored;
+        m_returnPlenumPortRemoved = false;
+      }
+      rollbackReturnBypassConnectors();
+      rollbackReturnConnector();
+      rollbackSecondaryConnector();
+      rollbackPrimaryConnector();
+      m_state = State::Prepared;
+    }
+
     void AirLoopHVAC_Impl::DualDuctPlenumRemovalPlan::restorePathMemberships(bool primaryRemoved, bool secondaryRemoved, bool returnRemoved) {
       if (returnRemoved) {
-        const bool restored = m_returnPath.addComponent(m_returnPlenum);
+        OS_ASSERT(m_returnPathOrdinal && !m_returnPathRow.empty());
+        auto group = m_returnPath.insertExtensibleGroup(*m_returnPathOrdinal);
+        const bool restored = !group.empty() && group.setFields(m_returnPathRow);
         OS_ASSERT(restored);
         (void)restored;
       }
       if (secondaryRemoved) {
-        auto pathImpl = m_secondarySupplyPath.getImpl<detail::AirLoopHVACSupplyPath_Impl>();
-        OS_ASSERT(pathImpl);
-        const bool restored = pathImpl->addComponent(m_secondaryPlenum);
+        OS_ASSERT(m_secondaryPathOrdinal && !m_secondaryPathRow.empty());
+        auto group = m_secondarySupplyPath.insertExtensibleGroup(*m_secondaryPathOrdinal);
+        const bool restored = !group.empty() && group.setFields(m_secondaryPathRow);
         OS_ASSERT(restored);
         (void)restored;
       }
       if (primaryRemoved) {
-        auto pathImpl = m_primarySupplyPath.getImpl<detail::AirLoopHVACSupplyPath_Impl>();
-        OS_ASSERT(pathImpl);
-        const bool restored = pathImpl->addComponent(m_primaryPlenum);
+        OS_ASSERT(m_primaryPathOrdinal && !m_primaryPathRow.empty());
+        auto group = m_primarySupplyPath.insertExtensibleGroup(*m_primaryPathOrdinal);
+        const bool restored = !group.empty() && group.setFields(m_primaryPathRow);
         OS_ASSERT(restored);
         (void)restored;
       }
@@ -3698,7 +3868,50 @@ namespace epmodel {
       (void)removed;
     }
 
-    bool AirLoopHVAC_Impl::DualDuctPlenumRemovalPlan::commit() {
+    AirLoopHVAC_Impl::DualDuctPlenumRemovalPlan::~DualDuctPlenumRemovalPlan() {
+      if (m_state == State::Applied) {
+        rollbackAppliedState();
+      }
+    }
+
+    bool AirLoopHVAC_Impl::DualDuctPlenumRemovalPlan::apply() {
+      if (m_state != State::Prepared) {
+        OS_ASSERT(false);
+        return false;
+      }
+
+      const auto capturePathRow = [](const ModelObject& path, unsigned componentNameField, const ModelObject& component,
+                                     boost::optional<unsigned>& ordinal, std::vector<std::string>& row) {
+        ordinal = boost::none;
+        row.clear();
+        const auto groups = path.extensibleGroups();
+        for (unsigned i = 0u; i < groups.size(); ++i) {
+          const auto workspaceGroup = groups[i].optionalCast<openstudio::WorkspaceExtensibleGroup>();
+          const auto target = workspaceGroup ? workspaceGroup->getTarget(componentNameField) : boost::none;
+          if (!target || target->handle() != component.handle()) {
+            continue;
+          }
+          if (ordinal) {
+            return false;
+          }
+          ordinal = i;
+          row = groups[i].fieldsWithHandles(false);
+        }
+        return ordinal && !row.empty();
+      };
+
+      if ((m_primaryDisposition == PlenumDisposition::DeleteLast
+           && !capturePathRow(m_primarySupplyPath.cast<ModelObject>(), openstudio::AirLoopHVAC_SupplyPathExtensibleFields::ComponentName,
+                              m_primaryPlenum.cast<ModelObject>(), m_primaryPathOrdinal, m_primaryPathRow))
+          || (m_secondaryDisposition == PlenumDisposition::DeleteLast
+              && !capturePathRow(m_secondarySupplyPath.cast<ModelObject>(), openstudio::AirLoopHVAC_SupplyPathExtensibleFields::ComponentName,
+                                 m_secondaryPlenum.cast<ModelObject>(), m_secondaryPathOrdinal, m_secondaryPathRow))
+          || (m_returnDisposition == PlenumDisposition::DeleteLast
+              && !capturePathRow(m_returnPath.cast<ModelObject>(), openstudio::AirLoopHVAC_ReturnPathExtensibleFields::ComponentName,
+                                 m_returnPlenum.cast<ModelObject>(), m_returnPathOrdinal, m_returnPathRow))) {
+        return false;
+      }
+
       if (!stagePrimaryConnector()) {
         return false;
       }
@@ -3718,12 +3931,9 @@ namespace epmodel {
         return false;
       }
 
-      bool primaryPathRemoved = false;
-      bool secondaryPathRemoved = false;
-      bool returnPathRemoved = false;
       if (m_primaryDisposition == PlenumDisposition::DeleteLast) {
-        primaryPathRemoved = m_primarySupplyPath.removeComponent(m_primaryPlenum);
-        if (!primaryPathRemoved) {
+        m_primaryPathRemoved = m_primarySupplyPath.removeComponent(m_primaryPlenum);
+        if (!m_primaryPathRemoved) {
           rollbackReturnBypassConnectors();
           rollbackReturnConnector();
           rollbackSecondaryConnector();
@@ -3732,24 +3942,16 @@ namespace epmodel {
         }
       }
       if (m_secondaryDisposition == PlenumDisposition::DeleteLast) {
-        secondaryPathRemoved = m_secondarySupplyPath.removeComponent(m_secondaryPlenum);
-        if (!secondaryPathRemoved) {
-          restorePathMemberships(primaryPathRemoved, false, false);
-          rollbackReturnBypassConnectors();
-          rollbackReturnConnector();
-          rollbackSecondaryConnector();
-          rollbackPrimaryConnector();
+        m_secondaryPathRemoved = m_secondarySupplyPath.removeComponent(m_secondaryPlenum);
+        if (!m_secondaryPathRemoved) {
+          rollbackAppliedState();
           return false;
         }
       }
       if (m_returnDisposition == PlenumDisposition::DeleteLast) {
-        returnPathRemoved = m_returnPath.removeComponent(m_returnPlenum);
-        if (!returnPathRemoved) {
-          restorePathMemberships(primaryPathRemoved, secondaryPathRemoved, false);
-          rollbackReturnBypassConnectors();
-          rollbackReturnConnector();
-          rollbackSecondaryConnector();
-          rollbackPrimaryConnector();
+        m_returnPathRemoved = m_returnPath.removeComponent(m_returnPlenum);
+        if (!m_returnPathRemoved) {
+          rollbackAppliedState();
           return false;
         }
       }
@@ -3767,23 +3969,41 @@ namespace epmodel {
       if ((m_primaryPlenumOrdinal >= primaryOutlets.size()) || (primaryOutlets[m_primaryPlenumOrdinal] != m_primaryInlet)
           || (m_secondaryPlenumOrdinal >= secondaryOutlets.size()) || (secondaryOutlets[m_secondaryPlenumOrdinal] != m_secondaryInlet)
           || (m_returnPlenumOrdinal >= returnInlets.size()) || (returnInlets[m_returnPlenumOrdinal] != m_zoneReturn) || !bypassRowsIntact) {
-        restorePathMemberships(primaryPathRemoved, secondaryPathRemoved, returnPathRemoved);
-        rollbackReturnBypassConnectors();
-        rollbackReturnConnector();
-        rollbackSecondaryConnector();
-        rollbackPrimaryConnector();
+        rollbackAppliedState();
         return false;
       }
 
+      // Shared plenums must stop advertising this zone before the topology
+      // resolver can select the staged direct rows. Extensible-group erasure
+      // is reversible while the plan remains Applied: rollback reinserts the
+      // exact target at its original ordinal.
       if (m_primaryDisposition == PlenumDisposition::PreserveShared) {
         m_primaryPlenum.removePortForBranch(m_primaryPlenumOrdinal);
+        m_primaryPlenumPortRemoved = true;
       }
       if (m_secondaryDisposition == PlenumDisposition::PreserveShared) {
         m_secondaryPlenum.removePortForBranch(m_secondaryPlenumOrdinal);
+        m_secondaryPlenumPortRemoved = true;
       }
       if (m_returnDisposition == PlenumDisposition::PreserveShared) {
         m_returnPlenum.removePortForBranch(m_returnPlenumOrdinal);
+        m_returnPlenumPortRemoved = true;
       }
+
+      m_state = State::Applied;
+      return true;
+    }
+
+    void AirLoopHVAC_Impl::DualDuctPlenumRemovalPlan::commit() {
+      if (m_state != State::Applied) {
+        OS_ASSERT(false);
+        return;
+      }
+
+      // Everything below this point is intentionally irreversible. Publish
+      // the state transition first so the destructor never tries to restore
+      // connector rows after their plenum owners have been deleted.
+      m_state = State::Committed;
 
       auto model = m_primaryPlenum.model();
       if (m_primaryDisposition == PlenumDisposition::DeleteLast) {
@@ -3804,7 +4024,6 @@ namespace epmodel {
         OS_ASSERT(!model.getObject(plenumHandle));
         removeOrphanConnectorNode(m_returnPlenumOutlet);
       }
-      return true;
     }
 
     AirLoopHVAC_Impl::DemandBranchStartReservation::DemandBranchStartReservation(ModelObject connector, ConnectorKind connectorKind,
@@ -3888,6 +4107,13 @@ namespace epmodel {
       if (m_state == State::Committed || !m_replacementTarget) {
         return false;
       }
+      if (m_state == State::RewireAttempted) {
+        const bool restored = setConnectorTarget(m_originalTarget);
+        if (restored) {
+          m_state = State::Restored;
+        }
+        return restored;
+      }
       const auto currentTarget = connectorTarget();
       if (!currentTarget) {
         return false;
@@ -3903,13 +4129,10 @@ namespace epmodel {
       return true;
     }
 
-    bool AirLoopHVAC_Impl::DemandBranchStartReservation::commit() {
+    void AirLoopHVAC_Impl::DemandBranchStartReservation::commit() {
       const auto currentTarget = connectorTarget();
-      if (m_state != State::Rewired || !m_replacementTarget || !currentTarget || (*currentTarget != *m_replacementTarget)) {
-        return false;
-      }
+      OS_ASSERT(m_state == State::Rewired && m_replacementTarget && currentTarget && (*currentTarget == *m_replacementTarget));
       m_state = State::Committed;
-      return true;
     }
 
     boost::optional<Node> AirLoopHVAC_Impl::effectiveDemandReturnNodeForBranchStart(const Node& branchStartNode) const {
@@ -4261,7 +4484,8 @@ namespace epmodel {
       if (!reservation || !outletNode || !reservation->replaceWith(*outletNode)) {
         return false;
       }
-      return reservation->commit();
+      reservation->commit();
+      return true;
     }
 
     boost::optional<ModelObject> AirLoopHVAC_Impl::effectiveDemandBranchStartForZone(const ThermalZone& thermalZone) const {
@@ -4816,9 +5040,7 @@ namespace epmodel {
       if (failureStage == DemandBranchAttachmentFailureStage::AfterDualDuctTerminalPrepared) {
         return false;
       }
-      if (!reservation->commit(failureStage)) {
-        return false;
-      }
+      reservation->commit();
 
       syncSetpointManagerMixedAirFanNodes();
       return true;
@@ -4884,8 +5106,8 @@ namespace epmodel {
       if (!reusableSingleDuctTerminalForZone()) {
         if (auto sourceTerminal = lastSingleDuctTerminalForClone()) {
           // Declare the branch plan first so rollback removes the cloned
-          // terminal (while its provisional branch and zone projection still
-          // exist) before restoring the surrounding branch transaction.
+          // terminal while its provisional branch and zone attachment still
+          // exist, before restoring the surrounding branch transaction.
           std::unique_ptr<DemandBranchAttachmentPlan> reservation;
           auto clonePlan = SingleDuctTerminalClonePlan::prepare(*sourceTerminal, failureStage);
           if (!clonePlan) {
@@ -4905,7 +5127,7 @@ namespace epmodel {
           if (failureStage == DemandBranchAttachmentFailureStage::AfterZonePrepared) {
             return false;
           }
-          if (!clonePlan->prepareZoneProjectionSnapshot(thermalZone)) {
+          if (!clonePlan->prepareZoneStateSnapshot(thermalZone)) {
             return false;
           }
 
@@ -4919,12 +5141,10 @@ namespace epmodel {
           if (!reservation->prepareTerminalAttachment(terminal, *terminalNode)) {
             return false;
           }
-          if (failureStage == DemandBranchAttachmentFailureStage::AfterTerminalZoneProjectionPrepared) {
+          if (failureStage == DemandBranchAttachmentFailureStage::AfterTerminalFirstZoneAttachmentPrepared) {
             return false;
           }
-          if (!reservation->commit(DemandBranchAttachmentFailureStage::None)) {
-            return false;
-          }
+          reservation->commit();
           clonePlan->commit();
           syncControllerMechanicalVentilationZoneOutdoorAirEntries();
           syncSetpointManagerMixedAirFanNodes();
@@ -4951,9 +5171,11 @@ namespace epmodel {
       if (failureStage == DemandBranchAttachmentFailureStage::AfterZonePrepared) {
         return false;
       }
-      if (!reservation->commit(failureStage)) {
+      if ((failureStage == DemandBranchAttachmentFailureStage::AfterTerminalFirstZoneAttachmentPrepared)
+          && reservation->terminalFirstZoneAttachmentPrepared()) {
         return false;
       }
+      reservation->commit();
       syncControllerMechanicalVentilationZoneOutdoorAirEntries();
       return true;
     }
@@ -5060,9 +5282,7 @@ namespace epmodel {
       if (failureStage == DemandBranchAttachmentFailureStage::AfterDualDuctTerminalPrepared) {
         return false;
       }
-      if (!reservation->commit(failureStage)) {
-        return false;
-      }
+      reservation->commit();
 
       syncControllerMechanicalVentilationZoneOutdoorAirEntries();
       syncSetpointManagerMixedAirFanNodes();
@@ -5870,9 +6090,10 @@ namespace epmodel {
       // served zone.
       auto airLoop = getObject<AirLoopHVAC>();
       const bool plenumWillBeDetached = effectiveBranch->supply.supplyPlenum || effectiveBranch->returnPath.returnPlenum;
+      std::unique_ptr<DualDuctPlenumRemovalPlan> dualDuctPlenumRemovalPlan;
       if (dualDuctTerminal && plenumWillBeDetached) {
-        auto removalPlan = DualDuctPlenumRemovalPlan::prepare(*this, thermalZone, *effectiveBranch, *dualDuctTerminal);
-        if (!removalPlan || !removalPlan->commit()) {
+        dualDuctPlenumRemovalPlan = DualDuctPlenumRemovalPlan::prepare(*this, thermalZone, *effectiveBranch, *dualDuctTerminal);
+        if (!dualDuctPlenumRemovalPlan || !dualDuctPlenumRemovalPlan->apply()) {
           return false;
         }
       } else {
@@ -5898,6 +6119,14 @@ namespace epmodel {
       branchPathHandles.clear();
       for (const auto& component : *branchPath) {
         branchPathHandles.insert(component.handle());
+      }
+
+      // Reversible connector and path staging stayed enrolled while the
+      // direct branch was resolved. Crossing the commit barrier now is safe:
+      // the remaining work begins by removing terminal objects and cannot be
+      // meaningfully rolled back without reconstructing their identities.
+      if (dualDuctPlenumRemovalPlan) {
+        dualDuctPlenumRemovalPlan->commit();
       }
 
       // Dual-duct teardown validates both demand paths and is intentionally
@@ -6016,7 +6245,7 @@ namespace epmodel {
       // Big picture: CMV extensible groups are not the source of truth. The
       // source of truth is ThermalZone -> Sizing:Zone ->
       // DesignSpecification:OutdoorAir:SpaceList. CMV entries are just the E+
-      // runtime projection of that relationship for this air loop.
+      // runtime copy of that relationship for this air loop.
       auto cmvImpl = cmv->getImpl<openstudio::epmodel::detail::ControllerMechanicalVentilation_Impl>();
       OS_ASSERT(cmvImpl);
       cmvImpl->clearZoneOutdoorAirEntries();

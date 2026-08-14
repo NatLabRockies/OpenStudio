@@ -71,6 +71,28 @@ Use these references when needed:
 - In epmodel tests, construct the concrete wrapper under test rather than
   using `ModelObject::create(...)` as a shortcut.
 
+## Topology mutation plans
+
+- Use a `*Plan` for a multi-object topology change with a distinct prepare and
+  commit boundary. Plans are one-shot and non-copyable, and they track an
+  explicit prepared/committed state.
+- A read-only preflight plan proves every owner, endpoint, and removal before
+  mutation. Its `commit()` performs only the already-proven invariant writes
+  and does not return a recoverable failure.
+- A provisional-mutation plan may create or rewire state while preparing. Its
+  destructor restores the exact original representation and removes only
+  objects that the plan created. This includes both managed object targets and
+  unresolved raw backing text when either representation is possible.
+- Enroll an attempted mutation in the plan before calling a setter. A setter
+  may partially write and still report failure.
+- Finish all fallible preparation, including preparation of nested plans,
+  before any plan crosses its commit boundary. Commit nested plans in an
+  explicit dependency order, then make the outer `commit()` a state-only or
+  otherwise no-fail operation.
+- Reserve `Guard` for scoped temporary restoration and `Snapshot` for captured
+  state that has no prepare/commit lifecycle. Do not call either one a plan
+  merely because it participates in rollback.
+
 ## Canonicalization
 
 - Canonicalization repairs imported models. It should run during construction

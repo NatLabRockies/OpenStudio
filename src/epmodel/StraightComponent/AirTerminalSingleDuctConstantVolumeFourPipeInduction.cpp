@@ -1641,7 +1641,9 @@ namespace epmodel {
       }
 
       if (adu) {
-        adu->getImpl<openstudio::epmodel::detail::ZoneHVACAirDistributionUnit_Impl>()->setOutletNode(node);
+        if (!adu->getImpl<openstudio::epmodel::detail::ZoneHVACAirDistributionUnit_Impl>()->setOutletNode(node)) {
+          return rollback();
+        }
       }
 
       if (thermalZone) {

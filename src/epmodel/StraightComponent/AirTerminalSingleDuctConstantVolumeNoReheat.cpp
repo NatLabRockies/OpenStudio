@@ -196,7 +196,8 @@ namespace epmodel {
       if (!plan->apply(failureStage == AddToNodeFailureStage::AfterADUUpdateBeforeZoneRegistration)) {
         return false;
       }
-      return plan->commit();
+      plan->commit();
+      return true;
     }
 
   }  // namespace detail

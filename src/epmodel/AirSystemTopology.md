@@ -45,6 +45,22 @@ similar class behaves the same way.
 9. Save/load may rebuild helper objects, but public connection methods must
    return the same system.
 
+## How connection changes commit
+
+Multi-object connection changes use a one-shot plan with a clear prepare and
+commit boundary. There are two supported shapes:
+
+- A preflight plan reads and proves the entire change before mutation. Once
+  prepared, its commit contains no expected failure path.
+- A provisional plan may stage reversible connections or owned helper objects.
+  Until commit, abandoning the plan restores the exact original targets and
+  raw unresolved references and deletes only objects created by that plan.
+
+Setters are treated as capable of partially writing before reporting failure,
+so rollback ownership is recorded before each call. Composite changes prepare
+all child plans first and commit them in dependency order. Fallible discovery
+or preparation does not happen inside `commit()`.
+
 ## What works now
 
 | Area | Implemented | Still missing |
@@ -96,6 +112,8 @@ differences alone do not need a new family.
 
 - clone and cross-model transfer;
 - moving an existing branch within one loop;
+- transactional outdoor/relief two-stream mutation and equipment/controller
+  update plans;
 - Ruby/Python overloads not yet used by a test;
 - autosized values read from SQL results;
 - Model/EPModel file comparison;

@@ -24,6 +24,7 @@
 #include <utilities/idd/AirTerminal_SingleDuct_ConstantVolume_NoReheat_FieldEnums.hxx>
 #include <utilities/core/Path.hpp>
 #include <utilities/idf/Handle.hpp>
+#include <utilities/idf/WorkspaceObject_Impl.hpp>
 
 using namespace openstudio::epmodel;
 
@@ -196,6 +197,37 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeNoReheat_AddToNode_Rej
   auto splitterOutlet = airLoop.zoneSplitter().outletModelObject(0u);
   ASSERT_TRUE(splitterOutlet);
   EXPECT_EQ(zoneAirNode.cast<ModelObject>(), *splitterOutlet);
+}
+
+TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeNoReheat_AbandonedInsertionRestoresMissingNameThenRetries) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  ThermalZone zone(model);
+  AirTerminalSingleDuctConstantVolumeNoReheat terminal(model);
+  auto terminalWorkspaceImpl = terminal.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  ASSERT_TRUE(terminalWorkspaceImpl);
+  ASSERT_TRUE(terminalWorkspaceImpl->setName("", false));
+  ASSERT_TRUE(terminal.name());
+  ASSERT_TRUE(terminal.name()->empty());
+
+  ASSERT_TRUE(airLoop.addBranchForZone(zone));
+  auto zoneAirNode = zone.zoneAirNode();
+  const auto baselineNodeCount = model.getConcreteModelObjects<Node>().size();
+  auto terminalImpl = terminal.getImpl<detail::AirTerminalSingleDuctConstantVolumeNoReheat_Impl>();
+  ASSERT_TRUE(terminalImpl);
+  EXPECT_FALSE(terminalImpl->addToNode(
+    zoneAirNode, detail::AirTerminalSingleDuctConstantVolumeNoReheat_Impl::AddToNodeFailureStage::AfterADUUpdateBeforeZoneRegistration));
+
+  ASSERT_TRUE(terminal.name());
+  EXPECT_TRUE(terminal.name()->empty());
+  EXPECT_FALSE(terminal.inletModelObject());
+  EXPECT_FALSE(terminal.outletModelObject());
+  EXPECT_TRUE(zone.equipment().empty());
+  EXPECT_EQ(baselineNodeCount, model.getConcreteModelObjects<Node>().size());
+
+  ASSERT_TRUE(terminal.addToNode(zoneAirNode));
+  EXPECT_TRUE(terminal.name());
+  EXPECT_EQ(terminal.cast<ModelObject>(), zone.equipment().front());
 }
 
 TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeNoReheat_Remove_ReconnectsZoneBranchAndCleansZoneReferences) {

@@ -127,6 +127,10 @@ namespace epmodel {
     }
 
     bool AirTerminalSingleDuctVAVHeatAndCoolNoReheat_Impl::addToNode(Node& node) {
+      return addToNode(node, AddToNodeFailureStage::None);
+    }
+
+    bool AirTerminalSingleDuctVAVHeatAndCoolNoReheat_Impl::addToNode(Node& node, AddToNodeFailureStage failureStage) {
       if (node.model() != model()) {
         return false;
       }
@@ -140,10 +144,11 @@ namespace epmodel {
         return false;
       }
 
-      if (!plan->apply()) {
+      if (!plan->apply(failureStage == AddToNodeFailureStage::AfterADUUpdateBeforeZoneRegistration)) {
         return false;
       }
-      return plan->commit();
+      plan->commit();
+      return true;
     }
 
     boost::optional<Schedule> AirTerminalSingleDuctVAVHeatAndCoolNoReheat_Impl::availabilitySchedule() const {

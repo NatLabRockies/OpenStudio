@@ -1205,6 +1205,13 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctSeriesPIUReheat_AddToNodeFailureIsAt
   ASSERT_TRUE(fan.setAvailabilitySchedule(terminalSchedule));
   CoilHeatingElectric reheatCoil(model);
   AirTerminalSingleDuctSeriesPIUReheat terminal(model, fan, reheatCoil);
+  const std::string unresolvedFanSchedule = "Persisted Missing Series PIU Fan Schedule";
+  auto fanWorkspaceImpl = fan.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  ASSERT_TRUE(fanWorkspaceImpl);
+  ASSERT_TRUE(fanWorkspaceImpl->setPointer(openstudio::Fan_SystemModelFields::AvailabilityScheduleName, openstudio::Handle(), false));
+  ASSERT_TRUE(fanWorkspaceImpl->openstudio::detail::IdfObject_Impl::setString(
+    openstudio::Fan_SystemModelFields::AvailabilityScheduleName, unresolvedFanSchedule, false));
+  EXPECT_FALSE(fan.getTarget(openstudio::Fan_SystemModelFields::AvailabilityScheduleName));
   ZoneHVACAirDistributionUnit adu(model);
   ASSERT_TRUE(adu.getImpl<detail::ZoneHVACAirDistributionUnit_Impl>()->setAirTerminal(terminal.cast<ModelObject>()));
   Node originalADUOutlet(model);
@@ -1222,7 +1229,6 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctSeriesPIUReheat_AddToNodeFailureIsAt
   ASSERT_TRUE(preexistingSecondaryNode.setName(zoneAirNode.nameString() + " - " + terminal.nameString() + " Secondary Air Inlet Node"));
   const auto exhaustNodesBefore = zoneConnections->zoneAirExhaustNodes();
   const auto nodeCountBefore = model.getConcreteModelObjects<Node>().size();
-  const auto fanScheduleBefore = fan.availabilitySchedule();
 
   auto impl = terminal.getImpl<detail::AirTerminalSingleDuctSeriesPIUReheat_Impl>();
   ASSERT_TRUE(impl);
@@ -1239,7 +1245,11 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctSeriesPIUReheat_AddToNodeFailureIsAt
   ASSERT_TRUE(adu.outletNode());
   EXPECT_EQ(originalADUOutlet.handle(), adu.outletNode()->handle());
   EXPECT_EQ(nodeCountBefore, model.getConcreteModelObjects<Node>().size());
-  EXPECT_EQ(fanScheduleBefore.handle(), fan.availabilitySchedule().handle());
+  EXPECT_FALSE(fan.getTarget(openstudio::Fan_SystemModelFields::AvailabilityScheduleName));
+  const auto restoredFanSchedule = fanWorkspaceImpl->openstudio::detail::IdfObject_Impl::getString(
+    openstudio::Fan_SystemModelFields::AvailabilityScheduleName, false, true);
+  ASSERT_TRUE(restoredFanSchedule);
+  EXPECT_EQ(unresolvedFanSchedule, *restoredFanSchedule);
 
   ASSERT_TRUE(terminal.addToNode(zoneAirNode));
   EXPECT_TRUE(terminal.secondaryAirInletNode());

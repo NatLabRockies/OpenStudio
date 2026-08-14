@@ -208,6 +208,14 @@ TEST_F(EPModelFixture, AirTerminalDualDuctConstantVolume_TerminalFirstZoneAttach
   EXPECT_EQ(openstudio::IddObjectType(openstudio::IddObjectType::ZoneHVAC_IdealLoadsAirSystem), equipment.front().iddObject().type());
   EXPECT_FALSE(model.getConcreteModelObjectByName<Node>(returnNodeName));
   EXPECT_TRUE(model.getConcreteModelObjects<ZoneHVACAirDistributionUnit>().empty());
+
+  ASSERT_TRUE(airLoop.addBranchForZone(zone));
+  EXPECT_FALSE(model.getObject(idealLoadsHandle));
+  EXPECT_FALSE(zone.useIdealAirLoads());
+  ASSERT_EQ(1u, zone.equipment().size());
+  EXPECT_EQ(terminal.cast<ModelObject>(), zone.equipment().front());
+  ASSERT_EQ(1u, airLoop.thermalZones().size());
+  EXPECT_EQ(zone, airLoop.thermalZones().front());
 }
 
 TEST_F(EPModelFixture, AirTerminalDualDuctConstantVolume_TerminalFirstZoneAttachmentPreparationFailurePreservesExistingState) {

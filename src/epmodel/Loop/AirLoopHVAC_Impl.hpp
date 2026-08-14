@@ -117,7 +117,7 @@ namespace epmodel {
         AfterPlantReconnectionPrepared,
         AfterReservationPrepared,
         AfterZonePrepared,
-        AfterTerminalZoneProjectionPrepared,
+        AfterTerminalFirstZoneAttachmentPrepared,
         BeforeTerminalAttachment,
         AfterDualDuctTerminalPrepared,
       };
@@ -133,7 +133,7 @@ namespace epmodel {
         boost::optional<openstudio::epmodel::ThermalZone> thermalZone() const;
         bool replaceWith(const openstudio::epmodel::Node& node);
         bool restore();
-        bool commit();
+        void commit();
 
        private:
         friend class AirLoopHVAC_Impl;
@@ -198,7 +198,7 @@ namespace epmodel {
      private:
       friend class ThermalZone_Impl;
       class DemandBranchAttachmentPlan;
-      class TerminalZoneProjectionPlan;
+      class TerminalFirstZoneAttachmentPlan;
       class SingleDuctTerminalClonePlan;
       class DualDuctZoneAttachment;
       class DualDuctTerminalInsertionPlan;
