@@ -16,6 +16,7 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class Curve;
 
   namespace detail {
     class BoilerHotWater_Impl;
@@ -43,13 +44,18 @@ namespace epmodel {
     static std::vector<std::string> boilerFlowModeValues();
 
     // Schema Alignment Notes:
-    // - Status: Scalar Parity. The canonical boiler-hot-water scalar surface is present, with one legacy flow-mode alias preserved for compatibility.
+    // - Status: Partial Parity. The canonical boiler-hot-water scalar surface and normalized boiler efficiency curve relationship are present,
+    //   with one legacy flow-mode alias preserved for compatibility.
     // - Canonical Counterpart: openstudio::model::BoilerHotWater.
-    // - Implemented Parity: The preserved scalar API matches the canonical fuel, capacity, efficiency, flow, and part-load accessors with matching autosize/default behavior.
-    // - Documented Delta: `setBoilerFlowMode("VariableFlow")` still normalizes to `LeavingSetpointModulated` to preserve legacy compatibility; node and curve helpers remain intentionally excluded.
-    // - Field/Storage Mapping: These accessors map directly to EnergyPlus `Boiler:HotWater` scalar fields used by the forward translator.
+    // - Implemented Parity: The preserved scalar API matches the canonical fuel, capacity, efficiency, flow, and part-load accessors with matching
+    //   autosize/default behavior. `normalizedBoilerEfficiencyCurve` preserves its canonical typed getter/setter/reset API and accepts configured
+    //   EnergyPlus univariate and bivariate curve targets from the same model.
+    // - Documented Delta: `setBoilerFlowMode("VariableFlow")` still normalizes to `LeavingSetpointModulated` to preserve legacy compatibility; node
+    //   helpers remain intentionally excluded.
+    // - Field/Storage Mapping: Scalars and the normalized curve relationship map directly to EnergyPlus `Boiler:HotWater` fields used by the forward
+    //   translator.
     // - Evidence: `src/model/BoilerHotWater.hpp`, `src/model/BoilerHotWater.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateBoilerHotWater.cpp`.
-    // - Remaining Parity Work: Add the omitted relationship helpers without changing the preserved scalar signatures.
+    // - Remaining Parity Work: Add the omitted node and other relationship helpers without changing the preserved scalar signatures.
     std::string fuelType() const;
     bool setFuelType(const std::string& fuelType);
 
@@ -65,6 +71,10 @@ namespace epmodel {
     boost::optional<std::string> efficiencyCurveTemperatureEvaluationVariable() const;
     bool setEfficiencyCurveTemperatureEvaluationVariable(const std::string& efficiencyCurveTemperatureEvaluationVariable);
     void resetEfficiencyCurveTemperatureEvaluationVariable();
+
+    boost::optional<Curve> normalizedBoilerEfficiencyCurve() const;
+    bool setNormalizedBoilerEfficiencyCurve(const Curve& normalizedBoilerEfficiencyCurve);
+    void resetNormalizedBoilerEfficiencyCurve();
 
     boost::optional<double> designWaterFlowRate() const;
     bool isDesignWaterFlowRateAutosized() const;

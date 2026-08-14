@@ -13,6 +13,8 @@
 namespace openstudio {
 namespace epmodel {
 
+  class Curve;
+
   namespace detail {
 
     class EPMODEL_API BoilerHotWater_Impl : public StraightComponent_Impl
@@ -44,6 +46,10 @@ namespace epmodel {
       boost::optional<std::string> efficiencyCurveTemperatureEvaluationVariable() const;
       bool setEfficiencyCurveTemperatureEvaluationVariable(const std::string& efficiencyCurveTemperatureEvaluationVariable);
       void resetEfficiencyCurveTemperatureEvaluationVariable();
+
+      boost::optional<Curve> normalizedBoilerEfficiencyCurve() const;
+      bool setNormalizedBoilerEfficiencyCurve(const Curve& normalizedBoilerEfficiencyCurve);
+      void resetNormalizedBoilerEfficiencyCurve();
 
       boost::optional<double> designWaterFlowRate() const;
       bool isDesignWaterFlowRateAutosized() const;
