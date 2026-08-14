@@ -5,6 +5,7 @@
 
 #include "Loop/AirLoopHVAC.hpp"
 #include "Loop/AirLoopHVAC_Impl.hpp"
+#include "TestFailurePoint.hpp"
 
 #include "BranchList.hpp"
 #include "BranchList_Impl.hpp"
@@ -870,8 +871,8 @@ namespace epmodel {
       struct ZoneStateSnapshot;
 
      public:
-      static std::unique_ptr<SingleDuctTerminalClonePlan> prepare(StraightComponent source, DemandBranchAttachmentFailureStage failureStage) {
-        auto plan = std::unique_ptr<SingleDuctTerminalClonePlan>(new SingleDuctTerminalClonePlan(std::move(source), failureStage));
+      static std::unique_ptr<SingleDuctTerminalClonePlan> prepare(StraightComponent source) {
+        auto plan = std::unique_ptr<SingleDuctTerminalClonePlan>(new SingleDuctTerminalClonePlan(std::move(source)));
         if (!plan->describeOwnedTopology()) {
           return nullptr;
         }
@@ -883,7 +884,7 @@ namespace epmodel {
                    "Failed to prepare the owned clone graph for trailing terminal '" << plan->m_source.nameString() << "'.");
           return nullptr;
         }
-        if (failureStage == DemandBranchAttachmentFailureStage::AfterTerminalClonePrepared) {
+        if (testFailurePointReached(plan->m_source.model(), TestFailurePoint::AirLoopAfterTerminalClonePrepared)) {
           return nullptr;
         }
         if (!plan->reconnectPlantTopology()) {
@@ -891,7 +892,7 @@ namespace epmodel {
                    "Failed to reconnect an owned clone to the source plant topology for trailing terminal '" << plan->m_source.nameString() << "'.");
           return nullptr;
         }
-        if (failureStage == DemandBranchAttachmentFailureStage::AfterPlantReconnectionPrepared) {
+        if (testFailurePointReached(plan->m_source.model(), TestFailurePoint::AirLoopAfterPlantReconnectionPrepared)) {
           return nullptr;
         }
         plan->m_state = State::Prepared;
@@ -905,8 +906,7 @@ namespace epmodel {
           m_source(std::move(other.m_source)),
           m_terminal(std::move(other.m_terminal)),
           m_children(std::move(other.m_children)),
-          m_zoneState(std::move(other.m_zoneState)),
-          m_failureStage(other.m_failureStage) {
+          m_zoneState(std::move(other.m_zoneState)) {
         other.m_state = State::MovedFrom;
       }
       SingleDuctTerminalClonePlan& operator=(SingleDuctTerminalClonePlan&&) = delete;
@@ -1023,8 +1023,7 @@ namespace epmodel {
         std::set<Handle> originalNodeListHandles;
       };
 
-      SingleDuctTerminalClonePlan(StraightComponent source, DemandBranchAttachmentFailureStage failureStage)
-        : m_source(std::move(source)), m_failureStage(failureStage) {}
+      explicit SingleDuctTerminalClonePlan(StraightComponent source) : m_source(std::move(source)) {}
 
       bool addOwnedChild(ChildRole role, unsigned terminalField, bool required) {
         auto child = m_source.getModelObjectTarget<HVACComponent>(terminalField);
@@ -1549,7 +1548,8 @@ namespace epmodel {
           }
           child.plantConnection->cloneReconnected = true;
           ++connectedChildren;
-          if ((m_failureStage == DemandBranchAttachmentFailureStage::AfterFirstPlantReconnectionPrepared) && (connectedChildren == 1u)) {
+          if ((connectedChildren == 1u)
+              && testFailurePointReached(m_source.model(), TestFailurePoint::AirLoopAfterFirstPlantReconnectionPrepared)) {
             return false;
           }
         }
@@ -1697,7 +1697,6 @@ namespace epmodel {
       boost::optional<HVACComponent> m_terminal;
       std::vector<OwnedChild> m_children;
       std::unique_ptr<ZoneStateSnapshot> m_zoneState;
-      DemandBranchAttachmentFailureStage m_failureStage = DemandBranchAttachmentFailureStage::None;
     };
 
     // A connector row is only meaningful inside the connector that owns it.
@@ -1980,8 +1979,7 @@ namespace epmodel {
     class AirLoopHVAC_Impl::DualDuctZoneAttachment
     {
      public:
-      static std::unique_ptr<DualDuctZoneAttachment> prepare(AirLoopHVAC& airLoop, ThermalZone& thermalZone, Mixer& terminal,
-                                                             DualDuctZoneAttachmentFailureStage failureStage);
+      static std::unique_ptr<DualDuctZoneAttachment> prepare(AirLoopHVAC& airLoop, ThermalZone& thermalZone, Mixer& terminal);
 
       DualDuctZoneAttachment(const DualDuctZoneAttachment&) = delete;
       DualDuctZoneAttachment& operator=(const DualDuctZoneAttachment&) = delete;
@@ -5001,11 +4999,6 @@ namespace epmodel {
     }
 
     bool AirLoopHVAC_Impl::addBranchForHVACComponent(openstudio::epmodel::HVACComponent& hvacComponent) {
-      return addBranchForHVACComponent(hvacComponent, DemandBranchAttachmentFailureStage::None);
-    }
-
-    bool AirLoopHVAC_Impl::addBranchForHVACComponent(openstudio::epmodel::HVACComponent& hvacComponent,
-                                                     DemandBranchAttachmentFailureStage failureStage) {
       if (hvacComponent.model() != model()) {
         return false;
       }
@@ -5023,21 +5016,22 @@ namespace epmodel {
       if (!reservation) {
         return false;
       }
-      if (failureStage == DemandBranchAttachmentFailureStage::AfterReservationPrepared) {
+      if (testFailurePointReached(model(), TestFailurePoint::AirLoopAfterBranchReservationPrepared)) {
         return false;
       }
 
       auto branchNode = reservation->node();
-      if (failureStage == DemandBranchAttachmentFailureStage::BeforeTerminalAttachment) {
+      if (testFailurePointReached(model(), TestFailurePoint::AirLoopBeforeTerminalAttachment)) {
         return false;
       }
-      if (failureStage == DemandBranchAttachmentFailureStage::AfterDualDuctTerminalPrepared && !hvacComponent.optionalCast<Mixer>()) {
+      if (testFailurePointReached(model(), TestFailurePoint::AirLoopAfterDualDuctTerminalPrepared)
+          && !hvacComponent.optionalCast<Mixer>()) {
         return false;
       }
       if (!reservation->prepareTerminalAttachment(hvacComponent, branchNode)) {
         return false;
       }
-      if (failureStage == DemandBranchAttachmentFailureStage::AfterDualDuctTerminalPrepared) {
+      if (testFailurePointReached(model(), TestFailurePoint::AirLoopAfterDualDuctTerminalPrepared)) {
         return false;
       }
       reservation->commit();
@@ -5047,10 +5041,6 @@ namespace epmodel {
     }
 
     bool AirLoopHVAC_Impl::addBranchForZone(openstudio::epmodel::ThermalZone& thermalZone) {
-      return addBranchForZone(thermalZone, DualDuctZoneAttachmentFailureStage::None);
-    }
-
-    bool AirLoopHVAC_Impl::addBranchForZone(openstudio::epmodel::ThermalZone& thermalZone, DualDuctZoneAttachmentFailureStage failureStage) {
       if (thermalZone.model() != model()) {
         return false;
       }
@@ -5066,17 +5056,16 @@ namespace epmodel {
         // instead of cloning a new terminal branch.
         if (auto terminal = reusableDualDuctTerminalForZone()) {
           auto airLoop = getObject<AirLoopHVAC>();
-          auto attachment = DualDuctZoneAttachment::prepare(airLoop, thermalZone, *terminal, failureStage);
+          auto attachment = DualDuctZoneAttachment::prepare(airLoop, thermalZone, *terminal);
           if (!attachment) {
+            return false;
+          }
+          if (testFailurePointReached(model(), TestFailurePoint::AirLoopAfterDualDuctZoneObjectsPrepared)) {
             return false;
           }
 
           attachment->commit();
           return true;
-        }
-
-        if (failureStage != DualDuctZoneAttachmentFailureStage::None) {
-          return false;
         }
 
         if (auto terminal = cloneLastDualDuctTerminalForBranch()) {
@@ -5086,13 +5075,13 @@ namespace epmodel {
           terminal->remove();
           return false;
         }
-        return addBranchForZone(thermalZone, DemandBranchAttachmentFailureStage::None);
+        return addSingleDuctBranchForZone(thermalZone);
       }
 
-      return addBranchForZone(thermalZone, DemandBranchAttachmentFailureStage::None);
+      return addSingleDuctBranchForZone(thermalZone);
     }
 
-    bool AirLoopHVAC_Impl::addBranchForZone(openstudio::epmodel::ThermalZone& thermalZone, DemandBranchAttachmentFailureStage failureStage) {
+    bool AirLoopHVAC_Impl::addSingleDuctBranchForZone(openstudio::epmodel::ThermalZone& thermalZone) {
       if (thermalZone.model() != model()) {
         return false;
       }
@@ -5109,7 +5098,7 @@ namespace epmodel {
           // terminal while its provisional branch and zone attachment still
           // exist, before restoring the surrounding branch transaction.
           std::unique_ptr<DemandBranchAttachmentPlan> reservation;
-          auto clonePlan = SingleDuctTerminalClonePlan::prepare(*sourceTerminal, failureStage);
+          auto clonePlan = SingleDuctTerminalClonePlan::prepare(*sourceTerminal);
           if (!clonePlan) {
             return false;
           }
@@ -5118,13 +5107,13 @@ namespace epmodel {
           if (!reservation) {
             return false;
           }
-          if (failureStage == DemandBranchAttachmentFailureStage::AfterReservationPrepared) {
+          if (testFailurePointReached(model(), TestFailurePoint::AirLoopAfterBranchReservationPrepared)) {
             return false;
           }
           if (!reservation->prepareZoneAttachment(thermalZone)) {
             return false;
           }
-          if (failureStage == DemandBranchAttachmentFailureStage::AfterZonePrepared) {
+          if (testFailurePointReached(model(), TestFailurePoint::AirLoopAfterZonePrepared)) {
             return false;
           }
           if (!clonePlan->prepareZoneStateSnapshot(thermalZone)) {
@@ -5133,15 +5122,15 @@ namespace epmodel {
 
           auto terminalNodeObject = zoneSplitter().outletModelObject(reservation->splitterBranchIndex());
           auto terminalNode = terminalNodeObject ? terminalNodeObject->optionalCast<Node>() : boost::optional<Node>();
-          if (!terminalNode || failureStage == DemandBranchAttachmentFailureStage::BeforeTerminalAttachment
-              || failureStage == DemandBranchAttachmentFailureStage::AfterDualDuctTerminalPrepared) {
+          if (!terminalNode || testFailurePointReached(model(), TestFailurePoint::AirLoopBeforeTerminalAttachment)
+              || testFailurePointReached(model(), TestFailurePoint::AirLoopAfterDualDuctTerminalPrepared)) {
             return false;
           }
           auto terminal = clonePlan->terminal();
           if (!reservation->prepareTerminalAttachment(terminal, *terminalNode)) {
             return false;
           }
-          if (failureStage == DemandBranchAttachmentFailureStage::AfterTerminalFirstZoneAttachmentPrepared) {
+          if (testFailurePointReached(model(), TestFailurePoint::AirLoopAfterTerminalFirstZoneAttachmentPrepared)) {
             return false;
           }
           reservation->commit();
@@ -5151,9 +5140,9 @@ namespace epmodel {
           return true;
         }
 
-        if (failureStage == DemandBranchAttachmentFailureStage::AfterTerminalClonePrepared
-            || failureStage == DemandBranchAttachmentFailureStage::AfterFirstPlantReconnectionPrepared
-            || failureStage == DemandBranchAttachmentFailureStage::AfterPlantReconnectionPrepared) {
+        if (testFailurePointReached(model(), TestFailurePoint::AirLoopAfterTerminalClonePrepared)
+            || testFailurePointReached(model(), TestFailurePoint::AirLoopAfterFirstPlantReconnectionPrepared)
+            || testFailurePointReached(model(), TestFailurePoint::AirLoopAfterPlantReconnectionPrepared)) {
           return false;
         }
       }
@@ -5162,16 +5151,16 @@ namespace epmodel {
       if (!reservation) {
         return false;
       }
-      if (failureStage == DemandBranchAttachmentFailureStage::AfterReservationPrepared) {
+      if (testFailurePointReached(model(), TestFailurePoint::AirLoopAfterBranchReservationPrepared)) {
         return false;
       }
       if (!reservation->prepareZoneAttachment(thermalZone)) {
         return false;
       }
-      if (failureStage == DemandBranchAttachmentFailureStage::AfterZonePrepared) {
+      if (testFailurePointReached(model(), TestFailurePoint::AirLoopAfterZonePrepared)) {
         return false;
       }
-      if ((failureStage == DemandBranchAttachmentFailureStage::AfterTerminalFirstZoneAttachmentPrepared)
+      if (testFailurePointReached(model(), TestFailurePoint::AirLoopAfterTerminalFirstZoneAttachmentPrepared)
           && reservation->terminalFirstZoneAttachmentPrepared()) {
         return false;
       }
@@ -5181,11 +5170,6 @@ namespace epmodel {
     }
 
     bool AirLoopHVAC_Impl::addBranchForZone(openstudio::epmodel::ThermalZone& thermalZone, openstudio::epmodel::HVACComponent& airTerminal) {
-      return addBranchForZone(thermalZone, airTerminal, DemandBranchAttachmentFailureStage::None);
-    }
-
-    bool AirLoopHVAC_Impl::addBranchForZone(openstudio::epmodel::ThermalZone& thermalZone, openstudio::epmodel::HVACComponent& airTerminal,
-                                            DemandBranchAttachmentFailureStage failureStage) {
       if (thermalZone.model() != model() || airTerminal.model() != model()) {
         return false;
       }
@@ -5200,9 +5184,6 @@ namespace epmodel {
 
       const auto zones = thermalZones();
       if (std::find(zones.begin(), zones.end(), thermalZone) != zones.end()) {
-        if (failureStage != DemandBranchAttachmentFailureStage::None) {
-          return false;
-        }
         // Removing an air terminal leaves the zone branch itself in place. A
         // replacement may belong at a ZoneSplitter outlet or at a
         // SupplyPlenum outlet, so prove the terminal-free effective endpoint
@@ -5255,13 +5236,13 @@ namespace epmodel {
       if (!reservation) {
         return false;
       }
-      if (failureStage == DemandBranchAttachmentFailureStage::AfterReservationPrepared) {
+      if (testFailurePointReached(model(), TestFailurePoint::AirLoopAfterBranchReservationPrepared)) {
         return false;
       }
       if (!reservation->prepareZoneAttachment(thermalZone)) {
         return false;
       }
-      if (failureStage == DemandBranchAttachmentFailureStage::AfterZonePrepared) {
+      if (testFailurePointReached(model(), TestFailurePoint::AirLoopAfterZonePrepared)) {
         return false;
       }
 
@@ -5270,16 +5251,16 @@ namespace epmodel {
       if (!terminalNode) {
         return false;
       }
-      if (failureStage == DemandBranchAttachmentFailureStage::BeforeTerminalAttachment) {
+      if (testFailurePointReached(model(), TestFailurePoint::AirLoopBeforeTerminalAttachment)) {
         return false;
       }
-      if (failureStage == DemandBranchAttachmentFailureStage::AfterDualDuctTerminalPrepared && !airTerminal.optionalCast<Mixer>()) {
+      if (testFailurePointReached(model(), TestFailurePoint::AirLoopAfterDualDuctTerminalPrepared) && !airTerminal.optionalCast<Mixer>()) {
         return false;
       }
       if (!reservation->prepareTerminalAttachment(airTerminal, *terminalNode)) {
         return false;
       }
-      if (failureStage == DemandBranchAttachmentFailureStage::AfterDualDuctTerminalPrepared) {
+      if (testFailurePointReached(model(), TestFailurePoint::AirLoopAfterDualDuctTerminalPrepared)) {
         return false;
       }
       reservation->commit();
@@ -5374,8 +5355,7 @@ namespace epmodel {
     }
 
     std::unique_ptr<AirLoopHVAC_Impl::DualDuctZoneAttachment>
-      AirLoopHVAC_Impl::DualDuctZoneAttachment::prepare(AirLoopHVAC& airLoop, ThermalZone& thermalZone, Mixer& terminal,
-                                                        DualDuctZoneAttachmentFailureStage failureStage) {
+      AirLoopHVAC_Impl::DualDuctZoneAttachment::prepare(AirLoopHVAC& airLoop, ThermalZone& thermalZone, Mixer& terminal) {
       if (airLoop.model() != thermalZone.model() || airLoop.model() != terminal.model() || !airLoop.isDualDuct()) {
         return nullptr;
       }
@@ -5431,10 +5411,6 @@ namespace epmodel {
       }
 
       attachment->m_disableIdealAirLoads = thermalZone.useIdealAirLoads();
-
-      if (failureStage == DualDuctZoneAttachmentFailureStage::AfterProvisionalObjectsPrepared) {
-        return nullptr;
-      }
 
       return attachment;
     }

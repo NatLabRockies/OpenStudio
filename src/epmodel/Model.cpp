@@ -1140,6 +1140,12 @@ namespace openstudio {
 namespace epmodel {
   namespace detail {
 
+    bool testFailurePointReached(const Model& model, TestFailurePoint point) {
+      auto modelImpl = model.getImpl<Model_Impl>();
+      OS_ASSERT(modelImpl);
+      return modelImpl->m_testFailurePoint == point;
+    }
+
     void addLoadInfo(LoadContext& ctx, const std::string& message) {
       ++ctx.report.infoCount;
       ctx.report.messages.push_back("INFO: " + message);

@@ -10,6 +10,7 @@
 #include <utilities/core/Exception.hpp>
 
 #include "EPModelFixture.hpp"
+#include "ScopedTestFailure.hpp"
 #include "../HVACComponent/ThermalZone.hpp"
 #include "../HVACComponent/ThermalZone_Impl.hpp"
 #include "../Loop/AirLoopHVAC.hpp"
@@ -1230,9 +1231,10 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctSeriesPIUReheat_AddToNodeFailureIsAt
   const auto exhaustNodesBefore = zoneConnections->zoneAirExhaustNodes();
   const auto nodeCountBefore = model.getConcreteModelObjects<Node>().size();
 
-  auto impl = terminal.getImpl<detail::AirTerminalSingleDuctSeriesPIUReheat_Impl>();
-  ASSERT_TRUE(impl);
-  EXPECT_FALSE(impl->addToNode(zoneAirNode, detail::AirTerminalSingleDuctSeriesPIUReheat_Impl::AddToNodeFailureStage::AfterTopologyPrepared));
+  {
+    test::ScopedTestFailure failure(model, detail::TestFailurePoint::SeriesPIUAfterTopologyPrepared);
+    EXPECT_FALSE(terminal.addToNode(zoneAirNode));
+  }
 
   EXPECT_FALSE(terminal.inletModelObject());
   EXPECT_FALSE(terminal.outletModelObject());
@@ -1277,9 +1279,10 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctSeriesPIUReheat_AddToNodeFailureRest
   ASSERT_TRUE(airLoop.addBranchForZone(zone));
   auto zoneAirNode = zone.zoneAirNode();
 
-  auto impl = terminal.getImpl<detail::AirTerminalSingleDuctSeriesPIUReheat_Impl>();
-  ASSERT_TRUE(impl);
-  EXPECT_FALSE(impl->addToNode(zoneAirNode, detail::AirTerminalSingleDuctSeriesPIUReheat_Impl::AddToNodeFailureStage::AfterTopologyPrepared));
+  {
+    test::ScopedTestFailure failure(model, detail::TestFailurePoint::SeriesPIUAfterTopologyPrepared);
+    EXPECT_FALSE(terminal.addToNode(zoneAirNode));
+  }
 
   const auto restoredOutletName = adu.getString(openstudio::ZoneHVAC_AirDistributionUnitFields::AirDistributionUnitOutletNodeName, false, true);
   ASSERT_TRUE(restoredOutletName);
@@ -1331,9 +1334,10 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctSeriesPIUReheat_TerminalOnlyFailureR
   ASSERT_TRUE(branchNode);
   const auto nodeCountBefore = model.getConcreteModelObjects<Node>().size();
 
-  auto impl = terminal.getImpl<detail::AirTerminalSingleDuctSeriesPIUReheat_Impl>();
-  ASSERT_TRUE(impl);
-  EXPECT_FALSE(impl->addToNode(*branchNode, detail::AirTerminalSingleDuctSeriesPIUReheat_Impl::AddToNodeFailureStage::AfterTopologyPrepared));
+  {
+    test::ScopedTestFailure failure(model, detail::TestFailurePoint::SeriesPIUAfterTopologyPrepared);
+    EXPECT_FALSE(terminal.addToNode(*branchNode));
+  }
   EXPECT_EQ(nodeCountBefore, model.getConcreteModelObjects<Node>().size());
   EXPECT_EQ(branchNode->handle(), airLoop.zoneSplitter().lastOutletModelObject()->handle());
   EXPECT_EQ(branchNode->handle(), airLoop.zoneMixer().lastInletModelObject()->handle());

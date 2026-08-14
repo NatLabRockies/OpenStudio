@@ -111,10 +111,6 @@ namespace epmodel {
     }
 
     bool AirTerminalSingleDuctUserDefined_Impl::addToNode(Node& node) {
-      return addToNode(node, AddToNodeFailureStage::None);
-    }
-
-    bool AirTerminalSingleDuctUserDefined_Impl::addToNode(Node& node, AddToNodeFailureStage failureStage) {
       if (node.model() != model()) {
         LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctUserDefined", "addToNode requires a node in the same model as the terminal.");
         return false;
@@ -128,7 +124,7 @@ namespace epmodel {
                  "addToNode requires a terminal-free effective demand branch on the target AirLoopHVAC.");
         return false;
       }
-      if (!plan->apply(failureStage == AddToNodeFailureStage::AfterADUUpdateBeforeZoneRegistration)) {
+      if (!plan->apply()) {
         return false;
       }
       plan->commit();

@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
+#include "ScopedTestFailure.hpp"
 
 #include "../HVACComponent/HVACComponent.hpp"
 #include "../HVACComponent/ControllerWaterCoil.hpp"
@@ -299,10 +300,10 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeFourPipeInduction_AddT
   const auto originalSplitterOutlet = airLoop.zoneSplitter().lastOutletModelObject();
   ASSERT_TRUE(originalSplitterOutlet);
 
-  auto impl = terminal.getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl>();
-  ASSERT_TRUE(impl);
-  EXPECT_FALSE(
-    impl->addToNode(zoneAirNode, detail::AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl::AddToNodeFailureStage::AfterTopologyPrepared));
+  {
+    test::ScopedTestFailure failure(model, detail::TestFailurePoint::FourPipeInductionAfterTopologyPrepared);
+    EXPECT_FALSE(terminal.addToNode(zoneAirNode));
+  }
   EXPECT_FALSE(terminal.inletModelObject());
   EXPECT_FALSE(terminal.outletModelObject());
   EXPECT_FALSE(terminal.inducedAirInletNode());

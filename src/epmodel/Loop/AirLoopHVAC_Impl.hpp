@@ -104,23 +104,6 @@ namespace epmodel {
       unsigned availabilityManagerPriority(const openstudio::epmodel::AvailabilityManager& availabilityManager) const;
       bool setNightCycleControlType(const std::string& controlType);
       std::string nightCycleControlType() const;
-      enum class DualDuctZoneAttachmentFailureStage
-      {
-        None,
-        AfterProvisionalObjectsPrepared,
-      };
-      enum class DemandBranchAttachmentFailureStage
-      {
-        None,
-        AfterTerminalClonePrepared,
-        AfterFirstPlantReconnectionPrepared,
-        AfterPlantReconnectionPrepared,
-        AfterReservationPrepared,
-        AfterZonePrepared,
-        AfterTerminalFirstZoneAttachmentPrepared,
-        BeforeTerminalAttachment,
-        AfterDualDuctTerminalPrepared,
-      };
       class DemandBranchStartReservation
       {
        public:
@@ -167,13 +150,8 @@ namespace epmodel {
         boost::optional<openstudio::epmodel::ModelObject> m_thermalZone;
       };
       bool addBranchForZone(openstudio::epmodel::ThermalZone& thermalZone);
-      bool addBranchForZone(openstudio::epmodel::ThermalZone& thermalZone, DualDuctZoneAttachmentFailureStage failureStage);
-      bool addBranchForZone(openstudio::epmodel::ThermalZone& thermalZone, DemandBranchAttachmentFailureStage failureStage);
       bool addBranchForZone(openstudio::epmodel::ThermalZone& thermalZone, openstudio::epmodel::HVACComponent& airTerminal);
-      bool addBranchForZone(openstudio::epmodel::ThermalZone& thermalZone, openstudio::epmodel::HVACComponent& airTerminal,
-                            DemandBranchAttachmentFailureStage failureStage);
       bool addBranchForHVACComponent(openstudio::epmodel::HVACComponent& hvacComponent);
-      bool addBranchForHVACComponent(openstudio::epmodel::HVACComponent& hvacComponent, DemandBranchAttachmentFailureStage failureStage);
       bool removeBranchForZone(openstudio::epmodel::ThermalZone& thermalZone);
       boost::optional<openstudio::epmodel::Node> effectiveDemandReturnNodeForBranchStart(const openstudio::epmodel::Node& branchStartNode) const;
       std::unique_ptr<DemandBranchStartReservation> reserveDemandBranchStart(const openstudio::epmodel::Node& branchStartNode) const;
@@ -205,6 +183,7 @@ namespace epmodel {
       class DualDuctPlenumRemovalPlan;
       class DemandTopologySnapshot;
       class DemandBranchComponentLocation;
+      bool addSingleDuctBranchForZone(openstudio::epmodel::ThermalZone& thermalZone);
       static boost::optional<openstudio::epmodel::ModelObject> resolveTerminalOnDemandBranchNodes(const openstudio::epmodel::Node& splitterOutletNode,
                                                                                                   const openstudio::epmodel::Node& mixerInletNode);
       static boost::optional<openstudio::epmodel::ModelObject> resolveTerminalOutletObject(const openstudio::epmodel::ModelObject& terminalObject);

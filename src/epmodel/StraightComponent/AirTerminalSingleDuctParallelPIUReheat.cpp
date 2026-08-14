@@ -5,6 +5,7 @@
 
 #include "StraightComponent/AirTerminalSingleDuctParallelPIUReheat.hpp"
 #include "StraightComponent/AirTerminalSingleDuctParallelPIUReheat_Impl.hpp"
+#include "TestFailurePoint.hpp"
 #include "StraightComponent/CompoundTerminalTopologyInspection.hpp"
 
 #include "HVACComponent.hpp"
@@ -2077,10 +2078,6 @@ namespace epmodel {
     }
 
     bool AirTerminalSingleDuctParallelPIUReheat_Impl::addToNode(Node& node) {
-      return addToNode(node, AddToNodeFailureStage::None);
-    }
-
-    bool AirTerminalSingleDuctParallelPIUReheat_Impl::addToNode(Node& node, AddToNodeFailureStage failureStage) {
       if (node.model() != model()) {
         LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctParallelPIUReheat",
                  "addToNode requires a node in the same model as the parallel PIU terminal.");
@@ -2148,7 +2145,7 @@ namespace epmodel {
       if (!insertion) {
         return false;
       }
-      if (failureStage == AddToNodeFailureStage::AfterTopologyPrepared) {
+      if (testFailurePointReached(model(), TestFailurePoint::ParallelPIUAfterTopologyPrepared)) {
         return false;
       }
       if (!maintainContainedAirPath()) {

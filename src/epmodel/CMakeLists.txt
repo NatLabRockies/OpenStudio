@@ -7,6 +7,7 @@ set(${target_name}_src
   Model.hpp
   Model_Impl.hpp
   Model.cpp
+  TestFailurePoint.hpp
 
   AirflowNetworkLinkage/AirflowNetworkDistributionLinkage.hpp
   AirflowNetworkLinkage/AirflowNetworkDistributionLinkage_Impl.hpp
@@ -3143,6 +3144,7 @@ set(${target_name}_test_src
   test/EnvironmentalImpactFactors_GTest.cpp
   test/EPModelFixture.hpp
   test/EPModelFixture.cpp
+  test/ScopedTestFailure.hpp
   test/EvaporativeCoolerDirectCelDekPad_GTest.cpp
   test/EvaporativeCoolerDirectResearchSpecial_GTest.cpp
   test/EvaporativeCoolerIndirectCelDekPad_GTest.cpp

@@ -8,6 +8,7 @@
 #include <set>
 
 #include "EPModelFixture.hpp"
+#include "ScopedTestFailure.hpp"
 #include "../HVACComponent/ThermalZone.hpp"
 #include "../HVACComponent/ControllerWaterCoil.hpp"
 #include "../Loop/AirLoopHVAC.hpp"
@@ -382,10 +383,10 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeReheat_AddToNode_LateF
   ASSERT_TRUE(splitterOutletBefore);
   const auto nodeCountBefore = model.getConcreteModelObjects<Node>().size();
 
-  auto terminalImpl = terminal.getImpl<detail::AirTerminalSingleDuctConstantVolumeReheat_Impl>();
-  ASSERT_TRUE(terminalImpl);
-  EXPECT_FALSE(terminalImpl->addToNode(
-    zoneAirNode, detail::AirTerminalSingleDuctConstantVolumeReheat_Impl::AddToNodeFailureStage::AfterADUUpdateBeforeZoneRegistration));
+  {
+    test::ScopedTestFailure failure(model, detail::TestFailurePoint::SingleDuctTerminalAfterAirDistributionUnitUpdate);
+    EXPECT_FALSE(terminal.addToNode(zoneAirNode));
+  }
 
   const auto splitterOutletAfter = airLoop.zoneSplitter().outletModelObject(0u);
   ASSERT_TRUE(splitterOutletAfter);
@@ -434,10 +435,10 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeReheat_AddToNode_LateF
   ASSERT_TRUE(splitterOutletBefore);
   const auto nodeCountBefore = model.getConcreteModelObjects<Node>().size();
 
-  auto terminalImpl = terminal.getImpl<detail::AirTerminalSingleDuctConstantVolumeReheat_Impl>();
-  ASSERT_TRUE(terminalImpl);
-  EXPECT_FALSE(terminalImpl->addToNode(
-    zoneAirNode, detail::AirTerminalSingleDuctConstantVolumeReheat_Impl::AddToNodeFailureStage::AfterADUUpdateBeforeZoneRegistration));
+  {
+    test::ScopedTestFailure failure(model, detail::TestFailurePoint::SingleDuctTerminalAfterAirDistributionUnitUpdate);
+    EXPECT_FALSE(terminal.addToNode(zoneAirNode));
+  }
 
   ASSERT_TRUE(adu.getTarget(outletField));
   EXPECT_EQ(originalOutlet.handle(), adu.getTarget(outletField)->handle());

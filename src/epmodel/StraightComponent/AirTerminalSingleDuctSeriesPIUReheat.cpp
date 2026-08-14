@@ -5,6 +5,7 @@
 
 #include "StraightComponent/AirTerminalSingleDuctSeriesPIUReheat.hpp"
 #include "StraightComponent/AirTerminalSingleDuctSeriesPIUReheat_Impl.hpp"
+#include "TestFailurePoint.hpp"
 #include "StraightComponent/CompoundTerminalTopologyInspection.hpp"
 
 #include "HVACComponent/ThermalZone.hpp"
@@ -2108,10 +2109,6 @@ namespace epmodel {
     }
 
     bool AirTerminalSingleDuctSeriesPIUReheat_Impl::addToNode(Node& node) {
-      return addToNode(node, AddToNodeFailureStage::None);
-    }
-
-    bool AirTerminalSingleDuctSeriesPIUReheat_Impl::addToNode(Node& node, AddToNodeFailureStage failureStage) {
       if (node.model() != model()) {
         LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctSeriesPIUReheat",
                  "addToNode requires a node in the same model as the series PIU terminal.");
@@ -2179,7 +2176,7 @@ namespace epmodel {
       if (!insertion) {
         return false;
       }
-      if (failureStage == AddToNodeFailureStage::AfterTopologyPrepared) {
+      if (testFailurePointReached(model(), TestFailurePoint::SeriesPIUAfterTopologyPrepared)) {
         return false;
       }
       if (!maintainContainedAirPath()) {

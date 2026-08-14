@@ -5,6 +5,7 @@
 
 #include "StraightComponent/AirTerminalSingleDuctVAVReheat.hpp"
 #include "StraightComponent/AirTerminalSingleDuctVAVReheat_Impl.hpp"
+#include "TestFailurePoint.hpp"
 
 #include "HVACComponent.hpp"
 #include "Loop/PlantLoop.hpp"
@@ -702,10 +703,6 @@ namespace epmodel {
     }
 
     bool AirTerminalSingleDuctVAVReheat_Impl::addToNode(Node& node) {
-      return addToNode(node, AddToNodeFailureStage::None);
-    }
-
-    bool AirTerminalSingleDuctVAVReheat_Impl::addToNode(Node& node, AddToNodeFailureStage failureStage) {
       if (node.model() != model()) {
         return false;
       }
@@ -738,7 +735,7 @@ namespace epmodel {
       if (!maintainReheatCoilAirPath(*coil)) {
         return false;
       }
-      if (failureStage == AddToNodeFailureStage::AfterReheatCoilAirPathPrepared) {
+      if (testFailurePointReached(model(), TestFailurePoint::VAVReheatAfterCoilAirPathPrepared)) {
         return false;
       }
       plan->commit();

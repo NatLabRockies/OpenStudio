@@ -6,6 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
+#include "ScopedTestFailure.hpp"
 #include "../HVACComponent/ThermalZone.hpp"
 #include "../HVACComponent/ThermalZone_Impl.hpp"
 #include "../Loop/AirLoopHVAC.hpp"
@@ -213,10 +214,10 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeNoReheat_AbandonedInse
   ASSERT_TRUE(airLoop.addBranchForZone(zone));
   auto zoneAirNode = zone.zoneAirNode();
   const auto baselineNodeCount = model.getConcreteModelObjects<Node>().size();
-  auto terminalImpl = terminal.getImpl<detail::AirTerminalSingleDuctConstantVolumeNoReheat_Impl>();
-  ASSERT_TRUE(terminalImpl);
-  EXPECT_FALSE(terminalImpl->addToNode(
-    zoneAirNode, detail::AirTerminalSingleDuctConstantVolumeNoReheat_Impl::AddToNodeFailureStage::AfterADUUpdateBeforeZoneRegistration));
+  {
+    test::ScopedTestFailure failure(model, detail::TestFailurePoint::SingleDuctTerminalAfterAirDistributionUnitUpdate);
+    EXPECT_FALSE(terminal.addToNode(zoneAirNode));
+  }
 
   ASSERT_TRUE(terminal.name());
   EXPECT_TRUE(terminal.name()->empty());

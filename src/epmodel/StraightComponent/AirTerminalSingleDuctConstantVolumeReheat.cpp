@@ -501,10 +501,6 @@ namespace epmodel {
     }
 
     bool AirTerminalSingleDuctConstantVolumeReheat_Impl::addToNode(Node& node) {
-      return addToNode(node, AddToNodeFailureStage::None);
-    }
-
-    bool AirTerminalSingleDuctConstantVolumeReheat_Impl::addToNode(Node& node, AddToNodeFailureStage failureStage) {
       if (node.model() != model()) {
         return false;
       }
@@ -524,7 +520,7 @@ namespace epmodel {
         return false;
       }
 
-      if (!plan->apply(failureStage == AddToNodeFailureStage::AfterADUUpdateBeforeZoneRegistration)) {
+      if (!plan->apply()) {
         return false;
       }
       if (!maintainContainedAirPath()) {

@@ -6,6 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
+#include "ScopedTestFailure.hpp"
 #include "../Loop/AirLoopHVAC.hpp"
 #include "../Loop/AirLoopHVAC_Impl.hpp"
 #include "../ModelObject/Branch.hpp"
@@ -2317,10 +2318,10 @@ TEST_F(EPModelFixture, AirLoopHVAC_TerminalFirstZoneAttachmentFailure_RestoresEx
   ASSERT_TRUE(originalMixerInlet);
   ASSERT_TRUE(originalExhaustTarget);
 
-  auto airLoopImpl = airLoop.getImpl<detail::AirLoopHVAC_Impl>();
-  ASSERT_TRUE(airLoopImpl);
-  EXPECT_FALSE(
-    airLoopImpl->addBranchForZone(zone, detail::AirLoopHVAC_Impl::DemandBranchAttachmentFailureStage::AfterTerminalFirstZoneAttachmentPrepared));
+  {
+    test::ScopedTestFailure failure(model, detail::TestFailurePoint::AirLoopAfterTerminalFirstZoneAttachmentPrepared);
+    EXPECT_FALSE(airLoop.addBranchForZone(zone));
+  }
 
   EXPECT_EQ(*originalSplitterOutlet, *airLoop.zoneSplitter().outletModelObject(0u));
   EXPECT_EQ(*originalMixerInlet, *airLoop.zoneMixer().inletModelObject(0u));
@@ -2378,10 +2379,10 @@ TEST_F(EPModelFixture, AirLoopHVAC_TerminalFirstZoneAttachmentFailure_RestoresUn
   EXPECT_FALSE(model.getConcreteModelObjectByName<Node>(unresolvedADUOutlet));
   const auto baselineHandles = workspaceHandles(model);
 
-  auto airLoopImpl = airLoop.getImpl<detail::AirLoopHVAC_Impl>();
-  ASSERT_TRUE(airLoopImpl);
-  EXPECT_FALSE(
-    airLoopImpl->addBranchForZone(zone, detail::AirLoopHVAC_Impl::DemandBranchAttachmentFailureStage::AfterTerminalFirstZoneAttachmentPrepared));
+  {
+    test::ScopedTestFailure failure(model, detail::TestFailurePoint::AirLoopAfterTerminalFirstZoneAttachmentPrepared);
+    EXPECT_FALSE(airLoop.addBranchForZone(zone));
+  }
 
   EXPECT_EQ(baselineHandles, workspaceHandles(model));
   EXPECT_FALSE(connections.getField(exhaustField, false));
@@ -2449,9 +2450,10 @@ TEST_F(EPModelFixture, AirLoopHVAC_TerminalOnlySingleDuctZoneAttachmentFailure_R
   ASSERT_TRUE(originalTerminalInlet);
   ASSERT_TRUE(originalTerminalOutlet);
 
-  auto airLoopImpl = airLoop.getImpl<detail::AirLoopHVAC_Impl>();
-  ASSERT_TRUE(airLoopImpl);
-  EXPECT_FALSE(airLoopImpl->addBranchForZone(zone, detail::AirLoopHVAC_Impl::DemandBranchAttachmentFailureStage::AfterZonePrepared));
+  {
+    test::ScopedTestFailure failure(model, detail::TestFailurePoint::AirLoopAfterZonePrepared);
+    EXPECT_FALSE(airLoop.addBranchForZone(zone));
+  }
 
   EXPECT_EQ(*originalSplitterOutlet, *airLoop.zoneSplitter().outletModelObject(0u));
   EXPECT_EQ(*originalMixerInlet, *airLoop.zoneMixer().inletModelObject(0u));
@@ -2584,10 +2586,10 @@ TEST_F(EPModelFixture, AirLoopHVAC_CompoundCloneLast_PIUProjectsDistinctSecondar
   const auto originalSplitter = objectHandles(airLoop.zoneSplitter().outletModelObjects());
   const auto originalMixer = objectHandles(airLoop.zoneMixer().inletModelObjects());
   const auto originalPlant = objectHandles(plantLoop.demandComponents());
-  auto airLoopImpl = airLoop.getImpl<detail::AirLoopHVAC_Impl>();
-  ASSERT_TRUE(airLoopImpl);
-  EXPECT_FALSE(
-    airLoopImpl->addBranchForZone(zone2, detail::AirLoopHVAC_Impl::DemandBranchAttachmentFailureStage::AfterTerminalFirstZoneAttachmentPrepared));
+  {
+    test::ScopedTestFailure failure(model, detail::TestFailurePoint::AirLoopAfterTerminalFirstZoneAttachmentPrepared);
+    EXPECT_FALSE(airLoop.addBranchForZone(zone2));
+  }
   EXPECT_EQ(originalHandles, workspaceHandles(model));
   EXPECT_EQ(originalSplitter, objectHandles(airLoop.zoneSplitter().outletModelObjects()));
   EXPECT_EQ(originalMixer, objectHandles(airLoop.zoneMixer().inletModelObjects()));
@@ -2867,7 +2869,7 @@ TEST_F(EPModelFixture, AirLoopHVAC_CompoundCloneLast_VariableSpeedFanOwnsFanCoil
   EXPECT_EQ(1u, plantLoop.demandComponents(CoilHeatingWater::iddObjectType()).size());
 }
 
-TEST_F(EPModelFixture, AirLoopHVAC_CompoundCloneLast_FailureStagesRestoreExactTopologyAndRetry) {
+TEST_F(EPModelFixture, AirLoopHVAC_CompoundCloneLast_InjectedFailuresRestoreExactTopologyAndRetry) {
   Model model;
   AirLoopHVAC airLoop(model);
   PlantLoop plantLoop(model);
@@ -2878,19 +2880,19 @@ TEST_F(EPModelFixture, AirLoopHVAC_CompoundCloneLast_FailureStagesRestoreExactTo
   AirTerminalSingleDuctConstantVolumeReheat sourceTerminal(model, availability, sourceCoil);
   ASSERT_TRUE(airLoop.addBranchForZone(zone1, sourceTerminal));
   ASSERT_TRUE(plantLoop.addDemandBranchForComponent(sourceCoil));
-  auto airLoopImpl = airLoop.getImpl<detail::AirLoopHVAC_Impl>();
-  ASSERT_TRUE(airLoopImpl);
-
   const auto originalHandles = workspaceHandles(model);
   const auto originalSplitter = objectHandles(airLoop.zoneSplitter().outletModelObjects());
   const auto originalMixer = objectHandles(airLoop.zoneMixer().inletModelObjects());
   const auto originalPlant = objectHandles(plantLoop.demandComponents());
-  using FailureStage = detail::AirLoopHVAC_Impl::DemandBranchAttachmentFailureStage;
-  const std::vector<FailureStage> failureStages = {FailureStage::AfterTerminalClonePrepared, FailureStage::AfterPlantReconnectionPrepared,
-                                                   FailureStage::AfterReservationPrepared,   FailureStage::AfterZonePrepared,
-                                                   FailureStage::BeforeTerminalAttachment,   FailureStage::AfterTerminalFirstZoneAttachmentPrepared};
-  for (const auto failureStage : failureStages) {
-    EXPECT_FALSE(airLoopImpl->addBranchForZone(zone2, failureStage));
+  const std::vector<detail::TestFailurePoint> failurePoints = {
+    detail::TestFailurePoint::AirLoopAfterTerminalClonePrepared, detail::TestFailurePoint::AirLoopAfterPlantReconnectionPrepared,
+    detail::TestFailurePoint::AirLoopAfterBranchReservationPrepared, detail::TestFailurePoint::AirLoopAfterZonePrepared,
+    detail::TestFailurePoint::AirLoopBeforeTerminalAttachment, detail::TestFailurePoint::AirLoopAfterTerminalFirstZoneAttachmentPrepared};
+  for (const auto failurePoint : failurePoints) {
+    {
+      test::ScopedTestFailure failure(model, failurePoint);
+      EXPECT_FALSE(airLoop.addBranchForZone(zone2));
+    }
     EXPECT_EQ(originalHandles, workspaceHandles(model));
     EXPECT_EQ(originalSplitter, objectHandles(airLoop.zoneSplitter().outletModelObjects()));
     EXPECT_EQ(originalMixer, objectHandles(airLoop.zoneMixer().inletModelObjects()));
@@ -2920,10 +2922,10 @@ TEST_F(EPModelFixture, AirLoopHVAC_CompoundCloneLast_TwoLoopPartialPlantFailureU
   const auto originalHandles = workspaceHandles(model);
   const auto originalChilled = objectHandles(chilledLoop.demandComponents());
   const auto originalHot = objectHandles(hotLoop.demandComponents());
-  auto airLoopImpl = airLoop.getImpl<detail::AirLoopHVAC_Impl>();
-  ASSERT_TRUE(airLoopImpl);
-  EXPECT_FALSE(
-    airLoopImpl->addBranchForZone(zone2, detail::AirLoopHVAC_Impl::DemandBranchAttachmentFailureStage::AfterFirstPlantReconnectionPrepared));
+  {
+    test::ScopedTestFailure failure(model, detail::TestFailurePoint::AirLoopAfterFirstPlantReconnectionPrepared);
+    EXPECT_FALSE(airLoop.addBranchForZone(zone2));
+  }
   EXPECT_EQ(originalHandles, workspaceHandles(model));
   EXPECT_EQ(originalChilled, objectHandles(chilledLoop.demandComponents()));
   EXPECT_EQ(originalHot, objectHandles(hotLoop.demandComponents()));
@@ -3335,10 +3337,10 @@ TEST_F(EPModelFixture, AirLoopHVAC_DemandBranchAttachmentPlanFailurePreservesReu
   ASSERT_EQ(baselineSplitterOutlets, baselineMixerInlets);
   const auto defaultBranchHandle = baselineSplitterOutlets.front().handle();
 
-  auto airLoopImpl = airLoop.getImpl<detail::AirLoopHVAC_Impl>();
-  ASSERT_TRUE(airLoopImpl);
-  EXPECT_FALSE(
-    airLoopImpl->addBranchForHVACComponent(terminal, detail::AirLoopHVAC_Impl::DemandBranchAttachmentFailureStage::AfterReservationPrepared));
+  {
+    test::ScopedTestFailure failure(model, detail::TestFailurePoint::AirLoopAfterBranchReservationPrepared);
+    EXPECT_FALSE(airLoop.addBranchForHVACComponent(terminal));
+  }
 
   EXPECT_EQ(baselineSplitterOutlets, airLoop.zoneSplitter().outletModelObjects());
   EXPECT_EQ(baselineMixerInlets, airLoop.zoneMixer().inletModelObjects());
@@ -3360,10 +3362,10 @@ TEST_F(EPModelFixture, AirLoopHVAC_DemandBranchAttachmentPlanFailureRemovesCreat
   const auto reservedNodeName = airLoop.nameString() + " Demand Branch Node 2";
   ASSERT_FALSE(model.getConcreteModelObjectByName<Node>(reservedNodeName));
 
-  auto airLoopImpl = airLoop.getImpl<detail::AirLoopHVAC_Impl>();
-  ASSERT_TRUE(airLoopImpl);
-  EXPECT_FALSE(
-    airLoopImpl->addBranchForHVACComponent(terminal2, detail::AirLoopHVAC_Impl::DemandBranchAttachmentFailureStage::AfterReservationPrepared));
+  {
+    test::ScopedTestFailure failure(model, detail::TestFailurePoint::AirLoopAfterBranchReservationPrepared);
+    EXPECT_FALSE(airLoop.addBranchForHVACComponent(terminal2));
+  }
 
   EXPECT_EQ(baselineSplitterOutlets, airLoop.zoneSplitter().outletModelObjects());
   EXPECT_EQ(baselineMixerInlets, airLoop.zoneMixer().inletModelObjects());
@@ -3398,10 +3400,10 @@ TEST_F(EPModelFixture, AirLoopHVAC_AddBranchForZoneUsesIndependentRowsAfterShare
   ASSERT_EQ(2u, plenumOutletsBefore.size());
   const auto handlesBefore = workspaceHandles(model);
 
-  auto airLoopImpl = airLoop.getImpl<detail::AirLoopHVAC_Impl>();
-  ASSERT_TRUE(airLoopImpl);
-  EXPECT_FALSE(
-    airLoopImpl->addBranchForZone(thirdZone, thirdTerminal, detail::AirLoopHVAC_Impl::DemandBranchAttachmentFailureStage::AfterReservationPrepared));
+  {
+    test::ScopedTestFailure failure(model, detail::TestFailurePoint::AirLoopAfterBranchReservationPrepared);
+    EXPECT_FALSE(airLoop.addBranchForZone(thirdZone, thirdTerminal));
+  }
   EXPECT_EQ(handlesBefore, workspaceHandles(model));
   EXPECT_EQ(splitterBefore, objectHandles(airLoop.zoneSplitter().outletModelObjects()));
   EXPECT_EQ(mixerBefore, objectHandles(airLoop.zoneMixer().inletModelObjects()));
@@ -4137,10 +4139,10 @@ TEST_F(EPModelFixture, AirLoopHVAC_SupplyPlenumTerminalReplacementRollsBackAndRe
   const auto targetPlenumOrdinal = static_cast<std::size_t>(std::distance(supplyPlenumOutletsBefore.begin(), targetOutletIt));
   ASSERT_EQ(1u, targetPlenumOrdinal);
 
-  auto replacementImpl = replacement.getImpl<detail::AirTerminalSingleDuctConstantVolumeReheat_Impl>();
-  ASSERT_TRUE(replacementImpl);
-  EXPECT_FALSE(replacementImpl->addToNode(
-    targetZoneInlet, detail::AirTerminalSingleDuctConstantVolumeReheat_Impl::AddToNodeFailureStage::AfterADUUpdateBeforeZoneRegistration));
+  {
+    test::ScopedTestFailure failure(model, detail::TestFailurePoint::SingleDuctTerminalAfterAirDistributionUnitUpdate);
+    EXPECT_FALSE(replacement.addToNode(targetZoneInlet));
+  }
 
   EXPECT_EQ(handlesBefore, workspaceHandles(model));
   EXPECT_EQ(splitterBefore, objectHandles(airLoop.zoneSplitter().outletModelObjects()));
@@ -4205,10 +4207,10 @@ TEST_F(EPModelFixture, AirLoopHVAC_VAVSupplyPlenumTerminalReplacementRollsBackAn
   const auto targetPlenumOrdinal = static_cast<std::size_t>(std::distance(supplyPlenumOutletsBefore.begin(), targetOutletIt));
   ASSERT_EQ(1u, targetPlenumOrdinal);
 
-  auto replacementImpl = replacement.getImpl<detail::AirTerminalSingleDuctVAVHeatAndCoolReheat_Impl>();
-  ASSERT_TRUE(replacementImpl);
-  EXPECT_FALSE(replacementImpl->addToNode(
-    targetZoneInlet, detail::AirTerminalSingleDuctVAVHeatAndCoolReheat_Impl::AddToNodeFailureStage::AfterADUUpdateBeforeZoneRegistration));
+  {
+    test::ScopedTestFailure failure(model, detail::TestFailurePoint::SingleDuctTerminalAfterAirDistributionUnitUpdate);
+    EXPECT_FALSE(replacement.addToNode(targetZoneInlet));
+  }
 
   EXPECT_EQ(handlesBefore, workspaceHandles(model));
   EXPECT_EQ(splitterBefore, objectHandles(airLoop.zoneSplitter().outletModelObjects()));
@@ -4289,10 +4291,10 @@ TEST_F(EPModelFixture, AirLoopHVAC_VAVReheatSupplyPlenumTerminalReplacementRolls
   ASSERT_EQ(1u, splitterBefore.size());
   ASSERT_EQ(2u, supplyPlenumOutletsBefore.size());
 
-  auto replacementImpl = replacement.getImpl<detail::AirTerminalSingleDuctVAVReheat_Impl>();
-  ASSERT_TRUE(replacementImpl);
-  EXPECT_FALSE(
-    replacementImpl->addToNode(targetZoneInlet, detail::AirTerminalSingleDuctVAVReheat_Impl::AddToNodeFailureStage::AfterReheatCoilAirPathPrepared));
+  {
+    test::ScopedTestFailure failure(model, detail::TestFailurePoint::VAVReheatAfterCoilAirPathPrepared);
+    EXPECT_FALSE(replacement.addToNode(targetZoneInlet));
+  }
 
   EXPECT_EQ(handlesBefore, workspaceHandles(model));
   EXPECT_EQ(splitterBefore, objectHandles(airLoop.zoneSplitter().outletModelObjects()));
@@ -4374,10 +4376,10 @@ TEST_F(EPModelFixture, AirLoopHVAC_NoReheatSupplyPlenumTerminalReplacementRollsB
   ASSERT_EQ(1u, splitterBefore.size());
   ASSERT_EQ(2u, supplyPlenumOutletsBefore.size());
 
-  auto replacementImpl = replacement.getImpl<detail::AirTerminalSingleDuctConstantVolumeNoReheat_Impl>();
-  ASSERT_TRUE(replacementImpl);
-  EXPECT_FALSE(replacementImpl->addToNode(
-    targetZoneInlet, detail::AirTerminalSingleDuctConstantVolumeNoReheat_Impl::AddToNodeFailureStage::AfterADUUpdateBeforeZoneRegistration));
+  {
+    test::ScopedTestFailure failure(model, detail::TestFailurePoint::SingleDuctTerminalAfterAirDistributionUnitUpdate);
+    EXPECT_FALSE(replacement.addToNode(targetZoneInlet));
+  }
 
   EXPECT_EQ(handlesBefore, workspaceHandles(model));
   EXPECT_EQ(splitterBefore, objectHandles(airLoop.zoneSplitter().outletModelObjects()));
@@ -4445,10 +4447,10 @@ TEST_F(EPModelFixture, AirLoopHVAC_VAVNoReheatSupplyPlenumTerminalReplacementRol
   ASSERT_EQ(1u, splitterBefore.size());
   ASSERT_EQ(2u, supplyPlenumOutletsBefore.size());
 
-  auto replacementImpl = replacement.getImpl<detail::AirTerminalSingleDuctVAVNoReheat_Impl>();
-  ASSERT_TRUE(replacementImpl);
-  EXPECT_FALSE(replacementImpl->addToNode(
-    targetZoneInlet, detail::AirTerminalSingleDuctVAVNoReheat_Impl::AddToNodeFailureStage::AfterADUUpdateBeforeZoneRegistration));
+  {
+    test::ScopedTestFailure failure(model, detail::TestFailurePoint::SingleDuctTerminalAfterAirDistributionUnitUpdate);
+    EXPECT_FALSE(replacement.addToNode(targetZoneInlet));
+  }
 
   EXPECT_EQ(handlesBefore, workspaceHandles(model));
   EXPECT_EQ(splitterBefore, objectHandles(airLoop.zoneSplitter().outletModelObjects()));
@@ -4904,9 +4906,10 @@ TEST_F(EPModelFixture, AirLoopHVAC_TerminalOnlyBranchClaimsZoneAcrossChangeoverB
   ASSERT_TRUE(terminal.outletModelObject());
   const auto terminalOutlet = *terminal.outletModelObject();
 
-  auto airLoopImpl = airLoop.getImpl<detail::AirLoopHVAC_Impl>();
-  ASSERT_TRUE(airLoopImpl);
-  EXPECT_FALSE(airLoopImpl->addBranchForZone(zone, detail::AirLoopHVAC_Impl::DemandBranchAttachmentFailureStage::AfterZonePrepared));
+  {
+    test::ScopedTestFailure failure(model, detail::TestFailurePoint::AirLoopAfterZonePrepared);
+    EXPECT_FALSE(airLoop.addBranchForZone(zone));
+  }
   EXPECT_EQ(handlesBefore, workspaceHandles(model));
   EXPECT_EQ(splitterBefore, objectHandles(airLoop.zoneSplitter().outletModelObjects()));
   EXPECT_EQ(mixerBefore, objectHandles(zoneMixer.inletModelObjects()));
@@ -4978,9 +4981,10 @@ TEST_F(EPModelFixture, AirLoopHVAC_DemandBranchZonePreparationFailureRemovesNewZ
   const auto baselineConnectionCount = model.getConcreteModelObjects<ZoneHVACEquipmentConnections>().size();
   const auto baselineEquipmentListCount = model.getConcreteModelObjects<ZoneHVACEquipmentList>().size();
 
-  auto airLoopImpl = airLoop.getImpl<detail::AirLoopHVAC_Impl>();
-  ASSERT_TRUE(airLoopImpl);
-  EXPECT_FALSE(airLoopImpl->addBranchForZone(zone, detail::AirLoopHVAC_Impl::DemandBranchAttachmentFailureStage::AfterZonePrepared));
+  {
+    test::ScopedTestFailure failure(model, detail::TestFailurePoint::AirLoopAfterZonePrepared);
+    EXPECT_FALSE(airLoop.addBranchForZone(zone));
+  }
 
   EXPECT_EQ(baselineSplitterOutlets, airLoop.zoneSplitter().outletModelObjects());
   EXPECT_EQ(baselineMixerInlets, airLoop.zoneMixer().inletModelObjects());
@@ -5012,9 +5016,10 @@ TEST_F(EPModelFixture, AirLoopHVAC_CompositeDemandBranchPreparationFailurePreser
   const auto baselineMixerInlets = airLoop.zoneMixer().inletModelObjects();
   const auto baselineNodeHandles = nodeHandles(model);
 
-  auto airLoopImpl = airLoop.getImpl<detail::AirLoopHVAC_Impl>();
-  ASSERT_TRUE(airLoopImpl);
-  EXPECT_FALSE(airLoopImpl->addBranchForZone(zone, terminal, detail::AirLoopHVAC_Impl::DemandBranchAttachmentFailureStage::AfterZonePrepared));
+  {
+    test::ScopedTestFailure failure(model, detail::TestFailurePoint::AirLoopAfterZonePrepared);
+    EXPECT_FALSE(airLoop.addBranchForZone(zone, terminal));
+  }
 
   EXPECT_TRUE(model.getObject(connectionHandle));
   EXPECT_TRUE(model.getObject(equipmentListHandle));
@@ -5062,9 +5067,10 @@ TEST_F(EPModelFixture, AirLoopHVAC_DemandBranchZonePreparationFailurePreservesEx
   const auto returnTargetHandle = returnTarget->handle();
   const auto baselineNodeHandles = nodeHandles(model);
 
-  auto airLoopImpl = airLoop.getImpl<detail::AirLoopHVAC_Impl>();
-  ASSERT_TRUE(airLoopImpl);
-  EXPECT_FALSE(airLoopImpl->addBranchForZone(zone, detail::AirLoopHVAC_Impl::DemandBranchAttachmentFailureStage::AfterZonePrepared));
+  {
+    test::ScopedTestFailure failure(model, detail::TestFailurePoint::AirLoopAfterZonePrepared);
+    EXPECT_FALSE(airLoop.addBranchForZone(zone));
+  }
 
   EXPECT_EQ(baselineInletNodes, connections.zoneAirInletNodes());
   EXPECT_EQ(baselineReturnNodes, connections.zoneReturnAirNodes());
@@ -5098,9 +5104,10 @@ TEST_F(EPModelFixture, AirLoopHVAC_DemandBranchZonePreparationFailurePreservesUn
   ASSERT_FALSE(model.getConcreteModelObjectByName<Node>(unresolvedReturn));
   const auto baselineHandles = workspaceHandles(model);
 
-  auto airLoopImpl = airLoop.getImpl<detail::AirLoopHVAC_Impl>();
-  ASSERT_TRUE(airLoopImpl);
-  EXPECT_FALSE(airLoopImpl->addBranchForZone(zone, detail::AirLoopHVAC_Impl::DemandBranchAttachmentFailureStage::AfterZonePrepared));
+  {
+    test::ScopedTestFailure failure(model, detail::TestFailurePoint::AirLoopAfterZonePrepared);
+    EXPECT_FALSE(airLoop.addBranchForZone(zone));
+  }
 
   EXPECT_EQ(baselineHandles, workspaceHandles(model));
   EXPECT_FALSE(connections.getField(inletField, false));
@@ -5134,9 +5141,10 @@ TEST_F(EPModelFixture, AirLoopHVAC_CompositeDemandBranchBeforeStraightTerminalIn
   const auto baselineEquipmentListCount = model.getConcreteModelObjects<ZoneHVACEquipmentList>().size();
   const auto baselineAirDistributionUnitCount = model.getConcreteModelObjects<ZoneHVACAirDistributionUnit>().size();
 
-  auto airLoopImpl = airLoop.getImpl<detail::AirLoopHVAC_Impl>();
-  ASSERT_TRUE(airLoopImpl);
-  EXPECT_FALSE(airLoopImpl->addBranchForZone(zone, terminal, detail::AirLoopHVAC_Impl::DemandBranchAttachmentFailureStage::BeforeTerminalAttachment));
+  {
+    test::ScopedTestFailure failure(model, detail::TestFailurePoint::AirLoopBeforeTerminalAttachment);
+    EXPECT_FALSE(airLoop.addBranchForZone(zone, terminal));
+  }
 
   EXPECT_EQ(baselineSplitterOutlets, airLoop.zoneSplitter().outletModelObjects());
   EXPECT_EQ(baselineMixerInlets, airLoop.zoneMixer().inletModelObjects());
@@ -5167,10 +5175,10 @@ TEST_F(EPModelFixture, AirLoopHVAC_CompositeDualDuctTerminalPreparationFailureRe
   const auto baselineEquipmentListCount = model.getConcreteModelObjects<ZoneHVACEquipmentList>().size();
   const auto baselineAirDistributionUnitCount = model.getConcreteModelObjects<ZoneHVACAirDistributionUnit>().size();
 
-  auto airLoopImpl = airLoop.getImpl<detail::AirLoopHVAC_Impl>();
-  ASSERT_TRUE(airLoopImpl);
-  EXPECT_FALSE(
-    airLoopImpl->addBranchForZone(zone, terminal, detail::AirLoopHVAC_Impl::DemandBranchAttachmentFailureStage::AfterDualDuctTerminalPrepared));
+  {
+    test::ScopedTestFailure failure(model, detail::TestFailurePoint::AirLoopAfterDualDuctTerminalPrepared);
+    EXPECT_FALSE(airLoop.addBranchForZone(zone, terminal));
+  }
 
   EXPECT_EQ(baselineDemandInletNodes, airLoop.demandInletNodes());
   EXPECT_EQ(baselineSplitterOutlets, airLoop.zoneSplitter().outletModelObjects());

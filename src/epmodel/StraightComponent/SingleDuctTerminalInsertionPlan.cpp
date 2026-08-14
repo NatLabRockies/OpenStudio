@@ -4,6 +4,7 @@
 ***********************************************************************************************************************/
 
 #include "StraightComponent/SingleDuctTerminalInsertionPlan.hpp"
+#include "TestFailurePoint.hpp"
 
 #include "HVACComponent/ThermalZone.hpp"
 #include "HVACComponent/ThermalZone_Impl.hpp"
@@ -163,7 +164,7 @@ namespace epmodel {
       return terminalImpl->setPointer(fieldIndex, targetHandle, false);
     }
 
-    bool SingleDuctTerminalInsertionPlan::apply(bool failAfterAirDistributionUnitUpdate) {
+    bool SingleDuctTerminalInsertionPlan::apply() {
       if (m_applyAttempted) {
         return false;
       }
@@ -195,7 +196,7 @@ namespace epmodel {
         }
       }
 
-      if (failAfterAirDistributionUnitUpdate) {
+      if (testFailurePointReached(m_terminal.model(), TestFailurePoint::SingleDuctTerminalAfterAirDistributionUnitUpdate)) {
         return false;
       }
 

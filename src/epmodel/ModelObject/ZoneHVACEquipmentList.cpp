@@ -10,6 +10,7 @@
 #include "HVACComponent/ThermalZone_Impl.hpp"
 #include "Model.hpp"
 #include "ModelObject.hpp"
+#include "TestFailurePoint.hpp"
 #include "ModelObject/ZoneHVACAirDistributionUnit.hpp"
 #include "ModelObject/ZoneHVACAirDistributionUnit_Impl.hpp"
 #include "ModelObject/ZoneHVACEquipmentConnections.hpp"
@@ -625,18 +626,14 @@ namespace epmodel {
     }
 
     bool ZoneHVACEquipmentList_Impl::addEquipment(const openstudio::epmodel::ModelObject& component) {
-      return addEquipment(component, AddEquipmentFailureStage::None);
-    }
-
-    bool ZoneHVACEquipmentList_Impl::addEquipment(const openstudio::epmodel::ModelObject& component, AddEquipmentFailureStage failureStage) {
       auto registration = EquipmentRegistrationPlan::prepare(getObject<openstudio::epmodel::ZoneHVACEquipmentList>(), component);
-      if (!registration || failureStage == AddEquipmentFailureStage::AfterTargetPrepared) {
+      if (!registration || detail::testFailurePointReached(model(), detail::TestFailurePoint::ZoneEquipmentAfterTargetPrepared)) {
         return false;
       }
       if (!registration->alreadyRegistered() && !registration->addExtensibleRow()) {
         return false;
       }
-      if (failureStage == AddEquipmentFailureStage::AfterExtensibleRowAdded) {
+      if (detail::testFailurePointReached(model(), detail::TestFailurePoint::ZoneEquipmentAfterRowAdded)) {
         return false;
       }
       registration->commit();

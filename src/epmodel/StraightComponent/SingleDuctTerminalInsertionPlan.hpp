@@ -32,7 +32,7 @@ namespace epmodel {
       SingleDuctTerminalInsertionPlan& operator=(SingleDuctTerminalInsertionPlan&&) = delete;
       ~SingleDuctTerminalInsertionPlan();
 
-      bool apply(bool failAfterAirDistributionUnitUpdate = false);
+      bool apply();
       void commit();
 
      private:

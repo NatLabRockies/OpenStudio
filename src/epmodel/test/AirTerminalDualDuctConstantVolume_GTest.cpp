@@ -8,6 +8,7 @@
 #include <algorithm>
 
 #include "EPModelFixture.hpp"
+#include "ScopedTestFailure.hpp"
 #include "../Loop/AirLoopHVAC.hpp"
 #include "../Loop/AirLoopHVAC_Impl.hpp"
 #include "../Mixer/AirTerminalDualDuctConstantVolume.hpp"
@@ -192,9 +193,10 @@ TEST_F(EPModelFixture, AirTerminalDualDuctConstantVolume_TerminalFirstZoneAttach
   const auto returnNodeName = zone.nameString() + " Demand Return Node";
   ASSERT_FALSE(model.getConcreteModelObjectByName<Node>(returnNodeName));
 
-  auto airLoopImpl = airLoop.getImpl<detail::AirLoopHVAC_Impl>();
-  ASSERT_TRUE(airLoopImpl);
-  EXPECT_FALSE(airLoopImpl->addBranchForZone(zone, detail::AirLoopHVAC_Impl::DualDuctZoneAttachmentFailureStage::AfterProvisionalObjectsPrepared));
+  {
+    test::ScopedTestFailure failure(model, detail::TestFailurePoint::AirLoopAfterDualDuctZoneObjectsPrepared);
+    EXPECT_FALSE(airLoop.addBranchForZone(zone));
+  }
 
   EXPECT_TRUE(zone.useIdealAirLoads());
   EXPECT_TRUE(airLoop.thermalZones().empty());
@@ -238,9 +240,10 @@ TEST_F(EPModelFixture, AirTerminalDualDuctConstantVolume_TerminalFirstZoneAttach
   ASSERT_TRUE(aduImpl->setOutletNode(originalADUOutlet));
 
   auto connections = zone.getImpl<detail::ThermalZone_Impl>()->getZoneHVACEquipmentConnections();
-  auto airLoopImpl = airLoop.getImpl<detail::AirLoopHVAC_Impl>();
-  ASSERT_TRUE(airLoopImpl);
-  EXPECT_FALSE(airLoopImpl->addBranchForZone(zone, detail::AirLoopHVAC_Impl::DualDuctZoneAttachmentFailureStage::AfterProvisionalObjectsPrepared));
+  {
+    test::ScopedTestFailure failure(model, detail::TestFailurePoint::AirLoopAfterDualDuctZoneObjectsPrepared);
+    EXPECT_FALSE(airLoop.addBranchForZone(zone));
+  }
 
   EXPECT_TRUE(model.getObject(existingReturnNode.handle()));
   EXPECT_TRUE(model.getObject(adu.handle()));
@@ -271,9 +274,10 @@ TEST_F(EPModelFixture, AirTerminalDualDuctConstantVolume_TerminalFirstZoneAttach
   ASSERT_FALSE(model.getConcreteModelObjectByName<Node>(zoneAirNodeName));
   ASSERT_FALSE(model.getConcreteModelObjectByName<Node>(returnNodeName));
 
-  auto airLoopImpl = airLoop.getImpl<detail::AirLoopHVAC_Impl>();
-  ASSERT_TRUE(airLoopImpl);
-  EXPECT_FALSE(airLoopImpl->addBranchForZone(zone, detail::AirLoopHVAC_Impl::DualDuctZoneAttachmentFailureStage::AfterProvisionalObjectsPrepared));
+  {
+    test::ScopedTestFailure failure(model, detail::TestFailurePoint::AirLoopAfterDualDuctZoneObjectsPrepared);
+    EXPECT_FALSE(airLoop.addBranchForZone(zone));
+  }
 
   EXPECT_FALSE(zoneImpl->zoneHVACEquipmentConnections());
   EXPECT_EQ(baselineConnectionCount, model.getConcreteModelObjects<ZoneHVACEquipmentConnections>().size());
@@ -297,9 +301,10 @@ TEST_F(EPModelFixture, AirTerminalDualDuctConstantVolume_TerminalFirstZoneAttach
   ASSERT_TRUE(zoneImpl);
   ASSERT_FALSE(zoneImpl->zoneHVACEquipmentConnections());
 
-  auto airLoopImpl = airLoop.getImpl<detail::AirLoopHVAC_Impl>();
-  ASSERT_TRUE(airLoopImpl);
-  EXPECT_FALSE(airLoopImpl->addBranchForZone(zone, detail::AirLoopHVAC_Impl::DualDuctZoneAttachmentFailureStage::AfterProvisionalObjectsPrepared));
+  {
+    test::ScopedTestFailure failure(model, detail::TestFailurePoint::AirLoopAfterDualDuctZoneObjectsPrepared);
+    EXPECT_FALSE(airLoop.addBranchForZone(zone));
+  }
 
   EXPECT_TRUE(model.getObject(existingZoneAirNode.handle()));
   EXPECT_FALSE(zoneImpl->zoneHVACEquipmentConnections());

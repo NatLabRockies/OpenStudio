@@ -6,6 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
+#include "ScopedTestFailure.hpp"
 #include "../HVACComponent/ThermalZone.hpp"
 #include "../Loop/AirLoopHVAC.hpp"
 #include "../Mixer/AirLoopHVACZoneMixer.hpp"
@@ -150,10 +151,10 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctUserDefined_AddToNode_RollsBackLateF
   auto zoneAirNode = zone.zoneAirNode();
   const auto nodeCountBefore = model.getConcreteModelObjects<Node>().size();
 
-  auto terminalImpl = terminal.getImpl<detail::AirTerminalSingleDuctUserDefined_Impl>();
-  ASSERT_TRUE(terminalImpl);
-  EXPECT_FALSE(
-    terminalImpl->addToNode(zoneAirNode, detail::AirTerminalSingleDuctUserDefined_Impl::AddToNodeFailureStage::AfterADUUpdateBeforeZoneRegistration));
+  {
+    test::ScopedTestFailure failure(model, detail::TestFailurePoint::SingleDuctTerminalAfterAirDistributionUnitUpdate);
+    EXPECT_FALSE(terminal.addToNode(zoneAirNode));
+  }
 
   auto splitterOutlet = airLoop.zoneSplitter().outletModelObject(0u);
   ASSERT_TRUE(splitterOutlet);

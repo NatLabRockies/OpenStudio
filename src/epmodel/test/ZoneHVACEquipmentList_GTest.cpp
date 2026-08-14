@@ -7,13 +7,14 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
+#include "ScopedTestFailure.hpp"
+#include "../TestFailurePoint.hpp"
 #include "../HVACComponent/ThermalZone.hpp"
 #include "../HVACComponent/ThermalZone_Impl.hpp"
 #include "../ModelObject/ZoneHVACAirDistributionUnit.hpp"
 #include "../ModelObject/ZoneHVACAirDistributionUnit_Impl.hpp"
 #include "../ModelObject/ZoneHVACEquipmentConnections.hpp"
 #include "../ModelObject/ZoneHVACEquipmentList.hpp"
-#include "../ModelObject/ZoneHVACEquipmentList_Impl.hpp"
 #include "../Schedule/Schedule.hpp"
 #include "../Schedule/Schedule_Impl.hpp"
 #include "../Schedule/ScheduleConstant.hpp"
@@ -81,11 +82,10 @@ TEST_F(EPModelFixture, ZoneHVACEquipmentList_AddEquipmentTransaction_RemovesCrea
   Node outletNode(model);
   ASSERT_TRUE(terminal.setPointer(terminal.outletPort(), outletNode.handle()));
 
-  auto equipmentListImpl = equipmentList.getImpl<detail::ZoneHVACEquipmentList_Impl>();
-  ASSERT_TRUE(equipmentListImpl);
-  for (const auto failureStage : {detail::ZoneHVACEquipmentList_Impl::AddEquipmentFailureStage::AfterTargetPrepared,
-                                  detail::ZoneHVACEquipmentList_Impl::AddEquipmentFailureStage::AfterExtensibleRowAdded}) {
-    EXPECT_FALSE(equipmentListImpl->addEquipment(terminal.cast<ModelObject>(), failureStage));
+  for (const auto failurePoint : {detail::TestFailurePoint::ZoneEquipmentAfterTargetPrepared,
+                                  detail::TestFailurePoint::ZoneEquipmentAfterRowAdded}) {
+    test::ScopedTestFailure failure(model, failurePoint);
+    EXPECT_FALSE(equipmentList.addEquipment(terminal.cast<ModelObject>()));
     EXPECT_TRUE(equipmentList.extensibleGroups().empty());
     EXPECT_TRUE(equipmentList.equipment().empty());
     EXPECT_TRUE(terminal.getSources(openstudio::IddObjectType::ZoneHVAC_AirDistributionUnit).empty());
@@ -115,10 +115,10 @@ TEST_F(EPModelFixture, ZoneHVACEquipmentList_AddEquipmentTransaction_RestoresSta
   ASSERT_TRUE(aduImpl->setAirTerminal(terminal.cast<ModelObject>()));
   ASSERT_TRUE(aduImpl->setOutletNode(staleOutletNode));
 
-  auto equipmentListImpl = equipmentList.getImpl<detail::ZoneHVACEquipmentList_Impl>();
-  ASSERT_TRUE(equipmentListImpl);
-  EXPECT_FALSE(equipmentListImpl->addEquipment(terminal.cast<ModelObject>(),
-                                               detail::ZoneHVACEquipmentList_Impl::AddEquipmentFailureStage::AfterExtensibleRowAdded));
+  {
+    test::ScopedTestFailure failure(model, detail::TestFailurePoint::ZoneEquipmentAfterRowAdded);
+    EXPECT_FALSE(equipmentList.addEquipment(terminal.cast<ModelObject>()));
+  }
   EXPECT_TRUE(equipmentList.extensibleGroups().empty());
   EXPECT_TRUE(equipmentList.equipment().empty());
   ASSERT_TRUE(adu.outletNode());

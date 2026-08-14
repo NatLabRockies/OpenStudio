@@ -5,6 +5,7 @@
 
 #include "StraightComponent/AirTerminalSingleDuctConstantVolumeFourPipeInduction.hpp"
 #include "StraightComponent/AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl.hpp"
+#include "TestFailurePoint.hpp"
 #include "StraightComponent/CompoundTerminalTopologyInspection.hpp"
 #include "StraightComponent/SingleDuctTerminalRemovalPlan.hpp"
 
@@ -1504,10 +1505,6 @@ namespace epmodel {
     }
 
     bool AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl::addToNode(Node& node) {
-      return addToNode(node, AddToNodeFailureStage::None);
-    }
-
-    bool AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl::addToNode(Node& node, AddToNodeFailureStage failureStage) {
       if (node.model() != model()) {
         LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctConstantVolumeFourPipeInduction",
                  "addToNode requires a node in the same model as the four-pipe induction terminal.");
@@ -1664,7 +1661,7 @@ namespace epmodel {
         terminalRegistered = !terminalWasRegistered;
       }
 
-      if (failureStage == AddToNodeFailureStage::AfterTopologyPrepared) {
+      if (testFailurePointReached(model(), TestFailurePoint::FourPipeInductionAfterTopologyPrepared)) {
         return rollback();
       }
       if (!maintainContainedAirPath()) {

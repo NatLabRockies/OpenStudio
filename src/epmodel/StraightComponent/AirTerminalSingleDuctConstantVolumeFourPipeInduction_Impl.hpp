@@ -20,19 +20,12 @@ namespace epmodel {
     class EPMODEL_API AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl : public StraightComponent_Impl
     {
      public:
-      enum class AddToNodeFailureStage
-      {
-        None,
-        AfterTopologyPrepared,
-      };
-
       using StraightComponent_Impl::StraightComponent_Impl;
       virtual ~AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl() override = default;
 
       unsigned inletPort() const override;
       unsigned outletPort() const override;
       bool addToNode(Node& node) override;
-      bool addToNode(Node& node, AddToNodeFailureStage failureStage);
       std::vector<ModelObject> children() const override;
       bool isRemovable() const override;
       std::vector<openstudio::IdfObject> remove() override;
