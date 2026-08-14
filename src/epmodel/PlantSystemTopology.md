@@ -129,10 +129,13 @@ The transactional branch evidence is deliberately exact rather than generic:
   connection after load, source, and heat-recovery owners make that role
   unambiguous. The load and heat-recovery paths, companion graph, curves,
   settings, `WaterSource` state, and staged initial-attachment behavior remain
-  unchanged. Exact direct source-branch removal and whole moved-source-loop
-  removal both retain the load and heat-recovery paths, return the heat pump to
-  `AirSource`, and allow source reattachment. Direct heat-recovery removal keeps
-  the source path and `WaterSource` state unchanged.
+  unchanged. Their heat-recovery connection can likewise move through the
+  explicit tertiary operation while retaining the load and source paths.
+  Exact direct source-branch removal and whole moved-source-loop removal both
+  retain the load and heat-recovery paths, return the heat pump to `AirSource`,
+  and allow source reattachment. Direct heat-recovery removal keeps the source
+  path and `WaterSource` state unchanged. Both relocation roles have exact
+  rejection, rollback, retry, branch-shape, and reload evidence.
 
 The representative C++ hot-water, chilled-water, and condenser-water vertical
 slice covers construction, typed `SizingPlant` loop types, equipment and
@@ -182,18 +185,31 @@ tests, translator coverage, and the configured EnergyPlus IDD when assessing a
 specific gap. Do not infer maturity from registration, matching class names,
 or the presence of a scalar test.
 
-## Ordered plant roadmap
+## Recommended stopping point
 
-1. **Heat-recovery movement and remaining multi-loop families.** Make exact
-   PlantLoop EIR heat-recovery movement transactional through the explicit
-   tertiary operation while retaining its load and source owners. Then treat
-   other families, branch replacement, standalone clone/remove, and cross-model
-   transfer as separately proven operations.
-2. **Additional contained owners.** Apply the private relocation boundary to
+The representative plant effort has reached its intended broad-core milestone:
+canonical loop infrastructure and lifecycle, transactional branch editing, and
+several materially different one-, two-, and three-loop component families are
+covered through failure, retry, and save/load. Further work is primarily
+family-specific depth rather than a prerequisite for using or extending the
+plant model. Treat the following items as demand-driven follow-up, not as an
+active completion checklist.
+
+## Deferred plant roadmap
+
+1. **Remaining family-specific topology.** Add another component family only
+   for a concrete use case, with its roles and ownership proven exactly. Broad
+   branch replacement and generic `WaterToWaterComponent` behavior should not
+   be inferred from the delivered exact families.
+2. **Standalone lifecycle and transfer depth.** Address selected standalone
+   clone/remove behavior, unusual malformed imports, and cross-model transfer
+   independently. For example, standalone chilled-water storage removal still
+   needs an atomic storage-and-sizing-child ownership contract.
+3. **Additional contained owners.** Apply the private relocation boundary to
    another selected compound owner only after its child roles, internal air or
    zone path, controller behavior, and removal lifetime have exact rejection,
    rollback, reload, and post-load mutation evidence.
-3. **Language and numerical expansion.** Extend Ruby/Python coverage and
+4. **Language and numerical expansion.** Extend Ruby/Python coverage and
    EnergyPlus/numerical comparison workflows beyond the delivered
    OpenStudio-resources slice. Add broader parity matrices and SQL/autosizing
    evidence only as concrete use cases require them; keep unusual malformed

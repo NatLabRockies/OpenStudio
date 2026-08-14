@@ -1107,6 +1107,28 @@ namespace epmodel {
                              {validatedPrimaryRow, validatedHeatRecoveryRow});
       }
 
+      static std::unique_ptr<DemandBranchRelocationPlan>
+        preparePlantLoopEIRHeatingHeatRecovery(PlantLoop_Impl& targetLoopImpl, HeatPumpPlantLoopEIRHeating heatPump, PlantLoop sourceLoop,
+                                               const ExternalRow& validatedPrimaryRow, const ExternalRow& validatedSourceRow) {
+        if (heatPump.iddObject().type() != HeatPumpPlantLoopEIRHeating::iddObjectType()) {
+          return nullptr;
+        }
+        return prepareProven(targetLoopImpl, heatPump.cast<HVACComponent>(), std::move(sourceLoop),
+                             openstudio::HeatPump_PlantLoop_EIR_HeatingFields::HeatRecoveryInletNodeName,
+                             openstudio::HeatPump_PlantLoop_EIR_HeatingFields::HeatRecoveryOutletNodeName, {validatedPrimaryRow, validatedSourceRow});
+      }
+
+      static std::unique_ptr<DemandBranchRelocationPlan>
+        preparePlantLoopEIRCoolingHeatRecovery(PlantLoop_Impl& targetLoopImpl, HeatPumpPlantLoopEIRCooling heatPump, PlantLoop sourceLoop,
+                                               const ExternalRow& validatedPrimaryRow, const ExternalRow& validatedSourceRow) {
+        if (heatPump.iddObject().type() != HeatPumpPlantLoopEIRCooling::iddObjectType()) {
+          return nullptr;
+        }
+        return prepareProven(targetLoopImpl, heatPump.cast<HVACComponent>(), std::move(sourceLoop),
+                             openstudio::HeatPump_PlantLoop_EIR_CoolingFields::HeatRecoveryInletNodeName,
+                             openstudio::HeatPump_PlantLoop_EIR_CoolingFields::HeatRecoveryOutletNodeName, {validatedPrimaryRow, validatedSourceRow});
+      }
+
       static std::unique_ptr<DemandBranchRelocationPlan> prepareThermalStorageChilledWaterStratified(PlantLoop_Impl& targetLoopImpl,
                                                                                                      ThermalStorageChilledWaterStratified storage,
                                                                                                      PlantLoop sourceLoop,
@@ -2041,51 +2063,11 @@ namespace epmodel {
       bool m_committed = false;
     };
 
-    // Exact PlantLoop EIR heating/cooling source-side moves retain their
-    // proven load and heat-recovery owners. The classifier preserves the
-    // existing staged attachment sequence and claims every malformed or fully
-    // three-owned representation before generic WaterToWater mutation.
-    class PlantLoop_Impl::PlantLoopEIRHeatPumpSourceDemandBranchAttachmentPlan : private PlantLoop_Impl::ExactPlantBranchTopologyInspection
+    // Role-neutral observational proof shared by the exact PlantLoop EIR
+    // SourceSide relocation/removal and HeatRecovery relocation plans.
+    class PlantLoop_Impl::PlantLoopEIRHeatPumpTopologyInspection : private PlantLoop_Impl::ExactPlantBranchTopologyInspection
     {
      public:
-      static bool requiresExactAttachmentDispatch(const HeatPumpPlantLoopEIRHeating& heatPump) {
-        return requiresExactAttachmentDispatch(heatPump.cast<HVACComponent>(), heatingDescriptor());
-      }
-
-      static bool requiresExactAttachmentDispatch(const HeatPumpPlantLoopEIRCooling& heatPump) {
-        return requiresExactAttachmentDispatch(heatPump.cast<HVACComponent>(), coolingDescriptor());
-      }
-
-      static std::unique_ptr<PlantLoopEIRHeatPumpSourceDemandBranchAttachmentPlan> prepare(PlantLoop_Impl& targetLoopImpl,
-                                                                                           HeatPumpPlantLoopEIRHeating heatPump) {
-        return prepareProven(targetLoopImpl, heatPump.cast<HVACComponent>(), heatingDescriptor());
-      }
-
-      static std::unique_ptr<PlantLoopEIRHeatPumpSourceDemandBranchAttachmentPlan> prepare(PlantLoop_Impl& targetLoopImpl,
-                                                                                           HeatPumpPlantLoopEIRCooling heatPump) {
-        return prepareProven(targetLoopImpl, heatPump.cast<HVACComponent>(), coolingDescriptor());
-      }
-
-      PlantLoopEIRHeatPumpSourceDemandBranchAttachmentPlan(const PlantLoopEIRHeatPumpSourceDemandBranchAttachmentPlan&) = delete;
-      PlantLoopEIRHeatPumpSourceDemandBranchAttachmentPlan& operator=(const PlantLoopEIRHeatPumpSourceDemandBranchAttachmentPlan&) = delete;
-      PlantLoopEIRHeatPumpSourceDemandBranchAttachmentPlan(PlantLoopEIRHeatPumpSourceDemandBranchAttachmentPlan&&) = delete;
-      PlantLoopEIRHeatPumpSourceDemandBranchAttachmentPlan& operator=(PlantLoopEIRHeatPumpSourceDemandBranchAttachmentPlan&&) = delete;
-      ~PlantLoopEIRHeatPumpSourceDemandBranchAttachmentPlan() = default;
-
-      void commit() {
-        OS_ASSERT(m_plantRelocation && !m_committed);
-        const auto primarySetpoint = m_primaryOwner.getModelObjectTarget<Node>(openstudio::PlantLoopFields::LoopTemperatureSetpointNodeName);
-        const auto heatRecoverySetpoint =
-          m_heatRecoveryOwner.getModelObjectTarget<Node>(openstudio::PlantLoopFields::LoopTemperatureSetpointNodeName);
-        OS_ASSERT(primarySetpoint && *primarySetpoint == m_primarySetpointTarget);
-        OS_ASSERT(heatRecoverySetpoint && *heatRecoverySetpoint == m_heatRecoverySetpointTarget);
-        m_plantRelocation->commit();
-        m_committed = true;
-      }
-
-     private:
-      friend class PlantLoop_Impl::PlantLoopEIRHeatPumpSourceDemandBranchRemovalPlan;
-
       struct Descriptor
       {
         IddObjectType componentType;
@@ -2106,6 +2088,16 @@ namespace epmodel {
         BranchList branchList;
         PlantLoop plantLoop;
         ObservedPlantSideTopology topology;
+      };
+
+      struct ProvenFullyOwnedTopology
+      {
+        ProvenOccurrenceOwner primary;
+        ProvenOccurrenceOwner source;
+        ProvenOccurrenceOwner heatRecovery;
+        BranchOccurrence primaryOccurrence;
+        BranchOccurrence sourceOccurrence;
+        BranchOccurrence heatRecoveryOccurrence;
       };
 
       static Descriptor heatingDescriptor() {
@@ -2141,14 +2133,6 @@ namespace epmodel {
         OS_ASSERT(workspaceImpl);
         const auto raw = workspaceImpl->openstudio::detail::IdfObject_Impl::getString(descriptor.condenserTypeField, false, true);
         return raw && openstudio::istringEqual(*raw, expected);
-      }
-
-      static bool inboundCompanionEvidenceIsExact(const HVACComponent& heatPump, const ModelObject& candidate, unsigned companionField) {
-        if (!referencesObject(candidate, companionField, heatPump)) {
-          return true;
-        }
-        const auto inboundTarget = exactObjectField(candidate, companionField);
-        return inboundTarget && inboundTarget->handle() == heatPump.handle() && hasUniqueName(candidate);
       }
 
       static bool companionEvidenceIsExact(const HVACComponent& heatPump, const Descriptor& descriptor) {
@@ -2274,11 +2258,10 @@ namespace epmodel {
         return !isCanonicalFallthroughAttachment(heatPump, descriptor);
       }
 
-      static std::unique_ptr<PlantLoopEIRHeatPumpSourceDemandBranchAttachmentPlan>
-        prepareProven(PlantLoop_Impl& targetLoopImpl, HVACComponent heatPump, const Descriptor& descriptor) {
-        if (heatPump.iddObject().type() != descriptor.componentType || heatPump.model() != targetLoopImpl.model() || !hasUniqueName(heatPump)
-            || !companionEvidenceIsExact(heatPump, descriptor) || !persistedCondenserTypeIs(heatPump, descriptor, "WaterSource")) {
-          return nullptr;
+      static boost::optional<ProvenFullyOwnedTopology> inspectFullyOwned(const HVACComponent& heatPump, const Descriptor& descriptor) {
+        if (heatPump.iddObject().type() != descriptor.componentType || !hasUniqueName(heatPump) || !companionEvidenceIsExact(heatPump, descriptor)
+            || !persistedCondenserTypeIs(heatPump, descriptor, "WaterSource") || !hasAllOwnershipFieldEvidence(heatPump, descriptor)) {
+          return boost::none;
         }
 
         const auto loadInlet = exactNodeField(heatPump, descriptor.loadInletPort);
@@ -2288,83 +2271,252 @@ namespace epmodel {
         const auto heatRecoveryInlet = exactNodeField(heatPump, descriptor.heatRecoveryInletPort);
         const auto heatRecoveryOutlet = exactNodeField(heatPump, descriptor.heatRecoveryOutletPort);
         if (!loadInlet || !loadOutlet || !sourceInlet || !sourceOutlet || !heatRecoveryInlet || !heatRecoveryOutlet) {
-          return nullptr;
+          return boost::none;
         }
 
         const std::array<Node, 6> ports{*loadInlet, *loadOutlet, *sourceInlet, *sourceOutlet, *heatRecoveryInlet, *heatRecoveryOutlet};
         std::set<Handle> portHandles;
         for (const auto& port : ports) {
           if (!hasUniqueName(port) || !portHandles.insert(port.handle()).second) {
-            return nullptr;
+            return boost::none;
           }
         }
 
         std::vector<BranchOccurrence> occurrences;
         if (!collectOccurrences(heatPump, occurrences) || occurrences.size() != 3u) {
-          return nullptr;
+          return boost::none;
         }
         boost::optional<BranchOccurrence> primaryOccurrence;
         boost::optional<BranchOccurrence> sourceOccurrence;
         boost::optional<BranchOccurrence> heatRecoveryOccurrence;
         for (const auto& occurrence : occurrences) {
           if (occurrence.branch.extensibleGroups().size() != 1u || !hasUniqueName(occurrence.branch)) {
-            return nullptr;
+            return boost::none;
           }
           if (occurrence.inlet == *loadInlet && occurrence.outlet == *loadOutlet) {
             if (primaryOccurrence) {
-              return nullptr;
+              return boost::none;
             }
             primaryOccurrence = occurrence;
           } else if (occurrence.inlet == *sourceInlet && occurrence.outlet == *sourceOutlet) {
             if (sourceOccurrence) {
-              return nullptr;
+              return boost::none;
             }
             sourceOccurrence = occurrence;
           } else if (occurrence.inlet == *heatRecoveryInlet && occurrence.outlet == *heatRecoveryOutlet) {
             if (heatRecoveryOccurrence) {
-              return nullptr;
+              return boost::none;
             }
             heatRecoveryOccurrence = occurrence;
           } else {
-            return nullptr;
+            return boost::none;
           }
         }
         if (!primaryOccurrence || !sourceOccurrence || !heatRecoveryOccurrence) {
-          return nullptr;
+          return boost::none;
         }
 
-        const auto primaryOwner = provenOwnerForOccurrence(*primaryOccurrence, true, true);
-        const auto sourceOwner = provenOwnerForOccurrence(*sourceOccurrence, false, false);
-        const auto heatRecoveryOwner = provenOwnerForOccurrence(*heatRecoveryOccurrence, false, false);
-        if (!primaryOwner || !sourceOwner || !heatRecoveryOwner || primaryOwner->branchList == sourceOwner->branchList
-            || primaryOwner->branchList == heatRecoveryOwner->branchList || sourceOwner->branchList == heatRecoveryOwner->branchList
-            || primaryOwner->plantLoop == sourceOwner->plantLoop || primaryOwner->plantLoop == heatRecoveryOwner->plantLoop
-            || sourceOwner->plantLoop == heatRecoveryOwner->plantLoop) {
-          return nullptr;
+        const auto primary = provenOwnerForOccurrence(*primaryOccurrence, true, true);
+        const auto source = provenOwnerForOccurrence(*sourceOccurrence, false, false);
+        const auto heatRecovery = provenOwnerForOccurrence(*heatRecoveryOccurrence, false, false);
+        if (!primary || !source || !heatRecovery || primary->branchList == source->branchList || primary->branchList == heatRecovery->branchList
+            || source->branchList == heatRecovery->branchList || primary->plantLoop == source->plantLoop
+            || primary->plantLoop == heatRecovery->plantLoop || source->plantLoop == heatRecovery->plantLoop) {
+          return boost::none;
         }
+        return ProvenFullyOwnedTopology{*primary, *source, *heatRecovery, *primaryOccurrence, *sourceOccurrence, *heatRecoveryOccurrence};
+      }
 
+      static bool receiverDemandSideReferencesComponent(PlantLoop_Impl& receiver, const HVACComponent& component) {
+        const auto receiverLoop = receiver.getObject<PlantLoop>();
+        const auto branches = receiver.model().getConcreteModelObjects<Branch>();
+        const auto demandBranchListField = openstudio::PlantLoopFields::DemandSideBranchListName;
+        for (const auto& branch : branches) {
+          if (referencesObject(receiverLoop, demandBranchListField, branch) && branchReferencesComponent(branch, component)) {
+            return true;
+          }
+        }
+        for (const auto& branchList : receiver.model().getConcreteModelObjects<BranchList>()) {
+          if (!referencesObject(receiverLoop, demandBranchListField, branchList)) {
+            continue;
+          }
+          for (unsigned row = 0u; row < branchList.extensibleGroups().size(); ++row) {
+            const auto branchField =
+              branchList.iddObject().index(openstudio::ExtensibleIndex(row, openstudio::BranchListExtensibleFields::BranchName));
+            for (const auto& branch : branches) {
+              if (referencesObject(branchList, branchField, branch) && branchReferencesComponent(branch, component)) {
+                return true;
+              }
+            }
+          }
+        }
+        return false;
+      }
+
+      static bool hasHeatRecoveryPortOrRowEvidence(const HVACComponent& heatPump, const Descriptor& descriptor) {
+        if (fieldHasEvidence(heatPump, descriptor.heatRecoveryInletPort) || fieldHasEvidence(heatPump, descriptor.heatRecoveryOutletPort)) {
+          return true;
+        }
+        std::vector<BranchOccurrence> occurrences;
+        if (!collectOccurrences(heatPump, occurrences)) {
+          return true;
+        }
+        const auto loadInlet = exactNodeField(heatPump, descriptor.loadInletPort);
+        const auto loadOutlet = exactNodeField(heatPump, descriptor.loadOutletPort);
+        const auto sourceInlet = exactNodeField(heatPump, descriptor.sourceInletPort);
+        const auto sourceOutlet = exactNodeField(heatPump, descriptor.sourceOutletPort);
+        return std::ranges::any_of(occurrences, [&](const auto& occurrence) {
+          const bool loadRow = loadInlet && loadOutlet && occurrence.inlet == *loadInlet && occurrence.outlet == *loadOutlet;
+          const bool sourceRow = sourceInlet && sourceOutlet && occurrence.inlet == *sourceInlet && occurrence.outlet == *sourceOutlet;
+          return !loadRow && !sourceRow;
+        });
+      }
+
+      static bool targetIsObservedOwner(PlantLoop_Impl& targetLoopImpl, const HVACComponent& heatPump) {
+        if (heatPump.model() != targetLoopImpl.model()) {
+          return false;
+        }
         const auto targetLoop = targetLoopImpl.getObject<PlantLoop>();
-        if (targetLoop == primaryOwner->plantLoop || targetLoop == sourceOwner->plantLoop || targetLoop == heatRecoveryOwner->plantLoop
-            || !observedPlantSideTopology(targetLoop, false)) {
+        std::vector<BranchOccurrence> occurrences;
+        if (!collectOccurrences(heatPump, occurrences)) {
+          return false;
+        }
+        for (const auto& occurrence : occurrences) {
+          const auto branchList = uniqueBranchListForBranch(heatPump.model(), occurrence.branch);
+          if (!branchList) {
+            continue;
+          }
+          for (const bool supplySide : {true, false}) {
+            const auto owner = uniquePlantLoopForBranchList(heatPump.model(), *branchList, supplySide);
+            if (owner && *owner == targetLoop) {
+              return true;
+            }
+          }
+        }
+        return false;
+      }
+
+      static bool targetDemandTopologyIsCanonical(const PlantLoop& targetLoop) {
+        return static_cast<bool>(observedPlantSideTopology(targetLoop, false));
+      }
+
+     private:
+      static bool inboundCompanionEvidenceIsExact(const HVACComponent& heatPump, const ModelObject& candidate, unsigned companionField) {
+        if (!referencesObject(candidate, companionField, heatPump)) {
+          return true;
+        }
+        const auto inboundTarget = exactObjectField(candidate, companionField);
+        return inboundTarget && inboundTarget->handle() == heatPump.handle() && hasUniqueName(candidate);
+      }
+
+      static bool hasAllOwnershipFieldEvidence(const HVACComponent& heatPump, const Descriptor& descriptor) {
+        return fieldHasEvidence(heatPump, descriptor.loadInletPort) && fieldHasEvidence(heatPump, descriptor.loadOutletPort)
+               && fieldHasEvidence(heatPump, descriptor.sourceInletPort) && fieldHasEvidence(heatPump, descriptor.sourceOutletPort)
+               && fieldHasEvidence(heatPump, descriptor.heatRecoveryInletPort) && fieldHasEvidence(heatPump, descriptor.heatRecoveryOutletPort);
+      }
+
+      static bool branchReferencesComponent(const Branch& branch, const HVACComponent& component) {
+        for (unsigned row = 0u; row < branch.extensibleGroups().size(); ++row) {
+          const auto componentNameField =
+            branch.iddObject().index(openstudio::ExtensibleIndex(row, openstudio::BranchExtensibleFields::ComponentName));
+          if (referencesObject(branch, componentNameField, component)) {
+            return true;
+          }
+        }
+        return false;
+      }
+    };
+
+    // Exact PlantLoop EIR heating/cooling source-side moves retain their
+    // proven load and heat-recovery owners. The classifier preserves the
+    // existing staged attachment sequence and claims every malformed or fully
+    // three-owned representation before generic WaterToWater mutation.
+    class PlantLoop_Impl::PlantLoopEIRHeatPumpSourceDemandBranchAttachmentPlan
+    {
+     public:
+      static bool requiresExactAttachmentDispatch(const HeatPumpPlantLoopEIRHeating& heatPump) {
+        return requiresExactAttachmentDispatch(heatPump.cast<HVACComponent>(), heatingDescriptor());
+      }
+
+      static bool requiresExactAttachmentDispatch(const HeatPumpPlantLoopEIRCooling& heatPump) {
+        return requiresExactAttachmentDispatch(heatPump.cast<HVACComponent>(), coolingDescriptor());
+      }
+
+      static std::unique_ptr<PlantLoopEIRHeatPumpSourceDemandBranchAttachmentPlan> prepare(PlantLoop_Impl& targetLoopImpl,
+                                                                                           HeatPumpPlantLoopEIRHeating heatPump) {
+        return prepareShared(targetLoopImpl, heatPump.cast<HVACComponent>(), heatingDescriptor());
+      }
+
+      static std::unique_ptr<PlantLoopEIRHeatPumpSourceDemandBranchAttachmentPlan> prepare(PlantLoop_Impl& targetLoopImpl,
+                                                                                           HeatPumpPlantLoopEIRCooling heatPump) {
+        return prepareShared(targetLoopImpl, heatPump.cast<HVACComponent>(), coolingDescriptor());
+      }
+
+      PlantLoopEIRHeatPumpSourceDemandBranchAttachmentPlan(const PlantLoopEIRHeatPumpSourceDemandBranchAttachmentPlan&) = delete;
+      PlantLoopEIRHeatPumpSourceDemandBranchAttachmentPlan& operator=(const PlantLoopEIRHeatPumpSourceDemandBranchAttachmentPlan&) = delete;
+      PlantLoopEIRHeatPumpSourceDemandBranchAttachmentPlan(PlantLoopEIRHeatPumpSourceDemandBranchAttachmentPlan&&) = delete;
+      PlantLoopEIRHeatPumpSourceDemandBranchAttachmentPlan& operator=(PlantLoopEIRHeatPumpSourceDemandBranchAttachmentPlan&&) = delete;
+      ~PlantLoopEIRHeatPumpSourceDemandBranchAttachmentPlan() = default;
+
+      void commit() {
+        OS_ASSERT(m_plantRelocation && !m_committed);
+        const auto primarySetpoint = m_primaryOwner.getModelObjectTarget<Node>(openstudio::PlantLoopFields::LoopTemperatureSetpointNodeName);
+        const auto heatRecoverySetpoint =
+          m_heatRecoveryOwner.getModelObjectTarget<Node>(openstudio::PlantLoopFields::LoopTemperatureSetpointNodeName);
+        OS_ASSERT(primarySetpoint && *primarySetpoint == m_primarySetpointTarget);
+        OS_ASSERT(heatRecoverySetpoint && *heatRecoverySetpoint == m_heatRecoverySetpointTarget);
+        m_plantRelocation->commit();
+        m_committed = true;
+      }
+
+     private:
+      using SharedInspection = PlantLoopEIRHeatPumpTopologyInspection;
+      using Descriptor = SharedInspection::Descriptor;
+
+      static Descriptor heatingDescriptor() {
+        return SharedInspection::heatingDescriptor();
+      }
+
+      static Descriptor coolingDescriptor() {
+        return SharedInspection::coolingDescriptor();
+      }
+
+      static bool requiresExactAttachmentDispatch(const HVACComponent& heatPump, const Descriptor& descriptor) {
+        return SharedInspection::requiresExactAttachmentDispatch(heatPump, descriptor);
+      }
+
+      static std::unique_ptr<PlantLoopEIRHeatPumpSourceDemandBranchAttachmentPlan>
+        prepareShared(PlantLoop_Impl& targetLoopImpl, HVACComponent heatPump, const Descriptor& descriptor) {
+        if (heatPump.model() != targetLoopImpl.model()) {
+          return nullptr;
+        }
+        const auto proven = SharedInspection::inspectFullyOwned(heatPump, descriptor);
+        if (!proven) {
+          return nullptr;
+        }
+        const auto targetLoop = targetLoopImpl.getObject<PlantLoop>();
+        if (targetLoop == proven->primary.plantLoop || targetLoop == proven->source.plantLoop || targetLoop == proven->heatRecovery.plantLoop
+            || !SharedInspection::targetDemandTopologyIsCanonical(targetLoop)) {
           return nullptr;
         }
 
+        const DemandBranchRelocationPlan::ExternalRow primaryRow{proven->primaryOccurrence.branch.handle(), proven->primaryOccurrence.row};
+        const DemandBranchRelocationPlan::ExternalRow heatRecoveryRow{proven->heatRecoveryOccurrence.branch.handle(),
+                                                                      proven->heatRecoveryOccurrence.row};
         std::unique_ptr<DemandBranchRelocationPlan> plantRelocation;
-        const DemandBranchRelocationPlan::ExternalRow primaryRow{primaryOccurrence->branch.handle(), primaryOccurrence->row};
-        const DemandBranchRelocationPlan::ExternalRow heatRecoveryRow{heatRecoveryOccurrence->branch.handle(), heatRecoveryOccurrence->row};
         if (descriptor.componentType == HeatPumpPlantLoopEIRHeating::iddObjectType()) {
           plantRelocation = DemandBranchRelocationPlan::preparePlantLoopEIRHeatingSource(targetLoopImpl, heatPump.cast<HeatPumpPlantLoopEIRHeating>(),
-                                                                                         sourceOwner->plantLoop, primaryRow, heatRecoveryRow);
+                                                                                         proven->source.plantLoop, primaryRow, heatRecoveryRow);
         } else if (descriptor.componentType == HeatPumpPlantLoopEIRCooling::iddObjectType()) {
           plantRelocation = DemandBranchRelocationPlan::preparePlantLoopEIRCoolingSource(targetLoopImpl, heatPump.cast<HeatPumpPlantLoopEIRCooling>(),
-                                                                                         sourceOwner->plantLoop, primaryRow, heatRecoveryRow);
+                                                                                         proven->source.plantLoop, primaryRow, heatRecoveryRow);
         }
         if (!plantRelocation) {
           return nullptr;
         }
         return std::unique_ptr<PlantLoopEIRHeatPumpSourceDemandBranchAttachmentPlan>(new PlantLoopEIRHeatPumpSourceDemandBranchAttachmentPlan(
-          std::move(plantRelocation), primaryOwner->plantLoop, heatRecoveryOwner->plantLoop, primaryOwner->topology.setpointTarget,
-          heatRecoveryOwner->topology.setpointTarget));
+          std::move(plantRelocation), proven->primary.plantLoop, proven->heatRecovery.plantLoop, proven->primary.topology.setpointTarget,
+          proven->heatRecovery.topology.setpointTarget));
       }
 
       PlantLoopEIRHeatPumpSourceDemandBranchAttachmentPlan(std::unique_ptr<DemandBranchRelocationPlan> plantRelocation, PlantLoop primaryOwner,
@@ -2383,29 +2535,139 @@ namespace epmodel {
       bool m_committed = false;
     };
 
+    // Exact explicit-tertiary relocation of the HeatRecovery role retains the
+    // proven LoadSide and SourceSide owners and delegates only the selected
+    // plant row/port mutation to the shared relocation core.
+    class PlantLoop_Impl::PlantLoopEIRHeatPumpHeatRecoveryDemandBranchAttachmentPlan
+    {
+     public:
+      static bool requiresExactAttachmentDispatch(PlantLoop_Impl& targetLoopImpl, const HeatPumpPlantLoopEIRHeating& heatPump) {
+        return requiresExactAttachmentDispatch(targetLoopImpl, heatPump.cast<HVACComponent>(), SharedInspection::heatingDescriptor());
+      }
+
+      static bool requiresExactAttachmentDispatch(PlantLoop_Impl& targetLoopImpl, const HeatPumpPlantLoopEIRCooling& heatPump) {
+        return requiresExactAttachmentDispatch(targetLoopImpl, heatPump.cast<HVACComponent>(), SharedInspection::coolingDescriptor());
+      }
+
+      static std::unique_ptr<PlantLoopEIRHeatPumpHeatRecoveryDemandBranchAttachmentPlan> prepare(PlantLoop_Impl& targetLoopImpl,
+                                                                                                 HeatPumpPlantLoopEIRHeating heatPump) {
+        return prepareProven(targetLoopImpl, heatPump.cast<HVACComponent>(), SharedInspection::heatingDescriptor());
+      }
+
+      static std::unique_ptr<PlantLoopEIRHeatPumpHeatRecoveryDemandBranchAttachmentPlan> prepare(PlantLoop_Impl& targetLoopImpl,
+                                                                                                 HeatPumpPlantLoopEIRCooling heatPump) {
+        return prepareProven(targetLoopImpl, heatPump.cast<HVACComponent>(), SharedInspection::coolingDescriptor());
+      }
+
+      PlantLoopEIRHeatPumpHeatRecoveryDemandBranchAttachmentPlan(const PlantLoopEIRHeatPumpHeatRecoveryDemandBranchAttachmentPlan&) = delete;
+      PlantLoopEIRHeatPumpHeatRecoveryDemandBranchAttachmentPlan&
+        operator=(const PlantLoopEIRHeatPumpHeatRecoveryDemandBranchAttachmentPlan&) = delete;
+      PlantLoopEIRHeatPumpHeatRecoveryDemandBranchAttachmentPlan(PlantLoopEIRHeatPumpHeatRecoveryDemandBranchAttachmentPlan&&) = delete;
+      PlantLoopEIRHeatPumpHeatRecoveryDemandBranchAttachmentPlan& operator=(PlantLoopEIRHeatPumpHeatRecoveryDemandBranchAttachmentPlan&&) = delete;
+      ~PlantLoopEIRHeatPumpHeatRecoveryDemandBranchAttachmentPlan() = default;
+
+      void commit() {
+        OS_ASSERT(m_plantRelocation && !m_committed);
+        assertRetainedSetpointIdentity();
+        m_plantRelocation->commit();
+        assertRetainedSetpointIdentity();
+        m_committed = true;
+      }
+
+     private:
+      using SharedInspection = PlantLoopEIRHeatPumpTopologyInspection;
+      using Descriptor = SharedInspection::Descriptor;
+
+      static bool requiresExactAttachmentDispatch(PlantLoop_Impl& targetLoopImpl, const HVACComponent& heatPump, const Descriptor& descriptor) {
+        if (heatPump.model() != targetLoopImpl.model() || heatPump.iddObject().type() != descriptor.componentType) {
+          return true;
+        }
+        if (!SharedInspection::hasHeatRecoveryPortOrRowEvidence(heatPump, descriptor)) {
+          // Only observationally exact staged states may reach the legacy
+          // explicit-tertiary attachment path.
+          return SharedInspection::requiresExactAttachmentDispatch(heatPump, descriptor)
+                 || SharedInspection::targetIsObservedOwner(targetLoopImpl, heatPump);
+        }
+        return true;
+      }
+
+      static std::unique_ptr<PlantLoopEIRHeatPumpHeatRecoveryDemandBranchAttachmentPlan>
+        prepareProven(PlantLoop_Impl& targetLoopImpl, HVACComponent heatPump, const Descriptor& descriptor) {
+        const auto proven = SharedInspection::inspectFullyOwned(heatPump, descriptor);
+        if (!proven) {
+          return nullptr;
+        }
+        const auto targetLoop = targetLoopImpl.getObject<PlantLoop>();
+        if (targetLoop == proven->primary.plantLoop || targetLoop == proven->source.plantLoop || targetLoop == proven->heatRecovery.plantLoop
+            || !SharedInspection::targetDemandTopologyIsCanonical(targetLoop)) {
+          return nullptr;
+        }
+
+        const DemandBranchRelocationPlan::ExternalRow primaryRow{proven->primaryOccurrence.branch.handle(), proven->primaryOccurrence.row};
+        const DemandBranchRelocationPlan::ExternalRow sourceRow{proven->sourceOccurrence.branch.handle(), proven->sourceOccurrence.row};
+        std::unique_ptr<DemandBranchRelocationPlan> plantRelocation;
+        if (descriptor.componentType == HeatPumpPlantLoopEIRHeating::iddObjectType()) {
+          plantRelocation = DemandBranchRelocationPlan::preparePlantLoopEIRHeatingHeatRecovery(
+            targetLoopImpl, heatPump.cast<HeatPumpPlantLoopEIRHeating>(), proven->heatRecovery.plantLoop, primaryRow, sourceRow);
+        } else if (descriptor.componentType == HeatPumpPlantLoopEIRCooling::iddObjectType()) {
+          plantRelocation = DemandBranchRelocationPlan::preparePlantLoopEIRCoolingHeatRecovery(
+            targetLoopImpl, heatPump.cast<HeatPumpPlantLoopEIRCooling>(), proven->heatRecovery.plantLoop, primaryRow, sourceRow);
+        }
+        if (!plantRelocation) {
+          return nullptr;
+        }
+        return std::unique_ptr<PlantLoopEIRHeatPumpHeatRecoveryDemandBranchAttachmentPlan>(
+          new PlantLoopEIRHeatPumpHeatRecoveryDemandBranchAttachmentPlan(std::move(plantRelocation), proven->primary.plantLoop,
+                                                                         proven->source.plantLoop, proven->primary.topology.setpointTarget,
+                                                                         proven->source.topology.setpointTarget));
+      }
+
+      PlantLoopEIRHeatPumpHeatRecoveryDemandBranchAttachmentPlan(std::unique_ptr<DemandBranchRelocationPlan> plantRelocation, PlantLoop primaryOwner,
+                                                                 PlantLoop sourceOwner, Node primarySetpointTarget, Node sourceSetpointTarget)
+        : m_plantRelocation(std::move(plantRelocation)),
+          m_primaryOwner(std::move(primaryOwner)),
+          m_sourceOwner(std::move(sourceOwner)),
+          m_primarySetpointTarget(std::move(primarySetpointTarget)),
+          m_sourceSetpointTarget(std::move(sourceSetpointTarget)) {}
+
+      void assertRetainedSetpointIdentity() const {
+        const auto primarySetpoint = m_primaryOwner.getModelObjectTarget<Node>(openstudio::PlantLoopFields::LoopTemperatureSetpointNodeName);
+        const auto sourceSetpoint = m_sourceOwner.getModelObjectTarget<Node>(openstudio::PlantLoopFields::LoopTemperatureSetpointNodeName);
+        OS_ASSERT(primarySetpoint && *primarySetpoint == m_primarySetpointTarget);
+        OS_ASSERT(sourceSetpoint && *sourceSetpoint == m_sourceSetpointTarget);
+      }
+
+      std::unique_ptr<DemandBranchRelocationPlan> m_plantRelocation;
+      PlantLoop m_primaryOwner;
+      PlantLoop m_sourceOwner;
+      Node m_primarySetpointTarget;
+      Node m_sourceSetpointTarget;
+      bool m_committed = false;
+    };
+
     // Direct removal of a fully three-owned PlantLoop EIR heat pump must
     // distinguish its SourceSide demand row from its HeatRecovery demand row.
     // The existing single-branch teardown owns the plant mutation; this
     // wrapper proves the two retained owners and the selected SourceSide role.
-    class PlantLoop_Impl::PlantLoopEIRHeatPumpSourceDemandBranchRemovalPlan : private PlantLoop_Impl::ExactPlantBranchTopologyInspection
+    class PlantLoop_Impl::PlantLoopEIRHeatPumpSourceDemandBranchRemovalPlan
     {
      public:
       static bool requiresExactRemovalDispatch(PlantLoop_Impl& receiver, const HeatPumpPlantLoopEIRHeating& heatPump) {
-        return requiresExactRemovalDispatch(receiver, heatPump.cast<HVACComponent>(), AttachmentPlan::heatingDescriptor());
+        return requiresExactRemovalDispatch(receiver, heatPump.cast<HVACComponent>(), PlantLoopEIRHeatPumpTopologyInspection::heatingDescriptor());
       }
 
       static bool requiresExactRemovalDispatch(PlantLoop_Impl& receiver, const HeatPumpPlantLoopEIRCooling& heatPump) {
-        return requiresExactRemovalDispatch(receiver, heatPump.cast<HVACComponent>(), AttachmentPlan::coolingDescriptor());
+        return requiresExactRemovalDispatch(receiver, heatPump.cast<HVACComponent>(), PlantLoopEIRHeatPumpTopologyInspection::coolingDescriptor());
       }
 
       static std::unique_ptr<PlantLoopEIRHeatPumpSourceDemandBranchRemovalPlan> prepare(PlantLoop_Impl& receiver,
                                                                                         HeatPumpPlantLoopEIRHeating heatPump) {
-        return prepareProven(receiver, heatPump.cast<HVACComponent>(), AttachmentPlan::heatingDescriptor());
+        return prepareProven(receiver, heatPump.cast<HVACComponent>(), PlantLoopEIRHeatPumpTopologyInspection::heatingDescriptor());
       }
 
       static std::unique_ptr<PlantLoopEIRHeatPumpSourceDemandBranchRemovalPlan> prepare(PlantLoop_Impl& receiver,
                                                                                         HeatPumpPlantLoopEIRCooling heatPump) {
-        return prepareProven(receiver, heatPump.cast<HVACComponent>(), AttachmentPlan::coolingDescriptor());
+        return prepareProven(receiver, heatPump.cast<HVACComponent>(), PlantLoopEIRHeatPumpTopologyInspection::coolingDescriptor());
       }
 
       PlantLoopEIRHeatPumpSourceDemandBranchRemovalPlan(const PlantLoopEIRHeatPumpSourceDemandBranchRemovalPlan&) = delete;
@@ -2423,99 +2685,14 @@ namespace epmodel {
       }
 
      private:
-      using AttachmentPlan = PlantLoopEIRHeatPumpSourceDemandBranchAttachmentPlan;
-      using Descriptor = AttachmentPlan::Descriptor;
-      using ProvenOccurrenceOwner = AttachmentPlan::ProvenOccurrenceOwner;
-
-      struct ProvenFullyOwnedTopology
-      {
-        ProvenOccurrenceOwner primary;
-        ProvenOccurrenceOwner source;
-        ProvenOccurrenceOwner heatRecovery;
-      };
-
-      static bool hasAllOwnershipFieldEvidence(const HVACComponent& heatPump, const Descriptor& descriptor) {
-        return fieldHasEvidence(heatPump, descriptor.loadInletPort) && fieldHasEvidence(heatPump, descriptor.loadOutletPort)
-               && fieldHasEvidence(heatPump, descriptor.sourceInletPort) && fieldHasEvidence(heatPump, descriptor.sourceOutletPort)
-               && fieldHasEvidence(heatPump, descriptor.heatRecoveryInletPort) && fieldHasEvidence(heatPump, descriptor.heatRecoveryOutletPort);
-      }
-
-      static boost::optional<ProvenFullyOwnedTopology> inspectFullyOwned(const HVACComponent& heatPump, const Descriptor& descriptor) {
-        if (heatPump.iddObject().type() != descriptor.componentType || !hasUniqueName(heatPump)
-            || !AttachmentPlan::companionEvidenceIsExact(heatPump, descriptor)
-            || !AttachmentPlan::persistedCondenserTypeIs(heatPump, descriptor, "WaterSource")
-            || !hasAllOwnershipFieldEvidence(heatPump, descriptor)) {
-          return boost::none;
-        }
-
-        const auto loadInlet = exactNodeField(heatPump, descriptor.loadInletPort);
-        const auto loadOutlet = exactNodeField(heatPump, descriptor.loadOutletPort);
-        const auto sourceInlet = exactNodeField(heatPump, descriptor.sourceInletPort);
-        const auto sourceOutlet = exactNodeField(heatPump, descriptor.sourceOutletPort);
-        const auto heatRecoveryInlet = exactNodeField(heatPump, descriptor.heatRecoveryInletPort);
-        const auto heatRecoveryOutlet = exactNodeField(heatPump, descriptor.heatRecoveryOutletPort);
-        if (!loadInlet || !loadOutlet || !sourceInlet || !sourceOutlet || !heatRecoveryInlet || !heatRecoveryOutlet) {
-          return boost::none;
-        }
-
-        const std::array<Node, 6> ports{*loadInlet, *loadOutlet, *sourceInlet, *sourceOutlet, *heatRecoveryInlet, *heatRecoveryOutlet};
-        std::set<Handle> portHandles;
-        for (const auto& port : ports) {
-          if (!hasUniqueName(port) || !portHandles.insert(port.handle()).second) {
-            return boost::none;
-          }
-        }
-
-        std::vector<BranchOccurrence> occurrences;
-        if (!collectOccurrences(heatPump, occurrences) || occurrences.size() != 3u) {
-          return boost::none;
-        }
-        boost::optional<BranchOccurrence> primaryOccurrence;
-        boost::optional<BranchOccurrence> sourceOccurrence;
-        boost::optional<BranchOccurrence> heatRecoveryOccurrence;
-        for (const auto& occurrence : occurrences) {
-          if (occurrence.branch.extensibleGroups().size() != 1u || !hasUniqueName(occurrence.branch)) {
-            return boost::none;
-          }
-          if (occurrence.inlet == *loadInlet && occurrence.outlet == *loadOutlet) {
-            if (primaryOccurrence) {
-              return boost::none;
-            }
-            primaryOccurrence = occurrence;
-          } else if (occurrence.inlet == *sourceInlet && occurrence.outlet == *sourceOutlet) {
-            if (sourceOccurrence) {
-              return boost::none;
-            }
-            sourceOccurrence = occurrence;
-          } else if (occurrence.inlet == *heatRecoveryInlet && occurrence.outlet == *heatRecoveryOutlet) {
-            if (heatRecoveryOccurrence) {
-              return boost::none;
-            }
-            heatRecoveryOccurrence = occurrence;
-          } else {
-            return boost::none;
-          }
-        }
-        if (!primaryOccurrence || !sourceOccurrence || !heatRecoveryOccurrence) {
-          return boost::none;
-        }
-
-        const auto primary = AttachmentPlan::provenOwnerForOccurrence(*primaryOccurrence, true, true);
-        const auto source = AttachmentPlan::provenOwnerForOccurrence(*sourceOccurrence, false, false);
-        const auto heatRecovery = AttachmentPlan::provenOwnerForOccurrence(*heatRecoveryOccurrence, false, false);
-        if (!primary || !source || !heatRecovery || primary->branchList == source->branchList || primary->branchList == heatRecovery->branchList
-            || source->branchList == heatRecovery->branchList || primary->plantLoop == source->plantLoop
-            || primary->plantLoop == heatRecovery->plantLoop || source->plantLoop == heatRecovery->plantLoop) {
-          return boost::none;
-        }
-        return ProvenFullyOwnedTopology{*primary, *source, *heatRecovery};
-      }
+      using SharedInspection = PlantLoopEIRHeatPumpTopologyInspection;
+      using Descriptor = SharedInspection::Descriptor;
 
       static bool requiresExactRemovalDispatch(PlantLoop_Impl& receiver, const HVACComponent& heatPump, const Descriptor& descriptor) {
         if (heatPump.model() != receiver.model() || heatPump.iddObject().type() != descriptor.componentType) {
           return false;
         }
-        if (const auto proven = inspectFullyOwned(heatPump, descriptor)) {
+        if (const auto proven = SharedInspection::inspectFullyOwned(heatPump, descriptor)) {
           // A proven HeatRecovery receiver intentionally falls through to the
           // existing tertiary removal behavior.
           const auto receiverLoop = receiver.getObject<PlantLoop>();
@@ -2528,60 +2705,18 @@ namespace epmodel {
         }
         // Preserve the established generic lifecycle for observationally exact
         // unattached and staged (primary-only or exact two-owner) shapes.
-        if (!AttachmentPlan::requiresExactAttachmentDispatch(heatPump, descriptor)) {
+        if (!SharedInspection::requiresExactAttachmentDispatch(heatPump, descriptor)) {
           return false;
         }
         // Classification is observational: any managed or raw HP row reached
         // through this receiver's persisted demand BranchList is claimed, so
         // malformed Source/HeatRecovery evidence cannot reach generic removal.
-        return receiverDemandSideReferencesComponent(receiver, heatPump);
-      }
-
-      static bool branchReferencesComponent(const Branch& branch, const HVACComponent& component) {
-        for (unsigned row = 0u; row < branch.extensibleGroups().size(); ++row) {
-          const auto componentNameField =
-            branch.iddObject().index(openstudio::ExtensibleIndex(row, openstudio::BranchExtensibleFields::ComponentName));
-          if (referencesObject(branch, componentNameField, component)) {
-            return true;
-          }
-        }
-        return false;
-      }
-
-      static bool receiverDemandSideReferencesComponent(PlantLoop_Impl& receiver, const HVACComponent& component) {
-        const auto receiverLoop = receiver.getObject<PlantLoop>();
-        const auto branches = receiver.model().getConcreteModelObjects<Branch>();
-        const auto demandBranchListField = openstudio::PlantLoopFields::DemandSideBranchListName;
-
-        // Include a malformed direct Branch target/name in the BranchList field.
-        for (const auto& branch : branches) {
-          if (referencesObject(receiverLoop, demandBranchListField, branch) && branchReferencesComponent(branch, component)) {
-            return true;
-          }
-        }
-
-        // Scan every managed or raw BranchList alias of the receiver and every
-        // managed or raw Branch alias in its extensible rows without traversal.
-        for (const auto& branchList : receiver.model().getConcreteModelObjects<BranchList>()) {
-          if (!referencesObject(receiverLoop, demandBranchListField, branchList)) {
-            continue;
-          }
-          for (unsigned row = 0u; row < branchList.extensibleGroups().size(); ++row) {
-            const auto branchField =
-              branchList.iddObject().index(openstudio::ExtensibleIndex(row, openstudio::BranchListExtensibleFields::BranchName));
-            for (const auto& branch : branches) {
-              if (referencesObject(branchList, branchField, branch) && branchReferencesComponent(branch, component)) {
-                return true;
-              }
-            }
-          }
-        }
-        return false;
+        return SharedInspection::receiverDemandSideReferencesComponent(receiver, heatPump);
       }
 
       static std::unique_ptr<PlantLoopEIRHeatPumpSourceDemandBranchRemovalPlan> prepareProven(PlantLoop_Impl& receiver, HVACComponent heatPump,
                                                                                               const Descriptor& descriptor) {
-        const auto proven = inspectFullyOwned(heatPump, descriptor);
+        const auto proven = SharedInspection::inspectFullyOwned(heatPump, descriptor);
         const auto receiverLoop = receiver.getObject<PlantLoop>();
         if (!proven || proven->source.plantLoop != receiverLoop) {
           return nullptr;
@@ -5943,6 +6078,44 @@ namespace epmodel {
             return false;
           }
           if (testFailurePointReached(model(), TestFailurePoint::PlantLoopAfterChillerElectricEIRHeatRecoveryBranchAttachmentPrepared)) {
+            return false;
+          }
+          plan->commit();
+          return true;
+        }
+      }
+      if (tertiary && hvacComponent.iddObject().type() == HeatPumpPlantLoopEIRHeating::iddObjectType()) {
+        const auto heatPump = hvacComponent.cast<HeatPumpPlantLoopEIRHeating>();
+        if (PlantLoopEIRHeatPumpHeatRecoveryDemandBranchAttachmentPlan::requiresExactAttachmentDispatch(*this, heatPump)) {
+          auto plan = PlantLoopEIRHeatPumpHeatRecoveryDemandBranchAttachmentPlan::prepare(*this, heatPump);
+          if (!plan) {
+            LOG_FREE(Warn, "openstudio.epmodel.PlantLoop",
+                     "Refusing to move " << hvacComponent.briefDescription() << " to the heat-recovery demand side of "
+                                         << getObject<PlantLoop>().briefDescription()
+                                         << " because its exact LoadSide, SourceSide, and HeatRecovery owners, WaterSource state, companion "
+                                            "evidence, six live ports, single-row branches, or target topology could not be validated.");
+            return false;
+          }
+          if (testFailurePointReached(model(), TestFailurePoint::PlantLoopAfterPlantLoopEIRHeatPumpHeatRecoveryBranchAttachmentPrepared)) {
+            return false;
+          }
+          plan->commit();
+          return true;
+        }
+      }
+      if (tertiary && hvacComponent.iddObject().type() == HeatPumpPlantLoopEIRCooling::iddObjectType()) {
+        const auto heatPump = hvacComponent.cast<HeatPumpPlantLoopEIRCooling>();
+        if (PlantLoopEIRHeatPumpHeatRecoveryDemandBranchAttachmentPlan::requiresExactAttachmentDispatch(*this, heatPump)) {
+          auto plan = PlantLoopEIRHeatPumpHeatRecoveryDemandBranchAttachmentPlan::prepare(*this, heatPump);
+          if (!plan) {
+            LOG_FREE(Warn, "openstudio.epmodel.PlantLoop",
+                     "Refusing to move " << hvacComponent.briefDescription() << " to the heat-recovery demand side of "
+                                         << getObject<PlantLoop>().briefDescription()
+                                         << " because its exact LoadSide, SourceSide, and HeatRecovery owners, WaterSource state, companion "
+                                            "evidence, six live ports, single-row branches, or target topology could not be validated.");
+            return false;
+          }
+          if (testFailurePointReached(model(), TestFailurePoint::PlantLoopAfterPlantLoopEIRHeatPumpHeatRecoveryBranchAttachmentPrepared)) {
             return false;
           }
           plan->commit();
