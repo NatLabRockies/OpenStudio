@@ -69,7 +69,7 @@ implements them.
 | Topology area | Representative implementation | Current boundary |
 | --- | --- | --- |
 | Air-loop foundation | Multi-zone demand branches, ordered traversal, independent connector rows, transactional insertion/removal, and single- and dual-duct loop shapes | General same-loop rebranching and arbitrary malformed imported graphs |
-| Ordinary single duct | Constant-volume and VAV families use shared, plenum-aware branch transactions; VAV reheat also has a registered Ruby workflow and scoped EnergyPlus topology execution | Reload coverage for several VAV siblings and broader scripting evidence |
+| Ordinary single duct | Constant-volume and VAV families use shared, plenum-aware branch transactions; VAV reheat also has scoped EnergyPlus topology execution | Reload coverage for several VAV siblings and scripting/workflow evidence |
 | Supply and return plenums | Shared single-duct plenums, common returns, and independent per-deck dual-duct supply lanes support reassignment, removal, and reload | Malformed connector combinations outside tested transactions |
 | PIU, induction, and beams | Series and Parallel PIU, four-pipe induction, cooled beam, and four-pipe beam have family-specific ownership and atomic removal | Beam reload/workflow evidence and secondary-port conveniences |
 | Direct dual duct | Constant-volume, VAV, and VAV outdoor-air terminals use two supply decks and one zone transaction; per-deck supply and common return plenums are supported | Reload/workflow evidence for VAV and VAV outdoor-air variants |
