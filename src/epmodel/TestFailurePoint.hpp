@@ -36,6 +36,9 @@ namespace epmodel {
       VAVReheatAfterCoilAirPathPrepared,
       ZoneEquipmentAfterTargetPrepared,
       ZoneEquipmentAfterRowAdded,
+      PlantLoopAfterPipeBranchAttachmentPrepared,
+      PlantLoopAfterPipeBranchRemovalPrepared,
+      PlantLoopAfterWaterCoilBranchAttachmentPrepared,
     };
 
     EPMODEL_API bool testFailurePointReached(const Model& model, TestFailurePoint point);

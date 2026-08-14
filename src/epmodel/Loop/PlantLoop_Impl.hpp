@@ -19,6 +19,7 @@ namespace epmodel {
   class BranchList;
   class AvailabilityManager;
   class AvailabilityManagerAssignmentList;
+  class ChillerElectricEIR;
   class CoilHeatingWater;
   class ConnectorMixer;
   class ConnectorSplitter;
@@ -157,9 +158,14 @@ namespace epmodel {
       void doCanonicalize(LoadContext& context) override;
 
      private:
+      class PipeBranchAttachmentPlan;
+      class PipeBranchRemovalPlan;
+      class WaterCoilDemandBranchAttachmentPlan;
+      class ContainedReheatCoilDemandBranchAttachmentPlan;
+
       // Carries a fully validated single-component demand-branch teardown
-      // across a compound terminal operation. It is private implementation
-      // machinery, not part of the PlantLoop wrapper API.
+      // across retained-component ownership operations. It is private
+      // implementation machinery, not part of the PlantLoop wrapper API.
       class DemandBranchRemovalPlan
       {
        public:
@@ -186,12 +192,16 @@ namespace epmodel {
       using WaterCoilDemandBranchRemovalPlan = DemandBranchRemovalPlan;
       using CoilHeatingWaterDemandBranchRemovalPlan = DemandBranchRemovalPlan;
       using BeamCoilDemandBranchRemovalPlan = DemandBranchRemovalPlan;
+      using ChillerCondenserDemandBranchRemovalPlan = DemandBranchRemovalPlan;
 
       std::unique_ptr<WaterCoilDemandBranchRemovalPlan> prepareWaterCoilDemandBranchRemoval(const openstudio::epmodel::WaterToAirComponent& coil);
       std::unique_ptr<WaterCoilDemandBranchRemovalPlan> prepareCoilHeatingWaterDemandBranchRemoval(const openstudio::epmodel::CoilHeatingWater& coil);
       std::unique_ptr<BeamCoilDemandBranchRemovalPlan> prepareBeamCoilDemandBranchRemoval(const openstudio::epmodel::StraightComponent& coil);
+      std::unique_ptr<ChillerCondenserDemandBranchRemovalPlan>
+        prepareChillerCondenserDemandBranchRemoval(const openstudio::epmodel::ChillerElectricEIR& chiller);
       std::unique_ptr<DemandBranchRemovalPlan> prepareDemandBranchRemoval(const openstudio::epmodel::HVACComponent& component, unsigned inletPort,
-                                                                          unsigned outletPort, bool waterToAirComponent);
+                                                                          unsigned outletPort, bool waterToAirComponent,
+                                                                          bool resetChillerCondenserType = false);
 
       openstudio::epmodel::PlantEquipmentOperationSchemes plantEquipmentOperationSchemes() const;
       bool syncConnectorPorts(openstudio::epmodel::ConnectorSplitter& splitter, openstudio::epmodel::ConnectorMixer& mixer,

@@ -5,6 +5,8 @@
 
 #include <gtest/gtest.h>
 
+#include "ScopedTestFailure.hpp"
+#include "../TestFailurePoint.hpp"
 #include "../AvailabilityManager/AvailabilityManagerNightCycle.hpp"
 #include "EPModelFixture.hpp"
 #include "../AvailabilityManager/AvailabilityManagerScheduledOn.hpp"
@@ -13,21 +15,32 @@
 #include "../Loop/PlantLoop.hpp"
 #include "../Loop/PlantLoop_Impl.hpp"
 #include "../Mixer/Mixer.hpp"
+#include "../Mixer/ConnectorMixer.hpp"
+#include "../Mixer/ConnectorMixer_Impl.hpp"
 #include "../ModelObject/AvailabilityManagerAssignmentList.hpp"
 #include "../ModelObject/AvailabilityManagerAssignmentList_Impl.hpp"
 #include "../ModelObject/PlantEquipmentOperationSchemes.hpp"
 #include "../ModelObject/PlantEquipmentOperationSchemes_Impl.hpp"
 #include "../Splitter/Splitter.hpp"
+#include "../Splitter/ConnectorSplitter.hpp"
+#include "../Splitter/ConnectorSplitter_Impl.hpp"
 #include "../ModelObject/ModelObject.hpp"
 #include "../ModelObject/Branch.hpp"
 #include "../ModelObject/Branch_Impl.hpp"
 #include "../ModelObject/BranchList.hpp"
 #include "../ModelObject/BranchList_Impl.hpp"
+#include "../ModelObject/AirLoopHVACControllerList.hpp"
+#include "../ModelObject/AirLoopHVACControllerList_Impl.hpp"
+#include "../ModelObject/ZoneHVACAirDistributionUnit.hpp"
+#include "../ModelObject/ZoneHVACAirDistributionUnit_Impl.hpp"
 #include "../HVACComponent/ControllerWaterCoil.hpp"
 #include "../HVACComponent/ControllerWaterCoil_Impl.hpp"
+#include "../HVACComponent/ThermalZone.hpp"
+#include "../HVACComponent/ThermalZone_Impl.hpp"
 #include "../ModelObject/SizingPlant.hpp"
 #include "../ModelObject/SizingPlant_Impl.hpp"
 #include "../PlantEquipmentOperationScheme/PlantEquipmentOperationCoolingLoad.hpp"
+#include "../PlantEquipmentOperationScheme/PlantEquipmentOperationCoolingLoad_Impl.hpp"
 #include "../PlantEquipmentOperationScheme/PlantEquipmentOperationHeatingLoad.hpp"
 #include "../PlantEquipmentOperationScheme/PlantEquipmentOperationHeatingLoad_Impl.hpp"
 #include "../PlantEquipmentOperationScheme/PlantEquipmentOperationOutdoorDryBulb.hpp"
@@ -36,22 +49,446 @@
 #include "../StraightComponent/Node.hpp"
 #include "../StraightComponent/BoilerHotWater.hpp"
 #include "../StraightComponent/BoilerHotWater_Impl.hpp"
+#include "../StraightComponent/CoolingTowerSingleSpeed.hpp"
+#include "../StraightComponent/CoolingTowerSingleSpeed_Impl.hpp"
 #include "../StraightComponent/PipeAdiabatic.hpp"
 #include "../StraightComponent/PipeAdiabatic_Impl.hpp"
+#include "../StraightComponent/PumpVariableSpeed.hpp"
+#include "../StraightComponent/PumpVariableSpeed_Impl.hpp"
+#include "../StraightComponent/AirTerminalSingleDuctConstantVolumeReheat.hpp"
+#include "../StraightComponent/AirTerminalSingleDuctConstantVolumeReheat_Impl.hpp"
+#include "../WaterToAirComponent/WaterToAirComponent.hpp"
 #include "../WaterToAirComponent/CoilHeatingWater.hpp"
 #include "../WaterToAirComponent/CoilHeatingWater_Impl.hpp"
 #include "../WaterToAirComponent/CoilCoolingWater.hpp"
 #include "../WaterToAirComponent/CoilCoolingWater_Impl.hpp"
 #include "../WaterToWaterComponent/HeatExchangerFluidToFluid.hpp"
 #include "../WaterToWaterComponent/HeatExchangerFluidToFluid_Impl.hpp"
+#include "../WaterToWaterComponent/ChillerElectricEIR.hpp"
+#include "../WaterToWaterComponent/ChillerElectricEIR_Impl.hpp"
 #include "../Loop/AirLoopHVAC.hpp"
 #include "../Loop/AirLoopHVAC_Impl.hpp"
+#include "../Splitter/AirLoopHVACZoneSplitter.hpp"
+#include "../Mixer/AirLoopHVACZoneMixer.hpp"
 
+#include <utilities/core/Filesystem.hpp>
+#include <utilities/core/UUID.hpp>
 #include <utilities/idd/ConnectorList_FieldEnums.hxx>
+#include <utilities/idd/AirLoopHVAC_FieldEnums.hxx>
 #include <utilities/idd/PlantLoop_FieldEnums.hxx>
 #include <utilities/idd/Sizing_Plant_FieldEnums.hxx>
 
+#include <algorithm>
+#include <utility>
+
 using namespace openstudio::epmodel;
+
+namespace {
+
+class ScopedFileRemoval
+{
+ public:
+  explicit ScopedFileRemoval(openstudio::path path) : m_path(std::move(path)) {}
+
+  ~ScopedFileRemoval() {
+    boost::system::error_code error;
+    boost::filesystem::remove(m_path, error);
+  }
+
+ private:
+  openstudio::path m_path;
+};
+
+struct PlantAttachmentTopologySnapshot
+{
+  std::vector<openstudio::Handle> branchHandles;
+  std::vector<std::vector<openstudio::Handle>> branchComponentHandles;
+  std::vector<std::vector<openstudio::Handle>> branchInletNodeHandles;
+  std::vector<std::vector<openstudio::Handle>> branchOutletNodeHandles;
+  std::vector<openstudio::Handle> branchListHandles;
+  std::vector<std::vector<openstudio::Handle>> branchListBranchHandles;
+  std::vector<openstudio::Handle> splitterHandles;
+  std::vector<boost::optional<openstudio::Handle>> splitterInletHandles;
+  std::vector<std::vector<openstudio::Handle>> splitterOutletHandles;
+  std::vector<openstudio::Handle> mixerHandles;
+  std::vector<std::vector<openstudio::Handle>> mixerInletHandles;
+  std::vector<boost::optional<openstudio::Handle>> mixerOutletHandles;
+  std::vector<openstudio::Handle> nodeHandles;
+  std::vector<openstudio::Handle> sourceComponentHandles;
+  std::vector<openstudio::Handle> targetComponentHandles;
+  boost::optional<openstudio::Handle> sourceSetpointTargetHandle;
+  boost::optional<openstudio::Handle> targetSetpointTargetHandle;
+  boost::optional<openstudio::Handle> componentInletHandle;
+  boost::optional<openstudio::Handle> componentOutletHandle;
+
+  bool operator==(const PlantAttachmentTopologySnapshot&) const = default;
+};
+
+template <typename T>
+std::vector<openstudio::Handle> objectHandles(const std::vector<T>& objects) {
+  std::vector<openstudio::Handle> result;
+  result.reserve(objects.size());
+  for (const auto& object : objects) {
+    result.push_back(object.handle());
+  }
+  return result;
+}
+
+PlantAttachmentTopologySnapshot capturePlantTopology(const Model& model, const PlantLoop& sourceLoop, const PlantLoop& targetLoop, bool supplySide) {
+  PlantAttachmentTopologySnapshot result;
+  auto branches = model.getConcreteModelObjects<Branch>();
+  std::ranges::sort(branches, {}, [](const auto& branch) { return branch.handle(); });
+  for (const auto& branch : branches) {
+    result.branchHandles.push_back(branch.handle());
+    result.branchComponentHandles.push_back(objectHandles(branch.components()));
+
+    std::vector<openstudio::Handle> inletHandles;
+    std::vector<openstudio::Handle> outletHandles;
+    for (unsigned i = 0u; i < branch.extensibleGroups().size(); ++i) {
+      if (auto inlet = branch.componentInletNode(i)) {
+        inletHandles.push_back(inlet->handle());
+      }
+      if (auto outlet = branch.componentOutletNode(i)) {
+        outletHandles.push_back(outlet->handle());
+      }
+    }
+    result.branchInletNodeHandles.push_back(std::move(inletHandles));
+    result.branchOutletNodeHandles.push_back(std::move(outletHandles));
+  }
+  auto nodes = model.getConcreteModelObjects<Node>();
+  std::ranges::sort(nodes, {}, [](const auto& node) { return node.handle(); });
+  for (const auto& node : nodes) {
+    result.nodeHandles.push_back(node.handle());
+  }
+  auto branchLists = model.getConcreteModelObjects<BranchList>();
+  std::ranges::sort(branchLists, {}, [](const auto& branchList) { return branchList.handle(); });
+  for (const auto& branchList : branchLists) {
+    result.branchListHandles.push_back(branchList.handle());
+    result.branchListBranchHandles.push_back(objectHandles(branchList.branches()));
+  }
+  auto splitters = model.getConcreteModelObjects<ConnectorSplitter>();
+  std::ranges::sort(splitters, {}, [](const auto& splitter) { return splitter.handle(); });
+  for (const auto& splitter : splitters) {
+    result.splitterHandles.push_back(splitter.handle());
+    const auto inlet = splitter.inletModelObject();
+    result.splitterInletHandles.push_back(inlet ? boost::optional<openstudio::Handle>(inlet->handle()) : boost::none);
+    result.splitterOutletHandles.push_back(objectHandles(splitter.outletModelObjects()));
+  }
+  auto mixers = model.getConcreteModelObjects<ConnectorMixer>();
+  std::ranges::sort(mixers, {}, [](const auto& mixer) { return mixer.handle(); });
+  for (const auto& mixer : mixers) {
+    result.mixerHandles.push_back(mixer.handle());
+    result.mixerInletHandles.push_back(objectHandles(mixer.inletModelObjects()));
+    const auto outlet = mixer.outletModelObject();
+    result.mixerOutletHandles.push_back(outlet ? boost::optional<openstudio::Handle>(outlet->handle()) : boost::none);
+  }
+
+  result.sourceComponentHandles = objectHandles(supplySide ? sourceLoop.supplyComponents() : sourceLoop.demandComponents());
+  result.targetComponentHandles = objectHandles(supplySide ? targetLoop.supplyComponents() : targetLoop.demandComponents());
+  if (auto sourceSetpointTarget = sourceLoop.getModelObjectTarget<Node>(openstudio::PlantLoopFields::LoopTemperatureSetpointNodeName)) {
+    result.sourceSetpointTargetHandle = sourceSetpointTarget->handle();
+  }
+  if (auto targetSetpointTarget = targetLoop.getModelObjectTarget<Node>(openstudio::PlantLoopFields::LoopTemperatureSetpointNodeName)) {
+    result.targetSetpointTargetHandle = targetSetpointTarget->handle();
+  }
+  return result;
+}
+
+PlantAttachmentTopologySnapshot capturePlantAttachmentTopology(const Model& model, const PlantLoop& sourceLoop, const PlantLoop& targetLoop,
+                                                               const StraightComponent& component, bool supplySide) {
+  auto result = capturePlantTopology(model, sourceLoop, targetLoop, supplySide);
+  if (auto inlet = component.inletModelObject()) {
+    result.componentInletHandle = inlet->handle();
+  }
+  if (auto outlet = component.outletModelObject()) {
+    result.componentOutletHandle = outlet->handle();
+  }
+  return result;
+}
+
+struct WaterCoilMoveTopologySnapshot
+{
+  PlantAttachmentTopologySnapshot plantTopology;
+  openstudio::Handle coilHandle;
+  std::vector<openstudio::Handle> airSupplyComponentHandles;
+  boost::optional<openstudio::Handle> airLoopHandle;
+  boost::optional<openstudio::Handle> plantLoopHandle;
+  boost::optional<openstudio::Handle> airInletHandle;
+  boost::optional<openstudio::Handle> airOutletHandle;
+  boost::optional<openstudio::Handle> waterInletHandle;
+  boost::optional<openstudio::Handle> waterOutletHandle;
+  std::vector<openstudio::Handle> controllerHandles;
+  std::vector<boost::optional<std::string>> controllerActions;
+  std::vector<boost::optional<openstudio::Handle>> controllerActuatorHandles;
+  std::vector<boost::optional<openstudio::Handle>> controllerSensorHandles;
+  std::vector<openstudio::Handle> controllerListHandles;
+  std::vector<std::vector<openstudio::Handle>> controllerListControllerHandles;
+
+  bool operator==(const WaterCoilMoveTopologySnapshot&) const = default;
+};
+
+WaterCoilMoveTopologySnapshot captureWaterCoilMoveTopology(const Model& model, const PlantLoop& sourceLoop, const PlantLoop& targetLoop,
+                                                           const AirLoopHVAC& airLoop, const WaterToAirComponent& coil) {
+  WaterCoilMoveTopologySnapshot result;
+  result.plantTopology = capturePlantTopology(model, sourceLoop, targetLoop, false);
+  result.coilHandle = coil.handle();
+  result.airSupplyComponentHandles = objectHandles(airLoop.supplyComponents());
+  if (auto owner = coil.airLoopHVAC()) {
+    result.airLoopHandle = owner->handle();
+  }
+  if (auto owner = coil.plantLoop()) {
+    result.plantLoopHandle = owner->handle();
+  }
+  if (auto node = coil.airInletModelObject()) {
+    result.airInletHandle = node->handle();
+  }
+  if (auto node = coil.airOutletModelObject()) {
+    result.airOutletHandle = node->handle();
+  }
+  if (auto node = coil.waterInletModelObject()) {
+    result.waterInletHandle = node->handle();
+  }
+  if (auto node = coil.waterOutletModelObject()) {
+    result.waterOutletHandle = node->handle();
+  }
+  for (const auto& controller : model.getConcreteModelObjects<ControllerWaterCoil>()) {
+    result.controllerHandles.push_back(controller.handle());
+    result.controllerActions.push_back(controller.action());
+    const auto actuatorNode = controller.actuatorNode();
+    const auto sensorNode = controller.sensorNode();
+    result.controllerActuatorHandles.push_back(actuatorNode ? boost::optional<openstudio::Handle>(actuatorNode->handle()) : boost::none);
+    result.controllerSensorHandles.push_back(sensorNode ? boost::optional<openstudio::Handle>(sensorNode->handle()) : boost::none);
+  }
+  for (const auto& controllerList : model.getConcreteModelObjects<AirLoopHVACControllerList>()) {
+    result.controllerListHandles.push_back(controllerList.handle());
+    result.controllerListControllerHandles.push_back(objectHandles(controllerList.controllers()));
+  }
+  return result;
+}
+
+void expectWaterCoilMoveTopologyEqual(const WaterCoilMoveTopologySnapshot& expected, const WaterCoilMoveTopologySnapshot& actual) {
+  EXPECT_EQ(expected.plantTopology.branchHandles, actual.plantTopology.branchHandles);
+  EXPECT_EQ(expected.plantTopology.branchComponentHandles, actual.plantTopology.branchComponentHandles);
+  EXPECT_EQ(expected.plantTopology.branchInletNodeHandles, actual.plantTopology.branchInletNodeHandles);
+  EXPECT_EQ(expected.plantTopology.branchOutletNodeHandles, actual.plantTopology.branchOutletNodeHandles);
+  EXPECT_EQ(expected.plantTopology.branchListHandles, actual.plantTopology.branchListHandles);
+  EXPECT_EQ(expected.plantTopology.branchListBranchHandles, actual.plantTopology.branchListBranchHandles);
+  EXPECT_EQ(expected.plantTopology.splitterHandles, actual.plantTopology.splitterHandles);
+  EXPECT_TRUE(expected.plantTopology.splitterInletHandles == actual.plantTopology.splitterInletHandles);
+  EXPECT_EQ(expected.plantTopology.splitterOutletHandles, actual.plantTopology.splitterOutletHandles);
+  EXPECT_EQ(expected.plantTopology.mixerHandles, actual.plantTopology.mixerHandles);
+  EXPECT_EQ(expected.plantTopology.mixerInletHandles, actual.plantTopology.mixerInletHandles);
+  EXPECT_TRUE(expected.plantTopology.mixerOutletHandles == actual.plantTopology.mixerOutletHandles);
+  EXPECT_EQ(expected.plantTopology.nodeHandles, actual.plantTopology.nodeHandles);
+  EXPECT_EQ(expected.plantTopology.sourceComponentHandles, actual.plantTopology.sourceComponentHandles);
+  EXPECT_EQ(expected.plantTopology.targetComponentHandles, actual.plantTopology.targetComponentHandles);
+  EXPECT_TRUE(expected.plantTopology.sourceSetpointTargetHandle == actual.plantTopology.sourceSetpointTargetHandle);
+  EXPECT_TRUE(expected.plantTopology.targetSetpointTargetHandle == actual.plantTopology.targetSetpointTargetHandle);
+  EXPECT_EQ(expected.coilHandle, actual.coilHandle);
+  EXPECT_EQ(expected.airSupplyComponentHandles, actual.airSupplyComponentHandles);
+  EXPECT_TRUE(expected.airLoopHandle == actual.airLoopHandle);
+  EXPECT_TRUE(expected.plantLoopHandle == actual.plantLoopHandle);
+  EXPECT_TRUE(expected.airInletHandle == actual.airInletHandle);
+  EXPECT_TRUE(expected.airOutletHandle == actual.airOutletHandle);
+  EXPECT_TRUE(expected.waterInletHandle == actual.waterInletHandle);
+  EXPECT_TRUE(expected.waterOutletHandle == actual.waterOutletHandle);
+  EXPECT_EQ(expected.controllerHandles, actual.controllerHandles);
+  EXPECT_TRUE(expected.controllerActions == actual.controllerActions);
+  EXPECT_TRUE(expected.controllerActuatorHandles == actual.controllerActuatorHandles);
+  EXPECT_TRUE(expected.controllerSensorHandles == actual.controllerSensorHandles);
+  EXPECT_EQ(expected.controllerListHandles, actual.controllerListHandles);
+  EXPECT_EQ(expected.controllerListControllerHandles, actual.controllerListControllerHandles);
+}
+
+struct ContainedReheatExternalTopologySnapshot
+{
+  openstudio::Handle coilHandle;
+  openstudio::Handle terminalHandle;
+  openstudio::Handle airLoopHandle;
+  openstudio::Handle thermalZoneHandle;
+  std::vector<openstudio::Handle> terminalChildHandles;
+  boost::optional<openstudio::Handle> coilParentHandle;
+  boost::optional<openstudio::Handle> coilAirLoopHandle;
+  boost::optional<openstudio::Handle> terminalAirLoopHandle;
+  boost::optional<openstudio::Handle> coilAirInletHandle;
+  boost::optional<openstudio::Handle> coilAirOutletHandle;
+  boost::optional<openstudio::Handle> terminalAirInletHandle;
+  boost::optional<openstudio::Handle> terminalAirOutletHandle;
+  std::vector<openstudio::Handle> airDemandComponentHandles;
+  std::vector<openstudio::Handle> airThermalZoneHandles;
+  std::vector<openstudio::Handle> zoneEquipmentHandles;
+  std::vector<openstudio::Handle> zoneTerminalHandles;
+  std::vector<openstudio::Handle> zoneSplitterOutletHandles;
+  std::vector<openstudio::Handle> zoneMixerInletHandles;
+  std::vector<openstudio::Handle> airDistributionUnitHandles;
+  std::vector<boost::optional<openstudio::Handle>> airDistributionUnitTerminalHandles;
+  std::vector<boost::optional<openstudio::Handle>> airDistributionUnitOutletHandles;
+  std::vector<openstudio::Handle> controllerHandles;
+  std::vector<openstudio::Handle> controllerListHandles;
+  std::vector<std::vector<openstudio::Handle>> controllerListControllerHandles;
+  openstudio::Handle availabilityScheduleHandle;
+  boost::optional<double> maximumAirFlowRate;
+  boost::optional<double> maximumHotWaterOrSteamFlowRate;
+  double minimumHotWaterOrSteamFlowRate;
+  double convergenceTolerance;
+  double maximumReheatAirTemperature;
+  double ratedInletWaterTemperature;
+
+  bool operator==(const ContainedReheatExternalTopologySnapshot&) const = default;
+};
+
+ContainedReheatExternalTopologySnapshot captureContainedReheatExternalTopology(const Model& model, const AirLoopHVAC& airLoop,
+                                                                               const ThermalZone& thermalZone,
+                                                                               const AirTerminalSingleDuctConstantVolumeReheat& terminal,
+                                                                               const CoilHeatingWater& coil) {
+  ContainedReheatExternalTopologySnapshot result;
+  result.coilHandle = coil.handle();
+  result.terminalHandle = terminal.handle();
+  result.airLoopHandle = airLoop.handle();
+  result.thermalZoneHandle = thermalZone.handle();
+  result.terminalChildHandles = objectHandles(terminal.children());
+  result.airDemandComponentHandles = objectHandles(airLoop.demandComponents());
+  result.airThermalZoneHandles = objectHandles(airLoop.thermalZones());
+  result.zoneEquipmentHandles = objectHandles(thermalZone.equipment());
+  result.zoneTerminalHandles = objectHandles(thermalZone.airLoopHVACTerminals());
+  result.zoneSplitterOutletHandles = objectHandles(airLoop.zoneSplitter().outletModelObjects());
+  result.zoneMixerInletHandles = objectHandles(airLoop.zoneMixer().inletModelObjects());
+  result.availabilityScheduleHandle = terminal.availabilitySchedule().handle();
+  result.maximumAirFlowRate = terminal.maximumAirFlowRate();
+  result.maximumHotWaterOrSteamFlowRate = terminal.maximumHotWaterorSteamFlowRate();
+  result.minimumHotWaterOrSteamFlowRate = terminal.minimumHotWaterorSteamFlowRate();
+  result.convergenceTolerance = terminal.convergenceTolerance();
+  result.maximumReheatAirTemperature = terminal.maximumReheatAirTemperature();
+  result.ratedInletWaterTemperature = coil.ratedInletWaterTemperature();
+
+  if (auto owner = coil.containingHVACComponent()) {
+    result.coilParentHandle = owner->handle();
+  }
+  if (auto owner = coil.airLoopHVAC()) {
+    result.coilAirLoopHandle = owner->handle();
+  }
+  if (auto owner = terminal.airLoopHVAC()) {
+    result.terminalAirLoopHandle = owner->handle();
+  }
+  if (auto node = coil.airInletModelObject()) {
+    result.coilAirInletHandle = node->handle();
+  }
+  if (auto node = coil.airOutletModelObject()) {
+    result.coilAirOutletHandle = node->handle();
+  }
+  if (auto node = terminal.inletModelObject()) {
+    result.terminalAirInletHandle = node->handle();
+  }
+  if (auto node = terminal.outletModelObject()) {
+    result.terminalAirOutletHandle = node->handle();
+  }
+
+  auto airDistributionUnits = model.getConcreteModelObjects<ZoneHVACAirDistributionUnit>();
+  std::ranges::sort(airDistributionUnits, {}, [](const auto& object) { return object.handle(); });
+  for (const auto& airDistributionUnit : airDistributionUnits) {
+    result.airDistributionUnitHandles.push_back(airDistributionUnit.handle());
+    const auto linkedTerminal = airDistributionUnit.airTerminal();
+    const auto outletNode = airDistributionUnit.outletNode();
+    result.airDistributionUnitTerminalHandles.push_back(linkedTerminal ? boost::optional<openstudio::Handle>(linkedTerminal->handle()) : boost::none);
+    result.airDistributionUnitOutletHandles.push_back(outletNode ? boost::optional<openstudio::Handle>(outletNode->handle()) : boost::none);
+  }
+
+  auto controllers = model.getConcreteModelObjects<ControllerWaterCoil>();
+  std::ranges::sort(controllers, {}, [](const auto& controller) { return controller.handle(); });
+  result.controllerHandles = objectHandles(controllers);
+  auto controllerLists = model.getConcreteModelObjects<AirLoopHVACControllerList>();
+  std::ranges::sort(controllerLists, {}, [](const auto& controllerList) { return controllerList.handle(); });
+  for (const auto& controllerList : controllerLists) {
+    result.controllerListHandles.push_back(controllerList.handle());
+    result.controllerListControllerHandles.push_back(objectHandles(controllerList.controllers()));
+  }
+  return result;
+}
+
+struct ContainedReheatMoveTopologySnapshot
+{
+  PlantAttachmentTopologySnapshot plantTopology;
+  ContainedReheatExternalTopologySnapshot externalTopology;
+  std::vector<openstudio::Handle> modelObjectHandles;
+  boost::optional<openstudio::Handle> plantLoopHandle;
+  boost::optional<openstudio::Handle> waterInletHandle;
+  boost::optional<openstudio::Handle> waterOutletHandle;
+
+  bool operator==(const ContainedReheatMoveTopologySnapshot&) const = default;
+};
+
+ContainedReheatMoveTopologySnapshot captureContainedReheatMoveTopology(const Model& model, const PlantLoop& sourceLoop, const PlantLoop& targetLoop,
+                                                                       const AirLoopHVAC& airLoop, const ThermalZone& thermalZone,
+                                                                       const AirTerminalSingleDuctConstantVolumeReheat& terminal,
+                                                                       const CoilHeatingWater& coil) {
+  ContainedReheatMoveTopologySnapshot result{capturePlantTopology(model, sourceLoop, targetLoop, false),
+                                             captureContainedReheatExternalTopology(model, airLoop, thermalZone, terminal, coil),
+                                             {},
+                                             boost::none,
+                                             boost::none,
+                                             boost::none};
+  const auto modelObjects = model.objects();
+  result.modelObjectHandles.reserve(modelObjects.size());
+  for (const auto& object : modelObjects) {
+    result.modelObjectHandles.push_back(object.handle());
+  }
+  std::ranges::sort(result.modelObjectHandles);
+  if (auto owner = coil.plantLoop()) {
+    result.plantLoopHandle = owner->handle();
+  }
+  if (auto node = coil.waterInletModelObject()) {
+    result.waterInletHandle = node->handle();
+  }
+  if (auto node = coil.waterOutletModelObject()) {
+    result.waterOutletHandle = node->handle();
+  }
+  return result;
+}
+
+void expectDemandBranchAndConnectorOrder(PlantLoop plantLoop, const std::vector<openstudio::Handle>& expectedBranchHandles) {
+  const auto branchList = plantLoop.getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::DemandSideBranchListName);
+  ASSERT_TRUE(branchList);
+  const auto branches = branchList->branches();
+  ASSERT_EQ(expectedBranchHandles, objectHandles(branches));
+  ASSERT_GE(branches.size(), 3u);
+
+  auto splitter = plantLoop.demandSplitter().cast<ConnectorSplitter>();
+  auto mixer = plantLoop.demandMixer().cast<ConnectorMixer>();
+  std::vector<openstudio::Handle> splitterBranchTargets;
+  std::vector<openstudio::Handle> mixerBranchTargets;
+  std::vector<openstudio::Handle> splitterTargets;
+  std::vector<openstudio::Handle> mixerTargets;
+  bool allEquipmentBranchesHaveRows = true;
+  unsigned equipmentIndex = 0u;
+  for (auto branch = branches.begin() + 1; branch != branches.end() - 1; ++branch, ++equipmentIndex) {
+    const auto splitterBranch = splitter.getModelObjectTarget<Branch>(splitter.outletPort(equipmentIndex));
+    const auto mixerBranch = mixer.getModelObjectTarget<Branch>(mixer.inletPort(equipmentIndex));
+    ASSERT_TRUE(splitterBranch);
+    ASSERT_TRUE(mixerBranch);
+    splitterBranchTargets.push_back(splitterBranch->handle());
+    mixerBranchTargets.push_back(mixerBranch->handle());
+    const auto rowCount = static_cast<unsigned>(branch->extensibleGroups().size());
+    if (rowCount == 0u) {
+      allEquipmentBranchesHaveRows = false;
+      continue;
+    }
+    const auto branchInlet = branch->componentInletNode(0u);
+    const auto branchOutlet = branch->componentOutletNode(rowCount - 1u);
+    ASSERT_TRUE(branchInlet);
+    ASSERT_TRUE(branchOutlet);
+    splitterTargets.push_back(branchInlet->handle());
+    mixerTargets.push_back(branchOutlet->handle());
+  }
+  const std::vector<openstudio::Handle> equipmentBranchHandles(expectedBranchHandles.begin() + 1, expectedBranchHandles.end() - 1);
+  EXPECT_EQ(equipmentBranchHandles, splitterBranchTargets);
+  EXPECT_EQ(equipmentBranchHandles, mixerBranchTargets);
+  if (allEquipmentBranchesHaveRows) {
+    EXPECT_EQ(splitterTargets, objectHandles(splitter.outletModelObjects()));
+    EXPECT_EQ(mixerTargets, objectHandles(mixer.inletModelObjects()));
+  }
+}
+
+}  // namespace
 
 TEST_F(EPModelFixture, PlantLoop_DefaultConstructor) {
   Model model;
@@ -586,6 +1023,1364 @@ TEST_F(EPModelFixture, PlantLoop_DemandBranchAddMovesOwnedStraightComponentLifec
   EXPECT_EQ(*reloadedTargetLoop, *reloadedTargetSiblingPipe->plantLoop());
   EXPECT_TRUE(reloadedSourceLoop->demandComponents(PipeAdiabatic::iddObjectType()).empty());
   EXPECT_EQ(2u, reloadedTargetLoop->demandComponents(PipeAdiabatic::iddObjectType()).size());
+
+  openstudio::filesystem::remove(idfPath);
+}
+
+TEST_F(EPModelFixture, PlantLoop_SupplyBranchAttachmentFailureRestoresDefaultBranchAndRetries) {
+  Model model;
+  PlantLoop plantLoop(model);
+  PipeAdiabatic pipe(model);
+  ASSERT_TRUE(plantLoop.setName("Transactional Default Supply Loop"));
+  ASSERT_TRUE(pipe.setName("Transactional Default Supply Pipe"));
+
+  const auto before = capturePlantAttachmentTopology(model, plantLoop, plantLoop, pipe, true);
+  {
+    test::ScopedTestFailure failure(model, detail::TestFailurePoint::PlantLoopAfterPipeBranchAttachmentPrepared);
+    EXPECT_FALSE(plantLoop.addSupplyBranchForComponent(pipe));
+  }
+  EXPECT_EQ(before, capturePlantAttachmentTopology(model, plantLoop, plantLoop, pipe, true));
+  EXPECT_FALSE(pipe.plantLoop());
+
+  ASSERT_TRUE(plantLoop.addSupplyBranchForComponent(pipe));
+  ASSERT_TRUE(pipe.plantLoop());
+  EXPECT_EQ(plantLoop, *pipe.plantLoop());
+  EXPECT_TRUE(plantLoop.supplyComponent(pipe.handle()));
+}
+
+TEST_F(EPModelFixture, PlantLoop_SupplyBranchMoveFailureRestoresBothLoopsAndRetries) {
+  Model model;
+  PlantLoop sourceLoop(model);
+  PlantLoop targetLoop(model);
+  PipeAdiabatic movingPipe(model);
+  PipeAdiabatic targetPipe(model);
+  ASSERT_TRUE(sourceLoop.setName("Transactional Source Supply Loop"));
+  ASSERT_TRUE(targetLoop.setName("Transactional Target Supply Loop"));
+  ASSERT_TRUE(movingPipe.setName("Transactional Moving Supply Pipe"));
+  ASSERT_TRUE(targetPipe.setName("Transactional Target Supply Pipe"));
+  ASSERT_TRUE(sourceLoop.addSupplyBranchForComponent(movingPipe));
+  ASSERT_TRUE(targetLoop.addSupplyBranchForComponent(targetPipe));
+
+  const auto before = capturePlantAttachmentTopology(model, sourceLoop, targetLoop, movingPipe, true);
+  {
+    test::ScopedTestFailure failure(model, detail::TestFailurePoint::PlantLoopAfterPipeBranchAttachmentPrepared);
+    EXPECT_FALSE(targetLoop.addSupplyBranchForComponent(movingPipe));
+  }
+  EXPECT_EQ(before, capturePlantAttachmentTopology(model, sourceLoop, targetLoop, movingPipe, true));
+  ASSERT_TRUE(movingPipe.plantLoop());
+  EXPECT_EQ(sourceLoop, *movingPipe.plantLoop());
+
+  ASSERT_TRUE(targetLoop.addSupplyBranchForComponent(movingPipe));
+  ASSERT_TRUE(movingPipe.plantLoop());
+  EXPECT_EQ(targetLoop, *movingPipe.plantLoop());
+  EXPECT_FALSE(sourceLoop.supplyComponent(movingPipe.handle()));
+  EXPECT_TRUE(targetLoop.supplyComponent(movingPipe.handle()));
+  EXPECT_TRUE(targetLoop.supplyComponent(targetPipe.handle()));
+}
+
+TEST_F(EPModelFixture, PlantLoop_DemandBranchAttachmentFailureRestoresDefaultBranchAndRetries) {
+  Model model;
+  PlantLoop plantLoop(model);
+  PipeAdiabatic pipe(model);
+  ASSERT_TRUE(plantLoop.setName("Transactional Default Demand Loop"));
+  ASSERT_TRUE(pipe.setName("Transactional Default Demand Pipe"));
+
+  const auto before = capturePlantAttachmentTopology(model, plantLoop, plantLoop, pipe, false);
+  {
+    test::ScopedTestFailure failure(model, detail::TestFailurePoint::PlantLoopAfterPipeBranchAttachmentPrepared);
+    EXPECT_FALSE(plantLoop.addDemandBranchForComponent(pipe));
+  }
+  EXPECT_EQ(before, capturePlantAttachmentTopology(model, plantLoop, plantLoop, pipe, false));
+  EXPECT_FALSE(pipe.plantLoop());
+
+  ASSERT_TRUE(plantLoop.addDemandBranchForComponent(pipe));
+  ASSERT_TRUE(pipe.plantLoop());
+  EXPECT_EQ(plantLoop, *pipe.plantLoop());
+  EXPECT_TRUE(plantLoop.demandComponent(pipe.handle()));
+}
+
+TEST_F(EPModelFixture, PlantLoop_DemandBranchMoveFailureRestoresBothLoopsAndRetries) {
+  Model model;
+  PlantLoop sourceLoop(model);
+  PlantLoop targetLoop(model);
+  PipeAdiabatic movingPipe(model);
+  PipeAdiabatic targetPipe(model);
+  ASSERT_TRUE(sourceLoop.setName("Transactional Source Demand Loop"));
+  ASSERT_TRUE(targetLoop.setName("Transactional Target Demand Loop"));
+  ASSERT_TRUE(movingPipe.setName("Transactional Moving Demand Pipe"));
+  ASSERT_TRUE(targetPipe.setName("Transactional Target Demand Pipe"));
+  ASSERT_TRUE(sourceLoop.addDemandBranchForComponent(movingPipe));
+  ASSERT_TRUE(targetLoop.addDemandBranchForComponent(targetPipe));
+
+  const auto before = capturePlantAttachmentTopology(model, sourceLoop, targetLoop, movingPipe, false);
+  {
+    test::ScopedTestFailure failure(model, detail::TestFailurePoint::PlantLoopAfterPipeBranchAttachmentPrepared);
+    EXPECT_FALSE(targetLoop.addDemandBranchForComponent(movingPipe));
+  }
+  EXPECT_EQ(before, capturePlantAttachmentTopology(model, sourceLoop, targetLoop, movingPipe, false));
+  ASSERT_TRUE(movingPipe.plantLoop());
+  EXPECT_EQ(sourceLoop, *movingPipe.plantLoop());
+
+  ASSERT_TRUE(targetLoop.addDemandBranchForComponent(movingPipe));
+  ASSERT_TRUE(movingPipe.plantLoop());
+  EXPECT_EQ(targetLoop, *movingPipe.plantLoop());
+  EXPECT_FALSE(sourceLoop.demandComponent(movingPipe.handle()));
+  EXPECT_TRUE(targetLoop.demandComponent(movingPipe.handle()));
+  EXPECT_TRUE(targetLoop.demandComponent(targetPipe.handle()));
+}
+
+TEST_F(EPModelFixture, PlantLoop_SupplyPipeMoveRemovesEmptiedParallelSourceBranch) {
+  Model model;
+  PlantLoop sourceLoop(model);
+  PlantLoop targetLoop(model);
+  PipeAdiabatic retainedPipe(model);
+  PipeAdiabatic movingPipe(model);
+  ASSERT_TRUE(sourceLoop.addSupplyBranchForComponent(retainedPipe));
+  ASSERT_TRUE(sourceLoop.addSupplyBranchForComponent(movingPipe));
+
+  auto sourceLoopImpl = sourceLoop.getImpl<detail::PlantLoop_Impl>();
+  auto sourceEquipmentBranches = sourceLoopImpl->supplyEquipmentBranches();
+  ASSERT_EQ(2u, sourceEquipmentBranches.size());
+  const auto movingBranch = std::ranges::find_if(sourceEquipmentBranches, [&movingPipe](const auto& branch) {
+    const auto components = branch.components();
+    return std::ranges::find(components, movingPipe.cast<ModelObject>()) != components.end();
+  });
+  ASSERT_NE(sourceEquipmentBranches.end(), movingBranch);
+  const auto movingBranchHandle = movingBranch->handle();
+
+  ASSERT_TRUE(targetLoop.addSupplyBranchForComponent(movingPipe));
+  sourceEquipmentBranches = sourceLoopImpl->supplyEquipmentBranches();
+  ASSERT_EQ(1u, sourceEquipmentBranches.size());
+  EXPECT_EQ(std::vector<ModelObject>{retainedPipe.cast<ModelObject>()}, sourceEquipmentBranches.front().components());
+  EXPECT_FALSE(model.getObject(movingBranchHandle));
+  EXPECT_EQ(1u, sourceLoopImpl->supplySplitter().cast<ConnectorSplitter>().nextBranchIndex());
+  EXPECT_EQ(1u, sourceLoopImpl->supplyMixer().cast<ConnectorMixer>().nextBranchIndex());
+}
+
+TEST_F(EPModelFixture, PlantLoop_DemandPipeMoveRemovesEmptiedParallelSourceBranch) {
+  Model model;
+  PlantLoop sourceLoop(model);
+  PlantLoop targetLoop(model);
+  PipeAdiabatic retainedPipe(model);
+  PipeAdiabatic movingPipe(model);
+  ASSERT_TRUE(sourceLoop.addDemandBranchForComponent(retainedPipe));
+  ASSERT_TRUE(sourceLoop.addDemandBranchForComponent(movingPipe));
+
+  auto sourceLoopImpl = sourceLoop.getImpl<detail::PlantLoop_Impl>();
+  auto sourceEquipmentBranches = sourceLoopImpl->demandEquipmentBranches();
+  ASSERT_EQ(2u, sourceEquipmentBranches.size());
+  const auto movingBranch = std::ranges::find_if(sourceEquipmentBranches, [&movingPipe](const auto& branch) {
+    const auto components = branch.components();
+    return std::ranges::find(components, movingPipe.cast<ModelObject>()) != components.end();
+  });
+  ASSERT_NE(sourceEquipmentBranches.end(), movingBranch);
+  const auto movingBranchHandle = movingBranch->handle();
+
+  ASSERT_TRUE(targetLoop.addDemandBranchForComponent(movingPipe));
+  sourceEquipmentBranches = sourceLoopImpl->demandEquipmentBranches();
+  ASSERT_EQ(1u, sourceEquipmentBranches.size());
+  EXPECT_EQ(std::vector<ModelObject>{retainedPipe.cast<ModelObject>()}, sourceEquipmentBranches.front().components());
+  EXPECT_FALSE(model.getObject(movingBranchHandle));
+  EXPECT_EQ(1u, sourceLoopImpl->demandSplitter().cast<ConnectorSplitter>().nextBranchIndex());
+  EXPECT_EQ(1u, sourceLoopImpl->demandMixer().cast<ConnectorMixer>().nextBranchIndex());
+}
+
+TEST_F(EPModelFixture, PlantLoop_SupplyPipeMoveRepairsPreviousStraightComponentOutlet) {
+  Model model;
+  PlantLoop sourceLoop(model);
+  PlantLoop targetLoop(model);
+  PipeAdiabatic retainedPipe(model);
+  PipeAdiabatic movingPipe(model);
+  ASSERT_TRUE(sourceLoop.addSupplyBranchForComponent(retainedPipe));
+  auto insertionNode = retainedPipe.outletModelObject()->cast<Node>();
+  ASSERT_TRUE(movingPipe.addToNode(insertionNode));
+
+  const auto bypassNode = movingPipe.outletModelObject()->cast<Node>();
+  ASSERT_NE(bypassNode, retainedPipe.outletModelObject()->cast<Node>());
+  ASSERT_TRUE(targetLoop.addSupplyBranchForComponent(movingPipe));
+
+  ASSERT_TRUE(retainedPipe.outletModelObject());
+  EXPECT_EQ(bypassNode, retainedPipe.outletModelObject()->cast<Node>());
+  const auto sourceBranches = sourceLoop.getImpl<detail::PlantLoop_Impl>()->supplyEquipmentBranches();
+  ASSERT_EQ(1u, sourceBranches.size());
+  EXPECT_EQ(std::vector<ModelObject>{retainedPipe.cast<ModelObject>()}, sourceBranches.front().components());
+  ASSERT_TRUE(sourceBranches.front().componentOutletNode(0u));
+  EXPECT_EQ(bypassNode, *sourceBranches.front().componentOutletNode(0u));
+}
+
+TEST_F(EPModelFixture, PlantLoop_DemandPipeMoveRepairsNextWaterCoilInlet) {
+  Model model;
+  ScheduleConstant availabilitySchedule(model);
+  PlantLoop sourceLoop(model);
+  PlantLoop targetLoop(model);
+  PipeAdiabatic movingPipe(model);
+  CoilHeatingWater retainedCoil(model, availabilitySchedule);
+  ASSERT_TRUE(sourceLoop.addDemandBranchForComponent(movingPipe));
+  auto insertionNode = movingPipe.outletModelObject()->cast<Node>();
+  ASSERT_TRUE(retainedCoil.addToNode(insertionNode));
+
+  const auto bypassNode = movingPipe.inletModelObject()->cast<Node>();
+  ASSERT_NE(bypassNode, retainedCoil.waterInletModelObject()->cast<Node>());
+  ASSERT_TRUE(targetLoop.addDemandBranchForComponent(movingPipe));
+
+  ASSERT_TRUE(retainedCoil.waterInletModelObject());
+  EXPECT_EQ(bypassNode, retainedCoil.waterInletModelObject()->cast<Node>());
+  const auto sourceBranches = sourceLoop.getImpl<detail::PlantLoop_Impl>()->demandEquipmentBranches();
+  ASSERT_EQ(1u, sourceBranches.size());
+  EXPECT_EQ(std::vector<ModelObject>{retainedCoil.cast<ModelObject>()}, sourceBranches.front().components());
+  ASSERT_TRUE(sourceBranches.front().componentInletNode(0u));
+  EXPECT_EQ(bypassNode, *sourceBranches.front().componentInletNode(0u));
+}
+
+TEST_F(EPModelFixture, PlantLoop_SupplyDefaultPipeBranchRemovalFailureRestoresAndRetries) {
+  Model model;
+  PlantLoop plantLoop(model);
+  PipeAdiabatic pipe(model);
+  ASSERT_TRUE(plantLoop.addSupplyBranchForComponent(pipe));
+  ASSERT_TRUE(pipe.inletModelObject());
+  ASSERT_TRUE(pipe.outletModelObject());
+  const auto inletNodeHandle = pipe.inletModelObject()->handle();
+  const auto outletNodeHandle = pipe.outletModelObject()->handle();
+  auto setpointTarget = plantLoop.supplyInletNode();
+  ASSERT_TRUE(plantLoop.setLoopTemperatureSetpointNode(setpointTarget));
+  const auto setpointTargetHandle = setpointTarget.handle();
+  auto branchList = plantLoop.getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::PlantSideBranchListName);
+  ASSERT_TRUE(branchList);
+  const auto originalBranchHandles = objectHandles(branchList->branches());
+  ASSERT_EQ(3u, originalBranchHandles.size());
+  const auto originalDefaultBranchHandle = originalBranchHandles[1];
+
+  const auto before = capturePlantAttachmentTopology(model, plantLoop, plantLoop, pipe, true);
+  {
+    test::ScopedTestFailure failure(model, detail::TestFailurePoint::PlantLoopAfterPipeBranchRemovalPrepared);
+    EXPECT_FALSE(plantLoop.removeSupplyBranchWithComponent(pipe));
+  }
+  EXPECT_EQ(before, capturePlantAttachmentTopology(model, plantLoop, plantLoop, pipe, true));
+  EXPECT_EQ(setpointTargetHandle, plantLoop.loopTemperatureSetpointNode().handle());
+
+  ASSERT_TRUE(plantLoop.removeSupplyBranchWithComponent(pipe));
+  EXPECT_TRUE(model.getObject(pipe.handle()));
+  EXPECT_FALSE(pipe.inletModelObject());
+  EXPECT_FALSE(pipe.outletModelObject());
+  EXPECT_FALSE(pipe.plantLoop());
+  EXPECT_FALSE(plantLoop.supplyComponent(pipe.handle()));
+  EXPECT_TRUE(model.getObject(inletNodeHandle));
+  EXPECT_TRUE(model.getObject(outletNodeHandle));
+  EXPECT_EQ(setpointTargetHandle, plantLoop.loopTemperatureSetpointNode().handle());
+  branchList = plantLoop.getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::PlantSideBranchListName);
+  ASSERT_TRUE(branchList);
+  const std::vector<openstudio::Handle> expectedBranchHandles{originalBranchHandles.front(), originalDefaultBranchHandle,
+                                                              originalBranchHandles.back()};
+  EXPECT_EQ(expectedBranchHandles, objectHandles(branchList->branches()));
+  ASSERT_TRUE(model.getObject(originalDefaultBranchHandle));
+  ASSERT_EQ(3u, branchList->branches().size());
+  EXPECT_EQ(originalDefaultBranchHandle, branchList->branches()[1].handle());
+  EXPECT_TRUE(branchList->branches()[1].components().empty());
+  EXPECT_EQ(1u, plantLoop.supplySplitter().cast<ConnectorSplitter>().nextBranchIndex());
+  EXPECT_EQ(1u, plantLoop.supplyMixer().cast<ConnectorMixer>().nextBranchIndex());
+
+  ASSERT_TRUE(plantLoop.addSupplyBranchForComponent(pipe));
+  ASSERT_TRUE(pipe.inletModelObject());
+  ASSERT_TRUE(pipe.outletModelObject());
+  EXPECT_EQ(inletNodeHandle, pipe.inletModelObject()->handle());
+  EXPECT_EQ(outletNodeHandle, pipe.outletModelObject()->handle());
+  EXPECT_TRUE(plantLoop.supplyComponent(pipe.handle()));
+  EXPECT_EQ(setpointTargetHandle, plantLoop.loopTemperatureSetpointNode().handle());
+  EXPECT_EQ(expectedBranchHandles, objectHandles(branchList->branches()));
+}
+
+TEST_F(EPModelFixture, PlantLoop_DemandDefaultPipeBranchRemovalFailureRestoresAndRetries) {
+  Model model;
+  PlantLoop plantLoop(model);
+  PipeAdiabatic pipe(model);
+  ASSERT_TRUE(plantLoop.addDemandBranchForComponent(pipe));
+  ASSERT_TRUE(pipe.inletModelObject());
+  ASSERT_TRUE(pipe.outletModelObject());
+  const auto inletNodeHandle = pipe.inletModelObject()->handle();
+  const auto outletNodeHandle = pipe.outletModelObject()->handle();
+  auto setpointTarget = plantLoop.supplyInletNode();
+  ASSERT_TRUE(plantLoop.setLoopTemperatureSetpointNode(setpointTarget));
+  const auto setpointTargetHandle = setpointTarget.handle();
+  auto branchList = plantLoop.getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::DemandSideBranchListName);
+  ASSERT_TRUE(branchList);
+  const auto originalBranchHandles = objectHandles(branchList->branches());
+  ASSERT_EQ(3u, originalBranchHandles.size());
+  const auto originalDefaultBranchHandle = originalBranchHandles[1];
+
+  const auto before = capturePlantAttachmentTopology(model, plantLoop, plantLoop, pipe, false);
+  {
+    test::ScopedTestFailure failure(model, detail::TestFailurePoint::PlantLoopAfterPipeBranchRemovalPrepared);
+    EXPECT_FALSE(plantLoop.removeDemandBranchWithComponent(pipe));
+  }
+  EXPECT_EQ(before, capturePlantAttachmentTopology(model, plantLoop, plantLoop, pipe, false));
+  EXPECT_EQ(setpointTargetHandle, plantLoop.loopTemperatureSetpointNode().handle());
+
+  ASSERT_TRUE(plantLoop.removeDemandBranchWithComponent(pipe));
+  EXPECT_TRUE(model.getObject(pipe.handle()));
+  EXPECT_FALSE(pipe.inletModelObject());
+  EXPECT_FALSE(pipe.outletModelObject());
+  EXPECT_FALSE(pipe.plantLoop());
+  EXPECT_FALSE(plantLoop.demandComponent(pipe.handle()));
+  EXPECT_TRUE(model.getObject(inletNodeHandle));
+  EXPECT_TRUE(model.getObject(outletNodeHandle));
+  EXPECT_EQ(setpointTargetHandle, plantLoop.loopTemperatureSetpointNode().handle());
+  branchList = plantLoop.getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::DemandSideBranchListName);
+  ASSERT_TRUE(branchList);
+  const std::vector<openstudio::Handle> expectedBranchHandles{originalBranchHandles.front(), originalDefaultBranchHandle,
+                                                              originalBranchHandles.back()};
+  EXPECT_EQ(expectedBranchHandles, objectHandles(branchList->branches()));
+  ASSERT_TRUE(model.getObject(originalDefaultBranchHandle));
+  ASSERT_EQ(3u, branchList->branches().size());
+  EXPECT_EQ(originalDefaultBranchHandle, branchList->branches()[1].handle());
+  EXPECT_TRUE(branchList->branches()[1].components().empty());
+  EXPECT_EQ(1u, plantLoop.demandSplitter().cast<ConnectorSplitter>().nextBranchIndex());
+  EXPECT_EQ(1u, plantLoop.demandMixer().cast<ConnectorMixer>().nextBranchIndex());
+
+  ASSERT_TRUE(plantLoop.addDemandBranchForComponent(pipe));
+  ASSERT_TRUE(pipe.inletModelObject());
+  ASSERT_TRUE(pipe.outletModelObject());
+  EXPECT_EQ(inletNodeHandle, pipe.inletModelObject()->handle());
+  EXPECT_EQ(outletNodeHandle, pipe.outletModelObject()->handle());
+  EXPECT_TRUE(plantLoop.demandComponent(pipe.handle()));
+  EXPECT_EQ(setpointTargetHandle, plantLoop.loopTemperatureSetpointNode().handle());
+  EXPECT_EQ(expectedBranchHandles, objectHandles(branchList->branches()));
+}
+
+TEST_F(EPModelFixture, PlantLoop_SupplyParallelPipeBranchRemovalFailureRestoresAndRetries) {
+  Model model;
+  PlantLoop plantLoop(model);
+  PipeAdiabatic retainedPipe(model);
+  PipeAdiabatic removedPipe(model);
+  ASSERT_TRUE(plantLoop.addSupplyBranchForComponent(retainedPipe));
+  ASSERT_TRUE(plantLoop.addSupplyBranchForComponent(removedPipe));
+  ASSERT_TRUE(removedPipe.inletModelObject());
+  ASSERT_TRUE(removedPipe.outletModelObject());
+  const auto inletNodeHandle = removedPipe.inletModelObject()->handle();
+  const auto outletNodeHandle = removedPipe.outletModelObject()->handle();
+  auto setpointTarget = plantLoop.supplyInletNode();
+  ASSERT_TRUE(plantLoop.setLoopTemperatureSetpointNode(setpointTarget));
+  const auto setpointTargetHandle = setpointTarget.handle();
+
+  auto branchList = plantLoop.getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::PlantSideBranchListName);
+  ASSERT_TRUE(branchList);
+  const auto listedBranches = branchList->branches();
+  const auto branchHandlesBefore = objectHandles(listedBranches);
+  ASSERT_EQ(4u, branchHandlesBefore.size());
+  const auto retainedBranch = std::ranges::find_if(listedBranches, [&retainedPipe](const auto& branch) {
+    const auto components = branch.components();
+    return std::ranges::find(components, retainedPipe.cast<ModelObject>()) != components.end();
+  });
+  const auto removedBranch = std::ranges::find_if(listedBranches, [&removedPipe](const auto& branch) {
+    const auto components = branch.components();
+    return std::ranges::find(components, removedPipe.cast<ModelObject>()) != components.end();
+  });
+  ASSERT_NE(listedBranches.end(), retainedBranch);
+  ASSERT_NE(listedBranches.end(), removedBranch);
+  const auto retainedBranchHandle = retainedBranch->handle();
+  const auto removedBranchHandle = removedBranch->handle();
+  auto expectedBranchHandlesAfterRemoval = branchHandlesBefore;
+  const auto erasedBranch = std::ranges::find(expectedBranchHandlesAfterRemoval, removedBranchHandle);
+  ASSERT_NE(expectedBranchHandlesAfterRemoval.end(), erasedBranch);
+  expectedBranchHandlesAfterRemoval.erase(erasedBranch);
+  ASSERT_EQ(3u, expectedBranchHandlesAfterRemoval.size());
+
+  const auto before = capturePlantAttachmentTopology(model, plantLoop, plantLoop, removedPipe, true);
+  {
+    test::ScopedTestFailure failure(model, detail::TestFailurePoint::PlantLoopAfterPipeBranchRemovalPrepared);
+    EXPECT_FALSE(plantLoop.removeSupplyBranchWithComponent(removedPipe));
+  }
+  EXPECT_EQ(before, capturePlantAttachmentTopology(model, plantLoop, plantLoop, removedPipe, true));
+  EXPECT_EQ(setpointTargetHandle, plantLoop.loopTemperatureSetpointNode().handle());
+
+  ASSERT_TRUE(plantLoop.removeSupplyBranchWithComponent(removedPipe));
+  EXPECT_FALSE(model.getObject(removedBranchHandle));
+  EXPECT_TRUE(model.getObject(removedPipe.handle()));
+  EXPECT_TRUE(model.getObject(inletNodeHandle));
+  EXPECT_TRUE(model.getObject(outletNodeHandle));
+  EXPECT_FALSE(plantLoop.supplyComponent(removedPipe.handle()));
+  EXPECT_TRUE(plantLoop.supplyComponent(retainedPipe.handle()));
+  EXPECT_EQ(setpointTargetHandle, plantLoop.loopTemperatureSetpointNode().handle());
+  branchList = plantLoop.getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::PlantSideBranchListName);
+  ASSERT_TRUE(branchList);
+  const auto branchesAfterRemoval = branchList->branches();
+  EXPECT_EQ(expectedBranchHandlesAfterRemoval, objectHandles(branchesAfterRemoval));
+  ASSERT_EQ(3u, branchesAfterRemoval.size());
+  ASSERT_EQ(retainedBranchHandle, branchesAfterRemoval[1].handle());
+  ASSERT_EQ(1u, branchesAfterRemoval[1].extensibleGroups().size());
+  const auto retainedBranchInlet = branchesAfterRemoval[1].componentInletNode(0u);
+  const auto retainedBranchOutlet = branchesAfterRemoval[1].componentOutletNode(0u);
+  ASSERT_TRUE(retainedBranchInlet);
+  ASSERT_TRUE(retainedBranchOutlet);
+  EXPECT_EQ(std::vector<openstudio::Handle>{retainedBranchInlet->handle()},
+            objectHandles(plantLoop.supplySplitter().cast<ConnectorSplitter>().outletModelObjects()));
+  EXPECT_EQ(std::vector<openstudio::Handle>{retainedBranchOutlet->handle()},
+            objectHandles(plantLoop.supplyMixer().cast<ConnectorMixer>().inletModelObjects()));
+
+  ASSERT_TRUE(plantLoop.addSupplyBranchForComponent(removedPipe));
+  ASSERT_TRUE(removedPipe.inletModelObject());
+  ASSERT_TRUE(removedPipe.outletModelObject());
+  EXPECT_EQ(inletNodeHandle, removedPipe.inletModelObject()->handle());
+  EXPECT_EQ(outletNodeHandle, removedPipe.outletModelObject()->handle());
+  EXPECT_EQ(setpointTargetHandle, plantLoop.loopTemperatureSetpointNode().handle());
+  branchList = plantLoop.getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::PlantSideBranchListName);
+  ASSERT_TRUE(branchList);
+  const auto branchHandlesAfterReAdd = objectHandles(branchList->branches());
+  ASSERT_EQ(4u, branchHandlesAfterReAdd.size());
+  std::vector<openstudio::Handle> splitterTargetsAfterReAdd;
+  std::vector<openstudio::Handle> mixerTargetsAfterReAdd;
+  const auto branchesAfterReAdd = branchList->branches();
+  for (auto branch = branchesAfterReAdd.begin() + 1; branch != branchesAfterReAdd.end() - 1; ++branch) {
+    ASSERT_EQ(1u, branch->extensibleGroups().size());
+    const auto branchInlet = branch->componentInletNode(0u);
+    const auto branchOutlet = branch->componentOutletNode(0u);
+    ASSERT_TRUE(branchInlet);
+    ASSERT_TRUE(branchOutlet);
+    splitterTargetsAfterReAdd.push_back(branchInlet->handle());
+    mixerTargetsAfterReAdd.push_back(branchOutlet->handle());
+  }
+  EXPECT_EQ(splitterTargetsAfterReAdd, objectHandles(plantLoop.supplySplitter().cast<ConnectorSplitter>().outletModelObjects()));
+  EXPECT_EQ(mixerTargetsAfterReAdd, objectHandles(plantLoop.supplyMixer().cast<ConnectorMixer>().inletModelObjects()));
+}
+
+TEST_F(EPModelFixture, PlantLoop_DemandParallelPipeBranchRemovalFailureRestoresAndRetries) {
+  Model model;
+  PlantLoop plantLoop(model);
+  PipeAdiabatic retainedPipe(model);
+  PipeAdiabatic removedPipe(model);
+  ASSERT_TRUE(plantLoop.addDemandBranchForComponent(retainedPipe));
+  ASSERT_TRUE(plantLoop.addDemandBranchForComponent(removedPipe));
+  ASSERT_TRUE(removedPipe.inletModelObject());
+  ASSERT_TRUE(removedPipe.outletModelObject());
+  const auto inletNodeHandle = removedPipe.inletModelObject()->handle();
+  const auto outletNodeHandle = removedPipe.outletModelObject()->handle();
+  auto setpointTarget = plantLoop.supplyInletNode();
+  ASSERT_TRUE(plantLoop.setLoopTemperatureSetpointNode(setpointTarget));
+  const auto setpointTargetHandle = setpointTarget.handle();
+
+  auto branchList = plantLoop.getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::DemandSideBranchListName);
+  ASSERT_TRUE(branchList);
+  const auto listedBranches = branchList->branches();
+  const auto branchHandlesBefore = objectHandles(listedBranches);
+  ASSERT_EQ(4u, branchHandlesBefore.size());
+  const auto retainedBranch = std::ranges::find_if(listedBranches, [&retainedPipe](const auto& branch) {
+    const auto components = branch.components();
+    return std::ranges::find(components, retainedPipe.cast<ModelObject>()) != components.end();
+  });
+  const auto removedBranch = std::ranges::find_if(listedBranches, [&removedPipe](const auto& branch) {
+    const auto components = branch.components();
+    return std::ranges::find(components, removedPipe.cast<ModelObject>()) != components.end();
+  });
+  ASSERT_NE(listedBranches.end(), retainedBranch);
+  ASSERT_NE(listedBranches.end(), removedBranch);
+  const auto retainedBranchHandle = retainedBranch->handle();
+  const auto removedBranchHandle = removedBranch->handle();
+  auto expectedBranchHandlesAfterRemoval = branchHandlesBefore;
+  const auto erasedBranch = std::ranges::find(expectedBranchHandlesAfterRemoval, removedBranchHandle);
+  ASSERT_NE(expectedBranchHandlesAfterRemoval.end(), erasedBranch);
+  expectedBranchHandlesAfterRemoval.erase(erasedBranch);
+  ASSERT_EQ(3u, expectedBranchHandlesAfterRemoval.size());
+
+  const auto before = capturePlantAttachmentTopology(model, plantLoop, plantLoop, removedPipe, false);
+  {
+    test::ScopedTestFailure failure(model, detail::TestFailurePoint::PlantLoopAfterPipeBranchRemovalPrepared);
+    EXPECT_FALSE(plantLoop.removeDemandBranchWithComponent(removedPipe));
+  }
+  EXPECT_EQ(before, capturePlantAttachmentTopology(model, plantLoop, plantLoop, removedPipe, false));
+  EXPECT_EQ(setpointTargetHandle, plantLoop.loopTemperatureSetpointNode().handle());
+
+  ASSERT_TRUE(plantLoop.removeDemandBranchWithComponent(removedPipe));
+  EXPECT_FALSE(model.getObject(removedBranchHandle));
+  EXPECT_TRUE(model.getObject(removedPipe.handle()));
+  EXPECT_TRUE(model.getObject(inletNodeHandle));
+  EXPECT_TRUE(model.getObject(outletNodeHandle));
+  EXPECT_FALSE(plantLoop.demandComponent(removedPipe.handle()));
+  EXPECT_TRUE(plantLoop.demandComponent(retainedPipe.handle()));
+  EXPECT_EQ(setpointTargetHandle, plantLoop.loopTemperatureSetpointNode().handle());
+  branchList = plantLoop.getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::DemandSideBranchListName);
+  ASSERT_TRUE(branchList);
+  const auto branchesAfterRemoval = branchList->branches();
+  EXPECT_EQ(expectedBranchHandlesAfterRemoval, objectHandles(branchesAfterRemoval));
+  ASSERT_EQ(3u, branchesAfterRemoval.size());
+  ASSERT_EQ(retainedBranchHandle, branchesAfterRemoval[1].handle());
+  ASSERT_EQ(1u, branchesAfterRemoval[1].extensibleGroups().size());
+  const auto retainedBranchInlet = branchesAfterRemoval[1].componentInletNode(0u);
+  const auto retainedBranchOutlet = branchesAfterRemoval[1].componentOutletNode(0u);
+  ASSERT_TRUE(retainedBranchInlet);
+  ASSERT_TRUE(retainedBranchOutlet);
+  EXPECT_EQ(std::vector<openstudio::Handle>{retainedBranchInlet->handle()},
+            objectHandles(plantLoop.demandSplitter().cast<ConnectorSplitter>().outletModelObjects()));
+  EXPECT_EQ(std::vector<openstudio::Handle>{retainedBranchOutlet->handle()},
+            objectHandles(plantLoop.demandMixer().cast<ConnectorMixer>().inletModelObjects()));
+
+  ASSERT_TRUE(plantLoop.addDemandBranchForComponent(removedPipe));
+  ASSERT_TRUE(removedPipe.inletModelObject());
+  ASSERT_TRUE(removedPipe.outletModelObject());
+  EXPECT_EQ(inletNodeHandle, removedPipe.inletModelObject()->handle());
+  EXPECT_EQ(outletNodeHandle, removedPipe.outletModelObject()->handle());
+  EXPECT_EQ(setpointTargetHandle, plantLoop.loopTemperatureSetpointNode().handle());
+  branchList = plantLoop.getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::DemandSideBranchListName);
+  ASSERT_TRUE(branchList);
+  const auto branchHandlesAfterReAdd = objectHandles(branchList->branches());
+  ASSERT_EQ(4u, branchHandlesAfterReAdd.size());
+  std::vector<openstudio::Handle> splitterTargetsAfterReAdd;
+  std::vector<openstudio::Handle> mixerTargetsAfterReAdd;
+  const auto branchesAfterReAdd = branchList->branches();
+  for (auto branch = branchesAfterReAdd.begin() + 1; branch != branchesAfterReAdd.end() - 1; ++branch) {
+    ASSERT_EQ(1u, branch->extensibleGroups().size());
+    const auto branchInlet = branch->componentInletNode(0u);
+    const auto branchOutlet = branch->componentOutletNode(0u);
+    ASSERT_TRUE(branchInlet);
+    ASSERT_TRUE(branchOutlet);
+    splitterTargetsAfterReAdd.push_back(branchInlet->handle());
+    mixerTargetsAfterReAdd.push_back(branchOutlet->handle());
+  }
+  EXPECT_EQ(splitterTargetsAfterReAdd, objectHandles(plantLoop.demandSplitter().cast<ConnectorSplitter>().outletModelObjects()));
+  EXPECT_EQ(mixerTargetsAfterReAdd, objectHandles(plantLoop.demandMixer().cast<ConnectorMixer>().inletModelObjects()));
+}
+
+TEST_F(EPModelFixture, PlantLoop_PipeBranchRemovalRejectsSerialRowsWithoutMutation) {
+  Model model;
+  PlantLoop supplyLoop(model);
+  PipeAdiabatic supplyFirstPipe(model);
+  PipeAdiabatic supplySecondPipe(model);
+  ASSERT_TRUE(supplyLoop.addSupplyBranchForComponent(supplyFirstPipe));
+  ASSERT_TRUE(supplyFirstPipe.outletModelObject());
+  auto supplyInsertionNode = supplyFirstPipe.outletModelObject()->cast<Node>();
+  ASSERT_TRUE(supplySecondPipe.addToNode(supplyInsertionNode));
+  const auto supplyBefore = capturePlantAttachmentTopology(model, supplyLoop, supplyLoop, supplySecondPipe, true);
+  EXPECT_FALSE(supplyLoop.removeSupplyBranchWithComponent(supplySecondPipe));
+  EXPECT_EQ(supplyBefore, capturePlantAttachmentTopology(model, supplyLoop, supplyLoop, supplySecondPipe, true));
+
+  PlantLoop demandLoop(model);
+  PipeAdiabatic demandFirstPipe(model);
+  PipeAdiabatic demandSecondPipe(model);
+  ASSERT_TRUE(demandLoop.addDemandBranchForComponent(demandFirstPipe));
+  ASSERT_TRUE(demandFirstPipe.outletModelObject());
+  auto demandInsertionNode = demandFirstPipe.outletModelObject()->cast<Node>();
+  ASSERT_TRUE(demandSecondPipe.addToNode(demandInsertionNode));
+  const auto demandBefore = capturePlantAttachmentTopology(model, demandLoop, demandLoop, demandSecondPipe, false);
+  EXPECT_FALSE(demandLoop.removeDemandBranchWithComponent(demandSecondPipe));
+  EXPECT_EQ(demandBefore, capturePlantAttachmentTopology(model, demandLoop, demandLoop, demandSecondPipe, false));
+}
+
+TEST_F(EPModelFixture, PlantLoop_HeatingWaterCoilDemandMoveDefaultSourceToOccupiedTargetIsTransactional) {
+  const auto idfPath = openstudio::tempDir() / openstudio::toPath("epmodel-heating-water-coil-demand-move.idf");
+
+  Model model;
+  AirLoopHVAC airLoop(model);
+  PlantLoop sourceLoop(model);
+  PlantLoop targetLoop(model);
+  CoilHeatingWater coil(model);
+  PipeAdiabatic targetPipe(model);
+  ASSERT_TRUE(airLoop.setName("Moved Heating Coil Air Loop"));
+  ASSERT_TRUE(sourceLoop.setName("Moved Heating Coil Source Plant Loop"));
+  ASSERT_TRUE(targetLoop.setName("Moved Heating Coil Target Plant Loop"));
+  ASSERT_TRUE(coil.setName("Moved Standalone Heating Water Coil"));
+  ASSERT_TRUE(targetPipe.setName("Retained Target Demand Pipe"));
+  ASSERT_TRUE(coil.setRatedInletWaterTemperature(61.25));
+
+  auto airInsertionNode = airLoop.supplyOutletNode();
+  ASSERT_TRUE(coil.addToNode(airInsertionNode));
+  ASSERT_TRUE(sourceLoop.addDemandBranchForComponent(coil));
+  ASSERT_TRUE(targetLoop.addDemandBranchForComponent(targetPipe));
+  auto sourceSetpointTarget = sourceLoop.supplyInletNode();
+  auto targetSetpointTarget = targetLoop.supplyInletNode();
+  ASSERT_TRUE(sourceLoop.setLoopTemperatureSetpointNode(sourceSetpointTarget));
+  ASSERT_TRUE(targetLoop.setLoopTemperatureSetpointNode(targetSetpointTarget));
+
+  ASSERT_TRUE(coil.airInletModelObject());
+  ASSERT_TRUE(coil.airOutletModelObject());
+  ASSERT_TRUE(coil.waterInletModelObject());
+  ASSERT_TRUE(coil.waterOutletModelObject());
+  const auto airInletHandle = coil.airInletModelObject()->handle();
+  const auto airOutletHandle = coil.airOutletModelObject()->handle();
+  const auto sourceWaterInletHandle = coil.waterInletModelObject()->handle();
+  const auto sourceWaterOutletHandle = coil.waterOutletModelObject()->handle();
+  const auto airSupplyHandles = objectHandles(airLoop.supplyComponents());
+
+  auto controller = coil.controllerWaterCoil();
+  ASSERT_TRUE(controller);
+  ASSERT_TRUE(controller->action());
+  EXPECT_EQ("Normal", *controller->action());
+  ASSERT_TRUE(controller->actuatorNode());
+  ASSERT_TRUE(controller->sensorNode());
+  const auto controllerHandle = controller->handle();
+  const auto controllerSensorHandle = controller->sensorNode()->handle();
+  auto controllerList = airLoop.getModelObjectTarget<AirLoopHVACControllerList>(openstudio::AirLoopHVACFields::ControllerListName);
+  ASSERT_TRUE(controllerList);
+  const auto controllerListHandle = controllerList->handle();
+  const auto controllerListMembers = objectHandles(controllerList->controllers());
+  EXPECT_EQ(std::vector<openstudio::Handle>{controllerHandle}, controllerListMembers);
+
+  auto sourceBranchList = sourceLoop.getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::DemandSideBranchListName);
+  auto targetBranchList = targetLoop.getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::DemandSideBranchListName);
+  ASSERT_TRUE(sourceBranchList);
+  ASSERT_TRUE(targetBranchList);
+  const auto sourceBranchHandlesBefore = objectHandles(sourceBranchList->branches());
+  const auto targetBranchHandlesBefore = objectHandles(targetBranchList->branches());
+  ASSERT_EQ(3u, sourceBranchHandlesBefore.size());
+  ASSERT_EQ(3u, targetBranchHandlesBefore.size());
+  const auto sourceDefaultBranchHandle = sourceBranchHandlesBefore[1];
+
+  const auto before = captureWaterCoilMoveTopology(model, sourceLoop, targetLoop, airLoop, coil);
+  {
+    test::ScopedTestFailure failure(model, detail::TestFailurePoint::PlantLoopAfterWaterCoilBranchAttachmentPrepared);
+    EXPECT_FALSE(targetLoop.addDemandBranchForComponent(coil));
+  }
+  expectWaterCoilMoveTopologyEqual(before, captureWaterCoilMoveTopology(model, sourceLoop, targetLoop, airLoop, coil));
+  EXPECT_DOUBLE_EQ(61.25, coil.ratedInletWaterTemperature());
+
+  ASSERT_TRUE(targetLoop.addDemandBranchForComponent(coil));
+  EXPECT_FALSE(sourceLoop.demandComponent(coil.handle()));
+  EXPECT_TRUE(targetLoop.demandComponent(coil.handle()));
+  ASSERT_TRUE(coil.plantLoop());
+  EXPECT_EQ(targetLoop, *coil.plantLoop());
+  ASSERT_TRUE(coil.airLoopHVAC());
+  EXPECT_EQ(airLoop, *coil.airLoopHVAC());
+  EXPECT_EQ(airSupplyHandles, objectHandles(airLoop.supplyComponents()));
+  ASSERT_TRUE(coil.airInletModelObject());
+  ASSERT_TRUE(coil.airOutletModelObject());
+  ASSERT_TRUE(coil.waterInletModelObject());
+  ASSERT_TRUE(coil.waterOutletModelObject());
+  EXPECT_EQ(airInletHandle, coil.airInletModelObject()->handle());
+  EXPECT_EQ(airOutletHandle, coil.airOutletModelObject()->handle());
+  EXPECT_NE(sourceWaterInletHandle, coil.waterInletModelObject()->handle());
+  EXPECT_NE(sourceWaterOutletHandle, coil.waterOutletModelObject()->handle());
+  EXPECT_TRUE(model.getObject(sourceWaterInletHandle));
+  EXPECT_TRUE(model.getObject(sourceWaterOutletHandle));
+  EXPECT_DOUBLE_EQ(61.25, coil.ratedInletWaterTemperature());
+  EXPECT_EQ(sourceSetpointTarget.handle(), sourceLoop.loopTemperatureSetpointNode().handle());
+  EXPECT_EQ(targetSetpointTarget.handle(), targetLoop.loopTemperatureSetpointNode().handle());
+
+  sourceBranchList = sourceLoop.getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::DemandSideBranchListName);
+  targetBranchList = targetLoop.getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::DemandSideBranchListName);
+  ASSERT_TRUE(sourceBranchList);
+  ASSERT_TRUE(targetBranchList);
+  EXPECT_EQ(sourceBranchHandlesBefore, objectHandles(sourceBranchList->branches()));
+  ASSERT_EQ(sourceDefaultBranchHandle, sourceBranchList->branches()[1].handle());
+  EXPECT_TRUE(sourceBranchList->branches()[1].components().empty());
+  expectDemandBranchAndConnectorOrder(sourceLoop, sourceBranchHandlesBefore);
+  const auto targetBranchHandlesAfter = objectHandles(targetBranchList->branches());
+  ASSERT_EQ(4u, targetBranchHandlesAfter.size());
+  EXPECT_EQ(targetBranchHandlesBefore[0], targetBranchHandlesAfter[0]);
+  EXPECT_EQ(targetBranchHandlesBefore[1], targetBranchHandlesAfter[1]);
+  EXPECT_EQ(targetBranchHandlesBefore[2], targetBranchHandlesAfter[3]);
+  EXPECT_NE(targetBranchHandlesBefore[1], targetBranchHandlesAfter[2]);
+  expectDemandBranchAndConnectorOrder(targetLoop, targetBranchHandlesAfter);
+
+  controller = coil.controllerWaterCoil();
+  ASSERT_TRUE(controller);
+  EXPECT_EQ(controllerHandle, controller->handle());
+  ASSERT_TRUE(controller->action());
+  EXPECT_EQ("Normal", *controller->action());
+  ASSERT_TRUE(controller->actuatorNode());
+  ASSERT_TRUE(controller->sensorNode());
+  EXPECT_EQ(coil.waterInletModelObject()->handle(), controller->actuatorNode()->handle());
+  EXPECT_EQ(controllerSensorHandle, controller->sensorNode()->handle());
+  controllerList = airLoop.getModelObjectTarget<AirLoopHVACControllerList>(openstudio::AirLoopHVACFields::ControllerListName);
+  ASSERT_TRUE(controllerList);
+  EXPECT_EQ(controllerListHandle, controllerList->handle());
+  EXPECT_EQ(controllerListMembers, objectHandles(controllerList->controllers()));
+
+  ASSERT_TRUE(model.save(idfPath, true));
+  auto loadedModel = Model::load(idfPath);
+  ASSERT_TRUE(loadedModel);
+  auto loadedAirLoop = loadedModel->getConcreteModelObjectByName<AirLoopHVAC>("Moved Heating Coil Air Loop");
+  auto loadedSourceLoop = loadedModel->getConcreteModelObjectByName<PlantLoop>("Moved Heating Coil Source Plant Loop");
+  auto loadedTargetLoop = loadedModel->getConcreteModelObjectByName<PlantLoop>("Moved Heating Coil Target Plant Loop");
+  auto loadedCoil = loadedModel->getConcreteModelObjectByName<CoilHeatingWater>("Moved Standalone Heating Water Coil");
+  ASSERT_TRUE(loadedAirLoop);
+  ASSERT_TRUE(loadedSourceLoop);
+  ASSERT_TRUE(loadedTargetLoop);
+  ASSERT_TRUE(loadedCoil);
+  EXPECT_FALSE(loadedSourceLoop->demandComponent(loadedCoil->handle()));
+  EXPECT_TRUE(loadedTargetLoop->demandComponent(loadedCoil->handle()));
+  ASSERT_TRUE(loadedCoil->plantLoop());
+  EXPECT_EQ(*loadedTargetLoop, *loadedCoil->plantLoop());
+  ASSERT_TRUE(loadedCoil->airLoopHVAC());
+  EXPECT_EQ(*loadedAirLoop, *loadedCoil->airLoopHVAC());
+  EXPECT_DOUBLE_EQ(61.25, loadedCoil->ratedInletWaterTemperature());
+  const auto loadedController = loadedCoil->controllerWaterCoil();
+  ASSERT_TRUE(loadedController);
+  ASSERT_TRUE(loadedController->action());
+  EXPECT_EQ("Normal", *loadedController->action());
+  ASSERT_TRUE(loadedController->actuatorNode());
+  ASSERT_TRUE(loadedController->sensorNode());
+  ASSERT_TRUE(loadedCoil->waterInletModelObject());
+  ASSERT_TRUE(loadedCoil->airOutletModelObject());
+  EXPECT_EQ(loadedCoil->waterInletModelObject()->handle(), loadedController->actuatorNode()->handle());
+  EXPECT_EQ(loadedCoil->airOutletModelObject()->handle(), loadedController->sensorNode()->handle());
+  const auto loadedControllerList = loadedAirLoop->getModelObjectTarget<AirLoopHVACControllerList>(openstudio::AirLoopHVACFields::ControllerListName);
+  ASSERT_TRUE(loadedControllerList);
+  EXPECT_EQ(std::vector<openstudio::Handle>{loadedController->handle()}, objectHandles(loadedControllerList->controllers()));
+
+  openstudio::filesystem::remove(idfPath);
+}
+
+TEST_F(EPModelFixture, PlantLoop_CoolingWaterCoilDemandMoveParallelSourceToDefaultTargetIsTransactional) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  PlantLoop sourceLoop(model);
+  PlantLoop targetLoop(model);
+  PipeAdiabatic retainedSourcePipe(model);
+  CoilCoolingWater coil(model);
+  ASSERT_TRUE(coil.setTypeOfAnalysis("DetailedAnalysis"));
+
+  auto airInsertionNode = airLoop.supplyOutletNode();
+  ASSERT_TRUE(coil.addToNode(airInsertionNode));
+  ASSERT_TRUE(sourceLoop.addDemandBranchForComponent(retainedSourcePipe));
+  ASSERT_TRUE(sourceLoop.addDemandBranchForComponent(coil));
+  auto sourceSetpointTarget = sourceLoop.supplyInletNode();
+  auto targetSetpointTarget = targetLoop.supplyInletNode();
+  ASSERT_TRUE(sourceLoop.setLoopTemperatureSetpointNode(sourceSetpointTarget));
+  ASSERT_TRUE(targetLoop.setLoopTemperatureSetpointNode(targetSetpointTarget));
+
+  ASSERT_TRUE(coil.airInletModelObject());
+  ASSERT_TRUE(coil.airOutletModelObject());
+  ASSERT_TRUE(coil.waterInletModelObject());
+  ASSERT_TRUE(coil.waterOutletModelObject());
+  const auto airInletHandle = coil.airInletModelObject()->handle();
+  const auto airOutletHandle = coil.airOutletModelObject()->handle();
+  const auto sourceWaterInletHandle = coil.waterInletModelObject()->handle();
+  const auto sourceWaterOutletHandle = coil.waterOutletModelObject()->handle();
+  const auto airSupplyHandles = objectHandles(airLoop.supplyComponents());
+
+  auto controller = coil.controllerWaterCoil();
+  ASSERT_TRUE(controller);
+  ASSERT_TRUE(controller->action());
+  EXPECT_EQ("Reverse", *controller->action());
+  ASSERT_TRUE(controller->sensorNode());
+  const auto controllerHandle = controller->handle();
+  const auto controllerSensorHandle = controller->sensorNode()->handle();
+  auto controllerList = airLoop.getModelObjectTarget<AirLoopHVACControllerList>(openstudio::AirLoopHVACFields::ControllerListName);
+  ASSERT_TRUE(controllerList);
+  const auto controllerListHandle = controllerList->handle();
+  const auto controllerListMembers = objectHandles(controllerList->controllers());
+
+  auto sourceBranchList = sourceLoop.getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::DemandSideBranchListName);
+  auto targetBranchList = targetLoop.getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::DemandSideBranchListName);
+  ASSERT_TRUE(sourceBranchList);
+  ASSERT_TRUE(targetBranchList);
+  const auto sourceBranchesBefore = sourceBranchList->branches();
+  const auto sourceBranchHandlesBefore = objectHandles(sourceBranchesBefore);
+  const auto targetBranchHandlesBefore = objectHandles(targetBranchList->branches());
+  ASSERT_EQ(4u, sourceBranchHandlesBefore.size());
+  ASSERT_EQ(3u, targetBranchHandlesBefore.size());
+  const auto removedBranch = std::ranges::find_if(sourceBranchesBefore, [&coil](const auto& branch) {
+    const auto components = branch.components();
+    return std::ranges::find(components, coil.cast<ModelObject>()) != components.end();
+  });
+  ASSERT_NE(sourceBranchesBefore.end(), removedBranch);
+  const auto removedBranchHandle = removedBranch->handle();
+  const auto targetDefaultBranchHandle = targetBranchHandlesBefore[1];
+  auto expectedSourceBranchHandlesAfter = sourceBranchHandlesBefore;
+  const auto removedHandle = std::ranges::find(expectedSourceBranchHandlesAfter, removedBranchHandle);
+  ASSERT_NE(expectedSourceBranchHandlesAfter.end(), removedHandle);
+  expectedSourceBranchHandlesAfter.erase(removedHandle);
+
+  const auto before = captureWaterCoilMoveTopology(model, sourceLoop, targetLoop, airLoop, coil);
+  {
+    test::ScopedTestFailure failure(model, detail::TestFailurePoint::PlantLoopAfterWaterCoilBranchAttachmentPrepared);
+    EXPECT_FALSE(targetLoop.addDemandBranchForComponent(coil));
+  }
+  expectWaterCoilMoveTopologyEqual(before, captureWaterCoilMoveTopology(model, sourceLoop, targetLoop, airLoop, coil));
+  EXPECT_EQ("DetailedAnalysis", coil.typeOfAnalysis());
+
+  ASSERT_TRUE(targetLoop.addDemandBranchForComponent(coil));
+  EXPECT_FALSE(model.getObject(removedBranchHandle));
+  EXPECT_TRUE(model.getObject(sourceWaterInletHandle));
+  EXPECT_TRUE(model.getObject(sourceWaterOutletHandle));
+  EXPECT_FALSE(sourceLoop.demandComponent(coil.handle()));
+  EXPECT_TRUE(sourceLoop.demandComponent(retainedSourcePipe.handle()));
+  EXPECT_TRUE(targetLoop.demandComponent(coil.handle()));
+  ASSERT_TRUE(coil.plantLoop());
+  EXPECT_EQ(targetLoop, *coil.plantLoop());
+  ASSERT_TRUE(coil.airLoopHVAC());
+  EXPECT_EQ(airLoop, *coil.airLoopHVAC());
+  EXPECT_EQ(airSupplyHandles, objectHandles(airLoop.supplyComponents()));
+  ASSERT_TRUE(coil.airInletModelObject());
+  ASSERT_TRUE(coil.airOutletModelObject());
+  ASSERT_TRUE(coil.waterInletModelObject());
+  ASSERT_TRUE(coil.waterOutletModelObject());
+  EXPECT_EQ(airInletHandle, coil.airInletModelObject()->handle());
+  EXPECT_EQ(airOutletHandle, coil.airOutletModelObject()->handle());
+  EXPECT_NE(sourceWaterInletHandle, coil.waterInletModelObject()->handle());
+  EXPECT_NE(sourceWaterOutletHandle, coil.waterOutletModelObject()->handle());
+  EXPECT_EQ("DetailedAnalysis", coil.typeOfAnalysis());
+  EXPECT_EQ(sourceSetpointTarget.handle(), sourceLoop.loopTemperatureSetpointNode().handle());
+  EXPECT_EQ(targetSetpointTarget.handle(), targetLoop.loopTemperatureSetpointNode().handle());
+
+  sourceBranchList = sourceLoop.getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::DemandSideBranchListName);
+  targetBranchList = targetLoop.getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::DemandSideBranchListName);
+  ASSERT_TRUE(sourceBranchList);
+  ASSERT_TRUE(targetBranchList);
+  expectDemandBranchAndConnectorOrder(sourceLoop, expectedSourceBranchHandlesAfter);
+  EXPECT_EQ(targetBranchHandlesBefore, objectHandles(targetBranchList->branches()));
+  ASSERT_EQ(targetDefaultBranchHandle, targetBranchList->branches()[1].handle());
+  EXPECT_EQ(std::vector<ModelObject>{coil.cast<ModelObject>()}, targetBranchList->branches()[1].components());
+  expectDemandBranchAndConnectorOrder(targetLoop, targetBranchHandlesBefore);
+
+  controller = coil.controllerWaterCoil();
+  ASSERT_TRUE(controller);
+  EXPECT_EQ(controllerHandle, controller->handle());
+  ASSERT_TRUE(controller->action());
+  EXPECT_EQ("Reverse", *controller->action());
+  ASSERT_TRUE(controller->actuatorNode());
+  ASSERT_TRUE(controller->sensorNode());
+  EXPECT_EQ(coil.waterInletModelObject()->handle(), controller->actuatorNode()->handle());
+  EXPECT_EQ(controllerSensorHandle, controller->sensorNode()->handle());
+  controllerList = airLoop.getModelObjectTarget<AirLoopHVACControllerList>(openstudio::AirLoopHVACFields::ControllerListName);
+  ASSERT_TRUE(controllerList);
+  EXPECT_EQ(controllerListHandle, controllerList->handle());
+  EXPECT_EQ(controllerListMembers, objectHandles(controllerList->controllers()));
+}
+
+TEST_F(EPModelFixture, PlantLoop_WaterCoilDemandMoveRejectsSameLoopAndNonSingleRowSourceWithoutMutation) {
+  Model model;
+  AirLoopHVAC sameLoopAir(model);
+  PlantLoop sameLoopPlant(model);
+  CoilHeatingWater sameLoopCoil(model);
+  auto sameLoopAirNode = sameLoopAir.supplyOutletNode();
+  ASSERT_TRUE(sameLoopCoil.addToNode(sameLoopAirNode));
+  ASSERT_TRUE(sameLoopPlant.addDemandBranchForComponent(sameLoopCoil));
+  const auto sameLoopBefore = captureWaterCoilMoveTopology(model, sameLoopPlant, sameLoopPlant, sameLoopAir, sameLoopCoil);
+  EXPECT_FALSE(sameLoopPlant.addDemandBranchForComponent(sameLoopCoil));
+  expectWaterCoilMoveTopologyEqual(sameLoopBefore, captureWaterCoilMoveTopology(model, sameLoopPlant, sameLoopPlant, sameLoopAir, sameLoopCoil));
+
+  AirLoopHVAC serialAir(model);
+  PlantLoop serialSource(model);
+  PlantLoop serialTarget(model);
+  CoilCoolingWater serialCoil(model);
+  PipeAdiabatic serialPipe(model);
+  auto serialAirNode = serialAir.supplyOutletNode();
+  ASSERT_TRUE(serialCoil.addToNode(serialAirNode));
+  ASSERT_TRUE(serialSource.addDemandBranchForComponent(serialCoil));
+  ASSERT_TRUE(serialCoil.waterOutletModelObject());
+  auto serialInsertionNode = serialCoil.waterOutletModelObject()->cast<Node>();
+  ASSERT_TRUE(serialPipe.addToNode(serialInsertionNode));
+  const auto serialBefore = captureWaterCoilMoveTopology(model, serialSource, serialTarget, serialAir, serialCoil);
+  EXPECT_FALSE(serialTarget.addDemandBranchForComponent(serialCoil));
+  expectWaterCoilMoveTopologyEqual(serialBefore, captureWaterCoilMoveTopology(model, serialSource, serialTarget, serialAir, serialCoil));
+}
+
+TEST_F(EPModelFixture, PlantLoop_ContainedReheatCoilDemandMoveDefaultSourceToOccupiedTargetIsTransactionalAcrossReload) {
+  const auto idfPath =
+    openstudio::tempDir()
+    / openstudio::toPath("epmodel-contained-reheat-coil-default-move-" + openstudio::removeBraces(openstudio::createUUID()) + ".idf");
+  const ScopedFileRemoval removeIdf(idfPath);
+
+  Model seedModel;
+  AirLoopHVAC seedAirLoop(seedModel);
+  ThermalZone seedZone(seedModel);
+  PlantLoop seedSourceLoop(seedModel);
+  PlantLoop seedTargetLoop(seedModel);
+  CoilHeatingWater seedCoil(seedModel);
+  auto availabilitySchedule = seedModel.alwaysOnDiscreteSchedule();
+  AirTerminalSingleDuctConstantVolumeReheat seedTerminal(seedModel, availabilitySchedule, seedCoil);
+  PipeAdiabatic seedTargetPipe(seedModel);
+  ASSERT_TRUE(seedAirLoop.setName("Contained Reheat Default Move Air Loop"));
+  ASSERT_TRUE(seedZone.setName("Contained Reheat Default Move Zone"));
+  ASSERT_TRUE(seedSourceLoop.setName("Contained Reheat Default Move Source Loop"));
+  ASSERT_TRUE(seedTargetLoop.setName("Contained Reheat Default Move Target Loop"));
+  ASSERT_TRUE(seedCoil.setName("Contained Reheat Default Move Coil"));
+  ASSERT_TRUE(seedTerminal.setName("Contained Reheat Default Move Terminal"));
+  ASSERT_TRUE(seedTargetPipe.setName("Contained Reheat Default Move Target Pipe"));
+  ASSERT_TRUE(seedTerminal.setMaximumAirFlowRate(1.75));
+  ASSERT_TRUE(seedTerminal.setMaximumHotWaterorSteamFlowRate(0.014));
+  ASSERT_TRUE(seedTerminal.setMinimumHotWaterorSteamFlowRate(0.002));
+  ASSERT_TRUE(seedTerminal.setConvergenceTolerance(0.0007));
+  ASSERT_TRUE(seedTerminal.setMaximumReheatAirTemperature(38.5));
+  ASSERT_TRUE(seedCoil.setRatedInletWaterTemperature(63.25));
+  ASSERT_TRUE(seedAirLoop.addBranchForZone(seedZone, seedTerminal));
+  ASSERT_TRUE(seedSourceLoop.addDemandBranchForComponent(seedCoil));
+  ASSERT_TRUE(seedTargetLoop.addDemandBranchForComponent(seedTargetPipe));
+  auto seedSourceSetpoint = seedSourceLoop.supplyInletNode();
+  auto seedTargetSetpoint = seedTargetLoop.supplyInletNode();
+  ASSERT_TRUE(seedSourceLoop.setLoopTemperatureSetpointNode(seedSourceSetpoint));
+  ASSERT_TRUE(seedTargetLoop.setLoopTemperatureSetpointNode(seedTargetSetpoint));
+  EXPECT_FALSE(seedCoil.controllerWaterCoil());
+  ASSERT_EQ(1u, seedTerminal.getSources(openstudio::IddObjectType::ZoneHVAC_AirDistributionUnit).size());
+  ASSERT_TRUE(seedModel.save(idfPath, true));
+
+  auto loadedModel = Model::load(idfPath);
+  ASSERT_TRUE(loadedModel);
+  auto airLoop = loadedModel->getConcreteModelObjectByName<AirLoopHVAC>("Contained Reheat Default Move Air Loop");
+  auto zone = loadedModel->getConcreteModelObjectByName<ThermalZone>("Contained Reheat Default Move Zone");
+  auto sourceLoop = loadedModel->getConcreteModelObjectByName<PlantLoop>("Contained Reheat Default Move Source Loop");
+  auto targetLoop = loadedModel->getConcreteModelObjectByName<PlantLoop>("Contained Reheat Default Move Target Loop");
+  auto coil = loadedModel->getConcreteModelObjectByName<CoilHeatingWater>("Contained Reheat Default Move Coil");
+  auto terminal = loadedModel->getConcreteModelObjectByName<AirTerminalSingleDuctConstantVolumeReheat>("Contained Reheat Default Move Terminal");
+  ASSERT_TRUE(airLoop);
+  ASSERT_TRUE(zone);
+  ASSERT_TRUE(sourceLoop);
+  ASSERT_TRUE(targetLoop);
+  ASSERT_TRUE(coil);
+  ASSERT_TRUE(terminal);
+
+  auto sourceBranchList = sourceLoop->getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::DemandSideBranchListName);
+  auto targetBranchList = targetLoop->getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::DemandSideBranchListName);
+  ASSERT_TRUE(sourceBranchList);
+  ASSERT_TRUE(targetBranchList);
+  const auto sourceBranchHandlesBefore = objectHandles(sourceBranchList->branches());
+  const auto targetBranchHandlesBefore = objectHandles(targetBranchList->branches());
+  ASSERT_EQ(3u, sourceBranchHandlesBefore.size());
+  ASSERT_EQ(3u, targetBranchHandlesBefore.size());
+  const auto sourceDefaultBranchHandle = sourceBranchHandlesBefore[1];
+  ASSERT_TRUE(coil->waterInletModelObject());
+  ASSERT_TRUE(coil->waterOutletModelObject());
+  const auto sourceWaterInletHandle = coil->waterInletModelObject()->handle();
+  const auto sourceWaterOutletHandle = coil->waterOutletModelObject()->handle();
+  const auto sourceSetpointHandle = sourceLoop->loopTemperatureSetpointNode().handle();
+  const auto targetSetpointHandle = targetLoop->loopTemperatureSetpointNode().handle();
+  const auto externalBefore = captureContainedReheatExternalTopology(*loadedModel, *airLoop, *zone, *terminal, *coil);
+  const auto before = captureContainedReheatMoveTopology(*loadedModel, *sourceLoop, *targetLoop, *airLoop, *zone, *terminal, *coil);
+
+  {
+    test::ScopedTestFailure failure(*loadedModel, detail::TestFailurePoint::PlantLoopAfterWaterCoilBranchAttachmentPrepared);
+    EXPECT_FALSE(targetLoop->addDemandBranchForComponent(*coil));
+  }
+  EXPECT_EQ(before, captureContainedReheatMoveTopology(*loadedModel, *sourceLoop, *targetLoop, *airLoop, *zone, *terminal, *coil));
+
+  ASSERT_TRUE(targetLoop->addDemandBranchForComponent(*coil));
+  EXPECT_FALSE(sourceLoop->demandComponent(coil->handle()));
+  EXPECT_TRUE(targetLoop->demandComponent(coil->handle()));
+  ASSERT_TRUE(coil->plantLoop());
+  EXPECT_EQ(*targetLoop, *coil->plantLoop());
+  EXPECT_EQ(externalBefore, captureContainedReheatExternalTopology(*loadedModel, *airLoop, *zone, *terminal, *coil));
+  EXPECT_FALSE(coil->controllerWaterCoil());
+  ASSERT_TRUE(coil->waterInletModelObject());
+  ASSERT_TRUE(coil->waterOutletModelObject());
+  EXPECT_NE(sourceWaterInletHandle, coil->waterInletModelObject()->handle());
+  EXPECT_NE(sourceWaterOutletHandle, coil->waterOutletModelObject()->handle());
+  EXPECT_TRUE(loadedModel->getObject(sourceWaterInletHandle));
+  EXPECT_TRUE(loadedModel->getObject(sourceWaterOutletHandle));
+  EXPECT_EQ(sourceSetpointHandle, sourceLoop->loopTemperatureSetpointNode().handle());
+  EXPECT_EQ(targetSetpointHandle, targetLoop->loopTemperatureSetpointNode().handle());
+
+  sourceBranchList = sourceLoop->getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::DemandSideBranchListName);
+  targetBranchList = targetLoop->getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::DemandSideBranchListName);
+  ASSERT_TRUE(sourceBranchList);
+  ASSERT_TRUE(targetBranchList);
+  EXPECT_EQ(sourceBranchHandlesBefore, objectHandles(sourceBranchList->branches()));
+  ASSERT_EQ(sourceDefaultBranchHandle, sourceBranchList->branches()[1].handle());
+  EXPECT_TRUE(sourceBranchList->branches()[1].components().empty());
+  expectDemandBranchAndConnectorOrder(*sourceLoop, sourceBranchHandlesBefore);
+  const auto targetBranchHandlesAfter = objectHandles(targetBranchList->branches());
+  ASSERT_EQ(4u, targetBranchHandlesAfter.size());
+  EXPECT_EQ(targetBranchHandlesBefore[0], targetBranchHandlesAfter[0]);
+  EXPECT_EQ(targetBranchHandlesBefore[1], targetBranchHandlesAfter[1]);
+  EXPECT_EQ(targetBranchHandlesBefore[2], targetBranchHandlesAfter[3]);
+  EXPECT_NE(targetBranchHandlesBefore[1], targetBranchHandlesAfter[2]);
+  expectDemandBranchAndConnectorOrder(*targetLoop, targetBranchHandlesAfter);
+
+  ASSERT_TRUE(loadedModel->save(idfPath, true));
+  auto reloadedModel = Model::load(idfPath);
+  ASSERT_TRUE(reloadedModel);
+  auto reloadedAirLoop = reloadedModel->getConcreteModelObjectByName<AirLoopHVAC>("Contained Reheat Default Move Air Loop");
+  auto reloadedZone = reloadedModel->getConcreteModelObjectByName<ThermalZone>("Contained Reheat Default Move Zone");
+  auto reloadedSourceLoop = reloadedModel->getConcreteModelObjectByName<PlantLoop>("Contained Reheat Default Move Source Loop");
+  auto reloadedTargetLoop = reloadedModel->getConcreteModelObjectByName<PlantLoop>("Contained Reheat Default Move Target Loop");
+  auto reloadedCoil = reloadedModel->getConcreteModelObjectByName<CoilHeatingWater>("Contained Reheat Default Move Coil");
+  auto reloadedTerminal =
+    reloadedModel->getConcreteModelObjectByName<AirTerminalSingleDuctConstantVolumeReheat>("Contained Reheat Default Move Terminal");
+  ASSERT_TRUE(reloadedAirLoop);
+  ASSERT_TRUE(reloadedZone);
+  ASSERT_TRUE(reloadedSourceLoop);
+  ASSERT_TRUE(reloadedTargetLoop);
+  ASSERT_TRUE(reloadedCoil);
+  ASSERT_TRUE(reloadedTerminal);
+  EXPECT_FALSE(reloadedSourceLoop->demandComponent(reloadedCoil->handle()));
+  EXPECT_TRUE(reloadedTargetLoop->demandComponent(reloadedCoil->handle()));
+  ASSERT_TRUE(reloadedCoil->containingHVACComponent());
+  EXPECT_EQ(reloadedTerminal->handle(), reloadedCoil->containingHVACComponent()->handle());
+  EXPECT_EQ(reloadedCoil->handle(), reloadedTerminal->reheatCoil().handle());
+  ASSERT_TRUE(reloadedCoil->airInletModelObject());
+  ASSERT_TRUE(reloadedCoil->airOutletModelObject());
+  ASSERT_TRUE(reloadedTerminal->inletModelObject());
+  ASSERT_TRUE(reloadedTerminal->outletModelObject());
+  EXPECT_EQ(reloadedCoil->airInletModelObject()->handle(), reloadedTerminal->inletModelObject()->handle());
+  EXPECT_EQ(reloadedCoil->airOutletModelObject()->handle(), reloadedTerminal->outletModelObject()->handle());
+  EXPECT_FALSE(reloadedCoil->controllerWaterCoil());
+  EXPECT_EQ(1u, std::ranges::count_if(reloadedAirLoop->demandComponents(),
+                                      [&reloadedTerminal](const auto& component) { return component.handle() == reloadedTerminal->handle(); }));
+  EXPECT_EQ(1u, std::ranges::count_if(reloadedZone->equipment(),
+                                      [&reloadedTerminal](const auto& component) { return component.handle() == reloadedTerminal->handle(); }));
+  const auto reloadedAdus = reloadedTerminal->getSources(openstudio::IddObjectType::ZoneHVAC_AirDistributionUnit);
+  ASSERT_EQ(1u, reloadedAdus.size());
+  auto reloadedAdu = reloadedAdus.front().optionalCast<ZoneHVACAirDistributionUnit>();
+  ASSERT_TRUE(reloadedAdu);
+  ASSERT_TRUE(reloadedAdu->airTerminal());
+  ASSERT_TRUE(reloadedAdu->outletNode());
+  EXPECT_EQ(reloadedTerminal->handle(), reloadedAdu->airTerminal()->handle());
+  EXPECT_EQ(reloadedTerminal->outletModelObject()->handle(), reloadedAdu->outletNode()->handle());
+  ASSERT_TRUE(reloadedTerminal->maximumAirFlowRate());
+  EXPECT_DOUBLE_EQ(1.75, *reloadedTerminal->maximumAirFlowRate());
+  EXPECT_DOUBLE_EQ(63.25, reloadedCoil->ratedInletWaterTemperature());
+}
+
+TEST_F(EPModelFixture, PlantLoop_ContainedReheatCoilDemandMoveParallelSourceToDefaultTargetIsTransactional) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  ThermalZone zone(model);
+  PlantLoop sourceLoop(model);
+  PlantLoop targetLoop(model);
+  PipeAdiabatic retainedSourcePipe(model);
+  CoilHeatingWater coil(model);
+  auto availabilitySchedule = model.alwaysOnDiscreteSchedule();
+  AirTerminalSingleDuctConstantVolumeReheat terminal(model, availabilitySchedule, coil);
+  ASSERT_TRUE(terminal.setMaximumReheatAirTemperature(39.25));
+  ASSERT_TRUE(coil.setRatedInletWaterTemperature(62.75));
+  ASSERT_TRUE(airLoop.addBranchForZone(zone, terminal));
+  ASSERT_TRUE(sourceLoop.addDemandBranchForComponent(retainedSourcePipe));
+  ASSERT_TRUE(sourceLoop.addDemandBranchForComponent(coil));
+  auto sourceSetpoint = sourceLoop.supplyInletNode();
+  auto targetSetpoint = targetLoop.supplyInletNode();
+  ASSERT_TRUE(sourceLoop.setLoopTemperatureSetpointNode(sourceSetpoint));
+  ASSERT_TRUE(targetLoop.setLoopTemperatureSetpointNode(targetSetpoint));
+  EXPECT_FALSE(coil.controllerWaterCoil());
+
+  auto sourceBranchList = sourceLoop.getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::DemandSideBranchListName);
+  auto targetBranchList = targetLoop.getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::DemandSideBranchListName);
+  ASSERT_TRUE(sourceBranchList);
+  ASSERT_TRUE(targetBranchList);
+  const auto sourceBranchesBefore = sourceBranchList->branches();
+  const auto sourceBranchHandlesBefore = objectHandles(sourceBranchesBefore);
+  const auto targetBranchHandlesBefore = objectHandles(targetBranchList->branches());
+  ASSERT_EQ(4u, sourceBranchHandlesBefore.size());
+  ASSERT_EQ(3u, targetBranchHandlesBefore.size());
+  const auto removedBranch = std::ranges::find_if(sourceBranchesBefore, [&coil](const auto& branch) {
+    const auto components = branch.components();
+    return std::ranges::find(components, coil.cast<ModelObject>()) != components.end();
+  });
+  ASSERT_NE(sourceBranchesBefore.end(), removedBranch);
+  const auto removedBranchHandle = removedBranch->handle();
+  auto expectedSourceBranchHandlesAfter = sourceBranchHandlesBefore;
+  const auto removedHandle = std::ranges::find(expectedSourceBranchHandlesAfter, removedBranchHandle);
+  ASSERT_NE(expectedSourceBranchHandlesAfter.end(), removedHandle);
+  expectedSourceBranchHandlesAfter.erase(removedHandle);
+  const auto targetDefaultBranchHandle = targetBranchHandlesBefore[1];
+  ASSERT_TRUE(coil.waterInletModelObject());
+  ASSERT_TRUE(coil.waterOutletModelObject());
+  const auto sourceWaterInletHandle = coil.waterInletModelObject()->handle();
+  const auto sourceWaterOutletHandle = coil.waterOutletModelObject()->handle();
+  const auto externalBefore = captureContainedReheatExternalTopology(model, airLoop, zone, terminal, coil);
+  const auto before = captureContainedReheatMoveTopology(model, sourceLoop, targetLoop, airLoop, zone, terminal, coil);
+
+  {
+    test::ScopedTestFailure failure(model, detail::TestFailurePoint::PlantLoopAfterWaterCoilBranchAttachmentPrepared);
+    EXPECT_FALSE(targetLoop.addDemandBranchForComponent(coil));
+  }
+  EXPECT_EQ(before, captureContainedReheatMoveTopology(model, sourceLoop, targetLoop, airLoop, zone, terminal, coil));
+
+  ASSERT_TRUE(targetLoop.addDemandBranchForComponent(coil));
+  EXPECT_FALSE(model.getObject(removedBranchHandle));
+  EXPECT_TRUE(model.getObject(sourceWaterInletHandle));
+  EXPECT_TRUE(model.getObject(sourceWaterOutletHandle));
+  EXPECT_FALSE(sourceLoop.demandComponent(coil.handle()));
+  EXPECT_TRUE(sourceLoop.demandComponent(retainedSourcePipe.handle()));
+  EXPECT_TRUE(targetLoop.demandComponent(coil.handle()));
+  EXPECT_EQ(externalBefore, captureContainedReheatExternalTopology(model, airLoop, zone, terminal, coil));
+  EXPECT_FALSE(coil.controllerWaterCoil());
+  EXPECT_EQ(sourceSetpoint.handle(), sourceLoop.loopTemperatureSetpointNode().handle());
+  EXPECT_EQ(targetSetpoint.handle(), targetLoop.loopTemperatureSetpointNode().handle());
+
+  sourceBranchList = sourceLoop.getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::DemandSideBranchListName);
+  targetBranchList = targetLoop.getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::DemandSideBranchListName);
+  ASSERT_TRUE(sourceBranchList);
+  ASSERT_TRUE(targetBranchList);
+  expectDemandBranchAndConnectorOrder(sourceLoop, expectedSourceBranchHandlesAfter);
+  EXPECT_EQ(targetBranchHandlesBefore, objectHandles(targetBranchList->branches()));
+  ASSERT_EQ(targetDefaultBranchHandle, targetBranchList->branches()[1].handle());
+  EXPECT_EQ(std::vector<ModelObject>{coil.cast<ModelObject>()}, targetBranchList->branches()[1].components());
+  expectDemandBranchAndConnectorOrder(targetLoop, targetBranchHandlesBefore);
+}
+
+TEST_F(EPModelFixture, PlantLoop_ContainedReheatCoilDemandMoveRejectsSameLoopAndSerialSourceWithoutMutation) {
+  Model model;
+  AirLoopHVAC sameLoopAir(model);
+  ThermalZone sameLoopZone(model);
+  PlantLoop sameLoopPlant(model);
+  CoilHeatingWater sameLoopCoil(model);
+  auto availabilitySchedule = model.alwaysOnDiscreteSchedule();
+  AirTerminalSingleDuctConstantVolumeReheat sameLoopTerminal(model, availabilitySchedule, sameLoopCoil);
+  ASSERT_TRUE(sameLoopAir.addBranchForZone(sameLoopZone, sameLoopTerminal));
+  ASSERT_TRUE(sameLoopPlant.addDemandBranchForComponent(sameLoopCoil));
+  const auto sameLoopBefore =
+    captureContainedReheatMoveTopology(model, sameLoopPlant, sameLoopPlant, sameLoopAir, sameLoopZone, sameLoopTerminal, sameLoopCoil);
+  EXPECT_FALSE(sameLoopPlant.addDemandBranchForComponent(sameLoopCoil));
+  EXPECT_EQ(sameLoopBefore,
+            captureContainedReheatMoveTopology(model, sameLoopPlant, sameLoopPlant, sameLoopAir, sameLoopZone, sameLoopTerminal, sameLoopCoil));
+
+  AirLoopHVAC serialAir(model);
+  ThermalZone serialZone(model);
+  PlantLoop serialSource(model);
+  PlantLoop serialTarget(model);
+  CoilHeatingWater serialCoil(model);
+  AirTerminalSingleDuctConstantVolumeReheat serialTerminal(model, availabilitySchedule, serialCoil);
+  PipeAdiabatic serialPipe(model);
+  ASSERT_TRUE(serialAir.addBranchForZone(serialZone, serialTerminal));
+  ASSERT_TRUE(serialSource.addDemandBranchForComponent(serialCoil));
+  ASSERT_TRUE(serialCoil.waterOutletModelObject());
+  auto serialInsertionNode = serialCoil.waterOutletModelObject()->cast<Node>();
+  ASSERT_TRUE(serialPipe.addToNode(serialInsertionNode));
+  const auto serialBefore = captureContainedReheatMoveTopology(model, serialSource, serialTarget, serialAir, serialZone, serialTerminal, serialCoil);
+  EXPECT_FALSE(serialTarget.addDemandBranchForComponent(serialCoil));
+  EXPECT_EQ(serialBefore, captureContainedReheatMoveTopology(model, serialSource, serialTarget, serialAir, serialZone, serialTerminal, serialCoil));
+}
+
+TEST_F(EPModelFixture, PlantLoop_ConfiguredChillerCondenserLoopRemovalPreservesPrimaryOwnerAndControls) {
+  const auto idfPath = openstudio::tempDir() / openstudio::toPath("epmodel-configured-chiller-condenser-loop-removal.idf");
+
+  Model model;
+  PlantLoop chilledWaterLoop(model);
+  PlantLoop condenserLoop(model);
+  ChillerElectricEIR chiller(model);
+  PumpVariableSpeed pump(model);
+  CoolingTowerSingleSpeed tower(model);
+  PlantEquipmentOperationCoolingLoad operationScheme(model);
+  ScheduleConstant operationSchedule(model);
+  ScheduleConstant basinSchedule(model);
+  ASSERT_TRUE(chilledWaterLoop.setName("Retained Chiller Primary Loop"));
+  ASSERT_TRUE(condenserLoop.setName("Removed Configured Chiller Condenser Loop"));
+  ASSERT_TRUE(chiller.setName("Retained Configured Condenser Chiller"));
+  ASSERT_TRUE(pump.setName("Removed Condenser Pump"));
+  ASSERT_TRUE(tower.setName("Removed Condenser Tower"));
+  ASSERT_TRUE(operationScheme.setName("Retained Condenser Operation Scheme"));
+  ASSERT_TRUE(operationSchedule.setName("Retained Condenser Operation Schedule"));
+  ASSERT_TRUE(basinSchedule.setName("Retained Condenser Basin Schedule"));
+  ASSERT_TRUE(chilledWaterLoop.addSupplyBranchForComponent(chiller));
+  ASSERT_TRUE(condenserLoop.addDemandBranchForComponent(chiller));
+  auto condenserSupplyInletNode = condenserLoop.supplyInletNode();
+  ASSERT_TRUE(pump.addToNode(condenserSupplyInletNode));
+  ASSERT_TRUE(condenserLoop.addSupplyBranchForComponent(tower));
+  ASSERT_TRUE(tower.setBasinHeaterOperatingSchedule(basinSchedule));
+  ASSERT_TRUE(operationScheme.addEquipment(tower));
+  ASSERT_TRUE(condenserLoop.setPlantEquipmentOperationCoolingLoad(operationScheme));
+  ASSERT_TRUE(condenserLoop.setPlantEquipmentOperationCoolingLoadSchedule(operationSchedule));
+  ASSERT_TRUE(model.save(idfPath, true));
+
+  auto loadedModel = Model::load(idfPath);
+  ASSERT_TRUE(loadedModel);
+  auto loadedChilledWaterLoop = loadedModel->getConcreteModelObjectByName<PlantLoop>("Retained Chiller Primary Loop");
+  auto loadedCondenserLoop = loadedModel->getConcreteModelObjectByName<PlantLoop>("Removed Configured Chiller Condenser Loop");
+  auto loadedChiller = loadedModel->getConcreteModelObjectByName<ChillerElectricEIR>("Retained Configured Condenser Chiller");
+  auto loadedPump = loadedModel->getConcreteModelObjectByName<PumpVariableSpeed>("Removed Condenser Pump");
+  auto loadedTower = loadedModel->getConcreteModelObjectByName<CoolingTowerSingleSpeed>("Removed Condenser Tower");
+  auto loadedOperationScheme = loadedModel->getConcreteModelObjectByName<PlantEquipmentOperationCoolingLoad>("Retained Condenser Operation Scheme");
+  auto loadedOperationSchedule = loadedModel->getConcreteModelObjectByName<ScheduleConstant>("Retained Condenser Operation Schedule");
+  auto loadedBasinSchedule = loadedModel->getConcreteModelObjectByName<ScheduleConstant>("Retained Condenser Basin Schedule");
+  ASSERT_TRUE(loadedChilledWaterLoop);
+  ASSERT_TRUE(loadedCondenserLoop);
+  ASSERT_TRUE(loadedChiller);
+  ASSERT_TRUE(loadedPump);
+  ASSERT_TRUE(loadedTower);
+  ASSERT_TRUE(loadedOperationScheme);
+  ASSERT_TRUE(loadedOperationSchedule);
+  ASSERT_TRUE(loadedBasinSchedule);
+  ASSERT_TRUE(loadedChiller->chilledWaterLoop());
+  ASSERT_TRUE(loadedChiller->condenserWaterLoop());
+  EXPECT_EQ(*loadedChilledWaterLoop, *loadedChiller->chilledWaterLoop());
+  EXPECT_EQ(*loadedCondenserLoop, *loadedChiller->condenserWaterLoop());
+  EXPECT_EQ("WaterCooled", loadedChiller->condenserType());
+  ASSERT_EQ(1u, loadedOperationScheme->equipment(loadedOperationScheme->maximumUpperLimit()).size());
+  EXPECT_EQ(*loadedTower, loadedOperationScheme->equipment(loadedOperationScheme->maximumUpperLimit()).front());
+
+  std::set<openstudio::Handle> condenserOwnerHandles;
+  const auto addOwner = [&condenserOwnerHandles, &loadedChiller](const ModelObject& object) {
+    if (object.handle() != loadedChiller->handle()) {
+      condenserOwnerHandles.insert(object.handle());
+    }
+  };
+  for (const auto& component : loadedCondenserLoop->supplyComponents()) {
+    addOwner(component);
+  }
+  for (const auto& component : loadedCondenserLoop->demandComponents()) {
+    addOwner(component);
+  }
+  const auto supplyBranchList = loadedCondenserLoop->getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::PlantSideBranchListName);
+  const auto demandBranchList = loadedCondenserLoop->getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::DemandSideBranchListName);
+  const auto supplyConnectorList = loadedCondenserLoop->getModelObjectTarget<ModelObject>(openstudio::PlantLoopFields::PlantSideConnectorListName);
+  const auto demandConnectorList = loadedCondenserLoop->getModelObjectTarget<ModelObject>(openstudio::PlantLoopFields::DemandSideConnectorListName);
+  const auto assignmentList =
+    loadedCondenserLoop->getModelObjectTarget<AvailabilityManagerAssignmentList>(openstudio::PlantLoopFields::AvailabilityManagerListName);
+  const auto operationSchemes =
+    loadedCondenserLoop->getModelObjectTarget<PlantEquipmentOperationSchemes>(openstudio::PlantLoopFields::PlantEquipmentOperationSchemeName);
+  ASSERT_TRUE(supplyBranchList);
+  ASSERT_TRUE(demandBranchList);
+  ASSERT_TRUE(supplyConnectorList);
+  ASSERT_TRUE(demandConnectorList);
+  ASSERT_TRUE(assignmentList);
+  ASSERT_TRUE(operationSchemes);
+  addOwner(*supplyBranchList);
+  addOwner(*demandBranchList);
+  addOwner(*supplyConnectorList);
+  addOwner(*demandConnectorList);
+  addOwner(*assignmentList);
+  addOwner(*operationSchemes);
+  for (const auto& branch : supplyBranchList->branches()) {
+    addOwner(branch);
+    for (unsigned i = 0u; i < branch.extensibleGroups().size(); ++i) {
+      if (auto inletNode = branch.componentInletNode(i)) {
+        addOwner(*inletNode);
+      }
+      if (auto outletNode = branch.componentOutletNode(i)) {
+        addOwner(*outletNode);
+      }
+    }
+  }
+  for (const auto& branch : demandBranchList->branches()) {
+    addOwner(branch);
+    for (unsigned i = 0u; i < branch.extensibleGroups().size(); ++i) {
+      if (auto inletNode = branch.componentInletNode(i)) {
+        addOwner(*inletNode);
+      }
+      if (auto outletNode = branch.componentOutletNode(i)) {
+        addOwner(*outletNode);
+      }
+    }
+  }
+  addOwner(loadedCondenserLoop->supplySplitter());
+  addOwner(loadedCondenserLoop->supplyMixer());
+  addOwner(loadedCondenserLoop->demandSplitter());
+  addOwner(loadedCondenserLoop->demandMixer());
+  addOwner(loadedCondenserLoop->supplyInletNode());
+  addOwner(loadedCondenserLoop->supplyOutletNode());
+  addOwner(loadedCondenserLoop->demandInletNode());
+  addOwner(loadedCondenserLoop->demandOutletNode());
+  addOwner(*loadedPump);
+  addOwner(*loadedTower);
+
+  const auto condenserLoopHandle = loadedCondenserLoop->handle();
+  const auto condenserSizingHandle = loadedCondenserLoop->sizingPlant().handle();
+  const auto chillerHandle = loadedChiller->handle();
+  ASSERT_FALSE(loadedCondenserLoop->remove().empty());
+  EXPECT_FALSE(loadedModel->getObject(condenserLoopHandle));
+  EXPECT_FALSE(loadedModel->getObject(condenserSizingHandle));
+  for (const auto& handle : condenserOwnerHandles) {
+    EXPECT_FALSE(loadedModel->getObject(handle));
+  }
+  ASSERT_TRUE(loadedModel->getObject(chillerHandle));
+  ASSERT_TRUE(loadedChiller->chilledWaterLoop());
+  EXPECT_EQ(*loadedChilledWaterLoop, *loadedChiller->chilledWaterLoop());
+  EXPECT_TRUE(loadedChilledWaterLoop->supplyComponent(chillerHandle));
+  EXPECT_FALSE(loadedChiller->condenserWaterLoop());
+  EXPECT_FALSE(loadedChiller->condenserInletNode());
+  EXPECT_FALSE(loadedChiller->condenserOutletNode());
+  EXPECT_EQ("AirCooled", loadedChiller->condenserType());
+  EXPECT_TRUE(loadedOperationScheme->equipment(loadedOperationScheme->maximumUpperLimit()).empty());
+  EXPECT_TRUE(loadedModel->getObject(loadedOperationScheme->handle()));
+  EXPECT_TRUE(loadedModel->getObject(loadedOperationSchedule->handle()));
+  EXPECT_TRUE(loadedModel->getObject(loadedBasinSchedule->handle()));
+
+  ASSERT_TRUE(loadedModel->save(idfPath, true));
+  auto reloadedModel = Model::load(idfPath);
+  ASSERT_TRUE(reloadedModel);
+  EXPECT_FALSE(reloadedModel->getConcreteModelObjectByName<PlantLoop>("Removed Configured Chiller Condenser Loop"));
+  EXPECT_FALSE(reloadedModel->getConcreteModelObjectByName<PumpVariableSpeed>("Removed Condenser Pump"));
+  EXPECT_FALSE(reloadedModel->getConcreteModelObjectByName<CoolingTowerSingleSpeed>("Removed Condenser Tower"));
+  auto reloadedChilledWaterLoop = reloadedModel->getConcreteModelObjectByName<PlantLoop>("Retained Chiller Primary Loop");
+  auto reloadedChiller = reloadedModel->getConcreteModelObjectByName<ChillerElectricEIR>("Retained Configured Condenser Chiller");
+  auto reloadedOperationScheme =
+    reloadedModel->getConcreteModelObjectByName<PlantEquipmentOperationCoolingLoad>("Retained Condenser Operation Scheme");
+  ASSERT_TRUE(reloadedChilledWaterLoop);
+  ASSERT_TRUE(reloadedChiller);
+  ASSERT_TRUE(reloadedOperationScheme);
+  ASSERT_TRUE(reloadedChiller->chilledWaterLoop());
+  EXPECT_EQ(*reloadedChilledWaterLoop, *reloadedChiller->chilledWaterLoop());
+  EXPECT_FALSE(reloadedChiller->condenserWaterLoop());
+  EXPECT_FALSE(reloadedChiller->condenserInletNode());
+  EXPECT_FALSE(reloadedChiller->condenserOutletNode());
+  EXPECT_EQ("AirCooled", reloadedChiller->condenserType());
+  EXPECT_TRUE(reloadedOperationScheme->equipment(reloadedOperationScheme->maximumUpperLimit()).empty());
+  EXPECT_TRUE(reloadedModel->getConcreteModelObjectByName<ScheduleConstant>("Retained Condenser Operation Schedule"));
+  EXPECT_TRUE(reloadedModel->getConcreteModelObjectByName<ScheduleConstant>("Retained Condenser Basin Schedule"));
+
+  openstudio::filesystem::remove(idfPath);
+}
+
+TEST_F(EPModelFixture, PlantLoop_DirectChillerCondenserBranchRemovalPreservesLoopEquipmentAndPrimaryOwner) {
+  const auto idfPath = openstudio::tempDir() / openstudio::toPath("epmodel-direct-chiller-condenser-branch-removal.idf");
+
+  Model model;
+  PlantLoop chilledWaterLoop(model);
+  PlantLoop condenserLoop(model);
+  ChillerElectricEIR chiller(model);
+  PumpVariableSpeed pump(model);
+  CoolingTowerSingleSpeed tower(model);
+  ASSERT_TRUE(chilledWaterLoop.setName("Direct Removal Chiller Primary Loop"));
+  ASSERT_TRUE(condenserLoop.setName("Retained Direct Removal Condenser Loop"));
+  ASSERT_TRUE(chiller.setName("Direct Condenser Branch Removal Chiller"));
+  ASSERT_TRUE(pump.setName("Retained Direct Removal Pump"));
+  ASSERT_TRUE(tower.setName("Retained Direct Removal Tower"));
+  ASSERT_TRUE(chilledWaterLoop.addSupplyBranchForComponent(chiller));
+  ASSERT_TRUE(condenserLoop.addDemandBranchForComponent(chiller));
+  auto condenserSupplyInletNode = condenserLoop.supplyInletNode();
+  ASSERT_TRUE(pump.addToNode(condenserSupplyInletNode));
+  ASSERT_TRUE(condenserLoop.addSupplyBranchForComponent(tower));
+  ASSERT_TRUE(model.save(idfPath, true));
+
+  auto loadedModel = Model::load(idfPath);
+  ASSERT_TRUE(loadedModel);
+  auto loadedChilledWaterLoop = loadedModel->getConcreteModelObjectByName<PlantLoop>("Direct Removal Chiller Primary Loop");
+  auto loadedCondenserLoop = loadedModel->getConcreteModelObjectByName<PlantLoop>("Retained Direct Removal Condenser Loop");
+  auto loadedChiller = loadedModel->getConcreteModelObjectByName<ChillerElectricEIR>("Direct Condenser Branch Removal Chiller");
+  auto loadedPump = loadedModel->getConcreteModelObjectByName<PumpVariableSpeed>("Retained Direct Removal Pump");
+  auto loadedTower = loadedModel->getConcreteModelObjectByName<CoolingTowerSingleSpeed>("Retained Direct Removal Tower");
+  ASSERT_TRUE(loadedChilledWaterLoop);
+  ASSERT_TRUE(loadedCondenserLoop);
+  ASSERT_TRUE(loadedChiller);
+  ASSERT_TRUE(loadedPump);
+  ASSERT_TRUE(loadedTower);
+  const auto condenserLoopHandle = loadedCondenserLoop->handle();
+  const auto condenserSizingHandle = loadedCondenserLoop->sizingPlant().handle();
+  const auto pumpHandle = loadedPump->handle();
+  const auto towerHandle = loadedTower->handle();
+  ASSERT_TRUE(loadedChiller->chilledWaterInletNode());
+  ASSERT_TRUE(loadedChiller->chilledWaterOutletNode());
+  const auto primaryInletHandle = loadedChiller->chilledWaterInletNode()->handle();
+  const auto primaryOutletHandle = loadedChiller->chilledWaterOutletNode()->handle();
+
+  ASSERT_TRUE(loadedCondenserLoop->removeDemandBranchWithComponent(*loadedChiller));
+  EXPECT_TRUE(loadedModel->getObject(condenserLoopHandle));
+  EXPECT_TRUE(loadedModel->getObject(condenserSizingHandle));
+  EXPECT_TRUE(loadedModel->getObject(pumpHandle));
+  EXPECT_TRUE(loadedModel->getObject(towerHandle));
+  EXPECT_TRUE(loadedCondenserLoop->supplyComponent(pumpHandle));
+  EXPECT_TRUE(loadedCondenserLoop->supplyComponent(towerHandle));
+  EXPECT_FALSE(loadedCondenserLoop->demandComponent(loadedChiller->handle()));
+  EXPECT_FALSE(loadedChiller->condenserWaterLoop());
+  EXPECT_FALSE(loadedChiller->condenserInletNode());
+  EXPECT_FALSE(loadedChiller->condenserOutletNode());
+  EXPECT_EQ("AirCooled", loadedChiller->condenserType());
+  ASSERT_TRUE(loadedChiller->chilledWaterLoop());
+  EXPECT_EQ(*loadedChilledWaterLoop, *loadedChiller->chilledWaterLoop());
+  EXPECT_EQ(primaryInletHandle, loadedChiller->chilledWaterInletNode()->handle());
+  EXPECT_EQ(primaryOutletHandle, loadedChiller->chilledWaterOutletNode()->handle());
+  EXPECT_TRUE(loadedChilledWaterLoop->supplyComponent(loadedChiller->handle()));
+
+  ASSERT_TRUE(loadedModel->save(idfPath, true));
+  auto reloadedModel = Model::load(idfPath);
+  ASSERT_TRUE(reloadedModel);
+  auto reloadedChilledWaterLoop = reloadedModel->getConcreteModelObjectByName<PlantLoop>("Direct Removal Chiller Primary Loop");
+  auto reloadedCondenserLoop = reloadedModel->getConcreteModelObjectByName<PlantLoop>("Retained Direct Removal Condenser Loop");
+  auto reloadedChiller = reloadedModel->getConcreteModelObjectByName<ChillerElectricEIR>("Direct Condenser Branch Removal Chiller");
+  auto reloadedPump = reloadedModel->getConcreteModelObjectByName<PumpVariableSpeed>("Retained Direct Removal Pump");
+  auto reloadedTower = reloadedModel->getConcreteModelObjectByName<CoolingTowerSingleSpeed>("Retained Direct Removal Tower");
+  ASSERT_TRUE(reloadedChilledWaterLoop);
+  ASSERT_TRUE(reloadedCondenserLoop);
+  ASSERT_TRUE(reloadedChiller);
+  ASSERT_TRUE(reloadedPump);
+  ASSERT_TRUE(reloadedTower);
+  EXPECT_TRUE(reloadedCondenserLoop->supplyComponent(reloadedPump->handle()));
+  EXPECT_TRUE(reloadedCondenserLoop->supplyComponent(reloadedTower->handle()));
+  EXPECT_FALSE(reloadedCondenserLoop->demandComponent(reloadedChiller->handle()));
+  EXPECT_FALSE(reloadedChiller->condenserWaterLoop());
+  EXPECT_FALSE(reloadedChiller->condenserInletNode());
+  EXPECT_FALSE(reloadedChiller->condenserOutletNode());
+  EXPECT_EQ("AirCooled", reloadedChiller->condenserType());
+  ASSERT_TRUE(reloadedChiller->chilledWaterLoop());
+  EXPECT_EQ(*reloadedChilledWaterLoop, *reloadedChiller->chilledWaterLoop());
+  EXPECT_TRUE(reloadedChilledWaterLoop->supplyComponent(reloadedChiller->handle()));
 
   openstudio::filesystem::remove(idfPath);
 }
