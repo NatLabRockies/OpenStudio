@@ -68,6 +68,11 @@ Use these references when needed:
 - In epmodel tests, prefer public wrapper APIs and typed `Model` queries.
   Avoid low-level `Workspace`/`IdfObject` helpers unless the test is
   explicitly about that layer.
+- Test through public APIs by default. A test may use `*_Impl` only to inject
+  a failure that the public API cannot trigger or to construct malformed or
+  unresolved persisted state that validated setters cannot represent. Assert
+  externally observable behavior, include a public-API retry after injected
+  failures, and do not test plan internals or implementation sequencing.
 - In epmodel tests, construct the concrete wrapper under test rather than
   using `ModelObject::create(...)` as a shortcut.
 
