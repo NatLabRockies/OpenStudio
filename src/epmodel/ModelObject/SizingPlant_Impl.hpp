@@ -21,6 +21,8 @@ namespace epmodel {
       using ModelObject_Impl::ModelObject_Impl;
       virtual ~SizingPlant_Impl() override = default;
 
+      openstudio::epmodel::PlantLoop plantLoop() const;
+
       std::string loopType() const;
       bool setLoopType(const std::string& loopType);
 
@@ -39,6 +41,9 @@ namespace epmodel {
       std::string coincidentSizingFactorMode() const;
       bool setCoincidentSizingFactorMode(const std::string& coincidentSizingFactorMode);
       bool setPlantLoop(const openstudio::epmodel::PlantLoop& plantLoop);
+
+     private:
+      void doCanonicalize(LoadContext& context) override;
     };
 
   }  // namespace detail

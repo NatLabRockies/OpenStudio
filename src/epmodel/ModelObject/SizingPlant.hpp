@@ -43,16 +43,14 @@ namespace epmodel {
     static std::vector<std::string> coincidentSizingFactorModeValues();
 
     // Schema Alignment Notes:
-    // - API: Preserve openstudio::model SizingPlant scalar accessor names/signatures.
-    // - Field Mapping: loopType, designLoopExitTemperature, loopDesignTemperatureDifference,
-    //   sizingOption, zoneTimestepsinAveragingWindow, and coincidentSizingFactorMode map
-    //   directly to E+ Sizing:Plant fields.
-    // - Field Mapping: PlantorCondenserLoopName is a relationship field and is intentionally
-    //   excluded from scalar accessor coverage.
-    // - ForwardTranslator Evidence: ForwardTranslateSizingPlant and ForwardTranslatePlantLoop
-    //   confirm direct scalar mappings and the owning PlantLoop relationship.
-    // - TODO(parity): Add relationship accessors for PlantorCondenserLoopName in a dedicated
-    //   non-scalar parity pass.
+    // - Status: Partial Parity.
+    // - Canonical Counterpart: openstudio::model::SizingPlant.
+    // - Implemented Parity: Scalar accessors and the read-only, total PlantLoop back-reference are available.
+    // - Field/Storage Mapping: PlantorCondenserLoopName is stored as a typed Sizing:Plant target to its owning PlantLoop.
+    // - Remaining Parity Work: Public setPlantLoop remains omitted until EPModel can provide an atomic retarget operation that preserves one
+    //   Sizing:Plant companion per PlantLoop.
+    PlantLoop plantLoop() const;
+
     std::string loopType() const;
     bool setLoopType(const std::string& loopType);
 

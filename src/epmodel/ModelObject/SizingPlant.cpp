@@ -7,6 +7,7 @@
 #include "SizingPlant_Impl.hpp"
 
 #include "Loop/PlantLoop.hpp"
+#include "Loop/PlantLoop_Impl.hpp"
 #include "Model.hpp"
 
 #include <utilities/core/Assert.hpp>
@@ -47,6 +48,10 @@ namespace epmodel {
 
   std::vector<std::string> SizingPlant::coincidentSizingFactorModeValues() {
     return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), openstudio::Sizing_PlantFields::CoincidentSizingFactorMode);
+  }
+
+  PlantLoop SizingPlant::plantLoop() const {
+    return getImpl<detail::SizingPlant_Impl>()->plantLoop();
   }
 
   std::string SizingPlant::loopType() const {
@@ -103,6 +108,42 @@ namespace epmodel {
 namespace openstudio {
 namespace epmodel {
   namespace detail {
+
+    PlantLoop SizingPlant_Impl::plantLoop() const {
+      const auto result = getObject<SizingPlant>().getModelObjectTarget<PlantLoop>(openstudio::Sizing_PlantFields::PlantorCondenserLoopName);
+      OS_ASSERT(result);
+      return *result;
+    }
+
+    void SizingPlant_Impl::doCanonicalize(LoadContext& context) {
+      ModelObject_Impl::doCanonicalize(context);
+
+      auto sizingPlant = getObject<SizingPlant>();
+      const auto sizingPlantName = sizingPlant.nameString().empty() ? std::string{"unnamed"} : sizingPlant.nameString();
+      const auto plantLoop = sizingPlant.getModelObjectTarget<PlantLoop>(openstudio::Sizing_PlantFields::PlantorCondenserLoopName);
+      if (!plantLoop) {
+        detail::addLoadWarning(context, "Removed orphan Sizing:Plant '" + sizingPlantName
+                                          + "' because Plant or Condenser Loop Name does not resolve to a PlantLoop.");
+        sizingPlant.remove();
+        return;
+      }
+
+      for (const auto& candidate : model().getConcreteModelObjects<SizingPlant>()) {
+        const auto candidateLoop = candidate.getModelObjectTarget<PlantLoop>(openstudio::Sizing_PlantFields::PlantorCondenserLoopName);
+        if (!candidateLoop || (*candidateLoop != *plantLoop)) {
+          continue;
+        }
+
+        if (candidate.handle() != sizingPlant.handle()) {
+          detail::addLoadWarning(context, "Removed duplicate Sizing:Plant '" + sizingPlantName + "' for PlantLoop '" + plantLoop->nameString()
+                                            + "'. Kept '" + candidate.nameString() + "'.");
+          sizingPlant.remove();
+        }
+        return;
+      }
+
+      OS_ASSERT(false);
+    }
 
     std::string SizingPlant_Impl::loopType() const {
       const auto value = getString(openstudio::Sizing_PlantFields::LoopType, true);
