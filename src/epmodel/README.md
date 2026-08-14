@@ -189,6 +189,16 @@ Current maturity is uneven:
 - Binding presence, workflow execution, and numerical equivalence remain
   separately evidenced capabilities.
 
+## External workflow corpus
+
+Broad EPModel integration and simulation workflows are maintained in the
+[OpenStudio-resources EPModel corpus](https://github.com/NatLabRockies/OpenStudio-resources/tree/develop/epmodel).
+That repository owns the growing OSW collection, its supporting measures, and
+shared seed files. This source repository should contain only deliberately
+selected user-facing examples and tests that belong in the normal OpenStudio
+build. A successful external workflow is evidence for the transitions it
+exercises; it is not a repository-wide parity claim.
+
 ## Type-local schema alignment notes
 
 Public wrapper headers use `Schema Alignment Notes` to keep class-level status
