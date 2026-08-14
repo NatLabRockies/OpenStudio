@@ -3415,6 +3415,7 @@ set(${target_name}_test_src
   test/PlantEquipmentOperationUncontrolled_GTest.cpp
   test/PlantEquipmentOperationUserDefined_GTest.cpp
   test/PlantLoop_GTest.cpp
+  test/PlantSystemTopology_GTest.cpp
   test/PumpConstantSpeed_GTest.cpp
   test/PumpVariableSpeed_GTest.cpp
   test/PumpVariableSpeedCondensate_GTest.cpp
