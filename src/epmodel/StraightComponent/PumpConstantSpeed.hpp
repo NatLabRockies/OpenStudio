@@ -19,6 +19,8 @@ namespace epmodel {
 
   class Model;
   class Node;
+  class Curve;
+  class Schedule;
 
   namespace detail {
     class PumpConstantSpeed_Impl;
@@ -41,13 +43,13 @@ namespace epmodel {
     static std::vector<std::string> designPowerSizingMethodValues();
 
     // Schema Alignment Notes:
-    // - Status: Partial Parity. The canonical scalar pump surface and the plant-loop placement contract are present, while schedule, curve, zone, and richer relationship helpers remain out of scope.
+    // - Status: Partial Parity. The canonical scalar pump surface, pump flow/curve relationships, and plant-loop placement contract are present, while zone and richer relationship helpers remain out of scope.
     // - Canonical Counterpart: openstudio::model::PumpConstantSpeed.
-    // - Implemented Parity: Preserved scalar accessor names/signatures cover flow, head, power, efficiency, control type, impeller/rotation, radiative fraction, design-power sizing, and end-use metadata with matching autosize semantics; `addToNode(...)` is limited to plant-loop placement like the canonical wrapper.
-    // - Documented Delta: `pumpFlowRateSchedule`, `pumpCurve`, and thermal-zone linkage helpers are not exposed yet.
-    // - Field/Storage Mapping: The preserved scalar APIs map directly to EnergyPlus `Pump:ConstantSpeed` scalar fields used by the forward translator.
-    // - Evidence: `src/model/PumpConstantSpeed.hpp` defines the canonical wrapper surface, and `src/energyplus/ForwardTranslator/ForwardTranslatePumpConstantSpeed.cpp` confirms the direct scalar field mapping and autosize tokens.
-    // - Remaining Parity Work: Add the omitted schedule, curve, thermal-zone, and relationship helpers without changing the preserved scalar signatures.
+    // - Implemented Parity: Preserved scalar accessor names/signatures cover flow, head, power, efficiency, control type, impeller/rotation, radiative fraction, design-power sizing, and end-use metadata with matching autosize semantics; pump flow rate schedule and pump curve preserve canonical signatures and typed target validation; `addToNode(...)` is limited to plant-loop placement like the canonical wrapper.
+    // - Documented Delta: Thermal-zone linkage helpers are not exposed yet.
+    // - Field/Storage Mapping: Scalars map directly to EnergyPlus `Pump:ConstantSpeed` fields; pump flow rate schedule and pump curve use their matching `ScheduleNames` and `UnivariateFunctions` object-list fields.
+    // - Evidence: `src/model/PumpConstantSpeed.hpp`, `src/model/PumpConstantSpeed.cpp`, and the configured EnergyPlus IDD define the canonical signatures, schedule constraints, curve target object list, and direct field mappings.
+    // - Remaining Parity Work: Add the thermal-zone and other omitted relationship helpers without changing the preserved scalar signatures.
 
     // ratedFlowRate
     boost::optional<double> ratedFlowRate() const;
@@ -88,6 +90,14 @@ namespace epmodel {
     bool isPumpControlTypeDefaulted() const;
     bool setPumpControlType(const std::string& pumpControlType);
     void resetPumpControlType();
+
+    boost::optional<Schedule> pumpFlowRateSchedule() const;
+    bool setPumpFlowRateSchedule(Schedule& schedule);
+    void resetPumpFlowRateSchedule();
+
+    boost::optional<Curve> pumpCurve() const;
+    bool setPumpCurve(const Curve& curve);
+    void resetPumpCurve();
 
     // impellerDiameter
     boost::optional<double> impellerDiameter() const;

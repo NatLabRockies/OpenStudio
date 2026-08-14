@@ -6,11 +6,16 @@
 #include "StraightComponent/HeaderedPumpsConstantSpeed.hpp"
 #include "StraightComponent/HeaderedPumpsConstantSpeed_Impl.hpp"
 
+#include "HVACComponent/ThermalZone.hpp"
+#include "HVACComponent/ThermalZone_Impl.hpp"
 #include "Loop/PlantLoop.hpp"
 #include "Model.hpp"
+#include "Schedule/Schedule.hpp"
+#include "Schedule/Schedule_Impl.hpp"
 #include "StraightComponent/Node.hpp"
 
 #include <utilities/core/Assert.hpp>
+#include <utilities/core/Logger.hpp>
 #include <utilities/core/StringHelpers.hpp>
 #include <utilities/idd/HeaderedPumps_ConstantSpeed_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
@@ -144,6 +149,30 @@ namespace epmodel {
 
   bool HeaderedPumpsConstantSpeed::setPumpControlType(const std::string& pumpControlType) {
     return getImpl<detail::HeaderedPumpsConstantSpeed_Impl>()->setPumpControlType(pumpControlType);
+  }
+
+  boost::optional<Schedule> HeaderedPumpsConstantSpeed::pumpFlowRateSchedule() const {
+    return getImpl<detail::HeaderedPumpsConstantSpeed_Impl>()->pumpFlowRateSchedule();
+  }
+
+  bool HeaderedPumpsConstantSpeed::setPumpFlowRateSchedule(Schedule& schedule) {
+    return getImpl<detail::HeaderedPumpsConstantSpeed_Impl>()->setPumpFlowRateSchedule(schedule);
+  }
+
+  void HeaderedPumpsConstantSpeed::resetPumpFlowRateSchedule() {
+    getImpl<detail::HeaderedPumpsConstantSpeed_Impl>()->resetPumpFlowRateSchedule();
+  }
+
+  boost::optional<ThermalZone> HeaderedPumpsConstantSpeed::thermalZone() const {
+    return getImpl<detail::HeaderedPumpsConstantSpeed_Impl>()->thermalZone();
+  }
+
+  bool HeaderedPumpsConstantSpeed::setThermalZone(const ThermalZone& thermalZone) {
+    return getImpl<detail::HeaderedPumpsConstantSpeed_Impl>()->setThermalZone(thermalZone);
+  }
+
+  void HeaderedPumpsConstantSpeed::resetThermalZone() {
+    getImpl<detail::HeaderedPumpsConstantSpeed_Impl>()->resetThermalZone();
   }
 
   double HeaderedPumpsConstantSpeed::skinLossRadiativeFraction() const {
@@ -349,6 +378,59 @@ namespace epmodel {
 
     bool HeaderedPumpsConstantSpeed_Impl::setPumpControlType(const std::string& pumpControlType) {
       return setString(openstudio::HeaderedPumps_ConstantSpeedFields::PumpControlType, pumpControlType);
+    }
+
+    boost::optional<Schedule> HeaderedPumpsConstantSpeed_Impl::pumpFlowRateSchedule() const {
+      return getObject<ModelObject>().getModelObjectTarget<Schedule>(openstudio::HeaderedPumps_ConstantSpeedFields::PumpFlowRateScheduleName);
+    }
+
+    bool HeaderedPumpsConstantSpeed_Impl::setPumpFlowRateSchedule(Schedule& schedule) {
+      if (schedule.model() != model()) {
+        LOG_FREE(Warn, "openstudio.epmodel.HeaderedPumpsConstantSpeed",
+                 "Cannot set the pump flow rate schedule because the schedule belongs to a different model.");
+        return false;
+      }
+
+      const bool result = setSchedule(openstudio::HeaderedPumps_ConstantSpeedFields::PumpFlowRateScheduleName, "HeaderedPumpsConstantSpeed",
+                                      "Pump Flow Rate Schedule", schedule);
+      if (!result) {
+        LOG_FREE(Warn, "openstudio.epmodel.HeaderedPumpsConstantSpeed",
+                 "Cannot set the pump flow rate schedule because its ScheduleTypeLimits are incompatible.");
+      }
+      return result;
+    }
+
+    void HeaderedPumpsConstantSpeed_Impl::resetPumpFlowRateSchedule() {
+      OS_ASSERT(setPointer(openstudio::HeaderedPumps_ConstantSpeedFields::PumpFlowRateScheduleName, Handle(), false));
+    }
+
+    boost::optional<ThermalZone> HeaderedPumpsConstantSpeed_Impl::thermalZone() const {
+      return getObject<ModelObject>().getModelObjectTarget<ThermalZone>(openstudio::HeaderedPumps_ConstantSpeedFields::ZoneName);
+    }
+
+    bool HeaderedPumpsConstantSpeed_Impl::setThermalZone(const ThermalZone& thermalZone) {
+      if (thermalZone.model() != model()) {
+        LOG_FREE(Warn, "openstudio.epmodel.HeaderedPumpsConstantSpeed",
+                 "Cannot set the thermal zone because the thermal zone belongs to a different model.");
+        return false;
+      }
+
+      const auto field = openstudio::HeaderedPumps_ConstantSpeedFields::ZoneName;
+      if (!model().canBeTarget(thermalZone.handle(), iddObject().objectLists(field))) {
+        LOG_FREE(Warn, "openstudio.epmodel.HeaderedPumpsConstantSpeed",
+                 "Cannot set the thermal zone because ThermalZone is not accepted by the HeaderedPumps:ConstantSpeed thermal zone field.");
+        return false;
+      }
+
+      if (!setPointer(field, thermalZone.handle(), false)) {
+        LOG_FREE(Warn, "openstudio.epmodel.HeaderedPumpsConstantSpeed", "Failed to set the thermal zone relationship.");
+        return false;
+      }
+      return true;
+    }
+
+    void HeaderedPumpsConstantSpeed_Impl::resetThermalZone() {
+      OS_ASSERT(setPointer(openstudio::HeaderedPumps_ConstantSpeedFields::ZoneName, Handle(), false));
     }
 
     bool HeaderedPumpsConstantSpeed_Impl::setSkinLossRadiativeFraction(double skinLossRadiativeFraction) {

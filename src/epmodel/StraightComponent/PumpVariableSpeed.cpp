@@ -6,10 +6,14 @@
 #include "StraightComponent/PumpVariableSpeed.hpp"
 #include "StraightComponent/PumpVariableSpeed_Impl.hpp"
 
+#include "Curve/Curve.hpp"
+#include "Curve/Curve_Impl.hpp"
 #include "Loop/PlantLoop.hpp"
 #include "Loop/PlantLoop_Impl.hpp"
 #include "Node.hpp"
 #include "Model.hpp"
+#include "Schedule/Schedule.hpp"
+#include "Schedule/Schedule_Impl.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
@@ -249,6 +253,30 @@ namespace epmodel {
     getImpl<detail::PumpVariableSpeed_Impl>()->resetPumpControlType();
   }
 
+  boost::optional<Schedule> PumpVariableSpeed::pumpFlowRateSchedule() const {
+    return getImpl<detail::PumpVariableSpeed_Impl>()->pumpFlowRateSchedule();
+  }
+
+  bool PumpVariableSpeed::setPumpFlowRateSchedule(Schedule& schedule) {
+    return getImpl<detail::PumpVariableSpeed_Impl>()->setPumpFlowRateSchedule(schedule);
+  }
+
+  void PumpVariableSpeed::resetPumpFlowRateSchedule() {
+    getImpl<detail::PumpVariableSpeed_Impl>()->resetPumpFlowRateSchedule();
+  }
+
+  boost::optional<Curve> PumpVariableSpeed::pumpCurve() const {
+    return getImpl<detail::PumpVariableSpeed_Impl>()->pumpCurve();
+  }
+
+  bool PumpVariableSpeed::setPumpCurve(const Curve& curve) {
+    return getImpl<detail::PumpVariableSpeed_Impl>()->setPumpCurve(curve);
+  }
+
+  void PumpVariableSpeed::resetPumpCurve() {
+    getImpl<detail::PumpVariableSpeed_Impl>()->resetPumpCurve();
+  }
+
   boost::optional<double> PumpVariableSpeed::impellerDiameter() const {
     return getImpl<detail::PumpVariableSpeed_Impl>()->impellerDiameter();
   }
@@ -271,6 +299,42 @@ namespace epmodel {
 
   void PumpVariableSpeed::resetVFDControlType() {
     getImpl<detail::PumpVariableSpeed_Impl>()->resetVFDControlType();
+  }
+
+  boost::optional<Schedule> PumpVariableSpeed::pumpRPMSchedule() const {
+    return getImpl<detail::PumpVariableSpeed_Impl>()->pumpRPMSchedule();
+  }
+
+  bool PumpVariableSpeed::setPumpRPMSchedule(Schedule& schedule) {
+    return getImpl<detail::PumpVariableSpeed_Impl>()->setPumpRPMSchedule(schedule);
+  }
+
+  void PumpVariableSpeed::resetPumpRPMSchedule() {
+    getImpl<detail::PumpVariableSpeed_Impl>()->resetPumpRPMSchedule();
+  }
+
+  boost::optional<Schedule> PumpVariableSpeed::minimumPressureSchedule() const {
+    return getImpl<detail::PumpVariableSpeed_Impl>()->minimumPressureSchedule();
+  }
+
+  bool PumpVariableSpeed::setMinimumPressureSchedule(Schedule& schedule) {
+    return getImpl<detail::PumpVariableSpeed_Impl>()->setMinimumPressureSchedule(schedule);
+  }
+
+  void PumpVariableSpeed::resetMinimumPressureSchedule() {
+    getImpl<detail::PumpVariableSpeed_Impl>()->resetMinimumPressureSchedule();
+  }
+
+  boost::optional<Schedule> PumpVariableSpeed::maximumPressureSchedule() const {
+    return getImpl<detail::PumpVariableSpeed_Impl>()->maximumPressureSchedule();
+  }
+
+  bool PumpVariableSpeed::setMaximumPressureSchedule(Schedule& schedule) {
+    return getImpl<detail::PumpVariableSpeed_Impl>()->setMaximumPressureSchedule(schedule);
+  }
+
+  void PumpVariableSpeed::resetMaximumPressureSchedule() {
+    getImpl<detail::PumpVariableSpeed_Impl>()->resetMaximumPressureSchedule();
   }
 
   std::string PumpVariableSpeed::endUseSubcategory() const {
@@ -600,6 +664,40 @@ namespace epmodel {
       OS_ASSERT(result);
     }
 
+    boost::optional<Schedule> PumpVariableSpeed_Impl::pumpFlowRateSchedule() const {
+      return getObject<ModelObject>().getModelObjectTarget<Schedule>(openstudio::Pump_VariableSpeedFields::PumpFlowRateScheduleName);
+    }
+
+    bool PumpVariableSpeed_Impl::setPumpFlowRateSchedule(Schedule& schedule) {
+      return setSchedule(openstudio::Pump_VariableSpeedFields::PumpFlowRateScheduleName, "PumpVariableSpeed", "Pump Flow Rate", schedule);
+    }
+
+    void PumpVariableSpeed_Impl::resetPumpFlowRateSchedule() {
+      OS_ASSERT(setPointer(openstudio::Pump_VariableSpeedFields::PumpFlowRateScheduleName, Handle(), false));
+    }
+
+    boost::optional<Curve> PumpVariableSpeed_Impl::pumpCurve() const {
+      return getObject<ModelObject>().getModelObjectTarget<Curve>(openstudio::Pump_VariableSpeedFields::PumpCurveName);
+    }
+
+    bool PumpVariableSpeed_Impl::setPumpCurve(const Curve& curve) {
+      if (curve.model() != model()) {
+        return false;
+      }
+
+      const auto type = curve.iddObject().type();
+      if ((type != IddObjectType::Curve_Linear) && (type != IddObjectType::Curve_Quadratic) && (type != IddObjectType::Curve_Cubic)
+          && (type != IddObjectType::Curve_Quartic)) {
+        return false;
+      }
+
+      return setPointer(openstudio::Pump_VariableSpeedFields::PumpCurveName, curve.handle(), false);
+    }
+
+    void PumpVariableSpeed_Impl::resetPumpCurve() {
+      OS_ASSERT(setPointer(openstudio::Pump_VariableSpeedFields::PumpCurveName, Handle(), false));
+    }
+
     boost::optional<double> PumpVariableSpeed_Impl::impellerDiameter() const {
       return getDouble(openstudio::Pump_VariableSpeedFields::ImpellerDiameter, true);
     }
@@ -628,6 +726,42 @@ namespace epmodel {
     void PumpVariableSpeed_Impl::resetVFDControlType() {
       const bool result = setString(openstudio::Pump_VariableSpeedFields::VFDControlType, "");
       OS_ASSERT(result);
+    }
+
+    boost::optional<Schedule> PumpVariableSpeed_Impl::pumpRPMSchedule() const {
+      return getObject<ModelObject>().getModelObjectTarget<Schedule>(openstudio::Pump_VariableSpeedFields::PumpRPMScheduleName);
+    }
+
+    bool PumpVariableSpeed_Impl::setPumpRPMSchedule(Schedule& schedule) {
+      return setSchedule(openstudio::Pump_VariableSpeedFields::PumpRPMScheduleName, "PumpVariableSpeed", "Pump RPM", schedule);
+    }
+
+    void PumpVariableSpeed_Impl::resetPumpRPMSchedule() {
+      OS_ASSERT(setPointer(openstudio::Pump_VariableSpeedFields::PumpRPMScheduleName, Handle(), false));
+    }
+
+    boost::optional<Schedule> PumpVariableSpeed_Impl::minimumPressureSchedule() const {
+      return getObject<ModelObject>().getModelObjectTarget<Schedule>(openstudio::Pump_VariableSpeedFields::MinimumPressureSchedule);
+    }
+
+    bool PumpVariableSpeed_Impl::setMinimumPressureSchedule(Schedule& schedule) {
+      return setSchedule(openstudio::Pump_VariableSpeedFields::MinimumPressureSchedule, "PumpVariableSpeed", "Minimum Pressure", schedule);
+    }
+
+    void PumpVariableSpeed_Impl::resetMinimumPressureSchedule() {
+      OS_ASSERT(setPointer(openstudio::Pump_VariableSpeedFields::MinimumPressureSchedule, Handle(), false));
+    }
+
+    boost::optional<Schedule> PumpVariableSpeed_Impl::maximumPressureSchedule() const {
+      return getObject<ModelObject>().getModelObjectTarget<Schedule>(openstudio::Pump_VariableSpeedFields::MaximumPressureSchedule);
+    }
+
+    bool PumpVariableSpeed_Impl::setMaximumPressureSchedule(Schedule& schedule) {
+      return setSchedule(openstudio::Pump_VariableSpeedFields::MaximumPressureSchedule, "PumpVariableSpeed", "Maximum Pressure", schedule);
+    }
+
+    void PumpVariableSpeed_Impl::resetMaximumPressureSchedule() {
+      OS_ASSERT(setPointer(openstudio::Pump_VariableSpeedFields::MaximumPressureSchedule, Handle(), false));
     }
 
     double PumpVariableSpeed_Impl::skinLossRadiativeFraction() const {

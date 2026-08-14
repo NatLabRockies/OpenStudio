@@ -81,7 +81,7 @@ namespace epmodel {
     static constexpr double kNoUpper = std::numeric_limits<double>::infinity();
 
     const ScheduleTypeSpec* findScheduleTypeSpec(const std::string& className, const std::string& scheduleDisplayName) {
-      static constexpr std::array<ScheduleTypeSpec, 141> specs{{
+      static constexpr std::array<ScheduleTypeSpec, 148> specs{{
         {"AirLoopHVAC", "Availability Manager Scheduled On", false, true, "Availability", 0.0, 1.0},
         {"AirLoopHVACDedicatedOutdoorAirSystem", "Availability Schedule", false, true, "Availability", 0.0, 1.0},
         {"AvailabilityManagerScheduledOn", "Availability Manager Scheduled On", false, true, "Availability", 0.0, 1.0},
@@ -202,6 +202,13 @@ namespace epmodel {
         {"PlantComponentTemperatureSource", "Source Temperature", true, false, "Temperature", kNoLower, kNoUpper},
         {"PipeIndoor", "Ambient Temperature Schedule", true, true, "Temperature", kNoLower, kNoUpper},
         {"PipeIndoor", "Ambient Air Velocity Schedule", true, true, "Velocity", 0.0, kNoUpper},
+        {"PumpConstantSpeed", "Pump Flow Rate", true, true, "", 0.0, 1.0},
+        {"PumpVariableSpeed", "Pump Flow Rate", true, true, "", 0.0, 1.0},
+        {"PumpVariableSpeed", "Pump RPM", true, true, "RotationsPerMinute", kNoLower, kNoUpper},
+        {"PumpVariableSpeed", "Minimum Pressure", true, true, "Pressure", kNoLower, kNoUpper},
+        {"PumpVariableSpeed", "Maximum Pressure", true, true, "Pressure", kNoLower, kNoUpper},
+        {"HeaderedPumpsConstantSpeed", "Pump Flow Rate Schedule", true, true, "", 0.0, 1.0},
+        {"HeaderedPumpsVariableSpeed", "Pump Flow Rate Schedule", true, true, "", 0.0, 1.0},
         {"AirTerminalSingleDuctConstantVolumeNoReheat", "Availability", false, true, "Availability", 0.0, 1.0},
         {"AirTerminalSingleDuctConstantVolumeReheat", "Availability", false, true, "Availability", 0.0, 1.0},
         {"AirTerminalSingleDuctConstantVolumeFourPipeBeam", "Primary Air Availability", false, true, "Availability", 0.0, 1.0},

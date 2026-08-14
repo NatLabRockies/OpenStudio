@@ -6,11 +6,16 @@
 #include "StraightComponent/PumpConstantSpeed.hpp"
 #include "StraightComponent/PumpConstantSpeed_Impl.hpp"
 
+#include "Curve/Curve.hpp"
+#include "Curve/Curve_Impl.hpp"
 #include "Model.hpp"
 #include "Loop/PlantLoop.hpp"
+#include "Schedule/Schedule.hpp"
+#include "Schedule/Schedule_Impl.hpp"
 #include "StraightComponent/Node.hpp"
 
 #include <utilities/core/Assert.hpp>
+#include <utilities/core/Logger.hpp>
 #include <utilities/core/StringHelpers.hpp>
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/IddFactory.hxx>
@@ -155,6 +160,30 @@ namespace epmodel {
 
   void PumpConstantSpeed::resetPumpControlType() {
     getImpl<detail::PumpConstantSpeed_Impl>()->resetPumpControlType();
+  }
+
+  boost::optional<Schedule> PumpConstantSpeed::pumpFlowRateSchedule() const {
+    return getImpl<detail::PumpConstantSpeed_Impl>()->pumpFlowRateSchedule();
+  }
+
+  bool PumpConstantSpeed::setPumpFlowRateSchedule(Schedule& schedule) {
+    return getImpl<detail::PumpConstantSpeed_Impl>()->setPumpFlowRateSchedule(schedule);
+  }
+
+  void PumpConstantSpeed::resetPumpFlowRateSchedule() {
+    getImpl<detail::PumpConstantSpeed_Impl>()->resetPumpFlowRateSchedule();
+  }
+
+  boost::optional<Curve> PumpConstantSpeed::pumpCurve() const {
+    return getImpl<detail::PumpConstantSpeed_Impl>()->pumpCurve();
+  }
+
+  bool PumpConstantSpeed::setPumpCurve(const Curve& curve) {
+    return getImpl<detail::PumpConstantSpeed_Impl>()->setPumpCurve(curve);
+  }
+
+  void PumpConstantSpeed::resetPumpCurve() {
+    getImpl<detail::PumpConstantSpeed_Impl>()->resetPumpCurve();
   }
 
   boost::optional<double> PumpConstantSpeed::impellerDiameter() const {
@@ -434,6 +463,59 @@ namespace epmodel {
 
     void PumpConstantSpeed_Impl::resetPumpControlType() {
       setString(openstudio::Pump_ConstantSpeedFields::PumpControlType, "", false);
+    }
+
+    boost::optional<Schedule> PumpConstantSpeed_Impl::pumpFlowRateSchedule() const {
+      return getObject<ModelObject>().getModelObjectTarget<Schedule>(openstudio::Pump_ConstantSpeedFields::PumpFlowRateScheduleName);
+    }
+
+    bool PumpConstantSpeed_Impl::setPumpFlowRateSchedule(Schedule& schedule) {
+      if (schedule.model() != model()) {
+        LOG_FREE(Warn, "openstudio.epmodel.PumpConstantSpeed",
+                 "Cannot set the pump flow rate schedule because the schedule belongs to a different model.");
+        return false;
+      }
+
+      const bool result =
+        setSchedule(openstudio::Pump_ConstantSpeedFields::PumpFlowRateScheduleName, "PumpConstantSpeed", "Pump Flow Rate", schedule);
+      if (!result) {
+        LOG_FREE(Warn, "openstudio.epmodel.PumpConstantSpeed",
+                 "Cannot set the pump flow rate schedule because its ScheduleTypeLimits are incompatible.");
+      }
+      return result;
+    }
+
+    void PumpConstantSpeed_Impl::resetPumpFlowRateSchedule() {
+      OS_ASSERT(setPointer(openstudio::Pump_ConstantSpeedFields::PumpFlowRateScheduleName, Handle(), false));
+    }
+
+    boost::optional<Curve> PumpConstantSpeed_Impl::pumpCurve() const {
+      return getObject<ModelObject>().getModelObjectTarget<Curve>(openstudio::Pump_ConstantSpeedFields::PumpCurveName);
+    }
+
+    bool PumpConstantSpeed_Impl::setPumpCurve(const Curve& curve) {
+      if (curve.model() != model()) {
+        LOG_FREE(Warn, "openstudio.epmodel.PumpConstantSpeed", "Cannot set the pump curve because the curve belongs to a different model.");
+        return false;
+      }
+
+      const auto field = openstudio::Pump_ConstantSpeedFields::PumpCurveName;
+      if (!model().canBeTarget(curve.handle(), iddObject().objectLists(field))) {
+        LOG_FREE(Warn, "openstudio.epmodel.PumpConstantSpeed",
+                 "Cannot set the pump curve because curve type '" << curve.iddObject().type().valueName()
+                                                                  << "' is not accepted by the Pump:ConstantSpeed pump curve field.");
+        return false;
+      }
+
+      const bool result = setPointer(field, curve.handle(), false);
+      if (!result) {
+        LOG_FREE(Warn, "openstudio.epmodel.PumpConstantSpeed", "Failed to set the pump curve relationship.");
+      }
+      return result;
+    }
+
+    void PumpConstantSpeed_Impl::resetPumpCurve() {
+      OS_ASSERT(setPointer(openstudio::Pump_ConstantSpeedFields::PumpCurveName, Handle(), false));
     }
 
     bool PumpConstantSpeed_Impl::setImpellerDiameter(double impellerDiameter) {

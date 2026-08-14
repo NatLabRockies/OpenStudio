@@ -19,6 +19,8 @@ namespace epmodel {
 
   class Model;
   class Node;
+  class Schedule;
+  class ThermalZone;
 
   namespace detail {
     class HeaderedPumpsConstantSpeed_Impl;
@@ -42,13 +44,12 @@ namespace epmodel {
     static std::vector<std::string> designPowerSizingMethodValues();
 
     // Schema Alignment Notes:
-    // - Status: Partial Parity. The canonical scalar pump-bank surface and plant-loop placement contract are present, while schedule, zone, and richer relationship helpers remain out of scope.
+    // - Status: Near Parity. The canonical scalar pump-bank surface, direct schedule and thermal-zone relationships, and plant-loop placement contract are present.
     // - Canonical Counterpart: openstudio::model::HeaderedPumpsConstantSpeed.
-    // - Implemented Parity: Preserved scalar accessor names/signatures cover total flow, pump-bank count, sequencing scheme, head, power, efficiency, control type, radiative fraction, design-power sizing, and end-use metadata with matching autosize behavior; `addToNode(...)` is limited to plant-loop placement like the canonical wrapper.
-    // - Documented Delta: `pumpFlowRateSchedule` and thermal-zone linkage helpers from canonical `openstudio::model::HeaderedPumpsConstantSpeed` are not exposed yet.
+    // - Implemented Parity: Preserved scalar accessor names/signatures cover total flow, pump-bank count, sequencing scheme, head, power, efficiency, control type, radiative fraction, design-power sizing, and end-use metadata with matching autosize behavior; pump-flow-rate schedule and thermal-zone links preserve canonical typed target APIs; `addToNode(...)` is limited to plant-loop placement like the canonical wrapper.
     // - Field/Storage Mapping: The preserved scalar APIs map directly to EnergyPlus `HeaderedPumps:ConstantSpeed` scalar fields used by the forward translator.
     // - Evidence: `src/model/HeaderedPumpsConstantSpeed.hpp` defines the canonical wrapper surface, and `src/energyplus/ForwardTranslator/ForwardTranslateHeaderedPumpsConstantSpeed.cpp` confirms the direct scalar mapping and autosize tokens.
-    // - Remaining Parity Work: Add the omitted schedule, thermal-zone, and relationship helpers without changing the preserved scalar signatures.
+    // - Remaining Parity Work: Evaluate further convenience APIs separately from this direct EnergyPlus-field surface.
 
     boost::optional<double> totalRatedFlowRate() const;
     bool isTotalRatedFlowRateAutosized() const;
@@ -79,6 +80,14 @@ namespace epmodel {
 
     std::string pumpControlType() const;
     bool setPumpControlType(const std::string& pumpControlType);
+
+    boost::optional<Schedule> pumpFlowRateSchedule() const;
+    bool setPumpFlowRateSchedule(Schedule& schedule);
+    void resetPumpFlowRateSchedule();
+
+    boost::optional<ThermalZone> thermalZone() const;
+    bool setThermalZone(const ThermalZone& thermalZone);
+    void resetThermalZone();
 
     double skinLossRadiativeFraction() const;
     bool setSkinLossRadiativeFraction(double skinLossRadiativeFraction);

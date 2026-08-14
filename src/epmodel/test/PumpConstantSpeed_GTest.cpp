@@ -6,13 +6,45 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
+#include "../Curve/CurveBiquadratic.hpp"
+#include "../Curve/CurveLinear.hpp"
+#include "../Curve/CurveLinear_Impl.hpp"
 #include "../Loop/AirLoopHVAC.hpp"
 #include "../Loop/PlantLoop.hpp"
+#include "../ResourceObject/ScheduleTypeLimits.hpp"
+#include "../Schedule/ScheduleConstant.hpp"
+#include "../Schedule/ScheduleConstant_Impl.hpp"
 #include "../Splitter/AirLoopHVACZoneSplitter.hpp"
 #include "../StraightComponent/Node.hpp"
 #include "../StraightComponent/PumpConstantSpeed.hpp"
+#include "../StraightComponent/PumpConstantSpeed_Impl.hpp"
+
+#include <utilities/core/Filesystem.hpp>
+#include <utilities/core/UUID.hpp>
+#include <utilities/idd/Pump_ConstantSpeed_FieldEnums.hxx>
+#include <utilities/idf/WorkspaceObject_Impl.hpp>
+
+#include <utility>
 
 using namespace openstudio::epmodel;
+
+namespace {
+
+class ScopedFileRemoval
+{
+ public:
+  explicit ScopedFileRemoval(openstudio::path path) : m_path(std::move(path)) {}
+
+  ~ScopedFileRemoval() {
+    boost::system::error_code error;
+    boost::filesystem::remove(m_path, error);
+  }
+
+ private:
+  openstudio::path m_path;
+};
+
+}  // namespace
 
 TEST_F(EPModelFixture, PumpConstantSpeed_DefaultConstructor) {
   Model model;
@@ -43,6 +75,111 @@ TEST_F(EPModelFixture, PumpConstantSpeed_ScalarAccessors_RoundTrip) {
   EXPECT_DOUBLE_EQ(2.5, pump.impellerDiameter().get());
   pump.resetImpellerDiameter();
   EXPECT_FALSE(pump.impellerDiameter());
+}
+
+TEST_F(EPModelFixture, PumpConstantSpeed_RelationshipAccessors_RoundTripAndReset) {
+  Model model;
+  PumpConstantSpeed pump(model);
+  ScheduleConstant flowSchedule(model);
+  CurveLinear pumpCurve(model);
+
+  EXPECT_FALSE(pump.pumpFlowRateSchedule());
+  EXPECT_FALSE(pump.pumpCurve());
+
+  EXPECT_TRUE(pump.setPumpFlowRateSchedule(flowSchedule));
+  EXPECT_TRUE(pump.setPumpCurve(pumpCurve));
+  ASSERT_TRUE(pump.pumpFlowRateSchedule());
+  ASSERT_TRUE(pump.pumpCurve());
+  EXPECT_EQ(flowSchedule.handle(), pump.pumpFlowRateSchedule()->handle());
+  EXPECT_EQ(pumpCurve.handle(), pump.pumpCurve()->handle());
+
+  pump.resetPumpFlowRateSchedule();
+  pump.resetPumpCurve();
+  EXPECT_FALSE(pump.pumpFlowRateSchedule());
+  EXPECT_FALSE(pump.pumpCurve());
+}
+
+TEST_F(EPModelFixture, PumpConstantSpeed_RelationshipSetters_RejectInvalidTargetsWithoutChangingOldTargetOrRawText) {
+  Model model;
+  PumpConstantSpeed pump(model);
+  ScheduleConstant flowSchedule(model);
+  CurveLinear pumpCurve(model);
+  ASSERT_TRUE(pump.setPumpFlowRateSchedule(flowSchedule));
+  ASSERT_TRUE(pump.setPumpCurve(pumpCurve));
+
+  Model foreignModel;
+  ScheduleConstant foreignSchedule(foreignModel);
+  CurveLinear foreignCurve(foreignModel);
+  EXPECT_FALSE(pump.setPumpFlowRateSchedule(foreignSchedule));
+  EXPECT_FALSE(pump.setPumpCurve(foreignCurve));
+  ASSERT_TRUE(pump.pumpFlowRateSchedule());
+  ASSERT_TRUE(pump.pumpCurve());
+  EXPECT_EQ(flowSchedule.handle(), pump.pumpFlowRateSchedule()->handle());
+  EXPECT_EQ(pumpCurve.handle(), pump.pumpCurve()->handle());
+
+  ScheduleConstant incompatibleFlowSchedule(model);
+  ScheduleTypeLimits incompatibleFlowLimits(model);
+  ASSERT_TRUE(incompatibleFlowLimits.setNumericType("Continuous"));
+  ASSERT_TRUE(incompatibleFlowLimits.setUnitType("Dimensionless"));
+  ASSERT_TRUE(incompatibleFlowLimits.setLowerLimitValue(-0.1));
+  ASSERT_TRUE(incompatibleFlowLimits.setUpperLimitValue(1.0));
+  ASSERT_TRUE(incompatibleFlowSchedule.setScheduleTypeLimits(incompatibleFlowLimits));
+  CurveBiquadratic incompatiblePumpCurve(model);
+  EXPECT_FALSE(pump.setPumpFlowRateSchedule(incompatibleFlowSchedule));
+  EXPECT_FALSE(pump.setPumpCurve(incompatiblePumpCurve));
+  EXPECT_EQ(flowSchedule.handle(), pump.pumpFlowRateSchedule()->handle());
+  EXPECT_EQ(pumpCurve.handle(), pump.pumpCurve()->handle());
+
+  auto pumpWorkspaceImpl = pump.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  ASSERT_TRUE(pumpWorkspaceImpl);
+  ASSERT_TRUE(pumpWorkspaceImpl->setPointer(openstudio::Pump_ConstantSpeedFields::PumpFlowRateScheduleName, openstudio::Handle(), false));
+  ASSERT_TRUE(pumpWorkspaceImpl->setPointer(openstudio::Pump_ConstantSpeedFields::PumpCurveName, openstudio::Handle(), false));
+  ASSERT_TRUE(pumpWorkspaceImpl->openstudio::detail::IdfObject_Impl::setString(openstudio::Pump_ConstantSpeedFields::PumpFlowRateScheduleName,
+                                                                               "Unresolved Flow Schedule", false));
+  ASSERT_TRUE(pumpWorkspaceImpl->openstudio::detail::IdfObject_Impl::setString(openstudio::Pump_ConstantSpeedFields::PumpCurveName,
+                                                                               "Unresolved Pump Curve", false));
+  EXPECT_FALSE(pump.setPumpFlowRateSchedule(incompatibleFlowSchedule));
+  EXPECT_FALSE(pump.setPumpCurve(incompatiblePumpCurve));
+  EXPECT_FALSE(pump.pumpFlowRateSchedule());
+  EXPECT_FALSE(pump.pumpCurve());
+  EXPECT_EQ(
+    "Unresolved Flow Schedule",
+    pumpWorkspaceImpl->openstudio::detail::IdfObject_Impl::getString(openstudio::Pump_ConstantSpeedFields::PumpFlowRateScheduleName, false, true)
+      .value_or(""));
+  EXPECT_EQ(
+    "Unresolved Pump Curve",
+    pumpWorkspaceImpl->openstudio::detail::IdfObject_Impl::getString(openstudio::Pump_ConstantSpeedFields::PumpCurveName, false, true).value_or(""));
+}
+
+TEST_F(EPModelFixture, PumpConstantSpeed_Relationships_SaveLoadIdentityByName) {
+  const auto idfPath =
+    openstudio::tempDir()
+    / openstudio::toPath("epmodel-pump-constant-speed-relationships-" + openstudio::removeBraces(openstudio::createUUID()) + ".idf");
+  const ScopedFileRemoval removeIdf(idfPath);
+
+  Model model;
+  PumpConstantSpeed pump(model);
+  ScheduleConstant flowSchedule(model);
+  CurveLinear pumpCurve(model);
+  ASSERT_TRUE(pump.setName("Relationship Pump"));
+  ASSERT_TRUE(flowSchedule.setName("Pump Flow Schedule"));
+  ASSERT_TRUE(pumpCurve.setName("Pump Pressure Curve"));
+  ASSERT_TRUE(pump.setPumpFlowRateSchedule(flowSchedule));
+  ASSERT_TRUE(pump.setPumpCurve(pumpCurve));
+  ASSERT_TRUE(model.save(idfPath, true));
+
+  auto loadedModel = Model::load(idfPath);
+  ASSERT_TRUE(loadedModel);
+  auto loadedPump = loadedModel->getConcreteModelObjectByName<PumpConstantSpeed>("Relationship Pump");
+  auto loadedFlowSchedule = loadedModel->getConcreteModelObjectByName<ScheduleConstant>("Pump Flow Schedule");
+  auto loadedPumpCurve = loadedModel->getConcreteModelObjectByName<CurveLinear>("Pump Pressure Curve");
+  ASSERT_TRUE(loadedPump);
+  ASSERT_TRUE(loadedFlowSchedule);
+  ASSERT_TRUE(loadedPumpCurve);
+  ASSERT_TRUE(loadedPump->pumpFlowRateSchedule());
+  ASSERT_TRUE(loadedPump->pumpCurve());
+  EXPECT_EQ(loadedFlowSchedule->handle(), loadedPump->pumpFlowRateSchedule()->handle());
+  EXPECT_EQ(loadedPumpCurve->handle(), loadedPump->pumpCurve()->handle());
 }
 
 TEST_F(EPModelFixture, PumpConstantSpeed_AddToNode) {

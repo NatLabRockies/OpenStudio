@@ -14,6 +14,8 @@
 
 namespace openstudio {
 namespace epmodel {
+  class Schedule;
+  class ThermalZone;
   namespace detail {
 
     class EPMODEL_API HeaderedPumpsConstantSpeed_Impl : public StraightComponent_Impl
@@ -55,6 +57,14 @@ namespace epmodel {
 
       std::string pumpControlType() const;
       bool setPumpControlType(const std::string& pumpControlType);
+
+      boost::optional<Schedule> pumpFlowRateSchedule() const;
+      bool setPumpFlowRateSchedule(Schedule& schedule);
+      void resetPumpFlowRateSchedule();
+
+      boost::optional<ThermalZone> thermalZone() const;
+      bool setThermalZone(const ThermalZone& thermalZone);
+      void resetThermalZone();
 
       double skinLossRadiativeFraction() const;
       bool setSkinLossRadiativeFraction(double skinLossRadiativeFraction);

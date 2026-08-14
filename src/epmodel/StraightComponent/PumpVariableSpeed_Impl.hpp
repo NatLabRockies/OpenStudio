@@ -15,6 +15,10 @@
 
 namespace openstudio {
 namespace epmodel {
+
+  class Curve;
+  class Schedule;
+
   namespace detail {
 
     class EPMODEL_API PumpVariableSpeed_Impl : public StraightComponent_Impl
@@ -90,6 +94,14 @@ namespace epmodel {
       bool setPumpControlType(const std::string& pumpControlType);
       void resetPumpControlType();
 
+      boost::optional<Schedule> pumpFlowRateSchedule() const;
+      bool setPumpFlowRateSchedule(Schedule& schedule);
+      void resetPumpFlowRateSchedule();
+
+      boost::optional<Curve> pumpCurve() const;
+      bool setPumpCurve(const Curve& curve);
+      void resetPumpCurve();
+
       boost::optional<double> impellerDiameter() const;
       bool setImpellerDiameter(double impellerDiameter);
       void resetImpellerDiameter();
@@ -97,6 +109,18 @@ namespace epmodel {
       boost::optional<std::string> vFDControlType() const;
       bool setVFDControlType(const std::string& vFDControlType);
       void resetVFDControlType();
+
+      boost::optional<Schedule> pumpRPMSchedule() const;
+      bool setPumpRPMSchedule(Schedule& schedule);
+      void resetPumpRPMSchedule();
+
+      boost::optional<Schedule> minimumPressureSchedule() const;
+      bool setMinimumPressureSchedule(Schedule& schedule);
+      void resetMinimumPressureSchedule();
+
+      boost::optional<Schedule> maximumPressureSchedule() const;
+      bool setMaximumPressureSchedule(Schedule& schedule);
+      void resetMaximumPressureSchedule();
 
       double skinLossRadiativeFraction() const;
       bool setSkinLossRadiativeFraction(double skinLossRadiativeFraction);
