@@ -85,8 +85,9 @@ The base classes describe common connection shapes:
 | `Mixer` / `Splitter` | Several inlets or outlets |
 
 Each concrete class still decides where it may be connected, which object owns
-the connection, and what is removed with it. Air-system support and remaining
-work are summarized in [AirSystemTopology.md](AirSystemTopology.md).
+the connection, and what is removed with it. Air-system behavior and backlog
+are summarized in [AirSystemTopology.md](AirSystemTopology.md); plant behavior
+and the active roadmap are in [PlantSystemTopology.md](PlantSystemTopology.md).
 
 ## Identity and ownership
 
@@ -140,10 +141,12 @@ For a particular class, check:
 Use the Input Output Reference shipped with the configured EnergyPlus version.
 A separately checked-in PDF can easily be the wrong version.
 
-HVAC has the most complete connection, ownership, and reload support. Many
-classes in other areas currently provide only their EnergyPlus fields and a
-subset of Model behavior. Ruby/Python use and numerical agreement must be
-tested separately.
+HVAC has the most complete connection, ownership, and reload support. Plant
+topology is the active development focus; see
+[PlantSystemTopology.md](PlantSystemTopology.md) for its contract and ordered
+roadmap. Many classes in other areas currently provide only their EnergyPlus
+fields and a subset of Model behavior. Ruby/Python use and numerical agreement
+must be tested separately.
 
 ## Integration workflows
 
@@ -181,8 +184,10 @@ binding was generated; run the Ruby or Python code before claiming it works.
 ## Other useful files
 
 - [AGENTS.md](AGENTS.md): implementation and review rules.
-- [AirSystemTopology.md](AirSystemTopology.md): air-system support and next
-  work.
+- [AirSystemTopology.md](AirSystemTopology.md): air-system support and air
+  backlog.
+- [PlantSystemTopology.md](PlantSystemTopology.md): plant-system contract,
+  maturity, and active development roadmap.
 - [scaffolds/README.md](scaffolds/README.md): the historical scaffold source
   directory.
 - `resources/energyplus/ProposedEnergy+.idd`: EnergyPlus schema used by

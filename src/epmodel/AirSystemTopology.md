@@ -1,8 +1,16 @@
 # Air-system topology in EPModel
 
-This page summarizes air loops, terminals, zone equipment, and the plant
-connections owned by air-side equipment. It does not cover plant loops in
-general. Class details belong in the headers and tests.
+This page summarizes air loops, terminals, zone equipment, and the air
+behavior of air-side equipment. It does not cover plant loops in general.
+Only the `ZoneHVACUnitVentilator` air behavior is tracked here; its plant
+attachment belongs in the plant roadmap. Class details belong in the headers
+and tests.
+
+Plant topology is the active cross-cutting development focus; its ordered
+roadmap is in [PlantSystemTopology.md](PlantSystemTopology.md). This page's
+backlog is limited to air-side work. `ZoneHVACUnitVentilator` is the bridge
+case used by the plant hot-water/chilled-water vertical slice, while its plant
+attachment remains part of [PlantSystemTopology.md](PlantSystemTopology.md).
 
 ## What should match Model
 
@@ -96,13 +104,14 @@ Add a separate family when the number of air streams, ownership, branch shape,
 or saved EnergyPlus objects changes caller-visible behavior. Scalar field
 differences alone do not need a new family.
 
-## Next work
+## Air backlog and bridge work
 
-1. Build a `ZoneHVACUnitVentilator` with `FanSystemModel`, electric heat,
-   chilled-water cooling, local outdoor air, and one plant connection. Test
-   save/load and changes made after loading.
+1. Complete the `ZoneHVACUnitVentilator` air-side behavior around the bridge
+   scenario above: `FanSystemModel`, electric heat, water-coil child wiring,
+   local outdoor air, save/load, and post-load changes. Plant attachment is
+   tracked in the plant roadmap.
 2. Add the missing terminal reload tests listed above.
-3. Choose later work from real model-building scripts, measures, and OSWs.
+3. Choose later air work from real model-building scripts, measures, and OSWs.
    Add only the methods needed by the chosen use case.
 4. Add Ruby/Python and EnergyPlus tests when the use case needs them. Keep
    exploratory workflows in OpenStudio-resources rather than the main source
