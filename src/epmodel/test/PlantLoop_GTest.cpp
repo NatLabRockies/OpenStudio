@@ -74,6 +74,12 @@
 #include "../WaterToAirComponent/CoilCoolingWater_Impl.hpp"
 #include "../WaterToWaterComponent/HeatExchangerFluidToFluid.hpp"
 #include "../WaterToWaterComponent/HeatExchangerFluidToFluid_Impl.hpp"
+#include "../WaterToWaterComponent/WaterToWaterComponent.hpp"
+#include "../WaterToWaterComponent/HeatPumpWaterToWaterEquationFitCooling.hpp"
+#include "../WaterToWaterComponent/HeatPumpWaterToWaterEquationFitCooling_Impl.hpp"
+#include "../WaterToWaterComponent/HeatPumpWaterToWaterEquationFitHeating.hpp"
+#include "../WaterToWaterComponent/HeatPumpWaterToWaterEquationFitHeating_Impl.hpp"
+#include "../Curve/CurveQuadLinear.hpp"
 #include "../WaterToWaterComponent/ChillerElectricEIR.hpp"
 #include "../WaterToWaterComponent/ChillerElectricEIR_Impl.hpp"
 #include "../ZoneHVACComponent/ZoneHVACFourPipeFanCoil.hpp"
@@ -95,6 +101,8 @@
 #include <utilities/idd/Sizing_Plant_FieldEnums.hxx>
 #include <utilities/idd/Controller_WaterCoil_FieldEnums.hxx>
 #include <utilities/idd/HeatExchanger_FluidToFluid_FieldEnums.hxx>
+#include <utilities/idd/HeatPump_WaterToWater_EquationFit_Cooling_FieldEnums.hxx>
+#include <utilities/idd/HeatPump_WaterToWater_EquationFit_Heating_FieldEnums.hxx>
 #include <utilities/idd/ZoneHVAC_FourPipeFanCoil_FieldEnums.hxx>
 #include <utilities/idd/ZoneHVAC_EquipmentConnections_FieldEnums.hxx>
 #include <utilities/idd/ZoneHVAC_EquipmentList_FieldEnums.hxx>
@@ -323,6 +331,88 @@ FluidToFluidHeatExchangerMoveSnapshot captureFluidToFluidHeatExchangerMove(const
   result.setpointRawFields = {rawField(primaryLoop, openstudio::PlantLoopFields::LoopTemperatureSetpointNodeName),
                               rawField(sourceLoop, openstudio::PlantLoopFields::LoopTemperatureSetpointNodeName),
                               rawField(targetLoop, openstudio::PlantLoopFields::LoopTemperatureSetpointNodeName)};
+  return result;
+}
+
+struct EquationFitHeatPumpMoveSnapshot
+{
+  PlantAttachmentTopologySnapshot plantTopology;
+  std::vector<openstudio::Handle> modelObjectHandles;
+  std::vector<std::pair<openstudio::Handle, std::vector<boost::optional<std::string>>>> modelRawFields;
+  std::vector<openstudio::Handle> primarySupplyComponentHandles;
+  boost::optional<openstudio::Handle> primarySetpointTargetHandle;
+  boost::optional<openstudio::Handle> primaryOwnerHandle;
+  boost::optional<openstudio::Handle> secondaryOwnerHandle;
+  boost::optional<openstudio::Handle> supplyInletHandle;
+  boost::optional<openstudio::Handle> supplyOutletHandle;
+  boost::optional<openstudio::Handle> demandInletHandle;
+  boost::optional<openstudio::Handle> demandOutletHandle;
+  std::array<boost::optional<std::string>, 3> setpointRawFields;
+
+  bool operator==(const EquationFitHeatPumpMoveSnapshot&) const = default;
+};
+
+EquationFitHeatPumpMoveSnapshot captureEquationFitHeatPumpMove(const Model& model, const PlantLoop& primaryLoop, const PlantLoop& sourceLoop,
+                                                               const PlantLoop& targetLoop, const WaterToWaterComponent& heatPump,
+                                                               bool observeTopology = true) {
+  EquationFitHeatPumpMoveSnapshot result;
+  if (observeTopology) {
+    result.plantTopology = capturePlantTopology(model, sourceLoop, targetLoop, false);
+    result.primarySupplyComponentHandles = objectHandles(primaryLoop.supplyComponents());
+  }
+  auto objects = model.objects();
+  std::ranges::sort(objects, {}, [](const auto& object) { return object.handle(); });
+  for (const auto& object : objects) {
+    result.modelObjectHandles.push_back(object.handle());
+    std::vector<boost::optional<std::string>> fields;
+    for (unsigned field = 0u; field < object.numFields(); ++field) {
+      fields.push_back(rawField(object, field));
+    }
+    while (!fields.empty() && !fields.back()) {
+      fields.pop_back();
+    }
+    result.modelRawFields.emplace_back(object.handle(), std::move(fields));
+  }
+  if (auto setpointTarget = primaryLoop.getModelObjectTarget<Node>(openstudio::PlantLoopFields::LoopTemperatureSetpointNodeName)) {
+    result.primarySetpointTargetHandle = setpointTarget->handle();
+  }
+  if (observeTopology) {
+    if (auto owner = heatPump.plantLoop()) {
+      result.primaryOwnerHandle = owner->handle();
+    }
+    if (auto owner = heatPump.secondaryPlantLoop()) {
+      result.secondaryOwnerHandle = owner->handle();
+    }
+  }
+  if (auto node = heatPump.supplyInletModelObject()) {
+    result.supplyInletHandle = node->handle();
+  }
+  if (auto node = heatPump.supplyOutletModelObject()) {
+    result.supplyOutletHandle = node->handle();
+  }
+  if (auto node = heatPump.demandInletModelObject()) {
+    result.demandInletHandle = node->handle();
+  }
+  if (auto node = heatPump.demandOutletModelObject()) {
+    result.demandOutletHandle = node->handle();
+  }
+  result.setpointRawFields = {rawField(primaryLoop, openstudio::PlantLoopFields::LoopTemperatureSetpointNodeName),
+                              rawField(sourceLoop, openstudio::PlantLoopFields::LoopTemperatureSetpointNodeName),
+                              rawField(targetLoop, openstudio::PlantLoopFields::LoopTemperatureSetpointNodeName)};
+  return result;
+}
+
+std::vector<std::pair<openstudio::Handle, boost::optional<std::string>>> equationFitCompanionRawFields(const Model& model) {
+  std::vector<std::pair<openstudio::Handle, boost::optional<std::string>>> result;
+  for (const auto& heating : model.getConcreteModelObjects<HeatPumpWaterToWaterEquationFitHeating>()) {
+    result.emplace_back(heating.handle(),
+                        rawField(heating, openstudio::HeatPump_WaterToWater_EquationFit_HeatingFields::CompanionCoolingHeatPumpName));
+  }
+  for (const auto& cooling : model.getConcreteModelObjects<HeatPumpWaterToWaterEquationFitCooling>()) {
+    result.emplace_back(cooling.handle(),
+                        rawField(cooling, openstudio::HeatPump_WaterToWater_EquationFit_CoolingFields::CompanionHeatingHeatPumpName));
+  }
+  std::ranges::sort(result, {}, [](const auto& field) { return field.first; });
   return result;
 }
 
@@ -3639,6 +3729,543 @@ TEST_F(EPModelFixture, PlantLoop_FluidToFluidHeatExchangerDemandMoveRejectsTarge
     const auto before = captureFluidToFluidHeatExchangerMove(model, primaryLoop, sourceLoop, targetLoop, heatExchanger);
     EXPECT_FALSE(targetLoop.addDemandBranchForComponent(heatExchanger));
     EXPECT_EQ(before, captureFluidToFluidHeatExchangerMove(model, primaryLoop, sourceLoop, targetLoop, heatExchanger));
+  }
+}
+
+TEST_F(EPModelFixture, PlantLoop_EquationFitHeatingLoadSideDemandMoveDefaultToOccupiedIsTransactionalAcrossReload) {
+  const auto idfPath =
+    openstudio::tempDir() / openstudio::toPath("epmodel-equation-fit-heating-demand-move-" + openstudio::toString(openstudio::createUUID()) + ".idf");
+  ScopedFileRemoval cleanup(idfPath);
+
+  Model model;
+  PlantLoop primaryLoop(model);
+  PlantLoop sourceLoop(model);
+  PlantLoop targetLoop(model);
+  HeatPumpWaterToWaterEquationFitHeating heatPump(model);
+  HeatPumpWaterToWaterEquationFitCooling companion(model);
+  PipeAdiabatic targetPipe(model);
+  ASSERT_TRUE(primaryLoop.setName("EquationFit Heating Source Primary"));
+  ASSERT_TRUE(sourceLoop.setName("EquationFit Heating Original Load Secondary"));
+  ASSERT_TRUE(targetLoop.setName("EquationFit Heating Moved Load Secondary"));
+  ASSERT_TRUE(heatPump.setName("Moved EquationFit Heating Heat Pump"));
+  ASSERT_TRUE(companion.setName("Reciprocal EquationFit Cooling Companion"));
+  ASSERT_TRUE(targetPipe.setName("EquationFit Heating Target Pipe"));
+  ASSERT_TRUE(heatPump.setReferenceCoefficientofPerformance(6.75));
+  ASSERT_TRUE(heatPump.setSizingFactor(1.13));
+  ASSERT_TRUE(heatPump.setRatedHeatingCapacity(18350.0));
+  ASSERT_TRUE(heatPump.setCompanionCoolingHeatPump(companion));
+  ASSERT_TRUE(companion.setCompanionHeatingHeatPump(heatPump));
+  auto primaryOutlet = primaryLoop.supplyOutletNode();
+  ASSERT_TRUE(heatPump.addToNode(primaryOutlet));
+  ASSERT_TRUE(sourceLoop.addDemandBranchForComponent(heatPump));
+  ASSERT_TRUE(targetLoop.addDemandBranchForComponent(targetPipe));
+  auto primarySetpoint = primaryLoop.supplyInletNode();
+  auto sourceSetpoint = sourceLoop.supplyInletNode();
+  auto targetSetpoint = targetLoop.supplyInletNode();
+  ASSERT_TRUE(primaryLoop.setLoopTemperatureSetpointNode(primarySetpoint));
+  ASSERT_TRUE(sourceLoop.setLoopTemperatureSetpointNode(sourceSetpoint));
+  ASSERT_TRUE(targetLoop.setLoopTemperatureSetpointNode(targetSetpoint));
+
+  ASSERT_TRUE(heatPump.supplyInletModelObject());
+  ASSERT_TRUE(heatPump.supplyOutletModelObject());
+  ASSERT_TRUE(heatPump.demandInletModelObject());
+  ASSERT_TRUE(heatPump.demandOutletModelObject());
+  const auto primaryInletHandle = heatPump.supplyInletModelObject()->handle();
+  const auto primaryOutletHandle = heatPump.supplyOutletModelObject()->handle();
+  const auto oldLoadInletHandle = heatPump.demandInletModelObject()->handle();
+  const auto oldLoadOutletHandle = heatPump.demandOutletModelObject()->handle();
+  const auto sourceSideInletRaw = rawField(heatPump, openstudio::HeatPump_WaterToWater_EquationFit_HeatingFields::SourceSideInletNodeName);
+  const auto sourceSideOutletRaw = rawField(heatPump, openstudio::HeatPump_WaterToWater_EquationFit_HeatingFields::SourceSideOutletNodeName);
+  const auto companionFieldsBefore = equationFitCompanionRawFields(model);
+  const auto heatingCapacityCurveHandle = heatPump.heatingCapacityCurve().handle();
+  const auto heatingPowerCurveHandle = heatPump.heatingCompressorPowerCurve().handle();
+
+  auto sourceBranchList = sourceLoop.getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::DemandSideBranchListName);
+  auto targetBranchList = targetLoop.getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::DemandSideBranchListName);
+  ASSERT_TRUE(sourceBranchList);
+  ASSERT_TRUE(targetBranchList);
+  const auto sourceBranchHandlesBefore = objectHandles(sourceBranchList->branches());
+  const auto targetBranchHandlesBefore = objectHandles(targetBranchList->branches());
+  ASSERT_EQ(3u, sourceBranchHandlesBefore.size());
+  ASSERT_EQ(3u, targetBranchHandlesBefore.size());
+  const auto sourceDefaultBranchHandle = sourceBranchHandlesBefore[1];
+
+  const auto before = captureEquationFitHeatPumpMove(model, primaryLoop, sourceLoop, targetLoop, heatPump);
+  {
+    test::ScopedTestFailure failure(model, detail::TestFailurePoint::PlantLoopAfterEquationFitHeatPumpBranchAttachmentPrepared);
+    EXPECT_FALSE(targetLoop.addDemandBranchForComponent(heatPump));
+  }
+  EXPECT_EQ(before, captureEquationFitHeatPumpMove(model, primaryLoop, sourceLoop, targetLoop, heatPump));
+
+  ASSERT_TRUE(targetLoop.addDemandBranchForComponent(heatPump));
+  ASSERT_TRUE(heatPump.plantLoop());
+  ASSERT_TRUE(heatPump.secondaryPlantLoop());
+  EXPECT_EQ(primaryLoop, *heatPump.plantLoop());
+  EXPECT_EQ(targetLoop, *heatPump.secondaryPlantLoop());
+  ASSERT_TRUE(heatPump.supplyInletModelObject());
+  ASSERT_TRUE(heatPump.supplyOutletModelObject());
+  ASSERT_TRUE(heatPump.demandInletModelObject());
+  ASSERT_TRUE(heatPump.demandOutletModelObject());
+  EXPECT_EQ(primaryInletHandle, heatPump.supplyInletModelObject()->handle());
+  EXPECT_EQ(primaryOutletHandle, heatPump.supplyOutletModelObject()->handle());
+  EXPECT_NE(oldLoadInletHandle, heatPump.demandInletModelObject()->handle());
+  EXPECT_NE(oldLoadOutletHandle, heatPump.demandOutletModelObject()->handle());
+  EXPECT_TRUE(model.getObject(oldLoadInletHandle));
+  EXPECT_TRUE(model.getObject(oldLoadOutletHandle));
+  EXPECT_TRUE(sourceSideInletRaw == rawField(heatPump, openstudio::HeatPump_WaterToWater_EquationFit_HeatingFields::SourceSideInletNodeName));
+  EXPECT_TRUE(sourceSideOutletRaw == rawField(heatPump, openstudio::HeatPump_WaterToWater_EquationFit_HeatingFields::SourceSideOutletNodeName));
+  const auto loadSideInlet = heatPump.getModelObjectTarget<Node>(openstudio::HeatPump_WaterToWater_EquationFit_HeatingFields::LoadSideInletNodeName);
+  const auto loadSideOutlet =
+    heatPump.getModelObjectTarget<Node>(openstudio::HeatPump_WaterToWater_EquationFit_HeatingFields::LoadSideOutletNodeName);
+  ASSERT_TRUE(loadSideInlet);
+  ASSERT_TRUE(loadSideOutlet);
+  EXPECT_EQ(heatPump.demandInletModelObject()->handle(), loadSideInlet->handle());
+  EXPECT_EQ(heatPump.demandOutletModelObject()->handle(), loadSideOutlet->handle());
+  EXPECT_TRUE(companionFieldsBefore == equationFitCompanionRawFields(model));
+  ASSERT_TRUE(heatPump.companionCoolingHeatPump());
+  ASSERT_TRUE(companion.companionHeatingHeatPump());
+  EXPECT_EQ(companion, *heatPump.companionCoolingHeatPump());
+  EXPECT_EQ(heatPump, *companion.companionHeatingHeatPump());
+  EXPECT_DOUBLE_EQ(6.75, heatPump.referenceCoefficientofPerformance());
+  EXPECT_DOUBLE_EQ(1.13, heatPump.sizingFactor());
+  ASSERT_TRUE(heatPump.ratedHeatingCapacity());
+  EXPECT_DOUBLE_EQ(18350.0, *heatPump.ratedHeatingCapacity());
+  EXPECT_EQ(heatingCapacityCurveHandle, heatPump.heatingCapacityCurve().handle());
+  EXPECT_EQ(heatingPowerCurveHandle, heatPump.heatingCompressorPowerCurve().handle());
+  EXPECT_EQ(primarySetpoint.handle(), primaryLoop.loopTemperatureSetpointNode().handle());
+  EXPECT_EQ(sourceSetpoint.handle(), sourceLoop.loopTemperatureSetpointNode().handle());
+  EXPECT_EQ(targetSetpoint.handle(), targetLoop.loopTemperatureSetpointNode().handle());
+
+  sourceBranchList = sourceLoop.getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::DemandSideBranchListName);
+  targetBranchList = targetLoop.getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::DemandSideBranchListName);
+  ASSERT_TRUE(sourceBranchList);
+  ASSERT_TRUE(targetBranchList);
+  EXPECT_EQ(sourceBranchHandlesBefore, objectHandles(sourceBranchList->branches()));
+  EXPECT_EQ(sourceDefaultBranchHandle, sourceBranchList->branches()[1].handle());
+  EXPECT_TRUE(sourceBranchList->branches()[1].components().empty());
+  expectDemandBranchAndConnectorOrder(sourceLoop, sourceBranchHandlesBefore);
+  const auto targetBranchHandlesAfter = objectHandles(targetBranchList->branches());
+  ASSERT_EQ(4u, targetBranchHandlesAfter.size());
+  EXPECT_EQ(targetBranchHandlesBefore[0], targetBranchHandlesAfter[0]);
+  EXPECT_EQ(targetBranchHandlesBefore[1], targetBranchHandlesAfter[1]);
+  EXPECT_EQ(targetBranchHandlesBefore[2], targetBranchHandlesAfter[3]);
+  expectDemandBranchAndConnectorOrder(targetLoop, targetBranchHandlesAfter);
+
+  ASSERT_TRUE(model.save(idfPath, true));
+  auto loadedModel = Model::load(idfPath);
+  ASSERT_TRUE(loadedModel);
+  auto loadedPrimary = loadedModel->getConcreteModelObjectByName<PlantLoop>("EquationFit Heating Source Primary");
+  auto loadedSource = loadedModel->getConcreteModelObjectByName<PlantLoop>("EquationFit Heating Original Load Secondary");
+  auto loadedTarget = loadedModel->getConcreteModelObjectByName<PlantLoop>("EquationFit Heating Moved Load Secondary");
+  auto loadedHeatPump = loadedModel->getConcreteModelObjectByName<HeatPumpWaterToWaterEquationFitHeating>("Moved EquationFit Heating Heat Pump");
+  auto loadedCompanion =
+    loadedModel->getConcreteModelObjectByName<HeatPumpWaterToWaterEquationFitCooling>("Reciprocal EquationFit Cooling Companion");
+  auto loadedTargetPipe = loadedModel->getConcreteModelObjectByName<PipeAdiabatic>("EquationFit Heating Target Pipe");
+  ASSERT_TRUE(loadedPrimary);
+  ASSERT_TRUE(loadedSource);
+  ASSERT_TRUE(loadedTarget);
+  ASSERT_TRUE(loadedHeatPump);
+  ASSERT_TRUE(loadedCompanion);
+  ASSERT_TRUE(loadedTargetPipe);
+  ASSERT_TRUE(loadedHeatPump->plantLoop());
+  ASSERT_TRUE(loadedHeatPump->secondaryPlantLoop());
+  EXPECT_EQ(*loadedPrimary, *loadedHeatPump->plantLoop());
+  EXPECT_EQ(*loadedTarget, *loadedHeatPump->secondaryPlantLoop());
+  EXPECT_FALSE(loadedSource->demandComponent(loadedHeatPump->handle()));
+  ASSERT_TRUE(loadedHeatPump->supplyInletModelObject());
+  ASSERT_TRUE(loadedHeatPump->demandInletModelObject());
+  const auto loadedSourceSideInlet =
+    loadedHeatPump->getModelObjectTarget<Node>(openstudio::HeatPump_WaterToWater_EquationFit_HeatingFields::SourceSideInletNodeName);
+  const auto loadedLoadSideInlet =
+    loadedHeatPump->getModelObjectTarget<Node>(openstudio::HeatPump_WaterToWater_EquationFit_HeatingFields::LoadSideInletNodeName);
+  ASSERT_TRUE(loadedSourceSideInlet);
+  ASSERT_TRUE(loadedLoadSideInlet);
+  EXPECT_EQ(loadedHeatPump->supplyInletModelObject()->handle(), loadedSourceSideInlet->handle());
+  EXPECT_EQ(loadedHeatPump->demandInletModelObject()->handle(), loadedLoadSideInlet->handle());
+  ASSERT_TRUE(loadedHeatPump->companionCoolingHeatPump());
+  ASSERT_TRUE(loadedCompanion->companionHeatingHeatPump());
+  EXPECT_EQ(*loadedCompanion, *loadedHeatPump->companionCoolingHeatPump());
+  EXPECT_EQ(*loadedHeatPump, *loadedCompanion->companionHeatingHeatPump());
+
+  // Keep this lifecycle assertion inside the existing single-specialized-owner
+  // removal contract by first removing the ordinary occupied-target branch.
+  ASSERT_TRUE(loadedTarget->removeDemandBranchWithComponent(*loadedTargetPipe));
+  EXPECT_TRUE(loadedModel->getObject(loadedTargetPipe->handle()));
+  const auto loadedTargetHandle = loadedTarget->handle();
+  EXPECT_FALSE(loadedTarget->remove().empty());
+  EXPECT_FALSE(loadedModel->getObject(loadedTargetHandle));
+  EXPECT_TRUE(loadedModel->getObject(loadedHeatPump->handle()));
+  ASSERT_TRUE(loadedHeatPump->plantLoop());
+  EXPECT_EQ(*loadedPrimary, *loadedHeatPump->plantLoop());
+  EXPECT_FALSE(loadedHeatPump->secondaryPlantLoop());
+  EXPECT_FALSE(loadedHeatPump->demandInletModelObject());
+  EXPECT_FALSE(loadedHeatPump->demandOutletModelObject());
+  ASSERT_TRUE(loadedHeatPump->companionCoolingHeatPump());
+  ASSERT_TRUE(loadedCompanion->companionHeatingHeatPump());
+}
+
+TEST_F(EPModelFixture, PlantLoop_EquationFitCoolingSourceSideDemandMoveParallelToDefaultIsTransactionalAcrossReload) {
+  const auto idfPath =
+    openstudio::tempDir() / openstudio::toPath("epmodel-equation-fit-cooling-demand-move-" + openstudio::toString(openstudio::createUUID()) + ".idf");
+  ScopedFileRemoval cleanup(idfPath);
+
+  Model model;
+  PlantLoop primaryLoop(model);
+  PlantLoop sourceLoop(model);
+  PlantLoop targetLoop(model);
+  HeatPumpWaterToWaterEquationFitCooling heatPump(model);
+  HeatPumpWaterToWaterEquationFitHeating companion(model);
+  PipeAdiabatic sourcePipe(model);
+  ASSERT_TRUE(primaryLoop.setName("EquationFit Cooling Load Primary"));
+  ASSERT_TRUE(sourceLoop.setName("EquationFit Cooling Original Source Secondary"));
+  ASSERT_TRUE(targetLoop.setName("EquationFit Cooling Moved Source Secondary"));
+  ASSERT_TRUE(heatPump.setName("Moved EquationFit Cooling Heat Pump"));
+  ASSERT_TRUE(companion.setName("One Way EquationFit Heating Companion"));
+  ASSERT_TRUE(sourcePipe.setName("EquationFit Cooling Source Pipe"));
+  ASSERT_TRUE(heatPump.setReferenceCoefficientofPerformance(5.85));
+  ASSERT_TRUE(heatPump.setSizingFactor(1.07));
+  ASSERT_TRUE(heatPump.setRatedCoolingCapacity(22600.0));
+  ASSERT_TRUE(companion.setCompanionCoolingHeatPump(heatPump));
+  ASSERT_TRUE(primaryLoop.addSupplyBranchForComponent(heatPump));
+  ASSERT_TRUE(sourceLoop.addDemandBranchForComponent(sourcePipe));
+  ASSERT_TRUE(sourceLoop.addDemandBranchForComponent(heatPump));
+  auto primarySetpoint = primaryLoop.supplyInletNode();
+  auto sourceSetpoint = sourceLoop.supplyInletNode();
+  auto targetSetpoint = targetLoop.supplyInletNode();
+  ASSERT_TRUE(primaryLoop.setLoopTemperatureSetpointNode(primarySetpoint));
+  ASSERT_TRUE(sourceLoop.setLoopTemperatureSetpointNode(sourceSetpoint));
+  ASSERT_TRUE(targetLoop.setLoopTemperatureSetpointNode(targetSetpoint));
+
+  ASSERT_TRUE(heatPump.supplyInletModelObject());
+  ASSERT_TRUE(heatPump.supplyOutletModelObject());
+  ASSERT_TRUE(heatPump.demandInletModelObject());
+  ASSERT_TRUE(heatPump.demandOutletModelObject());
+  const auto primaryInletHandle = heatPump.supplyInletModelObject()->handle();
+  const auto primaryOutletHandle = heatPump.supplyOutletModelObject()->handle();
+  const auto oldSourceInletHandle = heatPump.demandInletModelObject()->handle();
+  const auto oldSourceOutletHandle = heatPump.demandOutletModelObject()->handle();
+  const auto loadSideInletRaw = rawField(heatPump, openstudio::HeatPump_WaterToWater_EquationFit_CoolingFields::LoadSideInletNodeName);
+  const auto loadSideOutletRaw = rawField(heatPump, openstudio::HeatPump_WaterToWater_EquationFit_CoolingFields::LoadSideOutletNodeName);
+  const auto companionFieldsBefore = equationFitCompanionRawFields(model);
+  const auto coolingCapacityCurveHandle = heatPump.coolingCapacityCurve().handle();
+  const auto coolingPowerCurveHandle = heatPump.coolingCompressorPowerCurve().handle();
+
+  auto sourceBranchList = sourceLoop.getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::DemandSideBranchListName);
+  auto targetBranchList = targetLoop.getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::DemandSideBranchListName);
+  ASSERT_TRUE(sourceBranchList);
+  ASSERT_TRUE(targetBranchList);
+  const auto sourceBranchesBefore = sourceBranchList->branches();
+  const auto sourceBranchHandlesBefore = objectHandles(sourceBranchesBefore);
+  const auto targetBranchHandlesBefore = objectHandles(targetBranchList->branches());
+  ASSERT_EQ(4u, sourceBranchHandlesBefore.size());
+  ASSERT_EQ(3u, targetBranchHandlesBefore.size());
+  const auto removedBranch = std::ranges::find_if(sourceBranchesBefore, [&heatPump](const auto& branch) {
+    const auto components = branch.components();
+    return std::ranges::find(components, heatPump.cast<ModelObject>()) != components.end();
+  });
+  ASSERT_NE(sourceBranchesBefore.end(), removedBranch);
+  const auto removedBranchHandle = removedBranch->handle();
+  auto expectedSourceBranchHandles = sourceBranchHandlesBefore;
+  const auto removedHandle = std::ranges::find(expectedSourceBranchHandles, removedBranchHandle);
+  ASSERT_NE(expectedSourceBranchHandles.end(), removedHandle);
+  expectedSourceBranchHandles.erase(removedHandle);
+  const auto targetDefaultBranchHandle = targetBranchHandlesBefore[1];
+
+  const auto before = captureEquationFitHeatPumpMove(model, primaryLoop, sourceLoop, targetLoop, heatPump);
+  {
+    test::ScopedTestFailure failure(model, detail::TestFailurePoint::PlantLoopAfterEquationFitHeatPumpBranchAttachmentPrepared);
+    EXPECT_FALSE(targetLoop.addDemandBranchForComponent(heatPump));
+  }
+  EXPECT_EQ(before, captureEquationFitHeatPumpMove(model, primaryLoop, sourceLoop, targetLoop, heatPump));
+
+  ASSERT_TRUE(targetLoop.addDemandBranchForComponent(heatPump));
+  EXPECT_FALSE(model.getObject(removedBranchHandle));
+  EXPECT_TRUE(model.getObject(oldSourceInletHandle));
+  EXPECT_TRUE(model.getObject(oldSourceOutletHandle));
+  ASSERT_TRUE(heatPump.plantLoop());
+  ASSERT_TRUE(heatPump.secondaryPlantLoop());
+  EXPECT_EQ(primaryLoop, *heatPump.plantLoop());
+  EXPECT_EQ(targetLoop, *heatPump.secondaryPlantLoop());
+  ASSERT_TRUE(heatPump.supplyInletModelObject());
+  ASSERT_TRUE(heatPump.supplyOutletModelObject());
+  ASSERT_TRUE(heatPump.demandInletModelObject());
+  ASSERT_TRUE(heatPump.demandOutletModelObject());
+  EXPECT_EQ(primaryInletHandle, heatPump.supplyInletModelObject()->handle());
+  EXPECT_EQ(primaryOutletHandle, heatPump.supplyOutletModelObject()->handle());
+  EXPECT_NE(oldSourceInletHandle, heatPump.demandInletModelObject()->handle());
+  EXPECT_NE(oldSourceOutletHandle, heatPump.demandOutletModelObject()->handle());
+  EXPECT_TRUE(loadSideInletRaw == rawField(heatPump, openstudio::HeatPump_WaterToWater_EquationFit_CoolingFields::LoadSideInletNodeName));
+  EXPECT_TRUE(loadSideOutletRaw == rawField(heatPump, openstudio::HeatPump_WaterToWater_EquationFit_CoolingFields::LoadSideOutletNodeName));
+  const auto sourceSideInlet =
+    heatPump.getModelObjectTarget<Node>(openstudio::HeatPump_WaterToWater_EquationFit_CoolingFields::SourceSideInletNodeName);
+  const auto sourceSideOutlet =
+    heatPump.getModelObjectTarget<Node>(openstudio::HeatPump_WaterToWater_EquationFit_CoolingFields::SourceSideOutletNodeName);
+  ASSERT_TRUE(sourceSideInlet);
+  ASSERT_TRUE(sourceSideOutlet);
+  EXPECT_EQ(heatPump.demandInletModelObject()->handle(), sourceSideInlet->handle());
+  EXPECT_EQ(heatPump.demandOutletModelObject()->handle(), sourceSideOutlet->handle());
+  EXPECT_TRUE(companionFieldsBefore == equationFitCompanionRawFields(model));
+  EXPECT_FALSE(heatPump.companionHeatingHeatPump());
+  ASSERT_TRUE(companion.companionCoolingHeatPump());
+  EXPECT_EQ(heatPump, *companion.companionCoolingHeatPump());
+  EXPECT_DOUBLE_EQ(5.85, heatPump.referenceCoefficientofPerformance());
+  EXPECT_DOUBLE_EQ(1.07, heatPump.sizingFactor());
+  ASSERT_TRUE(heatPump.ratedCoolingCapacity());
+  EXPECT_DOUBLE_EQ(22600.0, *heatPump.ratedCoolingCapacity());
+  EXPECT_EQ(coolingCapacityCurveHandle, heatPump.coolingCapacityCurve().handle());
+  EXPECT_EQ(coolingPowerCurveHandle, heatPump.coolingCompressorPowerCurve().handle());
+  EXPECT_EQ(primarySetpoint.handle(), primaryLoop.loopTemperatureSetpointNode().handle());
+  EXPECT_EQ(sourceSetpoint.handle(), sourceLoop.loopTemperatureSetpointNode().handle());
+  EXPECT_EQ(targetSetpoint.handle(), targetLoop.loopTemperatureSetpointNode().handle());
+
+  sourceBranchList = sourceLoop.getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::DemandSideBranchListName);
+  targetBranchList = targetLoop.getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::DemandSideBranchListName);
+  ASSERT_TRUE(sourceBranchList);
+  ASSERT_TRUE(targetBranchList);
+  EXPECT_EQ(expectedSourceBranchHandles, objectHandles(sourceBranchList->branches()));
+  expectDemandBranchAndConnectorOrder(sourceLoop, expectedSourceBranchHandles);
+  EXPECT_EQ(targetBranchHandlesBefore, objectHandles(targetBranchList->branches()));
+  EXPECT_EQ(targetDefaultBranchHandle, targetBranchList->branches()[1].handle());
+  EXPECT_EQ(std::vector<ModelObject>{heatPump.cast<ModelObject>()}, targetBranchList->branches()[1].components());
+  expectDemandBranchAndConnectorOrder(targetLoop, targetBranchHandlesBefore);
+
+  ASSERT_TRUE(model.save(idfPath, true));
+  auto loadedModel = Model::load(idfPath);
+  ASSERT_TRUE(loadedModel);
+  auto loadedPrimary = loadedModel->getConcreteModelObjectByName<PlantLoop>("EquationFit Cooling Load Primary");
+  auto loadedSource = loadedModel->getConcreteModelObjectByName<PlantLoop>("EquationFit Cooling Original Source Secondary");
+  auto loadedTarget = loadedModel->getConcreteModelObjectByName<PlantLoop>("EquationFit Cooling Moved Source Secondary");
+  auto loadedHeatPump = loadedModel->getConcreteModelObjectByName<HeatPumpWaterToWaterEquationFitCooling>("Moved EquationFit Cooling Heat Pump");
+  auto loadedCompanion = loadedModel->getConcreteModelObjectByName<HeatPumpWaterToWaterEquationFitHeating>("One Way EquationFit Heating Companion");
+  ASSERT_TRUE(loadedPrimary);
+  ASSERT_TRUE(loadedSource);
+  ASSERT_TRUE(loadedTarget);
+  ASSERT_TRUE(loadedHeatPump);
+  ASSERT_TRUE(loadedCompanion);
+  ASSERT_TRUE(loadedHeatPump->plantLoop());
+  ASSERT_TRUE(loadedHeatPump->secondaryPlantLoop());
+  EXPECT_EQ(*loadedPrimary, *loadedHeatPump->plantLoop());
+  EXPECT_EQ(*loadedTarget, *loadedHeatPump->secondaryPlantLoop());
+  EXPECT_FALSE(loadedSource->demandComponent(loadedHeatPump->handle()));
+  ASSERT_TRUE(loadedHeatPump->supplyInletModelObject());
+  ASSERT_TRUE(loadedHeatPump->demandInletModelObject());
+  const auto loadedLoadSideInlet =
+    loadedHeatPump->getModelObjectTarget<Node>(openstudio::HeatPump_WaterToWater_EquationFit_CoolingFields::LoadSideInletNodeName);
+  const auto loadedSourceSideInlet =
+    loadedHeatPump->getModelObjectTarget<Node>(openstudio::HeatPump_WaterToWater_EquationFit_CoolingFields::SourceSideInletNodeName);
+  ASSERT_TRUE(loadedLoadSideInlet);
+  ASSERT_TRUE(loadedSourceSideInlet);
+  EXPECT_EQ(loadedHeatPump->supplyInletModelObject()->handle(), loadedLoadSideInlet->handle());
+  EXPECT_EQ(loadedHeatPump->demandInletModelObject()->handle(), loadedSourceSideInlet->handle());
+  EXPECT_FALSE(loadedHeatPump->companionHeatingHeatPump());
+  ASSERT_TRUE(loadedCompanion->companionCoolingHeatPump());
+  EXPECT_EQ(*loadedHeatPump, *loadedCompanion->companionCoolingHeatPump());
+
+  const auto loadedPrimaryHandle = loadedPrimary->handle();
+  EXPECT_FALSE(loadedPrimary->remove().empty());
+  EXPECT_FALSE(loadedModel->getObject(loadedPrimaryHandle));
+  EXPECT_TRUE(loadedModel->getObject(loadedHeatPump->handle()));
+  EXPECT_FALSE(loadedHeatPump->plantLoop());
+  EXPECT_FALSE(loadedHeatPump->supplyInletModelObject());
+  EXPECT_FALSE(loadedHeatPump->supplyOutletModelObject());
+  ASSERT_TRUE(loadedHeatPump->secondaryPlantLoop());
+  EXPECT_EQ(*loadedTarget, *loadedHeatPump->secondaryPlantLoop());
+  ASSERT_TRUE(loadedCompanion->companionCoolingHeatPump());
+  EXPECT_EQ(*loadedHeatPump, *loadedCompanion->companionCoolingHeatPump());
+}
+
+TEST_F(EPModelFixture, PlantLoop_EquationFitHeatPumpInitialDemandAttachmentAndConcretePortSemanticsRemainSupported) {
+  Model model;
+
+  PlantLoop unattachedHeatingTarget(model);
+  HeatPumpWaterToWaterEquationFitHeating unattachedHeating(model);
+  ASSERT_TRUE(unattachedHeatingTarget.addDemandBranchForComponent(unattachedHeating));
+  EXPECT_FALSE(unattachedHeating.plantLoop());
+  ASSERT_TRUE(unattachedHeating.secondaryPlantLoop());
+  EXPECT_EQ(unattachedHeatingTarget, *unattachedHeating.secondaryPlantLoop());
+  ASSERT_TRUE(unattachedHeating.demandInletModelObject());
+  ASSERT_TRUE(unattachedHeating.demandOutletModelObject());
+  const auto unattachedHeatingLoadInlet =
+    unattachedHeating.getModelObjectTarget<Node>(openstudio::HeatPump_WaterToWater_EquationFit_HeatingFields::LoadSideInletNodeName);
+  const auto unattachedHeatingLoadOutlet =
+    unattachedHeating.getModelObjectTarget<Node>(openstudio::HeatPump_WaterToWater_EquationFit_HeatingFields::LoadSideOutletNodeName);
+  ASSERT_TRUE(unattachedHeatingLoadInlet);
+  ASSERT_TRUE(unattachedHeatingLoadOutlet);
+  EXPECT_EQ(unattachedHeating.demandInletModelObject()->handle(), unattachedHeatingLoadInlet->handle());
+  EXPECT_EQ(unattachedHeating.demandOutletModelObject()->handle(), unattachedHeatingLoadOutlet->handle());
+
+  PlantLoop unattachedCoolingTarget(model);
+  HeatPumpWaterToWaterEquationFitCooling unattachedCooling(model);
+  ASSERT_TRUE(unattachedCoolingTarget.addDemandBranchForComponent(unattachedCooling));
+  EXPECT_FALSE(unattachedCooling.plantLoop());
+  ASSERT_TRUE(unattachedCooling.secondaryPlantLoop());
+  EXPECT_EQ(unattachedCoolingTarget, *unattachedCooling.secondaryPlantLoop());
+  ASSERT_TRUE(unattachedCooling.demandInletModelObject());
+  ASSERT_TRUE(unattachedCooling.demandOutletModelObject());
+  const auto unattachedCoolingSourceInlet =
+    unattachedCooling.getModelObjectTarget<Node>(openstudio::HeatPump_WaterToWater_EquationFit_CoolingFields::SourceSideInletNodeName);
+  const auto unattachedCoolingSourceOutlet =
+    unattachedCooling.getModelObjectTarget<Node>(openstudio::HeatPump_WaterToWater_EquationFit_CoolingFields::SourceSideOutletNodeName);
+  ASSERT_TRUE(unattachedCoolingSourceInlet);
+  ASSERT_TRUE(unattachedCoolingSourceOutlet);
+  EXPECT_EQ(unattachedCooling.demandInletModelObject()->handle(), unattachedCoolingSourceInlet->handle());
+  EXPECT_EQ(unattachedCooling.demandOutletModelObject()->handle(), unattachedCoolingSourceOutlet->handle());
+
+  PlantLoop heatingPrimary(model);
+  PlantLoop heatingSecondary(model);
+  HeatPumpWaterToWaterEquationFitHeating primaryOnlyHeating(model);
+  ASSERT_TRUE(heatingPrimary.addSupplyBranchForComponent(primaryOnlyHeating));
+  ASSERT_TRUE(heatingSecondary.addDemandBranchForComponent(primaryOnlyHeating));
+  ASSERT_TRUE(primaryOnlyHeating.plantLoop());
+  ASSERT_TRUE(primaryOnlyHeating.secondaryPlantLoop());
+  EXPECT_EQ(heatingPrimary, *primaryOnlyHeating.plantLoop());
+  EXPECT_EQ(heatingSecondary, *primaryOnlyHeating.secondaryPlantLoop());
+  ASSERT_TRUE(primaryOnlyHeating.supplyInletModelObject());
+  ASSERT_TRUE(primaryOnlyHeating.demandInletModelObject());
+  const auto heatingSourceInlet =
+    primaryOnlyHeating.getModelObjectTarget<Node>(openstudio::HeatPump_WaterToWater_EquationFit_HeatingFields::SourceSideInletNodeName);
+  const auto heatingLoadInlet =
+    primaryOnlyHeating.getModelObjectTarget<Node>(openstudio::HeatPump_WaterToWater_EquationFit_HeatingFields::LoadSideInletNodeName);
+  ASSERT_TRUE(heatingSourceInlet);
+  ASSERT_TRUE(heatingLoadInlet);
+  EXPECT_EQ(primaryOnlyHeating.supplyInletModelObject()->handle(), heatingSourceInlet->handle());
+  EXPECT_EQ(primaryOnlyHeating.demandInletModelObject()->handle(), heatingLoadInlet->handle());
+  EXPECT_FALSE(primaryOnlyHeating.companionCoolingHeatPump());
+
+  PlantLoop coolingPrimary(model);
+  PlantLoop coolingSecondary(model);
+  HeatPumpWaterToWaterEquationFitCooling primaryOnlyCooling(model);
+  ASSERT_TRUE(coolingPrimary.addSupplyBranchForComponent(primaryOnlyCooling));
+  ASSERT_TRUE(coolingSecondary.addDemandBranchForComponent(primaryOnlyCooling));
+  ASSERT_TRUE(primaryOnlyCooling.plantLoop());
+  ASSERT_TRUE(primaryOnlyCooling.secondaryPlantLoop());
+  EXPECT_EQ(coolingPrimary, *primaryOnlyCooling.plantLoop());
+  EXPECT_EQ(coolingSecondary, *primaryOnlyCooling.secondaryPlantLoop());
+  ASSERT_TRUE(primaryOnlyCooling.supplyInletModelObject());
+  ASSERT_TRUE(primaryOnlyCooling.demandInletModelObject());
+  const auto coolingLoadInlet =
+    primaryOnlyCooling.getModelObjectTarget<Node>(openstudio::HeatPump_WaterToWater_EquationFit_CoolingFields::LoadSideInletNodeName);
+  const auto coolingSourceInlet =
+    primaryOnlyCooling.getModelObjectTarget<Node>(openstudio::HeatPump_WaterToWater_EquationFit_CoolingFields::SourceSideInletNodeName);
+  ASSERT_TRUE(coolingLoadInlet);
+  ASSERT_TRUE(coolingSourceInlet);
+  EXPECT_EQ(primaryOnlyCooling.supplyInletModelObject()->handle(), coolingLoadInlet->handle());
+  EXPECT_EQ(primaryOnlyCooling.demandInletModelObject()->handle(), coolingSourceInlet->handle());
+  EXPECT_FALSE(primaryOnlyCooling.companionHeatingHeatPump());
+}
+
+TEST_F(EPModelFixture, PlantLoop_EquationFitHeatPumpDemandMoveRejectsSamePrimaryTertiarySerialAndForeignTargetsWithoutMutation) {
+  Model model;
+  PlantLoop primaryLoop(model);
+  PlantLoop sourceLoop(model);
+  PlantLoop targetLoop(model);
+  HeatPumpWaterToWaterEquationFitHeating heatPump(model);
+  ASSERT_TRUE(primaryLoop.addSupplyBranchForComponent(heatPump));
+  ASSERT_TRUE(sourceLoop.addDemandBranchForComponent(heatPump));
+
+  const auto before = captureEquationFitHeatPumpMove(model, primaryLoop, sourceLoop, targetLoop, heatPump);
+  EXPECT_FALSE(sourceLoop.addDemandBranchForComponent(heatPump));
+  EXPECT_EQ(before, captureEquationFitHeatPumpMove(model, primaryLoop, sourceLoop, targetLoop, heatPump));
+  EXPECT_FALSE(primaryLoop.addDemandBranchForComponent(heatPump));
+  EXPECT_EQ(before, captureEquationFitHeatPumpMove(model, primaryLoop, sourceLoop, targetLoop, heatPump));
+  EXPECT_FALSE(targetLoop.addDemandBranchForComponent(heatPump, true));
+  EXPECT_EQ(before, captureEquationFitHeatPumpMove(model, primaryLoop, sourceLoop, targetLoop, heatPump));
+
+  Model foreignModel;
+  PlantLoop foreignTarget(foreignModel);
+  EXPECT_FALSE(foreignTarget.addDemandBranchForComponent(heatPump));
+  EXPECT_EQ(before, captureEquationFitHeatPumpMove(model, primaryLoop, sourceLoop, targetLoop, heatPump));
+
+  ASSERT_TRUE(heatPump.demandOutletModelObject());
+  PipeAdiabatic serialPipe(model);
+  auto serialInsertionNode = heatPump.demandOutletModelObject()->cast<Node>();
+  ASSERT_TRUE(serialPipe.addToNode(serialInsertionNode));
+  const auto serialBefore = captureEquationFitHeatPumpMove(model, primaryLoop, sourceLoop, targetLoop, heatPump);
+  EXPECT_FALSE(targetLoop.addDemandBranchForComponent(heatPump));
+  EXPECT_EQ(serialBefore, captureEquationFitHeatPumpMove(model, primaryLoop, sourceLoop, targetLoop, heatPump));
+}
+
+TEST_F(EPModelFixture, PlantLoop_EquationFitHeatPumpDemandMoveRejectsMalformedPortBranchAndCompanionEvidenceWithoutMutation) {
+  {
+    Model model;
+    PlantLoop primaryLoop(model);
+    PlantLoop unusedSourceLoop(model);
+    PlantLoop targetLoop(model);
+    HeatPumpWaterToWaterEquationFitHeating heatPump(model);
+    ASSERT_TRUE(primaryLoop.addSupplyBranchForComponent(heatPump));
+    Node malformedLoadInlet(model);
+    auto heatPumpWorkspaceImpl = heatPump.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+    ASSERT_TRUE(heatPumpWorkspaceImpl);
+    ASSERT_TRUE(heatPumpWorkspaceImpl->setPointer(openstudio::HeatPump_WaterToWater_EquationFit_HeatingFields::LoadSideInletNodeName,
+                                                  openstudio::Handle(), false));
+    ASSERT_TRUE(heatPumpWorkspaceImpl->openstudio::detail::IdfObject_Impl::setString(
+      openstudio::HeatPump_WaterToWater_EquationFit_HeatingFields::LoadSideInletNodeName, malformedLoadInlet.nameString(), false));
+    const auto before = captureEquationFitHeatPumpMove(model, primaryLoop, unusedSourceLoop, targetLoop, heatPump, false);
+    EXPECT_FALSE(targetLoop.addDemandBranchForComponent(heatPump));
+    EXPECT_EQ(before, captureEquationFitHeatPumpMove(model, primaryLoop, unusedSourceLoop, targetLoop, heatPump, false));
+  }
+
+  {
+    Model model;
+    PlantLoop primaryLoop(model);
+    PlantLoop sourceLoop(model);
+    PlantLoop targetLoop(model);
+    HeatPumpWaterToWaterEquationFitCooling heatPump(model);
+    ASSERT_TRUE(primaryLoop.addSupplyBranchForComponent(heatPump));
+    ASSERT_TRUE(sourceLoop.addDemandBranchForComponent(heatPump));
+    ASSERT_TRUE(heatPump.demandInletModelObject());
+    ASSERT_TRUE(heatPump.demandOutletModelObject());
+    Branch rawAliasBranch(model);
+    auto rawAliasRow = rawAliasBranch.pushExtensibleGroup();
+    ASSERT_FALSE(rawAliasRow.empty());
+    ASSERT_TRUE(rawAliasRow.setString(openstudio::BranchExtensibleFields::ComponentObjectType, heatPump.iddObject().name(), false));
+    ASSERT_TRUE(rawAliasRow.setString(openstudio::BranchExtensibleFields::ComponentName, heatPump.nameString(), false));
+    ASSERT_TRUE(
+      rawAliasRow.setString(openstudio::BranchExtensibleFields::ComponentInletNodeName, heatPump.demandInletModelObject()->nameString(), false));
+    ASSERT_TRUE(
+      rawAliasRow.setString(openstudio::BranchExtensibleFields::ComponentOutletNodeName, heatPump.demandOutletModelObject()->nameString(), false));
+    const auto before = captureEquationFitHeatPumpMove(model, primaryLoop, sourceLoop, targetLoop, heatPump);
+    EXPECT_FALSE(targetLoop.addDemandBranchForComponent(heatPump));
+    EXPECT_EQ(before, captureEquationFitHeatPumpMove(model, primaryLoop, sourceLoop, targetLoop, heatPump));
+  }
+
+  {
+    Model model;
+    PlantLoop primaryLoop(model);
+    PlantLoop sourceLoop(model);
+    PlantLoop targetLoop(model);
+    HeatPumpWaterToWaterEquationFitHeating heatPump(model);
+    ASSERT_TRUE(primaryLoop.addSupplyBranchForComponent(heatPump));
+    ASSERT_TRUE(sourceLoop.addDemandBranchForComponent(heatPump));
+    auto heatPumpWorkspaceImpl = heatPump.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+    ASSERT_TRUE(heatPumpWorkspaceImpl);
+    ASSERT_TRUE(heatPumpWorkspaceImpl->setPointer(openstudio::HeatPump_WaterToWater_EquationFit_HeatingFields::CompanionCoolingHeatPumpName,
+                                                  openstudio::Handle(), false));
+    ASSERT_TRUE(heatPumpWorkspaceImpl->openstudio::detail::IdfObject_Impl::setString(
+      openstudio::HeatPump_WaterToWater_EquationFit_HeatingFields::CompanionCoolingHeatPumpName, "Missing Cooling Companion", false));
+    const auto before = captureEquationFitHeatPumpMove(model, primaryLoop, sourceLoop, targetLoop, heatPump);
+    EXPECT_FALSE(targetLoop.addDemandBranchForComponent(heatPump));
+    EXPECT_EQ(before, captureEquationFitHeatPumpMove(model, primaryLoop, sourceLoop, targetLoop, heatPump));
+  }
+
+  {
+    Model model;
+    PlantLoop primaryLoop(model);
+    PlantLoop sourceLoop(model);
+    PlantLoop targetLoop(model);
+    HeatPumpWaterToWaterEquationFitCooling heatPump(model);
+    HeatPumpWaterToWaterEquationFitHeating rawInboundCompanion(model);
+    ASSERT_TRUE(primaryLoop.addSupplyBranchForComponent(heatPump));
+    ASSERT_TRUE(sourceLoop.addDemandBranchForComponent(heatPump));
+    auto companionWorkspaceImpl = rawInboundCompanion.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+    ASSERT_TRUE(companionWorkspaceImpl);
+    ASSERT_TRUE(companionWorkspaceImpl->setPointer(openstudio::HeatPump_WaterToWater_EquationFit_HeatingFields::CompanionCoolingHeatPumpName,
+                                                   openstudio::Handle(), false));
+    ASSERT_TRUE(companionWorkspaceImpl->openstudio::detail::IdfObject_Impl::setString(
+      openstudio::HeatPump_WaterToWater_EquationFit_HeatingFields::CompanionCoolingHeatPumpName, heatPump.nameString(), false));
+    const auto before = captureEquationFitHeatPumpMove(model, primaryLoop, sourceLoop, targetLoop, heatPump);
+    EXPECT_FALSE(targetLoop.addDemandBranchForComponent(heatPump));
+    EXPECT_EQ(before, captureEquationFitHeatPumpMove(model, primaryLoop, sourceLoop, targetLoop, heatPump));
   }
 }
 
