@@ -90,6 +90,13 @@ The transactional branch evidence is deliberately exact rather than generic:
   membership across rejection, rollback, save/load, and retry. Air-loop,
   outdoor-air-system, inlet-side-mixer, ambiguous-owner, and controller-owned
   variants remain rejected.
+- An exact `HeatExchangerFluidToFluid` with proven primary supply and secondary
+  demand owners can move its secondary connection to another demand loop. The
+  primary loop, supply ports and branch, control-node relationships, schedule,
+  scalar settings, setpoints, and surviving nodes remain unchanged. Both
+  default and parallel branch shapes have failure rollback, retry, save/load,
+  and owner-removal evidence; partial, aliased, or ambiguous topology rejects
+  before the older remove-first path can run.
 - A configured `ChillerElectricEIR` can detach from a condenser loop without
   losing its chilled-water ownership. Removing the condenser loop removes only
   condenser-owned branch, operation, and companion objects; a replacement
@@ -146,12 +153,12 @@ or the presence of a scalar test.
 
 ## Ordered plant roadmap
 
-1. **Broader multi-owner and component topology.** Extend the proven paths to
-   broader `WaterToWaterComponent` ownership and secondary/tertiary ports,
-   then to additional `StraightComponent` and `WaterToAirComponent` families,
-   including branch replacement, equipment-list ownership, clone/remove, and
-   cross-model transfer. Keep unsupported mutators out of wrappers until their
-   ownership is defined.
+1. **Equation-fit and broader multi-owner topology.** Extend the exact
+   water-to-water evidence to the equation-fit heating and cooling heat pumps,
+   accounting explicitly for their different EPModel demand-port mappings and
+   independent companion links. Then address additional secondary/tertiary
+   owners, branch replacement, clone/remove, and cross-model transfer. Keep
+   unsupported mutators out of wrappers until their ownership is defined.
 2. **Additional contained owners.** Apply the private relocation boundary to
    another selected compound owner only after its child roles, internal air or
    zone path, controller behavior, and removal lifetime have exact rejection,

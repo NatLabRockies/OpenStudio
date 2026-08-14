@@ -89,9 +89,12 @@
 #include <utilities/core/UUID.hpp>
 #include <utilities/idd/ConnectorList_FieldEnums.hxx>
 #include <utilities/idd/AirLoopHVAC_FieldEnums.hxx>
+#include <utilities/idd/Branch_FieldEnums.hxx>
+#include <utilities/idd/BranchList_FieldEnums.hxx>
 #include <utilities/idd/PlantLoop_FieldEnums.hxx>
 #include <utilities/idd/Sizing_Plant_FieldEnums.hxx>
 #include <utilities/idd/Controller_WaterCoil_FieldEnums.hxx>
+#include <utilities/idd/HeatExchanger_FluidToFluid_FieldEnums.hxx>
 #include <utilities/idd/ZoneHVAC_FourPipeFanCoil_FieldEnums.hxx>
 #include <utilities/idd/ZoneHVAC_EquipmentConnections_FieldEnums.hxx>
 #include <utilities/idd/ZoneHVAC_EquipmentList_FieldEnums.hxx>
@@ -227,6 +230,99 @@ PlantAttachmentTopologySnapshot capturePlantAttachmentTopology(const Model& mode
   if (auto outlet = component.outletModelObject()) {
     result.componentOutletHandle = outlet->handle();
   }
+  return result;
+}
+
+struct FluidToFluidHeatExchangerMoveSnapshot
+{
+  PlantAttachmentTopologySnapshot plantTopology;
+  std::vector<openstudio::Handle> modelObjectHandles;
+  std::vector<std::pair<openstudio::Handle, std::vector<boost::optional<std::string>>>> modelRawFields;
+  std::vector<openstudio::Handle> primarySupplyComponentHandles;
+  boost::optional<openstudio::Handle> primarySetpointTargetHandle;
+  boost::optional<openstudio::Handle> primaryOwnerHandle;
+  boost::optional<openstudio::Handle> secondaryOwnerHandle;
+  boost::optional<openstudio::Handle> supplyInletHandle;
+  boost::optional<openstudio::Handle> supplyOutletHandle;
+  boost::optional<openstudio::Handle> demandInletHandle;
+  boost::optional<openstudio::Handle> demandOutletHandle;
+  boost::optional<openstudio::Handle> availabilityScheduleHandle;
+  boost::optional<openstudio::Handle> supplyOverrideHandle;
+  boost::optional<openstudio::Handle> demandOverrideHandle;
+  std::vector<boost::optional<std::string>> heatExchangerRawFields;
+  std::array<boost::optional<std::string>, 3> setpointRawFields;
+
+  bool operator==(const FluidToFluidHeatExchangerMoveSnapshot&) const = default;
+};
+
+boost::optional<std::string> rawField(const openstudio::WorkspaceObject& object, unsigned field) {
+  auto workspaceImpl = object.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  EXPECT_TRUE(workspaceImpl);
+  return workspaceImpl ? workspaceImpl->openstudio::detail::IdfObject_Impl::getString(field, false, true) : boost::none;
+}
+
+FluidToFluidHeatExchangerMoveSnapshot captureFluidToFluidHeatExchangerMove(const Model& model, const PlantLoop& primaryLoop,
+                                                                           const PlantLoop& sourceLoop, const PlantLoop& targetLoop,
+                                                                           const HeatExchangerFluidToFluid& heatExchanger,
+                                                                           bool observeComponentOwners = true) {
+  FluidToFluidHeatExchangerMoveSnapshot result;
+  if (observeComponentOwners) {
+    result.plantTopology = capturePlantTopology(model, sourceLoop, targetLoop, false);
+  }
+  auto objects = model.objects();
+  std::ranges::sort(objects, {}, [](const auto& object) { return object.handle(); });
+  for (const auto& object : objects) {
+    result.modelObjectHandles.push_back(object.handle());
+    std::vector<boost::optional<std::string>> fields;
+    for (unsigned field = 0u; field < object.numFields(); ++field) {
+      fields.push_back(rawField(object, field));
+    }
+    while (!fields.empty() && !fields.back()) {
+      fields.pop_back();
+    }
+    result.modelRawFields.emplace_back(object.handle(), std::move(fields));
+  }
+  if (observeComponentOwners) {
+    result.primarySupplyComponentHandles = objectHandles(primaryLoop.supplyComponents());
+  }
+  if (auto setpointTarget = primaryLoop.getModelObjectTarget<Node>(openstudio::PlantLoopFields::LoopTemperatureSetpointNodeName)) {
+    result.primarySetpointTargetHandle = setpointTarget->handle();
+  }
+  if (observeComponentOwners) {
+    if (auto owner = heatExchanger.plantLoop()) {
+      result.primaryOwnerHandle = owner->handle();
+    }
+    if (auto owner = heatExchanger.secondaryPlantLoop()) {
+      result.secondaryOwnerHandle = owner->handle();
+    }
+  }
+  if (auto node = heatExchanger.supplyInletModelObject()) {
+    result.supplyInletHandle = node->handle();
+  }
+  if (auto node = heatExchanger.supplyOutletModelObject()) {
+    result.supplyOutletHandle = node->handle();
+  }
+  if (auto node = heatExchanger.demandInletModelObject()) {
+    result.demandInletHandle = node->handle();
+  }
+  if (auto node = heatExchanger.demandOutletModelObject()) {
+    result.demandOutletHandle = node->handle();
+  }
+  if (auto schedule = heatExchanger.availabilitySchedule()) {
+    result.availabilityScheduleHandle = schedule->handle();
+  }
+  if (auto node = heatExchanger.componentOverrideLoopSupplySideInletNode()) {
+    result.supplyOverrideHandle = node->handle();
+  }
+  if (auto node = heatExchanger.componentOverrideLoopDemandSideInletNode()) {
+    result.demandOverrideHandle = node->handle();
+  }
+  for (unsigned field = 0u; field < heatExchanger.numFields(); ++field) {
+    result.heatExchangerRawFields.push_back(rawField(heatExchanger, field));
+  }
+  result.setpointRawFields = {rawField(primaryLoop, openstudio::PlantLoopFields::LoopTemperatureSetpointNodeName),
+                              rawField(sourceLoop, openstudio::PlantLoopFields::LoopTemperatureSetpointNodeName),
+                              rawField(targetLoop, openstudio::PlantLoopFields::LoopTemperatureSetpointNodeName)};
   return result;
 }
 
@@ -3020,6 +3116,529 @@ TEST_F(EPModelFixture, PlantLoop_FourPipeFanCoilDemandMoveRejectsMalformedFanRol
     EXPECT_TRUE(rawAliasNameBefore == aliasWorkspaceImpl->openstudio::detail::IdfObject_Impl::getString(aliasCase.nameField, false, true));
     ASSERT_TRUE(aliasWorkspaceImpl->openstudio::detail::IdfObject_Impl::setString(aliasCase.nameField, "", false));
     ASSERT_TRUE(aliasWorkspaceImpl->openstudio::detail::IdfObject_Impl::setString(aliasCase.typeField, "", false));
+  }
+}
+
+TEST_F(EPModelFixture, PlantLoop_FluidToFluidHeatExchangerDemandMoveDefaultSourceToOccupiedTargetIsTransactionalAcrossReload) {
+  const auto idfPath =
+    openstudio::tempDir() / openstudio::toPath("epmodel-fluid-to-fluid-demand-move-" + openstudio::toString(openstudio::createUUID()) + ".idf");
+  ScopedFileRemoval cleanup(idfPath);
+
+  Model model;
+  PlantLoop primaryLoop(model);
+  PlantLoop sourceLoop(model);
+  PlantLoop targetLoop(model);
+  HeatExchangerFluidToFluid heatExchanger(model);
+  PipeAdiabatic targetPipe(model);
+  ScheduleConstant availability(model);
+  ASSERT_TRUE(primaryLoop.setName("Fluid HX Primary Loop"));
+  ASSERT_TRUE(sourceLoop.setName("Fluid HX Original Secondary Loop"));
+  ASSERT_TRUE(targetLoop.setName("Fluid HX Moved Secondary Loop"));
+  ASSERT_TRUE(heatExchanger.setName("Moved Fluid To Fluid Heat Exchanger"));
+  ASSERT_TRUE(targetPipe.setName("Retained Fluid HX Target Pipe"));
+  ASSERT_TRUE(availability.setName("Fluid HX Availability"));
+  ASSERT_TRUE(availability.setValue(0.75));
+  ASSERT_TRUE(heatExchanger.setAvailabilitySchedule(availability));
+  ASSERT_TRUE(heatExchanger.setHeatExchangerUFactorTimesAreaValue(417.25));
+  ASSERT_TRUE(heatExchanger.setSizingFactor(1.17));
+  ASSERT_TRUE(heatExchanger.setControlType("CoolingSetpointModulated"));
+  ASSERT_TRUE(primaryLoop.addSupplyBranchForComponent(heatExchanger));
+  ASSERT_TRUE(sourceLoop.addDemandBranchForComponent(heatExchanger));
+  ASSERT_TRUE(targetLoop.addDemandBranchForComponent(targetPipe));
+  auto primarySetpoint = primaryLoop.supplyInletNode();
+  auto sourceSetpoint = sourceLoop.supplyInletNode();
+  auto targetSetpoint = targetLoop.supplyInletNode();
+  ASSERT_TRUE(primaryLoop.setLoopTemperatureSetpointNode(primarySetpoint));
+  ASSERT_TRUE(sourceLoop.setLoopTemperatureSetpointNode(sourceSetpoint));
+  ASSERT_TRUE(targetLoop.setLoopTemperatureSetpointNode(targetSetpoint));
+
+  ASSERT_TRUE(heatExchanger.supplyInletModelObject());
+  ASSERT_TRUE(heatExchanger.supplyOutletModelObject());
+  ASSERT_TRUE(heatExchanger.demandInletModelObject());
+  ASSERT_TRUE(heatExchanger.demandOutletModelObject());
+  const auto primaryInlet = heatExchanger.supplyInletModelObject()->cast<Node>();
+  const auto primaryOutlet = heatExchanger.supplyOutletModelObject()->cast<Node>();
+  const auto oldDemandInlet = heatExchanger.demandInletModelObject()->cast<Node>();
+  const auto oldDemandOutlet = heatExchanger.demandOutletModelObject()->cast<Node>();
+  ASSERT_TRUE(heatExchanger.setComponentOverrideLoopSupplySideInletNode(primaryInlet));
+  ASSERT_TRUE(heatExchanger.setComponentOverrideLoopDemandSideInletNode(oldDemandInlet));
+
+  auto sourceBranchList = sourceLoop.getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::DemandSideBranchListName);
+  auto targetBranchList = targetLoop.getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::DemandSideBranchListName);
+  ASSERT_TRUE(sourceBranchList);
+  ASSERT_TRUE(targetBranchList);
+  const auto sourceBranchHandlesBefore = objectHandles(sourceBranchList->branches());
+  const auto targetBranchHandlesBefore = objectHandles(targetBranchList->branches());
+  ASSERT_EQ(3u, sourceBranchHandlesBefore.size());
+  ASSERT_EQ(3u, targetBranchHandlesBefore.size());
+  const auto sourceDefaultBranch = sourceBranchHandlesBefore[1];
+
+  const auto before = captureFluidToFluidHeatExchangerMove(model, primaryLoop, sourceLoop, targetLoop, heatExchanger);
+  {
+    test::ScopedTestFailure failure(model, detail::TestFailurePoint::PlantLoopAfterFluidToFluidHeatExchangerBranchAttachmentPrepared);
+    EXPECT_FALSE(targetLoop.addDemandBranchForComponent(heatExchanger));
+  }
+  EXPECT_EQ(before, captureFluidToFluidHeatExchangerMove(model, primaryLoop, sourceLoop, targetLoop, heatExchanger));
+
+  ASSERT_TRUE(targetLoop.addDemandBranchForComponent(heatExchanger));
+  ASSERT_TRUE(heatExchanger.plantLoop());
+  ASSERT_TRUE(heatExchanger.secondaryPlantLoop());
+  EXPECT_EQ(primaryLoop, *heatExchanger.plantLoop());
+  EXPECT_EQ(targetLoop, *heatExchanger.secondaryPlantLoop());
+  EXPECT_FALSE(sourceLoop.demandComponent(heatExchanger.handle()));
+  EXPECT_TRUE(targetLoop.demandComponent(heatExchanger.handle()));
+  ASSERT_TRUE(heatExchanger.supplyInletModelObject());
+  ASSERT_TRUE(heatExchanger.supplyOutletModelObject());
+  ASSERT_TRUE(heatExchanger.demandInletModelObject());
+  ASSERT_TRUE(heatExchanger.demandOutletModelObject());
+  EXPECT_EQ(primaryInlet.handle(), heatExchanger.supplyInletModelObject()->handle());
+  EXPECT_EQ(primaryOutlet.handle(), heatExchanger.supplyOutletModelObject()->handle());
+  EXPECT_NE(oldDemandInlet.handle(), heatExchanger.demandInletModelObject()->handle());
+  EXPECT_NE(oldDemandOutlet.handle(), heatExchanger.demandOutletModelObject()->handle());
+  EXPECT_TRUE(model.getObject(oldDemandInlet.handle()));
+  EXPECT_TRUE(model.getObject(oldDemandOutlet.handle()));
+  ASSERT_TRUE(heatExchanger.availabilitySchedule());
+  ASSERT_TRUE(heatExchanger.componentOverrideLoopSupplySideInletNode());
+  ASSERT_TRUE(heatExchanger.componentOverrideLoopDemandSideInletNode());
+  EXPECT_EQ(availability.handle(), heatExchanger.availabilitySchedule()->handle());
+  EXPECT_EQ(primaryInlet.handle(), heatExchanger.componentOverrideLoopSupplySideInletNode()->handle());
+  EXPECT_EQ(oldDemandInlet.handle(), heatExchanger.componentOverrideLoopDemandSideInletNode()->handle());
+  EXPECT_DOUBLE_EQ(417.25, *heatExchanger.heatExchangerUFactorTimesAreaValue());
+  EXPECT_DOUBLE_EQ(1.17, heatExchanger.sizingFactor());
+  EXPECT_EQ("CoolingSetpointModulated", heatExchanger.controlType());
+  EXPECT_EQ(primarySetpoint.handle(), primaryLoop.loopTemperatureSetpointNode().handle());
+  EXPECT_EQ(sourceSetpoint.handle(), sourceLoop.loopTemperatureSetpointNode().handle());
+  EXPECT_EQ(targetSetpoint.handle(), targetLoop.loopTemperatureSetpointNode().handle());
+
+  sourceBranchList = sourceLoop.getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::DemandSideBranchListName);
+  targetBranchList = targetLoop.getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::DemandSideBranchListName);
+  ASSERT_TRUE(sourceBranchList);
+  ASSERT_TRUE(targetBranchList);
+  EXPECT_EQ(sourceBranchHandlesBefore, objectHandles(sourceBranchList->branches()));
+  EXPECT_EQ(sourceDefaultBranch, sourceBranchList->branches()[1].handle());
+  EXPECT_TRUE(sourceBranchList->branches()[1].components().empty());
+  expectDemandBranchAndConnectorOrder(sourceLoop, sourceBranchHandlesBefore);
+  const auto targetBranchHandlesAfter = objectHandles(targetBranchList->branches());
+  ASSERT_EQ(4u, targetBranchHandlesAfter.size());
+  EXPECT_EQ(targetBranchHandlesBefore[0], targetBranchHandlesAfter[0]);
+  EXPECT_EQ(targetBranchHandlesBefore[1], targetBranchHandlesAfter[1]);
+  EXPECT_EQ(targetBranchHandlesBefore[2], targetBranchHandlesAfter[3]);
+  EXPECT_NE(targetBranchHandlesBefore[1], targetBranchHandlesAfter[2]);
+  expectDemandBranchAndConnectorOrder(targetLoop, targetBranchHandlesAfter);
+
+  ASSERT_TRUE(model.save(idfPath, true));
+  auto loadedModel = Model::load(idfPath);
+  ASSERT_TRUE(loadedModel);
+  auto loadedPrimary = loadedModel->getConcreteModelObjectByName<PlantLoop>("Fluid HX Primary Loop");
+  auto loadedSource = loadedModel->getConcreteModelObjectByName<PlantLoop>("Fluid HX Original Secondary Loop");
+  auto loadedTarget = loadedModel->getConcreteModelObjectByName<PlantLoop>("Fluid HX Moved Secondary Loop");
+  auto loadedHeatExchanger = loadedModel->getConcreteModelObjectByName<HeatExchangerFluidToFluid>("Moved Fluid To Fluid Heat Exchanger");
+  auto loadedAvailability = loadedModel->getConcreteModelObjectByName<ScheduleConstant>("Fluid HX Availability");
+  ASSERT_TRUE(loadedPrimary);
+  ASSERT_TRUE(loadedSource);
+  ASSERT_TRUE(loadedTarget);
+  ASSERT_TRUE(loadedHeatExchanger);
+  ASSERT_TRUE(loadedAvailability);
+  ASSERT_TRUE(loadedHeatExchanger->plantLoop());
+  ASSERT_TRUE(loadedHeatExchanger->secondaryPlantLoop());
+  EXPECT_EQ(*loadedPrimary, *loadedHeatExchanger->plantLoop());
+  EXPECT_EQ(*loadedTarget, *loadedHeatExchanger->secondaryPlantLoop());
+  EXPECT_FALSE(loadedSource->demandComponent(loadedHeatExchanger->handle()));
+  EXPECT_TRUE(loadedTarget->demandComponent(loadedHeatExchanger->handle()));
+  ASSERT_TRUE(loadedHeatExchanger->availabilitySchedule());
+  EXPECT_EQ(*loadedAvailability, *loadedHeatExchanger->availabilitySchedule());
+  ASSERT_TRUE(loadedHeatExchanger->componentOverrideLoopSupplySideInletNode());
+  ASSERT_TRUE(loadedHeatExchanger->componentOverrideLoopDemandSideInletNode());
+  EXPECT_EQ(primaryInlet.nameString(), loadedHeatExchanger->componentOverrideLoopSupplySideInletNode()->nameString());
+  EXPECT_EQ(oldDemandInlet.nameString(), loadedHeatExchanger->componentOverrideLoopDemandSideInletNode()->nameString());
+  EXPECT_DOUBLE_EQ(417.25, *loadedHeatExchanger->heatExchangerUFactorTimesAreaValue());
+  EXPECT_DOUBLE_EQ(1.17, loadedHeatExchanger->sizingFactor());
+  EXPECT_EQ("CoolingSetpointModulated", loadedHeatExchanger->controlType());
+  EXPECT_EQ(primarySetpoint.nameString(), loadedPrimary->loopTemperatureSetpointNode().nameString());
+  EXPECT_EQ(sourceSetpoint.nameString(), loadedSource->loopTemperatureSetpointNode().nameString());
+  EXPECT_EQ(targetSetpoint.nameString(), loadedTarget->loopTemperatureSetpointNode().nameString());
+}
+
+TEST_F(EPModelFixture, PlantLoop_FluidToFluidHeatExchangerDemandMoveParallelSourceToDefaultTargetIsTransactionalAndSecondaryRemovalRetainsPrimary) {
+  Model model;
+  PlantLoop primaryLoop(model);
+  PlantLoop sourceLoop(model);
+  PlantLoop targetLoop(model);
+  HeatExchangerFluidToFluid heatExchanger(model);
+  PipeAdiabatic retainedSourcePipe(model);
+  ASSERT_TRUE(primaryLoop.addSupplyBranchForComponent(heatExchanger));
+  ASSERT_TRUE(sourceLoop.addDemandBranchForComponent(retainedSourcePipe));
+  ASSERT_TRUE(sourceLoop.addDemandBranchForComponent(heatExchanger));
+  auto primarySetpoint = primaryLoop.supplyInletNode();
+  auto sourceSetpoint = sourceLoop.supplyInletNode();
+  auto targetSetpoint = targetLoop.supplyInletNode();
+  ASSERT_TRUE(primaryLoop.setLoopTemperatureSetpointNode(primarySetpoint));
+  ASSERT_TRUE(sourceLoop.setLoopTemperatureSetpointNode(sourceSetpoint));
+  ASSERT_TRUE(targetLoop.setLoopTemperatureSetpointNode(targetSetpoint));
+
+  ASSERT_TRUE(heatExchanger.supplyInletModelObject());
+  ASSERT_TRUE(heatExchanger.supplyOutletModelObject());
+  ASSERT_TRUE(heatExchanger.demandInletModelObject());
+  ASSERT_TRUE(heatExchanger.demandOutletModelObject());
+  const auto primaryInletHandle = heatExchanger.supplyInletModelObject()->handle();
+  const auto primaryOutletHandle = heatExchanger.supplyOutletModelObject()->handle();
+  const auto oldDemandInletHandle = heatExchanger.demandInletModelObject()->handle();
+  const auto oldDemandOutletHandle = heatExchanger.demandOutletModelObject()->handle();
+
+  auto sourceBranchList = sourceLoop.getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::DemandSideBranchListName);
+  auto targetBranchList = targetLoop.getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::DemandSideBranchListName);
+  ASSERT_TRUE(sourceBranchList);
+  ASSERT_TRUE(targetBranchList);
+  const auto sourceBranchesBefore = sourceBranchList->branches();
+  const auto sourceBranchHandlesBefore = objectHandles(sourceBranchesBefore);
+  const auto targetBranchHandlesBefore = objectHandles(targetBranchList->branches());
+  ASSERT_EQ(4u, sourceBranchHandlesBefore.size());
+  ASSERT_EQ(3u, targetBranchHandlesBefore.size());
+  const auto removedBranch = std::ranges::find_if(sourceBranchesBefore, [&heatExchanger](const auto& branch) {
+    const auto components = branch.components();
+    return std::ranges::find(components, heatExchanger.cast<ModelObject>()) != components.end();
+  });
+  ASSERT_NE(sourceBranchesBefore.end(), removedBranch);
+  const auto removedBranchHandle = removedBranch->handle();
+  auto expectedSourceBranchHandles = sourceBranchHandlesBefore;
+  const auto removedHandle = std::ranges::find(expectedSourceBranchHandles, removedBranchHandle);
+  ASSERT_NE(expectedSourceBranchHandles.end(), removedHandle);
+  expectedSourceBranchHandles.erase(removedHandle);
+  const auto targetDefaultBranch = targetBranchHandlesBefore[1];
+
+  const auto before = captureFluidToFluidHeatExchangerMove(model, primaryLoop, sourceLoop, targetLoop, heatExchanger);
+  {
+    test::ScopedTestFailure failure(model, detail::TestFailurePoint::PlantLoopAfterFluidToFluidHeatExchangerBranchAttachmentPrepared);
+    EXPECT_FALSE(targetLoop.addDemandBranchForComponent(heatExchanger));
+  }
+  EXPECT_EQ(before, captureFluidToFluidHeatExchangerMove(model, primaryLoop, sourceLoop, targetLoop, heatExchanger));
+
+  ASSERT_TRUE(targetLoop.addDemandBranchForComponent(heatExchanger));
+  EXPECT_FALSE(model.getObject(removedBranchHandle));
+  EXPECT_TRUE(model.getObject(oldDemandInletHandle));
+  EXPECT_TRUE(model.getObject(oldDemandOutletHandle));
+  ASSERT_TRUE(heatExchanger.plantLoop());
+  ASSERT_TRUE(heatExchanger.secondaryPlantLoop());
+  EXPECT_EQ(primaryLoop, *heatExchanger.plantLoop());
+  EXPECT_EQ(targetLoop, *heatExchanger.secondaryPlantLoop());
+  ASSERT_TRUE(heatExchanger.supplyInletModelObject());
+  ASSERT_TRUE(heatExchanger.supplyOutletModelObject());
+  EXPECT_EQ(primaryInletHandle, heatExchanger.supplyInletModelObject()->handle());
+  EXPECT_EQ(primaryOutletHandle, heatExchanger.supplyOutletModelObject()->handle());
+  EXPECT_EQ(primarySetpoint.handle(), primaryLoop.loopTemperatureSetpointNode().handle());
+  EXPECT_EQ(sourceSetpoint.handle(), sourceLoop.loopTemperatureSetpointNode().handle());
+  EXPECT_EQ(targetSetpoint.handle(), targetLoop.loopTemperatureSetpointNode().handle());
+
+  sourceBranchList = sourceLoop.getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::DemandSideBranchListName);
+  targetBranchList = targetLoop.getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::DemandSideBranchListName);
+  ASSERT_TRUE(sourceBranchList);
+  ASSERT_TRUE(targetBranchList);
+  EXPECT_EQ(expectedSourceBranchHandles, objectHandles(sourceBranchList->branches()));
+  expectDemandBranchAndConnectorOrder(sourceLoop, expectedSourceBranchHandles);
+  EXPECT_EQ(targetBranchHandlesBefore, objectHandles(targetBranchList->branches()));
+  EXPECT_EQ(targetDefaultBranch, targetBranchList->branches()[1].handle());
+  EXPECT_EQ(std::vector<ModelObject>{heatExchanger.cast<ModelObject>()}, targetBranchList->branches()[1].components());
+  expectDemandBranchAndConnectorOrder(targetLoop, targetBranchHandlesBefore);
+
+  const auto targetHandle = targetLoop.handle();
+  EXPECT_FALSE(targetLoop.remove().empty());
+  EXPECT_FALSE(model.getObject(targetHandle));
+  EXPECT_TRUE(model.getObject(heatExchanger.handle()));
+  ASSERT_TRUE(heatExchanger.plantLoop());
+  EXPECT_EQ(primaryLoop, *heatExchanger.plantLoop());
+  EXPECT_FALSE(heatExchanger.secondaryPlantLoop());
+  EXPECT_TRUE(heatExchanger.supplyInletModelObject());
+  EXPECT_TRUE(heatExchanger.supplyOutletModelObject());
+  EXPECT_FALSE(heatExchanger.demandInletModelObject());
+  EXPECT_FALSE(heatExchanger.demandOutletModelObject());
+}
+
+TEST_F(EPModelFixture, PlantLoop_FluidToFluidHeatExchangerMovedPrimaryRemovalRetainsSecondary) {
+  Model model;
+  PlantLoop primaryLoop(model);
+  PlantLoop sourceLoop(model);
+  PlantLoop targetLoop(model);
+  HeatExchangerFluidToFluid heatExchanger(model);
+  ASSERT_TRUE(primaryLoop.addSupplyBranchForComponent(heatExchanger));
+  ASSERT_TRUE(sourceLoop.addDemandBranchForComponent(heatExchanger));
+  ASSERT_TRUE(targetLoop.addDemandBranchForComponent(heatExchanger));
+  ASSERT_TRUE(heatExchanger.plantLoop());
+  ASSERT_TRUE(heatExchanger.secondaryPlantLoop());
+  EXPECT_EQ(primaryLoop, *heatExchanger.plantLoop());
+  EXPECT_EQ(targetLoop, *heatExchanger.secondaryPlantLoop());
+
+  const auto targetDemandInletHandle = heatExchanger.demandInletModelObject()->handle();
+  const auto targetDemandOutletHandle = heatExchanger.demandOutletModelObject()->handle();
+  const auto primaryHandle = primaryLoop.handle();
+  EXPECT_FALSE(primaryLoop.remove().empty());
+  EXPECT_FALSE(model.getObject(primaryHandle));
+  EXPECT_TRUE(model.getObject(heatExchanger.handle()));
+  EXPECT_FALSE(heatExchanger.plantLoop());
+  EXPECT_FALSE(heatExchanger.supplyInletModelObject());
+  EXPECT_FALSE(heatExchanger.supplyOutletModelObject());
+  ASSERT_TRUE(heatExchanger.secondaryPlantLoop());
+  EXPECT_EQ(targetLoop, *heatExchanger.secondaryPlantLoop());
+  ASSERT_TRUE(heatExchanger.demandInletModelObject());
+  ASSERT_TRUE(heatExchanger.demandOutletModelObject());
+  EXPECT_EQ(targetDemandInletHandle, heatExchanger.demandInletModelObject()->handle());
+  EXPECT_EQ(targetDemandOutletHandle, heatExchanger.demandOutletModelObject()->handle());
+}
+
+TEST_F(EPModelFixture, PlantLoop_FluidToFluidHeatExchangerInitialDemandAttachmentRemainsSupported) {
+  Model model;
+  PlantLoop unattachedTarget(model);
+  HeatExchangerFluidToFluid unattachedHeatExchanger(model);
+  EXPECT_TRUE(unattachedTarget.addDemandBranchForComponent(unattachedHeatExchanger));
+  EXPECT_FALSE(unattachedHeatExchanger.plantLoop());
+  ASSERT_TRUE(unattachedHeatExchanger.secondaryPlantLoop());
+  EXPECT_EQ(unattachedTarget, *unattachedHeatExchanger.secondaryPlantLoop());
+
+  PlantLoop primaryLoop(model);
+  PlantLoop primaryOnlyTarget(model);
+  HeatExchangerFluidToFluid primaryOnlyHeatExchanger(model);
+  ASSERT_TRUE(primaryLoop.addSupplyBranchForComponent(primaryOnlyHeatExchanger));
+  EXPECT_TRUE(primaryOnlyTarget.addDemandBranchForComponent(primaryOnlyHeatExchanger));
+  ASSERT_TRUE(primaryOnlyHeatExchanger.plantLoop());
+  ASSERT_TRUE(primaryOnlyHeatExchanger.secondaryPlantLoop());
+  EXPECT_EQ(primaryLoop, *primaryOnlyHeatExchanger.plantLoop());
+  EXPECT_EQ(primaryOnlyTarget, *primaryOnlyHeatExchanger.secondaryPlantLoop());
+}
+
+TEST_F(EPModelFixture, PlantLoop_FluidToFluidHeatExchangerDemandMoveRejectsSamePrimaryTertiarySerialAndForeignTargetsWithoutMutation) {
+  Model model;
+  PlantLoop primaryLoop(model);
+  PlantLoop sourceLoop(model);
+  PlantLoop targetLoop(model);
+  HeatExchangerFluidToFluid heatExchanger(model);
+  ASSERT_TRUE(primaryLoop.addSupplyBranchForComponent(heatExchanger));
+  ASSERT_TRUE(sourceLoop.addDemandBranchForComponent(heatExchanger));
+
+  const auto before = captureFluidToFluidHeatExchangerMove(model, primaryLoop, sourceLoop, targetLoop, heatExchanger);
+  EXPECT_FALSE(sourceLoop.addDemandBranchForComponent(heatExchanger));
+  EXPECT_EQ(before, captureFluidToFluidHeatExchangerMove(model, primaryLoop, sourceLoop, targetLoop, heatExchanger));
+  EXPECT_FALSE(primaryLoop.addDemandBranchForComponent(heatExchanger));
+  EXPECT_EQ(before, captureFluidToFluidHeatExchangerMove(model, primaryLoop, sourceLoop, targetLoop, heatExchanger));
+  EXPECT_FALSE(targetLoop.addDemandBranchForComponent(heatExchanger, true));
+  EXPECT_EQ(before, captureFluidToFluidHeatExchangerMove(model, primaryLoop, sourceLoop, targetLoop, heatExchanger));
+
+  Model foreignModel;
+  PlantLoop foreignTarget(foreignModel);
+  EXPECT_FALSE(foreignTarget.addDemandBranchForComponent(heatExchanger));
+  EXPECT_EQ(before, captureFluidToFluidHeatExchangerMove(model, primaryLoop, sourceLoop, targetLoop, heatExchanger));
+
+  ASSERT_TRUE(heatExchanger.demandOutletModelObject());
+  PipeAdiabatic serialPipe(model);
+  auto serialInsertionNode = heatExchanger.demandOutletModelObject()->cast<Node>();
+  ASSERT_TRUE(serialPipe.addToNode(serialInsertionNode));
+  const auto serialBefore = captureFluidToFluidHeatExchangerMove(model, primaryLoop, sourceLoop, targetLoop, heatExchanger);
+  EXPECT_FALSE(targetLoop.addDemandBranchForComponent(heatExchanger));
+  EXPECT_EQ(serialBefore, captureFluidToFluidHeatExchangerMove(model, primaryLoop, sourceLoop, targetLoop, heatExchanger));
+}
+
+TEST_F(EPModelFixture, PlantLoop_FluidToFluidHeatExchangerDemandMoveRejectsPartialAndRawBranchEvidenceWithoutMutation) {
+  {
+    Model model;
+    PlantLoop primaryLoop(model);
+    PlantLoop unusedSourceLoop(model);
+    PlantLoop targetLoop(model);
+    HeatExchangerFluidToFluid heatExchanger(model);
+    ASSERT_TRUE(primaryLoop.addSupplyBranchForComponent(heatExchanger));
+    Node malformedDemandInlet(model);
+    auto heatExchangerWorkspaceImpl = heatExchanger.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+    ASSERT_TRUE(heatExchangerWorkspaceImpl);
+    ASSERT_TRUE(heatExchangerWorkspaceImpl->setPointer(heatExchanger.demandInletPort(), openstudio::Handle(), false));
+    ASSERT_TRUE(heatExchangerWorkspaceImpl->openstudio::detail::IdfObject_Impl::setString(heatExchanger.demandInletPort(),
+                                                                                          malformedDemandInlet.nameString(), false));
+    const auto before = captureFluidToFluidHeatExchangerMove(model, primaryLoop, unusedSourceLoop, targetLoop, heatExchanger, false);
+    EXPECT_FALSE(targetLoop.addDemandBranchForComponent(heatExchanger));
+    EXPECT_EQ(before, captureFluidToFluidHeatExchangerMove(model, primaryLoop, unusedSourceLoop, targetLoop, heatExchanger, false));
+  }
+
+  {
+    Model model;
+    PlantLoop primaryLoop(model);
+    PlantLoop sourceLoop(model);
+    PlantLoop targetLoop(model);
+    HeatExchangerFluidToFluid heatExchanger(model);
+    ASSERT_TRUE(primaryLoop.addSupplyBranchForComponent(heatExchanger));
+    ASSERT_TRUE(sourceLoop.addDemandBranchForComponent(heatExchanger));
+    ASSERT_TRUE(heatExchanger.demandInletModelObject());
+    ASSERT_TRUE(heatExchanger.demandOutletModelObject());
+
+    Branch rawAliasBranch(model);
+    auto rawAliasRow = rawAliasBranch.pushExtensibleGroup();
+    ASSERT_FALSE(rawAliasRow.empty());
+    ASSERT_TRUE(rawAliasRow.setString(openstudio::BranchExtensibleFields::ComponentObjectType, heatExchanger.iddObject().name(), false));
+    ASSERT_TRUE(rawAliasRow.setString(openstudio::BranchExtensibleFields::ComponentName, heatExchanger.nameString(), false));
+    ASSERT_TRUE(
+      rawAliasRow.setString(openstudio::BranchExtensibleFields::ComponentInletNodeName, heatExchanger.demandInletModelObject()->nameString(), false));
+    ASSERT_TRUE(rawAliasRow.setString(openstudio::BranchExtensibleFields::ComponentOutletNodeName,
+                                      heatExchanger.demandOutletModelObject()->nameString(), false));
+    const auto before = captureFluidToFluidHeatExchangerMove(model, primaryLoop, sourceLoop, targetLoop, heatExchanger);
+    EXPECT_FALSE(targetLoop.addDemandBranchForComponent(heatExchanger));
+    EXPECT_EQ(before, captureFluidToFluidHeatExchangerMove(model, primaryLoop, sourceLoop, targetLoop, heatExchanger));
+  }
+}
+
+TEST_F(EPModelFixture, PlantLoop_FluidToFluidHeatExchangerInitialDispatchRejectsMalformedPrimaryEvidenceWithoutMutation) {
+  enum class MalformedPrimaryCase
+  {
+    OrphanRow,
+    WrongSideRow,
+    DuplicateBranchListMembership,
+  };
+
+  for (const auto malformedCase :
+       {MalformedPrimaryCase::OrphanRow, MalformedPrimaryCase::WrongSideRow, MalformedPrimaryCase::DuplicateBranchListMembership}) {
+    SCOPED_TRACE(static_cast<int>(malformedCase));
+    Model model;
+    PlantLoop primaryLoop(model);
+    PlantLoop unusedSourceLoop(model);
+    PlantLoop targetLoop(model);
+    HeatExchangerFluidToFluid heatExchanger(model);
+
+    if (malformedCase == MalformedPrimaryCase::OrphanRow) {
+      Branch orphanBranch(model);
+      Node orphanInlet(model);
+      Node orphanOutlet(model);
+      auto orphanBranchImpl = orphanBranch.getImpl<detail::Branch_Impl>();
+      ASSERT_TRUE(orphanBranchImpl);
+      ASSERT_TRUE(orphanBranchImpl->appendComponent(heatExchanger.cast<ModelObject>(), orphanInlet.nameString(), orphanOutlet.nameString()));
+    } else if (malformedCase == MalformedPrimaryCase::WrongSideRow) {
+      ASSERT_TRUE(primaryLoop.addDemandBranchForComponent(heatExchanger));
+      ASSERT_TRUE(heatExchanger.demandInletModelObject());
+      ASSERT_TRUE(heatExchanger.demandOutletModelObject());
+      auto heatExchangerWorkspaceImpl = heatExchanger.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+      ASSERT_TRUE(heatExchangerWorkspaceImpl);
+      ASSERT_TRUE(heatExchangerWorkspaceImpl->setPointer(heatExchanger.supplyInletPort(), heatExchanger.demandInletModelObject()->handle(), false));
+      ASSERT_TRUE(heatExchangerWorkspaceImpl->setPointer(heatExchanger.supplyOutletPort(), heatExchanger.demandOutletModelObject()->handle(), false));
+      ASSERT_TRUE(heatExchangerWorkspaceImpl->setPointer(heatExchanger.demandInletPort(), openstudio::Handle(), false));
+      ASSERT_TRUE(heatExchangerWorkspaceImpl->setPointer(heatExchanger.demandOutletPort(), openstudio::Handle(), false));
+    } else {
+      ASSERT_TRUE(primaryLoop.addSupplyBranchForComponent(heatExchanger));
+      auto primaryBranchList = primaryLoop.getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::PlantSideBranchListName);
+      ASSERT_TRUE(primaryBranchList);
+      const auto primaryBranches = primaryBranchList->branches();
+      const auto primaryBranch = std::ranges::find_if(primaryBranches, [&heatExchanger](const auto& branch) {
+        const auto components = branch.components();
+        return std::ranges::find(components, heatExchanger.cast<ModelObject>()) != components.end();
+      });
+      ASSERT_NE(primaryBranches.end(), primaryBranch);
+      auto duplicateRow = primaryBranchList->pushExtensibleGroup();
+      ASSERT_FALSE(duplicateRow.empty());
+      ASSERT_TRUE(duplicateRow.setString(openstudio::BranchListExtensibleFields::BranchName, primaryBranch->nameString(), false));
+    }
+
+    const auto before = captureFluidToFluidHeatExchangerMove(model, primaryLoop, unusedSourceLoop, targetLoop, heatExchanger, false);
+    EXPECT_FALSE(targetLoop.addDemandBranchForComponent(heatExchanger));
+    EXPECT_EQ(before, captureFluidToFluidHeatExchangerMove(model, primaryLoop, unusedSourceLoop, targetLoop, heatExchanger, false));
+  }
+}
+
+TEST_F(EPModelFixture, PlantLoop_FluidToFluidHeatExchangerDemandMoveRejectsTargetScaffoldAliasesWithoutMutation) {
+  enum class TargetAliasCase
+  {
+    ManagedBranchListOwner,
+    RawConnectorListOwner,
+    RawBranchListMembership,
+  };
+
+  for (const auto aliasCase :
+       {TargetAliasCase::ManagedBranchListOwner, TargetAliasCase::RawConnectorListOwner, TargetAliasCase::RawBranchListMembership}) {
+    SCOPED_TRACE(static_cast<int>(aliasCase));
+    Model model;
+    PlantLoop primaryLoop(model);
+    PlantLoop sourceLoop(model);
+    PlantLoop targetLoop(model);
+    PlantLoop aliasLoop(model);
+    HeatExchangerFluidToFluid heatExchanger(model);
+    ASSERT_TRUE(primaryLoop.addSupplyBranchForComponent(heatExchanger));
+    ASSERT_TRUE(sourceLoop.addDemandBranchForComponent(heatExchanger));
+
+    auto targetBranchList = targetLoop.getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::DemandSideBranchListName);
+    auto targetConnectorList = targetLoop.getModelObjectTarget<ModelObject>(openstudio::PlantLoopFields::DemandSideConnectorListName);
+    ASSERT_TRUE(targetBranchList);
+    ASSERT_TRUE(targetConnectorList);
+    auto aliasLoopWorkspaceImpl = aliasLoop.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+    ASSERT_TRUE(aliasLoopWorkspaceImpl);
+
+    if (aliasCase == TargetAliasCase::ManagedBranchListOwner) {
+      ASSERT_TRUE(aliasLoopWorkspaceImpl->setPointer(openstudio::PlantLoopFields::PlantSideBranchListName, targetBranchList->handle(), false));
+    } else if (aliasCase == TargetAliasCase::RawConnectorListOwner) {
+      ASSERT_TRUE(aliasLoopWorkspaceImpl->setPointer(openstudio::PlantLoopFields::PlantSideConnectorListName, openstudio::Handle(), false));
+      ASSERT_TRUE(aliasLoopWorkspaceImpl->openstudio::detail::IdfObject_Impl::setString(openstudio::PlantLoopFields::PlantSideConnectorListName,
+                                                                                        targetConnectorList->nameString(), false));
+    } else {
+      BranchList rawAliasList(model);
+      auto rawAliasRow = rawAliasList.pushExtensibleGroup();
+      ASSERT_FALSE(rawAliasRow.empty());
+      ASSERT_TRUE(rawAliasRow.setString(openstudio::BranchListExtensibleFields::BranchName, targetBranchList->branches()[1].nameString(), false));
+    }
+
+    const auto before = captureFluidToFluidHeatExchangerMove(model, primaryLoop, sourceLoop, targetLoop, heatExchanger);
+    EXPECT_FALSE(targetLoop.addDemandBranchForComponent(heatExchanger));
+    EXPECT_EQ(before, captureFluidToFluidHeatExchangerMove(model, primaryLoop, sourceLoop, targetLoop, heatExchanger));
+  }
+}
+
+TEST_F(EPModelFixture, PlantLoop_FluidToFluidHeatExchangerDemandMoveRejectsTargetNodeNameCollisionsWithoutMutation) {
+  enum class NodeCollisionCase
+  {
+    DefaultAnchor,
+    DefaultOutlet,
+    DefaultOutletRawOwner,
+    NewBranchInlet,
+    NewBranchOutlet,
+  };
+
+  for (const auto collisionCase : {NodeCollisionCase::DefaultAnchor, NodeCollisionCase::DefaultOutlet, NodeCollisionCase::DefaultOutletRawOwner,
+                                   NodeCollisionCase::NewBranchInlet, NodeCollisionCase::NewBranchOutlet}) {
+    SCOPED_TRACE(static_cast<int>(collisionCase));
+    Model model;
+    PlantLoop primaryLoop(model);
+    PlantLoop sourceLoop(model);
+    PlantLoop targetLoop(model);
+    HeatExchangerFluidToFluid heatExchanger(model);
+    ASSERT_TRUE(targetLoop.setName("HX Node Collision Target"));
+    ASSERT_TRUE(heatExchanger.setName("HX Node Collision Component"));
+    ASSERT_TRUE(primaryLoop.addSupplyBranchForComponent(heatExchanger));
+    ASSERT_TRUE(sourceLoop.addDemandBranchForComponent(heatExchanger));
+
+    const bool occupiedTarget = collisionCase == NodeCollisionCase::NewBranchInlet || collisionCase == NodeCollisionCase::NewBranchOutlet;
+    if (occupiedTarget) {
+      PipeAdiabatic targetPipe(model);
+      ASSERT_TRUE(targetLoop.addDemandBranchForComponent(targetPipe));
+    }
+    auto targetBranchList = targetLoop.getModelObjectTarget<BranchList>(openstudio::PlantLoopFields::DemandSideBranchListName);
+    ASSERT_TRUE(targetBranchList);
+    ASSERT_EQ(3u, targetBranchList->branches().size());
+    const auto plannedBranchName = occupiedTarget ? targetLoop.nameString() + " Demand Branch 2" : targetBranchList->branches()[1].nameString();
+    const auto plannedInletName = plannedBranchName + " Node";
+    const auto plannedOutletName = plannedInletName + " - " + heatExchanger.nameString() + " Outlet";
+    const auto collisionName = (collisionCase == NodeCollisionCase::DefaultAnchor || collisionCase == NodeCollisionCase::NewBranchInlet)
+                                 ? plannedInletName
+                                 : plannedOutletName;
+    if (collisionCase == NodeCollisionCase::DefaultOutletRawOwner) {
+      PipeAdiabatic rawOwner(model);
+      auto rawOwnerWorkspaceImpl = rawOwner.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+      ASSERT_TRUE(rawOwnerWorkspaceImpl);
+      ASSERT_TRUE(rawOwnerWorkspaceImpl->openstudio::detail::IdfObject_Impl::setString(rawOwner.inletPort(), collisionName, false));
+    } else {
+      Node collision(model);
+      if (collisionCase == NodeCollisionCase::DefaultAnchor) {
+        const auto nameField = collision.iddObject().nameFieldIndex();
+        auto collisionWorkspaceImpl = collision.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+        ASSERT_TRUE(nameField);
+        ASSERT_TRUE(collisionWorkspaceImpl);
+        ASSERT_TRUE(collisionWorkspaceImpl->openstudio::detail::IdfObject_Impl::setString(*nameField, collisionName, false));
+      } else {
+        ASSERT_TRUE(collision.setName(collisionName));
+      }
+    }
+
+    const auto before = captureFluidToFluidHeatExchangerMove(model, primaryLoop, sourceLoop, targetLoop, heatExchanger);
+    EXPECT_FALSE(targetLoop.addDemandBranchForComponent(heatExchanger));
+    EXPECT_EQ(before, captureFluidToFluidHeatExchangerMove(model, primaryLoop, sourceLoop, targetLoop, heatExchanger));
   }
 }
 

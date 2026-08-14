@@ -161,6 +161,7 @@ namespace epmodel {
       class PipeBranchAttachmentPlan;
       class PipeBranchRemovalPlan;
       class DemandBranchRelocationPlan;
+      class FluidToFluidHeatExchangerDemandBranchAttachmentPlan;
       class WaterCoilDemandBranchAttachmentPlan;
       class ContainedReheatCoilDemandBranchAttachmentPlan;
       class FourPipeFanCoilDemandBranchAttachmentPlan;

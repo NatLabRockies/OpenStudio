@@ -130,6 +130,7 @@
 #include <utilities/idd/AirLoopHVAC_FieldEnums.hxx>
 #include <utilities/idd/AirTerminal_SingleDuct_ConstantVolume_Reheat_FieldEnums.hxx>
 #include <utilities/idd/Branch_FieldEnums.hxx>
+#include <utilities/idd/BranchList_FieldEnums.hxx>
 #include <utilities/idd/ConnectorList_FieldEnums.hxx>
 #include <utilities/idd/Controller_WaterCoil_FieldEnums.hxx>
 #include <utilities/idd/GroundHeatExchanger_System_FieldEnums.hxx>
@@ -1025,17 +1026,80 @@ namespace epmodel {
     };
 
     // Private one-shot demand-branch relocation shared only by the exact
-    // standalone and contained water-coil ownership plans below. Callers
-    // retain all air/controller/compound-owner validation; this plan owns only
-    // the proven plant representation and the two water-port writes.
+    // owner-proven water-coil plans and the exact fluid-to-fluid heat exchanger
+    // plan below. Callers retain all component-specific ownership validation;
+    // this plan owns only the proven plant representation and two explicit
+    // component-port writes.
     class PlantLoop_Impl::DemandBranchRelocationPlan
     {
      public:
       using ExternalRow = std::pair<Handle, unsigned>;
 
-      static std::unique_ptr<DemandBranchRelocationPlan> prepare(PlantLoop_Impl& targetLoopImpl, WaterToAirComponent coil,
-                                                                 const std::vector<ExternalRow>& validatedExternalRows) {
-        if ((coil.model() != targetLoopImpl.model()) || !coil.name()) {
+      static std::unique_ptr<DemandBranchRelocationPlan> prepareWaterCoil(PlantLoop_Impl& targetLoopImpl, WaterToAirComponent coil,
+                                                                          const std::vector<ExternalRow>& validatedExternalRows) {
+        const auto sourceLoop = coil.plantLoop();
+        if (!sourceLoop) {
+          return nullptr;
+        }
+        return prepareProven(targetLoopImpl, coil.cast<HVACComponent>(), *sourceLoop, coil.waterInletPort(), coil.waterOutletPort(),
+                             validatedExternalRows);
+      }
+
+      static std::unique_ptr<DemandBranchRelocationPlan> prepareFluidToFluidHeatExchanger(PlantLoop_Impl& targetLoopImpl,
+                                                                                          HeatExchangerFluidToFluid heatExchanger,
+                                                                                          PlantLoop sourceLoop,
+                                                                                          const ExternalRow& validatedPrimaryRow) {
+        if (heatExchanger.iddObject().type() != HeatExchangerFluidToFluid::iddObjectType()) {
+          return nullptr;
+        }
+        return prepareProven(targetLoopImpl, heatExchanger.cast<HVACComponent>(), std::move(sourceLoop), heatExchanger.demandInletPort(),
+                             heatExchanger.demandOutletPort(), {validatedPrimaryRow});
+      }
+
+     private:
+      static bool rawNodeIdentityIsReferenced(const Model& model, const std::string& nodeName,
+                                              const boost::optional<Handle>& nodeHandle = boost::none,
+                                              const boost::optional<Handle>& ignoredObject = boost::none) {
+        for (const auto& object : model.objects()) {
+          if (ignoredObject && object.handle() == *ignoredObject) {
+            continue;
+          }
+          auto workspaceImpl = object.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+          OS_ASSERT(workspaceImpl);
+          for (unsigned field = 0u; field < object.numFields(); ++field) {
+            const auto raw = workspaceImpl->openstudio::detail::IdfObject_Impl::getString(field, false, true);
+            if (raw && !raw->empty() && (openstudio::istringEqual(*raw, nodeName) || (nodeHandle && openstudio::toUUID(*raw) == *nodeHandle))) {
+              return true;
+            }
+          }
+        }
+        return false;
+      }
+
+      static bool generatedNodeNameIsAbsentAndUnowned(const Model& model, const std::string& nodeName) {
+        return !model.getConcreteModelObjectByName<Node>(nodeName) && !rawNodeIdentityIsReferenced(model, nodeName);
+      }
+
+      static bool isCanonicalEmptyBranchAnchor(const Model& model, const Branch& branch, const std::string& nodeName) {
+        const auto nodes = model.getConcreteModelObjects<Node>();
+        boost::optional<Node> anchor;
+        for (const auto& node : nodes) {
+          if (!openstudio::istringEqual(node.nameString(), nodeName)) {
+            continue;
+          }
+          if (anchor) {
+            return false;
+          }
+          anchor = node;
+        }
+        return branch.extensibleGroups().empty() && anchor && anchor->sources().empty()
+               && !rawNodeIdentityIsReferenced(model, nodeName, anchor->handle(), anchor->handle());
+      }
+
+      static std::unique_ptr<DemandBranchRelocationPlan> prepareProven(PlantLoop_Impl& targetLoopImpl, HVACComponent component, PlantLoop sourceLoop,
+                                                                       unsigned inletPort, unsigned outletPort,
+                                                                       const std::vector<ExternalRow>& validatedExternalRows) {
+        if ((component.model() != targetLoopImpl.model()) || (sourceLoop.model() != targetLoopImpl.model()) || !component.name()) {
           return nullptr;
         }
         for (auto row = validatedExternalRows.begin(); row != validatedExternalRows.end(); ++row) {
@@ -1045,13 +1109,11 @@ namespace epmodel {
         }
 
         const auto targetLoop = targetLoopImpl.getObject<PlantLoop>();
-        const auto sourceLoop = coil.plantLoop();
-        if (!sourceLoop || (*sourceLoop == targetLoop) || !sourceLoop->demandComponent(coil.handle())
-            || targetLoopImpl.demandComponent(coil.handle())) {
+        if ((sourceLoop == targetLoop) || !sourceLoop.demandComponent(component.handle()) || targetLoopImpl.demandComponent(component.handle())) {
           return nullptr;
         }
 
-        auto sourceLoopImpl = sourceLoop->getImpl<PlantLoop_Impl>();
+        auto sourceLoopImpl = sourceLoop.getImpl<PlantLoop_Impl>();
         OS_ASSERT(sourceLoopImpl);
         auto sourceTopology = validatedDemandSideTopology(*sourceLoopImpl);
         auto targetTopology = validatedDemandSideTopology(targetLoopImpl);
@@ -1059,9 +1121,9 @@ namespace epmodel {
           return nullptr;
         }
 
-        const auto waterInletField = existingNodeField(coil, coil.waterInletPort());
-        const auto waterOutletField = existingNodeField(coil, coil.waterOutletPort());
-        if (!waterInletField.set || !waterInletField.node || !waterOutletField.set || !waterOutletField.node) {
+        const auto inletField = existingNodeField(component, inletPort);
+        const auto outletField = existingNodeField(component, outletPort);
+        if (!inletField.set || !inletField.node || !outletField.set || !outletField.node) {
           return nullptr;
         }
 
@@ -1079,15 +1141,15 @@ namespace epmodel {
             const auto rawComponentName = branchWorkspaceImpl->openstudio::detail::IdfObject_Impl::getString(componentNameIndex, false, true);
             const auto rawComponentHandle = rawComponentName ? openstudio::toUUID(*rawComponentName) : Handle();
             const auto componentType = groups[groupIndex].getString(openstudio::BranchExtensibleFields::ComponentObjectType, false);
-            const bool referencesCoil = (relationship.object && relationship.object->handle() == coil.handle())
-                                        || (!rawComponentHandle.isNull() && rawComponentHandle == coil.handle())
-                                        || (componentType && openstudio::istringEqual(*componentType, coil.iddObject().name()) && rawComponentName
-                                            && openstudio::istringEqual(*rawComponentName, coil.nameString()));
-            if (!referencesCoil) {
+            const bool referencesComponent = (relationship.object && relationship.object->handle() == component.handle())
+                                             || (!rawComponentHandle.isNull() && rawComponentHandle == component.handle())
+                                             || (componentType && openstudio::istringEqual(*componentType, component.iddObject().name())
+                                                 && rawComponentName && openstudio::istringEqual(*rawComponentName, component.nameString()));
+            if (!referencesComponent) {
               continue;
             }
-            if (!relationship.set || !relationship.object || relationship.object->handle() != coil.handle() || !componentType
-                || !openstudio::istringEqual(*componentType, coil.iddObject().name())) {
+            if (!relationship.set || !relationship.object || relationship.object->handle() != component.handle() || !componentType
+                || !openstudio::istringEqual(*componentType, component.iddObject().name())) {
               return nullptr;
             }
 
@@ -1113,7 +1175,7 @@ namespace epmodel {
             const auto branchOutletField = existingNodeField(branch, branchOutletNodeIndex);
             ++sourceOccurrences;
             if (groups.size() != 1u || !branchInletField.set || !branchInletField.node || !branchOutletField.set || !branchOutletField.node
-                || *branchInletField.node != *waterInletField.node || *branchOutletField.node != *waterOutletField.node) {
+                || *branchInletField.node != *inletField.node || *branchOutletField.node != *outletField.node) {
               return nullptr;
             }
             sourceBranch = branch;
@@ -1141,13 +1203,27 @@ namespace epmodel {
         }
 
         OS_ASSERT(targetBranch);
+        const auto targetNodeName = targetBranch->nameString() + " Node";
+        const auto targetOutletNodeName = targetNodeName + " - " + component.nameString() + " Outlet";
+        const bool targetNodeNamesAreAvailable = createdTargetBranch
+                                                   ? generatedNodeNameIsAbsentAndUnowned(targetLoopImpl.model(), targetNodeName)
+                                                       && generatedNodeNameIsAbsentAndUnowned(targetLoopImpl.model(), targetOutletNodeName)
+                                                   : isCanonicalEmptyBranchAnchor(targetLoopImpl.model(), *targetBranch, targetNodeName)
+                                                       && generatedNodeNameIsAbsentAndUnowned(targetLoopImpl.model(), targetOutletNodeName);
+        if (!targetNodeNamesAreAvailable) {
+          if (createdTargetBranch) {
+            targetBranch->remove();
+          }
+          return nullptr;
+        }
+
         const auto targetBranchInsertIndex = static_cast<unsigned>(targetTopology->branchList.branches().size() - 1u);
         const auto originalTargetBranchCount = static_cast<unsigned>(targetTopology->branchList.extensibleGroups().size());
-        auto plan = std::unique_ptr<DemandBranchRelocationPlan>(
-          new DemandBranchRelocationPlan(targetLoop, *sourceLoop, coil, *sourceBranch, sourceTopology->branchList, sourceTopology->splitter,
-                                         sourceTopology->mixer, sourceTopology->equipmentBranches.size() == 1u, sourceTopology->setpointTarget,
-                                         targetTopology->branchList, targetTopology->splitter, targetTopology->mixer, *targetBranch,
-                                         createdTargetBranch, targetTopology->setpointTarget, originalTargetBranchCount, targetBranchInsertIndex));
+        auto plan = std::unique_ptr<DemandBranchRelocationPlan>(new DemandBranchRelocationPlan(
+          targetLoop, sourceLoop, component, inletPort, outletPort, *sourceBranch, sourceTopology->branchList, sourceTopology->splitter,
+          sourceTopology->mixer, sourceTopology->equipmentBranches.size() == 1u, sourceTopology->setpointTarget, targetTopology->branchList,
+          targetTopology->splitter, targetTopology->mixer, *targetBranch, createdTargetBranch, targetTopology->setpointTarget,
+          originalTargetBranchCount, targetBranchInsertIndex));
 
         if (createdTargetBranch) {
           plan->m_targetBranchInsertionAttempted = true;
@@ -1161,19 +1237,15 @@ namespace epmodel {
           }
         }
 
-        const auto targetNodeName = targetBranch->nameString() + " Node";
-        const auto targetOutletNodeName = targetNodeName + " - " + coil.nameString() + " Outlet";
-        if (!targetLoopImpl.model().getConcreteModelObjectByName<Node>(targetNodeName)) {
+        if (createdTargetBranch) {
           plan->m_createdNodeNames.push_back(targetNodeName);
         }
-        if (targetOutletNodeName != targetNodeName && !targetLoopImpl.model().getConcreteModelObjectByName<Node>(targetOutletNodeName)) {
-          plan->m_createdNodeNames.push_back(targetOutletNodeName);
-        }
+        plan->m_createdNodeNames.push_back(targetOutletNodeName);
 
         auto targetBranchImpl = targetBranch->getImpl<Branch_Impl>();
         OS_ASSERT(targetBranchImpl);
         plan->m_targetRowAttempted = true;
-        if (!targetBranchImpl->appendComponent(coil.cast<ModelObject>(), targetNodeName, targetOutletNodeName)) {
+        if (!targetBranchImpl->appendComponent(component.cast<ModelObject>(), targetNodeName, targetOutletNodeName)) {
           return nullptr;
         }
         plan->m_targetInletNode = targetBranch->componentInletNode(0u);
@@ -1186,6 +1258,7 @@ namespace epmodel {
         return plan;
       }
 
+     public:
       DemandBranchRelocationPlan(const DemandBranchRelocationPlan&) = delete;
       DemandBranchRelocationPlan& operator=(const DemandBranchRelocationPlan&) = delete;
       DemandBranchRelocationPlan(DemandBranchRelocationPlan&&) = delete;
@@ -1259,10 +1332,10 @@ namespace epmodel {
                                                                      sourceLoopImpl->demandOutletBranch(), sourceLoopImpl->demandEquipmentBranches());
         OS_ASSERT(synchronized);
 
-        // Prepare proved the exact live water NodeType fields and target Nodes,
-        // so these two pointer writes are no-fail after source teardown.
-        const bool inletSet = m_coil.setPointer(m_coil.waterInletPort(), m_targetInletNode->handle());
-        const bool outletSet = m_coil.setPointer(m_coil.waterOutletPort(), m_targetOutletNode->handle());
+        // Prepare proved the exact live same-model NodeType fields and target
+        // Nodes, so these two pointer writes are no-fail after source teardown.
+        const bool inletSet = m_component.setPointer(m_inletPort, m_targetInletNode->handle());
+        const bool outletSet = m_component.setPointer(m_outletPort, m_targetOutletNode->handle());
         OS_ASSERT(inletSet && outletSet);
         m_committed = true;
       }
@@ -1318,14 +1391,16 @@ namespace epmodel {
         return DemandSideTopology{branchList, splitter, mixer, equipmentBranches, *setpointTarget};
       }
 
-      DemandBranchRelocationPlan(PlantLoop targetLoop, PlantLoop sourceLoop, WaterToAirComponent coil, Branch sourceBranch,
-                                 BranchList sourceBranchList, ConnectorSplitter sourceSplitter, ConnectorMixer sourceMixer,
+      DemandBranchRelocationPlan(PlantLoop targetLoop, PlantLoop sourceLoop, HVACComponent component, unsigned inletPort, unsigned outletPort,
+                                 Branch sourceBranch, BranchList sourceBranchList, ConnectorSplitter sourceSplitter, ConnectorMixer sourceMixer,
                                  bool keepSourceAsDefaultBranch, Node sourceSetpointTarget, BranchList targetBranchList,
                                  ConnectorSplitter targetSplitter, ConnectorMixer targetMixer, Branch targetBranch, bool createdTargetBranch,
                                  Node targetSetpointTarget, unsigned originalTargetBranchCount, unsigned targetBranchInsertIndex)
         : m_targetLoop(std::move(targetLoop)),
           m_sourceLoop(std::move(sourceLoop)),
-          m_coil(std::move(coil)),
+          m_component(std::move(component)),
+          m_inletPort(inletPort),
+          m_outletPort(outletPort),
           m_sourceBranch(std::move(sourceBranch)),
           m_sourceBranchList(std::move(sourceBranchList)),
           m_sourceSplitter(std::move(sourceSplitter)),
@@ -1343,7 +1418,9 @@ namespace epmodel {
 
       PlantLoop m_targetLoop;
       PlantLoop m_sourceLoop;
-      WaterToAirComponent m_coil;
+      HVACComponent m_component;
+      unsigned m_inletPort;
+      unsigned m_outletPort;
       Branch m_sourceBranch;
       BranchList m_sourceBranchList;
       ConnectorSplitter m_sourceSplitter;
@@ -1364,6 +1441,440 @@ namespace epmodel {
       bool m_targetBranchInsertionAttempted = false;
       bool m_targetRowAttempted = false;
       bool m_prepared = false;
+      bool m_committed = false;
+    };
+
+    // Exact HeatExchanger:FluidToFluid demand-side moves retain their proven
+    // primary supply owner. An observational classifier keeps every partial or
+    // malformed attachment out of the generic water-to-water path.
+    class PlantLoop_Impl::FluidToFluidHeatExchangerDemandBranchAttachmentPlan
+    {
+     public:
+      static bool requiresExactAttachmentDispatch(const HeatExchangerFluidToFluid& heatExchanger) {
+        if (heatExchanger.iddObject().type() != HeatExchangerFluidToFluid::iddObjectType() || !hasUniqueName(heatExchanger)) {
+          return true;
+        }
+
+        const bool supplyInletEvidence = fieldHasEvidence(heatExchanger, heatExchanger.supplyInletPort());
+        const bool supplyOutletEvidence = fieldHasEvidence(heatExchanger, heatExchanger.supplyOutletPort());
+        const bool demandInletEvidence = fieldHasEvidence(heatExchanger, heatExchanger.demandInletPort());
+        const bool demandOutletEvidence = fieldHasEvidence(heatExchanger, heatExchanger.demandOutletPort());
+        std::vector<BranchOccurrence> occurrences;
+        if (!collectOccurrences(heatExchanger, occurrences)) {
+          return true;
+        }
+
+        const bool anyFieldEvidence = supplyInletEvidence || supplyOutletEvidence || demandInletEvidence || demandOutletEvidence;
+        if (!anyFieldEvidence && occurrences.empty()) {
+          return false;
+        }
+        if (!supplyInletEvidence || !supplyOutletEvidence || demandInletEvidence || demandOutletEvidence || occurrences.size() != 1u) {
+          return true;
+        }
+
+        const auto supplyInlet = exactNodeField(heatExchanger, heatExchanger.supplyInletPort());
+        const auto supplyOutlet = exactNodeField(heatExchanger, heatExchanger.supplyOutletPort());
+        if (!supplyInlet || !supplyOutlet || *supplyInlet == *supplyOutlet || !hasUniqueName(*supplyInlet) || !hasUniqueName(*supplyOutlet)) {
+          return true;
+        }
+
+        const auto& primaryOccurrence = occurrences.front();
+        if (primaryOccurrence.branch.extensibleGroups().size() != 1u || !hasUniqueName(primaryOccurrence.branch)
+            || primaryOccurrence.inlet != *supplyInlet || primaryOccurrence.outlet != *supplyOutlet) {
+          return true;
+        }
+
+        const auto branchList = uniqueBranchListForBranch(heatExchanger.model(), primaryOccurrence.branch);
+        const auto primaryOwner = branchList ? uniquePlantLoopForBranchList(heatExchanger.model(), *branchList, true) : boost::none;
+        const auto primaryTopology = primaryOwner ? observedPlantSideTopology(*primaryOwner, true) : boost::none;
+        const bool primaryPlacementSupported = primaryTopology
+                                               && (std::ranges::count(primaryTopology->equipmentBranches, primaryOccurrence.branch) == 1
+                                                   || primaryTopology->outletBranch == primaryOccurrence.branch);
+        return !branchList || !primaryOwner || !primaryTopology || primaryTopology->branchList != *branchList || !primaryPlacementSupported;
+      }
+
+      static bool targetIsPrimaryOwner(const PlantLoop_Impl& targetLoopImpl, const HeatExchangerFluidToFluid& heatExchanger) {
+        const auto supplyInlet = exactNodeField(heatExchanger, heatExchanger.supplyInletPort());
+        const auto supplyOutlet = exactNodeField(heatExchanger, heatExchanger.supplyOutletPort());
+        std::vector<BranchOccurrence> occurrences;
+        if (!supplyInlet || !supplyOutlet || !collectOccurrences(heatExchanger, occurrences)) {
+          return false;
+        }
+        const auto occurrence = std::ranges::find_if(
+          occurrences, [&](const auto& candidate) { return candidate.inlet == *supplyInlet && candidate.outlet == *supplyOutlet; });
+        if (occurrence == occurrences.end()) {
+          return false;
+        }
+        const auto branchList = uniqueBranchListForBranch(targetLoopImpl.model(), occurrence->branch);
+        const auto primaryOwner = branchList ? uniquePlantLoopForBranchList(targetLoopImpl.model(), *branchList, true) : boost::none;
+        return primaryOwner && *primaryOwner == targetLoopImpl.getObject<PlantLoop>();
+      }
+
+      static std::unique_ptr<FluidToFluidHeatExchangerDemandBranchAttachmentPlan> prepare(PlantLoop_Impl& targetLoopImpl,
+                                                                                          HeatExchangerFluidToFluid heatExchanger) {
+        if (heatExchanger.iddObject().type() != HeatExchangerFluidToFluid::iddObjectType() || heatExchanger.model() != targetLoopImpl.model()
+            || !hasUniqueName(heatExchanger)) {
+          return nullptr;
+        }
+
+        const auto supplyInlet = exactNodeField(heatExchanger, heatExchanger.supplyInletPort());
+        const auto supplyOutlet = exactNodeField(heatExchanger, heatExchanger.supplyOutletPort());
+        const auto demandInlet = exactNodeField(heatExchanger, heatExchanger.demandInletPort());
+        const auto demandOutlet = exactNodeField(heatExchanger, heatExchanger.demandOutletPort());
+        if (!supplyInlet || !supplyOutlet || !demandInlet || !demandOutlet) {
+          return nullptr;
+        }
+        const std::array<Node, 4> ports{*supplyInlet, *supplyOutlet, *demandInlet, *demandOutlet};
+        std::set<Handle> portHandles;
+        for (const auto& port : ports) {
+          if (!hasUniqueName(port) || !portHandles.insert(port.handle()).second) {
+            return nullptr;
+          }
+        }
+
+        std::vector<BranchOccurrence> occurrences;
+        if (!collectOccurrences(heatExchanger, occurrences) || occurrences.size() != 2u) {
+          return nullptr;
+        }
+        boost::optional<BranchOccurrence> primaryOccurrence;
+        boost::optional<BranchOccurrence> sourceOccurrence;
+        for (const auto& occurrence : occurrences) {
+          if (occurrence.branch.extensibleGroups().size() != 1u || !hasUniqueName(occurrence.branch)) {
+            return nullptr;
+          }
+          if (occurrence.inlet == *supplyInlet && occurrence.outlet == *supplyOutlet) {
+            if (primaryOccurrence) {
+              return nullptr;
+            }
+            primaryOccurrence = occurrence;
+          } else if (occurrence.inlet == *demandInlet && occurrence.outlet == *demandOutlet) {
+            if (sourceOccurrence) {
+              return nullptr;
+            }
+            sourceOccurrence = occurrence;
+          } else {
+            return nullptr;
+          }
+        }
+        if (!primaryOccurrence || !sourceOccurrence) {
+          return nullptr;
+        }
+
+        const auto primaryBranchList = uniqueBranchListForBranch(targetLoopImpl.model(), primaryOccurrence->branch);
+        const auto sourceBranchList = uniqueBranchListForBranch(targetLoopImpl.model(), sourceOccurrence->branch);
+        if (!primaryBranchList || !sourceBranchList || *primaryBranchList == *sourceBranchList) {
+          return nullptr;
+        }
+        const auto primaryOwner = uniquePlantLoopForBranchList(targetLoopImpl.model(), *primaryBranchList, true);
+        const auto sourceOwner = uniquePlantLoopForBranchList(targetLoopImpl.model(), *sourceBranchList, false);
+        if (!primaryOwner || !sourceOwner || *primaryOwner == *sourceOwner) {
+          return nullptr;
+        }
+
+        const auto targetLoop = targetLoopImpl.getObject<PlantLoop>();
+        if (targetLoop == *primaryOwner || targetLoop == *sourceOwner) {
+          return nullptr;
+        }
+        const auto primaryTopology = observedPlantSideTopology(*primaryOwner, true);
+        const auto sourceTopology = observedPlantSideTopology(*sourceOwner, false);
+        const auto targetTopology = observedPlantSideTopology(targetLoop, false);
+        const bool primaryPlacementSupported = primaryTopology
+                                               && (std::ranges::count(primaryTopology->equipmentBranches, primaryOccurrence->branch) == 1
+                                                   || primaryTopology->outletBranch == primaryOccurrence->branch);
+        if (!primaryTopology || !sourceTopology || !targetTopology || primaryTopology->branchList != *primaryBranchList
+            || sourceTopology->branchList != *sourceBranchList || !primaryPlacementSupported
+            || std::ranges::count(sourceTopology->equipmentBranches, sourceOccurrence->branch) != 1) {
+          return nullptr;
+        }
+
+        auto plantRelocation = DemandBranchRelocationPlan::prepareFluidToFluidHeatExchanger(
+          targetLoopImpl, heatExchanger, *sourceOwner, {primaryOccurrence->branch.handle(), primaryOccurrence->row});
+        if (!plantRelocation) {
+          return nullptr;
+        }
+        return std::unique_ptr<FluidToFluidHeatExchangerDemandBranchAttachmentPlan>(
+          new FluidToFluidHeatExchangerDemandBranchAttachmentPlan(std::move(plantRelocation)));
+      }
+
+      FluidToFluidHeatExchangerDemandBranchAttachmentPlan(const FluidToFluidHeatExchangerDemandBranchAttachmentPlan&) = delete;
+      FluidToFluidHeatExchangerDemandBranchAttachmentPlan& operator=(const FluidToFluidHeatExchangerDemandBranchAttachmentPlan&) = delete;
+      FluidToFluidHeatExchangerDemandBranchAttachmentPlan(FluidToFluidHeatExchangerDemandBranchAttachmentPlan&&) = delete;
+      FluidToFluidHeatExchangerDemandBranchAttachmentPlan& operator=(FluidToFluidHeatExchangerDemandBranchAttachmentPlan&&) = delete;
+      ~FluidToFluidHeatExchangerDemandBranchAttachmentPlan() = default;
+
+      void commit() {
+        OS_ASSERT(m_plantRelocation && !m_committed);
+        m_plantRelocation->commit();
+        m_committed = true;
+      }
+
+     private:
+      struct BranchOccurrence
+      {
+        Branch branch;
+        unsigned row;
+        Node inlet;
+        Node outlet;
+      };
+
+      struct ObservedPlantSideTopology
+      {
+        BranchList branchList;
+        ConnectorSplitter splitter;
+        ConnectorMixer mixer;
+        std::vector<Branch> equipmentBranches;
+        Branch outletBranch;
+        Node setpointTarget;
+      };
+
+      static bool rawFieldAgrees(const ModelObject& owner, unsigned field, const ModelObject& expected) {
+        auto workspaceImpl = owner.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+        OS_ASSERT(workspaceImpl);
+        const auto raw = workspaceImpl->openstudio::detail::IdfObject_Impl::getString(field, false, true);
+        if (!raw || raw->empty()) {
+          return true;
+        }
+        const auto expectedName = expected.name();
+        return (expectedName && openstudio::istringEqual(*raw, *expectedName)) || openstudio::toUUID(*raw) == expected.handle();
+      }
+
+      static bool hasUniqueName(const ModelObject& object) {
+        const auto name = object.name();
+        return name && !name->empty() && std::ranges::count_if(object.model().objects(), [&object, &name](const auto& candidate) {
+                                           const auto candidateName = candidate.name();
+                                           return candidate.handle() != object.handle() && candidate.iddObject().type() == object.iddObject().type()
+                                                  && candidateName && openstudio::istringEqual(*candidateName, *name);
+                                         }) == 0;
+      }
+
+      static bool fieldHasEvidence(const ModelObject& owner, unsigned field) {
+        const auto relationship = existingObjectField(owner, field);
+        auto workspaceImpl = owner.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+        OS_ASSERT(workspaceImpl);
+        const auto raw = workspaceImpl->openstudio::detail::IdfObject_Impl::getString(field, false, true);
+        return relationship.set || relationship.object || (raw && !raw->empty());
+      }
+
+      static boost::optional<ModelObject> exactObjectField(const ModelObject& owner, unsigned field) {
+        const auto relationship = existingObjectField(owner, field);
+        if (!relationship.set || !relationship.object || !rawFieldAgrees(owner, field, *relationship.object)) {
+          return boost::none;
+        }
+        return relationship.object;
+      }
+
+      static boost::optional<Node> exactNodeField(const ModelObject& owner, unsigned field) {
+        const auto object = exactObjectField(owner, field);
+        return object ? object->optionalCast<Node>() : boost::none;
+      }
+
+      static bool referencesObject(const ModelObject& owner, unsigned field, const ModelObject& expected) {
+        const auto relationship = existingObjectField(owner, field);
+        if (relationship.object && relationship.object->handle() == expected.handle()) {
+          return true;
+        }
+        auto workspaceImpl = owner.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+        OS_ASSERT(workspaceImpl);
+        const auto raw = workspaceImpl->openstudio::detail::IdfObject_Impl::getString(field, false, true);
+        const auto expectedName = expected.name();
+        return raw && !raw->empty()
+               && ((expectedName && openstudio::istringEqual(*raw, *expectedName)) || openstudio::toUUID(*raw) == expected.handle());
+      }
+
+      static bool collectOccurrences(const HeatExchangerFluidToFluid& heatExchanger, std::vector<BranchOccurrence>& result) {
+        result.clear();
+        for (const auto& branch : heatExchanger.model().getConcreteModelObjects<Branch>()) {
+          const auto groups = branch.extensibleGroups();
+          for (unsigned row = 0u; row < groups.size(); ++row) {
+            const auto componentNameField =
+              branch.iddObject().index(openstudio::ExtensibleIndex(row, openstudio::BranchExtensibleFields::ComponentName));
+            const auto relationship = existingObjectField(branch, componentNameField);
+            auto branchWorkspaceImpl = branch.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+            OS_ASSERT(branchWorkspaceImpl);
+            const auto rawName = branchWorkspaceImpl->openstudio::detail::IdfObject_Impl::getString(componentNameField, false, true);
+            const bool referencesHeatExchanger =
+              (relationship.object && relationship.object->handle() == heatExchanger.handle())
+              || (rawName && !rawName->empty()
+                  && (openstudio::istringEqual(*rawName, heatExchanger.nameString()) || openstudio::toUUID(*rawName) == heatExchanger.handle()));
+            if (!referencesHeatExchanger) {
+              continue;
+            }
+            const auto componentType = groups[row].getString(openstudio::BranchExtensibleFields::ComponentObjectType, false);
+            const auto exactComponent = exactObjectField(branch, componentNameField);
+            const auto inletField =
+              branch.iddObject().index(openstudio::ExtensibleIndex(row, openstudio::BranchExtensibleFields::ComponentInletNodeName));
+            const auto outletField =
+              branch.iddObject().index(openstudio::ExtensibleIndex(row, openstudio::BranchExtensibleFields::ComponentOutletNodeName));
+            const auto inlet = exactNodeField(branch, inletField);
+            const auto outlet = exactNodeField(branch, outletField);
+            if (!componentType || !openstudio::istringEqual(*componentType, heatExchanger.iddObject().name()) || !exactComponent
+                || exactComponent->handle() != heatExchanger.handle() || !inlet || !outlet) {
+              return false;
+            }
+            result.push_back({branch, row, *inlet, *outlet});
+          }
+        }
+        return true;
+      }
+
+      static boost::optional<BranchList> uniqueBranchListForBranch(const Model& model, const Branch& branch) {
+        boost::optional<BranchList> result;
+        unsigned occurrences = 0u;
+        for (const auto& branchList : model.getConcreteModelObjects<BranchList>()) {
+          for (unsigned row = 0u; row < branchList.extensibleGroups().size(); ++row) {
+            const auto branchField =
+              branchList.iddObject().index(openstudio::ExtensibleIndex(row, openstudio::BranchListExtensibleFields::BranchName));
+            if (!referencesObject(branchList, branchField, branch)) {
+              continue;
+            }
+            const auto exactBranch = exactObjectField(branchList, branchField);
+            if (!exactBranch || exactBranch->handle() != branch.handle()) {
+              return boost::none;
+            }
+            ++occurrences;
+            result = branchList;
+          }
+        }
+        return occurrences == 1u ? result : boost::none;
+      }
+
+      static boost::optional<PlantLoop> uniquePlantLoopForBranchList(const Model& model, const BranchList& branchList, bool supplySide) {
+        boost::optional<PlantLoop> result;
+        unsigned occurrences = 0u;
+        const unsigned expectedField =
+          supplySide ? openstudio::PlantLoopFields::PlantSideBranchListName : openstudio::PlantLoopFields::DemandSideBranchListName;
+        for (const auto& plantLoop : model.getConcreteModelObjects<PlantLoop>()) {
+          for (const unsigned field : {openstudio::PlantLoopFields::PlantSideBranchListName, openstudio::PlantLoopFields::DemandSideBranchListName}) {
+            if (!referencesObject(plantLoop, field, branchList)) {
+              continue;
+            }
+            const auto exactBranchList = exactObjectField(plantLoop, field);
+            if (field != expectedField || !exactBranchList || exactBranchList->handle() != branchList.handle()) {
+              return boost::none;
+            }
+            ++occurrences;
+            result = plantLoop;
+          }
+        }
+        return occurrences == 1u ? result : boost::none;
+      }
+
+      static boost::optional<PlantLoop> uniquePlantLoopForConnectorList(const Model& model, const ModelObject& connectorList, bool supplySide) {
+        boost::optional<PlantLoop> result;
+        unsigned occurrences = 0u;
+        const unsigned expectedField =
+          supplySide ? openstudio::PlantLoopFields::PlantSideConnectorListName : openstudio::PlantLoopFields::DemandSideConnectorListName;
+        for (const auto& plantLoop : model.getConcreteModelObjects<PlantLoop>()) {
+          for (const unsigned field :
+               {openstudio::PlantLoopFields::PlantSideConnectorListName, openstudio::PlantLoopFields::DemandSideConnectorListName}) {
+            if (!referencesObject(plantLoop, field, connectorList)) {
+              continue;
+            }
+            const auto exactConnectorList = exactObjectField(plantLoop, field);
+            if (field != expectedField || !exactConnectorList || exactConnectorList->handle() != connectorList.handle()) {
+              return boost::none;
+            }
+            ++occurrences;
+            result = plantLoop;
+          }
+        }
+        return occurrences == 1u ? result : boost::none;
+      }
+
+      static boost::optional<ObservedPlantSideTopology> observedPlantSideTopology(const PlantLoop& plantLoop, bool supplySide) {
+        const unsigned branchListField =
+          supplySide ? openstudio::PlantLoopFields::PlantSideBranchListName : openstudio::PlantLoopFields::DemandSideBranchListName;
+        const unsigned connectorListField =
+          supplySide ? openstudio::PlantLoopFields::PlantSideConnectorListName : openstudio::PlantLoopFields::DemandSideConnectorListName;
+        const auto branchListObject = exactObjectField(plantLoop, branchListField);
+        const auto connectorList = exactObjectField(plantLoop, connectorListField);
+        const auto setpointTarget = exactNodeField(plantLoop, openstudio::PlantLoopFields::LoopTemperatureSetpointNodeName);
+        const auto branchList = branchListObject ? branchListObject->optionalCast<BranchList>() : boost::none;
+        if (!branchList || !connectorList || connectorList->iddObject().type() != openstudio::IddObjectType::ConnectorList || !setpointTarget
+            || !hasUniqueName(*branchList) || !hasUniqueName(*connectorList)) {
+          return boost::none;
+        }
+        const auto branchListOwner = uniquePlantLoopForBranchList(plantLoop.model(), *branchList, supplySide);
+        const auto connectorListOwner = uniquePlantLoopForConnectorList(plantLoop.model(), *connectorList, supplySide);
+        if (!branchListOwner || *branchListOwner != plantLoop || !connectorListOwner || *connectorListOwner != plantLoop) {
+          return boost::none;
+        }
+        if (!hasUniqueName(*setpointTarget)) {
+          return boost::none;
+        }
+
+        std::vector<Branch> branches;
+        std::set<Handle> branchHandles;
+        for (unsigned row = 0u; row < branchList->extensibleGroups().size(); ++row) {
+          const auto branchField =
+            branchList->iddObject().index(openstudio::ExtensibleIndex(row, openstudio::BranchListExtensibleFields::BranchName));
+          const auto branchObject = exactObjectField(*branchList, branchField);
+          const auto branch = branchObject ? branchObject->optionalCast<Branch>() : boost::none;
+          const auto owningBranchList = branch ? uniqueBranchListForBranch(plantLoop.model(), *branch) : boost::none;
+          if (!branch || !hasUniqueName(*branch) || !owningBranchList || *owningBranchList != *branchList
+              || !branchHandles.insert(branch->handle()).second) {
+            return boost::none;
+          }
+          branches.push_back(*branch);
+        }
+        if (branches.size() < 3u) {
+          return boost::none;
+        }
+        const std::vector<Branch> equipmentBranches(std::next(branches.begin()), std::prev(branches.end()));
+
+        boost::optional<ConnectorSplitter> splitter;
+        boost::optional<ConnectorMixer> mixer;
+        const auto connectorGroups = connectorList->extensibleGroups();
+        if (connectorGroups.size() != 2u) {
+          return boost::none;
+        }
+        for (unsigned row = 0u; row < connectorGroups.size(); ++row) {
+          const auto connectorNameField =
+            connectorList->iddObject().index(openstudio::ExtensibleIndex(row, openstudio::ConnectorListExtensibleFields::ConnectorName));
+          const auto connectorObject = exactObjectField(*connectorList, connectorNameField);
+          const auto connectorType = connectorGroups[row].getString(openstudio::ConnectorListExtensibleFields::ConnectorObjectType, false);
+          if (!connectorObject || !connectorType) {
+            return boost::none;
+          }
+          if (auto candidate = connectorObject->optionalCast<ConnectorSplitter>()) {
+            if (splitter || !openstudio::istringEqual(*connectorType, candidate->iddObject().name())) {
+              return boost::none;
+            }
+            splitter = *candidate;
+          } else if (auto candidate = connectorObject->optionalCast<ConnectorMixer>()) {
+            if (mixer || !openstudio::istringEqual(*connectorType, candidate->iddObject().name())) {
+              return boost::none;
+            }
+            mixer = *candidate;
+          } else {
+            return boost::none;
+          }
+        }
+        if (!splitter || !mixer || !hasUniqueName(*splitter) || !hasUniqueName(*mixer)
+            || splitter->extensibleGroups().size() != equipmentBranches.size() || mixer->extensibleGroups().size() != equipmentBranches.size()) {
+          return boost::none;
+        }
+        const auto splitterInlet = exactObjectField(*splitter, splitter->inletPort());
+        const auto mixerOutlet = exactObjectField(*mixer, mixer->outletPort());
+        if (!splitterInlet || splitterInlet->handle() != branches.front().handle() || !mixerOutlet
+            || mixerOutlet->handle() != branches.back().handle()) {
+          return boost::none;
+        }
+        for (unsigned row = 0u; row < equipmentBranches.size(); ++row) {
+          const auto splitterOutlet = exactObjectField(*splitter, splitter->outletPort(row));
+          const auto mixerInlet = exactObjectField(*mixer, mixer->inletPort(row));
+          if (!splitterOutlet || splitterOutlet->handle() != equipmentBranches[row].handle() || !mixerInlet
+              || mixerInlet->handle() != equipmentBranches[row].handle()) {
+            return boost::none;
+          }
+        }
+        return ObservedPlantSideTopology{*branchList, *splitter, *mixer, equipmentBranches, branches.back(), *setpointTarget};
+      }
+
+      explicit FluidToFluidHeatExchangerDemandBranchAttachmentPlan(std::unique_ptr<DemandBranchRelocationPlan> plantRelocation)
+        : m_plantRelocation(std::move(plantRelocation)) {}
+
+      std::unique_ptr<DemandBranchRelocationPlan> m_plantRelocation;
       bool m_committed = false;
     };
 
@@ -1493,7 +2004,7 @@ namespace epmodel {
           return nullptr;
         }
 
-        auto plantRelocation = DemandBranchRelocationPlan::prepare(targetLoopImpl, coil, validatedExternalRows);
+        auto plantRelocation = DemandBranchRelocationPlan::prepareWaterCoil(targetLoopImpl, coil, validatedExternalRows);
         if (!plantRelocation) {
           return nullptr;
         }
@@ -1649,7 +2160,7 @@ namespace epmodel {
           }
         }
 
-        auto plantRelocation = DemandBranchRelocationPlan::prepare(targetLoopImpl, coil, {});
+        auto plantRelocation = DemandBranchRelocationPlan::prepareWaterCoil(targetLoopImpl, coil, {});
         if (!plantRelocation) {
           return nullptr;
         }
@@ -2008,7 +2519,7 @@ namespace epmodel {
           }
         }
 
-        auto plantRelocation = DemandBranchRelocationPlan::prepare(targetLoopImpl, coil, {});
+        auto plantRelocation = DemandBranchRelocationPlan::prepareWaterCoil(targetLoopImpl, coil, {});
         if (!plantRelocation) {
           return nullptr;
         }
@@ -3911,6 +4422,33 @@ namespace epmodel {
             return false;
           }
           if (testFailurePointReached(model(), TestFailurePoint::PlantLoopAfterWaterCoilBranchAttachmentPrepared)) {
+            return false;
+          }
+          plan->commit();
+          return true;
+        }
+      }
+      if (hvacComponent.iddObject().type() == HeatExchangerFluidToFluid::iddObjectType()) {
+        const auto heatExchanger = hvacComponent.cast<HeatExchangerFluidToFluid>();
+        if (tertiary) {
+          return false;
+        }
+        if (FluidToFluidHeatExchangerDemandBranchAttachmentPlan::targetIsPrimaryOwner(*this, heatExchanger)) {
+          LOG_FREE(Warn, "openstudio.epmodel.PlantLoop",
+                   "Refusing to attach " << hvacComponent.briefDescription() << " to the demand side of " << getObject<PlantLoop>().briefDescription()
+                                         << " because that PlantLoop is its proven primary owner.");
+          return false;
+        }
+        if (FluidToFluidHeatExchangerDemandBranchAttachmentPlan::requiresExactAttachmentDispatch(heatExchanger)) {
+          auto plan = FluidToFluidHeatExchangerDemandBranchAttachmentPlan::prepare(*this, heatExchanger);
+          if (!plan) {
+            LOG_FREE(Warn, "openstudio.epmodel.PlantLoop",
+                     "Refusing to move " << hvacComponent.briefDescription() << " to the demand side of " << getObject<PlantLoop>().briefDescription()
+                                         << " because its exact primary and secondary owners, single-row equipment branches, live ports, or "
+                                            "target topology could not be validated.");
+            return false;
+          }
+          if (testFailurePointReached(model(), TestFailurePoint::PlantLoopAfterFluidToFluidHeatExchangerBranchAttachmentPrepared)) {
             return false;
           }
           plan->commit();
