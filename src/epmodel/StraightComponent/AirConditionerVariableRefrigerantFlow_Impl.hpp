@@ -197,6 +197,52 @@ namespace epmodel {
       bool isCondenserTypeDefaulted() const;
       void resetCondenserType();
 
+      double minimumOutdoorTemperatureinHeatRecoveryMode() const;
+      bool setMinimumOutdoorTemperatureinHeatRecoveryMode(double minimumOutdoorTemperatureinHeatRecoveryMode);
+
+      double maximumOutdoorTemperatureinHeatRecoveryMode() const;
+      bool setMaximumOutdoorTemperatureinHeatRecoveryMode(double maximumOutdoorTemperatureinHeatRecoveryMode);
+
+      boost::optional<Curve> heatRecoveryCoolingCapacityModifierCurve() const;
+      bool setHeatRecoveryCoolingCapacityModifierCurve(const Curve& curve);
+      void resetHeatRecoveryCoolingCapacityModifierCurve();
+
+      double initialHeatRecoveryCoolingCapacityFraction() const;
+      bool setInitialHeatRecoveryCoolingCapacityFraction(double initialHeatRecoveryCoolingCapacityFraction);
+
+      double heatRecoveryCoolingCapacityTimeConstant() const;
+      bool setHeatRecoveryCoolingCapacityTimeConstant(double heatRecoveryCoolingCapacityTimeConstant);
+
+      boost::optional<Curve> heatRecoveryCoolingEnergyModifierCurve() const;
+      bool setHeatRecoveryCoolingEnergyModifierCurve(const Curve& curve);
+      void resetHeatRecoveryCoolingEnergyModifierCurve();
+
+      double initialHeatRecoveryCoolingEnergyFraction() const;
+      bool setInitialHeatRecoveryCoolingEnergyFraction(double initialHeatRecoveryCoolingEnergyFraction);
+
+      double heatRecoveryCoolingEnergyTimeConstant() const;
+      bool setHeatRecoveryCoolingEnergyTimeConstant(double heatRecoveryCoolingEnergyTimeConstant);
+
+      boost::optional<Curve> heatRecoveryHeatingCapacityModifierCurve() const;
+      bool setHeatRecoveryHeatingCapacityModifierCurve(const Curve& curve);
+      void resetHeatRecoveryHeatingCapacityModifierCurve();
+
+      double initialHeatRecoveryHeatingCapacityFraction() const;
+      bool setInitialHeatRecoveryHeatingCapacityFraction(double initialHeatRecoveryHeatingCapacityFraction);
+
+      double heatRecoveryHeatingCapacityTimeConstant() const;
+      bool setHeatRecoveryHeatingCapacityTimeConstant(double heatRecoveryHeatingCapacityTimeConstant);
+
+      boost::optional<Curve> heatRecoveryHeatingEnergyModifierCurve() const;
+      bool setHeatRecoveryHeatingEnergyModifierCurve(const Curve& curve);
+      void resetHeatRecoveryHeatingEnergyModifierCurve();
+
+      double initialHeatRecoveryHeatingEnergyFraction() const;
+      bool setInitialHeatRecoveryHeatingEnergyFraction(double initialHeatRecoveryHeatingEnergyFraction);
+
+      double heatRecoveryHeatingEnergyTimeConstant() const;
+      bool setHeatRecoveryHeatingEnergyTimeConstant(double heatRecoveryHeatingEnergyTimeConstant);
+
       std::vector<std::string> heatingPerformanceCurveOutdoorTemperatureTypeValues() const;
       std::vector<std::string> defrostStrategyValues() const;
       std::vector<std::string> condenserTypeValues() const;

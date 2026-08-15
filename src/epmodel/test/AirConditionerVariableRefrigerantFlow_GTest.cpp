@@ -100,6 +100,20 @@ TEST_F(EPModelFixture, AirConditionerVariableRefrigerantFlow_DefaultConstructor)
   EXPECT_DOUBLE_EQ(30.0, vrf.equivalentPipingLengthusedforPipingCorrectionFactorinHeatingMode());
   EXPECT_FALSE(vrf.pipingCorrectionFactorforLengthinHeatingModeCurve());
   EXPECT_DOUBLE_EQ(0.0, vrf.pipingCorrectionFactorforHeightinHeatingModeCoefficient());
+  EXPECT_DOUBLE_EQ(0.0, vrf.minimumOutdoorTemperatureinHeatRecoveryMode());
+  EXPECT_DOUBLE_EQ(20.0, vrf.maximumOutdoorTemperatureinHeatRecoveryMode());
+  EXPECT_FALSE(vrf.heatRecoveryCoolingCapacityModifierCurve());
+  EXPECT_DOUBLE_EQ(0.5, vrf.initialHeatRecoveryCoolingCapacityFraction());
+  EXPECT_DOUBLE_EQ(0.083, vrf.heatRecoveryCoolingCapacityTimeConstant());
+  EXPECT_FALSE(vrf.heatRecoveryCoolingEnergyModifierCurve());
+  EXPECT_DOUBLE_EQ(1.0, vrf.initialHeatRecoveryCoolingEnergyFraction());
+  EXPECT_DOUBLE_EQ(0.0, vrf.heatRecoveryCoolingEnergyTimeConstant());
+  EXPECT_FALSE(vrf.heatRecoveryHeatingCapacityModifierCurve());
+  EXPECT_DOUBLE_EQ(0.5, vrf.initialHeatRecoveryHeatingCapacityFraction());
+  EXPECT_DOUBLE_EQ(0.083, vrf.heatRecoveryHeatingCapacityTimeConstant());
+  EXPECT_FALSE(vrf.heatRecoveryHeatingEnergyModifierCurve());
+  EXPECT_DOUBLE_EQ(0.5, vrf.initialHeatRecoveryHeatingEnergyFraction());
+  EXPECT_DOUBLE_EQ(0.0, vrf.heatRecoveryHeatingEnergyTimeConstant());
   EXPECT_FALSE(vrf.defrostEnergyInputRatioModifierFunctionofTemperatureCurve());
   EXPECT_TRUE(vrf.terminals().empty());
   const auto lists = model.getObjectsByType(openstudio::IddObjectType::ZoneTerminalUnitList);
@@ -323,6 +337,402 @@ TEST_F(EPModelFixture, AirConditionerVariableRefrigerantFlow_PipingFieldsSurvive
   EXPECT_TRUE(reloadedModel->getObject(originalHeatingCurve->handle()));
   EXPECT_TRUE(reloadedModel->getObject(reloadedReplacementCoolingCurve->handle()));
   EXPECT_TRUE(reloadedModel->getObject(resetReplacementHeatingCurve->handle()));
+}
+
+TEST_F(EPModelFixture, AirConditionerVariableRefrigerantFlow_HeatRecoveryFieldsValidateRoundtripAndRemainIndependent) {
+  Model model;
+  Model foreignModel;
+  AirConditionerVariableRefrigerantFlow vrf(model);
+
+  EXPECT_TRUE(vrf.setHeatPumpWasteHeatRecovery(true));
+  EXPECT_TRUE(vrf.setMinimumOutdoorTemperatureinHeatRecoveryMode(-7.0));
+  EXPECT_TRUE(vrf.setMaximumOutdoorTemperatureinHeatRecoveryMode(31.0));
+  EXPECT_TRUE(vrf.setInitialHeatRecoveryCoolingCapacityFraction(0.61));
+  EXPECT_TRUE(vrf.setHeatRecoveryCoolingCapacityTimeConstant(0.17));
+  EXPECT_TRUE(vrf.setInitialHeatRecoveryCoolingEnergyFraction(1.21));
+  EXPECT_TRUE(vrf.setHeatRecoveryCoolingEnergyTimeConstant(0.07));
+  EXPECT_TRUE(vrf.setInitialHeatRecoveryHeatingCapacityFraction(0.62));
+  EXPECT_TRUE(vrf.setHeatRecoveryHeatingCapacityTimeConstant(0.18));
+  EXPECT_TRUE(vrf.setInitialHeatRecoveryHeatingEnergyFraction(0.63));
+  EXPECT_TRUE(vrf.setHeatRecoveryHeatingEnergyTimeConstant(0.08));
+  EXPECT_TRUE(vrf.heatPumpWasteHeatRecovery());
+  EXPECT_DOUBLE_EQ(-7.0, vrf.minimumOutdoorTemperatureinHeatRecoveryMode());
+  EXPECT_DOUBLE_EQ(31.0, vrf.maximumOutdoorTemperatureinHeatRecoveryMode());
+  EXPECT_DOUBLE_EQ(0.61, vrf.initialHeatRecoveryCoolingCapacityFraction());
+  EXPECT_DOUBLE_EQ(0.17, vrf.heatRecoveryCoolingCapacityTimeConstant());
+  EXPECT_DOUBLE_EQ(1.21, vrf.initialHeatRecoveryCoolingEnergyFraction());
+  EXPECT_DOUBLE_EQ(0.07, vrf.heatRecoveryCoolingEnergyTimeConstant());
+  EXPECT_DOUBLE_EQ(0.62, vrf.initialHeatRecoveryHeatingCapacityFraction());
+  EXPECT_DOUBLE_EQ(0.18, vrf.heatRecoveryHeatingCapacityTimeConstant());
+  EXPECT_DOUBLE_EQ(0.63, vrf.initialHeatRecoveryHeatingEnergyFraction());
+  EXPECT_DOUBLE_EQ(0.08, vrf.heatRecoveryHeatingEnergyTimeConstant());
+
+  EXPECT_TRUE(vrf.setHeatPumpWasteHeatRecovery(false));
+  EXPECT_FALSE(vrf.heatPumpWasteHeatRecovery());
+  EXPECT_DOUBLE_EQ(-7.0, vrf.minimumOutdoorTemperatureinHeatRecoveryMode());
+  EXPECT_DOUBLE_EQ(31.0, vrf.maximumOutdoorTemperatureinHeatRecoveryMode());
+  EXPECT_DOUBLE_EQ(0.61, vrf.initialHeatRecoveryCoolingCapacityFraction());
+  EXPECT_DOUBLE_EQ(0.17, vrf.heatRecoveryCoolingCapacityTimeConstant());
+  EXPECT_DOUBLE_EQ(1.21, vrf.initialHeatRecoveryCoolingEnergyFraction());
+  EXPECT_DOUBLE_EQ(0.07, vrf.heatRecoveryCoolingEnergyTimeConstant());
+  EXPECT_DOUBLE_EQ(0.62, vrf.initialHeatRecoveryHeatingCapacityFraction());
+  EXPECT_DOUBLE_EQ(0.18, vrf.heatRecoveryHeatingCapacityTimeConstant());
+  EXPECT_DOUBLE_EQ(0.63, vrf.initialHeatRecoveryHeatingEnergyFraction());
+  EXPECT_DOUBLE_EQ(0.08, vrf.heatRecoveryHeatingEnergyTimeConstant());
+
+  CurveBiquadratic coolingCapacityBiquadratic(model);
+  CurveBiquadratic coolingEnergyBiquadratic(model);
+  CurveBiquadratic heatingCapacityBiquadratic(model);
+  CurveBiquadratic heatingEnergyBiquadratic(model);
+  ASSERT_TRUE(vrf.setHeatRecoveryCoolingCapacityModifierCurve(coolingCapacityBiquadratic));
+  ASSERT_TRUE(vrf.setHeatRecoveryCoolingEnergyModifierCurve(coolingEnergyBiquadratic));
+  ASSERT_TRUE(vrf.setHeatRecoveryHeatingCapacityModifierCurve(heatingCapacityBiquadratic));
+  ASSERT_TRUE(vrf.setHeatRecoveryHeatingEnergyModifierCurve(heatingEnergyBiquadratic));
+  ASSERT_TRUE(vrf.heatRecoveryCoolingCapacityModifierCurve());
+  ASSERT_TRUE(vrf.heatRecoveryCoolingEnergyModifierCurve());
+  ASSERT_TRUE(vrf.heatRecoveryHeatingCapacityModifierCurve());
+  ASSERT_TRUE(vrf.heatRecoveryHeatingEnergyModifierCurve());
+  EXPECT_EQ(coolingCapacityBiquadratic, *vrf.heatRecoveryCoolingCapacityModifierCurve());
+  EXPECT_EQ(coolingEnergyBiquadratic, *vrf.heatRecoveryCoolingEnergyModifierCurve());
+  EXPECT_EQ(heatingCapacityBiquadratic, *vrf.heatRecoveryHeatingCapacityModifierCurve());
+  EXPECT_EQ(heatingEnergyBiquadratic, *vrf.heatRecoveryHeatingEnergyModifierCurve());
+
+  CurveBicubic coolingCapacityBicubic(model);
+  CurveBicubic coolingEnergyBicubic(model);
+  CurveBicubic heatingCapacityBicubic(model);
+  CurveBicubic heatingEnergyBicubic(model);
+  ASSERT_TRUE(vrf.setHeatRecoveryCoolingCapacityModifierCurve(coolingCapacityBicubic));
+  ASSERT_TRUE(vrf.setHeatRecoveryCoolingEnergyModifierCurve(coolingEnergyBicubic));
+  ASSERT_TRUE(vrf.setHeatRecoveryHeatingCapacityModifierCurve(heatingCapacityBicubic));
+  ASSERT_TRUE(vrf.setHeatRecoveryHeatingEnergyModifierCurve(heatingEnergyBicubic));
+  ASSERT_TRUE(vrf.heatRecoveryCoolingCapacityModifierCurve());
+  ASSERT_TRUE(vrf.heatRecoveryCoolingEnergyModifierCurve());
+  ASSERT_TRUE(vrf.heatRecoveryHeatingCapacityModifierCurve());
+  ASSERT_TRUE(vrf.heatRecoveryHeatingEnergyModifierCurve());
+  EXPECT_EQ(coolingCapacityBicubic, *vrf.heatRecoveryCoolingCapacityModifierCurve());
+  EXPECT_EQ(coolingEnergyBicubic, *vrf.heatRecoveryCoolingEnergyModifierCurve());
+  EXPECT_EQ(heatingCapacityBicubic, *vrf.heatRecoveryHeatingCapacityModifierCurve());
+  EXPECT_EQ(heatingEnergyBicubic, *vrf.heatRecoveryHeatingEnergyModifierCurve());
+
+  CurveQuadratic wrongType(model);
+  CurveBiquadratic foreignBiquadratic(foreignModel);
+  CurveBicubic foreignBicubic(foreignModel);
+  EXPECT_FALSE(vrf.setHeatRecoveryCoolingCapacityModifierCurve(wrongType));
+  EXPECT_FALSE(vrf.setHeatRecoveryCoolingCapacityModifierCurve(foreignBiquadratic));
+  EXPECT_FALSE(vrf.setHeatRecoveryCoolingEnergyModifierCurve(wrongType));
+  EXPECT_FALSE(vrf.setHeatRecoveryCoolingEnergyModifierCurve(foreignBicubic));
+  EXPECT_FALSE(vrf.setHeatRecoveryHeatingCapacityModifierCurve(wrongType));
+  EXPECT_FALSE(vrf.setHeatRecoveryHeatingCapacityModifierCurve(foreignBiquadratic));
+  EXPECT_FALSE(vrf.setHeatRecoveryHeatingEnergyModifierCurve(wrongType));
+  EXPECT_FALSE(vrf.setHeatRecoveryHeatingEnergyModifierCurve(foreignBicubic));
+  ASSERT_TRUE(vrf.heatRecoveryCoolingCapacityModifierCurve());
+  ASSERT_TRUE(vrf.heatRecoveryCoolingEnergyModifierCurve());
+  ASSERT_TRUE(vrf.heatRecoveryHeatingCapacityModifierCurve());
+  ASSERT_TRUE(vrf.heatRecoveryHeatingEnergyModifierCurve());
+  EXPECT_EQ(coolingCapacityBicubic, *vrf.heatRecoveryCoolingCapacityModifierCurve());
+  EXPECT_EQ(coolingEnergyBicubic, *vrf.heatRecoveryCoolingEnergyModifierCurve());
+  EXPECT_EQ(heatingCapacityBicubic, *vrf.heatRecoveryHeatingCapacityModifierCurve());
+  EXPECT_EQ(heatingEnergyBicubic, *vrf.heatRecoveryHeatingEnergyModifierCurve());
+
+  // Deliberately seed unresolved imported text that the validated public setters cannot create.
+  constexpr auto malformedField = openstudio::AirConditioner_VariableRefrigerantFlowFields::HeatRecoveryCoolingCapacityModifierCurveName;
+  auto workspaceImpl = vrf.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  ASSERT_TRUE(workspaceImpl);
+  ASSERT_TRUE(workspaceImpl->setPointer(malformedField, openstudio::Handle(), false));
+  ASSERT_TRUE(workspaceImpl->openstudio::detail::IdfObject_Impl::setString(malformedField, "Unresolved VRF Heat Recovery Curve", false));
+  EXPECT_FALSE(vrf.setHeatRecoveryCoolingCapacityModifierCurve(foreignBiquadratic));
+  EXPECT_EQ("Unresolved VRF Heat Recovery Curve",
+            workspaceImpl->openstudio::detail::IdfObject_Impl::getString(malformedField, false, true).value_or(""));
+
+  vrf.resetHeatRecoveryCoolingCapacityModifierCurve();
+  vrf.resetHeatRecoveryCoolingEnergyModifierCurve();
+  vrf.resetHeatRecoveryHeatingCapacityModifierCurve();
+  vrf.resetHeatRecoveryHeatingEnergyModifierCurve();
+  EXPECT_FALSE(vrf.heatRecoveryCoolingCapacityModifierCurve());
+  EXPECT_FALSE(vrf.heatRecoveryCoolingEnergyModifierCurve());
+  EXPECT_FALSE(vrf.heatRecoveryHeatingCapacityModifierCurve());
+  EXPECT_FALSE(vrf.heatRecoveryHeatingEnergyModifierCurve());
+  EXPECT_EQ("", workspaceImpl->openstudio::detail::IdfObject_Impl::getString(malformedField, false, true).value_or(""));
+  EXPECT_FALSE(vrf.heatPumpWasteHeatRecovery());
+}
+
+TEST_F(EPModelFixture, AirConditionerVariableRefrigerantFlow_CanonicalizationRepairsOnlyBlankHeatRecoveryScalars) {
+  const auto idfPath = uniqueIdfPath("epmodel-vrf-heat-recovery-scalar-repair");
+  const ScopedFileRemoval removeIdf(idfPath);
+
+  constexpr std::array<unsigned, 10> fields = {
+    openstudio::AirConditioner_VariableRefrigerantFlowFields::MinimumCondenserInletNodeTemperatureinHeatRecoveryMode,
+    openstudio::AirConditioner_VariableRefrigerantFlowFields::MaximumCondenserInletNodeTemperatureinHeatRecoveryMode,
+    openstudio::AirConditioner_VariableRefrigerantFlowFields::InitialHeatRecoveryCoolingCapacityFraction,
+    openstudio::AirConditioner_VariableRefrigerantFlowFields::HeatRecoveryCoolingCapacityTimeConstant,
+    openstudio::AirConditioner_VariableRefrigerantFlowFields::InitialHeatRecoveryCoolingEnergyFraction,
+    openstudio::AirConditioner_VariableRefrigerantFlowFields::HeatRecoveryCoolingEnergyTimeConstant,
+    openstudio::AirConditioner_VariableRefrigerantFlowFields::InitialHeatRecoveryHeatingCapacityFraction,
+    openstudio::AirConditioner_VariableRefrigerantFlowFields::HeatRecoveryHeatingCapacityTimeConstant,
+    openstudio::AirConditioner_VariableRefrigerantFlowFields::InitialHeatRecoveryHeatingEnergyFraction,
+    openstudio::AirConditioner_VariableRefrigerantFlowFields::HeatRecoveryHeatingEnergyTimeConstant,
+  };
+
+  Model model;
+  AirConditionerVariableRefrigerantFlow blank(model);
+  AirConditionerVariableRefrigerantFlow explicitValues(model);
+  ASSERT_TRUE(blank.setName("Blank Heat Recovery Scalars"));
+  ASSERT_TRUE(explicitValues.setName("Explicit Heat Recovery Scalars"));
+  auto blankImpl = blank.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  ASSERT_TRUE(blankImpl);
+  // Deliberately blank concrete scalar storage that validated public setters cannot produce.
+  for (const auto field : fields) {
+    ASSERT_TRUE(blankImpl->openstudio::detail::IdfObject_Impl::setString(field, "", false));
+  }
+  ASSERT_TRUE(explicitValues.setMinimumOutdoorTemperatureinHeatRecoveryMode(-8.0));
+  ASSERT_TRUE(explicitValues.setMaximumOutdoorTemperatureinHeatRecoveryMode(32.0));
+  ASSERT_TRUE(explicitValues.setInitialHeatRecoveryCoolingCapacityFraction(0.64));
+  ASSERT_TRUE(explicitValues.setHeatRecoveryCoolingCapacityTimeConstant(0.19));
+  ASSERT_TRUE(explicitValues.setInitialHeatRecoveryCoolingEnergyFraction(1.24));
+  ASSERT_TRUE(explicitValues.setHeatRecoveryCoolingEnergyTimeConstant(0.09));
+  ASSERT_TRUE(explicitValues.setInitialHeatRecoveryHeatingCapacityFraction(0.65));
+  ASSERT_TRUE(explicitValues.setHeatRecoveryHeatingCapacityTimeConstant(0.2));
+  ASSERT_TRUE(explicitValues.setInitialHeatRecoveryHeatingEnergyFraction(0.66));
+  ASSERT_TRUE(explicitValues.setHeatRecoveryHeatingEnergyTimeConstant(0.1));
+
+  const auto report = model.canonicalize();
+  EXPECT_EQ(0u, report.errorCount);
+  EXPECT_GE(report.infoCount, 10u);
+  EXPECT_DOUBLE_EQ(0.0, blank.minimumOutdoorTemperatureinHeatRecoveryMode());
+  EXPECT_DOUBLE_EQ(20.0, blank.maximumOutdoorTemperatureinHeatRecoveryMode());
+  EXPECT_DOUBLE_EQ(0.5, blank.initialHeatRecoveryCoolingCapacityFraction());
+  EXPECT_DOUBLE_EQ(0.083, blank.heatRecoveryCoolingCapacityTimeConstant());
+  EXPECT_DOUBLE_EQ(1.0, blank.initialHeatRecoveryCoolingEnergyFraction());
+  EXPECT_DOUBLE_EQ(0.0, blank.heatRecoveryCoolingEnergyTimeConstant());
+  EXPECT_DOUBLE_EQ(0.5, blank.initialHeatRecoveryHeatingCapacityFraction());
+  EXPECT_DOUBLE_EQ(0.083, blank.heatRecoveryHeatingCapacityTimeConstant());
+  EXPECT_DOUBLE_EQ(0.5, blank.initialHeatRecoveryHeatingEnergyFraction());
+  EXPECT_DOUBLE_EQ(0.0, blank.heatRecoveryHeatingEnergyTimeConstant());
+  EXPECT_DOUBLE_EQ(-8.0, explicitValues.minimumOutdoorTemperatureinHeatRecoveryMode());
+  EXPECT_DOUBLE_EQ(32.0, explicitValues.maximumOutdoorTemperatureinHeatRecoveryMode());
+  EXPECT_DOUBLE_EQ(0.64, explicitValues.initialHeatRecoveryCoolingCapacityFraction());
+  EXPECT_DOUBLE_EQ(0.19, explicitValues.heatRecoveryCoolingCapacityTimeConstant());
+  EXPECT_DOUBLE_EQ(1.24, explicitValues.initialHeatRecoveryCoolingEnergyFraction());
+  EXPECT_DOUBLE_EQ(0.09, explicitValues.heatRecoveryCoolingEnergyTimeConstant());
+  EXPECT_DOUBLE_EQ(0.65, explicitValues.initialHeatRecoveryHeatingCapacityFraction());
+  EXPECT_DOUBLE_EQ(0.2, explicitValues.heatRecoveryHeatingCapacityTimeConstant());
+  EXPECT_DOUBLE_EQ(0.66, explicitValues.initialHeatRecoveryHeatingEnergyFraction());
+  EXPECT_DOUBLE_EQ(0.1, explicitValues.heatRecoveryHeatingEnergyTimeConstant());
+  const auto secondReport = model.canonicalize();
+  EXPECT_EQ(0u, secondReport.errorCount);
+  ASSERT_EQ(1u, secondReport.infoCount);
+  ASSERT_EQ(1u, secondReport.messages.size());
+  EXPECT_NE(std::string::npos, secondReport.messages.front().find("Sanitization complete: infos=0"));
+
+  Model reloadSource;
+  AirConditionerVariableRefrigerantFlow blankOnLoad(reloadSource);
+  AirConditionerVariableRefrigerantFlow explicitOnLoad(reloadSource);
+  ASSERT_TRUE(blankOnLoad.setName("Blank Heat Recovery Scalars On Load"));
+  ASSERT_TRUE(explicitOnLoad.setName("Explicit Heat Recovery Scalars On Load"));
+  auto blankOnLoadImpl = blankOnLoad.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  ASSERT_TRUE(blankOnLoadImpl);
+  // Deliberately persist blanks to exercise load canonicalization rather than a normal public mutation.
+  for (const auto field : fields) {
+    ASSERT_TRUE(blankOnLoadImpl->openstudio::detail::IdfObject_Impl::setString(field, "", false));
+  }
+  ASSERT_TRUE(explicitOnLoad.setMinimumOutdoorTemperatureinHeatRecoveryMode(-9.0));
+  ASSERT_TRUE(explicitOnLoad.setMaximumOutdoorTemperatureinHeatRecoveryMode(33.0));
+  ASSERT_TRUE(explicitOnLoad.setInitialHeatRecoveryCoolingCapacityFraction(0.67));
+  ASSERT_TRUE(explicitOnLoad.setHeatRecoveryCoolingCapacityTimeConstant(0.21));
+  ASSERT_TRUE(explicitOnLoad.setInitialHeatRecoveryCoolingEnergyFraction(1.27));
+  ASSERT_TRUE(explicitOnLoad.setHeatRecoveryCoolingEnergyTimeConstant(0.11));
+  ASSERT_TRUE(explicitOnLoad.setInitialHeatRecoveryHeatingCapacityFraction(0.68));
+  ASSERT_TRUE(explicitOnLoad.setHeatRecoveryHeatingCapacityTimeConstant(0.22));
+  ASSERT_TRUE(explicitOnLoad.setInitialHeatRecoveryHeatingEnergyFraction(0.69));
+  ASSERT_TRUE(explicitOnLoad.setHeatRecoveryHeatingEnergyTimeConstant(0.12));
+  ASSERT_TRUE(reloadSource.save(idfPath, true));
+
+  auto loadedModel = Model::load(idfPath);
+  ASSERT_TRUE(loadedModel);
+  auto loadedBlank = loadedModel->getConcreteModelObjectByName<AirConditionerVariableRefrigerantFlow>("Blank Heat Recovery Scalars On Load");
+  auto loadedExplicit = loadedModel->getConcreteModelObjectByName<AirConditionerVariableRefrigerantFlow>("Explicit Heat Recovery Scalars On Load");
+  ASSERT_TRUE(loadedBlank);
+  ASSERT_TRUE(loadedExplicit);
+  EXPECT_DOUBLE_EQ(0.0, loadedBlank->minimumOutdoorTemperatureinHeatRecoveryMode());
+  EXPECT_DOUBLE_EQ(20.0, loadedBlank->maximumOutdoorTemperatureinHeatRecoveryMode());
+  EXPECT_DOUBLE_EQ(0.5, loadedBlank->initialHeatRecoveryCoolingCapacityFraction());
+  EXPECT_DOUBLE_EQ(0.083, loadedBlank->heatRecoveryCoolingCapacityTimeConstant());
+  EXPECT_DOUBLE_EQ(1.0, loadedBlank->initialHeatRecoveryCoolingEnergyFraction());
+  EXPECT_DOUBLE_EQ(0.0, loadedBlank->heatRecoveryCoolingEnergyTimeConstant());
+  EXPECT_DOUBLE_EQ(0.5, loadedBlank->initialHeatRecoveryHeatingCapacityFraction());
+  EXPECT_DOUBLE_EQ(0.083, loadedBlank->heatRecoveryHeatingCapacityTimeConstant());
+  EXPECT_DOUBLE_EQ(0.5, loadedBlank->initialHeatRecoveryHeatingEnergyFraction());
+  EXPECT_DOUBLE_EQ(0.0, loadedBlank->heatRecoveryHeatingEnergyTimeConstant());
+  EXPECT_DOUBLE_EQ(-9.0, loadedExplicit->minimumOutdoorTemperatureinHeatRecoveryMode());
+  EXPECT_DOUBLE_EQ(33.0, loadedExplicit->maximumOutdoorTemperatureinHeatRecoveryMode());
+  EXPECT_DOUBLE_EQ(0.67, loadedExplicit->initialHeatRecoveryCoolingCapacityFraction());
+  EXPECT_DOUBLE_EQ(0.21, loadedExplicit->heatRecoveryCoolingCapacityTimeConstant());
+  EXPECT_DOUBLE_EQ(1.27, loadedExplicit->initialHeatRecoveryCoolingEnergyFraction());
+  EXPECT_DOUBLE_EQ(0.11, loadedExplicit->heatRecoveryCoolingEnergyTimeConstant());
+  EXPECT_DOUBLE_EQ(0.68, loadedExplicit->initialHeatRecoveryHeatingCapacityFraction());
+  EXPECT_DOUBLE_EQ(0.22, loadedExplicit->heatRecoveryHeatingCapacityTimeConstant());
+  EXPECT_DOUBLE_EQ(0.69, loadedExplicit->initialHeatRecoveryHeatingEnergyFraction());
+  EXPECT_DOUBLE_EQ(0.12, loadedExplicit->heatRecoveryHeatingEnergyTimeConstant());
+  const auto loadedSecondReport = loadedModel->canonicalize();
+  EXPECT_EQ(0u, loadedSecondReport.errorCount);
+  ASSERT_EQ(1u, loadedSecondReport.infoCount);
+  ASSERT_EQ(1u, loadedSecondReport.messages.size());
+  EXPECT_NE(std::string::npos, loadedSecondReport.messages.front().find("Sanitization complete: infos=0"));
+}
+
+TEST_F(EPModelFixture, AirConditionerVariableRefrigerantFlow_HeatRecoveryFieldsSurviveReloadMutationResetAndRemoval) {
+  const auto firstIdfPath = uniqueIdfPath("epmodel-vrf-heat-recovery-first");
+  const auto secondIdfPath = uniqueIdfPath("epmodel-vrf-heat-recovery-second");
+  const ScopedFileRemoval removeFirstIdf(firstIdfPath);
+  const ScopedFileRemoval removeSecondIdf(secondIdfPath);
+
+  Model model;
+  AirConditionerVariableRefrigerantFlow vrf(model);
+  ZoneHVACTerminalUnitVariableRefrigerantFlow terminal(model);
+  CurveBiquadratic coolingCapacityCurve(model);
+  CurveBicubic coolingEnergyCurve(model);
+  CurveBiquadratic heatingCapacityCurve(model);
+  CurveBicubic heatingEnergyCurve(model);
+  ASSERT_TRUE(vrf.setName("Heat Recovery Field VRF"));
+  ASSERT_TRUE(terminal.setName("Heat Recovery Field VRF Terminal"));
+  ASSERT_TRUE(coolingCapacityCurve.setName("Original VRF Heat Recovery Cooling Capacity Curve"));
+  ASSERT_TRUE(coolingEnergyCurve.setName("Original VRF Heat Recovery Cooling Energy Curve"));
+  ASSERT_TRUE(heatingCapacityCurve.setName("Original VRF Heat Recovery Heating Capacity Curve"));
+  ASSERT_TRUE(heatingEnergyCurve.setName("Original VRF Heat Recovery Heating Energy Curve"));
+  ASSERT_TRUE(vrf.addTerminal(terminal));
+  ASSERT_TRUE(vrf.setMinimumOutdoorTemperatureinHeatRecoveryMode(-11.0));
+  ASSERT_TRUE(vrf.setMaximumOutdoorTemperatureinHeatRecoveryMode(34.0));
+  ASSERT_TRUE(vrf.setInitialHeatRecoveryCoolingCapacityFraction(0.71));
+  ASSERT_TRUE(vrf.setHeatRecoveryCoolingCapacityTimeConstant(0.23));
+  ASSERT_TRUE(vrf.setInitialHeatRecoveryCoolingEnergyFraction(1.31));
+  ASSERT_TRUE(vrf.setHeatRecoveryCoolingEnergyTimeConstant(0.13));
+  ASSERT_TRUE(vrf.setInitialHeatRecoveryHeatingCapacityFraction(0.72));
+  ASSERT_TRUE(vrf.setHeatRecoveryHeatingCapacityTimeConstant(0.24));
+  ASSERT_TRUE(vrf.setInitialHeatRecoveryHeatingEnergyFraction(0.73));
+  ASSERT_TRUE(vrf.setHeatRecoveryHeatingEnergyTimeConstant(0.14));
+  ASSERT_TRUE(vrf.setHeatRecoveryCoolingCapacityModifierCurve(coolingCapacityCurve));
+  ASSERT_TRUE(vrf.setHeatRecoveryCoolingEnergyModifierCurve(coolingEnergyCurve));
+  ASSERT_TRUE(vrf.setHeatRecoveryHeatingCapacityModifierCurve(heatingCapacityCurve));
+  ASSERT_TRUE(vrf.setHeatRecoveryHeatingEnergyModifierCurve(heatingEnergyCurve));
+  ASSERT_TRUE(model.save(firstIdfPath, true));
+
+  auto loadedModel = Model::load(firstIdfPath);
+  ASSERT_TRUE(loadedModel);
+  auto loadedVRF = loadedModel->getConcreteModelObjectByName<AirConditionerVariableRefrigerantFlow>("Heat Recovery Field VRF");
+  auto loadedTerminal = loadedModel->getConcreteModelObjectByName<ZoneHVACTerminalUnitVariableRefrigerantFlow>("Heat Recovery Field VRF Terminal");
+  ASSERT_TRUE(loadedVRF);
+  ASSERT_TRUE(loadedTerminal);
+  EXPECT_DOUBLE_EQ(-11.0, loadedVRF->minimumOutdoorTemperatureinHeatRecoveryMode());
+  EXPECT_DOUBLE_EQ(34.0, loadedVRF->maximumOutdoorTemperatureinHeatRecoveryMode());
+  EXPECT_DOUBLE_EQ(0.71, loadedVRF->initialHeatRecoveryCoolingCapacityFraction());
+  EXPECT_DOUBLE_EQ(0.23, loadedVRF->heatRecoveryCoolingCapacityTimeConstant());
+  EXPECT_DOUBLE_EQ(1.31, loadedVRF->initialHeatRecoveryCoolingEnergyFraction());
+  EXPECT_DOUBLE_EQ(0.13, loadedVRF->heatRecoveryCoolingEnergyTimeConstant());
+  EXPECT_DOUBLE_EQ(0.72, loadedVRF->initialHeatRecoveryHeatingCapacityFraction());
+  EXPECT_DOUBLE_EQ(0.24, loadedVRF->heatRecoveryHeatingCapacityTimeConstant());
+  EXPECT_DOUBLE_EQ(0.73, loadedVRF->initialHeatRecoveryHeatingEnergyFraction());
+  EXPECT_DOUBLE_EQ(0.14, loadedVRF->heatRecoveryHeatingEnergyTimeConstant());
+  ASSERT_TRUE(loadedVRF->heatRecoveryCoolingCapacityModifierCurve());
+  ASSERT_TRUE(loadedVRF->heatRecoveryCoolingEnergyModifierCurve());
+  ASSERT_TRUE(loadedVRF->heatRecoveryHeatingCapacityModifierCurve());
+  ASSERT_TRUE(loadedVRF->heatRecoveryHeatingEnergyModifierCurve());
+  EXPECT_EQ("Original VRF Heat Recovery Cooling Capacity Curve", loadedVRF->heatRecoveryCoolingCapacityModifierCurve()->nameString());
+  EXPECT_EQ("Original VRF Heat Recovery Cooling Energy Curve", loadedVRF->heatRecoveryCoolingEnergyModifierCurve()->nameString());
+  EXPECT_EQ("Original VRF Heat Recovery Heating Capacity Curve", loadedVRF->heatRecoveryHeatingCapacityModifierCurve()->nameString());
+  EXPECT_EQ("Original VRF Heat Recovery Heating Energy Curve", loadedVRF->heatRecoveryHeatingEnergyModifierCurve()->nameString());
+
+  CurveBicubic replacementCoolingCapacityCurve(*loadedModel);
+  CurveBiquadratic replacementCoolingEnergyCurve(*loadedModel);
+  CurveBicubic replacementHeatingCapacityCurve(*loadedModel);
+  CurveBiquadratic replacementHeatingEnergyCurve(*loadedModel);
+  ASSERT_TRUE(replacementCoolingCapacityCurve.setName("Replacement VRF Heat Recovery Cooling Capacity Curve"));
+  ASSERT_TRUE(replacementCoolingEnergyCurve.setName("Replacement VRF Heat Recovery Cooling Energy Curve"));
+  ASSERT_TRUE(replacementHeatingCapacityCurve.setName("Replacement VRF Heat Recovery Heating Capacity Curve"));
+  ASSERT_TRUE(replacementHeatingEnergyCurve.setName("Replacement VRF Heat Recovery Heating Energy Curve"));
+  ASSERT_TRUE(loadedVRF->setMinimumOutdoorTemperatureinHeatRecoveryMode(-12.0));
+  ASSERT_TRUE(loadedVRF->setMaximumOutdoorTemperatureinHeatRecoveryMode(35.0));
+  ASSERT_TRUE(loadedVRF->setInitialHeatRecoveryCoolingCapacityFraction(0.74));
+  ASSERT_TRUE(loadedVRF->setHeatRecoveryCoolingCapacityTimeConstant(0.25));
+  ASSERT_TRUE(loadedVRF->setInitialHeatRecoveryCoolingEnergyFraction(1.34));
+  ASSERT_TRUE(loadedVRF->setHeatRecoveryCoolingEnergyTimeConstant(0.15));
+  ASSERT_TRUE(loadedVRF->setInitialHeatRecoveryHeatingCapacityFraction(0.75));
+  ASSERT_TRUE(loadedVRF->setHeatRecoveryHeatingCapacityTimeConstant(0.26));
+  ASSERT_TRUE(loadedVRF->setInitialHeatRecoveryHeatingEnergyFraction(0.76));
+  ASSERT_TRUE(loadedVRF->setHeatRecoveryHeatingEnergyTimeConstant(0.16));
+  ASSERT_TRUE(loadedVRF->setHeatRecoveryCoolingCapacityModifierCurve(replacementCoolingCapacityCurve));
+  ASSERT_TRUE(loadedVRF->setHeatRecoveryCoolingEnergyModifierCurve(replacementCoolingEnergyCurve));
+  ASSERT_TRUE(loadedVRF->setHeatRecoveryHeatingCapacityModifierCurve(replacementHeatingCapacityCurve));
+  ASSERT_TRUE(loadedVRF->setHeatRecoveryHeatingEnergyModifierCurve(replacementHeatingEnergyCurve));
+  loadedVRF->resetHeatRecoveryCoolingEnergyModifierCurve();
+  loadedVRF->resetHeatRecoveryHeatingEnergyModifierCurve();
+  ASSERT_TRUE(loadedModel->save(secondIdfPath, true));
+
+  auto reloadedModel = Model::load(secondIdfPath);
+  ASSERT_TRUE(reloadedModel);
+  auto reloadedVRF = reloadedModel->getConcreteModelObjectByName<AirConditionerVariableRefrigerantFlow>("Heat Recovery Field VRF");
+  auto reloadedTerminal =
+    reloadedModel->getConcreteModelObjectByName<ZoneHVACTerminalUnitVariableRefrigerantFlow>("Heat Recovery Field VRF Terminal");
+  auto originalCoolingCapacityCurve =
+    reloadedModel->getConcreteModelObjectByName<CurveBiquadratic>("Original VRF Heat Recovery Cooling Capacity Curve");
+  auto originalCoolingEnergyCurve = reloadedModel->getConcreteModelObjectByName<CurveBicubic>("Original VRF Heat Recovery Cooling Energy Curve");
+  auto originalHeatingCapacityCurve =
+    reloadedModel->getConcreteModelObjectByName<CurveBiquadratic>("Original VRF Heat Recovery Heating Capacity Curve");
+  auto originalHeatingEnergyCurve = reloadedModel->getConcreteModelObjectByName<CurveBicubic>("Original VRF Heat Recovery Heating Energy Curve");
+  auto reloadedReplacementCoolingCapacityCurve =
+    reloadedModel->getConcreteModelObjectByName<CurveBicubic>("Replacement VRF Heat Recovery Cooling Capacity Curve");
+  auto resetReplacementCoolingEnergyCurve =
+    reloadedModel->getConcreteModelObjectByName<CurveBiquadratic>("Replacement VRF Heat Recovery Cooling Energy Curve");
+  auto reloadedReplacementHeatingCapacityCurve =
+    reloadedModel->getConcreteModelObjectByName<CurveBicubic>("Replacement VRF Heat Recovery Heating Capacity Curve");
+  auto resetReplacementHeatingEnergyCurve =
+    reloadedModel->getConcreteModelObjectByName<CurveBiquadratic>("Replacement VRF Heat Recovery Heating Energy Curve");
+  ASSERT_TRUE(reloadedVRF);
+  ASSERT_TRUE(reloadedTerminal);
+  ASSERT_TRUE(originalCoolingCapacityCurve);
+  ASSERT_TRUE(originalCoolingEnergyCurve);
+  ASSERT_TRUE(originalHeatingCapacityCurve);
+  ASSERT_TRUE(originalHeatingEnergyCurve);
+  ASSERT_TRUE(reloadedReplacementCoolingCapacityCurve);
+  ASSERT_TRUE(resetReplacementCoolingEnergyCurve);
+  ASSERT_TRUE(reloadedReplacementHeatingCapacityCurve);
+  ASSERT_TRUE(resetReplacementHeatingEnergyCurve);
+  EXPECT_DOUBLE_EQ(-12.0, reloadedVRF->minimumOutdoorTemperatureinHeatRecoveryMode());
+  EXPECT_DOUBLE_EQ(35.0, reloadedVRF->maximumOutdoorTemperatureinHeatRecoveryMode());
+  EXPECT_DOUBLE_EQ(0.74, reloadedVRF->initialHeatRecoveryCoolingCapacityFraction());
+  EXPECT_DOUBLE_EQ(0.25, reloadedVRF->heatRecoveryCoolingCapacityTimeConstant());
+  EXPECT_DOUBLE_EQ(1.34, reloadedVRF->initialHeatRecoveryCoolingEnergyFraction());
+  EXPECT_DOUBLE_EQ(0.15, reloadedVRF->heatRecoveryCoolingEnergyTimeConstant());
+  EXPECT_DOUBLE_EQ(0.75, reloadedVRF->initialHeatRecoveryHeatingCapacityFraction());
+  EXPECT_DOUBLE_EQ(0.26, reloadedVRF->heatRecoveryHeatingCapacityTimeConstant());
+  EXPECT_DOUBLE_EQ(0.76, reloadedVRF->initialHeatRecoveryHeatingEnergyFraction());
+  EXPECT_DOUBLE_EQ(0.16, reloadedVRF->heatRecoveryHeatingEnergyTimeConstant());
+  ASSERT_TRUE(reloadedVRF->heatRecoveryCoolingCapacityModifierCurve());
+  EXPECT_EQ(reloadedReplacementCoolingCapacityCurve->handle(), reloadedVRF->heatRecoveryCoolingCapacityModifierCurve()->handle());
+  EXPECT_FALSE(reloadedVRF->heatRecoveryCoolingEnergyModifierCurve());
+  ASSERT_TRUE(reloadedVRF->heatRecoveryHeatingCapacityModifierCurve());
+  EXPECT_EQ(reloadedReplacementHeatingCapacityCurve->handle(), reloadedVRF->heatRecoveryHeatingCapacityModifierCurve()->handle());
+  EXPECT_FALSE(reloadedVRF->heatRecoveryHeatingEnergyModifierCurve());
+  ASSERT_EQ(1u, reloadedVRF->terminals().size());
+  EXPECT_EQ(reloadedTerminal->handle(), reloadedVRF->terminals().front().handle());
+
+  auto terminalList =
+    reloadedVRF->getModelObjectTarget<ModelObject>(openstudio::AirConditioner_VariableRefrigerantFlowFields::ZoneTerminalUnitListName);
+  ASSERT_TRUE(terminalList);
+  const auto terminalListHandle = terminalList->handle();
+  const auto systemHandle = reloadedVRF->handle();
+  EXPECT_FALSE(reloadedVRF->remove().empty());
+  EXPECT_FALSE(reloadedModel->getObject(systemHandle));
+  EXPECT_FALSE(reloadedModel->getObject(terminalListHandle));
+  EXPECT_TRUE(reloadedModel->getObject(reloadedTerminal->handle()));
+  EXPECT_FALSE(reloadedTerminal->vrfSystem());
+  EXPECT_TRUE(reloadedModel->getObject(originalCoolingCapacityCurve->handle()));
+  EXPECT_TRUE(reloadedModel->getObject(originalCoolingEnergyCurve->handle()));
+  EXPECT_TRUE(reloadedModel->getObject(originalHeatingCapacityCurve->handle()));
+  EXPECT_TRUE(reloadedModel->getObject(originalHeatingEnergyCurve->handle()));
+  EXPECT_TRUE(reloadedModel->getObject(reloadedReplacementCoolingCapacityCurve->handle()));
+  EXPECT_TRUE(reloadedModel->getObject(resetReplacementCoolingEnergyCurve->handle()));
+  EXPECT_TRUE(reloadedModel->getObject(reloadedReplacementHeatingCapacityCurve->handle()));
+  EXPECT_TRUE(reloadedModel->getObject(resetReplacementHeatingEnergyCurve->handle()));
 }
 
 TEST_F(EPModelFixture, AirConditionerVariableRefrigerantFlow_CoolingCurveRelationshipsValidateAndResetExactly) {
