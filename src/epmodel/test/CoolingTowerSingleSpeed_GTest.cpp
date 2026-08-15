@@ -8,6 +8,7 @@
 #include "EPModelFixture.hpp"
 #include "../Loop/AirLoopHVAC.hpp"
 #include "../Loop/PlantLoop.hpp"
+#include "../ResourceObject/ScheduleTypeLimits.hpp"
 #include "../Schedule/ScheduleConstant.hpp"
 #include "../Splitter/AirLoopHVACZoneSplitter.hpp"
 #include "../StraightComponent/CoolingTowerSingleSpeed.hpp"
@@ -115,6 +116,72 @@ TEST_F(EPModelFixture, CoolingTowerSingleSpeed_RelationshipSetters_RoundTrip) {
   coolingTower.resetBlowdownMakeupWaterUsageSchedule();
   EXPECT_FALSE(coolingTower.basinHeaterOperatingSchedule());
   EXPECT_FALSE(coolingTower.blowdownMakeupWaterUsageSchedule());
+}
+
+TEST_F(EPModelFixture, CoolingTowerSingleSpeed_ScheduleRelationships_MatchCanonicalCompatibility) {
+  Model model;
+  CoolingTowerSingleSpeed coolingTower(model);
+
+  ScheduleConstant basinSchedule(model);
+  ASSERT_TRUE(basinSchedule.setValue(1.0));
+  ScheduleTypeLimits basinLimits(model);
+  ASSERT_TRUE(basinLimits.setUnitType("Availability"));
+  ASSERT_TRUE(basinLimits.setNumericType("Discrete"));
+  ASSERT_TRUE(basinLimits.setLowerLimitValue(0.0));
+  ASSERT_TRUE(basinLimits.setUpperLimitValue(1.0));
+  ASSERT_TRUE(basinSchedule.setScheduleTypeLimits(basinLimits));
+
+  EXPECT_TRUE(coolingTower.setBasinHeaterOperatingSchedule(basinSchedule));
+  ASSERT_TRUE(coolingTower.basinHeaterOperatingSchedule());
+  EXPECT_EQ(basinSchedule.handle(), coolingTower.basinHeaterOperatingSchedule()->handle());
+
+  ScheduleConstant blowdownSchedule(model);
+  ASSERT_TRUE(blowdownSchedule.setValue(0.0025));
+  ScheduleTypeLimits blowdownLimits(model);
+  ASSERT_TRUE(blowdownLimits.setUnitType("VolumetricFlowRate"));
+  ASSERT_TRUE(blowdownLimits.setNumericType("Continuous"));
+  ASSERT_TRUE(blowdownLimits.setLowerLimitValue(0.0));
+  ASSERT_TRUE(blowdownSchedule.setScheduleTypeLimits(blowdownLimits));
+
+  EXPECT_TRUE(coolingTower.setBlowdownMakeupWaterUsageSchedule(blowdownSchedule));
+  ASSERT_TRUE(coolingTower.blowdownMakeupWaterUsageSchedule());
+  EXPECT_EQ(blowdownSchedule.handle(), coolingTower.blowdownMakeupWaterUsageSchedule()->handle());
+
+  ScheduleConstant continuousAvailabilitySchedule(model);
+  ScheduleTypeLimits continuousAvailabilityLimits(model);
+  ASSERT_TRUE(continuousAvailabilityLimits.setUnitType("Availability"));
+  ASSERT_TRUE(continuousAvailabilityLimits.setNumericType("Continuous"));
+  ASSERT_TRUE(continuousAvailabilitySchedule.setScheduleTypeLimits(continuousAvailabilityLimits));
+  EXPECT_FALSE(coolingTower.setBasinHeaterOperatingSchedule(continuousAvailabilitySchedule));
+  EXPECT_EQ(basinSchedule.handle(), coolingTower.basinHeaterOperatingSchedule()->handle());
+
+  ScheduleConstant discreteVolumetricFlowSchedule(model);
+  ScheduleTypeLimits discreteVolumetricFlowLimits(model);
+  ASSERT_TRUE(discreteVolumetricFlowLimits.setUnitType("VolumetricFlowRate"));
+  ASSERT_TRUE(discreteVolumetricFlowLimits.setNumericType("Discrete"));
+  ASSERT_TRUE(discreteVolumetricFlowSchedule.setScheduleTypeLimits(discreteVolumetricFlowLimits));
+  EXPECT_FALSE(coolingTower.setBlowdownMakeupWaterUsageSchedule(discreteVolumetricFlowSchedule));
+  EXPECT_EQ(blowdownSchedule.handle(), coolingTower.blowdownMakeupWaterUsageSchedule()->handle());
+
+  ScheduleConstant temperatureSchedule(model);
+  ASSERT_TRUE(temperatureSchedule.setValue(12.0));
+  ScheduleTypeLimits temperatureLimits(model);
+  ASSERT_TRUE(temperatureLimits.setUnitType("Temperature"));
+  ASSERT_TRUE(temperatureLimits.setNumericType("Continuous"));
+  ASSERT_TRUE(temperatureSchedule.setScheduleTypeLimits(temperatureLimits));
+
+  EXPECT_FALSE(coolingTower.setBasinHeaterOperatingSchedule(temperatureSchedule));
+  EXPECT_EQ(basinSchedule.handle(), coolingTower.basinHeaterOperatingSchedule()->handle());
+
+  EXPECT_FALSE(coolingTower.setBlowdownMakeupWaterUsageSchedule(temperatureSchedule));
+  EXPECT_EQ(blowdownSchedule.handle(), coolingTower.blowdownMakeupWaterUsageSchedule()->handle());
+
+  Model foreignModel;
+  ScheduleConstant foreignSchedule(foreignModel);
+  EXPECT_FALSE(coolingTower.setBasinHeaterOperatingSchedule(foreignSchedule));
+  EXPECT_FALSE(coolingTower.setBlowdownMakeupWaterUsageSchedule(foreignSchedule));
+  EXPECT_EQ(basinSchedule.handle(), coolingTower.basinHeaterOperatingSchedule()->handle());
+  EXPECT_EQ(blowdownSchedule.handle(), coolingTower.blowdownMakeupWaterUsageSchedule()->handle());
 }
 
 TEST_F(EPModelFixture, CoolingTowerSingleSpeed_AddToNode_PlantSupplyOnly) {
