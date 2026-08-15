@@ -19,6 +19,9 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class Schedule;
+  class Curve;
+  class ThermalZone;
   class ControllerMechanicalVentilation;
   class AirLoopHVACOutdoorAirSystem;
 
@@ -47,11 +50,30 @@ namespace epmodel {
     static std::vector<std::string> economizerOperationStagingValues();
 
     // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::ControllerOutdoorAir scalar accessor names/signatures.
-    // - Field Mapping: Scalar APIs map directly to EnergyPlus Controller:OutdoorAir fields.
-    // - Field Mapping: Node/schedule/curve/zone links remain relationship APIs and are intentionally excluded.
-    // - ForwardTranslator evidence: ForwardTranslateControllerOutdoorAir.cpp writes these scalar fields directly.
-    // - TODO(parity): Add remaining non-scalar parity incrementally without changing preserved scalar signatures.
+    // - API: Preserves the openstudio::model::ControllerOutdoorAir scalar, schedule, curve, humidistat-zone, mechanical-ventilation,
+    //   and ordinary outdoor-air-system relationship signatures.
+    // - Field Mapping: These APIs map directly to EnergyPlus Controller:OutdoorAir fields and configured object lists.
+    // - Load Repair: Optional schedule, curve, and zone references are resolved observationally; invalid references are cleared, and
+    //   High Humidity Control is normalized with the humidistat-zone relationship.
+    // - Documented Delta: An active dedicated-outdoor-air-system projection keeps its Controller:OutdoorAir transient, so these
+    //   relationship fields remain in memory only until the controller is returned to ordinary persisted ownership.
+
+    boost::optional<Schedule> minimumOutdoorAirSchedule() const;
+    bool setMinimumOutdoorAirSchedule(Schedule& schedule);
+    void resetMinimumOutdoorAirSchedule();
+
+    boost::optional<Schedule> minimumFractionofOutdoorAirSchedule() const;
+    bool setMinimumFractionofOutdoorAirSchedule(Schedule& schedule);
+    void resetMinimumFractionofOutdoorAirSchedule();
+
+    boost::optional<Schedule> maximumFractionofOutdoorAirSchedule() const;
+    bool setMaximumFractionofOutdoorAirSchedule(Schedule& schedule);
+    void resetMaximumFractionofOutdoorAirSchedule();
+
+    boost::optional<Schedule> timeofDayEconomizerControlSchedule() const;
+    bool setTimeofDayEconomizerControlSchedule(Schedule& schedule);
+    void resetTimeofDayEconomizerControlSchedule();
+
     boost::optional<double> minimumOutdoorAirFlowRate() const;
     bool isMinimumOutdoorAirFlowRateAutosized() const;
     bool setMinimumOutdoorAirFlowRate(double minimumOutdoorAirFlowRate);
@@ -80,6 +102,10 @@ namespace epmodel {
     bool setEconomizerMaximumLimitDewpointTemperature(double value);
     void resetEconomizerMaximumLimitDewpointTemperature();
 
+    boost::optional<Curve> electronicEnthalpyLimitCurve() const;
+    bool setElectronicEnthalpyLimitCurve(const Curve& curve);
+    void resetElectronicEnthalpyLimitCurve();
+
     boost::optional<double> getEconomizerMinimumLimitDryBulbTemperature() const;
     bool setEconomizerMinimumLimitDryBulbTemperature(double value);
     void resetEconomizerMinimumLimitDryBulbTemperature();
@@ -92,6 +118,10 @@ namespace epmodel {
 
     boost::optional<bool> getHighHumidityControl() const;
     OS_DEPRECATED(3, 8, 0) bool setHighHumidityControl(bool val);
+
+    boost::optional<ThermalZone> humidistatControlZone() const;
+    bool setHumidistatControlZone(const ThermalZone& thermalZone);
+    void resetHumidistatControlZone();
 
     double getHighHumidityOutdoorAirFlowRatio() const;
     bool setHighHumidityOutdoorAirFlowRatio(double v);

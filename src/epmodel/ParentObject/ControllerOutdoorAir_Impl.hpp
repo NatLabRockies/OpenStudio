@@ -15,6 +15,9 @@ namespace epmodel {
 
   class ControllerMechanicalVentilation;
   class AirLoopHVACOutdoorAirSystem;
+  class Schedule;
+  class Curve;
+  class ThermalZone;
 
   namespace detail {
 
@@ -23,6 +26,22 @@ namespace epmodel {
      public:
       using ParentObject_Impl::ParentObject_Impl;
       virtual ~ControllerOutdoorAir_Impl() override = default;
+
+      boost::optional<openstudio::epmodel::Schedule> minimumOutdoorAirSchedule() const;
+      bool setMinimumOutdoorAirSchedule(openstudio::epmodel::Schedule& schedule);
+      void resetMinimumOutdoorAirSchedule();
+
+      boost::optional<openstudio::epmodel::Schedule> minimumFractionofOutdoorAirSchedule() const;
+      bool setMinimumFractionofOutdoorAirSchedule(openstudio::epmodel::Schedule& schedule);
+      void resetMinimumFractionofOutdoorAirSchedule();
+
+      boost::optional<openstudio::epmodel::Schedule> maximumFractionofOutdoorAirSchedule() const;
+      bool setMaximumFractionofOutdoorAirSchedule(openstudio::epmodel::Schedule& schedule);
+      void resetMaximumFractionofOutdoorAirSchedule();
+
+      boost::optional<openstudio::epmodel::Schedule> timeofDayEconomizerControlSchedule() const;
+      bool setTimeofDayEconomizerControlSchedule(openstudio::epmodel::Schedule& schedule);
+      void resetTimeofDayEconomizerControlSchedule();
 
       boost::optional<double> minimumOutdoorAirFlowRate() const;
       bool isMinimumOutdoorAirFlowRateAutosized() const;
@@ -49,6 +68,10 @@ namespace epmodel {
       boost::optional<double> getEconomizerMaximumLimitDewpointTemperature() const;
       bool setEconomizerMaximumLimitDewpointTemperature(boost::optional<double> value);
 
+      boost::optional<openstudio::epmodel::Curve> electronicEnthalpyLimitCurve() const;
+      bool setElectronicEnthalpyLimitCurve(const openstudio::epmodel::Curve& curve);
+      void resetElectronicEnthalpyLimitCurve();
+
       boost::optional<double> getEconomizerMinimumLimitDryBulbTemperature() const;
       bool setEconomizerMinimumLimitDryBulbTemperature(boost::optional<double> value);
 
@@ -59,6 +82,10 @@ namespace epmodel {
       bool setMinimumLimitType(const std::string& value);
 
       boost::optional<bool> getHighHumidityControl() const;
+
+      boost::optional<openstudio::epmodel::ThermalZone> humidistatControlZone() const;
+      bool setHumidistatControlZone(const openstudio::epmodel::ThermalZone& thermalZone);
+      void resetHumidistatControlZone();
 
       double getHighHumidityOutdoorAirFlowRatio() const;
       bool setHighHumidityOutdoorAirFlowRatio(double v);

@@ -19,7 +19,11 @@
 #include "ModelObject/ControllerMechanicalVentilation_Impl.hpp"
 #include "ModelObject/OutdoorAirMixer.hpp"
 #include "ModelObject/OutdoorAirMixer_Impl.hpp"
+#include "Curve/Curve.hpp"
+#include "Curve/Curve_Impl.hpp"
 #include "Model.hpp"
+#include "Schedule/Schedule.hpp"
+#include "Schedule/Schedule_Impl.hpp"
 #include "SizingZone.hpp"
 #include "HVACComponent/ThermalZone.hpp"
 #include "HVACComponent/ThermalZone_Impl.hpp"
@@ -34,6 +38,7 @@
 #include <utilities/idd/IddFactory.hxx>
 #include <utilities/idd/IddObject.hpp>
 #include <utilities/idd/Sizing_Zone_FieldEnums.hxx>
+#include <utilities/idf/IdfObject_Impl.hpp>
 
 namespace openstudio {
 namespace epmodel {
@@ -41,6 +46,12 @@ namespace epmodel {
   ControllerOutdoorAir::ControllerOutdoorAir(const Model& model) : ParentObject(ControllerOutdoorAir::iddObjectType(), model) {
     auto impl = getImpl<detail::ControllerOutdoorAir_Impl>();
     OS_ASSERT(impl);
+    impl->resetMinimumOutdoorAirSchedule();
+    impl->resetMinimumFractionofOutdoorAirSchedule();
+    impl->resetMaximumFractionofOutdoorAirSchedule();
+    impl->resetTimeofDayEconomizerControlSchedule();
+    impl->resetElectronicEnthalpyLimitCurve();
+    impl->resetHumidistatControlZone();
     detail::LoadContext context{const_cast<Model&>(model), SanitizationPolicy::Repair, SanitizationReport{}, {}};  // NOLINT
     impl->canonicalize(context);
   }
@@ -76,6 +87,54 @@ namespace epmodel {
   std::vector<std::string> ControllerOutdoorAir::economizerOperationStagingValues() {
     return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
                           openstudio::Controller_OutdoorAirFields::EconomizerOperationStaging);
+  }
+
+  boost::optional<Schedule> ControllerOutdoorAir::minimumOutdoorAirSchedule() const {
+    return getImpl<detail::ControllerOutdoorAir_Impl>()->minimumOutdoorAirSchedule();
+  }
+
+  bool ControllerOutdoorAir::setMinimumOutdoorAirSchedule(Schedule& schedule) {
+    return getImpl<detail::ControllerOutdoorAir_Impl>()->setMinimumOutdoorAirSchedule(schedule);
+  }
+
+  void ControllerOutdoorAir::resetMinimumOutdoorAirSchedule() {
+    getImpl<detail::ControllerOutdoorAir_Impl>()->resetMinimumOutdoorAirSchedule();
+  }
+
+  boost::optional<Schedule> ControllerOutdoorAir::minimumFractionofOutdoorAirSchedule() const {
+    return getImpl<detail::ControllerOutdoorAir_Impl>()->minimumFractionofOutdoorAirSchedule();
+  }
+
+  bool ControllerOutdoorAir::setMinimumFractionofOutdoorAirSchedule(Schedule& schedule) {
+    return getImpl<detail::ControllerOutdoorAir_Impl>()->setMinimumFractionofOutdoorAirSchedule(schedule);
+  }
+
+  void ControllerOutdoorAir::resetMinimumFractionofOutdoorAirSchedule() {
+    getImpl<detail::ControllerOutdoorAir_Impl>()->resetMinimumFractionofOutdoorAirSchedule();
+  }
+
+  boost::optional<Schedule> ControllerOutdoorAir::maximumFractionofOutdoorAirSchedule() const {
+    return getImpl<detail::ControllerOutdoorAir_Impl>()->maximumFractionofOutdoorAirSchedule();
+  }
+
+  bool ControllerOutdoorAir::setMaximumFractionofOutdoorAirSchedule(Schedule& schedule) {
+    return getImpl<detail::ControllerOutdoorAir_Impl>()->setMaximumFractionofOutdoorAirSchedule(schedule);
+  }
+
+  void ControllerOutdoorAir::resetMaximumFractionofOutdoorAirSchedule() {
+    getImpl<detail::ControllerOutdoorAir_Impl>()->resetMaximumFractionofOutdoorAirSchedule();
+  }
+
+  boost::optional<Schedule> ControllerOutdoorAir::timeofDayEconomizerControlSchedule() const {
+    return getImpl<detail::ControllerOutdoorAir_Impl>()->timeofDayEconomizerControlSchedule();
+  }
+
+  bool ControllerOutdoorAir::setTimeofDayEconomizerControlSchedule(Schedule& schedule) {
+    return getImpl<detail::ControllerOutdoorAir_Impl>()->setTimeofDayEconomizerControlSchedule(schedule);
+  }
+
+  void ControllerOutdoorAir::resetTimeofDayEconomizerControlSchedule() {
+    getImpl<detail::ControllerOutdoorAir_Impl>()->resetTimeofDayEconomizerControlSchedule();
   }
 
   boost::optional<double> ControllerOutdoorAir::minimumOutdoorAirFlowRate() const {
@@ -165,6 +224,18 @@ namespace epmodel {
     OS_ASSERT(ok);
   }
 
+  boost::optional<Curve> ControllerOutdoorAir::electronicEnthalpyLimitCurve() const {
+    return getImpl<detail::ControllerOutdoorAir_Impl>()->electronicEnthalpyLimitCurve();
+  }
+
+  bool ControllerOutdoorAir::setElectronicEnthalpyLimitCurve(const Curve& curve) {
+    return getImpl<detail::ControllerOutdoorAir_Impl>()->setElectronicEnthalpyLimitCurve(curve);
+  }
+
+  void ControllerOutdoorAir::resetElectronicEnthalpyLimitCurve() {
+    getImpl<detail::ControllerOutdoorAir_Impl>()->resetElectronicEnthalpyLimitCurve();
+  }
+
   boost::optional<double> ControllerOutdoorAir::getEconomizerMinimumLimitDryBulbTemperature() const {
     return getImpl<detail::ControllerOutdoorAir_Impl>()->getEconomizerMinimumLimitDryBulbTemperature();
   }
@@ -201,6 +272,18 @@ namespace epmodel {
   bool ControllerOutdoorAir::setHighHumidityControl(bool val) {
     (void)val;
     return false;
+  }
+
+  boost::optional<ThermalZone> ControllerOutdoorAir::humidistatControlZone() const {
+    return getImpl<detail::ControllerOutdoorAir_Impl>()->humidistatControlZone();
+  }
+
+  bool ControllerOutdoorAir::setHumidistatControlZone(const ThermalZone& thermalZone) {
+    return getImpl<detail::ControllerOutdoorAir_Impl>()->setHumidistatControlZone(thermalZone);
+  }
+
+  void ControllerOutdoorAir::resetHumidistatControlZone() {
+    getImpl<detail::ControllerOutdoorAir_Impl>()->resetHumidistatControlZone();
   }
 
   double ControllerOutdoorAir::getHighHumidityOutdoorAirFlowRatio() const {
@@ -338,6 +421,109 @@ namespace epmodel {
 
     }  // namespace
 
+    boost::optional<openstudio::epmodel::Schedule> ControllerOutdoorAir_Impl::minimumOutdoorAirSchedule() const {
+      return getObject<openstudio::epmodel::ControllerOutdoorAir>().getModelObjectTarget<openstudio::epmodel::Schedule>(
+        openstudio::Controller_OutdoorAirFields::MinimumOutdoorAirScheduleName);
+    }
+
+    bool ControllerOutdoorAir_Impl::setMinimumOutdoorAirSchedule(openstudio::epmodel::Schedule& schedule) {
+      if (schedule.model() != model()) {
+        LOG_FREE(Warn, "openstudio.epmodel.ControllerOutdoorAir",
+                 "Cannot set the minimum outdoor air schedule because it belongs to a different model.");
+        return false;
+      }
+      if (!setSchedule(openstudio::Controller_OutdoorAirFields::MinimumOutdoorAirScheduleName, "ControllerOutdoorAir", "Minimum Outdoor Air",
+                       schedule)) {
+        LOG_FREE(Warn, "openstudio.epmodel.ControllerOutdoorAir",
+                 "Cannot set the minimum outdoor air schedule because its schedule type limits are incompatible.");
+        return false;
+      }
+      return true;
+    }
+
+    void ControllerOutdoorAir_Impl::resetMinimumOutdoorAirSchedule() {
+      OS_ASSERT(setPointer(openstudio::Controller_OutdoorAirFields::MinimumOutdoorAirScheduleName, Handle(), false));
+      OS_ASSERT(openstudio::detail::IdfObject_Impl::setString(openstudio::Controller_OutdoorAirFields::MinimumOutdoorAirScheduleName, "", false));
+    }
+
+    boost::optional<openstudio::epmodel::Schedule> ControllerOutdoorAir_Impl::minimumFractionofOutdoorAirSchedule() const {
+      return getObject<openstudio::epmodel::ControllerOutdoorAir>().getModelObjectTarget<openstudio::epmodel::Schedule>(
+        openstudio::Controller_OutdoorAirFields::MinimumFractionofOutdoorAirScheduleName);
+    }
+
+    bool ControllerOutdoorAir_Impl::setMinimumFractionofOutdoorAirSchedule(openstudio::epmodel::Schedule& schedule) {
+      if (schedule.model() != model()) {
+        LOG_FREE(Warn, "openstudio.epmodel.ControllerOutdoorAir",
+                 "Cannot set the minimum fraction of outdoor air schedule because it belongs to a different model.");
+        return false;
+      }
+      if (!setSchedule(openstudio::Controller_OutdoorAirFields::MinimumFractionofOutdoorAirScheduleName, "ControllerOutdoorAir",
+                       "Minimum Fraction of Outdoor Air", schedule)) {
+        LOG_FREE(Warn, "openstudio.epmodel.ControllerOutdoorAir",
+                 "Cannot set the minimum fraction of outdoor air schedule because its schedule type limits are incompatible.");
+        return false;
+      }
+      return true;
+    }
+
+    void ControllerOutdoorAir_Impl::resetMinimumFractionofOutdoorAirSchedule() {
+      OS_ASSERT(setPointer(openstudio::Controller_OutdoorAirFields::MinimumFractionofOutdoorAirScheduleName, Handle(), false));
+      OS_ASSERT(
+        openstudio::detail::IdfObject_Impl::setString(openstudio::Controller_OutdoorAirFields::MinimumFractionofOutdoorAirScheduleName, "", false));
+    }
+
+    boost::optional<openstudio::epmodel::Schedule> ControllerOutdoorAir_Impl::maximumFractionofOutdoorAirSchedule() const {
+      return getObject<openstudio::epmodel::ControllerOutdoorAir>().getModelObjectTarget<openstudio::epmodel::Schedule>(
+        openstudio::Controller_OutdoorAirFields::MaximumFractionofOutdoorAirScheduleName);
+    }
+
+    bool ControllerOutdoorAir_Impl::setMaximumFractionofOutdoorAirSchedule(openstudio::epmodel::Schedule& schedule) {
+      if (schedule.model() != model()) {
+        LOG_FREE(Warn, "openstudio.epmodel.ControllerOutdoorAir",
+                 "Cannot set the maximum fraction of outdoor air schedule because it belongs to a different model.");
+        return false;
+      }
+      if (!setSchedule(openstudio::Controller_OutdoorAirFields::MaximumFractionofOutdoorAirScheduleName, "ControllerOutdoorAir",
+                       "Maximum Fraction of Outdoor Air", schedule)) {
+        LOG_FREE(Warn, "openstudio.epmodel.ControllerOutdoorAir",
+                 "Cannot set the maximum fraction of outdoor air schedule because its schedule type limits are incompatible.");
+        return false;
+      }
+      return true;
+    }
+
+    void ControllerOutdoorAir_Impl::resetMaximumFractionofOutdoorAirSchedule() {
+      OS_ASSERT(setPointer(openstudio::Controller_OutdoorAirFields::MaximumFractionofOutdoorAirScheduleName, Handle(), false));
+      OS_ASSERT(
+        openstudio::detail::IdfObject_Impl::setString(openstudio::Controller_OutdoorAirFields::MaximumFractionofOutdoorAirScheduleName, "", false));
+    }
+
+    boost::optional<openstudio::epmodel::Schedule> ControllerOutdoorAir_Impl::timeofDayEconomizerControlSchedule() const {
+      return getObject<openstudio::epmodel::ControllerOutdoorAir>().getModelObjectTarget<openstudio::epmodel::Schedule>(
+        openstudio::Controller_OutdoorAirFields::TimeofDayEconomizerControlScheduleName);
+    }
+
+    bool ControllerOutdoorAir_Impl::setTimeofDayEconomizerControlSchedule(openstudio::epmodel::Schedule& schedule) {
+      if (schedule.model() != model()) {
+        LOG_FREE(Warn, "openstudio.epmodel.ControllerOutdoorAir",
+                 "Cannot set the time-of-day economizer control schedule because it belongs to a different model.");
+        return false;
+      }
+      if (!setSchedule(openstudio::Controller_OutdoorAirFields::TimeofDayEconomizerControlScheduleName, "ControllerOutdoorAir",
+                       "Time of Day Economizer Control", schedule)) {
+        LOG_FREE(Warn, "openstudio.epmodel.ControllerOutdoorAir",
+                 "Cannot set the time-of-day economizer control schedule because its schedule type limits are incompatible.");
+        return false;
+      }
+      return true;
+    }
+
+    void ControllerOutdoorAir_Impl::resetTimeofDayEconomizerControlSchedule() {
+      OS_ASSERT(setPointer(openstudio::Controller_OutdoorAirFields::TimeofDayEconomizerControlScheduleName, Handle(), false));
+      OS_ASSERT(
+        openstudio::detail::IdfObject_Impl::setString(openstudio::Controller_OutdoorAirFields::TimeofDayEconomizerControlScheduleName, "", false));
+    }
+
     boost::optional<double> ControllerOutdoorAir_Impl::minimumOutdoorAirFlowRate() const {
       return getDouble(openstudio::Controller_OutdoorAirFields::MinimumOutdoorAirFlowRate, true);
     }
@@ -429,6 +615,38 @@ namespace epmodel {
       return setString(openstudio::Controller_OutdoorAirFields::EconomizerMaximumLimitDewpointTemperature, "");
     }
 
+    boost::optional<openstudio::epmodel::Curve> ControllerOutdoorAir_Impl::electronicEnthalpyLimitCurve() const {
+      return getObject<openstudio::epmodel::ControllerOutdoorAir>().getModelObjectTarget<openstudio::epmodel::Curve>(
+        openstudio::Controller_OutdoorAirFields::ElectronicEnthalpyLimitCurveName);
+    }
+
+    bool ControllerOutdoorAir_Impl::setElectronicEnthalpyLimitCurve(const openstudio::epmodel::Curve& curve) {
+      if (curve.model() != model()) {
+        LOG_FREE(Warn, "openstudio.epmodel.ControllerOutdoorAir",
+                 "Cannot set the electronic enthalpy limit curve because it belongs to a different model.");
+        return false;
+      }
+
+      const auto field = openstudio::Controller_OutdoorAirFields::ElectronicEnthalpyLimitCurveName;
+      if (!model().canBeTarget(curve.handle(), iddObject().objectLists(field))) {
+        LOG_FREE(Warn, "openstudio.epmodel.ControllerOutdoorAir",
+                 "Cannot set the electronic enthalpy limit curve because curve type '" << curve.iddObject().type().valueName()
+                                                                                       << "' is not accepted by the controller field.");
+        return false;
+      }
+      if (!setPointer(field, curve.handle(), false)) {
+        LOG_FREE(Warn, "openstudio.epmodel.ControllerOutdoorAir", "Failed to set the electronic enthalpy limit curve relationship.");
+        return false;
+      }
+      return true;
+    }
+
+    void ControllerOutdoorAir_Impl::resetElectronicEnthalpyLimitCurve() {
+      const auto field = openstudio::Controller_OutdoorAirFields::ElectronicEnthalpyLimitCurveName;
+      OS_ASSERT(setPointer(field, Handle(), false));
+      OS_ASSERT(openstudio::detail::IdfObject_Impl::setString(field, "", false));
+    }
+
     boost::optional<double> ControllerOutdoorAir_Impl::getEconomizerMinimumLimitDryBulbTemperature() const {
       return getDouble(openstudio::Controller_OutdoorAirFields::EconomizerMinimumLimitDryBulbTemperature);
     }
@@ -466,6 +684,66 @@ namespace epmodel {
         return boost::none;
       }
       return openstudio::istringEqual(*value, "Yes") || openstudio::istringEqual(*value, "True");
+    }
+
+    boost::optional<openstudio::epmodel::ThermalZone> ControllerOutdoorAir_Impl::humidistatControlZone() const {
+      return getObject<openstudio::epmodel::ControllerOutdoorAir>().getModelObjectTarget<openstudio::epmodel::ThermalZone>(
+        openstudio::Controller_OutdoorAirFields::HumidistatControlZoneName);
+    }
+
+    bool ControllerOutdoorAir_Impl::setHumidistatControlZone(const openstudio::epmodel::ThermalZone& thermalZone) {
+      if (thermalZone.model() != model()) {
+        LOG_FREE(Warn, "openstudio.epmodel.ControllerOutdoorAir", "Cannot set the humidistat control zone because it belongs to a different model.");
+        return false;
+      }
+
+      const auto zoneField = openstudio::Controller_OutdoorAirFields::HumidistatControlZoneName;
+      const auto highHumidityField = openstudio::Controller_OutdoorAirFields::HighHumidityControl;
+      if (!model().canBeTarget(thermalZone.handle(), iddObject().objectLists(zoneField))) {
+        LOG_FREE(Warn, "openstudio.epmodel.ControllerOutdoorAir",
+                 "Cannot set the humidistat control zone because ThermalZone is not accepted by the controller field.");
+        return false;
+      }
+
+      const auto thisController = getObject<openstudio::epmodel::ControllerOutdoorAir>();
+      const auto originalZoneTarget = thisController.getTarget(zoneField);
+      const auto originalZoneRaw = openstudio::detail::IdfObject_Impl::getString(zoneField, false, true);
+      const auto originalHighHumidityRaw = openstudio::detail::IdfObject_Impl::getString(highHumidityField, false, true);
+
+      const bool zoneSet = setPointer(zoneField, thermalZone.handle(), false);
+      const bool highHumiditySet = zoneSet && setString(highHumidityField, "Yes");
+      if (zoneSet && highHumiditySet) {
+        return true;
+      }
+
+      bool restored = setPointer(zoneField, originalZoneTarget ? originalZoneTarget->handle() : Handle(), false);
+      restored = openstudio::detail::IdfObject_Impl::setString(zoneField, originalZoneRaw.value_or(""), false) && restored;
+      restored = openstudio::detail::IdfObject_Impl::setString(highHumidityField, originalHighHumidityRaw.value_or(""), false) && restored;
+      OS_ASSERT(restored);
+      LOG_FREE(Warn, "openstudio.epmodel.ControllerOutdoorAir", "Failed to set the humidistat control zone relationship.");
+      return false;
+    }
+
+    void ControllerOutdoorAir_Impl::resetHumidistatControlZone() {
+      const auto zoneField = openstudio::Controller_OutdoorAirFields::HumidistatControlZoneName;
+      const auto highHumidityField = openstudio::Controller_OutdoorAirFields::HighHumidityControl;
+      const auto thisController = getObject<openstudio::epmodel::ControllerOutdoorAir>();
+      const auto originalZoneTarget = thisController.getTarget(zoneField);
+      const auto originalZoneRaw = openstudio::detail::IdfObject_Impl::getString(zoneField, false, true);
+      const auto originalHighHumidityRaw = openstudio::detail::IdfObject_Impl::getString(highHumidityField, false, true);
+
+      const bool zoneCleared = setPointer(zoneField, Handle(), false);
+      const bool rawCleared = zoneCleared && openstudio::detail::IdfObject_Impl::setString(zoneField, "", false);
+      const bool highHumidityCleared = rawCleared && setString(highHumidityField, "No");
+      if (zoneCleared && rawCleared && highHumidityCleared) {
+        return;
+      }
+
+      bool restored = setPointer(zoneField, originalZoneTarget ? originalZoneTarget->handle() : Handle(), false);
+      restored = openstudio::detail::IdfObject_Impl::setString(zoneField, originalZoneRaw.value_or(""), false) && restored;
+      restored = openstudio::detail::IdfObject_Impl::setString(highHumidityField, originalHighHumidityRaw.value_or(""), false) && restored;
+      OS_ASSERT(restored);
+      OS_ASSERT(false);
     }
 
     double ControllerOutdoorAir_Impl::getHighHumidityOutdoorAirFlowRatio() const {
@@ -592,6 +870,115 @@ namespace epmodel {
 
     void ControllerOutdoorAir_Impl::doCanonicalize(LoadContext& context) {
       auto thisController = getObject<openstudio::epmodel::ControllerOutdoorAir>();
+
+      {
+        const auto field = openstudio::Controller_OutdoorAirFields::MinimumOutdoorAirScheduleName;
+        const auto existingTarget = thisController.getTarget(field);
+        const auto raw = openstudio::detail::IdfObject_Impl::getString(field, false, true);
+        auto schedule = existingTarget ? existingTarget->optionalCast<openstudio::epmodel::Schedule>() : boost::none;
+        if (schedule) {
+          if (!setMinimumOutdoorAirSchedule(*schedule)) {
+            resetMinimumOutdoorAirSchedule();
+            detail::addLoadWarning(context, "Cleared the incompatible minimum outdoor air schedule from Controller:OutdoorAir '"
+                                              + thisController.nameString() + "'.");
+          }
+        } else if (existingTarget || (raw && !raw->empty())) {
+          resetMinimumOutdoorAirSchedule();
+          detail::addLoadWarning(context, "Cleared the unresolved minimum outdoor air schedule from Controller:OutdoorAir '"
+                                            + thisController.nameString() + "'.");
+        }
+      }
+
+      {
+        const auto field = openstudio::Controller_OutdoorAirFields::MinimumFractionofOutdoorAirScheduleName;
+        const auto existingTarget = thisController.getTarget(field);
+        const auto raw = openstudio::detail::IdfObject_Impl::getString(field, false, true);
+        auto schedule = existingTarget ? existingTarget->optionalCast<openstudio::epmodel::Schedule>() : boost::none;
+        if (schedule) {
+          if (!setMinimumFractionofOutdoorAirSchedule(*schedule)) {
+            resetMinimumFractionofOutdoorAirSchedule();
+            detail::addLoadWarning(context, "Cleared the incompatible minimum fraction of outdoor air schedule from Controller:OutdoorAir '"
+                                              + thisController.nameString() + "'.");
+          }
+        } else if (existingTarget || (raw && !raw->empty())) {
+          resetMinimumFractionofOutdoorAirSchedule();
+          detail::addLoadWarning(context, "Cleared the unresolved minimum fraction of outdoor air schedule from Controller:OutdoorAir '"
+                                            + thisController.nameString() + "'.");
+        }
+      }
+
+      {
+        const auto field = openstudio::Controller_OutdoorAirFields::MaximumFractionofOutdoorAirScheduleName;
+        const auto existingTarget = thisController.getTarget(field);
+        const auto raw = openstudio::detail::IdfObject_Impl::getString(field, false, true);
+        auto schedule = existingTarget ? existingTarget->optionalCast<openstudio::epmodel::Schedule>() : boost::none;
+        if (schedule) {
+          if (!setMaximumFractionofOutdoorAirSchedule(*schedule)) {
+            resetMaximumFractionofOutdoorAirSchedule();
+            detail::addLoadWarning(context, "Cleared the incompatible maximum fraction of outdoor air schedule from Controller:OutdoorAir '"
+                                              + thisController.nameString() + "'.");
+          }
+        } else if (existingTarget || (raw && !raw->empty())) {
+          resetMaximumFractionofOutdoorAirSchedule();
+          detail::addLoadWarning(context, "Cleared the unresolved maximum fraction of outdoor air schedule from Controller:OutdoorAir '"
+                                            + thisController.nameString() + "'.");
+        }
+      }
+
+      {
+        const auto field = openstudio::Controller_OutdoorAirFields::TimeofDayEconomizerControlScheduleName;
+        const auto existingTarget = thisController.getTarget(field);
+        const auto raw = openstudio::detail::IdfObject_Impl::getString(field, false, true);
+        auto schedule = existingTarget ? existingTarget->optionalCast<openstudio::epmodel::Schedule>() : boost::none;
+        if (schedule) {
+          if (!setTimeofDayEconomizerControlSchedule(*schedule)) {
+            resetTimeofDayEconomizerControlSchedule();
+            detail::addLoadWarning(context, "Cleared the incompatible time-of-day economizer control schedule from Controller:OutdoorAir '"
+                                              + thisController.nameString() + "'.");
+          }
+        } else if (existingTarget || (raw && !raw->empty())) {
+          resetTimeofDayEconomizerControlSchedule();
+          detail::addLoadWarning(context, "Cleared the unresolved time-of-day economizer control schedule from Controller:OutdoorAir '"
+                                            + thisController.nameString() + "'.");
+        }
+      }
+
+      {
+        const auto field = openstudio::Controller_OutdoorAirFields::ElectronicEnthalpyLimitCurveName;
+        const auto existingTarget = thisController.getTarget(field);
+        const auto raw = openstudio::detail::IdfObject_Impl::getString(field, false, true);
+        const auto curve = existingTarget ? existingTarget->optionalCast<openstudio::epmodel::Curve>() : boost::none;
+        if (curve) {
+          if (!setElectronicEnthalpyLimitCurve(*curve)) {
+            resetElectronicEnthalpyLimitCurve();
+            detail::addLoadWarning(context, "Cleared the incompatible electronic enthalpy limit curve from Controller:OutdoorAir '"
+                                              + thisController.nameString() + "'.");
+          }
+        } else if (existingTarget || (raw && !raw->empty())) {
+          resetElectronicEnthalpyLimitCurve();
+          detail::addLoadWarning(context, "Cleared the unresolved electronic enthalpy limit curve from Controller:OutdoorAir '"
+                                            + thisController.nameString() + "'.");
+        }
+      }
+
+      {
+        const auto field = openstudio::Controller_OutdoorAirFields::HumidistatControlZoneName;
+        const auto existingTarget = thisController.getTarget(field);
+        const auto raw = openstudio::detail::IdfObject_Impl::getString(field, false, true);
+        const auto zone = existingTarget ? existingTarget->optionalCast<openstudio::epmodel::ThermalZone>() : boost::none;
+        const bool highHumidityEnabled = getHighHumidityControl().value_or(false);
+        if (zone && model().canBeTarget(zone->handle(), iddObject().objectLists(field))) {
+          if (!highHumidityEnabled) {
+            OS_ASSERT(setHumidistatControlZone(*zone));
+            detail::addLoadInfo(context, "Enabled high humidity control for the existing humidistat zone on Controller:OutdoorAir '"
+                                           + thisController.nameString() + "'.");
+          }
+        } else if (existingTarget || (raw && !raw->empty()) || highHumidityEnabled) {
+          resetHumidistatControlZone();
+          detail::addLoadWarning(context, "Cleared an incomplete humidistat control relationship from Controller:OutdoorAir '"
+                                            + thisController.nameString() + "'.");
+        }
+      }
 
       if (!maximumOutdoorAirFlowRate() && !isMaximumOutdoorAirFlowRateAutosized()) {
         autosizeMaximumOutdoorAirFlowRate();
