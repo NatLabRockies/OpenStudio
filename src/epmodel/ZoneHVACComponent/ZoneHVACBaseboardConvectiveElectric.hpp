@@ -15,6 +15,7 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class Schedule;
   namespace detail {
     class ZoneHVACBaseboardConvectiveElectric_Impl;
   }
@@ -33,13 +34,22 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     // Schema Alignment Notes:
-    // - Status: Scalar Parity. The two scalar field groups are exposed with canonical-style accessors, and the remaining public surface is intentionally small.
+    // - Status: Scalar and Schedule Parity. The canonical availability relationship and two scalar field groups are exposed, and the
+    //   remaining public surface is intentionally small.
     // - Canonical Counterpart: openstudio::model::ZoneHVACBaseboardConvectiveElectric.
-    // - Implemented Parity: `nominalCapacity` and `efficiency` map directly to the matching EnergyPlus ZoneHVAC:Baseboard:Convective:Electric fields, including the autosize/default helpers.
-    // - Documented Delta: There are no meaningful relationship or topology helpers on this wrapper yet, so the public API stays scalar-only.
-    // - Field/Storage Mapping: EnergyPlus-backed storage is read and written through the scalar field accessors, with no additional child objects to synchronize.
+    // - Implemented Parity: `availabilitySchedule` and its validated setter preserve the required canonical relationship; `nominalCapacity`
+    //   and `efficiency` map directly to the matching EnergyPlus ZoneHVAC:Baseboard:Convective:Electric fields, including the
+    //   autosize/default helpers.
+    // - Documented Delta: The wrapper relies on the established ZoneHVACComponent thermal-zone attachment surface and adds no type-local
+    //   topology behavior.
+    // - Field/Storage Mapping: The schedule pointer and scalar values are stored directly in the matching EnergyPlus fields, with no child
+    //   objects to synchronize.
     // - Evidence: `src/model/ZoneHVACBaseboardConvectiveElectric.hpp`, `src/model/ZoneHVACBaseboardConvectiveElectric.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateZoneHVACBaseboardConvectiveElectric.cpp`, and `src/epmodel/test/ZoneHVACBaseboardConvectiveElectric_GTest.cpp`.
-    // - Remaining Parity Work: None beyond keeping the scalar API aligned with future canonical changes.
+    // - Remaining Parity Work: None within the current canonical public surface.
+
+    Schedule availabilitySchedule() const;
+    bool setAvailabilitySchedule(Schedule& schedule);
+
     /** @name Nominal capacity accessors */
     //@{
     boost::optional<double> nominalCapacity() const;

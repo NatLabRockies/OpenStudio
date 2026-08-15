@@ -11,6 +11,8 @@
 namespace openstudio {
 namespace epmodel {
 
+  class Schedule;
+
   namespace detail {
 
     class EPMODEL_API ZoneHVACBaseboardConvectiveElectric_Impl : public ZoneHVACComponent_Impl
@@ -18,6 +20,11 @@ namespace epmodel {
      public:
       using ZoneHVACComponent_Impl::ZoneHVACComponent_Impl;
       virtual ~ZoneHVACBaseboardConvectiveElectric_Impl() override = default;
+
+      void doCanonicalize(LoadContext& context) override;
+
+      Schedule availabilitySchedule() const;
+      bool setAvailabilitySchedule(Schedule& schedule);
 
       boost::optional<double> nominalCapacity() const;
       bool setNominalCapacity(double nominalCapacity);
