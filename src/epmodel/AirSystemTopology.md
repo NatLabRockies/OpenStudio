@@ -99,7 +99,7 @@ removal, and save/load.
 | Ordinary single duct | `AirTerminalSingleDuctVAVReheat` | Constant-volume, VAV no-reheat, reheat, and heat-and-cool variants share branch code | Add reload tests for VAV no-reheat and heat-and-cool variants; run `VAVHeatAndCoolReheat` in a workflow |
 | PIU | Series and Parallel PIU are both references because their induced-air paths differ | Both handle their fan and coil paths, plant connections, plenums, repair, and reload | Clone and sizing methods are separate work |
 | Induction and beam | `AirTerminalSingleDuctConstantVolumeFourPipeInduction` | Cooled and four-pipe beams cover attachment, ownership, removal, and plant cleanup | Add reload and workflow tests for both beams |
-| Direct dual duct | `AirTerminalDualDuctConstantVolume` has the reload tests; `AirTerminalDualDuctVAV` has the larger VAV API | All three direct dual-duct terminals have connection-change tests | Add reload tests for VAV and VAV outdoor air, then run them in workflows |
+| Direct dual duct | The constant-volume, VAV, and VAV outdoor-air terminals all have reload and post-load change tests | VAV also exposes its directly stored availability, DSOA, and turndown relationships | The topology family is at its stopping point; add SQL or translated outdoor-air conveniences only for a concrete use case |
 | Inlet-side mixer | `AirTerminalSingleDuctInletSideMixer` | No similar terminal | Treat the downstream ZoneHVAC equipment separately |
 | Special single duct | None yet | User-defined and variable-speed-fan terminals have limited C++ tests and remain in the historical scaffold directory | Define their EMS and fan ownership behavior before adding more API |
 
@@ -109,13 +109,11 @@ differences alone do not need a new family.
 
 ## Closing air work
 
-1. Complete the `ZoneHVACUnitVentilator` bridge with `FanSystemModel`, electric
-   heat, a plant-connected water coil, local outdoor air, save/load,
-   post-load changes, Ruby, and EnergyPlus execution.
-2. Add reload and post-load mutation evidence for direct dual-duct VAV and VAV
-   outdoor-air terminals, then exercise their useful public relationships in
-   the existing dual-duct workflow.
-3. Add reload and one real workflow for the cooled-beam and four-pipe-beam
+The `ZoneHVACUnitVentilator` bridge and the direct dual-duct family now have
+their planned C++, Ruby, reload, post-load change, and EnergyPlus evidence.
+One topology-led family remains:
+
+1. Add reload and one real workflow for the cooled-beam and four-pipe-beam
    family if the workflow can use their existing public APIs without a new
    topology abstraction.
 
