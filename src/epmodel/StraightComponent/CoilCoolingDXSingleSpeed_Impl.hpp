@@ -27,6 +27,7 @@ namespace epmodel {
       unsigned inletPort() const override;
       unsigned outletPort() const override;
       std::vector<ModelObject> children() const override;
+      std::vector<IdfObject> remove() override;
       void doCanonicalize(LoadContext& context) override;
 
       Schedule availabilitySchedule() const;
@@ -121,6 +122,9 @@ namespace epmodel {
       bool setBasinHeaterOperatingSchedule(Schedule& schedule);
       void resetBasinHeaterOperatingSchedule();
 
+      boost::optional<std::string> condenserAirInletNodeName() const;
+      bool setCondenserAirInletNodeName(const boost::optional<std::string>& condenserAirInletNodeName);
+
       double minimumOutdoorDryBulbTemperatureforCompressorOperation() const;
       bool setMinimumOutdoorDryBulbTemperatureforCompressorOperation(double minimumOutdoorDryBulbTemperatureforCompressorOperation);
 
@@ -129,6 +133,9 @@ namespace epmodel {
 
      private:
       bool setValidatedCurve(unsigned field, const Curve& curve, const char* relationshipName);
+      bool maintainCondenserOutdoorAirNode(const std::string& previousNodeName = {});
+      unsigned removeCondenserOutdoorAirNodeListEntries(const std::string& nodeName);
+      void removeUnusedCondenserOutdoorAirNode(const std::string& nodeName);
     };
 
   }  // namespace detail

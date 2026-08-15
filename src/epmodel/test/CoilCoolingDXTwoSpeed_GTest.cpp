@@ -19,6 +19,7 @@
 #include "../ModelObject/BranchList.hpp"
 #include "../ModelObject/CoilSystemCoolingDX.hpp"
 #include "../ModelObject/CoilSystemCoolingDX_Impl.hpp"
+#include "../ModelObject/ModelObject.hpp"
 #include "../Schedule/ScheduleConstant.hpp"
 #include "../Schedule/ScheduleConstant_Impl.hpp"
 #include "../StraightComponent/CoilCoolingDXTwoSpeed.hpp"
@@ -28,11 +29,58 @@
 #include "../StraightComponent/FanSystemModel_Impl.hpp"
 #include "../StraightComponent/Node.hpp"
 
+#include <utilities/core/Filesystem.hpp>
+#include <utilities/core/StringHelpers.hpp>
+#include <utilities/core/UUID.hpp>
+#include <utilities/idd/Coil_Cooling_DX_TwoSpeed_FieldEnums.hxx>
 #include <utilities/idd/CoilSystem_Cooling_DX_FieldEnums.hxx>
+#include <utilities/idd/OutdoorAir_NodeList_FieldEnums.hxx>
+#include <utilities/idf/WorkspaceExtensibleGroup.hpp>
+#include <utilities/idf/WorkspaceObject_Impl.hpp>
 
 #include <algorithm>
+#include <utility>
 
 using namespace openstudio::epmodel;
+
+namespace {
+
+class ScopedFileRemoval
+{
+ public:
+  explicit ScopedFileRemoval(openstudio::path path) : m_path(std::move(path)) {}
+
+  ~ScopedFileRemoval() {
+    boost::system::error_code error;
+    boost::filesystem::remove(m_path, error);
+  }
+
+ private:
+  openstudio::path m_path;
+};
+
+openstudio::path uniqueIdfPath(const std::string& stem) {
+  return openstudio::tempDir() / openstudio::toPath(stem + "-" + openstudio::removeBraces(openstudio::createUUID()) + ".idf");
+}
+
+unsigned outdoorAirNodeListEntryCount(const Model& model, const std::string& nodeName) {
+  unsigned result = 0;
+  for (const auto& object : model.getObjectsByType(openstudio::IddObjectType::OutdoorAir_NodeList)) {
+    for (const auto& group : object.extensibleGroups()) {
+      auto workspaceGroup = group.optionalCast<openstudio::WorkspaceExtensibleGroup>();
+      if (!workspaceGroup) {
+        continue;
+      }
+      const auto value = workspaceGroup->getString(openstudio::OutdoorAir_NodeListExtensibleFields::NodeorNodeListName);
+      if (value && openstudio::istringEqual(*value, nodeName)) {
+        ++result;
+      }
+    }
+  }
+  return result;
+}
+
+}  // namespace
 
 TEST_F(EPModelFixture, CoilCoolingDXTwoSpeed_DefaultConstructor) {
   Model model;
@@ -54,6 +102,8 @@ TEST_F(EPModelFixture, CoilCoolingDXTwoSpeed_DefaultConstructor) {
   ASSERT_TRUE(coil.lowSpeedEnergyInputRatioFunctionOfTemperatureCurve().optionalCast<CurveBiquadratic>());
 
   EXPECT_FALSE(coil.basinHeaterOperatingSchedule());
+  EXPECT_FALSE(coil.condenserAirInletNodeName());
+  EXPECT_TRUE(model.getObjectsByType(openstudio::IddObjectType::OutdoorAir_NodeList).empty());
 
   const auto children = coil.children();
   ASSERT_EQ(7u, children.size());
@@ -64,6 +114,80 @@ TEST_F(EPModelFixture, CoilCoolingDXTwoSpeed_DefaultConstructor) {
   EXPECT_EQ(coil.partLoadFractionCorrelationCurve().handle(), children[4].handle());
   EXPECT_EQ(coil.lowSpeedTotalCoolingCapacityFunctionOfTemperatureCurve().handle(), children[5].handle());
   EXPECT_EQ(coil.lowSpeedEnergyInputRatioFunctionOfTemperatureCurve().handle(), children[6].handle());
+}
+
+TEST_F(EPModelFixture, CoilCoolingDXTwoSpeed_CondenserAirInletNodeSetReplaceClear) {
+  Model model;
+  CoilCoolingDXTwoSpeed coil(model);
+
+  ASSERT_TRUE(coil.setCondenserAirInletNodeName("Two Speed Condenser Inlet"));
+  ASSERT_TRUE(coil.condenserAirInletNodeName());
+  EXPECT_EQ("Two Speed Condenser Inlet", *coil.condenserAirInletNodeName());
+  const auto firstNode = model.getConcreteModelObjectByName<Node>("Two Speed Condenser Inlet");
+  ASSERT_TRUE(firstNode);
+  EXPECT_EQ(1u, outdoorAirNodeListEntryCount(model, "Two Speed Condenser Inlet"));
+
+  const auto replacementNode = model.getOrCreateTransientByName<Node>("Replacement Two Speed Condenser Inlet");
+  const auto replacementNodeHandle = replacementNode.handle();
+  ASSERT_TRUE(coil.setCondenserAirInletNodeName("Replacement Two Speed Condenser Inlet"));
+  EXPECT_EQ(0u, outdoorAirNodeListEntryCount(model, "Two Speed Condenser Inlet"));
+  EXPECT_TRUE(model.getObject(firstNode->handle()));
+  EXPECT_EQ(1u, outdoorAirNodeListEntryCount(model, "Replacement Two Speed Condenser Inlet"));
+  const auto replacementNodes = model.getConcreteModelObjectsByName<Node>("Replacement Two Speed Condenser Inlet", true);
+  ASSERT_EQ(1u, replacementNodes.size());
+  EXPECT_EQ(replacementNodeHandle, replacementNodes.front().handle());
+
+  ASSERT_TRUE(coil.setCondenserAirInletNodeName(""));
+  EXPECT_FALSE(coil.condenserAirInletNodeName());
+  EXPECT_EQ(0u, outdoorAirNodeListEntryCount(model, "Replacement Two Speed Condenser Inlet"));
+  EXPECT_TRUE(model.getObject(replacementNodeHandle));
+  EXPECT_EQ(1u, model.getConcreteModelObjectsByName<Node>("Replacement Two Speed Condenser Inlet", true).size());
+}
+
+TEST_F(EPModelFixture, CoilCoolingDXTwoSpeed_CondenserAirInletCanonicalizationAndReload) {
+  const auto firstPath = uniqueIdfPath("epmodel-two-speed-condenser-first");
+  const auto secondPath = uniqueIdfPath("epmodel-two-speed-condenser-second");
+  const ScopedFileRemoval removeFirst(firstPath);
+  const ScopedFileRemoval removeSecond(secondPath);
+
+  Model model;
+  CoilCoolingDXTwoSpeed imported(model);
+  ASSERT_TRUE(imported.setName("Imported Two Speed Condenser Coil"));
+  constexpr auto field = openstudio::Coil_Cooling_DX_TwoSpeedFields::CondenserAirInletNodeName;
+  auto impl = imported.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  ASSERT_TRUE(impl);
+  // Seed persisted NodeType text without its managed Node or outdoor-air declaration.
+  ASSERT_TRUE(impl->setPointer(field, openstudio::Handle(), false));
+  ASSERT_TRUE(impl->openstudio::detail::IdfObject_Impl::setString(field, "Imported Two Speed Condenser Inlet", false));
+
+  EXPECT_EQ(0u, model.canonicalize().errorCount);
+  EXPECT_TRUE(model.getConcreteModelObjectByName<Node>("Imported Two Speed Condenser Inlet"));
+  EXPECT_EQ(1u, outdoorAirNodeListEntryCount(model, "Imported Two Speed Condenser Inlet"));
+  EXPECT_EQ(0u, model.canonicalize().errorCount);
+  EXPECT_EQ(1u, outdoorAirNodeListEntryCount(model, "Imported Two Speed Condenser Inlet"));
+  ASSERT_TRUE(model.save(firstPath, true));
+
+  auto loadedModel = Model::load(firstPath);
+  ASSERT_TRUE(loadedModel);
+  auto loadedCoil = loadedModel->getConcreteModelObjectByName<CoilCoolingDXTwoSpeed>("Imported Two Speed Condenser Coil");
+  ASSERT_TRUE(loadedCoil);
+  ASSERT_TRUE(loadedCoil->condenserAirInletNodeName());
+  EXPECT_EQ("Imported Two Speed Condenser Inlet", *loadedCoil->condenserAirInletNodeName());
+  EXPECT_EQ(1u, outdoorAirNodeListEntryCount(*loadedModel, "Imported Two Speed Condenser Inlet"));
+
+  ASSERT_TRUE(loadedCoil->setCondenserAirInletNodeName("Reloaded Two Speed Condenser Inlet"));
+  EXPECT_EQ(0u, outdoorAirNodeListEntryCount(*loadedModel, "Imported Two Speed Condenser Inlet"));
+  EXPECT_EQ(1u, outdoorAirNodeListEntryCount(*loadedModel, "Reloaded Two Speed Condenser Inlet"));
+  ASSERT_TRUE(loadedModel->save(secondPath, true));
+
+  auto reloadedModel = Model::load(secondPath);
+  ASSERT_TRUE(reloadedModel);
+  auto reloadedCoil = reloadedModel->getConcreteModelObjectByName<CoilCoolingDXTwoSpeed>("Imported Two Speed Condenser Coil");
+  ASSERT_TRUE(reloadedCoil);
+  ASSERT_TRUE(reloadedCoil->condenserAirInletNodeName());
+  EXPECT_EQ("Reloaded Two Speed Condenser Inlet", *reloadedCoil->condenserAirInletNodeName());
+  ASSERT_TRUE(reloadedCoil->setCondenserAirInletNodeName(""));
+  EXPECT_EQ(0u, outdoorAirNodeListEntryCount(*reloadedModel, "Reloaded Two Speed Condenser Inlet"));
 }
 
 TEST_F(EPModelFixture, CoilCoolingDXTwoSpeed_ScalarAccessors_RoundTrip) {
@@ -514,13 +638,15 @@ TEST_F(EPModelFixture, CoilCoolingDXTwoSpeed_RejectsAmbiguousAdaptersWithoutBran
 }
 
 TEST_F(EPModelFixture, CoilCoolingDXTwoSpeed_MalformedPersistedAdapterIsNotProjected) {
-  const auto idfPath = openstudio::tempDir() / openstudio::toPath("epmodel-two-speed-dx-malformed-adapter.idf");
+  const auto idfPath = uniqueIdfPath("epmodel-two-speed-dx-malformed-adapter");
+  const ScopedFileRemoval removeIdf(idfPath);
 
   Model model;
   AirLoopHVAC airLoop(model);
   ASSERT_TRUE(airLoop.setName("Malformed DX Adapter Loop"));
   CoilCoolingDXTwoSpeed coil(model);
   ASSERT_TRUE(coil.setName("Malformed DX Adapter Coil"));
+  ASSERT_TRUE(coil.setCondenserAirInletNodeName("Malformed Adapter Condenser Inlet"));
   auto supplyInletNode = airLoop.supplyInletNode();
   ASSERT_TRUE(coil.addToNode(supplyInletNode));
 
@@ -545,12 +671,15 @@ TEST_F(EPModelFixture, CoilCoolingDXTwoSpeed_MalformedPersistedAdapterIsNotProje
   EXPECT_FALSE(loadedLoop->supplyComponent(loadedCoil->handle()));
   EXPECT_TRUE(loadedSystem->airLoopHVAC());
   EXPECT_FALSE(loadedCoil->airLoopHVAC());
+  ASSERT_TRUE(loadedCoil->condenserAirInletNodeName());
+  EXPECT_EQ(1u, outdoorAirNodeListEntryCount(*loadedModel, "Malformed Adapter Condenser Inlet"));
   EXPECT_FALSE(loadedCoil->removeFromLoop());
+  EXPECT_TRUE(loadedCoil->remove().empty());
+  EXPECT_TRUE(loadedModel->getObject(loadedCoil->handle()));
+  EXPECT_EQ(1u, outdoorAirNodeListEntryCount(*loadedModel, "Malformed Adapter Condenser Inlet"));
   EXPECT_FALSE(loadedSystem->removeFromLoop());
   EXPECT_TRUE(loadedSystem->remove().empty());
   EXPECT_TRUE(loadedModel->getObject(loadedSystem->handle()));
-
-  openstudio::filesystem::remove(idfPath);
 }
 
 TEST_F(EPModelFixture, CoilCoolingDXTwoSpeed_RemoveDeletesAdapterAndPreservesAdjacentDeckComponents) {
@@ -562,6 +691,7 @@ TEST_F(EPModelFixture, CoilCoolingDXTwoSpeed_RemoveDeletesAdapterAndPreservesAdj
   Duct hotDeckDuct(model);
   ASSERT_TRUE(hotDeckDuct.addToNode(deckOutlets[0]));
   CoilCoolingDXTwoSpeed coil(model);
+  ASSERT_TRUE(coil.setCondenserAirInletNodeName("Live Adapter Condenser Inlet"));
   ASSERT_TRUE(coil.addToNode(deckOutlets[1]));
   Duct coldDeckDuct(model);
   ASSERT_TRUE(coldDeckDuct.addToNode(deckOutlets[1]));
@@ -573,6 +703,7 @@ TEST_F(EPModelFixture, CoilCoolingDXTwoSpeed_RemoveDeletesAdapterAndPreservesAdj
   EXPECT_FALSE(coil.remove().empty());
   EXPECT_FALSE(model.getObject(coilHandle));
   EXPECT_FALSE(model.getObject(systemHandle));
+  EXPECT_EQ(0u, outdoorAirNodeListEntryCount(model, "Live Adapter Condenser Inlet"));
   EXPECT_TRUE(hotDeckDuct.airLoopHVAC());
   EXPECT_TRUE(coldDeckDuct.airLoopHVAC());
 

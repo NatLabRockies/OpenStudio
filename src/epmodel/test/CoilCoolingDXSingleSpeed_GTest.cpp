@@ -16,16 +16,22 @@
 #include "../Schedule/ScheduleConstant.hpp"
 #include "../Schedule/ScheduleConstant_Impl.hpp"
 #include "../ResourceObject/ScheduleTypeLimits.hpp"
+#include "../ModelObject/ModelObject.hpp"
 #include "../StraightComponent/CoilCoolingDXSingleSpeed.hpp"
 #include "../StraightComponent/CoilCoolingDXSingleSpeed_Impl.hpp"
+#include "../StraightComponent/CoilCoolingDXTwoSpeed.hpp"
 #include "../StraightComponent/Node.hpp"
 #include "../Splitter/AirLoopHVACZoneSplitter.hpp"
 
 #include <utilities/core/Filesystem.hpp>
+#include <utilities/core/StringHelpers.hpp>
 #include <utilities/core/UUID.hpp>
 #include <utilities/idd/Coil_Cooling_DX_SingleSpeed_FieldEnums.hxx>
+#include <utilities/idd/OutdoorAir_NodeList_FieldEnums.hxx>
 #include <utilities/idf/WorkspaceObject_Impl.hpp>
+#include <utilities/idf/WorkspaceExtensibleGroup.hpp>
 
+#include <algorithm>
 #include <array>
 #include <utility>
 
@@ -49,6 +55,28 @@ class ScopedFileRemoval
 
 openstudio::path uniqueIdfPath(const std::string& stem) {
   return openstudio::tempDir() / openstudio::toPath(stem + "-" + openstudio::removeBraces(openstudio::createUUID()) + ".idf");
+}
+
+unsigned outdoorAirNodeListEntryCount(const Model& model, const std::string& nodeName) {
+  unsigned result = 0;
+  for (const auto& object : model.getObjectsByType(openstudio::IddObjectType::OutdoorAir_NodeList)) {
+    for (const auto& group : object.extensibleGroups()) {
+      auto workspaceGroup = group.optionalCast<openstudio::WorkspaceExtensibleGroup>();
+      if (!workspaceGroup) {
+        continue;
+      }
+      const auto value = workspaceGroup->getString(openstudio::OutdoorAir_NodeListExtensibleFields::NodeorNodeListName);
+      if (value && openstudio::istringEqual(*value, nodeName)) {
+        ++result;
+      }
+    }
+  }
+  return result;
+}
+
+bool hasOutdoorAirNode(const Model& model, const std::string& nodeName) {
+  const auto objects = model.getObjectsByType(openstudio::IddObjectType::OutdoorAir_Node);
+  return std::ranges::any_of(objects, [&](const auto& object) { return openstudio::istringEqual(object.nameString(), nodeName); });
 }
 
 }  // namespace
@@ -77,6 +105,125 @@ TEST_F(EPModelFixture, CoilCoolingDXSingleSpeed_DefaultConstructor) {
   EXPECT_EQ(coil.partLoadFractionCorrelationCurve().handle(), children[4].handle());
   EXPECT_FALSE(coil.crankcaseHeaterCapacityFunctionofTemperatureCurve());
   EXPECT_FALSE(coil.basinHeaterOperatingSchedule());
+  EXPECT_FALSE(coil.condenserAirInletNodeName());
+  EXPECT_TRUE(coil.setCondenserAirInletNodeName(std::string{}));
+  EXPECT_TRUE(model.getObjectsByType(openstudio::IddObjectType::OutdoorAir_NodeList).empty());
+}
+
+TEST_F(EPModelFixture, CoilCoolingDXSingleSpeed_CondenserAirInletNodeSetReplaceClearAndSharedDeclaration) {
+  Model model;
+  CoilCoolingDXSingleSpeed coil(model);
+  CoilCoolingDXTwoSpeed sibling(model);
+  const auto sharedNode = model.getOrCreateTransientByName<Node>("Shared Condenser Inlet");
+  const auto sharedNodeHandle = sharedNode.handle();
+
+  ASSERT_TRUE(coil.setCondenserAirInletNodeName(std::string{"Single Condenser Inlet"}));
+  ASSERT_TRUE(coil.condenserAirInletNodeName());
+  EXPECT_EQ("Single Condenser Inlet", *coil.condenserAirInletNodeName());
+  const auto firstNode = model.getConcreteModelObjectByName<Node>("Single Condenser Inlet");
+  ASSERT_TRUE(firstNode);
+  EXPECT_EQ(1u, outdoorAirNodeListEntryCount(model, "Single Condenser Inlet"));
+
+  ASSERT_TRUE(coil.setCondenserAirInletNodeName(std::string{"Shared Condenser Inlet"}));
+  EXPECT_EQ(0u, outdoorAirNodeListEntryCount(model, "Single Condenser Inlet"));
+  EXPECT_TRUE(model.getObject(firstNode->handle()));
+  EXPECT_EQ(1u, outdoorAirNodeListEntryCount(model, "Shared Condenser Inlet"));
+  ASSERT_TRUE(sibling.setCondenserAirInletNodeName("Shared Condenser Inlet"));
+  EXPECT_EQ(1u, outdoorAirNodeListEntryCount(model, "Shared Condenser Inlet"));
+  const auto sharedNodes = model.getConcreteModelObjectsByName<Node>("Shared Condenser Inlet", true);
+  ASSERT_EQ(1u, sharedNodes.size());
+  EXPECT_EQ(sharedNodeHandle, sharedNodes.front().handle());
+
+  ASSERT_TRUE(coil.setCondenserAirInletNodeName(boost::none));
+  EXPECT_FALSE(coil.condenserAirInletNodeName());
+  EXPECT_EQ(1u, outdoorAirNodeListEntryCount(model, "Shared Condenser Inlet"));
+  EXPECT_TRUE(model.getObject(sharedNodeHandle));
+
+  ASSERT_TRUE(coil.setCondenserAirInletNodeName(std::string{"Shared Condenser Inlet"}));
+  EXPECT_FALSE(coil.remove().empty());
+  EXPECT_EQ(1u, outdoorAirNodeListEntryCount(model, "Shared Condenser Inlet"));
+  EXPECT_TRUE(model.getObject(sharedNodeHandle));
+  ASSERT_TRUE(sibling.setCondenserAirInletNodeName(""));
+  EXPECT_EQ(0u, outdoorAirNodeListEntryCount(model, "Shared Condenser Inlet"));
+  EXPECT_TRUE(model.getObject(sharedNodeHandle));
+  EXPECT_EQ(1u, model.getConcreteModelObjectsByName<Node>("Shared Condenser Inlet", true).size());
+}
+
+TEST_F(EPModelFixture, CoilCoolingDXSingleSpeed_CondenserAirInletCanonicalizationRepairsDeclarations) {
+  Model model;
+  CoilCoolingDXSingleSpeed missingDeclaration(model);
+  CoilCoolingDXSingleSpeed richerDeclaration(model);
+  ASSERT_TRUE(missingDeclaration.setName("Missing Declaration Coil"));
+  ASSERT_TRUE(richerDeclaration.setName("Richer Declaration Coil"));
+
+  constexpr auto field = openstudio::Coil_Cooling_DX_SingleSpeedFields::CondenserAirInletNodeName;
+  auto missingImpl = missingDeclaration.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  auto richerImpl = richerDeclaration.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  ASSERT_TRUE(missingImpl);
+  ASSERT_TRUE(richerImpl);
+  // Seed persisted NodeType text without a managed Node or outdoor-air declaration.
+  ASSERT_TRUE(missingImpl->setPointer(field, openstudio::Handle(), false));
+  ASSERT_TRUE(missingImpl->openstudio::detail::IdfObject_Impl::setString(field, "Imported Missing OA Node", false));
+  ASSERT_TRUE(richerImpl->setPointer(field, openstudio::Handle(), false));
+  ASSERT_TRUE(richerImpl->openstudio::detail::IdfObject_Impl::setString(field, "Imported Rich OA Node", false));
+
+  auto outdoorAirNode = ModelObject::create(openstudio::IddObjectType::OutdoorAir_Node, model);
+  ASSERT_TRUE(outdoorAirNode.setName("Imported Rich OA Node"));
+  auto conflictingList = ModelObject::create(openstudio::IddObjectType::OutdoorAir_NodeList, model);
+  auto group = conflictingList.pushExtensibleGroup().optionalCast<openstudio::WorkspaceExtensibleGroup>();
+  ASSERT_TRUE(group);
+  ASSERT_TRUE(group->setString(openstudio::OutdoorAir_NodeListExtensibleFields::NodeorNodeListName, "Imported Rich OA Node"));
+
+  const auto report = model.canonicalize();
+  EXPECT_EQ(0u, report.errorCount);
+  EXPECT_TRUE(model.getConcreteModelObjectByName<Node>("Imported Missing OA Node"));
+  EXPECT_EQ(1u, outdoorAirNodeListEntryCount(model, "Imported Missing OA Node"));
+  EXPECT_TRUE(model.getConcreteModelObjectByName<Node>("Imported Rich OA Node"));
+  EXPECT_TRUE(hasOutdoorAirNode(model, "Imported Rich OA Node"));
+  EXPECT_EQ(0u, outdoorAirNodeListEntryCount(model, "Imported Rich OA Node"));
+
+  EXPECT_EQ(0u, model.canonicalize().errorCount);
+  EXPECT_EQ(1u, outdoorAirNodeListEntryCount(model, "Imported Missing OA Node"));
+  EXPECT_EQ(0u, outdoorAirNodeListEntryCount(model, "Imported Rich OA Node"));
+  ASSERT_TRUE(richerDeclaration.setCondenserAirInletNodeName(boost::none));
+  EXPECT_TRUE(hasOutdoorAirNode(model, "Imported Rich OA Node"));
+}
+
+TEST_F(EPModelFixture, CoilCoolingDXSingleSpeed_CondenserAirInletReloadMutationResetAndResourceSurvival) {
+  const auto firstPath = uniqueIdfPath("epmodel-single-speed-condenser-first");
+  const auto secondPath = uniqueIdfPath("epmodel-single-speed-condenser-second");
+  const ScopedFileRemoval removeFirst(firstPath);
+  const ScopedFileRemoval removeSecond(secondPath);
+
+  Model model;
+  CoilCoolingDXSingleSpeed coil(model);
+  ASSERT_TRUE(coil.setName("Reload Single Condenser Coil"));
+  ASSERT_TRUE(coil.setCondenserAirInletNodeName(std::string{"Reload Single Condenser Inlet"}));
+  ASSERT_TRUE(model.save(firstPath, true));
+
+  auto loadedModel = Model::load(firstPath);
+  ASSERT_TRUE(loadedModel);
+  auto loadedCoil = loadedModel->getConcreteModelObjectByName<CoilCoolingDXSingleSpeed>("Reload Single Condenser Coil");
+  ASSERT_TRUE(loadedCoil);
+  ASSERT_TRUE(loadedCoil->condenserAirInletNodeName());
+  EXPECT_EQ("Reload Single Condenser Inlet", *loadedCoil->condenserAirInletNodeName());
+  EXPECT_EQ(1u, outdoorAirNodeListEntryCount(*loadedModel, "Reload Single Condenser Inlet"));
+  ASSERT_TRUE(loadedCoil->setCondenserAirInletNodeName(std::string{"Replacement Single Condenser Inlet"}));
+  EXPECT_EQ(0u, outdoorAirNodeListEntryCount(*loadedModel, "Reload Single Condenser Inlet"));
+  EXPECT_EQ(1u, outdoorAirNodeListEntryCount(*loadedModel, "Replacement Single Condenser Inlet"));
+  ASSERT_TRUE(loadedModel->save(secondPath, true));
+
+  auto reloadedModel = Model::load(secondPath);
+  ASSERT_TRUE(reloadedModel);
+  auto reloadedCoil = reloadedModel->getConcreteModelObjectByName<CoilCoolingDXSingleSpeed>("Reload Single Condenser Coil");
+  ASSERT_TRUE(reloadedCoil);
+  ASSERT_TRUE(reloadedCoil->condenserAirInletNodeName());
+  EXPECT_EQ("Replacement Single Condenser Inlet", *reloadedCoil->condenserAirInletNodeName());
+  const auto reloadedAvailabilityHandle = reloadedCoil->availabilitySchedule().handle();
+  ASSERT_TRUE(reloadedCoil->setCondenserAirInletNodeName(boost::none));
+  EXPECT_EQ(0u, outdoorAirNodeListEntryCount(*reloadedModel, "Replacement Single Condenser Inlet"));
+  EXPECT_FALSE(reloadedCoil->remove().empty());
+  EXPECT_TRUE(reloadedModel->getObject(reloadedAvailabilityHandle));
 }
 
 TEST_F(EPModelFixture, CoilCoolingDXSingleSpeed_AddToNodeRejectsOutboardOANode) {

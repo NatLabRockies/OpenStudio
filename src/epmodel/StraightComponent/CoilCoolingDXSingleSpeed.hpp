@@ -43,20 +43,23 @@ namespace epmodel {
     static std::vector<std::string> condenserTypeValues();
 
     // Schema Alignment Notes:
-    // - Status: Partial Parity. The canonical scalar DX-coil surface plus the required schedule / curve relationships and the current epmodel
-    //   supply-side air-loop insertion path are present, while condenser-air-node, AFN, tank-link, and broader OA / DOAS topology helpers remain
-    //   out of scope.
+    // - Status: Partial Parity. The canonical scalar DX-coil surface, required schedule / curve relationships, optional condenser-air inlet-node
+    //   relationship, and the current epmodel supply-side air-loop insertion path are present, while AFN, tank-link, and broader OA / DOAS topology
+    //   helpers remain out of scope.
     // - Canonical Counterpart: openstudio::model::CoilCoolingDXSingleSpeed.
     // - Implemented Parity: The scalar rated/capacity/efficiency and evaporative-condenser APIs preserve the canonical naming, defaults, autosize
     //   behavior, and 2017/2023 fan-power variants; `availabilitySchedule`, the five required performance curves, optional crankcase and basin
-    //   schedule links, the relationship constructor, and the current supply-side air-loop `addToNode` path preserve the bounded canonical slice.
-    //   Schedule limits and each exposed curve relationship's IDD object list are validated, and load repair supplies only a genuinely blank availability relationship.
-    // - Documented Delta: Condenser-air node, AFN, tank-link, and broader OA / DOAS topology helpers from canonical
-    //   `openstudio::model::CoilCoolingDXSingleSpeed` are not exposed yet.
-    // - Field/Storage Mapping: Preserved scalars and relationships map directly to EnergyPlus `Coil:Cooling:DX:SingleSpeed` fields.
+    //   schedule links, optional condenser-air inlet-node link and outdoor-air declaration maintenance, the relationship constructor, and the
+    //   current supply-side air-loop `addToNode` path preserve the bounded canonical slice. Schedule limits and each exposed curve relationship's
+    //   IDD object list are validated, and load repair supplies only a genuinely blank availability relationship.
+    // - Documented Delta: Typed-node rename behavior, AFN, tank-link, and broader OA / DOAS topology helpers from canonical
+    //   `openstudio::model::CoilCoolingDXSingleSpeed` are not exposed.
+    // - Field/Storage Mapping: Preserved scalars and relationships map directly to EnergyPlus `Coil:Cooling:DX:SingleSpeed` fields; condenser air
+    //   inlet is the optional NodeType field A10 and its generated declaration is stored in `OutdoorAir:NodeList` unless a richer `OutdoorAir:Node`
+    //   already declares that name.
     // - Evidence: `src/model/CoilCoolingDXSingleSpeed.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateCoilCoolingDXSingleSpeed.cpp`, and `src/epmodel/test/CoilCoolingDXSingleSpeed_GTest.cpp`.
-    // - Remaining Parity Work: Add condenser-air-node, AFN, tank-link, and broader OA / DOAS topology helpers without changing the preserved
-    //   scalar signatures.
+    // - Remaining Parity Work: Add typed-node rename, AFN, tank-link, and broader OA / DOAS topology helpers without changing the preserved scalar
+    //   signatures.
     Schedule availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);
 
@@ -82,6 +85,9 @@ namespace epmodel {
     boost::optional<Schedule> basinHeaterOperatingSchedule() const;
     bool setBasinHeaterOperatingSchedule(Schedule& schedule);
     void resetBasinHeaterOperatingSchedule();
+
+    boost::optional<std::string> condenserAirInletNodeName() const;
+    bool setCondenserAirInletNodeName(const boost::optional<std::string>& condenserAirInletNodeName);
 
     std::string condenserType() const;
     bool setCondenserType(const std::string& condenserType);

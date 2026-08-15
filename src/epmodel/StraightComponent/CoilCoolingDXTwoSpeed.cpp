@@ -29,6 +29,8 @@
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/IddFactory.hxx>
 #include <utilities/idd/IddObject.hpp>
+#include <utilities/idd/OutdoorAir_NodeList_FieldEnums.hxx>
+#include <utilities/idf/WorkspaceExtensibleGroup.hpp>
 
 namespace openstudio {
 namespace epmodel {
@@ -330,6 +332,14 @@ namespace epmodel {
 
   void CoilCoolingDXTwoSpeed::resetBasinHeaterOperatingSchedule() {
     getImpl<detail::CoilCoolingDXTwoSpeed_Impl>()->resetBasinHeaterOperatingSchedule();
+  }
+
+  boost::optional<std::string> CoilCoolingDXTwoSpeed::condenserAirInletNodeName() const {
+    return getImpl<detail::CoilCoolingDXTwoSpeed_Impl>()->condenserAirInletNodeName();
+  }
+
+  bool CoilCoolingDXTwoSpeed::setCondenserAirInletNodeName(const std::string& condenserAirInletNodeName) {
+    return getImpl<detail::CoilCoolingDXTwoSpeed_Impl>()->setCondenserAirInletNodeName(condenserAirInletNodeName);
   }
 
   boost::optional<double> CoilCoolingDXTwoSpeed::ratedHighSpeedTotalCoolingCapacity() const {
@@ -1022,6 +1032,167 @@ namespace epmodel {
       OS_ASSERT(setPointer(openstudio::Coil_Cooling_DX_TwoSpeedFields::BasinHeaterOperatingScheduleName, Handle(), false));
     }
 
+    boost::optional<std::string> CoilCoolingDXTwoSpeed_Impl::condenserAirInletNodeName() const {
+      auto value = getString(openstudio::Coil_Cooling_DX_TwoSpeedFields::CondenserAirInletNodeName, false, true);
+      if (value && value->empty()) {
+        return boost::none;
+      }
+      return value;
+    }
+
+    bool CoilCoolingDXTwoSpeed_Impl::setCondenserAirInletNodeName(const std::string& condenserAirInletNodeName) {
+      constexpr auto field = openstudio::Coil_Cooling_DX_TwoSpeedFields::CondenserAirInletNodeName;
+      const auto previousNodeName = getString(field, false, true).value_or("");
+      if (condenserAirInletNodeName.empty()) {
+        if (!setPointer(field, openstudio::Handle(), false) || !openstudio::detail::IdfObject_Impl::setString(field, "", false)) {
+          return false;
+        }
+        removeUnusedCondenserOutdoorAirNode(previousNodeName);
+        return true;
+      }
+
+      const auto previousNode = resolvedNodeTarget(field);
+      // Track provisional ownership before creating so rollback can never remove a shared Node that predated this setter.
+      const auto existingCondenserInletNode = model().getConcreteModelObjectByName<Node>(condenserAirInletNodeName);
+      auto condenserInletNode =
+        existingCondenserInletNode ? *existingCondenserInletNode : model().getOrCreateTransientByName<Node>(condenserAirInletNodeName);
+      const bool provisionedCondenserInletNode = !existingCondenserInletNode;
+      if (!setPointer(field, condenserInletNode.handle(), false)) {
+        if (provisionedCondenserInletNode) {
+          condenserInletNode.remove();
+          OS_ASSERT(!model().getObject(condenserInletNode.handle()));
+        }
+        return false;
+      }
+      if (maintainCondenserOutdoorAirNode(previousNodeName)) {
+        return true;
+      }
+
+      OS_ASSERT(setPointer(field, previousNode ? previousNode->handle() : openstudio::Handle(), false));
+      if (provisionedCondenserInletNode) {
+        condenserInletNode.remove();
+        OS_ASSERT(!model().getObject(condenserInletNode.handle()));
+      }
+      return false;
+    }
+
+    bool CoilCoolingDXTwoSpeed_Impl::maintainCondenserOutdoorAirNode(const std::string& previousNodeName) {
+      const auto currentNodeName = condenserAirInletNodeName();
+      if (!currentNodeName) {
+        return false;
+      }
+
+      bool declaredByOutdoorAirNode = false;
+      for (const auto& object : model().getObjectsByType(openstudio::IddObjectType::OutdoorAir_Node)) {
+        if (openstudio::istringEqual(object.nameString(), *currentNodeName)) {
+          declaredByOutdoorAirNode = true;
+          break;
+        }
+      }
+
+      bool declaredAsOutdoorAir = declaredByOutdoorAirNode;
+      if (declaredByOutdoorAirNode) {
+        removeCondenserOutdoorAirNodeListEntries(*currentNodeName);
+      } else {
+        for (const auto& object : model().getObjectsByType(openstudio::IddObjectType::OutdoorAir_NodeList)) {
+          for (const auto& group : object.extensibleGroups()) {
+            auto workspaceGroup = group.optionalCast<openstudio::WorkspaceExtensibleGroup>();
+            if (!workspaceGroup) {
+              continue;
+            }
+            const auto nodeName = workspaceGroup->getString(openstudio::OutdoorAir_NodeListExtensibleFields::NodeorNodeListName);
+            if (nodeName && openstudio::istringEqual(*nodeName, *currentNodeName)) {
+              declaredAsOutdoorAir = true;
+              break;
+            }
+          }
+          if (declaredAsOutdoorAir) {
+            break;
+          }
+        }
+      }
+
+      if (!declaredAsOutdoorAir) {
+        auto nodeList = ModelObject::create(openstudio::IddObjectType::OutdoorAir_NodeList, model());
+        auto group = nodeList.pushExtensibleGroup().optionalCast<openstudio::WorkspaceExtensibleGroup>();
+        if (!(group && group->setString(openstudio::OutdoorAir_NodeListExtensibleFields::NodeorNodeListName, *currentNodeName))) {
+          nodeList.remove();
+          return false;
+        }
+      }
+
+      if (!previousNodeName.empty() && !openstudio::istringEqual(previousNodeName, *currentNodeName)) {
+        removeUnusedCondenserOutdoorAirNode(previousNodeName);
+      }
+      return true;
+    }
+
+    unsigned CoilCoolingDXTwoSpeed_Impl::removeCondenserOutdoorAirNodeListEntries(const std::string& nodeName) {
+      unsigned removedEntries = 0;
+      for (auto object : model().getObjectsByType(openstudio::IddObjectType::OutdoorAir_NodeList)) {
+        const auto groups = object.extensibleGroups();
+        std::vector<unsigned> matchingGroups;
+        for (const auto& group : groups) {
+          auto workspaceGroup = group.optionalCast<openstudio::WorkspaceExtensibleGroup>();
+          if (!workspaceGroup) {
+            continue;
+          }
+          const auto listedNodeName = workspaceGroup->getString(openstudio::OutdoorAir_NodeListExtensibleFields::NodeorNodeListName);
+          if (listedNodeName && openstudio::istringEqual(*listedNodeName, nodeName)) {
+            matchingGroups.push_back(workspaceGroup->groupIndex());
+          }
+        }
+
+        removedEntries += static_cast<unsigned>(matchingGroups.size());
+        if (!matchingGroups.empty() && (matchingGroups.size() == groups.size())) {
+          object.remove();
+          continue;
+        }
+        for (auto it = matchingGroups.rbegin(); it != matchingGroups.rend(); ++it) {
+          object.eraseExtensibleGroup(*it);
+        }
+      }
+      return removedEntries;
+    }
+
+    void CoilCoolingDXTwoSpeed_Impl::removeUnusedCondenserOutdoorAirNode(const std::string& nodeName) {
+      if (nodeName.empty()) {
+        return;
+      }
+
+      for (const auto& object : model().objects()) {
+        if ((object.handle() == handle()) || (object.iddObject().type() == openstudio::IddObjectType::OutdoorAir_NodeList)) {
+          continue;
+        }
+        for (unsigned fieldIndex = 0; fieldIndex < object.numFields(); ++fieldIndex) {
+          const auto iddField = object.iddObject().getField(fieldIndex);
+          if (!(iddField && (iddField->properties().type == openstudio::IddFieldType::NodeType))) {
+            continue;
+          }
+          const auto fieldValue = object.getString(fieldIndex);
+          if (fieldValue && openstudio::istringEqual(*fieldValue, nodeName)) {
+            return;
+          }
+        }
+      }
+
+      removeCondenserOutdoorAirNodeListEntries(nodeName);
+    }
+
+    void CoilCoolingDXTwoSpeed_Impl::doCanonicalize(LoadContext& context) {
+      StraightComponent_Impl::doCanonicalize(context);
+
+      constexpr auto field = openstudio::Coil_Cooling_DX_TwoSpeedFields::CondenserAirInletNodeName;
+      const auto condenserName = getString(field, false, true);
+      if (condenserName && !condenserName->empty()) {
+        (void)resolvedNodeTarget(field);
+        if (!maintainCondenserOutdoorAirNode()) {
+          detail::addLoadError(context, "Failed to maintain the condenser outdoor-air declaration for two-speed DX cooling coil '"
+                                          + getObject<ModelObject>().nameString() + "'.");
+        }
+      }
+    }
+
     double CoilCoolingDXTwoSpeed_Impl::minimumOutdoorDryBulbTemperatureforCompressorOperation() const {
       const auto value = getDouble(openstudio::Coil_Cooling_DX_TwoSpeedFields::MinimumOutdoorDryBulbTemperatureforCompressorOperation, true);
       OS_ASSERT(value);
@@ -1176,6 +1347,8 @@ namespace epmodel {
         result.insert(result.end(), removedSystem.begin(), removedSystem.end());
       }
 
+      const auto condenserInlet = condenserAirInletNodeName().value_or("");
+      removeUnusedCondenserOutdoorAirNode(condenserInlet);
       auto removedCoil = HVACComponent_Impl::remove();
       result.insert(result.end(), removedCoil.begin(), removedCoil.end());
       return result;
