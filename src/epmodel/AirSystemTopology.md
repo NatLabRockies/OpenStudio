@@ -6,11 +6,14 @@ Only the `ZoneHVACUnitVentilator` air behavior is tracked here; its plant
 attachment belongs in the plant roadmap. Class details belong in the headers
 and tests.
 
-Plant topology is the active cross-cutting development focus; its ordered
-roadmap is in [PlantSystemTopology.md](PlantSystemTopology.md). This page's
-backlog is limited to air-side work. `ZoneHVACUnitVentilator` is the bridge
-case used by the plant hot-water/chilled-water vertical slice, while its plant
-attachment remains part of [PlantSystemTopology.md](PlantSystemTopology.md).
+Plant topology has reached the representative broad-core stopping point in
+[PlantSystemTopology.md](PlantSystemTopology.md). Air topology has a short
+closing set below. `ZoneHVACUnitVentilator` is the remaining bridge case: its
+contained air path belongs here, while its water-coil attachment uses the
+established plant contract. After the closing set, work should move to the
+horizontal selection rules in
+[HVACComponentRoadmap.md](HVACComponentRoadmap.md), not continue indefinitely
+through increasingly unusual topology combinations.
 
 ## What should match Model
 
@@ -104,18 +107,22 @@ Add a separate family when the number of air streams, ownership, branch shape,
 or saved EnergyPlus objects changes caller-visible behavior. Scalar field
 differences alone do not need a new family.
 
-## Air backlog and bridge work
+## Closing air work
 
-1. Complete the `ZoneHVACUnitVentilator` air-side behavior around the bridge
-   scenario above: `FanSystemModel`, electric heat, water-coil child wiring,
-   local outdoor air, save/load, and post-load changes. Plant attachment is
-   tracked in the plant roadmap.
-2. Add the missing terminal reload tests listed above.
-3. Choose later air work from real model-building scripts, measures, and OSWs.
-   Add only the methods needed by the chosen use case.
-4. Add Ruby/Python and EnergyPlus tests when the use case needs them. Keep
-   exploratory workflows in OpenStudio-resources rather than the main source
-   repository.
+1. Complete the `ZoneHVACUnitVentilator` bridge with `FanSystemModel`, electric
+   heat, a plant-connected water coil, local outdoor air, save/load,
+   post-load changes, Ruby, and EnergyPlus execution.
+2. Add reload and post-load mutation evidence for direct dual-duct VAV and VAV
+   outdoor-air terminals, then exercise their useful public relationships in
+   the existing dual-duct workflow.
+3. Add reload and one real workflow for the cooled-beam and four-pipe-beam
+   family if the workflow can use their existing public APIs without a new
+   topology abstraction.
+
+This is the stopping boundary for the topology-led air campaign. Later work
+must be justified by a real use case or a shared defect across several
+families. Missing scalar conveniences, clone depth, unusual connector shapes,
+and malformed imports are not reasons to keep this list open.
 
 ## Other open work
 

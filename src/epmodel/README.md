@@ -85,9 +85,11 @@ The base classes describe common connection shapes:
 | `Mixer` / `Splitter` | Several inlets or outlets |
 
 Each concrete class still decides where it may be connected, which object owns
-the connection, and what is removed with it. Air-system behavior and backlog
-are summarized in [AirSystemTopology.md](AirSystemTopology.md); plant behavior
-and the active roadmap are in [PlantSystemTopology.md](PlantSystemTopology.md).
+the connection, and what is removed with it. Air-system behavior and closing
+topology work are summarized in [AirSystemTopology.md](AirSystemTopology.md),
+and plant behavior and its broad-core stopping point are in
+[PlantSystemTopology.md](PlantSystemTopology.md). Horizontal wrapper work is
+selected using [HVACComponentRoadmap.md](HVACComponentRoadmap.md).
 
 ## Identity and ownership
 
@@ -142,11 +144,12 @@ Use the Input Output Reference shipped with the configured EnergyPlus version.
 A separately checked-in PDF can easily be the wrong version.
 
 HVAC has the most complete connection, ownership, and reload support. Plant
-topology is the active development focus; see
-[PlantSystemTopology.md](PlantSystemTopology.md) for its contract and ordered
-roadmap. Many classes in other areas currently provide only their EnergyPlus
-fields and a subset of Model behavior. Ruby/Python use and numerical agreement
-must be tested separately.
+topology has reached its representative broad-core stopping point, while the
+air roadmap has a short closing set of bridge and reload work. After that,
+development should expand horizontally across component families using real
+workflows and the class-local notes as evidence. Many classes in other areas
+currently provide only their EnergyPlus fields and a subset of Model behavior.
+Ruby/Python use and numerical agreement must be tested separately.
 
 ## Integration workflows
 
@@ -187,7 +190,9 @@ binding was generated; run the Ruby or Python code before claiming it works.
 - [AirSystemTopology.md](AirSystemTopology.md): air-system support and air
   backlog.
 - [PlantSystemTopology.md](PlantSystemTopology.md): plant-system contract,
-  maturity, and active development roadmap.
+  maturity, and stopping point.
+- [HVACComponentRoadmap.md](HVACComponentRoadmap.md): rules and priorities for
+  horizontal HVAC wrapper work.
 - [scaffolds/README.md](scaffolds/README.md): the historical scaffold source
   directory.
 - `resources/energyplus/ProposedEnergy+.idd`: EnergyPlus schema used by

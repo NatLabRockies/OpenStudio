@@ -8,6 +8,8 @@ When working on epmodel parity or topology behavior, read these first:
 
 - `src/epmodel/README.md`
 - `src/epmodel/AirSystemTopology.md` for air-system topology work
+- `src/epmodel/PlantSystemTopology.md` for plant-system topology work
+- `src/epmodel/HVACComponentRoadmap.md` for horizontal HVAC wrapper priorities
 
 Use these references when needed:
 

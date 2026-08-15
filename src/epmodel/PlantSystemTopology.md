@@ -195,6 +195,11 @@ family-specific depth rather than a prerequisite for using or extending the
 plant model. Treat the following items as demand-driven follow-up, not as an
 active completion checklist.
 
+The remaining explicitly known ownership cleanup is standalone
+`ThermalStorageChilledWaterStratified` removal with its owned
+`WaterHeaterSizing` object. It is suitable as one final bounded plant phase,
+but it does not reopen the family-by-family topology campaign.
+
 ## Deferred plant roadmap
 
 1. **Remaining family-specific topology.** Add another component family only
@@ -216,4 +221,6 @@ active completion checklist.
    imports deferred until their repair contract is defined.
 
 Air-specific backlog remains in [AirSystemTopology.md](AirSystemTopology.md).
+Horizontal component work is selected through
+[HVACComponentRoadmap.md](HVACComponentRoadmap.md).
 See [README.md](README.md) for the broader EPModel design and storage model.
