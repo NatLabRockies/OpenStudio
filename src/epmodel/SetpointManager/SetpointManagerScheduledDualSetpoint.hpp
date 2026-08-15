@@ -16,6 +16,7 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class Schedule;
 
   namespace detail {
     class SetpointManagerScheduledDualSetpoint_Impl;
@@ -37,13 +38,25 @@ namespace epmodel {
     static std::vector<std::string> controlVariableValues();
 
     // Schema Alignment Notes:
-    // - API: Preserves openstudio::model naming for controlVariableValues and inherited
-    //   controlVariable()/setControlVariable() from SetpointManager.
-    // - Field Mapping: controlVariable delegates to E+ SetpointManager:Scheduled:DualSetpoint Control Variable.
-    // - Field Mapping: Relationship fields High Setpoint Schedule Name, Low Setpoint Schedule Name,
-    //   and Setpoint Node or NodeList Name are intentionally excluded from scalar-only scaffolding.
-    // - Field Mapping: isAllowedOnPlantLoop behavior is preserved via impl override for model parity.
-    // - TODO(parity): Add schedule-object parity accessors for high/low setpoint schedules in a follow-up pass.
+    // - Status: Near Parity. The high/low temperature schedules and inherited node attachment are aligned.
+    // - Canonical Counterpart: openstudio::model::SetpointManagerScheduledDualSetpoint.
+    // - Implemented Parity: The high- and low-setpoint schedule APIs preserve the canonical signatures and validate
+    //   continuous Temperature schedules through the shared registry. Plant-loop eligibility remains aligned.
+    // - Field/Storage Mapping: Both schedules and the setpoint node map directly to EnergyPlus
+    //   SetpointManager:Scheduled:DualSetpoint object-list/node fields.
+    // - Canonicalization: Construction and load normalize the control variable and setpoint-node relationship. Blank or
+    //   unresolved schedule fields are not invented or guessed; ordinary APIs assume canonical resolved relationships.
+    // - Evidence: `src/model/SetpointManagerScheduledDualSetpoint.hpp`, `src/model/ScheduleTypeRegistry.cpp`,
+    //   `resources/energyplus/ProposedEnergy+.idd`, and `src/epmodel/test/SetpointManager_GTest.cpp`.
+    // - Remaining Parity Work: Object-level clone behavior and broader language/workflow evidence remain demand-driven.
+
+    boost::optional<Schedule> highSetpointSchedule() const;
+    bool setHighSetpointSchedule(Schedule& schedule);
+    void resetHighSetpointSchedule();
+
+    boost::optional<Schedule> lowSetpointSchedule() const;
+    bool setLowSetpointSchedule(Schedule& schedule);
+    void resetLowSetpointSchedule();
 
    protected:
     using ImplType = detail::SetpointManagerScheduledDualSetpoint_Impl;

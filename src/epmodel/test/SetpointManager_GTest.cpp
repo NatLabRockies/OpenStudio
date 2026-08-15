@@ -25,6 +25,7 @@
 #include "../SetpointManager/SetpointManagerScheduled.hpp"
 #include "../SetpointManager/SetpointManagerScheduled_Impl.hpp"
 #include "../SetpointManager/SetpointManagerScheduledDualSetpoint.hpp"
+#include "../SetpointManager/SetpointManagerScheduledDualSetpoint_Impl.hpp"
 #include "../SetpointManager/SetpointManagerSingleZoneCooling.hpp"
 #include "../SetpointManager/SetpointManagerSingleZoneOneStageCooling.hpp"
 #include "../SetpointManager/SetpointManagerSingleZoneOneStageHeating.hpp"
@@ -37,13 +38,42 @@
 #include "../Schedule/ScheduleConstant.hpp"
 #include "../Schedule/ScheduleConstant_Impl.hpp"
 #include "../Schedule/ScheduleCompact.hpp"
+#include "../ResourceObject/ScheduleTypeLimits.hpp"
 
 #include <utilities/core/Filesystem.hpp>
+#include <utilities/core/UUID.hpp>
+#include <utilities/idd/SetpointManager_Scheduled_DualSetpoint_FieldEnums.hxx>
 #include <utilities/idd/SetpointManager_Scheduled_FieldEnums.hxx>
 #include <utilities/idd/SetpointManager_SingleZone_Reheat_FieldEnums.hxx>
 #include <utilities/idd/ZoneHVAC_EquipmentConnections_FieldEnums.hxx>
+#include <utilities/idf/IdfObject_Impl.hpp>
+#include <utilities/idf/WorkspaceObject_Impl.hpp>
+
+#include <utility>
 
 using namespace openstudio::epmodel;
+
+namespace {
+
+class ScopedSetpointManagerFileRemoval
+{
+ public:
+  explicit ScopedSetpointManagerFileRemoval(openstudio::path path) : m_path(std::move(path)) {}
+
+  ~ScopedSetpointManagerFileRemoval() {
+    boost::system::error_code error;
+    boost::filesystem::remove(m_path, error);
+  }
+
+ private:
+  openstudio::path m_path;
+};
+
+openstudio::path uniqueSetpointManagerIdfPath(const std::string& stem) {
+  return openstudio::tempDir() / openstudio::toPath(stem + "-" + openstudio::removeBraces(openstudio::createUUID()) + ".idf");
+}
+
+}  // namespace
 
 TEST_F(EPModelFixture, SetpointManagerScheduled_DefaultConstructor) {
   Model model;
@@ -273,6 +303,163 @@ TEST_F(EPModelFixture, SetpointManagerScheduledDualSetpoint_ScalarAccessors_Roun
   ASSERT_TRUE(spm.setControlVariable(controlVariable));
 
   EXPECT_EQ(controlVariable, spm.controlVariable());
+}
+
+TEST_F(EPModelFixture, SetpointManagerScheduledDualSetpoint_ScheduleRelationshipsValidateAndReset) {
+  Model model;
+  SetpointManagerScheduledDualSetpoint spm(model);
+  ScheduleConstant high(model);
+  ScheduleConstant low(model);
+  ASSERT_TRUE(high.setValue(18.0));
+  ASSERT_TRUE(low.setValue(7.0));
+
+  EXPECT_FALSE(spm.highSetpointSchedule());
+  EXPECT_FALSE(spm.lowSetpointSchedule());
+  ASSERT_TRUE(spm.setHighSetpointSchedule(high));
+  ASSERT_TRUE(spm.setLowSetpointSchedule(low));
+  ASSERT_TRUE(spm.highSetpointSchedule());
+  ASSERT_TRUE(spm.lowSetpointSchedule());
+  EXPECT_EQ(high.handle(), spm.highSetpointSchedule()->handle());
+  EXPECT_EQ(low.handle(), spm.lowSetpointSchedule()->handle());
+
+  ASSERT_TRUE(high.scheduleTypeLimits());
+  ASSERT_TRUE(high.scheduleTypeLimits()->numericType());
+  EXPECT_EQ("Continuous", *high.scheduleTypeLimits()->numericType());
+  EXPECT_EQ("Temperature", high.scheduleTypeLimits()->unitType());
+
+  ScheduleTypeLimits discreteTemperature(model);
+  ASSERT_TRUE(discreteTemperature.setNumericType("Discrete"));
+  ASSERT_TRUE(discreteTemperature.setUnitType("Temperature"));
+  ScheduleConstant incompatible(model);
+  ASSERT_TRUE(incompatible.setScheduleTypeLimits(discreteTemperature));
+  EXPECT_FALSE(spm.setHighSetpointSchedule(incompatible));
+  EXPECT_EQ(high.handle(), spm.highSetpointSchedule()->handle());
+
+  Model foreignModel;
+  ScheduleConstant foreign(foreignModel);
+  EXPECT_FALSE(spm.setLowSetpointSchedule(foreign));
+  EXPECT_EQ(low.handle(), spm.lowSetpointSchedule()->handle());
+
+  spm.resetHighSetpointSchedule();
+  spm.resetLowSetpointSchedule();
+  EXPECT_FALSE(spm.highSetpointSchedule());
+  EXPECT_FALSE(spm.lowSetpointSchedule());
+}
+
+TEST_F(EPModelFixture, SetpointManagerScheduledDualSetpoint_CanonicalizesOnlyUniquePersistedSchedules) {
+  Model model;
+  ScheduleConstant recoverable(model);
+  ScheduleConstant duplicateFirst(model);
+  ScheduleConstant duplicateSecond(model);
+  ASSERT_TRUE(recoverable.setName("Recoverable Dual Setpoint Schedule"));
+  ASSERT_TRUE(duplicateFirst.setName("Ambiguous Dual Setpoint Schedule"));
+  auto duplicateSecondImpl = duplicateSecond.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  ASSERT_TRUE(duplicateSecondImpl);
+  // Imported IDFs can contain duplicate eligible names, while the public name setter deliberately disambiguates them.
+  ASSERT_TRUE(duplicateSecondImpl->openstudio::detail::IdfObject_Impl::setString(0u, "Ambiguous Dual Setpoint Schedule", false));
+  ASSERT_EQ(duplicateFirst.nameString(), duplicateSecond.nameString());
+  SetpointManagerScheduledDualSetpoint spm(model);
+  SetpointManagerScheduledDualSetpoint ambiguous(model);
+  auto workspaceImpl = spm.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  auto ambiguousImpl = ambiguous.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  ASSERT_TRUE(workspaceImpl);
+  ASSERT_TRUE(ambiguousImpl);
+  constexpr auto highField = openstudio::SetpointManager_Scheduled_DualSetpointFields::HighSetpointScheduleName;
+  constexpr auto lowField = openstudio::SetpointManager_Scheduled_DualSetpointFields::LowSetpointScheduleName;
+
+  // These unresolved/raw field states represent imported IDF evidence that validated public setters cannot create.
+  ASSERT_TRUE(workspaceImpl->setPointer(highField, openstudio::Handle(), false));
+  ASSERT_TRUE(workspaceImpl->openstudio::detail::IdfObject_Impl::setString(highField, "Missing Dual Setpoint Schedule", false));
+  ASSERT_TRUE(workspaceImpl->setPointer(lowField, openstudio::Handle(), false));
+  ASSERT_TRUE(workspaceImpl->openstudio::detail::IdfObject_Impl::setString(lowField, recoverable.nameString(), false));
+  ASSERT_TRUE(ambiguousImpl->setPointer(highField, openstudio::Handle(), false));
+  ASSERT_TRUE(ambiguousImpl->openstudio::detail::IdfObject_Impl::setString(highField, "Ambiguous Dual Setpoint Schedule", false));
+
+  auto report = model.canonicalize(SanitizationPolicy::Repair);
+  EXPECT_EQ(0u, report.errorCount);
+  EXPECT_FALSE(spm.highSetpointSchedule());
+  ASSERT_TRUE(spm.lowSetpointSchedule());
+  EXPECT_EQ(recoverable.handle(), spm.lowSetpointSchedule()->handle());
+  EXPECT_EQ("Missing Dual Setpoint Schedule", workspaceImpl->openstudio::detail::IdfObject_Impl::getString(highField, false, true).value_or(""));
+  EXPECT_FALSE(ambiguous.getField(highField, false));
+  EXPECT_EQ("Ambiguous Dual Setpoint Schedule", ambiguousImpl->openstudio::detail::IdfObject_Impl::getString(highField, false, true).value_or(""));
+
+  Model foreignModel;
+  ScheduleConstant foreign(foreignModel);
+  EXPECT_FALSE(spm.setHighSetpointSchedule(foreign));
+  EXPECT_EQ("Missing Dual Setpoint Schedule", workspaceImpl->openstudio::detail::IdfObject_Impl::getString(highField, false, true).value_or(""));
+  spm.resetHighSetpointSchedule();
+  EXPECT_EQ("", workspaceImpl->openstudio::detail::IdfObject_Impl::getString(highField, false, true).value_or(""));
+}
+
+TEST_F(EPModelFixture, SetpointManagerScheduledDualSetpoint_ReloadMutationAndRemoval) {
+  const auto firstIdfPath = uniqueSetpointManagerIdfPath("epmodel-dual-setpoint-first");
+  const auto secondIdfPath = uniqueSetpointManagerIdfPath("epmodel-dual-setpoint-second");
+  const ScopedSetpointManagerFileRemoval removeFirstIdf(firstIdfPath);
+  const ScopedSetpointManagerFileRemoval removeSecondIdf(secondIdfPath);
+
+  Model model;
+  PlantLoop plantLoop(model);
+  SetpointManagerScheduledDualSetpoint spm(model);
+  ScheduleConstant high(model);
+  ScheduleConstant low(model);
+  ASSERT_TRUE(plantLoop.setName("Dual Setpoint Plant Loop"));
+  ASSERT_TRUE(spm.setName("Dual Scheduled Setpoint Manager"));
+  ASSERT_TRUE(high.setName("Initial High Setpoint Schedule"));
+  ASSERT_TRUE(low.setName("Initial Low Setpoint Schedule"));
+  ASSERT_TRUE(high.setValue(18.0));
+  ASSERT_TRUE(low.setValue(7.0));
+  ASSERT_TRUE(spm.setHighSetpointSchedule(high));
+  ASSERT_TRUE(spm.setLowSetpointSchedule(low));
+  auto node = plantLoop.supplyOutletNode();
+  ASSERT_TRUE(spm.addToNode(node));
+  ASSERT_TRUE(model.save(firstIdfPath, true));
+
+  auto loadedModel = Model::load(firstIdfPath);
+  ASSERT_TRUE(loadedModel);
+  auto loadedLoop = loadedModel->getConcreteModelObjectByName<PlantLoop>("Dual Setpoint Plant Loop");
+  auto loadedManager = loadedModel->getConcreteModelObjectByName<SetpointManagerScheduledDualSetpoint>("Dual Scheduled Setpoint Manager");
+  auto loadedHigh = loadedModel->getConcreteModelObjectByName<ScheduleConstant>("Initial High Setpoint Schedule");
+  auto loadedLow = loadedModel->getConcreteModelObjectByName<ScheduleConstant>("Initial Low Setpoint Schedule");
+  ASSERT_TRUE(loadedLoop);
+  ASSERT_TRUE(loadedManager);
+  ASSERT_TRUE(loadedHigh);
+  ASSERT_TRUE(loadedLow);
+  ASSERT_TRUE(loadedManager->highSetpointSchedule());
+  ASSERT_TRUE(loadedManager->lowSetpointSchedule());
+  EXPECT_EQ(loadedHigh->handle(), loadedManager->highSetpointSchedule()->handle());
+  EXPECT_EQ(loadedLow->handle(), loadedManager->lowSetpointSchedule()->handle());
+  const auto loadedNode = loadedLoop->supplyOutletNode();
+  ASSERT_TRUE(loadedManager->setpointNode());
+  EXPECT_EQ(loadedNode.handle(), loadedManager->setpointNode()->handle());
+
+  ScheduleConstant replacementHigh(*loadedModel);
+  ASSERT_TRUE(replacementHigh.setName("Replacement High Setpoint Schedule"));
+  ASSERT_TRUE(replacementHigh.setValue(19.0));
+  ASSERT_TRUE(loadedManager->setHighSetpointSchedule(replacementHigh));
+  loadedManager->resetLowSetpointSchedule();
+  ASSERT_TRUE(loadedModel->save(secondIdfPath, true));
+
+  auto reloadedModel = Model::load(secondIdfPath);
+  ASSERT_TRUE(reloadedModel);
+  auto reloadedLoop = reloadedModel->getConcreteModelObjectByName<PlantLoop>("Dual Setpoint Plant Loop");
+  auto reloadedManager = reloadedModel->getConcreteModelObjectByName<SetpointManagerScheduledDualSetpoint>("Dual Scheduled Setpoint Manager");
+  auto reloadedReplacement = reloadedModel->getConcreteModelObjectByName<ScheduleConstant>("Replacement High Setpoint Schedule");
+  auto reloadedLow = reloadedModel->getConcreteModelObjectByName<ScheduleConstant>("Initial Low Setpoint Schedule");
+  ASSERT_TRUE(reloadedLoop);
+  ASSERT_TRUE(reloadedManager);
+  ASSERT_TRUE(reloadedReplacement);
+  ASSERT_TRUE(reloadedLow);
+  ASSERT_TRUE(reloadedManager->highSetpointSchedule());
+  EXPECT_EQ(reloadedReplacement->handle(), reloadedManager->highSetpointSchedule()->handle());
+  EXPECT_FALSE(reloadedManager->lowSetpointSchedule());
+  ASSERT_TRUE(reloadedManager->setLowSetpointSchedule(*reloadedLow));
+  const auto reloadedNode = reloadedLoop->supplyOutletNode();
+  EXPECT_FALSE(reloadedManager->remove().empty());
+  EXPECT_TRUE(reloadedNode.setpointManagers().empty());
+  EXPECT_TRUE(reloadedModel->getObject(reloadedLoop->handle()));
+  EXPECT_TRUE(reloadedModel->getObject(reloadedReplacement->handle()));
+  EXPECT_TRUE(reloadedModel->getObject(reloadedLow->handle()));
 }
 
 TEST_F(EPModelFixture, SetpointManagerSingleZoneCooling_DefaultConstructor) {
