@@ -8,17 +8,61 @@
 #include "EPModelFixture.hpp"
 #include "../HVACComponent/ThermalZone.hpp"
 #include "../Loop/AirLoopHVAC.hpp"
+#include "../Loop/AirLoopHVAC_Impl.hpp"
 #include "../StraightComponent/AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed.hpp"
+#include "../StraightComponent/AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl.hpp"
 #include "../StraightComponent/CoilCoolingDXMultiSpeed.hpp"
+#include "../StraightComponent/CoilCoolingDXMultiSpeed_Impl.hpp"
 #include "../StraightComponent/CoilHeatingElectric.hpp"
+#include "../StraightComponent/CoilHeatingElectric_Impl.hpp"
 #include "../StraightComponent/CoilHeatingElectricMultiStage.hpp"
+#include "../StraightComponent/CoilHeatingElectricMultiStage_Impl.hpp"
+#include "../StraightComponent/CoilHeatingGas.hpp"
+#include "../StraightComponent/CoilHeatingGas_Impl.hpp"
+#include "../StraightComponent/CoilHeatingGasMultiStage.hpp"
+#include "../StraightComponent/CoilHeatingGasMultiStage_Impl.hpp"
+#include "../StraightComponent/FanConstantVolume.hpp"
+#include "../StraightComponent/FanConstantVolume_Impl.hpp"
 #include "../StraightComponent/FanOnOff.hpp"
+#include "../StraightComponent/FanOnOff_Impl.hpp"
 #include "../StraightComponent/Node.hpp"
 #include "../Schedule/ScheduleConstant.hpp"
 #include "../WaterToAirComponent/CoilHeatingWater.hpp"
 #include <utilities/idd/IddEnums.hxx>
+#include <utilities/core/Filesystem.hpp>
+#include <utilities/core/UUID.hpp>
+#include <utilities/idd/AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeed_FieldEnums.hxx>
+#include <utilities/idf/WorkspaceObject_Impl.hpp>
+
+#include <utility>
 
 using namespace openstudio::epmodel;
+
+namespace {
+class ScopedMultiSpeedUnitaryFileRemoval
+{
+ public:
+  explicit ScopedMultiSpeedUnitaryFileRemoval(openstudio::path path) : m_path(std::move(path)) {}
+
+  ~ScopedMultiSpeedUnitaryFileRemoval() {
+    boost::system::error_code error;
+    boost::filesystem::remove(m_path, error);
+  }
+
+ private:
+  openstudio::path m_path;
+};
+
+openstudio::path uniqueMultiSpeedUnitaryIdfPath(const std::string& stem) {
+  return openstudio::tempDir() / openstudio::toPath(stem + "-" + openstudio::removeBraces(openstudio::createUUID()) + ".idf");
+}
+
+std::string rawMultiSpeedUnitaryField(const AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed& unitary, unsigned field) {
+  auto workspaceImpl = unitary.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  EXPECT_TRUE(workspaceImpl);
+  return workspaceImpl ? workspaceImpl->openstudio::detail::IdfObject_Impl::getString(field, false, true).value_or("") : "";
+}
+}  // namespace
 
 TEST_F(EPModelFixture, AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_DefaultConstructor) {
   Model model;
@@ -39,6 +83,13 @@ TEST_F(EPModelFixture, AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Relationship
   EXPECT_EQ(heating.handle(), unitary.heatingCoil().handle());
   EXPECT_EQ(cooling.handle(), unitary.coolingCoil().handle());
   EXPECT_EQ(supplemental.handle(), unitary.supplementalHeatingCoil().handle());
+  EXPECT_EQ("Fan:OnOff", unitary.getString(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::SupplyAirFanObjectType).value_or(""));
+  EXPECT_EQ("Coil:Heating:Electric:MultiStage",
+            unitary.getString(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::HeatingCoilObjectType).value_or(""));
+  EXPECT_EQ("Coil:Cooling:DX:MultiSpeed",
+            unitary.getString(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::CoolingCoilObjectType).value_or(""));
+  EXPECT_EQ("Coil:Heating:Electric",
+            unitary.getString(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::SupplementalHeatingCoilObjectType).value_or(""));
 
   const auto children = unitary.children();
   ASSERT_EQ(4u, children.size());
@@ -368,4 +419,233 @@ TEST_F(EPModelFixture, AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Canonicalize
   EXPECT_EQ(*expectedCoolingOutlet, *unitary.coolingCoilOutletNode());
   EXPECT_EQ(*expectedHeatingOutlet, *unitary.heatingCoilOutletNode());
   EXPECT_EQ(*expectedFanOutlet, *unitary.fanOutletNode());
+}
+
+TEST_F(EPModelFixture, AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_ChildSettersRejectWithoutMutation) {
+  Model model;
+  FanOnOff fan(model);
+  CoilHeatingElectricMultiStage heating(model);
+  CoilCoolingDXMultiSpeed cooling(model);
+  CoilHeatingElectric supplemental(model);
+  AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed unitary(model, fan, heating, cooling, supplemental);
+
+  ASSERT_TRUE(unitary.fanOutletNode());
+  ASSERT_TRUE(unitary.coolingCoilOutletNode());
+  ASSERT_TRUE(unitary.heatingCoilOutletNode());
+  const auto fanOutlet = unitary.fanOutletNode()->handle();
+  const auto coolingOutlet = unitary.coolingCoilOutletNode()->handle();
+  const auto heatingOutlet = unitary.heatingCoilOutletNode()->handle();
+
+  Model foreignModel;
+  FanOnOff foreignFan(foreignModel);
+  EXPECT_FALSE(unitary.setSupplyAirFan(heating));
+  EXPECT_FALSE(unitary.setSupplyAirFan(foreignFan));
+  EXPECT_FALSE(unitary.setHeatingCoil(supplemental));
+  EXPECT_FALSE(unitary.setCoolingCoil(heating));
+  EXPECT_FALSE(unitary.setSupplementalHeatingCoil(heating));
+
+  FanOnOff duplicateFan(model);
+  auto duplicateFanImpl = duplicateFan.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  ASSERT_TRUE(duplicateFanImpl);
+  ASSERT_TRUE(duplicateFanImpl->openstudio::detail::IdfObject_Impl::setString(0u, fan.nameString(), false));
+  EXPECT_FALSE(unitary.setSupplyAirFan(duplicateFan));
+
+  EXPECT_EQ(fan.handle(), unitary.supplyAirFan().handle());
+  EXPECT_EQ(heating.handle(), unitary.heatingCoil().handle());
+  EXPECT_EQ(cooling.handle(), unitary.coolingCoil().handle());
+  EXPECT_EQ(supplemental.handle(), unitary.supplementalHeatingCoil().handle());
+  EXPECT_EQ("Fan:OnOff", unitary.getString(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::SupplyAirFanObjectType).value_or(""));
+  EXPECT_EQ("Coil:Heating:Electric:MultiStage",
+            unitary.getString(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::HeatingCoilObjectType).value_or(""));
+  EXPECT_EQ("Coil:Cooling:DX:MultiSpeed",
+            unitary.getString(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::CoolingCoilObjectType).value_or(""));
+  EXPECT_EQ("Coil:Heating:Electric",
+            unitary.getString(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::SupplementalHeatingCoilObjectType).value_or(""));
+  EXPECT_EQ(fanOutlet, unitary.fanOutletNode()->handle());
+  EXPECT_EQ(coolingOutlet, unitary.coolingCoilOutletNode()->handle());
+  EXPECT_EQ(heatingOutlet, unitary.heatingCoilOutletNode()->handle());
+}
+
+TEST_F(EPModelFixture, AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_CanonicalizeAlignsOnlyResolvedChildTypes) {
+  Model model;
+  FanOnOff fan(model);
+  CoilHeatingElectricMultiStage heating(model);
+  CoilCoolingDXMultiSpeed cooling(model);
+  CoilHeatingElectric supplemental(model);
+  AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed unitary(model, fan, heating, cooling, supplemental);
+
+  ASSERT_TRUE(unitary.setString(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::SupplyAirFanObjectType, ""));
+  ASSERT_TRUE(
+    unitary.setString(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::HeatingCoilObjectType, "Coil:Heating:Gas:MultiStage"));
+  ASSERT_TRUE(unitary.setString(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::CoolingCoilObjectType, ""));
+  ASSERT_TRUE(
+    unitary.setString(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::SupplementalHeatingCoilObjectType, "Coil:Heating:Fuel"));
+
+  AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed unresolved(model);
+  ASSERT_TRUE(unresolved.setName("Unresolved MultiSpeed Unitary"));
+  auto unresolvedImpl = unresolved.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  ASSERT_TRUE(unresolvedImpl);
+  ASSERT_TRUE(
+    unresolvedImpl->setPointer(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::SupplyAirFanName, openstudio::Handle(), false));
+  ASSERT_TRUE(unresolvedImpl->openstudio::detail::IdfObject_Impl::setString(
+    openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::SupplyAirFanName, "Missing MultiSpeed Fan", false));
+  ASSERT_TRUE(unresolvedImpl->openstudio::detail::IdfObject_Impl::setString(
+    openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::SupplyAirFanObjectType, "Fan:ConstantVolume", false));
+
+  AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed blank(model);
+  ASSERT_TRUE(blank.setName("Blank MultiSpeed Unitary"));
+  ASSERT_TRUE(blank.setString(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::SupplyAirFanObjectType, "Fan:OnOff"));
+
+  FanOnOff ambiguousFanA(model);
+  FanOnOff ambiguousFanB(model);
+  ASSERT_TRUE(ambiguousFanA.setName("Ambiguous MultiSpeed Fan"));
+  auto ambiguousFanBImpl = ambiguousFanB.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  ASSERT_TRUE(ambiguousFanBImpl);
+  ASSERT_TRUE(ambiguousFanBImpl->openstudio::detail::IdfObject_Impl::setString(0u, "Ambiguous MultiSpeed Fan", false));
+  AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed ambiguous(model);
+  ASSERT_TRUE(ambiguous.setName("Ambiguous MultiSpeed Unitary"));
+  auto ambiguousImpl = ambiguous.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  ASSERT_TRUE(ambiguousImpl);
+  ASSERT_TRUE(
+    ambiguousImpl->setPointer(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::SupplyAirFanName, ambiguousFanA.handle(), false));
+  ASSERT_TRUE(ambiguousImpl->openstudio::detail::IdfObject_Impl::setString(
+    openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::SupplyAirFanObjectType, "Fan:ConstantVolume", false));
+
+  const auto report = model.canonicalize();
+  EXPECT_EQ(0u, report.errorCount);
+  EXPECT_EQ("Fan:OnOff", unitary.getString(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::SupplyAirFanObjectType).value_or(""));
+  EXPECT_EQ("Coil:Heating:Electric:MultiStage",
+            unitary.getString(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::HeatingCoilObjectType).value_or(""));
+  EXPECT_EQ("Coil:Cooling:DX:MultiSpeed",
+            unitary.getString(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::CoolingCoilObjectType).value_or(""));
+  EXPECT_EQ("Coil:Heating:Electric",
+            unitary.getString(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::SupplementalHeatingCoilObjectType).value_or(""));
+  EXPECT_EQ("Missing MultiSpeed Fan",
+            rawMultiSpeedUnitaryField(unresolved, openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::SupplyAirFanName));
+  EXPECT_EQ("Fan:ConstantVolume",
+            rawMultiSpeedUnitaryField(unresolved, openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::SupplyAirFanObjectType));
+  EXPECT_TRUE(blank.getString(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::SupplyAirFanObjectType, true)->empty());
+  EXPECT_EQ("Fan:ConstantVolume",
+            rawMultiSpeedUnitaryField(ambiguous, openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::SupplyAirFanObjectType));
+  EXPECT_FALSE(ambiguous.inletModelObject());
+  EXPECT_FALSE(ambiguous.outletModelObject());
+
+  const auto secondReport = model.canonicalize();
+  EXPECT_EQ(0u, secondReport.errorCount);
+  EXPECT_EQ("Missing MultiSpeed Fan",
+            rawMultiSpeedUnitaryField(unresolved, openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::SupplyAirFanName));
+}
+
+TEST_F(EPModelFixture, AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_ConfiguredChildrenSurviveReloadAndReplacement) {
+  const auto firstIdfPath = uniqueMultiSpeedUnitaryIdfPath("epmodel-multispeed-unitary-first");
+  const auto secondIdfPath = uniqueMultiSpeedUnitaryIdfPath("epmodel-multispeed-unitary-second");
+  const ScopedMultiSpeedUnitaryFileRemoval removeFirst(firstIdfPath);
+  const ScopedMultiSpeedUnitaryFileRemoval removeSecond(secondIdfPath);
+
+  Model model;
+  AirLoopHVAC airLoop(model);
+  FanOnOff fan(model);
+  CoilHeatingElectricMultiStage heating(model);
+  CoilCoolingDXMultiSpeed cooling(model);
+  CoilHeatingElectric supplemental(model);
+  ASSERT_TRUE(airLoop.setName("MultiSpeed Air Loop"));
+  ASSERT_TRUE(fan.setName("Original MultiSpeed Fan"));
+  ASSERT_TRUE(heating.setName("Original MultiSpeed Heating"));
+  ASSERT_TRUE(cooling.setName("Original MultiSpeed Cooling"));
+  ASSERT_TRUE(supplemental.setName("Original MultiSpeed Supplemental"));
+  AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed unitary(model, fan, heating, cooling, supplemental);
+  ASSERT_TRUE(unitary.setName("Reloadable MultiSpeed Unitary"));
+  ASSERT_TRUE(unitary.setSupplyAirFanPlacement("DrawThrough"));
+  auto supplyOutlet = airLoop.supplyOutletNode();
+  ASSERT_TRUE(unitary.addToNode(supplyOutlet));
+  ASSERT_TRUE(model.save(firstIdfPath, true));
+
+  auto loadedModel = Model::load(firstIdfPath);
+  ASSERT_TRUE(loadedModel);
+  auto loadedAirLoop = loadedModel->getConcreteModelObjectByName<AirLoopHVAC>("MultiSpeed Air Loop");
+  auto loadedUnitary = loadedModel->getConcreteModelObjectByName<AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed>("Reloadable MultiSpeed Unitary");
+  auto loadedFan = loadedModel->getConcreteModelObjectByName<FanOnOff>("Original MultiSpeed Fan");
+  auto loadedHeating = loadedModel->getConcreteModelObjectByName<CoilHeatingElectricMultiStage>("Original MultiSpeed Heating");
+  auto loadedCooling = loadedModel->getConcreteModelObjectByName<CoilCoolingDXMultiSpeed>("Original MultiSpeed Cooling");
+  auto loadedSupplemental = loadedModel->getConcreteModelObjectByName<CoilHeatingElectric>("Original MultiSpeed Supplemental");
+  ASSERT_TRUE(loadedAirLoop);
+  ASSERT_TRUE(loadedUnitary);
+  ASSERT_TRUE(loadedFan);
+  ASSERT_TRUE(loadedHeating);
+  ASSERT_TRUE(loadedCooling);
+  ASSERT_TRUE(loadedSupplemental);
+  EXPECT_EQ(loadedFan->handle(), loadedUnitary->supplyAirFan().handle());
+  EXPECT_EQ(loadedHeating->handle(), loadedUnitary->heatingCoil().handle());
+  EXPECT_EQ(loadedCooling->handle(), loadedUnitary->coolingCoil().handle());
+  EXPECT_EQ(loadedSupplemental->handle(), loadedUnitary->supplementalHeatingCoil().handle());
+  ASSERT_TRUE(loadedUnitary->airLoopHVAC());
+  EXPECT_EQ(loadedAirLoop->handle(), loadedUnitary->airLoopHVAC()->handle());
+  EXPECT_EQ("Fan:OnOff",
+            loadedUnitary->getString(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::SupplyAirFanObjectType).value_or(""));
+  EXPECT_EQ("Coil:Heating:Electric:MultiStage",
+            loadedUnitary->getString(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::HeatingCoilObjectType).value_or(""));
+  EXPECT_EQ("Coil:Cooling:DX:MultiSpeed",
+            loadedUnitary->getString(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::CoolingCoilObjectType).value_or(""));
+  EXPECT_EQ(
+    "Coil:Heating:Electric",
+    loadedUnitary->getString(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::SupplementalHeatingCoilObjectType).value_or(""));
+
+  FanConstantVolume replacementFan(*loadedModel);
+  CoilHeatingGasMultiStage replacementHeating(*loadedModel);
+  CoilCoolingDXMultiSpeed replacementCooling(*loadedModel);
+  CoilHeatingGas replacementSupplemental(*loadedModel);
+  ASSERT_TRUE(replacementFan.setName("Replacement MultiSpeed Fan"));
+  ASSERT_TRUE(replacementHeating.setName("Replacement MultiSpeed Heating"));
+  ASSERT_TRUE(replacementCooling.setName("Replacement MultiSpeed Cooling"));
+  ASSERT_TRUE(replacementSupplemental.setName("Replacement MultiSpeed Supplemental"));
+  ASSERT_TRUE(loadedUnitary->setSupplyAirFan(replacementFan));
+  ASSERT_TRUE(loadedUnitary->setHeatingCoil(replacementHeating));
+  ASSERT_TRUE(loadedUnitary->setCoolingCoil(replacementCooling));
+  ASSERT_TRUE(loadedUnitary->setSupplementalHeatingCoil(replacementSupplemental));
+  ASSERT_TRUE(loadedUnitary->setSupplyAirFanPlacement("BlowThrough"));
+  ASSERT_TRUE(loadedModel->save(secondIdfPath, true));
+
+  auto reloadedModel = Model::load(secondIdfPath);
+  ASSERT_TRUE(reloadedModel);
+  auto reloadedUnitary = reloadedModel->getConcreteModelObjectByName<AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed>("Reloadable MultiSpeed Unitary");
+  auto reloadedFan = reloadedModel->getConcreteModelObjectByName<FanConstantVolume>("Replacement MultiSpeed Fan");
+  auto reloadedHeating = reloadedModel->getConcreteModelObjectByName<CoilHeatingGasMultiStage>("Replacement MultiSpeed Heating");
+  auto reloadedCooling = reloadedModel->getConcreteModelObjectByName<CoilCoolingDXMultiSpeed>("Replacement MultiSpeed Cooling");
+  auto reloadedSupplemental = reloadedModel->getConcreteModelObjectByName<CoilHeatingGas>("Replacement MultiSpeed Supplemental");
+  ASSERT_TRUE(reloadedUnitary);
+  ASSERT_TRUE(reloadedFan);
+  ASSERT_TRUE(reloadedHeating);
+  ASSERT_TRUE(reloadedCooling);
+  ASSERT_TRUE(reloadedSupplemental);
+  EXPECT_EQ("BlowThrough", reloadedUnitary->supplyAirFanPlacement());
+  EXPECT_EQ(reloadedFan->handle(), reloadedUnitary->supplyAirFan().handle());
+  EXPECT_EQ(reloadedHeating->handle(), reloadedUnitary->heatingCoil().handle());
+  EXPECT_EQ(reloadedCooling->handle(), reloadedUnitary->coolingCoil().handle());
+  EXPECT_EQ(reloadedSupplemental->handle(), reloadedUnitary->supplementalHeatingCoil().handle());
+  EXPECT_EQ("Fan:ConstantVolume",
+            reloadedUnitary->getString(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::SupplyAirFanObjectType).value_or(""));
+  EXPECT_EQ("Coil:Heating:Gas:MultiStage",
+            reloadedUnitary->getString(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::HeatingCoilObjectType).value_or(""));
+  EXPECT_EQ("Coil:Cooling:DX:MultiSpeed",
+            reloadedUnitary->getString(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::CoolingCoilObjectType).value_or(""));
+  EXPECT_EQ(
+    "Coil:Heating:Fuel",
+    reloadedUnitary->getString(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::SupplementalHeatingCoilObjectType).value_or(""));
+  ASSERT_TRUE(reloadedUnitary->fanOutletNode());
+  ASSERT_TRUE(reloadedUnitary->coolingCoilOutletNode());
+  ASSERT_TRUE(reloadedUnitary->heatingCoilOutletNode());
+  EXPECT_EQ(reloadedUnitary->fanOutletNode()->handle(), reloadedCooling->inletModelObject()->handle());
+  EXPECT_EQ(reloadedUnitary->coolingCoilOutletNode()->handle(), reloadedHeating->inletModelObject()->handle());
+  EXPECT_EQ(reloadedUnitary->heatingCoilOutletNode()->handle(), reloadedSupplemental->inletModelObject()->handle());
+
+  EXPECT_TRUE(reloadedFan->remove().empty());
+  const auto fanHandle = reloadedFan->handle();
+  const auto heatingHandle = reloadedHeating->handle();
+  const auto coolingHandle = reloadedCooling->handle();
+  const auto supplementalHandle = reloadedSupplemental->handle();
+  EXPECT_FALSE(reloadedUnitary->remove().empty());
+  EXPECT_TRUE(reloadedModel->getObject(fanHandle));
+  EXPECT_TRUE(reloadedModel->getObject(heatingHandle));
+  EXPECT_TRUE(reloadedModel->getObject(coolingHandle));
+  EXPECT_TRUE(reloadedModel->getObject(supplementalHandle));
 }

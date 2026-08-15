@@ -44,19 +44,21 @@ namespace epmodel {
     static std::vector<std::string> supplyAirFanPlacementValues();
 
     // Schema Alignment Notes:
-    // - Status: Partial Parity. The multi-speed scalar controls and direct object-link fields are aligned, and the owned internal air path is now maintained through parent-owned epmodel nodes.
+    // - Status: Partial Parity. The multi-speed scalar controls and direct object-link fields are aligned, and the owned internal air path is maintained through parent-owned epmodel nodes.
     // - Canonical Counterpart: openstudio::model::AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed.
     // - Implemented Parity: Availability schedule, controlling zone, supply fan, supply-air-fan operating mode schedule, heating coil,
     //   cooling coil, supplemental heating coil, constructor-with-components, and the scalar airflow/control fields preserve the main
     //   canonical wrapper contract. The owned fan/cooling/heating/supplemental chain now shares a stable parent-maintained air path, with
-    //   direct access to the meaningful outlet node roles on the compound, and child traversal matches the canonical owned-component slice.
+    //   direct access to the meaningful outlet node roles on the compound. Child setters validate their exact roles and persist matching
+    //   EnergyPlus object-type discriminators. Canonicalization clears a stale discriminator for a truly blank relationship, repairs the
+    //   discriminator only for a uniquely resolved child, and leaves unresolved or ambiguous relationship evidence unwired.
     // - Documented Delta: `fanOutletNode()`, `coolingCoilOutletNode()`, and `heatingCoilOutletNode()` are additive epmodel conveniences so
     //   callers can inspect and rename the meaningful internal outlet roles owned by the compound. Broader topology convenience beyond the
     //   owned serial air path remains intentionally omitted.
     // - Field/Storage Mapping: Scalar values map directly to EnergyPlus multi-speed unitary fields, while schedule, fan, coil, zone, and
     //   internal-node relationships are explicit parent-owned object links in epmodel.
     // - Evidence: `src/model/AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed.hpp`, `src/model/AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed.cpp`, and `src/epmodel/test/AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_GTest.cpp`.
-    // - Remaining Parity Work: Add any remaining topology conveniences only if the canonical wrapper still exposes them directly.
+    // - Remaining Parity Work: Speed/stage-data ownership and wider topology conveniences remain demand-driven work.
     boost::optional<Schedule> availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);
     void resetAvailabilitySchedule();
