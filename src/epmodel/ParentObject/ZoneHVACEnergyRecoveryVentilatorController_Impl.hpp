@@ -14,6 +14,9 @@
 namespace openstudio {
 namespace epmodel {
 
+  class Curve;
+  class Schedule;
+
   namespace detail {
 
     class EPMODEL_API ZoneHVACEnergyRecoveryVentilatorController_Impl : public ParentObject_Impl
@@ -21,6 +24,14 @@ namespace epmodel {
      public:
       using ParentObject_Impl::ParentObject_Impl;
       virtual ~ZoneHVACEnergyRecoveryVentilatorController_Impl() override = default;
+
+      boost::optional<Curve> electronicEnthalpyLimitCurve() const;
+      bool setElectronicEnthalpyLimitCurve(const Curve& curve);
+      void resetElectronicEnthalpyLimitCurve();
+
+      boost::optional<Schedule> timeofDayEconomizerFlowControlSchedule() const;
+      bool setTimeofDayEconomizerFlowControlSchedule(Schedule& schedule);
+      void resetTimeofDayEconomizerFlowControlSchedule();
 
       boost::optional<double> temperatureHighLimit() const;
       bool setTemperatureHighLimit(double temperatureHighLimit);

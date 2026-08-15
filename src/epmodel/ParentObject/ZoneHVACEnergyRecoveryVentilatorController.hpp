@@ -20,6 +20,8 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class Curve;
+  class Schedule;
 
   namespace detail {
     class ZoneHVACEnergyRecoveryVentilatorController_Impl;
@@ -42,10 +44,27 @@ namespace epmodel {
     static std::vector<std::string> exhaustAirEnthalpyLimitValues();
 
     // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::ZoneHVACEnergyRecoveryVentilatorController scalar accessor names/signatures.
-    // - Field Mapping: Scalar APIs map directly to EnergyPlus ZoneHVAC:EnergyRecoveryVentilator:Controller fields (temperature limits, exhaust limit choices, and humidity control flags).
-    // - Field Mapping: Relationship-like fields (Electronic Enthalpy Limit Curve Name, Time of Day Economizer Flow Control Schedule Name, Humidistat Control Zone Name) remain excluded from this scalar API surface.
-    // - ForwardTranslator evidence: ForwardTranslateZoneHVACEnergyRecoveryVentilatorController.cpp writes these scalar fields for the model counterpart.
+    // - Status: Partial Parity. The scalar controls plus the optional electronic-enthalpy curve and time-of-day economizer schedule are aligned.
+    // - Canonical Counterpart: openstudio::model::ZoneHVACEnergyRecoveryVentilatorController.
+    // - Implemented Parity: The direct scalar fields and the two exposed optional relationships preserve canonical assignment, validation,
+    //   reset, and reload behavior.
+    // - Lifecycle Boundary: Current EPModel removal preserves the referenced curve and schedule resources; canonical recursive child deletion is
+    //   deferred with the broader ERV ownership lifecycle.
+    // - Documented Delta: The EnergyPlus-only Humidistat Control Zone Name field remains outside the canonical public API and is not exposed.
+    // - Field/Storage Mapping: Scalars, the UnivariateFunctions curve reference, and the bounded continuous schedule reference map directly to
+    //   EnergyPlus ZoneHVAC:EnergyRecoveryVentilator:Controller fields.
+    // - Evidence: `src/model/ZoneHVACEnergyRecoveryVentilatorController.hpp`, `src/model/ZoneHVACEnergyRecoveryVentilatorController.cpp`,
+    //   `src/energyplus/ForwardTranslator/ForwardTranslateZoneHVACEnergyRecoveryVentilatorController.cpp`, and the epmodel controller tests.
+    // - Remaining Parity Work: Keep broader ERV ownership, child deletion, and topology behavior with the owning ZoneHVACEnergyRecoveryVentilator.
+
+    boost::optional<Curve> electronicEnthalpyLimitCurve() const;
+    bool setElectronicEnthalpyLimitCurve(const Curve& curve);
+    void resetElectronicEnthalpyLimitCurve();
+
+    boost::optional<Schedule> timeofDayEconomizerFlowControlSchedule() const;
+    bool setTimeofDayEconomizerFlowControlSchedule(Schedule& schedule);
+    void resetTimeofDayEconomizerFlowControlSchedule();
+
     boost::optional<double> temperatureHighLimit() const;
     bool setTemperatureHighLimit(double temperatureHighLimit);
     void resetTemperatureHighLimit();
