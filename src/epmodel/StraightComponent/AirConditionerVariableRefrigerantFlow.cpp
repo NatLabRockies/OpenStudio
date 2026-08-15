@@ -8,6 +8,8 @@
 
 #include "Model.hpp"
 #include "ModelObject.hpp"
+#include "Curve/Curve.hpp"
+#include "Curve/Curve_Impl.hpp"
 #include "HVACComponent/ThermalZone.hpp"
 #include "HVACComponent/ThermalZone_Impl.hpp"
 #include "Loop/PlantLoop.hpp"
@@ -204,6 +206,18 @@ namespace epmodel {
 
   bool AirConditionerVariableRefrigerantFlow::setDefrostStrategy(const std::string& defrostStrategy) {
     return getImpl<detail::AirConditionerVariableRefrigerantFlow_Impl>()->setDefrostStrategy(defrostStrategy);
+  }
+
+  boost::optional<Curve> AirConditionerVariableRefrigerantFlow::defrostEnergyInputRatioModifierFunctionofTemperatureCurve() const {
+    return getImpl<detail::AirConditionerVariableRefrigerantFlow_Impl>()->defrostEnergyInputRatioModifierFunctionofTemperatureCurve();
+  }
+
+  bool AirConditionerVariableRefrigerantFlow::setDefrostEnergyInputRatioModifierFunctionofTemperatureCurve(const Curve& curve) {
+    return getImpl<detail::AirConditionerVariableRefrigerantFlow_Impl>()->setDefrostEnergyInputRatioModifierFunctionofTemperatureCurve(curve);
+  }
+
+  void AirConditionerVariableRefrigerantFlow::resetDefrostEnergyInputRatioModifierFunctionofTemperatureCurve() {
+    getImpl<detail::AirConditionerVariableRefrigerantFlow_Impl>()->resetDefrostEnergyInputRatioModifierFunctionofTemperatureCurve();
   }
 
   std::string AirConditionerVariableRefrigerantFlow::condenserType() const {
@@ -566,6 +580,33 @@ namespace epmodel {
 
     bool AirConditionerVariableRefrigerantFlow_Impl::setDefrostStrategy(const std::string& defrostStrategy) {
       return setString(openstudio::AirConditioner_VariableRefrigerantFlowFields::DefrostStrategy, defrostStrategy);
+    }
+
+    boost::optional<Curve> AirConditionerVariableRefrigerantFlow_Impl::defrostEnergyInputRatioModifierFunctionofTemperatureCurve() const {
+      return getObject<ModelObject>().getModelObjectTarget<Curve>(
+        openstudio::AirConditioner_VariableRefrigerantFlowFields::DefrostEnergyInputRatioModifierFunctionofTemperatureCurveName);
+    }
+
+    bool AirConditionerVariableRefrigerantFlow_Impl::setDefrostEnergyInputRatioModifierFunctionofTemperatureCurve(const Curve& curve) {
+      constexpr auto field = openstudio::AirConditioner_VariableRefrigerantFlowFields::DefrostEnergyInputRatioModifierFunctionofTemperatureCurveName;
+      if (curve.model() != model()) {
+        LOG_FREE(Warn, "openstudio.epmodel.AirConditionerVariableRefrigerantFlow",
+                 "Cannot set the defrost energy input ratio modifier curve because it belongs to a different model.");
+        return false;
+      }
+      if (!model().canBeTarget(curve.handle(), iddObject().objectLists(field))) {
+        LOG_FREE(Warn, "openstudio.epmodel.AirConditionerVariableRefrigerantFlow",
+                 "Cannot set the defrost energy input ratio modifier curve because curve type '" << curve.iddObject().type().valueName()
+                                                                                                 << "' is not accepted by the VRF field.");
+        return false;
+      }
+      return setPointer(field, curve.handle(), false);
+    }
+
+    void AirConditionerVariableRefrigerantFlow_Impl::resetDefrostEnergyInputRatioModifierFunctionofTemperatureCurve() {
+      constexpr auto field = openstudio::AirConditioner_VariableRefrigerantFlowFields::DefrostEnergyInputRatioModifierFunctionofTemperatureCurveName;
+      OS_ASSERT(setPointer(field, Handle(), false));
+      OS_ASSERT(openstudio::detail::IdfObject_Impl::setString(field, "", false));
     }
 
     std::string AirConditionerVariableRefrigerantFlow_Impl::condenserType() const {

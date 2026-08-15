@@ -8,6 +8,10 @@
 #include "EPModelFixture.hpp"
 #include "../HVACComponent/ThermalZone.hpp"
 #include "../HVACComponent/ThermalZone_Impl.hpp"
+#include "../Curve/CurveBicubic.hpp"
+#include "../Curve/CurveBiquadratic.hpp"
+#include "../Curve/CurveBiquadratic_Impl.hpp"
+#include "../Curve/CurveQuadratic.hpp"
 #include "../StraightComponent/AirConditionerVariableRefrigerantFlow.hpp"
 #include "../StraightComponent/AirConditionerVariableRefrigerantFlow_Impl.hpp"
 #include "../Loop/PlantLoop.hpp"
@@ -24,6 +28,7 @@
 #include <utilities/idd/AirConditioner_VariableRefrigerantFlow_FieldEnums.hxx>
 #include <utilities/idd/ZoneTerminalUnitList_FieldEnums.hxx>
 #include <utilities/idf/WorkspaceExtensibleGroup.hpp>
+#include <utilities/idf/IdfObject_Impl.hpp>
 #include <utilities/idf/WorkspaceObject_Impl.hpp>
 
 #include <utility>
@@ -63,12 +68,102 @@ TEST_F(EPModelFixture, AirConditionerVariableRefrigerantFlow_DefaultConstructor)
   EXPECT_FALSE(vrf.zoneforMasterThermostatLocation());
   EXPECT_FALSE(vrf.thermostatPrioritySchedule());
   EXPECT_FALSE(vrf.basinHeaterOperatingSchedule());
+  EXPECT_FALSE(vrf.defrostEnergyInputRatioModifierFunctionofTemperatureCurve());
   EXPECT_TRUE(vrf.terminals().empty());
   const auto lists = model.getObjectsByType(openstudio::IddObjectType::ZoneTerminalUnitList);
   ASSERT_EQ(1u, lists.size());
   auto list = vrf.getModelObjectTarget<ModelObject>(openstudio::AirConditioner_VariableRefrigerantFlowFields::ZoneTerminalUnitListName);
   ASSERT_TRUE(list);
   EXPECT_EQ(lists.front().handle(), list->handle());
+}
+
+TEST_F(EPModelFixture, AirConditionerVariableRefrigerantFlow_DefrostEIRModifierCurve) {
+  const auto idfPath = uniqueIdfPath("epmodel-vrf-defrost-eir-curve");
+  const ScopedFileRemoval removeIdf(idfPath);
+  Model model;
+  Model foreignModel;
+  AirConditionerVariableRefrigerantFlow vrf(model);
+  ZoneHVACTerminalUnitVariableRefrigerantFlow terminal(model);
+  CurveBiquadratic initialCurve(model);
+  CurveBiquadratic replacementCurve(model);
+  CurveBicubic alternateAllowedCurve(model);
+  CurveQuadratic disallowedCurve(model);
+  CurveBiquadratic foreignCurve(foreignModel);
+  ASSERT_TRUE(vrf.setName("Standard VRF Defrost EIR"));
+  ASSERT_TRUE(terminal.setName("Standard VRF Defrost EIR Terminal"));
+  ASSERT_TRUE(initialCurve.setName("Standard VRF Initial Defrost EIR"));
+  ASSERT_TRUE(replacementCurve.setName("Standard VRF Replacement Defrost EIR"));
+  ASSERT_TRUE(alternateAllowedCurve.setName("Standard VRF Alternate Defrost EIR"));
+  ASSERT_TRUE(vrf.addTerminal(terminal));
+
+  constexpr unsigned field = openstudio::AirConditioner_VariableRefrigerantFlowFields::DefrostEnergyInputRatioModifierFunctionofTemperatureCurveName;
+  EXPECT_FALSE(vrf.defrostEnergyInputRatioModifierFunctionofTemperatureCurve());
+  EXPECT_TRUE(vrf.setDefrostEnergyInputRatioModifierFunctionofTemperatureCurve(initialCurve));
+  ASSERT_TRUE(vrf.defrostEnergyInputRatioModifierFunctionofTemperatureCurve());
+  EXPECT_EQ(initialCurve, *vrf.defrostEnergyInputRatioModifierFunctionofTemperatureCurve());
+  EXPECT_TRUE(vrf.setDefrostEnergyInputRatioModifierFunctionofTemperatureCurve(alternateAllowedCurve));
+  ASSERT_TRUE(vrf.defrostEnergyInputRatioModifierFunctionofTemperatureCurve());
+  EXPECT_EQ(alternateAllowedCurve, *vrf.defrostEnergyInputRatioModifierFunctionofTemperatureCurve());
+  EXPECT_FALSE(vrf.setDefrostEnergyInputRatioModifierFunctionofTemperatureCurve(disallowedCurve));
+  EXPECT_FALSE(vrf.setDefrostEnergyInputRatioModifierFunctionofTemperatureCurve(foreignCurve));
+  ASSERT_TRUE(vrf.defrostEnergyInputRatioModifierFunctionofTemperatureCurve());
+  EXPECT_EQ(alternateAllowedCurve, *vrf.defrostEnergyInputRatioModifierFunctionofTemperatureCurve());
+
+  auto workspaceImpl = vrf.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  ASSERT_TRUE(workspaceImpl);
+  ASSERT_TRUE(workspaceImpl->setPointer(field, openstudio::Handle(), false));
+  ASSERT_TRUE(workspaceImpl->openstudio::detail::IdfObject_Impl::setString(field, "Unresolved Standard VRF Defrost EIR", false));
+  EXPECT_FALSE(vrf.defrostEnergyInputRatioModifierFunctionofTemperatureCurve());
+  vrf.resetDefrostEnergyInputRatioModifierFunctionofTemperatureCurve();
+  EXPECT_FALSE(vrf.defrostEnergyInputRatioModifierFunctionofTemperatureCurve());
+  EXPECT_EQ("", workspaceImpl->openstudio::detail::IdfObject_Impl::getString(field, false, true).value_or(""));
+
+  ASSERT_TRUE(vrf.setDefrostEnergyInputRatioModifierFunctionofTemperatureCurve(initialCurve));
+  ASSERT_TRUE(model.save(idfPath, true));
+  auto loadedModel = Model::load(idfPath);
+  ASSERT_TRUE(loadedModel);
+  auto loadedVRF = loadedModel->getConcreteModelObjectByName<AirConditionerVariableRefrigerantFlow>("Standard VRF Defrost EIR");
+  auto loadedTerminal = loadedModel->getConcreteModelObjectByName<ZoneHVACTerminalUnitVariableRefrigerantFlow>("Standard VRF Defrost EIR Terminal");
+  auto loadedInitialCurve = loadedModel->getConcreteModelObjectByName<CurveBiquadratic>("Standard VRF Initial Defrost EIR");
+  auto loadedReplacementCurve = loadedModel->getConcreteModelObjectByName<CurveBiquadratic>("Standard VRF Replacement Defrost EIR");
+  ASSERT_TRUE(loadedVRF);
+  ASSERT_TRUE(loadedTerminal);
+  ASSERT_TRUE(loadedInitialCurve);
+  ASSERT_TRUE(loadedReplacementCurve);
+  ASSERT_TRUE(loadedVRF->defrostEnergyInputRatioModifierFunctionofTemperatureCurve());
+  EXPECT_EQ(*loadedInitialCurve, *loadedVRF->defrostEnergyInputRatioModifierFunctionofTemperatureCurve());
+  ASSERT_TRUE(loadedVRF->setDefrostEnergyInputRatioModifierFunctionofTemperatureCurve(*loadedReplacementCurve));
+  ASSERT_TRUE(loadedModel->save(idfPath, true));
+
+  auto replacedModel = Model::load(idfPath);
+  ASSERT_TRUE(replacedModel);
+  auto replacedVRF = replacedModel->getConcreteModelObjectByName<AirConditionerVariableRefrigerantFlow>("Standard VRF Defrost EIR");
+  auto replacedCurve = replacedModel->getConcreteModelObjectByName<CurveBiquadratic>("Standard VRF Replacement Defrost EIR");
+  ASSERT_TRUE(replacedVRF);
+  ASSERT_TRUE(replacedCurve);
+  ASSERT_TRUE(replacedVRF->defrostEnergyInputRatioModifierFunctionofTemperatureCurve());
+  EXPECT_EQ(*replacedCurve, *replacedVRF->defrostEnergyInputRatioModifierFunctionofTemperatureCurve());
+  replacedVRF->resetDefrostEnergyInputRatioModifierFunctionofTemperatureCurve();
+  ASSERT_TRUE(replacedModel->save(idfPath, true));
+
+  auto resetModel = Model::load(idfPath);
+  ASSERT_TRUE(resetModel);
+  auto resetVRF = resetModel->getConcreteModelObjectByName<AirConditionerVariableRefrigerantFlow>("Standard VRF Defrost EIR");
+  auto resetTerminal = resetModel->getConcreteModelObjectByName<ZoneHVACTerminalUnitVariableRefrigerantFlow>("Standard VRF Defrost EIR Terminal");
+  ASSERT_TRUE(resetVRF);
+  ASSERT_TRUE(resetTerminal);
+  EXPECT_FALSE(resetVRF->defrostEnergyInputRatioModifierFunctionofTemperatureCurve());
+  ASSERT_EQ(1u, resetVRF->terminals().size());
+  EXPECT_EQ(*resetTerminal, resetVRF->terminals().front());
+  auto terminalList = resetVRF->getModelObjectTarget<ModelObject>(openstudio::AirConditioner_VariableRefrigerantFlowFields::ZoneTerminalUnitListName);
+  ASSERT_TRUE(terminalList);
+  CurveBiquadratic retainedCurve(*resetModel);
+  ASSERT_TRUE(resetVRF->setDefrostEnergyInputRatioModifierFunctionofTemperatureCurve(retainedCurve));
+  EXPECT_FALSE(resetVRF->remove().empty());
+  EXPECT_TRUE(resetModel->getObject(retainedCurve.handle()));
+  EXPECT_TRUE(resetModel->getObject(resetTerminal->handle()));
+  EXPECT_FALSE(resetTerminal->vrfSystem());
+  EXPECT_FALSE(resetModel->getObject(terminalList->handle()));
 }
 
 TEST_F(EPModelFixture, AirConditionerVariableRefrigerantFlow_ScalarAccessors_RoundTrip) {

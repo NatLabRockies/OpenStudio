@@ -14,6 +14,7 @@ namespace openstudio {
 namespace epmodel {
 
   class ModelObject;
+  class Curve;
   class Schedule;
   class ThermalZone;
   class ZoneHVACTerminalUnitVariableRefrigerantFlow;
@@ -81,6 +82,10 @@ namespace epmodel {
 
       std::string defrostStrategy() const;
       bool setDefrostStrategy(const std::string& defrostStrategy);
+
+      boost::optional<Curve> defrostEnergyInputRatioModifierFunctionofTemperatureCurve() const;
+      bool setDefrostEnergyInputRatioModifierFunctionofTemperatureCurve(const Curve& curve);
+      void resetDefrostEnergyInputRatioModifierFunctionofTemperatureCurve();
 
       std::string condenserType() const;
       bool setCondenserType(const std::string& condenserType);

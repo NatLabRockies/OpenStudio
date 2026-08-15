@@ -17,6 +17,7 @@ namespace epmodel {
 
   class Model;
   class Node;
+  class Curve;
   class Schedule;
   class ThermalZone;
   class ZoneHVACTerminalUnitVariableRefrigerantFlow;
@@ -50,19 +51,22 @@ namespace epmodel {
     std::vector<ZoneHVACTerminalUnitVariableRefrigerantFlow> terminals() const;
 
     // Schema Alignment Notes:
-    // - Status: Partial Parity. Core VRF scalar controls, sizing/performance fields, direct schedule/zone relationships, and the standard VRF
-    //   terminal relationship are aligned, while curve APIs remain intentionally hidden.
+    // - Status: Partial Parity. Core VRF scalar controls, sizing/performance fields, direct schedule/zone relationships, the defrost EIR curve,
+    //   and the standard VRF terminal relationship are aligned.
     // - Canonical Counterpart: openstudio::model::AirConditionerVariableRefrigerantFlow.
     // - Implemented Parity: The selected scalar methods, availability/thermostat-priority/basin schedules, master-thermostat zone, terminal
     //   relationship, and demand-side `addToNode` preserve the canonical contract and current plant-loop insertion behavior. Terminal membership
     //   is deliberately exclusive and duplicate-safe rather than reproducing the canonical wrapper's duplicate and competing-list inconsistencies.
-    // - Documented Delta: Curve helpers remain omitted. `addToNode` is intentionally limited to PlantLoop demand-side insertion, and no broader
-    //   VRF topology or coupling between the optional thermostat relationships and priority-control scalar is claimed here.
+    // - Documented Delta: Other curve helpers remain omitted. `addToNode` is intentionally limited to PlantLoop demand-side insertion, and no
+    //   broader VRF topology or coupling between the optional thermostat relationships and priority-control scalar is claimed here.
     // - Field/Storage Mapping: Most preserved scalar methods map directly to EnergyPlus `AirConditioner:VariableRefrigerantFlow` fields. Terminal
-    //   membership uses the EnergyPlus `ZoneTerminalUnitList` object with pointer-backed extensible entries. `condenserType()` follows the
-    //   canonical defaulted readback behavior by deriving `AirCooled` versus `WaterCooled` from current plant-loop attachment when blank.
+    //   membership uses the EnergyPlus `ZoneTerminalUnitList` object with pointer-backed extensible entries. The defrost EIR curve maps to its
+    //   optional `BivariateFunctions` field. `condenserType()` follows the canonical defaulted readback behavior by deriving `AirCooled`
+    //   versus `WaterCooled` from current plant-loop attachment when blank.
+    // - Ownership: VRF removal owns only its terminal list and deliberately preserves every referenced standard-VRF performance curve, including
+    //   the defrost EIR curve; full all-curve ownership remains deferred.
     // - Evidence: `src/model/AirConditionerVariableRefrigerantFlow.hpp`, `src/model/AirConditionerVariableRefrigerantFlow.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirConditionerVariableRefrigerantFlow.cpp`, and `src/epmodel/test/AirConditionerVariableRefrigerantFlow_GTest.cpp`.
-    // - Remaining Parity Work: Add the omitted curve accessors when a bounded workflow needs them.
+    // - Remaining Parity Work: Add the remaining curve accessors and decide any full all-curve ownership contract separately.
     Schedule availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);
 
@@ -105,6 +109,10 @@ namespace epmodel {
 
     std::string defrostStrategy() const;
     bool setDefrostStrategy(const std::string& defrostStrategy);
+
+    boost::optional<Curve> defrostEnergyInputRatioModifierFunctionofTemperatureCurve() const;
+    bool setDefrostEnergyInputRatioModifierFunctionofTemperatureCurve(const Curve& curve);
+    void resetDefrostEnergyInputRatioModifierFunctionofTemperatureCurve();
 
     std::string condenserType() const;
     bool setCondenserType(const std::string& condenserType);
