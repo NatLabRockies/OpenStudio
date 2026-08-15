@@ -20,6 +20,11 @@ Use these references when needed:
 
 ## Implementation
 
+- Treat canonical form as the normal API contract. Construction and load
+  canonicalization establish the desired model invariants; ordinary getters
+  and mutators then assume those invariants instead of rediscovering or
+  conditionally repairing them throughout the implementation. Keep validation
+  at genuine input, ownership, and transaction boundaries.
 - Preserve public `openstudio::model` API shape for parity work. Do not add
   new public APIs unless divergence is intentional and explicitly documented.
 - For EnergyPlus-only connective-tissue types with no canonical
@@ -120,8 +125,8 @@ Use these references when needed:
   the minimum invalid content necessary to restore validity.
 - Do not leave partially repaired or internally contradictory topology behind.
 - Outside canonicalizers, normal API methods should not invoke
-  canonicalization. They should assume canonical state and rely on established
-  invariants.
+  canonicalization or repeat canonical-state checks defensively. They should
+  assume canonical state and rely on established invariants.
 - When one type must be repaired before another, put that ordering in a common
   owner such as the Model canonicalizer. Do not add runtime fallback paths.
 - After canonicalization, prefer assertions and direct logic over fallback
