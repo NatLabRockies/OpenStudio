@@ -19,6 +19,7 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class Node;
 
   namespace detail {
     class FluidCoolerTwoSpeed_Impl;
@@ -40,17 +41,22 @@ namespace epmodel {
     static std::vector<std::string> performanceInputMethodValues();
 
     // Schema Alignment Notes:
-    // - Status: Parity with documented deltas. The canonical two-speed fluid-cooler scalar surface and plant-supply placement rule are present, while
-    //   the outdoor-air inlet relationship helper and resolved autosized-value lookup remain out of scope.
+    // - Status: Parity with documented deltas. The canonical two-speed fluid-cooler scalar surface, outdoor-air inlet relationship, and plant-supply
+    //   placement rule are present, while resolved autosized-value lookup remains out of scope.
     // - Canonical Counterpart: openstudio::model::FluidCoolerTwoSpeed.
-    // - Implemented Parity: The preserved API matches the canonical high/low speed performance, capacity, temperature, and autosize-token accessors
-    //   with matching default behavior, and inherited `addToNode(...)` follows the canonical plant-supply-only insertion contract.
-    // - Documented Delta: The public wrapper still omits `outdoorAirInletNode()` and its mutators, and the `autosized*()` getters remain intentionally
-    //   unresolved because epmodel does not yet expose SQL-backed sizing results.
-    // - Field/Storage Mapping: These accessors map directly to EnergyPlus `FluidCooler:TwoSpeed` scalar fields used by the forward translator.
+    // - Implemented Parity: The preserved API matches the canonical high/low speed performance, capacity, temperature, autosize-token, and optional
+    //   outdoor-air Node accessors with matching default behavior; inherited `addToNode(...)` follows the canonical plant-supply-only insertion
+    //   contract. The Node API owns only field A5 and its generated `OutdoorAir:NodeList` declaration, preserves caller-owned Nodes and direct
+    //   `OutdoorAir:Node` objects, and lets direct declarations take precedence over conflicting NodeList rows.
+    // - Documented Delta: The `autosized*()` getters remain intentionally unresolved because epmodel does not yet expose SQL-backed sizing results.
+    // - Field/Storage Mapping: These accessors map directly to EnergyPlus `FluidCooler:TwoSpeed` fields used by the forward translator. Configured A5
+    //   is an optional NodeType field and remains blank at construction; the canonical forward translator emits it when present.
     // - Evidence: `src/model/FluidCoolerTwoSpeed.hpp`, `src/model/FluidCoolerTwoSpeed.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateFluidCoolerTwoSpeed.cpp`.
-    // - Remaining Parity Work: Add the omitted outdoor-air relationship helper and wire `autosized*()` to resolved sizing results without changing the
-    //   preserved scalar signatures.
+    // - Remaining Parity Work: Wire `autosized*()` to resolved sizing results without changing the preserved scalar signatures.
+    boost::optional<Node> outdoorAirInletNode() const;
+    bool setOutdoorAirInletNode(const Node& node);
+    void resetOutdoorAirInletNode();
+
     std::string performanceInputMethod() const;
     bool setPerformanceInputMethod(const std::string& performanceInputMethod);
 

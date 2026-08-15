@@ -26,6 +26,11 @@ namespace epmodel {
       unsigned inletPort() const override;
       unsigned outletPort() const override;
       bool addToNode(Node& node) override;
+      std::vector<openstudio::IdfObject> remove() override;
+
+      boost::optional<Node> outdoorAirInletNode() const;
+      bool setOutdoorAirInletNode(const Node& node);
+      void resetOutdoorAirInletNode();
 
       std::vector<std::string> performanceInputMethodValues() const;
 
@@ -103,6 +108,14 @@ namespace epmodel {
 
       double lowFanSpeedFanPowerSizingFactor() const;
       bool setLowFanSpeedFanPowerSizingFactor(double lowFanSpeedFanPowerSizingFactor);
+
+     protected:
+      void doCanonicalize(LoadContext& context) override;
+
+     private:
+      bool maintainOutdoorAirInletNode(const std::string& previousNodeName = {});
+      unsigned removeOutdoorAirNodeListEntries(const std::string& nodeName);
+      void removeUnusedOutdoorAirInletNode(const std::string& nodeName);
     };
 
   }  // namespace detail

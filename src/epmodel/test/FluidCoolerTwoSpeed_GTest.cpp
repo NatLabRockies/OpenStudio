@@ -5,16 +5,72 @@
 
 #include <gtest/gtest.h>
 
-#include <utilities/idd/FluidCooler_TwoSpeed_FieldEnums.hxx>
-
 #include "EPModelFixture.hpp"
 #include "../Loop/AirLoopHVAC.hpp"
 #include "../Loop/PlantLoop.hpp"
+#include "../ModelObject/ModelObject.hpp"
 #include "../Splitter/AirLoopHVACZoneSplitter.hpp"
+#include "../StraightComponent/FluidCoolerSingleSpeed.hpp"
 #include "../StraightComponent/FluidCoolerTwoSpeed.hpp"
+#include "../StraightComponent/FluidCoolerTwoSpeed_Impl.hpp"
 #include "../StraightComponent/Node.hpp"
 
+#include <utilities/core/Filesystem.hpp>
+#include <utilities/core/StringHelpers.hpp>
+#include <utilities/core/UUID.hpp>
+#include <utilities/idd/FluidCooler_TwoSpeed_FieldEnums.hxx>
+#include <utilities/idd/OutdoorAir_NodeList_FieldEnums.hxx>
+#include <utilities/idf/WorkspaceObject_Impl.hpp>
+#include <utilities/idf/WorkspaceExtensibleGroup.hpp>
+
+#include <algorithm>
+#include <utility>
+
 using namespace openstudio::epmodel;
+
+namespace {
+
+class ScopedFileRemoval
+{
+ public:
+  explicit ScopedFileRemoval(openstudio::path path) : m_path(std::move(path)) {}
+
+  ~ScopedFileRemoval() {
+    boost::system::error_code error;
+    boost::filesystem::remove(m_path, error);
+  }
+
+ private:
+  openstudio::path m_path;
+};
+
+openstudio::path uniqueIdfPath(const std::string& stem) {
+  return openstudio::tempDir() / openstudio::toPath(stem + "-" + openstudio::removeBraces(openstudio::createUUID()) + ".idf");
+}
+
+unsigned outdoorAirNodeListEntryCount(const Model& model, const std::string& nodeName) {
+  unsigned result = 0;
+  for (const auto& object : model.getObjectsByType(openstudio::IddObjectType::OutdoorAir_NodeList)) {
+    for (const auto& group : object.extensibleGroups()) {
+      const auto workspaceGroup = group.optionalCast<openstudio::WorkspaceExtensibleGroup>();
+      if (!workspaceGroup) {
+        continue;
+      }
+      const auto value = workspaceGroup->getString(openstudio::OutdoorAir_NodeListExtensibleFields::NodeorNodeListName);
+      if (value && openstudio::istringEqual(*value, nodeName)) {
+        ++result;
+      }
+    }
+  }
+  return result;
+}
+
+bool hasOutdoorAirNode(const Model& model, const std::string& nodeName) {
+  const auto objects = model.getObjectsByType(openstudio::IddObjectType::OutdoorAir_Node);
+  return std::ranges::any_of(objects, [&](const auto& object) { return openstudio::istringEqual(object.nameString(), nodeName); });
+}
+
+}  // namespace
 
 TEST_F(EPModelFixture, FluidCoolerTwoSpeed_DefaultConstructor) {
   Model model;
@@ -22,6 +78,8 @@ TEST_F(EPModelFixture, FluidCoolerTwoSpeed_DefaultConstructor) {
 
   EXPECT_EQ(FluidCoolerTwoSpeed::iddObjectType(), fluidCooler.iddObject().type());
   EXPECT_FALSE(fluidCooler.nameString().empty());
+  EXPECT_FALSE(fluidCooler.outdoorAirInletNode());
+  EXPECT_TRUE(model.getObjectsByType(openstudio::IddObjectType::OutdoorAir_NodeList).empty());
 
   EXPECT_EQ("NominalCapacity", fluidCooler.performanceInputMethod());
 
@@ -219,4 +277,205 @@ TEST_F(EPModelFixture, FluidCoolerTwoSpeed_AddToNode_PlantSupplyOnly) {
   EXPECT_FALSE(secondFluidCooler.loop());
   EXPECT_FALSE(secondFluidCooler.inletModelObject());
   EXPECT_FALSE(secondFluidCooler.outletModelObject());
+}
+
+TEST_F(EPModelFixture, FluidCoolerTwoSpeed_OutdoorAirInletSetReplaceResetAndForeignPreservation) {
+  Model model;
+  FluidCoolerTwoSpeed fluidCooler(model);
+  Node firstNode(model);
+  Node replacementNode(model);
+  ASSERT_TRUE(firstNode.setName("Two Speed Outdoor Air Inlet"));
+  ASSERT_TRUE(replacementNode.setName("Two Speed Replacement Outdoor Air Inlet"));
+  const auto firstNodeHandle = firstNode.handle();
+  const auto replacementNodeHandle = replacementNode.handle();
+
+  ASSERT_TRUE(fluidCooler.setOutdoorAirInletNode(firstNode));
+  ASSERT_TRUE(fluidCooler.outdoorAirInletNode());
+  EXPECT_EQ(firstNodeHandle, fluidCooler.outdoorAirInletNode()->handle());
+  EXPECT_EQ(1u, outdoorAirNodeListEntryCount(model, firstNode.nameString()));
+
+  ASSERT_TRUE(fluidCooler.setOutdoorAirInletNode(replacementNode));
+  ASSERT_TRUE(fluidCooler.outdoorAirInletNode());
+  EXPECT_EQ(replacementNodeHandle, fluidCooler.outdoorAirInletNode()->handle());
+  EXPECT_EQ(0u, outdoorAirNodeListEntryCount(model, firstNode.nameString()));
+  EXPECT_EQ(1u, outdoorAirNodeListEntryCount(model, replacementNode.nameString()));
+  EXPECT_TRUE(model.getObject(firstNodeHandle));
+
+  Model foreignModel;
+  Node foreignNode(foreignModel);
+  EXPECT_FALSE(fluidCooler.setOutdoorAirInletNode(foreignNode));
+  ASSERT_TRUE(fluidCooler.outdoorAirInletNode());
+  EXPECT_EQ(replacementNodeHandle, fluidCooler.outdoorAirInletNode()->handle());
+  EXPECT_EQ(1u, outdoorAirNodeListEntryCount(model, replacementNode.nameString()));
+
+  fluidCooler.resetOutdoorAirInletNode();
+  EXPECT_FALSE(fluidCooler.outdoorAirInletNode());
+  EXPECT_EQ(0u, outdoorAirNodeListEntryCount(model, replacementNode.nameString()));
+  EXPECT_TRUE(model.getObject(replacementNodeHandle));
+  fluidCooler.resetOutdoorAirInletNode();
+}
+
+TEST_F(EPModelFixture, FluidCoolerTwoSpeed_OutdoorAirDirectDeclarationTakesPrecedence) {
+  Model model;
+  FluidCoolerTwoSpeed fluidCooler(model);
+  Node outdoorAirNode(model);
+  ASSERT_TRUE(outdoorAirNode.setName("Direct Two Speed Outdoor Air Node"));
+
+  // These low-level objects intentionally model imported EnergyPlus outdoor-air declarations; epmodel has no typed declaration wrapper.
+  auto directDeclaration = ModelObject::create(openstudio::IddObjectType::OutdoorAir_Node, model);
+  ASSERT_TRUE(directDeclaration.setName(outdoorAirNode.nameString()));
+  auto conflictingList = ModelObject::create(openstudio::IddObjectType::OutdoorAir_NodeList, model);
+  auto conflictingGroup = conflictingList.pushExtensibleGroup().optionalCast<openstudio::WorkspaceExtensibleGroup>();
+  ASSERT_TRUE(conflictingGroup);
+  ASSERT_TRUE(conflictingGroup->setString(openstudio::OutdoorAir_NodeListExtensibleFields::NodeorNodeListName, outdoorAirNode.nameString()));
+  auto retainedGroup = conflictingList.pushExtensibleGroup().optionalCast<openstudio::WorkspaceExtensibleGroup>();
+  ASSERT_TRUE(retainedGroup);
+  ASSERT_TRUE(retainedGroup->setString(openstudio::OutdoorAir_NodeListExtensibleFields::NodeorNodeListName, "Unrelated Outdoor Air Node"));
+
+  ASSERT_TRUE(fluidCooler.setOutdoorAirInletNode(outdoorAirNode));
+  EXPECT_TRUE(hasOutdoorAirNode(model, outdoorAirNode.nameString()));
+  EXPECT_EQ(0u, outdoorAirNodeListEntryCount(model, outdoorAirNode.nameString()));
+  EXPECT_EQ(1u, outdoorAirNodeListEntryCount(model, "Unrelated Outdoor Air Node"));
+
+  fluidCooler.resetOutdoorAirInletNode();
+  EXPECT_TRUE(hasOutdoorAirNode(model, outdoorAirNode.nameString()));
+  EXPECT_TRUE(model.getObject(outdoorAirNode.handle()));
+}
+
+TEST_F(EPModelFixture, FluidCoolerTwoSpeed_OutdoorAirInletCanonicalizationRepairsImportedStorage) {
+  Model model;
+  FluidCoolerTwoSpeed fluidCooler(model);
+  ASSERT_TRUE(fluidCooler.setName("Imported Two Speed Fluid Cooler"));
+
+  constexpr auto field = openstudio::FluidCooler_TwoSpeedFields::OutdoorAirInletNodeName;
+  auto workspaceImpl = fluidCooler.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  ASSERT_TRUE(workspaceImpl);
+  // Deliberately seed unresolved raw NodeType text to represent a malformed imported IDF without using a public relationship setter.
+  ASSERT_TRUE(workspaceImpl->setPointer(field, openstudio::Handle(), false));
+  ASSERT_TRUE(workspaceImpl->openstudio::detail::IdfObject_Impl::setString(field, "Imported Two Speed Outdoor Air Node", false));
+  EXPECT_FALSE(fluidCooler.outdoorAirInletNode());
+
+  const auto report = model.canonicalize();
+  EXPECT_EQ(0u, report.errorCount);
+  ASSERT_TRUE(fluidCooler.outdoorAirInletNode());
+  EXPECT_EQ("Imported Two Speed Outdoor Air Node", fluidCooler.outdoorAirInletNode()->nameString());
+  EXPECT_EQ(1u, outdoorAirNodeListEntryCount(model, "Imported Two Speed Outdoor Air Node"));
+
+  const auto secondReport = model.canonicalize();
+  EXPECT_EQ(0u, secondReport.errorCount);
+  EXPECT_EQ(1u, secondReport.infoCount);  // The canonicalizer's summary is the only informational message on the no-op pass.
+  EXPECT_EQ(1u, outdoorAirNodeListEntryCount(model, "Imported Two Speed Outdoor Air Node"));
+
+  const auto importedNodeHandle = fluidCooler.outdoorAirInletNode()->handle();
+  fluidCooler.resetOutdoorAirInletNode();
+  EXPECT_FALSE(fluidCooler.outdoorAirInletNode());
+  EXPECT_EQ(0u, outdoorAirNodeListEntryCount(model, "Imported Two Speed Outdoor Air Node"));
+  EXPECT_TRUE(model.getObject(importedNodeHandle));
+}
+
+TEST_F(EPModelFixture, FluidCoolerTwoSpeed_CanonicalizationRepairsManagedNodeMissingDeclaration) {
+  Model model;
+  FluidCoolerTwoSpeed fluidCooler(model);
+  Node outdoorAirNode(model);
+  ASSERT_TRUE(outdoorAirNode.setName("Managed Two Speed Outdoor Air Node"));
+  ASSERT_TRUE(fluidCooler.setOutdoorAirInletNode(outdoorAirNode));
+  ASSERT_TRUE(fluidCooler.outdoorAirInletNode());
+
+  // Deliberately remove the generated EnergyPlus declaration to represent malformed imported storage around an intact managed pointer.
+  constexpr auto field = openstudio::FluidCooler_TwoSpeedFields::OutdoorAirInletNodeName;
+  auto workspaceImpl = fluidCooler.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  ASSERT_TRUE(workspaceImpl);
+  EXPECT_TRUE(workspaceImpl->openstudio::detail::IdfObject_Impl::getString(field, false, true).value_or("").empty());
+  for (auto object : model.getObjectsByType(openstudio::IddObjectType::OutdoorAir_NodeList)) {
+    object.remove();
+  }
+  EXPECT_EQ(0u, outdoorAirNodeListEntryCount(model, outdoorAirNode.nameString()));
+  ASSERT_TRUE(fluidCooler.outdoorAirInletNode());
+  EXPECT_EQ(outdoorAirNode.handle(), fluidCooler.outdoorAirInletNode()->handle());
+
+  const auto report = model.canonicalize();
+  EXPECT_EQ(0u, report.errorCount);
+  ASSERT_TRUE(fluidCooler.outdoorAirInletNode());
+  EXPECT_EQ(outdoorAirNode.handle(), fluidCooler.outdoorAirInletNode()->handle());
+  EXPECT_EQ(1u, outdoorAirNodeListEntryCount(model, outdoorAirNode.nameString()));
+}
+
+TEST_F(EPModelFixture, FluidCoolerTwoSpeed_OutdoorAirInletTwoStageReloadMutationAndReset) {
+  const auto firstPath = uniqueIdfPath("epmodel-fluid-cooler-two-outdoor-air-first");
+  const auto secondPath = uniqueIdfPath("epmodel-fluid-cooler-two-outdoor-air-second");
+  const ScopedFileRemoval removeFirst(firstPath);
+  const ScopedFileRemoval removeSecond(secondPath);
+
+  Model model;
+  FluidCoolerTwoSpeed fluidCooler(model);
+  ASSERT_TRUE(fluidCooler.setName("Reload Two Speed Fluid Cooler"));
+  Node firstNode(model);
+  ASSERT_TRUE(firstNode.setName("Reload Two Speed Outdoor Air Node"));
+  ASSERT_TRUE(fluidCooler.setOutdoorAirInletNode(firstNode));
+  ASSERT_TRUE(model.save(firstPath, true));
+
+  auto loadedModel = Model::load(firstPath);
+  ASSERT_TRUE(loadedModel);
+  auto loadedFluidCooler = loadedModel->getConcreteModelObjectByName<FluidCoolerTwoSpeed>("Reload Two Speed Fluid Cooler");
+  ASSERT_TRUE(loadedFluidCooler);
+  ASSERT_TRUE(loadedFluidCooler->outdoorAirInletNode());
+  EXPECT_EQ("Reload Two Speed Outdoor Air Node", loadedFluidCooler->outdoorAirInletNode()->nameString());
+  Node replacementNode(*loadedModel);
+  ASSERT_TRUE(replacementNode.setName("Reload Two Speed Replacement Outdoor Air Node"));
+  ASSERT_TRUE(loadedFluidCooler->setOutdoorAirInletNode(replacementNode));
+  EXPECT_EQ(0u, outdoorAirNodeListEntryCount(*loadedModel, "Reload Two Speed Outdoor Air Node"));
+  EXPECT_EQ(1u, outdoorAirNodeListEntryCount(*loadedModel, replacementNode.nameString()));
+  ASSERT_TRUE(loadedModel->save(secondPath, true));
+
+  auto reloadedModel = Model::load(secondPath);
+  ASSERT_TRUE(reloadedModel);
+  auto reloadedFluidCooler = reloadedModel->getConcreteModelObjectByName<FluidCoolerTwoSpeed>("Reload Two Speed Fluid Cooler");
+  ASSERT_TRUE(reloadedFluidCooler);
+  ASSERT_TRUE(reloadedFluidCooler->outdoorAirInletNode());
+  EXPECT_EQ("Reload Two Speed Replacement Outdoor Air Node", reloadedFluidCooler->outdoorAirInletNode()->nameString());
+  const auto replacementHandle = reloadedFluidCooler->outdoorAirInletNode()->handle();
+  reloadedFluidCooler->resetOutdoorAirInletNode();
+  EXPECT_FALSE(reloadedFluidCooler->outdoorAirInletNode());
+  EXPECT_EQ(0u, outdoorAirNodeListEntryCount(*reloadedModel, "Reload Two Speed Replacement Outdoor Air Node"));
+  EXPECT_TRUE(reloadedModel->getObject(replacementHandle));
+}
+
+TEST_F(EPModelFixture, FluidCoolerTwoSpeed_RemovalCleansDeclarationAndPreservesNode) {
+  Model model;
+  PlantLoop plantLoop(model);
+  FluidCoolerTwoSpeed fluidCooler(model);
+  const auto fluidCoolerHandle = fluidCooler.handle();
+  Node outdoorAirNode(model);
+  ASSERT_TRUE(outdoorAirNode.setName("Removed Two Speed Outdoor Air Node"));
+  const auto outdoorAirNodeHandle = outdoorAirNode.handle();
+
+  auto supplyOutletNode = plantLoop.supplyOutletNode();
+  ASSERT_TRUE(fluidCooler.addToNode(supplyOutletNode));
+  ASSERT_TRUE(fluidCooler.setOutdoorAirInletNode(outdoorAirNode));
+  EXPECT_EQ(1u, outdoorAirNodeListEntryCount(model, outdoorAirNode.nameString()));
+
+  EXPECT_FALSE(fluidCooler.remove().empty());
+  EXPECT_FALSE(model.getObject(fluidCoolerHandle));
+  EXPECT_EQ(0u, outdoorAirNodeListEntryCount(model, outdoorAirNode.nameString()));
+  EXPECT_TRUE(model.getObject(outdoorAirNodeHandle));
+  EXPECT_TRUE(model.getObject(plantLoop.handle()));
+}
+
+TEST_F(EPModelFixture, FluidCoolers_SharedOutdoorAirDeclarationSurvivesUntilFinalUser) {
+  Model model;
+  FluidCoolerSingleSpeed singleSpeed(model);
+  FluidCoolerTwoSpeed twoSpeed(model);
+  Node sharedNode(model);
+  ASSERT_TRUE(sharedNode.setName("Shared Fluid Cooler Outdoor Air Node"));
+  const auto sharedNodeHandle = sharedNode.handle();
+
+  ASSERT_TRUE(singleSpeed.setOutdoorAirInletNode(sharedNode));
+  ASSERT_TRUE(twoSpeed.setOutdoorAirInletNode(sharedNode));
+  EXPECT_EQ(1u, outdoorAirNodeListEntryCount(model, sharedNode.nameString()));
+
+  singleSpeed.resetOutdoorAirInletNode();
+  EXPECT_EQ(1u, outdoorAirNodeListEntryCount(model, sharedNode.nameString()));
+  EXPECT_FALSE(twoSpeed.remove().empty());
+  EXPECT_EQ(0u, outdoorAirNodeListEntryCount(model, sharedNode.nameString()));
+  EXPECT_TRUE(model.getObject(sharedNodeHandle));
 }
