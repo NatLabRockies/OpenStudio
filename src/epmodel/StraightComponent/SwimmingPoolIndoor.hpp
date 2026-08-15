@@ -21,6 +21,7 @@ namespace epmodel {
 
   class Model;
   class Node;
+  class Schedule;
 
   namespace detail {
     class SwimmingPoolIndoor_Impl;
@@ -40,23 +41,33 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     // Schema Alignment Notes:
-    // - Status: Partial Parity. The canonical indoor-swimming-pool scalar surface and plant-demand placement contract are present, while the
-    //   surface and schedule relationship helpers remain out of scope.
+    // - Status: Partial Parity. The canonical indoor-swimming-pool scalar, schedule, and plant-demand placement contracts are present, while the
+    //   surface relationship remains out of scope.
     // - Canonical Counterpart: openstudio::model::SwimmingPoolIndoor.
-    // - Implemented Parity: The preserved scalar API matches the cover-factor, heating-flow, miscellaneous-power, depth, and occupancy
-    //   accessors, including the canonical exposed constructor defaults for average depth, maximum people, heating flow, and miscellaneous
-    //   power; `addToNode(...)` now mirrors the canonical plant-demand-only restriction; and the pool water node convenience getters project
-    //   the straight-component inlet/outlet topology the same way the canonical wrapper does.
-    // - Documented Delta: Surface-name and all schedule relationship helpers remain intentionally omitted from this EnergyPlus-first wrapper,
-    //   and the `isCover*Defaulted()` / `resetCover*()` helpers are epmodel-only conveniences with no canonical counterpart.
-    // - Field/Storage Mapping: Scalar accessors write directly to EnergyPlus `SwimmingPool:Indoor` fields, while pool water node helpers resolve
-    //   the same inlet/outlet node fields used by loop topology and forward translation.
+    // - Implemented Parity: The preserved scalar and six canonical-required schedule APIs match the canonical names and signatures. Construction
+    //   and load canonicalization attach the canonical schedule values; the three canonical ScheduleRuleset defaults use semantically equivalent
+    //   EnergyPlus Schedule:Constant objects because epmodel has no ScheduleRuleset wrapper. `addToNode(...)` mirrors the canonical
+    //   plant-demand-only restriction, and the node convenience getters project the same straight-component topology.
+    // - Documented Delta: Surface-name remains intentionally omitted from this EnergyPlus-first wrapper, and the `isCover*Defaulted()` /
+    //   `resetCover*()` helpers are epmodel-only conveniences with no canonical counterpart.
+    // - Field/Storage Mapping: Scalar accessors write directly to EnergyPlus `SwimmingPool:Indoor` fields; schedule relationships target the six
+    //   EnergyPlus ScheduleNames fields even where EnergyPlus marks a field optional; and pool water node helpers resolve the inlet/outlet fields
+    //   used by loop topology and translation.
     // - Evidence: `src/model/SwimmingPoolIndoor.hpp`, `src/model/SwimmingPoolIndoor.cpp`,
     //   `src/energyplus/ForwardTranslator/ForwardTranslateSwimmingPoolIndoor.cpp`, and `src/model/test/SwimmingPoolIndoor_GTest.cpp`.
-    // - Remaining Parity Work: Add the omitted surface and schedule relationship helpers and decide whether the epmodel-only cover default/reset
-    //   helpers should remain a documented divergence or be folded back behind canonical-style behavior.
+    // - Remaining Parity Work: Add the omitted surface relationship and decide whether the epmodel-only cover default/reset helpers should remain
+    //   a documented divergence or be folded back behind canonical-style behavior.
     double averageDepth() const;
     bool setAverageDepth(double averageDepth);
+
+    Schedule activityFactorSchedule() const;
+    bool setActivityFactorSchedule(Schedule& schedule);
+
+    Schedule makeupWaterSupplySchedule() const;
+    bool setMakeupWaterSupplySchedule(Schedule& schedule);
+
+    Schedule coverSchedule() const;
+    bool setCoverSchedule(Schedule& schedule);
 
     double coverEvaporationFactor() const;
     bool isCoverEvaporationFactorDefaulted() const;
@@ -84,8 +95,17 @@ namespace epmodel {
     double poolMiscellaneousEquipmentPower() const;
     bool setPoolMiscellaneousEquipmentPower(double poolMiscellaneousEquipmentPower);
 
+    Schedule setpointTemperatureSchedule() const;
+    bool setSetpointTemperatureSchedule(Schedule& schedule);
+
     double maximumNumberofPeople() const;
     bool setMaximumNumberofPeople(double maximumNumberofPeople);
+
+    Schedule peopleSchedule() const;
+    bool setPeopleSchedule(Schedule& schedule);
+
+    Schedule peopleHeatGainSchedule() const;
+    bool setPeopleHeatGainSchedule(Schedule& schedule);
 
     boost::optional<Node> poolWaterInletNode() const;
     boost::optional<Node> poolWaterOutletNode() const;
