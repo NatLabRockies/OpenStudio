@@ -439,6 +439,181 @@ namespace epmodel {
         return boost::none;
       }
 
+      bool rawReferenceMatches(const ModelObject& owner, unsigned field, const ModelObject& expected) {
+        auto workspaceImpl = owner.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+        OS_ASSERT(workspaceImpl);
+        const auto raw = workspaceImpl->openstudio::detail::IdfObject_Impl::getString(field, false, true);
+        const auto expectedName = expected.name();
+        return raw && !raw->empty()
+               && (openstudio::toUUID(*raw) == expected.handle() || (expectedName && openstudio::istringEqual(*raw, *expectedName)));
+      }
+
+      bool rawReferenceAgrees(const ModelObject& owner, unsigned field, const ModelObject& expected) {
+        auto workspaceImpl = owner.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+        OS_ASSERT(workspaceImpl);
+        const auto raw = workspaceImpl->openstudio::detail::IdfObject_Impl::getString(field, false, true);
+        return !raw || raw->empty() || rawReferenceMatches(owner, field, expected);
+      }
+
+      bool referencesObject(const ModelObject& owner, unsigned field, const ModelObject& expected) {
+        const auto managedValue = owner.getField(field, false);
+        const auto managedHandle = managedValue ? openstudio::toUUID(*managedValue) : Handle{};
+        return (!managedHandle.isNull() && managedHandle == expected.handle()) || rawReferenceMatches(owner, field, expected);
+      }
+
+      bool isExactManagedReference(const ModelObject& owner, unsigned field, const ModelObject& expected) {
+        const auto managedValue = owner.getField(field, false);
+        const auto managedHandle = managedValue ? openstudio::toUUID(*managedValue) : Handle{};
+        return !managedHandle.isNull() && managedHandle == expected.handle() && rawReferenceAgrees(owner, field, expected);
+      }
+
+      boost::optional<ModelObject> exactManagedTarget(const ModelObject& owner, unsigned field) {
+        const auto managedValue = owner.getField(field, false);
+        if (!managedValue || managedValue->empty()) {
+          return boost::none;
+        }
+        const auto managedHandle = openstudio::toUUID(*managedValue);
+        if (managedHandle.isNull()) {
+          return boost::none;
+        }
+        const auto target = owner.model().getObject(managedHandle);
+        const auto modelObject = target ? target->optionalCast<ModelObject>() : boost::none;
+        if (!modelObject || !isExactManagedReference(owner, field, *modelObject)) {
+          return boost::none;
+        }
+        return modelObject;
+      }
+
+      boost::optional<ModelObject> managedTarget(const ModelObject& owner, unsigned field) {
+        const auto managedValue = owner.getField(field, false);
+        if (!managedValue || managedValue->empty()) {
+          return boost::none;
+        }
+        const auto managedHandle = openstudio::toUUID(*managedValue);
+        if (managedHandle.isNull()) {
+          return boost::none;
+        }
+        const auto target = owner.model().getObject(managedHandle);
+        return target ? target->optionalCast<ModelObject>() : boost::none;
+      }
+
+      boost::optional<NodeList> exactManagedNodeList(const ModelObject& owner, unsigned field) {
+        const auto target = exactManagedTarget(owner, field);
+        return target ? target->optionalCast<NodeList>() : boost::none;
+      }
+
+      boost::optional<AirLoopHVACOutdoorAirSystem> exactOutdoorAirSystemForAirLoop(const AirLoopHVAC& expectedOwner) {
+        const auto branchListObject = exactManagedTarget(expectedOwner, AirLoopHVACFields::BranchListName);
+        const auto branchList = branchListObject ? branchListObject->optionalCast<BranchList>() : boost::none;
+        if (!branchList) {
+          return boost::none;
+        }
+
+        unsigned ownerOccurrences = 0u;
+        for (const auto& airLoop : expectedOwner.model().getConcreteModelObjects<AirLoopHVAC>()) {
+          if (!referencesObject(airLoop, AirLoopHVACFields::BranchListName, *branchList)) {
+            continue;
+          }
+          if (!isExactManagedReference(airLoop, AirLoopHVACFields::BranchListName, *branchList)) {
+            return boost::none;
+          }
+          ++ownerOccurrences;
+          if (airLoop != expectedOwner) {
+            return boost::none;
+          }
+        }
+        if (ownerOccurrences != 1u) {
+          return boost::none;
+        }
+
+        std::vector<Branch> branches;
+        const auto branchListGroups = branchList->extensibleGroups();
+        if (branchListGroups.empty()) {
+          return boost::none;
+        }
+        branches.reserve(branchListGroups.size());
+        for (unsigned row = 0u; row < branchListGroups.size(); ++row) {
+          const auto branchField =
+            branchList->iddObject().index(openstudio::ExtensibleIndex(row, openstudio::BranchListExtensibleFields::BranchName));
+          const auto branchObject = exactManagedTarget(*branchList, branchField);
+          const auto branch = branchObject ? branchObject->optionalCast<Branch>() : boost::none;
+          if (!branch) {
+            return boost::none;
+          }
+          branches.push_back(*branch);
+        }
+
+        const auto outdoorAirSystems = expectedOwner.model().getConcreteModelObjects<AirLoopHVACOutdoorAirSystem>();
+        boost::optional<AirLoopHVACOutdoorAirSystem> result;
+        boost::optional<Branch> resultBranch;
+        unsigned resultRow = 0u;
+        for (const auto& branch : branches) {
+          const auto groups = branch.extensibleGroups();
+          for (unsigned row = 0u; row < groups.size(); ++row) {
+            const auto componentField = branch.iddObject().index(openstudio::ExtensibleIndex(row, BranchExtensibleFields::ComponentName));
+            const auto componentType = groups[row].getString(openstudio::BranchExtensibleFields::ComponentObjectType, false);
+            const auto target = managedTarget(branch, componentField);
+            const auto managedOutdoorAirSystem = target ? target->optionalCast<AirLoopHVACOutdoorAirSystem>() : boost::none;
+            const bool rawOutdoorAirSystemReference = std::ranges::any_of(
+              outdoorAirSystems, [&branch, componentField](const auto& candidate) { return rawReferenceMatches(branch, componentField, candidate); });
+            const bool declaresOutdoorAirSystem =
+              componentType && !outdoorAirSystems.empty() && openstudio::istringEqual(*componentType, outdoorAirSystems.front().iddObject().name());
+            if (!managedOutdoorAirSystem && !rawOutdoorAirSystemReference && !declaresOutdoorAirSystem) {
+              continue;
+            }
+            if (result || !managedOutdoorAirSystem || !declaresOutdoorAirSystem
+                || !isExactManagedReference(branch, componentField, *managedOutdoorAirSystem)) {
+              return boost::none;
+            }
+            result = *managedOutdoorAirSystem;
+            resultBranch = branch;
+            resultRow = row;
+          }
+        }
+        if (!result || !resultBranch) {
+          return boost::none;
+        }
+
+        unsigned componentOccurrences = 0u;
+        for (const auto& branch : expectedOwner.model().getConcreteModelObjects<Branch>()) {
+          const auto groups = branch.extensibleGroups();
+          for (unsigned row = 0u; row < groups.size(); ++row) {
+            const auto componentField = branch.iddObject().index(openstudio::ExtensibleIndex(row, BranchExtensibleFields::ComponentName));
+            if (!referencesObject(branch, componentField, *result)) {
+              continue;
+            }
+            const auto componentType = groups[row].getString(openstudio::BranchExtensibleFields::ComponentObjectType, false);
+            if (!isExactManagedReference(branch, componentField, *result) || !componentType
+                || !openstudio::istringEqual(*componentType, result->iddObject().name())) {
+              return boost::none;
+            }
+            ++componentOccurrences;
+            if (branch != *resultBranch || row != resultRow) {
+              return boost::none;
+            }
+          }
+        }
+        if (componentOccurrences != 1u) {
+          return boost::none;
+        }
+
+        unsigned branchOccurrences = 0u;
+        for (const auto& candidateList : expectedOwner.model().getConcreteModelObjects<BranchList>()) {
+          for (unsigned row = 0u; row < candidateList.extensibleGroups().size(); ++row) {
+            const auto branchField =
+              candidateList.iddObject().index(openstudio::ExtensibleIndex(row, openstudio::BranchListExtensibleFields::BranchName));
+            if (!referencesObject(candidateList, branchField, *resultBranch)) {
+              continue;
+            }
+            if (!isExactManagedReference(candidateList, branchField, *resultBranch) || candidateList != *branchList) {
+              return boost::none;
+            }
+            ++branchOccurrences;
+          }
+        }
+        return branchOccurrences == 1u ? result : boost::none;
+      }
+
       struct ReadOnlyNodeField
       {
         bool valid = true;
@@ -553,6 +728,29 @@ namespace epmodel {
         }
         result.valid = false;
         return result;
+      }
+
+      bool exactReadOnlyNodeField(const ModelObject& owner, unsigned field, const ReadOnlyNodeField& observation) {
+        return observation.valid && observation.set && observation.node && isExactManagedReference(owner, field, *observation.node);
+      }
+
+      bool exactReadOnlyNodeCollectionField(const ReadOnlyNodeCollectionField& observation) {
+        return observation.valid && !observation.nodes.empty();
+      }
+
+      bool hasExactNodeRows(const NodeList& nodeList) {
+        const auto groups = nodeList.extensibleGroups();
+        const auto observation = readOnlyNodeRows(nodeList, openstudio::NodeListExtensibleFields::NodeName);
+        if (groups.empty() || !observation.valid || observation.rows.size() != groups.size()) {
+          return false;
+        }
+        for (const auto& [row, node] : observation.rows) {
+          const auto nodeField = nodeList.iddObject().index(openstudio::ExtensibleIndex(row, openstudio::NodeListExtensibleFields::NodeName));
+          if (!isExactManagedReference(nodeList, nodeField, node)) {
+            return false;
+          }
+        }
+        return true;
       }
     }  // namespace
 
@@ -6198,6 +6396,41 @@ namespace epmodel {
 
     void AirLoopHVAC_Impl::syncControllerMechanicalVentilationZoneOutdoorAirEntries() {
       auto airLoop = getObject<AirLoopHVAC>();
+      // Prove ownership from persisted Branch/BranchList/AirLoop fields before
+      // invoking any node or topology accessor. This keeps malformed or
+      // not-yet-canonical imported loops observationally unchanged.
+      auto oaSystem = exactOutdoorAirSystemForAirLoop(airLoop);
+      if (!oaSystem) {
+        return;
+      }
+
+      const auto supplyInlet = readOnlyNodeField(airLoop, AirLoopHVACFields::SupplySideInletNodeName);
+      const auto supplyOutletNodes = readOnlyNodeCollectionField(airLoop, AirLoopHVACFields::SupplySideOutletNodeNames);
+      const auto demandInletNodes = readOnlyNodeCollectionField(airLoop, AirLoopHVACFields::DemandSideInletNodeNames);
+      const auto demandOutlet = readOnlyNodeField(airLoop, AirLoopHVACFields::DemandSideOutletNodeName);
+      const auto supplyOutletNodeList = exactManagedNodeList(airLoop, AirLoopHVACFields::SupplySideOutletNodeNames);
+      const auto demandInletNodeList = exactManagedNodeList(airLoop, AirLoopHVACFields::DemandSideInletNodeNames);
+      if (!exactReadOnlyNodeField(airLoop, AirLoopHVACFields::SupplySideInletNodeName, supplyInlet)
+          || !exactReadOnlyNodeCollectionField(supplyOutletNodes) || !supplyOutletNodeList || !hasExactNodeRows(*supplyOutletNodeList)
+          || !exactReadOnlyNodeCollectionField(demandInletNodes) || !demandInletNodeList || !hasExactNodeRows(*demandInletNodeList)
+          || !exactReadOnlyNodeField(airLoop, AirLoopHVACFields::DemandSideOutletNodeName, demandOutlet)) {
+        return;
+      }
+
+      auto oaController = oaSystem->getControllerOutdoorAir();
+      auto owningOASystem = oaController.airLoopHVACOutdoorAirSystem();
+      if (!owningOASystem || *owningOASystem != *oaSystem) {
+        return;
+      }
+      auto cmv = oaController.getImpl<detail::ControllerOutdoorAir_Impl>()->optionalControllerMechanicalVentilation();
+      if (!cmv) {
+        return;
+      }
+      auto owningOAController = cmv->controllerOutdoorAir();
+      if (!owningOAController || *owningOAController != oaController) {
+        return;
+      }
+
       std::vector<std::pair<openstudio::epmodel::ThermalZone, openstudio::epmodel::DesignSpecificationOutdoorAirSpaceList>> entries;
       for (const auto& zone : airLoop.thermalZones()) {
         auto sizingZone = zone.sizingZone();
@@ -6205,17 +6438,6 @@ namespace epmodel {
         if (dsoaSpaceList) {
           entries.emplace_back(zone, *dsoaSpaceList);
         }
-      }
-
-      auto oaSystem = airLoopHVACOutdoorAirSystem();
-      if (!oaSystem) {
-        return;
-      }
-
-      auto oaController = oaSystem->getControllerOutdoorAir();
-      auto cmv = oaController.getImpl<detail::ControllerOutdoorAir_Impl>()->optionalControllerMechanicalVentilation();
-      if (!cmv) {
-        return;
       }
 
       // Big picture: CMV extensible groups are not the source of truth. The

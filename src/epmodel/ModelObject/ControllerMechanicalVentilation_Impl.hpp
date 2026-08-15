@@ -10,6 +10,7 @@
 #include "DesignSpecificationOutdoorAirSpaceList.hpp"
 
 #include <utility>
+#include <string>
 #include <vector>
 
 namespace openstudio {
@@ -27,6 +28,29 @@ namespace epmodel {
     class EPMODEL_API ControllerMechanicalVentilation_Impl : public ModelObject_Impl
     {
      public:
+      struct OutdoorAirClaimFieldObservation
+      {
+        boost::optional<openstudio::Handle> managedTargetHandle;
+        boost::optional<std::string> rawTarget;
+        bool hasEvidence{false};
+        bool canonical{false};
+      };
+
+      struct OutdoorAirClaimInspection
+      {
+        std::vector<openstudio::Handle> canonicalClaimantHandles;
+        std::vector<openstudio::Handle> malformedClaimantHandles;
+        bool hasMalformedClaim{false};
+
+        bool exactlyOwnedBy(const openstudio::Handle& ownerHandle) const {
+          return !hasMalformedClaim && canonicalClaimantHandles.size() == 1u && canonicalClaimantHandles.front() == ownerHandle;
+        }
+
+        bool unclaimed() const {
+          return !hasMalformedClaim && canonicalClaimantHandles.empty();
+        }
+      };
+
       using ModelObject_Impl::ModelObject_Impl;
       virtual ~ControllerMechanicalVentilation_Impl() override = default;
 
@@ -44,6 +68,9 @@ namespace epmodel {
       std::vector<std::string> systemOutdoorAirMethodValues() const;
 
       boost::optional<openstudio::epmodel::ControllerOutdoorAir> controllerOutdoorAir() const;
+      static OutdoorAirClaimFieldObservation observeOutdoorAirClaimField(const openstudio::epmodel::ControllerOutdoorAir& controllerOutdoorAir);
+      static bool clearOutdoorAirClaimField(const openstudio::epmodel::ControllerOutdoorAir& controllerOutdoorAir);
+      OutdoorAirClaimInspection outdoorAirClaimInspection() const;
       std::vector<std::pair<openstudio::epmodel::ThermalZone, openstudio::epmodel::DesignSpecificationOutdoorAirSpaceList>>
         zoneOutdoorAirEntries() const;
       void clearZoneOutdoorAirEntries();

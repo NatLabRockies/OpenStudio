@@ -109,6 +109,8 @@ namespace epmodel {
       boost::optional<openstudio::epmodel::ControllerMechanicalVentilation> optionalControllerMechanicalVentilation() const;
       openstudio::epmodel::ControllerMechanicalVentilation controllerMechanicalVentilation() const;
       bool setControllerMechanicalVentilation(const openstudio::epmodel::ControllerMechanicalVentilation& controllerMechanicalVentilation);
+      bool setControllerMechanicalVentilation(const openstudio::epmodel::ControllerMechanicalVentilation& controllerMechanicalVentilation,
+                                              bool syncRows);
       boost::optional<openstudio::epmodel::AirLoopHVACOutdoorAirSystem> airLoopHVACOutdoorAirSystem() const;
 
       void doCanonicalize(LoadContext& context) override;

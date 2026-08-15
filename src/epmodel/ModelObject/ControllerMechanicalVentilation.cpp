@@ -20,12 +20,16 @@
 #include "Schedule/Schedule_Impl.hpp"
 
 #include <utilities/core/Assert.hpp>
+#include <utilities/core/StringHelpers.hpp>
+#include <utilities/idd/Controller_OutdoorAir_FieldEnums.hxx>
 #include <utilities/idd/Controller_MechanicalVentilation_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/IddFactory.hxx>
 #include <utilities/idf/WorkspaceExtensibleGroup.hpp>
+#include <utilities/idf/WorkspaceObject_Impl.hpp>
 
 #include <algorithm>
+#include <ranges>
 
 namespace openstudio {
 namespace epmodel {
@@ -154,22 +158,79 @@ namespace epmodel {
       return openstudio::epmodel::ControllerMechanicalVentilation::systemOutdoorAirMethodValues();
     }
 
-    boost::optional<openstudio::epmodel::ControllerOutdoorAir> ControllerMechanicalVentilation_Impl::controllerOutdoorAir() const {
+    ControllerMechanicalVentilation_Impl::OutdoorAirClaimFieldObservation
+      ControllerMechanicalVentilation_Impl::observeOutdoorAirClaimField(const openstudio::epmodel::ControllerOutdoorAir& controllerOutdoorAir) {
+      OutdoorAirClaimFieldObservation result;
+      constexpr unsigned field = openstudio::Controller_OutdoorAirFields::MechanicalVentilationControllerName;
+      const auto workspaceImpl = controllerOutdoorAir.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+      OS_ASSERT(workspaceImpl);
+      result.rawTarget = workspaceImpl->openstudio::detail::IdfObject_Impl::getString(field, false, true);
+
+      const auto managedTarget = controllerOutdoorAir.getTarget(field);
+      if (managedTarget) {
+        result.managedTargetHandle = managedTarget->handle();
+      }
+      result.hasEvidence = managedTarget || (result.rawTarget && !result.rawTarget->empty());
+
+      const auto mechanicalVentilation =
+        managedTarget ? managedTarget->optionalCast<openstudio::epmodel::ControllerMechanicalVentilation>() : boost::none;
+      if (!mechanicalVentilation) {
+        return result;
+      }
+
+      const auto targetName = mechanicalVentilation->name();
+      const bool uniqueName =
+        targetName && !targetName->empty()
+        && std::ranges::count_if(controllerOutdoorAir.model().getConcreteModelObjects<openstudio::epmodel::ControllerMechanicalVentilation>(),
+                                 [&mechanicalVentilation, &targetName](const auto& candidate) {
+                                   const auto candidateName = candidate.name();
+                                   return candidateName && openstudio::istringEqual(*candidateName, *targetName)
+                                          && candidate.handle() != mechanicalVentilation->handle();
+                                 })
+             == 0;
+      // A hydrated Workspace relationship stores its identity in the managed pointer.
+      // Non-empty backing text alongside that pointer is conflicting persisted evidence.
+      result.canonical = uniqueName && (!result.rawTarget || result.rawTarget->empty());
+      return result;
+    }
+
+    bool ControllerMechanicalVentilation_Impl::clearOutdoorAirClaimField(const openstudio::epmodel::ControllerOutdoorAir& controllerOutdoorAir) {
+      constexpr unsigned field = openstudio::Controller_OutdoorAirFields::MechanicalVentilationControllerName;
+      const auto workspaceImpl = controllerOutdoorAir.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+      OS_ASSERT(workspaceImpl);
+      return workspaceImpl->setPointer(field, Handle(), false) && workspaceImpl->openstudio::detail::IdfObject_Impl::setString(field, "", false);
+    }
+
+    ControllerMechanicalVentilation_Impl::OutdoorAirClaimInspection ControllerMechanicalVentilation_Impl::outdoorAirClaimInspection() const {
+      OutdoorAirClaimInspection result;
       const auto thisController = getObject<openstudio::epmodel::ControllerMechanicalVentilation>();
-      // There is no direct inverse pointer from CMV -> Controller:OutdoorAir in the
-      // EnergyPlus schema, so this relationship is resolved by scanning OA
-      // controllers for one that points at this CMV.
-      // Use the impl-only optional lookup to avoid side effects from the public
-      // ControllerOutdoorAir::controllerMechanicalVentilation() getter, which can
-      // synthesize a CMV on demand.
+      const auto thisName = thisController.name();
+
       for (const auto& oaController : model().getConcreteModelObjects<openstudio::epmodel::ControllerOutdoorAir>()) {
-        if (auto target = oaController.getImpl<openstudio::epmodel::detail::ControllerOutdoorAir_Impl>()->optionalControllerMechanicalVentilation()) {
-          if (*target == thisController) {
-            return oaController;
-          }
+        const auto observation = observeOutdoorAirClaimField(oaController);
+        const bool managedClaim = observation.managedTargetHandle && *observation.managedTargetHandle == thisController.handle();
+        const bool rawClaim = observation.rawTarget && !observation.rawTarget->empty()
+                              && (openstudio::toUUID(*observation.rawTarget) == thisController.handle()
+                                  || (thisName && openstudio::istringEqual(*observation.rawTarget, *thisName)));
+        if (managedClaim && observation.canonical) {
+          result.canonicalClaimantHandles.push_back(oaController.handle());
+        } else if (managedClaim || rawClaim) {
+          result.hasMalformedClaim = true;
+          result.malformedClaimantHandles.push_back(oaController.handle());
         }
       }
-      return boost::none;
+
+      std::ranges::sort(result.canonicalClaimantHandles);
+      std::ranges::sort(result.malformedClaimantHandles);
+      return result;
+    }
+
+    boost::optional<openstudio::epmodel::ControllerOutdoorAir> ControllerMechanicalVentilation_Impl::controllerOutdoorAir() const {
+      const auto claims = outdoorAirClaimInspection();
+      if (claims.hasMalformedClaim || claims.canonicalClaimantHandles.size() != 1u) {
+        return boost::none;
+      }
+      return model().getModelObject<openstudio::epmodel::ControllerOutdoorAir>(claims.canonicalClaimantHandles.front());
     }
 
     std::vector<std::pair<openstudio::epmodel::ThermalZone, openstudio::epmodel::DesignSpecificationOutdoorAirSpaceList>>

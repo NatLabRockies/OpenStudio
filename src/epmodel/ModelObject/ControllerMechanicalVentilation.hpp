@@ -43,9 +43,11 @@ namespace epmodel {
     // Schema Alignment Notes:
     // - Canonical Counterpart: openstudio::model::ControllerMechanicalVentilation.
     // - Implemented Parity: Canonical required availability schedule API and scalar controls.
-    // - EPModel Behavior: Optional inverse outdoor-air controller discovery and owner-managed zone rows support EnergyPlus topology.
-    // - Field Storage: Relationships use EnergyPlus object-list pointers; load repair restores a missing or incompatible required schedule.
-    // - Remaining Parity: Tighten unique outdoor-air-controller ownership and lifecycle behavior without changing the public API.
+    // - EPModel Behavior: The optional inverse is exposed only for one exact raw-and-managed Controller:OutdoorAir claim; owner-managed zone rows
+    //   synchronize only through an exact outdoor-air-system and AirLoop owner chain.
+    // - Field Storage: Relationships use EnergyPlus object-list pointers; load repair restores a missing or incompatible required schedule and
+    //   deterministically clones valid shared imported CMVs so each outdoor-air controller has one.
+    // - Remaining Parity: Direct Controller:MechanicalVentilation and Controller:OutdoorAir deletion semantics remain deferred.
     Schedule availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);
     bool demandControlledVentilation() const;

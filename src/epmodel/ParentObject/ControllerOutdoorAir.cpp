@@ -39,6 +39,9 @@
 #include <utilities/idd/IddObject.hpp>
 #include <utilities/idd/Sizing_Zone_FieldEnums.hxx>
 #include <utilities/idf/IdfObject_Impl.hpp>
+#include <utilities/idf/WorkspaceObject_Impl.hpp>
+
+#include <iterator>
 
 namespace openstudio {
 namespace epmodel {
@@ -811,56 +814,113 @@ namespace epmodel {
     }
 
     boost::optional<openstudio::epmodel::ControllerMechanicalVentilation> ControllerOutdoorAir_Impl::optionalControllerMechanicalVentilation() const {
-      return getObject<openstudio::epmodel::ControllerOutdoorAir>().getModelObjectTarget<openstudio::epmodel::ControllerMechanicalVentilation>(
-        openstudio::Controller_OutdoorAirFields::MechanicalVentilationControllerName);
+      const auto thisController = getObject<openstudio::epmodel::ControllerOutdoorAir>();
+      const auto observation = openstudio::epmodel::detail::ControllerMechanicalVentilation_Impl::observeOutdoorAirClaimField(thisController);
+      if (!observation.canonical || !observation.managedTargetHandle) {
+        return boost::none;
+      }
+      return model().getModelObject<openstudio::epmodel::ControllerMechanicalVentilation>(*observation.managedTargetHandle);
     }
 
     openstudio::epmodel::ControllerMechanicalVentilation ControllerOutdoorAir_Impl::controllerMechanicalVentilation() const {
-      if (auto result = optionalControllerMechanicalVentilation()) {
-        return *result;
+      const auto thisController = getObject<openstudio::epmodel::ControllerOutdoorAir>();
+      const auto observation = openstudio::epmodel::detail::ControllerMechanicalVentilation_Impl::observeOutdoorAirClaimField(thisController);
+      if (observation.hasEvidence) {
+        if (observation.canonical && observation.managedTargetHandle) {
+          auto target = model().getModelObject<openstudio::epmodel::ControllerMechanicalVentilation>(*observation.managedTargetHandle);
+          if (target) {
+            const auto targetImpl = target->getImpl<openstudio::epmodel::detail::ControllerMechanicalVentilation_Impl>();
+            OS_ASSERT(targetImpl);
+            if (targetImpl->outdoorAirClaimInspection().exactlyOwnedBy(thisController.handle())) {
+              return *target;
+            }
+          }
+        }
+        LOG_FREE_AND_THROW("openstudio.epmodel.ControllerOutdoorAir",
+                           "Controller:OutdoorAir '" << thisController.nameString()
+                                                     << "' has an unresolved, ambiguous, or malformed mechanical ventilation relationship.");
       }
 
       // Design pattern for epmodel parity:
       // - Canonicalize may synthesize Controller:MechanicalVentilation only when domain requirements warrant it
       //   (eg, zone OA specs that need mechanical ventilation behavior).
-      // - This getter remains non-throwing for API parity and creates on demand when missing.
-      auto thisController = getObject<openstudio::epmodel::ControllerOutdoorAir>();
+      // - This getter creates only from a truly blank relationship and never overwrites persisted evidence.
       auto newController = openstudio::epmodel::ControllerMechanicalVentilation(model());
-      if (isTransient()) {
-        newController.getImpl<openstudio::epmodel::detail::ControllerMechanicalVentilation_Impl>()->setTransient(true);
+      if (!const_cast<ControllerOutdoorAir_Impl*>(this)->setControllerMechanicalVentilation(newController)) {
+        newController.remove();
+        LOG_FREE_AND_THROW("openstudio.epmodel.ControllerOutdoorAir",
+                           "Failed to attach a provisional Controller:MechanicalVentilation to Controller:OutdoorAir '" << thisController.nameString()
+                                                                                                                        << "'.");
       }
-      OS_ASSERT(thisController.setPointer(openstudio::Controller_OutdoorAirFields::MechanicalVentilationControllerName, newController.handle()));
       return newController;
     }
 
     bool ControllerOutdoorAir_Impl::setControllerMechanicalVentilation(
       const openstudio::epmodel::ControllerMechanicalVentilation& controllerMechanicalVentilation) {
+      return setControllerMechanicalVentilation(controllerMechanicalVentilation, true);
+    }
+
+    bool ControllerOutdoorAir_Impl::setControllerMechanicalVentilation(
+      const openstudio::epmodel::ControllerMechanicalVentilation& controllerMechanicalVentilation, bool syncRows) {
       if (controllerMechanicalVentilation.model() != model()) {
+        LOG_FREE(Warn, "openstudio.epmodel.ControllerOutdoorAir",
+                 "Cannot set the mechanical ventilation controller because it belongs to a different model.");
         return false;
       }
       const auto thisController = getObject<openstudio::epmodel::ControllerOutdoorAir>();
-      auto mechanicalVentilationImpl = controllerMechanicalVentilation.getImpl<openstudio::epmodel::detail::ControllerMechanicalVentilation_Impl>();
-      OS_ASSERT(mechanicalVentilationImpl);
-      for (const auto& source : controllerMechanicalVentilation.sources()) {
-        // Persistent ordinary OA controllers may share a persistent CMV, as
-        // the reference Model API permits. Never share across a transient
-        // boundary: changing one DOAS projection later would change the
-        // serialization state required by the other owner.
-        if ((source.handle() != thisController.handle()) && (isTransient() || mechanicalVentilationImpl->isTransient())) {
+      const auto currentObservation = openstudio::epmodel::detail::ControllerMechanicalVentilation_Impl::observeOutdoorAirClaimField(thisController);
+      boost::optional<openstudio::epmodel::ControllerMechanicalVentilation> oldController;
+      if (currentObservation.hasEvidence) {
+        if (!currentObservation.canonical || !currentObservation.managedTargetHandle) {
+          LOG_FREE(Warn, "openstudio.epmodel.ControllerOutdoorAir",
+                   "Cannot replace the mechanical ventilation controller because the current relationship is malformed.");
           return false;
         }
+        oldController = model().getModelObject<openstudio::epmodel::ControllerMechanicalVentilation>(*currentObservation.managedTargetHandle);
+        if (!oldController) {
+          return false;
+        }
+        const auto oldImpl = oldController->getImpl<openstudio::epmodel::detail::ControllerMechanicalVentilation_Impl>();
+        OS_ASSERT(oldImpl);
+        if (!oldImpl->outdoorAirClaimInspection().exactlyOwnedBy(thisController.handle())) {
+          LOG_FREE(Warn, "openstudio.epmodel.ControllerOutdoorAir",
+                   "Cannot replace the mechanical ventilation controller because its current ownership is ambiguous.");
+          return false;
+        }
+        if (*oldController == controllerMechanicalVentilation) {
+          return true;
+        }
       }
-      const bool result =
-        setPointer(openstudio::Controller_OutdoorAirFields::MechanicalVentilationControllerName, controllerMechanicalVentilation.handle(), false);
-      if (result) {
-        mechanicalVentilationImpl->setTransient(isTransient());
+
+      auto mechanicalVentilationImpl = controllerMechanicalVentilation.getImpl<openstudio::epmodel::detail::ControllerMechanicalVentilation_Impl>();
+      OS_ASSERT(mechanicalVentilationImpl);
+      if (!mechanicalVentilationImpl->outdoorAirClaimInspection().unclaimed()) {
+        LOG_FREE(Warn, "openstudio.epmodel.ControllerOutdoorAir",
+                 "Cannot set the mechanical ventilation controller because it is already claimed or has malformed ownership evidence.");
+        return false;
+      }
+
+      if (!setPointer(openstudio::Controller_OutdoorAirFields::MechanicalVentilationControllerName, controllerMechanicalVentilation.handle(),
+                      false)) {
+        return false;
+      }
+      mechanicalVentilationImpl->setTransient(isTransient());
+      if (oldController) {
+        const auto oldImpl = oldController->getImpl<openstudio::epmodel::detail::ControllerMechanicalVentilation_Impl>();
+        OS_ASSERT(oldImpl);
+        if (oldImpl->outdoorAirClaimInspection().unclaimed()) {
+          // Canonical Model preserves the replaced CMV; clear only EPModel's transient projection state.
+          oldImpl->setTransient(false);
+        }
+      }
+      if (syncRows) {
         if (auto oaSystem = airLoopHVACOutdoorAirSystem()) {
           if (auto airLoop = oaSystem->airLoopHVAC()) {
             airLoop->getImpl<openstudio::epmodel::detail::AirLoopHVAC_Impl>()->syncControllerMechanicalVentilationZoneOutdoorAirEntries();
           }
         }
       }
-      return result;
+      return true;
     }
 
     boost::optional<openstudio::epmodel::AirLoopHVACOutdoorAirSystem> ControllerOutdoorAir_Impl::airLoopHVACOutdoorAirSystem() const {
@@ -1038,26 +1098,121 @@ namespace epmodel {
         }
       }
 
+      constexpr unsigned mechanicalVentilationField = openstudio::Controller_OutdoorAirFields::MechanicalVentilationControllerName;
+      auto observation = openstudio::epmodel::detail::ControllerMechanicalVentilation_Impl::observeOutdoorAirClaimField(thisController);
+      boost::optional<openstudio::epmodel::ControllerMechanicalVentilation> observedMechanicalVentilation;
+      if (observation.managedTargetHandle) {
+        observedMechanicalVentilation =
+          model().getModelObject<openstudio::epmodel::ControllerMechanicalVentilation>(*observation.managedTargetHandle);
+      } else if (observation.rawTarget && !observation.rawTarget->empty()) {
+        for (const auto& candidate : model().getConcreteModelObjects<openstudio::epmodel::ControllerMechanicalVentilation>()) {
+          const auto candidateName = candidate.name();
+          if (openstudio::toUUID(*observation.rawTarget) == candidate.handle()
+              || (candidateName && openstudio::istringEqual(*observation.rawTarget, *candidateName))) {
+            if (observedMechanicalVentilation) {
+              observedMechanicalVentilation = boost::none;
+              break;
+            }
+            observedMechanicalVentilation = candidate;
+          }
+        }
+      }
+
+      if (observation.hasEvidence && !observation.canonical) {
+        std::vector<Handle> malformedClaimants{thisController.handle()};
+        if (observedMechanicalVentilation) {
+          const auto observedImpl = observedMechanicalVentilation->getImpl<openstudio::epmodel::detail::ControllerMechanicalVentilation_Impl>();
+          OS_ASSERT(observedImpl);
+          const auto claims = observedImpl->outdoorAirClaimInspection();
+          if (!claims.malformedClaimantHandles.empty()) {
+            malformedClaimants = claims.malformedClaimantHandles;
+          }
+        }
+        for (const auto& claimantHandle : malformedClaimants) {
+          if (auto claimant = model().getModelObject<openstudio::epmodel::ControllerOutdoorAir>(claimantHandle)) {
+            OS_ASSERT(openstudio::epmodel::detail::ControllerMechanicalVentilation_Impl::clearOutdoorAirClaimField(*claimant));
+            detail::addLoadWarning(context, "Cleared a malformed mechanical ventilation relationship from Controller:OutdoorAir '"
+                                              + claimant->nameString() + "'.");
+          }
+        }
+      }
+
       auto target = optionalControllerMechanicalVentilation();
+      if (target) {
+        auto targetImpl = target->getImpl<openstudio::epmodel::detail::ControllerMechanicalVentilation_Impl>();
+        OS_ASSERT(targetImpl);
+        auto claims = targetImpl->outdoorAirClaimInspection();
+        if (!claims.hasMalformedClaim && claims.canonicalClaimantHandles.size() > 1u) {
+          // Resolve a valid shared import deterministically: the lowest OA-controller
+          // handle retains the imported CMV and every later owner receives a full clone.
+          for (auto claimantIt = std::next(claims.canonicalClaimantHandles.begin()); claimantIt != claims.canonicalClaimantHandles.end();
+               ++claimantIt) {
+            auto claimant = model().getModelObject<openstudio::epmodel::ControllerOutdoorAir>(*claimantIt);
+            if (!claimant) {
+              continue;
+            }
+            const auto claimantObservation =
+              openstudio::epmodel::detail::ControllerMechanicalVentilation_Impl::observeOutdoorAirClaimField(*claimant);
+            if (!claimantObservation.canonical || !claimantObservation.managedTargetHandle
+                || *claimantObservation.managedTargetHandle != target->handle()) {
+              continue;
+            }
+
+            auto cloneIdfObject = target->idfObject().clone(false);
+            OS_ASSERT(cloneIdfObject.setName(model().nextName(openstudio::IddObjectType::Controller_MechanicalVentilation, true)));
+            auto cloneObject = model().addObject(cloneIdfObject);
+            auto clone = cloneObject ? cloneObject->optionalCast<openstudio::epmodel::ControllerMechanicalVentilation>() : boost::none;
+            auto claimantImpl = claimant->getImpl<openstudio::epmodel::detail::ControllerOutdoorAir_Impl>();
+            OS_ASSERT(claimantImpl);
+            if (!clone || !claimantImpl->setPointer(mechanicalVentilationField, clone->handle(), false)) {
+              if (clone) {
+                clone->remove();
+              }
+              detail::addLoadError(context, "Could not split a shared Controller:MechanicalVentilation for Controller:OutdoorAir '"
+                                              + claimant->nameString() + "'.");
+              continue;
+            }
+
+            auto cloneImpl = clone->getImpl<openstudio::epmodel::detail::ControllerMechanicalVentilation_Impl>();
+            OS_ASSERT(cloneImpl);
+            cloneImpl->setTransient(claimantImpl->isTransient());
+            cloneImpl->canonicalize(context);
+            detail::addLoadWarning(context, "Cloned shared Controller:MechanicalVentilation '" + target->nameString()
+                                              + "' for Controller:OutdoorAir '" + claimant->nameString() + "'.");
+          }
+          target = optionalControllerMechanicalVentilation();
+          if (target) {
+            targetImpl = target->getImpl<openstudio::epmodel::detail::ControllerMechanicalVentilation_Impl>();
+            OS_ASSERT(targetImpl);
+          }
+        }
+      }
 
       if (!target && hasServedZoneWithDesignSpecificationOutdoorAir(thisController, context)) {
         auto newController = openstudio::epmodel::ControllerMechanicalVentilation(model());
-        if (isTransient()) {
-          newController.getImpl<openstudio::epmodel::detail::ControllerMechanicalVentilation_Impl>()->setTransient(true);
+        if (!setControllerMechanicalVentilation(newController, false)) {
+          newController.remove();
+          detail::addLoadError(context, "Could not attach a required Controller:MechanicalVentilation to Controller:OutdoorAir '"
+                                          + thisController.nameString() + "'.");
+        } else {
+          target = newController;
+          detail::addLoadInfo(context, "Created Controller:MechanicalVentilation '" + newController.nameString() + "' for Controller:OutdoorAir '"
+                                         + thisController.nameString() + "' because DesignSpecification:OutdoorAir assignments exist in the model.");
         }
-        OS_ASSERT(thisController.setPointer(openstudio::Controller_OutdoorAirFields::MechanicalVentilationControllerName, newController.handle()));
-        target = newController;
-        detail::addLoadInfo(context, "Created Controller:MechanicalVentilation '" + newController.nameString() + "' for Controller:OutdoorAir '"
-                                       + thisController.nameString() + "' because DesignSpecification:OutdoorAir assignments exist in the model.");
       }
 
-      // Canonical OA policy:
-      // - If zone OA assignments exist in the model, CMV is synthesized/maintained at canonicalization.
-      // - Otherwise CMV is optional and may still be created on-demand by getter API.
+      // Canonical OA policy: an existing CMV is maintained only for its one exact OA-controller claimant.
+      // A blank field may synthesize on demand, while malformed persisted evidence is cleared before that decision.
       if (target) {
-        target->getImpl<openstudio::epmodel::detail::ControllerMechanicalVentilation_Impl>()->setTransient(isTransient());
-        target->getImpl<openstudio::epmodel::detail::ControllerMechanicalVentilation_Impl>()->canonicalize(context);
+        auto targetImpl = target->getImpl<openstudio::epmodel::detail::ControllerMechanicalVentilation_Impl>();
+        OS_ASSERT(targetImpl);
+        if (targetImpl->outdoorAirClaimInspection().exactlyOwnedBy(thisController.handle())) {
+          targetImpl->setTransient(isTransient());
+          targetImpl->canonicalize(context);
+        }
       }
+      // Load-time CMV row synchronization belongs to AirLoopHVAC canonicalization,
+      // after its required NodeLists and demand topology have been repaired.
     }
 
   }  // namespace detail

@@ -48,6 +48,7 @@
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idf/WorkspaceExtensibleGroup.hpp>
 #include <utilities/idf/IdfFile.hpp>
+#include <utilities/idf/WorkspaceObject_Impl.hpp>
 
 #include <stdexcept>
 
@@ -233,6 +234,32 @@ TEST_F(EPModelFixture, AirLoopHVACDedicatedOutdoorAirSystem_ReplacesProjectedOut
   auto serialized = model.toIdfFile();
   EXPECT_TRUE(serialized.getObjectsByType(openstudio::IddObjectType::Controller_OutdoorAir).empty());
   EXPECT_TRUE(serialized.getObjectsByType(openstudio::IddObjectType::Controller_MechanicalVentilation).empty());
+}
+
+TEST_F(EPModelFixture, AirLoopHVACDedicatedOutdoorAirSystem_RejectsReplacementWhenProjectedMechanicalVentilationIsMalformed) {
+  Model model;
+  AirLoopHVACOutdoorAirSystem dedicatedOA(model);
+  AirLoopHVACDedicatedOutdoorAirSystem doas(dedicatedOA);
+  auto oldController = dedicatedOA.getControllerOutdoorAir();
+  auto oldMechanicalVentilation = oldController.controllerMechanicalVentilation();
+  ControllerOutdoorAir replacement(model);
+  auto replacementMechanicalVentilation = replacement.controllerMechanicalVentilation();
+  const auto objectCount = model.objects().size();
+
+  constexpr unsigned field = openstudio::Controller_OutdoorAirFields::MechanicalVentilationControllerName;
+  auto oldControllerImpl = oldController.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  ASSERT_TRUE(oldControllerImpl);
+  ASSERT_TRUE(oldControllerImpl->openstudio::detail::IdfObject_Impl::setString(field, oldMechanicalVentilation.nameString(), false));
+
+  EXPECT_FALSE(dedicatedOA.setControllerOutdoorAir(replacement));
+  EXPECT_EQ(oldController, dedicatedOA.getControllerOutdoorAir());
+  EXPECT_EQ(objectCount, model.objects().size());
+  EXPECT_EQ(oldMechanicalVentilation.nameString(), oldControllerImpl->openstudio::detail::IdfObject_Impl::getString(field, false, true).value_or(""));
+  EXPECT_TRUE(oldController.getImpl<detail::ControllerOutdoorAir_Impl>()->isTransient());
+  EXPECT_TRUE(oldMechanicalVentilation.getImpl<detail::ControllerMechanicalVentilation_Impl>()->isTransient());
+  EXPECT_TRUE(replacement.sources().empty());
+  EXPECT_FALSE(replacement.getImpl<detail::ControllerOutdoorAir_Impl>()->isTransient());
+  EXPECT_FALSE(replacementMechanicalVentilation.getImpl<detail::ControllerMechanicalVentilation_Impl>()->isTransient());
 }
 
 TEST_F(EPModelFixture, AirLoopHVACDedicatedOutdoorAirSystem_ProjectsWaterCoilControllers) {
@@ -429,8 +456,9 @@ TEST_F(EPModelFixture, AirLoopHVACDedicatedOutdoorAirSystem_RejectsSharedMechani
   EXPECT_FALSE(ordinaryMechanicalVentilation.getImpl<detail::ControllerMechanicalVentilation_Impl>()->isTransient());
   AirLoopHVACOutdoorAirSystem secondOrdinaryOA(model);
   auto secondOrdinaryController = secondOrdinaryOA.getControllerOutdoorAir();
-  ASSERT_TRUE(secondOrdinaryController.setControllerMechanicalVentilation(ordinaryMechanicalVentilation));
-  EXPECT_EQ(ordinaryMechanicalVentilation, secondOrdinaryController.controllerMechanicalVentilation());
+  EXPECT_FALSE(secondOrdinaryController.setControllerMechanicalVentilation(ordinaryMechanicalVentilation));
+  auto secondOrdinaryMechanicalVentilation = secondOrdinaryController.controllerMechanicalVentilation();
+  EXPECT_NE(ordinaryMechanicalVentilation, secondOrdinaryMechanicalVentilation);
 
   AirLoopHVACOutdoorAirSystem dedicatedOA(model);
   AirLoopHVACDedicatedOutdoorAirSystem doas(dedicatedOA);
@@ -486,16 +514,23 @@ TEST_F(EPModelFixture, AirLoopHVACDedicatedOutdoorAirSystem_CanonicalizeClonesSh
 
   auto projectedController = loadedDedicatedOA.getControllerOutdoorAir();
   auto ordinaryController = loadedOrdinaryOA->getControllerOutdoorAir();
+  auto projectedMechanicalVentilation = projectedController.controllerMechanicalVentilation();
+  auto ordinaryMechanicalVentilation = ordinaryController.controllerMechanicalVentilation();
   EXPECT_NE(ordinaryController, projectedController);
-  EXPECT_NE(ordinaryController.controllerMechanicalVentilation(), projectedController.controllerMechanicalVentilation());
+  EXPECT_NE(ordinaryMechanicalVentilation, projectedMechanicalVentilation);
   EXPECT_FALSE(ordinaryController.getImpl<detail::ControllerOutdoorAir_Impl>()->isTransient());
   EXPECT_TRUE(projectedController.getImpl<detail::ControllerOutdoorAir_Impl>()->isTransient());
+  EXPECT_FALSE(ordinaryMechanicalVentilation.getImpl<detail::ControllerMechanicalVentilation_Impl>()->isTransient());
+  EXPECT_TRUE(projectedMechanicalVentilation.getImpl<detail::ControllerMechanicalVentilation_Impl>()->isTransient());
   ASSERT_TRUE(ordinaryController.airLoopHVACOutdoorAirSystem());
   EXPECT_EQ(*loadedOrdinaryOA, *ordinaryController.airLoopHVACOutdoorAirSystem());
 
   auto serialized = loadedModel->toIdfFile();
   EXPECT_EQ(1u, serialized.getObjectsByType(openstudio::IddObjectType::Controller_OutdoorAir).size());
   EXPECT_EQ(ordinaryController.nameString(), serialized.getObjectsByType(openstudio::IddObjectType::Controller_OutdoorAir).front().nameString());
+  ASSERT_EQ(1u, serialized.getObjectsByType(openstudio::IddObjectType::Controller_MechanicalVentilation).size());
+  EXPECT_EQ(ordinaryMechanicalVentilation.nameString(),
+            serialized.getObjectsByType(openstudio::IddObjectType::Controller_MechanicalVentilation).front().nameString());
   openstudio::filesystem::remove(idfPath);
 }
 

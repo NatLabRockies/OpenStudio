@@ -54,7 +54,10 @@ namespace epmodel {
     //   and ordinary outdoor-air-system relationship signatures.
     // - Field Mapping: These APIs map directly to EnergyPlus Controller:OutdoorAir fields and configured object lists.
     // - Load Repair: Optional schedule, curve, and zone references are resolved observationally; invalid references are cleared, and
-    //   High Humidity Control is normalized with the humidistat-zone relationship.
+    //   High Humidity Control is normalized with the humidistat-zone relationship. Valid shared imported mechanical-ventilation controllers
+    //   are cloned per outdoor-air-controller owner; malformed relationship evidence is cleared before any required replacement is created.
+    // - Ownership: Mechanical-ventilation assignment enforces one exact raw-and-managed owner and preserves replaced CMVs. Direct deletion
+    //   semantics for Controller:OutdoorAir and Controller:MechanicalVentilation remain deferred.
     // - Documented Delta: An active dedicated-outdoor-air-system projection keeps its Controller:OutdoorAir transient, so these
     //   relationship fields remain in memory only until the controller is returned to ordinary persisted ownership.
 
