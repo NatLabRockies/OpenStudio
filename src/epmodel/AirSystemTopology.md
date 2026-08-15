@@ -98,7 +98,7 @@ removal, and save/load.
 | --- | --- | --- | --- |
 | Ordinary single duct | `AirTerminalSingleDuctVAVReheat` | Constant-volume, VAV no-reheat, reheat, and heat-and-cool variants share branch code | Add reload tests for VAV no-reheat and heat-and-cool variants; run `VAVHeatAndCoolReheat` in a workflow |
 | PIU | Series and Parallel PIU are both references because their induced-air paths differ | Both handle their fan and coil paths, plant connections, plenums, repair, and reload | Clone and sizing methods are separate work |
-| Induction and beam | `AirTerminalSingleDuctConstantVolumeFourPipeInduction` | Cooled and four-pipe beams cover attachment, ownership, removal, and plant cleanup | Add reload and workflow tests for both beams |
+| Induction and beam | `AirTerminalSingleDuctConstantVolumeFourPipeInduction` | Cooled and four-pipe beams cover in-memory attachment, ownership, removal, and plant cleanup | Defer beam reload and workflows until their OS-prefixed terminal/coil storage has an EnergyPlus-native persistence design |
 | Direct dual duct | The constant-volume, VAV, and VAV outdoor-air terminals all have reload and post-load change tests | VAV also exposes its directly stored availability, DSOA, and turndown relationships | The topology family is at its stopping point; add SQL or translated outdoor-air conveniences only for a concrete use case |
 | Inlet-side mixer | `AirTerminalSingleDuctInletSideMixer` | No similar terminal | Treat the downstream ZoneHVAC equipment separately |
 | Special single duct | None yet | User-defined and variable-speed-fan terminals have limited C++ tests and remain in the historical scaffold directory | Define their EMS and fan ownership behavior before adding more API |
@@ -107,20 +107,20 @@ Add a separate family when the number of air streams, ownership, branch shape,
 or saved EnergyPlus objects changes caller-visible behavior. Scalar field
 differences alone do not need a new family.
 
-## Closing air work
+## Air topology stopping point
 
 The `ZoneHVACUnitVentilator` bridge and the direct dual-duct family now have
 their planned C++, Ruby, reload, post-load change, and EnergyPlus evidence.
-One topology-led family remains:
+The remaining beam reload/workflow candidate was also investigated. It cannot
+be completed by adding evidence alone: the cooled-beam terminal and beam coil
+relationships still rely on OS-prefixed objects that do not return as typed
+objects through the EnergyPlus-schema `epmodel::Model::load` path.
 
-1. Add reload and one real workflow for the cooled-beam and four-pipe-beam
-   family if the workflow can use their existing public APIs without a new
-   topology abstraction.
-
-This is the stopping boundary for the topology-led air campaign. Later work
-must be justified by a real use case or a shared defect across several
-families. Missing scalar conveniences, clone depth, unusual connector shapes,
-and malformed imports are not reasons to keep this list open.
+That persistence redesign belongs to horizontal component work, not another
+topology phase. The topology-led air campaign has therefore reached its
+stopping point. Later work must be justified by a real use case or a shared
+defect across several families. Missing scalar conveniences, clone depth,
+unusual connector shapes, and malformed imports are not reasons to reopen it.
 
 ## Other open work
 
@@ -130,6 +130,8 @@ and malformed imports are not reasons to keep this list open.
   update plans;
 - Ruby/Python overloads not yet used by a test;
 - autosized values read from SQL results;
+- EnergyPlus-native storage for the OS-prefixed cooled-beam and beam-coil
+  relationships;
 - Model/EPModel file comparison;
 - numerical comparison on clean simulations;
 - multi-speed unitary stage data;
