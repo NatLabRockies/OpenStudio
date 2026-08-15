@@ -618,6 +618,48 @@ namespace epmodel {
 
     void ZoneHVACPackagedTerminalAirConditioner_Impl::doCanonicalize(LoadContext& context) {
       repairContainedAirPath(context);
+
+      auto owner = getObject<ModelObject>();
+      constexpr auto availabilityField = ZoneHVAC_PackagedTerminalAirConditionerFields::AvailabilityScheduleName;
+      const auto rawAvailability = openstudio::detail::IdfObject_Impl::getString(availabilityField, false, true);
+      if ((!rawAvailability || rawAvailability->empty()) && !owner.getModelObjectTarget<Schedule>(availabilityField)) {
+        auto alwaysOn = model().alwaysOnDiscreteSchedule();
+        if (setAvailabilitySchedule(alwaysOn)) {
+          detail::addLoadInfo(context, "Attached the always-on availability schedule to ZoneHVAC:PackagedTerminalAirConditioner '"
+                                         + owner.nameString() + "'.");
+        } else {
+          detail::addLoadError(context, "Failed to attach the always-on availability schedule to ZoneHVAC:PackagedTerminalAirConditioner '"
+                                          + owner.nameString() + "'.");
+        }
+      }
+
+      constexpr auto fanModeField = ZoneHVAC_PackagedTerminalAirConditionerFields::SupplyAirFanOperatingModeScheduleName;
+      const auto rawFanMode = openstudio::detail::IdfObject_Impl::getString(fanModeField, false, true);
+      if ((!rawFanMode || rawFanMode->empty()) && !owner.getModelObjectTarget<Schedule>(fanModeField)) {
+        const auto fan = owner.getModelObjectTarget<HVACComponent>(ZoneHVAC_PackagedTerminalAirConditionerFields::SupplyAirFanName);
+        if (!fan) {
+          detail::addLoadWarning(context, "Could not repair the blank fan operating-mode schedule for ZoneHVAC:PackagedTerminalAirConditioner '"
+                                            + owner.nameString() + "' because its supply fan is unresolved.");
+        } else {
+          const auto fanType = fan->iddObject().type();
+          const bool constantVolume = (fanType == IddObjectType::OS_Fan_ConstantVolume) || (fanType == IddObjectType::Fan_ConstantVolume);
+          bool repaired = false;
+          if (constantVolume) {
+            auto alwaysOn = model().alwaysOnDiscreteSchedule();
+            repaired = setSupplyAirFanOperatingModeSchedule(alwaysOn);
+          } else {
+            ScheduleConstant alwaysOff(model());
+            repaired = alwaysOff.setValue(0.0) && setSupplyAirFanOperatingModeSchedule(alwaysOff);
+          }
+          if (repaired) {
+            detail::addLoadInfo(context, "Attached the canonical fan operating-mode schedule to ZoneHVAC:PackagedTerminalAirConditioner '"
+                                           + owner.nameString() + "'.");
+          } else {
+            detail::addLoadError(context, "Failed to attach the canonical fan operating-mode schedule to ZoneHVAC:PackagedTerminalAirConditioner '"
+                                            + owner.nameString() + "'.");
+          }
+        }
+      }
     }
 
     HVACComponent ZoneHVACPackagedTerminalAirConditioner_Impl::supplyAirFan() const {

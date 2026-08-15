@@ -7,25 +7,78 @@
 
 #include "EPModelFixture.hpp"
 #include "../ZoneHVACComponent/ZoneHVACPackagedTerminalHeatPump.hpp"
+#include "../ZoneHVACComponent/ZoneHVACPackagedTerminalHeatPump_Impl.hpp"
 #include "../Loop/AirLoopHVAC.hpp"
 #include "../Loop/PlantLoop.hpp"
 #include "../HVACComponent/ThermalZone.hpp"
+#include "../HVACComponent/ThermalZone_Impl.hpp"
 #include "../Schedule/ScheduleCompact.hpp"
 #include "../Schedule/ScheduleConstant.hpp"
 #include "../Schedule/ScheduleConstant_Impl.hpp"
+#include "../ResourceObject/ScheduleTypeLimits.hpp"
 #include "../StraightComponent/Node.hpp"
 #include "../ModelObject/OutdoorAirMixer.hpp"
 #include "../ModelObject/OutdoorAirMixer_Impl.hpp"
 #include "../StraightComponent/CoilCoolingDXSingleSpeed.hpp"
+#include "../StraightComponent/CoilCoolingDXSingleSpeed_Impl.hpp"
 #include "../StraightComponent/CoilHeatingDXSingleSpeed.hpp"
+#include "../StraightComponent/CoilHeatingDXSingleSpeed_Impl.hpp"
 #include "../StraightComponent/CoilHeatingElectric.hpp"
+#include "../StraightComponent/CoilHeatingElectric_Impl.hpp"
+#include "../StraightComponent/FanConstantVolume.hpp"
+#include "../StraightComponent/FanConstantVolume_Impl.hpp"
 #include "../StraightComponent/FanOnOff.hpp"
+#include "../StraightComponent/FanOnOff_Impl.hpp"
 #include "../WaterToAirComponent/CoilHeatingWater.hpp"
 
-#include <utilities/idd/ZoneHVAC_PackagedTerminalHeatPump_FieldEnums.hxx>
+#include <utilities/core/Filesystem.hpp>
+#include <utilities/core/UUID.hpp>
 #include <utilities/idd/IddEnums.hxx>
+#include <utilities/idd/OutdoorAir_NodeList_FieldEnums.hxx>
+#include <utilities/idd/ZoneHVAC_PackagedTerminalHeatPump_FieldEnums.hxx>
+#include <utilities/idf/WorkspaceExtensibleGroup.hpp>
+#include <utilities/idf/WorkspaceObject_Impl.hpp>
+
+#include <utility>
 
 using namespace openstudio::epmodel;
+
+namespace {
+class ScopedPthpFileRemoval
+{
+ public:
+  explicit ScopedPthpFileRemoval(openstudio::path path) : m_path(std::move(path)) {}
+
+  ~ScopedPthpFileRemoval() {
+    boost::system::error_code error;
+    boost::filesystem::remove(m_path, error);
+  }
+
+ private:
+  openstudio::path m_path;
+};
+
+openstudio::path uniquePthpIdfPath(const std::string& stem) {
+  return openstudio::tempDir() / openstudio::toPath(stem + "-" + openstudio::removeBraces(openstudio::createUUID()) + ".idf");
+}
+
+unsigned pthpOutdoorAirNodeListEntryCount(const Model& model, const std::string& nodeName) {
+  unsigned result = 0u;
+  for (const auto& object : model.getObjectsByType(openstudio::IddObjectType::OutdoorAir_NodeList)) {
+    for (const auto& group : object.extensibleGroups()) {
+      auto workspaceGroup = group.optionalCast<openstudio::WorkspaceExtensibleGroup>();
+      if (!workspaceGroup) {
+        continue;
+      }
+      const auto listedNodeName = workspaceGroup->getString(openstudio::OutdoorAir_NodeListExtensibleFields::NodeorNodeListName);
+      if (listedNodeName && openstudio::istringEqual(*listedNodeName, nodeName)) {
+        ++result;
+      }
+    }
+  }
+  return result;
+}
+}  // namespace
 
 TEST_F(EPModelFixture, ZoneHVACPackagedTerminalHeatPump_DefaultConstructor) {
   Model model;
@@ -434,6 +487,102 @@ TEST_F(EPModelFixture, ZoneHVACPackagedTerminalHeatPump_HiddenMixedAirNodeMainte
   EXPECT_EQ(rogueRepairMixedAir, *coolingCoil.inletModelObject()->optionalCast<Node>());
 }
 
+TEST_F(EPModelFixture, ZoneHVACPackagedTerminalHeatPump_ScheduleValidationAndBlankOnlyLoadRepair) {
+  const auto idfPath = uniquePthpIdfPath("epmodel-pthp-schedule-repair");
+  const ScopedPthpFileRemoval removeIdf(idfPath);
+
+  Model model;
+  FanOnOff fan(model);
+  ZoneHVACPackagedTerminalHeatPump blank(model);
+  ZoneHVACPackagedTerminalHeatPump unresolved(model);
+  ASSERT_TRUE(blank.setName("Blank PTHP Schedules"));
+  ASSERT_TRUE(unresolved.setName("Unresolved PTHP Schedules"));
+  ASSERT_TRUE(blank.setSupplyAirFan(fan));
+
+  ScheduleConstant availability(model);
+  ScheduleConstant fanMode(model);
+  ASSERT_TRUE(availability.setValue(1.0));
+  ASSERT_TRUE(fanMode.setValue(0.0));
+  ASSERT_TRUE(blank.setAvailabilitySchedule(availability));
+  ASSERT_TRUE(blank.setSupplyAirFanOperatingModeSchedule(fanMode));
+  ASSERT_TRUE(availability.scheduleTypeLimits());
+  ASSERT_TRUE(fanMode.scheduleTypeLimits());
+  EXPECT_EQ("Availability", availability.scheduleTypeLimits()->unitType());
+  EXPECT_EQ("ControlMode", fanMode.scheduleTypeLimits()->unitType());
+
+  ScheduleConstant incompatible(model);
+  ScheduleTypeLimits temperatureLimits(model);
+  ASSERT_TRUE(temperatureLimits.setLowerLimitValue(0.0));
+  ASSERT_TRUE(temperatureLimits.setUpperLimitValue(1.0));
+  ASSERT_TRUE(temperatureLimits.setNumericType("Discrete"));
+  ASSERT_TRUE(temperatureLimits.setUnitType("Temperature"));
+  ASSERT_TRUE(incompatible.setScheduleTypeLimits(temperatureLimits));
+  EXPECT_FALSE(blank.setAvailabilitySchedule(incompatible));
+  EXPECT_FALSE(blank.setSupplyAirFanOperatingModeSchedule(incompatible));
+  EXPECT_EQ(availability.handle(), blank.availabilitySchedule().handle());
+  EXPECT_EQ(fanMode.handle(), blank.supplyAirFanOperatingModeSchedule().handle());
+
+  Model foreignModel;
+  ScheduleConstant foreignSchedule(foreignModel);
+  FanOnOff foreignFan(foreignModel);
+  EXPECT_FALSE(blank.setAvailabilitySchedule(foreignSchedule));
+  EXPECT_FALSE(blank.setSupplyAirFanOperatingModeSchedule(foreignSchedule));
+  EXPECT_FALSE(blank.setSupplyAirFan(foreignFan));
+  EXPECT_EQ(fan.handle(), blank.supplyAirFan().handle());
+
+  constexpr unsigned availabilityField = openstudio::ZoneHVAC_PackagedTerminalHeatPumpFields::AvailabilityScheduleName;
+  constexpr unsigned fanModeField = openstudio::ZoneHVAC_PackagedTerminalHeatPumpFields::SupplyAirFanOperatingModeScheduleName;
+  auto blankImpl = blank.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  auto unresolvedImpl = unresolved.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  ASSERT_TRUE(blankImpl);
+  ASSERT_TRUE(unresolvedImpl);
+  ASSERT_TRUE(blankImpl->setPointer(availabilityField, openstudio::Handle(), false));
+  ASSERT_TRUE(blankImpl->openstudio::detail::IdfObject_Impl::setString(availabilityField, "", false));
+  ASSERT_TRUE(blankImpl->setPointer(fanModeField, openstudio::Handle(), false));
+  ASSERT_TRUE(blankImpl->openstudio::detail::IdfObject_Impl::setString(fanModeField, "", false));
+  ASSERT_TRUE(unresolvedImpl->setPointer(availabilityField, openstudio::Handle(), false));
+  ASSERT_TRUE(unresolvedImpl->openstudio::detail::IdfObject_Impl::setString(availabilityField, "Missing PTHP Availability", false));
+  ASSERT_TRUE(unresolvedImpl->setPointer(fanModeField, openstudio::Handle(), false));
+  ASSERT_TRUE(unresolvedImpl->openstudio::detail::IdfObject_Impl::setString(fanModeField, "Missing PTHP Fan Mode", false));
+
+  const auto report = model.canonicalize();
+  EXPECT_EQ(0u, report.errorCount);
+  EXPECT_GE(report.infoCount, 2u);
+  EXPECT_EQ(model.alwaysOnDiscreteSchedule().handle(), blank.availabilitySchedule().handle());
+  auto repairedFanMode = blank.supplyAirFanOperatingModeSchedule().optionalCast<ScheduleConstant>();
+  ASSERT_TRUE(repairedFanMode);
+  EXPECT_DOUBLE_EQ(0.0, repairedFanMode->value());
+  EXPECT_EQ("Missing PTHP Availability", unresolvedImpl->openstudio::detail::IdfObject_Impl::getString(availabilityField, false, true).value_or(""));
+  EXPECT_EQ("Missing PTHP Fan Mode", unresolvedImpl->openstudio::detail::IdfObject_Impl::getString(fanModeField, false, true).value_or(""));
+
+  Model reloadSource;
+  FanOnOff reloadFan(reloadSource);
+  CoilHeatingDXSingleSpeed reloadHeating(reloadSource);
+  CoilCoolingDXSingleSpeed reloadCooling(reloadSource);
+  CoilHeatingElectric reloadSupplemental(reloadSource);
+  ZoneHVACPackagedTerminalHeatPump blankOnLoad(reloadSource);
+  ASSERT_TRUE(blankOnLoad.setName("Blank PTHP Schedules On Load"));
+  ASSERT_TRUE(blankOnLoad.setSupplyAirFan(reloadFan));
+  ASSERT_TRUE(blankOnLoad.setHeatingCoil(reloadHeating));
+  ASSERT_TRUE(blankOnLoad.setCoolingCoil(reloadCooling));
+  ASSERT_TRUE(blankOnLoad.setSupplementalHeatingCoil(reloadSupplemental));
+  auto blankOnLoadImpl = blankOnLoad.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  ASSERT_TRUE(blankOnLoadImpl);
+  ASSERT_TRUE(blankOnLoadImpl->setPointer(availabilityField, openstudio::Handle(), false));
+  ASSERT_TRUE(blankOnLoadImpl->openstudio::detail::IdfObject_Impl::setString(availabilityField, "", false));
+  ASSERT_TRUE(blankOnLoadImpl->setPointer(fanModeField, openstudio::Handle(), false));
+  ASSERT_TRUE(blankOnLoadImpl->openstudio::detail::IdfObject_Impl::setString(fanModeField, "", false));
+  ASSERT_TRUE(reloadSource.save(idfPath, true));
+  auto loadedModel = Model::load(idfPath);
+  ASSERT_TRUE(loadedModel);
+  auto loadedBlank = loadedModel->getConcreteModelObjectByName<ZoneHVACPackagedTerminalHeatPump>("Blank PTHP Schedules On Load");
+  ASSERT_TRUE(loadedBlank);
+  EXPECT_EQ(loadedModel->alwaysOnDiscreteSchedule().handle(), loadedBlank->availabilitySchedule().handle());
+  auto loadedFanMode = loadedBlank->supplyAirFanOperatingModeSchedule().optionalCast<ScheduleConstant>();
+  ASSERT_TRUE(loadedFanMode);
+  EXPECT_DOUBLE_EQ(0.0, loadedFanMode->value());
+}
+
 TEST_F(EPModelFixture, ZoneHVACPackagedTerminalHeatPump_OutdoorAirPathFollowsFlowAndRemovalLifecycle) {
   Model model;
   FanOnOff fan(model);
@@ -484,4 +633,205 @@ TEST_F(EPModelFixture, ZoneHVACPackagedTerminalHeatPump_OutdoorAirPathFollowsFlo
   EXPECT_FALSE(pthp.remove().empty());
   EXPECT_TRUE(model.getConcreteModelObjects<OutdoorAirMixer>().empty());
   EXPECT_TRUE(model.getObjectsByType(openstudio::IddObjectType::OutdoorAir_NodeList).empty());
+}
+
+TEST_F(EPModelFixture, ZoneHVACPackagedTerminalHeatPump_ConfiguredRelationshipsSurviveReloadAndPostLoadMutation) {
+  const auto firstIdfPath = uniquePthpIdfPath("epmodel-pthp-relationships-first");
+  const auto secondIdfPath = uniquePthpIdfPath("epmodel-pthp-relationships-second");
+  const ScopedPthpFileRemoval removeFirstIdf(firstIdfPath);
+  const ScopedPthpFileRemoval removeSecondIdf(secondIdfPath);
+
+  Model model;
+  ScheduleConstant availability(model);
+  ScheduleConstant fanMode(model);
+  FanOnOff fan(model);
+  CoilHeatingDXSingleSpeed heatingCoil(model);
+  CoilCoolingDXSingleSpeed coolingCoil(model);
+  CoilHeatingElectric supplementalCoil(model);
+  ThermalZone firstZone(model);
+  ThermalZone secondZone(model);
+  ASSERT_TRUE(availability.setName("PTHP Original Availability"));
+  ASSERT_TRUE(fanMode.setName("PTHP Original Fan Mode"));
+  ASSERT_TRUE(fan.setName("PTHP Original Fan"));
+  ASSERT_TRUE(heatingCoil.setName("PTHP Original Heating Coil"));
+  ASSERT_TRUE(coolingCoil.setName("PTHP Original Cooling Coil"));
+  ASSERT_TRUE(supplementalCoil.setName("PTHP Original Supplemental Coil"));
+  ASSERT_TRUE(firstZone.setName("PTHP First Zone"));
+  ASSERT_TRUE(secondZone.setName("PTHP Second Zone"));
+  ASSERT_TRUE(availability.setValue(0.8));
+  ASSERT_TRUE(fanMode.setValue(0.0));
+
+  ZoneHVACPackagedTerminalHeatPump pthp(model);
+  ASSERT_TRUE(pthp.setName("Reloadable PTHP"));
+  ASSERT_TRUE(pthp.setAvailabilitySchedule(availability));
+  ASSERT_TRUE(pthp.setSupplyAirFanOperatingModeSchedule(fanMode));
+  ASSERT_TRUE(pthp.setSupplyAirFan(fan));
+  ASSERT_TRUE(pthp.setHeatingCoil(heatingCoil));
+  ASSERT_TRUE(pthp.setCoolingCoil(coolingCoil));
+  ASSERT_TRUE(pthp.setSupplementalHeatingCoil(supplementalCoil));
+  ASSERT_TRUE(pthp.setFanPlacement("DrawThrough"));
+  ASSERT_TRUE(pthp.setSupplyAirFlowRateDuringCoolingOperation(0.45));
+  ASSERT_TRUE(pthp.setDXHeatingCoilSizingRatio(1.15));
+  ASSERT_TRUE(pthp.setOutdoorAirFlowRateDuringCoolingOperation(0.09));
+  ASSERT_TRUE(pthp.setOutdoorAirFlowRateDuringHeatingOperation(0.06));
+  ASSERT_TRUE(pthp.setOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded(0.02));
+  ASSERT_TRUE(pthp.addToThermalZone(firstZone));
+
+  EXPECT_FALSE(pthp.setSupplyAirFan(supplementalCoil));
+  EXPECT_FALSE(pthp.setHeatingCoil(supplementalCoil));
+  EXPECT_FALSE(pthp.setSupplementalHeatingCoil(heatingCoil));
+  EXPECT_EQ(fan.handle(), pthp.supplyAirFan().handle());
+  EXPECT_EQ(heatingCoil.handle(), pthp.heatingCoil().handle());
+  EXPECT_EQ(supplementalCoil.handle(), pthp.supplementalHeatingCoil().handle());
+  ASSERT_TRUE(model.save(firstIdfPath, true));
+
+  auto loadedModel = Model::load(firstIdfPath);
+  ASSERT_TRUE(loadedModel);
+  auto loadedPthp = loadedModel->getConcreteModelObjectByName<ZoneHVACPackagedTerminalHeatPump>("Reloadable PTHP");
+  auto loadedFirstZone = loadedModel->getConcreteModelObjectByName<ThermalZone>("PTHP First Zone");
+  auto loadedSecondZone = loadedModel->getConcreteModelObjectByName<ThermalZone>("PTHP Second Zone");
+  auto loadedAvailability = loadedModel->getConcreteModelObjectByName<ScheduleConstant>("PTHP Original Availability");
+  auto loadedFanMode = loadedModel->getConcreteModelObjectByName<ScheduleConstant>("PTHP Original Fan Mode");
+  auto loadedFan = loadedModel->getConcreteModelObjectByName<FanOnOff>("PTHP Original Fan");
+  auto loadedHeating = loadedModel->getConcreteModelObjectByName<CoilHeatingDXSingleSpeed>("PTHP Original Heating Coil");
+  auto loadedCooling = loadedModel->getConcreteModelObjectByName<CoilCoolingDXSingleSpeed>("PTHP Original Cooling Coil");
+  auto loadedSupplemental = loadedModel->getConcreteModelObjectByName<CoilHeatingElectric>("PTHP Original Supplemental Coil");
+  ASSERT_TRUE(loadedPthp);
+  ASSERT_TRUE(loadedFirstZone);
+  ASSERT_TRUE(loadedSecondZone);
+  ASSERT_TRUE(loadedAvailability);
+  ASSERT_TRUE(loadedFanMode);
+  ASSERT_TRUE(loadedFan);
+  ASSERT_TRUE(loadedHeating);
+  ASSERT_TRUE(loadedCooling);
+  ASSERT_TRUE(loadedSupplemental);
+  EXPECT_EQ(loadedAvailability->handle(), loadedPthp->availabilitySchedule().handle());
+  EXPECT_EQ(loadedFanMode->handle(), loadedPthp->supplyAirFanOperatingModeSchedule().handle());
+  EXPECT_EQ(loadedFan->handle(), loadedPthp->supplyAirFan().handle());
+  EXPECT_EQ(loadedHeating->handle(), loadedPthp->heatingCoil().handle());
+  EXPECT_EQ(loadedCooling->handle(), loadedPthp->coolingCoil().handle());
+  EXPECT_EQ(loadedSupplemental->handle(), loadedPthp->supplementalHeatingCoil().handle());
+  ASSERT_TRUE(loadedPthp->thermalZone());
+  EXPECT_EQ(*loadedFirstZone, *loadedPthp->thermalZone());
+  EXPECT_DOUBLE_EQ(0.45, loadedPthp->supplyAirFlowRateDuringCoolingOperation().get());
+  EXPECT_DOUBLE_EQ(1.15, loadedPthp->dXHeatingCoilSizingRatio());
+  EXPECT_EQ("Fan:OnOff", loadedPthp->getString(openstudio::ZoneHVAC_PackagedTerminalHeatPumpFields::SupplyAirFanObjectType).value_or(""));
+  EXPECT_EQ("Coil:Heating:DX:SingleSpeed",
+            loadedPthp->getString(openstudio::ZoneHVAC_PackagedTerminalHeatPumpFields::HeatingCoilObjectType).value_or(""));
+  EXPECT_EQ("Coil:Cooling:DX:SingleSpeed",
+            loadedPthp->getString(openstudio::ZoneHVAC_PackagedTerminalHeatPumpFields::CoolingCoilObjectType).value_or(""));
+  EXPECT_EQ("Coil:Heating:Electric",
+            loadedPthp->getString(openstudio::ZoneHVAC_PackagedTerminalHeatPumpFields::SupplementalHeatingCoilObjectType).value_or(""));
+  auto loadedMixer = loadedPthp->getModelObjectTarget<OutdoorAirMixer>(openstudio::ZoneHVAC_PackagedTerminalHeatPumpFields::OutdoorAirMixerName);
+  ASSERT_TRUE(loadedMixer);
+  ASSERT_TRUE(loadedMixer->mixedAirNode());
+  ASSERT_TRUE(loadedMixer->returnAirNode());
+  ASSERT_TRUE(loadedMixer->outdoorAirNode());
+  ASSERT_TRUE(loadedPthp->inletNode());
+  ASSERT_TRUE(loadedCooling->inletModelObject());
+  EXPECT_EQ(loadedCooling->inletModelObject()->handle(), loadedMixer->mixedAirNode()->handle());
+  EXPECT_EQ(loadedPthp->inletNode()->handle(), loadedMixer->returnAirNode()->handle());
+  EXPECT_EQ(1u, pthpOutdoorAirNodeListEntryCount(*loadedModel, loadedMixer->outdoorAirNode()->nameString()));
+
+  ScheduleConstant replacementAvailability(*loadedModel);
+  ScheduleConstant replacementFanMode(*loadedModel);
+  FanConstantVolume replacementFan(*loadedModel);
+  CoilHeatingDXSingleSpeed replacementHeating(*loadedModel);
+  CoilCoolingDXSingleSpeed replacementCooling(*loadedModel);
+  CoilHeatingElectric replacementSupplemental(*loadedModel);
+  ASSERT_TRUE(replacementAvailability.setName("PTHP Replacement Availability"));
+  ASSERT_TRUE(replacementFanMode.setName("PTHP Replacement Fan Mode"));
+  ASSERT_TRUE(replacementFan.setName("PTHP Replacement Fan"));
+  ASSERT_TRUE(replacementHeating.setName("PTHP Replacement Heating Coil"));
+  ASSERT_TRUE(replacementCooling.setName("PTHP Replacement Cooling Coil"));
+  ASSERT_TRUE(replacementSupplemental.setName("PTHP Replacement Supplemental Coil"));
+  ASSERT_TRUE(replacementAvailability.setValue(0.5));
+  ASSERT_TRUE(replacementFanMode.setValue(1.0));
+  ASSERT_TRUE(loadedPthp->setAvailabilitySchedule(replacementAvailability));
+  ASSERT_TRUE(loadedPthp->setSupplyAirFanOperatingModeSchedule(replacementFanMode));
+  ASSERT_TRUE(loadedPthp->setSupplyAirFan(replacementFan));
+  ASSERT_TRUE(loadedPthp->setHeatingCoil(replacementHeating));
+  ASSERT_TRUE(loadedPthp->setCoolingCoil(replacementCooling));
+  ASSERT_TRUE(loadedPthp->setSupplementalHeatingCoil(replacementSupplemental));
+  ASSERT_TRUE(loadedPthp->setFanPlacement("BlowThrough"));
+  ASSERT_TRUE(loadedPthp->setOutdoorAirFlowRateDuringCoolingOperation(0.0));
+  ASSERT_TRUE(loadedPthp->setOutdoorAirFlowRateDuringHeatingOperation(0.0));
+  ASSERT_TRUE(loadedPthp->setOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded(0.0));
+  EXPECT_FALSE(loadedPthp->getModelObjectTarget<OutdoorAirMixer>(openstudio::ZoneHVAC_PackagedTerminalHeatPumpFields::OutdoorAirMixerName));
+  ASSERT_TRUE(loadedPthp->setOutdoorAirFlowRateDuringCoolingOperation(0.08));
+  ASSERT_TRUE(loadedPthp->setOutdoorAirFlowRateDuringHeatingOperation(0.05));
+  ASSERT_TRUE(loadedPthp->setOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded(0.01));
+  ASSERT_TRUE(loadedPthp->addToThermalZone(*loadedSecondZone));
+  EXPECT_TRUE(loadedFirstZone->equipment().empty());
+  ASSERT_EQ(1u, loadedSecondZone->equipment().size());
+  EXPECT_EQ(loadedPthp->handle(), loadedSecondZone->equipment().front().handle());
+  ASSERT_TRUE(loadedModel->save(secondIdfPath, true));
+
+  auto reloadedModel = Model::load(secondIdfPath);
+  ASSERT_TRUE(reloadedModel);
+  auto reloadedPthp = reloadedModel->getConcreteModelObjectByName<ZoneHVACPackagedTerminalHeatPump>("Reloadable PTHP");
+  auto reloadedZone = reloadedModel->getConcreteModelObjectByName<ThermalZone>("PTHP Second Zone");
+  auto reloadedAvailability = reloadedModel->getConcreteModelObjectByName<ScheduleConstant>("PTHP Replacement Availability");
+  auto reloadedFanMode = reloadedModel->getConcreteModelObjectByName<ScheduleConstant>("PTHP Replacement Fan Mode");
+  auto reloadedFan = reloadedModel->getConcreteModelObjectByName<FanConstantVolume>("PTHP Replacement Fan");
+  auto reloadedHeating = reloadedModel->getConcreteModelObjectByName<CoilHeatingDXSingleSpeed>("PTHP Replacement Heating Coil");
+  auto reloadedCooling = reloadedModel->getConcreteModelObjectByName<CoilCoolingDXSingleSpeed>("PTHP Replacement Cooling Coil");
+  auto reloadedSupplemental = reloadedModel->getConcreteModelObjectByName<CoilHeatingElectric>("PTHP Replacement Supplemental Coil");
+  ASSERT_TRUE(reloadedPthp);
+  ASSERT_TRUE(reloadedZone);
+  ASSERT_TRUE(reloadedAvailability);
+  ASSERT_TRUE(reloadedFanMode);
+  ASSERT_TRUE(reloadedFan);
+  ASSERT_TRUE(reloadedHeating);
+  ASSERT_TRUE(reloadedCooling);
+  ASSERT_TRUE(reloadedSupplemental);
+  EXPECT_EQ("BlowThrough", reloadedPthp->fanPlacement());
+  EXPECT_EQ(reloadedAvailability->handle(), reloadedPthp->availabilitySchedule().handle());
+  EXPECT_EQ(reloadedFanMode->handle(), reloadedPthp->supplyAirFanOperatingModeSchedule().handle());
+  EXPECT_EQ(reloadedFan->handle(), reloadedPthp->supplyAirFan().handle());
+  EXPECT_EQ(reloadedHeating->handle(), reloadedPthp->heatingCoil().handle());
+  EXPECT_EQ(reloadedCooling->handle(), reloadedPthp->coolingCoil().handle());
+  EXPECT_EQ(reloadedSupplemental->handle(), reloadedPthp->supplementalHeatingCoil().handle());
+  ASSERT_TRUE(reloadedPthp->thermalZone());
+  EXPECT_EQ(*reloadedZone, *reloadedPthp->thermalZone());
+  auto reloadedMixer = reloadedPthp->getModelObjectTarget<OutdoorAirMixer>(openstudio::ZoneHVAC_PackagedTerminalHeatPumpFields::OutdoorAirMixerName);
+  ASSERT_TRUE(reloadedMixer);
+  ASSERT_TRUE(reloadedMixer->mixedAirNode());
+  ASSERT_TRUE(reloadedMixer->returnAirNode());
+  ASSERT_TRUE(reloadedMixer->outdoorAirNode());
+  ASSERT_TRUE(reloadedPthp->inletNode());
+  ASSERT_TRUE(reloadedFan->inletModelObject());
+  EXPECT_EQ(reloadedFan->inletModelObject()->handle(), reloadedMixer->mixedAirNode()->handle());
+  EXPECT_EQ(reloadedPthp->inletNode()->handle(), reloadedMixer->returnAirNode()->handle());
+  EXPECT_EQ(1u, pthpOutdoorAirNodeListEntryCount(*reloadedModel, reloadedMixer->outdoorAirNode()->nameString()));
+  ASSERT_TRUE(reloadedPthp->fanOutletNode());
+  ASSERT_TRUE(reloadedPthp->coolingCoilOutletNode());
+  ASSERT_TRUE(reloadedPthp->heatingCoilOutletNode());
+  ASSERT_TRUE(reloadedCooling->inletModelObject());
+  ASSERT_TRUE(reloadedHeating->inletModelObject());
+  ASSERT_TRUE(reloadedSupplemental->inletModelObject());
+  ASSERT_TRUE(reloadedSupplemental->outletModelObject());
+  ASSERT_TRUE(reloadedPthp->outletNode());
+  EXPECT_EQ(reloadedPthp->fanOutletNode()->handle(), reloadedCooling->inletModelObject()->handle());
+  EXPECT_EQ(reloadedPthp->coolingCoilOutletNode()->handle(), reloadedHeating->inletModelObject()->handle());
+  EXPECT_EQ(reloadedPthp->heatingCoilOutletNode()->handle(), reloadedSupplemental->inletModelObject()->handle());
+  EXPECT_EQ(reloadedSupplemental->outletModelObject()->handle(), reloadedPthp->outletNode()->handle());
+
+  const auto availabilityHandle = reloadedAvailability->handle();
+  const auto fanModeHandle = reloadedFanMode->handle();
+  const auto fanHandle = reloadedFan->handle();
+  const auto heatingHandle = reloadedHeating->handle();
+  const auto coolingHandle = reloadedCooling->handle();
+  const auto supplementalHandle = reloadedSupplemental->handle();
+  const auto outdoorAirNodeName = reloadedMixer->outdoorAirNode()->nameString();
+  EXPECT_FALSE(reloadedPthp->remove().empty());
+  EXPECT_TRUE(reloadedZone->equipment().empty());
+  EXPECT_TRUE(reloadedModel->getObject(availabilityHandle));
+  EXPECT_TRUE(reloadedModel->getObject(fanModeHandle));
+  EXPECT_TRUE(reloadedModel->getObject(fanHandle));
+  EXPECT_TRUE(reloadedModel->getObject(heatingHandle));
+  EXPECT_TRUE(reloadedModel->getObject(coolingHandle));
+  EXPECT_TRUE(reloadedModel->getObject(supplementalHandle));
+  EXPECT_TRUE(reloadedModel->getConcreteModelObjects<OutdoorAirMixer>().empty());
+  EXPECT_EQ(0u, pthpOutdoorAirNodeListEntryCount(*reloadedModel, outdoorAirNodeName));
 }

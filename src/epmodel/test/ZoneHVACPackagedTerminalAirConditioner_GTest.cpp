@@ -13,22 +13,52 @@
 #include "../Schedule/ScheduleCompact.hpp"
 #include "../Schedule/ScheduleConstant.hpp"
 #include "../Schedule/ScheduleConstant_Impl.hpp"
+#include "../ResourceObject/ScheduleTypeLimits.hpp"
 #include "../StraightComponent/Node.hpp"
 #include "../ModelObject/OutdoorAirMixer.hpp"
 #include "../ModelObject/OutdoorAirMixer_Impl.hpp"
 #include "../StraightComponent/FanConstantVolume.hpp"
+#include "../StraightComponent/FanConstantVolume_Impl.hpp"
+#include "../StraightComponent/FanOnOff.hpp"
+#include "../StraightComponent/FanOnOff_Impl.hpp"
 #include "../StraightComponent/CoilCoolingDXSingleSpeed.hpp"
 #include "../StraightComponent/CoilCoolingDXSingleSpeed_Impl.hpp"
+#include "../StraightComponent/CoilHeatingElectric.hpp"
+#include "../StraightComponent/CoilHeatingElectric_Impl.hpp"
 #include "../WaterToAirComponent/CoilHeatingWater.hpp"
 #include "../HVACComponent/ThermalZone.hpp"
+#include "../HVACComponent/ThermalZone_Impl.hpp"
 
-#include <utilities/idd/ZoneHVAC_PackagedTerminalAirConditioner_FieldEnums.hxx>
+#include <utilities/core/Filesystem.hpp>
+#include <utilities/core/UUID.hpp>
 #include <utilities/idd/OutdoorAir_NodeList_FieldEnums.hxx>
+#include <utilities/idd/ZoneHVAC_PackagedTerminalAirConditioner_FieldEnums.hxx>
 #include <utilities/idf/WorkspaceExtensibleGroup.hpp>
+#include <utilities/idf/WorkspaceObject_Impl.hpp>
+
+#include <utility>
 
 using namespace openstudio::epmodel;
 
 namespace {
+class ScopedPtacFileRemoval
+{
+ public:
+  explicit ScopedPtacFileRemoval(openstudio::path path) : m_path(std::move(path)) {}
+
+  ~ScopedPtacFileRemoval() {
+    boost::system::error_code error;
+    boost::filesystem::remove(m_path, error);
+  }
+
+ private:
+  openstudio::path m_path;
+};
+
+openstudio::path uniquePtacIdfPath(const std::string& stem) {
+  return openstudio::tempDir() / openstudio::toPath(stem + "-" + openstudio::removeBraces(openstudio::createUUID()) + ".idf");
+}
+
 unsigned ptacOutdoorAirNodeListEntryCount(const Model& model, const std::string& nodeName) {
   unsigned result = 0u;
   for (const auto& object : model.getObjectsByType(openstudio::IddObjectType::OutdoorAir_NodeList)) {
@@ -407,8 +437,99 @@ TEST_F(EPModelFixture, ZoneHVACPackagedTerminalAirConditioner_HiddenMixedAirNode
   EXPECT_EQ(rogueRepairMixedAir, *coolingCoil.inletModelObject()->optionalCast<Node>());
 }
 
+TEST_F(EPModelFixture, ZoneHVACPackagedTerminalAirConditioner_ScheduleValidationAndBlankOnlyLoadRepair) {
+  const auto idfPath = uniquePtacIdfPath("epmodel-ptac-schedule-repair");
+  const ScopedPtacFileRemoval removeIdf(idfPath);
+
+  Model model;
+  FanConstantVolume fan(model);
+  ZoneHVACPackagedTerminalAirConditioner blank(model);
+  ZoneHVACPackagedTerminalAirConditioner unresolved(model);
+  ASSERT_TRUE(blank.setName("Blank PTAC Schedules"));
+  ASSERT_TRUE(unresolved.setName("Unresolved PTAC Schedules"));
+  ASSERT_TRUE(blank.setSupplyAirFan(fan));
+
+  ScheduleConstant availability(model);
+  ScheduleConstant fanMode(model);
+  ASSERT_TRUE(availability.setValue(1.0));
+  ASSERT_TRUE(fanMode.setValue(0.0));
+  ASSERT_TRUE(blank.setAvailabilitySchedule(availability));
+  ASSERT_TRUE(blank.setSupplyAirFanOperatingModeSchedule(fanMode));
+  ASSERT_TRUE(availability.scheduleTypeLimits());
+  ASSERT_TRUE(fanMode.scheduleTypeLimits());
+  EXPECT_EQ("Availability", availability.scheduleTypeLimits()->unitType());
+  EXPECT_EQ("ControlMode", fanMode.scheduleTypeLimits()->unitType());
+
+  ScheduleConstant incompatible(model);
+  ScheduleTypeLimits temperatureLimits(model);
+  ASSERT_TRUE(temperatureLimits.setLowerLimitValue(0.0));
+  ASSERT_TRUE(temperatureLimits.setUpperLimitValue(1.0));
+  ASSERT_TRUE(temperatureLimits.setNumericType("Discrete"));
+  ASSERT_TRUE(temperatureLimits.setUnitType("Temperature"));
+  ASSERT_TRUE(incompatible.setScheduleTypeLimits(temperatureLimits));
+  EXPECT_FALSE(blank.setAvailabilitySchedule(incompatible));
+  EXPECT_FALSE(blank.setSupplyAirFanOperatingModeSchedule(incompatible));
+  EXPECT_EQ(availability.handle(), blank.availabilitySchedule().handle());
+  EXPECT_EQ(fanMode.handle(), blank.supplyAirFanOperatingModeSchedule().handle());
+
+  Model foreignModel;
+  ScheduleConstant foreignSchedule(foreignModel);
+  FanConstantVolume foreignFan(foreignModel);
+  EXPECT_FALSE(blank.setAvailabilitySchedule(foreignSchedule));
+  EXPECT_FALSE(blank.setSupplyAirFanOperatingModeSchedule(foreignSchedule));
+  EXPECT_FALSE(blank.setSupplyAirFan(foreignFan));
+  EXPECT_EQ(fan.handle(), blank.supplyAirFan().handle());
+
+  constexpr unsigned availabilityField = openstudio::ZoneHVAC_PackagedTerminalAirConditionerFields::AvailabilityScheduleName;
+  constexpr unsigned fanModeField = openstudio::ZoneHVAC_PackagedTerminalAirConditionerFields::SupplyAirFanOperatingModeScheduleName;
+  auto blankImpl = blank.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  auto unresolvedImpl = unresolved.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  ASSERT_TRUE(blankImpl);
+  ASSERT_TRUE(unresolvedImpl);
+  ASSERT_TRUE(blankImpl->setPointer(availabilityField, openstudio::Handle(), false));
+  ASSERT_TRUE(blankImpl->openstudio::detail::IdfObject_Impl::setString(availabilityField, "", false));
+  ASSERT_TRUE(blankImpl->setPointer(fanModeField, openstudio::Handle(), false));
+  ASSERT_TRUE(blankImpl->openstudio::detail::IdfObject_Impl::setString(fanModeField, "", false));
+  ASSERT_TRUE(unresolvedImpl->setPointer(availabilityField, openstudio::Handle(), false));
+  ASSERT_TRUE(unresolvedImpl->openstudio::detail::IdfObject_Impl::setString(availabilityField, "Missing PTAC Availability", false));
+  ASSERT_TRUE(unresolvedImpl->setPointer(fanModeField, openstudio::Handle(), false));
+  ASSERT_TRUE(unresolvedImpl->openstudio::detail::IdfObject_Impl::setString(fanModeField, "Missing PTAC Fan Mode", false));
+
+  const auto report = model.canonicalize();
+  EXPECT_EQ(0u, report.errorCount);
+  EXPECT_GE(report.infoCount, 2u);
+  EXPECT_EQ(model.alwaysOnDiscreteSchedule().handle(), blank.availabilitySchedule().handle());
+  EXPECT_EQ(model.alwaysOnDiscreteSchedule().handle(), blank.supplyAirFanOperatingModeSchedule().handle());
+  EXPECT_EQ("Missing PTAC Availability", unresolvedImpl->openstudio::detail::IdfObject_Impl::getString(availabilityField, false, true).value_or(""));
+  EXPECT_EQ("Missing PTAC Fan Mode", unresolvedImpl->openstudio::detail::IdfObject_Impl::getString(fanModeField, false, true).value_or(""));
+
+  Model reloadSource;
+  FanConstantVolume reloadFan(reloadSource);
+  CoilHeatingElectric reloadHeating(reloadSource);
+  CoilCoolingDXSingleSpeed reloadCooling(reloadSource);
+  ZoneHVACPackagedTerminalAirConditioner blankOnLoad(reloadSource);
+  ASSERT_TRUE(blankOnLoad.setName("Blank PTAC Schedules On Load"));
+  ASSERT_TRUE(blankOnLoad.setSupplyAirFan(reloadFan));
+  ASSERT_TRUE(blankOnLoad.setHeatingCoil(reloadHeating));
+  ASSERT_TRUE(blankOnLoad.setCoolingCoil(reloadCooling));
+  auto blankOnLoadImpl = blankOnLoad.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  ASSERT_TRUE(blankOnLoadImpl);
+  ASSERT_TRUE(blankOnLoadImpl->setPointer(availabilityField, openstudio::Handle(), false));
+  ASSERT_TRUE(blankOnLoadImpl->openstudio::detail::IdfObject_Impl::setString(availabilityField, "", false));
+  ASSERT_TRUE(blankOnLoadImpl->setPointer(fanModeField, openstudio::Handle(), false));
+  ASSERT_TRUE(blankOnLoadImpl->openstudio::detail::IdfObject_Impl::setString(fanModeField, "", false));
+  ASSERT_TRUE(reloadSource.save(idfPath, true));
+  auto loadedModel = Model::load(idfPath);
+  ASSERT_TRUE(loadedModel);
+  auto loadedBlank = loadedModel->getConcreteModelObjectByName<ZoneHVACPackagedTerminalAirConditioner>("Blank PTAC Schedules On Load");
+  ASSERT_TRUE(loadedBlank);
+  EXPECT_EQ(loadedModel->alwaysOnDiscreteSchedule().handle(), loadedBlank->availabilitySchedule().handle());
+  EXPECT_EQ(loadedModel->alwaysOnDiscreteSchedule().handle(), loadedBlank->supplyAirFanOperatingModeSchedule().handle());
+}
+
 TEST_F(EPModelFixture, ZoneHVACPackagedTerminalAirConditioner_OwnsPersistedOutdoorAirPath) {
-  const auto idfPath = openstudio::tempDir() / openstudio::toPath("epmodel-ptac-outdoor-air-path.idf");
+  const auto idfPath = uniquePtacIdfPath("epmodel-ptac-outdoor-air-path");
+  const ScopedPtacFileRemoval removeIdf(idfPath);
   Model model;
   FanConstantVolume fan(model);
   CoilHeatingWater heatingCoil(model);
@@ -463,6 +584,185 @@ TEST_F(EPModelFixture, ZoneHVACPackagedTerminalAirConditioner_OwnsPersistedOutdo
   ASSERT_TRUE(loadedCoolingCoil);
   ASSERT_TRUE(loadedCoolingCoil->inletModelObject());
   EXPECT_EQ(loadedPTAC->inletNode()->handle(), loadedCoolingCoil->inletModelObject()->handle());
+}
 
-  openstudio::filesystem::remove(idfPath);
+TEST_F(EPModelFixture, ZoneHVACPackagedTerminalAirConditioner_ConfiguredRelationshipsSurviveReloadAndPostLoadMutation) {
+  const auto firstIdfPath = uniquePtacIdfPath("epmodel-ptac-relationships-first");
+  const auto secondIdfPath = uniquePtacIdfPath("epmodel-ptac-relationships-second");
+  const ScopedPtacFileRemoval removeFirstIdf(firstIdfPath);
+  const ScopedPtacFileRemoval removeSecondIdf(secondIdfPath);
+
+  Model model;
+  ScheduleConstant availability(model);
+  ScheduleConstant fanMode(model);
+  FanConstantVolume fan(model);
+  CoilHeatingElectric heatingCoil(model);
+  CoilCoolingDXSingleSpeed coolingCoil(model);
+  ThermalZone firstZone(model);
+  ThermalZone secondZone(model);
+  ASSERT_TRUE(availability.setName("PTAC Original Availability"));
+  ASSERT_TRUE(fanMode.setName("PTAC Original Fan Mode"));
+  ASSERT_TRUE(fan.setName("PTAC Original Fan"));
+  ASSERT_TRUE(heatingCoil.setName("PTAC Original Heating Coil"));
+  ASSERT_TRUE(coolingCoil.setName("PTAC Original Cooling Coil"));
+  ASSERT_TRUE(firstZone.setName("PTAC First Zone"));
+  ASSERT_TRUE(secondZone.setName("PTAC Second Zone"));
+  ASSERT_TRUE(availability.setValue(0.8));
+  ASSERT_TRUE(fanMode.setValue(1.0));
+
+  ZoneHVACPackagedTerminalAirConditioner ptac(model);
+  ASSERT_TRUE(ptac.setName("Reloadable PTAC"));
+  ASSERT_TRUE(ptac.setAvailabilitySchedule(availability));
+  ASSERT_TRUE(ptac.setSupplyAirFanOperatingModeSchedule(fanMode));
+  ASSERT_TRUE(ptac.setSupplyAirFan(fan));
+  ASSERT_TRUE(ptac.setHeatingCoil(heatingCoil));
+  ASSERT_TRUE(ptac.setCoolingCoil(coolingCoil));
+  ASSERT_TRUE(ptac.setFanPlacement("DrawThrough"));
+  ASSERT_TRUE(ptac.setSupplyAirFlowRateDuringCoolingOperation(0.45));
+  ASSERT_TRUE(ptac.setOutdoorAirFlowRateDuringCoolingOperation(0.09));
+  ASSERT_TRUE(ptac.setOutdoorAirFlowRateDuringHeatingOperation(0.06));
+  ASSERT_TRUE(ptac.setOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded(0.02));
+  ASSERT_TRUE(ptac.addToThermalZone(firstZone));
+
+  EXPECT_FALSE(ptac.setSupplyAirFan(heatingCoil));
+  EXPECT_FALSE(ptac.setHeatingCoil(coolingCoil));
+  EXPECT_EQ(fan.handle(), ptac.supplyAirFan().handle());
+  EXPECT_EQ(heatingCoil.handle(), ptac.heatingCoil().handle());
+  ASSERT_TRUE(model.save(firstIdfPath, true));
+
+  auto loadedModel = Model::load(firstIdfPath);
+  ASSERT_TRUE(loadedModel);
+  auto loadedPtac = loadedModel->getConcreteModelObjectByName<ZoneHVACPackagedTerminalAirConditioner>("Reloadable PTAC");
+  auto loadedFirstZone = loadedModel->getConcreteModelObjectByName<ThermalZone>("PTAC First Zone");
+  auto loadedSecondZone = loadedModel->getConcreteModelObjectByName<ThermalZone>("PTAC Second Zone");
+  auto loadedAvailability = loadedModel->getConcreteModelObjectByName<ScheduleConstant>("PTAC Original Availability");
+  auto loadedFanMode = loadedModel->getConcreteModelObjectByName<ScheduleConstant>("PTAC Original Fan Mode");
+  auto loadedFan = loadedModel->getConcreteModelObjectByName<FanConstantVolume>("PTAC Original Fan");
+  auto loadedHeating = loadedModel->getConcreteModelObjectByName<CoilHeatingElectric>("PTAC Original Heating Coil");
+  auto loadedCooling = loadedModel->getConcreteModelObjectByName<CoilCoolingDXSingleSpeed>("PTAC Original Cooling Coil");
+  ASSERT_TRUE(loadedPtac);
+  ASSERT_TRUE(loadedFirstZone);
+  ASSERT_TRUE(loadedSecondZone);
+  ASSERT_TRUE(loadedAvailability);
+  ASSERT_TRUE(loadedFanMode);
+  ASSERT_TRUE(loadedFan);
+  ASSERT_TRUE(loadedHeating);
+  ASSERT_TRUE(loadedCooling);
+  EXPECT_EQ(loadedAvailability->handle(), loadedPtac->availabilitySchedule().handle());
+  EXPECT_EQ(loadedFanMode->handle(), loadedPtac->supplyAirFanOperatingModeSchedule().handle());
+  EXPECT_EQ(loadedFan->handle(), loadedPtac->supplyAirFan().handle());
+  EXPECT_EQ(loadedHeating->handle(), loadedPtac->heatingCoil().handle());
+  EXPECT_EQ(loadedCooling->handle(), loadedPtac->coolingCoil().handle());
+  ASSERT_TRUE(loadedPtac->thermalZone());
+  EXPECT_EQ(*loadedFirstZone, *loadedPtac->thermalZone());
+  EXPECT_DOUBLE_EQ(0.45, loadedPtac->supplyAirFlowRateDuringCoolingOperation().get());
+  EXPECT_EQ("Fan:ConstantVolume",
+            loadedPtac->getString(openstudio::ZoneHVAC_PackagedTerminalAirConditionerFields::SupplyAirFanObjectType).value_or(""));
+  EXPECT_EQ("Coil:Heating:Electric",
+            loadedPtac->getString(openstudio::ZoneHVAC_PackagedTerminalAirConditionerFields::HeatingCoilObjectType).value_or(""));
+  EXPECT_EQ("Coil:Cooling:DX:SingleSpeed",
+            loadedPtac->getString(openstudio::ZoneHVAC_PackagedTerminalAirConditionerFields::CoolingCoilObjectType).value_or(""));
+  auto loadedMixer =
+    loadedPtac->getModelObjectTarget<OutdoorAirMixer>(openstudio::ZoneHVAC_PackagedTerminalAirConditionerFields::OutdoorAirMixerName);
+  ASSERT_TRUE(loadedMixer);
+  ASSERT_TRUE(loadedMixer->mixedAirNode());
+  ASSERT_TRUE(loadedMixer->returnAirNode());
+  ASSERT_TRUE(loadedMixer->outdoorAirNode());
+  ASSERT_TRUE(loadedPtac->inletNode());
+  ASSERT_TRUE(loadedCooling->inletModelObject());
+  EXPECT_EQ(loadedCooling->inletModelObject()->handle(), loadedMixer->mixedAirNode()->handle());
+  EXPECT_EQ(loadedPtac->inletNode()->handle(), loadedMixer->returnAirNode()->handle());
+  EXPECT_EQ(1u, ptacOutdoorAirNodeListEntryCount(*loadedModel, loadedMixer->outdoorAirNode()->nameString()));
+
+  ScheduleConstant replacementAvailability(*loadedModel);
+  ScheduleConstant replacementFanMode(*loadedModel);
+  FanOnOff replacementFan(*loadedModel);
+  CoilHeatingElectric replacementHeating(*loadedModel);
+  CoilCoolingDXSingleSpeed replacementCooling(*loadedModel);
+  ASSERT_TRUE(replacementAvailability.setName("PTAC Replacement Availability"));
+  ASSERT_TRUE(replacementFanMode.setName("PTAC Replacement Fan Mode"));
+  ASSERT_TRUE(replacementFan.setName("PTAC Replacement Fan"));
+  ASSERT_TRUE(replacementHeating.setName("PTAC Replacement Heating Coil"));
+  ASSERT_TRUE(replacementCooling.setName("PTAC Replacement Cooling Coil"));
+  ASSERT_TRUE(replacementAvailability.setValue(0.5));
+  ASSERT_TRUE(replacementFanMode.setValue(0.0));
+  ASSERT_TRUE(loadedPtac->setAvailabilitySchedule(replacementAvailability));
+  ASSERT_TRUE(loadedPtac->setSupplyAirFanOperatingModeSchedule(replacementFanMode));
+  ASSERT_TRUE(loadedPtac->setSupplyAirFan(replacementFan));
+  ASSERT_TRUE(loadedPtac->setHeatingCoil(replacementHeating));
+  ASSERT_TRUE(loadedPtac->setCoolingCoil(replacementCooling));
+  ASSERT_TRUE(loadedPtac->setFanPlacement("BlowThrough"));
+  ASSERT_TRUE(loadedPtac->setOutdoorAirFlowRateDuringCoolingOperation(0.0));
+  ASSERT_TRUE(loadedPtac->setOutdoorAirFlowRateDuringHeatingOperation(0.0));
+  ASSERT_TRUE(loadedPtac->setOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded(0.0));
+  EXPECT_FALSE(loadedPtac->getModelObjectTarget<OutdoorAirMixer>(openstudio::ZoneHVAC_PackagedTerminalAirConditionerFields::OutdoorAirMixerName));
+  ASSERT_TRUE(loadedPtac->setOutdoorAirFlowRateDuringCoolingOperation(0.08));
+  ASSERT_TRUE(loadedPtac->setOutdoorAirFlowRateDuringHeatingOperation(0.05));
+  ASSERT_TRUE(loadedPtac->setOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded(0.01));
+  ASSERT_TRUE(loadedPtac->addToThermalZone(*loadedSecondZone));
+  EXPECT_TRUE(loadedFirstZone->equipment().empty());
+  ASSERT_EQ(1u, loadedSecondZone->equipment().size());
+  EXPECT_EQ(loadedPtac->handle(), loadedSecondZone->equipment().front().handle());
+  ASSERT_TRUE(loadedModel->save(secondIdfPath, true));
+
+  auto reloadedModel = Model::load(secondIdfPath);
+  ASSERT_TRUE(reloadedModel);
+  auto reloadedPtac = reloadedModel->getConcreteModelObjectByName<ZoneHVACPackagedTerminalAirConditioner>("Reloadable PTAC");
+  auto reloadedZone = reloadedModel->getConcreteModelObjectByName<ThermalZone>("PTAC Second Zone");
+  auto reloadedAvailability = reloadedModel->getConcreteModelObjectByName<ScheduleConstant>("PTAC Replacement Availability");
+  auto reloadedFanMode = reloadedModel->getConcreteModelObjectByName<ScheduleConstant>("PTAC Replacement Fan Mode");
+  auto reloadedFan = reloadedModel->getConcreteModelObjectByName<FanOnOff>("PTAC Replacement Fan");
+  auto reloadedHeating = reloadedModel->getConcreteModelObjectByName<CoilHeatingElectric>("PTAC Replacement Heating Coil");
+  auto reloadedCooling = reloadedModel->getConcreteModelObjectByName<CoilCoolingDXSingleSpeed>("PTAC Replacement Cooling Coil");
+  ASSERT_TRUE(reloadedPtac);
+  ASSERT_TRUE(reloadedZone);
+  ASSERT_TRUE(reloadedAvailability);
+  ASSERT_TRUE(reloadedFanMode);
+  ASSERT_TRUE(reloadedFan);
+  ASSERT_TRUE(reloadedHeating);
+  ASSERT_TRUE(reloadedCooling);
+  EXPECT_EQ("BlowThrough", reloadedPtac->fanPlacement());
+  EXPECT_EQ(reloadedAvailability->handle(), reloadedPtac->availabilitySchedule().handle());
+  EXPECT_EQ(reloadedFanMode->handle(), reloadedPtac->supplyAirFanOperatingModeSchedule().handle());
+  EXPECT_EQ(reloadedFan->handle(), reloadedPtac->supplyAirFan().handle());
+  EXPECT_EQ(reloadedHeating->handle(), reloadedPtac->heatingCoil().handle());
+  EXPECT_EQ(reloadedCooling->handle(), reloadedPtac->coolingCoil().handle());
+  ASSERT_TRUE(reloadedPtac->thermalZone());
+  EXPECT_EQ(*reloadedZone, *reloadedPtac->thermalZone());
+  auto reloadedMixer =
+    reloadedPtac->getModelObjectTarget<OutdoorAirMixer>(openstudio::ZoneHVAC_PackagedTerminalAirConditionerFields::OutdoorAirMixerName);
+  ASSERT_TRUE(reloadedMixer);
+  ASSERT_TRUE(reloadedMixer->mixedAirNode());
+  ASSERT_TRUE(reloadedMixer->returnAirNode());
+  ASSERT_TRUE(reloadedMixer->outdoorAirNode());
+  ASSERT_TRUE(reloadedPtac->inletNode());
+  ASSERT_TRUE(reloadedFan->inletModelObject());
+  EXPECT_EQ(reloadedFan->inletModelObject()->handle(), reloadedMixer->mixedAirNode()->handle());
+  EXPECT_EQ(reloadedPtac->inletNode()->handle(), reloadedMixer->returnAirNode()->handle());
+  EXPECT_EQ(1u, ptacOutdoorAirNodeListEntryCount(*reloadedModel, reloadedMixer->outdoorAirNode()->nameString()));
+  ASSERT_TRUE(reloadedPtac->fanOutletNode());
+  ASSERT_TRUE(reloadedPtac->coolingCoilOutletNode());
+  ASSERT_TRUE(reloadedPtac->heatingCoilOutletNode());
+  ASSERT_TRUE(reloadedCooling->inletModelObject());
+  ASSERT_TRUE(reloadedHeating->inletModelObject());
+  ASSERT_TRUE(reloadedPtac->outletNode());
+  EXPECT_EQ(reloadedPtac->fanOutletNode()->handle(), reloadedCooling->inletModelObject()->handle());
+  EXPECT_EQ(reloadedPtac->coolingCoilOutletNode()->handle(), reloadedHeating->inletModelObject()->handle());
+  EXPECT_EQ(reloadedPtac->heatingCoilOutletNode()->handle(), reloadedPtac->outletNode()->handle());
+
+  const auto availabilityHandle = reloadedAvailability->handle();
+  const auto fanModeHandle = reloadedFanMode->handle();
+  const auto fanHandle = reloadedFan->handle();
+  const auto heatingHandle = reloadedHeating->handle();
+  const auto coolingHandle = reloadedCooling->handle();
+  const auto outdoorAirNodeName = reloadedMixer->outdoorAirNode()->nameString();
+  EXPECT_FALSE(reloadedPtac->remove().empty());
+  EXPECT_TRUE(reloadedZone->equipment().empty());
+  EXPECT_TRUE(reloadedModel->getObject(availabilityHandle));
+  EXPECT_TRUE(reloadedModel->getObject(fanModeHandle));
+  EXPECT_TRUE(reloadedModel->getObject(fanHandle));
+  EXPECT_TRUE(reloadedModel->getObject(heatingHandle));
+  EXPECT_TRUE(reloadedModel->getObject(coolingHandle));
+  EXPECT_TRUE(reloadedModel->getConcreteModelObjects<OutdoorAirMixer>().empty());
+  EXPECT_EQ(0u, ptacOutdoorAirNodeListEntryCount(*reloadedModel, outdoorAirNodeName));
 }
