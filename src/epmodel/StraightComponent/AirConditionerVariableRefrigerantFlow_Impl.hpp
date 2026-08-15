@@ -63,6 +63,46 @@ namespace epmodel {
       double grossRatedCoolingCOP() const;
       bool setGrossRatedCoolingCOP(double grossRatedCoolingCOP);
 
+      boost::optional<Curve> coolingCapacityRatioModifierFunctionofLowTemperatureCurve() const;
+      bool setCoolingCapacityRatioModifierFunctionofLowTemperatureCurve(const Curve& curve);
+      void resetCoolingCapacityRatioModifierFunctionofLowTemperatureCurve();
+
+      boost::optional<Curve> coolingCapacityRatioBoundaryCurve() const;
+      bool setCoolingCapacityRatioBoundaryCurve(const Curve& curve);
+      void resetCoolingCapacityRatioBoundaryCurve();
+
+      boost::optional<Curve> coolingCapacityRatioModifierFunctionofHighTemperatureCurve() const;
+      bool setCoolingCapacityRatioModifierFunctionofHighTemperatureCurve(const Curve& curve);
+      void resetCoolingCapacityRatioModifierFunctionofHighTemperatureCurve();
+
+      boost::optional<Curve> coolingEnergyInputRatioModifierFunctionofLowTemperatureCurve() const;
+      bool setCoolingEnergyInputRatioModifierFunctionofLowTemperatureCurve(const Curve& curve);
+      void resetCoolingEnergyInputRatioModifierFunctionofLowTemperatureCurve();
+
+      boost::optional<Curve> coolingEnergyInputRatioBoundaryCurve() const;
+      bool setCoolingEnergyInputRatioBoundaryCurve(const Curve& curve);
+      void resetCoolingEnergyInputRatioBoundaryCurve();
+
+      boost::optional<Curve> coolingEnergyInputRatioModifierFunctionofHighTemperatureCurve() const;
+      bool setCoolingEnergyInputRatioModifierFunctionofHighTemperatureCurve(const Curve& curve);
+      void resetCoolingEnergyInputRatioModifierFunctionofHighTemperatureCurve();
+
+      boost::optional<Curve> coolingEnergyInputRatioModifierFunctionofLowPartLoadRatioCurve() const;
+      bool setCoolingEnergyInputRatioModifierFunctionofLowPartLoadRatioCurve(const Curve& curve);
+      void resetCoolingEnergyInputRatioModifierFunctionofLowPartLoadRatioCurve();
+
+      boost::optional<Curve> coolingEnergyInputRatioModifierFunctionofHighPartLoadRatioCurve() const;
+      bool setCoolingEnergyInputRatioModifierFunctionofHighPartLoadRatioCurve(const Curve& curve);
+      void resetCoolingEnergyInputRatioModifierFunctionofHighPartLoadRatioCurve();
+
+      boost::optional<Curve> coolingCombinationRatioCorrectionFactorCurve() const;
+      bool setCoolingCombinationRatioCorrectionFactorCurve(const Curve& curve);
+      void resetCoolingCombinationRatioCorrectionFactorCurve();
+
+      boost::optional<Curve> coolingPartLoadFractionCorrelationCurve() const;
+      bool setCoolingPartLoadFractionCorrelationCurve(const Curve& curve);
+      void resetCoolingPartLoadFractionCorrelationCurve();
+
       boost::optional<double> grossRatedHeatingCapacity() const;
       bool isGrossRatedHeatingCapacityAutosized() const;
       bool setGrossRatedHeatingCapacity(double grossRatedHeatingCapacity);
@@ -98,6 +138,7 @@ namespace epmodel {
 
      private:
       boost::optional<ModelObject> terminalUnitList() const;
+      bool setValidatedCurve(unsigned field, const Curve& curve, const char* relationshipName);
     };
 
   }  // namespace detail

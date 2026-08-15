@@ -9,9 +9,11 @@
 #include "../HVACComponent/ThermalZone.hpp"
 #include "../HVACComponent/ThermalZone_Impl.hpp"
 #include "../Curve/CurveBicubic.hpp"
+#include "../Curve/CurveBicubic_Impl.hpp"
 #include "../Curve/CurveBiquadratic.hpp"
 #include "../Curve/CurveBiquadratic_Impl.hpp"
 #include "../Curve/CurveQuadratic.hpp"
+#include "../Curve/CurveQuadratic_Impl.hpp"
 #include "../StraightComponent/AirConditionerVariableRefrigerantFlow.hpp"
 #include "../StraightComponent/AirConditionerVariableRefrigerantFlow_Impl.hpp"
 #include "../Loop/PlantLoop.hpp"
@@ -32,6 +34,7 @@
 #include <utilities/idf/WorkspaceObject_Impl.hpp>
 
 #include <utility>
+#include <vector>
 
 using namespace openstudio::epmodel;
 
@@ -68,6 +71,16 @@ TEST_F(EPModelFixture, AirConditionerVariableRefrigerantFlow_DefaultConstructor)
   EXPECT_FALSE(vrf.zoneforMasterThermostatLocation());
   EXPECT_FALSE(vrf.thermostatPrioritySchedule());
   EXPECT_FALSE(vrf.basinHeaterOperatingSchedule());
+  EXPECT_FALSE(vrf.coolingCapacityRatioModifierFunctionofLowTemperatureCurve());
+  EXPECT_FALSE(vrf.coolingCapacityRatioBoundaryCurve());
+  EXPECT_FALSE(vrf.coolingCapacityRatioModifierFunctionofHighTemperatureCurve());
+  EXPECT_FALSE(vrf.coolingEnergyInputRatioModifierFunctionofLowTemperatureCurve());
+  EXPECT_FALSE(vrf.coolingEnergyInputRatioBoundaryCurve());
+  EXPECT_FALSE(vrf.coolingEnergyInputRatioModifierFunctionofHighTemperatureCurve());
+  EXPECT_FALSE(vrf.coolingEnergyInputRatioModifierFunctionofLowPartLoadRatioCurve());
+  EXPECT_FALSE(vrf.coolingEnergyInputRatioModifierFunctionofHighPartLoadRatioCurve());
+  EXPECT_FALSE(vrf.coolingCombinationRatioCorrectionFactorCurve());
+  EXPECT_FALSE(vrf.coolingPartLoadFractionCorrelationCurve());
   EXPECT_FALSE(vrf.defrostEnergyInputRatioModifierFunctionofTemperatureCurve());
   EXPECT_TRUE(vrf.terminals().empty());
   const auto lists = model.getObjectsByType(openstudio::IddObjectType::ZoneTerminalUnitList);
@@ -75,6 +88,231 @@ TEST_F(EPModelFixture, AirConditionerVariableRefrigerantFlow_DefaultConstructor)
   auto list = vrf.getModelObjectTarget<ModelObject>(openstudio::AirConditioner_VariableRefrigerantFlowFields::ZoneTerminalUnitListName);
   ASSERT_TRUE(list);
   EXPECT_EQ(lists.front().handle(), list->handle());
+}
+
+TEST_F(EPModelFixture, AirConditionerVariableRefrigerantFlow_CoolingCurveRelationshipsValidateAndResetExactly) {
+  Model model;
+  Model foreignModel;
+  AirConditionerVariableRefrigerantFlow vrf(model);
+
+  CurveBiquadratic capacityLow(model);
+  CurveQuadratic capacityBoundary(model);
+  CurveBicubic capacityHigh(model);
+  CurveBiquadratic energyLow(model);
+  CurveQuadratic energyBoundary(model);
+  CurveBicubic energyHigh(model);
+  CurveQuadratic energyLowPartLoad(model);
+  CurveQuadratic energyHighPartLoad(model);
+  CurveQuadratic combinationRatio(model);
+  CurveQuadratic partLoadFraction(model);
+
+  ASSERT_TRUE(vrf.setCoolingCapacityRatioModifierFunctionofLowTemperatureCurve(capacityLow));
+  ASSERT_TRUE(vrf.setCoolingCapacityRatioBoundaryCurve(capacityBoundary));
+  ASSERT_TRUE(vrf.setCoolingCapacityRatioModifierFunctionofHighTemperatureCurve(capacityHigh));
+  ASSERT_TRUE(vrf.setCoolingEnergyInputRatioModifierFunctionofLowTemperatureCurve(energyLow));
+  ASSERT_TRUE(vrf.setCoolingEnergyInputRatioBoundaryCurve(energyBoundary));
+  ASSERT_TRUE(vrf.setCoolingEnergyInputRatioModifierFunctionofHighTemperatureCurve(energyHigh));
+  ASSERT_TRUE(vrf.setCoolingEnergyInputRatioModifierFunctionofLowPartLoadRatioCurve(energyLowPartLoad));
+  ASSERT_TRUE(vrf.setCoolingEnergyInputRatioModifierFunctionofHighPartLoadRatioCurve(energyHighPartLoad));
+  ASSERT_TRUE(vrf.setCoolingCombinationRatioCorrectionFactorCurve(combinationRatio));
+  ASSERT_TRUE(vrf.setCoolingPartLoadFractionCorrelationCurve(partLoadFraction));
+
+  ASSERT_TRUE(vrf.coolingCapacityRatioModifierFunctionofLowTemperatureCurve());
+  ASSERT_TRUE(vrf.coolingCapacityRatioBoundaryCurve());
+  ASSERT_TRUE(vrf.coolingCapacityRatioModifierFunctionofHighTemperatureCurve());
+  ASSERT_TRUE(vrf.coolingEnergyInputRatioModifierFunctionofLowTemperatureCurve());
+  ASSERT_TRUE(vrf.coolingEnergyInputRatioBoundaryCurve());
+  ASSERT_TRUE(vrf.coolingEnergyInputRatioModifierFunctionofHighTemperatureCurve());
+  ASSERT_TRUE(vrf.coolingEnergyInputRatioModifierFunctionofLowPartLoadRatioCurve());
+  ASSERT_TRUE(vrf.coolingEnergyInputRatioModifierFunctionofHighPartLoadRatioCurve());
+  ASSERT_TRUE(vrf.coolingCombinationRatioCorrectionFactorCurve());
+  ASSERT_TRUE(vrf.coolingPartLoadFractionCorrelationCurve());
+  EXPECT_EQ(capacityLow, *vrf.coolingCapacityRatioModifierFunctionofLowTemperatureCurve());
+  EXPECT_EQ(capacityBoundary, *vrf.coolingCapacityRatioBoundaryCurve());
+  EXPECT_EQ(capacityHigh, *vrf.coolingCapacityRatioModifierFunctionofHighTemperatureCurve());
+  EXPECT_EQ(energyLow, *vrf.coolingEnergyInputRatioModifierFunctionofLowTemperatureCurve());
+  EXPECT_EQ(energyBoundary, *vrf.coolingEnergyInputRatioBoundaryCurve());
+  EXPECT_EQ(energyHigh, *vrf.coolingEnergyInputRatioModifierFunctionofHighTemperatureCurve());
+  EXPECT_EQ(energyLowPartLoad, *vrf.coolingEnergyInputRatioModifierFunctionofLowPartLoadRatioCurve());
+  EXPECT_EQ(energyHighPartLoad, *vrf.coolingEnergyInputRatioModifierFunctionofHighPartLoadRatioCurve());
+  EXPECT_EQ(combinationRatio, *vrf.coolingCombinationRatioCorrectionFactorCurve());
+  EXPECT_EQ(partLoadFraction, *vrf.coolingPartLoadFractionCorrelationCurve());
+
+  CurveBiquadratic foreignBivariate(foreignModel);
+  CurveQuadratic foreignUnivariate(foreignModel);
+  EXPECT_FALSE(vrf.setCoolingCapacityRatioModifierFunctionofLowTemperatureCurve(capacityBoundary));
+  EXPECT_FALSE(vrf.setCoolingCapacityRatioModifierFunctionofLowTemperatureCurve(foreignBivariate));
+  EXPECT_FALSE(vrf.setCoolingCapacityRatioBoundaryCurve(capacityLow));
+  EXPECT_FALSE(vrf.setCoolingCapacityRatioBoundaryCurve(foreignUnivariate));
+  EXPECT_EQ(capacityLow, *vrf.coolingCapacityRatioModifierFunctionofLowTemperatureCurve());
+  EXPECT_EQ(capacityBoundary, *vrf.coolingCapacityRatioBoundaryCurve());
+
+  // Deliberately seed unresolved imported text that the validated public setters cannot create.
+  constexpr auto malformedField =
+    openstudio::AirConditioner_VariableRefrigerantFlowFields::CoolingCapacityRatioModifierFunctionofLowTemperatureCurveName;
+  auto workspaceImpl = vrf.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  ASSERT_TRUE(workspaceImpl);
+  ASSERT_TRUE(workspaceImpl->setPointer(malformedField, openstudio::Handle(), false));
+  ASSERT_TRUE(workspaceImpl->openstudio::detail::IdfObject_Impl::setString(malformedField, "Unresolved VRF Cooling Curve", false));
+  EXPECT_FALSE(vrf.setCoolingCapacityRatioModifierFunctionofLowTemperatureCurve(foreignBivariate));
+  EXPECT_EQ("Unresolved VRF Cooling Curve", workspaceImpl->openstudio::detail::IdfObject_Impl::getString(malformedField, false, true).value_or(""));
+
+  vrf.resetCoolingCapacityRatioModifierFunctionofLowTemperatureCurve();
+  vrf.resetCoolingCapacityRatioBoundaryCurve();
+  vrf.resetCoolingCapacityRatioModifierFunctionofHighTemperatureCurve();
+  vrf.resetCoolingEnergyInputRatioModifierFunctionofLowTemperatureCurve();
+  vrf.resetCoolingEnergyInputRatioBoundaryCurve();
+  vrf.resetCoolingEnergyInputRatioModifierFunctionofHighTemperatureCurve();
+  vrf.resetCoolingEnergyInputRatioModifierFunctionofLowPartLoadRatioCurve();
+  vrf.resetCoolingEnergyInputRatioModifierFunctionofHighPartLoadRatioCurve();
+  vrf.resetCoolingCombinationRatioCorrectionFactorCurve();
+  vrf.resetCoolingPartLoadFractionCorrelationCurve();
+  EXPECT_FALSE(vrf.coolingCapacityRatioModifierFunctionofLowTemperatureCurve());
+  EXPECT_FALSE(vrf.coolingCapacityRatioBoundaryCurve());
+  EXPECT_FALSE(vrf.coolingCapacityRatioModifierFunctionofHighTemperatureCurve());
+  EXPECT_FALSE(vrf.coolingEnergyInputRatioModifierFunctionofLowTemperatureCurve());
+  EXPECT_FALSE(vrf.coolingEnergyInputRatioBoundaryCurve());
+  EXPECT_FALSE(vrf.coolingEnergyInputRatioModifierFunctionofHighTemperatureCurve());
+  EXPECT_FALSE(vrf.coolingEnergyInputRatioModifierFunctionofLowPartLoadRatioCurve());
+  EXPECT_FALSE(vrf.coolingEnergyInputRatioModifierFunctionofHighPartLoadRatioCurve());
+  EXPECT_FALSE(vrf.coolingCombinationRatioCorrectionFactorCurve());
+  EXPECT_FALSE(vrf.coolingPartLoadFractionCorrelationCurve());
+  EXPECT_EQ("", workspaceImpl->openstudio::detail::IdfObject_Impl::getString(malformedField, false, true).value_or(""));
+}
+
+TEST_F(EPModelFixture, AirConditionerVariableRefrigerantFlow_CoolingCurvesSurviveReloadReplacementResetAndRemoval) {
+  const auto firstIdfPath = uniqueIdfPath("epmodel-vrf-cooling-curves-first");
+  const auto secondIdfPath = uniqueIdfPath("epmodel-vrf-cooling-curves-second");
+  const ScopedFileRemoval removeFirstIdf(firstIdfPath);
+  const ScopedFileRemoval removeSecondIdf(secondIdfPath);
+
+  Model model;
+  AirConditionerVariableRefrigerantFlow vrf(model);
+  ZoneHVACTerminalUnitVariableRefrigerantFlow terminal(model);
+  ASSERT_TRUE(vrf.setName("Cooling Curve VRF"));
+  ASSERT_TRUE(terminal.setName("Cooling Curve VRF Terminal"));
+  ASSERT_TRUE(vrf.addTerminal(terminal));
+
+  CurveBiquadratic capacityLow(model);
+  CurveQuadratic capacityBoundary(model);
+  CurveBicubic capacityHigh(model);
+  CurveBiquadratic energyLow(model);
+  CurveQuadratic energyBoundary(model);
+  CurveBicubic energyHigh(model);
+  CurveQuadratic energyLowPartLoad(model);
+  CurveQuadratic energyHighPartLoad(model);
+  CurveQuadratic combinationRatio(model);
+  CurveQuadratic partLoadFraction(model);
+  ASSERT_TRUE(capacityLow.setName("Original VRF Cooling Capacity Low Temperature"));
+  ASSERT_TRUE(capacityBoundary.setName("Original VRF Cooling Capacity Boundary"));
+  ASSERT_TRUE(capacityHigh.setName("Original VRF Cooling Capacity High Temperature"));
+  ASSERT_TRUE(energyLow.setName("Original VRF Cooling EIR Low Temperature"));
+  ASSERT_TRUE(energyBoundary.setName("Original VRF Cooling EIR Boundary"));
+  ASSERT_TRUE(energyHigh.setName("Original VRF Cooling EIR High Temperature"));
+  ASSERT_TRUE(energyLowPartLoad.setName("Original VRF Cooling EIR Low Part Load"));
+  ASSERT_TRUE(energyHighPartLoad.setName("Original VRF Cooling EIR High Part Load"));
+  ASSERT_TRUE(combinationRatio.setName("Original VRF Cooling Combination Ratio"));
+  ASSERT_TRUE(partLoadFraction.setName("Original VRF Cooling Part Load Fraction"));
+  ASSERT_TRUE(vrf.setCoolingCapacityRatioModifierFunctionofLowTemperatureCurve(capacityLow));
+  ASSERT_TRUE(vrf.setCoolingCapacityRatioBoundaryCurve(capacityBoundary));
+  ASSERT_TRUE(vrf.setCoolingCapacityRatioModifierFunctionofHighTemperatureCurve(capacityHigh));
+  ASSERT_TRUE(vrf.setCoolingEnergyInputRatioModifierFunctionofLowTemperatureCurve(energyLow));
+  ASSERT_TRUE(vrf.setCoolingEnergyInputRatioBoundaryCurve(energyBoundary));
+  ASSERT_TRUE(vrf.setCoolingEnergyInputRatioModifierFunctionofHighTemperatureCurve(energyHigh));
+  ASSERT_TRUE(vrf.setCoolingEnergyInputRatioModifierFunctionofLowPartLoadRatioCurve(energyLowPartLoad));
+  ASSERT_TRUE(vrf.setCoolingEnergyInputRatioModifierFunctionofHighPartLoadRatioCurve(energyHighPartLoad));
+  ASSERT_TRUE(vrf.setCoolingCombinationRatioCorrectionFactorCurve(combinationRatio));
+  ASSERT_TRUE(vrf.setCoolingPartLoadFractionCorrelationCurve(partLoadFraction));
+  ASSERT_TRUE(model.save(firstIdfPath, true));
+
+  auto loadedModel = Model::load(firstIdfPath);
+  ASSERT_TRUE(loadedModel);
+  auto loadedVRF = loadedModel->getConcreteModelObjectByName<AirConditionerVariableRefrigerantFlow>("Cooling Curve VRF");
+  auto loadedTerminal = loadedModel->getConcreteModelObjectByName<ZoneHVACTerminalUnitVariableRefrigerantFlow>("Cooling Curve VRF Terminal");
+  ASSERT_TRUE(loadedVRF);
+  ASSERT_TRUE(loadedTerminal);
+  ASSERT_TRUE(loadedVRF->coolingCapacityRatioModifierFunctionofLowTemperatureCurve());
+  ASSERT_TRUE(loadedVRF->coolingCapacityRatioBoundaryCurve());
+  ASSERT_TRUE(loadedVRF->coolingCapacityRatioModifierFunctionofHighTemperatureCurve());
+  ASSERT_TRUE(loadedVRF->coolingEnergyInputRatioModifierFunctionofLowTemperatureCurve());
+  ASSERT_TRUE(loadedVRF->coolingEnergyInputRatioBoundaryCurve());
+  ASSERT_TRUE(loadedVRF->coolingEnergyInputRatioModifierFunctionofHighTemperatureCurve());
+  ASSERT_TRUE(loadedVRF->coolingEnergyInputRatioModifierFunctionofLowPartLoadRatioCurve());
+  ASSERT_TRUE(loadedVRF->coolingEnergyInputRatioModifierFunctionofHighPartLoadRatioCurve());
+  ASSERT_TRUE(loadedVRF->coolingCombinationRatioCorrectionFactorCurve());
+  ASSERT_TRUE(loadedVRF->coolingPartLoadFractionCorrelationCurve());
+  EXPECT_EQ("Original VRF Cooling Capacity Low Temperature", loadedVRF->coolingCapacityRatioModifierFunctionofLowTemperatureCurve()->nameString());
+  EXPECT_EQ("Original VRF Cooling Capacity Boundary", loadedVRF->coolingCapacityRatioBoundaryCurve()->nameString());
+  EXPECT_EQ("Original VRF Cooling Capacity High Temperature", loadedVRF->coolingCapacityRatioModifierFunctionofHighTemperatureCurve()->nameString());
+  EXPECT_EQ("Original VRF Cooling EIR Low Temperature", loadedVRF->coolingEnergyInputRatioModifierFunctionofLowTemperatureCurve()->nameString());
+  EXPECT_EQ("Original VRF Cooling EIR Boundary", loadedVRF->coolingEnergyInputRatioBoundaryCurve()->nameString());
+  EXPECT_EQ("Original VRF Cooling EIR High Temperature", loadedVRF->coolingEnergyInputRatioModifierFunctionofHighTemperatureCurve()->nameString());
+  EXPECT_EQ("Original VRF Cooling EIR Low Part Load", loadedVRF->coolingEnergyInputRatioModifierFunctionofLowPartLoadRatioCurve()->nameString());
+  EXPECT_EQ("Original VRF Cooling EIR High Part Load", loadedVRF->coolingEnergyInputRatioModifierFunctionofHighPartLoadRatioCurve()->nameString());
+  EXPECT_EQ("Original VRF Cooling Combination Ratio", loadedVRF->coolingCombinationRatioCorrectionFactorCurve()->nameString());
+  EXPECT_EQ("Original VRF Cooling Part Load Fraction", loadedVRF->coolingPartLoadFractionCorrelationCurve()->nameString());
+
+  CurveBiquadratic replacementBivariate(*loadedModel);
+  CurveQuadratic replacementUnivariate(*loadedModel);
+  ASSERT_TRUE(replacementBivariate.setName("Replacement VRF Cooling Bivariate"));
+  ASSERT_TRUE(replacementUnivariate.setName("Replacement VRF Cooling Univariate"));
+  ASSERT_TRUE(loadedVRF->setCoolingCapacityRatioModifierFunctionofLowTemperatureCurve(replacementBivariate));
+  ASSERT_TRUE(loadedVRF->setCoolingCapacityRatioBoundaryCurve(replacementUnivariate));
+  loadedVRF->resetCoolingCapacityRatioModifierFunctionofHighTemperatureCurve();
+  loadedVRF->resetCoolingEnergyInputRatioBoundaryCurve();
+  ASSERT_TRUE(loadedModel->save(secondIdfPath, true));
+
+  auto reloadedModel = Model::load(secondIdfPath);
+  ASSERT_TRUE(reloadedModel);
+  auto reloadedVRF = reloadedModel->getConcreteModelObjectByName<AirConditionerVariableRefrigerantFlow>("Cooling Curve VRF");
+  auto reloadedTerminal = reloadedModel->getConcreteModelObjectByName<ZoneHVACTerminalUnitVariableRefrigerantFlow>("Cooling Curve VRF Terminal");
+  auto resetCapacityHigh = reloadedModel->getConcreteModelObjectByName<CurveBicubic>("Original VRF Cooling Capacity High Temperature");
+  auto resetEnergyBoundary = reloadedModel->getConcreteModelObjectByName<CurveQuadratic>("Original VRF Cooling EIR Boundary");
+  ASSERT_TRUE(reloadedVRF);
+  ASSERT_TRUE(reloadedTerminal);
+  ASSERT_TRUE(resetCapacityHigh);
+  ASSERT_TRUE(resetEnergyBoundary);
+  ASSERT_TRUE(reloadedVRF->coolingCapacityRatioModifierFunctionofLowTemperatureCurve());
+  ASSERT_TRUE(reloadedVRF->coolingCapacityRatioBoundaryCurve());
+  EXPECT_FALSE(reloadedVRF->coolingCapacityRatioModifierFunctionofHighTemperatureCurve());
+  ASSERT_TRUE(reloadedVRF->coolingEnergyInputRatioModifierFunctionofLowTemperatureCurve());
+  EXPECT_FALSE(reloadedVRF->coolingEnergyInputRatioBoundaryCurve());
+  ASSERT_TRUE(reloadedVRF->coolingEnergyInputRatioModifierFunctionofHighTemperatureCurve());
+  ASSERT_TRUE(reloadedVRF->coolingEnergyInputRatioModifierFunctionofLowPartLoadRatioCurve());
+  ASSERT_TRUE(reloadedVRF->coolingEnergyInputRatioModifierFunctionofHighPartLoadRatioCurve());
+  ASSERT_TRUE(reloadedVRF->coolingCombinationRatioCorrectionFactorCurve());
+  ASSERT_TRUE(reloadedVRF->coolingPartLoadFractionCorrelationCurve());
+  EXPECT_EQ("Replacement VRF Cooling Bivariate", reloadedVRF->coolingCapacityRatioModifierFunctionofLowTemperatureCurve()->nameString());
+  EXPECT_EQ("Replacement VRF Cooling Univariate", reloadedVRF->coolingCapacityRatioBoundaryCurve()->nameString());
+  EXPECT_EQ("Original VRF Cooling EIR Low Temperature", reloadedVRF->coolingEnergyInputRatioModifierFunctionofLowTemperatureCurve()->nameString());
+  EXPECT_EQ("Original VRF Cooling EIR High Temperature", reloadedVRF->coolingEnergyInputRatioModifierFunctionofHighTemperatureCurve()->nameString());
+  EXPECT_EQ("Original VRF Cooling EIR Low Part Load", reloadedVRF->coolingEnergyInputRatioModifierFunctionofLowPartLoadRatioCurve()->nameString());
+  EXPECT_EQ("Original VRF Cooling EIR High Part Load", reloadedVRF->coolingEnergyInputRatioModifierFunctionofHighPartLoadRatioCurve()->nameString());
+  EXPECT_EQ("Original VRF Cooling Combination Ratio", reloadedVRF->coolingCombinationRatioCorrectionFactorCurve()->nameString());
+  EXPECT_EQ("Original VRF Cooling Part Load Fraction", reloadedVRF->coolingPartLoadFractionCorrelationCurve()->nameString());
+
+  const std::vector<openstudio::Handle> attachedCurveHandles = {
+    reloadedVRF->coolingCapacityRatioModifierFunctionofLowTemperatureCurve()->handle(),
+    reloadedVRF->coolingCapacityRatioBoundaryCurve()->handle(),
+    reloadedVRF->coolingEnergyInputRatioModifierFunctionofLowTemperatureCurve()->handle(),
+    reloadedVRF->coolingEnergyInputRatioModifierFunctionofHighTemperatureCurve()->handle(),
+    reloadedVRF->coolingEnergyInputRatioModifierFunctionofLowPartLoadRatioCurve()->handle(),
+    reloadedVRF->coolingEnergyInputRatioModifierFunctionofHighPartLoadRatioCurve()->handle(),
+    reloadedVRF->coolingCombinationRatioCorrectionFactorCurve()->handle(),
+    reloadedVRF->coolingPartLoadFractionCorrelationCurve()->handle(),
+  };
+  auto terminalList =
+    reloadedVRF->getModelObjectTarget<ModelObject>(openstudio::AirConditioner_VariableRefrigerantFlowFields::ZoneTerminalUnitListName);
+  ASSERT_TRUE(terminalList);
+  EXPECT_FALSE(reloadedVRF->remove().empty());
+  for (const auto& handle : attachedCurveHandles) {
+    EXPECT_TRUE(reloadedModel->getObject(handle));
+  }
+  EXPECT_TRUE(reloadedModel->getObject(resetCapacityHigh->handle()));
+  EXPECT_TRUE(reloadedModel->getObject(resetEnergyBoundary->handle()));
+  EXPECT_TRUE(reloadedModel->getObject(reloadedTerminal->handle()));
+  EXPECT_FALSE(reloadedTerminal->vrfSystem());
+  EXPECT_FALSE(reloadedModel->getObject(terminalList->handle()));
 }
 
 TEST_F(EPModelFixture, AirConditionerVariableRefrigerantFlow_DefrostEIRModifierCurve) {
