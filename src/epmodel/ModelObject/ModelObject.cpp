@@ -81,7 +81,7 @@ namespace epmodel {
     static constexpr double kNoUpper = std::numeric_limits<double>::infinity();
 
     const ScheduleTypeSpec* findScheduleTypeSpec(const std::string& className, const std::string& scheduleDisplayName) {
-      static constexpr std::array<ScheduleTypeSpec, 173> specs{{
+      static constexpr std::array<ScheduleTypeSpec, 179> specs{{
         {"AirLoopHVAC", "Availability Manager Scheduled On", false, true, "Availability", 0.0, 1.0},
         {"AirLoopHVACDedicatedOutdoorAirSystem", "Availability Schedule", false, true, "Availability", 0.0, 1.0},
         {"ControllerOutdoorAir", "Minimum Outdoor Air", true, true, "", 0.0, 1.0},
@@ -121,6 +121,12 @@ namespace epmodel {
         {"ZoneHVACWaterToAirHeatPump", "Availability", false, true, "Availability", 0.0, 1.0},
         {"ZoneHVACWaterToAirHeatPump", "Supply Air Fan Operating Mode", false, true, "Availability", 0.0, 1.0},
         {"ZoneHVACBaseboardConvectiveElectric", "Availability", false, true, "Availability", 0.0, 1.0},
+        {"ZoneVentilationWindandStackOpenArea", "Opening Area Fraction Schedule", true, false, "", 0.0, 1.0},
+        {"ZoneVentilationWindandStackOpenArea", "Minimum Indoor Temperature", true, true, "Temperature", kNoLower, kNoUpper},
+        {"ZoneVentilationWindandStackOpenArea", "Maximum Indoor Temperature", true, true, "Temperature", kNoLower, kNoUpper},
+        {"ZoneVentilationWindandStackOpenArea", "Delta Temperature", true, true, "DeltaTemperature", kNoLower, kNoUpper},
+        {"ZoneVentilationWindandStackOpenArea", "Minimum Outdoor Temperature", true, true, "Temperature", kNoLower, kNoUpper},
+        {"ZoneVentilationWindandStackOpenArea", "Maximum Outdoor Temperature", true, true, "Temperature", kNoLower, kNoUpper},
         {"ZoneHVACBaseboardConvectiveWater", "Availability", false, true, "Availability", 0.0, 1.0},
         {"ZoneHVACIdealLoadsAirSystem", "Availability", false, true, "Availability", 0.0, 1.0},
         {"ZoneHVACIdealLoadsAirSystem", "Heating Availability", false, true, "Availability", 0.0, 1.0},

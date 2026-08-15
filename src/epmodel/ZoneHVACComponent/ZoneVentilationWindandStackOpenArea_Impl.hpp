@@ -13,6 +13,7 @@
 namespace openstudio {
 namespace epmodel {
 
+  class Schedule;
   class ThermalZone;
 
   namespace detail {
@@ -29,8 +30,12 @@ namespace epmodel {
       bool addToThermalZone(ThermalZone& thermalZone) override;
       void removeFromThermalZone() override;
 
+      void doCanonicalize(LoadContext& context) override;
+
       double openingArea() const;
       bool setOpeningArea(double openingArea);
+      Schedule openingAreaFractionSchedule() const;
+      bool setOpeningAreaFractionSchedule(Schedule& schedule);
 
       boost::optional<double> openingEffectiveness() const;
       bool setOpeningEffectiveness(double openingEffectiveness);
@@ -50,18 +55,33 @@ namespace epmodel {
 
       double minimumIndoorTemperature() const;
       bool setMinimumIndoorTemperature(double minimumIndoorTemperature);
+      boost::optional<Schedule> minimumIndoorTemperatureSchedule() const;
+      bool setMinimumIndoorTemperatureSchedule(Schedule& schedule);
+      void resetMinimumIndoorTemperatureSchedule();
 
       double maximumIndoorTemperature() const;
       bool setMaximumIndoorTemperature(double maximumIndoorTemperature);
+      boost::optional<Schedule> maximumIndoorTemperatureSchedule() const;
+      bool setMaximumIndoorTemperatureSchedule(Schedule& schedule);
+      void resetMaximumIndoorTemperatureSchedule();
 
       double deltaTemperature() const;
       bool setDeltaTemperature(double deltaTemperature);
+      boost::optional<Schedule> deltaTemperatureSchedule() const;
+      bool setDeltaTemperatureSchedule(Schedule& schedule);
+      void resetDeltaTemperatureSchedule();
 
       double minimumOutdoorTemperature() const;
       bool setMinimumOutdoorTemperature(double minimumOutdoorTemperature);
+      boost::optional<Schedule> minimumOutdoorTemperatureSchedule() const;
+      bool setMinimumOutdoorTemperatureSchedule(Schedule& schedule);
+      void resetMinimumOutdoorTemperatureSchedule();
 
       double maximumOutdoorTemperature() const;
       bool setMaximumOutdoorTemperature(double maximumOutdoorTemperature);
+      boost::optional<Schedule> maximumOutdoorTemperatureSchedule() const;
+      bool setMaximumOutdoorTemperatureSchedule(Schedule& schedule);
+      void resetMaximumOutdoorTemperatureSchedule();
 
       double maximumWindSpeed() const;
       bool setMaximumWindSpeed(double maximumWindSpeed);
