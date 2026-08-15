@@ -36,12 +36,12 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     // Schema Alignment Notes:
-    // - Status: Partial Parity. The connector-specific branch-port surface is present, but broader connector/topology behavior still relies on loop-level normalization.
+    // - Status: Partial Parity. The connector-specific branch-port surface is present within the representative loop-topology contract.
     // - Canonical Counterpart: openstudio::model::ConnectorSplitter.
     // - Implemented Parity: Connector-specific inlet/outlet port traversal, branch indexing, inlet lookup, and branch removal APIs preserve the canonical connector-splitter topology contract.
     // - Field/Storage Mapping: Public behavior is organized around EnergyPlus `Connector:Splitter` branch topology rather than OpenStudio connection storage.
     // - Evidence: `src/model/ConnectorSplitter.hpp` and the loop topology family establish the canonical connector-specific branch API this wrapper is preserving.
-    // - Remaining Parity Work: Confirm any remaining connector-specific loop-integration semantics once the topology family normalization pass is complete.
+    // - Remaining Parity Work: Add connector-specific loop integration only for a concrete workflow or shared topology defect.
     unsigned inletPort() const override;
     unsigned outletPort(unsigned branchIndex) const override;
     unsigned nextOutletPort() const override;

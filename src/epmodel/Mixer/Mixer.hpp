@@ -26,12 +26,12 @@ namespace epmodel {
     Mixer& operator=(Mixer&&) = default;
 
     // Schema Alignment Notes:
-    // - Status: Partial Parity. The canonical branch-oriented mixer API is present, but topology-heavy behavior still depends on the broader loop normalization work.
+    // - Status: Partial Parity. The canonical branch-oriented mixer API is present within the representative loop-topology contract.
     // - Canonical Counterpart: openstudio::model::Mixer.
     // - Implemented Parity: Outlet/inlet port queries, inlet-object traversal, branch indexing, branch creation, and branch removal preserve the canonical mixer topology contract.
     // - Field/Storage Mapping: Mixer branch linkage is expressed through EnergyPlus-backed connector topology rather than model-side `Connection` storage.
     // - Evidence: `src/model/Mixer.hpp` defines the canonical branch API surface; the zone-mixer and loop topology wrappers exercise that contract in epmodel.
-    // - Remaining Parity Work: Confirm remaining topology semantics and connector-specific behavior as the loop-branch family finishes normalization.
+    // - Remaining Parity Work: Add connector-specific behavior only for a concrete workflow or shared topology defect.
     virtual boost::optional<ModelObject> outletModelObject() const;
     virtual bool setOutletModelObject(const ModelObject& modelObject);
     virtual void resetOutletModelObject();

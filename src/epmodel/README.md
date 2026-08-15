@@ -143,13 +143,13 @@ For a particular class, check:
 Use the Input Output Reference shipped with the configured EnergyPlus version.
 A separately checked-in PDF can easily be the wrong version.
 
-HVAC has the most complete connection, ownership, and reload support. Plant
-topology has reached its representative broad-core stopping point, while the
-air roadmap has a short closing set of bridge and reload work. After that,
-development should expand horizontally across component families using real
-workflows and the class-local notes as evidence. Many classes in other areas
-currently provide only their EnergyPlus fields and a subset of Model behavior.
-Ruby/Python use and numerical agreement must be tested separately.
+HVAC has the most complete connection, ownership, and reload support. The air
+and plant topology campaigns have reached their representative broad-core
+stopping points. Further work is selected horizontally across component
+families using real workflows, shared correctness defects, and the class-local
+notes as evidence. Many classes in other areas currently provide only their
+EnergyPlus fields and a subset of Model behavior. Ruby/Python use and numerical
+agreement must be tested separately.
 
 ## Integration workflows
 
@@ -187,8 +187,8 @@ binding was generated; run the Ruby or Python code before claiming it works.
 ## Other useful files
 
 - [AGENTS.md](AGENTS.md): implementation and review rules.
-- [AirSystemTopology.md](AirSystemTopology.md): air-system support and air
-  backlog.
+- [AirSystemTopology.md](AirSystemTopology.md): air-system contract, maturity,
+  and stopping point.
 - [PlantSystemTopology.md](PlantSystemTopology.md): plant-system contract,
   maturity, and stopping point.
 - [HVACComponentRoadmap.md](HVACComponentRoadmap.md): rules and priorities for

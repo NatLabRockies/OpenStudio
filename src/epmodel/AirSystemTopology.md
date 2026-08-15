@@ -107,6 +107,9 @@ differences alone do not need a new family.
 
 The `ZoneHVACUnitVentilator` bridge and the direct dual-duct family now have
 their planned C++, Ruby, reload, post-load change, and EnergyPlus evidence.
+The scripting and simulation cases live in OpenStudio-resources under
+`epmodel/measures/EpModelUnitVentilator` and
+`epmodel/measures/EpModelDualDuct`.
 The remaining beam reload/workflow candidate was also investigated. It cannot
 be completed by adding evidence alone: the cooled-beam terminal and beam coil
 relationships still rely on OS-prefixed objects that do not return as typed

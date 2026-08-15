@@ -26,12 +26,12 @@ namespace epmodel {
     Splitter& operator=(Splitter&&) = default;
 
     // Schema Alignment Notes:
-    // - Status: Partial Parity. The canonical branch-oriented splitter API is present, but topology-heavy behavior still depends on the broader loop normalization work.
+    // - Status: Partial Parity. The canonical branch-oriented splitter API is present within the representative loop-topology contract.
     // - Canonical Counterpart: openstudio::model::Splitter.
     // - Implemented Parity: Inlet/outlet port queries, outlet-object traversal, branch indexing, branch creation, and branch removal preserve the canonical splitter topology contract.
     // - Field/Storage Mapping: Splitter branch linkage is expressed through EnergyPlus-backed connector topology rather than model-side `Connection` storage.
     // - Evidence: `src/model/Splitter.hpp` defines the canonical branch API surface; the zone-splitter and loop topology wrappers exercise that contract in epmodel.
-    // - Remaining Parity Work: Confirm remaining topology semantics and connector-specific behavior as the loop-branch family finishes normalization.
+    // - Remaining Parity Work: Add connector-specific behavior only for a concrete workflow or shared topology defect.
     virtual boost::optional<ModelObject> inletModelObject() const;
     virtual unsigned inletPort() const;
     virtual unsigned outletPort(unsigned branchIndex) const;

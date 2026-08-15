@@ -44,7 +44,7 @@ namespace epmodel {
     // - Documented Delta: The epmodel base stays focused on zone-equipment attachment and loop plumbing; additional convenience remains on derived wrappers or is still omitted while relationship coverage matures.
     // - Field/Storage Mapping: Public zone-equipment behavior is resolved through EnergyPlus `ZoneHVAC:EquipmentConnections` and `ZoneHVAC:EquipmentList` storage instead of OpenStudio-side connection objects.
     // - Evidence: `src/model/ZoneHVACComponent.hpp` and `src/model/ZoneHVACComponent.cpp` define the canonical shared topology behavior exercised by the concrete zone-equipment wrappers.
-    // - Remaining Parity Work: Add any missing shared zone-equipment convenience only if it is needed across multiple derived wrappers after the family normalization pass.
+    // - Remaining Parity Work: Add a missing shared zone-equipment convenience only for a concrete workflow or shared defect across derived wrappers.
     unsigned inletPort() const;
     boost::optional<Node> inletNode() const;
 

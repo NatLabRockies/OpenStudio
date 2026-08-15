@@ -51,7 +51,7 @@ namespace epmodel {
     // - Canonical Counterpart: openstudio::model::CoilHeatingDXSingleSpeed.
     // - Implemented Parity: The heating-capacity, COP, fan-power, defrost, and crankcase-heater helpers preserve the canonical naming, including the
     //   2017/2023 fan-power split; `availabilitySchedule`, the five required performance curves, optional defrost and crankcase curves, child traversal,
-    //   and the relationship constructor preserve the bounded canonical slice. Schedule limits and each curve field's IDD object list are validated,
+    //   and the relationship constructor preserve the bounded canonical slice. Schedule limits and each exposed curve relationship's IDD object list are validated,
     //   and load repair supplies only a genuinely blank availability relationship.
     // - Documented Delta: Broader OA / DOAS topology and AFN helpers from canonical `openstudio::model::CoilHeatingDXSingleSpeed` are not exposed yet.
     // - Field/Storage Mapping: Preserved scalars and relationships map directly to EnergyPlus `Coil:Heating:DX:SingleSpeed` fields.
