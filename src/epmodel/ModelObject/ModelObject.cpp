@@ -81,7 +81,7 @@ namespace epmodel {
     static constexpr double kNoUpper = std::numeric_limits<double>::infinity();
 
     const ScheduleTypeSpec* findScheduleTypeSpec(const std::string& className, const std::string& scheduleDisplayName) {
-      static constexpr std::array<ScheduleTypeSpec, 193> specs{{
+      static constexpr std::array<ScheduleTypeSpec, 194> specs{{
         {"AirLoopHVAC", "Availability Manager Scheduled On", false, true, "Availability", 0.0, 1.0},
         {"AirLoopHVACDedicatedOutdoorAirSystem", "Availability Schedule", false, true, "Availability", 0.0, 1.0},
         {"AirConditionerVariableRefrigerantFlow", "Availability Schedule", false, true, "Availability", 0.0, 1.0},
@@ -99,6 +99,7 @@ namespace epmodel {
         {"SetpointManagerScheduled", "(Exact, Min, Max) Mass Flow Rate", true, true, "MassFlowRate", 0.0, kNoUpper},
         {"SetpointManagerScheduledDualSetpoint", "High Setpoint", true, true, "Temperature", kNoLower, kNoUpper},
         {"SetpointManagerScheduledDualSetpoint", "Low Setpoint", true, true, "Temperature", kNoLower, kNoUpper},
+        {"SetpointManagerOutdoorAirReset", "Setpoint Manager Outdoor Air Reset", true, true, "", 0.0, kNoUpper},
         {"ThermostatSetpointDualSetpoint", "Heating Setpoint Temperature", true, true, "Temperature", kNoLower, kNoUpper},
         {"ThermostatSetpointDualSetpoint", "Cooling Setpoint Temperature", true, true, "Temperature", kNoLower, kNoUpper},
         {"ZoneControlThermostatStagedDualSetpoint", "Heating Temperature Setpoint Schedule", true, true, "Temperature", kNoLower, kNoUpper},

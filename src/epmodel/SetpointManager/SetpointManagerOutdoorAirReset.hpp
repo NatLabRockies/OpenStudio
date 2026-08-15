@@ -16,6 +16,7 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class Schedule;
 
   namespace detail {
     class SetpointManagerOutdoorAirReset_Impl;
@@ -37,15 +38,18 @@ namespace epmodel {
     static std::vector<std::string> controlVariableValues();
 
     // Schema Alignment Notes:
-    // - API: Preserves openstudio::model scalar accessor names/signatures for model-counterpart compatibility.
-    // - Field Mapping: setpointatOutdoorLowTemperature, outdoorLowTemperature,
-    //   setpointatOutdoorHighTemperature, outdoorHighTemperature,
-    //   setpointatOutdoorLowTemperature2, outdoorLowTemperature2,
-    //   setpointatOutdoorHighTemperature2, and outdoorHighTemperature2 map directly to
-    //   E+ SetpointManager:OutdoorAirReset scalar fields.
-    // - Field Mapping: Relationship fields Setpoint Node or NodeList Name and Schedule Name are intentionally excluded
-    //   from scalar-only scaffolding.
-    // - TODO(parity): Add non-scalar relationship parity for explicit schedule and setpoint-node linkage.
+    // - Status: Near Parity. Scalar reset rules, the optional rule-selection schedule, and inherited node attachment are aligned.
+    // - Canonical Counterpart: openstudio::model::SetpointManagerOutdoorAirReset.
+    // - Implemented Parity: Scalar accessors and the optional schedule preserve canonical public signatures. The schedule setter
+    //   uses the shared continuous, nonnegative schedule contract.
+    // - Field/Storage Mapping: Scalars, Schedule Name, and the setpoint node map directly to EnergyPlus
+    //   SetpointManager:OutdoorAirReset fields.
+    // - Canonicalization: Construction/load establish scalar defaults and node linkage. A unique persisted schedule name is
+    //   reattached during load repair; blank, missing, or ambiguous names are not invented or guessed. Ordinary APIs assume
+    //   canonical resolved relationships.
+    // - Evidence: `src/model/SetpointManagerOutdoorAirReset.hpp`, `src/model/ScheduleTypeRegistry.cpp`,
+    //   `resources/energyplus/ProposedEnergy+.idd`, and `src/epmodel/test/SetpointManagerOutdoorAirReset_GTest.cpp`.
+    // - Remaining Parity Work: Object-level clone behavior and broader language/workflow evidence remain demand-driven.
 
     bool isControlVariableDefaulted() const;
     void resetControlVariable();
@@ -61,6 +65,10 @@ namespace epmodel {
 
     double outdoorHighTemperature() const;
     bool setOutdoorHighTemperature(double outdoorHighTemperature);
+
+    boost::optional<Schedule> schedule() const;
+    bool setSchedule(Schedule& schedule);
+    void resetSchedule();
 
     boost::optional<double> setpointatOutdoorLowTemperature2() const;
     bool setSetpointatOutdoorLowTemperature2(double setpointatOutdoorLowTemperature2);
