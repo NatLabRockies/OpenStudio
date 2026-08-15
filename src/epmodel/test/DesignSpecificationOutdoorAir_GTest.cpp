@@ -58,9 +58,232 @@ TEST_F(EPModelFixture, API_DesignSpecificationOutdoorAir_DefaultConstructor) {
   Model model;
   DesignSpecificationOutdoorAir dsoa(model);
   EXPECT_EQ(DesignSpecificationOutdoorAir::iddObjectType(), dsoa.iddObject().type());
-  EXPECT_FALSE(dsoa.outdoorAirMethod().empty());
+
+  EXPECT_EQ("Sum", dsoa.outdoorAirMethod());
+  EXPECT_TRUE(dsoa.isOutdoorAirMethodDefaulted());
+  EXPECT_DOUBLE_EQ(0.0, dsoa.outdoorAirFlowperPerson());
+  EXPECT_TRUE(dsoa.isOutdoorAirFlowperPersonDefaulted());
+  EXPECT_DOUBLE_EQ(0.0, dsoa.outdoorAirFlowperFloorArea());
+  EXPECT_TRUE(dsoa.isOutdoorAirFlowperFloorAreaDefaulted());
   EXPECT_DOUBLE_EQ(0.0, dsoa.outdoorAirFlowRate());
+  EXPECT_TRUE(dsoa.isOutdoorAirFlowRateDefaulted());
+  EXPECT_DOUBLE_EQ(0.0, dsoa.outdoorAirFlowAirChangesperHour());
+  EXPECT_TRUE(dsoa.isOutdoorAirFlowAirChangesperHourDefaulted());
   EXPECT_FALSE(dsoa.outdoorAirFlowRateFractionSchedule());
+
+  const auto report = model.canonicalize();
+  EXPECT_EQ(0u, report.errorCount);
+  EXPECT_EQ("Sum", dsoa.outdoorAirMethod());
+  EXPECT_TRUE(dsoa.isOutdoorAirMethodDefaulted());
+  EXPECT_DOUBLE_EQ(0.0, dsoa.outdoorAirFlowperPerson());
+  EXPECT_TRUE(dsoa.isOutdoorAirFlowperPersonDefaulted());
+  EXPECT_DOUBLE_EQ(0.0, dsoa.outdoorAirFlowperFloorArea());
+  EXPECT_TRUE(dsoa.isOutdoorAirFlowperFloorAreaDefaulted());
+  EXPECT_DOUBLE_EQ(0.0, dsoa.outdoorAirFlowRate());
+  EXPECT_TRUE(dsoa.isOutdoorAirFlowRateDefaulted());
+  EXPECT_DOUBLE_EQ(0.0, dsoa.outdoorAirFlowAirChangesperHour());
+  EXPECT_TRUE(dsoa.isOutdoorAirFlowAirChangesperHourDefaulted());
+}
+
+TEST_F(EPModelFixture, API_DesignSpecificationOutdoorAir_OutdoorAirMethodValuesUseConfiguredKeys) {
+  const std::vector<std::string> expectedValues{"Flow/Person",
+                                                "Flow/Area",
+                                                "Flow/Zone",
+                                                "AirChanges/Hour",
+                                                "Sum",
+                                                "Maximum",
+                                                "IndoorAirQualityProcedure",
+                                                "ProportionalControlBasedOnDesignOccupancy",
+                                                "ProportionalControlBasedOnOccupancySchedule"};
+  EXPECT_EQ(expectedValues, DesignSpecificationOutdoorAir::outdoorAirMethodValues());
+  EXPECT_EQ(expectedValues, DesignSpecificationOutdoorAir::validOutdoorAirMethodValues());
+}
+
+TEST_F(EPModelFixture, API_DesignSpecificationOutdoorAir_ScalarSetInvalidPreservationAndReset) {
+  Model model;
+  DesignSpecificationOutdoorAir dsoa(model);
+
+  ASSERT_TRUE(dsoa.setOutdoorAirMethod("Maximum"));
+  EXPECT_EQ("Maximum", dsoa.outdoorAirMethod());
+  EXPECT_FALSE(dsoa.isOutdoorAirMethodDefaulted());
+  EXPECT_FALSE(dsoa.setOutdoorAirMethod("Not a configured outdoor air method"));
+  EXPECT_EQ("Maximum", dsoa.outdoorAirMethod());
+  EXPECT_FALSE(dsoa.isOutdoorAirMethodDefaulted());
+
+  ASSERT_TRUE(dsoa.setOutdoorAirFlowperPerson(0.0075));
+  EXPECT_DOUBLE_EQ(0.0075, dsoa.outdoorAirFlowperPerson());
+  EXPECT_FALSE(dsoa.isOutdoorAirFlowperPersonDefaulted());
+  EXPECT_FALSE(dsoa.setOutdoorAirFlowperPerson(-0.001));
+  EXPECT_DOUBLE_EQ(0.0075, dsoa.outdoorAirFlowperPerson());
+
+  ASSERT_TRUE(dsoa.setOutdoorAirFlowperFloorArea(0.0008));
+  EXPECT_DOUBLE_EQ(0.0008, dsoa.outdoorAirFlowperFloorArea());
+  EXPECT_FALSE(dsoa.isOutdoorAirFlowperFloorAreaDefaulted());
+  EXPECT_FALSE(dsoa.setOutdoorAirFlowperFloorArea(-0.001));
+  EXPECT_DOUBLE_EQ(0.0008, dsoa.outdoorAirFlowperFloorArea());
+
+  ASSERT_TRUE(dsoa.setOutdoorAirFlowRate(0.12));
+  EXPECT_DOUBLE_EQ(0.12, dsoa.outdoorAirFlowRate());
+  EXPECT_FALSE(dsoa.isOutdoorAirFlowRateDefaulted());
+  EXPECT_FALSE(dsoa.setOutdoorAirFlowRate(-0.01));
+  EXPECT_DOUBLE_EQ(0.12, dsoa.outdoorAirFlowRate());
+
+  ASSERT_TRUE(dsoa.setOutdoorAirFlowAirChangesperHour(0.65));
+  EXPECT_DOUBLE_EQ(0.65, dsoa.outdoorAirFlowAirChangesperHour());
+  EXPECT_FALSE(dsoa.isOutdoorAirFlowAirChangesperHourDefaulted());
+  EXPECT_FALSE(dsoa.setOutdoorAirFlowAirChangesperHour(-0.1));
+  EXPECT_DOUBLE_EQ(0.65, dsoa.outdoorAirFlowAirChangesperHour());
+
+  const auto report = model.canonicalize();
+  EXPECT_EQ(0u, report.errorCount);
+  EXPECT_EQ("Maximum", dsoa.outdoorAirMethod());
+  EXPECT_DOUBLE_EQ(0.0075, dsoa.outdoorAirFlowperPerson());
+  EXPECT_DOUBLE_EQ(0.0008, dsoa.outdoorAirFlowperFloorArea());
+  EXPECT_DOUBLE_EQ(0.12, dsoa.outdoorAirFlowRate());
+  EXPECT_DOUBLE_EQ(0.65, dsoa.outdoorAirFlowAirChangesperHour());
+
+  dsoa.resetOutdoorAirMethod();
+  dsoa.resetOutdoorAirFlowperPerson();
+  dsoa.resetOutdoorAirFlowperFloorArea();
+  dsoa.resetOutdoorAirFlowRate();
+  dsoa.resetOutdoorAirFlowAirChangesperHour();
+  EXPECT_EQ("Sum", dsoa.outdoorAirMethod());
+  EXPECT_TRUE(dsoa.isOutdoorAirMethodDefaulted());
+  EXPECT_DOUBLE_EQ(0.0, dsoa.outdoorAirFlowperPerson());
+  EXPECT_TRUE(dsoa.isOutdoorAirFlowperPersonDefaulted());
+  EXPECT_DOUBLE_EQ(0.0, dsoa.outdoorAirFlowperFloorArea());
+  EXPECT_TRUE(dsoa.isOutdoorAirFlowperFloorAreaDefaulted());
+  EXPECT_DOUBLE_EQ(0.0, dsoa.outdoorAirFlowRate());
+  EXPECT_TRUE(dsoa.isOutdoorAirFlowRateDefaulted());
+  EXPECT_DOUBLE_EQ(0.0, dsoa.outdoorAirFlowAirChangesperHour());
+  EXPECT_TRUE(dsoa.isOutdoorAirFlowAirChangesperHourDefaulted());
+}
+
+TEST_F(EPModelFixture, API_DesignSpecificationOutdoorAir_BlankAndExplicitScalarsSurviveReloadWithRelationships) {
+  const auto idfPath = uniqueDesignSpecificationOutdoorAirPath("epmodel-dsoa-scalar-defaults");
+  const ScopedDesignSpecificationOutdoorAirFileRemoval removeIdf(idfPath);
+
+  Model model;
+  ThermalZone zone(model);
+  Space space(model);
+  DesignSpecificationOutdoorAir blankDsoa(model);
+  DesignSpecificationOutdoorAir explicitDsoa(model);
+  ScheduleConstant schedule(model);
+  ASSERT_TRUE(zone.setName("DSOA Scalar Zone"));
+  ASSERT_TRUE(space.setName("DSOA Scalar Space"));
+  ASSERT_TRUE(blankDsoa.setName("Blank Scalar DSOA"));
+  ASSERT_TRUE(explicitDsoa.setName("Explicit Scalar DSOA"));
+  ASSERT_TRUE(schedule.setName("DSOA Scalar Fraction Schedule"));
+  ASSERT_TRUE(schedule.setValue(0.7));
+  ASSERT_TRUE(space.setThermalZone(zone));
+  ASSERT_TRUE(space.setDesignSpecificationOutdoorAir(explicitDsoa));
+  ASSERT_TRUE(explicitDsoa.setOutdoorAirFlowRateFractionSchedule(schedule));
+  ASSERT_TRUE(explicitDsoa.setOutdoorAirMethod("Maximum"));
+  ASSERT_TRUE(explicitDsoa.setOutdoorAirFlowperPerson(0.006));
+  ASSERT_TRUE(explicitDsoa.setOutdoorAirFlowperFloorArea(0.0006));
+  ASSERT_TRUE(explicitDsoa.setOutdoorAirFlowRate(0.18));
+  ASSERT_TRUE(explicitDsoa.setOutdoorAirFlowAirChangesperHour(0.75));
+
+  const auto report = model.canonicalize();
+  EXPECT_EQ(0u, report.errorCount);
+  EXPECT_EQ("Sum", blankDsoa.outdoorAirMethod());
+  EXPECT_TRUE(blankDsoa.isOutdoorAirMethodDefaulted());
+  EXPECT_DOUBLE_EQ(0.0, blankDsoa.outdoorAirFlowperPerson());
+  EXPECT_TRUE(blankDsoa.isOutdoorAirFlowperPersonDefaulted());
+  EXPECT_DOUBLE_EQ(0.0, blankDsoa.outdoorAirFlowperFloorArea());
+  EXPECT_TRUE(blankDsoa.isOutdoorAirFlowperFloorAreaDefaulted());
+  EXPECT_DOUBLE_EQ(0.0, blankDsoa.outdoorAirFlowRate());
+  EXPECT_TRUE(blankDsoa.isOutdoorAirFlowRateDefaulted());
+  EXPECT_DOUBLE_EQ(0.0, blankDsoa.outdoorAirFlowAirChangesperHour());
+  EXPECT_TRUE(blankDsoa.isOutdoorAirFlowAirChangesperHourDefaulted());
+  EXPECT_EQ("Maximum", explicitDsoa.outdoorAirMethod());
+  EXPECT_FALSE(explicitDsoa.isOutdoorAirMethodDefaulted());
+  EXPECT_DOUBLE_EQ(0.006, explicitDsoa.outdoorAirFlowperPerson());
+  EXPECT_FALSE(explicitDsoa.isOutdoorAirFlowperPersonDefaulted());
+  EXPECT_DOUBLE_EQ(0.0006, explicitDsoa.outdoorAirFlowperFloorArea());
+  EXPECT_FALSE(explicitDsoa.isOutdoorAirFlowperFloorAreaDefaulted());
+  EXPECT_DOUBLE_EQ(0.18, explicitDsoa.outdoorAirFlowRate());
+  EXPECT_FALSE(explicitDsoa.isOutdoorAirFlowRateDefaulted());
+  EXPECT_DOUBLE_EQ(0.75, explicitDsoa.outdoorAirFlowAirChangesperHour());
+  EXPECT_FALSE(explicitDsoa.isOutdoorAirFlowAirChangesperHourDefaulted());
+  ASSERT_TRUE(space.designSpecificationOutdoorAir());
+  EXPECT_EQ(explicitDsoa.handle(), space.designSpecificationOutdoorAir()->handle());
+  ASSERT_TRUE(explicitDsoa.outdoorAirFlowRateFractionSchedule());
+  EXPECT_EQ(schedule.handle(), explicitDsoa.outdoorAirFlowRateFractionSchedule()->handle());
+  ASSERT_TRUE(model.save(idfPath, true));
+
+  auto loadedModel = Model::load(idfPath);
+  ASSERT_TRUE(loadedModel);
+  auto loadedZone = loadedModel->getConcreteModelObjectByName<ThermalZone>("DSOA Scalar Zone");
+  auto loadedSpace = loadedModel->getConcreteModelObjectByName<Space>("DSOA Scalar Space");
+  auto loadedBlankDsoa = loadedModel->getConcreteModelObjectByName<DesignSpecificationOutdoorAir>("Blank Scalar DSOA");
+  auto loadedExplicitDsoa = loadedModel->getConcreteModelObjectByName<DesignSpecificationOutdoorAir>("Explicit Scalar DSOA");
+  auto loadedSchedule = loadedModel->getConcreteModelObjectByName<ScheduleConstant>("DSOA Scalar Fraction Schedule");
+  ASSERT_TRUE(loadedZone);
+  ASSERT_TRUE(loadedSpace);
+  ASSERT_TRUE(loadedBlankDsoa);
+  ASSERT_TRUE(loadedExplicitDsoa);
+  ASSERT_TRUE(loadedSchedule);
+  EXPECT_EQ("Sum", loadedBlankDsoa->outdoorAirMethod());
+  EXPECT_TRUE(loadedBlankDsoa->isOutdoorAirMethodDefaulted());
+  EXPECT_DOUBLE_EQ(0.0, loadedBlankDsoa->outdoorAirFlowperPerson());
+  EXPECT_TRUE(loadedBlankDsoa->isOutdoorAirFlowperPersonDefaulted());
+  EXPECT_DOUBLE_EQ(0.0, loadedBlankDsoa->outdoorAirFlowperFloorArea());
+  EXPECT_TRUE(loadedBlankDsoa->isOutdoorAirFlowperFloorAreaDefaulted());
+  EXPECT_DOUBLE_EQ(0.0, loadedBlankDsoa->outdoorAirFlowRate());
+  EXPECT_TRUE(loadedBlankDsoa->isOutdoorAirFlowRateDefaulted());
+  EXPECT_DOUBLE_EQ(0.0, loadedBlankDsoa->outdoorAirFlowAirChangesperHour());
+  EXPECT_TRUE(loadedBlankDsoa->isOutdoorAirFlowAirChangesperHourDefaulted());
+  EXPECT_EQ("Maximum", loadedExplicitDsoa->outdoorAirMethod());
+  EXPECT_FALSE(loadedExplicitDsoa->isOutdoorAirMethodDefaulted());
+  EXPECT_DOUBLE_EQ(0.006, loadedExplicitDsoa->outdoorAirFlowperPerson());
+  EXPECT_FALSE(loadedExplicitDsoa->isOutdoorAirFlowperPersonDefaulted());
+  EXPECT_DOUBLE_EQ(0.0006, loadedExplicitDsoa->outdoorAirFlowperFloorArea());
+  EXPECT_FALSE(loadedExplicitDsoa->isOutdoorAirFlowperFloorAreaDefaulted());
+  EXPECT_DOUBLE_EQ(0.18, loadedExplicitDsoa->outdoorAirFlowRate());
+  EXPECT_FALSE(loadedExplicitDsoa->isOutdoorAirFlowRateDefaulted());
+  EXPECT_DOUBLE_EQ(0.75, loadedExplicitDsoa->outdoorAirFlowAirChangesperHour());
+  EXPECT_FALSE(loadedExplicitDsoa->isOutdoorAirFlowAirChangesperHourDefaulted());
+  ASSERT_TRUE(loadedSpace->thermalZone());
+  EXPECT_EQ(loadedZone->handle(), loadedSpace->thermalZone()->handle());
+  ASSERT_TRUE(loadedSpace->designSpecificationOutdoorAir());
+  EXPECT_EQ(loadedExplicitDsoa->handle(), loadedSpace->designSpecificationOutdoorAir()->handle());
+  ASSERT_TRUE(loadedExplicitDsoa->outdoorAirFlowRateFractionSchedule());
+  EXPECT_EQ(loadedSchedule->handle(), loadedExplicitDsoa->outdoorAirFlowRateFractionSchedule()->handle());
+
+  loadedExplicitDsoa->resetOutdoorAirMethod();
+  loadedExplicitDsoa->resetOutdoorAirFlowperPerson();
+  loadedExplicitDsoa->resetOutdoorAirFlowperFloorArea();
+  loadedExplicitDsoa->resetOutdoorAirFlowRate();
+  loadedExplicitDsoa->resetOutdoorAirFlowAirChangesperHour();
+  ASSERT_TRUE(loadedModel->save(idfPath, true));
+
+  auto resetModel = Model::load(idfPath);
+  ASSERT_TRUE(resetModel);
+  auto resetZone = resetModel->getConcreteModelObjectByName<ThermalZone>("DSOA Scalar Zone");
+  auto resetSpace = resetModel->getConcreteModelObjectByName<Space>("DSOA Scalar Space");
+  auto resetDsoa = resetModel->getConcreteModelObjectByName<DesignSpecificationOutdoorAir>("Explicit Scalar DSOA");
+  auto resetSchedule = resetModel->getConcreteModelObjectByName<ScheduleConstant>("DSOA Scalar Fraction Schedule");
+  ASSERT_TRUE(resetZone);
+  ASSERT_TRUE(resetSpace);
+  ASSERT_TRUE(resetDsoa);
+  ASSERT_TRUE(resetSchedule);
+  EXPECT_EQ("Sum", resetDsoa->outdoorAirMethod());
+  EXPECT_TRUE(resetDsoa->isOutdoorAirMethodDefaulted());
+  EXPECT_DOUBLE_EQ(0.0, resetDsoa->outdoorAirFlowperPerson());
+  EXPECT_TRUE(resetDsoa->isOutdoorAirFlowperPersonDefaulted());
+  EXPECT_DOUBLE_EQ(0.0, resetDsoa->outdoorAirFlowperFloorArea());
+  EXPECT_TRUE(resetDsoa->isOutdoorAirFlowperFloorAreaDefaulted());
+  EXPECT_DOUBLE_EQ(0.0, resetDsoa->outdoorAirFlowRate());
+  EXPECT_TRUE(resetDsoa->isOutdoorAirFlowRateDefaulted());
+  EXPECT_DOUBLE_EQ(0.0, resetDsoa->outdoorAirFlowAirChangesperHour());
+  EXPECT_TRUE(resetDsoa->isOutdoorAirFlowAirChangesperHourDefaulted());
+  ASSERT_TRUE(resetSpace->thermalZone());
+  EXPECT_EQ(resetZone->handle(), resetSpace->thermalZone()->handle());
+  ASSERT_TRUE(resetSpace->designSpecificationOutdoorAir());
+  EXPECT_EQ(resetDsoa->handle(), resetSpace->designSpecificationOutdoorAir()->handle());
+  ASSERT_TRUE(resetDsoa->outdoorAirFlowRateFractionSchedule());
+  EXPECT_EQ(resetSchedule->handle(), resetDsoa->outdoorAirFlowRateFractionSchedule()->handle());
 }
 
 TEST_F(EPModelFixture, API_DesignSpecificationOutdoorAir_ScheduleRelationshipValidationAndReset) {
