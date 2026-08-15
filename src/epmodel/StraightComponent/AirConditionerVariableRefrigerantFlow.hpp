@@ -52,26 +52,26 @@ namespace epmodel {
 
     // Schema Alignment Notes:
     // - Status: Partial Parity. Core VRF scalar controls, sizing/performance fields, direct schedule/zone relationships, the standard cooling
-    //   performance curves, the defrost EIR curve, and the standard VRF terminal relationship are aligned.
+    //   and heating performance curves, the defrost EIR curve, and the standard VRF terminal relationship are aligned.
     // - Canonical Counterpart: openstudio::model::AirConditionerVariableRefrigerantFlow.
     // - Implemented Parity: The selected scalar methods, availability/thermostat-priority/basin schedules, master-thermostat zone, ten standard
-    //   cooling-curve relationships, terminal relationship, and demand-side `addToNode` preserve the canonical contract and current plant-loop
-    //   insertion behavior. Terminal membership is deliberately exclusive and duplicate-safe rather than reproducing the canonical wrapper's
-    //   duplicate and competing-list inconsistencies.
-    // - Documented Delta: The canonical Model constructor creates default objects for the ten cooling-curve relationships, while the EPModel
-    //   constructor deliberately leaves these optional EnergyPlus fields blank pending a separate default-curve and canonicalization decision.
-    //   Other curve helpers remain omitted. `addToNode` is intentionally limited to PlantLoop demand-side insertion, and no broader VRF topology
-    //   or coupling between the optional thermostat relationships and priority-control scalar is claimed here.
+    //   cooling- and ten standard heating-curve relationships, terminal relationship, and demand-side `addToNode` preserve the canonical contract
+    //   and current plant-loop insertion behavior. Terminal membership is deliberately exclusive and duplicate-safe rather than reproducing the
+    //   canonical wrapper's duplicate and competing-list inconsistencies.
+    // - Documented Delta: The canonical Model constructor creates default objects for the standard cooling- and heating-curve relationships,
+    //   while the EPModel constructor deliberately leaves these optional EnergyPlus fields blank pending a separate numerical-default and
+    //   canonicalization decision. Other curve helpers remain omitted. `addToNode` is intentionally limited to PlantLoop demand-side insertion,
+    //   and no broader VRF topology or coupling between curve relationships and their adjacent scalar controls is claimed here.
     // - Field/Storage Mapping: Most preserved scalar methods map directly to EnergyPlus `AirConditioner:VariableRefrigerantFlow` fields. Terminal
-    //   membership uses the EnergyPlus `ZoneTerminalUnitList` object with pointer-backed extensible entries. Cooling temperature modifiers and
-    //   the defrost EIR curve use `BivariateFunctions`; cooling boundary, part-load, and combination curves use `UnivariateFunctions`.
+    //   membership uses the EnergyPlus `ZoneTerminalUnitList` object with pointer-backed extensible entries. Cooling/heating temperature modifiers
+    //   and the defrost EIR curve use `BivariateFunctions`; cooling/heating boundary, part-load, and combination curves use `UnivariateFunctions`.
     //   `condenserType()` follows the canonical defaulted readback behavior by deriving `AirCooled` versus `WaterCooled` from current plant-loop
     //   attachment when blank.
     // - Ownership: VRF removal owns only its terminal list and deliberately preserves every referenced standard-VRF performance curve, including
     //   the defrost EIR curve; full all-curve ownership remains deferred.
     // - Evidence: `src/model/AirConditionerVariableRefrigerantFlow.hpp`, `src/model/AirConditionerVariableRefrigerantFlow.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirConditionerVariableRefrigerantFlow.cpp`, and `src/epmodel/test/AirConditionerVariableRefrigerantFlow_GTest.cpp`.
-    // - Remaining Parity Work: Add the heating, heat-recovery, and piping curve accessors and decide the cooling default-curve construction and
-    //   any full all-curve ownership contract separately.
+    // - Remaining Parity Work: Add the heat-recovery and piping curve accessors and decide standard cooling/heating numerical default-curve
+    //   construction and any full all-curve ownership contract separately.
     Schedule availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);
 
@@ -143,8 +143,48 @@ namespace epmodel {
     double ratedHeatingCapacitySizingRatio() const;
     bool setRatedHeatingCapacitySizingRatio(double ratedHeatingCapacitySizingRatio);
 
+    boost::optional<Curve> heatingCapacityRatioModifierFunctionofLowTemperatureCurve() const;
+    bool setHeatingCapacityRatioModifierFunctionofLowTemperatureCurve(const Curve& curve);
+    void resetHeatingCapacityRatioModifierFunctionofLowTemperatureCurve();
+
+    boost::optional<Curve> heatingCapacityRatioBoundaryCurve() const;
+    bool setHeatingCapacityRatioBoundaryCurve(const Curve& curve);
+    void resetHeatingCapacityRatioBoundaryCurve();
+
+    boost::optional<Curve> heatingCapacityRatioModifierFunctionofHighTemperatureCurve() const;
+    bool setHeatingCapacityRatioModifierFunctionofHighTemperatureCurve(const Curve& curve);
+    void resetHeatingCapacityRatioModifierFunctionofHighTemperatureCurve();
+
+    boost::optional<Curve> heatingEnergyInputRatioModifierFunctionofLowTemperatureCurve() const;
+    bool setHeatingEnergyInputRatioModifierFunctionofLowTemperatureCurve(const Curve& curve);
+    void resetHeatingEnergyInputRatioModifierFunctionofLowTemperatureCurve();
+
+    boost::optional<Curve> heatingEnergyInputRatioBoundaryCurve() const;
+    bool setHeatingEnergyInputRatioBoundaryCurve(const Curve& curve);
+    void resetHeatingEnergyInputRatioBoundaryCurve();
+
+    boost::optional<Curve> heatingEnergyInputRatioModifierFunctionofHighTemperatureCurve() const;
+    bool setHeatingEnergyInputRatioModifierFunctionofHighTemperatureCurve(const Curve& curve);
+    void resetHeatingEnergyInputRatioModifierFunctionofHighTemperatureCurve();
+
     std::string heatingPerformanceCurveOutdoorTemperatureType() const;
     bool setHeatingPerformanceCurveOutdoorTemperatureType(const std::string& heatingPerformanceCurveOutdoorTemperatureType);
+
+    boost::optional<Curve> heatingEnergyInputRatioModifierFunctionofLowPartLoadRatioCurve() const;
+    bool setHeatingEnergyInputRatioModifierFunctionofLowPartLoadRatioCurve(const Curve& curve);
+    void resetHeatingEnergyInputRatioModifierFunctionofLowPartLoadRatioCurve();
+
+    boost::optional<Curve> heatingEnergyInputRatioModifierFunctionofHighPartLoadRatioCurve() const;
+    bool setHeatingEnergyInputRatioModifierFunctionofHighPartLoadRatioCurve(const Curve& curve);
+    void resetHeatingEnergyInputRatioModifierFunctionofHighPartLoadRatioCurve();
+
+    boost::optional<Curve> heatingCombinationRatioCorrectionFactorCurve() const;
+    bool setHeatingCombinationRatioCorrectionFactorCurve(const Curve& curve);
+    void resetHeatingCombinationRatioCorrectionFactorCurve();
+
+    boost::optional<Curve> heatingPartLoadFractionCorrelationCurve() const;
+    bool setHeatingPartLoadFractionCorrelationCurve(const Curve& curve);
+    void resetHeatingPartLoadFractionCorrelationCurve();
 
     bool heatPumpWasteHeatRecovery() const;
     bool setHeatPumpWasteHeatRecovery(bool heatPumpWasteHeatRecovery);

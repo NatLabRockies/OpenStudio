@@ -111,8 +111,48 @@ namespace epmodel {
       double ratedHeatingCapacitySizingRatio() const;
       bool setRatedHeatingCapacitySizingRatio(double ratedHeatingCapacitySizingRatio);
 
+      boost::optional<Curve> heatingCapacityRatioModifierFunctionofLowTemperatureCurve() const;
+      bool setHeatingCapacityRatioModifierFunctionofLowTemperatureCurve(const Curve& curve);
+      void resetHeatingCapacityRatioModifierFunctionofLowTemperatureCurve();
+
+      boost::optional<Curve> heatingCapacityRatioBoundaryCurve() const;
+      bool setHeatingCapacityRatioBoundaryCurve(const Curve& curve);
+      void resetHeatingCapacityRatioBoundaryCurve();
+
+      boost::optional<Curve> heatingCapacityRatioModifierFunctionofHighTemperatureCurve() const;
+      bool setHeatingCapacityRatioModifierFunctionofHighTemperatureCurve(const Curve& curve);
+      void resetHeatingCapacityRatioModifierFunctionofHighTemperatureCurve();
+
+      boost::optional<Curve> heatingEnergyInputRatioModifierFunctionofLowTemperatureCurve() const;
+      bool setHeatingEnergyInputRatioModifierFunctionofLowTemperatureCurve(const Curve& curve);
+      void resetHeatingEnergyInputRatioModifierFunctionofLowTemperatureCurve();
+
+      boost::optional<Curve> heatingEnergyInputRatioBoundaryCurve() const;
+      bool setHeatingEnergyInputRatioBoundaryCurve(const Curve& curve);
+      void resetHeatingEnergyInputRatioBoundaryCurve();
+
+      boost::optional<Curve> heatingEnergyInputRatioModifierFunctionofHighTemperatureCurve() const;
+      bool setHeatingEnergyInputRatioModifierFunctionofHighTemperatureCurve(const Curve& curve);
+      void resetHeatingEnergyInputRatioModifierFunctionofHighTemperatureCurve();
+
       std::string heatingPerformanceCurveOutdoorTemperatureType() const;
       bool setHeatingPerformanceCurveOutdoorTemperatureType(const std::string& heatingPerformanceCurveOutdoorTemperatureType);
+
+      boost::optional<Curve> heatingEnergyInputRatioModifierFunctionofLowPartLoadRatioCurve() const;
+      bool setHeatingEnergyInputRatioModifierFunctionofLowPartLoadRatioCurve(const Curve& curve);
+      void resetHeatingEnergyInputRatioModifierFunctionofLowPartLoadRatioCurve();
+
+      boost::optional<Curve> heatingEnergyInputRatioModifierFunctionofHighPartLoadRatioCurve() const;
+      bool setHeatingEnergyInputRatioModifierFunctionofHighPartLoadRatioCurve(const Curve& curve);
+      void resetHeatingEnergyInputRatioModifierFunctionofHighPartLoadRatioCurve();
+
+      boost::optional<Curve> heatingCombinationRatioCorrectionFactorCurve() const;
+      bool setHeatingCombinationRatioCorrectionFactorCurve(const Curve& curve);
+      void resetHeatingCombinationRatioCorrectionFactorCurve();
+
+      boost::optional<Curve> heatingPartLoadFractionCorrelationCurve() const;
+      bool setHeatingPartLoadFractionCorrelationCurve(const Curve& curve);
+      void resetHeatingPartLoadFractionCorrelationCurve();
 
       bool heatPumpWasteHeatRecovery() const;
       bool setHeatPumpWasteHeatRecovery(bool heatPumpWasteHeatRecovery);
