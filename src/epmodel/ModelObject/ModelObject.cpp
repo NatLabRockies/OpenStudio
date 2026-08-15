@@ -81,7 +81,7 @@ namespace epmodel {
     static constexpr double kNoUpper = std::numeric_limits<double>::infinity();
 
     const ScheduleTypeSpec* findScheduleTypeSpec(const std::string& className, const std::string& scheduleDisplayName) {
-      static constexpr std::array<ScheduleTypeSpec, 165> specs{{
+      static constexpr std::array<ScheduleTypeSpec, 167> specs{{
         {"AirLoopHVAC", "Availability Manager Scheduled On", false, true, "Availability", 0.0, 1.0},
         {"AirLoopHVACDedicatedOutdoorAirSystem", "Availability Schedule", false, true, "Availability", 0.0, 1.0},
         {"ControllerOutdoorAir", "Minimum Outdoor Air", true, true, "", 0.0, 1.0},
@@ -186,6 +186,8 @@ namespace epmodel {
         {"CoolingTowerVariableSpeed", "Blowdown Makeup Water Usage Schedule", true, false, "VolumetricFlowRate", 0.0, kNoUpper},
         {"CoolingTowerTwoSpeed", "Basin Heater Operating", false, false, "Availability", 0.0, 1.0},
         {"CoolingTowerTwoSpeed", "Blowdown Makeup Water Usage", true, false, "VolumetricFlowRate", 0.0, kNoUpper},
+        {"EvaporativeFluidCoolerSingleSpeed", "Blowdown Makeup Water Usage", true, true, "VolumetricFlowRate", 0.0, kNoUpper},
+        {"EvaporativeFluidCoolerTwoSpeed", "Blowdown Makeup Water Usage", true, true, "VolumetricFlowRate", 0.0, kNoUpper},
         {"ChillerElectricEIR", "Heat Recovery Inlet High Temperature Limit", true, true, "Temperature", kNoLower, kNoUpper},
         {"ChillerElectricEIR", "Temperature Difference Across Condenser", true, true, "Temperature", kNoLower, kNoUpper},
         {"ChillerElectricASHRAE205", "Ambient Temperature", true, true, "Temperature", kNoLower, kNoUpper},

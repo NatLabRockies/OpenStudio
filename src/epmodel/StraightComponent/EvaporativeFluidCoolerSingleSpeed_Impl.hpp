@@ -15,6 +15,8 @@
 
 namespace openstudio {
 namespace epmodel {
+  class Schedule;
+
   namespace detail {
 
     class EPMODEL_API EvaporativeFluidCoolerSingleSpeed_Impl : public StraightComponent_Impl
@@ -115,6 +117,10 @@ namespace epmodel {
       bool isBlowdownCalculationModeDefaulted() const;
       bool setBlowdownCalculationMode(const std::string& blowdownCalculationMode);
       void resetBlowdownCalculationMode();
+
+      boost::optional<Schedule> blowdownMakeupWaterUsageSchedule() const;
+      bool setBlowdownMakeupWaterUsageSchedule(Schedule& schedule);
+      void resetBlowdownMakeupWaterUsageSchedule();
 
       double blowdownConcentrationRatio() const;
       bool isBlowdownConcentrationRatioDefaulted() const;

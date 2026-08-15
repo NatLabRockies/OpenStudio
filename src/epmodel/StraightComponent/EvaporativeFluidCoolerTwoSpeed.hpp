@@ -19,6 +19,7 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class Schedule;
 
   namespace detail {
     class EvaporativeFluidCoolerTwoSpeed_Impl;
@@ -42,18 +43,18 @@ namespace epmodel {
     static std::vector<std::string> blowdownCalculationModeValues();
 
     // Schema Alignment Notes:
-    // - Status: Parity with documented deltas. The canonical scalar surface and plant-supply placement rule are present, while the outdoor-air and
-    //   blowdown schedule relationship helpers plus the legacy storage-tank placeholder remain out of scope.
+    // - Status: Parity with documented deltas. The canonical scalar and blowdown-schedule surfaces plus the plant-supply placement rule are present,
+    //   while the outdoor-air relationship and legacy storage-tank placeholder remain out of scope.
     // - Canonical Counterpart: openstudio::model::EvaporativeFluidCoolerTwoSpeed.
     // - Implemented Parity: The preserved API matches the canonical high/low speed flow, fan power, sizing-factor, spray-water, performance, and
-    //   capacity accessors with matching autosize/default behavior, and inherited `addToNode(...)` now follows the canonical plant-supply-only
-    //   insertion contract.
-    // - Documented Delta: The public wrapper still omits `outdoorAirInletNodeName()`, `blowdownMakeupWaterUsageSchedule()`, their mutators, and the
-    //   legacy storage-tank helper.
-    // - Field/Storage Mapping: These accessors map directly to EnergyPlus `EvaporativeFluidCooler:TwoSpeed` scalar fields used by the forward translator.
+    //   capacity accessors with matching autosize/default behavior. The optional blowdown makeup-water schedule validates canonical volumetric-flow
+    //   limits, and inherited `addToNode(...)` follows the canonical plant-supply-only insertion contract.
+    // - Documented Delta: The public wrapper still omits `outdoorAirInletNodeName()` and its mutators, and the legacy storage-tank helper.
+    // - Field/Storage Mapping: These accessors map directly to EnergyPlus `EvaporativeFluidCooler:TwoSpeed` scalar and schedule fields used by the
+    //   forward translator.
     // - Evidence: `src/model/EvaporativeFluidCoolerTwoSpeed.hpp`, `src/model/EvaporativeFluidCoolerTwoSpeed.cpp`, and
     //   `src/energyplus/ForwardTranslator/ForwardTranslateEvaporativeFluidCoolerTwoSpeed.cpp`.
-    // - Remaining Parity Work: Add the omitted relationship helpers without changing the preserved scalar signatures.
+    // - Remaining Parity Work: Add the omitted outdoor-air relationship only if a workflow needs it; retain the preserved scalar signatures.
 
     // High fan speed air flow rate
     boost::optional<double> highFanSpeedAirFlowRate() const;
@@ -200,6 +201,10 @@ namespace epmodel {
     // Blowdown calculation mode
     std::string blowdownCalculationMode() const;
     bool setBlowdownCalculationMode(const std::string& blowdownCalculationMode);
+
+    boost::optional<Schedule> blowdownMakeupWaterUsageSchedule() const;
+    bool setBlowdownMakeupWaterUsageSchedule(Schedule& schedule);
+    void resetBlowdownMakeupWaterUsageSchedule();
 
     // Blowdown concentration ratio
     double blowdownConcentrationRatio() const;
