@@ -27,6 +27,7 @@ namespace epmodel {
       unsigned inletPort() const override;
       unsigned outletPort() const override;
       std::vector<ModelObject> children() const override;
+      void doCanonicalize(LoadContext& context) override;
 
       Schedule availabilitySchedule() const;
       bool setAvailabilitySchedule(Schedule& schedule);
@@ -125,6 +126,9 @@ namespace epmodel {
 
       bool addToNode(Node& node) override;
       boost::optional<CoilSystemCoolingDX> coilSystemCoolingDX() const;
+
+     private:
+      bool setValidatedCurve(unsigned field, const Curve& curve, const char* relationshipName);
     };
 
   }  // namespace detail

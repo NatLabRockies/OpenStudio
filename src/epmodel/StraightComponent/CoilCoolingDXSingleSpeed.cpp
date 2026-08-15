@@ -20,6 +20,7 @@
 #include "Schedule/Schedule_Impl.hpp"
 
 #include <utilities/core/Assert.hpp>
+#include <utilities/core/Logger.hpp>
 #include <utilities/core/StringHelpers.hpp>
 #include <utilities/idd/Coil_Cooling_DX_SingleSpeed_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
@@ -454,13 +455,17 @@ namespace epmodel {
     }
 
     Schedule CoilCoolingDXSingleSpeed_Impl::availabilitySchedule() const {
-      auto value = getObject<ModelObject>().getModelObjectTarget<Schedule>(openstudio::Coil_Cooling_DX_SingleSpeedFields::AvailabilityScheduleName);
+      constexpr auto field = openstudio::Coil_Cooling_DX_SingleSpeedFields::AvailabilityScheduleName;
+      const auto raw = openstudio::detail::IdfObject_Impl::getString(field, false, true);
+      OS_ASSERT(!raw || raw->empty());
+      auto value = getObject<ModelObject>().getModelObjectTarget<Schedule>(field);
       OS_ASSERT(value);
       return *value;
     }
 
     bool CoilCoolingDXSingleSpeed_Impl::setAvailabilitySchedule(Schedule& schedule) {
-      return setPointer(openstudio::Coil_Cooling_DX_SingleSpeedFields::AvailabilityScheduleName, schedule.handle(), false);
+      return ModelObject_Impl::setSchedule(openstudio::Coil_Cooling_DX_SingleSpeedFields::AvailabilityScheduleName, "CoilCoolingDXSingleSpeed",
+                                           "Availability", schedule);
     }
 
     Curve CoilCoolingDXSingleSpeed_Impl::totalCoolingCapacityFunctionOfTemperatureCurve() const {
@@ -471,7 +476,8 @@ namespace epmodel {
     }
 
     bool CoilCoolingDXSingleSpeed_Impl::setTotalCoolingCapacityFunctionOfTemperatureCurve(const Curve& curve) {
-      return setPointer(openstudio::Coil_Cooling_DX_SingleSpeedFields::TotalCoolingCapacityFunctionofTemperatureCurveName, curve.handle(), false);
+      return setValidatedCurve(openstudio::Coil_Cooling_DX_SingleSpeedFields::TotalCoolingCapacityFunctionofTemperatureCurveName, curve,
+                               "total cooling capacity temperature curve");
     }
 
     Curve CoilCoolingDXSingleSpeed_Impl::totalCoolingCapacityFunctionOfFlowFractionCurve() const {
@@ -482,7 +488,8 @@ namespace epmodel {
     }
 
     bool CoilCoolingDXSingleSpeed_Impl::setTotalCoolingCapacityFunctionOfFlowFractionCurve(const Curve& curve) {
-      return setPointer(openstudio::Coil_Cooling_DX_SingleSpeedFields::TotalCoolingCapacityFunctionofFlowFractionCurveName, curve.handle(), false);
+      return setValidatedCurve(openstudio::Coil_Cooling_DX_SingleSpeedFields::TotalCoolingCapacityFunctionofFlowFractionCurveName, curve,
+                               "total cooling capacity flow-fraction curve");
     }
 
     Curve CoilCoolingDXSingleSpeed_Impl::energyInputRatioFunctionOfTemperatureCurve() const {
@@ -493,7 +500,8 @@ namespace epmodel {
     }
 
     bool CoilCoolingDXSingleSpeed_Impl::setEnergyInputRatioFunctionOfTemperatureCurve(const Curve& curve) {
-      return setPointer(openstudio::Coil_Cooling_DX_SingleSpeedFields::EnergyInputRatioFunctionofTemperatureCurveName, curve.handle(), false);
+      return setValidatedCurve(openstudio::Coil_Cooling_DX_SingleSpeedFields::EnergyInputRatioFunctionofTemperatureCurveName, curve,
+                               "energy input ratio temperature curve");
     }
 
     Curve CoilCoolingDXSingleSpeed_Impl::energyInputRatioFunctionOfFlowFractionCurve() const {
@@ -504,7 +512,8 @@ namespace epmodel {
     }
 
     bool CoilCoolingDXSingleSpeed_Impl::setEnergyInputRatioFunctionOfFlowFractionCurve(const Curve& curve) {
-      return setPointer(openstudio::Coil_Cooling_DX_SingleSpeedFields::EnergyInputRatioFunctionofFlowFractionCurveName, curve.handle(), false);
+      return setValidatedCurve(openstudio::Coil_Cooling_DX_SingleSpeedFields::EnergyInputRatioFunctionofFlowFractionCurveName, curve,
+                               "energy input ratio flow-fraction curve");
     }
 
     Curve CoilCoolingDXSingleSpeed_Impl::partLoadFractionCorrelationCurve() const {
@@ -515,7 +524,8 @@ namespace epmodel {
     }
 
     bool CoilCoolingDXSingleSpeed_Impl::setPartLoadFractionCorrelationCurve(const Curve& curve) {
-      return setPointer(openstudio::Coil_Cooling_DX_SingleSpeedFields::PartLoadFractionCorrelationCurveName, curve.handle(), false);
+      return setValidatedCurve(openstudio::Coil_Cooling_DX_SingleSpeedFields::PartLoadFractionCorrelationCurveName, curve,
+                               "part-load fraction correlation curve");
     }
 
     std::vector<std::string> CoilCoolingDXSingleSpeed_Impl::condenserTypeValues() const {
@@ -734,7 +744,8 @@ namespace epmodel {
     }
 
     bool CoilCoolingDXSingleSpeed_Impl::setCrankcaseHeaterCapacityFunctionofTemperatureCurve(const Curve& curve) {
-      return setPointer(openstudio::Coil_Cooling_DX_SingleSpeedFields::CrankcaseHeaterCapacityFunctionofTemperatureCurveName, curve.handle(), false);
+      return setValidatedCurve(openstudio::Coil_Cooling_DX_SingleSpeedFields::CrankcaseHeaterCapacityFunctionofTemperatureCurveName, curve,
+                               "crankcase heater capacity temperature curve");
     }
 
     void CoilCoolingDXSingleSpeed_Impl::resetCrankcaseHeaterCapacityFunctionofTemperatureCurve() {
@@ -779,11 +790,49 @@ namespace epmodel {
     }
 
     bool CoilCoolingDXSingleSpeed_Impl::setBasinHeaterOperatingSchedule(Schedule& schedule) {
-      return setPointer(openstudio::Coil_Cooling_DX_SingleSpeedFields::BasinHeaterOperatingScheduleName, schedule.handle(), false);
+      return ModelObject_Impl::setSchedule(openstudio::Coil_Cooling_DX_SingleSpeedFields::BasinHeaterOperatingScheduleName,
+                                           "CoilCoolingDXSingleSpeed", "Basin Heater Operation", schedule);
     }
 
     void CoilCoolingDXSingleSpeed_Impl::resetBasinHeaterOperatingSchedule() {
       OS_ASSERT(setPointer(openstudio::Coil_Cooling_DX_SingleSpeedFields::BasinHeaterOperatingScheduleName, openstudio::Handle(), false));
+    }
+
+    bool CoilCoolingDXSingleSpeed_Impl::setValidatedCurve(unsigned field, const Curve& curve, const char* relationshipName) {
+      if (curve.model() != model()) {
+        LOG_FREE(Warn, "openstudio.epmodel.CoilCoolingDXSingleSpeed",
+                 "Cannot set the " << relationshipName << " because the curve belongs to a different model.");
+        return false;
+      }
+      if (!model().canBeTarget(curve.handle(), iddObject().objectLists(field))) {
+        LOG_FREE(Warn, "openstudio.epmodel.CoilCoolingDXSingleSpeed",
+                 "Cannot set the " << relationshipName << " because curve type '" << curve.iddObject().type().valueName()
+                                   << "' is not accepted by the Coil:Cooling:DX:SingleSpeed field.");
+        return false;
+      }
+      return setPointer(field, curve.handle(), false);
+    }
+
+    void CoilCoolingDXSingleSpeed_Impl::doCanonicalize(LoadContext& context) {
+      StraightComponent_Impl::doCanonicalize(context);
+
+      constexpr auto field = openstudio::Coil_Cooling_DX_SingleSpeedFields::AvailabilityScheduleName;
+      const auto raw = openstudio::detail::IdfObject_Impl::getString(field, false, true);
+      if (raw && !raw->empty()) {
+        return;
+      }
+      if (getObject<ModelObject>().getModelObjectTarget<Schedule>(field)) {
+        return;
+      }
+
+      auto alwaysOn = model().alwaysOnDiscreteSchedule();
+      if (setAvailabilitySchedule(alwaysOn)) {
+        detail::addLoadInfo(context,
+                            "Attached the always-on schedule to single-speed DX cooling coil '" + getObject<ModelObject>().nameString() + "'.");
+      } else {
+        detail::addLoadError(context, "Failed to attach the always-on schedule to single-speed DX cooling coil '"
+                                        + getObject<ModelObject>().nameString() + "'.");
+      }
     }
 
     double CoilCoolingDXSingleSpeed_Impl::minimumOutdoorDryBulbTemperatureforCompressorOperation() const {

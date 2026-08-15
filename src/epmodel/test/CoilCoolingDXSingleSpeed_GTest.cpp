@@ -9,16 +9,49 @@
 #include "../Curve/CurveBiquadratic_Impl.hpp"
 #include "../Curve/CurveQuadratic.hpp"
 #include "../Curve/CurveQuadratic_Impl.hpp"
+#include "../Curve/CurveTriquadratic.hpp"
 #include "EPModelFixture.hpp"
 #include "../Loop/AirLoopHVAC.hpp"
 #include "../HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
 #include "../Schedule/ScheduleConstant.hpp"
 #include "../Schedule/ScheduleConstant_Impl.hpp"
+#include "../ResourceObject/ScheduleTypeLimits.hpp"
 #include "../StraightComponent/CoilCoolingDXSingleSpeed.hpp"
+#include "../StraightComponent/CoilCoolingDXSingleSpeed_Impl.hpp"
 #include "../StraightComponent/Node.hpp"
 #include "../Splitter/AirLoopHVACZoneSplitter.hpp"
 
+#include <utilities/core/Filesystem.hpp>
+#include <utilities/core/UUID.hpp>
+#include <utilities/idd/Coil_Cooling_DX_SingleSpeed_FieldEnums.hxx>
+#include <utilities/idf/WorkspaceObject_Impl.hpp>
+
+#include <array>
+#include <utility>
+
 using namespace openstudio::epmodel;
+
+namespace {
+
+class ScopedFileRemoval
+{
+ public:
+  explicit ScopedFileRemoval(openstudio::path path) : m_path(std::move(path)) {}
+
+  ~ScopedFileRemoval() {
+    boost::system::error_code error;
+    boost::filesystem::remove(m_path, error);
+  }
+
+ private:
+  openstudio::path m_path;
+};
+
+openstudio::path uniqueIdfPath(const std::string& stem) {
+  return openstudio::tempDir() / openstudio::toPath(stem + "-" + openstudio::removeBraces(openstudio::createUUID()) + ".idf");
+}
+
+}  // namespace
 
 TEST_F(EPModelFixture, CoilCoolingDXSingleSpeed_DefaultConstructor) {
   Model model;
@@ -189,4 +222,270 @@ TEST_F(EPModelFixture, CoilCoolingDXSingleSpeed_AddToNodeSupplyPath) {
   ASSERT_TRUE(coil.inletModelObject());
   EXPECT_EQ(supplyInletNode, coil.inletModelObject()->cast<Node>());
   EXPECT_TRUE(coil.outletModelObject());
+}
+
+TEST_F(EPModelFixture, CoilCoolingDXSingleSpeed_RelationshipValidationPreservesManagedAndRawState) {
+  Model model;
+  CoilCoolingDXSingleSpeed coil(model);
+
+  ScheduleConstant availability(model);
+  ASSERT_TRUE(availability.setValue(1.0));
+  EXPECT_TRUE(coil.setAvailabilitySchedule(availability));
+  ASSERT_TRUE(availability.scheduleTypeLimits());
+  EXPECT_EQ("Availability", availability.scheduleTypeLimits()->unitType());
+  ASSERT_TRUE(availability.scheduleTypeLimits()->numericType());
+  EXPECT_EQ("Discrete", availability.scheduleTypeLimits()->numericType().get());
+
+  ScheduleConstant basinSchedule(model);
+  ASSERT_TRUE(basinSchedule.setValue(1.0));
+  EXPECT_TRUE(coil.setBasinHeaterOperatingSchedule(basinSchedule));
+  ASSERT_TRUE(basinSchedule.scheduleTypeLimits());
+  EXPECT_EQ("Availability", basinSchedule.scheduleTypeLimits()->unitType());
+
+  ScheduleConstant incompatibleAvailability(model);
+  ScheduleTypeLimits temperatureLimits(model);
+  ASSERT_TRUE(temperatureLimits.setLowerLimitValue(0.0));
+  ASSERT_TRUE(temperatureLimits.setUpperLimitValue(1.0));
+  ASSERT_TRUE(temperatureLimits.setNumericType("Discrete"));
+  ASSERT_TRUE(temperatureLimits.setUnitType("Temperature"));
+  ASSERT_TRUE(incompatibleAvailability.setScheduleTypeLimits(temperatureLimits));
+  EXPECT_FALSE(coil.setAvailabilitySchedule(incompatibleAvailability));
+  EXPECT_FALSE(coil.setBasinHeaterOperatingSchedule(incompatibleAvailability));
+  EXPECT_EQ(availability.handle(), coil.availabilitySchedule().handle());
+  ASSERT_TRUE(coil.basinHeaterOperatingSchedule());
+  EXPECT_EQ(basinSchedule.handle(), coil.basinHeaterOperatingSchedule()->handle());
+
+  Model foreignModel;
+  ScheduleConstant foreignSchedule(foreignModel);
+  EXPECT_FALSE(coil.setAvailabilitySchedule(foreignSchedule));
+  EXPECT_FALSE(coil.setBasinHeaterOperatingSchedule(foreignSchedule));
+  EXPECT_EQ(availability.handle(), coil.availabilitySchedule().handle());
+  ASSERT_TRUE(coil.basinHeaterOperatingSchedule());
+  EXPECT_EQ(basinSchedule.handle(), coil.basinHeaterOperatingSchedule()->handle());
+
+  CurveBiquadratic bivariate(model);
+  CurveQuadratic univariate(model);
+  CurveTriquadratic trivariate(model);
+  EXPECT_TRUE(coil.setTotalCoolingCapacityFunctionOfTemperatureCurve(bivariate));
+  EXPECT_FALSE(coil.setTotalCoolingCapacityFunctionOfTemperatureCurve(univariate));
+  EXPECT_FALSE(coil.setTotalCoolingCapacityFunctionOfTemperatureCurve(trivariate));
+  EXPECT_EQ(bivariate.handle(), coil.totalCoolingCapacityFunctionOfTemperatureCurve().handle());
+  EXPECT_TRUE(coil.setEnergyInputRatioFunctionOfTemperatureCurve(bivariate));
+  EXPECT_FALSE(coil.setEnergyInputRatioFunctionOfTemperatureCurve(univariate));
+  EXPECT_EQ(bivariate.handle(), coil.energyInputRatioFunctionOfTemperatureCurve().handle());
+
+  EXPECT_TRUE(coil.setTotalCoolingCapacityFunctionOfFlowFractionCurve(univariate));
+  EXPECT_FALSE(coil.setTotalCoolingCapacityFunctionOfFlowFractionCurve(bivariate));
+  EXPECT_EQ(univariate.handle(), coil.totalCoolingCapacityFunctionOfFlowFractionCurve().handle());
+  EXPECT_TRUE(coil.setEnergyInputRatioFunctionOfFlowFractionCurve(univariate));
+  EXPECT_FALSE(coil.setEnergyInputRatioFunctionOfFlowFractionCurve(bivariate));
+  EXPECT_EQ(univariate.handle(), coil.energyInputRatioFunctionOfFlowFractionCurve().handle());
+  EXPECT_TRUE(coil.setPartLoadFractionCorrelationCurve(univariate));
+  EXPECT_FALSE(coil.setPartLoadFractionCorrelationCurve(bivariate));
+  EXPECT_EQ(univariate.handle(), coil.partLoadFractionCorrelationCurve().handle());
+  EXPECT_TRUE(coil.setCrankcaseHeaterCapacityFunctionofTemperatureCurve(univariate));
+  EXPECT_FALSE(coil.setCrankcaseHeaterCapacityFunctionofTemperatureCurve(bivariate));
+  ASSERT_TRUE(coil.crankcaseHeaterCapacityFunctionofTemperatureCurve());
+  EXPECT_EQ(univariate.handle(), coil.crankcaseHeaterCapacityFunctionofTemperatureCurve()->handle());
+
+  CurveQuadratic foreignCurve(foreignModel);
+  EXPECT_FALSE(coil.setPartLoadFractionCorrelationCurve(foreignCurve));
+  EXPECT_EQ(univariate.handle(), coil.partLoadFractionCorrelationCurve().handle());
+
+  CoilCoolingDXSingleSpeed unresolved(model);
+  auto workspaceImpl = unresolved.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  ASSERT_TRUE(workspaceImpl);
+  const auto setUnresolvedRaw = [&](unsigned field, const std::string& value) {
+    ASSERT_TRUE(workspaceImpl->setPointer(field, openstudio::Handle(), false));
+    ASSERT_TRUE(workspaceImpl->openstudio::detail::IdfObject_Impl::setString(field, value, false));
+  };
+  const auto rawValue = [&](unsigned field) { return workspaceImpl->openstudio::detail::IdfObject_Impl::getString(field, false, true).value_or(""); };
+
+  constexpr unsigned availabilityField = openstudio::Coil_Cooling_DX_SingleSpeedFields::AvailabilityScheduleName;
+  constexpr unsigned capacityTemperatureField = openstudio::Coil_Cooling_DX_SingleSpeedFields::TotalCoolingCapacityFunctionofTemperatureCurveName;
+  constexpr unsigned capacityFlowField = openstudio::Coil_Cooling_DX_SingleSpeedFields::TotalCoolingCapacityFunctionofFlowFractionCurveName;
+  constexpr unsigned eirTemperatureField = openstudio::Coil_Cooling_DX_SingleSpeedFields::EnergyInputRatioFunctionofTemperatureCurveName;
+  constexpr unsigned eirFlowField = openstudio::Coil_Cooling_DX_SingleSpeedFields::EnergyInputRatioFunctionofFlowFractionCurveName;
+  constexpr unsigned partLoadField = openstudio::Coil_Cooling_DX_SingleSpeedFields::PartLoadFractionCorrelationCurveName;
+  constexpr unsigned crankcaseField = openstudio::Coil_Cooling_DX_SingleSpeedFields::CrankcaseHeaterCapacityFunctionofTemperatureCurveName;
+  constexpr unsigned basinField = openstudio::Coil_Cooling_DX_SingleSpeedFields::BasinHeaterOperatingScheduleName;
+  setUnresolvedRaw(availabilityField, "Unresolved Cooling Availability");
+  setUnresolvedRaw(capacityTemperatureField, "Unresolved Cooling Capacity Temperature");
+  setUnresolvedRaw(capacityFlowField, "Unresolved Cooling Capacity Flow");
+  setUnresolvedRaw(eirTemperatureField, "Unresolved Cooling EIR Temperature");
+  setUnresolvedRaw(eirFlowField, "Unresolved Cooling EIR Flow");
+  setUnresolvedRaw(partLoadField, "Unresolved Cooling Part Load");
+  setUnresolvedRaw(crankcaseField, "Unresolved Cooling Crankcase");
+  setUnresolvedRaw(basinField, "Unresolved Cooling Basin Schedule");
+
+  EXPECT_FALSE(unresolved.setAvailabilitySchedule(incompatibleAvailability));
+  EXPECT_FALSE(unresolved.setTotalCoolingCapacityFunctionOfTemperatureCurve(univariate));
+  EXPECT_FALSE(unresolved.setTotalCoolingCapacityFunctionOfFlowFractionCurve(bivariate));
+  EXPECT_FALSE(unresolved.setEnergyInputRatioFunctionOfTemperatureCurve(univariate));
+  EXPECT_FALSE(unresolved.setEnergyInputRatioFunctionOfFlowFractionCurve(bivariate));
+  EXPECT_FALSE(unresolved.setPartLoadFractionCorrelationCurve(bivariate));
+  EXPECT_FALSE(unresolved.setCrankcaseHeaterCapacityFunctionofTemperatureCurve(bivariate));
+  EXPECT_FALSE(unresolved.setBasinHeaterOperatingSchedule(incompatibleAvailability));
+  EXPECT_EQ("Unresolved Cooling Availability", rawValue(availabilityField));
+  EXPECT_EQ("Unresolved Cooling Capacity Temperature", rawValue(capacityTemperatureField));
+  EXPECT_EQ("Unresolved Cooling Capacity Flow", rawValue(capacityFlowField));
+  EXPECT_EQ("Unresolved Cooling EIR Temperature", rawValue(eirTemperatureField));
+  EXPECT_EQ("Unresolved Cooling EIR Flow", rawValue(eirFlowField));
+  EXPECT_EQ("Unresolved Cooling Part Load", rawValue(partLoadField));
+  EXPECT_EQ("Unresolved Cooling Crankcase", rawValue(crankcaseField));
+  EXPECT_EQ("Unresolved Cooling Basin Schedule", rawValue(basinField));
+}
+
+TEST_F(EPModelFixture, CoilCoolingDXSingleSpeed_CanonicalizationRepairsOnlyBlankAvailability) {
+  const auto idfPath = uniqueIdfPath("epmodel-cooling-dx-single-speed-availability-repair");
+  const ScopedFileRemoval removeIdf(idfPath);
+
+  Model model;
+  CoilCoolingDXSingleSpeed blank(model);
+  CoilCoolingDXSingleSpeed unresolved(model);
+  ASSERT_TRUE(blank.setName("Blank Cooling Availability"));
+  ASSERT_TRUE(unresolved.setName("Unresolved Cooling Availability Coil"));
+
+  constexpr unsigned field = openstudio::Coil_Cooling_DX_SingleSpeedFields::AvailabilityScheduleName;
+  auto blankImpl = blank.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  auto unresolvedImpl = unresolved.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  ASSERT_TRUE(blankImpl);
+  ASSERT_TRUE(unresolvedImpl);
+  ASSERT_TRUE(blankImpl->setPointer(field, openstudio::Handle(), false));
+  ASSERT_TRUE(blankImpl->openstudio::detail::IdfObject_Impl::setString(field, "", false));
+  ASSERT_TRUE(unresolvedImpl->setPointer(field, openstudio::Handle(), false));
+  ASSERT_TRUE(unresolvedImpl->openstudio::detail::IdfObject_Impl::setString(field, "Missing Cooling Availability", false));
+
+  const auto report = model.canonicalize();
+  EXPECT_EQ(0u, report.errorCount);
+  EXPECT_GE(report.infoCount, 1u);
+  EXPECT_EQ(model.alwaysOnDiscreteSchedule().handle(), blank.availabilitySchedule().handle());
+  EXPECT_EQ("Missing Cooling Availability", unresolvedImpl->openstudio::detail::IdfObject_Impl::getString(field, false, true).value_or(""));
+
+  Model reloadSource;
+  CoilCoolingDXSingleSpeed blankOnLoad(reloadSource);
+  ASSERT_TRUE(blankOnLoad.setName("Blank Cooling Availability On Load"));
+  auto blankOnLoadImpl = blankOnLoad.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  ASSERT_TRUE(blankOnLoadImpl);
+  ASSERT_TRUE(blankOnLoadImpl->setPointer(field, openstudio::Handle(), false));
+  ASSERT_TRUE(blankOnLoadImpl->openstudio::detail::IdfObject_Impl::setString(field, "", false));
+  ASSERT_TRUE(reloadSource.save(idfPath, true));
+  auto loadedModel = Model::load(idfPath);
+  ASSERT_TRUE(loadedModel);
+  auto loadedBlank = loadedModel->getConcreteModelObjectByName<CoilCoolingDXSingleSpeed>("Blank Cooling Availability On Load");
+  ASSERT_TRUE(loadedBlank);
+  EXPECT_EQ(loadedModel->alwaysOnDiscreteSchedule().handle(), loadedBlank->availabilitySchedule().handle());
+}
+
+TEST_F(EPModelFixture, CoilCoolingDXSingleSpeed_RelationshipsSurviveReloadMutationResetAndRemoval) {
+  const auto firstIdfPath = uniqueIdfPath("epmodel-cooling-dx-single-speed-relationships-first");
+  const auto secondIdfPath = uniqueIdfPath("epmodel-cooling-dx-single-speed-relationships-second");
+  const ScopedFileRemoval removeFirstIdf(firstIdfPath);
+  const ScopedFileRemoval removeSecondIdf(secondIdfPath);
+
+  Model model;
+  ScheduleConstant availability(model);
+  ScheduleConstant basinSchedule(model);
+  CurveBiquadratic capacityTemperature(model);
+  CurveQuadratic capacityFlow(model);
+  CurveBiquadratic eirTemperature(model);
+  CurveQuadratic eirFlow(model);
+  CurveQuadratic partLoad(model);
+  CurveQuadratic crankcase(model);
+  ASSERT_TRUE(availability.setName("Shared Cooling Availability"));
+  ASSERT_TRUE(basinSchedule.setName("Shared Cooling Basin Schedule"));
+  ASSERT_TRUE(capacityTemperature.setName("Shared Cooling Capacity Temperature"));
+  ASSERT_TRUE(capacityFlow.setName("Shared Cooling Capacity Flow"));
+  ASSERT_TRUE(eirTemperature.setName("Shared Cooling EIR Temperature"));
+  ASSERT_TRUE(eirFlow.setName("Shared Cooling EIR Flow"));
+  ASSERT_TRUE(partLoad.setName("Shared Cooling Part Load"));
+  ASSERT_TRUE(crankcase.setName("Shared Cooling Crankcase"));
+  ASSERT_TRUE(availability.setValue(1.0));
+  ASSERT_TRUE(basinSchedule.setValue(1.0));
+
+  CoilCoolingDXSingleSpeed first(model, availability, capacityTemperature, capacityFlow, eirTemperature, eirFlow, partLoad);
+  CoilCoolingDXSingleSpeed second(model, availability, capacityTemperature, capacityFlow, eirTemperature, eirFlow, partLoad);
+  ASSERT_TRUE(first.setName("First Relationship Cooling Coil"));
+  ASSERT_TRUE(second.setName("Second Relationship Cooling Coil"));
+  ASSERT_TRUE(first.setCrankcaseHeaterCapacityFunctionofTemperatureCurve(crankcase));
+  ASSERT_TRUE(second.setCrankcaseHeaterCapacityFunctionofTemperatureCurve(crankcase));
+  ASSERT_TRUE(first.setBasinHeaterOperatingSchedule(basinSchedule));
+  ASSERT_TRUE(second.setBasinHeaterOperatingSchedule(basinSchedule));
+  ASSERT_TRUE(model.save(firstIdfPath, true));
+
+  auto loadedModel = Model::load(firstIdfPath);
+  ASSERT_TRUE(loadedModel);
+  auto loadedFirst = loadedModel->getConcreteModelObjectByName<CoilCoolingDXSingleSpeed>("First Relationship Cooling Coil");
+  auto loadedSecond = loadedModel->getConcreteModelObjectByName<CoilCoolingDXSingleSpeed>("Second Relationship Cooling Coil");
+  auto loadedAvailability = loadedModel->getConcreteModelObjectByName<ScheduleConstant>("Shared Cooling Availability");
+  auto loadedBasinSchedule = loadedModel->getConcreteModelObjectByName<ScheduleConstant>("Shared Cooling Basin Schedule");
+  auto loadedCapacityTemperature = loadedModel->getConcreteModelObjectByName<CurveBiquadratic>("Shared Cooling Capacity Temperature");
+  auto loadedCrankcase = loadedModel->getConcreteModelObjectByName<CurveQuadratic>("Shared Cooling Crankcase");
+  ASSERT_TRUE(loadedFirst);
+  ASSERT_TRUE(loadedSecond);
+  ASSERT_TRUE(loadedAvailability);
+  ASSERT_TRUE(loadedBasinSchedule);
+  ASSERT_TRUE(loadedCapacityTemperature);
+  ASSERT_TRUE(loadedCrankcase);
+  EXPECT_EQ(loadedAvailability->handle(), loadedFirst->availabilitySchedule().handle());
+  EXPECT_EQ(loadedAvailability->handle(), loadedSecond->availabilitySchedule().handle());
+  EXPECT_EQ(loadedCapacityTemperature->handle(), loadedFirst->totalCoolingCapacityFunctionOfTemperatureCurve().handle());
+  EXPECT_EQ(loadedCapacityTemperature->handle(), loadedSecond->totalCoolingCapacityFunctionOfTemperatureCurve().handle());
+  ASSERT_TRUE(loadedFirst->basinHeaterOperatingSchedule());
+  ASSERT_TRUE(loadedSecond->basinHeaterOperatingSchedule());
+  EXPECT_EQ(loadedBasinSchedule->handle(), loadedFirst->basinHeaterOperatingSchedule()->handle());
+  EXPECT_EQ(loadedBasinSchedule->handle(), loadedSecond->basinHeaterOperatingSchedule()->handle());
+
+  ScheduleConstant replacementAvailability(*loadedModel);
+  CurveBiquadratic replacementCapacityTemperature(*loadedModel);
+  ASSERT_TRUE(replacementAvailability.setName("Replacement Cooling Availability"));
+  ASSERT_TRUE(replacementAvailability.setValue(1.0));
+  ASSERT_TRUE(replacementCapacityTemperature.setName("Replacement Cooling Capacity Temperature"));
+  ASSERT_TRUE(loadedFirst->setAvailabilitySchedule(replacementAvailability));
+  ASSERT_TRUE(loadedFirst->setTotalCoolingCapacityFunctionOfTemperatureCurve(replacementCapacityTemperature));
+  loadedFirst->resetCrankcaseHeaterCapacityFunctionofTemperatureCurve();
+  loadedFirst->resetBasinHeaterOperatingSchedule();
+  ASSERT_TRUE(loadedModel->save(secondIdfPath, true));
+
+  auto reloadedModel = Model::load(secondIdfPath);
+  ASSERT_TRUE(reloadedModel);
+  auto reloadedFirst = reloadedModel->getConcreteModelObjectByName<CoilCoolingDXSingleSpeed>("First Relationship Cooling Coil");
+  auto reloadedSecond = reloadedModel->getConcreteModelObjectByName<CoilCoolingDXSingleSpeed>("Second Relationship Cooling Coil");
+  auto reloadedOriginalAvailability = reloadedModel->getConcreteModelObjectByName<ScheduleConstant>("Shared Cooling Availability");
+  auto reloadedReplacementAvailability = reloadedModel->getConcreteModelObjectByName<ScheduleConstant>("Replacement Cooling Availability");
+  auto reloadedBasinSchedule = reloadedModel->getConcreteModelObjectByName<ScheduleConstant>("Shared Cooling Basin Schedule");
+  auto reloadedOriginalCapacityTemperature = reloadedModel->getConcreteModelObjectByName<CurveBiquadratic>("Shared Cooling Capacity Temperature");
+  auto reloadedReplacementCapacityTemperature =
+    reloadedModel->getConcreteModelObjectByName<CurveBiquadratic>("Replacement Cooling Capacity Temperature");
+  auto reloadedCrankcase = reloadedModel->getConcreteModelObjectByName<CurveQuadratic>("Shared Cooling Crankcase");
+  ASSERT_TRUE(reloadedFirst);
+  ASSERT_TRUE(reloadedSecond);
+  ASSERT_TRUE(reloadedOriginalAvailability);
+  ASSERT_TRUE(reloadedReplacementAvailability);
+  ASSERT_TRUE(reloadedBasinSchedule);
+  ASSERT_TRUE(reloadedOriginalCapacityTemperature);
+  ASSERT_TRUE(reloadedReplacementCapacityTemperature);
+  ASSERT_TRUE(reloadedCrankcase);
+  EXPECT_EQ(reloadedReplacementAvailability->handle(), reloadedFirst->availabilitySchedule().handle());
+  EXPECT_EQ(reloadedOriginalAvailability->handle(), reloadedSecond->availabilitySchedule().handle());
+  EXPECT_EQ(reloadedReplacementCapacityTemperature->handle(), reloadedFirst->totalCoolingCapacityFunctionOfTemperatureCurve().handle());
+  EXPECT_EQ(reloadedOriginalCapacityTemperature->handle(), reloadedSecond->totalCoolingCapacityFunctionOfTemperatureCurve().handle());
+  EXPECT_FALSE(reloadedFirst->crankcaseHeaterCapacityFunctionofTemperatureCurve());
+  EXPECT_FALSE(reloadedFirst->basinHeaterOperatingSchedule());
+  ASSERT_TRUE(reloadedSecond->crankcaseHeaterCapacityFunctionofTemperatureCurve());
+  ASSERT_TRUE(reloadedSecond->basinHeaterOperatingSchedule());
+  EXPECT_EQ(reloadedBasinSchedule->handle(), reloadedSecond->basinHeaterOperatingSchedule()->handle());
+
+  const std::array<openstudio::Handle, 6> retainedResources = {
+    reloadedOriginalAvailability->handle(),        reloadedReplacementAvailability->handle(),        reloadedBasinSchedule->handle(),
+    reloadedOriginalCapacityTemperature->handle(), reloadedReplacementCapacityTemperature->handle(), reloadedCrankcase->handle()};
+  EXPECT_FALSE(reloadedFirst->remove().empty());
+  EXPECT_EQ(reloadedOriginalAvailability->handle(), reloadedSecond->availabilitySchedule().handle());
+  for (const auto& handle : retainedResources) {
+    EXPECT_TRUE(reloadedModel->getObject(handle));
+  }
+  EXPECT_FALSE(reloadedSecond->remove().empty());
+  for (const auto& handle : retainedResources) {
+    EXPECT_TRUE(reloadedModel->getObject(handle));
+  }
 }

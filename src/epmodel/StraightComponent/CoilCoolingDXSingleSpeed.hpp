@@ -50,6 +50,7 @@ namespace epmodel {
     // - Implemented Parity: The scalar rated/capacity/efficiency and evaporative-condenser APIs preserve the canonical naming, defaults, autosize
     //   behavior, and 2017/2023 fan-power variants; `availabilitySchedule`, the five required performance curves, optional crankcase and basin
     //   schedule links, the relationship constructor, and the current supply-side air-loop `addToNode` path preserve the bounded canonical slice.
+    //   Schedule limits and each curve field's IDD object list are validated, and load repair supplies only a genuinely blank availability relationship.
     // - Documented Delta: Condenser-air node, AFN, tank-link, and broader OA / DOAS topology helpers from canonical
     //   `openstudio::model::CoilCoolingDXSingleSpeed` are not exposed yet.
     // - Field/Storage Mapping: Preserved scalars and relationships map directly to EnergyPlus `Coil:Cooling:DX:SingleSpeed` fields.
