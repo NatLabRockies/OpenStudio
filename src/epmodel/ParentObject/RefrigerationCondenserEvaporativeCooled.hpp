@@ -20,6 +20,7 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class Schedule;
 
   namespace detail {
     class RefrigerationCondenserEvaporativeCooled_Impl;
@@ -41,11 +42,16 @@ namespace epmodel {
     static std::vector<std::string> fanSpeedControlTypeValues();
 
     // Schema Alignment Notes:
-    // - API: preserves the openstudio::model RefrigerationCondenserEvaporativeCooled scalar accessors and maps them
-    //   to the EnergyPlus Refrigeration:Condenser:EvaporativeCooled fields listed below.
-    // - Field Mapping: ForwardTranslateRefrigerationCondenserEvaporativeCooled.cpp writes these scalars via
-    //   Refrigeration_Condenser_EvaporativeCooledFields enums while omitting the relationship-like air inlet node,
-    //   schedule, and tank references that remain outside the scalar-only scaffold.
+    // - Status: Partial Parity. The scalar surface and optional evaporative-condenser availability schedule are aligned.
+    // - Canonical Counterpart: openstudio::model::RefrigerationCondenserEvaporativeCooled.
+    // - Implemented Parity: The direct scalar fields and availability schedule preserve canonical assignment, validation, reset, reload, and
+    //   referenced-resource lifetime behavior.
+    // - Documented Delta: Air inlet node, evaporative water supply tank, and RefrigerationSystem ownership helpers remain outside this slice.
+    // - Field/Storage Mapping: Scalars and the optional schedule reference map directly to EnergyPlus
+    //   Refrigeration:Condenser:EvaporativeCooled fields.
+    // - Evidence: `src/model/RefrigerationCondenserEvaporativeCooled.hpp`, `src/model/RefrigerationCondenserEvaporativeCooled.cpp`,
+    //   `src/energyplus/ForwardTranslator/ForwardTranslateRefrigerationCondenserEvaporativeCooled.cpp`, and the epmodel condenser tests.
+    // - Remaining Parity Work: Add the deferred air, tank, and refrigeration-system relationships only with their owning lifecycle contracts.
 
     /** @name Field accessors */
     //@{
@@ -123,6 +129,10 @@ namespace epmodel {
     bool setRatedWaterPumpPower(double ratedWaterPumpPower);
     void resetRatedWaterPumpPower();
     void autocalculateRatedWaterPumpPower();
+
+    boost::optional<Schedule> evaporativeCondenserAvailabilitySchedule() const;
+    bool setEvaporativeCondenserAvailabilitySchedule(Schedule& schedule);
+    void resetEvaporativeCondenserAvailabilitySchedule();
 
     std::string endUseSubcategory() const;
     bool isEndUseSubcategoryDefaulted() const;

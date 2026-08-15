@@ -81,7 +81,7 @@ namespace epmodel {
     static constexpr double kNoUpper = std::numeric_limits<double>::infinity();
 
     const ScheduleTypeSpec* findScheduleTypeSpec(const std::string& className, const std::string& scheduleDisplayName) {
-      static constexpr std::array<ScheduleTypeSpec, 189> specs{{
+      static constexpr std::array<ScheduleTypeSpec, 190> specs{{
         {"AirLoopHVAC", "Availability Manager Scheduled On", false, true, "Availability", 0.0, 1.0},
         {"AirLoopHVACDedicatedOutdoorAirSystem", "Availability Schedule", false, true, "Availability", 0.0, 1.0},
         {"AirConditionerVariableRefrigerantFlow", "Availability Schedule", false, true, "Availability", 0.0, 1.0},
@@ -200,6 +200,7 @@ namespace epmodel {
         {"RefrigerationCase", "Case Credit Fraction", true, true, "", 0.0, 1.0},
         {"RefrigerationCompressorRack", "Water Cooled Condenser Outlet Temperature", true, true, "Temperature", kNoLower, kNoUpper},
         {"RefrigerationCompressorRack", "Evaporative Condenser Availability", false, true, "Availability", 0.0, 1.0},
+        {"RefrigerationCondenserEvaporativeCooled", "Evaporative Condenser Availability", false, true, "Availability", 0.0, 1.0},
         {"CentralHeatPumpSystem", "Ancillary Operation", false, true, "Availability", 0.0, 1.0},
         {"ChillerElectricEIR", "Basin Heater Operating", false, true, "Availability", 0.0, 1.0},
         {"CoolingTowerSingleSpeed", "Basin Heater Operating", false, true, "Availability", 0.0, 1.0},
