@@ -16,6 +16,7 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class Node;
 
   namespace detail {
     class SetpointManagerSystemNodeResetHumidity_Impl;
@@ -37,15 +38,18 @@ namespace epmodel {
     static std::vector<std::string> controlVariableValues();
 
     // Schema Alignment Notes:
-    // - API: Preserves openstudio::model scalar accessor names/signatures for model-counterpart compatibility.
+    // - Status: Near Parity. The scalar reset rule, reference-node relationship, and inherited setpoint-node attachment are aligned.
+    // - Canonical Counterpart: openstudio::model::SetpointManagerSystemNodeResetHumidity.
+    // - Implemented Parity: Preserves the canonical scalar accessors, reference-node relationship, and inherited setpoint-node attachment.
     // - Field Mapping: setpointatLowReferenceHumidityRatio, setpointatHighReferenceHumidityRatio,
     //   lowReferenceHumidityRatio, and highReferenceHumidityRatio map directly to
     //   E+ SetpointManager:SystemNodeReset:Humidity scalar fields.
     // - ForwardTranslator Evidence: ForwardTranslateSetpointManagerSystemNodeResetHumidity writes these exact
     //   scalar fields plus control variable using preserved model API names.
-    // - Field Mapping: Relationship fields Reference Node Name and Setpoint Node or NodeList Name are intentionally
-    //   excluded from scalar-only scaffolding.
-    // - TODO(parity): Add non-scalar relationship parity for explicit reference-node linkage in a follow-up pass.
+    // - Field Mapping: referenceNode maps directly to E+ Reference Node Name; inherited addToNode/setpointNode behavior maps
+    //   Setpoint Node or NodeList Name.
+    // - Canonicalization: Load resolves persisted reference and setpoint node names once; ordinary relationship getters are observational.
+    // - Remaining Parity Work: Broader clone and workflow evidence remains demand-driven.
     double setpointatLowReferenceHumidityRatio() const;
     bool setSetpointatLowReferenceHumidityRatio(double setpointatLowReferenceHumidityRatio);
 
@@ -57,6 +61,10 @@ namespace epmodel {
 
     double highReferenceHumidityRatio() const;
     bool setHighReferenceHumidityRatio(double highReferenceHumidityRatio);
+
+    boost::optional<Node> referenceNode() const;
+    bool setReferenceNode(const Node& node);
+    void resetReferenceNode();
 
    protected:
     using ImplType = detail::SetpointManagerSystemNodeResetHumidity_Impl;
