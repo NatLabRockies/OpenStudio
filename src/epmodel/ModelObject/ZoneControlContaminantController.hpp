@@ -11,12 +11,16 @@
 
 #include <utilities/idd/IddEnums.hxx>
 
+#include <boost/optional.hpp>
+
 #include <memory>
 
 namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class Schedule;
+  class ThermalZone;
 
   namespace detail {
     class ZoneControlContaminantController_Impl;
@@ -36,9 +40,35 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     // Schema Alignment Notes:
-    // - API: Mirrors the openstudio::model counterpart naming (ZoneControlContaminantController).
-    // - Field Mapping: Name remains available through the base ModelObject scalar API; all controller-specific fields are relationship-style object-list references (Controlled Zone Name, Carbon Dioxide Control Availability Schedule Name, Carbon Dioxide Setpoint Schedule Name, Minimum Carbon Dioxide Concentration Schedule Name, Generic Contaminant Control Availability Schedule Name, Generic Contaminant Setpoint Schedule Name) and are excluded from scalar accessors.
-    // - TODO(parity): Add schedule/relationship APIs once scalar saturation for relationships completes.
+    // - Status: Near Parity for the canonical public relationship surface.
+    // - Canonical Counterpart: openstudio::model::ZoneControlContaminantController.
+    // - Implemented Parity: Controlled-zone observation and the five canonical optional schedule getter/setter/reset relationships.
+    // - Field/Storage Mapping: controlledZone maps to E+ Zone Name; schedule setters use the five matching ScheduleNames fields with
+    //   canonical availability or non-negative concentration limits. The E+-only Maximum Carbon Dioxide Concentration field is not exposed.
+    // - Documented Delta: Existing ThermalZone assignment, replacement, reset, clone, and removal behavior is unchanged by this API-only phase.
+    // - Remaining Parity Work: Broader ThermalZone ownership and direct clone/removal lifecycle parity remains demand-driven.
+
+    boost::optional<ThermalZone> controlledZone() const;
+
+    boost::optional<Schedule> carbonDioxideControlAvailabilitySchedule() const;
+    bool setCarbonDioxideControlAvailabilitySchedule(Schedule& schedule);
+    void resetCarbonDioxideControlAvailabilitySchedule();
+
+    boost::optional<Schedule> carbonDioxideSetpointSchedule() const;
+    bool setCarbonDioxideSetpointSchedule(Schedule& schedule);
+    void resetCarbonDioxideSetpointSchedule();
+
+    boost::optional<Schedule> minimumCarbonDioxideConcentrationSchedule() const;
+    bool setMinimumCarbonDioxideConcentrationSchedule(Schedule& schedule);
+    void resetMinimumCarbonDioxideConcentrationSchedule();
+
+    boost::optional<Schedule> genericContaminantControlAvailabilitySchedule() const;
+    bool setGenericContaminantControlAvailabilitySchedule(Schedule& schedule);
+    void resetGenericContaminantControlAvailabilitySchedule();
+
+    boost::optional<Schedule> genericContaminantSetpointSchedule() const;
+    bool setGenericContaminantSetpointSchedule(Schedule& schedule);
+    void resetGenericContaminantSetpointSchedule();
 
    protected:
     using ImplType = detail::ZoneControlContaminantController_Impl;
