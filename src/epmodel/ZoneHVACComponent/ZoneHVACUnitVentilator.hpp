@@ -43,20 +43,25 @@ namespace epmodel {
     static std::vector<std::string> outdoorAirControlTypeValues();
 
     // Schema Alignment Notes:
-    // - Status: Partial Parity. The unit-ventilator scalar fields are aligned, and the contained fan/coil air path is kept consistent through
-    //   parent-owned epmodel nodes, but broader unit-ventilator parity remains incomplete.
+    // - Status: Near Parity for the selected zone-and-plant workflow. The scalar fields and contained fan/coil air path remain consistent through
+    //   save/load and further public zone, plant, and child changes.
     // - Canonical Counterpart: openstudio::model::ZoneHVACUnitVentilator.
     // - Implemented Parity: `maximumSupplyAirFlowRate`, `outdoorAirControlType`, `minimumOutdoorAirFlowRate`, `maximumOutdoorAirFlowRate`,
     //   `heatingConvergenceTolerance`, and `coolingConvergenceTolerance` map directly to the EnergyPlus object, and the contained
-    //   fan/cooling-coil/heating-coil path is maintained through explicit transient epmodel nodes with direct access to the meaningful
-    //   mixed-air, outdoor-air, exhaust-air, fan-outlet, and cooling-coil-outlet roles on the compound.
+    //   fan/cooling-coil/heating-coil path is maintained through explicit transient epmodel nodes with direct access to the meaningful mixed-air,
+    //   outdoor-air, exhaust-air, fan-outlet, and cooling-coil-outlet roles on the compound. A `FanSystemModel`, electric heating coil, and
+    //   plant-connected cooling-water coil retain their parent and loop relationships through reload, plant detach/re-attach, zone detach/re-attach,
+    //   child replacement, and a second reload.
     // - Documented Delta: `mixedAirNode()`, `outdoorAirNode()`, `exhaustAirNode()`, `fanOutletNode()`, and `coolingCoilOutletNode()` are exposed
     //   as additive conveniences so callers can inspect and rename the meaningful node roles owned by the compound, even when some roles alias
     //   each other or the parent inlet/outlet in a valid configuration.
     // - Field/Storage Mapping: Scalar values are stored directly on the EnergyPlus object while schedule links are preserved as typed object links
     //   and the contained air-path nodes are synchronized through transient Node objects.
-    // - Evidence: `src/model/ZoneHVACUnitVentilator.hpp`, `src/model/ZoneHVACUnitVentilator.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateZoneHVACUnitVentilator.cpp`, and `src/epmodel/test/ZoneHVACUnitVentilator_GTest.cpp`.
-    // - Remaining Parity Work: Add the missing relationship helpers only if the canonical wrapper still exposes them directly.
+    // - Evidence: `src/model/ZoneHVACUnitVentilator.hpp`, `src/model/ZoneHVACUnitVentilator.cpp`,
+    //   `src/energyplus/ForwardTranslator/ForwardTranslateZoneHVACUnitVentilator.cpp`, and
+    //   `src/epmodel/test/ZoneHVACUnitVentilator_GTest.cpp`.
+    // - Remaining Parity Work: Keep clone/cross-model transfer and less common fan/coil combinations demand-driven. Add another relationship helper
+    //   only if the canonical wrapper still exposes it and a real workflow needs it.
 
     Schedule availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);
