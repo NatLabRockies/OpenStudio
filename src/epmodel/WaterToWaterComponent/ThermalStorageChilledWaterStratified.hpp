@@ -46,11 +46,11 @@ namespace epmodel {
     // Schema Alignment Notes:
     // - Status: Near Parity with documented deltas. The canonical scalar, relationship, loop-classification, and autosized-helper surface is aligned, while the default ambient schedule subtype and deeper model-side clone/sizing-application workflows still differ.
     // - Canonical Counterpart: openstudio::model::ThermalStorageChilledWaterStratified.
-    // - Implemented Parity: Scalar accessors plus setpoint/ambient/use-side/source-side schedules, ambient zone/object links, WaterHeaterSizing ownership, cooling classification/fuel reporting, and SQL-backed autosized helpers preserve the canonical model API shape.
-    // - Documented Delta: The constructor seeds the default ambient schedule with `ScheduleConstant` because epmodel does not yet expose canonical `ScheduleRuleset`; clone and sizing-application behavior also remains inherited rather than matching the model-side override.
+    // - Implemented Parity: Scalar accessors plus setpoint/ambient/use-side/source-side schedules, ambient zone/object links, WaterHeaterSizing ownership, exact detached storage-and-sizing removal, cooling classification/fuel reporting, and SQL-backed autosized helpers preserve the canonical model API shape.
+    // - Documented Delta: The constructor seeds the default ambient schedule with `ScheduleConstant` because epmodel does not yet expose canonical `ScheduleRuleset`; connected direct removal remains conservatively rejected in favor of loop-owned detach operations, and clone and sizing-application behavior remain inherited rather than matching the model-side overrides.
     // - Field/Storage Mapping: Wrappers target EnergyPlus `ThermalStorage:ChilledWater:Stratified` fields directly, including schedule and thermal-zone object references; autosized helpers resolve against shared epmodel SQL-backed component-sizing results.
     // - Evidence: `src/model/ThermalStorageChilledWaterStratified.hpp`, `src/model/ThermalStorageChilledWaterStratified.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateThermalStorageChilledWaterStratified.cpp`.
-    // - Remaining Parity Work: Add canonical `ScheduleRuleset` support for the seeded ambient schedule if epmodel adopts that schedule family, and expand only if later work needs model-side clone behavior or richer sizing application helpers.
+    // - Remaining Parity Work: Add canonical `ScheduleRuleset` support for the seeded ambient schedule if epmodel adopts that schedule family, and expand only if later work needs connected direct removal, model-side clone behavior, or richer sizing application helpers.
 
     double tankVolume() const;
     bool setTankVolume(double tankVolume);

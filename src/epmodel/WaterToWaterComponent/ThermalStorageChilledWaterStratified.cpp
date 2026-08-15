@@ -11,6 +11,8 @@
 #include "Loop/PlantLoop.hpp"
 #include "Loop/PlantLoop_Impl.hpp"
 #include "Model.hpp"
+#include "ModelObject/Branch.hpp"
+#include "ModelObject/Branch_Impl.hpp"
 #include "ModelObject/WaterHeaterSizing.hpp"
 #include "ModelObject/WaterHeaterSizing_Impl.hpp"
 #include "Schedule/Schedule.hpp"
@@ -19,15 +21,109 @@
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
+#include <utilities/core/UUID.hpp>
 #include <utilities/data/DataEnums.hpp>
+#include <utilities/idd/Branch_FieldEnums.hxx>
 #include <utilities/idd/IddFactory.hxx>
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/ThermalStorage_ChilledWater_Stratified_FieldEnums.hxx>
+#include <utilities/idd/WaterHeater_Sizing_FieldEnums.hxx>
+#include <utilities/idf/WorkspaceExtensibleGroup.hpp>
+#include <utilities/idf/WorkspaceObject_Impl.hpp>
 
+#include <algorithm>
 #include <stdexcept>
 
 namespace openstudio {
 namespace epmodel {
+
+  namespace {
+
+    boost::optional<std::string> rawFieldValue(const ModelObject& object, unsigned field) {
+      const auto workspaceImpl = object.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+      OS_ASSERT(workspaceImpl);
+      return workspaceImpl->openstudio::detail::IdfObject_Impl::getString(field, false, true);
+    }
+
+    bool rawReferenceMatches(const boost::optional<std::string>& rawReference, const ModelObject& expected) {
+      if (!rawReference || rawReference->empty()) {
+        return false;
+      }
+      const auto expectedName = expected.name();
+      return (expectedName && openstudio::istringEqual(*rawReference, *expectedName)) || openstudio::toUUID(*rawReference) == expected.handle();
+    }
+
+    bool rawFieldAgrees(const boost::optional<std::string>& rawReference, const ModelObject& expected) {
+      return !rawReference || rawReference->empty() || rawReferenceMatches(rawReference, expected);
+    }
+
+    bool hasUniqueEligibleStorageName(const ThermalStorageChilledWaterStratified& storage) {
+      const auto name = storage.name();
+      if (!name || name->empty()) {
+        return false;
+      }
+      return std::ranges::count_if(storage.model().objects(),
+                                   [&name](const auto& candidate) {
+                                     const auto references = candidate.iddObject().references();
+                                     const bool eligible = std::ranges::any_of(references, [](const auto& reference) {
+                                       return openstudio::istringEqual(reference, "ThermalStorageWaterNames")
+                                              || openstudio::istringEqual(reference, "WaterHeaterNames");
+                                     });
+                                     const auto candidateName = candidate.name();
+                                     return eligible && candidateName && openstudio::istringEqual(*candidateName, *name);
+                                   })
+             == 1;
+    }
+
+    boost::optional<WaterHeaterSizing> exactWaterHeaterSizingForStorage(const ThermalStorageChilledWaterStratified& storage) {
+      if (!hasUniqueEligibleStorageName(storage)) {
+        return boost::none;
+      }
+
+      boost::optional<WaterHeaterSizing> result;
+      unsigned occurrences = 0u;
+      for (const auto& sizing : storage.model().getConcreteModelObjects<WaterHeaterSizing>()) {
+        const auto target = sizing.getModelObjectTarget<ModelObject>(openstudio::WaterHeater_SizingFields::WaterHeaterName);
+        const auto rawReference = rawFieldValue(sizing, openstudio::WaterHeater_SizingFields::WaterHeaterName);
+        const bool referencesStorage = (target && target->handle() == storage.handle()) || rawReferenceMatches(rawReference, storage);
+        if (!referencesStorage) {
+          continue;
+        }
+        if (!target || target->handle() != storage.handle() || target->iddObject().type() != storage.iddObject().type()
+            || !rawFieldAgrees(rawReference, storage)) {
+          return boost::none;
+        }
+        ++occurrences;
+        result = sizing;
+      }
+      return occurrences == 1u ? result : boost::none;
+    }
+
+    bool fieldHasEvidence(const ModelObject& object, unsigned field) {
+      const auto raw = rawFieldValue(object, field);
+      return object.getModelObjectTarget<ModelObject>(field) || (raw && !raw->empty());
+    }
+
+    bool branchReferencesStorage(const Branch& branch, const ThermalStorageChilledWaterStratified& storage) {
+      const auto storageName = storage.name();
+      for (const auto& group : branch.extensibleGroups()) {
+        if (auto workspaceGroup = group.optionalCast<openstudio::WorkspaceExtensibleGroup>()) {
+          if (auto target = workspaceGroup->getTarget(openstudio::BranchExtensibleFields::ComponentName);
+              target && target->handle() == storage.handle()) {
+            return true;
+          }
+        }
+        const auto componentType = group.getString(openstudio::BranchExtensibleFields::ComponentObjectType, false);
+        const auto componentName = group.getString(openstudio::BranchExtensibleFields::ComponentName, false);
+        if (componentType && openstudio::istringEqual(*componentType, storage.iddObject().name()) && componentName
+            && ((storageName && openstudio::istringEqual(*componentName, *storageName)) || openstudio::toUUID(*componentName) == storage.handle())) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+  }  // namespace
 
   ThermalStorageChilledWaterStratified::ThermalStorageChilledWaterStratified(const Model& model)
     : WaterToWaterComponent(ThermalStorageChilledWaterStratified::iddObjectType(), model) {
@@ -545,6 +641,36 @@ namespace epmodel {
 
     std::vector<ModelObject> ThermalStorageChilledWaterStratified_Impl::children() const {
       return {waterHeaterSizing()};
+    }
+
+    std::vector<IdfObject> ThermalStorageChilledWaterStratified_Impl::remove() {
+      const auto storage = getObject<ThermalStorageChilledWaterStratified>();
+
+      // This override deliberately owns only the detached lifecycle. Connected
+      // storage must first be removed from its PlantLoops so the branch change
+      // uses the loop's exact transaction instead of the inherited remove-first
+      // sequence.
+      for (const auto field : {supplyInletPort(), supplyOutletPort(), demandInletPort(), demandOutletPort()}) {
+        if (fieldHasEvidence(storage, field)) {
+          return {};
+        }
+      }
+      if (std::ranges::any_of(model().getConcreteModelObjects<Branch>(),
+                              [&storage](const auto& branch) { return branchReferencesStorage(branch, storage); })) {
+        return {};
+      }
+
+      auto sizing = exactWaterHeaterSizing();
+      if (!sizing || !isRemovable()) {
+        return {};
+      }
+
+      auto result = HVACComponent_Impl::remove();
+      OS_ASSERT(!result.empty());
+      auto removedSizing = sizing->remove();
+      OS_ASSERT(!removedSizing.empty());
+      result.insert(result.end(), removedSizing.begin(), removedSizing.end());
+      return result;
     }
 
     double ThermalStorageChilledWaterStratified_Impl::tankVolume() const {
@@ -1084,6 +1210,10 @@ namespace epmodel {
         }
       }
       throw std::runtime_error("ThermalStorageChilledWaterStratified missing WaterHeater:Sizing object.");
+    }
+
+    boost::optional<WaterHeaterSizing> ThermalStorageChilledWaterStratified_Impl::exactWaterHeaterSizing() const {
+      return exactWaterHeaterSizingForStorage(getObject<ThermalStorageChilledWaterStratified>());
     }
 
     boost::optional<double> ThermalStorageChilledWaterStratified_Impl::autosizedNominalCoolingCapacity() const {

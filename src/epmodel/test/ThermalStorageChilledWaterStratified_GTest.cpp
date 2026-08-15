@@ -14,9 +14,14 @@
 #include "../Schedule/ScheduleConstant.hpp"
 #include "../WaterToWaterComponent/ChillerElectricEIR.hpp"
 #include "../WaterToWaterComponent/ThermalStorageChilledWaterStratified.hpp"
+#include "../WaterToWaterComponent/ThermalStorageChilledWaterStratified_Impl.hpp"
 
 #include <utilities/data/DataEnums.hpp>
 #include <utilities/idd/ThermalStorage_ChilledWater_Stratified_FieldEnums.hxx>
+#include <utilities/idd/WaterHeater_Sizing_FieldEnums.hxx>
+#include <utilities/idf/IdfObject_Impl.hpp>
+
+#include <set>
 
 using namespace openstudio::epmodel;
 
@@ -241,6 +246,108 @@ TEST_F(EPModelFixture, ThermalStorageChilledWaterStratified_RelationshipAccessor
 
   WaterHeaterSizing sizing = storage.waterHeaterSizing();
   EXPECT_EQ(storage.handle(), sizing.waterHeater().handle());
+}
+
+TEST_F(EPModelFixture, ThermalStorageChilledWaterStratified_DetachedRemovalAlsoRemovesExactSizingChild) {
+  Model model;
+  ThermalStorageChilledWaterStratified storage(model);
+  const auto storageHandle = storage.handle();
+  const auto sizingHandle = storage.waterHeaterSizing().handle();
+  ASSERT_TRUE(storage.ambientTemperatureSchedule());
+  const auto ambientScheduleHandle = storage.ambientTemperatureSchedule()->handle();
+
+  const auto removed = storage.remove();
+  const std::set<openstudio::Handle> removedHandles = [&removed]() {
+    std::set<openstudio::Handle> result;
+    for (const auto& object : removed) {
+      result.insert(object.handle());
+    }
+    return result;
+  }();
+
+  EXPECT_EQ((std::set<openstudio::Handle>{storageHandle, sizingHandle}), removedHandles);
+  EXPECT_FALSE(model.getObject(storageHandle));
+  EXPECT_FALSE(model.getObject(sizingHandle));
+  EXPECT_TRUE(model.getObject(ambientScheduleHandle));
+  EXPECT_TRUE(model.getConcreteModelObjects<ThermalStorageChilledWaterStratified>().empty());
+  EXPECT_TRUE(model.getConcreteModelObjects<WaterHeaterSizing>().empty());
+}
+
+TEST_F(EPModelFixture, ThermalStorageChilledWaterStratified_DetachedRemovalRejectsMissingOrDuplicateSizing) {
+  {
+    Model model;
+    ThermalStorageChilledWaterStratified storage(model);
+    const auto storageHandle = storage.handle();
+    storage.waterHeaterSizing().remove();
+    ASSERT_TRUE(model.getConcreteModelObjects<WaterHeaterSizing>().empty());
+
+    EXPECT_TRUE(storage.remove().empty());
+    EXPECT_TRUE(model.getObject(storageHandle));
+    EXPECT_TRUE(model.getConcreteModelObjects<WaterHeaterSizing>().empty());
+  }
+
+  {
+    Model model;
+    ThermalStorageChilledWaterStratified storage(model);
+    const auto storageHandle = storage.handle();
+    const auto originalSizingHandle = storage.waterHeaterSizing().handle();
+    WaterHeaterSizing duplicate(storage);
+    const auto duplicateSizingHandle = duplicate.handle();
+    ASSERT_EQ(2u, model.getConcreteModelObjects<WaterHeaterSizing>().size());
+
+    EXPECT_TRUE(storage.remove().empty());
+    EXPECT_TRUE(model.getObject(storageHandle));
+    EXPECT_TRUE(model.getObject(originalSizingHandle));
+    EXPECT_TRUE(model.getObject(duplicateSizingHandle));
+    EXPECT_EQ(2u, model.getConcreteModelObjects<WaterHeaterSizing>().size());
+  }
+
+  {
+    Model model;
+    ThermalStorageChilledWaterStratified storage(model);
+    const auto storageHandle = storage.handle();
+    const auto originalSizingHandle = storage.waterHeaterSizing().handle();
+    WaterHeaterSizing rawAlias(model);
+    const auto rawAliasHandle = rawAlias.handle();
+    const auto rawAliasImpl = rawAlias.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+    ASSERT_TRUE(rawAliasImpl);
+    ASSERT_TRUE(rawAliasImpl->setPointer(openstudio::WaterHeater_SizingFields::WaterHeaterName, openstudio::Handle(), false));
+    ASSERT_TRUE(rawAliasImpl->openstudio::detail::IdfObject_Impl::setString(openstudio::WaterHeater_SizingFields::WaterHeaterName,
+                                                                            storage.nameString(), false));
+
+    EXPECT_TRUE(storage.remove().empty());
+    EXPECT_TRUE(model.getObject(storageHandle));
+    EXPECT_TRUE(model.getObject(originalSizingHandle));
+    EXPECT_TRUE(model.getObject(rawAliasHandle));
+    EXPECT_EQ(2u, model.getConcreteModelObjects<WaterHeaterSizing>().size());
+  }
+}
+
+TEST_F(EPModelFixture, ThermalStorageChilledWaterStratified_DirectRemovalRejectsConnectedStorageUntilDetached) {
+  Model model;
+  PlantLoop useSideLoop(model);
+  ThermalStorageChilledWaterStratified storage(model);
+  const auto storageHandle = storage.handle();
+  const auto sizingHandle = storage.waterHeaterSizing().handle();
+  ASSERT_TRUE(useSideLoop.addSupplyBranchForComponent(storage));
+  ASSERT_TRUE(storage.plantLoop());
+  const auto inletHandle = storage.supplyInletModelObject()->handle();
+  const auto outletHandle = storage.supplyOutletModelObject()->handle();
+
+  EXPECT_TRUE(storage.remove().empty());
+  EXPECT_TRUE(model.getObject(storageHandle));
+  EXPECT_TRUE(model.getObject(sizingHandle));
+  ASSERT_TRUE(storage.plantLoop());
+  EXPECT_EQ(useSideLoop.handle(), storage.plantLoop()->handle());
+  EXPECT_EQ(inletHandle, storage.supplyInletModelObject()->handle());
+  EXPECT_EQ(outletHandle, storage.supplyOutletModelObject()->handle());
+
+  ASSERT_TRUE(storage.removeFromPlantLoop());
+  const auto removed = storage.remove();
+  EXPECT_EQ(2u, removed.size());
+  EXPECT_FALSE(model.getObject(storageHandle));
+  EXPECT_FALSE(model.getObject(sizingHandle));
+  EXPECT_TRUE(model.getObject(useSideLoop.handle()));
 }
 
 TEST_F(EPModelFixture, ThermalStorageChilledWaterStratified_PlantLoopAttachmentParity) {

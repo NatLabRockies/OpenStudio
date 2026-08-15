@@ -110,8 +110,9 @@ The transactional branch evidence is deliberately exact rather than generic:
   ambient relationship, settings, and owned `WaterHeaterSizing` object. Loop
   removal retains the storage and sizing while the other water-side owner
   survives and removes both with the final owner, including loops that also
-  own ordinary straight equipment. Standalone storage removal remains outside
-  this exact lifecycle contract.
+  own ordinary straight equipment. Once detached from its loops, direct
+  storage removal also removes its exact sizing child; connected direct
+  removal is conservatively rejected until the loop owner is detached.
 - A configured `ChillerElectricEIR` can detach from a condenser loop without
   losing its chilled-water ownership. Removing the condenser loop removes only
   condenser-owned branch, operation, and companion objects; a replacement
@@ -195,10 +196,10 @@ family-specific depth rather than a prerequisite for using or extending the
 plant model. Treat the following items as demand-driven follow-up, not as an
 active completion checklist.
 
-The remaining explicitly known ownership cleanup is standalone
-`ThermalStorageChilledWaterStratified` removal with its owned
-`WaterHeaterSizing` object. It is suitable as one final bounded plant phase,
-but it does not reopen the family-by-family topology campaign.
+The plant topology roadmap is therefore closed at the useful 80-percent
+boundary. New plant topology should start only from a concrete component or
+workflow need, not from an attempt to generalize every branch and ownership
+combination.
 
 ## Deferred plant roadmap
 
@@ -206,10 +207,9 @@ but it does not reopen the family-by-family topology campaign.
    for a concrete use case, with its roles and ownership proven exactly. Broad
    branch replacement and generic `WaterToWaterComponent` behavior should not
    be inferred from the delivered exact families.
-2. **Standalone lifecycle and transfer depth.** Address selected standalone
-   clone/remove behavior, unusual malformed imports, and cross-model transfer
-   independently. For example, standalone chilled-water storage removal still
-   needs an atomic storage-and-sizing-child ownership contract.
+2. **Standalone lifecycle and transfer depth.** Address selected connected
+   direct removal, clone behavior, unusual malformed imports, and cross-model
+   transfer independently when a concrete workflow requires them.
 3. **Additional contained owners.** Apply the private relocation boundary to
    another selected compound owner only after its child roles, internal air or
    zone path, controller behavior, and removal lifetime have exact rejection,

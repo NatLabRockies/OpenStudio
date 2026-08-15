@@ -2952,8 +2952,8 @@ namespace epmodel {
       };
 
       static bool requiresExactAttachmentDispatch(const ThermalStorageChilledWaterStratified& storage) {
-        if (storage.iddObject().type() != ThermalStorageChilledWaterStratified::iddObjectType() || !hasUniqueEligibleStorageName(storage)
-            || !exactSizingChild(storage)) {
+        if (storage.iddObject().type() != ThermalStorageChilledWaterStratified::iddObjectType()
+            || !storage.getImpl<detail::ThermalStorageChilledWaterStratified_Impl>()->exactWaterHeaterSizing()) {
           return true;
         }
 
@@ -3036,48 +3036,13 @@ namespace epmodel {
       }
 
      private:
-      static bool hasUniqueEligibleStorageName(const ThermalStorageChilledWaterStratified& storage) {
-        const auto name = storage.name();
-        if (!name || name->empty()) {
-          return false;
-        }
-        return std::ranges::count_if(storage.model().objects(),
-                                     [&name](const auto& candidate) {
-                                       const auto references = candidate.iddObject().references();
-                                       const bool isEligible = std::ranges::any_of(references, [](const auto& reference) {
-                                         return openstudio::istringEqual(reference, "ThermalStorageWaterNames")
-                                                || openstudio::istringEqual(reference, "WaterHeaterNames");
-                                       });
-                                       const auto candidateName = candidate.name();
-                                       return isEligible && candidateName && openstudio::istringEqual(*candidateName, *name);
-                                     })
-               == 1;
-      }
-
       static boost::optional<WaterHeaterSizing> exactSizingChild(const ThermalStorageChilledWaterStratified& storage) {
-        if (!hasUniqueEligibleStorageName(storage)) {
-          return boost::none;
-        }
-
-        boost::optional<WaterHeaterSizing> result;
-        unsigned occurrences = 0u;
-        for (const auto& sizing : storage.model().getConcreteModelObjects<WaterHeaterSizing>()) {
-          if (!referencesObject(sizing, openstudio::WaterHeater_SizingFields::WaterHeaterName, storage)) {
-            continue;
-          }
-          const auto target = exactObjectField(sizing, openstudio::WaterHeater_SizingFields::WaterHeaterName);
-          if (!target || target->handle() != storage.handle() || target->iddObject().type() != storage.iddObject().type()) {
-            return boost::none;
-          }
-          ++occurrences;
-          result = sizing;
-        }
-        return occurrences == 1u ? result : boost::none;
+        return storage.getImpl<detail::ThermalStorageChilledWaterStratified_Impl>()->exactWaterHeaterSizing();
       }
 
       static boost::optional<ProvenOwnership> provenOwnership(const ThermalStorageChilledWaterStratified& storage, bool requirePrimary,
                                                               bool requireSource) {
-        if (storage.iddObject().type() != ThermalStorageChilledWaterStratified::iddObjectType() || !hasUniqueEligibleStorageName(storage)) {
+        if (storage.iddObject().type() != ThermalStorageChilledWaterStratified::iddObjectType()) {
           return boost::none;
         }
         const auto sizing = exactSizingChild(storage);
@@ -5429,13 +5394,15 @@ namespace epmodel {
           }
         }
         if (!selectedComponent.retained) {
-          if (selectedComponent.ownedSizing) {
-            appendRemoved(selectedComponent.ownedSizing->remove());
-          } else if (auto waterHeater = selectedComponent.component.optionalCast<WaterHeaterMixed>()) {
-            appendRemoved(waterHeater->waterHeaterSizing().remove());
-          } else if (auto waterHeater = selectedComponent.component.optionalCast<WaterHeaterStratified>()) {
-            appendRemoved(waterHeater->waterHeaterSizing().remove());
+          if (!selectedComponent.ownedSizing) {
+            if (auto waterHeater = selectedComponent.component.optionalCast<WaterHeaterMixed>()) {
+              appendRemoved(waterHeater->waterHeaterSizing().remove());
+            } else if (auto waterHeater = selectedComponent.component.optionalCast<WaterHeaterStratified>()) {
+              appendRemoved(waterHeater->waterHeaterSizing().remove());
+            }
           }
+          // ThermalStorageChilledWaterStratified owns its exact sizing child
+          // once its final PlantLoop branch has been detached.
           appendRemoved(selectedComponent.component.remove());
         }
       }
