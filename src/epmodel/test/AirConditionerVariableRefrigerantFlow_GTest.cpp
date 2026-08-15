@@ -12,6 +12,7 @@
 #include "../Curve/CurveBicubic_Impl.hpp"
 #include "../Curve/CurveBiquadratic.hpp"
 #include "../Curve/CurveBiquadratic_Impl.hpp"
+#include "../Curve/CurveQuadLinear.hpp"
 #include "../Curve/CurveQuadratic.hpp"
 #include "../Curve/CurveQuadratic_Impl.hpp"
 #include "../StraightComponent/AirConditionerVariableRefrigerantFlow.hpp"
@@ -33,6 +34,7 @@
 #include <utilities/idf/IdfObject_Impl.hpp>
 #include <utilities/idf/WorkspaceObject_Impl.hpp>
 
+#include <array>
 #include <utility>
 #include <vector>
 
@@ -91,6 +93,13 @@ TEST_F(EPModelFixture, AirConditionerVariableRefrigerantFlow_DefaultConstructor)
   EXPECT_FALSE(vrf.heatingEnergyInputRatioModifierFunctionofHighPartLoadRatioCurve());
   EXPECT_FALSE(vrf.heatingCombinationRatioCorrectionFactorCurve());
   EXPECT_FALSE(vrf.heatingPartLoadFractionCorrelationCurve());
+  EXPECT_DOUBLE_EQ(30.0, vrf.equivalentPipingLengthusedforPipingCorrectionFactorinCoolingMode());
+  EXPECT_DOUBLE_EQ(10.0, vrf.verticalHeightusedforPipingCorrectionFactor());
+  EXPECT_FALSE(vrf.pipingCorrectionFactorforLengthinCoolingModeCurve());
+  EXPECT_DOUBLE_EQ(-0.000386, vrf.pipingCorrectionFactorforHeightinCoolingModeCoefficient());
+  EXPECT_DOUBLE_EQ(30.0, vrf.equivalentPipingLengthusedforPipingCorrectionFactorinHeatingMode());
+  EXPECT_FALSE(vrf.pipingCorrectionFactorforLengthinHeatingModeCurve());
+  EXPECT_DOUBLE_EQ(0.0, vrf.pipingCorrectionFactorforHeightinHeatingModeCoefficient());
   EXPECT_FALSE(vrf.defrostEnergyInputRatioModifierFunctionofTemperatureCurve());
   EXPECT_TRUE(vrf.terminals().empty());
   const auto lists = model.getObjectsByType(openstudio::IddObjectType::ZoneTerminalUnitList);
@@ -98,6 +107,222 @@ TEST_F(EPModelFixture, AirConditionerVariableRefrigerantFlow_DefaultConstructor)
   auto list = vrf.getModelObjectTarget<ModelObject>(openstudio::AirConditioner_VariableRefrigerantFlowFields::ZoneTerminalUnitListName);
   ASSERT_TRUE(list);
   EXPECT_EQ(lists.front().handle(), list->handle());
+}
+
+TEST_F(EPModelFixture, AirConditionerVariableRefrigerantFlow_PipingFieldsValidateRoundtripAndResetExactly) {
+  Model model;
+  Model foreignModel;
+  AirConditionerVariableRefrigerantFlow vrf(model);
+
+  EXPECT_TRUE(vrf.setEquivalentPipingLengthusedforPipingCorrectionFactorinCoolingMode(41.0));
+  EXPECT_TRUE(vrf.setVerticalHeightusedforPipingCorrectionFactor(-7.5));
+  EXPECT_TRUE(vrf.setPipingCorrectionFactorforHeightinCoolingModeCoefficient(-0.0012));
+  EXPECT_TRUE(vrf.setEquivalentPipingLengthusedforPipingCorrectionFactorinHeatingMode(43.0));
+  EXPECT_TRUE(vrf.setPipingCorrectionFactorforHeightinHeatingModeCoefficient(0.0023));
+  EXPECT_DOUBLE_EQ(41.0, vrf.equivalentPipingLengthusedforPipingCorrectionFactorinCoolingMode());
+  EXPECT_DOUBLE_EQ(-7.5, vrf.verticalHeightusedforPipingCorrectionFactor());
+  EXPECT_DOUBLE_EQ(-0.0012, vrf.pipingCorrectionFactorforHeightinCoolingModeCoefficient());
+  EXPECT_DOUBLE_EQ(43.0, vrf.equivalentPipingLengthusedforPipingCorrectionFactorinHeatingMode());
+  EXPECT_DOUBLE_EQ(0.0023, vrf.pipingCorrectionFactorforHeightinHeatingModeCoefficient());
+
+  CurveQuadratic coolingUnivariate(model);
+  CurveBiquadratic coolingBivariate(model);
+  CurveQuadratic heatingUnivariate(model);
+  CurveBiquadratic heatingBivariate(model);
+  ASSERT_TRUE(vrf.setPipingCorrectionFactorforLengthinCoolingModeCurve(coolingUnivariate));
+  ASSERT_TRUE(vrf.pipingCorrectionFactorforLengthinCoolingModeCurve());
+  EXPECT_EQ(coolingUnivariate, *vrf.pipingCorrectionFactorforLengthinCoolingModeCurve());
+  ASSERT_TRUE(vrf.setPipingCorrectionFactorforLengthinCoolingModeCurve(coolingBivariate));
+  EXPECT_EQ(coolingBivariate, *vrf.pipingCorrectionFactorforLengthinCoolingModeCurve());
+  ASSERT_TRUE(vrf.setPipingCorrectionFactorforLengthinHeatingModeCurve(heatingUnivariate));
+  ASSERT_TRUE(vrf.pipingCorrectionFactorforLengthinHeatingModeCurve());
+  EXPECT_EQ(heatingUnivariate, *vrf.pipingCorrectionFactorforLengthinHeatingModeCurve());
+  ASSERT_TRUE(vrf.setPipingCorrectionFactorforLengthinHeatingModeCurve(heatingBivariate));
+  EXPECT_EQ(heatingBivariate, *vrf.pipingCorrectionFactorforLengthinHeatingModeCurve());
+
+  CurveQuadLinear wrongType(model);
+  CurveQuadratic foreignUnivariate(foreignModel);
+  CurveBiquadratic foreignBivariate(foreignModel);
+  EXPECT_FALSE(vrf.setPipingCorrectionFactorforLengthinCoolingModeCurve(wrongType));
+  EXPECT_FALSE(vrf.setPipingCorrectionFactorforLengthinCoolingModeCurve(foreignUnivariate));
+  EXPECT_FALSE(vrf.setPipingCorrectionFactorforLengthinHeatingModeCurve(wrongType));
+  EXPECT_FALSE(vrf.setPipingCorrectionFactorforLengthinHeatingModeCurve(foreignBivariate));
+  EXPECT_EQ(coolingBivariate, *vrf.pipingCorrectionFactorforLengthinCoolingModeCurve());
+  EXPECT_EQ(heatingBivariate, *vrf.pipingCorrectionFactorforLengthinHeatingModeCurve());
+
+  // Deliberately seed unresolved imported text that the validated public setters cannot create.
+  constexpr auto malformedField = openstudio::AirConditioner_VariableRefrigerantFlowFields::PipingCorrectionFactorforLengthinCoolingModeCurveName;
+  auto workspaceImpl = vrf.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  ASSERT_TRUE(workspaceImpl);
+  ASSERT_TRUE(workspaceImpl->setPointer(malformedField, openstudio::Handle(), false));
+  ASSERT_TRUE(workspaceImpl->openstudio::detail::IdfObject_Impl::setString(malformedField, "Unresolved VRF Piping Curve", false));
+  EXPECT_FALSE(vrf.setPipingCorrectionFactorforLengthinCoolingModeCurve(foreignUnivariate));
+  EXPECT_EQ("Unresolved VRF Piping Curve", workspaceImpl->openstudio::detail::IdfObject_Impl::getString(malformedField, false, true).value_or(""));
+
+  vrf.resetPipingCorrectionFactorforLengthinCoolingModeCurve();
+  vrf.resetPipingCorrectionFactorforLengthinHeatingModeCurve();
+  EXPECT_FALSE(vrf.pipingCorrectionFactorforLengthinCoolingModeCurve());
+  EXPECT_FALSE(vrf.pipingCorrectionFactorforLengthinHeatingModeCurve());
+  EXPECT_EQ("", workspaceImpl->openstudio::detail::IdfObject_Impl::getString(malformedField, false, true).value_or(""));
+}
+
+TEST_F(EPModelFixture, AirConditionerVariableRefrigerantFlow_CanonicalizationRepairsPipingScalarsFromConcreteStorage) {
+  const auto idfPath = uniqueIdfPath("epmodel-vrf-piping-scalar-repair");
+  const ScopedFileRemoval removeIdf(idfPath);
+
+  constexpr std::array<unsigned, 5> fields = {
+    openstudio::AirConditioner_VariableRefrigerantFlowFields::EquivalentPipingLengthusedforPipingCorrectionFactorinCoolingMode,
+    openstudio::AirConditioner_VariableRefrigerantFlowFields::VerticalHeightusedforPipingCorrectionFactor,
+    openstudio::AirConditioner_VariableRefrigerantFlowFields::PipingCorrectionFactorforHeightinCoolingModeCoefficient,
+    openstudio::AirConditioner_VariableRefrigerantFlowFields::EquivalentPipingLengthusedforPipingCorrectionFactorinHeatingMode,
+    openstudio::AirConditioner_VariableRefrigerantFlowFields::PipingCorrectionFactorforHeightinHeatingModeCoefficient,
+  };
+
+  Model model;
+  AirConditionerVariableRefrigerantFlow vrf(model);
+  auto workspaceImpl = vrf.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  ASSERT_TRUE(workspaceImpl);
+  // Deliberately blank concrete scalar storage that validated public setters cannot produce.
+  for (const auto field : fields) {
+    ASSERT_TRUE(workspaceImpl->openstudio::detail::IdfObject_Impl::setString(field, "", false));
+    EXPECT_FALSE(workspaceImpl->getDouble(field, false));
+  }
+
+  const auto report = model.canonicalize();
+  EXPECT_EQ(0u, report.errorCount);
+  EXPECT_GE(report.infoCount, 5u);
+  EXPECT_DOUBLE_EQ(30.0, vrf.equivalentPipingLengthusedforPipingCorrectionFactorinCoolingMode());
+  EXPECT_DOUBLE_EQ(10.0, vrf.verticalHeightusedforPipingCorrectionFactor());
+  EXPECT_DOUBLE_EQ(-0.000386, vrf.pipingCorrectionFactorforHeightinCoolingModeCoefficient());
+  EXPECT_DOUBLE_EQ(30.0, vrf.equivalentPipingLengthusedforPipingCorrectionFactorinHeatingMode());
+  EXPECT_DOUBLE_EQ(0.0, vrf.pipingCorrectionFactorforHeightinHeatingModeCoefficient());
+  const auto secondReport = model.canonicalize();
+  EXPECT_EQ(0u, secondReport.errorCount);
+  ASSERT_EQ(1u, secondReport.infoCount);
+  ASSERT_EQ(1u, secondReport.messages.size());
+  EXPECT_NE(std::string::npos, secondReport.messages.front().find("Sanitization complete: infos=0"));
+
+  Model reloadSource;
+  AirConditionerVariableRefrigerantFlow blankOnLoad(reloadSource);
+  ASSERT_TRUE(blankOnLoad.setName("Blank Piping Scalars On Load"));
+  auto blankOnLoadImpl = blankOnLoad.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  ASSERT_TRUE(blankOnLoadImpl);
+  // Deliberately persist blanks to exercise load canonicalization rather than a normal public mutation.
+  for (const auto field : fields) {
+    ASSERT_TRUE(blankOnLoadImpl->openstudio::detail::IdfObject_Impl::setString(field, "", false));
+  }
+  ASSERT_TRUE(reloadSource.save(idfPath, true));
+
+  auto loadedModel = Model::load(idfPath);
+  ASSERT_TRUE(loadedModel);
+  auto loadedVRF = loadedModel->getConcreteModelObjectByName<AirConditionerVariableRefrigerantFlow>("Blank Piping Scalars On Load");
+  ASSERT_TRUE(loadedVRF);
+  EXPECT_DOUBLE_EQ(30.0, loadedVRF->equivalentPipingLengthusedforPipingCorrectionFactorinCoolingMode());
+  EXPECT_DOUBLE_EQ(10.0, loadedVRF->verticalHeightusedforPipingCorrectionFactor());
+  EXPECT_DOUBLE_EQ(-0.000386, loadedVRF->pipingCorrectionFactorforHeightinCoolingModeCoefficient());
+  EXPECT_DOUBLE_EQ(30.0, loadedVRF->equivalentPipingLengthusedforPipingCorrectionFactorinHeatingMode());
+  EXPECT_DOUBLE_EQ(0.0, loadedVRF->pipingCorrectionFactorforHeightinHeatingModeCoefficient());
+  const auto loadedSecondReport = loadedModel->canonicalize();
+  EXPECT_EQ(0u, loadedSecondReport.errorCount);
+  ASSERT_EQ(1u, loadedSecondReport.infoCount);
+  ASSERT_EQ(1u, loadedSecondReport.messages.size());
+  EXPECT_NE(std::string::npos, loadedSecondReport.messages.front().find("Sanitization complete: infos=0"));
+}
+
+TEST_F(EPModelFixture, AirConditionerVariableRefrigerantFlow_PipingFieldsSurviveReloadMutationResetAndRemoval) {
+  const auto firstIdfPath = uniqueIdfPath("epmodel-vrf-piping-first");
+  const auto secondIdfPath = uniqueIdfPath("epmodel-vrf-piping-second");
+  const ScopedFileRemoval removeFirstIdf(firstIdfPath);
+  const ScopedFileRemoval removeSecondIdf(secondIdfPath);
+
+  Model model;
+  AirConditionerVariableRefrigerantFlow vrf(model);
+  ZoneHVACTerminalUnitVariableRefrigerantFlow terminal(model);
+  CurveQuadratic coolingCurve(model);
+  CurveBiquadratic heatingCurve(model);
+  ASSERT_TRUE(vrf.setName("Piping Field VRF"));
+  ASSERT_TRUE(terminal.setName("Piping Field VRF Terminal"));
+  ASSERT_TRUE(coolingCurve.setName("Original VRF Cooling Piping Curve"));
+  ASSERT_TRUE(heatingCurve.setName("Original VRF Heating Piping Curve"));
+  ASSERT_TRUE(vrf.addTerminal(terminal));
+  ASSERT_TRUE(vrf.setEquivalentPipingLengthusedforPipingCorrectionFactorinCoolingMode(51.0));
+  ASSERT_TRUE(vrf.setVerticalHeightusedforPipingCorrectionFactor(12.5));
+  ASSERT_TRUE(vrf.setPipingCorrectionFactorforHeightinCoolingModeCoefficient(-0.004));
+  ASSERT_TRUE(vrf.setEquivalentPipingLengthusedforPipingCorrectionFactorinHeatingMode(53.0));
+  ASSERT_TRUE(vrf.setPipingCorrectionFactorforHeightinHeatingModeCoefficient(0.006));
+  ASSERT_TRUE(vrf.setPipingCorrectionFactorforLengthinCoolingModeCurve(coolingCurve));
+  ASSERT_TRUE(vrf.setPipingCorrectionFactorforLengthinHeatingModeCurve(heatingCurve));
+  ASSERT_TRUE(model.save(firstIdfPath, true));
+
+  auto loadedModel = Model::load(firstIdfPath);
+  ASSERT_TRUE(loadedModel);
+  auto loadedVRF = loadedModel->getConcreteModelObjectByName<AirConditionerVariableRefrigerantFlow>("Piping Field VRF");
+  auto loadedTerminal = loadedModel->getConcreteModelObjectByName<ZoneHVACTerminalUnitVariableRefrigerantFlow>("Piping Field VRF Terminal");
+  ASSERT_TRUE(loadedVRF);
+  ASSERT_TRUE(loadedTerminal);
+  EXPECT_DOUBLE_EQ(51.0, loadedVRF->equivalentPipingLengthusedforPipingCorrectionFactorinCoolingMode());
+  EXPECT_DOUBLE_EQ(12.5, loadedVRF->verticalHeightusedforPipingCorrectionFactor());
+  EXPECT_DOUBLE_EQ(-0.004, loadedVRF->pipingCorrectionFactorforHeightinCoolingModeCoefficient());
+  EXPECT_DOUBLE_EQ(53.0, loadedVRF->equivalentPipingLengthusedforPipingCorrectionFactorinHeatingMode());
+  EXPECT_DOUBLE_EQ(0.006, loadedVRF->pipingCorrectionFactorforHeightinHeatingModeCoefficient());
+  ASSERT_TRUE(loadedVRF->pipingCorrectionFactorforLengthinCoolingModeCurve());
+  ASSERT_TRUE(loadedVRF->pipingCorrectionFactorforLengthinHeatingModeCurve());
+  EXPECT_EQ("Original VRF Cooling Piping Curve", loadedVRF->pipingCorrectionFactorforLengthinCoolingModeCurve()->nameString());
+  EXPECT_EQ("Original VRF Heating Piping Curve", loadedVRF->pipingCorrectionFactorforLengthinHeatingModeCurve()->nameString());
+
+  CurveBiquadratic replacementCoolingCurve(*loadedModel);
+  CurveQuadratic replacementHeatingCurve(*loadedModel);
+  ASSERT_TRUE(replacementCoolingCurve.setName("Replacement VRF Cooling Piping Curve"));
+  ASSERT_TRUE(replacementHeatingCurve.setName("Replacement VRF Heating Piping Curve"));
+  ASSERT_TRUE(loadedVRF->setEquivalentPipingLengthusedforPipingCorrectionFactorinCoolingMode(61.0));
+  ASSERT_TRUE(loadedVRF->setVerticalHeightusedforPipingCorrectionFactor(-13.5));
+  ASSERT_TRUE(loadedVRF->setPipingCorrectionFactorforHeightinCoolingModeCoefficient(-0.008));
+  ASSERT_TRUE(loadedVRF->setEquivalentPipingLengthusedforPipingCorrectionFactorinHeatingMode(63.0));
+  ASSERT_TRUE(loadedVRF->setPipingCorrectionFactorforHeightinHeatingModeCoefficient(0.009));
+  ASSERT_TRUE(loadedVRF->setPipingCorrectionFactorforLengthinCoolingModeCurve(replacementCoolingCurve));
+  ASSERT_TRUE(loadedVRF->setPipingCorrectionFactorforLengthinHeatingModeCurve(replacementHeatingCurve));
+  loadedVRF->resetPipingCorrectionFactorforLengthinHeatingModeCurve();
+  ASSERT_TRUE(loadedModel->save(secondIdfPath, true));
+
+  auto reloadedModel = Model::load(secondIdfPath);
+  ASSERT_TRUE(reloadedModel);
+  auto reloadedVRF = reloadedModel->getConcreteModelObjectByName<AirConditionerVariableRefrigerantFlow>("Piping Field VRF");
+  auto reloadedTerminal = reloadedModel->getConcreteModelObjectByName<ZoneHVACTerminalUnitVariableRefrigerantFlow>("Piping Field VRF Terminal");
+  auto originalCoolingCurve = reloadedModel->getConcreteModelObjectByName<CurveQuadratic>("Original VRF Cooling Piping Curve");
+  auto originalHeatingCurve = reloadedModel->getConcreteModelObjectByName<CurveBiquadratic>("Original VRF Heating Piping Curve");
+  auto reloadedReplacementCoolingCurve = reloadedModel->getConcreteModelObjectByName<CurveBiquadratic>("Replacement VRF Cooling Piping Curve");
+  auto resetReplacementHeatingCurve = reloadedModel->getConcreteModelObjectByName<CurveQuadratic>("Replacement VRF Heating Piping Curve");
+  ASSERT_TRUE(reloadedVRF);
+  ASSERT_TRUE(reloadedTerminal);
+  ASSERT_TRUE(originalCoolingCurve);
+  ASSERT_TRUE(originalHeatingCurve);
+  ASSERT_TRUE(reloadedReplacementCoolingCurve);
+  ASSERT_TRUE(resetReplacementHeatingCurve);
+  EXPECT_DOUBLE_EQ(61.0, reloadedVRF->equivalentPipingLengthusedforPipingCorrectionFactorinCoolingMode());
+  EXPECT_DOUBLE_EQ(-13.5, reloadedVRF->verticalHeightusedforPipingCorrectionFactor());
+  EXPECT_DOUBLE_EQ(-0.008, reloadedVRF->pipingCorrectionFactorforHeightinCoolingModeCoefficient());
+  EXPECT_DOUBLE_EQ(63.0, reloadedVRF->equivalentPipingLengthusedforPipingCorrectionFactorinHeatingMode());
+  EXPECT_DOUBLE_EQ(0.009, reloadedVRF->pipingCorrectionFactorforHeightinHeatingModeCoefficient());
+  ASSERT_TRUE(reloadedVRF->pipingCorrectionFactorforLengthinCoolingModeCurve());
+  EXPECT_EQ(reloadedReplacementCoolingCurve->handle(), reloadedVRF->pipingCorrectionFactorforLengthinCoolingModeCurve()->handle());
+  EXPECT_FALSE(reloadedVRF->pipingCorrectionFactorforLengthinHeatingModeCurve());
+  ASSERT_EQ(1u, reloadedVRF->terminals().size());
+  EXPECT_EQ(reloadedTerminal->handle(), reloadedVRF->terminals().front().handle());
+
+  auto terminalList =
+    reloadedVRF->getModelObjectTarget<ModelObject>(openstudio::AirConditioner_VariableRefrigerantFlowFields::ZoneTerminalUnitListName);
+  ASSERT_TRUE(terminalList);
+  const auto terminalListHandle = terminalList->handle();
+  const auto systemHandle = reloadedVRF->handle();
+  EXPECT_FALSE(reloadedVRF->remove().empty());
+  EXPECT_FALSE(reloadedModel->getObject(systemHandle));
+  EXPECT_FALSE(reloadedModel->getObject(terminalListHandle));
+  EXPECT_TRUE(reloadedModel->getObject(reloadedTerminal->handle()));
+  EXPECT_FALSE(reloadedTerminal->vrfSystem());
+  EXPECT_TRUE(reloadedModel->getObject(originalCoolingCurve->handle()));
+  EXPECT_TRUE(reloadedModel->getObject(originalHeatingCurve->handle()));
+  EXPECT_TRUE(reloadedModel->getObject(reloadedReplacementCoolingCurve->handle()));
+  EXPECT_TRUE(reloadedModel->getObject(resetReplacementHeatingCurve->handle()));
 }
 
 TEST_F(EPModelFixture, AirConditionerVariableRefrigerantFlow_CoolingCurveRelationshipsValidateAndResetExactly) {

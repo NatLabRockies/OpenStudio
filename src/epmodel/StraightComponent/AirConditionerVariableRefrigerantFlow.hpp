@@ -52,25 +52,28 @@ namespace epmodel {
 
     // Schema Alignment Notes:
     // - Status: Partial Parity. Core VRF scalar controls, sizing/performance fields, direct schedule/zone relationships, the standard cooling
-    //   and heating performance curves, the defrost EIR curve, and the standard VRF terminal relationship are aligned.
+    //   and heating performance curves, the cooling/heating piping fields, the defrost EIR curve, and the standard VRF terminal relationship are
+    //   aligned.
     // - Canonical Counterpart: openstudio::model::AirConditionerVariableRefrigerantFlow.
     // - Implemented Parity: The selected scalar methods, availability/thermostat-priority/basin schedules, master-thermostat zone, ten standard
-    //   cooling- and ten standard heating-curve relationships, terminal relationship, and demand-side `addToNode` preserve the canonical contract
-    //   and current plant-loop insertion behavior. Terminal membership is deliberately exclusive and duplicate-safe rather than reproducing the
-    //   canonical wrapper's duplicate and competing-list inconsistencies.
+    //   cooling- and ten standard heating-curve relationships, the five piping scalars and two piping-curve relationships, terminal relationship,
+    //   and demand-side `addToNode` preserve the canonical contract and current plant-loop insertion behavior. Terminal membership is deliberately
+    //   exclusive and duplicate-safe rather than reproducing the canonical wrapper's duplicate and competing-list inconsistencies.
     // - Documented Delta: The canonical Model constructor creates default objects for the standard cooling- and heating-curve relationships,
     //   while the EPModel constructor deliberately leaves these optional EnergyPlus fields blank pending a separate numerical-default and
-    //   canonicalization decision. Other curve helpers remain omitted. `addToNode` is intentionally limited to PlantLoop demand-side insertion,
-    //   and no broader VRF topology or coupling between curve relationships and their adjacent scalar controls is claimed here.
+    //   canonicalization decision. The canonical Model constructor also creates a default cooling piping correction curve; EPModel leaves that
+    //   optional field blank pending the same numerical-default decision, and both constructors leave the heating piping correction curve blank.
+    //   Other curve helpers remain omitted. `addToNode` is intentionally limited to PlantLoop demand-side insertion, and no broader VRF topology or
+    //   coupling between curve relationships and their adjacent scalar controls is claimed here.
     // - Field/Storage Mapping: Most preserved scalar methods map directly to EnergyPlus `AirConditioner:VariableRefrigerantFlow` fields. Terminal
     //   membership uses the EnergyPlus `ZoneTerminalUnitList` object with pointer-backed extensible entries. Cooling/heating temperature modifiers
     //   and the defrost EIR curve use `BivariateFunctions`; cooling/heating boundary, part-load, and combination curves use `UnivariateFunctions`.
-    //   `condenserType()` follows the canonical defaulted readback behavior by deriving `AirCooled` versus `WaterCooled` from current plant-loop
-    //   attachment when blank.
+    //   Both piping length correction fields accept the configured `UnivariateFunctions` and `BivariateFunctions` lists. `condenserType()` follows
+    //   the canonical defaulted readback behavior by deriving `AirCooled` versus `WaterCooled` from current plant-loop attachment when blank.
     // - Ownership: VRF removal owns only its terminal list and deliberately preserves every referenced standard-VRF performance curve, including
-    //   the defrost EIR curve; full all-curve ownership remains deferred.
+    //   both piping curves and the defrost EIR curve; full all-curve ownership remains deferred.
     // - Evidence: `src/model/AirConditionerVariableRefrigerantFlow.hpp`, `src/model/AirConditionerVariableRefrigerantFlow.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirConditionerVariableRefrigerantFlow.cpp`, and `src/epmodel/test/AirConditionerVariableRefrigerantFlow_GTest.cpp`.
-    // - Remaining Parity Work: Add the heat-recovery and piping curve accessors and decide standard cooling/heating numerical default-curve
+    // - Remaining Parity Work: Add the heat-recovery curve accessors and decide standard cooling/heating and cooling-piping numerical default-curve
     //   construction and any full all-curve ownership contract separately.
     Schedule availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);
@@ -188,6 +191,29 @@ namespace epmodel {
 
     bool heatPumpWasteHeatRecovery() const;
     bool setHeatPumpWasteHeatRecovery(bool heatPumpWasteHeatRecovery);
+
+    double equivalentPipingLengthusedforPipingCorrectionFactorinCoolingMode() const;
+    bool setEquivalentPipingLengthusedforPipingCorrectionFactorinCoolingMode(double equivalentPipingLengthusedforPipingCorrectionFactorinCoolingMode);
+
+    double verticalHeightusedforPipingCorrectionFactor() const;
+    bool setVerticalHeightusedforPipingCorrectionFactor(double verticalHeightusedforPipingCorrectionFactor);
+
+    boost::optional<Curve> pipingCorrectionFactorforLengthinCoolingModeCurve() const;
+    bool setPipingCorrectionFactorforLengthinCoolingModeCurve(const Curve& curve);
+    void resetPipingCorrectionFactorforLengthinCoolingModeCurve();
+
+    double pipingCorrectionFactorforHeightinCoolingModeCoefficient() const;
+    bool setPipingCorrectionFactorforHeightinCoolingModeCoefficient(double pipingCorrectionFactorforHeightinCoolingModeCoefficient);
+
+    double equivalentPipingLengthusedforPipingCorrectionFactorinHeatingMode() const;
+    bool setEquivalentPipingLengthusedforPipingCorrectionFactorinHeatingMode(double equivalentPipingLengthusedforPipingCorrectionFactorinHeatingMode);
+
+    boost::optional<Curve> pipingCorrectionFactorforLengthinHeatingModeCurve() const;
+    bool setPipingCorrectionFactorforLengthinHeatingModeCurve(const Curve& curve);
+    void resetPipingCorrectionFactorforLengthinHeatingModeCurve();
+
+    double pipingCorrectionFactorforHeightinHeatingModeCoefficient() const;
+    bool setPipingCorrectionFactorforHeightinHeatingModeCoefficient(double pipingCorrectionFactorforHeightinHeatingModeCoefficient);
 
     int numberofCompressors() const;
     bool setNumberofCompressors(int numberofCompressors);

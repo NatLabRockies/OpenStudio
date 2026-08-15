@@ -157,6 +157,31 @@ namespace epmodel {
       bool heatPumpWasteHeatRecovery() const;
       bool setHeatPumpWasteHeatRecovery(bool heatPumpWasteHeatRecovery);
 
+      double equivalentPipingLengthusedforPipingCorrectionFactorinCoolingMode() const;
+      bool
+        setEquivalentPipingLengthusedforPipingCorrectionFactorinCoolingMode(double equivalentPipingLengthusedforPipingCorrectionFactorinCoolingMode);
+
+      double verticalHeightusedforPipingCorrectionFactor() const;
+      bool setVerticalHeightusedforPipingCorrectionFactor(double verticalHeightusedforPipingCorrectionFactor);
+
+      boost::optional<Curve> pipingCorrectionFactorforLengthinCoolingModeCurve() const;
+      bool setPipingCorrectionFactorforLengthinCoolingModeCurve(const Curve& curve);
+      void resetPipingCorrectionFactorforLengthinCoolingModeCurve();
+
+      double pipingCorrectionFactorforHeightinCoolingModeCoefficient() const;
+      bool setPipingCorrectionFactorforHeightinCoolingModeCoefficient(double pipingCorrectionFactorforHeightinCoolingModeCoefficient);
+
+      double equivalentPipingLengthusedforPipingCorrectionFactorinHeatingMode() const;
+      bool
+        setEquivalentPipingLengthusedforPipingCorrectionFactorinHeatingMode(double equivalentPipingLengthusedforPipingCorrectionFactorinHeatingMode);
+
+      boost::optional<Curve> pipingCorrectionFactorforLengthinHeatingModeCurve() const;
+      bool setPipingCorrectionFactorforLengthinHeatingModeCurve(const Curve& curve);
+      void resetPipingCorrectionFactorforLengthinHeatingModeCurve();
+
+      double pipingCorrectionFactorforHeightinHeatingModeCoefficient() const;
+      bool setPipingCorrectionFactorforHeightinHeatingModeCoefficient(double pipingCorrectionFactorforHeightinHeatingModeCoefficient);
+
       int numberofCompressors() const;
       bool setNumberofCompressors(int numberofCompressors);
 

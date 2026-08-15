@@ -28,6 +28,7 @@
 #include <utilities/idf/IdfObject.hpp>
 #include <utilities/idf/WorkspaceExtensibleGroup.hpp>
 
+#include <array>
 #include <set>
 
 namespace openstudio {
@@ -40,6 +41,11 @@ namespace epmodel {
     auto availability = model.alwaysOnDiscreteSchedule();
     OS_ASSERT(impl->setAvailabilitySchedule(availability));
     OS_ASSERT(impl->ensureTerminalUnitList());
+    OS_ASSERT(impl->setEquivalentPipingLengthusedforPipingCorrectionFactorinCoolingMode(30.0));
+    OS_ASSERT(impl->setVerticalHeightusedforPipingCorrectionFactor(10.0));
+    OS_ASSERT(impl->setPipingCorrectionFactorforHeightinCoolingModeCoefficient(-0.000386));
+    OS_ASSERT(impl->setEquivalentPipingLengthusedforPipingCorrectionFactorinHeatingMode(30.0));
+    OS_ASSERT(impl->setPipingCorrectionFactorforHeightinHeatingModeCoefficient(0.0));
   }
 
   AirConditionerVariableRefrigerantFlow::AirConditionerVariableRefrigerantFlow(
@@ -432,6 +438,79 @@ namespace epmodel {
     return getImpl<detail::AirConditionerVariableRefrigerantFlow_Impl>()->setHeatPumpWasteHeatRecovery(heatPumpWasteHeatRecovery);
   }
 
+  double AirConditionerVariableRefrigerantFlow::equivalentPipingLengthusedforPipingCorrectionFactorinCoolingMode() const {
+    return getImpl<detail::AirConditionerVariableRefrigerantFlow_Impl>()->equivalentPipingLengthusedforPipingCorrectionFactorinCoolingMode();
+  }
+
+  bool AirConditionerVariableRefrigerantFlow::setEquivalentPipingLengthusedforPipingCorrectionFactorinCoolingMode(
+    double equivalentPipingLengthusedforPipingCorrectionFactorinCoolingMode) {
+    return getImpl<detail::AirConditionerVariableRefrigerantFlow_Impl>()->setEquivalentPipingLengthusedforPipingCorrectionFactorinCoolingMode(
+      equivalentPipingLengthusedforPipingCorrectionFactorinCoolingMode);
+  }
+
+  double AirConditionerVariableRefrigerantFlow::verticalHeightusedforPipingCorrectionFactor() const {
+    return getImpl<detail::AirConditionerVariableRefrigerantFlow_Impl>()->verticalHeightusedforPipingCorrectionFactor();
+  }
+
+  bool AirConditionerVariableRefrigerantFlow::setVerticalHeightusedforPipingCorrectionFactor(double verticalHeightusedforPipingCorrectionFactor) {
+    return getImpl<detail::AirConditionerVariableRefrigerantFlow_Impl>()->setVerticalHeightusedforPipingCorrectionFactor(
+      verticalHeightusedforPipingCorrectionFactor);
+  }
+
+  boost::optional<Curve> AirConditionerVariableRefrigerantFlow::pipingCorrectionFactorforLengthinCoolingModeCurve() const {
+    return getImpl<detail::AirConditionerVariableRefrigerantFlow_Impl>()->pipingCorrectionFactorforLengthinCoolingModeCurve();
+  }
+
+  bool AirConditionerVariableRefrigerantFlow::setPipingCorrectionFactorforLengthinCoolingModeCurve(const Curve& curve) {
+    return getImpl<detail::AirConditionerVariableRefrigerantFlow_Impl>()->setPipingCorrectionFactorforLengthinCoolingModeCurve(curve);
+  }
+
+  void AirConditionerVariableRefrigerantFlow::resetPipingCorrectionFactorforLengthinCoolingModeCurve() {
+    getImpl<detail::AirConditionerVariableRefrigerantFlow_Impl>()->resetPipingCorrectionFactorforLengthinCoolingModeCurve();
+  }
+
+  double AirConditionerVariableRefrigerantFlow::pipingCorrectionFactorforHeightinCoolingModeCoefficient() const {
+    return getImpl<detail::AirConditionerVariableRefrigerantFlow_Impl>()->pipingCorrectionFactorforHeightinCoolingModeCoefficient();
+  }
+
+  bool AirConditionerVariableRefrigerantFlow::setPipingCorrectionFactorforHeightinCoolingModeCoefficient(
+    double pipingCorrectionFactorforHeightinCoolingModeCoefficient) {
+    return getImpl<detail::AirConditionerVariableRefrigerantFlow_Impl>()->setPipingCorrectionFactorforHeightinCoolingModeCoefficient(
+      pipingCorrectionFactorforHeightinCoolingModeCoefficient);
+  }
+
+  double AirConditionerVariableRefrigerantFlow::equivalentPipingLengthusedforPipingCorrectionFactorinHeatingMode() const {
+    return getImpl<detail::AirConditionerVariableRefrigerantFlow_Impl>()->equivalentPipingLengthusedforPipingCorrectionFactorinHeatingMode();
+  }
+
+  bool AirConditionerVariableRefrigerantFlow::setEquivalentPipingLengthusedforPipingCorrectionFactorinHeatingMode(
+    double equivalentPipingLengthusedforPipingCorrectionFactorinHeatingMode) {
+    return getImpl<detail::AirConditionerVariableRefrigerantFlow_Impl>()->setEquivalentPipingLengthusedforPipingCorrectionFactorinHeatingMode(
+      equivalentPipingLengthusedforPipingCorrectionFactorinHeatingMode);
+  }
+
+  boost::optional<Curve> AirConditionerVariableRefrigerantFlow::pipingCorrectionFactorforLengthinHeatingModeCurve() const {
+    return getImpl<detail::AirConditionerVariableRefrigerantFlow_Impl>()->pipingCorrectionFactorforLengthinHeatingModeCurve();
+  }
+
+  bool AirConditionerVariableRefrigerantFlow::setPipingCorrectionFactorforLengthinHeatingModeCurve(const Curve& curve) {
+    return getImpl<detail::AirConditionerVariableRefrigerantFlow_Impl>()->setPipingCorrectionFactorforLengthinHeatingModeCurve(curve);
+  }
+
+  void AirConditionerVariableRefrigerantFlow::resetPipingCorrectionFactorforLengthinHeatingModeCurve() {
+    getImpl<detail::AirConditionerVariableRefrigerantFlow_Impl>()->resetPipingCorrectionFactorforLengthinHeatingModeCurve();
+  }
+
+  double AirConditionerVariableRefrigerantFlow::pipingCorrectionFactorforHeightinHeatingModeCoefficient() const {
+    return getImpl<detail::AirConditionerVariableRefrigerantFlow_Impl>()->pipingCorrectionFactorforHeightinHeatingModeCoefficient();
+  }
+
+  bool AirConditionerVariableRefrigerantFlow::setPipingCorrectionFactorforHeightinHeatingModeCoefficient(
+    double pipingCorrectionFactorforHeightinHeatingModeCoefficient) {
+    return getImpl<detail::AirConditionerVariableRefrigerantFlow_Impl>()->setPipingCorrectionFactorforHeightinHeatingModeCoefficient(
+      pipingCorrectionFactorforHeightinHeatingModeCoefficient);
+  }
+
   int AirConditionerVariableRefrigerantFlow::numberofCompressors() const {
     return getImpl<detail::AirConditionerVariableRefrigerantFlow_Impl>()->numberofCompressors();
   }
@@ -700,22 +779,50 @@ namespace epmodel {
     void AirConditionerVariableRefrigerantFlow_Impl::doCanonicalize(LoadContext& context) {
       StraightComponent_Impl::doCanonicalize(context);
 
-      constexpr auto field = openstudio::AirConditioner_VariableRefrigerantFlowFields::AvailabilityScheduleName;
-      const auto raw = openstudio::detail::IdfObject_Impl::getString(field, false, true);
-      if (raw && !raw->empty()) {
-        return;
-      }
-      if (getObject<ModelObject>().getModelObjectTarget<Schedule>(field)) {
-        return;
+      constexpr auto availabilityField = openstudio::AirConditioner_VariableRefrigerantFlowFields::AvailabilityScheduleName;
+      const auto rawAvailability = openstudio::detail::IdfObject_Impl::getString(availabilityField, false, true);
+      if ((!rawAvailability || rawAvailability->empty()) && !getObject<ModelObject>().getModelObjectTarget<Schedule>(availabilityField)) {
+        auto alwaysOn = model().alwaysOnDiscreteSchedule();
+        if (setAvailabilitySchedule(alwaysOn)) {
+          detail::addLoadInfo(context, "Attached the always-on availability schedule to AirConditioner:VariableRefrigerantFlow '"
+                                         + getObject<ModelObject>().nameString() + "'.");
+        } else {
+          detail::addLoadError(context, "Failed to attach the always-on availability schedule to AirConditioner:VariableRefrigerantFlow '"
+                                          + getObject<ModelObject>().nameString() + "'.");
+        }
       }
 
-      auto alwaysOn = model().alwaysOnDiscreteSchedule();
-      if (setAvailabilitySchedule(alwaysOn)) {
-        detail::addLoadInfo(context, "Attached the always-on availability schedule to AirConditioner:VariableRefrigerantFlow '"
-                                       + getObject<ModelObject>().nameString() + "'.");
-      } else {
-        detail::addLoadError(context, "Failed to attach the always-on availability schedule to AirConditioner:VariableRefrigerantFlow '"
-                                        + getObject<ModelObject>().nameString() + "'.");
+      struct CanonicalScalar
+      {
+        unsigned field;
+        double value;
+        const char* name;
+      };
+      constexpr std::array<CanonicalScalar, 5> canonicalScalars = {{
+        {openstudio::AirConditioner_VariableRefrigerantFlowFields::EquivalentPipingLengthusedforPipingCorrectionFactorinCoolingMode, 30.0,
+         "cooling equivalent piping length"},
+        {openstudio::AirConditioner_VariableRefrigerantFlowFields::VerticalHeightusedforPipingCorrectionFactor, 10.0,
+         "piping correction vertical height"},
+        {openstudio::AirConditioner_VariableRefrigerantFlowFields::PipingCorrectionFactorforHeightinCoolingModeCoefficient, -0.000386,
+         "cooling piping height coefficient"},
+        {openstudio::AirConditioner_VariableRefrigerantFlowFields::EquivalentPipingLengthusedforPipingCorrectionFactorinHeatingMode, 30.0,
+         "heating equivalent piping length"},
+        {openstudio::AirConditioner_VariableRefrigerantFlowFields::PipingCorrectionFactorforHeightinHeatingModeCoefficient, 0.0,
+         "heating piping height coefficient"},
+      }};
+
+      for (const auto& scalar : canonicalScalars) {
+        // Inspect concrete storage so the EnergyPlus N13 default of zero cannot mask the canonical Model value.
+        if (getDouble(scalar.field, false)) {
+          continue;
+        }
+        if (setDouble(scalar.field, scalar.value)) {
+          detail::addLoadInfo(context, "Restored the canonical " + std::string(scalar.name) + " on AirConditioner:VariableRefrigerantFlow '"
+                                         + getObject<ModelObject>().nameString() + "'.");
+        } else {
+          detail::addLoadError(context, "Failed to restore the canonical " + std::string(scalar.name) + " on AirConditioner:VariableRefrigerantFlow '"
+                                          + getObject<ModelObject>().nameString() + "'.");
+        }
       }
     }
 
@@ -1151,6 +1258,102 @@ namespace epmodel {
         setString(openstudio::AirConditioner_VariableRefrigerantFlowFields::HeatPumpWasteHeatRecovery, heatPumpWasteHeatRecovery ? "Yes" : "No");
       OS_ASSERT(result);
       return result;
+    }
+
+    double AirConditionerVariableRefrigerantFlow_Impl::equivalentPipingLengthusedforPipingCorrectionFactorinCoolingMode() const {
+      const auto value =
+        getDouble(openstudio::AirConditioner_VariableRefrigerantFlowFields::EquivalentPipingLengthusedforPipingCorrectionFactorinCoolingMode, true);
+      OS_ASSERT(value);
+      return *value;
+    }
+
+    bool AirConditionerVariableRefrigerantFlow_Impl::setEquivalentPipingLengthusedforPipingCorrectionFactorinCoolingMode(
+      double equivalentPipingLengthusedforPipingCorrectionFactorinCoolingMode) {
+      return setDouble(openstudio::AirConditioner_VariableRefrigerantFlowFields::EquivalentPipingLengthusedforPipingCorrectionFactorinCoolingMode,
+                       equivalentPipingLengthusedforPipingCorrectionFactorinCoolingMode);
+    }
+
+    double AirConditionerVariableRefrigerantFlow_Impl::verticalHeightusedforPipingCorrectionFactor() const {
+      const auto value = getDouble(openstudio::AirConditioner_VariableRefrigerantFlowFields::VerticalHeightusedforPipingCorrectionFactor, true);
+      OS_ASSERT(value);
+      return *value;
+    }
+
+    bool
+      AirConditionerVariableRefrigerantFlow_Impl::setVerticalHeightusedforPipingCorrectionFactor(double verticalHeightusedforPipingCorrectionFactor) {
+      return setDouble(openstudio::AirConditioner_VariableRefrigerantFlowFields::VerticalHeightusedforPipingCorrectionFactor,
+                       verticalHeightusedforPipingCorrectionFactor);
+    }
+
+    boost::optional<Curve> AirConditionerVariableRefrigerantFlow_Impl::pipingCorrectionFactorforLengthinCoolingModeCurve() const {
+      return getObject<ModelObject>().getModelObjectTarget<Curve>(
+        openstudio::AirConditioner_VariableRefrigerantFlowFields::PipingCorrectionFactorforLengthinCoolingModeCurveName);
+    }
+
+    bool AirConditionerVariableRefrigerantFlow_Impl::setPipingCorrectionFactorforLengthinCoolingModeCurve(const Curve& curve) {
+      constexpr auto field = openstudio::AirConditioner_VariableRefrigerantFlowFields::PipingCorrectionFactorforLengthinCoolingModeCurveName;
+      return setValidatedCurve(field, curve, "cooling piping length correction curve");
+    }
+
+    void AirConditionerVariableRefrigerantFlow_Impl::resetPipingCorrectionFactorforLengthinCoolingModeCurve() {
+      constexpr auto field = openstudio::AirConditioner_VariableRefrigerantFlowFields::PipingCorrectionFactorforLengthinCoolingModeCurveName;
+      OS_ASSERT(setPointer(field, Handle(), false));
+      OS_ASSERT(openstudio::detail::IdfObject_Impl::setString(field, "", false));
+    }
+
+    double AirConditionerVariableRefrigerantFlow_Impl::pipingCorrectionFactorforHeightinCoolingModeCoefficient() const {
+      const auto value =
+        getDouble(openstudio::AirConditioner_VariableRefrigerantFlowFields::PipingCorrectionFactorforHeightinCoolingModeCoefficient, true);
+      OS_ASSERT(value);
+      return *value;
+    }
+
+    bool AirConditionerVariableRefrigerantFlow_Impl::setPipingCorrectionFactorforHeightinCoolingModeCoefficient(
+      double pipingCorrectionFactorforHeightinCoolingModeCoefficient) {
+      return setDouble(openstudio::AirConditioner_VariableRefrigerantFlowFields::PipingCorrectionFactorforHeightinCoolingModeCoefficient,
+                       pipingCorrectionFactorforHeightinCoolingModeCoefficient);
+    }
+
+    double AirConditionerVariableRefrigerantFlow_Impl::equivalentPipingLengthusedforPipingCorrectionFactorinHeatingMode() const {
+      const auto value =
+        getDouble(openstudio::AirConditioner_VariableRefrigerantFlowFields::EquivalentPipingLengthusedforPipingCorrectionFactorinHeatingMode, true);
+      OS_ASSERT(value);
+      return *value;
+    }
+
+    bool AirConditionerVariableRefrigerantFlow_Impl::setEquivalentPipingLengthusedforPipingCorrectionFactorinHeatingMode(
+      double equivalentPipingLengthusedforPipingCorrectionFactorinHeatingMode) {
+      return setDouble(openstudio::AirConditioner_VariableRefrigerantFlowFields::EquivalentPipingLengthusedforPipingCorrectionFactorinHeatingMode,
+                       equivalentPipingLengthusedforPipingCorrectionFactorinHeatingMode);
+    }
+
+    boost::optional<Curve> AirConditionerVariableRefrigerantFlow_Impl::pipingCorrectionFactorforLengthinHeatingModeCurve() const {
+      return getObject<ModelObject>().getModelObjectTarget<Curve>(
+        openstudio::AirConditioner_VariableRefrigerantFlowFields::PipingCorrectionFactorforLengthinHeatingModeCurveName);
+    }
+
+    bool AirConditionerVariableRefrigerantFlow_Impl::setPipingCorrectionFactorforLengthinHeatingModeCurve(const Curve& curve) {
+      constexpr auto field = openstudio::AirConditioner_VariableRefrigerantFlowFields::PipingCorrectionFactorforLengthinHeatingModeCurveName;
+      return setValidatedCurve(field, curve, "heating piping length correction curve");
+    }
+
+    void AirConditionerVariableRefrigerantFlow_Impl::resetPipingCorrectionFactorforLengthinHeatingModeCurve() {
+      constexpr auto field = openstudio::AirConditioner_VariableRefrigerantFlowFields::PipingCorrectionFactorforLengthinHeatingModeCurveName;
+      OS_ASSERT(setPointer(field, Handle(), false));
+      OS_ASSERT(openstudio::detail::IdfObject_Impl::setString(field, "", false));
+    }
+
+    double AirConditionerVariableRefrigerantFlow_Impl::pipingCorrectionFactorforHeightinHeatingModeCoefficient() const {
+      const auto value =
+        getDouble(openstudio::AirConditioner_VariableRefrigerantFlowFields::PipingCorrectionFactorforHeightinHeatingModeCoefficient, true);
+      OS_ASSERT(value);
+      return *value;
+    }
+
+    bool AirConditionerVariableRefrigerantFlow_Impl::setPipingCorrectionFactorforHeightinHeatingModeCoefficient(
+      double pipingCorrectionFactorforHeightinHeatingModeCoefficient) {
+      return setDouble(openstudio::AirConditioner_VariableRefrigerantFlowFields::PipingCorrectionFactorforHeightinHeatingModeCoefficient,
+                       pipingCorrectionFactorforHeightinHeatingModeCoefficient);
     }
 
     int AirConditionerVariableRefrigerantFlow_Impl::numberofCompressors() const {
