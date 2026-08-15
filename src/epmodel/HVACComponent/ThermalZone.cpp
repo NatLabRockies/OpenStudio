@@ -40,6 +40,7 @@
 #include "ModelObject/ZoneControlContaminantController_Impl.hpp"
 #include "ModelObject/ZoneControlHumidistat.hpp"
 #include "ModelObject/ZoneControlHumidistat_Impl.hpp"
+#include "Schedule/Schedule.hpp"
 #include "Thermostat/Thermostat.hpp"
 #include "Thermostat/ThermostatSetpointDualSetpoint_Impl.hpp"
 #include "Thermostat/ThermostatSetpointDualSetpoint.hpp"
@@ -1343,13 +1344,13 @@ namespace epmodel {
         return false;
       }
 
-      if (auto current = zoneControlHumidistat()) {
-        if (*current == humidistat) {
-          return true;
-        }
+      auto current = zoneControlHumidistat();
+      if (current && (*current == humidistat)) {
+        return true;
       }
 
       auto assigned = humidistat;
+      boost::optional<openstudio::epmodel::ZoneControlHumidistat> stagedClone;
       const auto zone = getObject<openstudio::epmodel::ThermalZone>();
       if (auto zoneName = humidistat.getString(openstudio::ZoneControl_HumidistatFields::ZoneName, true)) {
         if (!zoneName->empty() && !openstudio::istringEqual(*zoneName, zone.nameString())) {
@@ -1358,17 +1359,42 @@ namespace epmodel {
             return false;
           }
           assigned = clonedObject->cast<openstudio::epmodel::ZoneControlHumidistat>();
+          stagedClone = assigned;
+          if (auto humidifying = humidistat.humidifyingRelativeHumiditySetpointSchedule();
+              humidifying && !assigned.setHumidifyingRelativeHumiditySetpointSchedule(*humidifying)) {
+            stagedClone->remove();
+            return false;
+          }
+          if (auto dehumidifying = humidistat.dehumidifyingRelativeHumiditySetpointSchedule();
+              dehumidifying && !assigned.setDehumidifyingRelativeHumiditySetpointSchedule(*dehumidifying)) {
+            stagedClone->remove();
+            return false;
+          }
         }
       }
 
-      resetZoneControlHumidistat();
-      return assigned.setPointer(openstudio::ZoneControl_HumidistatFields::ZoneName, zone.handle());
+      if (!assigned.setPointer(openstudio::ZoneControl_HumidistatFields::ZoneName, zone.handle())) {
+        if (stagedClone) {
+          stagedClone->remove();
+        }
+        return false;
+      }
+
+      if (current) {
+        current->remove();
+      }
+      return true;
     }
 
     void ThermalZone_Impl::resetZoneControlHumidistat() {
       if (auto humidistat = zoneControlHumidistat()) {
-        OS_ASSERT(humidistat->setString(openstudio::ZoneControl_HumidistatFields::ZoneName, ""));
+        humidistat->remove();
       }
+    }
+
+    std::vector<openstudio::IdfObject> ThermalZone_Impl::remove() {
+      resetZoneControlHumidistat();
+      return ModelObject_Impl::remove();
     }
 
     boost::optional<openstudio::epmodel::ZoneControlContaminantController> ThermalZone_Impl::zoneControlContaminantController() const {

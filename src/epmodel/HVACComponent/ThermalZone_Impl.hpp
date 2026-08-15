@@ -99,6 +99,8 @@ namespace epmodel {
       bool setZoneControlHumidistat(const openstudio::epmodel::ZoneControlHumidistat& humidistat);
       void resetZoneControlHumidistat();
 
+      std::vector<openstudio::IdfObject> remove() override;
+
       boost::optional<openstudio::epmodel::ZoneControlContaminantController> zoneControlContaminantController() const;
       bool setZoneControlContaminantController(const openstudio::epmodel::ZoneControlContaminantController& contaminantController);
       void resetZoneControlContaminantController();
