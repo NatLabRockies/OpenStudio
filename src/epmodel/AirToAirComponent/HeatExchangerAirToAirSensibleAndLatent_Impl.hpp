@@ -13,6 +13,9 @@
 namespace openstudio {
 namespace epmodel {
 
+  class Schedule;
+  class Curve;
+
   namespace detail {
 
     class EPMODEL_API HeatExchangerAirToAirSensibleAndLatent_Impl : public AirToAirComponent_Impl
@@ -22,6 +25,25 @@ namespace epmodel {
       HeatExchangerAirToAirSensibleAndLatent_Impl(const openstudio::detail::WorkspaceObject_Impl& other, Model_Impl* model, bool keepHandle);
       HeatExchangerAirToAirSensibleAndLatent_Impl(const HeatExchangerAirToAirSensibleAndLatent_Impl& other, Model_Impl* model, bool keepHandle);
       virtual ~HeatExchangerAirToAirSensibleAndLatent_Impl() override = default;
+
+      Schedule availabilitySchedule() const;
+      bool setAvailabilitySchedule(Schedule& schedule);
+
+      boost::optional<Curve> sensibleEffectivenessofHeatingAirFlowCurve() const;
+      bool setSensibleEffectivenessofHeatingAirFlowCurve(const Curve& curve);
+      void resetSensibleEffectivenessofHeatingAirFlowCurve();
+
+      boost::optional<Curve> latentEffectivenessofHeatingAirFlowCurve() const;
+      bool setLatentEffectivenessofHeatingAirFlowCurve(const Curve& curve);
+      void resetLatentEffectivenessofHeatingAirFlowCurve();
+
+      boost::optional<Curve> sensibleEffectivenessofCoolingAirFlowCurve() const;
+      bool setSensibleEffectivenessofCoolingAirFlowCurve(const Curve& curve);
+      void resetSensibleEffectivenessofCoolingAirFlowCurve();
+
+      boost::optional<Curve> latentEffectivenessofCoolingAirFlowCurve() const;
+      bool setLatentEffectivenessofCoolingAirFlowCurve(const Curve& curve);
+      void resetLatentEffectivenessofCoolingAirFlowCurve();
 
       boost::optional<double> nominalSupplyAirFlowRate() const;
       bool setNominalSupplyAirFlowRate(double nominalSupplyAirFlowRate);
@@ -72,6 +94,9 @@ namespace epmodel {
       unsigned primaryAirOutletPort() const override;
       unsigned secondaryAirInletPort() const override;
       unsigned secondaryAirOutletPort() const override;
+
+     protected:
+      void doCanonicalize(LoadContext& context) override;
 
      private:
       std::vector<std::string> heatExchangerTypeValues() const;

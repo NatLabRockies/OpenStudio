@@ -18,6 +18,8 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class Schedule;
+  class Curve;
 
   namespace detail {
     class HeatExchangerAirToAirSensibleAndLatent_Impl;
@@ -39,14 +41,36 @@ namespace epmodel {
     static std::vector<std::string> heatExchangerTypeValues();
     static std::vector<std::string> frostControlTypeValues();
 
+    Schedule availabilitySchedule() const;
+    bool setAvailabilitySchedule(Schedule& schedule);
+
+    boost::optional<Curve> sensibleEffectivenessofHeatingAirFlowCurve() const;
+    bool setSensibleEffectivenessofHeatingAirFlowCurve(const Curve& curve);
+    void resetSensibleEffectivenessofHeatingAirFlowCurve();
+
+    boost::optional<Curve> latentEffectivenessofHeatingAirFlowCurve() const;
+    bool setLatentEffectivenessofHeatingAirFlowCurve(const Curve& curve);
+    void resetLatentEffectivenessofHeatingAirFlowCurve();
+
+    boost::optional<Curve> sensibleEffectivenessofCoolingAirFlowCurve() const;
+    bool setSensibleEffectivenessofCoolingAirFlowCurve(const Curve& curve);
+    void resetSensibleEffectivenessofCoolingAirFlowCurve();
+
+    boost::optional<Curve> latentEffectivenessofCoolingAirFlowCurve() const;
+    bool setLatentEffectivenessofCoolingAirFlowCurve(const Curve& curve);
+    void resetLatentEffectivenessofCoolingAirFlowCurve();
+
     // Schema Alignment Notes:
-    // - Status: Partial Parity. Scalar effectiveness and control fields are aligned, but the canonical relationship/performance-surface is still incomplete.
+    // - Status: Partial Parity. The direct EnergyPlus schedule and effectiveness-curve relationships are aligned.
     // - Canonical Counterpart: openstudio::model::HeatExchangerAirToAirSensibleAndLatent.
-    // - Implemented Parity: The scalar effectiveness, frost-control, defrost, and economizer-lockout accessors preserve the canonical model-facing field semantics. Outdoor-air-system placement and removal coordinate all four air ports as one component; a dedicated system keeps its mixer outlet on the secondary inlet through save/load and later mutation.
-    // - Documented Delta: Epmodel does not yet expose the canonical availability schedule, curve/table relationship APIs, or the historical 75% effectiveness compatibility helpers that remain part of `openstudio::model`.
+    // - Implemented Parity: The required availability schedule, four optional effectiveness curves, scalar effectiveness, frost-control, defrost,
+    //   and economizer-lockout accessors preserve the canonical model-facing field semantics. Outdoor-air-system placement and removal coordinate
+    //   all four air ports as one component; a dedicated system keeps its mixer outlet on the secondary inlet through save/load and later mutation.
+    // - Documented Delta: Historical 75% effectiveness compatibility helpers and airflow-network helpers are not exposed.
     // - Field/Storage Mapping: Preserved scalar APIs map directly to `HeatExchanger:AirToAir:SensibleAndLatent` fields in EnergyPlus storage. One outdoor-air equipment-list row participates in both the outdoor and relief traversals through its primary and secondary node fields.
     // - Evidence: `src/model/HeatExchangerAirToAirSensibleAndLatent.hpp`, `src/model/HeatExchangerAirToAirSensibleAndLatent.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateHeatExchangerAirToAirSensibleAndLatent.cpp`, and `src/epmodel/test/HeatExchangerAirToAirSensibleAndLatent_GTest.cpp` define and exercise the selected scalar and two-stream behavior.
-    // - Remaining Parity Work: Add the schedule and curve/table relationship APIs, compatibility helpers, arbitrary multi-heat-exchanger ordering evidence, and performance/numerical validation when the corresponding workflows require them.
+    // - Remaining Parity Work: Add compatibility and airflow-network helpers, arbitrary multi-heat-exchanger ordering evidence, and numerical
+    //   performance validation when a workflow requires them.
     /** @name Field Accessors */
     //@{
 
