@@ -18,6 +18,7 @@ namespace epmodel {
 
   class Curve;
   class Schedule;
+  class ThermalZone;
 
   namespace detail {
 
@@ -113,6 +114,18 @@ namespace epmodel {
       boost::optional<Schedule> pumpRPMSchedule() const;
       bool setPumpRPMSchedule(Schedule& schedule);
       void resetPumpRPMSchedule();
+
+      boost::optional<Schedule> minimumRPMSchedule() const;
+      bool setMinimumRPMSchedule(Schedule& schedule);
+      void resetMinimumRPMSchedule();
+
+      boost::optional<Schedule> maximumRPMSchedule() const;
+      bool setMaximumRPMSchedule(Schedule& schedule);
+      void resetMaximumRPMSchedule();
+
+      boost::optional<ThermalZone> zone() const;
+      bool setZone(const ThermalZone& thermalZone);
+      void resetZone();
 
       boost::optional<Schedule> minimumPressureSchedule() const;
       bool setMinimumPressureSchedule(Schedule& schedule);

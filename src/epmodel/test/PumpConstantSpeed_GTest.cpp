@@ -9,6 +9,8 @@
 #include "../Curve/CurveBiquadratic.hpp"
 #include "../Curve/CurveLinear.hpp"
 #include "../Curve/CurveLinear_Impl.hpp"
+#include "../HVACComponent/ThermalZone.hpp"
+#include "../HVACComponent/ThermalZone_Impl.hpp"
 #include "../Loop/AirLoopHVAC.hpp"
 #include "../Loop/PlantLoop.hpp"
 #include "../ResourceObject/ScheduleTypeLimits.hpp"
@@ -82,21 +84,28 @@ TEST_F(EPModelFixture, PumpConstantSpeed_RelationshipAccessors_RoundTripAndReset
   PumpConstantSpeed pump(model);
   ScheduleConstant flowSchedule(model);
   CurveLinear pumpCurve(model);
+  ThermalZone zone(model);
 
   EXPECT_FALSE(pump.pumpFlowRateSchedule());
   EXPECT_FALSE(pump.pumpCurve());
+  EXPECT_FALSE(pump.zone());
 
   EXPECT_TRUE(pump.setPumpFlowRateSchedule(flowSchedule));
   EXPECT_TRUE(pump.setPumpCurve(pumpCurve));
+  EXPECT_TRUE(pump.setZone(zone));
   ASSERT_TRUE(pump.pumpFlowRateSchedule());
   ASSERT_TRUE(pump.pumpCurve());
+  ASSERT_TRUE(pump.zone());
   EXPECT_EQ(flowSchedule.handle(), pump.pumpFlowRateSchedule()->handle());
   EXPECT_EQ(pumpCurve.handle(), pump.pumpCurve()->handle());
+  EXPECT_EQ(zone.handle(), pump.zone()->handle());
 
   pump.resetPumpFlowRateSchedule();
   pump.resetPumpCurve();
+  pump.resetZone();
   EXPECT_FALSE(pump.pumpFlowRateSchedule());
   EXPECT_FALSE(pump.pumpCurve());
+  EXPECT_FALSE(pump.zone());
 }
 
 TEST_F(EPModelFixture, PumpConstantSpeed_RelationshipSetters_RejectInvalidTargetsWithoutChangingOldTargetOrRawText) {
@@ -104,18 +113,24 @@ TEST_F(EPModelFixture, PumpConstantSpeed_RelationshipSetters_RejectInvalidTarget
   PumpConstantSpeed pump(model);
   ScheduleConstant flowSchedule(model);
   CurveLinear pumpCurve(model);
+  ThermalZone zone(model);
   ASSERT_TRUE(pump.setPumpFlowRateSchedule(flowSchedule));
   ASSERT_TRUE(pump.setPumpCurve(pumpCurve));
+  ASSERT_TRUE(pump.setZone(zone));
 
   Model foreignModel;
   ScheduleConstant foreignSchedule(foreignModel);
   CurveLinear foreignCurve(foreignModel);
+  ThermalZone foreignZone(foreignModel);
   EXPECT_FALSE(pump.setPumpFlowRateSchedule(foreignSchedule));
   EXPECT_FALSE(pump.setPumpCurve(foreignCurve));
+  EXPECT_FALSE(pump.setZone(foreignZone));
   ASSERT_TRUE(pump.pumpFlowRateSchedule());
   ASSERT_TRUE(pump.pumpCurve());
+  ASSERT_TRUE(pump.zone());
   EXPECT_EQ(flowSchedule.handle(), pump.pumpFlowRateSchedule()->handle());
   EXPECT_EQ(pumpCurve.handle(), pump.pumpCurve()->handle());
+  EXPECT_EQ(zone.handle(), pump.zone()->handle());
 
   ScheduleConstant incompatibleFlowSchedule(model);
   ScheduleTypeLimits incompatibleFlowLimits(model);
@@ -134,14 +149,19 @@ TEST_F(EPModelFixture, PumpConstantSpeed_RelationshipSetters_RejectInvalidTarget
   ASSERT_TRUE(pumpWorkspaceImpl);
   ASSERT_TRUE(pumpWorkspaceImpl->setPointer(openstudio::Pump_ConstantSpeedFields::PumpFlowRateScheduleName, openstudio::Handle(), false));
   ASSERT_TRUE(pumpWorkspaceImpl->setPointer(openstudio::Pump_ConstantSpeedFields::PumpCurveName, openstudio::Handle(), false));
+  ASSERT_TRUE(pumpWorkspaceImpl->setPointer(openstudio::Pump_ConstantSpeedFields::ZoneName, openstudio::Handle(), false));
   ASSERT_TRUE(pumpWorkspaceImpl->openstudio::detail::IdfObject_Impl::setString(openstudio::Pump_ConstantSpeedFields::PumpFlowRateScheduleName,
                                                                                "Unresolved Flow Schedule", false));
   ASSERT_TRUE(pumpWorkspaceImpl->openstudio::detail::IdfObject_Impl::setString(openstudio::Pump_ConstantSpeedFields::PumpCurveName,
                                                                                "Unresolved Pump Curve", false));
+  ASSERT_TRUE(
+    pumpWorkspaceImpl->openstudio::detail::IdfObject_Impl::setString(openstudio::Pump_ConstantSpeedFields::ZoneName, "Unresolved Zone", false));
   EXPECT_FALSE(pump.setPumpFlowRateSchedule(incompatibleFlowSchedule));
   EXPECT_FALSE(pump.setPumpCurve(incompatiblePumpCurve));
+  EXPECT_FALSE(pump.setZone(foreignZone));
   EXPECT_FALSE(pump.pumpFlowRateSchedule());
   EXPECT_FALSE(pump.pumpCurve());
+  EXPECT_FALSE(pump.zone());
   EXPECT_EQ(
     "Unresolved Flow Schedule",
     pumpWorkspaceImpl->openstudio::detail::IdfObject_Impl::getString(openstudio::Pump_ConstantSpeedFields::PumpFlowRateScheduleName, false, true)
@@ -149,6 +169,9 @@ TEST_F(EPModelFixture, PumpConstantSpeed_RelationshipSetters_RejectInvalidTarget
   EXPECT_EQ(
     "Unresolved Pump Curve",
     pumpWorkspaceImpl->openstudio::detail::IdfObject_Impl::getString(openstudio::Pump_ConstantSpeedFields::PumpCurveName, false, true).value_or(""));
+  EXPECT_EQ(
+    "Unresolved Zone",
+    pumpWorkspaceImpl->openstudio::detail::IdfObject_Impl::getString(openstudio::Pump_ConstantSpeedFields::ZoneName, false, true).value_or(""));
 }
 
 TEST_F(EPModelFixture, PumpConstantSpeed_Relationships_SaveLoadIdentityByName) {
@@ -161,11 +184,14 @@ TEST_F(EPModelFixture, PumpConstantSpeed_Relationships_SaveLoadIdentityByName) {
   PumpConstantSpeed pump(model);
   ScheduleConstant flowSchedule(model);
   CurveLinear pumpCurve(model);
+  ThermalZone zone(model);
   ASSERT_TRUE(pump.setName("Relationship Pump"));
   ASSERT_TRUE(flowSchedule.setName("Pump Flow Schedule"));
   ASSERT_TRUE(pumpCurve.setName("Pump Pressure Curve"));
+  ASSERT_TRUE(zone.setName("Pump Zone"));
   ASSERT_TRUE(pump.setPumpFlowRateSchedule(flowSchedule));
   ASSERT_TRUE(pump.setPumpCurve(pumpCurve));
+  ASSERT_TRUE(pump.setZone(zone));
   ASSERT_TRUE(model.save(idfPath, true));
 
   auto loadedModel = Model::load(idfPath);
@@ -173,13 +199,33 @@ TEST_F(EPModelFixture, PumpConstantSpeed_Relationships_SaveLoadIdentityByName) {
   auto loadedPump = loadedModel->getConcreteModelObjectByName<PumpConstantSpeed>("Relationship Pump");
   auto loadedFlowSchedule = loadedModel->getConcreteModelObjectByName<ScheduleConstant>("Pump Flow Schedule");
   auto loadedPumpCurve = loadedModel->getConcreteModelObjectByName<CurveLinear>("Pump Pressure Curve");
+  auto loadedZone = loadedModel->getConcreteModelObjectByName<ThermalZone>("Pump Zone");
   ASSERT_TRUE(loadedPump);
   ASSERT_TRUE(loadedFlowSchedule);
   ASSERT_TRUE(loadedPumpCurve);
+  ASSERT_TRUE(loadedZone);
   ASSERT_TRUE(loadedPump->pumpFlowRateSchedule());
   ASSERT_TRUE(loadedPump->pumpCurve());
+  ASSERT_TRUE(loadedPump->zone());
   EXPECT_EQ(loadedFlowSchedule->handle(), loadedPump->pumpFlowRateSchedule()->handle());
   EXPECT_EQ(loadedPumpCurve->handle(), loadedPump->pumpCurve()->handle());
+  EXPECT_EQ(loadedZone->handle(), loadedPump->zone()->handle());
+
+  ThermalZone replacementZone(*loadedModel);
+  ASSERT_TRUE(replacementZone.setName("Replacement Pump Zone"));
+  ASSERT_TRUE(loadedPump->setZone(replacementZone));
+  loadedPump->resetPumpFlowRateSchedule();
+  ASSERT_TRUE(loadedModel->save(idfPath, true));
+
+  auto reloadedModel = Model::load(idfPath);
+  ASSERT_TRUE(reloadedModel);
+  auto reloadedPump = reloadedModel->getConcreteModelObjectByName<PumpConstantSpeed>("Relationship Pump");
+  auto reloadedZone = reloadedModel->getConcreteModelObjectByName<ThermalZone>("Replacement Pump Zone");
+  ASSERT_TRUE(reloadedPump);
+  ASSERT_TRUE(reloadedZone);
+  EXPECT_FALSE(reloadedPump->pumpFlowRateSchedule());
+  ASSERT_TRUE(reloadedPump->zone());
+  EXPECT_EQ(reloadedZone->handle(), reloadedPump->zone()->handle());
 }
 
 TEST_F(EPModelFixture, PumpConstantSpeed_AddToNode) {

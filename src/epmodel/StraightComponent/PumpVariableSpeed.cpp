@@ -8,6 +8,8 @@
 
 #include "Curve/Curve.hpp"
 #include "Curve/Curve_Impl.hpp"
+#include "HVACComponent/ThermalZone.hpp"
+#include "HVACComponent/ThermalZone_Impl.hpp"
 #include "Loop/PlantLoop.hpp"
 #include "Loop/PlantLoop_Impl.hpp"
 #include "Node.hpp"
@@ -16,6 +18,7 @@
 #include "Schedule/Schedule_Impl.hpp"
 
 #include <utilities/core/Assert.hpp>
+#include <utilities/core/Logger.hpp>
 #include <utilities/core/StringHelpers.hpp>
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/IddFactory.hxx>
@@ -311,6 +314,42 @@ namespace epmodel {
 
   void PumpVariableSpeed::resetPumpRPMSchedule() {
     getImpl<detail::PumpVariableSpeed_Impl>()->resetPumpRPMSchedule();
+  }
+
+  boost::optional<Schedule> PumpVariableSpeed::minimumRPMSchedule() const {
+    return getImpl<detail::PumpVariableSpeed_Impl>()->minimumRPMSchedule();
+  }
+
+  bool PumpVariableSpeed::setMinimumRPMSchedule(Schedule& schedule) {
+    return getImpl<detail::PumpVariableSpeed_Impl>()->setMinimumRPMSchedule(schedule);
+  }
+
+  void PumpVariableSpeed::resetMinimumRPMSchedule() {
+    getImpl<detail::PumpVariableSpeed_Impl>()->resetMinimumRPMSchedule();
+  }
+
+  boost::optional<Schedule> PumpVariableSpeed::maximumRPMSchedule() const {
+    return getImpl<detail::PumpVariableSpeed_Impl>()->maximumRPMSchedule();
+  }
+
+  bool PumpVariableSpeed::setMaximumRPMSchedule(Schedule& schedule) {
+    return getImpl<detail::PumpVariableSpeed_Impl>()->setMaximumRPMSchedule(schedule);
+  }
+
+  void PumpVariableSpeed::resetMaximumRPMSchedule() {
+    getImpl<detail::PumpVariableSpeed_Impl>()->resetMaximumRPMSchedule();
+  }
+
+  boost::optional<ThermalZone> PumpVariableSpeed::zone() const {
+    return getImpl<detail::PumpVariableSpeed_Impl>()->zone();
+  }
+
+  bool PumpVariableSpeed::setZone(const ThermalZone& thermalZone) {
+    return getImpl<detail::PumpVariableSpeed_Impl>()->setZone(thermalZone);
+  }
+
+  void PumpVariableSpeed::resetZone() {
+    getImpl<detail::PumpVariableSpeed_Impl>()->resetZone();
   }
 
   boost::optional<Schedule> PumpVariableSpeed::minimumPressureSchedule() const {
@@ -740,6 +779,57 @@ namespace epmodel {
       OS_ASSERT(setPointer(openstudio::Pump_VariableSpeedFields::PumpRPMScheduleName, Handle(), false));
     }
 
+    boost::optional<Schedule> PumpVariableSpeed_Impl::minimumRPMSchedule() const {
+      return getObject<ModelObject>().getModelObjectTarget<Schedule>(openstudio::Pump_VariableSpeedFields::MinimumRPMSchedule);
+    }
+
+    bool PumpVariableSpeed_Impl::setMinimumRPMSchedule(Schedule& schedule) {
+      return setSchedule(openstudio::Pump_VariableSpeedFields::MinimumRPMSchedule, "PumpVariableSpeed", "Minimum RPM", schedule);
+    }
+
+    void PumpVariableSpeed_Impl::resetMinimumRPMSchedule() {
+      OS_ASSERT(setPointer(openstudio::Pump_VariableSpeedFields::MinimumRPMSchedule, Handle(), false));
+    }
+
+    boost::optional<Schedule> PumpVariableSpeed_Impl::maximumRPMSchedule() const {
+      return getObject<ModelObject>().getModelObjectTarget<Schedule>(openstudio::Pump_VariableSpeedFields::MaximumRPMSchedule);
+    }
+
+    bool PumpVariableSpeed_Impl::setMaximumRPMSchedule(Schedule& schedule) {
+      return setSchedule(openstudio::Pump_VariableSpeedFields::MaximumRPMSchedule, "PumpVariableSpeed", "Maximum RPM", schedule);
+    }
+
+    void PumpVariableSpeed_Impl::resetMaximumRPMSchedule() {
+      OS_ASSERT(setPointer(openstudio::Pump_VariableSpeedFields::MaximumRPMSchedule, Handle(), false));
+    }
+
+    boost::optional<ThermalZone> PumpVariableSpeed_Impl::zone() const {
+      return getObject<ModelObject>().getModelObjectTarget<ThermalZone>(openstudio::Pump_VariableSpeedFields::ZoneName);
+    }
+
+    bool PumpVariableSpeed_Impl::setZone(const ThermalZone& thermalZone) {
+      if (thermalZone.model() != model()) {
+        LOG_FREE(Warn, "openstudio.epmodel.PumpVariableSpeed", "Cannot set the zone because the thermal zone belongs to a different model.");
+        return false;
+      }
+
+      const auto field = openstudio::Pump_VariableSpeedFields::ZoneName;
+      if (!model().canBeTarget(thermalZone.handle(), iddObject().objectLists(field))) {
+        LOG_FREE(Warn, "openstudio.epmodel.PumpVariableSpeed",
+                 "Cannot set the zone because ThermalZone is not accepted by the Pump:VariableSpeed zone field.");
+        return false;
+      }
+
+      if (!setPointer(field, thermalZone.handle(), false)) {
+        LOG_FREE(Warn, "openstudio.epmodel.PumpVariableSpeed", "Failed to set the zone relationship.");
+        return false;
+      }
+      return true;
+    }
+
+    void PumpVariableSpeed_Impl::resetZone() {
+      OS_ASSERT(setPointer(openstudio::Pump_VariableSpeedFields::ZoneName, Handle(), false));
+    }
     boost::optional<Schedule> PumpVariableSpeed_Impl::minimumPressureSchedule() const {
       return getObject<ModelObject>().getModelObjectTarget<Schedule>(openstudio::Pump_VariableSpeedFields::MinimumPressureSchedule);
     }

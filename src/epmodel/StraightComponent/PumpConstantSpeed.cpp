@@ -8,6 +8,8 @@
 
 #include "Curve/Curve.hpp"
 #include "Curve/Curve_Impl.hpp"
+#include "HVACComponent/ThermalZone.hpp"
+#include "HVACComponent/ThermalZone_Impl.hpp"
 #include "Model.hpp"
 #include "Loop/PlantLoop.hpp"
 #include "Schedule/Schedule.hpp"
@@ -208,6 +210,18 @@ namespace epmodel {
 
   void PumpConstantSpeed::resetRotationalSpeed() {
     getImpl<detail::PumpConstantSpeed_Impl>()->resetRotationalSpeed();
+  }
+
+  boost::optional<ThermalZone> PumpConstantSpeed::zone() const {
+    return getImpl<detail::PumpConstantSpeed_Impl>()->zone();
+  }
+
+  bool PumpConstantSpeed::setZone(const ThermalZone& thermalZone) {
+    return getImpl<detail::PumpConstantSpeed_Impl>()->setZone(thermalZone);
+  }
+
+  void PumpConstantSpeed::resetZone() {
+    getImpl<detail::PumpConstantSpeed_Impl>()->resetZone();
   }
 
   boost::optional<double> PumpConstantSpeed::skinLossRadiativeFraction() const {
@@ -536,6 +550,33 @@ namespace epmodel {
       OS_ASSERT(result);
     }
 
+    boost::optional<ThermalZone> PumpConstantSpeed_Impl::zone() const {
+      return getObject<ModelObject>().getModelObjectTarget<ThermalZone>(openstudio::Pump_ConstantSpeedFields::ZoneName);
+    }
+
+    bool PumpConstantSpeed_Impl::setZone(const ThermalZone& thermalZone) {
+      if (thermalZone.model() != model()) {
+        LOG_FREE(Warn, "openstudio.epmodel.PumpConstantSpeed", "Cannot set the zone because the thermal zone belongs to a different model.");
+        return false;
+      }
+
+      const auto field = openstudio::Pump_ConstantSpeedFields::ZoneName;
+      if (!model().canBeTarget(thermalZone.handle(), iddObject().objectLists(field))) {
+        LOG_FREE(Warn, "openstudio.epmodel.PumpConstantSpeed",
+                 "Cannot set the zone because ThermalZone is not accepted by the Pump:ConstantSpeed zone field.");
+        return false;
+      }
+
+      if (!setPointer(field, thermalZone.handle(), false)) {
+        LOG_FREE(Warn, "openstudio.epmodel.PumpConstantSpeed", "Failed to set the zone relationship.");
+        return false;
+      }
+      return true;
+    }
+
+    void PumpConstantSpeed_Impl::resetZone() {
+      OS_ASSERT(setPointer(openstudio::Pump_ConstantSpeedFields::ZoneName, Handle(), false));
+    }
     bool PumpConstantSpeed_Impl::setSkinLossRadiativeFraction(double skinLossRadiativeFraction) {
       return setDouble(openstudio::Pump_ConstantSpeedFields::SkinLossRadiativeFraction, skinLossRadiativeFraction);
     }

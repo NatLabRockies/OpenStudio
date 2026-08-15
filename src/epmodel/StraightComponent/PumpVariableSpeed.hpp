@@ -19,6 +19,7 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class ThermalZone;
   class Curve;
   class Schedule;
 
@@ -45,15 +46,15 @@ namespace epmodel {
     static std::vector<std::string> vfdControlTypeValues();
 
     // Schema Alignment Notes:
-    // - Status: Partial Parity. The canonical scalar pump surface and five schedule/curve relationships are present.
+    // - Status: Partial Parity. The canonical scalar pump surface and all direct schedule, curve, and zone relationships are present.
     // - Canonical Counterpart: openstudio::model::PumpVariableSpeed.
     // - Implemented Parity: Preserved accessor names/signatures cover the existing scalar surface plus pump flow rate, pump curve,
-    //   pump RPM, minimum pressure, and maximum pressure relationships, including reset behavior and typed target validation.
-    // - Documented Delta: Minimum/maximum RPM schedules and the zone relationship remain deferred.
-    // - Field/Storage Mapping: Scalars and the five implemented relationships map directly to their EnergyPlus `Pump:VariableSpeed` fields.
+    //   pump RPM, minimum/maximum pressure, minimum/maximum RPM, and zone relationships, including reset behavior and typed target validation.
+    // - Documented Delta: Broader canonical behavior outside the direct EnergyPlus field surface remains deferred.
+    // - Field/Storage Mapping: Scalars and relationships map directly to their EnergyPlus `Pump:VariableSpeed` fields.
     // - Evidence: `src/model/PumpVariableSpeed.hpp`, `src/model/PumpVariableSpeed.cpp`, and the configured EnergyPlus IDD define the
     //   canonical signatures, schedule constraints, supported pump curve types, and direct field mappings.
-    // - Remaining Parity Work: Add minimum/maximum RPM schedules, the zone relationship, and other canonical behavior outside this slice.
+    // - Remaining Parity Work: Add other canonical behavior only when demanded by a concrete workflow.
     boost::optional<double> ratedFlowRate() const;
     bool isRatedFlowRateDefaulted() const;
     bool isRatedFlowRateAutosized() const;
@@ -135,6 +136,18 @@ namespace epmodel {
     boost::optional<Schedule> pumpRPMSchedule() const;
     bool setPumpRPMSchedule(Schedule& schedule);
     void resetPumpRPMSchedule();
+
+    boost::optional<Schedule> minimumRPMSchedule() const;
+    bool setMinimumRPMSchedule(Schedule& schedule);
+    void resetMinimumRPMSchedule();
+
+    boost::optional<Schedule> maximumRPMSchedule() const;
+    bool setMaximumRPMSchedule(Schedule& schedule);
+    void resetMaximumRPMSchedule();
+
+    boost::optional<ThermalZone> zone() const;
+    bool setZone(const ThermalZone& thermalZone);
+    void resetZone();
 
     boost::optional<Schedule> minimumPressureSchedule() const;
     bool setMinimumPressureSchedule(Schedule& schedule);

@@ -81,7 +81,7 @@ namespace epmodel {
     static constexpr double kNoUpper = std::numeric_limits<double>::infinity();
 
     const ScheduleTypeSpec* findScheduleTypeSpec(const std::string& className, const std::string& scheduleDisplayName) {
-      static constexpr std::array<ScheduleTypeSpec, 152> specs{{
+      static constexpr std::array<ScheduleTypeSpec, 154> specs{{
         {"AirLoopHVAC", "Availability Manager Scheduled On", false, true, "Availability", 0.0, 1.0},
         {"AirLoopHVACDedicatedOutdoorAirSystem", "Availability Schedule", false, true, "Availability", 0.0, 1.0},
         {"AvailabilityManagerScheduledOn", "Availability Manager Scheduled On", false, true, "Availability", 0.0, 1.0},
@@ -209,6 +209,8 @@ namespace epmodel {
         {"PumpConstantSpeed", "Pump Flow Rate", true, true, "", 0.0, 1.0},
         {"PumpVariableSpeed", "Pump Flow Rate", true, true, "", 0.0, 1.0},
         {"PumpVariableSpeed", "Pump RPM", true, true, "RotationsPerMinute", kNoLower, kNoUpper},
+        {"PumpVariableSpeed", "Minimum RPM", true, true, "RotationsPerMinute", kNoLower, kNoUpper},
+        {"PumpVariableSpeed", "Maximum RPM", true, true, "RotationsPerMinute", kNoLower, kNoUpper},
         {"PumpVariableSpeed", "Minimum Pressure", true, true, "Pressure", kNoLower, kNoUpper},
         {"PumpVariableSpeed", "Maximum Pressure", true, true, "Pressure", kNoLower, kNoUpper},
         {"HeaderedPumpsConstantSpeed", "Pump Flow Rate Schedule", true, true, "", 0.0, 1.0},

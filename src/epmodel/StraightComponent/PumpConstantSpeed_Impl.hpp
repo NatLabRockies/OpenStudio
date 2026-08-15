@@ -16,6 +16,7 @@ namespace epmodel {
   class Node;
   class Curve;
   class Schedule;
+  class ThermalZone;
   namespace detail {
 
     class EPMODEL_API PumpConstantSpeed_Impl : public StraightComponent_Impl
@@ -77,6 +78,10 @@ namespace epmodel {
       boost::optional<double> rotationalSpeed() const;
       bool setRotationalSpeed(double rotationalSpeed);
       void resetRotationalSpeed();
+
+      boost::optional<ThermalZone> zone() const;
+      bool setZone(const ThermalZone& thermalZone);
+      void resetZone();
 
       boost::optional<double> skinLossRadiativeFraction() const;
       bool setSkinLossRadiativeFraction(double skinLossRadiativeFraction);
