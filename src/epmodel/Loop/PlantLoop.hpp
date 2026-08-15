@@ -48,18 +48,17 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     // Schema Alignment Notes:
-    // - Status: Partial Parity. Core loop operating scalars, supply/demand topology accessors, branch add/remove APIs, setpoint-node helpers,
-    //   sizing ownership, availability-manager ownership, and plant operation-scheme/schedule APIs are present, but the canonical PlantLoop
-    //   surface is still incomplete.
+    // - Status: Partial Parity. The representative loop, companion, and branch-mutation contract is present; the wider canonical convenience
+    //   surface remains incomplete.
     // - Canonical Counterpart: openstudio::model::PlantLoop.
-    // - Implemented Parity: `loadDistributionScheme`, `fluidType`, glycol concentration, loop temperature/flow/volume scalars,
-    //   `commonPipeSimulation`, setpoint-node helpers, plant operation-scheme/schedule APIs, sizing ownership, supply/demand node accessors,
-    //   supply/demand mixers and splitters, supply/demand traversal, availability-manager ownership, and branch add/remove APIs preserve the
-    //   main canonical plant-loop topology contract.
+    // - Implemented Parity: Core operating scalars, fluid properties, setpoint helpers, operation schemes and schedules, sizing and availability
+    //   ownership, supply/demand nodes, mixers, splitters, traversal, and exact branch add/remove operations preserve the main topology contract.
     // - Documented Delta: clone/remove specializations and autosized-result helpers remain omitted.
-    // - Field/Storage Mapping: Branch-name and connector linkage remain expressed through topology APIs over EnergyPlus-backed loop structure instead of exposing new scalar string accessors for mixer/splitter branch fields.
-    // - Evidence: `src/model/PlantLoop.hpp` and `src/energyplus/ForwardTranslator/ForwardTranslatePlantLoop.cpp` define the canonical public surface and direct scalar mappings that this epmodel wrapper currently preserves in part.
-    // - Remaining Parity Work: Add clone/remove specializations and autosized-result helpers.
+    // - Field/Storage Mapping: Branch and connector linkage is expressed through topology APIs over EnergyPlus-backed loop structure rather than
+    //   exposed as scalar mixer/splitter branch-name fields.
+    // - Evidence: `src/model/PlantLoop.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslatePlantLoop.cpp`, and focused epmodel loop/component
+    //   tests define the selected contract.
+    // - Remaining Parity Work: Add clone/remove specializations or autosized-result helpers only for a concrete workflow or shared defect.
 
     std::string loadDistributionScheme() const;
     bool setLoadDistributionScheme(const std::string& scheme);

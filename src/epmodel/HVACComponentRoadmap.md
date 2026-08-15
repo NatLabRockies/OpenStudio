@@ -1,10 +1,13 @@
 # HVAC component work in EPModel
 
-This page explains how to choose horizontal HVAC wrapper work after the air
-and plant topology campaigns reach their stopping points. It is deliberately
-not a class inventory. The public header's `Schema Alignment Notes`, its
-implementation and tests, and any executable workflow are the current status
-for a particular class.
+This page explains how to choose horizontal HVAC wrapper work now that the air
+and plant topology campaigns have reached their stopping points. It is
+deliberately not a class inventory. The public header's `Schema Alignment
+Notes`, its implementation and tests, and any executable workflow are the
+current status for a particular class.
+
+The representative 80-percent boundary is met. Future phases must be driven by
+a concrete workflow or a shared correctness defect, not by wrapper inventory.
 
 ## Selection rule
 

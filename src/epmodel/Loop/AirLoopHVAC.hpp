@@ -50,13 +50,19 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     // Schema Alignment Notes:
-    // - Status: Partial Parity. Core scalar accessors, node/traversal APIs, branch mutation, outdoor-air-system lookup, air-side convenience APIs, sizing ownership, availability-schedule wiring, and night-cycle wiring are present, but the canonical AirLoopHVAC surface is still incomplete.
+    // - Status: Partial Parity. The representative single- and dual-duct topology contract is present; the wider canonical convenience surface
+    //   remains incomplete.
     // - Canonical Counterpart: openstudio::model::AirLoopHVAC.
-    // - Implemented Parity: `designSupplyAirFlowRate`, `designReturnAirFlowFractionofSupplyAirFlow`, supply/demand node accessors, `zoneSplitter`, `zoneMixer`, `supplyComponents`, `demandComponents`, outdoor-air and DOAS reverse lookup, `thermalZones`, and availability-manager APIs preserve the main single-duct loop-topology contract used by canonical model code. Implicit `addBranchForZone` clone-last supports the canonical childless, reheat, PIU, cooled-beam, four-pipe-beam, and four-pipe-induction families, plus the epmodel variable-speed-fan reheat terminal, including owned-child and plant reconnection semantics. Dual-duct whole-zone removal atomically owns both supply leaves and the common return leaf across every shared/last-served plenum combination, including ordered transfer of changeover-bypass leaves from a deleted return plenum to the zone mixer. Public supply traversal projects a direct two-speed DX coil through the `CoilSystem:Cooling:DX` object stored on its EnergyPlus Branch.
-    // - Documented Delta: The basic dual-duct helpers (`isDualDuct`, supply splitter accessors, and paired deck nodes) are exposed, but the wider canonical multi-splitter surface remains incomplete. Inlet-side mixers are rejected before mutation because their secondary inlet can be owned by downstream ZoneHVAC equipment, and user-defined terminals are rejected because no canonical ownership contract exists for their optional plant/program/tank relationships.
-    // - Field/Storage Mapping: Connector-list and splitter/mixer linkage remain relationship-driven through EnergyPlus branch topology helpers instead of scalar string accessors for `ConnectorListName` and related node names.
-    // - Evidence: `src/model/AirLoopHVAC.hpp`, the air-loop forward/reverse translator files, and `src/epmodel/test/idf/IDF_SmallOffice_GTest.cpp` define the canonical loop traversal and topology expectations this wrapper is partially matching.
-    // - Remaining Parity Work: Add the remaining dual-duct, outdoor-air-node, and higher-level convenience APIs after the topology anchor types and zone-side branching helpers are fully normalized.
+    // - Implemented Parity: Core scalars, supply/demand nodes and traversal, branch mutation, plenums, supported terminal ownership, outdoor-air and
+    //   DOAS lookup, thermal zones, sizing, schedules, night-cycle control, and availability managers preserve the main canonical loop behavior.
+    //   Dual-duct removal owns both supply leaves and the common return; supply traversal projects the stored two-speed DX adapter.
+    // - Documented Delta: The wider canonical multi-splitter and outdoor-node convenience surface remains incomplete. Inlet-side-mixer and
+    //   user-defined-terminal shapes without a proven ownership contract are rejected before mutation.
+    // - Field/Storage Mapping: Connector, splitter, mixer, branch, and node relationships are projected from EnergyPlus topology rather than
+    //   exposed as scalar name fields.
+    // - Evidence: `src/model/AirLoopHVAC.hpp`, the air-loop translators, focused epmodel air-loop/terminal tests, and
+    //   `src/epmodel/test/idf/IDF_SmallOffice_GTest.cpp` define the selected contract.
+    // - Remaining Parity Work: Add broader multi-splitter, outdoor-node, or higher-level conveniences only for a concrete workflow or shared defect.
     boost::optional<double> designSupplyAirFlowRate() const;
     bool setDesignSupplyAirFlowRate(double designSupplyAirFlowRate);
     void resetDesignSupplyAirFlowRate();

@@ -2,18 +2,14 @@
 
 This page summarizes air loops, terminals, zone equipment, and the air
 behavior of air-side equipment. It does not cover plant loops in general.
-Only the `ZoneHVACUnitVentilator` air behavior is tracked here; its plant
-attachment belongs in the plant roadmap. Class details belong in the headers
-and tests.
+Class details belong in the headers and tests.
 
-Plant topology has reached the representative broad-core stopping point in
-[PlantSystemTopology.md](PlantSystemTopology.md). Air topology has a short
-closing set below. `ZoneHVACUnitVentilator` is the remaining bridge case: its
-contained air path belongs here, while its water-coil attachment uses the
-established plant contract. After the closing set, work should move to the
-horizontal selection rules in
-[HVACComponentRoadmap.md](HVACComponentRoadmap.md), not continue indefinitely
-through increasingly unusual topology combinations.
+Air and plant topology have reached their representative 80-percent stopping
+points. This page records the air contract and its tested boundaries; it is
+not an active completion checklist. Select any new component work through
+[HVACComponentRoadmap.md](HVACComponentRoadmap.md), and see
+[PlantSystemTopology.md](PlantSystemTopology.md) for the corresponding plant
+contract.
 
 ## What should match Model
 
@@ -74,13 +70,13 @@ or preparation does not happen inside `commit()`.
 
 ## What works now
 
-| Area | Implemented | Still missing |
+| Area | Implemented | Demand-driven boundary |
 | --- | --- | --- |
 | Air-loop basics | Multi-zone demand branches, ordered traversal, separate connector rows, insertion and removal, and single- and dual-duct loops | General rebranching within the same loop and badly malformed imported systems |
 | Ordinary single duct | Constant-volume and VAV terminals use the same plenum-aware branch code; VAV reheat also has an EnergyPlus topology test | Reload tests for several VAV variants and more Ruby/Python use |
 | Supply and return plenums | Shared supply plenums, common returns, and separate dual-duct supply lanes support reassignment, removal, and reload | Unusual connector combinations outside the tested operations |
 | PIU, induction, and beams | Series and Parallel PIU, four-pipe induction, cooled beam, and four-pipe beam handle their children and remove atomically | Reload and workflow tests for beams, plus some secondary-port helpers |
-| Direct dual duct | Constant-volume, VAV, and VAV outdoor-air terminals connect two supply decks to one zone; per-deck supply and common return plenums work | Reload and workflow tests for VAV and VAV outdoor-air terminals |
+| Direct dual duct | Constant-volume, VAV, and VAV outdoor-air terminals connect two supply decks to one zone and have reload and post-load change evidence; per-deck supply and common return plenums work | SQL or translated outdoor-air conveniences only for a concrete use case |
 | Outdoor and exhaust air | Outdoor and relief paths, dedicated outdoor-air systems, heat recovery, evaporative and desiccant equipment, zone exhaust, and central exhaust | More equipment-order combinations and numerical testing |
 | Air-side coils and heaters | Gas heat, two-speed DX, curve-fit DX, and assisted cooling have tested placements and retain object identity | More equipment families and numerical comparison |
 | Packaged systems | Fan coils, unitary systems, VRF, packaged terminals, and water-to-air heat pumps control their internal paths while connecting to loops and zones | Clone and cross-model transfer, missing convenience methods, and numerical VRF testing |
@@ -117,26 +113,23 @@ relationships still rely on OS-prefixed objects that do not return as typed
 objects through the EnergyPlus-schema `epmodel::Model::load` path.
 
 That persistence redesign belongs to horizontal component work, not another
-topology phase. The topology-led air campaign has therefore reached its
-stopping point. Later work must be justified by a real use case or a shared
-defect across several families. Missing scalar conveniences, clone depth,
-unusual connector shapes, and malformed imports are not reasons to reopen it.
+topology phase. The topology-led air campaign is therefore closed at its
+representative 80-percent stopping point. Later work must be justified by a
+real use case or a shared defect across several families. Missing scalar
+conveniences, clone depth, unusual connector shapes, and malformed imports are
+not reasons to reopen it.
 
-## Other open work
+## Demand-driven boundaries
 
-- clone and cross-model transfer;
-- moving an existing branch within one loop;
-- transactional outdoor/relief two-stream mutation and equipment/controller
-  update plans;
-- Ruby/Python overloads not yet used by a test;
-- autosized values read from SQL results;
-- EnergyPlus-native storage for the OS-prefixed cooled-beam and beam-coil
-  relationships;
-- Model/EPModel file comparison;
-- numerical comparison on clean simulations;
-- multi-speed unitary stage data;
-- AirflowNetwork, leakage, and space-level HVAC; and
-- repair of malformed systems not produced by the supported API.
+- **Persistence design.** EnergyPlus-native storage for the OS-prefixed
+  cooled-beam and beam-coil relationships needs a separate horizontal design.
+- **Additional topology mutation.** Same-loop rebranching, arbitrary
+  outdoor/relief two-stream updates, and repair of unsupported malformed
+  imports should begin only from a concrete workflow or shared defect.
+- **Horizontal depth.** Clone and cross-model transfer, additional language
+  bindings, SQL/autosizing, numerical comparison, multi-speed stage data,
+  AirflowNetwork, leakage, and space-level HVAC follow the selection rules in
+  [HVACComponentRoadmap.md](HVACComponentRoadmap.md).
 
 Stop for a design review when Model behavior is ambiguous, when two reasonable
 implementations would behave differently for callers, or when the work would
