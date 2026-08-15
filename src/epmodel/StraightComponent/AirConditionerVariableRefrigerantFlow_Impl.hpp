@@ -14,6 +14,8 @@ namespace openstudio {
 namespace epmodel {
 
   class ModelObject;
+  class Schedule;
+  class ThermalZone;
   class ZoneHVACTerminalUnitVariableRefrigerantFlow;
 
   namespace detail {
@@ -28,6 +30,7 @@ namespace epmodel {
       unsigned outletPort() const override;
       bool addToNode(Node& node) override;
       std::vector<IdfObject> remove() override;
+      void doCanonicalize(LoadContext& context) override;
 
       bool addTerminal(ZoneHVACTerminalUnitVariableRefrigerantFlow& terminal);
       void removeTerminal(ZoneHVACTerminalUnitVariableRefrigerantFlow& terminal);
@@ -35,6 +38,21 @@ namespace epmodel {
       std::vector<ZoneHVACTerminalUnitVariableRefrigerantFlow> terminals() const;
 
       boost::optional<ModelObject> ensureTerminalUnitList();
+
+      Schedule availabilitySchedule() const;
+      bool setAvailabilitySchedule(Schedule& schedule);
+
+      boost::optional<ThermalZone> zoneforMasterThermostatLocation() const;
+      bool setZoneforMasterThermostatLocation(const ThermalZone& zone);
+      void resetZoneforMasterThermostatLocation();
+
+      boost::optional<Schedule> thermostatPrioritySchedule() const;
+      bool setThermostatPrioritySchedule(Schedule& schedule);
+      void resetThermostatPrioritySchedule();
+
+      boost::optional<Schedule> basinHeaterOperatingSchedule() const;
+      bool setBasinHeaterOperatingSchedule(Schedule& schedule);
+      void resetBasinHeaterOperatingSchedule();
 
       boost::optional<double> grossRatedTotalCoolingCapacity() const;
       bool isGrossRatedTotalCoolingCapacityAutosized() const;

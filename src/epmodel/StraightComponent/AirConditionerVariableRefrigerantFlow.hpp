@@ -17,6 +17,8 @@ namespace epmodel {
 
   class Model;
   class Node;
+  class Schedule;
+  class ThermalZone;
   class ZoneHVACTerminalUnitVariableRefrigerantFlow;
 
   namespace detail {
@@ -48,19 +50,34 @@ namespace epmodel {
     std::vector<ZoneHVACTerminalUnitVariableRefrigerantFlow> terminals() const;
 
     // Schema Alignment Notes:
-    // - Status: Partial Parity. Core VRF scalar controls, sizing/performance fields, and the standard VRF terminal relationship are aligned,
-    //   but schedule, curve, and zone-link APIs remain intentionally hidden.
+    // - Status: Partial Parity. Core VRF scalar controls, sizing/performance fields, direct schedule/zone relationships, and the standard VRF
+    //   terminal relationship are aligned, while curve APIs remain intentionally hidden.
     // - Canonical Counterpart: openstudio::model::AirConditionerVariableRefrigerantFlow.
-    // - Implemented Parity: The selected scalar methods, terminal relationship, and demand-side `addToNode` preserve the canonical contract and
-    //   current plant-loop insertion behavior. Terminal membership is deliberately exclusive and duplicate-safe rather than reproducing the
-    //   canonical wrapper's duplicate and competing-list inconsistencies.
-    // - Documented Delta: Schedules, curves, and other relationship-style helpers are not exposed yet. `addToNode` is intentionally limited to
-    //   PlantLoop demand-side insertion, and no broader VRF topology parity is claimed here.
+    // - Implemented Parity: The selected scalar methods, availability/thermostat-priority/basin schedules, master-thermostat zone, terminal
+    //   relationship, and demand-side `addToNode` preserve the canonical contract and current plant-loop insertion behavior. Terminal membership
+    //   is deliberately exclusive and duplicate-safe rather than reproducing the canonical wrapper's duplicate and competing-list inconsistencies.
+    // - Documented Delta: Curve helpers remain omitted. `addToNode` is intentionally limited to PlantLoop demand-side insertion, and no broader
+    //   VRF topology or coupling between the optional thermostat relationships and priority-control scalar is claimed here.
     // - Field/Storage Mapping: Most preserved scalar methods map directly to EnergyPlus `AirConditioner:VariableRefrigerantFlow` fields. Terminal
     //   membership uses the EnergyPlus `ZoneTerminalUnitList` object with pointer-backed extensible entries. `condenserType()` follows the
     //   canonical defaulted readback behavior by deriving `AirCooled` versus `WaterCooled` from current plant-loop attachment when blank.
     // - Evidence: `src/model/AirConditionerVariableRefrigerantFlow.hpp`, `src/model/AirConditionerVariableRefrigerantFlow.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirConditionerVariableRefrigerantFlow.cpp`, and `src/epmodel/test/AirConditionerVariableRefrigerantFlow_GTest.cpp`.
-    // - Remaining Parity Work: Add the omitted schedule, curve, and zone-link accessors when relationship parity is in scope.
+    // - Remaining Parity Work: Add the omitted curve accessors when a bounded workflow needs them.
+    Schedule availabilitySchedule() const;
+    bool setAvailabilitySchedule(Schedule& schedule);
+
+    boost::optional<ThermalZone> zoneforMasterThermostatLocation() const;
+    bool setZoneforMasterThermostatLocation(const ThermalZone& zone);
+    void resetZoneforMasterThermostatLocation();
+
+    boost::optional<Schedule> thermostatPrioritySchedule() const;
+    bool setThermostatPrioritySchedule(Schedule& schedule);
+    void resetThermostatPrioritySchedule();
+
+    boost::optional<Schedule> basinHeaterOperatingSchedule() const;
+    bool setBasinHeaterOperatingSchedule(Schedule& schedule);
+    void resetBasinHeaterOperatingSchedule();
+
     boost::optional<double> grossRatedTotalCoolingCapacity() const;
     bool setGrossRatedTotalCoolingCapacity(double grossRatedTotalCoolingCapacity);
     bool isGrossRatedTotalCoolingCapacityAutosized() const;

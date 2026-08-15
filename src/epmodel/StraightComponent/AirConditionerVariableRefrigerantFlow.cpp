@@ -8,12 +8,17 @@
 
 #include "Model.hpp"
 #include "ModelObject.hpp"
+#include "HVACComponent/ThermalZone.hpp"
+#include "HVACComponent/ThermalZone_Impl.hpp"
 #include "Loop/PlantLoop.hpp"
+#include "Schedule/Schedule.hpp"
+#include "Schedule/Schedule_Impl.hpp"
 #include "StraightComponent/Node.hpp"
 #include "ZoneHVACComponent/ZoneHVACTerminalUnitVariableRefrigerantFlow.hpp"
 #include "ZoneHVACComponent/ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl.hpp"
 
 #include <utilities/core/Assert.hpp>
+#include <utilities/core/Logger.hpp>
 #include <utilities/core/StringHelpers.hpp>
 #include <utilities/idd/AirConditioner_VariableRefrigerantFlow_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
@@ -28,7 +33,11 @@ namespace epmodel {
 
   AirConditionerVariableRefrigerantFlow::AirConditionerVariableRefrigerantFlow(const Model& model)
     : StraightComponent(AirConditionerVariableRefrigerantFlow::iddObjectType(), model) {
-    OS_ASSERT(getImpl<detail::AirConditionerVariableRefrigerantFlow_Impl>()->ensureTerminalUnitList());
+    auto impl = getImpl<detail::AirConditionerVariableRefrigerantFlow_Impl>();
+    OS_ASSERT(impl);
+    auto availability = model.alwaysOnDiscreteSchedule();
+    OS_ASSERT(impl->setAvailabilitySchedule(availability));
+    OS_ASSERT(impl->ensureTerminalUnitList());
   }
 
   AirConditionerVariableRefrigerantFlow::AirConditionerVariableRefrigerantFlow(
@@ -69,6 +78,50 @@ namespace epmodel {
 
   std::vector<ZoneHVACTerminalUnitVariableRefrigerantFlow> AirConditionerVariableRefrigerantFlow::terminals() const {
     return getImpl<detail::AirConditionerVariableRefrigerantFlow_Impl>()->terminals();
+  }
+
+  Schedule AirConditionerVariableRefrigerantFlow::availabilitySchedule() const {
+    return getImpl<detail::AirConditionerVariableRefrigerantFlow_Impl>()->availabilitySchedule();
+  }
+
+  bool AirConditionerVariableRefrigerantFlow::setAvailabilitySchedule(Schedule& schedule) {
+    return getImpl<detail::AirConditionerVariableRefrigerantFlow_Impl>()->setAvailabilitySchedule(schedule);
+  }
+
+  boost::optional<ThermalZone> AirConditionerVariableRefrigerantFlow::zoneforMasterThermostatLocation() const {
+    return getImpl<detail::AirConditionerVariableRefrigerantFlow_Impl>()->zoneforMasterThermostatLocation();
+  }
+
+  bool AirConditionerVariableRefrigerantFlow::setZoneforMasterThermostatLocation(const ThermalZone& zone) {
+    return getImpl<detail::AirConditionerVariableRefrigerantFlow_Impl>()->setZoneforMasterThermostatLocation(zone);
+  }
+
+  void AirConditionerVariableRefrigerantFlow::resetZoneforMasterThermostatLocation() {
+    getImpl<detail::AirConditionerVariableRefrigerantFlow_Impl>()->resetZoneforMasterThermostatLocation();
+  }
+
+  boost::optional<Schedule> AirConditionerVariableRefrigerantFlow::thermostatPrioritySchedule() const {
+    return getImpl<detail::AirConditionerVariableRefrigerantFlow_Impl>()->thermostatPrioritySchedule();
+  }
+
+  bool AirConditionerVariableRefrigerantFlow::setThermostatPrioritySchedule(Schedule& schedule) {
+    return getImpl<detail::AirConditionerVariableRefrigerantFlow_Impl>()->setThermostatPrioritySchedule(schedule);
+  }
+
+  void AirConditionerVariableRefrigerantFlow::resetThermostatPrioritySchedule() {
+    getImpl<detail::AirConditionerVariableRefrigerantFlow_Impl>()->resetThermostatPrioritySchedule();
+  }
+
+  boost::optional<Schedule> AirConditionerVariableRefrigerantFlow::basinHeaterOperatingSchedule() const {
+    return getImpl<detail::AirConditionerVariableRefrigerantFlow_Impl>()->basinHeaterOperatingSchedule();
+  }
+
+  bool AirConditionerVariableRefrigerantFlow::setBasinHeaterOperatingSchedule(Schedule& schedule) {
+    return getImpl<detail::AirConditionerVariableRefrigerantFlow_Impl>()->setBasinHeaterOperatingSchedule(schedule);
+  }
+
+  void AirConditionerVariableRefrigerantFlow::resetBasinHeaterOperatingSchedule() {
+    getImpl<detail::AirConditionerVariableRefrigerantFlow_Impl>()->resetBasinHeaterOperatingSchedule();
   }
 
   boost::optional<double> AirConditionerVariableRefrigerantFlow::grossRatedTotalCoolingCapacity() const {
@@ -175,6 +228,76 @@ namespace epmodel {
 namespace openstudio {
 namespace epmodel {
   namespace detail {
+
+    Schedule AirConditionerVariableRefrigerantFlow_Impl::availabilitySchedule() const {
+      auto schedule =
+        getObject<ModelObject>().getModelObjectTarget<Schedule>(openstudio::AirConditioner_VariableRefrigerantFlowFields::AvailabilityScheduleName);
+      OS_ASSERT(schedule);
+      return *schedule;
+    }
+
+    bool AirConditionerVariableRefrigerantFlow_Impl::setAvailabilitySchedule(Schedule& schedule) {
+      return ModelObject_Impl::setSchedule(openstudio::AirConditioner_VariableRefrigerantFlowFields::AvailabilityScheduleName,
+                                           "AirConditionerVariableRefrigerantFlow", "Availability Schedule", schedule);
+    }
+
+    boost::optional<ThermalZone> AirConditionerVariableRefrigerantFlow_Impl::zoneforMasterThermostatLocation() const {
+      return getObject<ModelObject>().getModelObjectTarget<ThermalZone>(
+        openstudio::AirConditioner_VariableRefrigerantFlowFields::ZoneNameforMasterThermostatLocation);
+    }
+
+    bool AirConditionerVariableRefrigerantFlow_Impl::setZoneforMasterThermostatLocation(const ThermalZone& zone) {
+      constexpr auto field = openstudio::AirConditioner_VariableRefrigerantFlowFields::ZoneNameforMasterThermostatLocation;
+      if (zone.model() != model()) {
+        LOG_FREE(Warn, "openstudio.epmodel.AirConditionerVariableRefrigerantFlow",
+                 "Cannot set the master thermostat zone because it belongs to a different model.");
+        return false;
+      }
+      if (!model().canBeTarget(zone.handle(), iddObject().objectLists(field))) {
+        LOG_FREE(Warn, "openstudio.epmodel.AirConditionerVariableRefrigerantFlow",
+                 "Cannot set the master thermostat zone because ThermalZone is not accepted by the VRF field.");
+        return false;
+      }
+      return setPointer(field, zone.handle(), false);
+    }
+
+    void AirConditionerVariableRefrigerantFlow_Impl::resetZoneforMasterThermostatLocation() {
+      constexpr auto field = openstudio::AirConditioner_VariableRefrigerantFlowFields::ZoneNameforMasterThermostatLocation;
+      OS_ASSERT(setPointer(field, Handle(), false));
+      OS_ASSERT(openstudio::detail::IdfObject_Impl::setString(field, "", false));
+    }
+
+    boost::optional<Schedule> AirConditionerVariableRefrigerantFlow_Impl::thermostatPrioritySchedule() const {
+      return getObject<ModelObject>().getModelObjectTarget<Schedule>(
+        openstudio::AirConditioner_VariableRefrigerantFlowFields::ThermostatPriorityScheduleName);
+    }
+
+    bool AirConditionerVariableRefrigerantFlow_Impl::setThermostatPrioritySchedule(Schedule& schedule) {
+      return ModelObject_Impl::setSchedule(openstudio::AirConditioner_VariableRefrigerantFlowFields::ThermostatPriorityScheduleName,
+                                           "AirConditionerVariableRefrigerantFlow", "Thermostat Priority Schedule", schedule);
+    }
+
+    void AirConditionerVariableRefrigerantFlow_Impl::resetThermostatPrioritySchedule() {
+      constexpr auto field = openstudio::AirConditioner_VariableRefrigerantFlowFields::ThermostatPriorityScheduleName;
+      OS_ASSERT(setPointer(field, Handle(), false));
+      OS_ASSERT(openstudio::detail::IdfObject_Impl::setString(field, "", false));
+    }
+
+    boost::optional<Schedule> AirConditionerVariableRefrigerantFlow_Impl::basinHeaterOperatingSchedule() const {
+      return getObject<ModelObject>().getModelObjectTarget<Schedule>(
+        openstudio::AirConditioner_VariableRefrigerantFlowFields::BasinHeaterOperatingScheduleName);
+    }
+
+    bool AirConditionerVariableRefrigerantFlow_Impl::setBasinHeaterOperatingSchedule(Schedule& schedule) {
+      return ModelObject_Impl::setSchedule(openstudio::AirConditioner_VariableRefrigerantFlowFields::BasinHeaterOperatingScheduleName,
+                                           "AirConditionerVariableRefrigerantFlow", "Basin Heater Operating Schedule", schedule);
+    }
+
+    void AirConditionerVariableRefrigerantFlow_Impl::resetBasinHeaterOperatingSchedule() {
+      constexpr auto field = openstudio::AirConditioner_VariableRefrigerantFlowFields::BasinHeaterOperatingScheduleName;
+      OS_ASSERT(setPointer(field, Handle(), false));
+      OS_ASSERT(openstudio::detail::IdfObject_Impl::setString(field, "", false));
+    }
 
     boost::optional<ModelObject> AirConditionerVariableRefrigerantFlow_Impl::terminalUnitList() const {
       auto list = getObject<ModelObject>().getModelObjectTarget<ModelObject>(
@@ -318,6 +441,28 @@ namespace epmodel {
       }
       result.insert(result.end(), removedParent.begin(), removedParent.end());
       return result;
+    }
+
+    void AirConditionerVariableRefrigerantFlow_Impl::doCanonicalize(LoadContext& context) {
+      StraightComponent_Impl::doCanonicalize(context);
+
+      constexpr auto field = openstudio::AirConditioner_VariableRefrigerantFlowFields::AvailabilityScheduleName;
+      const auto raw = openstudio::detail::IdfObject_Impl::getString(field, false, true);
+      if (raw && !raw->empty()) {
+        return;
+      }
+      if (getObject<ModelObject>().getModelObjectTarget<Schedule>(field)) {
+        return;
+      }
+
+      auto alwaysOn = model().alwaysOnDiscreteSchedule();
+      if (setAvailabilitySchedule(alwaysOn)) {
+        detail::addLoadInfo(context, "Attached the always-on availability schedule to AirConditioner:VariableRefrigerantFlow '"
+                                       + getObject<ModelObject>().nameString() + "'.");
+      } else {
+        detail::addLoadError(context, "Failed to attach the always-on availability schedule to AirConditioner:VariableRefrigerantFlow '"
+                                        + getObject<ModelObject>().nameString() + "'.");
+      }
     }
 
     boost::optional<double> AirConditionerVariableRefrigerantFlow_Impl::grossRatedTotalCoolingCapacity() const {
