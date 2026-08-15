@@ -22,6 +22,7 @@
 #include "../SetpointManager/SetpointManagerFollowGroundTemperature.hpp"
 #include "../SetpointManager/SetpointManagerFollowOutdoorAirTemperature.hpp"
 #include "../SetpointManager/SetpointManagerFollowSystemNodeTemperature.hpp"
+#include "../SetpointManager/SetpointManagerFollowSystemNodeTemperature_Impl.hpp"
 #include "../SetpointManager/SetpointManagerScheduled.hpp"
 #include "../SetpointManager/SetpointManagerScheduled_Impl.hpp"
 #include "../SetpointManager/SetpointManagerScheduledDualSetpoint.hpp"
@@ -42,6 +43,7 @@
 
 #include <utilities/core/Filesystem.hpp>
 #include <utilities/core/UUID.hpp>
+#include <utilities/idd/SetpointManager_FollowSystemNodeTemperature_FieldEnums.hxx>
 #include <utilities/idd/SetpointManager_Scheduled_DualSetpoint_FieldEnums.hxx>
 #include <utilities/idd/SetpointManager_Scheduled_FieldEnums.hxx>
 #include <utilities/idd/SetpointManager_SingleZone_Reheat_FieldEnums.hxx>
@@ -783,6 +785,186 @@ TEST_F(EPModelFixture, SetpointManagerFollowSystemNodeTemperature_ScalarAccessor
   EXPECT_DOUBLE_EQ(5.0, spm.minimumLimitSetpointTemperature());
 
   EXPECT_FALSE(spm.setReferenceTemperatureType("InvalidValue"));
+}
+
+TEST_F(EPModelFixture, SetpointManagerFollowSystemNodeTemperature_ReferenceNodeValidationAndRawReset) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  PlantLoop plantLoop(model);
+  SetpointManagerFollowSystemNodeTemperature spm(model);
+  auto setpointNode = airLoop.supplyOutletNode();
+  auto airReferenceNode = airLoop.supplyInletNode();
+  auto plantReferenceNode = plantLoop.supplyInletNode();
+
+  EXPECT_FALSE(spm.referenceNode());
+  ASSERT_TRUE(spm.addToNode(setpointNode));
+  ASSERT_TRUE(spm.setReferenceNode(airReferenceNode));
+  ASSERT_TRUE(spm.referenceNode());
+  EXPECT_EQ(airReferenceNode, *spm.referenceNode());
+  ASSERT_TRUE(spm.setpointNode());
+  EXPECT_EQ(setpointNode, *spm.setpointNode());
+  EXPECT_NE(*spm.referenceNode(), *spm.setpointNode());
+
+  ASSERT_TRUE(spm.setReferenceNode(plantReferenceNode));
+  ASSERT_TRUE(spm.referenceNode());
+  EXPECT_EQ(plantReferenceNode, *spm.referenceNode());
+  EXPECT_EQ(setpointNode, *spm.setpointNode());
+
+  Model foreignModel;
+  AirLoopHVAC foreignAirLoop(foreignModel);
+  const auto foreignReferenceNode = foreignAirLoop.supplyInletNode();
+  EXPECT_FALSE(spm.setReferenceNode(foreignReferenceNode));
+  ASSERT_TRUE(spm.referenceNode());
+  EXPECT_EQ(plantReferenceNode, *spm.referenceNode());
+  EXPECT_EQ(setpointNode, *spm.setpointNode());
+
+  SetpointManagerFollowSystemNodeTemperature malformed(model);
+  auto malformedImpl = malformed.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  ASSERT_TRUE(malformedImpl);
+  constexpr auto referenceField = openstudio::SetpointManager_FollowSystemNodeTemperatureFields::ReferenceNodeName;
+
+  // This unresolved raw field represents imported malformed state that validated public setters cannot create.
+  ASSERT_TRUE(malformedImpl->setPointer(referenceField, openstudio::Handle(), false));
+  ASSERT_TRUE(malformedImpl->openstudio::detail::IdfObject_Impl::setString(referenceField, "Missing Follow-System Reference Node", false));
+  EXPECT_FALSE(malformed.referenceNode());
+  EXPECT_EQ("Missing Follow-System Reference Node",
+            malformedImpl->openstudio::detail::IdfObject_Impl::getString(referenceField, false, true).value_or(""));
+  EXPECT_FALSE(malformed.setReferenceNode(foreignReferenceNode));
+  EXPECT_EQ("Missing Follow-System Reference Node",
+            malformedImpl->openstudio::detail::IdfObject_Impl::getString(referenceField, false, true).value_or(""));
+
+  malformed.resetReferenceNode();
+  EXPECT_FALSE(malformed.referenceNode());
+  EXPECT_EQ("", malformedImpl->openstudio::detail::IdfObject_Impl::getString(referenceField, false, true).value_or(""));
+}
+
+TEST_F(EPModelFixture, SetpointManagerFollowSystemNodeTemperature_CanonicalizesUniqueRawReferenceNodeName) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  SetpointManagerFollowSystemNodeTemperature spm(model);
+  const auto referenceNode = airLoop.supplyInletNode();
+  auto spmImpl = spm.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  ASSERT_TRUE(spmImpl);
+  constexpr auto referenceField = openstudio::SetpointManager_FollowSystemNodeTemperatureFields::ReferenceNodeName;
+
+  // A persisted node name has no managed pointer until load canonicalization repairs the imported relationship.
+  ASSERT_TRUE(spmImpl->setPointer(referenceField, openstudio::Handle(), false));
+  ASSERT_TRUE(spmImpl->openstudio::detail::IdfObject_Impl::setString(referenceField, referenceNode.nameString(), false));
+  EXPECT_FALSE(spm.referenceNode());
+
+  const auto report = model.canonicalize();
+  EXPECT_EQ(0u, report.errorCount);
+  ASSERT_TRUE(spm.referenceNode());
+  EXPECT_EQ(referenceNode, *spm.referenceNode());
+}
+
+TEST_F(EPModelFixture, SetpointManagerFollowSystemNodeTemperature_MalformedRawNamesRemainObservational) {
+  Model model;
+  Node duplicateFirst(model);
+  Node duplicateSecond(model);
+  ASSERT_TRUE(duplicateFirst.setName("Ambiguous Follow-System Reference Node"));
+  auto duplicateSecondImpl = duplicateSecond.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  ASSERT_TRUE(duplicateSecondImpl);
+  // A duplicate persisted transient name is malformed evidence that the public naming API prevents.
+  ASSERT_TRUE(duplicateSecondImpl->openstudio::detail::IdfObject_Impl::setString(0u, "Ambiguous Follow-System Reference Node", false));
+
+  SetpointManagerFollowSystemNodeTemperature ambiguous(model);
+  SetpointManagerFollowSystemNodeTemperature unresolved(model);
+  auto ambiguousImpl = ambiguous.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  auto unresolvedImpl = unresolved.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  ASSERT_TRUE(ambiguousImpl);
+  ASSERT_TRUE(unresolvedImpl);
+  constexpr auto referenceField = openstudio::SetpointManager_FollowSystemNodeTemperatureFields::ReferenceNodeName;
+
+  // These raw names model malformed imported evidence that public typed setters intentionally cannot create.
+  ASSERT_TRUE(ambiguousImpl->setPointer(referenceField, openstudio::Handle(), false));
+  ASSERT_TRUE(ambiguousImpl->openstudio::detail::IdfObject_Impl::setString(referenceField, "Ambiguous Follow-System Reference Node", false));
+  ASSERT_TRUE(unresolvedImpl->setPointer(referenceField, openstudio::Handle(), false));
+  ASSERT_TRUE(unresolvedImpl->openstudio::detail::IdfObject_Impl::setString(referenceField, "Unresolved Follow-System Reference Node", false));
+
+  EXPECT_FALSE(ambiguous.referenceNode());
+  EXPECT_FALSE(unresolved.referenceNode());
+  Model foreignModel;
+  Node foreignNode(foreignModel);
+  EXPECT_FALSE(ambiguous.setReferenceNode(foreignNode));
+  EXPECT_FALSE(unresolved.setReferenceNode(foreignNode));
+  EXPECT_EQ("Ambiguous Follow-System Reference Node",
+            ambiguousImpl->openstudio::detail::IdfObject_Impl::getString(referenceField, false, true).value_or(""));
+  EXPECT_EQ("Unresolved Follow-System Reference Node",
+            unresolvedImpl->openstudio::detail::IdfObject_Impl::getString(referenceField, false, true).value_or(""));
+}
+
+TEST_F(EPModelFixture, SetpointManagerFollowSystemNodeTemperature_ReferenceNodeReloadMutationAndRemoval) {
+  const auto firstIdfPath = uniqueSetpointManagerIdfPath("epmodel-follow-system-node-temperature-first");
+  const auto secondIdfPath = uniqueSetpointManagerIdfPath("epmodel-follow-system-node-temperature-second");
+  const ScopedSetpointManagerFileRemoval removeFirstIdf(firstIdfPath);
+  const ScopedSetpointManagerFileRemoval removeSecondIdf(secondIdfPath);
+
+  Model model;
+  AirLoopHVAC airLoop(model);
+  PlantLoop plantLoop(model);
+  SetpointManagerFollowSystemNodeTemperature spm(model);
+  ASSERT_TRUE(airLoop.setName("Follow-System Reference Air Loop"));
+  ASSERT_TRUE(plantLoop.setName("Follow-System Reference Plant Loop"));
+  ASSERT_TRUE(spm.setName("Follow System Node Temperature Manager"));
+  auto setpointNode = airLoop.supplyOutletNode();
+  const auto initialReferenceNode = plantLoop.supplyInletNode();
+  ASSERT_TRUE(spm.addToNode(setpointNode));
+  ASSERT_TRUE(spm.setReferenceNode(initialReferenceNode));
+  ASSERT_TRUE(model.save(firstIdfPath, true));
+
+  auto loadedModel = Model::load(firstIdfPath);
+  ASSERT_TRUE(loadedModel);
+  auto loadedAirLoop = loadedModel->getConcreteModelObjectByName<AirLoopHVAC>("Follow-System Reference Air Loop");
+  auto loadedPlantLoop = loadedModel->getConcreteModelObjectByName<PlantLoop>("Follow-System Reference Plant Loop");
+  auto loadedManager =
+    loadedModel->getConcreteModelObjectByName<SetpointManagerFollowSystemNodeTemperature>("Follow System Node Temperature Manager");
+  ASSERT_TRUE(loadedAirLoop);
+  ASSERT_TRUE(loadedPlantLoop);
+  ASSERT_TRUE(loadedManager);
+  const auto loadedSetpointNode = loadedAirLoop->supplyOutletNode();
+  const auto loadedInitialReferenceNode = loadedPlantLoop->supplyInletNode();
+  ASSERT_TRUE(loadedManager->setpointNode());
+  ASSERT_TRUE(loadedManager->referenceNode());
+  EXPECT_EQ(loadedSetpointNode, *loadedManager->setpointNode());
+  EXPECT_EQ(loadedInitialReferenceNode, *loadedManager->referenceNode());
+
+  loadedManager->resetReferenceNode();
+  EXPECT_FALSE(loadedManager->referenceNode());
+  ASSERT_TRUE(loadedManager->setpointNode());
+  EXPECT_EQ(loadedSetpointNode, *loadedManager->setpointNode());
+  const auto replacementReferenceNode = loadedAirLoop->demandOutletNode();
+  ASSERT_TRUE(loadedManager->setReferenceNode(replacementReferenceNode));
+  ASSERT_TRUE(loadedManager->setpointNode());
+  EXPECT_EQ(loadedSetpointNode, *loadedManager->setpointNode());
+  ASSERT_TRUE(loadedModel->save(secondIdfPath, true));
+
+  auto reloadedModel = Model::load(secondIdfPath);
+  ASSERT_TRUE(reloadedModel);
+  auto reloadedAirLoop = reloadedModel->getConcreteModelObjectByName<AirLoopHVAC>("Follow-System Reference Air Loop");
+  auto reloadedPlantLoop = reloadedModel->getConcreteModelObjectByName<PlantLoop>("Follow-System Reference Plant Loop");
+  auto reloadedManager =
+    reloadedModel->getConcreteModelObjectByName<SetpointManagerFollowSystemNodeTemperature>("Follow System Node Temperature Manager");
+  ASSERT_TRUE(reloadedAirLoop);
+  ASSERT_TRUE(reloadedPlantLoop);
+  ASSERT_TRUE(reloadedManager);
+  const auto reloadedSetpointNode = reloadedAirLoop->supplyOutletNode();
+  const auto reloadedReferenceNode = reloadedAirLoop->demandOutletNode();
+  const auto retainedPlantNode = reloadedPlantLoop->supplyInletNode();
+  ASSERT_TRUE(reloadedManager->referenceNode());
+  ASSERT_TRUE(reloadedManager->setpointNode());
+  EXPECT_EQ(reloadedReferenceNode, *reloadedManager->referenceNode());
+  EXPECT_EQ(reloadedSetpointNode, *reloadedManager->setpointNode());
+  ASSERT_EQ(1u, reloadedSetpointNode.setpointManagers().size());
+  EXPECT_EQ(*reloadedManager, reloadedSetpointNode.setpointManagers().front());
+
+  EXPECT_FALSE(reloadedManager->remove().empty());
+  EXPECT_TRUE(reloadedSetpointNode.setpointManagers().empty());
+  EXPECT_TRUE(reloadedModel->getObject(reloadedAirLoop->handle()));
+  EXPECT_TRUE(reloadedModel->getObject(reloadedPlantLoop->handle()));
+  EXPECT_TRUE(reloadedModel->getObject(reloadedSetpointNode.handle()));
+  EXPECT_TRUE(reloadedModel->getObject(reloadedReferenceNode.handle()));
+  EXPECT_TRUE(reloadedModel->getObject(retainedPlantNode.handle()));
 }
 
 TEST_F(EPModelFixture, SetpointManagerScheduled_AddToNodeReplacesSameControlVariable) {

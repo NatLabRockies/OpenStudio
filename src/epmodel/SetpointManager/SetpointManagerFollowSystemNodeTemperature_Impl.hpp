@@ -18,6 +18,10 @@ namespace epmodel {
       using SetpointManager_Impl::SetpointManager_Impl;
       virtual ~SetpointManagerFollowSystemNodeTemperature_Impl() override = default;
 
+      boost::optional<openstudio::epmodel::Node> referenceNode() const;
+      bool setReferenceNode(const openstudio::epmodel::Node& node);
+      void resetReferenceNode();
+
       std::string referenceTemperatureType() const;
       bool setReferenceTemperatureType(const std::string& referenceTemperatureType);
 

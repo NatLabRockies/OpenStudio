@@ -7,8 +7,10 @@
 #include "SetpointManager/SetpointManagerFollowSystemNodeTemperature_Impl.hpp"
 
 #include "Model.hpp"
+#include "StraightComponent/Node.hpp"
 
 #include <utilities/core/Assert.hpp>
+#include <utilities/core/UUID.hpp>
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/IddFactory.hxx>
 #include <utilities/idd/SetpointManager_FollowSystemNodeTemperature_FieldEnums.hxx>
@@ -45,6 +47,18 @@ namespace epmodel {
   std::vector<std::string> SetpointManagerFollowSystemNodeTemperature::referenceTemperatureTypeValues() {
     return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
                           openstudio::SetpointManager_FollowSystemNodeTemperatureFields::ReferenceTemperatureType);
+  }
+
+  boost::optional<Node> SetpointManagerFollowSystemNodeTemperature::referenceNode() const {
+    return getImpl<detail::SetpointManagerFollowSystemNodeTemperature_Impl>()->referenceNode();
+  }
+
+  bool SetpointManagerFollowSystemNodeTemperature::setReferenceNode(const Node& node) {
+    return getImpl<detail::SetpointManagerFollowSystemNodeTemperature_Impl>()->setReferenceNode(node);
+  }
+
+  void SetpointManagerFollowSystemNodeTemperature::resetReferenceNode() {
+    getImpl<detail::SetpointManagerFollowSystemNodeTemperature_Impl>()->resetReferenceNode();
   }
 
   std::string SetpointManagerFollowSystemNodeTemperature::referenceTemperatureType() const {
@@ -144,6 +158,32 @@ namespace epmodel {
       return result;
     }
 
+    boost::optional<openstudio::epmodel::Node> SetpointManagerFollowSystemNodeTemperature_Impl::referenceNode() const {
+      constexpr auto field = openstudio::SetpointManager_FollowSystemNodeTemperatureFields::ReferenceNodeName;
+      const auto managedValue = getObject<ModelObject>().getField(field, false);
+      if (!managedValue || managedValue->empty()) {
+        return boost::none;
+      }
+      const auto targetHandle = openstudio::toUUID(*managedValue);
+      if (targetHandle.isNull()) {
+        return boost::none;
+      }
+      return model().getModelObject<openstudio::epmodel::Node>(targetHandle);
+    }
+
+    bool SetpointManagerFollowSystemNodeTemperature_Impl::setReferenceNode(const openstudio::epmodel::Node& node) {
+      if (node.model() != model()) {
+        return false;
+      }
+      return getObject<ModelObject>().setPointer(openstudio::SetpointManager_FollowSystemNodeTemperatureFields::ReferenceNodeName, node.handle());
+    }
+
+    void SetpointManagerFollowSystemNodeTemperature_Impl::resetReferenceNode() {
+      constexpr auto field = openstudio::SetpointManager_FollowSystemNodeTemperatureFields::ReferenceNodeName;
+      OS_ASSERT(setPointer(field, Handle(), false));
+      OS_ASSERT(openstudio::detail::IdfObject_Impl::setString(field, "", false));
+    }
+
     bool SetpointManagerFollowSystemNodeTemperature_Impl::isAllowedOnPlantLoop() const {
       return true;
     }
@@ -171,6 +211,7 @@ namespace epmodel {
 
     void SetpointManagerFollowSystemNodeTemperature_Impl::doCanonicalize(LoadContext& context) {
       SetpointManager_Impl::doCanonicalize(context);
+      (void)resolvedNodeTarget(openstudio::SetpointManager_FollowSystemNodeTemperatureFields::ReferenceNodeName);
       canonicalizeSetpointNodeField(context, openstudio::SetpointManager_FollowSystemNodeTemperatureFields::SetpointNodeorNodeListName);
 
       if (auto value = getString(openstudio::SetpointManager_FollowSystemNodeTemperatureFields::ControlVariable, true)) {

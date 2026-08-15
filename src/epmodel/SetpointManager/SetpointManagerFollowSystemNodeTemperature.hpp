@@ -16,6 +16,7 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class Node;
 
   namespace detail {
     class SetpointManagerFollowSystemNodeTemperature_Impl;
@@ -38,12 +39,20 @@ namespace epmodel {
     static std::vector<std::string> referenceTemperatureTypeValues();
 
     // Schema Alignment Notes:
-    // - API: Preserves openstudio::model scalar accessor names/signatures for model-counterpart compatibility.
+    // - Status: Near Parity. The scalar follow rule, reference-node relationship, and inherited setpoint-node attachment are aligned.
+    // - Canonical Counterpart: openstudio::model::SetpointManagerFollowSystemNodeTemperature.
+    // - Implemented Parity: Preserves the canonical scalar accessors, reference-node relationship, and inherited setpoint-node attachment.
     // - Field Mapping: referenceTemperatureType, offsetTemperatureDifference, maximumLimitSetpointTemperature, and
     //   minimumLimitSetpointTemperature map directly to E+ SetpointManager:FollowSystemNodeTemperature fields.
-    // - Field Mapping: Relationship fields Reference Node Name and Setpoint Node or NodeList Name are intentionally
-    //   excluded from scalar-only scaffolding.
-    // - TODO(parity): Add non-scalar relationship parity for explicit reference/setpoint node linkage in a follow-up pass.
+    // - Field/Storage Mapping: referenceNode maps directly to E+ Reference Node Name; inherited addToNode/setpointNode behavior maps
+    //   Setpoint Node or NodeList Name.
+    // - Canonicalization: Load resolves persisted reference and setpoint node names once; ordinary relationship getters are observational.
+    // - Evidence: Relationship tests cover validation, persisted-name repair, save/load mutation, reset, and removal.
+    // - Remaining Parity Work: Broader clone and workflow evidence remains demand-driven.
+
+    boost::optional<Node> referenceNode() const;
+    bool setReferenceNode(const Node& node);
+    void resetReferenceNode();
 
     std::string referenceTemperatureType() const;
     bool setReferenceTemperatureType(const std::string& referenceTemperatureType);
