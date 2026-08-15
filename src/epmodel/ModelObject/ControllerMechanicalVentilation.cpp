@@ -16,6 +16,8 @@
 #include "HVACComponent/ThermalZone.hpp"
 #include "HVACComponent/ThermalZone_Impl.hpp"
 #include "Model.hpp"
+#include "Schedule/Schedule.hpp"
+#include "Schedule/Schedule_Impl.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/idd/Controller_MechanicalVentilation_FieldEnums.hxx>
@@ -32,6 +34,8 @@ namespace epmodel {
     : ModelObject(ControllerMechanicalVentilation::iddObjectType(), model) {
     auto impl = getImpl<detail::ControllerMechanicalVentilation_Impl>();
     OS_ASSERT(impl);
+    auto schedule = model.alwaysOnDiscreteSchedule();
+    OS_ASSERT(impl->setAvailabilitySchedule(schedule));
     detail::LoadContext context{const_cast<Model&>(model), SanitizationPolicy::Repair, SanitizationReport{}, {}};  // NOLINT
     impl->canonicalize(context);
   }
@@ -46,6 +50,14 @@ namespace epmodel {
   std::vector<std::string> ControllerMechanicalVentilation::systemOutdoorAirMethodValues() {
     return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
                           openstudio::Controller_MechanicalVentilationFields::SystemOutdoorAirMethod);
+  }
+
+  Schedule ControllerMechanicalVentilation::availabilitySchedule() const {
+    return getImpl<detail::ControllerMechanicalVentilation_Impl>()->availabilitySchedule();
+  }
+
+  bool ControllerMechanicalVentilation::setAvailabilitySchedule(Schedule& schedule) {
+    return getImpl<detail::ControllerMechanicalVentilation_Impl>()->setAvailabilitySchedule(schedule);
   }
 
   bool ControllerMechanicalVentilation::demandControlledVentilation() const {
@@ -191,6 +203,18 @@ namespace epmodel {
       }
     }
 
+    Schedule ControllerMechanicalVentilation_Impl::availabilitySchedule() const {
+      auto schedule =
+        getObject<ModelObject>().getModelObjectTarget<Schedule>(openstudio::Controller_MechanicalVentilationFields::AvailabilityScheduleName);
+      OS_ASSERT(schedule);
+      return *schedule;
+    }
+
+    bool ControllerMechanicalVentilation_Impl::setAvailabilitySchedule(Schedule& schedule) {
+      return ModelObject_Impl::setSchedule(openstudio::Controller_MechanicalVentilationFields::AvailabilityScheduleName,
+                                           "ControllerMechanicalVentilation", "Availability Schedule", schedule);
+    }
+
     bool
       ControllerMechanicalVentilation_Impl::addZoneOutdoorAirEntry(const openstudio::epmodel::ThermalZone& zone,
                                                                    const openstudio::epmodel::DesignSpecificationOutdoorAirSpaceList& dsoaSpaceList) {
@@ -207,6 +231,16 @@ namespace epmodel {
 
     void ControllerMechanicalVentilation_Impl::doCanonicalize(LoadContext& context) {
       auto thisController = getObject<openstudio::epmodel::ControllerMechanicalVentilation>();
+
+      ModelObject_Impl::doCanonicalize(context);
+
+      auto schedule =
+        getObject<ModelObject>().getModelObjectTarget<Schedule>(openstudio::Controller_MechanicalVentilationFields::AvailabilityScheduleName);
+      if (!(schedule && setAvailabilitySchedule(*schedule))) {
+        auto alwaysOn = model().alwaysOnDiscreteSchedule();
+        OS_ASSERT(setAvailabilitySchedule(alwaysOn));
+        detail::addLoadInfo(context, "Attached the always-on schedule to mechanical ventilation controller '" + thisController.nameString() + "'.");
+      }
 
       if (!getString(openstudio::Controller_MechanicalVentilationFields::DemandControlledVentilation, true)) {
         OS_ASSERT(setString(openstudio::Controller_MechanicalVentilationFields::DemandControlledVentilation, "No"));

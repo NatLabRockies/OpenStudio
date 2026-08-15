@@ -19,6 +19,7 @@ namespace epmodel {
   class ControllerMechanicalVentilation;
   class Model;
   class ModelObject;
+  class Schedule;
   class ThermalZone;
 
   namespace detail {
@@ -29,6 +30,8 @@ namespace epmodel {
       using ModelObject_Impl::ModelObject_Impl;
       virtual ~ControllerMechanicalVentilation_Impl() override = default;
 
+      Schedule availabilitySchedule() const;
+      bool setAvailabilitySchedule(Schedule& schedule);
       bool demandControlledVentilation() const;
       bool isDemandControlledVentilationDefaulted() const;
       bool setDemandControlledVentilation(bool value);

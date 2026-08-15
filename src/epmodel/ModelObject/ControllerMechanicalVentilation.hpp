@@ -18,6 +18,7 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class Schedule;
   class ControllerOutdoorAir;
 
   namespace detail {
@@ -40,11 +41,13 @@ namespace epmodel {
     static std::vector<std::string> systemOutdoorAirMethodValues();
 
     // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::ControllerMechanicalVentilation scalar accessor names/signatures.
-    // - Field Mapping: DemandControlledVentilation and SystemOutdoorAirMethod map directly to same-named E+ fields.
-    // - Field Mapping: Availability schedule and extensible zone/DSOA links are relationship-like and excluded from scalar API generation.
-    // - ForwardTranslator evidence: ForwardTranslateControllerMechanicalVentilation.cpp writes these scalar fields directly.
-    // - TODO(parity): Add remaining relationship API parity incrementally without changing preserved scalar signatures.
+    // - Canonical Counterpart: openstudio::model::ControllerMechanicalVentilation.
+    // - Implemented Parity: Canonical required availability schedule API and scalar controls.
+    // - EPModel Behavior: Optional inverse outdoor-air controller discovery and owner-managed zone rows support EnergyPlus topology.
+    // - Field Storage: Relationships use EnergyPlus object-list pointers; load repair restores a missing or incompatible required schedule.
+    // - Remaining Parity: Tighten unique outdoor-air-controller ownership and lifecycle behavior without changing the public API.
+    Schedule availabilitySchedule() const;
+    bool setAvailabilitySchedule(Schedule& schedule);
     bool demandControlledVentilation() const;
     bool isDemandControlledVentilationDefaulted() const;
     bool setDemandControlledVentilation(bool value);
