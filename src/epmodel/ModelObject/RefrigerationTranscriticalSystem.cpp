@@ -5,14 +5,18 @@
 
 #include "RefrigerationTranscriticalSystem.hpp"
 #include "RefrigerationTranscriticalSystem_Impl.hpp"
+#include "HVACComponent/ThermalZone.hpp"
+#include "HVACComponent/ThermalZone_Impl.hpp"
 #include "ModelObject/FluidPropertiesName.hpp"
 
 #include "Model.hpp"
 
 #include <utilities/core/Assert.hpp>
+#include <utilities/core/Logger.hpp>
 #include <utilities/idd/Refrigeration_TranscriticalSystem_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/IddFactory.hxx>
+#include <utilities/idf/IdfObject_Impl.hpp>
 
 namespace openstudio {
 namespace epmodel {
@@ -102,6 +106,18 @@ namespace epmodel {
     getImpl<detail::RefrigerationTranscriticalSystem_Impl>()->resetSumUASuctionPipingforMediumTemperatureLoads();
   }
 
+  boost::optional<ThermalZone> RefrigerationTranscriticalSystem::mediumTemperatureSuctionPipingZone() const {
+    return getImpl<detail::RefrigerationTranscriticalSystem_Impl>()->mediumTemperatureSuctionPipingZone();
+  }
+
+  bool RefrigerationTranscriticalSystem::setMediumTemperatureSuctionPipingZone(const ThermalZone& thermalZone) {
+    return getImpl<detail::RefrigerationTranscriticalSystem_Impl>()->setMediumTemperatureSuctionPipingZone(thermalZone);
+  }
+
+  void RefrigerationTranscriticalSystem::resetMediumTemperatureSuctionPipingZone() {
+    getImpl<detail::RefrigerationTranscriticalSystem_Impl>()->resetMediumTemperatureSuctionPipingZone();
+  }
+
   double RefrigerationTranscriticalSystem::sumUASuctionPipingforLowTemperatureLoads() const {
     return getImpl<detail::RefrigerationTranscriticalSystem_Impl>()->sumUASuctionPipingforLowTemperatureLoads();
   }
@@ -117,6 +133,18 @@ namespace epmodel {
 
   void RefrigerationTranscriticalSystem::resetSumUASuctionPipingforLowTemperatureLoads() {
     getImpl<detail::RefrigerationTranscriticalSystem_Impl>()->resetSumUASuctionPipingforLowTemperatureLoads();
+  }
+
+  boost::optional<ThermalZone> RefrigerationTranscriticalSystem::lowTemperatureSuctionPipingZone() const {
+    return getImpl<detail::RefrigerationTranscriticalSystem_Impl>()->lowTemperatureSuctionPipingZone();
+  }
+
+  bool RefrigerationTranscriticalSystem::setLowTemperatureSuctionPipingZone(const ThermalZone& thermalZone) {
+    return getImpl<detail::RefrigerationTranscriticalSystem_Impl>()->setLowTemperatureSuctionPipingZone(thermalZone);
+  }
+
+  void RefrigerationTranscriticalSystem::resetLowTemperatureSuctionPipingZone() {
+    getImpl<detail::RefrigerationTranscriticalSystem_Impl>()->resetLowTemperatureSuctionPipingZone();
   }
 
   std::string RefrigerationTranscriticalSystem::endUseSubcategory() const {
@@ -217,6 +245,32 @@ namespace epmodel {
       OS_ASSERT(result);
     }
 
+    boost::optional<ThermalZone> RefrigerationTranscriticalSystem_Impl::mediumTemperatureSuctionPipingZone() const {
+      return getObject<ModelObject>().getModelObjectTarget<ThermalZone>(
+        openstudio::Refrigeration_TranscriticalSystemFields::MediumTemperatureSuctionPipingZoneName);
+    }
+
+    bool RefrigerationTranscriticalSystem_Impl::setMediumTemperatureSuctionPipingZone(const ThermalZone& thermalZone) {
+      constexpr auto field = openstudio::Refrigeration_TranscriticalSystemFields::MediumTemperatureSuctionPipingZoneName;
+      if (thermalZone.model() != model()) {
+        LOG_FREE(Warn, "openstudio.epmodel.RefrigerationTranscriticalSystem",
+                 "Cannot set the medium-temperature suction-piping zone because it belongs to a different model.");
+        return false;
+      }
+      if (!model().canBeTarget(thermalZone.handle(), iddObject().objectLists(field))) {
+        LOG_FREE(Warn, "openstudio.epmodel.RefrigerationTranscriticalSystem",
+                 "Cannot set the medium-temperature suction-piping zone because ThermalZone is not accepted by the field.");
+        return false;
+      }
+      return setPointer(field, thermalZone.handle(), false);
+    }
+
+    void RefrigerationTranscriticalSystem_Impl::resetMediumTemperatureSuctionPipingZone() {
+      constexpr auto field = openstudio::Refrigeration_TranscriticalSystemFields::MediumTemperatureSuctionPipingZoneName;
+      OS_ASSERT(setPointer(field, Handle(), false));
+      OS_ASSERT(openstudio::detail::IdfObject_Impl::setString(field, "", false));
+    }
+
     double RefrigerationTranscriticalSystem_Impl::sumUASuctionPipingforLowTemperatureLoads() const {
       boost::optional<double> value = getDouble(openstudio::Refrigeration_TranscriticalSystemFields::SumUASuctionPipingforLowTemperatureLoads, true);
       OS_ASSERT(value);
@@ -237,6 +291,32 @@ namespace epmodel {
     void RefrigerationTranscriticalSystem_Impl::resetSumUASuctionPipingforLowTemperatureLoads() {
       bool result = setString(openstudio::Refrigeration_TranscriticalSystemFields::SumUASuctionPipingforLowTemperatureLoads, "");
       OS_ASSERT(result);
+    }
+
+    boost::optional<ThermalZone> RefrigerationTranscriticalSystem_Impl::lowTemperatureSuctionPipingZone() const {
+      return getObject<ModelObject>().getModelObjectTarget<ThermalZone>(
+        openstudio::Refrigeration_TranscriticalSystemFields::LowTemperatureSuctionPipingZoneName);
+    }
+
+    bool RefrigerationTranscriticalSystem_Impl::setLowTemperatureSuctionPipingZone(const ThermalZone& thermalZone) {
+      constexpr auto field = openstudio::Refrigeration_TranscriticalSystemFields::LowTemperatureSuctionPipingZoneName;
+      if (thermalZone.model() != model()) {
+        LOG_FREE(Warn, "openstudio.epmodel.RefrigerationTranscriticalSystem",
+                 "Cannot set the low-temperature suction-piping zone because it belongs to a different model.");
+        return false;
+      }
+      if (!model().canBeTarget(thermalZone.handle(), iddObject().objectLists(field))) {
+        LOG_FREE(Warn, "openstudio.epmodel.RefrigerationTranscriticalSystem",
+                 "Cannot set the low-temperature suction-piping zone because ThermalZone is not accepted by the field.");
+        return false;
+      }
+      return setPointer(field, thermalZone.handle(), false);
+    }
+
+    void RefrigerationTranscriticalSystem_Impl::resetLowTemperatureSuctionPipingZone() {
+      constexpr auto field = openstudio::Refrigeration_TranscriticalSystemFields::LowTemperatureSuctionPipingZoneName;
+      OS_ASSERT(setPointer(field, Handle(), false));
+      OS_ASSERT(openstudio::detail::IdfObject_Impl::setString(field, "", false));
     }
 
     std::string RefrigerationTranscriticalSystem_Impl::endUseSubcategory() const {

@@ -17,6 +17,7 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class ThermalZone;
 
   namespace detail {
     class RefrigerationTranscriticalSystem_Impl;
@@ -37,13 +38,18 @@ namespace epmodel {
     static std::vector<std::string> refrigerationSystemWorkingFluidTypeValues();
 
     // Schema Alignment Notes:
-    // - API: Preserve the openstudio::model scalar accessor names/signatures for receiverPressure, subcoolerEffectiveness,
-    //   refrigerationSystemWorkingFluidType, sumUASuctionPipingforMediumTemperatureLoads, sumUASuctionPipingforLowTemperatureLoads, and endUseSubcategory.
-    // - Field Mapping: Each scalar maps directly to the EnergyPlus Refrigeration:TranscriticalSystem fields documented in
-    //   ForwardTranslator::translateRefrigerationTranscriticalSystem.
-    // - Field Mapping: Medium/Low temperature Refrigerated CaseAndWalkInList, compressor lists, Refrigeration Gas Cooler, and
-    //   suction piping zone relationship fields are intentionally excluded from this scalar-only surface.
-    // - TODO(parity): Add non-scalar relationship APIs later without changing scalar signatures.
+    // - Status: Partial Parity. The scalar controls and the two optional suction-piping ThermalZone relationships are aligned.
+    // - Canonical Counterpart: openstudio::model::RefrigerationTranscriticalSystem.
+    // - Implemented Parity: The selected scalar methods and both optional suction-piping zone relationships preserve the canonical
+    //   public signatures. Zone setters validate the configured object list and do not couple the related UA scalars.
+    // - Field/Storage Mapping: Scalars and both zone relationships map directly to EnergyPlus Refrigeration:TranscriticalSystem fields;
+    //   the zone fields use the configured ZoneNames object list.
+    // - Canonicalization: Blank zone fields are valid and require no repair. Unresolved imported references remain untouched until an
+    //   explicit typed setter or reset; ordinary APIs assume canonical state.
+    // - Evidence: `src/model/RefrigerationTranscriticalSystem.hpp`, `src/model/RefrigerationTranscriticalSystem.cpp`,
+    //   `resources/energyplus/ProposedEnergy+.idd`, and `src/epmodel/test/RefrigerationTranscriticalSystem_GTest.cpp`.
+    // - Remaining Parity Work: Refrigerated case/walk-in lists, compressor lists, the gas cooler relationship, and object-level clone
+    //   behavior remain deferred.
     double receiverPressure() const;
     bool isReceiverPressureDefaulted() const;
     bool setReceiverPressure(double receiverPressure);
@@ -62,10 +68,18 @@ namespace epmodel {
     bool setSumUASuctionPipingforMediumTemperatureLoads(double sumUASuctionPipingforMediumTemperatureLoads);
     void resetSumUASuctionPipingforMediumTemperatureLoads();
 
+    boost::optional<ThermalZone> mediumTemperatureSuctionPipingZone() const;
+    bool setMediumTemperatureSuctionPipingZone(const ThermalZone& thermalZone);
+    void resetMediumTemperatureSuctionPipingZone();
+
     double sumUASuctionPipingforLowTemperatureLoads() const;
     bool isSumUASuctionPipingforLowTemperatureLoadsDefaulted() const;
     bool setSumUASuctionPipingforLowTemperatureLoads(double sumUASuctionPipingforLowTemperatureLoads);
     void resetSumUASuctionPipingforLowTemperatureLoads();
+
+    boost::optional<ThermalZone> lowTemperatureSuctionPipingZone() const;
+    bool setLowTemperatureSuctionPipingZone(const ThermalZone& thermalZone);
+    void resetLowTemperatureSuctionPipingZone();
 
     std::string endUseSubcategory() const;
     bool isEndUseSubcategoryDefaulted() const;
