@@ -6,6 +6,12 @@
 #include "StraightComponent/CoilWaterHeatingAirToWaterHeatPumpWrapped.hpp"
 #include "StraightComponent/CoilWaterHeatingAirToWaterHeatPumpWrapped_Impl.hpp"
 
+#include "Curve/Curve.hpp"
+#include "Curve/CurveBiquadratic.hpp"
+#include "Curve/CurveBiquadratic_Impl.hpp"
+#include "Curve/CurveCubic.hpp"
+#include "Curve/CurveCubic_Impl.hpp"
+#include "Curve/Curve_Impl.hpp"
 #include "Model.hpp"
 #include "Schedule/Schedule.hpp"
 #include "Schedule/Schedule_Impl.hpp"
@@ -16,14 +22,17 @@
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/IddFactory.hxx>
 #include <utilities/idd/IddObject.hpp>
+#include <utilities/idf/IdfObject_Impl.hpp>
 
 namespace openstudio {
 namespace epmodel {
 
   CoilWaterHeatingAirToWaterHeatPumpWrapped::CoilWaterHeatingAirToWaterHeatPumpWrapped(const Model& model)
     : StraightComponent(CoilWaterHeatingAirToWaterHeatPumpWrapped::iddObjectType(), model) {
-    auto alwaysOn = const_cast<Model&>(model).alwaysOnDiscreteSchedule();
-    OS_ASSERT(setAvailabilitySchedule(alwaysOn));
+    auto impl = getImpl<detail::CoilWaterHeatingAirToWaterHeatPumpWrapped_Impl>();
+    OS_ASSERT(impl);
+    detail::LoadContext context{const_cast<Model&>(model), SanitizationPolicy::Repair, SanitizationReport{}, {}};  // NOLINT
+    impl->canonicalize(context);
   }
 
   CoilWaterHeatingAirToWaterHeatPumpWrapped::CoilWaterHeatingAirToWaterHeatPumpWrapped(
@@ -190,6 +199,18 @@ namespace epmodel {
     getImpl<detail::CoilWaterHeatingAirToWaterHeatPumpWrapped_Impl>()->resetCrankcaseHeaterCapacity();
   }
 
+  boost::optional<Curve> CoilWaterHeatingAirToWaterHeatPumpWrapped::crankcaseHeaterCapacityFunctionofTemperatureCurve() const {
+    return getImpl<detail::CoilWaterHeatingAirToWaterHeatPumpWrapped_Impl>()->crankcaseHeaterCapacityFunctionofTemperatureCurve();
+  }
+
+  bool CoilWaterHeatingAirToWaterHeatPumpWrapped::setCrankcaseHeaterCapacityFunctionofTemperatureCurve(const Curve& curve) {
+    return getImpl<detail::CoilWaterHeatingAirToWaterHeatPumpWrapped_Impl>()->setCrankcaseHeaterCapacityFunctionofTemperatureCurve(curve);
+  }
+
+  void CoilWaterHeatingAirToWaterHeatPumpWrapped::resetCrankcaseHeaterCapacityFunctionofTemperatureCurve() {
+    getImpl<detail::CoilWaterHeatingAirToWaterHeatPumpWrapped_Impl>()->resetCrankcaseHeaterCapacityFunctionofTemperatureCurve();
+  }
+
   double CoilWaterHeatingAirToWaterHeatPumpWrapped::maximumAmbientTemperatureforCrankcaseHeaterOperation() const {
     return getImpl<detail::CoilWaterHeatingAirToWaterHeatPumpWrapped_Impl>()->maximumAmbientTemperatureforCrankcaseHeaterOperation();
   }
@@ -226,6 +247,46 @@ namespace epmodel {
     getImpl<detail::CoilWaterHeatingAirToWaterHeatPumpWrapped_Impl>()->resetEvaporatorAirTemperatureTypeforCurveObjects();
   }
 
+  Curve CoilWaterHeatingAirToWaterHeatPumpWrapped::heatingCapacityFunctionofTemperatureCurve() const {
+    return getImpl<detail::CoilWaterHeatingAirToWaterHeatPumpWrapped_Impl>()->heatingCapacityFunctionofTemperatureCurve();
+  }
+
+  bool CoilWaterHeatingAirToWaterHeatPumpWrapped::setHeatingCapacityFunctionofTemperatureCurve(const Curve& curve) {
+    return getImpl<detail::CoilWaterHeatingAirToWaterHeatPumpWrapped_Impl>()->setHeatingCapacityFunctionofTemperatureCurve(curve);
+  }
+
+  Curve CoilWaterHeatingAirToWaterHeatPumpWrapped::heatingCapacityFunctionofAirFlowFractionCurve() const {
+    return getImpl<detail::CoilWaterHeatingAirToWaterHeatPumpWrapped_Impl>()->heatingCapacityFunctionofAirFlowFractionCurve();
+  }
+
+  bool CoilWaterHeatingAirToWaterHeatPumpWrapped::setHeatingCapacityFunctionofAirFlowFractionCurve(const Curve& curve) {
+    return getImpl<detail::CoilWaterHeatingAirToWaterHeatPumpWrapped_Impl>()->setHeatingCapacityFunctionofAirFlowFractionCurve(curve);
+  }
+
+  Curve CoilWaterHeatingAirToWaterHeatPumpWrapped::heatingCOPFunctionofTemperatureCurve() const {
+    return getImpl<detail::CoilWaterHeatingAirToWaterHeatPumpWrapped_Impl>()->heatingCOPFunctionofTemperatureCurve();
+  }
+
+  bool CoilWaterHeatingAirToWaterHeatPumpWrapped::setHeatingCOPFunctionofTemperatureCurve(const Curve& curve) {
+    return getImpl<detail::CoilWaterHeatingAirToWaterHeatPumpWrapped_Impl>()->setHeatingCOPFunctionofTemperatureCurve(curve);
+  }
+
+  Curve CoilWaterHeatingAirToWaterHeatPumpWrapped::heatingCOPFunctionofAirFlowFractionCurve() const {
+    return getImpl<detail::CoilWaterHeatingAirToWaterHeatPumpWrapped_Impl>()->heatingCOPFunctionofAirFlowFractionCurve();
+  }
+
+  bool CoilWaterHeatingAirToWaterHeatPumpWrapped::setHeatingCOPFunctionofAirFlowFractionCurve(const Curve& curve) {
+    return getImpl<detail::CoilWaterHeatingAirToWaterHeatPumpWrapped_Impl>()->setHeatingCOPFunctionofAirFlowFractionCurve(curve);
+  }
+
+  Curve CoilWaterHeatingAirToWaterHeatPumpWrapped::partLoadFractionCorrelationCurve() const {
+    return getImpl<detail::CoilWaterHeatingAirToWaterHeatPumpWrapped_Impl>()->partLoadFractionCorrelationCurve();
+  }
+
+  bool CoilWaterHeatingAirToWaterHeatPumpWrapped::setPartLoadFractionCorrelationCurve(const Curve& curve) {
+    return getImpl<detail::CoilWaterHeatingAirToWaterHeatPumpWrapped_Impl>()->setPartLoadFractionCorrelationCurve(curve);
+  }
+
 }  // namespace epmodel
 }  // namespace openstudio
 
@@ -247,21 +308,17 @@ namespace epmodel {
     }
 
     Schedule CoilWaterHeatingAirToWaterHeatPumpWrapped_Impl::availabilitySchedule() const {
-      auto value = getObject<ModelObject>().getModelObjectTarget<Schedule>(
-        openstudio::Coil_WaterHeating_AirToWaterHeatPump_WrappedFields::AvailabilityScheduleName);
-      if (!value) {
-        value = this->model().alwaysOnDiscreteSchedule();
-        OS_ASSERT(value);
-        const_cast<CoilWaterHeatingAirToWaterHeatPumpWrapped_Impl*>(this)->setAvailabilitySchedule(*value);
-        value = getObject<ModelObject>().getModelObjectTarget<Schedule>(
-          openstudio::Coil_WaterHeating_AirToWaterHeatPump_WrappedFields::AvailabilityScheduleName);
-      }
+      constexpr auto field = openstudio::Coil_WaterHeating_AirToWaterHeatPump_WrappedFields::AvailabilityScheduleName;
+      const auto raw = openstudio::detail::IdfObject_Impl::getString(field, false, true);
+      OS_ASSERT(!raw || raw->empty());
+      const auto value = getObject<ModelObject>().getModelObjectTarget<Schedule>(field);
       OS_ASSERT(value);
       return *value;
     }
 
     bool CoilWaterHeatingAirToWaterHeatPumpWrapped_Impl::setAvailabilitySchedule(Schedule& schedule) {
-      return setPointer(openstudio::Coil_WaterHeating_AirToWaterHeatPump_WrappedFields::AvailabilityScheduleName, schedule.handle(), false);
+      return ModelObject_Impl::setSchedule(openstudio::Coil_WaterHeating_AirToWaterHeatPump_WrappedFields::AvailabilityScheduleName,
+                                           "CoilWaterHeatingAirToWaterHeatPumpWrapped", "Availability Schedule", schedule);
     }
 
     double CoilWaterHeatingAirToWaterHeatPumpWrapped_Impl::ratedHeatingCapacity() const {
@@ -431,6 +488,22 @@ namespace epmodel {
       OS_ASSERT(setString(openstudio::Coil_WaterHeating_AirToWaterHeatPump_WrappedFields::CrankcaseHeaterCapacity, ""));
     }
 
+    boost::optional<Curve> CoilWaterHeatingAirToWaterHeatPumpWrapped_Impl::crankcaseHeaterCapacityFunctionofTemperatureCurve() const {
+      return getObject<ModelObject>().getModelObjectTarget<Curve>(
+        openstudio::Coil_WaterHeating_AirToWaterHeatPump_WrappedFields::CrankcaseHeaterCapacityFunctionofTemperatureCurveName);
+    }
+
+    bool CoilWaterHeatingAirToWaterHeatPumpWrapped_Impl::setCrankcaseHeaterCapacityFunctionofTemperatureCurve(const Curve& curve) {
+      return setValidatedCurve(openstudio::Coil_WaterHeating_AirToWaterHeatPump_WrappedFields::CrankcaseHeaterCapacityFunctionofTemperatureCurveName,
+                               curve, "crankcase heater capacity temperature curve");
+    }
+
+    void CoilWaterHeatingAirToWaterHeatPumpWrapped_Impl::resetCrankcaseHeaterCapacityFunctionofTemperatureCurve() {
+      constexpr auto field = openstudio::Coil_WaterHeating_AirToWaterHeatPump_WrappedFields::CrankcaseHeaterCapacityFunctionofTemperatureCurveName;
+      OS_ASSERT(setPointer(field, Handle(), false));
+      OS_ASSERT(openstudio::detail::IdfObject_Impl::setString(field, "", false));
+    }
+
     double CoilWaterHeatingAirToWaterHeatPumpWrapped_Impl::maximumAmbientTemperatureforCrankcaseHeaterOperation() const {
       const auto value =
         getDouble(openstudio::Coil_WaterHeating_AirToWaterHeatPump_WrappedFields::MaximumAmbientTemperatureforCrankcaseHeaterOperation, true);
@@ -472,8 +545,222 @@ namespace epmodel {
       OS_ASSERT(setString(openstudio::Coil_WaterHeating_AirToWaterHeatPump_WrappedFields::EvaporatorAirTemperatureTypeforCurveObjects, ""));
     }
 
+    Curve CoilWaterHeatingAirToWaterHeatPumpWrapped_Impl::heatingCapacityFunctionofTemperatureCurve() const {
+      const auto value = getObject<ModelObject>().getModelObjectTarget<Curve>(
+        openstudio::Coil_WaterHeating_AirToWaterHeatPump_WrappedFields::HeatingCapacityFunctionofTemperatureCurveName);
+      OS_ASSERT(value);
+      return *value;
+    }
+
+    bool CoilWaterHeatingAirToWaterHeatPumpWrapped_Impl::setHeatingCapacityFunctionofTemperatureCurve(const Curve& curve) {
+      return setValidatedCurve(openstudio::Coil_WaterHeating_AirToWaterHeatPump_WrappedFields::HeatingCapacityFunctionofTemperatureCurveName, curve,
+                               "heating capacity temperature curve");
+    }
+
+    Curve CoilWaterHeatingAirToWaterHeatPumpWrapped_Impl::heatingCapacityFunctionofAirFlowFractionCurve() const {
+      const auto value = getObject<ModelObject>().getModelObjectTarget<Curve>(
+        openstudio::Coil_WaterHeating_AirToWaterHeatPump_WrappedFields::HeatingCapacityFunctionofAirFlowFractionCurveName);
+      OS_ASSERT(value);
+      return *value;
+    }
+
+    bool CoilWaterHeatingAirToWaterHeatPumpWrapped_Impl::setHeatingCapacityFunctionofAirFlowFractionCurve(const Curve& curve) {
+      return setValidatedCurve(openstudio::Coil_WaterHeating_AirToWaterHeatPump_WrappedFields::HeatingCapacityFunctionofAirFlowFractionCurveName,
+                               curve, "heating capacity air-flow-fraction curve");
+    }
+
+    Curve CoilWaterHeatingAirToWaterHeatPumpWrapped_Impl::heatingCOPFunctionofTemperatureCurve() const {
+      const auto value = getObject<ModelObject>().getModelObjectTarget<Curve>(
+        openstudio::Coil_WaterHeating_AirToWaterHeatPump_WrappedFields::HeatingCOPFunctionofTemperatureCurveName);
+      OS_ASSERT(value);
+      return *value;
+    }
+
+    bool CoilWaterHeatingAirToWaterHeatPumpWrapped_Impl::setHeatingCOPFunctionofTemperatureCurve(const Curve& curve) {
+      return setValidatedCurve(openstudio::Coil_WaterHeating_AirToWaterHeatPump_WrappedFields::HeatingCOPFunctionofTemperatureCurveName, curve,
+                               "heating COP temperature curve");
+    }
+
+    Curve CoilWaterHeatingAirToWaterHeatPumpWrapped_Impl::heatingCOPFunctionofAirFlowFractionCurve() const {
+      const auto value = getObject<ModelObject>().getModelObjectTarget<Curve>(
+        openstudio::Coil_WaterHeating_AirToWaterHeatPump_WrappedFields::HeatingCOPFunctionofAirFlowFractionCurveName);
+      OS_ASSERT(value);
+      return *value;
+    }
+
+    bool CoilWaterHeatingAirToWaterHeatPumpWrapped_Impl::setHeatingCOPFunctionofAirFlowFractionCurve(const Curve& curve) {
+      return setValidatedCurve(openstudio::Coil_WaterHeating_AirToWaterHeatPump_WrappedFields::HeatingCOPFunctionofAirFlowFractionCurveName, curve,
+                               "heating COP air-flow-fraction curve");
+    }
+
+    Curve CoilWaterHeatingAirToWaterHeatPumpWrapped_Impl::partLoadFractionCorrelationCurve() const {
+      const auto value = getObject<ModelObject>().getModelObjectTarget<Curve>(
+        openstudio::Coil_WaterHeating_AirToWaterHeatPump_WrappedFields::PartLoadFractionCorrelationCurveName);
+      OS_ASSERT(value);
+      return *value;
+    }
+
+    bool CoilWaterHeatingAirToWaterHeatPumpWrapped_Impl::setPartLoadFractionCorrelationCurve(const Curve& curve) {
+      return setValidatedCurve(openstudio::Coil_WaterHeating_AirToWaterHeatPump_WrappedFields::PartLoadFractionCorrelationCurveName, curve,
+                               "part-load fraction correlation curve");
+    }
+
     std::vector<std::string> CoilWaterHeatingAirToWaterHeatPumpWrapped_Impl::evaporatorAirTemperatureTypeforCurveObjectsValues() const {
       return openstudio::epmodel::CoilWaterHeatingAirToWaterHeatPumpWrapped::evaporatorAirTemperatureTypeforCurveObjectsValues();
+    }
+
+    bool CoilWaterHeatingAirToWaterHeatPumpWrapped_Impl::setValidatedCurve(unsigned field, const Curve& curve, const char* relationshipName) {
+      if (curve.model() != model()) {
+        LOG_FREE(Warn, "openstudio.epmodel.CoilWaterHeatingAirToWaterHeatPumpWrapped",
+                 "Cannot set the " << relationshipName << " because the curve belongs to a different model.");
+        return false;
+      }
+      if (!model().canBeTarget(curve.handle(), iddObject().objectLists(field))) {
+        LOG_FREE(Warn, "openstudio.epmodel.CoilWaterHeatingAirToWaterHeatPumpWrapped",
+                 "Cannot set the " << relationshipName << " because curve type '" << curve.iddObject().type().valueName()
+                                   << "' is not accepted by the Coil:WaterHeating:AirToWaterHeatPump:Wrapped field.");
+        return false;
+      }
+      return setPointer(field, curve.handle(), false);
+    }
+
+    void CoilWaterHeatingAirToWaterHeatPumpWrapped_Impl::doCanonicalize(LoadContext& context) {
+      StraightComponent_Impl::doCanonicalize(context);
+
+      const auto object = getObject<ModelObject>();
+      const auto objectName = object.nameString();
+
+      constexpr auto availabilityField = openstudio::Coil_WaterHeating_AirToWaterHeatPump_WrappedFields::AvailabilityScheduleName;
+      const auto availabilityRaw = openstudio::detail::IdfObject_Impl::getString(availabilityField, false, true);
+      if (availabilityRaw && !availabilityRaw->empty()) {
+        detail::addLoadWarning(context, "Preserved unresolved, ambiguous, or otherwise noncanonical availability schedule evidence '"
+                                          + *availabilityRaw + "' on wrapped water-heating coil '" + objectName + "'.");
+      } else if (!object.getModelObjectTarget<Schedule>(availabilityField)) {
+        if (context.repairEnabled()) {
+          auto alwaysOn = model().alwaysOnDiscreteSchedule();
+          if (setAvailabilitySchedule(alwaysOn)) {
+            detail::addLoadInfo(context, "Attached the always-on schedule to wrapped water-heating coil '" + objectName + "'.");
+          } else {
+            detail::addLoadError(context, "Failed to attach the always-on schedule to wrapped water-heating coil '" + objectName + "'.");
+          }
+        } else {
+          detail::addLoadWarning(context, "Wrapped water-heating coil '" + objectName + "' has a blank availability schedule.");
+        }
+      }
+
+      auto needsCurveRepair = [&](unsigned field, const char* relationshipName) {
+        const auto raw = openstudio::detail::IdfObject_Impl::getString(field, false, true);
+        if (raw && !raw->empty()) {
+          detail::addLoadWarning(context, "Preserved unresolved, ambiguous, or ineligible " + std::string(relationshipName) + " '" + *raw
+                                            + "' on wrapped water-heating coil '" + objectName + "'.");
+          return false;
+        }
+        if (const auto curve = object.getModelObjectTarget<Curve>(field)) {
+          if (model().canBeTarget(curve->handle(), iddObject().objectLists(field))) {
+            return false;
+          }
+          detail::addLoadWarning(context,
+                                 "Preserved ineligible " + std::string(relationshipName) + " on wrapped water-heating coil '" + objectName + "'.");
+          return false;
+        }
+        if (!context.repairEnabled()) {
+          detail::addLoadWarning(context, "Wrapped water-heating coil '" + objectName + "' has a blank " + relationshipName + ".");
+          return false;
+        }
+        return true;
+      };
+
+      auto recordCurveRepair = [&](bool result, Curve& curve, const char* relationshipName) {
+        if (result) {
+          detail::addLoadInfo(context,
+                              "Attached the canonical " + std::string(relationshipName) + " to wrapped water-heating coil '" + objectName + "'.");
+        } else {
+          curve.remove();
+          detail::addLoadError(context, "Failed to attach the canonical " + std::string(relationshipName) + " to wrapped water-heating coil '"
+                                          + objectName + "'.");
+        }
+      };
+
+      constexpr auto capacityTemperatureField =
+        openstudio::Coil_WaterHeating_AirToWaterHeatPump_WrappedFields::HeatingCapacityFunctionofTemperatureCurveName;
+      if (needsCurveRepair(capacityTemperatureField, "heating capacity temperature curve")) {
+        CurveBiquadratic curve(model());
+        OS_ASSERT(curve.setName("HPWH-Htg-Cap-fT"));
+        OS_ASSERT(curve.setCoefficient1Constant(0.563));
+        OS_ASSERT(curve.setCoefficient2x(0.0437));
+        OS_ASSERT(curve.setCoefficient3xPOW2(0.000039));
+        OS_ASSERT(curve.setCoefficient4y(0.0055));
+        OS_ASSERT(curve.setCoefficient5yPOW2(-0.000148));
+        OS_ASSERT(curve.setCoefficient6xTIMESY(-0.000145));
+        OS_ASSERT(curve.setMinimumValueofx(0.0));
+        OS_ASSERT(curve.setMaximumValueofx(100.0));
+        OS_ASSERT(curve.setMinimumValueofy(0.0));
+        OS_ASSERT(curve.setMaximumValueofy(100.0));
+        OS_ASSERT(curve.setMinimumCurveOutput(0.0));
+        Curve genericCurve = curve;
+        recordCurveRepair(setHeatingCapacityFunctionofTemperatureCurve(genericCurve), genericCurve, "heating capacity temperature curve");
+      }
+
+      constexpr auto capacityAirFlowField =
+        openstudio::Coil_WaterHeating_AirToWaterHeatPump_WrappedFields::HeatingCapacityFunctionofAirFlowFractionCurveName;
+      if (needsCurveRepair(capacityAirFlowField, "heating capacity air-flow-fraction curve")) {
+        CurveCubic curve(model());
+        OS_ASSERT(curve.setName("HPWH-Htg-Cap-FF"));
+        OS_ASSERT(curve.setCoefficient1Constant(1.0));
+        OS_ASSERT(curve.setCoefficient2x(0.0));
+        OS_ASSERT(curve.setCoefficient3xPOW2(0.0));
+        OS_ASSERT(curve.setCoefficient4xPOW3(0.0));
+        OS_ASSERT(curve.setMinimumValueofx(0.0));
+        OS_ASSERT(curve.setMaximumValueofx(100.0));
+        Curve genericCurve = curve;
+        recordCurveRepair(setHeatingCapacityFunctionofAirFlowFractionCurve(genericCurve), genericCurve, "heating capacity air-flow-fraction curve");
+      }
+
+      constexpr auto copTemperatureField = openstudio::Coil_WaterHeating_AirToWaterHeatPump_WrappedFields::HeatingCOPFunctionofTemperatureCurveName;
+      if (needsCurveRepair(copTemperatureField, "heating COP temperature curve")) {
+        CurveBiquadratic curve(model());
+        OS_ASSERT(curve.setName("HPWH-Htg-COP-fT"));
+        OS_ASSERT(curve.setCoefficient1Constant(1.1332));
+        OS_ASSERT(curve.setCoefficient2x(0.063));
+        OS_ASSERT(curve.setCoefficient3xPOW2(-0.0000979));
+        OS_ASSERT(curve.setCoefficient4y(-0.00972));
+        OS_ASSERT(curve.setCoefficient5yPOW2(-0.0000214));
+        OS_ASSERT(curve.setCoefficient6xTIMESY(-0.000686));
+        OS_ASSERT(curve.setMinimumValueofx(0.0));
+        OS_ASSERT(curve.setMaximumValueofx(100.0));
+        OS_ASSERT(curve.setMinimumValueofy(0.0));
+        OS_ASSERT(curve.setMaximumValueofy(100.0));
+        Curve genericCurve = curve;
+        recordCurveRepair(setHeatingCOPFunctionofTemperatureCurve(genericCurve), genericCurve, "heating COP temperature curve");
+      }
+
+      constexpr auto copAirFlowField = openstudio::Coil_WaterHeating_AirToWaterHeatPump_WrappedFields::HeatingCOPFunctionofAirFlowFractionCurveName;
+      if (needsCurveRepair(copAirFlowField, "heating COP air-flow-fraction curve")) {
+        CurveCubic curve(model());
+        OS_ASSERT(curve.setName("HPWH-Htg-COP-FF"));
+        OS_ASSERT(curve.setCoefficient1Constant(1.0));
+        OS_ASSERT(curve.setCoefficient2x(0.0));
+        OS_ASSERT(curve.setCoefficient3xPOW2(0.0));
+        OS_ASSERT(curve.setCoefficient4xPOW3(0.0));
+        OS_ASSERT(curve.setMinimumValueofx(0.0));
+        OS_ASSERT(curve.setMaximumValueofx(100.0));
+        Curve genericCurve = curve;
+        recordCurveRepair(setHeatingCOPFunctionofAirFlowFractionCurve(genericCurve), genericCurve, "heating COP air-flow-fraction curve");
+      }
+
+      constexpr auto partLoadField = openstudio::Coil_WaterHeating_AirToWaterHeatPump_WrappedFields::PartLoadFractionCorrelationCurveName;
+      if (needsCurveRepair(partLoadField, "part-load fraction correlation curve")) {
+        CurveCubic curve(model());
+        OS_ASSERT(curve.setName("HPWH-COP-fPLR"));
+        OS_ASSERT(curve.setCoefficient1Constant(1.0));
+        OS_ASSERT(curve.setCoefficient2x(0.0));
+        OS_ASSERT(curve.setCoefficient3xPOW2(0.0));
+        OS_ASSERT(curve.setCoefficient4xPOW3(0.0));
+        OS_ASSERT(curve.setMinimumValueofx(0.0));
+        OS_ASSERT(curve.setMaximumValueofx(1.0));
+        Curve genericCurve = curve;
+        recordCurveRepair(setPartLoadFractionCorrelationCurve(genericCurve), genericCurve, "part-load fraction correlation curve");
+      }
     }
 
   }  // namespace detail

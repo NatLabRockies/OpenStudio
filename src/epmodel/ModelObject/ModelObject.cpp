@@ -81,7 +81,7 @@ namespace epmodel {
     static constexpr double kNoUpper = std::numeric_limits<double>::infinity();
 
     const ScheduleTypeSpec* findScheduleTypeSpec(const std::string& className, const std::string& scheduleDisplayName) {
-      static constexpr std::array<ScheduleTypeSpec, 200> specs{{
+      static constexpr std::array<ScheduleTypeSpec, 201> specs{{
         {"AirLoopHVAC", "Availability Manager Scheduled On", false, true, "Availability", 0.0, 1.0},
         {"AirLoopHVACDedicatedOutdoorAirSystem", "Availability Schedule", false, true, "Availability", 0.0, 1.0},
         {"AirConditionerVariableRefrigerantFlow", "Availability Schedule", false, true, "Availability", 0.0, 1.0},
@@ -227,6 +227,7 @@ namespace epmodel {
         {"ChillerElectricReformulatedEIR", "Heat Recovery Inlet High Temperature Limit", true, true, "Temperature", kNoLower, kNoUpper},
         {"ChillerElectricReformulatedEIR", "Temperature Difference Across Condenser", true, true, "Temperature", kNoLower, kNoUpper},
         {"CoilWaterHeatingAirToWaterHeatPump", "Availability Schedule", false, true, "Availability", 0.0, 1.0},
+        {"CoilWaterHeatingAirToWaterHeatPumpWrapped", "Availability Schedule", false, true, "Availability", 0.0, 1.0},
         {"CoilCoolingWaterToAirHeatPumpEquationFit", "Availability Schedule", false, true, "Availability", 0.0, 1.0},
         {"CoilHeatingWaterToAirHeatPumpEquationFit", "Availability Schedule", false, true, "Availability", 0.0, 1.0},
         {"CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit", "Availability Schedule", false, true, "Availability", 0.0, 1.0},
