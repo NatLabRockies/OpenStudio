@@ -12,6 +12,8 @@
 
 namespace openstudio {
 namespace epmodel {
+  class Schedule;
+
   namespace detail {
 
     class EPMODEL_API RefrigerationCase_Impl : public ParentObject_Impl
@@ -24,6 +26,10 @@ namespace epmodel {
       bool isRatedAmbientTemperatureDefaulted() const;
       bool setRatedAmbientTemperature(double ratedAmbientTemperature);
       void resetRatedAmbientTemperature();
+
+      boost::optional<Schedule> availabilitySchedule() const;
+      bool setAvailabilitySchedule(Schedule& schedule);
+      void resetAvailabilitySchedule();
 
       double ratedAmbientRelativeHumidity() const;
       bool isRatedAmbientRelativeHumidityDefaulted() const;
@@ -79,6 +85,10 @@ namespace epmodel {
       bool setInstalledCaseLightingPowerperUnitLength(double installedCaseLightingPowerperUnitLength);
       void resetInstalledCaseLightingPowerperUnitLength();
 
+      boost::optional<Schedule> caseLightingSchedule() const;
+      bool setCaseLightingSchedule(Schedule& schedule);
+      void resetCaseLightingSchedule();
+
       double fractionofLightingEnergytoCase() const;
       bool isFractionofLightingEnergytoCaseDefaulted() const;
       bool setFractionofLightingEnergytoCase(double fractionofLightingEnergytoCase);
@@ -124,6 +134,14 @@ namespace epmodel {
       bool setCaseDefrostType(const std::string& caseDefrostType);
       void resetCaseDefrostType();
 
+      boost::optional<Schedule> caseDefrostSchedule() const;
+      bool setCaseDefrostSchedule(Schedule& schedule);
+      void resetCaseDefrostSchedule();
+
+      boost::optional<Schedule> caseDefrostDripDownSchedule() const;
+      bool setCaseDefrostDripDownSchedule(Schedule& schedule);
+      void resetCaseDefrostDripDownSchedule();
+
       std::string defrostEnergyCorrectionCurveType() const;
       bool isDefrostEnergyCorrectionCurveTypeDefaulted() const;
       bool setDefrostEnergyCorrectionCurveType(const std::string& defrostEnergyCorrectionCurveType);
@@ -133,6 +151,14 @@ namespace epmodel {
       bool isUnderCaseHVACReturnAirFractionDefaulted() const;
       bool setUnderCaseHVACReturnAirFraction(double underCaseHVACReturnAirFraction);
       void resetUnderCaseHVACReturnAirFraction();
+
+      boost::optional<Schedule> refrigeratedCaseRestockingSchedule() const;
+      bool setRefrigeratedCaseRestockingSchedule(Schedule& schedule);
+      void resetRefrigeratedCaseRestockingSchedule();
+
+      boost::optional<Schedule> caseCreditFractionSchedule() const;
+      bool setCaseCreditFractionSchedule(Schedule& schedule);
+      void resetCaseCreditFractionSchedule();
 
       boost::optional<double> designEvaporatorTemperatureorBrineInletTemperature() const;
       bool setDesignEvaporatorTemperatureorBrineInletTemperature(double designEvaporatorTemperatureorBrineInletTemperature);

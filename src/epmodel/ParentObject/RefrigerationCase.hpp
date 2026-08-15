@@ -19,6 +19,7 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class Schedule;
 
   namespace detail {
     class RefrigerationCase_Impl;
@@ -43,18 +44,20 @@ namespace epmodel {
     static std::vector<std::string> defrostEnergyCorrectionCurveTypeValues();
 
     // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::RefrigerationCase scalar accessor names/signatures for the simple numeric and
-    //   choice fields that map directly to EnergyPlus Refrigeration:Case.
-    // - Field Mapping: Refrigeration_Case_FieldEnums and ForwardTranslateRefrigerationCase.cpp evidence that the retained
-    //   scalars (rated ambient stats, fan/lighting powers, anti-sweat heater and defrost controls, etc.) map directly to
-    //   Refrigeration:Case field enums.
-    // - Field Mapping: Availability Schedule Name, Zone Name, Latent Case Credit Curve Name, Case Lighting Schedule Name,
-    //   Case Defrost Schedule Name, Case Defrost Drip-Down Schedule Name, Defrost Energy Correction Curve Name,
-    //   Refrigerated Case Restocking Schedule Name, Case Credit Fraction Schedule Name, and Under Case HVAC Return Air
-    //   Node Name are richer relationship-like fields and are intentionally excluded from this scalar-only scaffold.
+    // - Status: Partial Parity. Scalar fields and six optional direct schedule relationships are aligned.
+    // - Canonical Counterpart: openstudio::model::RefrigerationCase.
+    // - Implemented Parity: Availability, lighting, defrost, drip-down, restocking, and credit-fraction schedules preserve canonical
+    //   getter/setter/reset signatures with registered schedule type validation.
+    // - Field/Storage Mapping: Those schedules map directly to Refrigeration:Case ScheduleNames fields; retained scalar fields map through
+    //   Refrigeration_Case_FieldEnums.
+    // - Remaining Parity Work: Zone, curve, under-case return-air-node, and refrigeration-system ownership relationships remain omitted.
 
     /** @name Getters */
     //@{
+    boost::optional<Schedule> availabilitySchedule() const;
+    bool setAvailabilitySchedule(Schedule& schedule);
+    void resetAvailabilitySchedule();
+
     double ratedAmbientTemperature() const;
     bool isRatedAmbientTemperatureDefaulted() const;
     bool setRatedAmbientTemperature(double ratedAmbientTemperature);
@@ -114,6 +117,10 @@ namespace epmodel {
     bool setInstalledCaseLightingPowerperUnitLength(double installedCaseLightingPowerperUnitLength);
     void resetInstalledCaseLightingPowerperUnitLength();
 
+    boost::optional<Schedule> caseLightingSchedule() const;
+    bool setCaseLightingSchedule(Schedule& schedule);
+    void resetCaseLightingSchedule();
+
     double fractionofLightingEnergytoCase() const;
     bool isFractionofLightingEnergytoCaseDefaulted() const;
     bool setFractionofLightingEnergytoCase(double fractionofLightingEnergytoCase);
@@ -159,6 +166,14 @@ namespace epmodel {
     bool setCaseDefrostType(const std::string& caseDefrostType);
     void resetCaseDefrostType();
 
+    boost::optional<Schedule> caseDefrostSchedule() const;
+    bool setCaseDefrostSchedule(Schedule& schedule);
+    void resetCaseDefrostSchedule();
+
+    boost::optional<Schedule> caseDefrostDripDownSchedule() const;
+    bool setCaseDefrostDripDownSchedule(Schedule& schedule);
+    void resetCaseDefrostDripDownSchedule();
+
     std::string defrostEnergyCorrectionCurveType() const;
     bool isDefrostEnergyCorrectionCurveTypeDefaulted() const;
     bool setDefrostEnergyCorrectionCurveType(const std::string& defrostEnergyCorrectionCurveType);
@@ -168,6 +183,14 @@ namespace epmodel {
     bool isUnderCaseHVACReturnAirFractionDefaulted() const;
     bool setUnderCaseHVACReturnAirFraction(double underCaseHVACReturnAirFraction);
     void resetUnderCaseHVACReturnAirFraction();
+
+    boost::optional<Schedule> refrigeratedCaseRestockingSchedule() const;
+    bool setRefrigeratedCaseRestockingSchedule(Schedule& schedule);
+    void resetRefrigeratedCaseRestockingSchedule();
+
+    boost::optional<Schedule> caseCreditFractionSchedule() const;
+    bool setCaseCreditFractionSchedule(Schedule& schedule);
+    void resetCaseCreditFractionSchedule();
 
     boost::optional<double> designEvaporatorTemperatureorBrineInletTemperature() const;
     bool setDesignEvaporatorTemperatureorBrineInletTemperature(double designEvaporatorTemperatureorBrineInletTemperature);

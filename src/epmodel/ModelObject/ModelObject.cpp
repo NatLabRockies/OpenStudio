@@ -81,7 +81,7 @@ namespace epmodel {
     static constexpr double kNoUpper = std::numeric_limits<double>::infinity();
 
     const ScheduleTypeSpec* findScheduleTypeSpec(const std::string& className, const std::string& scheduleDisplayName) {
-      static constexpr std::array<ScheduleTypeSpec, 183> specs{{
+      static constexpr std::array<ScheduleTypeSpec, 189> specs{{
         {"AirLoopHVAC", "Availability Manager Scheduled On", false, true, "Availability", 0.0, 1.0},
         {"AirLoopHVACDedicatedOutdoorAirSystem", "Availability Schedule", false, true, "Availability", 0.0, 1.0},
         {"AirConditionerVariableRefrigerantFlow", "Availability Schedule", false, true, "Availability", 0.0, 1.0},
@@ -192,6 +192,12 @@ namespace epmodel {
         {"WaterUseConnections", "Cold Water Supply Temperature", true, true, "Temperature", kNoLower, kNoUpper},
         {"HeatPumpAirToWater", "Operating Mode Control", false, true, "", 0.0, 2.0},
         {"RefrigerationCondenserWaterCooled", "Water Outlet Temperature", true, true, "Temperature", kNoLower, kNoUpper},
+        {"RefrigerationCase", "Availability", false, true, "Availability", 0.0, 1.0},
+        {"RefrigerationCase", "Case Lighting", true, true, "", 0.0, 1.0},
+        {"RefrigerationCase", "Case Defrost", true, true, "", 0.0, 1.0},
+        {"RefrigerationCase", "Case Defrost Drip-Down", true, true, "", 0.0, 1.0},
+        {"RefrigerationCase", "Refrigerated Case Restocking", true, true, "LinearPowerDensity", 0.0, kNoUpper},
+        {"RefrigerationCase", "Case Credit Fraction", true, true, "", 0.0, 1.0},
         {"RefrigerationCompressorRack", "Water Cooled Condenser Outlet Temperature", true, true, "Temperature", kNoLower, kNoUpper},
         {"RefrigerationCompressorRack", "Evaporative Condenser Availability", false, true, "Availability", 0.0, 1.0},
         {"CentralHeatPumpSystem", "Ancillary Operation", false, true, "Availability", 0.0, 1.0},

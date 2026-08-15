@@ -7,9 +7,14 @@
 #include "ParentObject/RefrigerationCase_Impl.hpp"
 
 #include "Model.hpp"
+#include "ModelObject.hpp"
+#include "Schedule/Schedule.hpp"
+#include "Schedule/Schedule_Impl.hpp"
 
+#include <utilities/core/Assert.hpp>
 #include <utilities/idd/IddFactory.hxx>
 #include <utilities/idd/Refrigeration_Case_FieldEnums.hxx>
+#include <utilities/idf/IdfObject_Impl.hpp>
 
 namespace openstudio {
 namespace epmodel {
@@ -36,6 +41,18 @@ namespace epmodel {
 
   std::vector<std::string> RefrigerationCase::defrostEnergyCorrectionCurveTypeValues() {
     return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), Refrigeration_CaseFields::DefrostEnergyCorrectionCurveType);
+  }
+
+  boost::optional<Schedule> RefrigerationCase::availabilitySchedule() const {
+    return getImpl<detail::RefrigerationCase_Impl>()->availabilitySchedule();
+  }
+
+  bool RefrigerationCase::setAvailabilitySchedule(Schedule& schedule) {
+    return getImpl<detail::RefrigerationCase_Impl>()->setAvailabilitySchedule(schedule);
+  }
+
+  void RefrigerationCase::resetAvailabilitySchedule() {
+    getImpl<detail::RefrigerationCase_Impl>()->resetAvailabilitySchedule();
   }
 
   double RefrigerationCase::ratedAmbientTemperature() const {
@@ -226,6 +243,18 @@ namespace epmodel {
     getImpl<detail::RefrigerationCase_Impl>()->resetInstalledCaseLightingPowerperUnitLength();
   }
 
+  boost::optional<Schedule> RefrigerationCase::caseLightingSchedule() const {
+    return getImpl<detail::RefrigerationCase_Impl>()->caseLightingSchedule();
+  }
+
+  bool RefrigerationCase::setCaseLightingSchedule(Schedule& schedule) {
+    return getImpl<detail::RefrigerationCase_Impl>()->setCaseLightingSchedule(schedule);
+  }
+
+  void RefrigerationCase::resetCaseLightingSchedule() {
+    getImpl<detail::RefrigerationCase_Impl>()->resetCaseLightingSchedule();
+  }
+
   double RefrigerationCase::fractionofLightingEnergytoCase() const {
     return getImpl<detail::RefrigerationCase_Impl>()->fractionofLightingEnergytoCase();
   }
@@ -370,6 +399,30 @@ namespace epmodel {
     getImpl<detail::RefrigerationCase_Impl>()->resetCaseDefrostType();
   }
 
+  boost::optional<Schedule> RefrigerationCase::caseDefrostSchedule() const {
+    return getImpl<detail::RefrigerationCase_Impl>()->caseDefrostSchedule();
+  }
+
+  bool RefrigerationCase::setCaseDefrostSchedule(Schedule& schedule) {
+    return getImpl<detail::RefrigerationCase_Impl>()->setCaseDefrostSchedule(schedule);
+  }
+
+  void RefrigerationCase::resetCaseDefrostSchedule() {
+    getImpl<detail::RefrigerationCase_Impl>()->resetCaseDefrostSchedule();
+  }
+
+  boost::optional<Schedule> RefrigerationCase::caseDefrostDripDownSchedule() const {
+    return getImpl<detail::RefrigerationCase_Impl>()->caseDefrostDripDownSchedule();
+  }
+
+  bool RefrigerationCase::setCaseDefrostDripDownSchedule(Schedule& schedule) {
+    return getImpl<detail::RefrigerationCase_Impl>()->setCaseDefrostDripDownSchedule(schedule);
+  }
+
+  void RefrigerationCase::resetCaseDefrostDripDownSchedule() {
+    getImpl<detail::RefrigerationCase_Impl>()->resetCaseDefrostDripDownSchedule();
+  }
+
   std::string RefrigerationCase::defrostEnergyCorrectionCurveType() const {
     return getImpl<detail::RefrigerationCase_Impl>()->defrostEnergyCorrectionCurveType();
   }
@@ -402,6 +455,30 @@ namespace epmodel {
     getImpl<detail::RefrigerationCase_Impl>()->resetUnderCaseHVACReturnAirFraction();
   }
 
+  boost::optional<Schedule> RefrigerationCase::refrigeratedCaseRestockingSchedule() const {
+    return getImpl<detail::RefrigerationCase_Impl>()->refrigeratedCaseRestockingSchedule();
+  }
+
+  bool RefrigerationCase::setRefrigeratedCaseRestockingSchedule(Schedule& schedule) {
+    return getImpl<detail::RefrigerationCase_Impl>()->setRefrigeratedCaseRestockingSchedule(schedule);
+  }
+
+  void RefrigerationCase::resetRefrigeratedCaseRestockingSchedule() {
+    getImpl<detail::RefrigerationCase_Impl>()->resetRefrigeratedCaseRestockingSchedule();
+  }
+
+  boost::optional<Schedule> RefrigerationCase::caseCreditFractionSchedule() const {
+    return getImpl<detail::RefrigerationCase_Impl>()->caseCreditFractionSchedule();
+  }
+
+  bool RefrigerationCase::setCaseCreditFractionSchedule(Schedule& schedule) {
+    return getImpl<detail::RefrigerationCase_Impl>()->setCaseCreditFractionSchedule(schedule);
+  }
+
+  void RefrigerationCase::resetCaseCreditFractionSchedule() {
+    getImpl<detail::RefrigerationCase_Impl>()->resetCaseCreditFractionSchedule();
+  }
+
   boost::optional<double> RefrigerationCase::designEvaporatorTemperatureorBrineInletTemperature() const {
     return getImpl<detail::RefrigerationCase_Impl>()->designEvaporatorTemperatureorBrineInletTemperature();
   }
@@ -431,5 +508,95 @@ namespace epmodel {
     getImpl<detail::RefrigerationCase_Impl>()->resetAverageRefrigerantChargeInventory();
   }
 
+  namespace detail {
+
+    boost::optional<Schedule> RefrigerationCase_Impl::availabilitySchedule() const {
+      return getObject<ModelObject>().getModelObjectTarget<Schedule>(Refrigeration_CaseFields::AvailabilityScheduleName);
+    }
+
+    bool RefrigerationCase_Impl::setAvailabilitySchedule(Schedule& schedule) {
+      return ModelObject_Impl::setSchedule(Refrigeration_CaseFields::AvailabilityScheduleName, "RefrigerationCase", "Availability", schedule);
+    }
+
+    void RefrigerationCase_Impl::resetAvailabilitySchedule() {
+      constexpr auto field = Refrigeration_CaseFields::AvailabilityScheduleName;
+      OS_ASSERT(setPointer(field, Handle(), false));
+      OS_ASSERT(openstudio::detail::IdfObject_Impl::setString(field, "", false));
+    }
+
+    boost::optional<Schedule> RefrigerationCase_Impl::caseLightingSchedule() const {
+      return getObject<ModelObject>().getModelObjectTarget<Schedule>(Refrigeration_CaseFields::CaseLightingScheduleName);
+    }
+
+    bool RefrigerationCase_Impl::setCaseLightingSchedule(Schedule& schedule) {
+      return ModelObject_Impl::setSchedule(Refrigeration_CaseFields::CaseLightingScheduleName, "RefrigerationCase", "Case Lighting", schedule);
+    }
+
+    void RefrigerationCase_Impl::resetCaseLightingSchedule() {
+      constexpr auto field = Refrigeration_CaseFields::CaseLightingScheduleName;
+      OS_ASSERT(setPointer(field, Handle(), false));
+      OS_ASSERT(openstudio::detail::IdfObject_Impl::setString(field, "", false));
+    }
+
+    boost::optional<Schedule> RefrigerationCase_Impl::caseDefrostSchedule() const {
+      return getObject<ModelObject>().getModelObjectTarget<Schedule>(Refrigeration_CaseFields::CaseDefrostScheduleName);
+    }
+
+    bool RefrigerationCase_Impl::setCaseDefrostSchedule(Schedule& schedule) {
+      return ModelObject_Impl::setSchedule(Refrigeration_CaseFields::CaseDefrostScheduleName, "RefrigerationCase", "Case Defrost", schedule);
+    }
+
+    void RefrigerationCase_Impl::resetCaseDefrostSchedule() {
+      constexpr auto field = Refrigeration_CaseFields::CaseDefrostScheduleName;
+      OS_ASSERT(setPointer(field, Handle(), false));
+      OS_ASSERT(openstudio::detail::IdfObject_Impl::setString(field, "", false));
+    }
+
+    boost::optional<Schedule> RefrigerationCase_Impl::caseDefrostDripDownSchedule() const {
+      return getObject<ModelObject>().getModelObjectTarget<Schedule>(Refrigeration_CaseFields::CaseDefrostDripDownScheduleName);
+    }
+
+    bool RefrigerationCase_Impl::setCaseDefrostDripDownSchedule(Schedule& schedule) {
+      return ModelObject_Impl::setSchedule(Refrigeration_CaseFields::CaseDefrostDripDownScheduleName, "RefrigerationCase", "Case Defrost Drip-Down",
+                                           schedule);
+    }
+
+    void RefrigerationCase_Impl::resetCaseDefrostDripDownSchedule() {
+      constexpr auto field = Refrigeration_CaseFields::CaseDefrostDripDownScheduleName;
+      OS_ASSERT(setPointer(field, Handle(), false));
+      OS_ASSERT(openstudio::detail::IdfObject_Impl::setString(field, "", false));
+    }
+
+    boost::optional<Schedule> RefrigerationCase_Impl::refrigeratedCaseRestockingSchedule() const {
+      return getObject<ModelObject>().getModelObjectTarget<Schedule>(Refrigeration_CaseFields::RefrigeratedCaseRestockingScheduleName);
+    }
+
+    bool RefrigerationCase_Impl::setRefrigeratedCaseRestockingSchedule(Schedule& schedule) {
+      return ModelObject_Impl::setSchedule(Refrigeration_CaseFields::RefrigeratedCaseRestockingScheduleName, "RefrigerationCase",
+                                           "Refrigerated Case Restocking", schedule);
+    }
+
+    void RefrigerationCase_Impl::resetRefrigeratedCaseRestockingSchedule() {
+      constexpr auto field = Refrigeration_CaseFields::RefrigeratedCaseRestockingScheduleName;
+      OS_ASSERT(setPointer(field, Handle(), false));
+      OS_ASSERT(openstudio::detail::IdfObject_Impl::setString(field, "", false));
+    }
+
+    boost::optional<Schedule> RefrigerationCase_Impl::caseCreditFractionSchedule() const {
+      return getObject<ModelObject>().getModelObjectTarget<Schedule>(Refrigeration_CaseFields::CaseCreditFractionScheduleName);
+    }
+
+    bool RefrigerationCase_Impl::setCaseCreditFractionSchedule(Schedule& schedule) {
+      return ModelObject_Impl::setSchedule(Refrigeration_CaseFields::CaseCreditFractionScheduleName, "RefrigerationCase", "Case Credit Fraction",
+                                           schedule);
+    }
+
+    void RefrigerationCase_Impl::resetCaseCreditFractionSchedule() {
+      constexpr auto field = Refrigeration_CaseFields::CaseCreditFractionScheduleName;
+      OS_ASSERT(setPointer(field, Handle(), false));
+      OS_ASSERT(openstudio::detail::IdfObject_Impl::setString(field, "", false));
+    }
+
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
