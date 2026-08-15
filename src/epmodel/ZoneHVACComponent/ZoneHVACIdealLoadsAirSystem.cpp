@@ -7,6 +7,8 @@
 #include "ZoneHVACComponent/ZoneHVACIdealLoadsAirSystem_Impl.hpp"
 
 #include "Model.hpp"
+#include "Schedule/Schedule.hpp"
+#include "Schedule/Schedule_Impl.hpp"
 
 #include <utility>
 
@@ -70,6 +72,18 @@ namespace epmodel {
 
   std::vector<std::string> ZoneHVACIdealLoadsAirSystem::coolingFuelTypeValues() {
     return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), ZoneHVAC_IdealLoadsAirSystemFields::CoolingFuelType);
+  }
+
+  boost::optional<Schedule> ZoneHVACIdealLoadsAirSystem::availabilitySchedule() const {
+    return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->availabilitySchedule();
+  }
+
+  bool ZoneHVACIdealLoadsAirSystem::setAvailabilitySchedule(Schedule& availabilitySchedule) {
+    return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->setAvailabilitySchedule(availabilitySchedule);
+  }
+
+  void ZoneHVACIdealLoadsAirSystem::resetAvailabilitySchedule() {
+    getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->resetAvailabilitySchedule();
   }
 
   double ZoneHVACIdealLoadsAirSystem::maximumHeatingSupplyAirTemperature() const {
@@ -264,6 +278,30 @@ namespace epmodel {
     return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->autosizedMaximumTotalCoolingCapacity();
   }
 
+  boost::optional<Schedule> ZoneHVACIdealLoadsAirSystem::heatingAvailabilitySchedule() const {
+    return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->heatingAvailabilitySchedule();
+  }
+
+  bool ZoneHVACIdealLoadsAirSystem::setHeatingAvailabilitySchedule(Schedule& heatingAvailabilitySchedule) {
+    return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->setHeatingAvailabilitySchedule(heatingAvailabilitySchedule);
+  }
+
+  void ZoneHVACIdealLoadsAirSystem::resetHeatingAvailabilitySchedule() {
+    getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->resetHeatingAvailabilitySchedule();
+  }
+
+  boost::optional<Schedule> ZoneHVACIdealLoadsAirSystem::coolingAvailabilitySchedule() const {
+    return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->coolingAvailabilitySchedule();
+  }
+
+  bool ZoneHVACIdealLoadsAirSystem::setCoolingAvailabilitySchedule(Schedule& coolingAvailabilitySchedule) {
+    return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->setCoolingAvailabilitySchedule(coolingAvailabilitySchedule);
+  }
+
+  void ZoneHVACIdealLoadsAirSystem::resetCoolingAvailabilitySchedule() {
+    getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->resetCoolingAvailabilitySchedule();
+  }
+
   std::string ZoneHVACIdealLoadsAirSystem::dehumidificationControlType() const {
     return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->dehumidificationControlType();
   }
@@ -392,12 +430,36 @@ namespace epmodel {
     getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->resetLatentHeatRecoveryEffectiveness();
   }
 
+  boost::optional<Schedule> ZoneHVACIdealLoadsAirSystem::heatingFuelEfficiencySchedule() const {
+    return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->heatingFuelEfficiencySchedule();
+  }
+
+  bool ZoneHVACIdealLoadsAirSystem::setHeatingFuelEfficiencySchedule(Schedule& heatingFuelEfficiencySchedule) {
+    return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->setHeatingFuelEfficiencySchedule(heatingFuelEfficiencySchedule);
+  }
+
+  void ZoneHVACIdealLoadsAirSystem::resetHeatingFuelEfficiencySchedule() {
+    getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->resetHeatingFuelEfficiencySchedule();
+  }
+
   std::string ZoneHVACIdealLoadsAirSystem::heatingFuelType() const {
     return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->heatingFuelType();
   }
 
   bool ZoneHVACIdealLoadsAirSystem::setHeatingFuelType(const std::string& heatingFuelType) {
     return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->setHeatingFuelType(heatingFuelType);
+  }
+
+  boost::optional<Schedule> ZoneHVACIdealLoadsAirSystem::coolingFuelEfficiencySchedule() const {
+    return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->coolingFuelEfficiencySchedule();
+  }
+
+  bool ZoneHVACIdealLoadsAirSystem::setCoolingFuelEfficiencySchedule(Schedule& coolingFuelEfficiencySchedule) {
+    return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->setCoolingFuelEfficiencySchedule(coolingFuelEfficiencySchedule);
+  }
+
+  void ZoneHVACIdealLoadsAirSystem::resetCoolingFuelEfficiencySchedule() {
+    getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->resetCoolingFuelEfficiencySchedule();
   }
 
   std::string ZoneHVACIdealLoadsAirSystem::coolingFuelType() const {
@@ -416,6 +478,21 @@ namespace epmodel {
 
     unsigned ZoneHVACIdealLoadsAirSystem_Impl::outletPort() const {
       return ZoneHVAC_IdealLoadsAirSystemFields::ZoneExhaustAirNodeName;
+    }
+
+    boost::optional<Schedule> ZoneHVACIdealLoadsAirSystem_Impl::availabilitySchedule() const {
+      return getObject<ModelObject>().getModelObjectTarget<Schedule>(ZoneHVAC_IdealLoadsAirSystemFields::AvailabilityScheduleName);
+    }
+
+    bool ZoneHVACIdealLoadsAirSystem_Impl::setAvailabilitySchedule(Schedule& availabilitySchedule) {
+      return ModelObject_Impl::setSchedule(ZoneHVAC_IdealLoadsAirSystemFields::AvailabilityScheduleName, "ZoneHVACIdealLoadsAirSystem",
+                                           "Availability", availabilitySchedule);
+    }
+
+    void ZoneHVACIdealLoadsAirSystem_Impl::resetAvailabilitySchedule() {
+      constexpr auto field = ZoneHVAC_IdealLoadsAirSystemFields::AvailabilityScheduleName;
+      OS_ASSERT(setPointer(field, Handle(), false));
+      OS_ASSERT(openstudio::detail::IdfObject_Impl::setString(field, "", false));
     }
 
     double ZoneHVACIdealLoadsAirSystem_Impl::maximumHeatingSupplyAirTemperature() const {
@@ -526,6 +603,36 @@ namespace epmodel {
       return result;
     }
 
+    boost::optional<Schedule> ZoneHVACIdealLoadsAirSystem_Impl::heatingAvailabilitySchedule() const {
+      return getObject<ModelObject>().getModelObjectTarget<Schedule>(ZoneHVAC_IdealLoadsAirSystemFields::HeatingAvailabilityScheduleName);
+    }
+
+    bool ZoneHVACIdealLoadsAirSystem_Impl::setHeatingAvailabilitySchedule(Schedule& heatingAvailabilitySchedule) {
+      return ModelObject_Impl::setSchedule(ZoneHVAC_IdealLoadsAirSystemFields::HeatingAvailabilityScheduleName, "ZoneHVACIdealLoadsAirSystem",
+                                           "Heating Availability", heatingAvailabilitySchedule);
+    }
+
+    void ZoneHVACIdealLoadsAirSystem_Impl::resetHeatingAvailabilitySchedule() {
+      constexpr auto field = ZoneHVAC_IdealLoadsAirSystemFields::HeatingAvailabilityScheduleName;
+      OS_ASSERT(setPointer(field, Handle(), false));
+      OS_ASSERT(openstudio::detail::IdfObject_Impl::setString(field, "", false));
+    }
+
+    boost::optional<Schedule> ZoneHVACIdealLoadsAirSystem_Impl::coolingAvailabilitySchedule() const {
+      return getObject<ModelObject>().getModelObjectTarget<Schedule>(ZoneHVAC_IdealLoadsAirSystemFields::CoolingAvailabilityScheduleName);
+    }
+
+    bool ZoneHVACIdealLoadsAirSystem_Impl::setCoolingAvailabilitySchedule(Schedule& coolingAvailabilitySchedule) {
+      return ModelObject_Impl::setSchedule(ZoneHVAC_IdealLoadsAirSystemFields::CoolingAvailabilityScheduleName, "ZoneHVACIdealLoadsAirSystem",
+                                           "Cooling Availability", coolingAvailabilitySchedule);
+    }
+
+    void ZoneHVACIdealLoadsAirSystem_Impl::resetCoolingAvailabilitySchedule() {
+      constexpr auto field = ZoneHVAC_IdealLoadsAirSystemFields::CoolingAvailabilityScheduleName;
+      OS_ASSERT(setPointer(field, Handle(), false));
+      OS_ASSERT(openstudio::detail::IdfObject_Impl::setString(field, "", false));
+    }
+
     std::string ZoneHVACIdealLoadsAirSystem_Impl::dehumidificationControlType() const {
       auto value = getString(ZoneHVAC_IdealLoadsAirSystemFields::DehumidificationControlType, true);
       OS_ASSERT(value);
@@ -604,6 +711,21 @@ namespace epmodel {
 
     bool ZoneHVACIdealLoadsAirSystem_Impl::isLatentHeatRecoveryEffectivenessDefaulted() const {
       return isEmpty(ZoneHVAC_IdealLoadsAirSystemFields::LatentHeatRecoveryEffectiveness);
+    }
+
+    boost::optional<Schedule> ZoneHVACIdealLoadsAirSystem_Impl::heatingFuelEfficiencySchedule() const {
+      return getObject<ModelObject>().getModelObjectTarget<Schedule>(ZoneHVAC_IdealLoadsAirSystemFields::HeatingFuelEfficiencyScheduleName);
+    }
+
+    bool ZoneHVACIdealLoadsAirSystem_Impl::setHeatingFuelEfficiencySchedule(Schedule& heatingFuelEfficiencySchedule) {
+      return ModelObject_Impl::setSchedule(ZoneHVAC_IdealLoadsAirSystemFields::HeatingFuelEfficiencyScheduleName, "ZoneHVACIdealLoadsAirSystem",
+                                           "Heating Fuel Efficiency", heatingFuelEfficiencySchedule);
+    }
+
+    void ZoneHVACIdealLoadsAirSystem_Impl::resetHeatingFuelEfficiencySchedule() {
+      constexpr auto field = ZoneHVAC_IdealLoadsAirSystemFields::HeatingFuelEfficiencyScheduleName;
+      OS_ASSERT(setPointer(field, Handle(), false));
+      OS_ASSERT(openstudio::detail::IdfObject_Impl::setString(field, "", false));
     }
 
     std::string ZoneHVACIdealLoadsAirSystem_Impl::heatingFuelType() const {
@@ -834,6 +956,21 @@ namespace epmodel {
       const bool result = setString(ZoneHVAC_IdealLoadsAirSystemFields::HeatingFuelType, heatingFuelType);
       OS_ASSERT(result);
       return result;
+    }
+
+    boost::optional<Schedule> ZoneHVACIdealLoadsAirSystem_Impl::coolingFuelEfficiencySchedule() const {
+      return getObject<ModelObject>().getModelObjectTarget<Schedule>(ZoneHVAC_IdealLoadsAirSystemFields::CoolingFuelEfficiencyScheduleName);
+    }
+
+    bool ZoneHVACIdealLoadsAirSystem_Impl::setCoolingFuelEfficiencySchedule(Schedule& coolingFuelEfficiencySchedule) {
+      return ModelObject_Impl::setSchedule(ZoneHVAC_IdealLoadsAirSystemFields::CoolingFuelEfficiencyScheduleName, "ZoneHVACIdealLoadsAirSystem",
+                                           "Cooling Fuel Efficiency", coolingFuelEfficiencySchedule);
+    }
+
+    void ZoneHVACIdealLoadsAirSystem_Impl::resetCoolingFuelEfficiencySchedule() {
+      constexpr auto field = ZoneHVAC_IdealLoadsAirSystemFields::CoolingFuelEfficiencyScheduleName;
+      OS_ASSERT(setPointer(field, Handle(), false));
+      OS_ASSERT(openstudio::detail::IdfObject_Impl::setString(field, "", false));
     }
 
     bool ZoneHVACIdealLoadsAirSystem_Impl::setCoolingFuelType(const std::string& coolingFuelType) {

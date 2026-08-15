@@ -14,6 +14,8 @@
 namespace openstudio {
 namespace epmodel {
 
+  class Schedule;
+
   namespace detail {
 
     class EPMODEL_API ZoneHVACIdealLoadsAirSystem_Impl : public ZoneHVACComponent_Impl
@@ -24,6 +26,10 @@ namespace epmodel {
 
       unsigned inletPort() const override;
       unsigned outletPort() const override;
+
+      boost::optional<Schedule> availabilitySchedule() const;
+      bool setAvailabilitySchedule(Schedule& availabilitySchedule);
+      void resetAvailabilitySchedule();
 
       double maximumHeatingSupplyAirTemperature() const;
       bool isMaximumHeatingSupplyAirTemperatureDefaulted() const;
@@ -83,6 +89,14 @@ namespace epmodel {
       void autosizeMaximumTotalCoolingCapacity();
       boost::optional<double> autosizedMaximumTotalCoolingCapacity() const;
 
+      boost::optional<Schedule> heatingAvailabilitySchedule() const;
+      bool setHeatingAvailabilitySchedule(Schedule& heatingAvailabilitySchedule);
+      void resetHeatingAvailabilitySchedule();
+
+      boost::optional<Schedule> coolingAvailabilitySchedule() const;
+      bool setCoolingAvailabilitySchedule(Schedule& coolingAvailabilitySchedule);
+      void resetCoolingAvailabilitySchedule();
+
       std::string dehumidificationControlType() const;
       bool isDehumidificationControlTypeDefaulted() const;
       bool setDehumidificationControlType(const std::string& dehumidificationControlType);
@@ -123,8 +137,16 @@ namespace epmodel {
       bool setLatentHeatRecoveryEffectiveness(double latentHeatRecoveryEffectiveness);
       void resetLatentHeatRecoveryEffectiveness();
 
+      boost::optional<Schedule> heatingFuelEfficiencySchedule() const;
+      bool setHeatingFuelEfficiencySchedule(Schedule& heatingFuelEfficiencySchedule);
+      void resetHeatingFuelEfficiencySchedule();
+
       std::string heatingFuelType() const;
       bool setHeatingFuelType(const std::string& heatingFuelType);
+
+      boost::optional<Schedule> coolingFuelEfficiencySchedule() const;
+      bool setCoolingFuelEfficiencySchedule(Schedule& coolingFuelEfficiencySchedule);
+      void resetCoolingFuelEfficiencySchedule();
 
       std::string coolingFuelType() const;
       bool setCoolingFuelType(const std::string& coolingFuelType);
