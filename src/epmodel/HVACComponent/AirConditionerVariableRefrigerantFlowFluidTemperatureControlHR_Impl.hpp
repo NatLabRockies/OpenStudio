@@ -160,6 +160,10 @@ namespace epmodel {
       std::string defrostControl() const;
       bool setDefrostControl(const std::string& defrostControl);
 
+      boost::optional<Curve> defrostEnergyInputRatioModifierFunctionofTemperatureCurve() const;
+      bool setDefrostEnergyInputRatioModifierFunctionofTemperatureCurve(const Curve& curve);
+      void resetDefrostEnergyInputRatioModifierFunctionofTemperatureCurve();
+
       double defrostTimePeriodFraction() const;
       bool setDefrostTimePeriodFraction(double defrostTimePeriodFraction);
 

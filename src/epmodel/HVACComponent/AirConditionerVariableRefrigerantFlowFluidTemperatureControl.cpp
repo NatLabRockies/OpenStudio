@@ -18,6 +18,7 @@
 #include "ZoneHVACComponent/ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl.hpp"
 
 #include <utilities/core/Assert.hpp>
+#include <utilities/core/Logger.hpp>
 #include <utilities/core/StringHelpers.hpp>
 #include <utilities/idd/AirConditioner_VariableRefrigerantFlow_FluidTemperatureControl_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
@@ -420,6 +421,23 @@ namespace epmodel {
     return getImpl<detail::AirConditionerVariableRefrigerantFlowFluidTemperatureControl_Impl>()->setDefrostControl(defrostControl);
   }
 
+  boost::optional<Curve>
+    AirConditionerVariableRefrigerantFlowFluidTemperatureControl::defrostEnergyInputRatioModifierFunctionofTemperatureCurve() const {
+    return getImpl<detail::AirConditionerVariableRefrigerantFlowFluidTemperatureControl_Impl>()
+      ->defrostEnergyInputRatioModifierFunctionofTemperatureCurve();
+  }
+
+  bool
+    AirConditionerVariableRefrigerantFlowFluidTemperatureControl::setDefrostEnergyInputRatioModifierFunctionofTemperatureCurve(const Curve& curve) {
+    return getImpl<detail::AirConditionerVariableRefrigerantFlowFluidTemperatureControl_Impl>()
+      ->setDefrostEnergyInputRatioModifierFunctionofTemperatureCurve(curve);
+  }
+
+  void AirConditionerVariableRefrigerantFlowFluidTemperatureControl::resetDefrostEnergyInputRatioModifierFunctionofTemperatureCurve() {
+    getImpl<detail::AirConditionerVariableRefrigerantFlowFluidTemperatureControl_Impl>()
+      ->resetDefrostEnergyInputRatioModifierFunctionofTemperatureCurve();
+  }
+
   double AirConditionerVariableRefrigerantFlowFluidTemperatureControl::defrostTimePeriodFraction() const {
     return getImpl<detail::AirConditionerVariableRefrigerantFlowFluidTemperatureControl_Impl>()->defrostTimePeriodFraction();
   }
@@ -691,6 +709,8 @@ namespace epmodel {
                OutdoorUnitEvaporatingTemperatureFunctionofSuperheatingCurveName,
              openstudio::AirConditioner_VariableRefrigerantFlow_FluidTemperatureControlFields::
                OutdoorUnitCondensingTemperatureFunctionofSubcoolingCurveName,
+             openstudio::AirConditioner_VariableRefrigerantFlow_FluidTemperatureControlFields::
+               DefrostEnergyInputRatioModifierFunctionofTemperatureCurveName,
            }) {
         if (auto curve = system.getModelObjectTarget<ModelObject>(field)) {
           if (seenCurves.insert(curve->handle()).second) {
@@ -1178,6 +1198,37 @@ namespace epmodel {
 
     bool AirConditionerVariableRefrigerantFlowFluidTemperatureControl_Impl::setDefrostControl(const std::string& defrostControl) {
       return setString(openstudio::AirConditioner_VariableRefrigerantFlow_FluidTemperatureControlFields::DefrostControl, defrostControl);
+    }
+
+    boost::optional<Curve>
+      AirConditionerVariableRefrigerantFlowFluidTemperatureControl_Impl::defrostEnergyInputRatioModifierFunctionofTemperatureCurve() const {
+      return getObject<ModelObject>().getModelObjectTarget<Curve>(openstudio::AirConditioner_VariableRefrigerantFlow_FluidTemperatureControlFields::
+                                                                    DefrostEnergyInputRatioModifierFunctionofTemperatureCurveName);
+    }
+
+    bool AirConditionerVariableRefrigerantFlowFluidTemperatureControl_Impl::setDefrostEnergyInputRatioModifierFunctionofTemperatureCurve(
+      const Curve& curve) {
+      if (curve.model() != model()) {
+        LOG_FREE(Warn, "openstudio.epmodel.AirConditionerVariableRefrigerantFlowFluidTemperatureControl",
+                 "Cannot set the defrost energy input ratio modifier curve because it belongs to a different model.");
+        return false;
+      }
+      const auto field = openstudio::AirConditioner_VariableRefrigerantFlow_FluidTemperatureControlFields::
+        DefrostEnergyInputRatioModifierFunctionofTemperatureCurveName;
+      if (!model().canBeTarget(curve.handle(), iddObject().objectLists(field))) {
+        LOG_FREE(Warn, "openstudio.epmodel.AirConditionerVariableRefrigerantFlowFluidTemperatureControl",
+                 "Cannot set the defrost energy input ratio modifier curve because curve type '" << curve.iddObject().type().valueName()
+                                                                                                 << "' is not accepted by the VRF field.");
+        return false;
+      }
+      return setPointer(field, curve.handle(), false);
+    }
+
+    void AirConditionerVariableRefrigerantFlowFluidTemperatureControl_Impl::resetDefrostEnergyInputRatioModifierFunctionofTemperatureCurve() {
+      constexpr auto field = openstudio::AirConditioner_VariableRefrigerantFlow_FluidTemperatureControlFields::
+        DefrostEnergyInputRatioModifierFunctionofTemperatureCurveName;
+      OS_ASSERT(setPointer(field, Handle(), false));
+      OS_ASSERT(openstudio::detail::IdfObject_Impl::setString(field, "", false));
     }
 
     double AirConditionerVariableRefrigerantFlowFluidTemperatureControl_Impl::defrostTimePeriodFraction() const {

@@ -44,16 +44,16 @@ namespace epmodel {
     static std::vector<std::string> defrostControlValues();
 
     // Schema Alignment Notes:
-    // - Status: Partial Parity. The long scalar VRF surface, terminal ownership, required outdoor-unit curves, and constructor-default compressor
-    //   loading rows are aligned.
+    // - Status: Partial Parity. The long scalar VRF surface, terminal ownership, outdoor-unit curves, and constructor-default compressor loading
+    //   rows are aligned.
     // - Canonical Counterpart: openstudio::model::AirConditionerVariableRefrigerantFlowFluidTemperatureControl.
     // - Implemented Parity: The preserved scalar API surface mirrors the canonical VRF cooling/heating, refrigerant, defrost, pipe, and heat-recovery fields exposed in the model type. The constructor and refrigerant setter ensure one shared built-in property dataset through `Model`.
     // - Documented Delta: Loading indexes are stored directly as EnergyPlus extensible rows rather than transient Model `LoadingIndex` objects.
-    // - Field/Storage Mapping: Scalars and the two public outdoor-unit curve relationships map directly to EnergyPlus
+    // - Field/Storage Mapping: Scalars and the three public outdoor-unit curve relationships map directly to EnergyPlus
     //   `AirConditioner:VariableRefrigerantFlow:FluidTemperatureControl` storage; the constructor creates three loading rows referencing six
     //   `Curve:Biquadratic` objects. Refrigerant tables remain model-owned EnergyPlus objects and survive consumer removal.
     // - Evidence: `src/model/AirConditionerVariableRefrigerantFlowFluidTemperatureControl.hpp`, `src/model/AirConditionerVariableRefrigerantFlowFluidTemperatureControl.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirConditionerVariableRefrigerantFlowFluidTemperatureControl.cpp`, `src/epmodel/test/AirConditionerVariableRefrigerantFlowFluidTemperatureControl_GTest.cpp`, and `src/model/test/AirConditionerVariableRefrigerantFlowFluidTemperatureControl_GTest.cpp`.
-    // - Remaining Parity Work: Add a Model-shaped public loading-index API, the optional defrost curve relationship, and autosized-result conveniences.
+    // - Remaining Parity Work: Add a Model-shaped public loading-index API and autosized-result conveniences.
 
     Schedule availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);
@@ -161,6 +161,10 @@ namespace epmodel {
 
     std::string defrostControl() const;
     bool setDefrostControl(const std::string& defrostControl);
+
+    boost::optional<Curve> defrostEnergyInputRatioModifierFunctionofTemperatureCurve() const;
+    bool setDefrostEnergyInputRatioModifierFunctionofTemperatureCurve(const Curve& curve);
+    void resetDefrostEnergyInputRatioModifierFunctionofTemperatureCurve();
 
     double defrostTimePeriodFraction() const;
     bool setDefrostTimePeriodFraction(double defrostTimePeriodFraction);

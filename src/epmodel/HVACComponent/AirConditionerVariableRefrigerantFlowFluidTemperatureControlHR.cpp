@@ -18,6 +18,7 @@
 #include "ZoneHVACComponent/ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl.hpp"
 
 #include <utilities/core/Assert.hpp>
+#include <utilities/core/Logger.hpp>
 #include <utilities/core/StringHelpers.hpp>
 #include <utilities/idd/AirConditioner_VariableRefrigerantFlow_FluidTemperatureControl_HR_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
@@ -384,6 +385,20 @@ namespace epmodel {
   }
   bool AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR::setDefrostControl(const std::string& value) {
     return getImpl<detail::AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR_Impl>()->setDefrostControl(value);
+  }
+  boost::optional<Curve>
+    AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR::defrostEnergyInputRatioModifierFunctionofTemperatureCurve() const {
+    return getImpl<detail::AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR_Impl>()
+      ->defrostEnergyInputRatioModifierFunctionofTemperatureCurve();
+  }
+  bool
+    AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR::setDefrostEnergyInputRatioModifierFunctionofTemperatureCurve(const Curve& curve) {
+    return getImpl<detail::AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR_Impl>()
+      ->setDefrostEnergyInputRatioModifierFunctionofTemperatureCurve(curve);
+  }
+  void AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR::resetDefrostEnergyInputRatioModifierFunctionofTemperatureCurve() {
+    getImpl<detail::AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR_Impl>()
+      ->resetDefrostEnergyInputRatioModifierFunctionofTemperatureCurve();
   }
   double AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR::defrostTimePeriodFraction() const {
     return getImpl<detail::AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR_Impl>()->defrostTimePeriodFraction();
@@ -927,6 +942,35 @@ namespace epmodel {
     STRING_SETTER(setDefrostStrategy, DefrostStrategy)
     REQUIRED_STRING_GETTER(defrostControl, DefrostControl)
     STRING_SETTER(setDefrostControl, DefrostControl)
+    boost::optional<Curve>
+      AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR_Impl::defrostEnergyInputRatioModifierFunctionofTemperatureCurve() const {
+      return getObject<ModelObject>().getModelObjectTarget<Curve>(
+        openstudio::AirConditioner_VariableRefrigerantFlow_FluidTemperatureControl_HRFields::
+          DefrostEnergyInputRatioModifierFunctionofTemperatureCurveName);
+    }
+    bool AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR_Impl::setDefrostEnergyInputRatioModifierFunctionofTemperatureCurve(
+      const Curve& curve) {
+      if (curve.model() != model()) {
+        LOG_FREE(Warn, "openstudio.epmodel.AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR",
+                 "Cannot set the defrost energy input ratio modifier curve because it belongs to a different model.");
+        return false;
+      }
+      const auto field = openstudio::AirConditioner_VariableRefrigerantFlow_FluidTemperatureControl_HRFields::
+        DefrostEnergyInputRatioModifierFunctionofTemperatureCurveName;
+      if (!model().canBeTarget(curve.handle(), iddObject().objectLists(field))) {
+        LOG_FREE(Warn, "openstudio.epmodel.AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR",
+                 "Cannot set the defrost energy input ratio modifier curve because curve type '" << curve.iddObject().type().valueName()
+                                                                                                 << "' is not accepted by the VRF field.");
+        return false;
+      }
+      return setPointer(field, curve.handle(), false);
+    }
+    void AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR_Impl::resetDefrostEnergyInputRatioModifierFunctionofTemperatureCurve() {
+      constexpr auto field = openstudio::AirConditioner_VariableRefrigerantFlow_FluidTemperatureControl_HRFields::
+        DefrostEnergyInputRatioModifierFunctionofTemperatureCurveName;
+      OS_ASSERT(setPointer(field, Handle(), false));
+      OS_ASSERT(openstudio::detail::IdfObject_Impl::setString(field, "", false));
+    }
     REQUIRED_DOUBLE_GETTER(defrostTimePeriodFraction, DefrostTimePeriodFraction)
     DOUBLE_SETTER(setDefrostTimePeriodFraction, DefrostTimePeriodFraction)
     OPTIONAL_DOUBLE_GETTER(resistiveDefrostHeaterCapacity, ResistiveDefrostHeaterCapacity)
