@@ -17,6 +17,7 @@
 namespace openstudio {
 namespace epmodel {
 
+  class DesignSpecificationOutdoorAir;
   class Model;
   class Schedule;
 
@@ -38,12 +39,14 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     // Schema Alignment Notes:
-    // - Status: Partial Parity. The ideal-loads scalar and schedule fields are aligned, while broader zone relationships remain topology-driven.
+    // - Status: Partial Parity. The ideal-loads scalar, schedule, and direct DesignSpecification:OutdoorAir fields are aligned, while broader
+    //   zone relationships remain topology-driven.
     // - Canonical Counterpart: openstudio::model::ZoneHVACIdealLoadsAirSystem.
-    // - Implemented Parity: The cooling/heating/dehumidification scalar groups, flow limits, and five optional schedule relationships map directly
-    //   to the EnergyPlus object.
+    // - Implemented Parity: The cooling/heating/dehumidification scalar groups, flow limits, five optional schedule relationships, and the direct
+    //   DesignSpecification:OutdoorAir relationship map directly to the EnergyPlus object.
     // - Documented Delta: Zone and node references remain relationship-only links and are intentionally not exposed as scalar fields.
-    // - Field/Storage Mapping: Scalars and schedules live on the EnergyPlus object while zone membership is maintained through thermal-zone topology.
+    // - Field/Storage Mapping: Scalars, schedules, and the direct DesignSpecification:OutdoorAir reference live on the EnergyPlus object while
+    //   zone membership is maintained through thermal-zone topology.
     // - Evidence: `src/model/ZoneHVACIdealLoadsAirSystem.hpp`, `src/model/ZoneHVACIdealLoadsAirSystem.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateZoneHVACIdealLoadsAirSystem.cpp`, `src/energyplus/ReverseTranslator/ReverseTranslateZoneHVACIdealLoadsAirSystem.cpp`, and `src/epmodel/test/ZoneHVACIdealLoadsAirSystem_GTest.cpp`.
     // - Remaining Parity Work: Add the remaining canonical non-schedule relationship helpers when their ownership semantics are implemented.
     static std::vector<std::string> heatingLimitValues();
@@ -140,6 +143,10 @@ namespace epmodel {
     bool isHumidificationControlTypeDefaulted() const;
     bool setHumidificationControlType(const std::string& humidificationControlType);
     void resetHumidificationControlType();
+
+    boost::optional<DesignSpecificationOutdoorAir> designSpecificationOutdoorAirObject() const;
+    bool setDesignSpecificationOutdoorAirObject(const DesignSpecificationOutdoorAir& designSpecificationOutdoorAir);
+    void resetDesignSpecificationOutdoorAirObject();
 
     std::string demandControlledVentilationType() const;
     bool isDemandControlledVentilationTypeDefaulted() const;

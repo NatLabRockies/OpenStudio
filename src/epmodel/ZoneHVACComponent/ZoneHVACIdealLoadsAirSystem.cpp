@@ -7,6 +7,9 @@
 #include "ZoneHVACComponent/ZoneHVACIdealLoadsAirSystem_Impl.hpp"
 
 #include "Model.hpp"
+#include "ModelObject.hpp"
+#include "ResourceObject/DesignSpecificationOutdoorAir.hpp"
+#include "ResourceObject/DesignSpecificationOutdoorAir_Impl.hpp"
 #include "Schedule/Schedule.hpp"
 #include "Schedule/Schedule_Impl.hpp"
 
@@ -17,6 +20,7 @@
 #include <utilities/idd/IddFactory.hxx>
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/ZoneHVAC_IdealLoadsAirSystem_FieldEnums.hxx>
+#include <utilities/idf/IdfObject_Impl.hpp>
 
 namespace openstudio {
 namespace epmodel {
@@ -348,6 +352,18 @@ namespace epmodel {
 
   void ZoneHVACIdealLoadsAirSystem::resetHumidificationControlType() {
     getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->resetHumidificationControlType();
+  }
+
+  boost::optional<DesignSpecificationOutdoorAir> ZoneHVACIdealLoadsAirSystem::designSpecificationOutdoorAirObject() const {
+    return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->designSpecificationOutdoorAirObject();
+  }
+
+  bool ZoneHVACIdealLoadsAirSystem::setDesignSpecificationOutdoorAirObject(const DesignSpecificationOutdoorAir& designSpecificationOutdoorAir) {
+    return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->setDesignSpecificationOutdoorAirObject(designSpecificationOutdoorAir);
+  }
+
+  void ZoneHVACIdealLoadsAirSystem::resetDesignSpecificationOutdoorAirObject() {
+    getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->resetDesignSpecificationOutdoorAirObject();
   }
 
   std::string ZoneHVACIdealLoadsAirSystem::demandControlledVentilationType() const {
@@ -900,6 +916,33 @@ namespace epmodel {
 
     void ZoneHVACIdealLoadsAirSystem_Impl::resetHumidificationControlType() {
       OS_ASSERT(setString(ZoneHVAC_IdealLoadsAirSystemFields::HumidificationControlType, ""));
+    }
+
+    boost::optional<DesignSpecificationOutdoorAir> ZoneHVACIdealLoadsAirSystem_Impl::designSpecificationOutdoorAirObject() const {
+      return getObject<ModelObject>().getModelObjectTarget<DesignSpecificationOutdoorAir>(
+        ZoneHVAC_IdealLoadsAirSystemFields::DesignSpecificationOutdoorAirObjectName);
+    }
+
+    bool
+      ZoneHVACIdealLoadsAirSystem_Impl::setDesignSpecificationOutdoorAirObject(const DesignSpecificationOutdoorAir& designSpecificationOutdoorAir) {
+      constexpr auto field = ZoneHVAC_IdealLoadsAirSystemFields::DesignSpecificationOutdoorAirObjectName;
+      if (designSpecificationOutdoorAir.model() != model()) {
+        LOG_FREE(Warn, "openstudio.epmodel.ZoneHVACIdealLoadsAirSystem",
+                 "Cannot set the design specification outdoor air object because it belongs to a different model.");
+        return false;
+      }
+      if (!model().canBeTarget(designSpecificationOutdoorAir.handle(), iddObject().objectLists(field))) {
+        LOG_FREE(Warn, "openstudio.epmodel.ZoneHVACIdealLoadsAirSystem",
+                 "Cannot set the design specification outdoor air object because its type is not accepted by the Ideal Loads field.");
+        return false;
+      }
+      return setPointer(field, designSpecificationOutdoorAir.handle(), false);
+    }
+
+    void ZoneHVACIdealLoadsAirSystem_Impl::resetDesignSpecificationOutdoorAirObject() {
+      constexpr auto field = ZoneHVAC_IdealLoadsAirSystemFields::DesignSpecificationOutdoorAirObjectName;
+      OS_ASSERT(setPointer(field, Handle(), false));
+      OS_ASSERT(openstudio::detail::IdfObject_Impl::setString(field, "", false));
     }
 
     bool ZoneHVACIdealLoadsAirSystem_Impl::setDemandControlledVentilationType(const std::string& demandControlledVentilationType) {

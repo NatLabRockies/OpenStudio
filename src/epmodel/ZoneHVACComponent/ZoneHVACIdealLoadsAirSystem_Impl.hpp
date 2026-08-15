@@ -14,6 +14,7 @@
 namespace openstudio {
 namespace epmodel {
 
+  class DesignSpecificationOutdoorAir;
   class Schedule;
 
   namespace detail {
@@ -111,6 +112,10 @@ namespace epmodel {
       bool isHumidificationControlTypeDefaulted() const;
       bool setHumidificationControlType(const std::string& humidificationControlType);
       void resetHumidificationControlType();
+
+      boost::optional<DesignSpecificationOutdoorAir> designSpecificationOutdoorAirObject() const;
+      bool setDesignSpecificationOutdoorAirObject(const DesignSpecificationOutdoorAir& designSpecificationOutdoorAir);
+      void resetDesignSpecificationOutdoorAirObject();
 
       std::string demandControlledVentilationType() const;
       bool isDemandControlledVentilationTypeDefaulted() const;

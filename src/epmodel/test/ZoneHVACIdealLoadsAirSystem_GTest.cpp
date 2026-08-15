@@ -8,11 +8,15 @@
 #include <utilities/core/Filesystem.hpp>
 #include <utilities/core/UUID.hpp>
 #include <utilities/idd/ZoneHVAC_IdealLoadsAirSystem_FieldEnums.hxx>
+#include <utilities/idf/IdfObject_Impl.hpp>
 #include <utilities/idf/WorkspaceObject_Impl.hpp>
 
 #include "EPModelFixture.hpp"
 #include "../HVACComponent/ThermalZone.hpp"
 #include "../HVACComponent/ThermalZone_Impl.hpp"
+#include "../ModelObject/DesignSpecificationOutdoorAirSpaceList.hpp"
+#include "../ResourceObject/DesignSpecificationOutdoorAir.hpp"
+#include "../ResourceObject/DesignSpecificationOutdoorAir_Impl.hpp"
 #include "../ResourceObject/ScheduleTypeLimits.hpp"
 #include "../Schedule/ScheduleCompact.hpp"
 #include "../Schedule/ScheduleCompact_Impl.hpp"
@@ -73,8 +77,49 @@ TEST_F(EPModelFixture, ZoneHVACIdealLoadsAirSystem_DefaultConstructor) {
   EXPECT_FALSE(system.coolingAvailabilitySchedule());
   EXPECT_FALSE(system.heatingFuelEfficiencySchedule());
   EXPECT_FALSE(system.coolingFuelEfficiencySchedule());
+  EXPECT_FALSE(system.designSpecificationOutdoorAirObject());
   EXPECT_EQ("DistrictHeatingWater", system.heatingFuelType());
   EXPECT_EQ("DistrictCooling", system.coolingFuelType());
+}
+
+TEST_F(EPModelFixture, ZoneHVACIdealLoadsAirSystem_DesignSpecificationOutdoorAirValidationAndRawReset) {
+  Model model;
+  ZoneHVACIdealLoadsAirSystem system(model);
+  DesignSpecificationOutdoorAir outdoorAir(model);
+  constexpr auto field = openstudio::ZoneHVAC_IdealLoadsAirSystemFields::DesignSpecificationOutdoorAirObjectName;
+  EXPECT_TRUE(model.canBeTarget(outdoorAir.handle(), system.iddObject().objectLists(field)));
+  ASSERT_TRUE(system.setDesignSpecificationOutdoorAirObject(outdoorAir));
+  ASSERT_TRUE(system.designSpecificationOutdoorAirObject());
+  EXPECT_EQ(outdoorAir.handle(), system.designSpecificationOutdoorAirObject()->handle());
+
+  Model foreignModel;
+  DesignSpecificationOutdoorAir foreignOutdoorAir(foreignModel);
+  EXPECT_FALSE(system.setDesignSpecificationOutdoorAirObject(foreignOutdoorAir));
+  ASSERT_TRUE(system.designSpecificationOutdoorAirObject());
+  EXPECT_EQ(outdoorAir.handle(), system.designSpecificationOutdoorAirObject()->handle());
+
+  auto workspaceImpl = system.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  ASSERT_TRUE(workspaceImpl);
+  ASSERT_TRUE(workspaceImpl->setPointer(field, openstudio::Handle(), false));
+  ASSERT_TRUE(workspaceImpl->openstudio::detail::IdfObject_Impl::setString(field, "Unresolved Ideal Loads DSOA", false));
+  EXPECT_FALSE(system.designSpecificationOutdoorAirObject());
+  EXPECT_FALSE(system.setDesignSpecificationOutdoorAirObject(foreignOutdoorAir));
+  EXPECT_EQ("Unresolved Ideal Loads DSOA", workspaceImpl->openstudio::detail::IdfObject_Impl::getString(field, false, true).value_or(""));
+  system.resetDesignSpecificationOutdoorAirObject();
+  EXPECT_FALSE(system.designSpecificationOutdoorAirObject());
+  EXPECT_EQ("", workspaceImpl->openstudio::detail::IdfObject_Impl::getString(field, false, true).value_or(""));
+
+  DesignSpecificationOutdoorAirSpaceList spaceList(model);
+  ASSERT_TRUE(spaceList.setName("Ideal Loads DSOA Space List"));
+  EXPECT_TRUE(model.canBeTarget(spaceList.handle(), system.iddObject().objectLists(field)));
+  ASSERT_TRUE(workspaceImpl->setPointer(field, spaceList.handle(), false));
+  ASSERT_TRUE(workspaceImpl->getTarget(field));
+  EXPECT_EQ(spaceList.handle(), workspaceImpl->getTarget(field)->handle());
+  EXPECT_TRUE(workspaceImpl->openstudio::detail::IdfObject_Impl::getString(field, false, true).value_or("").empty());
+  EXPECT_FALSE(system.designSpecificationOutdoorAirObject());
+  system.resetDesignSpecificationOutdoorAirObject();
+  EXPECT_FALSE(workspaceImpl->getTarget(field));
+  EXPECT_EQ("", workspaceImpl->openstudio::detail::IdfObject_Impl::getString(field, false, true).value_or(""));
 }
 
 TEST_F(EPModelFixture, ZoneHVACIdealLoadsAirSystem_ScheduleRelationshipsRoundTripValidationAndReset) {
@@ -212,7 +257,7 @@ TEST_F(EPModelFixture, ZoneHVACIdealLoadsAirSystem_ScheduleResetClearsMalformedR
   EXPECT_TRUE(workspaceImpl->openstudio::detail::IdfObject_Impl::getString(coolingFuelField, false, true).value_or("").empty());
 }
 
-TEST_F(EPModelFixture, ZoneHVACIdealLoadsAirSystem_SchedulesSurviveReloadPostLoadMutationAndRemoval) {
+TEST_F(EPModelFixture, ZoneHVACIdealLoadsAirSystem_RelationshipsSurviveReloadPostLoadMutationAndRemoval) {
   const auto firstPath = uniqueIdealLoadsPath("epmodel-ideal-loads-schedules-first");
   const auto secondPath = uniqueIdealLoadsPath("epmodel-ideal-loads-schedules-second");
   const ScopedIdealLoadsFileRemoval removeFirst(firstPath);
@@ -230,11 +275,13 @@ TEST_F(EPModelFixture, ZoneHVACIdealLoadsAirSystem_SchedulesSurviveReloadPostLoa
   ScheduleCompact coolingAvailability(model);
   ScheduleCompact heatingFuelEfficiency(model);
   ScheduleCompact coolingFuelEfficiency(model);
+  DesignSpecificationOutdoorAir originalOutdoorAir(model);
   ASSERT_TRUE(availability.setName("Ideal Loads General Availability"));
   ASSERT_TRUE(heatingAvailability.setName("Ideal Loads Heating Availability"));
   ASSERT_TRUE(coolingAvailability.setName("Ideal Loads Cooling Availability"));
   ASSERT_TRUE(heatingFuelEfficiency.setName("Ideal Loads Heating Fuel Efficiency"));
   ASSERT_TRUE(coolingFuelEfficiency.setName("Ideal Loads Cooling Fuel Efficiency"));
+  ASSERT_TRUE(originalOutdoorAir.setName("Original Ideal Loads DSOA"));
   ASSERT_TRUE(availability.setToConstantValue(1.0));
   ASSERT_TRUE(heatingAvailability.setToConstantValue(1.0));
   ASSERT_TRUE(coolingAvailability.setToConstantValue(1.0));
@@ -245,6 +292,7 @@ TEST_F(EPModelFixture, ZoneHVACIdealLoadsAirSystem_SchedulesSurviveReloadPostLoa
   ASSERT_TRUE(system.setCoolingAvailabilitySchedule(coolingAvailability));
   ASSERT_TRUE(system.setHeatingFuelEfficiencySchedule(heatingFuelEfficiency));
   ASSERT_TRUE(system.setCoolingFuelEfficiencySchedule(coolingFuelEfficiency));
+  ASSERT_TRUE(system.setDesignSpecificationOutdoorAirObject(originalOutdoorAir));
   ASSERT_TRUE(model.save(firstPath, true));
 
   auto loadedModel = Model::load(firstPath);
@@ -256,6 +304,7 @@ TEST_F(EPModelFixture, ZoneHVACIdealLoadsAirSystem_SchedulesSurviveReloadPostLoa
   auto loadedCoolingAvailability = loadedModel->getConcreteModelObjectByName<ScheduleCompact>("Ideal Loads Cooling Availability");
   auto loadedHeatingFuelEfficiency = loadedModel->getConcreteModelObjectByName<ScheduleCompact>("Ideal Loads Heating Fuel Efficiency");
   auto loadedCoolingFuelEfficiency = loadedModel->getConcreteModelObjectByName<ScheduleCompact>("Ideal Loads Cooling Fuel Efficiency");
+  auto loadedOutdoorAir = loadedModel->getConcreteModelObjectByName<DesignSpecificationOutdoorAir>("Original Ideal Loads DSOA");
   ASSERT_TRUE(loadedSystem);
   ASSERT_TRUE(loadedZone);
   ASSERT_TRUE(loadedAvailability);
@@ -263,6 +312,7 @@ TEST_F(EPModelFixture, ZoneHVACIdealLoadsAirSystem_SchedulesSurviveReloadPostLoa
   ASSERT_TRUE(loadedCoolingAvailability);
   ASSERT_TRUE(loadedHeatingFuelEfficiency);
   ASSERT_TRUE(loadedCoolingFuelEfficiency);
+  ASSERT_TRUE(loadedOutdoorAir);
   ASSERT_TRUE(loadedSystem->thermalZone());
   EXPECT_EQ(loadedZone->handle(), loadedSystem->thermalZone()->handle());
   EXPECT_TRUE(loadedSystem->inletNode());
@@ -272,16 +322,20 @@ TEST_F(EPModelFixture, ZoneHVACIdealLoadsAirSystem_SchedulesSurviveReloadPostLoa
   ASSERT_TRUE(loadedSystem->coolingAvailabilitySchedule());
   ASSERT_TRUE(loadedSystem->heatingFuelEfficiencySchedule());
   ASSERT_TRUE(loadedSystem->coolingFuelEfficiencySchedule());
+  ASSERT_TRUE(loadedSystem->designSpecificationOutdoorAirObject());
   EXPECT_EQ(loadedAvailability->handle(), loadedSystem->availabilitySchedule()->handle());
   EXPECT_EQ(loadedHeatingAvailability->handle(), loadedSystem->heatingAvailabilitySchedule()->handle());
   EXPECT_EQ(loadedCoolingAvailability->handle(), loadedSystem->coolingAvailabilitySchedule()->handle());
   EXPECT_EQ(loadedHeatingFuelEfficiency->handle(), loadedSystem->heatingFuelEfficiencySchedule()->handle());
   EXPECT_EQ(loadedCoolingFuelEfficiency->handle(), loadedSystem->coolingFuelEfficiencySchedule()->handle());
+  EXPECT_EQ(loadedOutdoorAir->handle(), loadedSystem->designSpecificationOutdoorAirObject()->handle());
 
   ScheduleCompact replacementAvailability(*loadedModel);
   ScheduleCompact replacementFuelEfficiency(*loadedModel);
+  DesignSpecificationOutdoorAir replacementOutdoorAir(*loadedModel);
   ASSERT_TRUE(replacementAvailability.setName("Replacement Ideal Loads Availability"));
   ASSERT_TRUE(replacementFuelEfficiency.setName("Replacement Ideal Loads Fuel Efficiency"));
+  ASSERT_TRUE(replacementOutdoorAir.setName("Replacement Ideal Loads DSOA"));
   ASSERT_TRUE(replacementAvailability.setToConstantValue(1.0));
   ASSERT_TRUE(replacementFuelEfficiency.setToConstantValue(1.25));
   ASSERT_TRUE(loadedSystem->setAvailabilitySchedule(replacementAvailability));
@@ -289,6 +343,7 @@ TEST_F(EPModelFixture, ZoneHVACIdealLoadsAirSystem_SchedulesSurviveReloadPostLoa
   ASSERT_TRUE(loadedSystem->setCoolingAvailabilitySchedule(replacementAvailability));
   ASSERT_TRUE(loadedSystem->setHeatingFuelEfficiencySchedule(replacementFuelEfficiency));
   ASSERT_TRUE(loadedSystem->setCoolingFuelEfficiencySchedule(replacementFuelEfficiency));
+  ASSERT_TRUE(loadedSystem->setDesignSpecificationOutdoorAirObject(replacementOutdoorAir));
   loadedSystem->resetHeatingAvailabilitySchedule();
   loadedSystem->resetCoolingFuelEfficiencySchedule();
   ASSERT_TRUE(loadedModel->save(secondPath, true));
@@ -299,10 +354,12 @@ TEST_F(EPModelFixture, ZoneHVACIdealLoadsAirSystem_SchedulesSurviveReloadPostLoa
   auto reloadedZone = reloadedModel->getConcreteModelObjectByName<ThermalZone>("Ideal Loads Schedule Zone");
   auto reloadedAvailability = reloadedModel->getConcreteModelObjectByName<ScheduleCompact>("Replacement Ideal Loads Availability");
   auto reloadedFuelEfficiency = reloadedModel->getConcreteModelObjectByName<ScheduleCompact>("Replacement Ideal Loads Fuel Efficiency");
+  auto reloadedOutdoorAir = reloadedModel->getConcreteModelObjectByName<DesignSpecificationOutdoorAir>("Replacement Ideal Loads DSOA");
   ASSERT_TRUE(reloadedSystem);
   ASSERT_TRUE(reloadedZone);
   ASSERT_TRUE(reloadedAvailability);
   ASSERT_TRUE(reloadedFuelEfficiency);
+  ASSERT_TRUE(reloadedOutdoorAir);
   ASSERT_TRUE(reloadedSystem->availabilitySchedule());
   EXPECT_EQ(reloadedAvailability->handle(), reloadedSystem->availabilitySchedule()->handle());
   EXPECT_FALSE(reloadedSystem->heatingAvailabilitySchedule());
@@ -311,6 +368,8 @@ TEST_F(EPModelFixture, ZoneHVACIdealLoadsAirSystem_SchedulesSurviveReloadPostLoa
   ASSERT_TRUE(reloadedSystem->heatingFuelEfficiencySchedule());
   EXPECT_EQ(reloadedFuelEfficiency->handle(), reloadedSystem->heatingFuelEfficiencySchedule()->handle());
   EXPECT_FALSE(reloadedSystem->coolingFuelEfficiencySchedule());
+  ASSERT_TRUE(reloadedSystem->designSpecificationOutdoorAirObject());
+  EXPECT_EQ(reloadedOutdoorAir->handle(), reloadedSystem->designSpecificationOutdoorAirObject()->handle());
   ASSERT_TRUE(reloadedSystem->thermalZone());
   EXPECT_EQ(reloadedZone->handle(), reloadedSystem->thermalZone()->handle());
   EXPECT_TRUE(reloadedSystem->inletNode());
@@ -323,6 +382,8 @@ TEST_F(EPModelFixture, ZoneHVACIdealLoadsAirSystem_SchedulesSurviveReloadPostLoa
   EXPECT_TRUE(reloadedModel->getObject(reloadedZone->handle()));
   EXPECT_TRUE(reloadedModel->getObject(reloadedAvailability->handle()));
   EXPECT_TRUE(reloadedModel->getObject(reloadedFuelEfficiency->handle()));
+  EXPECT_TRUE(reloadedModel->getConcreteModelObjectByName<DesignSpecificationOutdoorAir>("Original Ideal Loads DSOA"));
+  EXPECT_TRUE(reloadedModel->getObject(reloadedOutdoorAir->handle()));
   for (const auto& name : originalScheduleNames) {
     EXPECT_TRUE(reloadedModel->getConcreteModelObjectByName<ScheduleCompact>(name));
   }
