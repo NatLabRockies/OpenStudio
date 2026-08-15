@@ -24,12 +24,37 @@
 #include "../ModelObject/ZoneHVACEquipmentList_Impl.hpp"
 #include "../Schedule/Schedule.hpp"
 #include "../Schedule/Schedule_Impl.hpp"
+#include "../Schedule/ScheduleConstant.hpp"
+#include "../Schedule/ScheduleConstant_Impl.hpp"
+#include "../ResourceObject/ScheduleTypeLimits.hpp"
 #include "../StraightComponent/Node.hpp"
 
 #include <utilities/idd/AirTerminal_DualDuct_ConstantVolume_FieldEnums.hxx>
 #include <utilities/core/Path.hpp>
+#include <utilities/core/Filesystem.hpp>
+#include <utilities/core/UUID.hpp>
+
+#include <utility>
 
 using namespace openstudio::epmodel;
+
+namespace {
+
+class ScopedFileRemoval
+{
+ public:
+  explicit ScopedFileRemoval(openstudio::path path) : m_path(std::move(path)) {}
+
+  ~ScopedFileRemoval() {
+    boost::system::error_code error;
+    boost::filesystem::remove(m_path, error);
+  }
+
+ private:
+  openstudio::path m_path;
+};
+
+}  // namespace
 
 TEST_F(EPModelFixture, AirTerminalDualDuctConstantVolume_DefaultConstructor) {
   Model model;
@@ -38,10 +63,30 @@ TEST_F(EPModelFixture, AirTerminalDualDuctConstantVolume_DefaultConstructor) {
   EXPECT_FALSE(terminal.nameString().empty());
   EXPECT_TRUE(terminal.isMaximumAirFlowRateAutosized());
 
-  auto availabilitySchedule =
-    terminal.getModelObjectTarget<Schedule>(openstudio::AirTerminal_DualDuct_ConstantVolumeFields::AvailabilityScheduleName);
-  ASSERT_TRUE(availabilitySchedule);
-  EXPECT_EQ(model.alwaysOnDiscreteSchedule(), *availabilitySchedule);
+  EXPECT_EQ(model.alwaysOnDiscreteSchedule(), terminal.availabilitySchedule());
+}
+
+TEST_F(EPModelFixture, AirTerminalDualDuctConstantVolume_AvailabilityScheduleRejectsInvalidReplacementWithoutMutation) {
+  Model model;
+  AirTerminalDualDuctConstantVolume terminal(model);
+  ScheduleConstant availability(model);
+  ASSERT_TRUE(terminal.setAvailabilitySchedule(availability));
+  EXPECT_EQ(availability.handle(), terminal.availabilitySchedule().handle());
+
+  Model foreignModel;
+  ScheduleConstant foreignSchedule(foreignModel);
+  EXPECT_FALSE(terminal.setAvailabilitySchedule(foreignSchedule));
+  EXPECT_EQ(availability.handle(), terminal.availabilitySchedule().handle());
+
+  ScheduleConstant incompatibleSchedule(model);
+  ScheduleTypeLimits incompatibleLimits(model);
+  ASSERT_TRUE(incompatibleLimits.setNumericType("Continuous"));
+  ASSERT_TRUE(incompatibleLimits.setUnitType("Dimensionless"));
+  ASSERT_TRUE(incompatibleLimits.setLowerLimitValue(-0.1));
+  ASSERT_TRUE(incompatibleLimits.setUpperLimitValue(1.0));
+  ASSERT_TRUE(incompatibleSchedule.setScheduleTypeLimits(incompatibleLimits));
+  EXPECT_FALSE(terminal.setAvailabilitySchedule(incompatibleSchedule));
+  EXPECT_EQ(availability.handle(), terminal.availabilitySchedule().handle());
 }
 
 TEST_F(EPModelFixture, AirTerminalDualDuctConstantVolume_ScalarAccessors_RoundTrip) {
@@ -430,7 +475,10 @@ TEST_F(EPModelFixture, AirTerminalDualDuctConstantVolume_RemoveClearsStaleZoneEq
 }
 
 TEST_F(EPModelFixture, AirTerminalDualDuctConstantVolume_ConnectedTopologySurvivesSaveLoadAndRemoval) {
-  const auto idfPath = openstudio::tempDir() / openstudio::toPath("epmodel-dual-duct-terminal-connected-roundtrip.idf");
+  const auto idfPath =
+    openstudio::tempDir()
+    / openstudio::toPath("epmodel-dual-duct-terminal-connected-roundtrip-" + openstudio::removeBraces(openstudio::createUUID()) + ".idf");
+  const ScopedFileRemoval removeIdf(idfPath);
 
   Model model;
   AirLoopHVAC airLoop(model, true);
@@ -438,11 +486,14 @@ TEST_F(EPModelFixture, AirTerminalDualDuctConstantVolume_ConnectedTopologySurviv
   ThermalZone zone2(model);
   AirTerminalDualDuctConstantVolume terminal1(model);
   AirTerminalDualDuctConstantVolume terminal2(model);
+  ScheduleConstant availability(model);
   ASSERT_TRUE(airLoop.setName("Roundtrip Dual Duct Air Loop"));
   ASSERT_TRUE(zone1.setName("Roundtrip Dual Duct Zone 1"));
   ASSERT_TRUE(zone2.setName("Roundtrip Dual Duct Zone 2"));
   ASSERT_TRUE(terminal1.setName("Roundtrip Dual Duct Terminal 1"));
   ASSERT_TRUE(terminal2.setName("Roundtrip Dual Duct Terminal 2"));
+  ASSERT_TRUE(availability.setName("Roundtrip Dual Duct Availability"));
+  ASSERT_TRUE(terminal2.setAvailabilitySchedule(availability));
 
   ASSERT_TRUE(airLoop.addBranchForHVACComponent(terminal1));
   ASSERT_TRUE(airLoop.addBranchForZone(zone1));
@@ -456,13 +507,16 @@ TEST_F(EPModelFixture, AirTerminalDualDuctConstantVolume_ConnectedTopologySurviv
   auto loadedZone2 = loadedModel->getConcreteModelObjectByName<ThermalZone>("Roundtrip Dual Duct Zone 2");
   auto loadedTerminal1 = loadedModel->getConcreteModelObjectByName<AirTerminalDualDuctConstantVolume>("Roundtrip Dual Duct Terminal 1");
   auto loadedTerminal2 = loadedModel->getConcreteModelObjectByName<AirTerminalDualDuctConstantVolume>("Roundtrip Dual Duct Terminal 2");
+  auto loadedAvailability = loadedModel->getConcreteModelObjectByName<ScheduleConstant>("Roundtrip Dual Duct Availability");
   ASSERT_TRUE(loadedAirLoop);
   ASSERT_TRUE(loadedZone1);
   ASSERT_TRUE(loadedZone2);
   ASSERT_TRUE(loadedTerminal1);
   ASSERT_TRUE(loadedTerminal2);
+  ASSERT_TRUE(loadedAvailability);
   ASSERT_TRUE(loadedTerminal2->hotAirInletNode());
   ASSERT_TRUE(loadedTerminal2->coldAirInletNode());
+  EXPECT_EQ(loadedAvailability->handle(), loadedTerminal2->availabilitySchedule().handle());
 
   const auto terminal1Handle = loadedTerminal1->handle();
   const auto terminal2Handle = loadedTerminal2->handle();
@@ -483,6 +537,4 @@ TEST_F(EPModelFixture, AirTerminalDualDuctConstantVolume_ConnectedTopologySurviv
   EXPECT_FALSE(loadedModel->getObject(terminal2Handle));
   EXPECT_TRUE(loadedAirLoop->thermalZones().empty());
   EXPECT_EQ(1u, loadedAirLoop->demandInletNodes().size());
-
-  openstudio::filesystem::remove(idfPath);
 }

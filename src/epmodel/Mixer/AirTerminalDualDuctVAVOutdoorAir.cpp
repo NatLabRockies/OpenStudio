@@ -9,6 +9,7 @@
 #include "Loop/AirLoopHVAC_Impl.hpp"
 #include "Model.hpp"
 #include "Schedule/Schedule.hpp"
+#include "Schedule/Schedule_Impl.hpp"
 #include "StraightComponent/Node.hpp"
 
 #include <utilities/core/Assert.hpp>
@@ -45,6 +46,14 @@ namespace epmodel {
 
   IddObjectType AirTerminalDualDuctVAVOutdoorAir::iddObjectType() {
     return IddObjectType::AirTerminal_DualDuct_VAV_OutdoorAir;
+  }
+
+  Schedule AirTerminalDualDuctVAVOutdoorAir::availabilitySchedule() const {
+    return getImpl<detail::AirTerminalDualDuctVAVOutdoorAir_Impl>()->availabilitySchedule();
+  }
+
+  bool AirTerminalDualDuctVAVOutdoorAir::setAvailabilitySchedule(Schedule& schedule) {
+    return getImpl<detail::AirTerminalDualDuctVAVOutdoorAir_Impl>()->setAvailabilitySchedule(schedule);
   }
 
   std::vector<std::string> AirTerminalDualDuctVAVOutdoorAir::perPersonVentilationRateModeValues() {
@@ -134,6 +143,18 @@ namespace epmodel {
         return object->optionalCast<Node>();
       }
       return boost::none;
+    }
+
+    Schedule AirTerminalDualDuctVAVOutdoorAir_Impl::availabilitySchedule() const {
+      auto schedule =
+        getObject<ModelObject>().getModelObjectTarget<Schedule>(openstudio::AirTerminal_DualDuct_VAV_OutdoorAirFields::AvailabilityScheduleName);
+      OS_ASSERT(schedule);
+      return *schedule;
+    }
+
+    bool AirTerminalDualDuctVAVOutdoorAir_Impl::setAvailabilitySchedule(Schedule& schedule) {
+      return ModelObject_Impl::setSchedule(openstudio::AirTerminal_DualDuct_VAV_OutdoorAirFields::AvailabilityScheduleName,
+                                           "AirTerminalDualDuctVAVOutdoorAir", "Availability Schedule", schedule);
     }
 
     boost::optional<double> AirTerminalDualDuctVAVOutdoorAir_Impl::maximumTerminalAirFlowRate() const {

@@ -9,6 +9,7 @@
 #include "Loop/AirLoopHVAC_Impl.hpp"
 #include "Model.hpp"
 #include "Schedule/Schedule.hpp"
+#include "Schedule/Schedule_Impl.hpp"
 #include "StraightComponent/Node.hpp"
 
 #include <utilities/core/Assert.hpp>
@@ -33,6 +34,14 @@ namespace epmodel {
 
   IddObjectType AirTerminalDualDuctConstantVolume::iddObjectType() {
     return IddObjectType::AirTerminal_DualDuct_ConstantVolume;
+  }
+
+  Schedule AirTerminalDualDuctConstantVolume::availabilitySchedule() const {
+    return getImpl<detail::AirTerminalDualDuctConstantVolume_Impl>()->availabilitySchedule();
+  }
+
+  bool AirTerminalDualDuctConstantVolume::setAvailabilitySchedule(Schedule& schedule) {
+    return getImpl<detail::AirTerminalDualDuctConstantVolume_Impl>()->setAvailabilitySchedule(schedule);
   }
 
   boost::optional<double> AirTerminalDualDuctConstantVolume::maximumAirFlowRate() const {
@@ -113,6 +122,18 @@ namespace epmodel {
         return object->optionalCast<Node>();
       }
       return boost::none;
+    }
+
+    Schedule AirTerminalDualDuctConstantVolume_Impl::availabilitySchedule() const {
+      auto schedule =
+        getObject<ModelObject>().getModelObjectTarget<Schedule>(openstudio::AirTerminal_DualDuct_ConstantVolumeFields::AvailabilityScheduleName);
+      OS_ASSERT(schedule);
+      return *schedule;
+    }
+
+    bool AirTerminalDualDuctConstantVolume_Impl::setAvailabilitySchedule(Schedule& schedule) {
+      return ModelObject_Impl::setSchedule(openstudio::AirTerminal_DualDuct_ConstantVolumeFields::AvailabilityScheduleName,
+                                           "AirTerminalDualDuctConstantVolume", "Availability Schedule", schedule);
     }
 
     boost::optional<double> AirTerminalDualDuctConstantVolume_Impl::maximumAirFlowRate() const {

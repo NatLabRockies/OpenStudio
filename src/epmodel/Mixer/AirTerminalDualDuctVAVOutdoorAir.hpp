@@ -19,6 +19,7 @@ namespace epmodel {
 
   class Model;
   class Node;
+  class Schedule;
 
   namespace detail {
     class AirTerminalDualDuctVAVOutdoorAir_Impl;
@@ -40,17 +41,19 @@ namespace epmodel {
     static std::vector<std::string> perPersonVentilationRateModeValues();
 
     // Schema Alignment Notes:
-    // - Status: Connectivity parity for the tested dual-duct add/remove path and inlet-node wiring.
+    // - Status: Near Parity for directly stored EnergyPlus fields and tested dual-duct topology.
     // - Canonical Counterpart: openstudio::model::AirTerminalDualDuctVAVOutdoorAir.
-    // - Implemented Connectivity Surface: the currently enforced constructor defaults used by the dual-duct path, `outdoorAirInletNode`, `recirculatedAirInletNode`, and the shared `addToNode`/`remove` topology behavior are implemented here.
-    // - Documented Delta: epmodel still does not expose canonical `availabilitySchedule()`, `controlForOutdoorAir()`, or `autosizedMaximumTerminalAirFlowRate()`. It retains the schedule relationship internally and
-    //   already supports direct flow-rate autosizing APIs, but it does not mirror the OpenStudio-side `controlForOutdoorAir` behavior that derives a zone DSOA during translation.
+    // - Implemented Connectivity Surface: availability-schedule access, constructor defaults, `outdoorAirInletNode`, `recirculatedAirInletNode`, and the shared `addToNode`/`remove` topology behavior are implemented here.
+    // - Documented Delta: epmodel does not mirror the OpenStudio-side `controlForOutdoorAir` flag that derives a zone DSOA during forward translation, and SQL-backed autosized-result convenience remains outside this direct-IDF wrapper.
     // - Field/Storage Mapping: `AvailabilityScheduleName` remains an underlying relationship field; Air Outlet/Outdoor Air Inlet/Recirculated Air Inlet node fields are surfaced through node accessors and
     //   shared AirLoopHVAC topology helpers; `DesignSpecificationOutdoorAirObjectName` remains the direct EnergyPlus-facing field and is not wrapped by this epmodel API.
     // - Evidence: `src/model/AirTerminalDualDuctVAVOutdoorAir.cpp`, `src/model/test/AirTerminalDualDuctVAVOutdoorAir_GTest.cpp`, and
     //   `src/energyplus/ForwardTranslator/ForwardTranslateAirTerminalDualDuctVAVOutdoorAir.cpp` document the canonical outdoor-air-control and DSOA mapping; `src/epmodel/test/AirTerminalDualDuctVAVOutdoorAir_GTest.cpp`
     //   covers the supported epmodel constructor storage plus insertion, removal, reuse, and cleanup behavior.
-    // - Remaining Parity Work: Reintroduce the omitted schedule and outdoor-air-control wrappers only if broader model API parity is needed outside this connectivity campaign.
+    // - Remaining Parity Work: Define an EnergyPlus-backed equivalent before exposing `controlForOutdoorAir`; add SQL-backed autosized-result convenience only when a sizing-results workflow needs it.
+    Schedule availabilitySchedule() const;
+    bool setAvailabilitySchedule(Schedule& schedule);
+
     boost::optional<double> maximumTerminalAirFlowRate() const;
     bool setMaximumTerminalAirFlowRate(double maximumTerminalAirFlowRate);
     void autosizeMaximumTerminalAirFlowRate();

@@ -18,6 +18,7 @@ namespace epmodel {
 
   class Model;
   class Node;
+  class Schedule;
 
   namespace detail {
     class AirTerminalDualDuctConstantVolume_Impl;
@@ -37,13 +38,16 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     // Schema Alignment Notes:
-    // - Status: Partial Parity. epmodel preserves the scalar surface plus tested dual-duct node connectivity, but it does not expose the canonical availability-schedule convenience accessors.
+    // - Status: Near Parity for the directly stored EnergyPlus fields and tested dual-duct topology.
     // - Canonical Counterpart: openstudio::model::AirTerminalDualDuctConstantVolume.
-    // - Implemented Parity: `maximumAirFlowRate`, autosize support, constructor defaults, `hotAirInletNode`, `coldAirInletNode`, and the tested dual-duct `addToNode`/`remove` connectivity path are implemented here.
-    // - Documented Delta: epmodel does not expose canonical `availabilitySchedule()` / `setAvailabilitySchedule()` wrappers even though the underlying schedule relationship is still stored.
+    // - Implemented Parity: availability-schedule access, `maximumAirFlowRate`, autosize support, constructor defaults, `hotAirInletNode`, `coldAirInletNode`, and the tested dual-duct `addToNode`/`remove` connectivity path are implemented here.
+    // - Documented Delta: SQL-backed `autosizedMaximumAirFlowRate()` remains outside this direct-IDF wrapper.
     // - Field/Storage Mapping: `AvailabilityScheduleName` remains an underlying IDD relationship field used by the constructor and translator; Air Outlet/Hot Air Inlet/Cold Air Inlet node fields are surfaced through the preserved node accessors and shared AirLoopHVAC topology helpers.
     // - Evidence: `src/model/AirTerminalDualDuctConstantVolume.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirTerminalDualDuctConstantVolume.cpp`, and `src/epmodel/test/AirTerminalDualDuctConstantVolume_GTest.cpp` cover the same scalar mapping plus supported connectivity.
-    // - Remaining Parity Work: Reintroduce the availability-schedule wrappers if full model-side API parity is needed.
+    // - Remaining Parity Work: Add SQL-backed autosized-result convenience only when an epmodel sizing-results workflow needs it.
+    Schedule availabilitySchedule() const;
+    bool setAvailabilitySchedule(Schedule& schedule);
+
     boost::optional<double> maximumAirFlowRate() const;
     bool setMaximumAirFlowRate(double maximumAirFlowRate);
     bool isMaximumAirFlowRateAutosized() const;

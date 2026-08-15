@@ -18,6 +18,8 @@ namespace epmodel {
 
   class Model;
   class Node;
+  class Schedule;
+  class DesignSpecificationOutdoorAir;
 
   namespace detail {
     class AirTerminalDualDuctVAV_Impl;
@@ -37,13 +39,25 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     // Schema Alignment Notes:
-    // - Status: Connectivity parity for the tested dual-duct add/remove path and inlet-node wiring.
+    // - Status: Near Parity for directly stored EnergyPlus relationships, scalars, and tested dual-duct topology.
     // - Canonical Counterpart: openstudio::model::AirTerminalDualDuctVAV.
-    // - Implemented Connectivity Surface: constructor defaults used by the dual-duct path, `hotAirInletNode`, `coldAirInletNode`, and the shared `addToNode`/`remove` topology behavior are implemented here.
-    // - Documented Delta: epmodel still does not expose canonical `availabilitySchedule()`, DSOA, minimum-air-flow-turndown, or autosized-value convenience wrappers even though the underlying IDD relationship fields remain stored.
+    // - Implemented Connectivity Surface: availability, DSOA, and minimum-air-flow-turndown relationships; constructor defaults; `hotAirInletNode`; `coldAirInletNode`; and shared `addToNode`/`remove` topology are implemented here.
+    // - Documented Delta: SQL-backed autosized-value convenience remains outside this direct-IDF wrapper.
     // - Field/Storage Mapping: `AvailabilityScheduleName`, `DesignSpecificationOutdoorAirObjectName`, and `MinimumAirFlowTurndownScheduleName` remain underlying relationship fields; Air Outlet/Hot Air Inlet/Cold Air Inlet node fields are surfaced through node accessors and shared AirLoopHVAC topology helpers.
     // - Evidence: `src/model/AirTerminalDualDuctVAV.cpp` and `src/energyplus/ForwardTranslator/ForwardTranslateAirTerminalDualDuctVAV.cpp` document the canonical field mapping; `src/model/test/AirTerminalDualDuctVAV_GTest.cpp` and `src/epmodel/test/AirTerminalDualDuctVAV_GTest.cpp` cover the tested insertion, removal, reuse, and cleanup behavior.
-    // - Remaining Parity Work: Reintroduce the omitted schedule, DSOA, and turndown wrappers only if broader model API parity is needed outside this connectivity campaign.
+    // - Remaining Parity Work: Add SQL-backed autosized-result convenience only when an epmodel sizing-results workflow needs it.
+    boost::optional<Schedule> availabilitySchedule() const;
+    bool setAvailabilitySchedule(Schedule& schedule);
+    void resetAvailabilitySchedule();
+
+    boost::optional<DesignSpecificationOutdoorAir> designSpecificationOutdoorAirObject() const;
+    bool setDesignSpecificationOutdoorAirObject(const DesignSpecificationOutdoorAir& designSpecificationOutdoorAir);
+    void resetDesignSpecificationOutdoorAirObject();
+
+    boost::optional<Schedule> minimumAirFlowTurndownSchedule() const;
+    bool setMinimumAirFlowTurndownSchedule(Schedule& schedule);
+    void resetMinimumAirFlowTurndownSchedule();
+
     boost::optional<double> maximumDamperAirFlowRate() const;
     bool isMaximumDamperAirFlowRateAutosized() const;
     bool setMaximumDamperAirFlowRate(double maximumDamperAirFlowRate);

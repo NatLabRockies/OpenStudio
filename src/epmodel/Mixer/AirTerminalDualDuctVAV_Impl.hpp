@@ -11,6 +11,8 @@
 namespace openstudio {
 namespace epmodel {
 
+  class DesignSpecificationOutdoorAir;
+
   namespace detail {
 
     class EPMODEL_API AirTerminalDualDuctVAV_Impl : public Mixer_Impl
@@ -25,6 +27,15 @@ namespace epmodel {
       std::vector<openstudio::IdfObject> remove() override;
       boost::optional<openstudio::epmodel::Node> hotAirInletNode() const;
       boost::optional<openstudio::epmodel::Node> coldAirInletNode() const;
+      boost::optional<Schedule> availabilitySchedule() const;
+      bool setAvailabilitySchedule(Schedule& schedule);
+      void resetAvailabilitySchedule();
+      boost::optional<DesignSpecificationOutdoorAir> designSpecificationOutdoorAirObject() const;
+      bool setDesignSpecificationOutdoorAirObject(const DesignSpecificationOutdoorAir& designSpecificationOutdoorAir);
+      void resetDesignSpecificationOutdoorAirObject();
+      boost::optional<Schedule> minimumAirFlowTurndownSchedule() const;
+      bool setMinimumAirFlowTurndownSchedule(Schedule& schedule);
+      void resetMinimumAirFlowTurndownSchedule();
       boost::optional<double> maximumDamperAirFlowRate() const;
       bool setMaximumDamperAirFlowRate(double maximumDamperAirFlowRate);
       bool isMaximumDamperAirFlowRateAutosized() const;

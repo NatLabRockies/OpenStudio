@@ -9,6 +9,7 @@
 
 #include "EPModelFixture.hpp"
 #include "../Loop/AirLoopHVAC.hpp"
+#include "../Loop/AirLoopHVAC_Impl.hpp"
 #include "../Mixer/AirTerminalDualDuctVAVOutdoorAir.hpp"
 #include "../Mixer/AirTerminalDualDuctVAVOutdoorAir_Impl.hpp"
 #include "../Mixer/AirLoopHVACZoneMixer.hpp"
@@ -26,13 +27,38 @@
 #include "../ModelObject/NodeList_Impl.hpp"
 #include "../Schedule/Schedule.hpp"
 #include "../Schedule/Schedule_Impl.hpp"
+#include "../Schedule/ScheduleConstant.hpp"
+#include "../Schedule/ScheduleConstant_Impl.hpp"
+#include "../ResourceObject/ScheduleTypeLimits.hpp"
 #include "../StraightComponent/Node.hpp"
 
+#include <utilities/core/Filesystem.hpp>
+#include <utilities/core/UUID.hpp>
 #include <utilities/idd/AirTerminal_DualDuct_VAV_OutdoorAir_FieldEnums.hxx>
 #include <utilities/idd/AirLoopHVAC_FieldEnums.hxx>
 #include <utilities/idd/AirLoopHVAC_ZoneSplitter_FieldEnums.hxx>
 
+#include <utility>
+
 using namespace openstudio::epmodel;
+
+namespace {
+
+class ScopedFileRemoval
+{
+ public:
+  explicit ScopedFileRemoval(openstudio::path path) : m_path(std::move(path)) {}
+
+  ~ScopedFileRemoval() {
+    boost::system::error_code error;
+    boost::filesystem::remove(m_path, error);
+  }
+
+ private:
+  openstudio::path m_path;
+};
+
+}  // namespace
 
 TEST_F(EPModelFixture, AirTerminalDualDuctVAVOutdoorAir_DefaultConstructor) {
   Model model;
@@ -43,10 +69,30 @@ TEST_F(EPModelFixture, AirTerminalDualDuctVAVOutdoorAir_DefaultConstructor) {
   EXPECT_TRUE(terminal.isMaximumTerminalAirFlowRateAutosized());
   EXPECT_EQ("CurrentOccupancy", terminal.perPersonVentilationRateMode());
 
-  auto availabilitySchedule =
-    terminal.getModelObjectTarget<Schedule>(openstudio::AirTerminal_DualDuct_VAV_OutdoorAirFields::AvailabilityScheduleName);
-  ASSERT_TRUE(availabilitySchedule);
-  EXPECT_EQ(model.alwaysOnDiscreteSchedule(), *availabilitySchedule);
+  EXPECT_EQ(model.alwaysOnDiscreteSchedule(), terminal.availabilitySchedule());
+}
+
+TEST_F(EPModelFixture, AirTerminalDualDuctVAVOutdoorAir_AvailabilityScheduleRejectsInvalidReplacementWithoutMutation) {
+  Model model;
+  AirTerminalDualDuctVAVOutdoorAir terminal(model);
+  ScheduleConstant availability(model);
+  ASSERT_TRUE(terminal.setAvailabilitySchedule(availability));
+  EXPECT_EQ(availability.handle(), terminal.availabilitySchedule().handle());
+
+  Model foreignModel;
+  ScheduleConstant foreignSchedule(foreignModel);
+  EXPECT_FALSE(terminal.setAvailabilitySchedule(foreignSchedule));
+  EXPECT_EQ(availability.handle(), terminal.availabilitySchedule().handle());
+
+  ScheduleConstant incompatibleSchedule(model);
+  ScheduleTypeLimits incompatibleLimits(model);
+  ASSERT_TRUE(incompatibleLimits.setNumericType("Continuous"));
+  ASSERT_TRUE(incompatibleLimits.setUnitType("Dimensionless"));
+  ASSERT_TRUE(incompatibleLimits.setLowerLimitValue(-0.1));
+  ASSERT_TRUE(incompatibleLimits.setUpperLimitValue(1.0));
+  ASSERT_TRUE(incompatibleSchedule.setScheduleTypeLimits(incompatibleLimits));
+  EXPECT_FALSE(terminal.setAvailabilitySchedule(incompatibleSchedule));
+  EXPECT_EQ(availability.handle(), terminal.availabilitySchedule().handle());
 }
 
 TEST_F(EPModelFixture, AirTerminalDualDuctVAVOutdoorAir_ScalarAccessors_RoundTrip) {
@@ -485,4 +531,55 @@ TEST_F(EPModelFixture, AirTerminalDualDuctVAVOutdoorAir_RemoveClearsStaleZoneEqu
   terminal.remove();
   EXPECT_TRUE(equipmentList.equipment().empty());
   EXPECT_FALSE(model.getObject(terminalHandle));
+}
+
+TEST_F(EPModelFixture, AirTerminalDualDuctVAVOutdoorAir_ConnectedTopologyAndScheduleSurviveSaveLoadAndMutation) {
+  const auto idfPath =
+    openstudio::tempDir() / openstudio::toPath("epmodel-dual-duct-vav-oa-roundtrip-" + openstudio::removeBraces(openstudio::createUUID()) + ".idf");
+  const ScopedFileRemoval removeIdf(idfPath);
+
+  Model model;
+  AirLoopHVAC airLoop(model, true);
+  ThermalZone zone(model);
+  AirTerminalDualDuctVAVOutdoorAir terminal(model);
+  ScheduleConstant availability(model);
+  ASSERT_TRUE(airLoop.setName("Roundtrip Dual Duct VAV OA Air Loop"));
+  ASSERT_TRUE(zone.setName("Roundtrip Dual Duct VAV OA Zone"));
+  ASSERT_TRUE(terminal.setName("Roundtrip Dual Duct VAV OA Terminal"));
+  ASSERT_TRUE(availability.setName("Roundtrip Dual Duct VAV OA Availability"));
+  ASSERT_TRUE(terminal.setAvailabilitySchedule(availability));
+  ASSERT_TRUE(terminal.setMaximumTerminalAirFlowRate(1.75));
+  ASSERT_TRUE(terminal.setPerPersonVentilationRateMode("DesignOccupancy"));
+  ASSERT_TRUE(airLoop.addBranchForZone(zone, terminal));
+  ASSERT_TRUE(model.save(idfPath, true));
+
+  auto loadedModel = Model::load(idfPath);
+  ASSERT_TRUE(loadedModel);
+  auto loadedAirLoop = loadedModel->getConcreteModelObjectByName<AirLoopHVAC>("Roundtrip Dual Duct VAV OA Air Loop");
+  auto loadedZone = loadedModel->getConcreteModelObjectByName<ThermalZone>("Roundtrip Dual Duct VAV OA Zone");
+  auto loadedTerminal = loadedModel->getConcreteModelObjectByName<AirTerminalDualDuctVAVOutdoorAir>("Roundtrip Dual Duct VAV OA Terminal");
+  auto loadedAvailability = loadedModel->getConcreteModelObjectByName<ScheduleConstant>("Roundtrip Dual Duct VAV OA Availability");
+  ASSERT_TRUE(loadedAirLoop);
+  ASSERT_TRUE(loadedZone);
+  ASSERT_TRUE(loadedTerminal);
+  ASSERT_TRUE(loadedAvailability);
+  ASSERT_TRUE(loadedTerminal->airLoopHVAC());
+  ASSERT_TRUE(loadedTerminal->outdoorAirInletNode());
+  ASSERT_TRUE(loadedTerminal->recirculatedAirInletNode());
+  EXPECT_EQ(loadedAirLoop->handle(), loadedTerminal->airLoopHVAC()->handle());
+  EXPECT_EQ(loadedAvailability->handle(), loadedTerminal->availabilitySchedule().handle());
+  EXPECT_DOUBLE_EQ(1.75, loadedTerminal->maximumTerminalAirFlowRate().get());
+  EXPECT_EQ("DesignOccupancy", loadedTerminal->perPersonVentilationRateMode());
+
+  const auto outdoorInlet = loadedTerminal->outdoorAirInletNode()->handle();
+  const auto recirculatedInlet = loadedTerminal->recirculatedAirInletNode()->handle();
+  ScheduleConstant replacementAvailability(*loadedModel);
+  ASSERT_TRUE(loadedTerminal->setAvailabilitySchedule(replacementAvailability));
+  EXPECT_EQ(replacementAvailability.handle(), loadedTerminal->availabilitySchedule().handle());
+  EXPECT_EQ(outdoorInlet, loadedTerminal->outdoorAirInletNode()->handle());
+  EXPECT_EQ(recirculatedInlet, loadedTerminal->recirculatedAirInletNode()->handle());
+
+  const auto terminalHandle = loadedTerminal->handle();
+  ASSERT_TRUE(loadedAirLoop->removeBranchForZone(*loadedZone));
+  EXPECT_FALSE(loadedModel->getObject(terminalHandle));
 }

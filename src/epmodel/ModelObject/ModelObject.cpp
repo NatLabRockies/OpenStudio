@@ -81,7 +81,7 @@ namespace epmodel {
     static constexpr double kNoUpper = std::numeric_limits<double>::infinity();
 
     const ScheduleTypeSpec* findScheduleTypeSpec(const std::string& className, const std::string& scheduleDisplayName) {
-      static constexpr std::array<ScheduleTypeSpec, 148> specs{{
+      static constexpr std::array<ScheduleTypeSpec, 152> specs{{
         {"AirLoopHVAC", "Availability Manager Scheduled On", false, true, "Availability", 0.0, 1.0},
         {"AirLoopHVACDedicatedOutdoorAirSystem", "Availability Schedule", false, true, "Availability", 0.0, 1.0},
         {"AvailabilityManagerScheduledOn", "Availability Manager Scheduled On", false, true, "Availability", 0.0, 1.0},
@@ -127,6 +127,10 @@ namespace epmodel {
         {"EvaporativeCoolerIndirectResearchSpecial", "Availability", false, false, "Availability", 0.0, 1.0},
         {"ZoneHVACTerminalUnitVariableRefrigerantFlow", "Terminal Unit Availability", false, true, "Availability", 0.0, 1.0},
         {"ZoneHVACTerminalUnitVariableRefrigerantFlow", "Supply Air Fan Operating Mode", false, true, "Availability", 0.0, 1.0},
+        {"AirTerminalDualDuctConstantVolume", "Availability Schedule", false, true, "Availability", 0.0, 1.0},
+        {"AirTerminalDualDuctVAV", "Availability Schedule", false, true, "Availability", 0.0, 1.0},
+        {"AirTerminalDualDuctVAV", "Minimum Air Flow Turndown", true, true, "", 0.0, 1.0},
+        {"AirTerminalDualDuctVAVOutdoorAir", "Availability Schedule", false, true, "Availability", 0.0, 1.0},
         {"AirTerminalSingleDuctConstantVolumeCooledBeam", "Availability", false, true, "Availability", 0.0, 1.0},
         {"AirLoopHVACUnitarySystem", "Availability", false, true, "Availability", 0.0, 1.0},
         {"AirLoopHVACUnitarySystem", "Supply Air Fan Operating Mode", false, true, "Availability", 0.0, 1.0},
