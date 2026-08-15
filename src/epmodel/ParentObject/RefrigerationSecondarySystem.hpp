@@ -19,6 +19,7 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class ThermalZone;
 
   namespace detail {
     class RefrigerationSecondarySystem_Impl;
@@ -41,11 +42,18 @@ namespace epmodel {
     static std::vector<std::string> pumpDriveTypeValues();
 
     // Schema Alignment Notes:
-    // - API: preserve openstudio::model::RefrigerationSecondarySystem scalar accessor naming/signatures for the numeric and string fields backed by
-    //   the EnergyPlus Refrigeration:SecondarySystem object.
-    // - Field Mapping: ForwardTranslateRefrigerationSecondarySystem.cpp documents how the retained scalars write to Refrigeration_SecondarySystemFields.
-    // - Field Mapping: richer relationship fields (case/walk-in lists, the variable-speed pump curve, zone references, etc.) are handled elsewhere and intentionally
-    //   excluded from this scalar-only scaffold.
+    // - Status: Partial Parity. The selected scalar controls and both optional heat-gain ThermalZone relationships are aligned.
+    // - Canonical Counterpart: openstudio::model::RefrigerationSecondarySystem.
+    // - Implemented Parity: The selected scalar methods plus distribution-piping and receiver/separator zone relationships preserve
+    //   canonical public signatures. Zone setters validate configured object lists without coupling their related UA scalars.
+    // - Field/Storage Mapping: Scalars and both zones map directly to EnergyPlus Refrigeration:SecondarySystem fields; the zone fields
+    //   use the configured ZoneNames object list.
+    // - Canonicalization: Blank zone fields are valid and require no repair. Unresolved imported references remain untouched until an
+    //   explicit typed setter or reset; ordinary APIs assume canonical state.
+    // - Evidence: `src/model/RefrigerationSecondarySystem.hpp`, `src/model/RefrigerationSecondarySystem.cpp`,
+    //   `resources/energyplus/ProposedEnergy+.idd`, and `src/epmodel/test/RefrigerationSecondarySystem_GTest.cpp`.
+    // - Remaining Parity Work: Refrigerated load lists, the variable-speed pump curve, full family removal, and object-level clone
+    //   behavior remain a separate refrigeration architecture phase.
 
     /** @name Field accessors */
     //@{
@@ -107,10 +115,18 @@ namespace epmodel {
     bool setSumUADistributionPiping(double sumUADistributionPiping);
     void resetSumUADistributionPiping();
 
+    boost::optional<ThermalZone> distributionPipingZone() const;
+    bool setDistributionPipingZone(const ThermalZone& thermalZone);
+    void resetDistributionPipingZone();
+
     double sumUAReceiverSeparatorShell() const;
     bool isSumUAReceiverSeparatorShellDefaulted() const;
     bool setSumUAReceiverSeparatorShell(double sumUAReceiverSeparatorShell);
     void resetSumUAReceiverSeparatorShell();
+
+    boost::optional<ThermalZone> receiverSeparatorZone() const;
+    bool setReceiverSeparatorZone(const ThermalZone& thermalZone);
+    void resetReceiverSeparatorZone();
 
     double evaporatorRefrigerantInventory() const;
     bool isEvaporatorRefrigerantInventoryDefaulted() const;
