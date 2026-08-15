@@ -25,7 +25,6 @@
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
 #include <utilities/idd/Coil_Cooling_DX_FieldEnums.hxx>
-#include <utilities/idd/Coil_Cooling_DX_CurveFit_Performance_FieldEnums.hxx>
 #include <utilities/idd/CoilSystem_Cooling_DX_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/OutdoorAir_NodeList_FieldEnums.hxx>
@@ -75,10 +74,6 @@ namespace epmodel {
       OS_ASSERT(performance.setCapacityControlMethod("Discrete"));
       OS_ASSERT(performance.setEvaporativeCondenserBasinHeaterCapacity(0.0));
       OS_ASSERT(performance.setEvaporativeCondenserBasinHeaterSetpointTemperature(2.0));
-      auto heaterSchedule = model.alwaysOnDiscreteSchedule();
-      OS_ASSERT(performance.getImpl<detail::CoilCoolingDXCurveFitPerformance_Impl>()->setPointer(
-        openstudio::Coil_Cooling_DX_CurveFit_PerformanceFields::EvaporativeCondenserBasinHeaterOperatingScheduleName, heaterSchedule.handle(),
-        false));
       OS_ASSERT(performance.setCompressorFuelType("Electricity"));
       OS_ASSERT(performance.setBaseOperatingMode(baseOperatingMode));
     }

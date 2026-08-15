@@ -16,7 +16,9 @@ namespace openstudio {
 namespace epmodel {
 
   class CoilCoolingDXCurveFitOperatingMode;
+  class Curve;
   class Model;
+  class Schedule;
 
   namespace detail {
     class CoilCoolingDXCurveFitPerformance_Impl;
@@ -44,15 +46,20 @@ namespace epmodel {
     // Schema Alignment Notes:
     // - Status: Partial Parity.
     // - Canonical Counterpart: openstudio::model::CoilCoolingDXCurveFitPerformance.
-    // - Implemented Parity: Scalar fields plus the required base-operating-mode constructor, getter, and setter preserve the public API needed
-    //   to construct a curve-fit DX air-loop performance graph.
+    // - Implemented Parity: Scalar fields, the required base operating mode, the optional crankcase-heater temperature curve, and the required
+    //   evaporative-condenser basin-heater schedule preserve their canonical public API and configured EnergyPlus relationship constraints.
     // - Documented Delta: The existing one-argument constructor remains available for internal/default EPModel construction.
-    // - Field/Storage Mapping: Scalars and the required base mode map directly to `Coil:Cooling:DX:CurveFit:Performance` fields.
+    // - Field/Storage Mapping: Scalars and relationships map directly to `Coil:Cooling:DX:CurveFit:Performance` fields; constructors and
+    //   blank-only load repair attach the always-on basin-heater schedule without changing unresolved nonblank imports.
     // - Evidence: `src/model/CoilCoolingDXCurveFitPerformance.hpp` and
     //   `src/epmodel/test/CoilCoolingDXCurveFitPerformance_GTest.cpp`.
-    // - Remaining Parity Work: Add optional modes, basin-heater schedule, crankcase curve, reverse navigation, and removal/clone equivalence.
+    // - Remaining Parity Work: Add optional operating modes, reverse navigation, and removal/clone equivalence.
     double crankcaseHeaterCapacity() const;
     bool setCrankcaseHeaterCapacity(double crankcaseHeaterCapacity);
+
+    boost::optional<Curve> crankcaseHeaterCapacityFunctionofTemperatureCurve() const;
+    bool setCrankcaseHeaterCapacityFunctionofTemperatureCurve(const Curve& curve);
+    void resetCrankcaseHeaterCapacityFunctionofTemperatureCurve();
 
     double minimumOutdoorDryBulbTemperatureforCompressorOperation() const;
     bool setMinimumOutdoorDryBulbTemperatureforCompressorOperation(double minimumOutdoorDryBulbTemperatureforCompressorOperation);
@@ -71,6 +78,9 @@ namespace epmodel {
 
     double evaporativeCondenserBasinHeaterSetpointTemperature() const;
     bool setEvaporativeCondenserBasinHeaterSetpointTemperature(double evaporativeCondenserBasinHeaterSetpointTemperature);
+
+    Schedule evaporativeCondenserBasinHeaterOperatingSchedule() const;
+    bool setEvaporativeCondenserBasinHeaterOperatingSchedule(Schedule& schedule);
 
     std::string compressorFuelType() const;
     bool setCompressorFuelType(const std::string& compressorFuelType);

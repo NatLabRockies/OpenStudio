@@ -14,6 +14,8 @@ namespace openstudio {
 namespace epmodel {
 
   class CoilCoolingDXCurveFitOperatingMode;
+  class Curve;
+  class Schedule;
 
   namespace detail {
 
@@ -25,6 +27,10 @@ namespace epmodel {
 
       double crankcaseHeaterCapacity() const;
       bool setCrankcaseHeaterCapacity(double crankcaseHeaterCapacity);
+
+      boost::optional<Curve> crankcaseHeaterCapacityFunctionofTemperatureCurve() const;
+      bool setCrankcaseHeaterCapacityFunctionofTemperatureCurve(const Curve& curve);
+      void resetCrankcaseHeaterCapacityFunctionofTemperatureCurve();
 
       double minimumOutdoorDryBulbTemperatureforCompressorOperation() const;
       bool setMinimumOutdoorDryBulbTemperatureforCompressorOperation(double minimumOutdoorDryBulbTemperatureforCompressorOperation);
@@ -45,12 +51,18 @@ namespace epmodel {
       double evaporativeCondenserBasinHeaterSetpointTemperature() const;
       bool setEvaporativeCondenserBasinHeaterSetpointTemperature(double evaporativeCondenserBasinHeaterSetpointTemperature);
 
+      Schedule evaporativeCondenserBasinHeaterOperatingSchedule() const;
+      bool setEvaporativeCondenserBasinHeaterOperatingSchedule(Schedule& schedule);
+
       std::string compressorFuelType() const;
       bool setCompressorFuelType(const std::string& compressorFuelType);
       std::vector<std::string> compressorFuelTypeValues() const;
 
       CoilCoolingDXCurveFitOperatingMode baseOperatingMode() const;
       bool setBaseOperatingMode(const CoilCoolingDXCurveFitOperatingMode& baseOperatingMode);
+
+     protected:
+      void doCanonicalize(LoadContext& context) override;
     };
 
   }  // namespace detail

@@ -7,9 +7,12 @@
 #include "ResourceObject/CoilCoolingDXCurveFitPerformance_Impl.hpp"
 
 #include "Model.hpp"
+#include "Curve/Curve.hpp"
+#include "Curve/Curve_Impl.hpp"
 #include "ResourceObject/CoilCoolingDXCurveFitOperatingMode.hpp"
 #include "ResourceObject/CoilCoolingDXCurveFitOperatingMode_Impl.hpp"
 #include "Schedule/Schedule.hpp"
+#include "Schedule/Schedule_Impl.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/idd/Coil_Cooling_DX_CurveFit_Performance_FieldEnums.hxx>
@@ -23,7 +26,10 @@ namespace openstudio {
 namespace epmodel {
 
   CoilCoolingDXCurveFitPerformance::CoilCoolingDXCurveFitPerformance(const Model& model)
-    : ModelObject(CoilCoolingDXCurveFitPerformance::iddObjectType(), model) {}
+    : ModelObject(CoilCoolingDXCurveFitPerformance::iddObjectType(), model) {
+    auto basinHeaterSchedule = model.alwaysOnDiscreteSchedule();
+    OS_ASSERT(setEvaporativeCondenserBasinHeaterOperatingSchedule(basinHeaterSchedule));
+  }
 
   CoilCoolingDXCurveFitPerformance::CoilCoolingDXCurveFitPerformance(const Model& model, const CoilCoolingDXCurveFitOperatingMode& baseOperatingMode)
     : ModelObject(CoilCoolingDXCurveFitPerformance::iddObjectType(), model) {
@@ -39,10 +45,8 @@ namespace epmodel {
     OS_ASSERT(setCapacityControlMethod("Discrete"));
     OS_ASSERT(setEvaporativeCondenserBasinHeaterCapacity(0.0));
     OS_ASSERT(setEvaporativeCondenserBasinHeaterSetpointTemperature(2.0));
-    const auto basinHeaterSchedule = model.alwaysOnDiscreteSchedule();
-    OS_ASSERT(getImpl<detail::CoilCoolingDXCurveFitPerformance_Impl>()->setPointer(
-      openstudio::Coil_Cooling_DX_CurveFit_PerformanceFields::EvaporativeCondenserBasinHeaterOperatingScheduleName, basinHeaterSchedule.handle(),
-      false));
+    auto basinHeaterSchedule = model.alwaysOnDiscreteSchedule();
+    OS_ASSERT(setEvaporativeCondenserBasinHeaterOperatingSchedule(basinHeaterSchedule));
     OS_ASSERT(setCompressorFuelType("Electricity"));
     if (!setBaseOperatingMode(baseOperatingMode)) {
       remove();
@@ -81,6 +85,18 @@ namespace epmodel {
 
   bool CoilCoolingDXCurveFitPerformance::setCrankcaseHeaterCapacity(double crankcaseHeaterCapacity) {
     return getImpl<detail::CoilCoolingDXCurveFitPerformance_Impl>()->setCrankcaseHeaterCapacity(crankcaseHeaterCapacity);
+  }
+
+  boost::optional<Curve> CoilCoolingDXCurveFitPerformance::crankcaseHeaterCapacityFunctionofTemperatureCurve() const {
+    return getImpl<detail::CoilCoolingDXCurveFitPerformance_Impl>()->crankcaseHeaterCapacityFunctionofTemperatureCurve();
+  }
+
+  bool CoilCoolingDXCurveFitPerformance::setCrankcaseHeaterCapacityFunctionofTemperatureCurve(const Curve& curve) {
+    return getImpl<detail::CoilCoolingDXCurveFitPerformance_Impl>()->setCrankcaseHeaterCapacityFunctionofTemperatureCurve(curve);
+  }
+
+  void CoilCoolingDXCurveFitPerformance::resetCrankcaseHeaterCapacityFunctionofTemperatureCurve() {
+    getImpl<detail::CoilCoolingDXCurveFitPerformance_Impl>()->resetCrankcaseHeaterCapacityFunctionofTemperatureCurve();
   }
 
   double CoilCoolingDXCurveFitPerformance::minimumOutdoorDryBulbTemperatureforCompressorOperation() const {
@@ -138,6 +154,14 @@ namespace epmodel {
       evaporativeCondenserBasinHeaterSetpointTemperature);
   }
 
+  Schedule CoilCoolingDXCurveFitPerformance::evaporativeCondenserBasinHeaterOperatingSchedule() const {
+    return getImpl<detail::CoilCoolingDXCurveFitPerformance_Impl>()->evaporativeCondenserBasinHeaterOperatingSchedule();
+  }
+
+  bool CoilCoolingDXCurveFitPerformance::setEvaporativeCondenserBasinHeaterOperatingSchedule(Schedule& schedule) {
+    return getImpl<detail::CoilCoolingDXCurveFitPerformance_Impl>()->setEvaporativeCondenserBasinHeaterOperatingSchedule(schedule);
+  }
+
   std::string CoilCoolingDXCurveFitPerformance::compressorFuelType() const {
     return getImpl<detail::CoilCoolingDXCurveFitPerformance_Impl>()->compressorFuelType();
   }
@@ -169,6 +193,33 @@ namespace epmodel {
 
     bool CoilCoolingDXCurveFitPerformance_Impl::setCrankcaseHeaterCapacity(double crankcaseHeaterCapacity) {
       return setDouble(openstudio::Coil_Cooling_DX_CurveFit_PerformanceFields::CrankcaseHeaterCapacity, crankcaseHeaterCapacity);
+    }
+
+    boost::optional<Curve> CoilCoolingDXCurveFitPerformance_Impl::crankcaseHeaterCapacityFunctionofTemperatureCurve() const {
+      return getObject<ModelObject>().getModelObjectTarget<Curve>(
+        openstudio::Coil_Cooling_DX_CurveFit_PerformanceFields::CrankcaseHeaterCapacityFunctionofTemperatureCurveName);
+    }
+
+    bool CoilCoolingDXCurveFitPerformance_Impl::setCrankcaseHeaterCapacityFunctionofTemperatureCurve(const Curve& curve) {
+      if (curve.model() != model()) {
+        LOG_FREE(Warn, "openstudio.epmodel.CoilCoolingDXCurveFitPerformance",
+                 "Cannot set the crankcase-heater capacity temperature curve because it belongs to a different model.");
+        return false;
+      }
+      constexpr auto field = openstudio::Coil_Cooling_DX_CurveFit_PerformanceFields::CrankcaseHeaterCapacityFunctionofTemperatureCurveName;
+      if (!model().canBeTarget(curve.handle(), iddObject().objectLists(field))) {
+        LOG_FREE(Warn, "openstudio.epmodel.CoilCoolingDXCurveFitPerformance",
+                 "Cannot set the crankcase-heater capacity temperature curve because curve type '" << curve.iddObject().type().valueName()
+                                                                                                   << "' is not accepted by the field.");
+        return false;
+      }
+      return setPointer(field, curve.handle(), false);
+    }
+
+    void CoilCoolingDXCurveFitPerformance_Impl::resetCrankcaseHeaterCapacityFunctionofTemperatureCurve() {
+      constexpr auto field = openstudio::Coil_Cooling_DX_CurveFit_PerformanceFields::CrankcaseHeaterCapacityFunctionofTemperatureCurveName;
+      OS_ASSERT(setPointer(field, Handle(), false));
+      OS_ASSERT(openstudio::detail::IdfObject_Impl::setString(field, "", false));
     }
 
     double CoilCoolingDXCurveFitPerformance_Impl::minimumOutdoorDryBulbTemperatureforCompressorOperation() const {
@@ -240,6 +291,19 @@ namespace epmodel {
                        evaporativeCondenserBasinHeaterSetpointTemperature);
     }
 
+    Schedule CoilCoolingDXCurveFitPerformance_Impl::evaporativeCondenserBasinHeaterOperatingSchedule() const {
+      const auto schedule = getObject<ModelObject>().getModelObjectTarget<Schedule>(
+        openstudio::Coil_Cooling_DX_CurveFit_PerformanceFields::EvaporativeCondenserBasinHeaterOperatingScheduleName);
+      OS_ASSERT(schedule);
+      return *schedule;
+    }
+
+    bool CoilCoolingDXCurveFitPerformance_Impl::setEvaporativeCondenserBasinHeaterOperatingSchedule(Schedule& schedule) {
+      return ModelObject_Impl::setSchedule(
+        openstudio::Coil_Cooling_DX_CurveFit_PerformanceFields::EvaporativeCondenserBasinHeaterOperatingScheduleName,
+        "CoilCoolingDXCurveFitPerformance", "Evaporative Condenser Basin Heater Operating Schedule", schedule);
+    }
+
     std::string CoilCoolingDXCurveFitPerformance_Impl::compressorFuelType() const {
       const auto value = getString(openstudio::Coil_Cooling_DX_CurveFit_PerformanceFields::CompressorFuelType, true);
       OS_ASSERT(value);
@@ -262,6 +326,28 @@ namespace epmodel {
     bool CoilCoolingDXCurveFitPerformance_Impl::setBaseOperatingMode(const CoilCoolingDXCurveFitOperatingMode& baseOperatingMode) {
       return baseOperatingMode.model() == model()
              && setPointer(openstudio::Coil_Cooling_DX_CurveFit_PerformanceFields::BaseOperatingMode, baseOperatingMode.handle(), false);
+    }
+
+    void CoilCoolingDXCurveFitPerformance_Impl::doCanonicalize(LoadContext& context) {
+      ModelObject_Impl::doCanonicalize(context);
+
+      constexpr auto field = openstudio::Coil_Cooling_DX_CurveFit_PerformanceFields::EvaporativeCondenserBasinHeaterOperatingScheduleName;
+      const auto raw = openstudio::detail::IdfObject_Impl::getString(field, false, true);
+      if (raw && !raw->empty()) {
+        return;
+      }
+      if (getObject<ModelObject>().getModelObjectTarget<Schedule>(field)) {
+        return;
+      }
+
+      auto alwaysOn = model().alwaysOnDiscreteSchedule();
+      if (setEvaporativeCondenserBasinHeaterOperatingSchedule(alwaysOn)) {
+        detail::addLoadInfo(context, "Attached the always-on basin-heater schedule to curve-fit DX cooling performance '"
+                                       + getObject<ModelObject>().nameString() + "'.");
+      } else {
+        detail::addLoadError(context, "Failed to attach the always-on basin-heater schedule to curve-fit DX cooling performance '"
+                                        + getObject<ModelObject>().nameString() + "'.");
+      }
     }
 
     std::vector<std::string> CoilCoolingDXCurveFitPerformance_Impl::capacityControlMethodValues() const {
