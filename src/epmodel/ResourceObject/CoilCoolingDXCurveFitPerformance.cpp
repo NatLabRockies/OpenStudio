@@ -178,6 +178,30 @@ namespace epmodel {
     return getImpl<detail::CoilCoolingDXCurveFitPerformance_Impl>()->setBaseOperatingMode(baseOperatingMode);
   }
 
+  boost::optional<CoilCoolingDXCurveFitOperatingMode> CoilCoolingDXCurveFitPerformance::alternativeOperatingMode1() const {
+    return getImpl<detail::CoilCoolingDXCurveFitPerformance_Impl>()->alternativeOperatingMode1();
+  }
+
+  bool CoilCoolingDXCurveFitPerformance::setAlternativeOperatingMode1(const CoilCoolingDXCurveFitOperatingMode& alternativeOperatingMode1) {
+    return getImpl<detail::CoilCoolingDXCurveFitPerformance_Impl>()->setAlternativeOperatingMode1(alternativeOperatingMode1);
+  }
+
+  void CoilCoolingDXCurveFitPerformance::resetAlternativeOperatingMode1() {
+    getImpl<detail::CoilCoolingDXCurveFitPerformance_Impl>()->resetAlternativeOperatingMode1();
+  }
+
+  boost::optional<CoilCoolingDXCurveFitOperatingMode> CoilCoolingDXCurveFitPerformance::alternativeOperatingMode2() const {
+    return getImpl<detail::CoilCoolingDXCurveFitPerformance_Impl>()->alternativeOperatingMode2();
+  }
+
+  bool CoilCoolingDXCurveFitPerformance::setAlternativeOperatingMode2(const CoilCoolingDXCurveFitOperatingMode& alternativeOperatingMode2) {
+    return getImpl<detail::CoilCoolingDXCurveFitPerformance_Impl>()->setAlternativeOperatingMode2(alternativeOperatingMode2);
+  }
+
+  void CoilCoolingDXCurveFitPerformance::resetAlternativeOperatingMode2() {
+    getImpl<detail::CoilCoolingDXCurveFitPerformance_Impl>()->resetAlternativeOperatingMode2();
+  }
+
 }  // namespace epmodel
 }  // namespace openstudio
 
@@ -326,6 +350,60 @@ namespace epmodel {
     bool CoilCoolingDXCurveFitPerformance_Impl::setBaseOperatingMode(const CoilCoolingDXCurveFitOperatingMode& baseOperatingMode) {
       return baseOperatingMode.model() == model()
              && setPointer(openstudio::Coil_Cooling_DX_CurveFit_PerformanceFields::BaseOperatingMode, baseOperatingMode.handle(), false);
+    }
+
+    boost::optional<CoilCoolingDXCurveFitOperatingMode> CoilCoolingDXCurveFitPerformance_Impl::alternativeOperatingMode1() const {
+      return getObject<ModelObject>().getModelObjectTarget<CoilCoolingDXCurveFitOperatingMode>(
+        openstudio::Coil_Cooling_DX_CurveFit_PerformanceFields::AlternativeOperatingMode1);
+    }
+
+    bool CoilCoolingDXCurveFitPerformance_Impl::setAlternativeOperatingMode1(const CoilCoolingDXCurveFitOperatingMode& alternativeOperatingMode1) {
+      if (alternativeOperatingMode1.model() != model()) {
+        LOG_FREE(Warn, "openstudio.epmodel.CoilCoolingDXCurveFitPerformance",
+                 "Cannot set alternative operating mode 1 because it belongs to a different model.");
+        return false;
+      }
+      constexpr auto field = openstudio::Coil_Cooling_DX_CurveFit_PerformanceFields::AlternativeOperatingMode1;
+      if (!model().canBeTarget(alternativeOperatingMode1.handle(), iddObject().objectLists(field))) {
+        LOG_FREE(Warn, "openstudio.epmodel.CoilCoolingDXCurveFitPerformance",
+                 "Cannot set alternative operating mode 1 because object type '" << alternativeOperatingMode1.iddObject().type().valueName()
+                                                                                 << "' is not accepted by the field.");
+        return false;
+      }
+      return setPointer(field, alternativeOperatingMode1.handle(), false);
+    }
+
+    void CoilCoolingDXCurveFitPerformance_Impl::resetAlternativeOperatingMode1() {
+      constexpr auto field = openstudio::Coil_Cooling_DX_CurveFit_PerformanceFields::AlternativeOperatingMode1;
+      OS_ASSERT(setPointer(field, Handle(), false));
+      OS_ASSERT(openstudio::detail::IdfObject_Impl::setString(field, "", false));
+    }
+
+    boost::optional<CoilCoolingDXCurveFitOperatingMode> CoilCoolingDXCurveFitPerformance_Impl::alternativeOperatingMode2() const {
+      return getObject<ModelObject>().getModelObjectTarget<CoilCoolingDXCurveFitOperatingMode>(
+        openstudio::Coil_Cooling_DX_CurveFit_PerformanceFields::AlternativeOperatingMode2);
+    }
+
+    bool CoilCoolingDXCurveFitPerformance_Impl::setAlternativeOperatingMode2(const CoilCoolingDXCurveFitOperatingMode& alternativeOperatingMode2) {
+      if (alternativeOperatingMode2.model() != model()) {
+        LOG_FREE(Warn, "openstudio.epmodel.CoilCoolingDXCurveFitPerformance",
+                 "Cannot set alternative operating mode 2 because it belongs to a different model.");
+        return false;
+      }
+      constexpr auto field = openstudio::Coil_Cooling_DX_CurveFit_PerformanceFields::AlternativeOperatingMode2;
+      if (!model().canBeTarget(alternativeOperatingMode2.handle(), iddObject().objectLists(field))) {
+        LOG_FREE(Warn, "openstudio.epmodel.CoilCoolingDXCurveFitPerformance",
+                 "Cannot set alternative operating mode 2 because object type '" << alternativeOperatingMode2.iddObject().type().valueName()
+                                                                                 << "' is not accepted by the field.");
+        return false;
+      }
+      return setPointer(field, alternativeOperatingMode2.handle(), false);
+    }
+
+    void CoilCoolingDXCurveFitPerformance_Impl::resetAlternativeOperatingMode2() {
+      constexpr auto field = openstudio::Coil_Cooling_DX_CurveFit_PerformanceFields::AlternativeOperatingMode2;
+      OS_ASSERT(setPointer(field, Handle(), false));
+      OS_ASSERT(openstudio::detail::IdfObject_Impl::setString(field, "", false));
     }
 
     void CoilCoolingDXCurveFitPerformance_Impl::doCanonicalize(LoadContext& context) {

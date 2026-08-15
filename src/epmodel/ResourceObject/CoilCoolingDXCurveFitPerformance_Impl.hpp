@@ -61,6 +61,14 @@ namespace epmodel {
       CoilCoolingDXCurveFitOperatingMode baseOperatingMode() const;
       bool setBaseOperatingMode(const CoilCoolingDXCurveFitOperatingMode& baseOperatingMode);
 
+      boost::optional<CoilCoolingDXCurveFitOperatingMode> alternativeOperatingMode1() const;
+      bool setAlternativeOperatingMode1(const CoilCoolingDXCurveFitOperatingMode& alternativeOperatingMode1);
+      void resetAlternativeOperatingMode1();
+
+      boost::optional<CoilCoolingDXCurveFitOperatingMode> alternativeOperatingMode2() const;
+      bool setAlternativeOperatingMode2(const CoilCoolingDXCurveFitOperatingMode& alternativeOperatingMode2);
+      void resetAlternativeOperatingMode2();
+
      protected:
       void doCanonicalize(LoadContext& context) override;
     };

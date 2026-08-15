@@ -55,6 +55,8 @@ TEST_F(EPModelFixture, CoilCoolingDXCurveFitPerformance_DefaultConstructor) {
   EXPECT_FALSE(performance.nameString().empty());
   EXPECT_EQ(model.alwaysOnDiscreteSchedule().handle(), performance.evaporativeCondenserBasinHeaterOperatingSchedule().handle());
   EXPECT_FALSE(performance.crankcaseHeaterCapacityFunctionofTemperatureCurve());
+  EXPECT_FALSE(performance.alternativeOperatingMode1());
+  EXPECT_FALSE(performance.alternativeOperatingMode2());
 }
 
 TEST_F(EPModelFixture, CoilCoolingDXCurveFitPerformance_ScalarAccessors_RoundTrip) {
@@ -120,6 +122,52 @@ TEST_F(EPModelFixture, CoilCoolingDXCurveFitPerformance_BaseOperatingModeRelatio
   const auto objectCount = otherModel.getConcreteModelObjects<CoilCoolingDXCurveFitPerformance>().size();
   EXPECT_THROW((CoilCoolingDXCurveFitPerformance{otherModel, replacementOperatingMode}), std::invalid_argument);
   EXPECT_EQ(objectCount, otherModel.getConcreteModelObjects<CoilCoolingDXCurveFitPerformance>().size());
+}
+
+TEST_F(EPModelFixture, CoilCoolingDXCurveFitPerformance_AlternativeOperatingModeValidationAndRawReset) {
+  Model model;
+  CoilCoolingDXCurveFitOperatingMode base(model);
+  CoilCoolingDXCurveFitOperatingMode alternative1(model);
+  CoilCoolingDXCurveFitOperatingMode alternative2(model);
+  CoilCoolingDXCurveFitPerformance performance(model, base);
+
+  ASSERT_TRUE(performance.setAlternativeOperatingMode1(alternative1));
+  ASSERT_TRUE(performance.setAlternativeOperatingMode2(alternative2));
+  ASSERT_TRUE(performance.alternativeOperatingMode1());
+  ASSERT_TRUE(performance.alternativeOperatingMode2());
+  EXPECT_EQ(alternative1.handle(), performance.alternativeOperatingMode1()->handle());
+  EXPECT_EQ(alternative2.handle(), performance.alternativeOperatingMode2()->handle());
+
+  Model foreignModel;
+  CoilCoolingDXCurveFitOperatingMode foreignMode(foreignModel);
+  EXPECT_FALSE(performance.setAlternativeOperatingMode1(foreignMode));
+  EXPECT_FALSE(performance.setAlternativeOperatingMode2(foreignMode));
+  EXPECT_EQ(alternative1.handle(), performance.alternativeOperatingMode1()->handle());
+  EXPECT_EQ(alternative2.handle(), performance.alternativeOperatingMode2()->handle());
+
+  // Deliberately seed impossible imported relationship text to prove failed public writes preserve it and explicit resets clear it.
+  auto workspaceImpl = performance.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  ASSERT_TRUE(workspaceImpl);
+  constexpr auto alternative1Field = openstudio::Coil_Cooling_DX_CurveFit_PerformanceFields::AlternativeOperatingMode1;
+  constexpr auto alternative2Field = openstudio::Coil_Cooling_DX_CurveFit_PerformanceFields::AlternativeOperatingMode2;
+  ASSERT_TRUE(workspaceImpl->setPointer(alternative1Field, openstudio::Handle(), false));
+  ASSERT_TRUE(workspaceImpl->openstudio::detail::IdfObject_Impl::setString(alternative1Field, "Unresolved Alternative Mode 1", false));
+  ASSERT_TRUE(workspaceImpl->setPointer(alternative2Field, openstudio::Handle(), false));
+  ASSERT_TRUE(workspaceImpl->openstudio::detail::IdfObject_Impl::setString(alternative2Field, "Unresolved Alternative Mode 2", false));
+
+  EXPECT_FALSE(performance.setAlternativeOperatingMode1(foreignMode));
+  EXPECT_FALSE(performance.setAlternativeOperatingMode2(foreignMode));
+  EXPECT_EQ("Unresolved Alternative Mode 1",
+            workspaceImpl->openstudio::detail::IdfObject_Impl::getString(alternative1Field, false, true).value_or(""));
+  EXPECT_EQ("Unresolved Alternative Mode 2",
+            workspaceImpl->openstudio::detail::IdfObject_Impl::getString(alternative2Field, false, true).value_or(""));
+
+  performance.resetAlternativeOperatingMode1();
+  performance.resetAlternativeOperatingMode2();
+  EXPECT_FALSE(performance.alternativeOperatingMode1());
+  EXPECT_FALSE(performance.alternativeOperatingMode2());
+  EXPECT_TRUE(workspaceImpl->openstudio::detail::IdfObject_Impl::getString(alternative1Field, false, true).value_or("").empty());
+  EXPECT_TRUE(workspaceImpl->openstudio::detail::IdfObject_Impl::getString(alternative2Field, false, true).value_or("").empty());
 }
 
 TEST_F(EPModelFixture, CoilCoolingDXCurveFitPerformance_DirectRelationshipValidationAndReset) {
@@ -257,40 +305,61 @@ TEST_F(EPModelFixture, CoilCoolingDXCurveFitPerformance_RelationshipsSurviveRelo
 
   Model model;
   CoilCoolingDXCurveFitOperatingMode baseOperatingMode(model);
+  CoilCoolingDXCurveFitOperatingMode originalAlternative1(model);
+  CoilCoolingDXCurveFitOperatingMode originalAlternative2(model);
   CoilCoolingDXCurveFitPerformance performance(model, baseOperatingMode);
   CurveLinear originalCurve(model);
   ScheduleConstant originalSchedule(model);
   ASSERT_TRUE(performance.setName("Reloadable Curve Fit Performance"));
   ASSERT_TRUE(baseOperatingMode.setName("Reloadable Curve Fit Base Mode"));
+  ASSERT_TRUE(originalAlternative1.setName("Original Curve Fit Alternative Mode 1"));
+  ASSERT_TRUE(originalAlternative2.setName("Original Curve Fit Alternative Mode 2"));
   ASSERT_TRUE(originalCurve.setName("Original Curve Fit Crankcase Curve"));
   ASSERT_TRUE(originalSchedule.setName("Original Curve Fit Basin Schedule"));
   ASSERT_TRUE(originalSchedule.setValue(1.0));
   ASSERT_TRUE(performance.setCrankcaseHeaterCapacityFunctionofTemperatureCurve(originalCurve));
   ASSERT_TRUE(performance.setEvaporativeCondenserBasinHeaterOperatingSchedule(originalSchedule));
+  ASSERT_TRUE(performance.setAlternativeOperatingMode1(originalAlternative1));
+  ASSERT_TRUE(performance.setAlternativeOperatingMode2(originalAlternative2));
   ASSERT_TRUE(model.save(firstPath, true));
 
   auto loadedModel = Model::load(firstPath);
   ASSERT_TRUE(loadedModel);
   auto loadedPerformance = loadedModel->getConcreteModelObjectByName<CoilCoolingDXCurveFitPerformance>("Reloadable Curve Fit Performance");
   auto loadedBase = loadedModel->getConcreteModelObjectByName<CoilCoolingDXCurveFitOperatingMode>("Reloadable Curve Fit Base Mode");
+  auto loadedAlternative1 = loadedModel->getConcreteModelObjectByName<CoilCoolingDXCurveFitOperatingMode>("Original Curve Fit Alternative Mode 1");
+  auto loadedAlternative2 = loadedModel->getConcreteModelObjectByName<CoilCoolingDXCurveFitOperatingMode>("Original Curve Fit Alternative Mode 2");
   auto loadedCurve = loadedModel->getConcreteModelObjectByName<CurveLinear>("Original Curve Fit Crankcase Curve");
   auto loadedSchedule = loadedModel->getConcreteModelObjectByName<ScheduleConstant>("Original Curve Fit Basin Schedule");
   ASSERT_TRUE(loadedPerformance);
   ASSERT_TRUE(loadedBase);
+  ASSERT_TRUE(loadedAlternative1);
+  ASSERT_TRUE(loadedAlternative2);
   ASSERT_TRUE(loadedCurve);
   ASSERT_TRUE(loadedSchedule);
   EXPECT_EQ(loadedBase->handle(), loadedPerformance->baseOperatingMode().handle());
+  ASSERT_TRUE(loadedPerformance->alternativeOperatingMode1());
+  ASSERT_TRUE(loadedPerformance->alternativeOperatingMode2());
+  EXPECT_EQ(loadedAlternative1->handle(), loadedPerformance->alternativeOperatingMode1()->handle());
+  EXPECT_EQ(loadedAlternative2->handle(), loadedPerformance->alternativeOperatingMode2()->handle());
   ASSERT_TRUE(loadedPerformance->crankcaseHeaterCapacityFunctionofTemperatureCurve());
   EXPECT_EQ(loadedCurve->handle(), loadedPerformance->crankcaseHeaterCapacityFunctionofTemperatureCurve()->handle());
   EXPECT_EQ(loadedSchedule->handle(), loadedPerformance->evaporativeCondenserBasinHeaterOperatingSchedule().handle());
 
   CurveLinear replacementCurve(*loadedModel);
   ScheduleConstant replacementSchedule(*loadedModel);
+  CoilCoolingDXCurveFitOperatingMode replacementAlternative1(*loadedModel);
+  CoilCoolingDXCurveFitOperatingMode replacementAlternative2(*loadedModel);
   ASSERT_TRUE(replacementCurve.setName("Replacement Curve Fit Crankcase Curve"));
   ASSERT_TRUE(replacementSchedule.setName("Replacement Curve Fit Basin Schedule"));
   ASSERT_TRUE(replacementSchedule.setValue(1.0));
+  ASSERT_TRUE(replacementAlternative1.setName("Replacement Curve Fit Alternative Mode 1"));
+  ASSERT_TRUE(replacementAlternative2.setName("Replacement Curve Fit Alternative Mode 2"));
   ASSERT_TRUE(loadedPerformance->setCrankcaseHeaterCapacityFunctionofTemperatureCurve(replacementCurve));
   ASSERT_TRUE(loadedPerformance->setEvaporativeCondenserBasinHeaterOperatingSchedule(replacementSchedule));
+  ASSERT_TRUE(loadedPerformance->setAlternativeOperatingMode1(replacementAlternative1));
+  ASSERT_TRUE(loadedPerformance->setAlternativeOperatingMode2(replacementAlternative2));
+  loadedPerformance->resetAlternativeOperatingMode2();
   ASSERT_TRUE(loadedModel->save(secondPath, true));
 
   auto reloadedModel = Model::load(secondPath);
@@ -298,16 +367,34 @@ TEST_F(EPModelFixture, CoilCoolingDXCurveFitPerformance_RelationshipsSurviveRelo
   auto reloadedPerformance = reloadedModel->getConcreteModelObjectByName<CoilCoolingDXCurveFitPerformance>("Reloadable Curve Fit Performance");
   auto reloadedCurve = reloadedModel->getConcreteModelObjectByName<CurveLinear>("Replacement Curve Fit Crankcase Curve");
   auto reloadedSchedule = reloadedModel->getConcreteModelObjectByName<ScheduleConstant>("Replacement Curve Fit Basin Schedule");
+  auto reloadedBase = reloadedModel->getConcreteModelObjectByName<CoilCoolingDXCurveFitOperatingMode>("Reloadable Curve Fit Base Mode");
+  auto reloadedAlternative1 =
+    reloadedModel->getConcreteModelObjectByName<CoilCoolingDXCurveFitOperatingMode>("Replacement Curve Fit Alternative Mode 1");
+  auto reloadedAlternative2 =
+    reloadedModel->getConcreteModelObjectByName<CoilCoolingDXCurveFitOperatingMode>("Replacement Curve Fit Alternative Mode 2");
   ASSERT_TRUE(reloadedPerformance);
   ASSERT_TRUE(reloadedCurve);
   ASSERT_TRUE(reloadedSchedule);
+  ASSERT_TRUE(reloadedBase);
+  ASSERT_TRUE(reloadedAlternative1);
+  ASSERT_TRUE(reloadedAlternative2);
   ASSERT_TRUE(reloadedPerformance->crankcaseHeaterCapacityFunctionofTemperatureCurve());
   EXPECT_EQ(reloadedCurve->handle(), reloadedPerformance->crankcaseHeaterCapacityFunctionofTemperatureCurve()->handle());
   EXPECT_EQ(reloadedSchedule->handle(), reloadedPerformance->evaporativeCondenserBasinHeaterOperatingSchedule().handle());
+  EXPECT_EQ(reloadedBase->handle(), reloadedPerformance->baseOperatingMode().handle());
+  ASSERT_TRUE(reloadedPerformance->alternativeOperatingMode1());
+  EXPECT_EQ(reloadedAlternative1->handle(), reloadedPerformance->alternativeOperatingMode1()->handle());
+  EXPECT_FALSE(reloadedPerformance->alternativeOperatingMode2());
 
   const auto curveHandle = reloadedCurve->handle();
   const auto scheduleHandle = reloadedSchedule->handle();
+  const auto baseHandle = reloadedBase->handle();
+  const auto alternative1Handle = reloadedAlternative1->handle();
+  const auto alternative2Handle = reloadedAlternative2->handle();
   EXPECT_FALSE(reloadedPerformance->remove().empty());
   EXPECT_TRUE(reloadedModel->getObject(curveHandle));
   EXPECT_TRUE(reloadedModel->getObject(scheduleHandle));
+  EXPECT_TRUE(reloadedModel->getObject(baseHandle));
+  EXPECT_TRUE(reloadedModel->getObject(alternative1Handle));
+  EXPECT_TRUE(reloadedModel->getObject(alternative2Handle));
 }
