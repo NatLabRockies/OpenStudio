@@ -5,22 +5,54 @@
 
 #include <gtest/gtest.h>
 
+#include <utilities/core/Filesystem.hpp>
+#include <utilities/core/UUID.hpp>
+#include <utilities/idd/DesignSpecification_OutdoorAir_FieldEnums.hxx>
+#include <utilities/idd/DesignSpecification_OutdoorAir_SpaceList_FieldEnums.hxx>
+#include <utilities/idd/Sizing_Zone_FieldEnums.hxx>
+#include <utilities/idf/IdfObject_Impl.hpp>
+#include <utilities/idf/WorkspaceExtensibleGroup.hpp>
+#include <utilities/idf/WorkspaceObject_Impl.hpp>
+
 #include "EPModelFixture.hpp"
 
-#include "../ResourceObject/DesignSpecificationOutdoorAir.hpp"
-#include "../ResourceObject/DesignSpecificationOutdoorAir_Impl.hpp"
+#include "../HVACComponent/ThermalZone.hpp"
+#include "../HVACComponent/ThermalZone_Impl.hpp"
 #include "../ModelObject/DesignSpecificationOutdoorAirSpaceList.hpp"
 #include "../ModelObject/DesignSpecificationOutdoorAirSpaceList_Impl.hpp"
 #include "../ModelObject/SizingZone.hpp"
 #include "../ModelObject/SizingZone_Impl.hpp"
 #include "../PlanarSurfaceGroup/Space.hpp"
-#include "../HVACComponent/ThermalZone.hpp"
+#include "../PlanarSurfaceGroup/Space_Impl.hpp"
+#include "../ResourceObject/DesignSpecificationOutdoorAir.hpp"
+#include "../ResourceObject/DesignSpecificationOutdoorAir_Impl.hpp"
+#include "../ResourceObject/ScheduleTypeLimits.hpp"
+#include "../Schedule/ScheduleConstant.hpp"
+#include "../Schedule/ScheduleConstant_Impl.hpp"
 
-#include <utilities/idd/Sizing_Zone_FieldEnums.hxx>
-#include <utilities/idd/DesignSpecification_OutdoorAir_SpaceList_FieldEnums.hxx>
-#include <utilities/idf/WorkspaceExtensibleGroup.hpp>
+#include <utility>
 
 using namespace openstudio::epmodel;
+
+namespace {
+class ScopedDesignSpecificationOutdoorAirFileRemoval
+{
+ public:
+  explicit ScopedDesignSpecificationOutdoorAirFileRemoval(openstudio::path path) : m_path(std::move(path)) {}
+
+  ~ScopedDesignSpecificationOutdoorAirFileRemoval() {
+    boost::system::error_code error;
+    boost::filesystem::remove(m_path, error);
+  }
+
+ private:
+  openstudio::path m_path;
+};
+
+openstudio::path uniqueDesignSpecificationOutdoorAirPath(const std::string& stem) {
+  return openstudio::tempDir() / openstudio::toPath(stem + "-" + openstudio::removeBraces(openstudio::createUUID()) + ".idf");
+}
+}  // namespace
 
 TEST_F(EPModelFixture, API_DesignSpecificationOutdoorAir_DefaultConstructor) {
   Model model;
@@ -28,6 +60,255 @@ TEST_F(EPModelFixture, API_DesignSpecificationOutdoorAir_DefaultConstructor) {
   EXPECT_EQ(DesignSpecificationOutdoorAir::iddObjectType(), dsoa.iddObject().type());
   EXPECT_FALSE(dsoa.outdoorAirMethod().empty());
   EXPECT_DOUBLE_EQ(0.0, dsoa.outdoorAirFlowRate());
+  EXPECT_FALSE(dsoa.outdoorAirFlowRateFractionSchedule());
+}
+
+TEST_F(EPModelFixture, API_DesignSpecificationOutdoorAir_ScheduleRelationshipValidationAndReset) {
+  Model model;
+  DesignSpecificationOutdoorAir dsoa(model);
+
+  ScheduleConstant inferredSchedule(model);
+  ASSERT_TRUE(inferredSchedule.setValue(0.5));
+  EXPECT_FALSE(inferredSchedule.scheduleTypeLimits());
+  ASSERT_TRUE(dsoa.setOutdoorAirFlowRateFractionSchedule(inferredSchedule));
+  ASSERT_TRUE(dsoa.outdoorAirFlowRateFractionSchedule());
+  EXPECT_EQ(inferredSchedule.handle(), dsoa.outdoorAirFlowRateFractionSchedule()->handle());
+  ASSERT_TRUE(inferredSchedule.scheduleTypeLimits());
+  EXPECT_EQ("Continuous", inferredSchedule.scheduleTypeLimits()->numericType().value_or(""));
+  EXPECT_TRUE(inferredSchedule.scheduleTypeLimits()->isUnitTypeDefaulted());
+  EXPECT_DOUBLE_EQ(0.0, inferredSchedule.scheduleTypeLimits()->lowerLimitValue().value_or(-1.0));
+  EXPECT_DOUBLE_EQ(1.0, inferredSchedule.scheduleTypeLimits()->upperLimitValue().value_or(-1.0));
+
+  ScheduleConstant explicitSchedule(model);
+  ScheduleTypeLimits explicitLimits(model);
+  ASSERT_TRUE(explicitSchedule.setValue(0.75));
+  ASSERT_TRUE(explicitLimits.setNumericType("Continuous"));
+  ASSERT_TRUE(explicitLimits.setUnitType("Dimensionless"));
+  ASSERT_TRUE(explicitLimits.setLowerLimitValue(0.0));
+  ASSERT_TRUE(explicitLimits.setUpperLimitValue(1.0));
+  ASSERT_TRUE(explicitSchedule.setScheduleTypeLimits(explicitLimits));
+  ASSERT_TRUE(dsoa.setOutdoorAirFlowRateFractionSchedule(explicitSchedule));
+  ASSERT_TRUE(dsoa.outdoorAirFlowRateFractionSchedule());
+  EXPECT_EQ(explicitSchedule.handle(), dsoa.outdoorAirFlowRateFractionSchedule()->handle());
+
+  ScheduleConstant incompatibleSchedule(model);
+  ScheduleTypeLimits incompatibleLimits(model);
+  ASSERT_TRUE(incompatibleLimits.setNumericType("Continuous"));
+  ASSERT_TRUE(incompatibleLimits.setUnitType("Dimensionless"));
+  ASSERT_TRUE(incompatibleLimits.setLowerLimitValue(-0.1));
+  ASSERT_TRUE(incompatibleLimits.setUpperLimitValue(1.0));
+  ASSERT_TRUE(incompatibleSchedule.setScheduleTypeLimits(incompatibleLimits));
+  EXPECT_FALSE(dsoa.setOutdoorAirFlowRateFractionSchedule(incompatibleSchedule));
+  ASSERT_TRUE(dsoa.outdoorAirFlowRateFractionSchedule());
+  EXPECT_EQ(explicitSchedule.handle(), dsoa.outdoorAirFlowRateFractionSchedule()->handle());
+
+  Model foreignModel;
+  ScheduleConstant foreignSchedule(foreignModel);
+  ASSERT_TRUE(foreignSchedule.setValue(0.25));
+  EXPECT_FALSE(dsoa.setOutdoorAirFlowRateFractionSchedule(foreignSchedule));
+  ASSERT_TRUE(dsoa.outdoorAirFlowRateFractionSchedule());
+  EXPECT_EQ(explicitSchedule.handle(), dsoa.outdoorAirFlowRateFractionSchedule()->handle());
+
+  dsoa.resetOutdoorAirFlowRateFractionSchedule();
+  EXPECT_FALSE(dsoa.outdoorAirFlowRateFractionSchedule());
+}
+
+TEST_F(EPModelFixture, API_DesignSpecificationOutdoorAir_ScheduleResetClearsMalformedRawRelationship) {
+  Model model;
+  DesignSpecificationOutdoorAir dsoa(model);
+  auto workspaceImpl = dsoa.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  ASSERT_TRUE(workspaceImpl);
+  constexpr auto field = openstudio::DesignSpecification_OutdoorAirFields::OutdoorAirScheduleName;
+
+  // Public setters cannot create an unresolved schedule reference; this low-level write represents malformed imported EnergyPlus storage.
+  ASSERT_TRUE(workspaceImpl->setPointer(field, openstudio::Handle(), false));
+  ASSERT_TRUE(workspaceImpl->openstudio::detail::IdfObject_Impl::setString(field, "Unresolved Outdoor Air Schedule", false));
+  EXPECT_FALSE(dsoa.outdoorAirFlowRateFractionSchedule());
+
+  ScheduleConstant incompatibleSchedule(model);
+  ScheduleTypeLimits incompatibleLimits(model);
+  ASSERT_TRUE(incompatibleLimits.setNumericType("Discrete"));
+  ASSERT_TRUE(incompatibleLimits.setUnitType("Availability"));
+  ASSERT_TRUE(incompatibleLimits.setLowerLimitValue(0.0));
+  ASSERT_TRUE(incompatibleLimits.setUpperLimitValue(1.0));
+  ASSERT_TRUE(incompatibleSchedule.setScheduleTypeLimits(incompatibleLimits));
+  EXPECT_FALSE(dsoa.setOutdoorAirFlowRateFractionSchedule(incompatibleSchedule));
+
+  Model foreignModel;
+  ScheduleConstant foreignSchedule(foreignModel);
+  EXPECT_FALSE(dsoa.setOutdoorAirFlowRateFractionSchedule(foreignSchedule));
+  EXPECT_EQ("Unresolved Outdoor Air Schedule", workspaceImpl->openstudio::detail::IdfObject_Impl::getString(field, false, true).value_or(""));
+
+  dsoa.resetOutdoorAirFlowRateFractionSchedule();
+  EXPECT_FALSE(dsoa.outdoorAirFlowRateFractionSchedule());
+  EXPECT_EQ("", workspaceImpl->openstudio::detail::IdfObject_Impl::getString(field, false, true).value_or(""));
+}
+
+TEST_F(EPModelFixture, API_DesignSpecificationOutdoorAir_CanonicalizesOnlyUnambiguousPersistedScheduleEvidence) {
+  Model model;
+  ScheduleConstant recoverableByName(model);
+  ScheduleConstant duplicateFirst(model);
+  ScheduleConstant duplicateSecond(model);
+  ASSERT_TRUE(recoverableByName.setName("Recoverable DSOA Schedule"));
+  ASSERT_TRUE(duplicateFirst.setName("Ambiguous DSOA Schedule"));
+  auto duplicateSecondImpl = duplicateSecond.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  ASSERT_TRUE(duplicateSecondImpl);
+  // Imported IDFs can contain duplicate eligible names, while the public name setter deliberately disambiguates them.
+  ASSERT_TRUE(duplicateSecondImpl->openstudio::detail::IdfObject_Impl::setString(0u, "Ambiguous DSOA Schedule", false));
+
+  DesignSpecificationOutdoorAir byName(model);
+  DesignSpecificationOutdoorAir missing(model);
+  DesignSpecificationOutdoorAir ambiguous(model);
+  DesignSpecificationOutdoorAir blank(model);
+  auto byNameImpl = byName.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  auto missingImpl = missing.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  auto ambiguousImpl = ambiguous.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  auto blankImpl = blank.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  ASSERT_TRUE(byNameImpl);
+  ASSERT_TRUE(missingImpl);
+  ASSERT_TRUE(ambiguousImpl);
+  ASSERT_TRUE(blankImpl);
+  constexpr auto field = openstudio::DesignSpecification_OutdoorAirFields::OutdoorAirScheduleName;
+
+  // These low-level fields represent imported relationship evidence that validated public setters cannot create.
+  ASSERT_TRUE(byNameImpl->setPointer(field, openstudio::Handle(), false));
+  ASSERT_TRUE(byNameImpl->openstudio::detail::IdfObject_Impl::setString(field, recoverableByName.nameString(), false));
+  ASSERT_TRUE(missingImpl->setPointer(field, openstudio::Handle(), false));
+  ASSERT_TRUE(missingImpl->openstudio::detail::IdfObject_Impl::setString(field, "Missing DSOA Schedule", false));
+  ASSERT_TRUE(ambiguousImpl->setPointer(field, openstudio::Handle(), false));
+  ASSERT_TRUE(ambiguousImpl->openstudio::detail::IdfObject_Impl::setString(field, "Ambiguous DSOA Schedule", false));
+  ASSERT_TRUE(blankImpl->setPointer(field, openstudio::Handle(), false));
+  ASSERT_TRUE(blankImpl->openstudio::detail::IdfObject_Impl::setString(field, "", false));
+
+  EXPECT_FALSE(byName.outdoorAirFlowRateFractionSchedule());
+  const auto scheduleCount = model.getConcreteModelObjects<ScheduleConstant>().size();
+  const auto report = model.canonicalize(SanitizationPolicy::Repair);
+  EXPECT_EQ(0u, report.errorCount);
+  ASSERT_TRUE(byName.outdoorAirFlowRateFractionSchedule());
+  EXPECT_EQ(recoverableByName.handle(), byName.outdoorAirFlowRateFractionSchedule()->handle());
+  EXPECT_FALSE(missing.outdoorAirFlowRateFractionSchedule());
+  EXPECT_EQ("Missing DSOA Schedule", missingImpl->openstudio::detail::IdfObject_Impl::getString(field, false, true).value_or(""));
+  EXPECT_FALSE(ambiguous.outdoorAirFlowRateFractionSchedule());
+  EXPECT_EQ("Ambiguous DSOA Schedule", ambiguousImpl->openstudio::detail::IdfObject_Impl::getString(field, false, true).value_or(""));
+  EXPECT_FALSE(blank.outdoorAirFlowRateFractionSchedule());
+  EXPECT_EQ("", blankImpl->openstudio::detail::IdfObject_Impl::getString(field, false, true).value_or(""));
+  EXPECT_EQ(scheduleCount, model.getConcreteModelObjects<ScheduleConstant>().size());
+
+  const auto secondReport = model.canonicalize(SanitizationPolicy::Repair);
+  EXPECT_EQ(0u, secondReport.errorCount);
+  ASSERT_TRUE(byName.outdoorAirFlowRateFractionSchedule());
+  EXPECT_EQ(recoverableByName.handle(), byName.outdoorAirFlowRateFractionSchedule()->handle());
+  EXPECT_FALSE(missing.outdoorAirFlowRateFractionSchedule());
+  EXPECT_EQ("Missing DSOA Schedule", missingImpl->openstudio::detail::IdfObject_Impl::getString(field, false, true).value_or(""));
+  EXPECT_FALSE(ambiguous.outdoorAirFlowRateFractionSchedule());
+  EXPECT_EQ("Ambiguous DSOA Schedule", ambiguousImpl->openstudio::detail::IdfObject_Impl::getString(field, false, true).value_or(""));
+  EXPECT_FALSE(blank.outdoorAirFlowRateFractionSchedule());
+  EXPECT_EQ("", blankImpl->openstudio::detail::IdfObject_Impl::getString(field, false, true).value_or(""));
+  EXPECT_EQ(scheduleCount, model.getConcreteModelObjects<ScheduleConstant>().size());
+}
+
+TEST_F(EPModelFixture, API_DesignSpecificationOutdoorAir_ScheduleSurvivesReloadMutationResetAndOwnerRemoval) {
+  const auto firstPath = uniqueDesignSpecificationOutdoorAirPath("epmodel-dsoa-schedule-first");
+  const auto secondPath = uniqueDesignSpecificationOutdoorAirPath("epmodel-dsoa-schedule-second");
+  const ScopedDesignSpecificationOutdoorAirFileRemoval removeFirst(firstPath);
+  const ScopedDesignSpecificationOutdoorAirFileRemoval removeSecond(secondPath);
+
+  Model model;
+  ThermalZone zone(model);
+  Space space(model);
+  DesignSpecificationOutdoorAir dsoa(model);
+  ScheduleConstant originalSchedule(model);
+  ASSERT_TRUE(zone.setName("DSOA Schedule Zone"));
+  ASSERT_TRUE(space.setName("DSOA Schedule Space"));
+  ASSERT_TRUE(dsoa.setName("Reloadable DSOA"));
+  ASSERT_TRUE(originalSchedule.setName("Original DSOA Fraction Schedule"));
+  ASSERT_TRUE(originalSchedule.setValue(0.6));
+  ASSERT_TRUE(space.setThermalZone(zone));
+  ASSERT_TRUE(space.setDesignSpecificationOutdoorAir(dsoa));
+  ASSERT_TRUE(dsoa.setOutdoorAirFlowRateFractionSchedule(originalSchedule));
+  ASSERT_TRUE(model.save(firstPath, true));
+
+  auto loadedModel = Model::load(firstPath);
+  ASSERT_TRUE(loadedModel);
+  auto loadedZone = loadedModel->getConcreteModelObjectByName<ThermalZone>("DSOA Schedule Zone");
+  auto loadedSpace = loadedModel->getConcreteModelObjectByName<Space>("DSOA Schedule Space");
+  auto loadedDsoa = loadedModel->getConcreteModelObjectByName<DesignSpecificationOutdoorAir>("Reloadable DSOA");
+  auto loadedOriginalSchedule = loadedModel->getConcreteModelObjectByName<ScheduleConstant>("Original DSOA Fraction Schedule");
+  ASSERT_TRUE(loadedZone);
+  ASSERT_TRUE(loadedSpace);
+  ASSERT_TRUE(loadedDsoa);
+  ASSERT_TRUE(loadedOriginalSchedule);
+  ASSERT_TRUE(loadedDsoa->outdoorAirFlowRateFractionSchedule());
+  EXPECT_EQ(loadedOriginalSchedule->handle(), loadedDsoa->outdoorAirFlowRateFractionSchedule()->handle());
+  ASSERT_TRUE(loadedSpace->designSpecificationOutdoorAir());
+  EXPECT_EQ(loadedDsoa->handle(), loadedSpace->designSpecificationOutdoorAir()->handle());
+  auto loadedSpaceLists = loadedModel->getConcreteModelObjects<DesignSpecificationOutdoorAirSpaceList>();
+  ASSERT_EQ(1u, loadedSpaceLists.size());
+  auto loadedListedDsoa = loadedSpaceLists.front().designSpecificationOutdoorAir(*loadedSpace);
+  ASSERT_TRUE(loadedListedDsoa);
+  EXPECT_EQ(loadedDsoa->handle(), loadedListedDsoa->handle());
+
+  ScheduleConstant replacementSchedule(*loadedModel);
+  ASSERT_TRUE(replacementSchedule.setName("Replacement DSOA Fraction Schedule"));
+  ASSERT_TRUE(replacementSchedule.setValue(0.35));
+  ASSERT_TRUE(loadedDsoa->setOutdoorAirFlowRateFractionSchedule(replacementSchedule));
+  ASSERT_TRUE(loadedModel->save(secondPath, true));
+
+  auto reloadedModel = Model::load(secondPath);
+  ASSERT_TRUE(reloadedModel);
+  auto reloadedSpace = reloadedModel->getConcreteModelObjectByName<Space>("DSOA Schedule Space");
+  auto reloadedDsoa = reloadedModel->getConcreteModelObjectByName<DesignSpecificationOutdoorAir>("Reloadable DSOA");
+  auto reloadedOriginalSchedule = reloadedModel->getConcreteModelObjectByName<ScheduleConstant>("Original DSOA Fraction Schedule");
+  auto reloadedReplacementSchedule = reloadedModel->getConcreteModelObjectByName<ScheduleConstant>("Replacement DSOA Fraction Schedule");
+  ASSERT_TRUE(reloadedSpace);
+  ASSERT_TRUE(reloadedDsoa);
+  ASSERT_TRUE(reloadedOriginalSchedule);
+  ASSERT_TRUE(reloadedReplacementSchedule);
+  ASSERT_TRUE(reloadedDsoa->outdoorAirFlowRateFractionSchedule());
+  EXPECT_EQ(reloadedReplacementSchedule->handle(), reloadedDsoa->outdoorAirFlowRateFractionSchedule()->handle());
+  ASSERT_TRUE(reloadedSpace->designSpecificationOutdoorAir());
+  EXPECT_EQ(reloadedDsoa->handle(), reloadedSpace->designSpecificationOutdoorAir()->handle());
+  auto reloadedSpaceLists = reloadedModel->getConcreteModelObjects<DesignSpecificationOutdoorAirSpaceList>();
+  ASSERT_EQ(1u, reloadedSpaceLists.size());
+  auto reloadedListedDsoa = reloadedSpaceLists.front().designSpecificationOutdoorAir(*reloadedSpace);
+  ASSERT_TRUE(reloadedListedDsoa);
+  EXPECT_EQ(reloadedDsoa->handle(), reloadedListedDsoa->handle());
+
+  reloadedDsoa->resetOutdoorAirFlowRateFractionSchedule();
+  EXPECT_FALSE(reloadedDsoa->outdoorAirFlowRateFractionSchedule());
+  ASSERT_TRUE(reloadedModel->save(secondPath, true));
+
+  auto resetModel = Model::load(secondPath);
+  ASSERT_TRUE(resetModel);
+  auto resetSpace = resetModel->getConcreteModelObjectByName<Space>("DSOA Schedule Space");
+  auto resetDsoa = resetModel->getConcreteModelObjectByName<DesignSpecificationOutdoorAir>("Reloadable DSOA");
+  auto resetOriginalSchedule = resetModel->getConcreteModelObjectByName<ScheduleConstant>("Original DSOA Fraction Schedule");
+  auto resetReplacementSchedule = resetModel->getConcreteModelObjectByName<ScheduleConstant>("Replacement DSOA Fraction Schedule");
+  ASSERT_TRUE(resetSpace);
+  ASSERT_TRUE(resetDsoa);
+  ASSERT_TRUE(resetOriginalSchedule);
+  ASSERT_TRUE(resetReplacementSchedule);
+  EXPECT_FALSE(resetDsoa->outdoorAirFlowRateFractionSchedule());
+  ASSERT_TRUE(resetSpace->designSpecificationOutdoorAir());
+  EXPECT_EQ(resetDsoa->handle(), resetSpace->designSpecificationOutdoorAir()->handle());
+  auto resetSpaceLists = resetModel->getConcreteModelObjects<DesignSpecificationOutdoorAirSpaceList>();
+  ASSERT_EQ(1u, resetSpaceLists.size());
+  auto resetListedDsoa = resetSpaceLists.front().designSpecificationOutdoorAir(*resetSpace);
+  ASSERT_TRUE(resetListedDsoa);
+  EXPECT_EQ(resetDsoa->handle(), resetListedDsoa->handle());
+
+  DesignSpecificationOutdoorAir removableDsoa(*resetModel);
+  ASSERT_TRUE(removableDsoa.setName("Removable Scheduled DSOA"));
+  ASSERT_TRUE(removableDsoa.setOutdoorAirFlowRateFractionSchedule(*resetReplacementSchedule));
+  const auto removableDsoaHandle = removableDsoa.handle();
+  EXPECT_FALSE(removableDsoa.remove().empty());
+  EXPECT_FALSE(resetModel->getObject(removableDsoaHandle));
+  EXPECT_TRUE(resetModel->getObject(resetOriginalSchedule->handle()));
+  EXPECT_TRUE(resetModel->getObject(resetReplacementSchedule->handle()));
+  ASSERT_TRUE(resetSpace->designSpecificationOutdoorAir());
+  EXPECT_EQ(resetDsoa->handle(), resetSpace->designSpecificationOutdoorAir()->handle());
+  ASSERT_TRUE(resetSpaceLists.front().designSpecificationOutdoorAir(*resetSpace));
+  EXPECT_EQ(resetDsoa->handle(), resetSpaceLists.front().designSpecificationOutdoorAir(*resetSpace)->handle());
 }
 
 TEST_F(EPModelFixture, API_DesignSpecificationOutdoorAirSpaceList_DefaultConstructor) {

@@ -10,6 +10,9 @@
 
 namespace openstudio {
 namespace epmodel {
+
+  class Schedule;
+
   namespace detail {
 
     class EPMODEL_API DesignSpecificationOutdoorAir_Impl : public ModelObject_Impl
@@ -37,6 +40,10 @@ namespace epmodel {
       // Outdoor air flow air changes per hour
       double outdoorAirFlowAirChangesperHour() const;
       bool setOutdoorAirFlowAirChangesperHour(double value);
+
+      boost::optional<Schedule> outdoorAirFlowRateFractionSchedule() const;
+      bool setOutdoorAirFlowRateFractionSchedule(Schedule& schedule);
+      void resetOutdoorAirFlowRateFractionSchedule();
 
       void doCanonicalize(LoadContext& context) override;
     };

@@ -11,12 +11,15 @@
 
 #include "../utilities/idd/IddEnums.hpp"
 
+#include <boost/optional.hpp>
+
 #include <memory>
 
 namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class Schedule;
 
   namespace detail {
     class DesignSpecificationOutdoorAir_Impl;
@@ -35,6 +38,22 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
+    // Schema Alignment Notes:
+    // - Status: Partial Parity. The persisted scalar fields and optional outdoor-air flow-rate fraction schedule relationship are exposed, while
+    //   broader canonical default/reset conveniences remain incomplete.
+    // - Canonical Counterpart: openstudio::model::DesignSpecificationOutdoorAir.
+    // - Implemented Parity: Outdoor-air method and flow inputs map directly to EnergyPlus, and the canonical optional schedule relationship supports
+    //   validated assignment, reset, save/load, and post-load mutation.
+    // - Documented Delta: EnergyPlus also has a Proportional Control Minimum Outdoor Air Flow Rate Schedule Name field, but the canonical Model wrapper
+    //   has no corresponding public API, so epmodel does not expose it.
+    // - Field/Storage Mapping: `outdoorAirFlowRateFractionSchedule()` maps to EnergyPlus `Outdoor Air Schedule Name`; the referenced schedule remains
+    //   an independent model resource.
+    // - Canonicalization: A unique persisted schedule name is reattached during load repair; blank, missing, or ambiguous names are not invented or
+    //   guessed. Ordinary getters remain observational and assume canonical resolved relationships.
+    // - Evidence: `src/model/DesignSpecificationOutdoorAir.hpp`, `src/model/ScheduleTypeRegistry.cpp`,
+    //   `resources/energyplus/ProposedEnergy+.idd`, and `src/epmodel/test/DesignSpecificationOutdoorAir_GTest.cpp`.
+    // - Remaining Parity Work: Add the remaining canonical scalar default/reset helpers when that broader API surface is needed.
+
     std::string outdoorAirMethod() const;
     bool setOutdoorAirMethod(const std::string& value);
 
@@ -49,6 +68,10 @@ namespace epmodel {
 
     double outdoorAirFlowAirChangesperHour() const;
     bool setOutdoorAirFlowAirChangesperHour(double value);
+
+    boost::optional<Schedule> outdoorAirFlowRateFractionSchedule() const;
+    bool setOutdoorAirFlowRateFractionSchedule(Schedule& schedule);
+    void resetOutdoorAirFlowRateFractionSchedule();
 
    protected:
     using ImplType = detail::DesignSpecificationOutdoorAir_Impl;
