@@ -51,11 +51,11 @@ namespace epmodel {
     // Schema Alignment Notes:
     // - API: Preserve openstudio::model Surface scalar accessor names/signatures.
     // - Field Mapping: These APIs map to BuildingSurface:Detailed fields in the EnergyPlus schema.
-    // - Field Mapping: Construction Name, Zone Name, Space Name, Outside Boundary Condition Object,
-    //   and extensible vertex coordinates are relationship/non-scalar fields and are intentionally excluded.
+    // - Field Mapping: Construction Name and Space Name are exposed by the relationship APIs below; setSpace also synchronizes the redundant Zone Name
+    //   from the Space's ThermalZone. Outside Boundary Condition Object and broader adjacent-object convenience remain separate relationship work.
     // - ForwardTranslator evidence: ForwardTranslateSurface.cpp maps surfaceType, outsideBoundaryCondition,
     //   sunExposure, windExposure, and viewFactortoGround directly to BuildingSurface:Detailed.
-    // - TODO(parity): Add non-scalar geometry and relationship APIs in later parity milestones.
+    // - TODO(parity): Extend the remaining non-scalar relationship conveniences only when supported workflows require them.
     std::string surfaceType() const;
     bool setSurfaceType(const std::string& surfaceType);
 

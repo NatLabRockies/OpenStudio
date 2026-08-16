@@ -40,7 +40,11 @@
 #include "ModelObject/ZoneControlContaminantController_Impl.hpp"
 #include "ModelObject/ZoneControlHumidistat.hpp"
 #include "ModelObject/ZoneControlHumidistat_Impl.hpp"
+#include "ResourceObject/ScheduleTypeLimits.hpp"
 #include "Schedule/Schedule.hpp"
+#include "Schedule/Schedule_Impl.hpp"
+#include "Schedule/ScheduleConstant.hpp"
+#include "Schedule/ScheduleConstant_Impl.hpp"
 #include "Thermostat/Thermostat.hpp"
 #include "Thermostat/ThermostatSetpointDualSetpoint_Impl.hpp"
 #include "Thermostat/ThermostatSetpointDualSetpoint.hpp"
@@ -75,6 +79,7 @@
 #include <utilities/idf/IdfExtensibleGroup.hpp>
 #include <utilities/idf/WorkspaceExtensibleGroup.hpp>
 #include <utilities/idf/WorkspaceObject.hpp>
+#include <utilities/idf/WorkspaceObject_Impl.hpp>
 
 #include <algorithm>
 #include <set>
@@ -795,6 +800,97 @@ namespace epmodel {
         return false;
       }
 
+      boost::optional<double> thermostatControlValue(const Thermostat& thermostat) {
+        switch (thermostat.iddObject().type().value()) {
+          case openstudio::IddObjectType::ThermostatSetpoint_SingleHeating:
+            return 1.0;
+          case openstudio::IddObjectType::ThermostatSetpoint_SingleCooling:
+            return 2.0;
+          case openstudio::IddObjectType::ThermostatSetpoint_DualSetpoint:
+            return 4.0;
+          default:
+            return boost::none;
+        }
+      }
+
+      struct ThermostatControlScheduleEvidence
+      {
+        boost::optional<Schedule> managed;
+        std::string raw;
+        std::vector<Schedule> candidates;
+        bool exact = false;
+      };
+
+      ThermostatControlScheduleEvidence thermostatControlScheduleEvidence(const openstudio::WorkspaceObject& zoneControl, const ThermalZone& zone) {
+        constexpr auto field = openstudio::ZoneControl_ThermostatFields::ControlTypeScheduleName;
+        ThermostatControlScheduleEvidence result;
+        const auto managedValue = zoneControl.getField(field, false);
+        if (managedValue) {
+          const auto managedHandle = openstudio::toUUID(*managedValue);
+          if (!managedHandle.isNull()) {
+            result.managed = zone.model().getModelObject<Schedule>(managedHandle);
+          }
+        }
+
+        const auto workspaceImpl = zoneControl.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+        OS_ASSERT(workspaceImpl);
+        const auto raw = workspaceImpl->openstudio::detail::IdfObject_Impl::getString(
+          openstudio::ZoneControl_ThermostatFields::ControlTypeScheduleName, false, true);
+        result.raw = raw.value_or("");
+
+        const auto candidateName = !result.raw.empty() ? result.raw : (result.managed ? result.managed->nameString() : std::string{});
+        if (!candidateName.empty()) {
+          const auto candidateHandle = openstudio::toUUID(candidateName);
+          if (!candidateHandle.isNull()) {
+            if (auto candidate = zone.model().getModelObject<Schedule>(candidateHandle)) {
+              result.candidates.push_back(*candidate);
+            }
+          } else {
+            for (const auto& schedule : zone.model().getModelObjects<Schedule>()) {
+              if (openstudio::istringEqual(schedule.nameString(), candidateName)) {
+                result.candidates.push_back(schedule);
+              }
+            }
+          }
+        }
+
+        const bool rawAgrees =
+          result.raw.empty()
+          || (result.managed
+              && (openstudio::toUUID(result.raw) == result.managed->handle() || openstudio::istringEqual(result.raw, result.managed->nameString())));
+        result.exact =
+          result.managed && rawAgrees && result.candidates.size() == 1u && result.candidates.front().handle() == result.managed->handle();
+        return result;
+      }
+
+      bool ensureThermostatControlSchedule(openstudio::WorkspaceObject& zoneControl, const ThermalZone& zone, double controlValue) {
+        const auto evidence = thermostatControlScheduleEvidence(zoneControl, zone);
+        if (evidence.exact) {
+          return true;
+        }
+        if (evidence.managed || !evidence.raw.empty()) {
+          return false;
+        }
+
+        ScheduleConstant schedule(zone.model());
+        OS_ASSERT(schedule.setName(zone.nameString() + " Thermostat Control Type Schedule"));
+        OS_ASSERT(schedule.setValue(controlValue));
+        ScheduleTypeLimits limits(zone.model());
+        OS_ASSERT(limits.setName(zone.nameString() + " Thermostat Control Type Schedule Limits"));
+        OS_ASSERT(limits.setLowerLimitValue(0.0));
+        OS_ASSERT(limits.setUpperLimitValue(4.0));
+        OS_ASSERT(limits.setNumericType("Discrete"));
+        OS_ASSERT(schedule.setScheduleTypeLimits(limits));
+        if (!zoneControl.setPointer(openstudio::ZoneControl_ThermostatFields::ControlTypeScheduleName, schedule.handle())) {
+          schedule.remove();
+          if (limits.sources().empty()) {
+            limits.remove();
+          }
+          return false;
+        }
+        return true;
+      }
+
       bool zoneVentilationTargetsZone(const ThermalZone& zone, const openstudio::WorkspaceObject& zoneVentilation) {
         const auto zoneName = zone.nameString();
         if (zoneName.empty()) {
@@ -1222,6 +1318,11 @@ namespace epmodel {
         return false;
       }
 
+      const auto controlValue = thermostatControlValue(thermostat);
+      if (!controlValue) {
+        return false;
+      }
+
       auto zone = getObject<openstudio::epmodel::ThermalZone>();
       if (auto currentThermostat = thermostatSetpointDualSetpoint()) {
         currentThermostat->getImpl<openstudio::epmodel::detail::ThermostatSetpointDualSetpoint_Impl>()
@@ -1242,12 +1343,22 @@ namespace epmodel {
       }
 
       if (auto current = this->thermostat()) {
+        const auto currentControlValue = thermostatControlValue(*current);
+        if (!currentControlValue || *currentControlValue != *controlValue) {
+          return false;
+        }
         if (*current == thermostat) {
           return true;
         }
       }
 
+      const auto existingZoneControl = zoneControlThermostatObject();
+      if (existingZoneControl && !thermostatControlScheduleEvidence(*existingZoneControl, zone).exact) {
+        return false;
+      }
+
       auto assigned = thermostat;
+      boost::optional<openstudio::epmodel::Thermostat> stagedClone;
       for (const auto& zoneControl : model().getObjectsByType(openstudio::IddObjectType::ZoneControl_Thermostat)) {
         if (auto target = zoneControl.getTarget(openstudio::ZoneControl_ThermostatFields::Control1Name)) {
           if ((*target == thermostat) && !zoneControlThermostatTargetsZone(zone, zoneControl)) {
@@ -1256,16 +1367,59 @@ namespace epmodel {
               return false;
             }
             assigned = clonedObject->cast<openstudio::epmodel::Thermostat>();
+            stagedClone = assigned;
             break;
           }
         }
       }
 
-      auto object = getOrCreateZoneControlThermostatObject();
-      if (!object.setString(openstudio::ZoneControl_ThermostatFields::Control1ObjectType, thermostat.iddObject().name())) {
+      const bool createdZoneControl = !existingZoneControl;
+      auto object = existingZoneControl ? *existingZoneControl : getOrCreateZoneControlThermostatObject();
+      const auto discardCreatedZoneControl = [&]() {
+        if (!createdZoneControl) {
+          return;
+        }
+        boost::optional<ScheduleConstant> generatedSchedule;
+        boost::optional<ScheduleTypeLimits> generatedLimits;
+        if (auto target = object.getTarget(openstudio::ZoneControl_ThermostatFields::ControlTypeScheduleName)) {
+          generatedSchedule = target->optionalCast<ScheduleConstant>();
+          if (generatedSchedule) {
+            generatedLimits = generatedSchedule->scheduleTypeLimits();
+          }
+        }
+        object.remove();
+        if (generatedSchedule) {
+          generatedSchedule->remove();
+        }
+        if (generatedLimits && generatedLimits->sources().empty()) {
+          generatedLimits->remove();
+        }
+      };
+      if (createdZoneControl && !ensureThermostatControlSchedule(object, zone, *controlValue)) {
+        discardCreatedZoneControl();
+        if (stagedClone) {
+          stagedClone->remove();
+        }
+        return false;
+      }
+
+      const auto previousType = object.getString(openstudio::ZoneControl_ThermostatFields::Control1ObjectType, false, true).value_or("");
+      if (!object.setString(openstudio::ZoneControl_ThermostatFields::Control1ObjectType, assigned.iddObject().name())) {
+        discardCreatedZoneControl();
+        if (stagedClone) {
+          stagedClone->remove();
+        }
         return false;
       }
       if (!object.setPointer(openstudio::ZoneControl_ThermostatFields::Control1Name, assigned.handle())) {
+        if (createdZoneControl) {
+          discardCreatedZoneControl();
+        } else {
+          OS_ASSERT(object.setString(openstudio::ZoneControl_ThermostatFields::Control1ObjectType, previousType));
+        }
+        if (stagedClone) {
+          stagedClone->remove();
+        }
         return false;
       }
 
@@ -3470,6 +3624,42 @@ namespace epmodel {
             sz->remove();
           }
           return;
+        }
+      }
+
+      if (auto currentThermostat = thermostat()) {
+        if (auto controlValue = thermostatControlValue(*currentThermostat)) {
+          std::vector<openstudio::WorkspaceObject> zoneControls;
+          for (const auto& candidate : model().getObjectsByType(openstudio::IddObjectType::ZoneControl_Thermostat)) {
+            if (zoneControlThermostatTargetsZone(zone, candidate)) {
+              zoneControls.push_back(candidate);
+            }
+          }
+          if (zoneControls.size() != 1u) {
+            detail::addLoadWarning(context, "Preserved ambiguous ZoneControl:Thermostat ownership for ThermalZone '" + zone.nameString() + "'.");
+          } else {
+            auto& zoneControl = zoneControls.front();
+            const auto evidence = thermostatControlScheduleEvidence(zoneControl, zone);
+            if (!evidence.exact) {
+              if (!evidence.managed && !evidence.raw.empty() && evidence.candidates.size() == 1u) {
+                if (context.repairEnabled()) {
+                  OS_ASSERT(
+                    zoneControl.setPointer(openstudio::ZoneControl_ThermostatFields::ControlTypeScheduleName, evidence.candidates.front().handle()));
+                  detail::addLoadInfo(context, "Reattached the thermostat control-type schedule for ThermalZone '" + zone.nameString() + "'.");
+                } else {
+                  detail::addLoadWarning(context, "ThermalZone '" + zone.nameString() + "' has a detached thermostat control-type schedule.");
+                }
+              } else if (evidence.managed || !evidence.raw.empty()) {
+                detail::addLoadWarning(context, "Preserved malformed or ambiguous thermostat control-type schedule evidence for ThermalZone '"
+                                                  + zone.nameString() + "'.");
+              } else if (context.repairEnabled()) {
+                OS_ASSERT(ensureThermostatControlSchedule(zoneControl, zone, *controlValue));
+                detail::addLoadInfo(context, "Created the thermostat control-type schedule for ThermalZone '" + zone.nameString() + "'.");
+              } else {
+                detail::addLoadWarning(context, "ThermalZone '" + zone.nameString() + "' is missing its thermostat control-type schedule.");
+              }
+            }
+          }
         }
       }
 

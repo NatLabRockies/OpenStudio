@@ -9,6 +9,7 @@
 #include "PlanarSurface/Surface_Impl.hpp"
 
 #include "Model.hpp"
+#include "HVACComponent/ThermalZone.hpp"
 #include "PlanarSurfaceGroup/Space.hpp"
 #include "PlanarSurfaceGroup/Space_Impl.hpp"
 #include "PlanarSurface/SubSurface.hpp"
@@ -455,7 +456,24 @@ namespace epmodel {
     }
 
     bool Surface_Impl::setSpace(const Space& space) {
-      return setPointer(openstudio::BuildingSurface_DetailedFields::SpaceName, space.handle());
+      if (space.model() != model()) {
+        return false;
+      }
+      if (!setPointer(openstudio::BuildingSurface_DetailedFields::SpaceName, space.handle())) {
+        return false;
+      }
+      OS_ASSERT(syncThermalZoneFromSpace(space.thermalZone()));
+      return true;
+    }
+
+    bool Surface_Impl::syncThermalZoneFromSpace(const boost::optional<ThermalZone>& thermalZone) {
+      if (thermalZone) {
+        if (thermalZone->model() != model()) {
+          return false;
+        }
+        return setPointer(openstudio::BuildingSurface_DetailedFields::ZoneName, thermalZone->handle(), false);
+      }
+      return setString(openstudio::BuildingSurface_DetailedFields::ZoneName, "");
     }
 
     boost::optional<SubSurface> Surface_Impl::setWindowToWallRatio(double wwr, double desiredHeightOffset, bool heightOffsetFromFloor) {

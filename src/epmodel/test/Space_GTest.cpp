@@ -12,10 +12,19 @@
 #include "../ModelObject/DesignSpecificationOutdoorAirSpaceList_Impl.hpp"
 #include "../ModelObject/SizingZone.hpp"
 #include "../ModelObject/SizingZone_Impl.hpp"
+#include "../PlanarSurface/Surface.hpp"
+#include "../PlanarSurface/Surface_Impl.hpp"
 #include "../PlanarSurfaceGroup/Space.hpp"
+#include "../PlanarSurfaceGroup/Space_Impl.hpp"
 #include "../HVACComponent/ThermalZone.hpp"
+#include "../HVACComponent/ThermalZone_Impl.hpp"
+#include "../Thermostat/ThermostatSetpointDualSetpoint.hpp"
 
+#include <utilities/core/Filesystem.hpp>
+#include <utilities/geometry/Point3d.hpp>
+#include <utilities/idd/BuildingSurface_Detailed_FieldEnums.hxx>
 #include <utilities/idd/Sizing_Zone_FieldEnums.hxx>
+#include <utilities/idd/ZoneControl_Thermostat_FieldEnums.hxx>
 
 using namespace openstudio::epmodel;
 
@@ -76,6 +85,88 @@ TEST_F(EPModelFixture, API_Space_ThermalZoneSetReset) {
 
   space.resetThermalZone();
   EXPECT_FALSE(space.thermalZone());
+}
+
+TEST_F(EPModelFixture, API_Space_ThermalZoneSynchronizesSurfaceZoneStorage) {
+  Model model;
+  const std::vector<openstudio::Point3d> floorPrint{{0.0, 0.0, 0.0}, {0.0, 10.0, 0.0}, {10.0, 10.0, 0.0}, {10.0, 0.0, 0.0}};
+  auto space = Space::fromFloorPrint(floorPrint, 3.0, model);
+  ASSERT_TRUE(space);
+  ThermalZone zone(model);
+
+  ASSERT_TRUE(space->setThermalZone(zone));
+  ASSERT_EQ(6u, space->surfaces().size());
+  for (const auto& surface : space->surfaces()) {
+    const auto target = surface.getTarget(openstudio::BuildingSurface_DetailedFields::ZoneName);
+    ASSERT_TRUE(target);
+    EXPECT_EQ(zone.handle(), target->handle());
+  }
+
+  // Assigning an existing Surface to an already-zoned Space synchronizes both
+  // redundant EnergyPlus relationship fields in the same public operation.
+  Space destination(model);
+  ThermalZone destinationZone(model);
+  ASSERT_TRUE(destination.setThermalZone(destinationZone));
+  auto movedSurface = space->surfaces().back();
+  ASSERT_TRUE(movedSurface.setSpace(destination));
+  const auto movedZoneTarget = movedSurface.getTarget(openstudio::BuildingSurface_DetailedFields::ZoneName);
+  ASSERT_TRUE(movedZoneTarget);
+  EXPECT_EQ(destinationZone.handle(), movedZoneTarget->handle());
+
+  // Intentional malformed-import fixture: canonicalization restores the
+  // redundant field from the typed Space -> ThermalZone relationship.
+  auto surface = space->surfaces().front();
+  ASSERT_TRUE(surface.setString(openstudio::BuildingSurface_DetailedFields::ZoneName, ""));
+  const auto report = model.canonicalize(SanitizationPolicy::ReportOnly);
+  EXPECT_GT(report.warningCount, 0u);
+  EXPECT_TRUE(surface.getString(openstudio::BuildingSurface_DetailedFields::ZoneName, false, true).value_or("").empty());
+  model.canonicalize(SanitizationPolicy::Repair);
+  auto repairedTarget = surface.getTarget(openstudio::BuildingSurface_DetailedFields::ZoneName);
+  ASSERT_TRUE(repairedTarget);
+  EXPECT_EQ(zone.handle(), repairedTarget->handle());
+
+  space->resetThermalZone();
+  for (const auto& currentSurface : space->surfaces()) {
+    EXPECT_TRUE(currentSurface.getString(openstudio::BuildingSurface_DetailedFields::ZoneName, false, true).value_or("").empty());
+  }
+}
+
+TEST_F(EPModelFixture, API_Space_ThermalZoneAndThermostatStorage_Reload) {
+  Model model;
+  const std::vector<openstudio::Point3d> floorPrint{{0.0, 0.0, 0.0}, {0.0, 10.0, 0.0}, {10.0, 10.0, 0.0}, {10.0, 0.0, 0.0}};
+  auto space = Space::fromFloorPrint(floorPrint, 3.0, model, "Reload Space");
+  ASSERT_TRUE(space);
+  ThermalZone zone(model);
+  ASSERT_TRUE(zone.setName("Reload Zone"));
+  ASSERT_TRUE(space->setThermalZone(zone));
+  ThermostatSetpointDualSetpoint thermostat(model);
+  ASSERT_TRUE(thermostat.setName("Reload Thermostat"));
+  ASSERT_TRUE(zone.setThermostatSetpointDualSetpoint(thermostat));
+
+  const auto idfPath =
+    openstudio::tempDir() / openstudio::toPath("epmodel-space-zone-thermostat-" + openstudio::removeBraces(openstudio::createUUID()) + ".idf");
+  ASSERT_TRUE(model.save(idfPath, true));
+  auto loadedModel = Model::load(idfPath);
+  ASSERT_TRUE(loadedModel);
+
+  const auto loadedSpaces = loadedModel->getConcreteModelObjects<Space>();
+  const auto loadedZones = loadedModel->getConcreteModelObjects<ThermalZone>();
+  ASSERT_EQ(1u, loadedSpaces.size());
+  ASSERT_EQ(1u, loadedZones.size());
+  for (const auto& surface : loadedSpaces.front().surfaces()) {
+    const auto loadedSpaceTarget = surface.getTarget(openstudio::BuildingSurface_DetailedFields::SpaceName);
+    const auto loadedZoneTarget = surface.getTarget(openstudio::BuildingSurface_DetailedFields::ZoneName);
+    ASSERT_TRUE(loadedSpaceTarget);
+    ASSERT_TRUE(loadedZoneTarget);
+    EXPECT_EQ(loadedSpaces.front().handle(), loadedSpaceTarget->handle());
+    EXPECT_EQ(loadedZones.front().handle(), loadedZoneTarget->handle());
+  }
+
+  const auto zoneControls = loadedModel->getObjectsByType(openstudio::IddObjectType::ZoneControl_Thermostat);
+  ASSERT_EQ(1u, zoneControls.size());
+  EXPECT_TRUE(zoneControls.front().getTarget(openstudio::ZoneControl_ThermostatFields::ControlTypeScheduleName));
+  EXPECT_TRUE(zoneControls.front().getTarget(openstudio::ZoneControl_ThermostatFields::Control1Name));
+  openstudio::filesystem::remove(idfPath);
 }
 
 TEST_F(EPModelFixture, API_Space_SetDesignSpecificationOutdoorAir_UnzonedSpace_PersistsViaOrphanList) {

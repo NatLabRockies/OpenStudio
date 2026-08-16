@@ -45,6 +45,9 @@ namespace epmodel {
     //   both zoned and unzoned spaces.
     //   Zoned spaces write through ThermalZone -> Sizing:Zone -> DSOA:SpaceList.
     //   Unzoned spaces write to an orphan DSOA:SpaceList owned by the Model.
+    // - Canonical storage: setThermalZone and load canonicalization synchronize
+    //   the redundant BuildingSurface:Detailed Zone Name for every surface in
+    //   this space; ordinary surface APIs may therefore assume that pair agrees.
     explicit Space(const Model& model);
 
     static boost::optional<Space> fromFloorPrint(const std::vector<Point3d>& floorPrint, double floorHeight, const Model& model,

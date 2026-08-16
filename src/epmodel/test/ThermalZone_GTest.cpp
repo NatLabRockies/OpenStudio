@@ -10,6 +10,9 @@
 #include "../Mixer/AirLoopHVACZoneMixer.hpp"
 #include "../Splitter/AirLoopHVACZoneSplitter.hpp"
 #include "../ResourceObject/DesignSpecificationOutdoorAir.hpp"
+#include "../ResourceObject/ScheduleTypeLimits.hpp"
+#include "../Schedule/ScheduleConstant.hpp"
+#include "../Schedule/ScheduleConstant_Impl.hpp"
 #include "../StraightComponent/Node.hpp"
 #include "../PlanarSurfaceGroup/Space.hpp"
 #include "../HVACComponent/ThermalZone.hpp"
@@ -24,12 +27,14 @@
 #include "../Thermostat/Thermostat_Impl.hpp"
 #include "../Thermostat/ThermostatSetpointDualSetpoint.hpp"
 #include "../Thermostat/ThermostatSetpointDualSetpoint_Impl.hpp"
+#include "../Thermostat/ZoneControlThermostatStagedDualSetpoint.hpp"
 #include "../ZoneHVACComponent/FanZoneExhaust.hpp"
 #include "../ZoneHVACComponent/ZoneHVACBaseboardConvectiveElectric.hpp"
 #include "../ZoneHVACComponent/ZoneHVACIdealLoadsAirSystem.hpp"
 #include "../ZoneHVACComponent/ZoneHVACIdealLoadsAirSystem_Impl.hpp"
 #include "../../utilities/idf/IdfExtensibleGroup.hpp"
 #include "../../utilities/idf/IdfObject.hpp"
+#include "../../utilities/idf/WorkspaceObject_Impl.hpp"
 #include <utilities/idd/Daylighting_Controls_FieldEnums.hxx>
 #include <utilities/idd/Daylighting_ReferencePoint_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
@@ -326,6 +331,72 @@ TEST_F(EPModelFixture, API_ThermalZone_ThermostatSetpointDualSetpoint_Relationsh
   EXPECT_EQ(zone1.thermostatSetpointDualSetpoint().get(), zone1.thermostat().get());
   EXPECT_EQ("Shared Thermostat", zone1.thermostatSetpointDualSetpoint()->nameString());
 
+  auto zoneControls = model.getObjectsByType(openstudio::IddObjectType::ZoneControl_Thermostat);
+  ASSERT_EQ(1u, zoneControls.size());
+  auto controlScheduleTarget = zoneControls.front().getTarget(openstudio::ZoneControl_ThermostatFields::ControlTypeScheduleName);
+  ASSERT_TRUE(controlScheduleTarget);
+  auto controlSchedule = controlScheduleTarget->optionalCast<ScheduleConstant>();
+  ASSERT_TRUE(controlSchedule);
+  EXPECT_DOUBLE_EQ(4.0, controlSchedule->value());
+  ASSERT_TRUE(controlSchedule->scheduleTypeLimits());
+  EXPECT_DOUBLE_EQ(0.0, controlSchedule->scheduleTypeLimits()->lowerLimitValue().value_or(-1.0));
+  EXPECT_DOUBLE_EQ(4.0, controlSchedule->scheduleTypeLimits()->upperLimitValue().value_or(-1.0));
+  EXPECT_EQ("Discrete", controlSchedule->scheduleTypeLimits()->numericType().value_or(""));
+
+  // Intentional malformed-import fixture: an idempotent public assignment is
+  // a no-op. Canonicalization owns diagnosis and repair of imported state.
+  ASSERT_FALSE(controlSchedule->remove().empty());
+  EXPECT_FALSE(zoneControls.front().getTarget(openstudio::ZoneControl_ThermostatFields::ControlTypeScheduleName));
+  auto zoneControlImpl = zoneControls.front().getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  ASSERT_TRUE(zoneControlImpl);
+  ASSERT_TRUE(zoneControlImpl->openstudio::detail::IdfObject_Impl::setString(openstudio::ZoneControl_ThermostatFields::ControlTypeScheduleName,
+                                                                             "Unresolved Control Schedule"));
+  const auto controlTypeBefore = zoneControls.front().getString(openstudio::ZoneControl_ThermostatFields::Control1ObjectType, false, true);
+  const auto controlNameBefore = zoneControls.front().getString(openstudio::ZoneControl_ThermostatFields::Control1Name, false, true);
+  EXPECT_TRUE(zone1.setThermostatSetpointDualSetpoint(thermostat));
+  EXPECT_TRUE(controlTypeBefore == zoneControls.front().getString(openstudio::ZoneControl_ThermostatFields::Control1ObjectType, false, true));
+  EXPECT_TRUE(controlNameBefore == zoneControls.front().getString(openstudio::ZoneControl_ThermostatFields::Control1Name, false, true));
+  EXPECT_EQ(
+    "Unresolved Control Schedule",
+    zoneControlImpl->openstudio::detail::IdfObject_Impl::getString(openstudio::ZoneControl_ThermostatFields::ControlTypeScheduleName, false, true)
+      .value_or(""));
+
+  ThermalZone replacementOwner(model);
+  ThermostatSetpointDualSetpoint replacement(model);
+  ASSERT_TRUE(replacementOwner.setThermostatSetpointDualSetpoint(replacement));
+  const auto thermostatCountBeforeRejectedReplacement = model.getConcreteModelObjects<ThermostatSetpointDualSetpoint>().size();
+  EXPECT_FALSE(zone1.setThermostatSetpointDualSetpoint(replacement));
+  EXPECT_EQ(thermostatCountBeforeRejectedReplacement, model.getConcreteModelObjects<ThermostatSetpointDualSetpoint>().size());
+  EXPECT_EQ(thermostat.handle(), zone1.thermostatSetpointDualSetpoint()->handle());
+
+  auto report = model.canonicalize(SanitizationPolicy::Repair);
+  EXPECT_GT(report.warningCount, 0u);
+  EXPECT_EQ(
+    "Unresolved Control Schedule",
+    zoneControlImpl->openstudio::detail::IdfObject_Impl::getString(openstudio::ZoneControl_ThermostatFields::ControlTypeScheduleName, false, true)
+      .value_or(""));
+
+  // A truly blank field also stays untouched by the idempotent public API.
+  ASSERT_TRUE(zoneControlImpl->openstudio::detail::IdfObject_Impl::setString(openstudio::ZoneControl_ThermostatFields::ControlTypeScheduleName, ""));
+  ASSERT_TRUE(zone1.setThermostatSetpointDualSetpoint(thermostat));
+  EXPECT_FALSE(zoneControls.front().getTarget(openstudio::ZoneControl_ThermostatFields::ControlTypeScheduleName));
+  report = model.canonicalize(SanitizationPolicy::ReportOnly);
+  EXPECT_GT(report.warningCount, 0u);
+  EXPECT_FALSE(zoneControls.front().getTarget(openstudio::ZoneControl_ThermostatFields::ControlTypeScheduleName));
+  model.canonicalize(SanitizationPolicy::Repair);
+  controlScheduleTarget = zoneControls.front().getTarget(openstudio::ZoneControl_ThermostatFields::ControlTypeScheduleName);
+  ASSERT_TRUE(controlScheduleTarget);
+  controlSchedule = controlScheduleTarget->optionalCast<ScheduleConstant>();
+  ASSERT_TRUE(controlSchedule);
+  EXPECT_DOUBLE_EQ(4.0, controlSchedule->value());
+
+  ThermalZone unsupportedZone(model);
+  ZoneControlThermostatStagedDualSetpoint stagedThermostat(model);
+  const auto zoneControlCountBeforeUnsupported = model.getObjectsByType(openstudio::IddObjectType::ZoneControl_Thermostat).size();
+  EXPECT_FALSE(unsupportedZone.setThermostat(stagedThermostat));
+  EXPECT_EQ(zoneControlCountBeforeUnsupported, model.getObjectsByType(openstudio::IddObjectType::ZoneControl_Thermostat).size());
+  EXPECT_FALSE(unsupportedZone.thermostat());
+
   EXPECT_TRUE(zone2.setThermostat(thermostat));
   ASSERT_TRUE(zone2.thermostat());
   ASSERT_TRUE(zone2.thermostatSetpointDualSetpoint());
@@ -361,6 +432,36 @@ TEST_F(EPModelFixture, API_ThermalZone_Thermostat_Relationships) {
   EXPECT_FALSE(zone.thermostatSetpointDualSetpoint());
   EXPECT_FALSE(thermostat.thermalZone());
   EXPECT_TRUE(model.getObjectsByType(openstudio::IddObjectType::ZoneControl_Thermostat).empty());
+}
+
+TEST_F(EPModelFixture, API_ThermalZone_ThermostatCrossTypeReplacementRejects) {
+  Model model;
+  ThermalZone zone(model);
+
+  // Intentional imported-subtype fixture: EPModel represents EnergyPlus
+  // SingleHeating through the ThermostatSetpointDualSetpoint wrapper.
+  openstudio::IdfObject singleHeatingObject(openstudio::IddObjectType::ThermostatSetpoint_SingleHeating);
+  ASSERT_TRUE(singleHeatingObject.setName("Imported Single Heating Thermostat"));
+  auto added = model.addObject(singleHeatingObject);
+  ASSERT_TRUE(added);
+  auto singleHeating = added->cast<Thermostat>();
+  ASSERT_TRUE(zone.setThermostat(singleHeating));
+
+  const auto zoneControls = model.getObjectsByType(openstudio::IddObjectType::ZoneControl_Thermostat);
+  ASSERT_EQ(1u, zoneControls.size());
+  const auto typeBefore = zoneControls.front().getString(openstudio::ZoneControl_ThermostatFields::Control1ObjectType, false, true);
+  const auto nameBefore = zoneControls.front().getString(openstudio::ZoneControl_ThermostatFields::Control1Name, false, true);
+  const auto scheduleBefore = zoneControls.front().getTarget(openstudio::ZoneControl_ThermostatFields::ControlTypeScheduleName);
+  ASSERT_TRUE(scheduleBefore);
+
+  ThermostatSetpointDualSetpoint dualSetpoint(model);
+  EXPECT_FALSE(zone.setThermostatSetpointDualSetpoint(dualSetpoint));
+  EXPECT_TRUE(typeBefore == zoneControls.front().getString(openstudio::ZoneControl_ThermostatFields::Control1ObjectType, false, true));
+  EXPECT_TRUE(nameBefore == zoneControls.front().getString(openstudio::ZoneControl_ThermostatFields::Control1Name, false, true));
+  ASSERT_TRUE(zoneControls.front().getTarget(openstudio::ZoneControl_ThermostatFields::ControlTypeScheduleName));
+  EXPECT_EQ(scheduleBefore->handle(), zoneControls.front().getTarget(openstudio::ZoneControl_ThermostatFields::ControlTypeScheduleName)->handle());
+  ASSERT_TRUE(zone.thermostat());
+  EXPECT_EQ(singleHeating.handle(), zone.thermostat()->handle());
 }
 
 TEST_F(EPModelFixture, API_ThermalZone_ZoneControlHumidistat_Relationships) {

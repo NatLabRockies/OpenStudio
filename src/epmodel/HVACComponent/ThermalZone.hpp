@@ -158,6 +158,9 @@ namespace epmodel {
     // - Documented Delta: epmodel still models only a subset of the broader thermostat family, so unsupported thermostat subclasses remain outside this wrapper.
     // - Field/Storage Mapping: The scalar accessors and thermostat convenience read/write the `ZoneControl:Thermostat` fields targeting this zone
     //   (Zone Name == ThermalZone nameString()), while humidistat and contaminant-controller relationships resolve directly from their owning objects.
+    //   Assigning a supported single-heating, single-cooling, or dual-setpoint thermostat also creates a semantically equivalent EnergyPlus
+    //   Schedule:Constant (value 1, 2, or 4 with discrete 0..4 limits) for the control-type field; load canonicalization repairs blank and uniquely
+    //   resolvable schedule evidence while preserving unresolved or ambiguous evidence.
     // - Evidence: `src/model/ThermalZone.hpp` and `src/energyplus/ForwardTranslator/ForwardTranslateThermalZone.cpp` show the matching model surface and translator wiring.
     // - Remaining Parity Work: Extend thermostat-family coverage if epmodel later adds additional canonical thermostat subclasses beyond the currently modeled ones.
     static std::vector<std::string> control1ObjectTypeValues();

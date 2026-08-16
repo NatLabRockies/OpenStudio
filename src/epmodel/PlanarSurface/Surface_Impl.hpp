@@ -18,6 +18,7 @@ namespace epmodel {
   class SubSurface;
   class Surface;
   class SurfaceIntersection;
+  class ThermalZone;
 
   namespace detail {
 
@@ -69,6 +70,11 @@ namespace epmodel {
       virtual boost::optional<Space> space() const override;
       virtual bool subtractFromGrossArea() const override;
       bool setSpace(const Space& space);
+
+      // EnergyPlus persists both Space Name and its parent Zone Name on a
+      // BuildingSurface:Detailed. Space owns the canonical relationship; this
+      // helper keeps the redundant surface field synchronized.
+      bool syncThermalZoneFromSpace(const boost::optional<ThermalZone>& thermalZone);
 
       boost::optional<SubSurface> setWindowToWallRatio(double wwr, double desiredHeightOffset, bool heightOffsetFromFloor);
 

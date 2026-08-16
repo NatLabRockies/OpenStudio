@@ -34,8 +34,10 @@
 #include <utilities/geometry/Transformation.hpp>
 #include <utilities/geometry/Vector3d.hpp>
 #include <utilities/idd/IddEnums.hxx>
+#include <utilities/idd/BuildingSurface_Detailed_FieldEnums.hxx>
 #include <utilities/idd/Sizing_Zone_FieldEnums.hxx>
 #include <utilities/idd/Space_FieldEnums.hxx>
+#include <utilities/idf/WorkspaceObject_Impl.hpp>
 
 #include <algorithm>
 #include <fmt/format.h>
@@ -297,6 +299,96 @@ namespace epmodel {
 
       constexpr const char* orphanDSOASpaceListName = "Orphan Spaces DSOA Space List";
 
+      bool surfaceZoneStorageIsCanonical(const openstudio::epmodel::Surface& surface, const openstudio::epmodel::ThermalZone& zone) {
+        constexpr auto field = openstudio::BuildingSurface_DetailedFields::ZoneName;
+        const auto managed = surface.getField(field, false);
+        const auto managedHandle = managed ? openstudio::toUUID(*managed) : openstudio::Handle{};
+        if (managedHandle != zone.handle()) {
+          return false;
+        }
+
+        const auto workspaceImpl = surface.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+        OS_ASSERT(workspaceImpl);
+        const auto raw = workspaceImpl->openstudio::detail::IdfObject_Impl::getString(field, false, true);
+        return !raw || raw->empty() || openstudio::toUUID(*raw) == zone.handle() || openstudio::istringEqual(*raw, zone.nameString());
+      }
+
+      struct ExactSpaceZoneEvidence
+      {
+        boost::optional<openstudio::epmodel::ThermalZone> zone;
+        bool hasEvidence = false;
+        bool exact = false;
+      };
+
+      ExactSpaceZoneEvidence exactThermalZoneForSpace(const openstudio::epmodel::Space& space) {
+        constexpr auto field = openstudio::SpaceFields::ZoneName;
+        ExactSpaceZoneEvidence result;
+        const auto managedValue = space.getField(field, false);
+        if (managedValue) {
+          const auto handle = openstudio::toUUID(*managedValue);
+          if (!handle.isNull()) {
+            result.zone = space.model().getModelObject<openstudio::epmodel::ThermalZone>(handle);
+          }
+        }
+
+        const auto workspaceImpl = space.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+        OS_ASSERT(workspaceImpl);
+        const auto raw = workspaceImpl->openstudio::detail::IdfObject_Impl::getString(field, false, true).value_or("");
+        result.hasEvidence = result.zone || !raw.empty();
+        if (!result.zone) {
+          return result;
+        }
+
+        size_t sameNameCount = 0u;
+        for (const auto& candidate : space.model().getConcreteModelObjects<openstudio::epmodel::ThermalZone>()) {
+          if (openstudio::istringEqual(candidate.nameString(), result.zone->nameString())) {
+            ++sameNameCount;
+          }
+        }
+        const bool rawAgrees =
+          raw.empty() || openstudio::toUUID(raw) == result.zone->handle() || openstudio::istringEqual(raw, result.zone->nameString());
+        result.exact = rawAgrees && sameNameCount == 1u;
+        return result;
+      }
+
+      struct ExactSpaceSurfaces
+      {
+        std::vector<openstudio::epmodel::Surface> surfaces;
+        bool ambiguous = false;
+      };
+
+      ExactSpaceSurfaces exactSurfacesForSpace(const openstudio::epmodel::Space& space) {
+        constexpr auto field = openstudio::BuildingSurface_DetailedFields::SpaceName;
+        ExactSpaceSurfaces result;
+        size_t sameNameCount = 0u;
+        for (const auto& candidate : space.model().getConcreteModelObjects<openstudio::epmodel::Space>()) {
+          if (openstudio::istringEqual(candidate.nameString(), space.nameString())) {
+            ++sameNameCount;
+          }
+        }
+
+        for (const auto& surface : space.model().getConcreteModelObjects<openstudio::epmodel::Surface>()) {
+          const auto managedValue = surface.getField(field, false);
+          const auto managedHandle = managedValue ? openstudio::toUUID(*managedValue) : openstudio::Handle{};
+          const auto workspaceImpl = surface.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+          OS_ASSERT(workspaceImpl);
+          const auto raw = workspaceImpl->openstudio::detail::IdfObject_Impl::getString(field, false, true).value_or("");
+          const bool rawReferencesSpace = openstudio::toUUID(raw) == space.handle() || openstudio::istringEqual(raw, space.nameString());
+
+          if (managedHandle == space.handle()) {
+            const bool rawAgrees = raw.empty() || rawReferencesSpace;
+            if (rawAgrees && sameNameCount == 1u) {
+              result.surfaces.push_back(surface);
+            } else {
+              result.ambiguous = true;
+            }
+          } else if (rawReferencesSpace) {
+            result.ambiguous = true;
+          }
+        }
+        return result;
+      }
+
       void syncAllAirLoopCMVEntries(const openstudio::epmodel::Model& model) {
         for (const auto& airLoop : model.getConcreteModelObjects<openstudio::epmodel::AirLoopHVAC>()) {
           airLoop.getImpl<openstudio::epmodel::detail::AirLoopHVAC_Impl>()->syncControllerMechanicalVentilationZoneOutdoorAirEntries();
@@ -541,6 +633,11 @@ namespace epmodel {
       if (!setPointer(openstudio::SpaceFields::ZoneName, thermalZone.handle(), false)) {
         return false;
       }
+      for (auto& surface : surfaces()) {
+        auto surfaceImpl = surface.getImpl<openstudio::epmodel::detail::Surface_Impl>();
+        OS_ASSERT(surfaceImpl);
+        OS_ASSERT(surfaceImpl->syncThermalZoneFromSpace(thermalZone));
+      }
       if (currentDSOA) {
         OS_ASSERT(setDesignSpecificationOutdoorAir(*currentDSOA));
       }
@@ -550,6 +647,11 @@ namespace epmodel {
     void Space_Impl::resetThermalZone() {
       auto currentDSOA = designSpecificationOutdoorAir();
       OS_ASSERT(setString(openstudio::SpaceFields::ZoneName, ""));
+      for (auto& surface : surfaces()) {
+        auto surfaceImpl = surface.getImpl<openstudio::epmodel::detail::Surface_Impl>();
+        OS_ASSERT(surfaceImpl);
+        OS_ASSERT(surfaceImpl->syncThermalZoneFromSpace(boost::none));
+      }
       if (currentDSOA) {
         OS_ASSERT(setDesignSpecificationOutdoorAir(*currentDSOA));
       }
@@ -855,8 +957,29 @@ namespace epmodel {
 
     void Space_Impl::doCanonicalize(LoadContext& context) {
       auto thisSpace = getObject<openstudio::epmodel::Space>();
-      auto zone = thermalZone();
+      const auto zoneEvidence = exactThermalZoneForSpace(thisSpace);
+      const auto zone = zoneEvidence.exact ? zoneEvidence.zone : boost::none;
+      if (zoneEvidence.hasEvidence && !zoneEvidence.exact) {
+        detail::addLoadWarning(context, "Preserved ambiguous ThermalZone evidence for Space '" + thisSpace.nameString() + "'.");
+        return;
+      }
       if (zone) {
+        const auto surfaceEvidence = exactSurfacesForSpace(thisSpace);
+        if (surfaceEvidence.ambiguous) {
+          detail::addLoadWarning(context, "Preserved ambiguous Surface ownership evidence for Space '" + thisSpace.nameString() + "'.");
+        }
+        for (auto surface : surfaceEvidence.surfaces) {
+          if (!surfaceZoneStorageIsCanonical(surface, *zone)) {
+            if (context.repairEnabled() && !surfaceEvidence.ambiguous) {
+              auto surfaceImpl = surface.getImpl<openstudio::epmodel::detail::Surface_Impl>();
+              OS_ASSERT(surfaceImpl);
+              OS_ASSERT(surfaceImpl->syncThermalZoneFromSpace(zone));
+              detail::addLoadInfo(context, "Synchronized ThermalZone storage for Surface '" + surface.nameString() + "'.");
+            } else {
+              detail::addLoadWarning(context, "Surface '" + surface.nameString() + "' does not agree with its Space ThermalZone.");
+            }
+          }
+        }
         zone->getImpl<openstudio::epmodel::detail::ThermalZone_Impl>()->canonicalize(context);
       }
 
