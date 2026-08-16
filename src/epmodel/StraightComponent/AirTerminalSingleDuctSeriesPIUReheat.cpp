@@ -895,10 +895,9 @@ namespace epmodel {
           secondaryNode = terminalImpl.model().getOrCreateTransientByName<Node>(secondaryNodeName);
         }
 
-        auto plan = std::unique_ptr<InsertionPlan>(new InsertionPlan(terminalImpl, std::move(airLoop), std::move(splitter), branchIndex,
-                                                                     std::move(outletNode), std::move(inletNode), !inletNodeExisted,
-                                                                     std::move(thermalZone), std::move(secondaryNode), !secondaryNodeExisted,
-                                                                     terminalNameAssigned));
+        auto plan = std::unique_ptr<InsertionPlan>(
+          new InsertionPlan(terminalImpl, std::move(airLoop), std::move(splitter), branchIndex, std::move(outletNode), std::move(inletNode),
+                            !inletNodeExisted, std::move(thermalZone), std::move(secondaryNode), !secondaryNodeExisted, terminalNameAssigned));
         if (!plan->prepareTopology()) {
           return nullptr;
         }
@@ -1018,8 +1017,7 @@ namespace epmodel {
         if (!m_previousFanAvailabilityTarget) {
           auto workspaceImpl = fanObject.getImpl<openstudio::detail::WorkspaceObject_Impl>();
           OS_ASSERT(workspaceImpl);
-          m_previousFanAvailabilityRaw =
-            workspaceImpl->openstudio::detail::IdfObject_Impl::getString(*m_fanAvailabilityField, false, true);
+          m_previousFanAvailabilityRaw = workspaceImpl->openstudio::detail::IdfObject_Impl::getString(*m_fanAvailabilityField, false, true);
         }
         m_fanAvailabilityUpdateAttempted = true;
         auto loopAvailability = m_airLoop.availabilitySchedule();
@@ -1123,8 +1121,8 @@ namespace epmodel {
             restored = fanImpl->setPointer(*m_fanAvailabilityField, m_previousFanAvailabilityTarget->handle(), false);
           } else if (m_previousFanAvailabilityRaw) {
             const bool cleared = fanImpl->setPointer(*m_fanAvailabilityField, Handle(), false);
-            const bool rawRestored = fanImpl->openstudio::detail::IdfObject_Impl::setString(
-              *m_fanAvailabilityField, *m_previousFanAvailabilityRaw, false);
+            const bool rawRestored =
+              fanImpl->openstudio::detail::IdfObject_Impl::setString(*m_fanAvailabilityField, *m_previousFanAvailabilityRaw, false);
             restored = cleared && rawRestored;
           } else {
             restored = fanImpl->setPointer(*m_fanAvailabilityField, Handle(), false);
@@ -2121,15 +2119,19 @@ namespace epmodel {
         return false;
       }
 
-      auto airLoop = node.airLoopHVAC();
-      if (!airLoop) {
+      auto resolvedOutletNode = AirLoopHVAC_Impl::resolveSingleDuctTerminalAttachmentNode(node);
+      if (!resolvedOutletNode) {
         LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctSeriesPIUReheat",
-                 "addToNode requires a node that resolves to an AirLoopHVAC context.");
+                 "addToNode requires a unique terminal-free single-duct branch for the requested outlet node.");
         return false;
       }
+      auto& insertionOutletNode = *resolvedOutletNode;
+
+      auto airLoop = insertionOutletNode.airLoopHVAC();
+      OS_ASSERT(airLoop);
 
       auto zoneSplitter = airLoop->zoneSplitter();
-      const auto thisNode = node.cast<ModelObject>();
+      const auto thisNode = insertionOutletNode.cast<ModelObject>();
       const auto splitterOutlets = zoneSplitter.outletModelObjects();
       const auto splitterIt = std::find(splitterOutlets.begin(), splitterOutlets.end(), thisNode);
       if (splitterIt == splitterOutlets.end()) {
@@ -2141,13 +2143,13 @@ namespace epmodel {
 
       auto airLoopImpl = airLoop->getImpl<detail::AirLoopHVAC_Impl>();
       OS_ASSERT(airLoopImpl);
-      auto mixerInlet = airLoopImpl->effectiveDemandReturnNodeForBranchStart(node);
+      auto mixerInlet = airLoopImpl->effectiveDemandReturnNodeForBranchStart(insertionOutletNode);
       if (!mixerInlet) {
         LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctSeriesPIUReheat",
                  "addToNode requires one effective ZoneMixer return for the selected ZoneSplitter branch.");
         return false;
       }
-      auto thermalZone = owningThermalZoneForZoneNode(model(), node);
+      auto thermalZone = owningThermalZoneForZoneNode(model(), insertionOutletNode);
       if ((*mixerInlet != thisNode) && !isServedZoneReturnNode(thermalZone, *mixerInlet)) {
         LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctSeriesPIUReheat",
                  "addToNode requires the drop node to either feed the ZoneMixer directly or be the served zone inlet node.");
@@ -2172,7 +2174,8 @@ namespace epmodel {
         }
       }
 
-      auto insertion = InsertionPlan::prepare(*this, *airLoop, zoneSplitter, splitterBranchIndex, node, thermalZone, terminalNameAssigned);
+      auto insertion =
+        InsertionPlan::prepare(*this, *airLoop, zoneSplitter, splitterBranchIndex, insertionOutletNode, thermalZone, terminalNameAssigned);
       if (!insertion) {
         return false;
       }

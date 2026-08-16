@@ -194,20 +194,22 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeFourPipeInduction_AddT
   ASSERT_TRUE(outletObject);
   auto outletNode = outletObject->optionalCast<Node>();
   ASSERT_TRUE(outletNode);
-  EXPECT_EQ(zone.zoneAirNode(), *outletNode);
+  EXPECT_NE(zone.zoneAirNode(), *outletNode);
 
   ASSERT_TRUE(terminal.inducedAirInletNode());
   auto zoneImpl = zone.getImpl<detail::ThermalZone_Impl>();
   ASSERT_TRUE(zoneImpl);
   auto zoneConnections = zoneImpl->zoneHVACEquipmentConnections();
   ASSERT_TRUE(zoneConnections);
+  ASSERT_EQ(1u, zoneConnections->zoneAirInletNodes().size());
+  EXPECT_EQ(zoneConnections->zoneAirInletNodes().front(), *outletNode);
   auto exhaustNode = zoneConnections->getModelObjectTarget<Node>(openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneAirExhaustNodeorNodeListName);
   ASSERT_TRUE(exhaustNode);
   EXPECT_EQ(*exhaustNode, terminal.inducedAirInletNode().get());
 
   auto resolvedOutletNode = adu.outletNode();
   ASSERT_TRUE(resolvedOutletNode);
-  EXPECT_EQ(zone.zoneAirNode(), resolvedOutletNode.get());
+  EXPECT_EQ(*outletNode, resolvedOutletNode.get());
 
   const auto equipment = zone.equipment();
   ASSERT_EQ(1u, equipment.size());
@@ -259,6 +261,10 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeFourPipeInduction_AddT
   ASSERT_TRUE(branchNode);
   ASSERT_TRUE(zone.addToNode(*branchNode));
   auto zoneAirNode = zone.zoneAirNode();
+  auto zoneConnections = zone.getImpl<detail::ThermalZone_Impl>()->zoneHVACEquipmentConnections();
+  ASSERT_TRUE(zoneConnections);
+  ASSERT_EQ(1u, zoneConnections->zoneAirInletNodes().size());
+  const auto zoneInletNode = zoneConnections->zoneAirInletNodes().front();
 
   Node mismatchedMixerNode(model);
   ASSERT_TRUE(airLoop.zoneMixer().setInletModelObject(0u, mismatchedMixerNode.cast<ModelObject>()));
@@ -271,7 +277,8 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeFourPipeInduction_AddT
 
   auto splitterOutlet = airLoop.zoneSplitter().outletModelObject(0u);
   ASSERT_TRUE(splitterOutlet);
-  EXPECT_EQ(zoneAirNode.cast<ModelObject>(), *splitterOutlet);
+  EXPECT_NE(zoneAirNode, zoneInletNode);
+  EXPECT_EQ(zoneInletNode.cast<ModelObject>(), *splitterOutlet);
 }
 
 TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeFourPipeInduction_AddToNodeLateFailureIsAtomicAndRetryable) {
@@ -290,8 +297,10 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeFourPipeInduction_AddT
   auto zoneAirNode = zone.zoneAirNode();
   auto zoneConnections = zone.getImpl<detail::ThermalZone_Impl>()->zoneHVACEquipmentConnections();
   ASSERT_TRUE(zoneConnections);
+  ASSERT_EQ(1u, zoneConnections->zoneAirInletNodes().size());
+  const auto zoneInletNode = zoneConnections->zoneAirInletNodes().front();
   Node preexistingInlet(model);
-  ASSERT_TRUE(preexistingInlet.setName(zoneAirNode.nameString() + " - " + terminal.nameString() + " Inlet Node"));
+  ASSERT_TRUE(preexistingInlet.setName(zoneInletNode.nameString() + " - " + terminal.nameString() + " Inlet Node"));
   Node preexistingExhaust(model);
   ASSERT_TRUE(preexistingExhaust.setName(zone.nameString() + " Exhaust Node"));
   const auto originalExhaustTarget =
@@ -417,7 +426,13 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeFourPipeInduction_Remo
   ASSERT_TRUE(terminal.inducedAirInletNode());
   const auto inducedAirInletHandle = terminal.inducedAirInletNode()->handle();
   const auto branchInletNodeHandle = terminal.inletModelObject()->handle();
+  auto outletObject = terminal.outletModelObject();
+  ASSERT_TRUE(outletObject);
+  auto zoneInletNode = outletObject->optionalCast<Node>();
+  ASSERT_TRUE(zoneInletNode);
+  EXPECT_NE(zone.zoneAirNode(), *zoneInletNode);
   ASSERT_TRUE(adu.outletNode());
+  EXPECT_EQ(*zoneInletNode, *adu.outletNode());
   ASSERT_TRUE(adu.airTerminal());
 
   auto splitterOutletBeforeRemoval = airLoop.zoneSplitter().outletModelObject(0u);
@@ -449,7 +464,7 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeFourPipeInduction_Remo
 
   auto splitterOutletAfterRemoval = airLoop.zoneSplitter().outletModelObject(0u);
   ASSERT_TRUE(splitterOutletAfterRemoval);
-  EXPECT_EQ(zone.zoneAirNode().handle(), splitterOutletAfterRemoval->handle());
+  EXPECT_EQ(zoneInletNode->handle(), splitterOutletAfterRemoval->handle());
 }
 
 TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeFourPipeInduction_Remove_ConnectedDeletesOwnedCoils) {
@@ -503,11 +518,16 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeFourPipeInduction_Remo
   ASSERT_TRUE(terminal.inducedAirInletNode());
   const auto inducedAirInletHandle = terminal.inducedAirInletNode()->handle();
   const auto branchInletNodeHandle = terminal.inletModelObject()->handle();
+  auto outletObject = terminal.outletModelObject();
+  ASSERT_TRUE(outletObject);
+  auto zoneInletNode = outletObject->optionalCast<Node>();
+  ASSERT_TRUE(zoneInletNode);
+  EXPECT_NE(zone.zoneAirNode(), *zoneInletNode);
 
   EXPECT_TRUE(containsObject(zone.equipment(), terminal.cast<ModelObject>()));
   EXPECT_TRUE(containsObject(hotWaterLoop.demandComponents(), heatingCoil.cast<ModelObject>()));
   ASSERT_TRUE(adu.outletNode());
-  EXPECT_EQ(zone.zoneAirNode(), adu.outletNode().get());
+  EXPECT_EQ(*zoneInletNode, adu.outletNode().get());
 
   EXPECT_TRUE(terminal.removeFromLoop());
 
@@ -524,7 +544,7 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeFourPipeInduction_Remo
 
   auto splitterOutletAfterRemoval = airLoop.zoneSplitter().outletModelObject(0u);
   ASSERT_TRUE(splitterOutletAfterRemoval);
-  EXPECT_EQ(zone.zoneAirNode().handle(), splitterOutletAfterRemoval->handle());
+  EXPECT_EQ(zoneInletNode->handle(), splitterOutletAfterRemoval->handle());
 }
 
 TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeFourPipeInduction_Remove_PreflightFailurePreservesAirZoneAndBothPlantSides) {

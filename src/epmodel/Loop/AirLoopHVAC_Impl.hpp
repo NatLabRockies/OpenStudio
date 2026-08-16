@@ -154,6 +154,7 @@ namespace epmodel {
       bool addBranchForHVACComponent(openstudio::epmodel::HVACComponent& hvacComponent);
       bool removeBranchForZone(openstudio::epmodel::ThermalZone& thermalZone);
       boost::optional<openstudio::epmodel::Node> effectiveDemandReturnNodeForBranchStart(const openstudio::epmodel::Node& branchStartNode) const;
+      static boost::optional<openstudio::epmodel::Node> resolveSingleDuctTerminalAttachmentNode(const openstudio::epmodel::Node& requestedNode);
       std::unique_ptr<DemandBranchStartReservation> reserveDemandBranchStart(const openstudio::epmodel::Node& branchStartNode) const;
       std::unique_ptr<DemandBranchStartReservation> reserveDemandBranchStartBypass(const openstudio::epmodel::StraightComponent& component) const;
       std::unique_ptr<DemandBranchStartReservation>

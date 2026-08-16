@@ -1523,15 +1523,19 @@ namespace epmodel {
         return false;
       }
 
-      auto airLoop = node.airLoopHVAC();
-      if (!airLoop) {
+      auto resolvedOutletNode = AirLoopHVAC_Impl::resolveSingleDuctTerminalAttachmentNode(node);
+      if (!resolvedOutletNode) {
         LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctConstantVolumeFourPipeInduction",
-                 "addToNode requires a node that resolves to an AirLoopHVAC context.");
+                 "addToNode requires a unique terminal-free single-duct branch for the requested outlet node.");
         return false;
       }
+      auto& insertionOutletNode = *resolvedOutletNode;
+
+      auto airLoop = insertionOutletNode.airLoopHVAC();
+      OS_ASSERT(airLoop);
 
       auto zoneSplitter = airLoop->zoneSplitter();
-      const auto thisNode = node.cast<ModelObject>();
+      const auto thisNode = insertionOutletNode.cast<ModelObject>();
       const auto splitterOutlets = zoneSplitter.outletModelObjects();
       const auto splitterIt = std::find(splitterOutlets.begin(), splitterOutlets.end(), thisNode);
       if (splitterIt == splitterOutlets.end()) {
@@ -1543,13 +1547,13 @@ namespace epmodel {
 
       auto airLoopImpl = airLoop->getImpl<detail::AirLoopHVAC_Impl>();
       OS_ASSERT(airLoopImpl);
-      auto mixerInlet = airLoopImpl->effectiveDemandReturnNodeForBranchStart(node);
+      auto mixerInlet = airLoopImpl->effectiveDemandReturnNodeForBranchStart(insertionOutletNode);
       if (!mixerInlet) {
         LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctConstantVolumeFourPipeInduction",
                  "addToNode requires one effective ZoneMixer return for the selected ZoneSplitter branch.");
         return false;
       }
-      auto thermalZone = owningThermalZoneForBranchNode(model(), node);
+      auto thermalZone = owningThermalZoneForBranchNode(model(), insertionOutletNode);
       if ((*mixerInlet != thisNode) && !isServedZoneReturnNode(thermalZone, *mixerInlet)) {
         LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctConstantVolumeFourPipeInduction",
                  "addToNode requires the drop node to either feed the ZoneMixer directly or be the served zone inlet node.");
@@ -1569,7 +1573,7 @@ namespace epmodel {
         }
       }
 
-      const std::string inletNodeName = node.nameString() + " - " + thisObject.nameString() + " Inlet Node";
+      const std::string inletNodeName = insertionOutletNode.nameString() + " - " + thisObject.nameString() + " Inlet Node";
       const bool inletNodeExisted = static_cast<bool>(model().getConcreteModelObjectByName<Node>(inletNodeName));
       auto inletNode = model().getOrCreateTransientByName<Node>(inletNodeName);
       auto adu = zoneHVACAirDistributionUnit();
@@ -1607,7 +1611,7 @@ namespace epmodel {
           OS_ASSERT(aduWorkspaceImpl->setPointer(aduOutletField, Handle(), false));
           OS_ASSERT(aduWorkspaceImpl->openstudio::detail::IdfObject_Impl::setString(aduOutletField, originalADUOutlet.value_or(""), false));
         }
-        OS_ASSERT(zoneSplitter.setOutletModelObject(splitterBranchIndex, node.cast<ModelObject>()));
+        OS_ASSERT(zoneSplitter.setOutletModelObject(splitterBranchIndex, insertionOutletNode.cast<ModelObject>()));
         if (zoneConnections) {
           const auto exhaustField = openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneAirExhaustNodeorNodeListName;
           auto connectionsWorkspaceImpl = zoneConnections->getImpl<openstudio::detail::WorkspaceObject_Impl>();
@@ -1633,12 +1637,12 @@ namespace epmodel {
         return rollback();
       }
 
-      if (!setPointer(outletPort(), node.handle(), false)) {
+      if (!setPointer(outletPort(), insertionOutletNode.handle(), false)) {
         return rollback();
       }
 
       if (adu) {
-        if (!adu->getImpl<openstudio::epmodel::detail::ZoneHVACAirDistributionUnit_Impl>()->setOutletNode(node)) {
+        if (!adu->getImpl<openstudio::epmodel::detail::ZoneHVACAirDistributionUnit_Impl>()->setOutletNode(insertionOutletNode)) {
           return rollback();
         }
       }

@@ -14,6 +14,8 @@
 #include "../Mixer/AirLoopHVACReturnPlenum_Impl.hpp"
 #include "../ModelObject/Branch.hpp"
 #include "../ModelObject/ModelObject.hpp"
+#include "../ModelObject/ZoneHVACEquipmentConnections.hpp"
+#include "../ModelObject/ZoneHVACEquipmentConnections_Impl.hpp"
 #include "../Schedule/Schedule.hpp"
 #include "../Schedule/Schedule_Impl.hpp"
 #include "../Schedule/ScheduleCompact.hpp"
@@ -38,6 +40,7 @@
 #include <utilities/idf/IdfExtensibleGroup.hpp>
 #include <utilities/idf/WorkspaceObject_Impl.hpp>
 
+#include <algorithm>
 #include <set>
 
 using namespace openstudio::epmodel;
@@ -276,7 +279,13 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeCooledBeam_AddToNode_R
   ASSERT_TRUE(outletObject);
   auto outletNode = outletObject->optionalCast<Node>();
   ASSERT_TRUE(outletNode);
-  EXPECT_EQ(zoneAirNode, *outletNode);
+  EXPECT_NE(zoneAirNode, *outletNode);
+
+  const auto connections = model.getConcreteModelObjects<ZoneHVACEquipmentConnections>();
+  ASSERT_EQ(1u, connections.size());
+  EXPECT_EQ(zone, connections.front().thermalZone());
+  ASSERT_EQ(1u, connections.front().zoneAirInletNodes().size());
+  EXPECT_EQ(connections.front().zoneAirInletNodes().front(), *outletNode);
 
   const auto equipment = zone.equipment();
   ASSERT_EQ(1u, equipment.size());
@@ -310,7 +319,12 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeCooledBeam_AddToNode_R
 
   auto terminalOutlet = terminal.outletModelObject()->optionalCast<Node>();
   ASSERT_TRUE(terminalOutlet);
-  EXPECT_EQ(zone2.zoneAirNode(), *terminalOutlet);
+  EXPECT_NE(zone2.zoneAirNode(), *terminalOutlet);
+  const auto connections = model.getConcreteModelObjects<ZoneHVACEquipmentConnections>();
+  const auto connectionsIt = std::ranges::find_if(connections, [&zone2](const auto& candidate) { return candidate.thermalZone() == zone2; });
+  ASSERT_NE(connections.end(), connectionsIt);
+  ASSERT_EQ(1u, connectionsIt->zoneAirInletNodes().size());
+  EXPECT_EQ(connectionsIt->zoneAirInletNodes().front(), *terminalOutlet);
 
   const auto zone2Equipment = zone2.equipment();
   ASSERT_EQ(1u, zone2Equipment.size());
@@ -336,6 +350,10 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeCooledBeam_AddToNode_R
   ASSERT_TRUE(branchNode);
   ASSERT_TRUE(zone.addToNode(*branchNode));
   auto zoneAirNode = zone.zoneAirNode();
+  const auto connections = model.getConcreteModelObjects<ZoneHVACEquipmentConnections>();
+  ASSERT_EQ(1u, connections.size());
+  ASSERT_EQ(1u, connections.front().zoneAirInletNodes().size());
+  const auto zoneInletNode = connections.front().zoneAirInletNodes().front();
 
   Node mismatchedMixerNode(model);
   ASSERT_TRUE(airLoop.zoneMixer().setInletModelObject(0u, mismatchedMixerNode.cast<ModelObject>()));
@@ -347,7 +365,8 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeCooledBeam_AddToNode_R
 
   auto splitterOutlet = airLoop.zoneSplitter().outletModelObject(0u);
   ASSERT_TRUE(splitterOutlet);
-  EXPECT_EQ(zoneAirNode.cast<ModelObject>(), *splitterOutlet);
+  EXPECT_NE(zoneAirNode, zoneInletNode);
+  EXPECT_EQ(zoneInletNode.cast<ModelObject>(), *splitterOutlet);
 }
 
 TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeCooledBeam_Remove_ReconnectsZoneBranchAndCleansZoneReferences) {
@@ -367,6 +386,11 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeCooledBeam_Remove_Reco
   ASSERT_TRUE(inletNode);
   const auto inletNodeHandle = inletNode->handle();
   EXPECT_NE(zoneAirNode, *inletNode);
+  auto outletObject = terminal.outletModelObject();
+  ASSERT_TRUE(outletObject);
+  auto zoneInletNode = outletObject->optionalCast<Node>();
+  ASSERT_TRUE(zoneInletNode);
+  EXPECT_NE(zoneAirNode, *zoneInletNode);
 
   auto splitterOutlet = airLoop.zoneSplitter().outletModelObject(0u);
   ASSERT_TRUE(splitterOutlet);
@@ -378,7 +402,7 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeCooledBeam_Remove_Reco
 
   splitterOutlet = airLoop.zoneSplitter().outletModelObject(0u);
   ASSERT_TRUE(splitterOutlet);
-  EXPECT_EQ(zoneAirNode.cast<ModelObject>(), *splitterOutlet);
+  EXPECT_EQ(zoneInletNode->cast<ModelObject>(), *splitterOutlet);
   EXPECT_EQ(7u, airLoop.demandComponents().size());
   EXPECT_TRUE(airLoop.demandComponents(AirTerminalSingleDuctConstantVolumeCooledBeam::iddObjectType()).empty());
   EXPECT_TRUE(zone.equipment().empty());
@@ -402,12 +426,17 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeCooledBeam_RemoveFromL
   auto inletNode = inletObject->optionalCast<Node>();
   ASSERT_TRUE(inletNode);
   const auto inletNodeHandle = inletNode->handle();
+  auto outletObject = terminal.outletModelObject();
+  ASSERT_TRUE(outletObject);
+  auto zoneInletNode = outletObject->optionalCast<Node>();
+  ASSERT_TRUE(zoneInletNode);
+  EXPECT_NE(zoneAirNode, *zoneInletNode);
 
   ASSERT_TRUE(terminal.removeFromLoop());
 
   auto splitterOutlet = airLoop.zoneSplitter().outletModelObject(0u);
   ASSERT_TRUE(splitterOutlet);
-  EXPECT_EQ(zoneAirNode.cast<ModelObject>(), *splitterOutlet);
+  EXPECT_EQ(zoneInletNode->cast<ModelObject>(), *splitterOutlet);
   EXPECT_TRUE(zone.equipment().empty());
   EXPECT_FALSE(terminal.inletModelObject());
   EXPECT_FALSE(terminal.outletModelObject());

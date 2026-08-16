@@ -314,7 +314,7 @@ TEST_F(EPModelFixture, AirTerminalDualDuctConstantVolume_TerminalFirstZoneAttach
   ASSERT_FALSE(zoneImpl->zoneHVACEquipmentConnections());
   const auto baselineConnectionCount = model.getConcreteModelObjects<ZoneHVACEquipmentConnections>().size();
   const auto baselineEquipmentListCount = model.getConcreteModelObjects<ZoneHVACEquipmentList>().size();
-  const auto zoneAirNodeName = zone.nameString() + " Demand Branch Node";
+  const auto zoneAirNodeName = zone.nameString() + " Zone Air Node";
   const auto returnNodeName = zone.nameString() + " Demand Return Node";
   ASSERT_FALSE(model.getConcreteModelObjectByName<Node>(zoneAirNodeName));
   ASSERT_FALSE(model.getConcreteModelObjectByName<Node>(returnNodeName));
@@ -341,7 +341,7 @@ TEST_F(EPModelFixture, AirTerminalDualDuctConstantVolume_TerminalFirstZoneAttach
 
   ASSERT_TRUE(airLoop.addBranchForHVACComponent(terminal));
   Node existingZoneAirNode(model);
-  ASSERT_TRUE(existingZoneAirNode.setName(zone.nameString() + " Demand Branch Node"));
+  ASSERT_TRUE(existingZoneAirNode.setName(zone.nameString() + " Zone Air Node"));
   auto zoneImpl = zone.getImpl<detail::ThermalZone_Impl>();
   ASSERT_TRUE(zoneImpl);
   ASSERT_FALSE(zoneImpl->zoneHVACEquipmentConnections());

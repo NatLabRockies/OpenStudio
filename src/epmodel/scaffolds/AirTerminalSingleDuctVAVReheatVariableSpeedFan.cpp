@@ -537,15 +537,19 @@ namespace epmodel {
         return false;
       }
 
-      auto airLoop = node.airLoopHVAC();
-      if (!airLoop) {
+      auto resolvedOutletNode = AirLoopHVAC_Impl::resolveSingleDuctTerminalAttachmentNode(node);
+      if (!resolvedOutletNode) {
         LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctVAVReheatVariableSpeedFan",
-                 "addToNode requires a node that resolves to an AirLoopHVAC context.");
+                 "addToNode requires a unique terminal-free single-duct branch for the requested outlet node.");
         return false;
       }
+      auto& insertionOutletNode = *resolvedOutletNode;
+
+      auto airLoop = insertionOutletNode.airLoopHVAC();
+      OS_ASSERT(airLoop);
 
       auto zoneSplitter = airLoop->zoneSplitter();
-      const auto thisNode = node.cast<ModelObject>();
+      const auto thisNode = insertionOutletNode.cast<ModelObject>();
       const auto splitterOutlets = zoneSplitter.outletModelObjects();
       const auto splitterIt = std::ranges::find(splitterOutlets, thisNode);
       if (splitterIt == splitterOutlets.end()) {
@@ -557,13 +561,13 @@ namespace epmodel {
 
       auto airLoopImpl = airLoop->getImpl<detail::AirLoopHVAC_Impl>();
       OS_ASSERT(airLoopImpl);
-      auto mixerInlet = airLoopImpl->effectiveDemandReturnNodeForBranchStart(node);
+      auto mixerInlet = airLoopImpl->effectiveDemandReturnNodeForBranchStart(insertionOutletNode);
       if (!mixerInlet) {
         LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctVAVReheatVariableSpeedFan",
                  "addToNode requires one effective ZoneMixer return for the selected ZoneSplitter branch.");
         return false;
       }
-      auto thermalZone = owningThermalZoneForBranchNode(model(), node);
+      auto thermalZone = owningThermalZoneForBranchNode(model(), insertionOutletNode);
       if ((*mixerInlet != thisNode) && !isServedZoneReturnNode(thermalZone, *mixerInlet)) {
         LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctVAVReheatVariableSpeedFan",
                  "addToNode requires the drop node to either feed the ZoneMixer directly or be the served zone inlet node.");
@@ -577,8 +581,8 @@ namespace epmodel {
         }
       }
 
-      TerminalInsertionPlan plan(thisObject, zoneSplitter, splitterBranchIndex, node, inletPort(), outletPort(), zoneHVACAirDistributionUnit(),
-                                 thermalZone);
+      TerminalInsertionPlan plan(thisObject, zoneSplitter, splitterBranchIndex, insertionOutletNode, inletPort(), outletPort(),
+                                 zoneHVACAirDistributionUnit(), thermalZone);
       return plan.apply();
     }
 

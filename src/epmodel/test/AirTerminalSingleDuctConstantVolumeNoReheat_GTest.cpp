@@ -141,6 +141,11 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeNoReheat_AddToNode_Res
   ASSERT_TRUE(zone.addToNode(*branchNode));
 
   auto zoneAirNode = zone.zoneAirNode();
+  auto zoneInletObject = airLoop.zoneSplitter().outletModelObject(0u);
+  ASSERT_TRUE(zoneInletObject);
+  auto zoneInletNode = zoneInletObject->optionalCast<Node>();
+  ASSERT_TRUE(zoneInletNode);
+  EXPECT_NE(zoneAirNode, *zoneInletNode);
   ASSERT_TRUE(terminal.addToNode(zoneAirNode));
 
   auto linkedAirLoop = terminal.airLoopHVAC();
@@ -157,11 +162,11 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeNoReheat_AddToNode_Res
   ASSERT_TRUE(terminalOutletObject);
   auto terminalOutletNode = terminalOutletObject->optionalCast<Node>();
   ASSERT_TRUE(terminalOutletNode);
-  EXPECT_EQ(zoneAirNode, *terminalOutletNode);
+  EXPECT_EQ(*zoneInletNode, *terminalOutletNode);
 
   const auto resolvedOutletNode = adu.outletNode();
   ASSERT_TRUE(resolvedOutletNode);
-  EXPECT_EQ(zoneAirNode, resolvedOutletNode.get());
+  EXPECT_EQ(*zoneInletNode, resolvedOutletNode.get());
 
   const auto equipment = zone.equipment();
   ASSERT_EQ(1u, equipment.size());
@@ -186,6 +191,9 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeNoReheat_AddToNode_Rej
   ASSERT_TRUE(branchNode);
   ASSERT_TRUE(zone.addToNode(*branchNode));
   auto zoneAirNode = zone.zoneAirNode();
+  const auto zoneInletObject = airLoop.zoneSplitter().outletModelObject(0u);
+  ASSERT_TRUE(zoneInletObject);
+  EXPECT_NE(zoneAirNode.handle(), zoneInletObject->handle());
 
   Node mismatchedMixerNode(model);
   ASSERT_TRUE(airLoop.zoneMixer().setInletModelObject(0u, mismatchedMixerNode.cast<ModelObject>()));
@@ -197,7 +205,7 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeNoReheat_AddToNode_Rej
 
   auto splitterOutlet = airLoop.zoneSplitter().outletModelObject(0u);
   ASSERT_TRUE(splitterOutlet);
-  EXPECT_EQ(zoneAirNode.cast<ModelObject>(), *splitterOutlet);
+  EXPECT_EQ(*zoneInletObject, *splitterOutlet);
 }
 
 TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeNoReheat_AbandonedInsertionRestoresMissingNameThenRetries) {
@@ -244,6 +252,11 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeNoReheat_Remove_Reconn
 
   ASSERT_TRUE(airLoop.addBranchForZone(zone, terminal));
   const auto zoneAirNode = zone.zoneAirNode();
+  auto zoneInletObject = terminal.outletModelObject();
+  ASSERT_TRUE(zoneInletObject);
+  auto zoneInletNode = zoneInletObject->optionalCast<Node>();
+  ASSERT_TRUE(zoneInletNode);
+  EXPECT_NE(zoneAirNode, *zoneInletNode);
 
   auto inletObject = terminal.inletModelObject();
   ASSERT_TRUE(inletObject);
@@ -265,7 +278,7 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeNoReheat_Remove_Reconn
 
   splitterOutlet = airLoop.zoneSplitter().outletModelObject(0u);
   ASSERT_TRUE(splitterOutlet);
-  EXPECT_EQ(zoneAirNode.cast<ModelObject>(), *splitterOutlet);
+  EXPECT_EQ(zoneInletNode->cast<ModelObject>(), *splitterOutlet);
   EXPECT_EQ(7u, airLoop.demandComponents().size());
   EXPECT_TRUE(airLoop.demandComponents(AirTerminalSingleDuctConstantVolumeNoReheat::iddObjectType()).empty());
   EXPECT_TRUE(zone.equipment().empty());
@@ -287,6 +300,11 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeNoReheat_RemoveFromLoo
 
   ASSERT_TRUE(airLoop.addBranchForZone(zone, terminal));
   const auto zoneAirNode = zone.zoneAirNode();
+  auto zoneInletObject = terminal.outletModelObject();
+  ASSERT_TRUE(zoneInletObject);
+  auto zoneInletNode = zoneInletObject->optionalCast<Node>();
+  ASSERT_TRUE(zoneInletNode);
+  EXPECT_NE(zoneAirNode, *zoneInletNode);
   auto inletObject = terminal.inletModelObject();
   ASSERT_TRUE(inletObject);
   auto inletNode = inletObject->optionalCast<Node>();
@@ -297,7 +315,7 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeNoReheat_RemoveFromLoo
 
   auto splitterOutlet = airLoop.zoneSplitter().outletModelObject(0u);
   ASSERT_TRUE(splitterOutlet);
-  EXPECT_EQ(zoneAirNode.cast<ModelObject>(), *splitterOutlet);
+  EXPECT_EQ(zoneInletNode->cast<ModelObject>(), *splitterOutlet);
   EXPECT_TRUE(zone.equipment().empty());
   EXPECT_FALSE(adu.outletNode());
   EXPECT_FALSE(adu.airTerminal());

@@ -291,7 +291,7 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctParallelPIUReheat_AddToNode_ZoneBran
   ASSERT_TRUE(terminal.outletModelObject());
   auto outletNode = terminal.outletModelObject()->optionalCast<Node>();
   ASSERT_TRUE(outletNode);
-  EXPECT_EQ(zone.zoneAirNode(), *outletNode);
+  EXPECT_NE(zone.zoneAirNode(), *outletNode);
 
   auto inletNode = terminal.inletModelObject()->optionalCast<Node>();
   ASSERT_TRUE(inletNode);
@@ -354,6 +354,9 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctParallelPIUReheat_AddToNode_ZoneBran
   auto zoneImpl = zone.getImpl<detail::ThermalZone_Impl>();
   ASSERT_TRUE(zoneImpl);
   auto zoneConnections = zoneImpl->getZoneHVACEquipmentConnections();
+  const auto zoneAirInletNodes = zoneConnections.zoneAirInletNodes();
+  ASSERT_EQ(1u, zoneAirInletNodes.size());
+  EXPECT_EQ(zoneAirInletNodes.front(), *outletNode);
   auto exhaustTarget = zoneConnections.getTarget(openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneAirExhaustNodeorNodeListName);
   ASSERT_TRUE(exhaustTarget);
   auto exhaustNodeList = exhaustTarget->optionalCast<NodeList>();
@@ -473,6 +476,9 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctParallelPIUReheat_Remove_CleansZoneB
   const auto secondaryNodeHandle = terminal.secondaryAirInletNode()->handle();
   ASSERT_TRUE(terminal.inletModelObject());
   const auto inletNodeHandle = terminal.inletModelObject()->handle();
+  ASSERT_TRUE(terminal.outletModelObject());
+  const auto zoneInletNodeHandle = terminal.outletModelObject()->handle();
+  EXPECT_NE(zone.zoneAirNode().handle(), zoneInletNodeHandle);
   ASSERT_TRUE(adu.outletNode());
   ASSERT_TRUE(adu.airTerminal());
 
@@ -511,7 +517,7 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctParallelPIUReheat_Remove_CleansZoneB
 
   auto splitterOutletAfterRemoval = airLoop.zoneSplitter().outletModelObject(0u);
   ASSERT_TRUE(splitterOutletAfterRemoval);
-  EXPECT_EQ(zone.zoneAirNode().handle(), splitterOutletAfterRemoval->handle());
+  EXPECT_EQ(zoneInletNodeHandle, splitterOutletAfterRemoval->handle());
 
   auto mixerInletAfterRemoval = airLoop.zoneMixer().inletModelObject(0u);
   ASSERT_TRUE(mixerInletAfterRemoval);
@@ -557,6 +563,9 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctParallelPIUReheat_RemoveFromLoop_Cle
   const auto secondaryNodeHandle = terminal.secondaryAirInletNode()->handle();
   ASSERT_TRUE(terminal.inletModelObject());
   const auto inletNodeHandle = terminal.inletModelObject()->handle();
+  ASSERT_TRUE(terminal.outletModelObject());
+  const auto zoneInletNode = terminal.outletModelObject()->cast<Node>();
+  EXPECT_NE(zoneAirNode, zoneInletNode);
 
   ASSERT_TRUE(terminal.removeFromLoop());
 
@@ -586,7 +595,7 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctParallelPIUReheat_RemoveFromLoop_Cle
 
   auto splitterOutlet = airLoop.zoneSplitter().outletModelObject(0u);
   ASSERT_TRUE(splitterOutlet);
-  EXPECT_EQ(zoneAirNode.cast<ModelObject>(), *splitterOutlet);
+  EXPECT_EQ(zoneInletNode.cast<ModelObject>(), *splitterOutlet);
 
   auto mixerInlet = airLoop.zoneMixer().inletModelObject(0u);
   ASSERT_TRUE(mixerInlet);
@@ -987,11 +996,14 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctParallelPIUReheat_AddToNode_RejectsM
   AirLoopHVAC airLoop(model);
   ThermalZone zone(model);
   ASSERT_TRUE(airLoop.addBranchForZone(zone));
+  auto zoneInletNode = airLoop.zoneSplitter().outletModelObject(0u);
+  ASSERT_TRUE(zoneInletNode);
 
   Node rogueMixerNode(model);
   ASSERT_TRUE(airLoop.zoneMixer().setInletModelObject(0u, rogueMixerNode.cast<ModelObject>()));
 
   auto zoneAirNode = zone.zoneAirNode();
+  EXPECT_NE(zoneAirNode.handle(), zoneInletNode->handle());
   EXPECT_FALSE(terminal.addToNode(zoneAirNode));
   EXPECT_TRUE(zone.equipment().empty());
   EXPECT_FALSE(zone.airLoopHVACTerminal());
@@ -1001,7 +1013,7 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctParallelPIUReheat_AddToNode_RejectsM
 
   auto splitterOutlet = airLoop.zoneSplitter().outletModelObject(0u);
   ASSERT_TRUE(splitterOutlet);
-  EXPECT_EQ(zoneAirNode.cast<ModelObject>(), *splitterOutlet);
+  EXPECT_EQ(zoneInletNode->handle(), splitterOutlet->handle());
 
   auto mixerInlet = airLoop.zoneMixer().inletModelObject(0u);
   ASSERT_TRUE(mixerInlet);
@@ -1106,8 +1118,8 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctParallelPIUReheat_AddToNodeFailureIs
   auto fanWorkspaceImpl = fan.getImpl<openstudio::detail::WorkspaceObject_Impl>();
   ASSERT_TRUE(fanWorkspaceImpl);
   ASSERT_TRUE(fanWorkspaceImpl->setPointer(openstudio::Fan_SystemModelFields::AvailabilityScheduleName, openstudio::Handle(), false));
-  ASSERT_TRUE(fanWorkspaceImpl->openstudio::detail::IdfObject_Impl::setString(
-    openstudio::Fan_SystemModelFields::AvailabilityScheduleName, unresolvedFanSchedule, false));
+  ASSERT_TRUE(fanWorkspaceImpl->openstudio::detail::IdfObject_Impl::setString(openstudio::Fan_SystemModelFields::AvailabilityScheduleName,
+                                                                              unresolvedFanSchedule, false));
   EXPECT_FALSE(fan.getTarget(openstudio::Fan_SystemModelFields::AvailabilityScheduleName));
   ZoneHVACAirDistributionUnit adu(model);
   ASSERT_TRUE(adu.getImpl<detail::ZoneHVACAirDistributionUnit_Impl>()->setAirTerminal(terminal.cast<ModelObject>()));
@@ -1120,10 +1132,14 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctParallelPIUReheat_AddToNodeFailureIs
   auto zoneAirNode = zone.zoneAirNode();
   auto zoneConnections = zone.getImpl<detail::ThermalZone_Impl>()->zoneHVACEquipmentConnections();
   ASSERT_TRUE(zoneConnections);
+  const auto zoneAirInletNodes = zoneConnections->zoneAirInletNodes();
+  ASSERT_EQ(1u, zoneAirInletNodes.size());
+  const auto zoneInletNode = zoneAirInletNodes.front();
+  EXPECT_NE(zoneAirNode, zoneInletNode);
   Node preexistingInletNode(model);
-  ASSERT_TRUE(preexistingInletNode.setName(zoneAirNode.nameString() + " - " + terminal.nameString() + " Inlet Node"));
+  ASSERT_TRUE(preexistingInletNode.setName(zoneInletNode.nameString() + " - " + terminal.nameString() + " Inlet Node"));
   Node preexistingSecondaryNode(model);
-  ASSERT_TRUE(preexistingSecondaryNode.setName(zoneAirNode.nameString() + " - " + terminal.nameString() + " Secondary Air Inlet Node"));
+  ASSERT_TRUE(preexistingSecondaryNode.setName(zoneInletNode.nameString() + " - " + terminal.nameString() + " Secondary Air Inlet Node"));
   const auto exhaustNodesBefore = zoneConnections->zoneAirExhaustNodes();
   const auto nodeCountBefore = model.getConcreteModelObjects<Node>().size();
 
@@ -1135,7 +1151,7 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctParallelPIUReheat_AddToNodeFailureIs
   EXPECT_FALSE(terminal.inletModelObject());
   EXPECT_FALSE(terminal.outletModelObject());
   EXPECT_FALSE(terminal.secondaryAirInletNode());
-  EXPECT_EQ(zoneAirNode.handle(), airLoop.zoneSplitter().lastOutletModelObject()->handle());
+  EXPECT_EQ(zoneInletNode.handle(), airLoop.zoneSplitter().lastOutletModelObject()->handle());
   EXPECT_EQ(exhaustNodesBefore, zoneConnections->zoneAirExhaustNodes());
   EXPECT_TRUE(zone.equipment().empty());
   EXPECT_TRUE(model.getObject(preexistingInletNode.handle()));
@@ -1148,8 +1164,8 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctParallelPIUReheat_AddToNodeFailureIs
   }
   EXPECT_EQ(nodeCountBefore, model.getConcreteModelObjects<Node>().size());
   EXPECT_FALSE(fan.getTarget(openstudio::Fan_SystemModelFields::AvailabilityScheduleName));
-  const auto restoredFanSchedule = fanWorkspaceImpl->openstudio::detail::IdfObject_Impl::getString(
-    openstudio::Fan_SystemModelFields::AvailabilityScheduleName, false, true);
+  const auto restoredFanSchedule =
+    fanWorkspaceImpl->openstudio::detail::IdfObject_Impl::getString(openstudio::Fan_SystemModelFields::AvailabilityScheduleName, false, true);
   ASSERT_TRUE(restoredFanSchedule);
   EXPECT_EQ(unresolvedFanSchedule, *restoredFanSchedule);
 

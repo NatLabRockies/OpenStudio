@@ -22,6 +22,7 @@
 #include <utilities/idd/NodeList_FieldEnums.hxx>
 #include <utilities/idd/ZoneHVAC_EquipmentConnections_FieldEnums.hxx>
 #include <utilities/idf/IdfExtensibleGroup.hpp>
+#include <utilities/idf/WorkspaceObject_Impl.hpp>
 
 #include <algorithm>
 #include <functional>
@@ -99,6 +100,151 @@ namespace epmodel {
         }
 
         return {};
+      }
+
+      boost::optional<openstudio::epmodel::ModelObject> uniqueNamedNodeOrNodeList(const openstudio::epmodel::Model& model, const std::string& name) {
+        boost::optional<openstudio::epmodel::ModelObject> result;
+        for (const auto& node : model.getConcreteModelObjects<openstudio::epmodel::Node>()) {
+          if (!openstudio::istringEqual(node.nameString(), name)) {
+            continue;
+          }
+          if (result) {
+            return boost::none;
+          }
+          result = node;
+        }
+        for (const auto& nodeList : model.getConcreteModelObjects<openstudio::epmodel::NodeList>()) {
+          if (!openstudio::istringEqual(nodeList.nameString(), name)) {
+            continue;
+          }
+          if (result) {
+            return boost::none;
+          }
+          result = nodeList;
+        }
+        return result;
+      }
+
+      boost::optional<openstudio::epmodel::Node> uniqueNamedNode(const openstudio::epmodel::Model& model, const std::string& name) {
+        boost::optional<openstudio::epmodel::Node> result;
+        for (const auto& node : model.getConcreteModelObjects<openstudio::epmodel::Node>()) {
+          if (!openstudio::istringEqual(node.nameString(), name)) {
+            continue;
+          }
+          if (result) {
+            return boost::none;
+          }
+          result = node;
+        }
+        return result;
+      }
+
+      boost::optional<std::string> rawFieldValue(const openstudio::epmodel::ModelObject& owner, const unsigned field) {
+        auto workspaceImpl = owner.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+        OS_ASSERT(workspaceImpl);
+        return workspaceImpl->openstudio::detail::IdfObject_Impl::getString(field, false, true);
+      }
+
+      bool rawFieldAgrees(const openstudio::epmodel::ModelObject& owner, const unsigned field, const openstudio::epmodel::ModelObject& target) {
+        const auto raw = rawFieldValue(owner, field);
+        return !raw || raw->empty() || openstudio::toUUID(*raw) == target.handle()
+               || (target.name() && openstudio::istringEqual(*raw, *target.name()));
+      }
+
+      boost::optional<openstudio::epmodel::ModelObject> readOnlyManagedTarget(const openstudio::epmodel::ModelObject& owner, const unsigned field) {
+        const auto managed = owner.getField(field, false);
+        if (!managed || managed->empty()) {
+          return boost::none;
+        }
+        const auto handle = openstudio::toUUID(*managed);
+        if (handle.isNull()) {
+          return boost::none;
+        }
+        const auto target = owner.model().getObject(handle);
+        return target ? target->optionalCast<openstudio::epmodel::ModelObject>() : boost::none;
+      }
+
+      struct ReadOnlyNodeField
+      {
+        bool hasEvidence = false;
+        bool valid = true;
+        boost::optional<openstudio::epmodel::Node> node;
+      };
+
+      ReadOnlyNodeField readOnlyNodeField(const openstudio::epmodel::ModelObject& owner, const unsigned field) {
+        ReadOnlyNodeField result;
+        const auto managed = readOnlyManagedTarget(owner, field);
+        const auto raw = rawFieldValue(owner, field);
+        result.hasEvidence = static_cast<bool>(managed) || (raw && !raw->empty());
+        if (!result.hasEvidence) {
+          return result;
+        }
+
+        if (managed) {
+          result.node = managed->optionalCast<openstudio::epmodel::Node>();
+          const auto uniqueNamedTarget = result.node ? uniqueNamedNode(owner.model(), result.node->nameString()) : boost::none;
+          result.valid = result.node && uniqueNamedTarget && *uniqueNamedTarget == *result.node && rawFieldAgrees(owner, field, *managed);
+          return result;
+        }
+
+        result.node = uniqueNamedNode(owner.model(), *raw);
+        result.valid = static_cast<bool>(result.node);
+        return result;
+      }
+
+      struct ReadOnlyNodeCollectionField
+      {
+        bool hasEvidence = false;
+        bool valid = true;
+        std::vector<openstudio::epmodel::Node> nodes;
+      };
+
+      ReadOnlyNodeCollectionField readOnlyNodeCollectionField(const openstudio::epmodel::ModelObject& owner, const unsigned field) {
+        ReadOnlyNodeCollectionField result;
+        const auto managed = readOnlyManagedTarget(owner, field);
+        const auto raw = rawFieldValue(owner, field);
+        result.hasEvidence = static_cast<bool>(managed) || (raw && !raw->empty());
+        if (!result.hasEvidence) {
+          return result;
+        }
+
+        boost::optional<openstudio::epmodel::ModelObject> target = managed;
+        if (managed) {
+          const auto uniqueNamedTarget = uniqueNamedNodeOrNodeList(owner.model(), managed->nameString());
+          if (!uniqueNamedTarget || *uniqueNamedTarget != *managed || !rawFieldAgrees(owner, field, *managed)) {
+            result.valid = false;
+            return result;
+          }
+        } else {
+          target = uniqueNamedNodeOrNodeList(owner.model(), *raw);
+        }
+        if (!target) {
+          result.valid = false;
+          return result;
+        }
+
+        if (auto node = target->optionalCast<openstudio::epmodel::Node>()) {
+          result.nodes.push_back(*node);
+          return result;
+        }
+        const auto nodeList = target->optionalCast<openstudio::epmodel::NodeList>();
+        if (!nodeList) {
+          result.valid = false;
+          return result;
+        }
+
+        const auto groups = nodeList->extensibleGroups();
+        result.nodes.reserve(groups.size());
+        for (unsigned row = 0u; row < groups.size(); ++row) {
+          const auto nodeField = nodeList->iddObject().index(openstudio::ExtensibleIndex(row, openstudio::NodeListExtensibleFields::NodeName));
+          const auto observation = readOnlyNodeField(*nodeList, nodeField);
+          if (!observation.valid || !observation.hasEvidence || !observation.node) {
+            result.valid = false;
+            continue;
+          }
+          result.nodes.push_back(*observation.node);
+        }
+        return result;
       }
 
       bool setNodeListField(openstudio::epmodel::ZoneHVACEquipmentConnections& connections, const unsigned field,
@@ -220,20 +366,46 @@ namespace epmodel {
         }
       }
 
-      if (auto existingZoneAirNode =
-            equipmentConnections.getModelObjectTarget<openstudio::epmodel::Node>(openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneAirNodeName)) {
+      const auto inletObservation =
+        readOnlyNodeCollectionField(equipmentConnections, openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneAirInletNodeorNodeListName);
+      const auto zoneAirNodeObservation = readOnlyNodeField(equipmentConnections, openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneAirNodeName);
+      if (!inletObservation.valid || !zoneAirNodeObservation.valid) {
+        detail::addLoadWarning(context, "Preserved unresolved or ambiguous zone inlet/zone air node evidence on ZoneHVAC:EquipmentConnections '"
+                                          + equipmentConnections.nameString() + "'.");
+        return;
+      }
+
+      const auto& inletNodes = inletObservation.nodes;
+      const auto existingZoneAirNode = zoneAirNodeObservation.node;
+      const bool zoneAirNodeAliasesInlet = existingZoneAirNode && (std::ranges::find(inletNodes, *existingZoneAirNode) != inletNodes.end());
+      if (existingZoneAirNode && !zoneAirNodeAliasesInlet) {
         detail::addLoadInfo(context, "Preserved existing zone air node '" + existingZoneAirNode->nameString() + "' on ZoneHVAC:EquipmentConnections '"
                                        + equipmentConnections.nameString() + "'.");
+      } else if (zoneAirNodeAliasesInlet && context.policy != SanitizationPolicy::Repair) {
+        detail::addLoadWarning(context, "ZoneHVAC:EquipmentConnections '" + equipmentConnections.nameString() + "' uses zone air node '"
+                                          + existingZoneAirNode->nameString()
+                                          + "' as a zone inlet; repair canonicalization must split these EnergyPlus node roles.");
       } else {
-        const auto zoneAirNodeName = zone->nameString() + " Demand Branch Node";
+        // EnergyPlus requires the zone sensing node to be distinct from every
+        // zone inlet. The first air-loop inlet conventionally uses the
+        // "Demand Branch Node" stem, so keep this required node separate.
+        const auto zoneAirNodeName = zone->nameString() + " Zone Air Node";
         const bool zoneAirNodeAlreadyExisted = static_cast<bool>(model().getObjectByTypeAndName(openstudio::IddObjectType::Node, zoneAirNodeName));
         auto zoneAirNode = model().getOrCreateTransientByName<openstudio::epmodel::Node>(zoneAirNodeName);
+        bool reusedZoneAirNode = zoneAirNodeAlreadyExisted;
+        if (std::ranges::find(inletNodes, zoneAirNode) != inletNodes.end()) {
+          // A malformed import may already use the preferred name for an A3
+          // inlet. Keep that inlet intact and give the new sensing node the
+          // model's next unique Node name.
+          zoneAirNode = openstudio::epmodel::Node(model());
+          reusedZoneAirNode = false;
+        }
         if (!equipmentConnections.setPointer(openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneAirNodeName, zoneAirNode.handle())) {
           detail::addLoadError(context, "Failed to attach zone air node '" + zoneAirNode.nameString() + "' to ZoneHVAC:EquipmentConnections '"
                                           + equipmentConnections.nameString() + "'.");
           OS_ASSERT(false);
         } else {
-          detail::addLoadInfo(context, std::string(zoneAirNodeAlreadyExisted ? "Reused" : "Created") + " zone air node '" + zoneAirNode.nameString()
+          detail::addLoadInfo(context, std::string(reusedZoneAirNode ? "Reused" : "Created") + " zone air node '" + zoneAirNode.nameString()
                                          + "' and attached it to ZoneHVAC:EquipmentConnections '" + equipmentConnections.nameString() + "'.");
         }
       }

@@ -13,6 +13,7 @@
 #include "ModelObject/ModelObject_Impl.hpp"
 #include "ModelObject/ZoneHVACAirDistributionUnit.hpp"
 #include "ModelObject/ZoneHVACAirDistributionUnit_Impl.hpp"
+#include "ModelObject/ZoneHVACEquipmentConnections.hpp"
 #include "ModelObject/ZoneHVACEquipmentList.hpp"
 #include "ModelObject/ZoneHVACEquipmentList_Impl.hpp"
 #include "Node.hpp"
@@ -82,14 +83,11 @@ namespace epmodel {
         return nullptr;
       }
 
-      auto airLoop = outletNode.airLoopHVAC();
-      if (!airLoop) {
-        return nullptr;
-      }
-      auto airLoopImpl = airLoop->getImpl<AirLoopHVAC_Impl>();
-      OS_ASSERT(airLoopImpl);
-      auto branchReservation = airLoopImpl->reserveDemandBranchStart(outletNode);
-      if (!branchReservation) {
+      auto effectiveOutletNode = AirLoopHVAC_Impl::resolveSingleDuctTerminalAttachmentNode(outletNode);
+      auto effectiveAirLoop = effectiveOutletNode ? effectiveOutletNode->airLoopHVAC() : boost::none;
+      auto effectiveAirLoopImpl = effectiveAirLoop ? effectiveAirLoop->getImpl<AirLoopHVAC_Impl>() : nullptr;
+      auto branchReservation = effectiveAirLoopImpl ? effectiveAirLoopImpl->reserveDemandBranchStart(*effectiveOutletNode) : nullptr;
+      if (!branchReservation || !effectiveOutletNode) {
         return nullptr;
       }
 
@@ -146,15 +144,15 @@ namespace epmodel {
           return nullptr;
         }
       }
-      const std::string inletNodeName = outletNode.nameString() + " - " + terminalObject.nameString() + " Inlet Node";
+      const std::string inletNodeName = effectiveOutletNode->nameString() + " - " + terminalObject.nameString() + " Inlet Node";
       const bool inletNodeExisted = static_cast<bool>(terminal.model().getConcreteModelObjectByName<Node>(inletNodeName));
       auto inletNode = terminal.model().getOrCreateTransientByName<Node>(inletNodeName);
 
       const boost::optional<ModelObject> airDistributionUnit =
         airDistributionUnits.empty() ? boost::none : boost::optional<ModelObject>(airDistributionUnits.front());
       return std::unique_ptr<SingleDuctTerminalInsertionPlan>(new SingleDuctTerminalInsertionPlan(
-        terminalObject, std::move(branchReservation), outletNode.cast<ModelObject>(), inletNode.cast<ModelObject>(), !inletNodeExisted, inletPort,
-        outletPort, airDistributionUnit, equipmentList, previousAirDistributionUnitOutletTarget, previousAirDistributionUnitOutletNodeName,
+        terminalObject, std::move(branchReservation), effectiveOutletNode->cast<ModelObject>(), inletNode.cast<ModelObject>(), !inletNodeExisted,
+        inletPort, outletPort, airDistributionUnit, equipmentList, previousAirDistributionUnitOutletTarget, previousAirDistributionUnitOutletNodeName,
         assignedTerminalName));
     }
 

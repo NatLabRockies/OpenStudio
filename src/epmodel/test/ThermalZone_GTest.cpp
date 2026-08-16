@@ -528,7 +528,7 @@ TEST_F(EPModelFixture, API_ThermalZone_EquipmentAndTopologyHelpers_RoundTrip) {
   auto zoneAirNode = zone.zoneAirNode();
   ASSERT_TRUE(terminal.addToNode(zoneAirNode));
 
-  EXPECT_EQ(zone.nameString() + " Demand Branch Node", zoneAirNode.nameString());
+  EXPECT_EQ(zone.nameString() + " Zone Air Node", zoneAirNode.nameString());
 
   auto returnAirObject = zone.returnAirModelObject();
   ASSERT_TRUE(returnAirObject);

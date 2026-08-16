@@ -2516,7 +2516,7 @@ namespace epmodel {
       const auto multiLoopNodeStem = thermalZone.nameString() + " " + m_airLoop.nameString();
       const auto zoneInletNodeName =
         originalInletNodes.empty() ? thermalZone.nameString() + " Demand Branch Node" : multiLoopNodeStem + " Demand Branch Node";
-      const auto zoneAirNodeName = thermalZone.nameString() + " Demand Branch Node";
+      const auto zoneAirNodeName = thermalZone.nameString() + " Zone Air Node";
       const bool zoneAirNodeExisted = static_cast<bool>(m_airLoop.model().getConcreteModelObjectByName<Node>(zoneAirNodeName));
       const bool zoneInletNodeExisted =
         m_preserveSplitterOutletForZone || static_cast<bool>(m_airLoop.model().getConcreteModelObjectByName<Node>(zoneInletNodeName));
@@ -4358,6 +4358,52 @@ namespace epmodel {
       return result;
     }
 
+    boost::optional<Node> AirLoopHVAC_Impl::resolveSingleDuctTerminalAttachmentNode(const Node& requestedNode) {
+      // The EPModel compatibility-facing API accepts zone.zoneAirNode() as an
+      // attachment anchor. EnergyPlus stores that sensing node separately
+      // from the A3 inlet where the terminal is connected. Resolve only
+      // already-canonical, unique managed relationships; canonicalization
+      // owns repair.
+      std::vector<ZoneHVACEquipmentConnections> zoneAirNodeClaims;
+      for (const auto& zone : requestedNode.model().getConcreteModelObjects<ThermalZone>()) {
+        auto connections = zone.getImpl<ThermalZone_Impl>()->zoneHVACEquipmentConnections();
+        if (connections && connections->zoneAirNode() == requestedNode) {
+          zoneAirNodeClaims.push_back(*connections);
+        }
+      }
+      if (zoneAirNodeClaims.size() > 1u) {
+        return boost::none;
+      }
+
+      if (zoneAirNodeClaims.empty()) {
+        auto airLoop = requestedNode.airLoopHVAC();
+        if (!airLoop) {
+          return boost::none;
+        }
+        auto reservation = airLoop->getImpl<AirLoopHVAC_Impl>()->reserveDemandBranchStart(requestedNode);
+        return reservation ? boost::optional<Node>(requestedNode) : boost::none;
+      }
+
+      auto owner = zoneAirNodeClaims.front().thermalZone();
+      boost::optional<Node> resolvedNode;
+      for (const auto& inletNode : zoneAirNodeClaims.front().zoneAirInletNodes()) {
+        auto airLoop = inletNode.airLoopHVAC();
+        if (!airLoop) {
+          continue;
+        }
+        auto reservation = airLoop->getImpl<AirLoopHVAC_Impl>()->reserveDemandBranchStart(inletNode);
+        auto reservationZone = reservation ? reservation->thermalZone() : boost::none;
+        if (!reservation || !reservationZone || (*reservationZone != owner)) {
+          continue;
+        }
+        if (resolvedNode) {
+          return boost::none;
+        }
+        resolvedNode = inletNode;
+      }
+      return resolvedNode;
+    }
+
     std::unique_ptr<AirLoopHVAC_Impl::DemandBranchStartReservation> AirLoopHVAC_Impl::reserveDemandBranchStart(const Node& branchStartNode) const {
       if (branchStartNode.model() != model() || isDualDuct()) {
         return nullptr;
@@ -5586,7 +5632,7 @@ namespace epmodel {
       OS_ASSERT(thermalZoneImpl);
       auto zoneConnections = thermalZoneImpl->zoneHVACEquipmentConnections();
       const bool createdZoneConnections = !zoneConnections;
-      const auto zoneAirNodeName = thermalZone.nameString() + " Demand Branch Node";
+      const auto zoneAirNodeName = thermalZone.nameString() + " Zone Air Node";
       const bool zoneAirNodeExisted = static_cast<bool>(airLoop.model().getConcreteModelObjectByName<Node>(zoneAirNodeName));
       if (!zoneConnections) {
         zoneConnections = thermalZoneImpl->getZoneHVACEquipmentConnections();
