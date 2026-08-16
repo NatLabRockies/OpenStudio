@@ -10,6 +10,7 @@
 
 #include <utilities/core/Compare.hpp>
 #include <utilities/math/FloatCompare.hpp>
+#include <utilities/idd/GlobalGeometryRules_FieldEnums.hxx>
 #include <utilities/idd/Refrigeration_Subcooler_FieldEnums.hxx>
 #include <utilities/sql/SqlFile.hpp>
 
@@ -514,6 +515,7 @@
 #include "ResourceObject/SurfacePropertyOtherSideCoefficients_Impl.hpp"
 #include "ResourceObject/SurfacePropertyOtherSideConditionsModel_Impl.hpp"
 #include "scaffolds/GlobalGeometryRules_Impl.hpp"
+#include "scaffolds/GlobalGeometryRules.hpp"
 #include "scaffolds/GeometryTransform_Impl.hpp"
 #include "ModelObject/DaylightingDeviceLightWell_Impl.hpp"
 #include "ModelObject/DaylightingDeviceShelf_Impl.hpp"
@@ -1108,6 +1110,57 @@ namespace epmodel {
     detail::LoadContext context{*this, policy, SanitizationReport{}, {}};
     if (policy == SanitizationPolicy::None) {
       return context.report;
+    }
+
+    const auto geometryRules = this->getObjectsByType(GlobalGeometryRules::iddObjectType());
+    if (geometryRules.empty()) {
+      if (context.repairEnabled()) {
+        GlobalGeometryRules globalGeometryRules(*this);
+        const bool initialized =
+          globalGeometryRules.setStartingVertexPosition("UpperLeftCorner") && globalGeometryRules.setVertexEntryDirection("Counterclockwise")
+          && globalGeometryRules.setCoordinateSystem("Relative") && globalGeometryRules.setDaylightingReferencePointCoordinateSystem("Relative")
+          && globalGeometryRules.setRectangularSurfaceCoordinateSystem("Relative");
+        if (initialized) {
+          detail::addLoadInfo(context, "Created the required GlobalGeometryRules object.");
+        } else {
+          globalGeometryRules.remove();
+          detail::addLoadError(context, "Failed to initialize the required GlobalGeometryRules object.");
+        }
+      } else {
+        detail::addLoadWarning(context, "Model is missing the required GlobalGeometryRules object.");
+      }
+    } else if (geometryRules.size() == 1u) {
+      auto globalGeometryRules = geometryRules.front();
+      constexpr auto startingVertexField = openstudio::GlobalGeometryRulesFields::StartingVertexPosition;
+      constexpr auto entryDirectionField = openstudio::GlobalGeometryRulesFields::VertexEntryDirection;
+      constexpr auto coordinateSystemField = openstudio::GlobalGeometryRulesFields::CoordinateSystem;
+      const bool missingStartingVertex = globalGeometryRules.getString(startingVertexField, false, true).value_or("").empty();
+      const bool missingEntryDirection = globalGeometryRules.getString(entryDirectionField, false, true).value_or("").empty();
+      const bool missingCoordinateSystem = globalGeometryRules.getString(coordinateSystemField, false, true).value_or("").empty();
+      const bool missingRequiredField = missingStartingVertex || missingEntryDirection || missingCoordinateSystem;
+      if (missingRequiredField) {
+        if (context.repairEnabled()) {
+          bool repaired = true;
+          if (missingStartingVertex) {
+            repaired = globalGeometryRules.setString(startingVertexField, "UpperLeftCorner") && repaired;
+          }
+          if (missingEntryDirection) {
+            repaired = globalGeometryRules.setString(entryDirectionField, "Counterclockwise") && repaired;
+          }
+          if (missingCoordinateSystem) {
+            repaired = globalGeometryRules.setString(coordinateSystemField, "Relative") && repaired;
+          }
+          if (repaired) {
+            detail::addLoadInfo(context, "Filled blank required GlobalGeometryRules fields.");
+          } else {
+            detail::addLoadError(context, "Failed to fill blank required GlobalGeometryRules fields.");
+          }
+        } else {
+          detail::addLoadWarning(context, "GlobalGeometryRules has blank required fields.");
+        }
+      }
+    } else {
+      detail::addLoadWarning(context, "Preserved multiple GlobalGeometryRules objects; exactly one is required.");
     }
 
     // Fixed-point pass over all objects:

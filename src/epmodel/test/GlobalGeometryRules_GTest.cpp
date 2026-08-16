@@ -7,6 +7,10 @@
 
 #include "EPModelFixture.hpp"
 #include "../scaffolds/GlobalGeometryRules.hpp"
+#include "../scaffolds/GlobalGeometryRules_Impl.hpp"
+#include <utilities/core/Filesystem.hpp>
+
+#include <set>
 
 using namespace openstudio::epmodel;
 
@@ -49,4 +53,89 @@ TEST_F(EPModelFixture, GlobalGeometryRules_ScalarAccessors_RoundTrip) {
 
   const auto coordinateSystemValues = GlobalGeometryRules::coordinateSystemValues();
   EXPECT_FALSE(coordinateSystemValues.empty());
+}
+
+TEST_F(EPModelFixture, GlobalGeometryRules_CanonicalizeRequiredSingleton) {
+  Model model;
+  EXPECT_TRUE(model.getObjectsByType(GlobalGeometryRules::iddObjectType()).empty());
+
+  const auto audit = model.canonicalize(SanitizationPolicy::ReportOnly);
+  EXPECT_EQ(1u, audit.warningCount);
+  EXPECT_TRUE(model.getObjectsByType(GlobalGeometryRules::iddObjectType()).empty());
+
+  const auto repair = model.canonicalize(SanitizationPolicy::Repair);
+  EXPECT_EQ(0u, repair.warningCount);
+  EXPECT_EQ(1u, model.getObjectsByType(GlobalGeometryRules::iddObjectType()).size());
+
+  auto geometryRulesObjects = model.getConcreteModelObjects<GlobalGeometryRules>();
+  ASSERT_EQ(1u, geometryRulesObjects.size());
+  auto geometryRules = geometryRulesObjects.front();
+  const auto geometryRulesHandle = geometryRules.handle();
+  EXPECT_EQ("UpperLeftCorner", geometryRules.startingVertexPosition());
+  EXPECT_EQ("Counterclockwise", geometryRules.vertexEntryDirection());
+  EXPECT_EQ("Relative", geometryRules.coordinateSystem());
+  EXPECT_EQ("Relative", geometryRules.daylightingReferencePointCoordinateSystem());
+  EXPECT_EQ("Relative", geometryRules.rectangularSurfaceCoordinateSystem());
+
+  const auto secondRepair = model.canonicalize(SanitizationPolicy::Repair);
+  EXPECT_EQ(1u, model.getObjectsByType(GlobalGeometryRules::iddObjectType()).size());
+  EXPECT_EQ(1u, secondRepair.infoCount);
+  EXPECT_EQ(geometryRulesHandle, model.getConcreteModelObjects<GlobalGeometryRules>().front().handle());
+
+  EXPECT_TRUE(geometryRules.setStartingVertexPosition("LowerLeftCorner"));
+  model.canonicalize(SanitizationPolicy::Repair);
+  EXPECT_EQ("LowerLeftCorner", geometryRules.startingVertexPosition());
+
+  EXPECT_TRUE(geometryRules.setStartingVertexPosition(""));
+  EXPECT_TRUE(geometryRules.setVertexEntryDirection(""));
+  EXPECT_TRUE(geometryRules.setCoordinateSystem(""));
+  const auto blankAudit = model.canonicalize(SanitizationPolicy::ReportOnly);
+  EXPECT_EQ(1u, blankAudit.warningCount);
+  EXPECT_TRUE(geometryRules.startingVertexPosition().empty());
+  model.canonicalize(SanitizationPolicy::Repair);
+  EXPECT_EQ("UpperLeftCorner", geometryRules.startingVertexPosition());
+  EXPECT_EQ("Counterclockwise", geometryRules.vertexEntryDirection());
+  EXPECT_EQ("Relative", geometryRules.coordinateSystem());
+
+  ASSERT_FALSE(geometryRules.remove().empty());
+  const auto removedAudit = model.canonicalize(SanitizationPolicy::ReportOnly);
+  EXPECT_EQ(1u, removedAudit.warningCount);
+  EXPECT_TRUE(model.getObjectsByType(GlobalGeometryRules::iddObjectType()).empty());
+  model.canonicalize(SanitizationPolicy::Repair);
+  EXPECT_EQ(1u, model.getObjectsByType(GlobalGeometryRules::iddObjectType()).size());
+
+  const auto idfPath =
+    openstudio::tempDir() / openstudio::toPath("epmodel-global-geometry-rules-" + openstudio::removeBraces(openstudio::createUUID()) + ".idf");
+  ASSERT_TRUE(model.save(idfPath, true));
+  auto loadedModel = Model::load(idfPath);
+  ASSERT_TRUE(loadedModel);
+  const auto loadedRules = loadedModel->getConcreteModelObjects<GlobalGeometryRules>();
+  ASSERT_EQ(1u, loadedRules.size());
+  EXPECT_EQ("UpperLeftCorner", loadedRules.front().startingVertexPosition());
+  EXPECT_EQ("Counterclockwise", loadedRules.front().vertexEntryDirection());
+  EXPECT_EQ("Relative", loadedRules.front().coordinateSystem());
+  openstudio::filesystem::remove(idfPath);
+}
+
+TEST_F(EPModelFixture, GlobalGeometryRules_CanonicalizePreservesDuplicates) {
+  Model model;
+  GlobalGeometryRules first(model);
+  GlobalGeometryRules second(model);
+  ASSERT_TRUE(first.setStartingVertexPosition("UpperLeftCorner"));
+  ASSERT_TRUE(second.setStartingVertexPosition("LowerLeftCorner"));
+  const std::set<openstudio::Handle> originalHandles{first.handle(), second.handle()};
+
+  const auto audit = model.canonicalize(SanitizationPolicy::ReportOnly);
+  EXPECT_EQ(1u, audit.warningCount);
+  EXPECT_EQ(2u, model.getObjectsByType(GlobalGeometryRules::iddObjectType()).size());
+
+  const auto repair = model.canonicalize(SanitizationPolicy::Repair);
+  EXPECT_EQ(1u, repair.warningCount);
+  const auto preserved = model.getConcreteModelObjects<GlobalGeometryRules>();
+  ASSERT_EQ(2u, preserved.size());
+  std::set<openstudio::Handle> preservedHandles;
+  for (const auto& object : preserved) {
+    preservedHandles.insert(object.handle());
+  }
+  EXPECT_EQ(originalHandles, preservedHandles);
 }
