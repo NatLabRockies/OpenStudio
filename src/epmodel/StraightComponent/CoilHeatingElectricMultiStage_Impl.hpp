@@ -30,6 +30,8 @@ namespace epmodel {
 
       unsigned numberOfStages() const;
       bool setNumberOfStages(unsigned numberOfStages);
+
+      void doCanonicalize(LoadContext& context) override;
     };
 
   }  // namespace detail
