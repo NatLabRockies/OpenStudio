@@ -489,11 +489,11 @@ namespace epmodel {
   namespace detail {
 
     unsigned ZoneHVACIdealLoadsAirSystem_Impl::inletPort() const {
-      return ZoneHVAC_IdealLoadsAirSystemFields::ZoneSupplyAirNodeName;
+      return ZoneHVAC_IdealLoadsAirSystemFields::ZoneExhaustAirNodeName;
     }
 
     unsigned ZoneHVACIdealLoadsAirSystem_Impl::outletPort() const {
-      return ZoneHVAC_IdealLoadsAirSystemFields::ZoneExhaustAirNodeName;
+      return ZoneHVAC_IdealLoadsAirSystemFields::ZoneSupplyAirNodeName;
     }
 
     boost::optional<Schedule> ZoneHVACIdealLoadsAirSystem_Impl::availabilitySchedule() const {

@@ -46,7 +46,8 @@ namespace epmodel {
     //   DesignSpecification:OutdoorAir relationship map directly to the EnergyPlus object.
     // - Documented Delta: Zone and node references remain relationship-only links and are intentionally not exposed as scalar fields.
     // - Field/Storage Mapping: Scalars, schedules, and the direct DesignSpecification:OutdoorAir reference live on the EnergyPlus object while
-    //   zone membership is maintained through thermal-zone topology.
+    //   zone membership is maintained through thermal-zone topology. The EnergyPlus Zone Supply Air Node is the component outlet and belongs to
+    //   the zone inlet list; Zone Exhaust Air Node is the component inlet and belongs to the zone exhaust list.
     // - Evidence: `src/model/ZoneHVACIdealLoadsAirSystem.hpp`, `src/model/ZoneHVACIdealLoadsAirSystem.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateZoneHVACIdealLoadsAirSystem.cpp`, `src/energyplus/ReverseTranslator/ReverseTranslateZoneHVACIdealLoadsAirSystem.cpp`, and `src/epmodel/test/ZoneHVACIdealLoadsAirSystem_GTest.cpp`.
     // - Remaining Parity Work: Add the remaining canonical non-schedule relationship helpers when their ownership semantics are implemented.
     static std::vector<std::string> heatingLimitValues();

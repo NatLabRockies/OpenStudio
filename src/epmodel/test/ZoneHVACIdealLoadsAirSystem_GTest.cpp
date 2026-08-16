@@ -15,6 +15,7 @@
 #include "../HVACComponent/ThermalZone.hpp"
 #include "../HVACComponent/ThermalZone_Impl.hpp"
 #include "../ModelObject/DesignSpecificationOutdoorAirSpaceList.hpp"
+#include "../ModelObject/ZoneHVACEquipmentConnections.hpp"
 #include "../ResourceObject/DesignSpecificationOutdoorAir.hpp"
 #include "../ResourceObject/DesignSpecificationOutdoorAir_Impl.hpp"
 #include "../ResourceObject/ScheduleTypeLimits.hpp"
@@ -518,6 +519,19 @@ TEST_F(EPModelFixture, ZoneHVACIdealLoadsAirSystem_ZoneAttachmentRoundTrip) {
   EXPECT_EQ(zone, *system.thermalZone());
   EXPECT_TRUE(system.inletNode());
   EXPECT_TRUE(system.outletNode());
+
+  auto connections = zone.getImpl<detail::ThermalZone_Impl>()->zoneHVACEquipmentConnections();
+  ASSERT_TRUE(connections);
+  const auto zoneInlets = connections->zoneAirInletNodes();
+  const auto zoneExhausts = connections->zoneAirExhaustNodes();
+  ASSERT_EQ(1u, zoneInlets.size());
+  ASSERT_EQ(1u, zoneExhausts.size());
+  EXPECT_EQ(system.outletNode()->handle(), zoneInlets.front().handle());
+  EXPECT_EQ(system.inletNode()->handle(), zoneExhausts.front().handle());
+  EXPECT_EQ(system.outletNode()->handle(),
+            system.getModelObjectTarget<Node>(openstudio::ZoneHVAC_IdealLoadsAirSystemFields::ZoneSupplyAirNodeName)->handle());
+  EXPECT_EQ(system.inletNode()->handle(),
+            system.getModelObjectTarget<Node>(openstudio::ZoneHVAC_IdealLoadsAirSystemFields::ZoneExhaustAirNodeName)->handle());
 
   system.removeFromThermalZone();
   EXPECT_FALSE(system.thermalZone());
