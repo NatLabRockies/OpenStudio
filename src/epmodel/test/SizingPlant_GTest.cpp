@@ -11,6 +11,7 @@
 #include "../Loop/PlantLoop_Impl.hpp"
 #include "../ModelObject/SizingPlant.hpp"
 #include "../ModelObject/SizingPlant_Impl.hpp"
+#include "../scaffolds/CondenserLoop.hpp"
 #include "ScopedTestFailure.hpp"
 #include "../TestFailurePoint.hpp"
 
@@ -444,6 +445,29 @@ TEST_F(EPModelFixture, SizingPlant_CanonicalizeRemovesOrphanAndDuplicateCompanio
   EXPECT_EQ(retainedSizingPlantHandle, sizingPlants.front().handle());
   EXPECT_EQ(plantLoop, sizingPlants.front().plantLoop());
   EXPECT_EQ(sizingPlants.front(), plantLoop.sizingPlant());
+}
+
+TEST_F(EPModelFixture, SizingPlant_CanonicalizePreservesLegacyCondenserLoopTarget) {
+  Model model;
+  PlantLoop plantLoop(model);
+  auto sizingPlant = plantLoop.sizingPlant();
+  CondenserLoop condenserLoop(model);
+  ASSERT_TRUE(condenserLoop.setName("Imported Condenser Loop"));
+
+  // The CondenserLoop relationship is intentionally seeded through the shared
+  // EnergyPlus PlantLoops object list because its EPModel wrapper is currently
+  // a scalar scaffold without a typed SizingPlant relationship API.
+  ASSERT_TRUE(sizingPlant.setPointer(openstudio::Sizing_PlantFields::PlantorCondenserLoopName, condenserLoop.handle()));
+  const auto sizingPlantHandle = sizingPlant.handle();
+
+  const auto report = model.canonicalize(SanitizationPolicy::Repair);
+  EXPECT_EQ(0u, report.errorCount);
+  ASSERT_TRUE(model.getObject(sizingPlantHandle));
+
+  sizingPlant = model.getModelObject<SizingPlant>(sizingPlantHandle).get();
+  const auto retainedLoop = sizingPlant.getModelObjectTarget<ModelObject>(openstudio::Sizing_PlantFields::PlantorCondenserLoopName);
+  ASSERT_TRUE(retainedLoop);
+  EXPECT_EQ(condenserLoop.handle(), retainedLoop->handle());
 }
 
 TEST_F(EPModelFixture, SizingPlant_IsRemovedWithOwningPlantLoop) {

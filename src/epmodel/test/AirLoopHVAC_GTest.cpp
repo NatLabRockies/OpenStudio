@@ -5601,6 +5601,34 @@ TEST_F(EPModelFixture, AirLoopHVAC_Canonicalize_AddsSupplyWaterCoilControllersTo
     std::ranges::any_of(controllers, [&](const auto& controller) { return controller.handle() == heatingCoil.controllerWaterCoil()->handle(); }));
 }
 
+TEST_F(EPModelFixture, AirLoopHVAC_Canonicalize_PreservesControllerForUnsupportedWaterCoilFamily) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  ControllerWaterCoil importedController(model);
+  Node importedSensorNode(model);
+  Node importedActuatorNode(model);
+
+  ASSERT_TRUE(importedController.setSensorNode(importedSensorNode));
+  ASSERT_TRUE(importedController.setActuatorNode(importedActuatorNode));
+  EXPECT_FALSE(importedController.waterCoil());
+
+  // Controller-list mutation is intentionally internal: this fixture represents an
+  // imported controller relationship for a water-coil family without a typed EPModel
+  // HVACComponent wrapper.
+  AirLoopHVACControllerList seededControllerList(model);
+  ASSERT_TRUE(seededControllerList.getImpl<detail::AirLoopHVACControllerList_Impl>()->addController(importedController));
+  ASSERT_TRUE(airLoop.setPointer(openstudio::AirLoopHVACFields::ControllerListName, seededControllerList.handle()));
+
+  auto report = model.canonicalize(SanitizationPolicy::Repair);
+  EXPECT_EQ(0u, report.errorCount);
+
+  auto controllerList = airLoop.getModelObjectTarget<AirLoopHVACControllerList>(openstudio::AirLoopHVACFields::ControllerListName);
+  ASSERT_TRUE(controllerList);
+  const auto controllers = subsetCastVector<ControllerWaterCoil>(controllerList->controllers());
+  ASSERT_EQ(1u, controllers.size());
+  EXPECT_EQ(importedController.handle(), controllers.front().handle());
+}
+
 TEST_F(EPModelFixture, AirLoopHVAC_NightCycleControlType_UsesAvailabilityManagerNightCycle) {
   Model model;
   AirLoopHVAC airLoop(model);

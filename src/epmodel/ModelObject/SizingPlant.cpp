@@ -217,6 +217,15 @@ namespace epmodel {
       const auto sizingPlantName = sizingPlant.nameString().empty() ? std::string{"unnamed"} : sizingPlant.nameString();
       const auto plantLoop = optionalPlantLoop();
       if (!plantLoop) {
+        // EnergyPlus 26.1 still supports the legacy CondenserLoop object, whose
+        // name participates in the same PlantLoops reference list. EPModel has
+        // only a scalar scaffold for that family, so the typed PlantLoop API
+        // cannot represent its back-reference yet. Preserve the valid imported
+        // Sizing:Plant relationship instead of misclassifying it as an orphan.
+        const auto genericLoop = sizingPlant.getModelObjectTarget<ModelObject>(openstudio::Sizing_PlantFields::PlantorCondenserLoopName);
+        if (genericLoop && (genericLoop->iddObject().type() == IddObjectType::CondenserLoop)) {
+          return;
+        }
         detail::addLoadWarning(context, "Removed orphan Sizing:Plant '" + sizingPlantName
                                           + "' because Plant or Condenser Loop Name does not resolve to a PlantLoop.");
         sizingPlant.remove();

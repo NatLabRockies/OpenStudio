@@ -5175,7 +5175,13 @@ namespace epmodel {
           auto controllerListImpl = controllerList->getImpl<detail::AirLoopHVACControllerList_Impl>();
           for (const auto& controller : controllerList->controllers()) {
             if (auto waterController = controller.optionalCast<ControllerWaterCoil>()) {
-              OS_ASSERT(controllerListImpl->removeController(waterController->cast<ModelObject>()));
+              // ControllerWaterCoil can also serve water-coil families that EPModel does not yet
+              // expose as HVACComponent wrappers (for example
+              // Coil:Cooling:Water:DetailedGeometry). Preserve an existing controller unless its
+              // node relationship positively identifies one of the exact supported coil types.
+              if (waterController->waterCoil()) {
+                OS_ASSERT(controllerListImpl->removeController(waterController->cast<ModelObject>()));
+              }
             }
           }
         }
@@ -5195,7 +5201,7 @@ namespace epmodel {
           const bool isRequired = std::ranges::any_of(requiredControllers, [&waterController](const auto& requiredController) {
             return requiredController.handle() == waterController->handle();
           });
-          if (!isRequired) {
+          if (!isRequired && waterController->waterCoil()) {
             OS_ASSERT(controllerListImpl->removeController(waterController->cast<ModelObject>()));
           }
         }
