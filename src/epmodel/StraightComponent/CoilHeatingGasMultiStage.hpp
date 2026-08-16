@@ -42,11 +42,18 @@ namespace epmodel {
     // - Status: Partial Parity. The bounded availability-schedule and optional part-load-fraction-curve relationships are present, but the canonical
     //   stage-data family remains model-owned.
     // - Canonical Counterpart: openstudio::model::CoilHeatingGasMultiStage.
-    // - Implemented Parity: `availabilitySchedule` and the optional `partLoadFractionCorrelationCurve` preserve the bounded canonical relationship slice
-    //   for this campaign; `parasiticGasLoad`, `offCycleParasiticGasLoad`, and `numberOfStages` preserve the current scalar field mirror.
+    // - Implemented Parity: The typed `availabilitySchedule` relationship and validated optional `partLoadFractionCorrelationCurve` preserve the bounded
+    //   canonical relationship slice for this campaign; `parasiticGasLoad`, `offCycleParasiticGasLoad`, and `numberOfStages` preserve the current scalar
+    //   field mirror.
     // - Documented Delta: Stage-data ownership and extensible stage-list APIs from canonical `openstudio::model::CoilHeatingGasMultiStage` are not
     //   exposed yet, and standalone `addToNode(...)` remains intentionally rejected to match the canonical wrapper.
-    // - Field/Storage Mapping: The preserved relationship and scalar APIs map directly to EnergyPlus `Coil:Heating:Gas:MultiStage` storage.
+    // - Field/Storage Mapping: The preserved relationship and scalar APIs map directly to EnergyPlus `Coil:Heating:Gas:MultiStage` storage. EnergyPlus A2
+    //   is optional, with blank meaning always-on; epmodel canonical form materializes that meaning as a managed schedule relationship. A6 accepts only
+    //   the configured `UnivariateFunctions` object list and may remain blank.
+    // - Canonicalization: Ordinary availability access is observational. Managed relationships are revalidated through their typed setters and unique
+    //   eligible persisted names are reattached. Only truly blank availability is repaired to always-on; blank PLF remains valid, no curve is synthesized,
+    //   and malformed nonblank evidence is preserved and reported. Stage, extensible-list, scalar, node, topology, ownership, and removal behavior is
+    //   unchanged.
     // - Evidence: `src/model/CoilHeatingGasMultiStage.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateCoilHeatingGasMultiStage.cpp`, and `src/epmodel/test/CoilHeatingGasMultiStage_GTest.cpp`.
     // - Remaining Parity Work: Add the canonical stage-data family and owning extensible-list behavior without changing the preserved scalar signatures.
     Schedule availabilitySchedule() const;
