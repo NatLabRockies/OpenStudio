@@ -14,6 +14,8 @@
 #include "../../epmodel/Model.hpp"
 #include "../../epmodel/ModelObject/Timestep.hpp"
 #include "../../epmodel/ModelObject/Timestep_Impl.hpp"
+#include "../../epmodel/PlanarSurfaceGroup/Space.hpp"
+#include "../../epmodel/PlanarSurfaceGroup/Space_Impl.hpp"
 #include "../../model/Model.hpp"
 #include "../../model/Space.hpp"
 #include "../../model/Space_Impl.hpp"
@@ -70,7 +72,7 @@ class TestModelUserScript1 : public ModelMeasure
     return "TestModelUserScript1";
   }
 
-  // remove all objects and add a new one
+  // remove all typed Space objects and add a new one
   virtual bool run(openstudio::epmodel::Model& model, OSRunner& runner, const std::map<std::string, OSArgument>& user_arguments) const override {
     ModelMeasure::run(model, runner, user_arguments);
 
@@ -80,20 +82,20 @@ class TestModelUserScript1 : public ModelMeasure
 
     std::stringstream ss;
 
-    // remove old objects
-    const auto objects = model.objects();
-    int count = static_cast<int>(objects.size());
-    for (auto object : objects) {
-      object.remove();
+    // remove old typed objects through their public EPModel API
+    const auto spaces = model.getConcreteModelObjects<openstudio::epmodel::Space>();
+    int count = static_cast<int>(spaces.size());
+    for (auto space : spaces) {
+      space.remove();
     }
-    ss << "Initial model had " << count << " objects.";
+    ss << "Initial model had " << count << " Space objects.";
     runner.registerInitialCondition(ss.str());
     ss.str("");
 
-    // add a new one
-    addTimestep(model, 6);
+    // add a new typed EPModel object
+    openstudio::epmodel::Space space(model);
 
-    ss << "Removed the " << count << " original objects, and added one new Timestep object.";
+    ss << "Removed the " << count << " original Space objects, and added one new Space object.";
     runner.registerFinalCondition(ss.str());
 
     // success
@@ -127,18 +129,15 @@ TEST_F(MeasureFixture, UserScript_TestModelUserScript1) {
   EXPECT_EQ(0u, result.stepWarnings().size());
   EXPECT_EQ(0u, result.stepInfo().size());
   ASSERT_TRUE(result.initialCondition());
-  EXPECT_EQ("Initial model had 0 objects.", result.initialCondition()->logMessage());
+  EXPECT_EQ("Initial model had 0 Space objects.", result.initialCondition()->logMessage());
   ASSERT_TRUE(result.finalCondition());
-  EXPECT_EQ("Removed the 0 original objects, and added one new Timestep object.", result.finalCondition()->logMessage());
+  EXPECT_EQ("Removed the 0 original Space objects, and added one new Space object.", result.finalCondition()->logMessage());
+  EXPECT_EQ(1u, model1.getConcreteModelObjects<openstudio::epmodel::Space>().size());
 
   // test with populated model
   openstudio::epmodel::Model model2;
-  addTimestep(model2, 4);
-  openstudio::IdfObject outputVariable(openstudio::IddObjectType::Output_Variable);
-  outputVariable.setString(0, "*");
-  outputVariable.setString(1, "Site Outdoor Air Drybulb Temperature");
-  outputVariable.setString(2, "Hourly");
-  ASSERT_TRUE(model2.addObject(outputVariable));
+  openstudio::epmodel::Space originalSpace1(model2);
+  openstudio::epmodel::Space originalSpace2(model2);
   EXPECT_EQ(2u, model2.numObjects());
   EXPECT_EQ(0u, script.arguments(model2).size());
   script.run(model2, runner, user_arguments);
@@ -150,9 +149,10 @@ TEST_F(MeasureFixture, UserScript_TestModelUserScript1) {
   EXPECT_EQ(0u, result.stepWarnings().size());
   EXPECT_EQ(0u, result.stepInfo().size());
   ASSERT_TRUE(result.initialCondition());
-  EXPECT_EQ("Initial model had 2 objects.", result.initialCondition()->logMessage());
+  EXPECT_EQ("Initial model had 2 Space objects.", result.initialCondition()->logMessage());
   ASSERT_TRUE(result.finalCondition());
-  EXPECT_EQ("Removed the 2 original objects, and added one new Timestep object.", result.finalCondition()->logMessage());
+  EXPECT_EQ("Removed the 2 original Space objects, and added one new Space object.", result.finalCondition()->logMessage());
+  EXPECT_EQ(1u, model2.getConcreteModelObjects<openstudio::epmodel::Space>().size());
 }
 
 class TestModelUserScript2 : public ModelMeasure
@@ -354,12 +354,6 @@ TEST_F(MeasureFixture, UserScript_TestModelUserScript2) {
   EXPECT_EQ(5u, result.stepValues().size());
 
   EXPECT_EQ(4, timestep.numberOfTimestepsPerHour());
-}
-
-TEST_F(MeasureFixture, EPModelMeasureParity_RestoreTypedSpaceMeasureCoverage) {
-  ADD_FAILURE() << "Temporary epmodel workflow reminder: UserScript_TestModelUserScript1 was reduced from canonical Space construction/removal "
-                   "to generic IDF object mutation so the clean-break workflow target would compile. Restore this test to use epmodel::Space "
-                   "once the typed Space creation/removal path is ready to carry the same measure-facing contract as canonical Model.";
 }
 
 TEST_F(MeasureFixture, EPModelMeasureParity_ResolveLightsDefinitionAbstraction) {
