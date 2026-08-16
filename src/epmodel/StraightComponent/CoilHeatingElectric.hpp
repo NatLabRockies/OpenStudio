@@ -25,6 +25,7 @@ namespace epmodel {
   class EPMODEL_API CoilHeatingElectric : public StraightComponent
   {
    public:
+    explicit CoilHeatingElectric(const Model& model, Schedule& schedule);
     explicit CoilHeatingElectric(const Model& model);
 
     virtual ~CoilHeatingElectric() override = default;
@@ -38,14 +39,19 @@ namespace epmodel {
     bool addToNode(Node& node);
 
     // Schema Alignment Notes:
-    // - Status: Partial Parity. The canonical electric-coil scalar surface plus the required availability-schedule and optional temperature-setpoint-node
+    // - Status: Partial Parity. The canonical electric-coil scalar surface plus the availability-schedule and optional temperature-setpoint-node
     //   relationships are present, while broader AFN helpers remain out of scope.
     // - Canonical Counterpart: openstudio::model::CoilHeatingElectric.
-    // - Implemented Parity: `efficiency` and `nominalCapacity` preserve the canonical scalar API and autosize behavior; `availabilitySchedule` and
-    //   `temperatureSetpointNode` preserve the bounded relationship slice; `addToNode` preserves the current epmodel supply-side and OA-system insertion
-    //   paths.
-    // - Documented Delta: AFN helpers from canonical `openstudio::model::CoilHeatingElectric` are not exposed yet.
-    // - Field/Storage Mapping: Preserved scalars and relationships map directly to EnergyPlus `Coil:Heating:Electric` fields.
+    // - Implemented Parity: `efficiency` and `nominalCapacity` preserve the canonical scalar API and autosize behavior; the canonical schedule
+    //   constructor and typed `availabilitySchedule` relationship preserve the canonical availability slice; `temperatureSetpointNode` and `addToNode`
+    //   preserve the existing epmodel node relationship and supply-side/OA-system insertion paths.
+    // - Documented Delta: The one-argument constructor remains as an EnergyPlus-compatible convenience that selects always-on availability. AFN helpers
+    //   from canonical `openstudio::model::CoilHeatingElectric` are not exposed yet.
+    // - Field/Storage Mapping: Preserved scalars and relationships map directly to EnergyPlus `Coil:Heating:Electric` fields. EnergyPlus A2 is optional,
+    //   with blank meaning always-on; epmodel canonical form materializes that meaning as a managed schedule relationship.
+    // - Canonicalization: Ordinary availability access is observational. Managed relationships are revalidated through the typed setter and unique
+    //   eligible persisted names are reattached. Only truly blank availability is repaired to always-on; malformed nonblank evidence is preserved and
+    //   reported. Existing temperature-setpoint-node, topology, and scalar behavior is unchanged.
     // - Evidence: `src/model/CoilHeatingElectric.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateCoilHeatingElectric.cpp`, and `src/epmodel/test/CoilHeatingElectric_GTest.cpp`.
     // - Remaining Parity Work: Add AFN helpers without changing the preserved scalar signatures.
     Schedule availabilitySchedule() const;

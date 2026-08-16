@@ -9,19 +9,35 @@
 #include "Loop/AirLoopHVAC.hpp"
 #include "HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
 #include "Model.hpp"
+#include "ModelObject.hpp"
 #include "Node.hpp"
 #include "Schedule/Schedule.hpp"
 #include "Schedule/Schedule_Impl.hpp"
 
 #include <utilities/core/Assert.hpp>
+#include <utilities/core/Exception.hpp>
 #include <utilities/core/StringHelpers.hpp>
+#include <utilities/core/UUID.hpp>
 #include <utilities/idd/Coil_Heating_Electric_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
+#include <utilities/idf/IdfObject_Impl.hpp>
 
 namespace openstudio {
 namespace epmodel {
 
-  CoilHeatingElectric::CoilHeatingElectric(const Model& model) : StraightComponent(CoilHeatingElectric::iddObjectType(), model) {}
+  CoilHeatingElectric::CoilHeatingElectric(const Model& model, Schedule& schedule) : StraightComponent(CoilHeatingElectric::iddObjectType(), model) {
+    OS_ASSERT(getImpl<detail::CoilHeatingElectric_Impl>());
+    if (!setAvailabilitySchedule(schedule)) {
+      remove();
+      throw openstudio::Exception("Unable to set " + briefDescription() + "'s availability schedule to " + schedule.briefDescription() + ".");
+    }
+  }
+
+  CoilHeatingElectric::CoilHeatingElectric(const Model& model) : StraightComponent(CoilHeatingElectric::iddObjectType(), model) {
+    auto alwaysOn = model.alwaysOnDiscreteSchedule();
+    const bool result = setAvailabilitySchedule(alwaysOn);
+    OS_ASSERT(result);
+  }
 
   CoilHeatingElectric::CoilHeatingElectric(std::shared_ptr<detail::CoilHeatingElectric_Impl> impl) : StraightComponent(std::move(impl)) {}
 
@@ -124,19 +140,19 @@ namespace epmodel {
     }
 
     Schedule CoilHeatingElectric_Impl::availabilitySchedule() const {
-      auto value = getObject<ModelObject>().getModelObjectTarget<Schedule>(openstudio::Coil_Heating_ElectricFields::AvailabilityScheduleName);
-      if (!value) {
-        value = this->model().alwaysOnDiscreteSchedule();
-        OS_ASSERT(value);
-        const_cast<CoilHeatingElectric_Impl*>(this)->setAvailabilitySchedule(*value);
-        value = getObject<ModelObject>().getModelObjectTarget<Schedule>(openstudio::Coil_Heating_ElectricFields::AvailabilityScheduleName);
-      }
+      constexpr auto field = openstudio::Coil_Heating_ElectricFields::AvailabilityScheduleName;
+      const auto managedValue = getObject<ModelObject>().getField(field, false);
+      OS_ASSERT(managedValue && !managedValue->empty());
+      const auto targetHandle = openstudio::toUUID(*managedValue);
+      OS_ASSERT(!targetHandle.isNull());
+      const auto value = model().getModelObject<Schedule>(targetHandle);
       OS_ASSERT(value);
       return *value;
     }
 
     bool CoilHeatingElectric_Impl::setAvailabilitySchedule(Schedule& schedule) {
-      return setPointer(openstudio::Coil_Heating_ElectricFields::AvailabilityScheduleName, schedule.handle(), false);
+      return ModelObject_Impl::setSchedule(openstudio::Coil_Heating_ElectricFields::AvailabilityScheduleName, "CoilHeatingElectric", "Availability",
+                                           schedule);
     }
 
     boost::optional<Node> CoilHeatingElectric_Impl::temperatureSetpointNode() const {
@@ -199,6 +215,84 @@ namespace epmodel {
     boost::optional<double> CoilHeatingElectric_Impl::autosizedNominalCapacity() const {
       // epmodel does not currently resolve autosized values from SQL results.
       return boost::none;
+    }
+
+    void CoilHeatingElectric_Impl::doCanonicalize(LoadContext& context) {
+      StraightComponent_Impl::doCanonicalize(context);
+
+      constexpr auto field = openstudio::Coil_Heating_ElectricFields::AvailabilityScheduleName;
+      const auto coil = getObject<ModelObject>();
+      const auto coilName = coil.nameString();
+      const auto managedValue = coil.getField(field, false);
+      const auto managedHandle = managedValue ? openstudio::toUUID(*managedValue) : Handle{};
+      if (!managedHandle.isNull()) {
+        auto schedule = model().getModelObject<Schedule>(managedHandle);
+        boost::optional<Schedule> uniqueEligibleSchedule;
+        bool ambiguous = false;
+        if (schedule) {
+          for (const auto& candidate : model().getObjectsByName(schedule->nameString(), true)) {
+            if (auto namedSchedule = candidate.optionalCast<Schedule>()) {
+              if (!model().canBeTarget(namedSchedule->handle(), iddObject().objectLists(field))) {
+                continue;
+              }
+              if (uniqueEligibleSchedule) {
+                ambiguous = true;
+                break;
+              }
+              uniqueEligibleSchedule = *namedSchedule;
+            }
+          }
+        }
+
+        if (schedule && !ambiguous && uniqueEligibleSchedule && (uniqueEligibleSchedule->handle() == schedule->handle())
+            && setAvailabilitySchedule(*schedule)) {
+          return;
+        }
+        detail::addLoadWarning(context, "Preserved an unresolved, ambiguous, ineligible, or incompatible availability schedule on "
+                                        "Coil:Heating:Electric '"
+                                          + coilName + "'.");
+        return;
+      }
+
+      const auto rawName = openstudio::detail::IdfObject_Impl::getString(field, false, true);
+      if (rawName && !rawName->empty()) {
+        boost::optional<Schedule> uniqueEligibleSchedule;
+        bool ambiguous = false;
+        for (const auto& candidate : model().getObjectsByName(*rawName, true)) {
+          if (auto schedule = candidate.optionalCast<Schedule>()) {
+            if (!model().canBeTarget(schedule->handle(), iddObject().objectLists(field))) {
+              continue;
+            }
+            if (uniqueEligibleSchedule) {
+              ambiguous = true;
+              break;
+            }
+            uniqueEligibleSchedule = *schedule;
+          }
+        }
+
+        if (uniqueEligibleSchedule && !ambiguous) {
+          if (setAvailabilitySchedule(*uniqueEligibleSchedule)) {
+            detail::addLoadInfo(context, "Reattached availability schedule '" + uniqueEligibleSchedule->nameString() + "' to Coil:Heating:Electric '"
+                                           + coilName + "'.");
+          } else {
+            detail::addLoadWarning(context, "Preserved incompatible availability schedule reference '" + *rawName + "' on Coil:Heating:Electric '"
+                                              + coilName + "'.");
+          }
+        } else {
+          detail::addLoadWarning(context, "Preserved unresolved or ambiguous availability schedule reference '" + *rawName
+                                            + "' on Coil:Heating:Electric '" + coilName + "'.");
+        }
+      } else if (context.repairEnabled()) {
+        auto alwaysOn = model().alwaysOnDiscreteSchedule();
+        if (setAvailabilitySchedule(alwaysOn)) {
+          detail::addLoadInfo(context, "Attached the always-on availability schedule to Coil:Heating:Electric '" + coilName + "'.");
+        } else {
+          detail::addLoadError(context, "Failed to attach the always-on availability schedule to Coil:Heating:Electric '" + coilName + "'.");
+        }
+      } else {
+        detail::addLoadWarning(context, "Coil:Heating:Electric '" + coilName + "' has a blank availability schedule.");
+      }
     }
 
     bool CoilHeatingElectric_Impl::addToNode(Node& node) {
