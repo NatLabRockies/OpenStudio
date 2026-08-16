@@ -73,6 +73,13 @@ namespace epmodel {
       // exact local topology is safe to repair.
       OwnedOutdoorAirMixerRelationshipInspection inspectOwnedOutdoorAirMixer(unsigned objectTypeField, unsigned objectNameField) const;
 
+      // Load canonicalization must not discover AirLoop ownership through Node::airLoopHVAC():
+      // that inverse traverses every loop and can reach a sibling whose node lists have not yet
+      // been canonicalized. Managed Branch, inlet-side-mixer, and outdoor-air equipment-list
+      // references are the observational ownership evidence needed by contained-air-path repair;
+      // normal public API paths can continue using the full inverse after the model is canonical.
+      bool hasManagedAirLoopPathReference() const;
+
       // Some EnergyPlus zone equipment owns an OutdoorAir:Mixer that has no
       // separate public Model object. Keep the persisted companion, its four
       // nodes, and the outdoor-air node declaration aligned with the owner's

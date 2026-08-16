@@ -1265,7 +1265,8 @@ namespace epmodel {
       // OutdoorAir:Mixer, even when its maximum outdoor-air flow is zero.
       // Inlet-side/AirLoop attachment supplies already-mixed air and therefore
       // keeps both fan-coil mixer fields blank.
-      const bool usesHiddenMixedAir = fan && cooling && heating && !airLoopHVAC();
+      const bool isAirLoopAttached = allowChildNodeRecovery ? hasManagedAirLoopPathReference() : static_cast<bool>(airLoopHVAC());
+      const bool usesHiddenMixedAir = fan && cooling && heating && !isAirLoopAttached;
       boost::optional<Node> sourceNode;
       if (usesHiddenMixedAir) {
         const HVACComponent* firstComponent = nullptr;

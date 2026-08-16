@@ -806,7 +806,8 @@ namespace epmodel {
       // The water-to-air heat pump owns this local OA mixer whenever it owns
       // its own zone-side air path. Zero OA flow does not remove the topology
       // object; it only affects the flow through that already-defined path.
-      const bool usesHiddenMixedAir = !airLoopHVAC();
+      const bool isAirLoopAttached = allowChildNodeRecovery ? hasManagedAirLoopPathReference() : static_cast<bool>(airLoopHVAC());
+      const bool usesHiddenMixedAir = !isAirLoopAttached;
 
       boost::optional<Node> sourceNode;
       boost::optional<OutdoorAirMixer> outdoorAirMixer;

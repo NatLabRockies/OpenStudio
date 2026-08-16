@@ -893,7 +893,8 @@ namespace epmodel {
       if (auto value = outdoorAirFlowRateWhenNoCoolingorHeatingisNeeded()) {
         zeroOutdoorAir = zeroOutdoorAir && (*value == 0.0);
       }
-      const bool usesHiddenMixedAir = !airLoopHVAC() && !zeroOutdoorAir;
+      const bool isAirLoopAttached = allowChildNodeRecovery ? hasManagedAirLoopPathReference() : static_cast<bool>(airLoopHVAC());
+      const bool usesHiddenMixedAir = !isAirLoopAttached && !zeroOutdoorAir;
 
       boost::optional<Node> sourceNode;
       if (usesHiddenMixedAir) {

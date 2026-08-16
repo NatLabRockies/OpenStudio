@@ -666,6 +666,12 @@ namespace epmodel {
       return boost::none;
     }
 
+    bool ZoneHVACComponent_Impl::hasManagedAirLoopPathReference() const {
+      const auto object = getObject<ModelObject>();
+      return !object.getSources(IddObjectType::Branch).empty() || !object.getSources(IddObjectType::AirTerminal_SingleDuct_Mixer).empty()
+             || !object.getSources(IddObjectType::AirLoopHVAC_OutdoorAirSystem_EquipmentList).empty();
+    }
+
     bool ZoneHVACComponent_Impl::removeFromAirLoopHVAC() {
       return false;
     }

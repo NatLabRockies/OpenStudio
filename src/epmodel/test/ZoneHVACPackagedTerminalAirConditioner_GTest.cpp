@@ -32,6 +32,7 @@
 #include <utilities/core/Filesystem.hpp>
 #include <utilities/core/UUID.hpp>
 #include <utilities/idd/OutdoorAir_NodeList_FieldEnums.hxx>
+#include <utilities/idd/AirLoopHVAC_FieldEnums.hxx>
 #include <utilities/idd/ZoneHVAC_PackagedTerminalAirConditioner_FieldEnums.hxx>
 #include <utilities/idf/WorkspaceExtensibleGroup.hpp>
 #include <utilities/idf/WorkspaceObject_Impl.hpp>
@@ -96,6 +97,24 @@ TEST_F(EPModelFixture, ZoneHVACPackagedTerminalAirConditioner_DefaultConstructor
   EXPECT_FALSE(ptac.isOutdoorAirFlowRateWhenNoCoolingorHeatingisNeededAutosized());
   EXPECT_TRUE(ptac.isFanPlacementDefaulted());
   EXPECT_EQ("", ptac.fanPlacement());
+}
+
+TEST_F(EPModelFixture, ZoneHVACPackagedTerminalAirConditioner_CanonicalizeDoesNotTraverseUnreadyAirLoop) {
+  Model model;
+  AirLoopHVAC unreadyAirLoop(model);
+  ZoneHVACPackagedTerminalAirConditioner ptac(model);
+
+  // This intentionally models load-order state: another AirLoop exists, but its
+  // outlet NodeList relationship has not yet been canonicalized. PTAC repair must
+  // classify its own managed Branch ownership without traversing that sibling.
+  ASSERT_TRUE(unreadyAirLoop.setPointer(openstudio::AirLoopHVACFields::SupplySideOutletNodeNames, openstudio::Handle()));
+  EXPECT_FALSE(unreadyAirLoop.getTarget(openstudio::AirLoopHVACFields::SupplySideOutletNodeNames));
+
+  detail::LoadContext context{model, SanitizationPolicy::Repair, SanitizationReport{}, {}};
+  ptac.getImpl<detail::ZoneHVACPackagedTerminalAirConditioner_Impl>()->canonicalize(context);
+
+  EXPECT_EQ(0u, context.report.errorCount);
+  EXPECT_FALSE(unreadyAirLoop.getTarget(openstudio::AirLoopHVACFields::SupplySideOutletNodeNames));
 }
 
 TEST_F(EPModelFixture, ZoneHVACPackagedTerminalAirConditioner_ScalarAccessors_RoundTrip) {

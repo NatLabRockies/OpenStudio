@@ -1960,7 +1960,8 @@ namespace epmodel {
       // The terminal owns this local OA mixer whenever it owns its own zone-side
       // air path. Zero OA flow still means a valid local mixer topology in
       // EnergyPlus; it should not make the topology object appear and disappear.
-      const bool usesHiddenMixedAir = !airLoopHVAC();
+      const bool isAirLoopAttached = allowChildNodeRecovery ? hasManagedAirLoopPathReference() : static_cast<bool>(airLoopHVAC());
+      const bool usesHiddenMixedAir = !isAirLoopAttached;
 
       if (!fan && !cooling && !heating && !supplemental) {
         return changed;
