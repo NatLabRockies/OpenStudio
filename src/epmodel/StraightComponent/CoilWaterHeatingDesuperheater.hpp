@@ -27,7 +27,9 @@ namespace epmodel {
   class EPMODEL_API CoilWaterHeatingDesuperheater : public StraightComponent
   {
    public:
+    /** EnergyPlus-compatible construction. The object remains structurally incomplete until a setpoint temperature schedule is supplied. */
     explicit CoilWaterHeatingDesuperheater(const Model& model);
+    explicit CoilWaterHeatingDesuperheater(const Model& model, Schedule& setpointTemperatureSchedule);
 
     virtual ~CoilWaterHeatingDesuperheater() override = default;
     CoilWaterHeatingDesuperheater(const CoilWaterHeatingDesuperheater& other) = default;
@@ -38,18 +40,28 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     // Schema Alignment Notes:
-    // - Status: Partial Parity. The canonical scalar surface plus the required availability-schedule and bounded relationship slice are present, while tank-link and broader node-link helpers remain out of scope.
+    // - Status: Partial Parity. The canonical scalar and schedule surfaces plus the bounded relationship slice are present, while tank-link and
+    //   broader node-link helpers remain out of scope.
     // - Canonical Counterpart: openstudio::model::CoilWaterHeatingDesuperheater.
-    // - Implemented Parity: The dead-band, heat-reclaim, water-flow, pump-power, and parasitic-load helpers preserve the canonical scalar API; `availabilitySchedule`,
-    //   the optional reclaim-efficiency curve, the optional heating-source relationship, curve child traversal, and the canonical `addToNode(...)` rejection preserve
-    //   the current bounded relationship slice.
-    // - Documented Delta: Tank-link helpers remain out of scope for this wrapper.
-    // - Field/Storage Mapping: Preserved scalars and relationships map directly to EnergyPlus `Coil:WaterHeating:Desuperheater` fields.
+    // - Implemented Parity: The canonical constructor accepts the required setpoint temperature schedule. Availability and setpoint relationships
+    //   enforce their canonical schedule types, and canonicalization repairs blank availability while preserving malformed nonblank evidence. The
+    //   dead-band, heat-reclaim, water-flow, pump-power, parasitic-load, curve, heating-source, child-traversal, and `addToNode(...)` surfaces remain.
+    // - Documented Delta: The one-argument constructor remains for direct EnergyPlus compatibility, where blank availability is valid, but its result
+    //   is structurally incomplete until `setSetpointTemperatureSchedule(...)` succeeds. Tank-link helpers remain out of scope.
+    // - Field/Storage Mapping: `availabilitySchedule()` maps to A2 and `setpointTemperatureSchedule()` maps to required A3. Preserved scalars and other
+    //   relationships map directly to EnergyPlus `Coil:WaterHeating:Desuperheater` fields. There is intentionally no setpoint reset API.
+    // - Canonicalization: Ordinary getters are observational and assume managed schedule pointers. Repair attaches always-on only for truly blank
+    //   availability, reattaches unique eligible persisted names through validated setters, never invents a setpoint schedule, and preserves and
+    //   reports unresolved, ambiguous, or incompatible nonblank evidence.
     // - Evidence: `src/model/CoilWaterHeatingDesuperheater.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateCoilWaterHeatingDesuperheater.cpp`, and `src/epmodel/test/CoilWaterHeatingDesuperheater_GTest.cpp`.
-    // - Remaining Parity Work: Add the omitted tank-link and broader relationship helpers without changing the preserved scalar signatures.
+    // - Remaining Parity Work: Add the omitted tank-link and broader relationship helpers without changing the preserved public signatures.
 
     Schedule availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);
+    void resetAvailabilitySchedule();
+
+    Schedule setpointTemperatureSchedule() const;
+    bool setSetpointTemperatureSchedule(Schedule& schedule);
 
     boost::optional<CurveBiquadratic> heatReclaimEfficiencyFunctionofTemperatureCurve() const;
     bool setHeatReclaimEfficiencyFunctionofTemperatureCurve(const CurveBiquadratic& curveBiquadratic);
