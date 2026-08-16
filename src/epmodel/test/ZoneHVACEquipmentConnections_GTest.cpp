@@ -237,3 +237,33 @@ TEST_F(EPModelFixture, ZoneHVACEquipmentConnections_ReportOnlyPreservesRawInletE
   EXPECT_TRUE(managedDuplicateBefore == connections->getField(inletField, false));
   EXPECT_EQ(inletNodes.front().handle(), connections->zoneAirNode().handle());
 }
+
+TEST_F(EPModelFixture, ZoneHVACEquipmentConnections_ReportOnlyDoesNotCreateMissingZoneAirNode) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  ThermalZone zone(model);
+  ASSERT_TRUE(airLoop.addBranchForZone(zone));
+
+  auto connections = zone.getImpl<detail::ThermalZone_Impl>()->zoneHVACEquipmentConnections();
+  ASSERT_TRUE(connections);
+  auto connectionsImpl = connections->getImpl<detail::ZoneHVACEquipmentConnections_Impl>();
+  auto workspaceImpl = connections->getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  ASSERT_TRUE(connectionsImpl);
+  ASSERT_TRUE(workspaceImpl);
+  constexpr unsigned zoneAirNodeField = openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneAirNodeName;
+
+  ASSERT_TRUE(connectionsImpl->setPointer(zoneAirNodeField, openstudio::Handle(), false));
+  const auto managedBefore = connections->getField(zoneAirNodeField, false);
+  const auto rawBefore = workspaceImpl->openstudio::detail::IdfObject_Impl::getString(zoneAirNodeField, false, true);
+  const auto objectCountBefore = model.objects().size();
+
+  const auto reportOnly = model.canonicalize(SanitizationPolicy::ReportOnly);
+  EXPECT_GT(reportOnly.warningCount, 0u);
+  EXPECT_EQ(objectCountBefore, model.objects().size());
+  EXPECT_TRUE(managedBefore == connections->getField(zoneAirNodeField, false));
+  EXPECT_TRUE(rawBefore == workspaceImpl->openstudio::detail::IdfObject_Impl::getString(zoneAirNodeField, false, true));
+
+  const auto repair = model.canonicalize(SanitizationPolicy::Repair);
+  EXPECT_GT(repair.infoCount, 0u);
+  EXPECT_EQ(zone.nameString() + " Zone Air Node", connections->zoneAirNode().nameString());
+}

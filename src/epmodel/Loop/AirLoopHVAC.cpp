@@ -4364,42 +4364,88 @@ namespace epmodel {
       // from the A3 inlet where the terminal is connected. Resolve only
       // already-canonical, unique managed relationships; canonicalization
       // owns repair.
-      std::vector<ZoneHVACEquipmentConnections> zoneAirNodeClaims;
-      for (const auto& zone : requestedNode.model().getConcreteModelObjects<ThermalZone>()) {
-        auto connections = zone.getImpl<ThermalZone_Impl>()->zoneHVACEquipmentConnections();
-        if (connections && connections->zoneAirNode() == requestedNode) {
-          zoneAirNodeClaims.push_back(*connections);
+      struct ZoneAirNodeClaim
+      {
+        ZoneHVACEquipmentConnections connections;
+        ThermalZone owner;
+      };
+      std::vector<ZoneAirNodeClaim> zoneAirNodeClaims;
+      for (const auto& connections : requestedNode.model().getConcreteModelObjects<ZoneHVACEquipmentConnections>()) {
+        constexpr unsigned zoneAirNodeField = openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneAirNodeName;
+        if (!referencesObject(connections, zoneAirNodeField, requestedNode)) {
+          continue;
         }
-      }
-      if (zoneAirNodeClaims.size() > 1u) {
-        return boost::none;
+        const auto zoneAirNode = readOnlyNodeField(connections, zoneAirNodeField);
+        const auto ownerObject = exactManagedTarget(connections, openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneName);
+        const auto owner = ownerObject ? ownerObject->optionalCast<ThermalZone>() : boost::none;
+        if (!exactReadOnlyNodeField(connections, zoneAirNodeField, zoneAirNode) || !zoneAirNode.node || (*zoneAirNode.node != requestedNode)
+            || !owner) {
+          return boost::none;
+        }
+        zoneAirNodeClaims.push_back({connections, *owner});
+        if (zoneAirNodeClaims.size() > 1u) {
+          return boost::none;
+        }
       }
 
       if (zoneAirNodeClaims.empty()) {
-        auto airLoop = requestedNode.airLoopHVAC();
-        if (!airLoop) {
-          return boost::none;
+        boost::optional<Node> resolvedNode;
+        for (const auto& airLoop : requestedNode.model().getConcreteModelObjects<AirLoopHVAC>()) {
+          if (!airLoop.getImpl<AirLoopHVAC_Impl>()->reserveDemandBranchStart(requestedNode)) {
+            continue;
+          }
+          if (resolvedNode) {
+            return boost::none;
+          }
+          resolvedNode = requestedNode;
         }
-        auto reservation = airLoop->getImpl<AirLoopHVAC_Impl>()->reserveDemandBranchStart(requestedNode);
-        return reservation ? boost::optional<Node>(requestedNode) : boost::none;
+        return resolvedNode;
       }
 
-      auto owner = zoneAirNodeClaims.front().thermalZone();
-      boost::optional<Node> resolvedNode;
-      for (const auto& inletNode : zoneAirNodeClaims.front().zoneAirInletNodes()) {
-        auto airLoop = inletNode.airLoopHVAC();
-        if (!airLoop) {
+      const auto& claim = zoneAirNodeClaims.front();
+      unsigned ownerOccurrences = 0u;
+      for (const auto& connections : requestedNode.model().getConcreteModelObjects<ZoneHVACEquipmentConnections>()) {
+        if (!referencesObject(connections, openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneName, claim.owner)) {
           continue;
         }
-        auto reservation = airLoop->getImpl<AirLoopHVAC_Impl>()->reserveDemandBranchStart(inletNode);
-        auto reservationZone = reservation ? reservation->thermalZone() : boost::none;
-        if (!reservation || !reservationZone || (*reservationZone != owner)) {
-          continue;
-        }
-        if (resolvedNode) {
+        if (connections != claim.connections
+            || !isExactManagedReference(connections, openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneName, claim.owner)) {
           return boost::none;
         }
-        resolvedNode = inletNode;
+        ++ownerOccurrences;
+      }
+      if (ownerOccurrences != 1u) {
+        return boost::none;
+      }
+
+      constexpr unsigned inletField = openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneAirInletNodeorNodeListName;
+      const auto inletNodes = readOnlyNodeCollectionField(claim.connections, inletField);
+      const auto inletTarget = exactManagedTarget(claim.connections, inletField);
+      bool exactInletRelationship = false;
+      if (inletTarget && inletNodes.valid && !inletNodes.nodes.empty()) {
+        if (auto inletNode = inletTarget->optionalCast<Node>()) {
+          exactInletRelationship = inletNodes.nodes.size() == 1u && inletNodes.nodes.front() == *inletNode;
+        } else if (auto inletNodeList = inletTarget->optionalCast<NodeList>()) {
+          exactInletRelationship = hasExactNodeRows(*inletNodeList) && inletNodes.nodes.size() == inletNodeList->extensibleGroups().size();
+        }
+      }
+      if (!exactInletRelationship) {
+        return boost::none;
+      }
+
+      boost::optional<Node> resolvedNode;
+      for (const auto& inletNode : inletNodes.nodes) {
+        for (const auto& airLoop : requestedNode.model().getConcreteModelObjects<AirLoopHVAC>()) {
+          auto reservation = airLoop.getImpl<AirLoopHVAC_Impl>()->reserveDemandBranchStart(inletNode);
+          auto reservationZone = reservation ? reservation->thermalZone() : boost::none;
+          if (!reservation || !reservationZone || (*reservationZone != claim.owner)) {
+            continue;
+          }
+          if (resolvedNode) {
+            return boost::none;
+          }
+          resolvedNode = inletNode;
+        }
       }
       return resolvedNode;
     }

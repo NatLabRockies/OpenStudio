@@ -381,10 +381,15 @@ namespace epmodel {
       if (existingZoneAirNode && !zoneAirNodeAliasesInlet) {
         detail::addLoadInfo(context, "Preserved existing zone air node '" + existingZoneAirNode->nameString() + "' on ZoneHVAC:EquipmentConnections '"
                                        + equipmentConnections.nameString() + "'.");
-      } else if (zoneAirNodeAliasesInlet && context.policy != SanitizationPolicy::Repair) {
-        detail::addLoadWarning(context, "ZoneHVAC:EquipmentConnections '" + equipmentConnections.nameString() + "' uses zone air node '"
-                                          + existingZoneAirNode->nameString()
-                                          + "' as a zone inlet; repair canonicalization must split these EnergyPlus node roles.");
+      } else if (context.policy != SanitizationPolicy::Repair) {
+        if (zoneAirNodeAliasesInlet) {
+          detail::addLoadWarning(context, "ZoneHVAC:EquipmentConnections '" + equipmentConnections.nameString() + "' uses zone air node '"
+                                            + existingZoneAirNode->nameString()
+                                            + "' as a zone inlet; repair canonicalization must split these EnergyPlus node roles.");
+        } else {
+          detail::addLoadWarning(context, "ZoneHVAC:EquipmentConnections '" + equipmentConnections.nameString()
+                                            + "' is missing its required zone air node; repair canonicalization must create it.");
+        }
       } else {
         // EnergyPlus requires the zone sensing node to be distinct from every
         // zone inlet. The first air-loop inlet conventionally uses the

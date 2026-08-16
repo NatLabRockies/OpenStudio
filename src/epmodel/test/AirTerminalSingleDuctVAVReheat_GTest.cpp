@@ -27,6 +27,7 @@
 #include "../ModelObject/ZoneHVACAirDistributionUnit.hpp"
 #include "../ModelObject/ZoneHVACAirDistributionUnit_Impl.hpp"
 #include "../ModelObject/ZoneHVACEquipmentConnections.hpp"
+#include "../ModelObject/ZoneHVACEquipmentConnections_Impl.hpp"
 #include "../StraightComponent/Node.hpp"
 #include "../Splitter/AirLoopHVACZoneSplitter.hpp"
 #include "../StraightComponent/AirTerminalSingleDuctConstantVolumeNoReheat.hpp"
@@ -40,6 +41,7 @@
 
 #include <utilities/idd/AirTerminal_SingleDuct_VAV_Reheat_FieldEnums.hxx>
 #include <utilities/idd/Coil_Heating_Water_FieldEnums.hxx>
+#include <utilities/idd/ZoneHVAC_EquipmentConnections_FieldEnums.hxx>
 #include <utilities/idf/WorkspaceObject_Impl.hpp>
 
 using namespace openstudio::epmodel;
@@ -603,6 +605,65 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctVAVReheat_AddToZoneAirNodeRejectsAmb
   EXPECT_EQ(firstOutlets, firstAirLoop.zoneSplitter().outletModelObjects());
   EXPECT_EQ(secondOutlets, secondAirLoop.zoneSplitter().outletModelObjects());
   EXPECT_EQ(nodeCount, model.getConcreteModelObjects<Node>().size());
+}
+
+TEST_F(EPModelFixture, AirTerminalSingleDuctVAVReheat_AddToZoneAirNodePreflightDoesNotRepairRawOrDuplicateZoneRelationships) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  ThermalZone zone(model);
+  CoilHeatingElectric reheatCoil(model);
+  AirTerminalSingleDuctVAVReheat terminal(model);
+  ASSERT_TRUE(terminal.setReheatCoil(reheatCoil));
+  ASSERT_TRUE(airLoop.addBranchForZone(zone));
+
+  auto connections = zone.getImpl<detail::ThermalZone_Impl>()->zoneHVACEquipmentConnections();
+  ASSERT_TRUE(connections);
+  auto connectionsImpl = connections->getImpl<detail::ZoneHVACEquipmentConnections_Impl>();
+  auto workspaceImpl = connections->getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  ASSERT_TRUE(connectionsImpl);
+  ASSERT_TRUE(workspaceImpl);
+  constexpr unsigned inletField = openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneAirInletNodeorNodeListName;
+  constexpr unsigned zoneAirNodeField = openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneAirNodeName;
+
+  auto zoneAirNode = zone.zoneAirNode();
+  const auto inletTarget = connections->getTarget(inletField);
+  ASSERT_TRUE(inletTarget);
+  const auto inletNodeList = inletTarget->optionalCast<NodeList>();
+  ASSERT_TRUE(inletNodeList);
+
+  // Intentional raw-only imported A3 relationship. Terminal preflight must
+  // reject it without enrolling the NodeList pointer or creating any Node.
+  ASSERT_TRUE(connectionsImpl->setPointer(inletField, openstudio::Handle(), false));
+  ASSERT_TRUE(workspaceImpl->openstudio::detail::IdfObject_Impl::setString(inletField, inletNodeList->nameString()));
+  const auto inletManagedBefore = connections->getField(inletField, false);
+  const auto inletRawBefore = workspaceImpl->openstudio::detail::IdfObject_Impl::getString(inletField, false, true);
+  const auto nodeCountBeforeRaw = model.getConcreteModelObjects<Node>().size();
+
+  EXPECT_FALSE(terminal.addToNode(zoneAirNode));
+  EXPECT_TRUE(inletManagedBefore == connections->getField(inletField, false));
+  EXPECT_TRUE(inletRawBefore == workspaceImpl->openstudio::detail::IdfObject_Impl::getString(inletField, false, true));
+  EXPECT_EQ(nodeCountBeforeRaw, model.getConcreteModelObjects<Node>().size());
+  EXPECT_FALSE(terminal.inletModelObject());
+  EXPECT_FALSE(terminal.outletModelObject());
+  EXPECT_TRUE(zone.equipment().empty());
+
+  ASSERT_TRUE(connectionsImpl->setPointer(inletField, inletNodeList->handle(), false));
+  ThermalZone duplicateOwner(model);
+  ZoneHVACEquipmentConnections duplicateConnections(duplicateOwner);
+  auto duplicateImpl = duplicateConnections.getImpl<detail::ZoneHVACEquipmentConnections_Impl>();
+  ASSERT_TRUE(duplicateImpl);
+  ASSERT_TRUE(duplicateImpl->setPointer(zoneAirNodeField, zoneAirNode.handle(), false));
+  const auto originalZoneAirNodeField = connections->getField(zoneAirNodeField, false);
+  const auto duplicateZoneAirNodeField = duplicateConnections.getField(zoneAirNodeField, false);
+  const auto nodeCountBeforeDuplicate = model.getConcreteModelObjects<Node>().size();
+
+  EXPECT_FALSE(terminal.addToNode(zoneAirNode));
+  EXPECT_TRUE(originalZoneAirNodeField == connections->getField(zoneAirNodeField, false));
+  EXPECT_TRUE(duplicateZoneAirNodeField == duplicateConnections.getField(zoneAirNodeField, false));
+  EXPECT_EQ(nodeCountBeforeDuplicate, model.getConcreteModelObjects<Node>().size());
+  EXPECT_FALSE(terminal.inletModelObject());
+  EXPECT_FALSE(terminal.outletModelObject());
+  EXPECT_TRUE(zone.equipment().empty());
 }
 
 TEST_F(EPModelFixture, AirTerminalSingleDuctVAVReheat_TerminalOnlyBranchCanBeClaimedByZoneAndRemoved) {
