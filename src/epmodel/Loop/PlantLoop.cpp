@@ -23,6 +23,8 @@
 #include "ModelObject/ZoneHVACEquipmentConnections_Impl.hpp"
 #include "ModelObject/ZoneHVACEquipmentList.hpp"
 #include "ModelObject/ZoneHVACEquipmentList_Impl.hpp"
+#include "ModelObject/OutdoorAirMixer.hpp"
+#include "ModelObject/OutdoorAirMixer_Impl.hpp"
 #include "ModelObject/SizingPlant.hpp"
 #include "ModelObject/SizingPlant_Impl.hpp"
 #include "ModelObject/WaterHeaterSizing.hpp"
@@ -144,6 +146,8 @@
 #include <utilities/idd/HeatPump_WaterToWater_EquationFit_Heating_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/OS_PlantLoop_FieldEnums.hxx>
+#include <utilities/idd/OutdoorAir_Mixer_FieldEnums.hxx>
+#include <utilities/idd/OutdoorAir_NodeList_FieldEnums.hxx>
 #include <utilities/idd/PlantLoop_FieldEnums.hxx>
 #include <utilities/idd/Sizing_Plant_FieldEnums.hxx>
 #include <utilities/idd/ThermalStorage_ChilledWater_Stratified_FieldEnums.hxx>
@@ -3922,22 +3926,67 @@ namespace epmodel {
         const auto fanField = existingObjectField(*fanCoil, openstudio::ZoneHVAC_FourPipeFanCoilFields::SupplyAirFanName);
         const auto coolingField = existingObjectField(*fanCoil, openstudio::ZoneHVAC_FourPipeFanCoilFields::CoolingCoilName);
         const auto heatingField = existingObjectField(*fanCoil, openstudio::ZoneHVAC_FourPipeFanCoilFields::HeatingCoilName);
+        const auto mixerField = existingObjectField(*fanCoil, openstudio::ZoneHVAC_FourPipeFanCoilFields::OutdoorAirMixerName);
         const auto fanType = fanCoil->getString(openstudio::ZoneHVAC_FourPipeFanCoilFields::SupplyAirFanObjectType, false, true);
         const auto coolingType = fanCoil->getString(openstudio::ZoneHVAC_FourPipeFanCoilFields::CoolingCoilObjectType, false, true);
         const auto heatingType = fanCoil->getString(openstudio::ZoneHVAC_FourPipeFanCoilFields::HeatingCoilObjectType, false, true);
+        const auto mixerType = fanCoil->getString(openstudio::ZoneHVAC_FourPipeFanCoilFields::OutdoorAirMixerObjectType, false, true);
         const auto fan = fanField.object ? fanField.object->optionalCast<StraightComponent>() : boost::optional<StraightComponent>();
         const auto cooling = coolingField.object ? coolingField.object->optionalCast<CoilCoolingWater>() : boost::optional<CoilCoolingWater>();
         const auto heating = heatingField.object ? heatingField.object->optionalCast<CoilHeatingWater>() : boost::optional<CoilHeatingWater>();
+        const auto outdoorAirMixer = mixerField.object ? mixerField.object->optionalCast<OutdoorAirMixer>() : boost::optional<OutdoorAirMixer>();
         if (!fanField.set || !fan || !fanType || !openstudio::istringEqual(*fanType, fan->iddObject().name()) || !coolingField.set || !cooling
             || !coolingType || !openstudio::istringEqual(*coolingType, cooling->iddObject().name()) || !heatingField.set || !heating || !heatingType
-            || !openstudio::istringEqual(*heatingType, heating->iddObject().name())
+            || !openstudio::istringEqual(*heatingType, heating->iddObject().name()) || !mixerField.set || !outdoorAirMixer || !mixerType
+            || !openstudio::istringEqual(*mixerType, "OutdoorAir:Mixer")
             || (selectedHeating ? heating->handle() != coil.handle() : cooling->handle() != coil.handle())) {
           return nullptr;
         }
 
-        const auto expectedChildren = std::vector<ModelObject>{fan->cast<ModelObject>(), cooling->cast<ModelObject>(), heating->cast<ModelObject>()};
+        const auto expectedChildren = std::vector<ModelObject>{fan->cast<ModelObject>(), cooling->cast<ModelObject>(), heating->cast<ModelObject>(),
+                                                               outdoorAirMixer->cast<ModelObject>()};
         if (fanCoil->children() != expectedChildren || !isSoleOwnedChild(fanCoil->cast<ModelObject>(), *fan)
             || !isSoleOwnedChild(fanCoil->cast<ModelObject>(), *cooling) || !isSoleOwnedChild(fanCoil->cast<ModelObject>(), *heating)) {
+          return nullptr;
+        }
+        const auto mixerSources = outdoorAirMixer->sources();
+        if (mixerSources.size() != 1u || mixerSources.front().handle() != fanCoil->handle()) {
+          return nullptr;
+        }
+
+        unsigned mixerClaimOccurrences = 0u;
+        for (const auto& candidate : targetLoopImpl.model().objects()) {
+          const auto candidateModelObject = candidate.optionalCast<ModelObject>();
+          if (!candidateModelObject) {
+            continue;
+          }
+          auto workspaceImpl = candidate.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+          OS_ASSERT(workspaceImpl);
+          for (unsigned field = 0u; field < candidate.numFields(); ++field) {
+            const auto iddField = candidate.iddObject().getField(field);
+            if (!iddField || !std::ranges::any_of(iddField->properties().objectLists, [](const auto& objectList) {
+                  return openstudio::istringEqual(objectList, "OutdoorAirMixers");
+                })) {
+              continue;
+            }
+            const auto relationship = existingObjectField(*candidateModelObject, field);
+            const auto rawName = workspaceImpl->openstudio::detail::IdfObject_Impl::getString(field, false, true);
+            const auto rawHandle = rawName ? openstudio::toUUID(*rawName) : Handle();
+            const bool rawMatches = rawName && !rawName->empty()
+                                    && ((!rawHandle.isNull() && rawHandle == outdoorAirMixer->handle())
+                                        || (rawHandle.isNull() && openstudio::istringEqual(*rawName, outdoorAirMixer->nameString())));
+            if ((!relationship.object || relationship.object->handle() != outdoorAirMixer->handle()) && !rawMatches) {
+              continue;
+            }
+            ++mixerClaimOccurrences;
+            if (candidate.handle() != fanCoil->handle() || field != openstudio::ZoneHVAC_FourPipeFanCoilFields::OutdoorAirMixerName
+                || !relationship.set || !relationship.object || relationship.object->handle() != outdoorAirMixer->handle()
+                || (rawName && !rawName->empty() && !rawMatches)) {
+              return nullptr;
+            }
+          }
+        }
+        if (mixerClaimOccurrences != 1u) {
           return nullptr;
         }
 
@@ -4005,14 +4054,42 @@ namespace epmodel {
         const auto coolingAirOutlet = existingNodeField(*cooling, cooling->airOutletPort());
         const auto heatingAirInlet = existingNodeField(*heating, heating->airInletPort());
         const auto heatingAirOutlet = existingNodeField(*heating, heating->airOutletPort());
+        const auto mixedAir = existingNodeField(*outdoorAirMixer, openstudio::OutdoorAir_MixerFields::MixedAirNodeName);
+        const auto outdoorAir = existingNodeField(*outdoorAirMixer, openstudio::OutdoorAir_MixerFields::OutdoorAirStreamNodeName);
+        const auto reliefAir = existingNodeField(*outdoorAirMixer, openstudio::OutdoorAir_MixerFields::ReliefAirStreamNodeName);
+        const auto returnAir = existingNodeField(*outdoorAirMixer, openstudio::OutdoorAir_MixerFields::ReturnAirStreamNodeName);
         if (!fanCoilInlet.set || !fanCoilInlet.node || !fanCoilOutlet.set || !fanCoilOutlet.node || !fanInlet.set || !fanInlet.node || !fanOutlet.set
             || !fanOutlet.node || !coolingAirInlet.set || !coolingAirInlet.node || !coolingAirOutlet.set || !coolingAirOutlet.node
-            || !heatingAirInlet.set || !heatingAirInlet.node || !heatingAirOutlet.set || !heatingAirOutlet.node
-            || *fanCoilInlet.node != *fanInlet.node || *fanOutlet.node != *coolingAirInlet.node || *coolingAirOutlet.node != *heatingAirInlet.node
-            || *heatingAirOutlet.node != *fanCoilOutlet.node
-            || std::set<Handle>{fanCoilInlet.node->handle(), fanOutlet.node->handle(), coolingAirOutlet.node->handle(), fanCoilOutlet.node->handle()}
+            || !heatingAirInlet.set || !heatingAirInlet.node || !heatingAirOutlet.set || !heatingAirOutlet.node || !mixedAir.set || !mixedAir.node
+            || !outdoorAir.set || !outdoorAir.node || !reliefAir.set || !reliefAir.node || !returnAir.set || !returnAir.node
+            || *fanCoilInlet.node != *returnAir.node || *mixedAir.node != *fanInlet.node || *fanOutlet.node != *coolingAirInlet.node
+            || *coolingAirOutlet.node != *heatingAirInlet.node || *heatingAirOutlet.node != *fanCoilOutlet.node
+            || std::set<Handle>{fanCoilInlet.node->handle(), fanInlet.node->handle(), outdoorAir.node->handle(), reliefAir.node->handle(),
+                                fanOutlet.node->handle(), coolingAirOutlet.node->handle(), fanCoilOutlet.node->handle()}
                    .size()
-                 != 4u) {
+                 != 7u) {
+          return nullptr;
+        }
+
+        for (const auto& node :
+             {*fanCoilInlet.node, *fanInlet.node, *outdoorAir.node, *reliefAir.node, *fanOutlet.node, *coolingAirOutlet.node, *fanCoilOutlet.node}) {
+          if (std::ranges::count_if(targetLoopImpl.model().getConcreteModelObjects<Node>(),
+                                    [&node](const auto& candidate) { return openstudio::istringEqual(candidate.nameString(), node.nameString()); })
+              != 1) {
+            return nullptr;
+          }
+        }
+
+        unsigned outdoorAirDeclarationCount = 0u;
+        for (const auto& nodeList : targetLoopImpl.model().getObjectsByType(openstudio::IddObjectType::OutdoorAir_NodeList)) {
+          for (const auto& group : nodeList.extensibleGroups()) {
+            const auto listedName = group.getString(openstudio::OutdoorAir_NodeListExtensibleFields::NodeorNodeListName);
+            if (listedName && openstudio::istringEqual(*listedName, outdoorAir.node->nameString())) {
+              ++outdoorAirDeclarationCount;
+            }
+          }
+        }
+        if (outdoorAirDeclarationCount != 1u) {
           return nullptr;
         }
 
@@ -4057,8 +4134,9 @@ namespace epmodel {
           return nullptr;
         }
         return std::unique_ptr<FourPipeFanCoilDemandBranchAttachmentPlan>(new FourPipeFanCoilDemandBranchAttachmentPlan(
-          coil, *fanCoil, zoneOwnership->zone, zoneOwnership->connections, zoneOwnership->equipmentList, *fan, *cooling, *heating, *fanCoilInlet.node,
-          *fanOutlet.node, *coolingAirOutlet.node, *fanCoilOutlet.node, std::move(plantRelocation)));
+          coil, *fanCoil, zoneOwnership->zone, zoneOwnership->connections, zoneOwnership->equipmentList, *fan, *cooling, *heating, *outdoorAirMixer,
+          *fanCoilInlet.node, *fanInlet.node, *outdoorAir.node, *reliefAir.node, *fanOutlet.node, *coolingAirOutlet.node, *fanCoilOutlet.node,
+          std::move(plantRelocation)));
       }
 
       FourPipeFanCoilDemandBranchAttachmentPlan(const FourPipeFanCoilDemandBranchAttachmentPlan&) = delete;
@@ -4078,8 +4156,13 @@ namespace epmodel {
         OS_ASSERT((m_coil.iddObject().type() == CoilHeatingWater::iddObjectType() && m_heating.handle() == m_coil.handle())
                   || (m_coil.iddObject().type() == CoilCoolingWater::iddObjectType() && m_cooling.handle() == m_coil.handle()));
         OS_ASSERT((m_fanCoil.children()
-                   == std::vector<ModelObject>{m_fan.cast<ModelObject>(), m_cooling.cast<ModelObject>(), m_heating.cast<ModelObject>()}));
-        OS_ASSERT(m_fan.inletModelObject() && m_fan.inletModelObject()->handle() == m_fanCoilInlet.handle());
+                   == std::vector<ModelObject>{m_fan.cast<ModelObject>(), m_cooling.cast<ModelObject>(), m_heating.cast<ModelObject>(),
+                                               m_outdoorAirMixer.cast<ModelObject>()}));
+        OS_ASSERT(m_outdoorAirMixer.returnAirNode() && m_outdoorAirMixer.returnAirNode()->handle() == m_fanCoilInlet.handle());
+        OS_ASSERT(m_outdoorAirMixer.mixedAirNode() && m_outdoorAirMixer.mixedAirNode()->handle() == m_mixedAir.handle());
+        OS_ASSERT(m_outdoorAirMixer.outdoorAirNode() && m_outdoorAirMixer.outdoorAirNode()->handle() == m_outdoorAir.handle());
+        OS_ASSERT(m_outdoorAirMixer.reliefAirNode() && m_outdoorAirMixer.reliefAirNode()->handle() == m_reliefAir.handle());
+        OS_ASSERT(m_fan.inletModelObject() && m_fan.inletModelObject()->handle() == m_mixedAir.handle());
         OS_ASSERT(m_fan.outletModelObject() && m_fan.outletModelObject()->handle() == m_fanOutlet.handle());
         OS_ASSERT(m_cooling.airInletModelObject() && m_cooling.airInletModelObject()->handle() == m_fanOutlet.handle());
         OS_ASSERT(m_cooling.airOutletModelObject() && m_cooling.airOutletModelObject()->handle() == m_coolingOutlet.handle());
@@ -4092,7 +4175,8 @@ namespace epmodel {
      private:
       FourPipeFanCoilDemandBranchAttachmentPlan(WaterToAirComponent coil, ZoneHVACFourPipeFanCoil fanCoil, ThermalZone thermalZone,
                                                 ZoneHVACEquipmentConnections zoneConnections, ZoneHVACEquipmentList zoneEquipmentList,
-                                                StraightComponent fan, CoilCoolingWater cooling, CoilHeatingWater heating, Node fanCoilInlet,
+                                                StraightComponent fan, CoilCoolingWater cooling, CoilHeatingWater heating,
+                                                OutdoorAirMixer outdoorAirMixer, Node fanCoilInlet, Node mixedAir, Node outdoorAir, Node reliefAir,
                                                 Node fanOutlet, Node coolingOutlet, Node fanCoilOutlet,
                                                 std::unique_ptr<DemandBranchRelocationPlan> plantRelocation)
         : m_coil(std::move(coil)),
@@ -4103,7 +4187,11 @@ namespace epmodel {
           m_fan(std::move(fan)),
           m_cooling(std::move(cooling)),
           m_heating(std::move(heating)),
+          m_outdoorAirMixer(std::move(outdoorAirMixer)),
           m_fanCoilInlet(std::move(fanCoilInlet)),
+          m_mixedAir(std::move(mixedAir)),
+          m_outdoorAir(std::move(outdoorAir)),
+          m_reliefAir(std::move(reliefAir)),
           m_fanOutlet(std::move(fanOutlet)),
           m_coolingOutlet(std::move(coolingOutlet)),
           m_fanCoilOutlet(std::move(fanCoilOutlet)),
@@ -4117,7 +4205,11 @@ namespace epmodel {
       StraightComponent m_fan;
       CoilCoolingWater m_cooling;
       CoilHeatingWater m_heating;
+      OutdoorAirMixer m_outdoorAirMixer;
       Node m_fanCoilInlet;
+      Node m_mixedAir;
+      Node m_outdoorAir;
+      Node m_reliefAir;
       Node m_fanOutlet;
       Node m_coolingOutlet;
       Node m_fanCoilOutlet;

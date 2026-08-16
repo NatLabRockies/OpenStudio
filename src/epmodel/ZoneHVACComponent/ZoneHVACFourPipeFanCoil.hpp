@@ -51,8 +51,9 @@ namespace epmodel {
     //   the compound.
     // - Documented Delta: `fanOutletNode()` and `coolingCoilOutletNode()` are exposed as additive conveniences so callers can inspect and
     //   rename the meaningful node roles owned by the compound, even when those roles alias each other or the parent outlet in a valid
-    //   configuration. Outdoor-air mixer linkage remains string-backed, so the OA-mixer-only node roles are still outside the public wrapper
-    //   for now.
+    //   configuration. A configured locally owned fan coil internally maintains the complete EnergyPlus OutdoorAir:Mixer companion, including
+    //   while unattached and at zero outdoor-air flow; inlet-side/AirLoop attachment keeps that local companion absent. The mixer-only node roles remain outside the
+    //   public wrapper for now.
     // - Field/Storage Mapping: The component's fan, heating/cooling coils, and schedule links are modeled explicitly rather than flattened into
     //   scalar references, and the contained air-path nodes are synchronized through transient Node objects.
     // - Evidence: `src/model/ZoneHVACFourPipeFanCoil.hpp`, `src/model/ZoneHVACFourPipeFanCoil.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateZoneHVACFourPipeFanCoil.cpp`, and `src/epmodel/test/ZoneHVACFourPipeFanCoil_GTest.cpp`.

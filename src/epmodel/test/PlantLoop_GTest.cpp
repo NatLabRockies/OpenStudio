@@ -94,6 +94,7 @@
 #include "../WaterToWaterComponent/ChillerElectricEIR_Impl.hpp"
 #include "../ZoneHVACComponent/ZoneHVACFourPipeFanCoil.hpp"
 #include "../ZoneHVACComponent/ZoneHVACFourPipeFanCoil_Impl.hpp"
+#include "../ZoneHVACComponent/ZoneHVACPackagedTerminalAirConditioner.hpp"
 #include "../ZoneHVACComponent/ZoneHVACUnitVentilator.hpp"
 #include "../Loop/AirLoopHVAC.hpp"
 #include "../Loop/AirLoopHVAC_Impl.hpp"
@@ -121,11 +122,13 @@
 #include <utilities/idd/WaterHeater_Mixed_FieldEnums.hxx>
 #include <utilities/idd/WaterHeater_Sizing_FieldEnums.hxx>
 #include <utilities/idd/ZoneHVAC_FourPipeFanCoil_FieldEnums.hxx>
+#include <utilities/idd/ZoneHVAC_PackagedTerminalAirConditioner_FieldEnums.hxx>
 #include <utilities/idd/ZoneHVAC_EquipmentConnections_FieldEnums.hxx>
 #include <utilities/idd/ZoneHVAC_EquipmentList_FieldEnums.hxx>
 #include <utilities/idd/AirLoopHVAC_OutdoorAirSystem_FieldEnums.hxx>
 #include <utilities/idd/NodeList_FieldEnums.hxx>
 #include <utilities/idd/OutdoorAir_Mixer_FieldEnums.hxx>
+#include <utilities/idd/OutdoorAir_NodeList_FieldEnums.hxx>
 #include <utilities/idf/WorkspaceObject_Impl.hpp>
 
 #include <algorithm>
@@ -991,6 +994,14 @@ struct FourPipeFanCoilMoveTopologySnapshot
   std::array<boost::optional<std::string>, 3> roleTargetTypes;
   std::array<boost::optional<std::string>, 3> rawRoleNames;
   std::array<boost::optional<std::string>, 3> rawRoleTypes;
+  boost::optional<openstudio::Handle> mixerHandle;
+  boost::optional<std::string> mixerName;
+  boost::optional<std::string> rawMixerName;
+  boost::optional<std::string> rawMixerType;
+  std::array<boost::optional<openstudio::Handle>, 4> mixerNodeHandles;
+  std::array<boost::optional<std::string>, 4> rawMixerNodeNames;
+  std::vector<openstudio::Handle> mixerSourceHandles;
+  std::vector<std::pair<openstudio::Handle, std::string>> outdoorAirDeclarationRows;
   std::array<boost::optional<openstudio::Handle>, 8> airNodeHandles;
   boost::optional<openstudio::Handle> coolingPlantLoopHandle;
   boost::optional<openstudio::Handle> heatingPlantLoopHandle;
@@ -1077,6 +1088,41 @@ FourPipeFanCoilMoveTopologySnapshot captureFourPipeFanCoilMoveTopology(const Mod
     result.rawRoleTypes[i] = fanCoilWorkspaceImpl->openstudio::detail::IdfObject_Impl::getString(typeField, false, true);
   }
 
+  result.rawMixerName =
+    fanCoilWorkspaceImpl->openstudio::detail::IdfObject_Impl::getString(openstudio::ZoneHVAC_FourPipeFanCoilFields::OutdoorAirMixerName, false, true);
+  result.rawMixerType = fanCoilWorkspaceImpl->openstudio::detail::IdfObject_Impl::getString(
+    openstudio::ZoneHVAC_FourPipeFanCoilFields::OutdoorAirMixerObjectType, false, true);
+  if (auto mixer = fanCoil.getModelObjectTarget<OutdoorAirMixer>(openstudio::ZoneHVAC_FourPipeFanCoilFields::OutdoorAirMixerName)) {
+    result.mixerHandle = mixer->handle();
+    result.mixerName = mixer->nameString();
+    const std::array<unsigned, 4> mixerFields = {
+      openstudio::OutdoorAir_MixerFields::MixedAirNodeName, openstudio::OutdoorAir_MixerFields::OutdoorAirStreamNodeName,
+      openstudio::OutdoorAir_MixerFields::ReliefAirStreamNodeName, openstudio::OutdoorAir_MixerFields::ReturnAirStreamNodeName};
+    auto mixerWorkspaceImpl = mixer->getImpl<openstudio::detail::WorkspaceObject_Impl>();
+    OS_ASSERT(mixerWorkspaceImpl);
+    for (unsigned i = 0u; i < mixerFields.size(); ++i) {
+      if (auto node = mixer->getModelObjectTarget<Node>(mixerFields[i])) {
+        result.mixerNodeHandles[i] = node->handle();
+      }
+      result.rawMixerNodeNames[i] = mixerWorkspaceImpl->openstudio::detail::IdfObject_Impl::getString(mixerFields[i], false, true);
+    }
+    for (const auto& source : mixer->sources()) {
+      result.mixerSourceHandles.push_back(source.handle());
+    }
+    std::ranges::sort(result.mixerSourceHandles);
+    if (auto outdoorNode = mixer->outdoorAirNode()) {
+      for (const auto& nodeList : model.getObjectsByType(openstudio::IddObjectType::OutdoorAir_NodeList)) {
+        for (const auto& group : nodeList.extensibleGroups()) {
+          const auto listedName = group.getString(openstudio::OutdoorAir_NodeListExtensibleFields::NodeorNodeListName);
+          if (listedName && openstudio::istringEqual(*listedName, outdoorNode->nameString())) {
+            result.outdoorAirDeclarationRows.emplace_back(nodeList.handle(), *listedName);
+          }
+        }
+      }
+      std::ranges::sort(result.outdoorAirDeclarationRows);
+    }
+  }
+
   const std::array<boost::optional<ModelObject>, 8> airNodes = {
     fanCoil.inletNode() ? boost::optional<ModelObject>(fanCoil.inletNode()->cast<ModelObject>()) : boost::none,
     fan.inletModelObject(),
@@ -1160,7 +1206,19 @@ void expectFourPipeFanCoilExternalTopologyPreserved(const FourPipeFanCoilMoveTop
   EXPECT_TRUE(expected.roleTargetTypes == actual.roleTargetTypes);
   EXPECT_TRUE(expected.rawRoleNames == actual.rawRoleNames);
   EXPECT_TRUE(expected.rawRoleTypes == actual.rawRoleTypes);
+  EXPECT_TRUE(expected.mixerHandle == actual.mixerHandle);
+  EXPECT_TRUE(expected.mixerName == actual.mixerName);
+  EXPECT_TRUE(expected.rawMixerName == actual.rawMixerName);
+  EXPECT_TRUE(expected.rawMixerType == actual.rawMixerType);
+  EXPECT_TRUE(expected.mixerNodeHandles == actual.mixerNodeHandles);
+  EXPECT_TRUE(expected.rawMixerNodeNames == actual.rawMixerNodeNames);
+  EXPECT_EQ(expected.mixerSourceHandles, actual.mixerSourceHandles);
+  EXPECT_EQ(expected.outdoorAirDeclarationRows, actual.outdoorAirDeclarationRows);
   EXPECT_TRUE(expected.airNodeHandles == actual.airNodeHandles);
+  EXPECT_TRUE(actual.mixerNodeHandles[3] == actual.airNodeHandles[0]);
+  EXPECT_TRUE(actual.mixerNodeHandles[0] == actual.airNodeHandles[1]);
+  EXPECT_FALSE(actual.mixerNodeHandles[0] == actual.mixerNodeHandles[1]);
+  EXPECT_FALSE(actual.mixerNodeHandles[0] == actual.mixerNodeHandles[2]);
   EXPECT_EQ(expected.controllerHandles, actual.controllerHandles);
   EXPECT_TRUE(expected.controllerActuatorHandles == actual.controllerActuatorHandles);
   EXPECT_TRUE(expected.rawControllerActuatorNames == actual.rawControllerActuatorNames);
@@ -1205,6 +1263,16 @@ void expectFourPipeFanCoilExternalTopologySurvivesReload(const FourPipeFanCoilMo
   EXPECT_TRUE(expected.roleTargetTypes == actual.roleTargetTypes);
   EXPECT_TRUE(expected.rawRoleNames == actual.rawRoleNames);
   EXPECT_TRUE(expected.rawRoleTypes == actual.rawRoleTypes);
+  EXPECT_TRUE(expected.mixerName == actual.mixerName);
+  EXPECT_TRUE(expected.rawMixerName == actual.rawMixerName);
+  EXPECT_TRUE(expected.rawMixerType == actual.rawMixerType);
+  EXPECT_TRUE(expected.rawMixerNodeNames == actual.rawMixerNodeNames);
+  EXPECT_EQ(expected.mixerSourceHandles.size(), actual.mixerSourceHandles.size());
+  EXPECT_EQ(expected.outdoorAirDeclarationRows.size(), actual.outdoorAirDeclarationRows.size());
+  EXPECT_TRUE(actual.mixerNodeHandles[3] == actual.airNodeHandles[0]);
+  EXPECT_TRUE(actual.mixerNodeHandles[0] == actual.airNodeHandles[1]);
+  EXPECT_FALSE(actual.mixerNodeHandles[0] == actual.mixerNodeHandles[1]);
+  EXPECT_FALSE(actual.mixerNodeHandles[0] == actual.mixerNodeHandles[2]);
   EXPECT_TRUE(expected.coolingPlantLoopName == actual.coolingPlantLoopName);
   EXPECT_TRUE(expected.heatingPlantLoopName == actual.heatingPlantLoopName);
   EXPECT_EQ(expected.controllerHandles.size(), actual.controllerHandles.size());
@@ -1227,7 +1295,9 @@ void expectFourPipeFanCoilExternalTopologySurvivesReload(const FourPipeFanCoilMo
   EXPECT_DOUBLE_EQ(expected.heatingRatedOutletAirTemperature, actual.heatingRatedOutletAirTemperature);
 
   ASSERT_TRUE(std::ranges::all_of(actual.airNodeHandles, [](const auto& handle) { return static_cast<bool>(handle); }));
-  EXPECT_TRUE(actual.airNodeHandles[0] == actual.airNodeHandles[1]);
+  EXPECT_FALSE(actual.airNodeHandles[0] == actual.airNodeHandles[1]);
+  EXPECT_TRUE(actual.mixerNodeHandles[3] == actual.airNodeHandles[0]);
+  EXPECT_TRUE(actual.mixerNodeHandles[0] == actual.airNodeHandles[1]);
   EXPECT_TRUE(actual.airNodeHandles[2] == actual.airNodeHandles[3]);
   EXPECT_TRUE(actual.airNodeHandles[4] == actual.airNodeHandles[5]);
   EXPECT_TRUE(actual.airNodeHandles[6] == actual.airNodeHandles[7]);
@@ -3189,7 +3259,10 @@ TEST_F(EPModelFixture, PlantLoop_FourPipeFanCoilHeatingDemandMoveDefaultSourceTo
   EXPECT_TRUE(reloadedCoolingLoop->demandComponent(reloadedCooling->handle()));
   EXPECT_EQ(1u, std::ranges::count_if(reloadedZone->equipment(),
                                       [&reloadedFanCoil](const auto& equipment) { return equipment.handle() == reloadedFanCoil->handle(); }));
-  EXPECT_EQ((std::vector<ModelObject>{reloadedFan->cast<ModelObject>(), reloadedCooling->cast<ModelObject>(), reloadedHeating->cast<ModelObject>()}),
+  const auto reloadedMixer = reloadedFanCoil->getModelObjectTarget<OutdoorAirMixer>(openstudio::ZoneHVAC_FourPipeFanCoilFields::OutdoorAirMixerName);
+  ASSERT_TRUE(reloadedMixer);
+  EXPECT_EQ((std::vector<ModelObject>{reloadedFan->cast<ModelObject>(), reloadedCooling->cast<ModelObject>(), reloadedHeating->cast<ModelObject>(),
+                                      reloadedMixer->cast<ModelObject>()}),
             reloadedFanCoil->children());
   EXPECT_FALSE(reloadedCooling->controllerWaterCoil());
   EXPECT_FALSE(reloadedHeating->controllerWaterCoil());
@@ -3201,11 +3274,14 @@ TEST_F(EPModelFixture, PlantLoop_FourPipeFanCoilHeatingDemandMoveDefaultSourceTo
   const auto fanHandle = reloadedFan->handle();
   const auto coolingHandle = reloadedCooling->handle();
   const auto heatingHandle = reloadedHeating->handle();
+  const auto mixerHandle = reloadedMixer->handle();
   EXPECT_FALSE(reloadedFanCoil->remove().empty());
   EXPECT_FALSE(reloaded->getObject(fanCoilHandle));
   EXPECT_FALSE(reloaded->getObject(fanHandle));
   EXPECT_FALSE(reloaded->getObject(coolingHandle));
   EXPECT_FALSE(reloaded->getObject(heatingHandle));
+  EXPECT_FALSE(reloaded->getObject(mixerHandle));
+  EXPECT_TRUE(reloaded->getObjectsByType(openstudio::IddObjectType::OutdoorAir_NodeList).empty());
   EXPECT_FALSE(reloadedCoolingLoop->demandComponent(coolingHandle));
   EXPECT_FALSE(reloadedTarget->demandComponent(heatingHandle));
   EXPECT_TRUE(reloaded->getObject(reloadedSource->handle()));
@@ -3523,14 +3599,93 @@ TEST_F(EPModelFixture, PlantLoop_FourPipeFanCoilDemandMoveRejectsMalformedFanRol
   // Collapse one internal boundary while retaining exact component-to-
   // component adjacency.
   ASSERT_TRUE(fanCoil.inletNode());
-  ASSERT_TRUE(fan.outletModelObject());
+  ASSERT_TRUE(fan.inletModelObject());
   const auto fanCoilInlet = *fanCoil.inletNode();
-  const auto fanOutlet = fan.outletModelObject()->cast<Node>();
-  ASSERT_TRUE(fan.setPointer(fan.outletPort(), fanCoilInlet.handle()));
-  ASSERT_TRUE(cooling.setPointer(cooling.airInletPort(), fanCoilInlet.handle()));
+  const auto mixedAir = fan.inletModelObject()->cast<Node>();
+  ASSERT_TRUE(fan.setPointer(fan.inletPort(), fanCoilInlet.handle()));
   expectRejectedUnchanged();
-  ASSERT_TRUE(fan.setPointer(fan.outletPort(), fanOutlet.handle()));
-  ASSERT_TRUE(cooling.setPointer(cooling.airInletPort(), fanOutlet.handle()));
+  ASSERT_TRUE(fan.setPointer(fan.inletPort(), mixedAir.handle()));
+
+  // Intentional low-level storage edits exercise exact mixer classification;
+  // the public relocation API must reject without repairing any air-side state.
+  auto localMixer = fanCoil.getModelObjectTarget<OutdoorAirMixer>(openstudio::ZoneHVAC_FourPipeFanCoilFields::OutdoorAirMixerName);
+  ASSERT_TRUE(localMixer);
+  ASSERT_TRUE(localMixer->mixedAirNode());
+  const auto originalMixedAir = *localMixer->mixedAirNode();
+  ASSERT_TRUE(fanCoilWorkspaceImpl->openstudio::detail::IdfObject_Impl::setString(
+    openstudio::ZoneHVAC_FourPipeFanCoilFields::OutdoorAirMixerObjectType, "OutdoorAir:Node", false));
+  expectRejectedUnchanged();
+  ASSERT_TRUE(fanCoilWorkspaceImpl->openstudio::detail::IdfObject_Impl::setString(
+    openstudio::ZoneHVAC_FourPipeFanCoilFields::OutdoorAirMixerObjectType, "OutdoorAir:Mixer", false));
+
+  ASSERT_TRUE(localMixer->setPointer(openstudio::OutdoorAir_MixerFields::MixedAirNodeName, fanCoilInlet.handle()));
+  expectRejectedUnchanged();
+  ASSERT_TRUE(localMixer->setPointer(openstudio::OutdoorAir_MixerFields::MixedAirNodeName, originalMixedAir.handle()));
+
+  ZoneHVACFourPipeFanCoil rawMixerAlias(model);
+  auto rawMixerAliasImpl = rawMixerAlias.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  ASSERT_TRUE(rawMixerAliasImpl);
+  ASSERT_TRUE(rawMixerAliasImpl->openstudio::detail::IdfObject_Impl::setString(openstudio::ZoneHVAC_FourPipeFanCoilFields::OutdoorAirMixerObjectType,
+                                                                               "OutdoorAir:Mixer", false));
+  ASSERT_TRUE(rawMixerAliasImpl->openstudio::detail::IdfObject_Impl::setString(openstudio::ZoneHVAC_FourPipeFanCoilFields::OutdoorAirMixerName,
+                                                                               localMixer->nameString(), false));
+  expectRejectedUnchanged();
+  ASSERT_TRUE(rawMixerAliasImpl->openstudio::detail::IdfObject_Impl::setString(openstudio::ZoneHVAC_FourPipeFanCoilFields::OutdoorAirMixerObjectType,
+                                                                               "", false));
+  ASSERT_TRUE(
+    rawMixerAliasImpl->openstudio::detail::IdfObject_Impl::setString(openstudio::ZoneHVAC_FourPipeFanCoilFields::OutdoorAirMixerName, "", false));
+
+  // A different configured IDD family can claim the same reference list. A
+  // raw-only imported alias must be observed globally, not just through the
+  // FourPipe wrapper or Workspace inverse sources.
+  ZoneHVACPackagedTerminalAirConditioner rawCrossFamilyAlias(model);
+  auto rawCrossFamilyAliasImpl = rawCrossFamilyAlias.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  ASSERT_TRUE(rawCrossFamilyAliasImpl);
+  ASSERT_TRUE(
+    rawCrossFamilyAliasImpl->setPointer(openstudio::ZoneHVAC_PackagedTerminalAirConditionerFields::OutdoorAirMixerName, openstudio::Handle(), false));
+  ASSERT_TRUE(rawCrossFamilyAliasImpl->openstudio::detail::IdfObject_Impl::setString(
+    openstudio::ZoneHVAC_PackagedTerminalAirConditionerFields::OutdoorAirMixerName, localMixer->nameString(), false));
+  const auto crossFamilyManagedBefore =
+    rawCrossFamilyAlias.getField(openstudio::ZoneHVAC_PackagedTerminalAirConditionerFields::OutdoorAirMixerName, false);
+  const auto crossFamilyRawBefore = rawCrossFamilyAliasImpl->openstudio::detail::IdfObject_Impl::getString(
+    openstudio::ZoneHVAC_PackagedTerminalAirConditionerFields::OutdoorAirMixerName, false, true);
+  expectRejectedUnchanged();
+  EXPECT_TRUE(crossFamilyManagedBefore
+              == rawCrossFamilyAlias.getField(openstudio::ZoneHVAC_PackagedTerminalAirConditionerFields::OutdoorAirMixerName, false));
+  EXPECT_TRUE(crossFamilyRawBefore
+              == rawCrossFamilyAliasImpl->openstudio::detail::IdfObject_Impl::getString(
+                openstudio::ZoneHVAC_PackagedTerminalAirConditionerFields::OutdoorAirMixerName, false, true));
+  ASSERT_TRUE(rawCrossFamilyAliasImpl->openstudio::detail::IdfObject_Impl::setString(
+    openstudio::ZoneHVAC_PackagedTerminalAirConditionerFields::OutdoorAirMixerName, "", false));
+
+  ASSERT_TRUE(localMixer->outdoorAirNode());
+  const auto localOutdoorAirNodeName = localMixer->outdoorAirNode()->nameString();
+  boost::optional<openstudio::WorkspaceObject> outdoorAirDeclaration;
+  for (const auto& nodeList : model.getObjectsByType(openstudio::IddObjectType::OutdoorAir_NodeList)) {
+    const auto groups = nodeList.extensibleGroups();
+    if (std::ranges::any_of(groups, [&localOutdoorAirNodeName](const auto& group) {
+          const auto listedName = group.getString(openstudio::OutdoorAir_NodeListExtensibleFields::NodeorNodeListName);
+          return listedName && openstudio::istringEqual(*listedName, localOutdoorAirNodeName);
+        })) {
+      ASSERT_FALSE(outdoorAirDeclaration);
+      outdoorAirDeclaration = nodeList;
+    }
+  }
+  ASSERT_TRUE(outdoorAirDeclaration);
+  ASSERT_EQ(1u, outdoorAirDeclaration->extensibleGroups().size());
+
+  // Missing and duplicate declaration rows are malformed import evidence.
+  // Relocation preflight must reject each without repairing the air side.
+  EXPECT_FALSE(outdoorAirDeclaration->popExtensibleGroup().empty());
+  expectRejectedUnchanged();
+  auto restoredDeclaration = outdoorAirDeclaration->pushExtensibleGroup();
+  ASSERT_FALSE(restoredDeclaration.empty());
+  ASSERT_TRUE(restoredDeclaration.setString(openstudio::OutdoorAir_NodeListExtensibleFields::NodeorNodeListName, localOutdoorAirNodeName, false));
+  auto duplicateDeclaration = outdoorAirDeclaration->pushExtensibleGroup();
+  ASSERT_FALSE(duplicateDeclaration.empty());
+  ASSERT_TRUE(duplicateDeclaration.setString(openstudio::OutdoorAir_NodeListExtensibleFields::NodeorNodeListName, localOutdoorAirNodeName, false));
+  expectRejectedUnchanged();
+  EXPECT_FALSE(outdoorAirDeclaration->popExtensibleGroup().empty());
 
   // An inlet-side mixer source is rejected even without an AirLoop owner.
   AirTerminalSingleDuctInletSideMixer detachedMixer(model);
@@ -3555,6 +3710,8 @@ TEST_F(EPModelFixture, PlantLoop_FourPipeFanCoilDemandMoveRejectsMalformedFanRol
   auto oaMixer = oaMixers.front();
   const auto originalOAMixerOutdoorNode = oaMixer.getModelObjectTarget<Node>(openstudio::OutdoorAir_MixerFields::OutdoorAirStreamNodeName);
   ASSERT_TRUE(originalOAMixerOutdoorNode);
+  ASSERT_TRUE(fan.outletModelObject());
+  const auto fanOutlet = fan.outletModelObject()->cast<Node>();
   ASSERT_TRUE(oaEquipmentListImpl->addEquipment(fan));
   ASSERT_TRUE(oaMixer.setPointer(openstudio::OutdoorAir_MixerFields::OutdoorAirStreamNodeName, fanOutlet.handle()));
   ASSERT_TRUE(fan.airLoopHVACOutdoorAirSystem());

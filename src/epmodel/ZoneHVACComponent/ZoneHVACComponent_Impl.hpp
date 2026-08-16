@@ -52,6 +52,27 @@ namespace epmodel {
       boost::optional<AirLoopHVACReturnPlenum> returnPlenum() const;
 
      protected:
+      enum class OwnedOutdoorAirMixerRelationshipState
+      {
+        Blank,
+        Exact,
+        Malformed,
+      };
+
+      struct OwnedOutdoorAirMixerRelationshipInspection
+      {
+        OwnedOutdoorAirMixerRelationshipState state = OwnedOutdoorAirMixerRelationshipState::Blank;
+        boost::optional<Handle> mixerHandle;
+        bool objectTypeHasEvidence = false;
+        bool objectTypeIsExact = false;
+      };
+
+      // Observational counterpart to reconciliation. It classifies only the
+      // persisted owner-to-mixer relationship and never resolves raw names or
+      // changes pointers. Family canonicalizers can then decide whether their
+      // exact local topology is safe to repair.
+      OwnedOutdoorAirMixerRelationshipInspection inspectOwnedOutdoorAirMixer(unsigned objectTypeField, unsigned objectNameField) const;
+
       // Some EnergyPlus zone equipment owns an OutdoorAir:Mixer that has no
       // separate public Model object. Keep the persisted companion, its four
       // nodes, and the outdoor-air node declaration aligned with the owner's

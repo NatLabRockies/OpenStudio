@@ -10,6 +10,8 @@
 #include "../HVACComponent/ThermalZone_Impl.hpp"
 #include "../Loop/AirLoopHVAC.hpp"
 #include "../Loop/PlantLoop.hpp"
+#include "../ModelObject/OutdoorAirMixer.hpp"
+#include "../ModelObject/OutdoorAirMixer_Impl.hpp"
 #include "../Schedule/ScheduleCompact.hpp"
 #include "../Schedule/ScheduleConstant.hpp"
 #include "../Schedule/ScheduleConstant_Impl.hpp"
@@ -24,6 +26,10 @@
 #include "../WaterToAirComponent/CoilHeatingWater_Impl.hpp"
 #include "../ZoneHVACComponent/ZoneHVACFourPipeFanCoil.hpp"
 #include "../ZoneHVACComponent/ZoneHVACFourPipeFanCoil_Impl.hpp"
+#include <utilities/idf/IdfObject_Impl.hpp>
+#include <utilities/idf/WorkspaceObject_Impl.hpp>
+#include <utilities/idd/Node_FieldEnums.hxx>
+#include <utilities/idd/OutdoorAir_Mixer_FieldEnums.hxx>
 #include <utilities/idd/ZoneHVAC_FourPipeFanCoil_FieldEnums.hxx>
 
 using namespace openstudio::epmodel;
@@ -97,6 +103,8 @@ TEST_F(EPModelFixture, ZoneHVACFourPipeFanCoil_ScalarAccessors_RoundTrip) {
   ASSERT_FALSE(mixerTypes.empty());
   EXPECT_TRUE(coil.setOutdoorAirMixerObjectType(mixerTypes.front()));
   EXPECT_EQ(mixerTypes.front(), coil.outdoorAirMixerObjectType());
+  EXPECT_FALSE(coil.setOutdoorAirMixerObjectType("BadChoice"));
+  EXPECT_EQ(mixerTypes.front(), coil.outdoorAirMixerObjectType());
 
   EXPECT_TRUE(coil.setMaximumColdWaterFlowRate(0.18));
   coil.autosizeMaximumColdWaterFlowRate();
@@ -152,10 +160,11 @@ TEST_F(EPModelFixture, ZoneHVACFourPipeFanCoil_ChildrenAndZoneTopology) {
   ASSERT_TRUE(coil.coolingCoilOutletNode());
 
   const auto children = coil.children();
-  ASSERT_EQ(3u, children.size());
+  ASSERT_EQ(4u, children.size());
   EXPECT_EQ(fan, children[0]);
   EXPECT_EQ(coolingCoil, children[1]);
   EXPECT_EQ(heatingCoil, children[2]);
+  EXPECT_TRUE(children[3].optionalCast<OutdoorAirMixer>());
 
   ASSERT_TRUE(fan.containingHVACComponent());
   ASSERT_TRUE(coolingCoil.containingHVACComponent());
@@ -174,6 +183,101 @@ TEST_F(EPModelFixture, ZoneHVACFourPipeFanCoil_ChildrenAndZoneTopology) {
   EXPECT_TRUE(coil.outletNode());
   EXPECT_TRUE(coil.fanOutletNode());
   EXPECT_TRUE(coil.coolingCoilOutletNode());
+}
+
+TEST_F(EPModelFixture, ZoneHVACFourPipeFanCoil_DirectZonePathOwnsOutdoorAirMixer) {
+  const auto idfPath =
+    openstudio::tempDir() / openstudio::toPath("epmodel-four-pipe-fan-coil-oa-mixer-" + openstudio::removeBraces(openstudio::createUUID()) + ".idf");
+  Model model;
+  ThermalZone zone(model);
+  FanConstantVolume fan(model);
+  CoilCoolingWater coolingCoil(model);
+  CoilHeatingWater heatingCoil(model);
+  ZoneHVACFourPipeFanCoil fanCoil(model);
+  ASSERT_TRUE(fanCoil.setCapacityControlMethod("ConstantFanVariableFlow"));
+  ASSERT_TRUE(fanCoil.setMaximumOutdoorAirFlowRate(0.0));
+  ASSERT_TRUE(fanCoil.setSupplyAirFan(fan));
+  EXPECT_EQ("OutdoorAir:Mixer", fanCoil.outdoorAirMixerObjectType());
+  EXPECT_FALSE(fanCoil.getTarget(openstudio::ZoneHVAC_FourPipeFanCoilFields::OutdoorAirMixerName));
+  EXPECT_TRUE(model.getConcreteModelObjects<OutdoorAirMixer>().empty());
+  ASSERT_TRUE(fanCoil.setCoolingCoil(coolingCoil));
+  EXPECT_EQ("OutdoorAir:Mixer", fanCoil.outdoorAirMixerObjectType());
+  EXPECT_FALSE(fanCoil.getTarget(openstudio::ZoneHVAC_FourPipeFanCoilFields::OutdoorAirMixerName));
+  EXPECT_TRUE(model.getConcreteModelObjects<OutdoorAirMixer>().empty());
+  ASSERT_TRUE(fanCoil.setHeatingCoil(heatingCoil));
+  auto mixers = model.getConcreteModelObjects<OutdoorAirMixer>();
+  ASSERT_EQ(1u, mixers.size());
+  auto mixer = mixers.front();
+  const auto managedMixer = fanCoil.getModelObjectTarget<OutdoorAirMixer>(openstudio::ZoneHVAC_FourPipeFanCoilFields::OutdoorAirMixerName);
+  ASSERT_TRUE(managedMixer);
+  EXPECT_EQ(mixer.handle(), managedMixer->handle());
+  ASSERT_EQ(4u, fanCoil.children().size());
+  ASSERT_TRUE(mixer.mixedAirNode());
+  ASSERT_TRUE(mixer.returnAirNode());
+  ASSERT_TRUE(mixer.outdoorAirNode());
+  ASSERT_TRUE(mixer.reliefAirNode());
+  ASSERT_TRUE(fanCoil.inletNode());
+  ASSERT_TRUE(fan.inletModelObject());
+  EXPECT_EQ(*mixer.returnAirNode(), *fanCoil.inletNode());
+  EXPECT_EQ(*mixer.mixedAirNode(), *fan.inletModelObject()->optionalCast<Node>());
+  EXPECT_NE(*mixer.mixedAirNode(), *mixer.returnAirNode());
+  EXPECT_NE(*mixer.outdoorAirNode(), *mixer.reliefAirNode());
+  EXPECT_EQ("OutdoorAir:Mixer", fanCoil.outdoorAirMixerObjectType());
+
+  ASSERT_TRUE(fanCoil.addToThermalZone(zone));
+  ASSERT_EQ(1u, model.getConcreteModelObjects<OutdoorAirMixer>().size());
+
+  // Low-level edits below intentionally seed imported-like storage. Public
+  // APIs assume canonical form; ReportOnly diagnoses without mutating, while
+  // Repair alone restores a genuinely blank required companion.
+  ASSERT_FALSE(mixer.remove().empty());
+  EXPECT_TRUE(model.getConcreteModelObjects<OutdoorAirMixer>().empty());
+  auto fanCoilImpl = fanCoil.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  ASSERT_TRUE(fanCoilImpl);
+  ASSERT_TRUE(fanCoilImpl->setPointer(openstudio::ZoneHVAC_FourPipeFanCoilFields::OutdoorAirMixerName, openstudio::Handle(), false));
+  ASSERT_TRUE(
+    fanCoilImpl->openstudio::detail::IdfObject_Impl::setString(openstudio::ZoneHVAC_FourPipeFanCoilFields::OutdoorAirMixerObjectType, "", false));
+  const auto objectsBeforeAudit = model.objects().size();
+  const auto audit = model.canonicalize(SanitizationPolicy::ReportOnly);
+  EXPECT_GT(audit.warningCount, 0u);
+  EXPECT_EQ(objectsBeforeAudit, model.objects().size());
+  EXPECT_TRUE(model.getConcreteModelObjects<OutdoorAirMixer>().empty());
+  const auto repair = model.canonicalize(SanitizationPolicy::Repair);
+  EXPECT_EQ(0u, repair.errorCount);
+  mixers = model.getConcreteModelObjects<OutdoorAirMixer>();
+  ASSERT_EQ(1u, mixers.size());
+  const auto repairedMixerName = mixers.front().nameString();
+  const auto secondRepairObjectCount = model.objects().size();
+  model.canonicalize(SanitizationPolicy::Repair);
+  EXPECT_EQ(secondRepairObjectCount, model.objects().size());
+
+  ASSERT_TRUE(model.save(idfPath, true));
+  auto loadedModel = Model::load(idfPath);
+  ASSERT_TRUE(loadedModel);
+  auto loadedFanCoils = loadedModel->getConcreteModelObjects<ZoneHVACFourPipeFanCoil>();
+  auto loadedMixers = loadedModel->getConcreteModelObjects<OutdoorAirMixer>();
+  auto loadedZones = loadedModel->getConcreteModelObjects<ThermalZone>();
+  ASSERT_EQ(1u, loadedFanCoils.size());
+  ASSERT_EQ(1u, loadedMixers.size());
+  ASSERT_EQ(1u, loadedZones.size());
+  auto loadedFanCoil = loadedFanCoils.front();
+  auto loadedFan = loadedFanCoil.supplyAirFan().optionalCast<FanConstantVolume>();
+  ASSERT_TRUE(loadedFan);
+  ASSERT_TRUE(loadedFanCoil.inletNode());
+  ASSERT_TRUE(loadedFan->inletModelObject());
+  ASSERT_TRUE(loadedMixers.front().mixedAirNode());
+  ASSERT_TRUE(loadedMixers.front().returnAirNode());
+  EXPECT_EQ(repairedMixerName, loadedMixers.front().nameString());
+  EXPECT_EQ(*loadedMixers.front().returnAirNode(), *loadedFanCoil.inletNode());
+  EXPECT_EQ(*loadedMixers.front().mixedAirNode(), *loadedFan->inletModelObject()->optionalCast<Node>());
+
+  loadedFanCoil.removeFromThermalZone();
+  EXPECT_EQ(1u, loadedModel->getConcreteModelObjects<OutdoorAirMixer>().size());
+  ASSERT_TRUE(loadedFanCoil.addToThermalZone(loadedZones.front()));
+  ASSERT_EQ(1u, loadedModel->getConcreteModelObjects<OutdoorAirMixer>().size());
+  EXPECT_FALSE(loadedFanCoil.remove().empty());
+  EXPECT_TRUE(loadedModel->getConcreteModelObjects<OutdoorAirMixer>().empty());
+  openstudio::filesystem::remove(idfPath);
 }
 
 TEST_F(EPModelFixture, ZoneHVACFourPipeFanCoil_InletSideMixerAttachmentRewiresContainedAirPath) {
@@ -209,9 +313,190 @@ TEST_F(EPModelFixture, ZoneHVACFourPipeFanCoil_InletSideMixerAttachmentRewiresCo
   EXPECT_EQ(fan.outletModelObject().get(), coolingCoil.airInletModelObject().get());
   EXPECT_EQ(coolingCoil.airOutletModelObject().get(), heatingCoil.airInletModelObject().get());
   EXPECT_EQ(fanCoil.outletNode()->cast<ModelObject>(), heatingCoil.airOutletModelObject().get());
+  EXPECT_TRUE(model.getConcreteModelObjects<OutdoorAirMixer>().empty());
   ASSERT_TRUE(terminal.secondaryAirInletNode());
   ASSERT_TRUE(fanCoil.thermalZone());
   EXPECT_EQ(zone, fanCoil.thermalZone().get());
+
+  // Intentional imported-like discriminator evidence: the inlet-side path
+  // requires both mixer fields blank. Audit preserves and reports; Repair
+  // alone clears the derived type field.
+  auto fanCoilWorkspaceImpl = fanCoil.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  ASSERT_TRUE(fanCoilWorkspaceImpl);
+  ASSERT_TRUE(fanCoilWorkspaceImpl->openstudio::detail::IdfObject_Impl::setString(
+    openstudio::ZoneHVAC_FourPipeFanCoilFields::OutdoorAirMixerObjectType, "OutdoorAir:Node", false));
+  EXPECT_GT(model.canonicalize(SanitizationPolicy::ReportOnly).warningCount, 0u);
+  EXPECT_EQ("OutdoorAir:Node", fanCoil.outdoorAirMixerObjectType());
+  EXPECT_EQ(0u, model.canonicalize(SanitizationPolicy::Repair).errorCount);
+  EXPECT_TRUE(fanCoil.outdoorAirMixerObjectType().empty());
+
+  fanCoil.removeFromThermalZone();
+  EXPECT_FALSE(fanCoil.thermalZone());
+  const auto recreatedMixers = model.getConcreteModelObjects<OutdoorAirMixer>();
+  ASSERT_EQ(1u, recreatedMixers.size());
+  ASSERT_TRUE(recreatedMixers.front().returnAirNode());
+  ASSERT_TRUE(recreatedMixers.front().mixedAirNode());
+  ASSERT_TRUE(fanCoil.inletNode());
+  ASSERT_TRUE(fan.inletModelObject());
+  EXPECT_EQ(*recreatedMixers.front().returnAirNode(), *fanCoil.inletNode());
+  EXPECT_EQ(*recreatedMixers.front().mixedAirNode(), *fan.inletModelObject()->optionalCast<Node>());
+}
+
+TEST_F(EPModelFixture, ZoneHVACFourPipeFanCoil_CanonicalizationOwnsOnlyUnambiguousOutdoorAirMixerEvidence) {
+  Model stagedModel;
+  ZoneHVACFourPipeFanCoil stagedFanCoil(stagedModel);
+  FanConstantVolume stagedFan(stagedModel);
+  ASSERT_TRUE(stagedFanCoil.setSupplyAirFan(stagedFan));
+  OutdoorAirMixer stagedMixer(stagedModel);
+  auto stagedFanCoilImpl = stagedFanCoil.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  ASSERT_TRUE(stagedFanCoilImpl);
+  ASSERT_TRUE(stagedFanCoilImpl->setPointer(openstudio::ZoneHVAC_FourPipeFanCoilFields::OutdoorAirMixerName, stagedMixer.handle(), false));
+  const auto stagedMixerHandle = stagedMixer.handle();
+  EXPECT_GT(stagedModel.canonicalize(SanitizationPolicy::ReportOnly).warningCount, 0u);
+  EXPECT_TRUE(stagedModel.getObject(stagedMixerHandle));
+  EXPECT_EQ(0u, stagedModel.canonicalize(SanitizationPolicy::Repair).errorCount);
+  EXPECT_FALSE(stagedModel.getObject(stagedMixerHandle));
+  EXPECT_FALSE(stagedFanCoil.getTarget(openstudio::ZoneHVAC_FourPipeFanCoilFields::OutdoorAirMixerName));
+  EXPECT_EQ("OutdoorAir:Mixer", stagedFanCoil.outdoorAirMixerObjectType());
+
+  Model model;
+  FanConstantVolume fan(model);
+  CoilCoolingWater coolingCoil(model);
+  CoilHeatingWater heatingCoil(model);
+  ZoneHVACFourPipeFanCoil fanCoil(model);
+  ASSERT_TRUE(fanCoil.setCapacityControlMethod("ConstantFanVariableFlow"));
+  ASSERT_TRUE(fanCoil.setSupplyAirFan(fan));
+  ASSERT_TRUE(fanCoil.setCoolingCoil(coolingCoil));
+  ASSERT_TRUE(fanCoil.setHeatingCoil(heatingCoil));
+
+  auto originalMixer = fanCoil.getModelObjectTarget<OutdoorAirMixer>(openstudio::ZoneHVAC_FourPipeFanCoilFields::OutdoorAirMixerName);
+  ASSERT_TRUE(originalMixer);
+  ASSERT_FALSE(originalMixer->remove().empty());
+  auto fanCoilImpl = fanCoil.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  ASSERT_TRUE(fanCoilImpl);
+  ASSERT_TRUE(fanCoilImpl->setPointer(openstudio::ZoneHVAC_FourPipeFanCoilFields::OutdoorAirMixerName, openstudio::Handle(), false));
+
+  // Intentional low-level storage represents a uniquely named imported A8.
+  // ReportOnly must preserve it; Repair alone enrolls and completes it.
+  OutdoorAirMixer importedMixer(model);
+  ASSERT_TRUE(importedMixer.setName("Imported Four Pipe Outdoor Air Mixer"));
+  ASSERT_TRUE(fanCoilImpl->openstudio::detail::IdfObject_Impl::setString(openstudio::ZoneHVAC_FourPipeFanCoilFields::OutdoorAirMixerName,
+                                                                         importedMixer.nameString(), false));
+  const auto rawImportedName =
+    fanCoilImpl->openstudio::detail::IdfObject_Impl::getString(openstudio::ZoneHVAC_FourPipeFanCoilFields::OutdoorAirMixerName, false, true);
+  const auto objectCountBeforeAudit = model.objects().size();
+  const auto audit = model.canonicalize(SanitizationPolicy::ReportOnly);
+  EXPECT_GT(audit.warningCount, 0u);
+  EXPECT_EQ(objectCountBeforeAudit, model.objects().size());
+  EXPECT_TRUE(
+    rawImportedName
+    == fanCoilImpl->openstudio::detail::IdfObject_Impl::getString(openstudio::ZoneHVAC_FourPipeFanCoilFields::OutdoorAirMixerName, false, true));
+  const auto repair = model.canonicalize(SanitizationPolicy::Repair);
+  EXPECT_EQ(0u, repair.errorCount);
+  auto repairedMixer = fanCoil.getModelObjectTarget<OutdoorAirMixer>(openstudio::ZoneHVAC_FourPipeFanCoilFields::OutdoorAirMixerName);
+  ASSERT_TRUE(repairedMixer);
+  EXPECT_EQ(importedMixer.handle(), repairedMixer->handle());
+  ASSERT_TRUE(repairedMixer->mixedAirNode());
+  ASSERT_TRUE(repairedMixer->outdoorAirNode());
+  ASSERT_TRUE(repairedMixer->reliefAirNode());
+  ASSERT_TRUE(repairedMixer->returnAirNode());
+
+  // Duplicate eligible names are ambiguous even when Workspace retained one
+  // managed target. Both audit and repair preserve the exact prior state.
+  OutdoorAirMixer duplicateMixer(model);
+  auto duplicateMixerImpl = duplicateMixer.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  ASSERT_TRUE(duplicateMixerImpl);
+  ASSERT_TRUE(
+    duplicateMixerImpl->openstudio::detail::IdfObject_Impl::setString(openstudio::OutdoorAir_MixerFields::Name, importedMixer.nameString(), false));
+  const auto managedBeforeDuplicate = fanCoil.getField(openstudio::ZoneHVAC_FourPipeFanCoilFields::OutdoorAirMixerName, false);
+  const auto objectsBeforeDuplicate = model.objects().size();
+  EXPECT_GT(model.canonicalize(SanitizationPolicy::ReportOnly).warningCount, 0u);
+  EXPECT_EQ(objectsBeforeDuplicate, model.objects().size());
+  EXPECT_TRUE(managedBeforeDuplicate == fanCoil.getField(openstudio::ZoneHVAC_FourPipeFanCoilFields::OutdoorAirMixerName, false));
+  EXPECT_GT(model.canonicalize(SanitizationPolicy::Repair).warningCount, 0u);
+  EXPECT_EQ(objectsBeforeDuplicate, model.objects().size());
+  EXPECT_TRUE(managedBeforeDuplicate == fanCoil.getField(openstudio::ZoneHVAC_FourPipeFanCoilFields::OutdoorAirMixerName, false));
+  ASSERT_FALSE(duplicateMixer.remove().empty());
+
+  // Collapsed persisted roles are not guessed apart by canonicalization.
+  const auto originalRelief = repairedMixer->reliefAirNode();
+  ASSERT_TRUE(originalRelief);
+  ASSERT_TRUE(repairedMixer->setPointer(openstudio::OutdoorAir_MixerFields::ReliefAirStreamNodeName, repairedMixer->outdoorAirNode()->handle()));
+  const auto collapsedField = repairedMixer->getField(openstudio::OutdoorAir_MixerFields::ReliefAirStreamNodeName, false);
+  EXPECT_GT(model.canonicalize(SanitizationPolicy::ReportOnly).warningCount, 0u);
+  EXPECT_TRUE(collapsedField == repairedMixer->getField(openstudio::OutdoorAir_MixerFields::ReliefAirStreamNodeName, false));
+  EXPECT_GT(model.canonicalize(SanitizationPolicy::Repair).warningCount, 0u);
+  EXPECT_TRUE(collapsedField == repairedMixer->getField(openstudio::OutdoorAir_MixerFields::ReliefAirStreamNodeName, false));
+  ASSERT_TRUE(repairedMixer->setPointer(openstudio::OutdoorAir_MixerFields::ReliefAirStreamNodeName, originalRelief->handle()));
+
+  // A7 is derived from an exact local relationship. Audit observes a bad
+  // discriminator; Repair corrects it without replacing the mixer.
+  ASSERT_TRUE(fanCoilImpl->openstudio::detail::IdfObject_Impl::setString(openstudio::ZoneHVAC_FourPipeFanCoilFields::OutdoorAirMixerObjectType,
+                                                                         "OutdoorAir:Node", false));
+  EXPECT_GT(model.canonicalize(SanitizationPolicy::ReportOnly).warningCount, 0u);
+  EXPECT_EQ("OutdoorAir:Node", fanCoil.outdoorAirMixerObjectType());
+  EXPECT_EQ(0u, model.canonicalize(SanitizationPolicy::Repair).errorCount);
+  EXPECT_EQ("OutdoorAir:Mixer", fanCoil.outdoorAirMixerObjectType());
+  EXPECT_EQ(importedMixer.handle(),
+            fanCoil.getModelObjectTarget<OutdoorAirMixer>(openstudio::ZoneHVAC_FourPipeFanCoilFields::OutdoorAirMixerName)->handle());
+
+  // A generated-looking collider is never adopted by the ordinary API.
+  Model collisionModel;
+  ZoneHVACFourPipeFanCoil collisionFanCoil(collisionModel);
+  FanConstantVolume collisionFan(collisionModel);
+  CoilCoolingWater collisionCooling(collisionModel);
+  CoilHeatingWater collisionHeating(collisionModel);
+  OutdoorAirMixer collider(collisionModel);
+  ASSERT_TRUE(collider.setName(collisionFanCoil.nameString() + " OA Mixer"));
+  ASSERT_TRUE(collisionFanCoil.setSupplyAirFan(collisionFan));
+  ASSERT_TRUE(collisionFanCoil.setCoolingCoil(collisionCooling));
+  ASSERT_TRUE(collisionFanCoil.setHeatingCoil(collisionHeating));
+  const auto ownedMixer = collisionFanCoil.getModelObjectTarget<OutdoorAirMixer>(openstudio::ZoneHVAC_FourPipeFanCoilFields::OutdoorAirMixerName);
+  ASSERT_TRUE(ownedMixer);
+  EXPECT_NE(collider.handle(), ownedMixer->handle());
+  EXPECT_NE(collider.nameString(), ownedMixer->nameString());
+}
+
+TEST_F(EPModelFixture, OutdoorAirMixer_CanonicalizationResolvesOnlyUniqueRawNodeEvidence) {
+  Model model;
+  OutdoorAirMixer mixer(model);
+  Node uniqueMixedAir(model);
+  ASSERT_TRUE(uniqueMixedAir.setName("Imported Unique Mixed Air Node"));
+  auto mixerImpl = mixer.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  ASSERT_TRUE(mixerImpl);
+
+  // Intentional low-level storage mimics an imported raw node name.
+  ASSERT_TRUE(mixerImpl->openstudio::detail::IdfObject_Impl::setString(openstudio::OutdoorAir_MixerFields::MixedAirNodeName,
+                                                                       uniqueMixedAir.nameString(), false));
+  const auto rawMixedAir =
+    mixerImpl->openstudio::detail::IdfObject_Impl::getString(openstudio::OutdoorAir_MixerFields::MixedAirNodeName, false, true);
+  const auto beforeAudit = model.objects().size();
+  EXPECT_GT(model.canonicalize(SanitizationPolicy::ReportOnly).warningCount, 0u);
+  EXPECT_EQ(beforeAudit, model.objects().size());
+  EXPECT_TRUE(rawMixedAir
+              == mixerImpl->openstudio::detail::IdfObject_Impl::getString(openstudio::OutdoorAir_MixerFields::MixedAirNodeName, false, true));
+  EXPECT_EQ(0u, model.canonicalize(SanitizationPolicy::Repair).errorCount);
+  ASSERT_TRUE(mixer.mixedAirNode());
+  EXPECT_EQ(uniqueMixedAir.handle(), mixer.mixedAirNode()->handle());
+
+  Node firstAmbiguousRelief(model);
+  Node secondAmbiguousRelief(model);
+  ASSERT_TRUE(firstAmbiguousRelief.setName("Imported Ambiguous Relief Node"));
+  auto secondAmbiguousReliefImpl = secondAmbiguousRelief.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  ASSERT_TRUE(secondAmbiguousReliefImpl);
+  ASSERT_TRUE(
+    secondAmbiguousReliefImpl->openstudio::detail::IdfObject_Impl::setString(openstudio::NodeFields::Name, firstAmbiguousRelief.nameString(), false));
+  ASSERT_TRUE(mixerImpl->setPointer(openstudio::OutdoorAir_MixerFields::ReliefAirStreamNodeName, openstudio::Handle(), false));
+  ASSERT_TRUE(mixerImpl->openstudio::detail::IdfObject_Impl::setString(openstudio::OutdoorAir_MixerFields::ReliefAirStreamNodeName,
+                                                                       firstAmbiguousRelief.nameString(), false));
+  const auto rawRelief =
+    mixerImpl->openstudio::detail::IdfObject_Impl::getString(openstudio::OutdoorAir_MixerFields::ReliefAirStreamNodeName, false, true);
+  const auto beforeAmbiguous = model.objects().size();
+  EXPECT_GT(model.canonicalize(SanitizationPolicy::ReportOnly).warningCount, 0u);
+  EXPECT_GT(model.canonicalize(SanitizationPolicy::Repair).warningCount, 0u);
+  EXPECT_EQ(beforeAmbiguous, model.objects().size());
+  EXPECT_TRUE(rawRelief
+              == mixerImpl->openstudio::detail::IdfObject_Impl::getString(openstudio::OutdoorAir_MixerFields::ReliefAirStreamNodeName, false, true));
 }
 
 TEST_F(EPModelFixture, ZoneHVACFourPipeFanCoil_InletSideMixerAttachmentSurvivesReload) {
@@ -471,7 +756,13 @@ TEST_F(EPModelFixture, ZoneHVACFourPipeFanCoil_ContainedNodePath_RoundTrip) {
   ASSERT_TRUE(heatingInlet);
   ASSERT_TRUE(heatingOutlet);
 
-  EXPECT_EQ(*coilInlet, *fanInlet->optionalCast<Node>());
+  const auto mixer = coil.getModelObjectTarget<OutdoorAirMixer>(openstudio::ZoneHVAC_FourPipeFanCoilFields::OutdoorAirMixerName);
+  ASSERT_TRUE(mixer);
+  ASSERT_TRUE(mixer->returnAirNode());
+  ASSERT_TRUE(mixer->mixedAirNode());
+  EXPECT_EQ(*coilInlet, *mixer->returnAirNode());
+  EXPECT_EQ(*mixer->mixedAirNode(), *fanInlet->optionalCast<Node>());
+  EXPECT_NE(*coilInlet, *fanInlet->optionalCast<Node>());
   EXPECT_EQ(*fanOutletNode, *fanOutlet->optionalCast<Node>());
   EXPECT_EQ(*fanOutletNode, *coolingInlet->optionalCast<Node>());
   EXPECT_EQ(*coolingOutletNode, *coolingOutlet->optionalCast<Node>());
@@ -538,7 +829,12 @@ TEST_F(EPModelFixture, ZoneHVACFourPipeFanCoil_InternalNodeRenamesSurviveCanonic
 
   EXPECT_EQ("Custom Four Pipe Fan Outlet", coil.fanOutletNode()->nameString());
   EXPECT_EQ("Custom Four Pipe Cooling Outlet", coil.coolingCoilOutletNode()->nameString());
-  EXPECT_EQ(*coil.inletNode(), *fan.inletModelObject()->optionalCast<Node>());
+  const auto mixer = coil.getModelObjectTarget<OutdoorAirMixer>(openstudio::ZoneHVAC_FourPipeFanCoilFields::OutdoorAirMixerName);
+  ASSERT_TRUE(mixer);
+  ASSERT_TRUE(mixer->returnAirNode());
+  ASSERT_TRUE(mixer->mixedAirNode());
+  EXPECT_EQ(*coil.inletNode(), *mixer->returnAirNode());
+  EXPECT_EQ(*mixer->mixedAirNode(), *fan.inletModelObject()->optionalCast<Node>());
   EXPECT_EQ(*coil.fanOutletNode(), *coolingCoil.airInletModelObject()->optionalCast<Node>());
   EXPECT_EQ(*coil.coolingCoilOutletNode(), *heatingCoil.airInletModelObject()->optionalCast<Node>());
 }
@@ -592,7 +888,12 @@ TEST_F(EPModelFixture, ZoneHVACFourPipeFanCoil_ContainedChildTopologyMutationsAr
   EXPECT_EQ(*originalInlet, *coil.inletNode());
   EXPECT_EQ(*originalFanOutlet, *coil.fanOutletNode());
   EXPECT_EQ(*originalCoolingOutlet, *coil.coolingCoilOutletNode());
-  EXPECT_EQ(*coil.inletNode(), *fan.inletModelObject()->optionalCast<Node>());
+  const auto mixer = coil.getModelObjectTarget<OutdoorAirMixer>(openstudio::ZoneHVAC_FourPipeFanCoilFields::OutdoorAirMixerName);
+  ASSERT_TRUE(mixer);
+  ASSERT_TRUE(mixer->returnAirNode());
+  ASSERT_TRUE(mixer->mixedAirNode());
+  EXPECT_EQ(*coil.inletNode(), *mixer->returnAirNode());
+  EXPECT_EQ(*mixer->mixedAirNode(), *fan.inletModelObject()->optionalCast<Node>());
   EXPECT_EQ(*coil.fanOutletNode(), *coolingCoil.airInletModelObject()->optionalCast<Node>());
   EXPECT_EQ(*coil.coolingCoilOutletNode(), *heatingCoil.airInletModelObject()->optionalCast<Node>());
 }
@@ -680,7 +981,12 @@ TEST_F(EPModelFixture, ZoneHVACFourPipeFanCoil_OwnerMutationsRebuildContainedPat
   EXPECT_NE("Rogue Four Pipe Mixed Air", coil.inletNode()->nameString());
   EXPECT_NE("Rogue Four Pipe Fan Outlet", coil.fanOutletNode()->nameString());
   EXPECT_NE("Rogue Four Pipe Cooling Outlet", coil.coolingCoilOutletNode()->nameString());
-  EXPECT_EQ(*coil.inletNode(), *fan.inletModelObject()->optionalCast<Node>());
+  const auto mixer = coil.getModelObjectTarget<OutdoorAirMixer>(openstudio::ZoneHVAC_FourPipeFanCoilFields::OutdoorAirMixerName);
+  ASSERT_TRUE(mixer);
+  ASSERT_TRUE(mixer->returnAirNode());
+  ASSERT_TRUE(mixer->mixedAirNode());
+  EXPECT_EQ(*coil.inletNode(), *mixer->returnAirNode());
+  EXPECT_EQ(*mixer->mixedAirNode(), *fan.inletModelObject()->optionalCast<Node>());
   EXPECT_EQ(*coil.fanOutletNode(), *coolingCoil.airInletModelObject()->optionalCast<Node>());
   EXPECT_EQ(*coil.coolingCoilOutletNode(), *heatingCoil.airInletModelObject()->optionalCast<Node>());
 }
@@ -720,7 +1026,12 @@ TEST_F(EPModelFixture, ZoneHVACFourPipeFanCoil_CanonicalizeRepairsContainedNodeP
   EXPECT_EQ(*expectedInlet, *coil.inletNode());
   EXPECT_EQ("Rogue Four Pipe Fan Outlet", coil.fanOutletNode()->nameString());
   EXPECT_EQ("Rogue Four Pipe Cooling Outlet", coil.coolingCoilOutletNode()->nameString());
-  EXPECT_EQ(*coil.inletNode(), *fan.inletModelObject()->optionalCast<Node>());
+  const auto mixer = coil.getModelObjectTarget<OutdoorAirMixer>(openstudio::ZoneHVAC_FourPipeFanCoilFields::OutdoorAirMixerName);
+  ASSERT_TRUE(mixer);
+  ASSERT_TRUE(mixer->returnAirNode());
+  ASSERT_TRUE(mixer->mixedAirNode());
+  EXPECT_EQ(*coil.inletNode(), *mixer->returnAirNode());
+  EXPECT_EQ(*mixer->mixedAirNode(), *fan.inletModelObject()->optionalCast<Node>());
   EXPECT_EQ(*coil.fanOutletNode(), *coolingCoil.airInletModelObject()->optionalCast<Node>());
   EXPECT_EQ(*coil.coolingCoilOutletNode(), *heatingCoil.airInletModelObject()->optionalCast<Node>());
   EXPECT_EQ(*expectedOutlet, *heatingCoil.airOutletModelObject()->optionalCast<Node>());
