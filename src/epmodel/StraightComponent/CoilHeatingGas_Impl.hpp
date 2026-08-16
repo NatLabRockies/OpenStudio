@@ -66,6 +66,8 @@ namespace epmodel {
 
       boost::optional<double> autosizedNominalCapacity() const;
 
+      void doCanonicalize(LoadContext& context) override;
+
      private:
       void clearTemperatureSetpointNode();
     };

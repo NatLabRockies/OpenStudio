@@ -5,13 +5,18 @@
 
 #include <gtest/gtest.h>
 
+#include "../Curve/CurveBiquadratic.hpp"
+#include "../Curve/CurveCubic.hpp"
+#include "../Curve/CurveCubic_Impl.hpp"
 #include "../Curve/CurveQuadratic.hpp"
+#include "../Curve/CurveQuadratic_Impl.hpp"
 #include "EPModelFixture.hpp"
 #include "../Loop/AirLoopHVAC.hpp"
 #include "../Loop/AirLoopHVAC_Impl.hpp"
 #include "../ModelObject/Branch.hpp"
 #include "../ModelObject/BranchList.hpp"
 #include "../HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
+#include "../ResourceObject/ScheduleTypeLimits.hpp"
 #include "../Splitter/AirLoopHVACZoneSplitter.hpp"
 #include "../StraightComponent/CoilHeatingGas.hpp"
 #include "../StraightComponent/CoilHeatingGas_Impl.hpp"
@@ -24,8 +29,37 @@
 #include "../StraightComponent/AirTerminalSingleDuctConstantVolumeReheat_Impl.hpp"
 
 #include <utilities/idd/Coil_Heating_Fuel_FieldEnums.hxx>
+#include <utilities/core/Filesystem.hpp>
+#include <utilities/core/UUID.hpp>
+#include <utilities/idf/IdfObject_Impl.hpp>
+#include <utilities/idf/WorkspaceObject_Impl.hpp>
+
+#include <array>
+#include <utility>
 
 using namespace openstudio::epmodel;
+
+namespace {
+
+class ScopedGasCoilFileRemoval
+{
+ public:
+  explicit ScopedGasCoilFileRemoval(openstudio::path path) : m_path(std::move(path)) {}
+
+  ~ScopedGasCoilFileRemoval() {
+    boost::system::error_code error;
+    boost::filesystem::remove(m_path, error);
+  }
+
+ private:
+  openstudio::path m_path;
+};
+
+openstudio::path uniqueGasCoilPath(const std::string& stem) {
+  return openstudio::tempDir() / openstudio::toPath(stem + "-" + openstudio::removeBraces(openstudio::createUUID()) + ".idf");
+}
+
+}  // namespace
 
 TEST_F(EPModelFixture, CoilHeatingGas_DefaultConstructor) {
   Model model;
@@ -37,6 +71,42 @@ TEST_F(EPModelFixture, CoilHeatingGas_DefaultConstructor) {
   EXPECT_DOUBLE_EQ(1.0, availability->value());
   EXPECT_FALSE(coil.partLoadFractionCorrelationCurve());
   EXPECT_FALSE(coil.getTarget(openstudio::Coil_Heating_FuelFields::TemperatureSetpointNodeName));
+}
+
+TEST_F(EPModelFixture, CoilHeatingGas_ScheduleConstructorAliasesAndValidation) {
+  Model model;
+  ScheduleConstant availability(model);
+  ASSERT_TRUE(availability.setValue(0.75));
+  CoilHeatingGas coil(model, availability);
+  EXPECT_EQ(availability.handle(), coil.availabilitySchedule().handle());
+  EXPECT_EQ(availability.handle(), coil.availableSchedule().handle());
+  ASSERT_TRUE(availability.scheduleTypeLimits());
+  EXPECT_EQ("Discrete", availability.scheduleTypeLimits()->numericType().value_or(""));
+  EXPECT_EQ("Availability", availability.scheduleTypeLimits()->unitType());
+  EXPECT_DOUBLE_EQ(0.0, availability.scheduleTypeLimits()->lowerLimitValue().value_or(-1.0));
+  EXPECT_DOUBLE_EQ(1.0, availability.scheduleTypeLimits()->upperLimitValue().value_or(-1.0));
+
+  ScheduleConstant replacement(model);
+  ASSERT_TRUE(replacement.setValue(1.0));
+  ASSERT_TRUE(coil.setAvailableSchedule(replacement));
+  EXPECT_EQ(replacement.handle(), coil.availabilitySchedule().handle());
+  const auto replacementHandle = replacement.handle();
+
+  ScheduleConstant incompatible(model);
+  ScheduleTypeLimits temperatureLimits(model);
+  ASSERT_TRUE(temperatureLimits.setNumericType("Continuous"));
+  ASSERT_TRUE(temperatureLimits.setUnitType("Temperature"));
+  ASSERT_TRUE(incompatible.setScheduleTypeLimits(temperatureLimits));
+  EXPECT_FALSE(coil.setAvailabilitySchedule(incompatible));
+  EXPECT_EQ(replacementHandle, coil.availabilitySchedule().handle());
+
+  Model foreignModel;
+  ScheduleConstant foreignSchedule(foreignModel);
+  EXPECT_FALSE(coil.setAvailableSchedule(foreignSchedule));
+  EXPECT_EQ(replacementHandle, coil.availabilitySchedule().handle());
+  const auto coilCount = model.getConcreteModelObjects<CoilHeatingGas>().size();
+  EXPECT_ANY_THROW({ CoilHeatingGas rejected(model, foreignSchedule); });
+  EXPECT_EQ(coilCount, model.getConcreteModelObjects<CoilHeatingGas>().size());
 }
 
 TEST_F(EPModelFixture, CoilHeatingGas_ScalarAccessors_RoundTrip) {
@@ -88,6 +158,8 @@ TEST_F(EPModelFixture, CoilHeatingGas_RelationshipSetters_RoundTrip) {
   ASSERT_TRUE(plf.setCoefficient1Constant(0.8));
   ASSERT_TRUE(plf.setCoefficient2x(0.2));
   ASSERT_TRUE(plf.setCoefficient3xPOW2(0.0));
+  CurveCubic cubic(model);
+  CurveBiquadratic bivariate(model);
 
   EXPECT_TRUE(coil.setAvailabilitySchedule(availability));
   EXPECT_EQ(availability.handle(), coil.availabilitySchedule().handle());
@@ -96,13 +168,208 @@ TEST_F(EPModelFixture, CoilHeatingGas_RelationshipSetters_RoundTrip) {
   ASSERT_TRUE(coil.partLoadFractionCorrelationCurve());
   EXPECT_EQ(plf.handle(), coil.partLoadFractionCorrelationCurve()->handle());
 
+  EXPECT_FALSE(coil.setPartLoadFractionCorrelationCurve(bivariate));
+  EXPECT_EQ(plf.handle(), coil.partLoadFractionCorrelationCurve()->handle());
+  Model foreignModel;
+  CurveQuadratic foreignCurve(foreignModel);
+  EXPECT_FALSE(coil.setPartLoadFractionCorrelationCurve(foreignCurve));
+  EXPECT_EQ(plf.handle(), coil.partLoadFractionCorrelationCurve()->handle());
+
+  EXPECT_TRUE(coil.setPartLoadFractionCorrelationCurve(cubic));
+  ASSERT_TRUE(coil.partLoadFractionCorrelationCurve());
+  EXPECT_EQ(cubic.handle(), coil.partLoadFractionCorrelationCurve()->handle());
+
   const auto children = coil.children();
   ASSERT_EQ(1u, children.size());
-  EXPECT_EQ(plf.handle(), children[0].handle());
+  EXPECT_EQ(cubic.handle(), children[0].handle());
 
   coil.resetPartLoadFractionCorrelationCurve();
   EXPECT_FALSE(coil.partLoadFractionCorrelationCurve());
   EXPECT_TRUE(coil.children().empty());
+}
+
+TEST_F(EPModelFixture, CoilHeatingGas_CanonicalizesOnlyUniqueEligibleRelationshipEvidence) {
+  Model model;
+  ScheduleConstant recoverableAvailability(model);
+  CurveQuadratic recoverableCurve(model);
+  ScheduleConstant duplicateAvailabilityFirst(model);
+  ScheduleConstant duplicateAvailabilitySecond(model);
+  CurveQuadratic duplicateCurveFirst(model);
+  CurveQuadratic duplicateCurveSecond(model);
+  ScheduleConstant incompatibleAvailability(model);
+  ScheduleTypeLimits temperatureLimits(model);
+  CurveBiquadratic incompatibleCurve(model);
+  ASSERT_TRUE(recoverableAvailability.setName("Recoverable Gas Coil Availability"));
+  ASSERT_TRUE(recoverableCurve.setName("Recoverable Gas Coil PLF"));
+  ASSERT_TRUE(duplicateAvailabilityFirst.setName("Ambiguous Gas Coil Availability"));
+  ASSERT_TRUE(duplicateCurveFirst.setName("Ambiguous Gas Coil PLF"));
+  ASSERT_TRUE(temperatureLimits.setNumericType("Continuous"));
+  ASSERT_TRUE(temperatureLimits.setUnitType("Temperature"));
+  ASSERT_TRUE(incompatibleAvailability.setScheduleTypeLimits(temperatureLimits));
+
+  auto duplicateAvailabilitySecondImpl = duplicateAvailabilitySecond.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  auto duplicateCurveSecondImpl = duplicateCurveSecond.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  ASSERT_TRUE(duplicateAvailabilitySecondImpl);
+  ASSERT_TRUE(duplicateCurveSecondImpl);
+  // Imported EnergyPlus files may contain duplicate eligible names; public name setters deliberately disambiguate them.
+  ASSERT_TRUE(duplicateAvailabilitySecondImpl->openstudio::detail::IdfObject_Impl::setString(0u, "Ambiguous Gas Coil Availability", false));
+  ASSERT_TRUE(duplicateCurveSecondImpl->openstudio::detail::IdfObject_Impl::setString(0u, "Ambiguous Gas Coil PLF", false));
+
+  CoilHeatingGas blank(model);
+  CoilHeatingGas recoverable(model);
+  CoilHeatingGas unresolved(model);
+  CoilHeatingGas ambiguous(model);
+  CoilHeatingGas managedAmbiguous(model);
+  CoilHeatingGas managedIncompatible(model);
+  CoilHeatingGas rawReset(model);
+  auto blankImpl = blank.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  auto recoverableImpl = recoverable.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  auto unresolvedImpl = unresolved.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  auto ambiguousImpl = ambiguous.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  auto managedAmbiguousImpl = managedAmbiguous.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  auto managedIncompatibleImpl = managedIncompatible.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  auto rawResetImpl = rawReset.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  ASSERT_TRUE(blankImpl);
+  ASSERT_TRUE(recoverableImpl);
+  ASSERT_TRUE(unresolvedImpl);
+  ASSERT_TRUE(ambiguousImpl);
+  ASSERT_TRUE(managedAmbiguousImpl);
+  ASSERT_TRUE(managedIncompatibleImpl);
+  ASSERT_TRUE(rawResetImpl);
+
+  constexpr auto availabilityField = openstudio::Coil_Heating_FuelFields::AvailabilityScheduleName;
+  constexpr auto curveField = openstudio::Coil_Heating_FuelFields::PartLoadFractionCorrelationCurveName;
+  const auto setRawEvidence = [](const std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>& impl, unsigned field, const std::string& value) {
+    return impl->setPointer(field, openstudio::Handle(), false) && impl->openstudio::detail::IdfObject_Impl::setString(field, value, false);
+  };
+
+  // These low-level writes intentionally model blank, unique, unresolved, ambiguous, and incompatible imported relationship storage.
+  ASSERT_TRUE(setRawEvidence(blankImpl, availabilityField, ""));
+  ASSERT_TRUE(setRawEvidence(recoverableImpl, availabilityField, recoverableAvailability.nameString()));
+  ASSERT_TRUE(setRawEvidence(recoverableImpl, curveField, recoverableCurve.nameString()));
+  ASSERT_TRUE(setRawEvidence(unresolvedImpl, availabilityField, "Missing Gas Coil Availability"));
+  ASSERT_TRUE(setRawEvidence(unresolvedImpl, curveField, "Missing Gas Coil PLF"));
+  ASSERT_TRUE(setRawEvidence(ambiguousImpl, availabilityField, "Ambiguous Gas Coil Availability"));
+  ASSERT_TRUE(setRawEvidence(ambiguousImpl, curveField, "Ambiguous Gas Coil PLF"));
+  ASSERT_TRUE(managedAmbiguousImpl->setPointer(availabilityField, duplicateAvailabilityFirst.handle(), false));
+  ASSERT_TRUE(managedAmbiguousImpl->setPointer(curveField, duplicateCurveFirst.handle(), false));
+  ASSERT_TRUE(managedIncompatibleImpl->setPointer(availabilityField, incompatibleAvailability.handle(), false));
+  ASSERT_TRUE(managedIncompatibleImpl->setPointer(curveField, incompatibleCurve.handle(), false));
+  ASSERT_TRUE(setRawEvidence(rawResetImpl, curveField, "Raw Gas Coil PLF To Reset"));
+  rawReset.resetPartLoadFractionCorrelationCurve();
+  EXPECT_FALSE(rawResetImpl->getTarget(curveField));
+  EXPECT_EQ("", rawResetImpl->openstudio::detail::IdfObject_Impl::getString(curveField, false, true).value_or(""));
+
+  // Rejected public assignments leave deliberately malformed raw evidence intact.
+  EXPECT_FALSE(unresolved.setAvailabilitySchedule(incompatibleAvailability));
+  EXPECT_FALSE(unresolved.setPartLoadFractionCorrelationCurve(incompatibleCurve));
+  Model foreignModel;
+  ScheduleConstant foreignSchedule(foreignModel);
+  CurveQuadratic foreignCurve(foreignModel);
+  EXPECT_FALSE(unresolved.setAvailabilitySchedule(foreignSchedule));
+  EXPECT_FALSE(unresolved.setPartLoadFractionCorrelationCurve(foreignCurve));
+  EXPECT_EQ("Missing Gas Coil Availability",
+            unresolvedImpl->openstudio::detail::IdfObject_Impl::getString(availabilityField, false, true).value_or(""));
+  EXPECT_EQ("Missing Gas Coil PLF", unresolvedImpl->openstudio::detail::IdfObject_Impl::getString(curveField, false, true).value_or(""));
+
+  const auto report = model.canonicalize(SanitizationPolicy::Repair);
+  EXPECT_EQ(0u, report.errorCount);
+  EXPECT_GE(report.infoCount, 3u);
+  EXPECT_GE(report.warningCount, 6u);
+  EXPECT_EQ(model.alwaysOnDiscreteSchedule().handle(), blank.availabilitySchedule().handle());
+  EXPECT_FALSE(blank.partLoadFractionCorrelationCurve());
+  EXPECT_EQ(recoverableAvailability.handle(), recoverable.availabilitySchedule().handle());
+  ASSERT_TRUE(recoverable.partLoadFractionCorrelationCurve());
+  EXPECT_EQ(recoverableCurve.handle(), recoverable.partLoadFractionCorrelationCurve()->handle());
+  ASSERT_TRUE(recoverableAvailability.scheduleTypeLimits());
+  EXPECT_EQ("Discrete", recoverableAvailability.scheduleTypeLimits()->numericType().value_or(""));
+  EXPECT_EQ("Missing Gas Coil Availability",
+            unresolvedImpl->openstudio::detail::IdfObject_Impl::getString(availabilityField, false, true).value_or(""));
+  EXPECT_EQ("Missing Gas Coil PLF", unresolvedImpl->openstudio::detail::IdfObject_Impl::getString(curveField, false, true).value_or(""));
+  EXPECT_EQ("Ambiguous Gas Coil Availability",
+            ambiguousImpl->openstudio::detail::IdfObject_Impl::getString(availabilityField, false, true).value_or(""));
+  EXPECT_EQ("Ambiguous Gas Coil PLF", ambiguousImpl->openstudio::detail::IdfObject_Impl::getString(curveField, false, true).value_or(""));
+  ASSERT_TRUE(managedAmbiguousImpl->getTarget(availabilityField));
+  ASSERT_TRUE(managedAmbiguousImpl->getTarget(curveField));
+  EXPECT_EQ(duplicateAvailabilityFirst.handle(), managedAmbiguousImpl->getTarget(availabilityField)->handle());
+  EXPECT_EQ(duplicateCurveFirst.handle(), managedAmbiguousImpl->getTarget(curveField)->handle());
+  EXPECT_FALSE(duplicateAvailabilityFirst.scheduleTypeLimits());
+  ASSERT_TRUE(managedIncompatibleImpl->getTarget(availabilityField));
+  ASSERT_TRUE(managedIncompatibleImpl->getTarget(curveField));
+  EXPECT_EQ(incompatibleAvailability.handle(), managedIncompatibleImpl->getTarget(availabilityField)->handle());
+  EXPECT_EQ(incompatibleCurve.handle(), managedIncompatibleImpl->getTarget(curveField)->handle());
+
+  const auto blankAvailabilityHandle = blank.availabilitySchedule().handle();
+  const auto recoverableCurveHandle = recoverable.partLoadFractionCorrelationCurve()->handle();
+  const auto secondReport = model.canonicalize(SanitizationPolicy::Repair);
+  EXPECT_EQ(0u, secondReport.errorCount);
+  EXPECT_EQ(blankAvailabilityHandle, blank.availabilitySchedule().handle());
+  EXPECT_EQ(recoverableCurveHandle, recoverable.partLoadFractionCorrelationCurve()->handle());
+}
+
+TEST_F(EPModelFixture, CoilHeatingGas_RelationshipsSurviveReloadReplacementResetAndRemoval) {
+  const auto firstPath = uniqueGasCoilPath("epmodel-gas-coil-relationships-first");
+  const auto secondPath = uniqueGasCoilPath("epmodel-gas-coil-relationships-second");
+  const ScopedGasCoilFileRemoval removeFirst(firstPath);
+  const ScopedGasCoilFileRemoval removeSecond(secondPath);
+
+  Model model;
+  ScheduleConstant originalAvailability(model);
+  CurveQuadratic originalCurve(model);
+  ASSERT_TRUE(originalAvailability.setName("Original Gas Coil Availability"));
+  ASSERT_TRUE(originalCurve.setName("Original Gas Coil PLF"));
+  CoilHeatingGas coil(model, originalAvailability);
+  ASSERT_TRUE(coil.setName("Reloadable Gas Coil"));
+  ASSERT_TRUE(coil.setPartLoadFractionCorrelationCurve(originalCurve));
+  ASSERT_TRUE(model.save(firstPath, true));
+
+  auto loadedModel = Model::load(firstPath);
+  ASSERT_TRUE(loadedModel);
+  auto loadedCoil = loadedModel->getConcreteModelObjectByName<CoilHeatingGas>("Reloadable Gas Coil");
+  auto loadedOriginalAvailability = loadedModel->getConcreteModelObjectByName<ScheduleConstant>("Original Gas Coil Availability");
+  auto loadedOriginalCurve = loadedModel->getConcreteModelObjectByName<CurveQuadratic>("Original Gas Coil PLF");
+  ASSERT_TRUE(loadedCoil);
+  ASSERT_TRUE(loadedOriginalAvailability);
+  ASSERT_TRUE(loadedOriginalCurve);
+  EXPECT_EQ(loadedOriginalAvailability->handle(), loadedCoil->availabilitySchedule().handle());
+  ASSERT_TRUE(loadedCoil->partLoadFractionCorrelationCurve());
+  EXPECT_EQ(loadedOriginalCurve->handle(), loadedCoil->partLoadFractionCorrelationCurve()->handle());
+
+  ScheduleConstant replacementAvailability(*loadedModel);
+  CurveCubic replacementCurve(*loadedModel);
+  ASSERT_TRUE(replacementAvailability.setName("Replacement Gas Coil Availability"));
+  ASSERT_TRUE(replacementCurve.setName("Replacement Gas Coil PLF"));
+  ASSERT_TRUE(loadedCoil->setAvailabilitySchedule(replacementAvailability));
+  ASSERT_TRUE(loadedCoil->setPartLoadFractionCorrelationCurve(replacementCurve));
+  loadedCoil->resetPartLoadFractionCorrelationCurve();
+  ASSERT_TRUE(loadedModel->save(secondPath, true));
+
+  auto reloadedModel = Model::load(secondPath);
+  ASSERT_TRUE(reloadedModel);
+  auto reloadedCoil = reloadedModel->getConcreteModelObjectByName<CoilHeatingGas>("Reloadable Gas Coil");
+  auto reloadedOriginalAvailability = reloadedModel->getConcreteModelObjectByName<ScheduleConstant>("Original Gas Coil Availability");
+  auto reloadedOriginalCurve = reloadedModel->getConcreteModelObjectByName<CurveQuadratic>("Original Gas Coil PLF");
+  auto reloadedReplacementAvailability = reloadedModel->getConcreteModelObjectByName<ScheduleConstant>("Replacement Gas Coil Availability");
+  auto reloadedReplacementCurve = reloadedModel->getConcreteModelObjectByName<CurveCubic>("Replacement Gas Coil PLF");
+  ASSERT_TRUE(reloadedCoil);
+  ASSERT_TRUE(reloadedOriginalAvailability);
+  ASSERT_TRUE(reloadedOriginalCurve);
+  ASSERT_TRUE(reloadedReplacementAvailability);
+  ASSERT_TRUE(reloadedReplacementCurve);
+  EXPECT_EQ(reloadedReplacementAvailability->handle(), reloadedCoil->availabilitySchedule().handle());
+  EXPECT_FALSE(reloadedCoil->partLoadFractionCorrelationCurve());
+
+  ASSERT_TRUE(reloadedCoil->setPartLoadFractionCorrelationCurve(*reloadedReplacementCurve));
+  const auto currentChildren = reloadedCoil->children();
+  ASSERT_EQ(1u, currentChildren.size());
+  EXPECT_EQ(reloadedReplacementCurve->handle(), currentChildren.front().handle());
+
+  const std::array<openstudio::Handle, 4> resourceHandles{reloadedOriginalAvailability->handle(), reloadedOriginalCurve->handle(),
+                                                          reloadedReplacementAvailability->handle(), reloadedReplacementCurve->handle()};
+  EXPECT_FALSE(reloadedCoil->remove().empty());
+  for (const auto& handle : resourceHandles) {
+    EXPECT_TRUE(reloadedModel->getObject(handle));
+  }
 }
 
 TEST_F(EPModelFixture, CoilHeatingGas_AddToNodeRejectsAirLoopDemandNode) {

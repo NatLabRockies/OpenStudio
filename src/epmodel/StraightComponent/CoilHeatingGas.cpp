@@ -18,10 +18,13 @@
 
 #include <algorithm>
 #include <utilities/core/Assert.hpp>
+#include <utilities/core/Logger.hpp>
 #include <utilities/core/StringHelpers.hpp>
+#include <utilities/core/UUID.hpp>
 #include <utilities/idd/Coil_Heating_Fuel_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/IddFactory.hxx>
+#include <utilities/idf/IdfObject_Impl.hpp>
 
 namespace openstudio {
 namespace epmodel {
@@ -43,9 +46,23 @@ namespace epmodel {
     auto alwaysOn = model.alwaysOnDiscreteSchedule();
     ok = setAvailabilitySchedule(alwaysOn);
     OS_ASSERT(ok);
+  }
 
-    detail::LoadContext context{const_cast<Model&>(model), SanitizationPolicy::Repair, SanitizationReport{}, {}};  // NOLINT
-    impl->canonicalize(context);
+  CoilHeatingGas::CoilHeatingGas(const Model& model, Schedule& schedule) : StraightComponent(CoilHeatingGas::iddObjectType(), model) {
+    OS_ASSERT(getImpl<detail::CoilHeatingGas_Impl>());
+    if (!setAvailabilitySchedule(schedule)) {
+      remove();
+      throw openstudio::Exception("Unable to set " + briefDescription() + "'s availability schedule to " + schedule.briefDescription() + ".");
+    }
+
+    bool ok = setGasBurnerEfficiency(0.8);
+    OS_ASSERT(ok);
+    ok = setString(openstudio::Coil_Heating_FuelFields::NominalCapacity, "AutoSize");
+    OS_ASSERT(ok);
+    ok = setOnCycleParasiticElectricLoad(0.0);
+    OS_ASSERT(ok);
+    ok = setOffCycleParasiticGasLoad(0.0);
+    OS_ASSERT(ok);
   }
 
   CoilHeatingGas::CoilHeatingGas(std::shared_ptr<detail::CoilHeatingGas_Impl> impl) : StraightComponent(std::move(impl)) {}
@@ -62,8 +79,16 @@ namespace epmodel {
     return getImpl<detail::CoilHeatingGas_Impl>()->availabilitySchedule();
   }
 
+  Schedule CoilHeatingGas::availableSchedule() const {
+    return availabilitySchedule();
+  }
+
   bool CoilHeatingGas::setAvailabilitySchedule(Schedule& schedule) {
     return getImpl<detail::CoilHeatingGas_Impl>()->setAvailabilitySchedule(schedule);
+  }
+
+  bool CoilHeatingGas::setAvailableSchedule(Schedule& schedule) {
+    return setAvailabilitySchedule(schedule);
   }
 
   boost::optional<Curve> CoilHeatingGas::partLoadFractionCorrelationCurve() const {
@@ -229,19 +254,18 @@ namespace epmodel {
     }
 
     Schedule CoilHeatingGas_Impl::availabilitySchedule() const {
-      auto value = getObject<ModelObject>().getModelObjectTarget<Schedule>(openstudio::Coil_Heating_FuelFields::AvailabilityScheduleName);
-      if (!value) {
-        value = this->model().alwaysOnDiscreteSchedule();
-        OS_ASSERT(value);
-        const_cast<CoilHeatingGas_Impl*>(this)->setAvailabilitySchedule(*value);
-        value = getObject<ModelObject>().getModelObjectTarget<Schedule>(openstudio::Coil_Heating_FuelFields::AvailabilityScheduleName);
-      }
+      constexpr auto field = openstudio::Coil_Heating_FuelFields::AvailabilityScheduleName;
+      const auto managedValue = getObject<ModelObject>().getField(field, false);
+      OS_ASSERT(managedValue && !managedValue->empty());
+      const auto targetHandle = openstudio::toUUID(*managedValue);
+      OS_ASSERT(!targetHandle.isNull());
+      const auto value = model().getModelObject<Schedule>(targetHandle);
       OS_ASSERT(value);
       return *value;
     }
 
     bool CoilHeatingGas_Impl::setAvailabilitySchedule(Schedule& schedule) {
-      return setPointer(openstudio::Coil_Heating_FuelFields::AvailabilityScheduleName, schedule.handle(), false);
+      return ModelObject_Impl::setSchedule(openstudio::Coil_Heating_FuelFields::AvailabilityScheduleName, "CoilHeatingGas", "Availability", schedule);
     }
 
     boost::optional<Curve> CoilHeatingGas_Impl::partLoadFractionCorrelationCurve() const {
@@ -249,11 +273,173 @@ namespace epmodel {
     }
 
     bool CoilHeatingGas_Impl::setPartLoadFractionCorrelationCurve(const Curve& curve) {
-      return setPointer(openstudio::Coil_Heating_FuelFields::PartLoadFractionCorrelationCurveName, curve.handle(), false);
+      constexpr auto field = openstudio::Coil_Heating_FuelFields::PartLoadFractionCorrelationCurveName;
+      if (curve.model() != model()) {
+        LOG_FREE(Warn, "openstudio.epmodel.CoilHeatingGas",
+                 "Cannot set the part-load fraction correlation curve because the curve belongs to a different model.");
+        return false;
+      }
+      if (!model().canBeTarget(curve.handle(), iddObject().objectLists(field))) {
+        LOG_FREE(Warn, "openstudio.epmodel.CoilHeatingGas",
+                 "Cannot set the part-load fraction correlation curve because curve type '" << curve.iddObject().type().valueName()
+                                                                                            << "' is not accepted by Coil:Heating:Fuel.");
+        return false;
+      }
+      return setPointer(field, curve.handle(), false);
     }
 
     void CoilHeatingGas_Impl::resetPartLoadFractionCorrelationCurve() {
-      OS_ASSERT(setPointer(openstudio::Coil_Heating_FuelFields::PartLoadFractionCorrelationCurveName, openstudio::Handle(), false));
+      constexpr auto field = openstudio::Coil_Heating_FuelFields::PartLoadFractionCorrelationCurveName;
+      OS_ASSERT(setPointer(field, Handle(), false));
+      OS_ASSERT(openstudio::detail::IdfObject_Impl::setString(field, "", false));
+    }
+
+    void CoilHeatingGas_Impl::doCanonicalize(LoadContext& context) {
+      StraightComponent_Impl::doCanonicalize(context);
+
+      const auto coil = getObject<ModelObject>();
+      const auto coilName = coil.nameString();
+
+      {
+        constexpr auto field = openstudio::Coil_Heating_FuelFields::AvailabilityScheduleName;
+        const auto managedValue = coil.getField(field, false);
+        const auto managedHandle = managedValue ? openstudio::toUUID(*managedValue) : Handle{};
+        if (!managedHandle.isNull()) {
+          auto schedule = model().getModelObject<Schedule>(managedHandle);
+          boost::optional<Schedule> uniqueEligibleSchedule;
+          bool ambiguous = false;
+          if (schedule) {
+            for (const auto& candidate : model().getObjectsByName(schedule->nameString(), true)) {
+              if (auto namedSchedule = candidate.optionalCast<Schedule>()) {
+                if (!model().canBeTarget(namedSchedule->handle(), iddObject().objectLists(field))) {
+                  continue;
+                }
+                if (uniqueEligibleSchedule) {
+                  ambiguous = true;
+                  break;
+                }
+                uniqueEligibleSchedule = *namedSchedule;
+              }
+            }
+          }
+
+          if (schedule && !ambiguous && uniqueEligibleSchedule && (uniqueEligibleSchedule->handle() == schedule->handle())
+              && setAvailabilitySchedule(*schedule)) {
+            // The managed relationship is already canonical.
+          } else {
+            detail::addLoadWarning(context, "Preserved an unresolved, ambiguous, ineligible, or incompatible availability schedule on "
+                                            "Coil:Heating:Fuel '"
+                                              + coilName + "'.");
+          }
+        } else {
+          const auto rawName = openstudio::detail::IdfObject_Impl::getString(field, false, true);
+          if (rawName && !rawName->empty()) {
+            boost::optional<Schedule> uniqueEligibleSchedule;
+            bool ambiguous = false;
+            for (const auto& candidate : model().getObjectsByName(*rawName, true)) {
+              if (auto schedule = candidate.optionalCast<Schedule>()) {
+                if (!model().canBeTarget(schedule->handle(), iddObject().objectLists(field))) {
+                  continue;
+                }
+                if (uniqueEligibleSchedule) {
+                  ambiguous = true;
+                  break;
+                }
+                uniqueEligibleSchedule = *schedule;
+              }
+            }
+
+            if (uniqueEligibleSchedule && !ambiguous) {
+              if (setAvailabilitySchedule(*uniqueEligibleSchedule)) {
+                detail::addLoadInfo(context, "Reattached availability schedule '" + uniqueEligibleSchedule->nameString() + "' to Coil:Heating:Fuel '"
+                                               + coilName + "'.");
+              } else {
+                detail::addLoadWarning(context, "Preserved incompatible availability schedule reference '" + *rawName + "' on Coil:Heating:Fuel '"
+                                                  + coilName + "'.");
+              }
+            } else {
+              detail::addLoadWarning(context, "Preserved unresolved or ambiguous availability schedule reference '" + *rawName
+                                                + "' on Coil:Heating:Fuel '" + coilName + "'.");
+            }
+          } else if (context.repairEnabled()) {
+            auto alwaysOn = model().alwaysOnDiscreteSchedule();
+            if (setAvailabilitySchedule(alwaysOn)) {
+              detail::addLoadInfo(context, "Attached the always-on availability schedule to Coil:Heating:Fuel '" + coilName + "'.");
+            } else {
+              detail::addLoadError(context, "Failed to attach the always-on availability schedule to Coil:Heating:Fuel '" + coilName + "'.");
+            }
+          } else {
+            detail::addLoadWarning(context, "Coil:Heating:Fuel '" + coilName + "' has a blank availability schedule.");
+          }
+        }
+      }
+
+      {
+        constexpr auto field = openstudio::Coil_Heating_FuelFields::PartLoadFractionCorrelationCurveName;
+        const auto managedValue = coil.getField(field, false);
+        const auto managedHandle = managedValue ? openstudio::toUUID(*managedValue) : Handle{};
+        if (!managedHandle.isNull()) {
+          const auto curve = model().getModelObject<Curve>(managedHandle);
+          boost::optional<Curve> uniqueEligibleCurve;
+          bool ambiguous = false;
+          if (curve) {
+            for (const auto& candidate : model().getObjectsByName(curve->nameString(), true)) {
+              if (auto namedCurve = candidate.optionalCast<Curve>()) {
+                if (!model().canBeTarget(namedCurve->handle(), iddObject().objectLists(field))) {
+                  continue;
+                }
+                if (uniqueEligibleCurve) {
+                  ambiguous = true;
+                  break;
+                }
+                uniqueEligibleCurve = *namedCurve;
+              }
+            }
+          }
+
+          if (curve && !ambiguous && uniqueEligibleCurve && (uniqueEligibleCurve->handle() == curve->handle())
+              && setPartLoadFractionCorrelationCurve(*curve)) {
+            return;
+          }
+          detail::addLoadWarning(context, "Preserved an unresolved, ambiguous, or ineligible part-load fraction correlation curve on "
+                                          "Coil:Heating:Fuel '"
+                                            + coilName + "'.");
+          return;
+        }
+
+        const auto rawName = openstudio::detail::IdfObject_Impl::getString(field, false, true);
+        if (!(rawName && !rawName->empty())) {
+          return;
+        }
+
+        boost::optional<Curve> uniqueEligibleCurve;
+        bool ambiguous = false;
+        for (const auto& candidate : model().getObjectsByName(*rawName, true)) {
+          if (auto curve = candidate.optionalCast<Curve>()) {
+            if (!model().canBeTarget(curve->handle(), iddObject().objectLists(field))) {
+              continue;
+            }
+            if (uniqueEligibleCurve) {
+              ambiguous = true;
+              break;
+            }
+            uniqueEligibleCurve = *curve;
+          }
+        }
+
+        if (uniqueEligibleCurve && !ambiguous) {
+          if (setPartLoadFractionCorrelationCurve(*uniqueEligibleCurve)) {
+            detail::addLoadInfo(context, "Reattached part-load fraction correlation curve '" + uniqueEligibleCurve->nameString()
+                                           + "' to Coil:Heating:Fuel '" + coilName + "'.");
+          } else {
+            detail::addLoadWarning(context, "Preserved incompatible part-load fraction correlation curve reference '" + *rawName
+                                              + "' on Coil:Heating:Fuel '" + coilName + "'.");
+          }
+        } else {
+          detail::addLoadWarning(context, "Preserved unresolved, ambiguous, or ineligible part-load fraction correlation curve reference '" + *rawName
+                                            + "' on Coil:Heating:Fuel '" + coilName + "'.");
+        }
+      }
     }
 
     std::string CoilHeatingGas_Impl::fuelType() const {
