@@ -91,3 +91,24 @@ def test_epmodel_sizing_plant_retarget_swaps_companions():
     assert target_sizing.plantLoop().handle() == source_loop.handle()
     assert target_loop.sizingPlant().handle() == source_sizing.handle()
     assert source_loop.sizingPlant().handle() == target_sizing.handle()
+
+
+def test_epmodel_zone_hvac_python_module_imports_cross_module_vrf_types():
+    model = openstudio.epmodel.Model()
+    terminal = openstudio.epmodel.ZoneHVACTerminalUnitVariableRefrigerantFlow(model)
+    outdoor_unit = openstudio.epmodel.AirConditionerVariableRefrigerantFlow(model)
+
+    assert isinstance(terminal, openstudio.epmodel.ZoneHVACTerminalUnitVariableRefrigerantFlow)
+    assert outdoor_unit.addTerminal(terminal)
+    terminals = outdoor_unit.terminals()
+    assert len(terminals) == 1
+    assert isinstance(terminals[0], openstudio.epmodel.ZoneHVACTerminalUnitVariableRefrigerantFlow)
+
+
+def test_epmodel_recent_zone_exhaust_relationships_are_available_in_python():
+    model = openstudio.epmodel.Model()
+    fan = openstudio.epmodel.FanZoneExhaust(model)
+
+    assert fan.setAvailabilitySchedule(model.alwaysOnDiscreteSchedule())
+    assert fan.setFlowFractionSchedule(model.alwaysOnContinuousSchedule())
+    assert fan.setBalancedExhaustFractionSchedule(model.alwaysOnContinuousSchedule())
