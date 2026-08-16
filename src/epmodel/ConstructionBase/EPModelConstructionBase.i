@@ -7,6 +7,7 @@
 
 %include <epmodel/EPModel_Common_Include.i>
 %import <epmodel/EPModel.i>
+%import <epmodel/ResourceObject/EPModelResourceObject.i>
 
 EPMODELOBJECT_WRAP(ConstructionBase, <epmodel/ConstructionBase/ConstructionBase.hpp>, 0, 0)
 EPMODELOBJECT_WRAP(ConstructionAirBoundary, <epmodel/ConstructionBase/ConstructionAirBoundary.hpp>, 0, 1)

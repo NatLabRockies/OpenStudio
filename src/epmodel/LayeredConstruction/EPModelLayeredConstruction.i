@@ -7,6 +7,8 @@
 
 %include <epmodel/EPModel_Common_Include.i>
 %import <epmodel/EPModel.i>
+%import <epmodel/ConstructionBase/EPModelConstructionBase.i>
+%import <epmodel/Material/EPModelMaterial.i>
 
 EPMODELOBJECT_WRAP(LayeredConstruction, <epmodel/LayeredConstruction/LayeredConstruction.hpp>, 0, 0)
 EPMODELOBJECT_WRAP(Construction, <epmodel/LayeredConstruction/Construction.hpp>, 0, 1)

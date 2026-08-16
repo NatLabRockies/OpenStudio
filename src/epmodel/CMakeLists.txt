@@ -2752,9 +2752,9 @@ set(${target_name}_sub_swig_src
 
   Inverter/EPModelInverter.i
 
-  LayeredConstruction/EPModelLayeredConstruction.i
-
   Material/EPModelMaterial.i
+
+  LayeredConstruction/EPModelLayeredConstruction.i
 
   ModelObject/EPModelModelObject.i
 

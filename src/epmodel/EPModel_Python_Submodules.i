@@ -23,8 +23,8 @@
     from openstudioepmodelmodelpartitionmaterial import *
     from openstudioepmodelthermostat import *
     from openstudioepmodelsizingperiod import *
-    from openstudioepmodellayeredconstruction import *
     from openstudioepmodelconstructionbase import *
+    from openstudioepmodellayeredconstruction import *
     from openstudioepmodelinverter import *
     from openstudioepmodelelectricalstorage import *
     from openstudioepmodelplanarsurface import *

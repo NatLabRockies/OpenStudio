@@ -23,8 +23,8 @@ extern "C"
   void Init_openstudioepmodelmodelpartitionmaterial(void);
   void Init_openstudioepmodelthermostat(void);
   void Init_openstudioepmodelsizingperiod(void);
-  void Init_openstudioepmodellayeredconstruction(void);
   void Init_openstudioepmodelconstructionbase(void);
+  void Init_openstudioepmodellayeredconstruction(void);
   void Init_openstudioepmodelinverter(void);
   void Init_openstudioepmodelelectricalstorage(void);
   void Init_openstudioepmodelplanarsurface(void);
@@ -113,12 +113,12 @@ namespace ruby {
     Init_openstudioepmodelsizingperiod();
     rb_provide("openstudioepmodelsizingperiod");
     rb_provide("openstudioepmodelsizingperiod.so");
-    Init_openstudioepmodellayeredconstruction();
-    rb_provide("openstudioepmodellayeredconstruction");
-    rb_provide("openstudioepmodellayeredconstruction.so");
     Init_openstudioepmodelconstructionbase();
     rb_provide("openstudioepmodelconstructionbase");
     rb_provide("openstudioepmodelconstructionbase.so");
+    Init_openstudioepmodellayeredconstruction();
+    rb_provide("openstudioepmodellayeredconstruction");
+    rb_provide("openstudioepmodellayeredconstruction.so");
     Init_openstudioepmodelinverter();
     rb_provide("openstudioepmodelinverter");
     rb_provide("openstudioepmodelinverter.so");
