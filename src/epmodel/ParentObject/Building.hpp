@@ -43,6 +43,8 @@ namespace epmodel {
     // - Field Mapping: northAxis maps directly to EnergyPlus Building/North Axis.
     // - Field Mapping: Terrain and warmup/convergence/solar-distribution fields are represented by model::Site and
     //   model::SimulationControl in ForwardTranslator flow and intentionally excluded from this class's scalar API.
+    // - Canonicalization: Model load auditing reports a missing or duplicate required Building object. Repair creates
+    //   only a missing singleton and preserves duplicate imported objects for explicit user resolution.
     // - TODO(parity): Add cross-object parity wiring for Site/SimulationControl-derived Building fields after scalar saturation.
     double northAxis() const;
     bool setNorthAxis(double northAxis);

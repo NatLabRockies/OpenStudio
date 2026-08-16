@@ -42,6 +42,7 @@
 #include "scaffolds/ThermalStoragePCM_Impl.hpp"
 #include "scaffolds/ThermalStorageSizing_Impl.hpp"
 #include "ModelObject/Version_Impl.hpp"
+#include "ParentObject/Building.hpp"
 #include "ModelObject/RunPeriodControlDaylightSavingTime_Impl.hpp"
 #include "ModelObject/RunPeriodControlSpecialDays_Impl.hpp"
 #include "HVACComponent/AirLoopHVACOutdoorAirSystem_Impl.hpp"
@@ -1110,6 +1111,23 @@ namespace epmodel {
     detail::LoadContext context{*this, policy, SanitizationReport{}, {}};
     if (policy == SanitizationPolicy::None) {
       return context.report;
+    }
+
+    const auto buildings = this->getObjectsByType(Building::iddObjectType());
+    if (buildings.empty()) {
+      if (context.repairEnabled()) {
+        Building building(*this);
+        if (this->getObjectsByType(Building::iddObjectType()).size() == 1u) {
+          detail::addLoadInfo(context, "Created the required Building object.");
+        } else {
+          building.remove();
+          detail::addLoadError(context, "Failed to create the required Building object.");
+        }
+      } else {
+        detail::addLoadWarning(context, "Model is missing the required Building object.");
+      }
+    } else if (buildings.size() > 1u) {
+      detail::addLoadWarning(context, "Preserved multiple Building objects; exactly one is required.");
     }
 
     const auto geometryRules = this->getObjectsByType(GlobalGeometryRules::iddObjectType());

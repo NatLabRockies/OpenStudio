@@ -8,6 +8,8 @@
 #include "EPModelFixture.hpp"
 #include "../scaffolds/GlobalGeometryRules.hpp"
 #include "../scaffolds/GlobalGeometryRules_Impl.hpp"
+#include "../ParentObject/Building.hpp"
+#include "../ParentObject/Building_Impl.hpp"
 #include <utilities/core/Filesystem.hpp>
 
 #include <set>
@@ -57,6 +59,7 @@ TEST_F(EPModelFixture, GlobalGeometryRules_ScalarAccessors_RoundTrip) {
 
 TEST_F(EPModelFixture, GlobalGeometryRules_CanonicalizeRequiredSingleton) {
   Model model;
+  model.getUniqueModelObject<Building>();
   EXPECT_TRUE(model.getObjectsByType(GlobalGeometryRules::iddObjectType()).empty());
 
   const auto audit = model.canonicalize(SanitizationPolicy::ReportOnly);
@@ -119,6 +122,7 @@ TEST_F(EPModelFixture, GlobalGeometryRules_CanonicalizeRequiredSingleton) {
 
 TEST_F(EPModelFixture, GlobalGeometryRules_CanonicalizePreservesDuplicates) {
   Model model;
+  model.getUniqueModelObject<Building>();
   GlobalGeometryRules first(model);
   GlobalGeometryRules second(model);
   ASSERT_TRUE(first.setStartingVertexPosition("UpperLeftCorner"));
