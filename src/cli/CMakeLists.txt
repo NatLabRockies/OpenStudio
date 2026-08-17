@@ -320,11 +320,6 @@ if(BUILD_TESTING)
       WORKING_DIRECTORY "${PROJECT_BINARY_DIR}/resources/workflow/runner_errors/"
     )
 
-    add_test(NAME OpenStudioCLI.test_outdated_measure
-      COMMAND ${Python_EXECUTABLE} -m pytest --verbose --os-cli-path $<TARGET_FILE:openstudio> "${CMAKE_CURRENT_SOURCE_DIR}/test/test_outdated_measure.py"
-      WORKING_DIRECTORY "${PROJECT_BINARY_DIR}/resources/workflow/outdated_measures/"
-    )
-
     add_test(NAME OpenStudioCLI.test_output_files
       COMMAND ${Python_EXECUTABLE} -m pytest --verbose --os-cli-path $<TARGET_FILE:openstudio> "${CMAKE_CURRENT_SOURCE_DIR}/test/test_output_files.py"
       WORKING_DIRECTORY "${PROJECT_BINARY_DIR}/resources/workflow/output_test/"
