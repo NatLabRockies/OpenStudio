@@ -9,6 +9,7 @@
 #include "Timer.hpp"
 
 #include "../measure/OSRunner.hpp"
+#include "../model/Model.hpp"
 #include "../scriptengine/ScriptEngine.hpp"
 #include "../utilities/core/Logger.hpp"
 #include "../utilities/core/Filesystem.hpp"

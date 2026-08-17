@@ -92,6 +92,7 @@ void OSWorkflow::applyMeasures(MeasureType measureType, ApplyMeasureType apply_m
     }
 
     if (epModel_) {
+      runner.setLastOpenStudioModel(*epModel_);
       workspace_ = openstudio::Workspace(*epModel_);
       runner.setLastEnergyPlusWorkspace(workspace_.get());
     } else if (workspace_) {

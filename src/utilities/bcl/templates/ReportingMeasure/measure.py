@@ -42,22 +42,34 @@ class ReportingMeasureName(openstudio.measure.ReportingMeasure):
         """
         return "MODELER_DESCRIPTION_TEXT"
 
-    def arguments(self, model: openstudio.model.Model) -> openstudio.measure.OSArgumentVector:
+    def arguments(
+        self, model: openstudio.epmodel.Model
+    ) -> openstudio.measure.OSArgumentVector:
         """Prepares user arguments for the measure.
 
         Measure arguments define which -- if any -- input parameters the user may set before running the measure.
         """
         args = openstudio.measure.OSArgumentVector()
 
-        report_drybulb_temp = openstudio.measure.OSArgument.makeBoolArgument("report_drybulb_temp", True)
-        report_drybulb_temp.setDisplayName("Add output variables for Drybulb Temperature")
-        report_drybulb_temp.setDescription("Will add drybulb temp and report min/max values in html.")
+        report_drybulb_temp = openstudio.measure.OSArgument.makeBoolArgument(
+            "report_drybulb_temp", True
+        )
+        report_drybulb_temp.setDisplayName(
+            "Add output variables for Drybulb Temperature"
+        )
+        report_drybulb_temp.setDescription(
+            "Will add drybulb temp and report min/max values in html."
+        )
         report_drybulb_temp.setDefaultValue(True)
         args.append(report_drybulb_temp)
 
-        add_output_json = openstudio.measure.OSArgument.makeBoolArgument("add_output_json", True)
+        add_output_json = openstudio.measure.OSArgument.makeBoolArgument(
+            "add_output_json", True
+        )
         add_output_json.setDisplayName("Request JSON output")
-        add_output_json.setDescription("Will add Output:JSON with TimeSeriesAndTabular and set Output JSON to true")
+        add_output_json.setDescription(
+            "Will add Output:JSON with TimeSeriesAndTabular and set Output JSON to true"
+        )
         add_output_json.setDefaultValue(True)
         args.append(add_output_json)
 
@@ -73,7 +85,7 @@ class ReportingMeasureName(openstudio.measure.ReportingMeasure):
 
     def modelOutputRequests(
         self,
-        model: openstudio.model.Model,
+        model: openstudio.epmodel.Model,
         runner: openstudio.measure.OSRunner,
         user_arguments: openstudio.measure.OSArgumentMap,
     ) -> bool:
@@ -96,13 +108,17 @@ class ReportingMeasureName(openstudio.measure.ReportingMeasure):
         return True
 
     def energyPlusOutputRequests(
-        self, runner: openstudio.measure.OSRunner, user_arguments: openstudio.measure.OSArgumentMap
+        self,
+        runner: openstudio.measure.OSRunner,
+        user_arguments: openstudio.measure.OSArgumentMap,
     ) -> openstudio.IdfObjectVector:
         """Returns a vector of IdfObject's to request EnergyPlus objects needed by the run method.
 
         This is done after ForwardTranslation to IDF, and there is a list of accepted objects.
         """
-        super().energyPlusOutputRequests(runner, user_arguments)  # Do **NOT** remove this line
+        super().energyPlusOutputRequests(
+            runner, user_arguments
+        )  # Do **NOT** remove this line
 
         result = openstudio.IdfObjectVector()
 
@@ -147,7 +163,9 @@ class ReportingMeasureName(openstudio.measure.ReportingMeasure):
             return False
 
         # get measure arguments
-        report_drybulb_temp = runner.getBoolArgumentValue("report_drybulb_temp", user_arguments)
+        report_drybulb_temp = runner.getBoolArgumentValue(
+            "report_drybulb_temp", user_arguments
+        )
 
         # load sql file
         sql_file = runner.lastEnergyPlusSqlFile()
@@ -214,7 +232,7 @@ class ReportingMeasureName(openstudio.measure.ReportingMeasure):
         <h2>Basic HTML</h2>
         <p>Measure Name = {self.name()}<br/>
            Building Name = {model.getBuilding().nameString()}<br/>
-           Floor Area = {model.getBuilding().floorArea():.0f} m<sup>2</sup><br/>
+           Floor Area = {sum(space.floorArea() for space in model.getSpaces()):.0f} m<sup>2</sup><br/>
            Net Site Energy = {sql_file.netSiteEnergy().get():.2f} GJ<br/>
         </p>
       </div>
@@ -267,11 +285,15 @@ class ReportingMeasureName(openstudio.measure.ReportingMeasure):
             else:
                 # get desired variable
                 key_value = "Environment"
-                time_step = "Hourly"  # "Zone Timestep", "Hourly", "HVAC System Timestep"
+                time_step = (
+                    "Hourly"  # "Zone Timestep", "Hourly", "HVAC System Timestep"
+                )
                 variable_name = "Site Outdoor Air Drybulb Temperature"
 
                 # key value would go at the end if we used it.
-                output_timeseries = sql_file.timeSeries(ann_env_pd, time_step, variable_name, key_value)
+                output_timeseries = sql_file.timeSeries(
+                    ann_env_pd, time_step, variable_name, key_value
+                )
                 if not output_timeseries.is_initialized():
                     runner.registerWarning("Timeseries not found.")
                 else:
@@ -291,7 +313,9 @@ class ReportingMeasureName(openstudio.measure.ReportingMeasure):
                         return f"new Date({d.year()}, {d.monthOfYear().value()}, {d.dayOfMonth()}, {t.hours()}, {t.minutes()}, {t.seconds()})"
 
                     for i, v in enumerate(vals):
-                        data_lines.append(f"{{date: {format_dt(times[i])}, value: {v}}}")
+                        data_lines.append(
+                            f"{{date: {format_dt(times[i])}, value: {v}}}"
+                        )
                     date_lines_str = ",\n        ".join(data_lines)
 
                     output += f"""

@@ -37,6 +37,10 @@ class TestReportingMeasureName:
         return TestReportingMeasureName.run_dir(test_name) / "run/eplusout.sql"
 
     @staticmethod
+    def epmodel_path(test_name) -> Path:
+        return TestReportingMeasureName.run_dir(test_name) / "run/model-measures.idf"
+
+    @staticmethod
     def report_path(test_name) -> Path:
         return TestReportingMeasureName.run_dir(test_name) / "report.html"
 
@@ -63,7 +67,9 @@ class TestReportingMeasureName:
             model_out_path.unlink()
 
         # convert output requests to OSM for testing, OS App and PAT will add these to the E+ Idf
-        workspace = openstudio.Workspace(openstudio.StrictnessLevel("Draft"), openstudio.IddFileType("EnergyPlus"))
+        workspace = openstudio.Workspace(
+            openstudio.StrictnessLevel("Draft"), openstudio.IddFileType("EnergyPlus")
+        )
         workspace.addObjects(idf_output_requests)
         rt = openstudio.energyplus.ReverseTranslator()
         request_model = rt.translateWorkspace(workspace)
@@ -100,7 +106,7 @@ class TestReportingMeasureName:
         measure = ReportingMeasureName()
 
         # make an empty model
-        model = openstudio.model.Model()
+        model = openstudio.epmodel.Model()
 
         # get arguments and test that they are what we are expecting
         arguments = measure.arguments(model)
@@ -125,14 +131,14 @@ class TestReportingMeasureName:
         runner = openstudio.measure.OSRunner(osw)
 
         # make an empty model
-        model = openstudio.model.Model()
+        model = openstudio.epmodel.Model()
 
         # get arguments
         arguments = measure.arguments(model)
         argument_map = openstudio.measure.convertOSArgumentVectorToMap(arguments)
 
-        # temp set path so idf_output_requests work
-        runner.setLastOpenStudioModelPath(MODEL_IN_PATH_DEFAULT)
+        # temp set model so idf_output_requests work
+        runner.setLastOpenStudioModel(model)
 
         # get the energyplus output requests, this will be done automatically by OS App and PAT
         idf_output_requests = measure.energyPlusOutputRequests(runner, argument_map)
@@ -140,17 +146,24 @@ class TestReportingMeasureName:
 
         # mimic the process of running this measure in OS App or PAT. Optionally set custom model_in_path and custom epw_path.
         epw_path = EPW_IN_PATH_DEFAULT
-        TestReportingMeasureName.setup_test(test_name=test_name, idf_output_requests=idf_output_requests)
+        TestReportingMeasureName.setup_test(
+            test_name=test_name, idf_output_requests=idf_output_requests
+        )
 
         model_out_path = TestReportingMeasureName.model_out_path(test_name)
         assert model_out_path.exists()
+        assert TestReportingMeasureName.epmodel_path(test_name).exists()
         assert epw_path.exists()
         assert TestReportingMeasureName.sql_path(test_name).exists()
 
         # set up runner, this will happen automatically when measure is run in PAT or OpenStudio
-        runner.setLastOpenStudioModelPath(model_out_path)
+        runner.setLastOpenStudioModelPath(
+            TestReportingMeasureName.epmodel_path(test_name)
+        )
         runner.setLastEpwFilePath(epw_path)
-        runner.setLastEnergyPlusSqlFilePath(TestReportingMeasureName.sql_path(test_name))
+        runner.setLastEnergyPlusSqlFilePath(
+            TestReportingMeasureName.sql_path(test_name)
+        )
 
         # delete the output if it exists
         report_path = TestReportingMeasureName.report_path(test_name)
@@ -195,7 +208,7 @@ class TestReportingMeasureName:
         runner = openstudio.measure.OSRunner(osw)
 
         # make an empty model
-        model = openstudio.model.Model()
+        model = openstudio.epmodel.Model()
 
         # get arguments
         arguments = measure.arguments(model)
@@ -214,8 +227,8 @@ class TestReportingMeasureName:
                 assert temp_arg_var.setValue(args_dict[arg.name()])
                 argument_map[arg.name()] = temp_arg_var
 
-        # temp set path so idf_output_requests work
-        runner.setLastOpenStudioModelPath(MODEL_IN_PATH_DEFAULT)
+        # temp set model so idf_output_requests work
+        runner.setLastOpenStudioModel(model)
 
         # get the energyplus output requests, this will be done automatically by OS App and PAT
         idf_output_requests = measure.energyPlusOutputRequests(runner, argument_map)
@@ -223,17 +236,24 @@ class TestReportingMeasureName:
 
         # mimic the process of running this measure in OS App or PAT. Optionally set custom model_in_path and custom epw_path.
         epw_path = EPW_IN_PATH_DEFAULT
-        TestReportingMeasureName.setup_test(test_name=test_name, idf_output_requests=idf_output_requests)
+        TestReportingMeasureName.setup_test(
+            test_name=test_name, idf_output_requests=idf_output_requests
+        )
 
         model_out_path = TestReportingMeasureName.model_out_path(test_name)
         assert model_out_path.exists()
+        assert TestReportingMeasureName.epmodel_path(test_name).exists()
         assert epw_path.exists()
         assert TestReportingMeasureName.sql_path(test_name).exists()
 
         # set up runner, this will happen automatically when measure is run in PAT or OpenStudio
-        runner.setLastOpenStudioModelPath(model_out_path)
+        runner.setLastOpenStudioModelPath(
+            TestReportingMeasureName.epmodel_path(test_name)
+        )
         runner.setLastEpwFilePath(epw_path)
-        runner.setLastEnergyPlusSqlFilePath(TestReportingMeasureName.sql_path(test_name))
+        runner.setLastEnergyPlusSqlFilePath(
+            TestReportingMeasureName.sql_path(test_name)
+        )
 
         # delete the output if it exists
         report_path = TestReportingMeasureName.report_path(test_name)
@@ -276,7 +296,7 @@ class TestReportingMeasureName:
         runner = openstudio.measure.OSRunner(osw)
 
         # make an empty model
-        model = openstudio.model.Model()
+        model = openstudio.epmodel.Model()
 
         # get arguments
         arguments = measure.arguments(model)
@@ -293,11 +313,11 @@ class TestReportingMeasureName:
                 assert temp_arg_var.setValue(args_dict[arg.name()])
                 argument_map[arg.name()] = temp_arg_var
 
-        assert not model.outputJSON().is_initialized()
+        assert not model.getOptionalOutputJSON().is_initialized()
 
         assert measure.modelOutputRequests(model, runner, argument_map)
 
-        assert model.outputJSON().is_initialized()
+        assert model.getOptionalOutputJSON().is_initialized()
         output_json = model.getOutputJSON()
         assert output_json.optionType() == "TimeSeriesAndTabular"
         assert output_json.outputJSON()
@@ -314,7 +334,7 @@ class TestReportingMeasureName:
         runner = openstudio.measure.OSRunner(osw)
 
         # make an empty model
-        model = openstudio.model.Model()
+        model = openstudio.epmodel.Model()
 
         # get arguments
         arguments = measure.arguments(model)
@@ -331,11 +351,11 @@ class TestReportingMeasureName:
                 assert temp_arg_var.setValue(args_dict[arg.name()])
                 argument_map[arg.name()] = temp_arg_var
 
-        assert not model.outputJSON().is_initialized()
+        assert not model.getOptionalOutputJSON().is_initialized()
 
         assert measure.modelOutputRequests(model, runner, argument_map)
 
-        assert not model.outputJSON().is_initialized()
+        assert not model.getOptionalOutputJSON().is_initialized()
 
 
 # This allows running openstudio CLI on this file (`openstudio test_measure.py`, maybe with extra args)

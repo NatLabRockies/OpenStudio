@@ -134,7 +134,8 @@ class ReportingMeasureName < OpenStudio::Measure::ReportingMeasure
     # put data into the local variable 'output', all local variables are available for erb to use when configuring the input html file
     output =  'Measure Name = ' << name << '<br>'
     output << 'Building Name = ' << model.getBuilding.name.get << '<br>'
-    output << 'Floor Area = ' << model.getBuilding.floorArea.to_s << '<br>'
+    floor_area = model.getSpaces.sum(&:floorArea)
+    output << 'Floor Area = ' << floor_area.to_s << '<br>'
     output << 'Net Site Energy = ' << sql_file.netSiteEnergy.to_s << ' (GJ)<br>'
 
     # read in template
