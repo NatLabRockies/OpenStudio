@@ -56,7 +56,7 @@ class ModelMeasureName < OpenStudio::Measure::ModelMeasure
     runner.registerInitialCondition("The building started with #{model.getSpaces.size} spaces.")
 
     # add a new space to the model
-    new_space = OpenStudio::Model::Space.new(model)
+    new_space = OpenStudio::EPModel::Space.new(model)
     new_space.setName(space_name)
 
     # echo the new space's name back to the user
