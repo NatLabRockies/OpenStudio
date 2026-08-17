@@ -707,8 +707,6 @@ class CLI
   # This constant maps commands to classes in this CLI and stores meta-data on them
   def command_list
     {
-        run: [ Proc.new { ::Run }, {primary: true, working: true}],
-        #apply_measure: [ Proc.new { ::ApplyMeasure }, {primary: true, working: false}], # DLM: remove, can do this with run
         gem_list: [ Proc.new { ::GemList }, {primary: false, working: true}],
         #gem_install: [ Proc.new { ::InstallGem }, {primary: false, working: false}], # DLM: needs Ruby built with FFI
         measure: [ Proc.new { ::Measure }, {primary: true, working: false}],

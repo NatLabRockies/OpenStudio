@@ -102,12 +102,6 @@ if(BUILD_TESTING)
     COMMAND $<TARGET_FILE:openstudio> --help
   )
 
-  add_test(NAME OpenStudioCLI.Classic.run_compact_ruby_only_osw
-    COMMAND $<TARGET_FILE:openstudio> classic run -w compact_ruby_only.osw
-    WORKING_DIRECTORY "${PROJECT_BINARY_DIR}/resources/Examples/compact_osw/"
-  )
-  set_tests_properties(OpenStudioCLI.Classic.run_compact_ruby_only_osw PROPERTIES RESOURCE_LOCK "compact_osw")
-
   add_test(NAME OpenStudioCLI.openstudio_version
     COMMAND $<TARGET_FILE:openstudio> openstudio_version
   )
@@ -212,24 +206,12 @@ if(BUILD_TESTING)
     COMMAND $<TARGET_FILE:openstudio> ${CMAKE_CURRENT_SOURCE_DIR}/test/ensure_uuid_can_be_loaded.rb
   )
 
-  add_test(NAME OpenStudioCLI.Classic.Run_RubyOnly
-    COMMAND $<TARGET_FILE:openstudio> classic run -w compact_ruby_only.osw
-    WORKING_DIRECTORY "${PROJECT_BINARY_DIR}/resources/Examples/compact_osw/"
-  )
-  set_tests_properties(OpenStudioCLI.Classic.Run_RubyOnly PROPERTIES RESOURCE_LOCK "compact_osw")
-
   add_test(NAME OpenStudioCLI.Run_RubyOnly
     COMMAND $<TARGET_FILE:openstudio> run -w compact_ruby_only.osw
     WORKING_DIRECTORY "${PROJECT_BINARY_DIR}/resources/Examples/compact_osw/"
   )
   set_tests_properties(OpenStudioCLI.Run_RubyOnly PROPERTIES RESOURCE_LOCK "compact_osw")
 
-
-  add_test(NAME OpenStudioCLI.Classic.Run_RubyOnly.absolute_path
-    COMMAND $<TARGET_FILE:openstudio> classic run -w "'${PROJECT_BINARY_DIR}/resources/Examples/compact_osw/compact_ruby_only.osw'"
-    WORKING_DIRECTORY "${PROJECT_BINARY_DIR}/resources/Examples/compact_osw/"
-  )
-  set_tests_properties(OpenStudioCLI.Classic.Run_RubyOnly.absolute_path PROPERTIES RESOURCE_LOCK "compact_osw")
 
   add_test(NAME OpenStudioCLI.Run_RubyOnly.absolute_path
     COMMAND $<TARGET_FILE:openstudio> run -w "'${PROJECT_BINARY_DIR}/resources/Examples/compact_osw/compact_ruby_only.osw'"
@@ -283,10 +265,7 @@ if(BUILD_TESTING)
   # not compatible with the EPModel workflow model. Re-enable them when a
   # workflow can select the appropriate model type or the examples are replaced.
   set_tests_properties(
-    OpenStudioCLI.Classic.run_compact_ruby_only_osw
-    OpenStudioCLI.Classic.Run_RubyOnly
     OpenStudioCLI.Run_RubyOnly
-    OpenStudioCLI.Classic.Run_RubyOnly.absolute_path
     OpenStudioCLI.Run_RubyOnly.absolute_path
     OpenStudioCLI.Run_RubyPython
     OpenStudioCLI.Run_PythonRuby
@@ -323,33 +302,6 @@ if(BUILD_TESTING)
     RESOURCE_LOCK "invalid_measures"
   )
 
-  # Classic
-  add_test(NAME OpenStudioCLI.Classic.Run_Validate.MissingAMeasure
-    COMMAND $<TARGET_FILE:openstudio> classic run --show-stdout -w missing_a_measure.osw
-    WORKING_DIRECTORY "${PROJECT_BINARY_DIR}/resources/workflow/invalid_measures/"
-  )
-  set_tests_properties(OpenStudioCLI.Classic.Run_Validate.MissingAMeasure PROPERTIES
-    WILL_FAIL TRUE
-    RESOURCE_LOCK "invalid_measures"
-  )
-
-  add_test(NAME OpenStudioCLI.Classic.Run_Validate.UnloadableMeasure
-    COMMAND $<TARGET_FILE:openstudio> classic run --show-stdout -w unloadable_measure.osw
-    WORKING_DIRECTORY "${PROJECT_BINARY_DIR}/resources/workflow/invalid_measures/"
-  )
-  set_tests_properties(OpenStudioCLI.Classic.Run_Validate.UnloadableMeasure PROPERTIES
-    WILL_FAIL TRUE
-    RESOURCE_LOCK "invalid_measures"
-  )
-
-  add_test(NAME OpenStudioCLI.Classic.Run_Validate.WrongMeasureTypeOrder
-    COMMAND $<TARGET_FILE:openstudio> classic run --show-stdout -w wrong_measure_type_order.osw
-    WORKING_DIRECTORY "${PROJECT_BINARY_DIR}/resources/workflow/invalid_measures/"
-  )
-  set_tests_properties(OpenStudioCLI.Classic.Run_Validate.WrongMeasureTypeOrder PROPERTIES
-    WILL_FAIL TRUE
-    RESOURCE_LOCK "invalid_measures"
-  )
   # ====================== End Workflows should fail ======================
 
   if (Pytest_AVAILABLE)

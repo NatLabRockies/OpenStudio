@@ -6,40 +6,31 @@ import pytest
 from workflow_helpers import run_workflow
 
 
-@pytest.fixture(scope="module", params=[True, False], ids=["labs", "classic"])
-def runWorkflow(osclipath, request):
-    is_labs = request.param
-    suffix = "labs" if is_labs else "classic"
+@pytest.fixture(scope="module")
+def runWorkflow(osclipath):
     runDir, r = run_workflow(
         osclipath=osclipath,
         base_osw_name="in.osw",
-        suffix=suffix,
-        is_labs=is_labs,
+        suffix="labs",
         verbose=False,
         debug=False,
         post_process_only=True,
     )
     r.check_returncode()
-    return runDir, is_labs
+    return runDir
 
 
-@pytest.mark.parametrize(
-    "is_labs",
-    [pytest.param(True, id="labs"), pytest.param(False, id="classic")],
-)
-def test_(osclipath, is_labs: bool):
-    suffix = "labs" if is_labs else "classic"
+def test_(osclipath):
     runDir, r = run_workflow(
         osclipath=osclipath,
         base_osw_name="in.osw",
-        suffix=suffix,
-        is_labs=is_labs,
+        suffix="labs_debug",
         verbose=False,
         debug=True,
         post_process_only=True,
     )
     r.check_returncode()
-    out_osw_path = Path(f"out_in_{suffix}.osw")
+    out_osw_path = Path("out_in_labs_debug.osw")
     assert out_osw_path.is_file()
     out = json.loads(out_osw_path.read_text())
 
@@ -59,8 +50,7 @@ def test_(osclipath, is_labs: bool):
         "steps",
         "updated_at",
     }
-    if is_labs:
-        EXPECTED_TOPLEVEL_KEYS.add("run_options")
+    EXPECTED_TOPLEVEL_KEYS.add("run_options")
     assert out.keys() == EXPECTED_TOPLEVEL_KEYS
 
     assert len(out["steps"]) == 1

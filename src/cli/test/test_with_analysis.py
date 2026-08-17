@@ -9,25 +9,22 @@ import pytest
 from workflow_helpers import run_workflow
 
 
-@pytest.fixture(scope="module", params=[True, False], ids=["labs", "classic"])
-def runWorkflow(osclipath, request):
-    is_labs = request.param
-    suffix = "labs" if is_labs else "classic"
+@pytest.fixture(scope="module")
+def runWorkflow(osclipath):
     runDir, r = run_workflow(
         osclipath=osclipath,
         base_osw_name="with_analysis.osw",
-        suffix=suffix,
-        is_labs=is_labs,
+        suffix="labs",
         verbose=False,
         debug=False,
         post_process_only=True,
     )
     r.check_returncode()
-    return runDir, is_labs
+    return runDir
 
 
 def test_run_with_analysis(runWorkflow):
-    runDir, _ = runWorkflow
+    runDir = runWorkflow
     assert runDir.exists()
     measure_attributes_path = runDir / "measure_attributes.json"
     assert measure_attributes_path.is_file()
@@ -81,7 +78,7 @@ def test_all_expected_files_in_run_dir(runWorkflow):
         "started.job",
         "data_point_out.json",
     }
-    runDir, _ = runWorkflow
+    runDir = runWorkflow
     assert set([x.name for x in runDir.glob("*")]) == expected_files_in_run_dir
 
 
@@ -95,24 +92,21 @@ class LogLevel(Enum):
     Fatal = 2
 
 
-def _get_search_str(log_level: LogLevel, is_labs: bool) -> str:
-    # if is_labs:
-    #    return f"<{log_level.value}>"
-    # else:
+def _get_search_str(log_level: LogLevel) -> str:
     return f"{log_level.name.upper()}]"
 
 
-def _get_lines_with_log_level(run_log: str, log_level: LogLevel, is_labs: bool):
-    search_str = _get_search_str(log_level=log_level, is_labs=is_labs)
+def _get_lines_with_log_level(run_log: str, log_level: LogLevel):
+    search_str = _get_search_str(log_level=log_level)
     return [x for x in run_log.splitlines() if search_str in x]
 
 
-def count_msg_with_log_level(run_log: str, log_level: LogLevel, is_labs: bool) -> int:
-    return run_log.count(_get_search_str(log_level=log_level, is_labs=is_labs))
+def count_msg_with_log_level(run_log: str, log_level: LogLevel) -> int:
+    return run_log.count(_get_search_str(log_level=log_level))
 
 
 def test_run_log(runWorkflow):
-    runDir, is_labs = runWorkflow
+    runDir = runWorkflow
 
     # Test run.log for #5030
     run_log_path = runDir / "run.log"
@@ -123,26 +117,19 @@ def test_run_log(runWorkflow):
     assert "No results for objective function IsNonExisting.NonExisting" in run_log
     assert "runner.registerWarning called" in run_log
 
-    assert count_msg_with_log_level(run_log=run_log, log_level=LogLevel.Trace, is_labs=is_labs) == 0
-    assert count_msg_with_log_level(run_log=run_log, log_level=LogLevel.Debug, is_labs=is_labs) == 0
-    assert count_msg_with_log_level(run_log=run_log, log_level=LogLevel.Info, is_labs=is_labs) == 0
-    assert 1 < count_msg_with_log_level(run_log=run_log, log_level=LogLevel.Warn, is_labs=is_labs) < 4
-    assert count_msg_with_log_level(run_log=run_log, log_level=LogLevel.Error, is_labs=is_labs) == 0
-    assert count_msg_with_log_level(run_log=run_log, log_level=LogLevel.Fatal, is_labs=is_labs) == 0
+    assert count_msg_with_log_level(run_log=run_log, log_level=LogLevel.Trace) == 0
+    assert count_msg_with_log_level(run_log=run_log, log_level=LogLevel.Debug) == 0
+    assert count_msg_with_log_level(run_log=run_log, log_level=LogLevel.Info) == 0
+    assert 1 < count_msg_with_log_level(run_log=run_log, log_level=LogLevel.Warn) < 4
+    assert count_msg_with_log_level(run_log=run_log, log_level=LogLevel.Error) == 0
+    assert count_msg_with_log_level(run_log=run_log, log_level=LogLevel.Fatal) == 0
 
 
-@pytest.mark.parametrize(
-    "is_labs",
-    [pytest.param(True, id="labs"), pytest.param(False, id="classic")],
-)
-def test_run_log_debug(osclipath, is_labs: bool):
-    suffix = "labs" if is_labs else "classic"
-    suffix += "_debug"
+def test_run_log_debug(osclipath):
     runDir, r = run_workflow(
         osclipath=osclipath,
         base_osw_name="with_analysis.osw",
-        suffix=suffix,
-        is_labs=is_labs,
+        suffix="labs_debug",
         verbose=False,
         debug=True,
         post_process_only=True,
@@ -153,31 +140,24 @@ def test_run_log_debug(osclipath, is_labs: bool):
     assert run_log_path.is_file()
     run_log = run_log_path.read_text()
     # Filter out the debug InitRubyBindings
-    run_log = "\n".join([x for x in run_log.splitlines() if ' [ruby] ' not in x])
+    run_log = "\n".join([x for x in run_log.splitlines() if " [ruby] " not in x])
     assert "No results for objective function IsNonExisting.NonExisting" in run_log
     assert "runner.registerWarning called" in run_log
     assert 50 < len(run_log.splitlines()) < 100
 
-    assert count_msg_with_log_level(run_log=run_log, log_level=LogLevel.Trace, is_labs=is_labs) == 0
-    assert 30 < count_msg_with_log_level(run_log=run_log, log_level=LogLevel.Debug, is_labs=is_labs) < 45
-    assert 20 < count_msg_with_log_level(run_log=run_log, log_level=LogLevel.Info, is_labs=is_labs) < 50
-    assert 1 < count_msg_with_log_level(run_log=run_log, log_level=LogLevel.Warn, is_labs=is_labs) < 4
-    assert count_msg_with_log_level(run_log=run_log, log_level=LogLevel.Error, is_labs=is_labs) == 0
-    assert count_msg_with_log_level(run_log=run_log, log_level=LogLevel.Fatal, is_labs=is_labs) == 0
+    assert count_msg_with_log_level(run_log=run_log, log_level=LogLevel.Trace) == 0
+    assert 30 < count_msg_with_log_level(run_log=run_log, log_level=LogLevel.Debug) < 45
+    assert 20 < count_msg_with_log_level(run_log=run_log, log_level=LogLevel.Info) < 50
+    assert 1 < count_msg_with_log_level(run_log=run_log, log_level=LogLevel.Warn) < 4
+    assert count_msg_with_log_level(run_log=run_log, log_level=LogLevel.Error) == 0
+    assert count_msg_with_log_level(run_log=run_log, log_level=LogLevel.Fatal) == 0
 
 
-@pytest.mark.parametrize(
-    "is_labs",
-    [pytest.param(True, id="labs"), pytest.param(False, id="classic")],
-)
-def test_run_log_toplevel_verbose(osclipath, is_labs: bool):
-    suffix = "labs" if is_labs else "classic"
-    suffix += "_toplevel_verbose"
+def test_run_log_toplevel_verbose(osclipath):
     runDir, r = run_workflow(
         osclipath=osclipath,
         base_osw_name="with_analysis.osw",
-        suffix=suffix,
-        is_labs=is_labs,
+        suffix="labs_toplevel_verbose",
         verbose=True,
         debug=False,
         post_process_only=True,
@@ -188,16 +168,14 @@ def test_run_log_toplevel_verbose(osclipath, is_labs: bool):
     assert run_log_path.is_file()
     run_log = run_log_path.read_text()
     # Filter out the debug InitRubyBindings
-    run_log = "\n".join([x for x in run_log.splitlines() if ' [ruby] ' not in x])
+    run_log = "\n".join([x for x in run_log.splitlines() if " [ruby] " not in x])
     assert "No results for objective function IsNonExisting.NonExisting" in run_log
     assert "runner.registerWarning called" in run_log
-    if not is_labs:
-        pytest.skip("classic (Ruby) CLI just ignored the top level --verbose flag for run.log")
     assert 50 < len(run_log.splitlines()) < 100
 
-    assert count_msg_with_log_level(run_log=run_log, log_level=LogLevel.Trace, is_labs=is_labs) == 0
-    assert 30 < count_msg_with_log_level(run_log=run_log, log_level=LogLevel.Debug, is_labs=is_labs) < 45
-    assert 20 < count_msg_with_log_level(run_log=run_log, log_level=LogLevel.Info, is_labs=is_labs) < 50
-    assert 1 < count_msg_with_log_level(run_log=run_log, log_level=LogLevel.Warn, is_labs=is_labs) < 4
-    assert count_msg_with_log_level(run_log=run_log, log_level=LogLevel.Error, is_labs=is_labs) == 0
-    assert count_msg_with_log_level(run_log=run_log, log_level=LogLevel.Fatal, is_labs=is_labs) == 0
+    assert count_msg_with_log_level(run_log=run_log, log_level=LogLevel.Trace) == 0
+    assert 30 < count_msg_with_log_level(run_log=run_log, log_level=LogLevel.Debug) < 45
+    assert 20 < count_msg_with_log_level(run_log=run_log, log_level=LogLevel.Info) < 50
+    assert 1 < count_msg_with_log_level(run_log=run_log, log_level=LogLevel.Warn) < 4
+    assert count_msg_with_log_level(run_log=run_log, log_level=LogLevel.Error) == 0
+    assert count_msg_with_log_level(run_log=run_log, log_level=LogLevel.Fatal) == 0

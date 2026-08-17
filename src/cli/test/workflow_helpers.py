@@ -9,7 +9,6 @@ def run_workflow(
     osclipath: Path,
     base_osw_name: str,
     suffix: str,
-    is_labs: bool,
     verbose: bool = False,
     debug: bool = False,
     post_process_only: bool = False,
@@ -31,9 +30,6 @@ def run_workflow(
 
     suffix : str
         The suffix to be appended to the base OSW name for the new workflow file.
-
-    is_labs : bool
-        A flag indicating whether to run in OpenStudio Labs mode, or Classic mode.
 
     verbose : bool, optional
         If True, passes the high level --verbose flag.
@@ -61,8 +57,7 @@ def run_workflow(
     >>> oscli_path = Path('/path/to/oscli')
     >>> base_osw = 'example.osw'
     >>> suffix = 'run1'
-    >>> labs_mode = True
-    >>> run_dir, process_result = run_workflow(oscli_path, base_osw, suffix, labs_mode, verbose=True)
+    >>> run_dir, process_result = run_workflow(oscli_path, base_osw, suffix, verbose=True)
     """
     base_osw_path = Path(base_osw_name).resolve()
     assert base_osw_path.is_file(), f"{base_osw_path=} is not found"
@@ -79,14 +74,11 @@ def run_workflow(
         json.dump(osw, fp=f, indent=2, sort_keys=True)
 
     command = [str(osclipath)]
-    if not is_labs:
-        command.append("classic")
     if verbose:
         command.append("--verbose")
     command.append("run")
     if post_process_only:
-        # Fake having an in.idf or it won't run in the "classic" subcommand
-        # Doing it for labs too so that it's less confusing
+        # Fake having an in.idf so the workflow can enter post-processing.
         with open(runDir / "in.idf", "w") as f:
             f.write("Building,;")
         command.append("--postprocess_only")
