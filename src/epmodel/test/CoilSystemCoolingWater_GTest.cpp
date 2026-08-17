@@ -233,13 +233,11 @@ TEST_F(EPModelFixture, CoilSystemCoolingWater_NestedAssemblySurvivesSaveLoadAndR
   ASSERT_TRUE(loadedModel);
   auto loadedAirLoop = loadedModel->getConcreteModelObjectByName<AirLoopHVAC>("Roundtrip Nested Air Loop");
   auto loadedPlantLoop = loadedModel->getConcreteModelObjectByName<PlantLoop>("Roundtrip Nested Plant Loop");
-  auto loadedOuterSystem =
-    loadedModel->getConcreteModelObjectByName<CoilSystemCoolingWater>("Roundtrip Outer Cooling System");
-  auto loadedAssistedSystem = loadedModel->getConcreteModelObjectByName<CoilSystemCoolingWaterHeatExchangerAssisted>(
-    "Roundtrip Assisted Cooling System");
+  auto loadedOuterSystem = loadedModel->getConcreteModelObjectByName<CoilSystemCoolingWater>("Roundtrip Outer Cooling System");
+  auto loadedAssistedSystem =
+    loadedModel->getConcreteModelObjectByName<CoilSystemCoolingWaterHeatExchangerAssisted>("Roundtrip Assisted Cooling System");
   auto loadedCoolingCoil = loadedModel->getConcreteModelObjectByName<CoilCoolingWater>("Roundtrip Nested Cooling Coil");
-  auto loadedHeatExchanger =
-    loadedModel->getConcreteModelObjectByName<HeatExchangerAirToAirSensibleAndLatent>("Roundtrip Nested Heat Exchanger");
+  auto loadedHeatExchanger = loadedModel->getConcreteModelObjectByName<HeatExchangerAirToAirSensibleAndLatent>("Roundtrip Nested Heat Exchanger");
   ASSERT_TRUE(loadedAirLoop);
   ASSERT_TRUE(loadedPlantLoop);
   ASSERT_TRUE(loadedOuterSystem);

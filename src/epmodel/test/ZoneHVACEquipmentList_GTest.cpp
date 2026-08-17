@@ -82,8 +82,7 @@ TEST_F(EPModelFixture, ZoneHVACEquipmentList_AddEquipmentTransaction_RemovesCrea
   Node outletNode(model);
   ASSERT_TRUE(terminal.setPointer(terminal.outletPort(), outletNode.handle()));
 
-  for (const auto failurePoint : {detail::TestFailurePoint::ZoneEquipmentAfterTargetPrepared,
-                                  detail::TestFailurePoint::ZoneEquipmentAfterRowAdded}) {
+  for (const auto failurePoint : {detail::TestFailurePoint::ZoneEquipmentAfterTargetPrepared, detail::TestFailurePoint::ZoneEquipmentAfterRowAdded}) {
     test::ScopedTestFailure failure(model, failurePoint);
     EXPECT_FALSE(equipmentList.addEquipment(terminal.cast<ModelObject>()));
     EXPECT_TRUE(equipmentList.extensibleGroups().empty());

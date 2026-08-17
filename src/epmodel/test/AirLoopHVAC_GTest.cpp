@@ -2885,9 +2885,9 @@ TEST_F(EPModelFixture, AirLoopHVAC_CompoundCloneLast_InjectedFailuresRestoreExac
   const auto originalMixer = objectHandles(airLoop.zoneMixer().inletModelObjects());
   const auto originalPlant = objectHandles(plantLoop.demandComponents());
   const std::vector<detail::TestFailurePoint> failurePoints = {
-    detail::TestFailurePoint::AirLoopAfterTerminalClonePrepared, detail::TestFailurePoint::AirLoopAfterPlantReconnectionPrepared,
+    detail::TestFailurePoint::AirLoopAfterTerminalClonePrepared,     detail::TestFailurePoint::AirLoopAfterPlantReconnectionPrepared,
     detail::TestFailurePoint::AirLoopAfterBranchReservationPrepared, detail::TestFailurePoint::AirLoopAfterZonePrepared,
-    detail::TestFailurePoint::AirLoopBeforeTerminalAttachment, detail::TestFailurePoint::AirLoopAfterTerminalFirstZoneAttachmentPrepared};
+    detail::TestFailurePoint::AirLoopBeforeTerminalAttachment,       detail::TestFailurePoint::AirLoopAfterTerminalFirstZoneAttachmentPrepared};
   for (const auto failurePoint : failurePoints) {
     {
       test::ScopedTestFailure failure(model, failurePoint);

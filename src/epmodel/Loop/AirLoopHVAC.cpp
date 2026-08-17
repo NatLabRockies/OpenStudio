@@ -967,8 +967,8 @@ namespace epmodel {
           restored = connectionsImpl->setPointer(exhaustField, m_originalExhaustTarget->handle(), false);
         } else {
           const bool pointerCleared = connectionsImpl->setPointer(exhaustField, Handle(), false);
-          const bool rawRestored = connectionsImpl->openstudio::detail::IdfObject_Impl::setString(
-            exhaustField, m_originalExhaustRaw.get_value_or(""), false);
+          const bool rawRestored =
+            connectionsImpl->openstudio::detail::IdfObject_Impl::setString(exhaustField, m_originalExhaustRaw.get_value_or(""), false);
           restored = pointerCleared && rawRestored;
         }
         OS_ASSERT(restored);
@@ -1155,8 +1155,8 @@ namespace epmodel {
           OS_ASSERT(workspaceImpl);
           m_zoneState->originalExhaustRaw = workspaceImpl->openstudio::detail::IdfObject_Impl::getString(exhaustField, false, true);
         }
-        if (auto nodeList = m_zoneState->originalExhaustTarget ? m_zoneState->originalExhaustTarget->optionalCast<NodeList>()
-                                                               : boost::optional<NodeList>()) {
+        if (auto nodeList =
+              m_zoneState->originalExhaustTarget ? m_zoneState->originalExhaustTarget->optionalCast<NodeList>() : boost::optional<NodeList>()) {
           m_zoneState->originalExhaustNodes = nodeList->nodes();
         }
         return true;
@@ -1746,8 +1746,7 @@ namespace epmodel {
           }
           child.plantConnection->cloneReconnected = true;
           ++connectedChildren;
-          if ((connectedChildren == 1u)
-              && testFailurePointReached(m_source.model(), TestFailurePoint::AirLoopAfterFirstPlantReconnectionPrepared)) {
+          if ((connectedChildren == 1u) && testFailurePointReached(m_source.model(), TestFailurePoint::AirLoopAfterFirstPlantReconnectionPrepared)) {
             return false;
           }
         }
@@ -1799,8 +1798,8 @@ namespace epmodel {
           nodeList.remove();
         }
 
-        if (auto originalNodeList = m_zoneState->originalExhaustTarget ? m_zoneState->originalExhaustTarget->optionalCast<NodeList>()
-                                                                       : boost::optional<NodeList>()) {
+        if (auto originalNodeList =
+              m_zoneState->originalExhaustTarget ? m_zoneState->originalExhaustTarget->optionalCast<NodeList>() : boost::optional<NodeList>()) {
           auto nodeListImpl = originalNodeList->getImpl<detail::NodeList_Impl>();
           OS_ASSERT(nodeListImpl);
           for (const auto& node : originalNodeList->nodes()) {
@@ -1820,8 +1819,8 @@ namespace epmodel {
           restored = connectionsImpl->setPointer(exhaustField, m_zoneState->originalExhaustTarget->handle(), false);
         } else {
           const bool pointerCleared = connectionsImpl->setPointer(exhaustField, Handle(), false);
-          const bool rawRestored = connectionsImpl->openstudio::detail::IdfObject_Impl::setString(
-            exhaustField, m_zoneState->originalExhaustRaw.get_value_or(""), false);
+          const bool rawRestored =
+            connectionsImpl->openstudio::detail::IdfObject_Impl::setString(exhaustField, m_zoneState->originalExhaustRaw.get_value_or(""), false);
           restored = pointerCleared && rawRestored;
         }
         OS_ASSERT(restored);
@@ -2149,8 +2148,8 @@ namespace epmodel {
 
       void cleanupPreparedState();
       void captureCreatedZoneNodeLists();
-      void restoreZoneNodeField(unsigned field, const boost::optional<ModelObject>& originalTarget,
-                                const boost::optional<std::string>& originalRaw, const std::vector<Node>& originalNodes);
+      void restoreZoneNodeField(unsigned field, const boost::optional<ModelObject>& originalTarget, const boost::optional<std::string>& originalRaw,
+                                const std::vector<Node>& originalNodes);
       void removeCreatedNode(const boost::optional<Node>& node);
 
       State m_state = State::Prepared;
@@ -2503,14 +2502,12 @@ namespace epmodel {
         if (zoneState.originalInletFieldTarget) {
           originalInletNodes = connections->zoneAirInletNodes();
         } else {
-          zoneState.originalInletFieldRaw =
-            connectionsWorkspaceImpl->openstudio::detail::IdfObject_Impl::getString(inletField, false, true);
+          zoneState.originalInletFieldRaw = connectionsWorkspaceImpl->openstudio::detail::IdfObject_Impl::getString(inletField, false, true);
         }
         if (zoneState.originalReturnFieldTarget) {
           originalReturnNodes = connections->zoneReturnAirNodes();
         } else {
-          zoneState.originalReturnFieldRaw =
-            connectionsWorkspaceImpl->openstudio::detail::IdfObject_Impl::getString(returnField, false, true);
+          zoneState.originalReturnFieldRaw = connectionsWorkspaceImpl->openstudio::detail::IdfObject_Impl::getString(returnField, false, true);
         }
       }
       const auto multiLoopNodeStem = thermalZone.nameString() + " " + m_airLoop.nameString();
@@ -5320,8 +5317,7 @@ namespace epmodel {
       if (testFailurePointReached(model(), TestFailurePoint::AirLoopBeforeTerminalAttachment)) {
         return false;
       }
-      if (testFailurePointReached(model(), TestFailurePoint::AirLoopAfterDualDuctTerminalPrepared)
-          && !hvacComponent.optionalCast<Mixer>()) {
+      if (testFailurePointReached(model(), TestFailurePoint::AirLoopAfterDualDuctTerminalPrepared) && !hvacComponent.optionalCast<Mixer>()) {
         return false;
       }
       if (!reservation->prepareTerminalAttachment(hvacComponent, branchNode)) {

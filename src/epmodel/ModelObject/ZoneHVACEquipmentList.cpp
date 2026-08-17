@@ -760,8 +760,8 @@ namespace epmodel {
         if (!equipmentGroup) {
           return false;
         }
-        const bool prioritySet = equipmentGroup->setUnsigned(
-          openstudio::ZoneHVAC_EquipmentListExtensibleFields::ZoneEquipmentHeatingorNoLoadSequence, i + 1u);
+        const bool prioritySet =
+          equipmentGroup->setUnsigned(openstudio::ZoneHVAC_EquipmentListExtensibleFields::ZoneEquipmentHeatingorNoLoadSequence, i + 1u);
         OS_ASSERT(prioritySet);
         if (!prioritySet) {
           return false;
