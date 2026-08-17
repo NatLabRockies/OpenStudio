@@ -16,11 +16,6 @@
 #include "../../epmodel/ModelObject/Timestep_Impl.hpp"
 #include "../../epmodel/PlanarSurfaceGroup/Space.hpp"
 #include "../../epmodel/PlanarSurfaceGroup/Space_Impl.hpp"
-#include "../../model/Model.hpp"
-#include "../../model/Space.hpp"
-#include "../../model/Space_Impl.hpp"
-#include "../../model/LightsDefinition.hpp"
-#include "../../model/LightsDefinition_Impl.hpp"
 
 #include "../../utilities/idd/IddEnums.hpp"
 #include <utilities/idd/IddEnums.hxx>
@@ -32,8 +27,6 @@
 #include "../../utilities/filetypes/WorkflowJSON.hpp"
 #include "../../utilities/filetypes/WorkflowStep.hpp"
 
-#include "../../utilities/units/QuantityConverter.hpp"
-
 #include <fmt/format.h>
 
 #include <limits>
@@ -41,7 +34,6 @@
 #include <vector>
 
 using namespace openstudio;
-using namespace openstudio::model;
 using namespace openstudio::measure;
 
 class TestOSRunner : public OSRunner
@@ -354,13 +346,6 @@ TEST_F(MeasureFixture, UserScript_TestModelUserScript2) {
   EXPECT_EQ(5u, result.stepValues().size());
 
   EXPECT_EQ(4, timestep.numberOfTimestepsPerHour());
-}
-
-TEST_F(MeasureFixture, EPModelMeasureParity_ResolveLightsDefinitionAbstraction) {
-  ADD_FAILURE() << "Temporary epmodel workflow reminder: UserScript_TestModelUserScript2 used to exercise canonical LightsDefinition, "
-                   "makeChoiceArgumentOfWorkspaceObjects, optionalCast<LightsDefinition>, wattsperSpaceFloorArea, quantity, and floorArea. "
-                   "The current epmodel test uses a Timestep object only to keep the target compiling. Decide how IDD-backed epmodel should "
-                   "represent this canonical load-definition measure pattern, then restore equivalent coverage.";
 }
 
 TEST_F(MeasureFixture, RegisterValueNames) {
