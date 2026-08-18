@@ -10,6 +10,7 @@
 #include "Model.hpp"
 
 #include <algorithm>
+#include <set>
 #include <stdexcept>
 
 #include <utilities/core/Assert.hpp>
@@ -188,6 +189,38 @@ namespace epmodel {
       }
 
       return true;
+    }
+
+    void PlantEquipmentList_Impl::doCanonicalize(LoadContext& context) {
+      ModelObject_Impl::doCanonicalize(context);
+
+      auto list = getObject<openstudio::epmodel::PlantEquipmentList>();
+      std::set<openstudio::Handle> seenEquipment;
+      unsigned originalIndex = 0u;
+      unsigned removedCount = 0u;
+      for (const auto& group : list.extensibleGroups()) {
+        auto workspaceGroup = group.optionalCast<openstudio::WorkspaceExtensibleGroup>();
+        OS_ASSERT(workspaceGroup);
+
+        const auto equipment = resolveEquipmentTarget(*workspaceGroup, model());
+        if (equipment) {
+          const auto objectType = workspaceGroup->getString(openstudio::PlantEquipmentListExtensibleFields::EquipmentObjectType, true);
+          const bool discriminatorNeedsRepair = !objectType || (*objectType != equipment->iddObject().name());
+          OS_ASSERT(setEquipmentTarget(*workspaceGroup, *equipment));
+          if (discriminatorNeedsRepair) {
+            detail::addLoadWarning(context, "Corrected the PlantEquipmentList equipment type for '" + equipment->nameString() + "' in '"
+                                              + list.nameString() + "'.");
+          }
+
+          if (!seenEquipment.insert(equipment->handle()).second) {
+            list.eraseExtensibleGroup(originalIndex - removedCount);
+            ++removedCount;
+            detail::addLoadWarning(context, "Removed duplicate PlantEquipmentList row for equipment '" + equipment->nameString() + "' from '"
+                                              + list.nameString() + "'.");
+          }
+        }
+        ++originalIndex;
+      }
     }
 
   }  // namespace detail

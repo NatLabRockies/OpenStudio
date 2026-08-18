@@ -53,6 +53,8 @@
 #include "../PlantEquipmentOperationScheme/PlantEquipmentOperationOutdoorDryBulb.hpp"
 #include "../Schedule/ScheduleConstant.hpp"
 #include "../Schedule/ScheduleConstant_Impl.hpp"
+#include "../SetpointManager/SetpointManagerScheduled.hpp"
+#include "../SetpointManager/SetpointManagerScheduled_Impl.hpp"
 #include "../StraightComponent/Node.hpp"
 #include "../StraightComponent/BoilerHotWater.hpp"
 #include "../StraightComponent/BoilerHotWater_Impl.hpp"
@@ -62,6 +64,8 @@
 #include "../StraightComponent/PipeAdiabatic_Impl.hpp"
 #include "../StraightComponent/PumpVariableSpeed.hpp"
 #include "../StraightComponent/PumpVariableSpeed_Impl.hpp"
+#include "../StraightComponent/WaterUseConnections.hpp"
+#include "../StraightComponent/WaterUseConnections_Impl.hpp"
 #include "../StraightComponent/FanConstantVolume.hpp"
 #include "../StraightComponent/FanConstantVolume_Impl.hpp"
 #include "../StraightComponent/AirTerminalSingleDuctConstantVolumeReheat.hpp"
@@ -79,6 +83,7 @@
 #include "../WaterToWaterComponent/ThermalStorageChilledWaterStratified_Impl.hpp"
 #include "../WaterToWaterComponent/WaterToWaterComponent.hpp"
 #include "../WaterToWaterComponent/WaterHeaterMixed.hpp"
+#include "../WaterToWaterComponent/WaterHeaterMixed_Impl.hpp"
 #include "../ModelObject/WaterHeaterSizing.hpp"
 #include "../ModelObject/WaterHeaterSizing_Impl.hpp"
 #include "../WaterToWaterComponent/HeatPumpWaterToWaterEquationFitCooling.hpp"
@@ -1680,6 +1685,117 @@ TEST_F(EPModelFixture, PlantLoop_StraightComponentRemovalLifecycle) {
   ASSERT_TRUE(reloadedModel);
   EXPECT_TRUE(reloadedModel->getConcreteModelObjects<PlantLoop>().empty());
   EXPECT_FALSE(reloadedModel->getConcreteModelObjectByName<PipeAdiabatic>("Owned Supply Pipe"));
+
+  openstudio::filesystem::remove(idfPath);
+}
+
+TEST_F(EPModelFixture, PlantLoop_ServiceWaterHeatingRemovalLifecycle) {
+  const auto idfPath = openstudio::tempDir() / openstudio::toPath("epmodel-plant-loop-service-water-heating-removal.idf");
+
+  Model model;
+  PlantLoop plantLoop(model);
+  WaterHeaterMixed waterHeater(model);
+  WaterUseConnections waterUseConnections(model);
+  SetpointManagerScheduled setpointManager(model);
+  ASSERT_TRUE(plantLoop.setName("Service Water Heating Removal Plant Loop"));
+  ASSERT_TRUE(waterHeater.setName("Owned Service Water Heater"));
+  ASSERT_TRUE(waterUseConnections.setName("Owned Water Use Connections"));
+  ASSERT_TRUE(setpointManager.setName("Owned Service Water Setpoint Manager"));
+  ASSERT_TRUE(plantLoop.addSupplyBranchForComponent(waterHeater));
+  ASSERT_TRUE(plantLoop.addDemandBranchForComponent(waterUseConnections));
+  auto supplyOutletNode = plantLoop.supplyOutletNode();
+  ASSERT_TRUE(setpointManager.addToNode(supplyOutletNode));
+  ASSERT_TRUE(model.save(idfPath, true));
+
+  auto loadedModel = Model::load(idfPath);
+  ASSERT_TRUE(loadedModel);
+  auto loadedPlantLoop = loadedModel->getConcreteModelObjectByName<PlantLoop>("Service Water Heating Removal Plant Loop");
+  auto loadedWaterHeater = loadedModel->getConcreteModelObjectByName<WaterHeaterMixed>("Owned Service Water Heater");
+  auto loadedWaterUseConnections = loadedModel->getConcreteModelObjectByName<WaterUseConnections>("Owned Water Use Connections");
+  auto loadedSetpointManager =
+    loadedModel->getConcreteModelObjectByName<SetpointManagerScheduled>("Owned Service Water Setpoint Manager");
+  ASSERT_TRUE(loadedPlantLoop);
+  ASSERT_TRUE(loadedWaterHeater);
+  ASSERT_TRUE(loadedWaterUseConnections);
+  ASSERT_TRUE(loadedSetpointManager);
+  ASSERT_TRUE(loadedWaterHeater->plantLoop());
+  ASSERT_TRUE(loadedWaterUseConnections->plantLoop());
+
+  const auto plantLoopHandle = loadedPlantLoop->handle();
+  const auto sizingPlantHandle = loadedPlantLoop->sizingPlant().handle();
+  const auto waterHeaterHandle = loadedWaterHeater->handle();
+  const auto waterHeaterSizingHandle = loadedWaterHeater->waterHeaterSizing().handle();
+  const auto waterUseConnectionsHandle = loadedWaterUseConnections->handle();
+  const auto setpointManagerHandle = loadedSetpointManager->handle();
+  EXPECT_FALSE(loadedPlantLoop->remove().empty());
+  EXPECT_FALSE(loadedModel->getObject(plantLoopHandle));
+  EXPECT_FALSE(loadedModel->getObject(sizingPlantHandle));
+  EXPECT_FALSE(loadedModel->getObject(waterHeaterHandle));
+  EXPECT_FALSE(loadedModel->getObject(waterHeaterSizingHandle));
+  EXPECT_FALSE(loadedModel->getObject(waterUseConnectionsHandle));
+  EXPECT_FALSE(loadedModel->getObject(setpointManagerHandle));
+
+  ASSERT_TRUE(loadedModel->save(idfPath, true));
+  auto reloadedModel = Model::load(idfPath);
+  ASSERT_TRUE(reloadedModel);
+  EXPECT_TRUE(reloadedModel->getConcreteModelObjects<PlantLoop>().empty());
+  EXPECT_FALSE(reloadedModel->getConcreteModelObjectByName<WaterHeaterMixed>("Owned Service Water Heater"));
+  EXPECT_FALSE(reloadedModel->getConcreteModelObjectByName<WaterUseConnections>("Owned Water Use Connections"));
+
+  openstudio::filesystem::remove(idfPath);
+}
+
+TEST_F(EPModelFixture, PlantLoop_UnsupportedMixedOwnerRemovalIsAtomic) {
+  const auto idfPath = openstudio::tempDir() / openstudio::toPath("epmodel-plant-loop-unsupported-mixed-owner-removal.idf");
+
+  Model model;
+  PlantLoop plantLoop(model);
+  WaterHeaterMixed waterHeater(model);
+  HeatExchangerFluidToFluid heatExchanger(model);
+  ASSERT_TRUE(plantLoop.setName("Unsupported Mixed Owner Plant Loop"));
+  ASSERT_TRUE(waterHeater.setName("Unsupported Mixed Owner Water Heater"));
+  ASSERT_TRUE(heatExchanger.setName("Unsupported Mixed Owner Heat Exchanger"));
+  ASSERT_TRUE(plantLoop.addSupplyBranchForComponent(waterHeater));
+  ASSERT_TRUE(plantLoop.addSupplyBranchForComponent(heatExchanger));
+  ASSERT_TRUE(model.save(idfPath, true));
+
+  auto loadedModel = Model::load(idfPath);
+  ASSERT_TRUE(loadedModel);
+  auto loadedPlantLoop = loadedModel->getConcreteModelObjectByName<PlantLoop>("Unsupported Mixed Owner Plant Loop");
+  auto loadedWaterHeater = loadedModel->getConcreteModelObjectByName<WaterHeaterMixed>("Unsupported Mixed Owner Water Heater");
+  auto loadedHeatExchanger =
+    loadedModel->getConcreteModelObjectByName<HeatExchangerFluidToFluid>("Unsupported Mixed Owner Heat Exchanger");
+  ASSERT_TRUE(loadedPlantLoop);
+  ASSERT_TRUE(loadedWaterHeater);
+  ASSERT_TRUE(loadedHeatExchanger);
+  ASSERT_TRUE(loadedWaterHeater->plantLoop());
+  ASSERT_TRUE(loadedHeatExchanger->plantLoop());
+
+  const auto initialObjectCount = loadedModel->numObjects();
+  const auto plantLoopHandle = loadedPlantLoop->handle();
+  const auto sizingPlantHandle = loadedPlantLoop->sizingPlant().handle();
+  const auto waterHeaterHandle = loadedWaterHeater->handle();
+  const auto heatExchangerHandle = loadedHeatExchanger->handle();
+  const auto initialSupplyComponents = loadedPlantLoop->supplyComponents();
+
+  EXPECT_TRUE(loadedPlantLoop->remove().empty());
+  EXPECT_EQ(initialObjectCount, loadedModel->numObjects());
+  EXPECT_TRUE(loadedModel->getObject(plantLoopHandle));
+  EXPECT_TRUE(loadedModel->getObject(sizingPlantHandle));
+  EXPECT_TRUE(loadedModel->getObject(waterHeaterHandle));
+  EXPECT_TRUE(loadedModel->getObject(heatExchangerHandle));
+  EXPECT_EQ(initialSupplyComponents, loadedPlantLoop->supplyComponents());
+  ASSERT_TRUE(loadedWaterHeater->plantLoop());
+  EXPECT_EQ(*loadedPlantLoop, *loadedWaterHeater->plantLoop());
+  ASSERT_TRUE(loadedHeatExchanger->plantLoop());
+  EXPECT_EQ(*loadedPlantLoop, *loadedHeatExchanger->plantLoop());
+
+  ASSERT_TRUE(loadedModel->save(idfPath, true));
+  auto reloadedModel = Model::load(idfPath);
+  ASSERT_TRUE(reloadedModel);
+  EXPECT_TRUE(reloadedModel->getConcreteModelObjectByName<PlantLoop>("Unsupported Mixed Owner Plant Loop"));
+  EXPECT_TRUE(reloadedModel->getConcreteModelObjectByName<WaterHeaterMixed>("Unsupported Mixed Owner Water Heater"));
+  EXPECT_TRUE(reloadedModel->getConcreteModelObjectByName<HeatExchangerFluidToFluid>("Unsupported Mixed Owner Heat Exchanger"));
 
   openstudio::filesystem::remove(idfPath);
 }
@@ -7705,6 +7821,64 @@ TEST_F(EPModelFixture, PlantLoop_SharedWaterCoilRemovalLifecycle) {
 TEST_F(EPModelFixture, PlantLoop_SharedCoolingCoilRemovalLifecycle) {
   runSharedWaterCoilRemovalLifecycle<CoilCoolingWater>(
     openstudio::tempDir() / openstudio::toPath("epmodel-plant-loop-shared-cooling-water-coil-removal.idf"), "Cooling Water Coil", "Reverse");
+}
+
+TEST_F(EPModelFixture, PlantLoop_LastOwnerWaterCoilsAfterAirLoopRemovalLifecycle) {
+  const auto idfPath = openstudio::tempDir() / openstudio::toPath("epmodel-plant-loop-last-owner-water-coils-removal.idf");
+
+  Model model;
+  ScheduleConstant availabilitySchedule(model);
+  CoilHeatingWater heatingCoil(model, availabilitySchedule);
+  CoilCoolingWater coolingCoil(model, availabilitySchedule);
+  AirLoopHVAC airLoop(model);
+  PlantLoop plantLoop(model);
+  ASSERT_TRUE(heatingCoil.setName("Last Owner Heating Water Coil"));
+  ASSERT_TRUE(coolingCoil.setName("Last Owner Cooling Water Coil"));
+  auto supplyOutletNode = airLoop.supplyOutletNode();
+  ASSERT_TRUE(heatingCoil.addToNode(supplyOutletNode));
+  supplyOutletNode = airLoop.supplyOutletNode();
+  ASSERT_TRUE(coolingCoil.addToNode(supplyOutletNode));
+  ASSERT_TRUE(plantLoop.addDemandBranchForComponent(heatingCoil));
+  ASSERT_TRUE(plantLoop.addDemandBranchForComponent(coolingCoil));
+  ASSERT_TRUE(model.save(idfPath, true));
+
+  auto loadedModel = Model::load(idfPath);
+  ASSERT_TRUE(loadedModel);
+  auto loadedAirLoops = loadedModel->getConcreteModelObjects<AirLoopHVAC>();
+  auto loadedPlantLoops = loadedModel->getConcreteModelObjects<PlantLoop>();
+  ASSERT_EQ(1u, loadedAirLoops.size());
+  ASSERT_EQ(1u, loadedPlantLoops.size());
+  auto loadedAirLoop = loadedAirLoops.front();
+  auto loadedPlantLoop = loadedPlantLoops.front();
+  auto loadedHeatingCoil = loadedModel->getConcreteModelObjectByName<CoilHeatingWater>("Last Owner Heating Water Coil");
+  auto loadedCoolingCoil = loadedModel->getConcreteModelObjectByName<CoilCoolingWater>("Last Owner Cooling Water Coil");
+  ASSERT_TRUE(loadedHeatingCoil);
+  ASSERT_TRUE(loadedCoolingCoil);
+  const auto heatingCoilHandle = loadedHeatingCoil->handle();
+  const auto coolingCoilHandle = loadedCoolingCoil->handle();
+
+  EXPECT_FALSE(loadedAirLoop.remove().empty());
+  EXPECT_TRUE(loadedModel->getObject(heatingCoilHandle));
+  EXPECT_TRUE(loadedModel->getObject(coolingCoilHandle));
+  EXPECT_FALSE(loadedHeatingCoil->airLoopHVAC());
+  EXPECT_FALSE(loadedCoolingCoil->airLoopHVAC());
+  ASSERT_TRUE(loadedHeatingCoil->plantLoop());
+  ASSERT_TRUE(loadedCoolingCoil->plantLoop());
+
+  EXPECT_FALSE(loadedPlantLoop.remove().empty());
+  EXPECT_FALSE(loadedModel->getObject(heatingCoilHandle));
+  EXPECT_FALSE(loadedModel->getObject(coolingCoilHandle));
+  EXPECT_TRUE(loadedModel->getConcreteModelObjects<PlantLoop>().empty());
+
+  ASSERT_TRUE(loadedModel->save(idfPath, true));
+  auto reloadedModel = Model::load(idfPath);
+  ASSERT_TRUE(reloadedModel);
+  EXPECT_TRUE(reloadedModel->getConcreteModelObjects<AirLoopHVAC>().empty());
+  EXPECT_TRUE(reloadedModel->getConcreteModelObjects<PlantLoop>().empty());
+  EXPECT_FALSE(reloadedModel->getConcreteModelObjectByName<CoilHeatingWater>("Last Owner Heating Water Coil"));
+  EXPECT_FALSE(reloadedModel->getConcreteModelObjectByName<CoilCoolingWater>("Last Owner Cooling Water Coil"));
+
+  openstudio::filesystem::remove(idfPath);
 }
 
 TEST_F(EPModelFixture, PlantLoop_DualLoopHeatExchangerRemovalLifecycle) {

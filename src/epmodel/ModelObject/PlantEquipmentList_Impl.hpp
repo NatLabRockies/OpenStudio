@@ -26,6 +26,9 @@ namespace epmodel {
       bool removeEquipment(const openstudio::epmodel::HVACComponent& equipment);
       void removeAllEquipment();
       bool replaceEquipment(const std::vector<openstudio::epmodel::HVACComponent>& equipment);
+
+     protected:
+      void doCanonicalize(LoadContext& context) override;
     };
 
   }  // namespace detail

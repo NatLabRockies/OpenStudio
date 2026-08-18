@@ -32,6 +32,7 @@
 #include "PlantEquipmentOperationScheme/PlantEquipmentOperationCoolingLoad.hpp"
 #include "PlantEquipmentOperationScheme/PlantEquipmentOperationHeatingLoad.hpp"
 #include "Schedule/Schedule.hpp"
+#include "SetpointManager/SetpointManager.hpp"
 #include "StraightComponent/Node.hpp"
 #include "ModelObject/Branch.hpp"
 #include "ModelObject/Branch_Impl.hpp"
@@ -5111,11 +5112,15 @@ namespace epmodel {
               }
               auto componentPlantLoop = waterCoil->plantLoop();
               auto componentAirLoop = waterCoil->airLoopHVAC();
-              if (!componentPlantLoop || *componentPlantLoop != plantLoop || !componentAirLoop) {
+              if (!componentPlantLoop || *componentPlantLoop != plantLoop) {
                 return false;
               }
-              ++selectedSpecializedComponentCount;
-              if (std::ranges::none_of(retainedWaterCoils, [&waterCoil](const auto& existing) { return existing.handle() == waterCoil->handle(); })) {
+              // Match Model removal ordering: a water coil survives while an
+              // air loop still owns it, but belongs to this removal graph once
+              // the air-side owner has already been removed.
+              if (componentAirLoop
+                  && std::ranges::none_of(retainedWaterCoils,
+                                          [&waterCoil](const auto& existing) { return existing.handle() == waterCoil->handle(); })) {
                 retainedWaterCoils.push_back(*waterCoil);
               }
               continue;
@@ -5387,16 +5392,28 @@ namespace epmodel {
           storage && selected.ownedSizing
           && ((selected.owner == SelectedWaterToWaterOwner::Supply) || (selected.owner == SelectedWaterToWaterOwner::SecondaryDemand));
       }
+      bool isSelectedWaterHeaterWithOwnedStraightEquipment = false;
+      // A service-water-heating loop commonly owns one water heater together
+      // with pumps, pipes, and WaterUse:Connections. When this is the water
+      // heater's last loop, all of those components share the PlantLoop
+      // lifecycle and can be removed as one owner-local graph.
+      if ((selectedSpecializedComponentCount == 1u) && retainedWaterCoils.empty() && (selectedWaterToWaterComponents.size() == 1u)
+          && ((ownedSupplyStraightComponentCount + ownedDemandStraightComponentCount) > 0u)) {
+        const auto& selected = selectedWaterToWaterComponents.front();
+        isSelectedWaterHeaterWithOwnedStraightEquipment =
+          !selected.retained && (selected.owner == SelectedWaterToWaterOwner::Supply)
+          && (selected.component.optionalCast<WaterHeaterMixed>() || selected.component.optionalCast<WaterHeaterStratified>());
+      }
       const bool hasSelectedSpecializedCardinality =
         (selectedSpecializedComponentCount == 0u)
         || ((selectedSpecializedComponentCount == 1u) && ((ownedSupplyStraightComponentCount + ownedDemandStraightComponentCount) == 0u))
         || isSelectedEquationFitCompanionPair || isSelectedChillerCondenserWithOwnedSupplyEquipment
-        || isSelectedThermalStorageWithOwnedStraightEquipment;
+        || isSelectedThermalStorageWithOwnedStraightEquipment || isSelectedWaterHeaterWithOwnedStraightEquipment;
       if (!hasOnlySelectedSupplyComponents || !hasOnlySelectedDemandComponents || !hasSelectedSpecializedCardinality) {
-        // Specialized branch members are separate ownership lifecycles.
-        // Preserve the pre-existing generic behavior until each has a paired
-        // contract.
-        return Loop_Impl::remove();
+        // Do not remove only the PlantLoop row and leave its canonical graph
+        // orphaned. Unsupported ownership combinations must fail atomically
+        // until they have an explicit removal contract.
+        return {};
       }
 
       std::vector<ModelObject> removalObjects;
@@ -5417,11 +5434,21 @@ namespace epmodel {
       for (const auto& component : supplyComponents(openstudio::IddObjectType::Catchall)) {
         if (!isRetainedSharedComponent(component)) {
           addRemovalObject(component);
+          if (auto node = component.optionalCast<Node>()) {
+            for (const auto& setpointManager : node->setpointManagers()) {
+              addRemovalObject(setpointManager.cast<ModelObject>());
+            }
+          }
         }
       }
       for (const auto& component : demandComponents(openstudio::IddObjectType::Catchall)) {
         if (!isRetainedSharedComponent(component)) {
           addRemovalObject(component);
+          if (auto node = component.optionalCast<Node>()) {
+            for (const auto& setpointManager : node->setpointManagers()) {
+              addRemovalObject(setpointManager.cast<ModelObject>());
+            }
+          }
         }
       }
 

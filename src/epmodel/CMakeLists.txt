@@ -1047,9 +1047,6 @@ set(${target_name}_src
   scaffolds/AirLoopHVACUnitaryFurnaceHeatOnly.hpp
   scaffolds/AirLoopHVACUnitaryFurnaceHeatOnly_Impl.hpp
   scaffolds/AirLoopHVACUnitaryFurnaceHeatOnly.cpp
-  scaffolds/AirLoopHVACUnitaryHeatCool.hpp
-  scaffolds/AirLoopHVACUnitaryHeatCool_Impl.hpp
-  scaffolds/AirLoopHVACUnitaryHeatCool.cpp
   scaffolds/AirLoopHVACUnitaryHeatOnly.hpp
   scaffolds/AirLoopHVACUnitaryHeatOnly_Impl.hpp
   scaffolds/AirLoopHVACUnitaryHeatOnly.cpp
@@ -2217,6 +2214,9 @@ set(${target_name}_src
   StraightComponent/AirConditionerVariableRefrigerantFlow.hpp
   StraightComponent/AirConditionerVariableRefrigerantFlow_Impl.hpp
   StraightComponent/AirConditionerVariableRefrigerantFlow.cpp
+  StraightComponent/AirLoopHVACUnitaryHeatCool.hpp
+  StraightComponent/AirLoopHVACUnitaryHeatCool_Impl.hpp
+  StraightComponent/AirLoopHVACUnitaryHeatCool.cpp
   StraightComponent/AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass.hpp
   StraightComponent/AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_Impl.hpp
   StraightComponent/AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass.cpp

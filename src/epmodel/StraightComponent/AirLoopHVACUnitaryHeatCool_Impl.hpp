@@ -6,20 +6,57 @@
 #ifndef EPMODEL_AIRLOOPHVACUNITARYHEATCOOL_IMPL_HPP
 #define EPMODEL_AIRLOOPHVACUNITARYHEATCOOL_IMPL_HPP
 
-#include "ModelObject_Impl.hpp"
+#include "StraightComponent/StraightComponent_Impl.hpp"
 
 #include <vector>
 
 namespace openstudio {
 namespace epmodel {
+  class Node;
+  class HVACComponent;
+  class Schedule;
+  class ThermalZone;
 
   namespace detail {
+    struct LoadContext;
 
-    class EPMODEL_API AirLoopHVACUnitaryHeatCool_Impl : public ModelObject_Impl
+    class EPMODEL_API AirLoopHVACUnitaryHeatCool_Impl : public StraightComponent_Impl
     {
      public:
-      using ModelObject_Impl::ModelObject_Impl;
-      virtual ~AirLoopHVACUnitaryHeatCool_Impl() override = default;
+      using StraightComponent_Impl::StraightComponent_Impl;
+      ~AirLoopHVACUnitaryHeatCool_Impl() override = default;
+
+      unsigned inletPort() const override;
+      unsigned outletPort() const override;
+      bool addToNode(Node& node) override;
+      std::vector<IdfObject> remove() override;
+      void doCanonicalize(LoadContext& context) override;
+      std::vector<ModelObject> children() const override;
+
+      Schedule availabilitySchedule() const;
+      bool setAvailabilitySchedule(Schedule& schedule);
+
+      boost::optional<Schedule> supplyAirFanOperatingModeSchedule() const;
+      bool setSupplyAirFanOperatingModeSchedule(Schedule& schedule);
+      void resetSupplyAirFanOperatingModeSchedule();
+
+      boost::optional<ThermalZone> controllingZone() const;
+      bool setControllingZone(ThermalZone& zone);
+      void resetControllingZone();
+
+      HVACComponent supplyFan() const;
+      bool setSupplyFan(HVACComponent& hvacComponent);
+      HVACComponent heatingCoil() const;
+      bool setHeatingCoil(HVACComponent& hvacComponent);
+      HVACComponent coolingCoil() const;
+      bool setCoolingCoil(HVACComponent& hvacComponent);
+      boost::optional<HVACComponent> reheatCoil() const;
+      bool setReheatCoil(HVACComponent& hvacComponent);
+      void resetReheatCoil();
+
+      boost::optional<Node> fanOutletNode() const;
+      boost::optional<Node> coolingCoilOutletNode() const;
+      boost::optional<Node> heatingCoilOutletNode() const;
 
       boost::optional<double> maximumSupplyAirTemperature() const;
       bool setMaximumSupplyAirTemperature(double maximumSupplyAirTemperature);
@@ -73,6 +110,11 @@ namespace epmodel {
       std::vector<std::string> coolingCoilObjectTypeValues() const;
       std::vector<std::string> dehumidificationControlTypeValues() const;
       std::vector<std::string> reheatCoilObjectTypeValues() const;
+
+     private:
+      bool maintainContainedAirPath();
+      bool repairContainedAirPath(LoadContext& context);
+      bool reconcileContainedAirPath(bool allowChildNodeRecovery, LoadContext* context = nullptr);
     };
 
   }  // namespace detail

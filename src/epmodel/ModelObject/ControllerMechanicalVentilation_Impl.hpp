@@ -7,7 +7,7 @@
 #define EPMODEL_CONTROLLERMECHANICALVENTILATION_IMPL_HPP
 
 #include "ModelObject_Impl.hpp"
-#include "DesignSpecificationOutdoorAirSpaceList.hpp"
+#include "ModelObject.hpp"
 
 #include <utility>
 #include <string>
@@ -71,11 +71,9 @@ namespace epmodel {
       static OutdoorAirClaimFieldObservation observeOutdoorAirClaimField(const openstudio::epmodel::ControllerOutdoorAir& controllerOutdoorAir);
       static bool clearOutdoorAirClaimField(const openstudio::epmodel::ControllerOutdoorAir& controllerOutdoorAir);
       OutdoorAirClaimInspection outdoorAirClaimInspection() const;
-      std::vector<std::pair<openstudio::epmodel::ThermalZone, openstudio::epmodel::DesignSpecificationOutdoorAirSpaceList>>
-        zoneOutdoorAirEntries() const;
+      std::vector<std::pair<openstudio::epmodel::ThermalZone, openstudio::epmodel::ModelObject>> zoneOutdoorAirEntries() const;
       void clearZoneOutdoorAirEntries();
-      bool addZoneOutdoorAirEntry(const openstudio::epmodel::ThermalZone& zone,
-                                  const openstudio::epmodel::DesignSpecificationOutdoorAirSpaceList& dsoaSpaceList);
+      bool addZoneOutdoorAirEntry(const openstudio::epmodel::ThermalZone& zone, const openstudio::epmodel::ModelObject& dsoaObject);
 
       void doCanonicalize(LoadContext& context) override;
     };

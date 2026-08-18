@@ -13,6 +13,8 @@
 #include "HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
 #include "DesignSpecificationOutdoorAirSpaceList.hpp"
 #include "DesignSpecificationOutdoorAirSpaceList_Impl.hpp"
+#include "ResourceObject/DesignSpecificationOutdoorAir.hpp"
+#include "ResourceObject/DesignSpecificationOutdoorAir_Impl.hpp"
 #include "HVACComponent/ThermalZone.hpp"
 #include "HVACComponent/ThermalZone_Impl.hpp"
 #include "Model.hpp"
@@ -233,9 +235,9 @@ namespace epmodel {
       return model().getModelObject<openstudio::epmodel::ControllerOutdoorAir>(claims.canonicalClaimantHandles.front());
     }
 
-    std::vector<std::pair<openstudio::epmodel::ThermalZone, openstudio::epmodel::DesignSpecificationOutdoorAirSpaceList>>
+    std::vector<std::pair<openstudio::epmodel::ThermalZone, openstudio::epmodel::ModelObject>>
       ControllerMechanicalVentilation_Impl::zoneOutdoorAirEntries() const {
-      std::vector<std::pair<openstudio::epmodel::ThermalZone, openstudio::epmodel::DesignSpecificationOutdoorAirSpaceList>> result;
+      std::vector<std::pair<openstudio::epmodel::ThermalZone, openstudio::epmodel::ModelObject>> result;
       for (const auto& group : getObject<openstudio::epmodel::ControllerMechanicalVentilation>().extensibleGroups()) {
         auto workspaceGroup = group.optionalCast<openstudio::WorkspaceExtensibleGroup>();
         if (!workspaceGroup) {
@@ -248,11 +250,14 @@ namespace epmodel {
           continue;
         }
         auto zone = zoneTarget->optionalCast<openstudio::epmodel::ThermalZone>();
-        auto dsoaSpaceList = dsoaTarget->optionalCast<openstudio::epmodel::DesignSpecificationOutdoorAirSpaceList>();
-        if (!zone || !dsoaSpaceList) {
+        auto dsoaObject = dsoaTarget->optionalCast<openstudio::epmodel::ModelObject>();
+        const bool supportedDSOA = dsoaObject
+                                   && (dsoaObject->optionalCast<openstudio::epmodel::DesignSpecificationOutdoorAir>()
+                                       || dsoaObject->optionalCast<openstudio::epmodel::DesignSpecificationOutdoorAirSpaceList>());
+        if (!zone || !supportedDSOA) {
           continue;
         }
-        result.emplace_back(*zone, *dsoaSpaceList);
+        result.emplace_back(*zone, *dsoaObject);
       }
       return result;
     }
@@ -276,17 +281,21 @@ namespace epmodel {
                                            "ControllerMechanicalVentilation", "Availability Schedule", schedule);
     }
 
-    bool
-      ControllerMechanicalVentilation_Impl::addZoneOutdoorAirEntry(const openstudio::epmodel::ThermalZone& zone,
-                                                                   const openstudio::epmodel::DesignSpecificationOutdoorAirSpaceList& dsoaSpaceList) {
+    bool ControllerMechanicalVentilation_Impl::addZoneOutdoorAirEntry(const openstudio::epmodel::ThermalZone& zone,
+                                                                      const openstudio::epmodel::ModelObject& dsoaObject) {
       auto controller = getObject<openstudio::epmodel::ControllerMechanicalVentilation>();
+      if ((zone.model() != controller.model()) || (dsoaObject.model() != controller.model())
+          || !(dsoaObject.optionalCast<openstudio::epmodel::DesignSpecificationOutdoorAir>()
+               || dsoaObject.optionalCast<openstudio::epmodel::DesignSpecificationOutdoorAirSpaceList>())) {
+        return false;
+      }
       auto group = controller.pushExtensibleGroup();
       auto workspaceGroup = group.optionalCast<openstudio::WorkspaceExtensibleGroup>();
       OS_ASSERT(workspaceGroup);
       OS_ASSERT(group.setString(openstudio::Controller_MechanicalVentilationExtensibleFields::DesignSpecificationZoneAirDistributionObjectName, ""));
       OS_ASSERT(workspaceGroup->setPointer(openstudio::Controller_MechanicalVentilationExtensibleFields::ZoneorZoneListName, zone.handle()));
       OS_ASSERT(workspaceGroup->setPointer(openstudio::Controller_MechanicalVentilationExtensibleFields::DesignSpecificationOutdoorAirObjectName,
-                                           dsoaSpaceList.handle()));
+                                           dsoaObject.handle()));
       return true;
     }
 

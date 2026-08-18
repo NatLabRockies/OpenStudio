@@ -44,6 +44,7 @@ EPMODELOBJECT_WRAP(CoilCoolingWaterPanelRadiant, <epmodel/StraightComponent/Coil
 EPMODELOBJECT_WRAP(CoilWaterHeatingAirToWaterHeatPumpWrapped, <epmodel/StraightComponent/CoilWaterHeatingAirToWaterHeatPumpWrapped.hpp>, 0, 1)
 EPMODELOBJECT_WRAP(AirLoopHVACUnitaryHeatPumpAirToAir, <epmodel/StraightComponent/AirLoopHVACUnitaryHeatPumpAirToAir.hpp>, 0, 1)
 EPMODELOBJECT_WRAP(AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed, <epmodel/StraightComponent/AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed.hpp>, 0, 1)
+EPMODELOBJECT_WRAP(AirLoopHVACUnitaryHeatCool, <epmodel/StraightComponent/AirLoopHVACUnitaryHeatCool.hpp>, 0, 1)
 EPMODELOBJECT_WRAP(AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass, <epmodel/StraightComponent/AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass.hpp>, 0, 1)
 EPMODELOBJECT_WRAP(AirTerminalSingleDuctConstantVolumeCooledBeam, <epmodel/StraightComponent/AirTerminalSingleDuctConstantVolumeCooledBeam.hpp>, 0, 1)
 EPMODELOBJECT_WRAP(AirTerminalSingleDuctConstantVolumeFourPipeBeam, <epmodel/StraightComponent/AirTerminalSingleDuctConstantVolumeFourPipeBeam.hpp>, 0, 1)

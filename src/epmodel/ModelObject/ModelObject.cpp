@@ -81,7 +81,7 @@ namespace epmodel {
     static constexpr double kNoUpper = std::numeric_limits<double>::infinity();
 
     const ScheduleTypeSpec* findScheduleTypeSpec(const std::string& className, const std::string& scheduleDisplayName) {
-      static constexpr std::array<ScheduleTypeSpec, 213> specs{{
+      static constexpr std::array<ScheduleTypeSpec, 215> specs{{
         {"AirLoopHVAC", "Availability Manager Scheduled On", false, true, "Availability", 0.0, 1.0},
         {"AirLoopHVACDedicatedOutdoorAirSystem", "Availability Schedule", false, true, "Availability", 0.0, 1.0},
         {"AirConditionerVariableRefrigerantFlow", "Availability Schedule", false, true, "Availability", 0.0, 1.0},
@@ -177,6 +177,8 @@ namespace epmodel {
         {"AirLoopHVACUnitaryHeatPumpAirToAir", "Supply Air Fan Operating Mode", false, true, "Availability", 0.0, 1.0},
         {"AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed", "Availability Schedule", false, true, "Availability", 0.0, 1.0},
         {"AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed", "Supply Air Fan Operating Mode Schedule", false, true, "Availability", 0.0, 1.0},
+        {"AirLoopHVACUnitaryHeatCool", "Availability", false, true, "Availability", 0.0, 1.0},
+        {"AirLoopHVACUnitaryHeatCool", "Supply Air Fan Operating Mode", false, true, "Availability", 0.0, 1.0},
         {"AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass", "Availability Schedule", false, true, "Availability", 0.0, 1.0},
         {"AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass", "Outdoor Air Flow Rate Multiplier Schedule", true, true, "Dimensionless", 0.0, 1.0},
         {"AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass", "Supply Air Fan Operating Mode Schedule", false, true, "Availability", 0.0, 1.0},

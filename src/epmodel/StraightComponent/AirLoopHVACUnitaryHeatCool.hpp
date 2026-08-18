@@ -7,7 +7,7 @@
 #define EPMODEL_AIRLOOPHVACUNITARYHEATCOOL_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "StraightComponent/StraightComponent.hpp"
 
 #include <utilities/idd/IddEnums.hxx>
 
@@ -18,15 +18,21 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class Node;
+  class HVACComponent;
+  class Schedule;
+  class ThermalZone;
 
   namespace detail {
     class AirLoopHVACUnitaryHeatCool_Impl;
   }
 
-  class EPMODEL_API AirLoopHVACUnitaryHeatCool : public ModelObject
+  class EPMODEL_API AirLoopHVACUnitaryHeatCool : public StraightComponent
   {
    public:
     explicit AirLoopHVACUnitaryHeatCool(const Model& model);
+    AirLoopHVACUnitaryHeatCool(const Model& model, Schedule& availabilitySchedule, HVACComponent& supplyFan, HVACComponent& heatingCoil,
+                               HVACComponent& coolingCoil);
 
     virtual ~AirLoopHVACUnitaryHeatCool() override = default;
     AirLoopHVACUnitaryHeatCool(const AirLoopHVACUnitaryHeatCool& other) = default;
@@ -44,10 +50,45 @@ namespace epmodel {
     static std::vector<std::string> reheatCoilObjectTypeValues();
 
     // Schema Alignment Notes:
-    // - API: This no-counterpart type uses IDD-derived class/accessor naming.
-    // - Field Mapping: Scalar APIs map directly to AirLoopHVAC:UnitaryHeatCool numeric/choice fields.
-    // - Field Mapping: Availability schedule, unitary system inlet/outlet nodes, fan operating mode schedule, controlling zone, and *Name linkage fields remain excluded as relationship fields.
-    // - TODO(parity): Add relationship APIs after scalar saturation without changing scalar signatures.
+    // - Status: Partial Parity.
+    // - Canonical Counterpart: None; this is an EnergyPlus-native type. Its contract follows the fully implemented canonical unitary siblings.
+    // - Implemented Parity: The wrapper is a supply-side StraightComponent. Its availability and operating-mode schedules, controlling
+    //   zone, fan, heating coil, cooling coil, and optional reheat coil are typed relationships. The unitary owns the HVAC children and
+    //   maintains their serial air path for blow-through and draw-through fan placement.
+    // - Field Mapping: Scalar APIs map directly to AirLoopHVAC:UnitaryHeatCool numeric/choice fields. Object type/name pairs are
+    //   synchronized by typed relationship mutation and canonicalization.
+    // - Evidence: The sibling AirLoopHVACUnitaryHeatPumpAirToAir and AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass wrappers provide the ownership,
+    //   supply-connection, and contained-air-path contracts.
+    // - Remaining Parity Work: Add broader topology conveniences only when another supported unitary contract establishes their semantics.
+    Schedule availabilitySchedule() const;
+    bool setAvailabilitySchedule(Schedule& schedule);
+
+    boost::optional<Schedule> supplyAirFanOperatingModeSchedule() const;
+    bool setSupplyAirFanOperatingModeSchedule(Schedule& schedule);
+    void resetSupplyAirFanOperatingModeSchedule();
+
+    boost::optional<ThermalZone> controllingZone() const;
+    bool setControllingZone(ThermalZone& zone);
+    void resetControllingZone();
+
+    HVACComponent supplyFan() const;
+    bool setSupplyFan(HVACComponent& hvacComponent);
+
+    HVACComponent heatingCoil() const;
+    bool setHeatingCoil(HVACComponent& hvacComponent);
+
+    HVACComponent coolingCoil() const;
+    bool setCoolingCoil(HVACComponent& hvacComponent);
+
+    boost::optional<HVACComponent> reheatCoil() const;
+    bool setReheatCoil(HVACComponent& hvacComponent);
+    void resetReheatCoil();
+
+    boost::optional<Node> fanOutletNode() const;
+    boost::optional<Node> coolingCoilOutletNode() const;
+    boost::optional<Node> heatingCoilOutletNode() const;
+
+    bool addToNode(Node& node);
     boost::optional<double> maximumSupplyAirTemperature() const;
     bool isMaximumSupplyAirTemperatureDefaulted() const;
     bool isMaximumSupplyAirTemperatureAutosized() const;

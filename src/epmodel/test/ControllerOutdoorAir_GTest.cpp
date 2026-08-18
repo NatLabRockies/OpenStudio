@@ -29,6 +29,7 @@
 #include "../ParentObject/ControllerOutdoorAir.hpp"
 #include "../ParentObject/ControllerOutdoorAir_Impl.hpp"
 #include "../ResourceObject/DesignSpecificationOutdoorAir.hpp"
+#include "../ResourceObject/DesignSpecificationOutdoorAir_Impl.hpp"
 #include "../ResourceObject/ScheduleTypeLimits.hpp"
 #include "../Schedule/Schedule.hpp"
 #include "../Schedule/Schedule_Impl.hpp"
@@ -38,6 +39,7 @@
 #include "../ModelObject/SizingZone.hpp"
 #include "../ModelObject/SizingZone_Impl.hpp"
 #include "../PlanarSurfaceGroup/Space.hpp"
+#include "../PlanarSurfaceGroup/Space_Impl.hpp"
 #include "../HVACComponent/ThermalZone.hpp"
 #include "../HVACComponent/ThermalZone_Impl.hpp"
 
@@ -1019,6 +1021,51 @@ TEST_F(EPModelFixture, API_ControllerMechanicalVentilation_ImplOnlyZoneOutdoorAi
   auto entries = cmv.getImpl<openstudio::epmodel::detail::ControllerMechanicalVentilation_Impl>()->zoneOutdoorAirEntries();
   ASSERT_EQ(1u, entries.size());
   EXPECT_EQ(zoneWithDSOA, entries.front().first);
+}
+
+TEST_F(EPModelFixture, ControllerMechanicalVentilation_RowSyncSupportsZoneOnlyDirectDSOA) {
+  const auto idfPath = openstudio::tempDir() / openstudio::toPath("epmodel-cmv-zone-only-direct-dsoa.idf");
+  Model model;
+  AirLoopHVAC airLoop(model);
+  AirLoopHVACOutdoorAirSystem outdoorAirSystem(model);
+  auto supplyInletNode = airLoop.supplyInletNode();
+  ASSERT_TRUE(outdoorAirSystem.addToNode(supplyInletNode));
+
+  ThermalZone zone(model);
+  ASSERT_TRUE(zone.setName("Zone Only Direct DSOA Zone"));
+  ASSERT_TRUE(airLoop.addBranchForZone(zone));
+  EXPECT_TRUE(model.getConcreteModelObjects<Space>().empty());
+
+  DesignSpecificationOutdoorAir dsoa(model);
+  ASSERT_TRUE(dsoa.setName("Zone Only Direct DSOA"));
+  auto sizingZone = zone.sizingZone();
+  ASSERT_TRUE(sizingZone.setPointer(openstudio::Sizing_ZoneFields::DesignSpecificationOutdoorAirObjectName, dsoa.handle()));
+  EXPECT_FALSE(sizingZone.getImpl<detail::SizingZone_Impl>()->designSpecificationOutdoorAirSpaceList());
+
+  auto cmv = outdoorAirSystem.getControllerOutdoorAir().controllerMechanicalVentilation();
+  auto cmvImpl = cmv.getImpl<detail::ControllerMechanicalVentilation_Impl>();
+  ASSERT_TRUE(cmvImpl);
+  airLoop.getImpl<detail::AirLoopHVAC_Impl>()->syncControllerMechanicalVentilationZoneOutdoorAirEntries();
+  const auto entries = cmvImpl->zoneOutdoorAirEntries();
+  ASSERT_EQ(1u, entries.size());
+  EXPECT_EQ(zone.handle(), entries.front().first.handle());
+  EXPECT_EQ(dsoa.handle(), entries.front().second.handle());
+  EXPECT_TRUE(entries.front().second.optionalCast<DesignSpecificationOutdoorAir>());
+  EXPECT_FALSE(entries.front().second.optionalCast<DesignSpecificationOutdoorAirSpaceList>());
+  ASSERT_TRUE(model.save(idfPath, true));
+
+  auto loadedModel = Model::load(idfPath);
+  ASSERT_TRUE(loadedModel);
+  EXPECT_TRUE(loadedModel->getConcreteModelObjects<Space>().empty());
+  auto loadedCMV = loadedModel->getConcreteModelObjectByName<ControllerMechanicalVentilation>(cmv.nameString());
+  ASSERT_TRUE(loadedCMV);
+  const auto loadedEntries = loadedCMV->getImpl<detail::ControllerMechanicalVentilation_Impl>()->zoneOutdoorAirEntries();
+  ASSERT_EQ(1u, loadedEntries.size());
+  EXPECT_EQ("Zone Only Direct DSOA Zone", loadedEntries.front().first.nameString());
+  EXPECT_EQ("Zone Only Direct DSOA", loadedEntries.front().second.nameString());
+  EXPECT_TRUE(loadedEntries.front().second.optionalCast<DesignSpecificationOutdoorAir>());
+
+  openstudio::filesystem::remove(idfPath);
 }
 
 TEST_F(EPModelFixture, API_ControllerMechanicalVentilation_RebuildOnThermalZoneAddToNode) {

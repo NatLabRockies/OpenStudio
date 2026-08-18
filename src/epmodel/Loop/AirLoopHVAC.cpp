@@ -108,6 +108,8 @@
 #include "SizingZone_Impl.hpp"
 #include "ModelObject/DesignSpecificationOutdoorAirSpaceList.hpp"
 #include "ModelObject/DesignSpecificationOutdoorAirSpaceList_Impl.hpp"
+#include "ResourceObject/DesignSpecificationOutdoorAir.hpp"
+#include "ResourceObject/DesignSpecificationOutdoorAir_Impl.hpp"
 #include "ModelObject/SizingSystem.hpp"
 #include "ModelObject/SizingSystem_Impl.hpp"
 #include "SetpointManager/SetpointManagerMixedAir.hpp"
@@ -6525,24 +6527,27 @@ namespace epmodel {
         return;
       }
 
-      std::vector<std::pair<openstudio::epmodel::ThermalZone, openstudio::epmodel::DesignSpecificationOutdoorAirSpaceList>> entries;
+      std::vector<std::pair<openstudio::epmodel::ThermalZone, openstudio::epmodel::ModelObject>> entries;
       for (const auto& zone : airLoop.thermalZones()) {
         auto sizingZone = zone.sizingZone();
-        auto dsoaSpaceList = sizingZone.getImpl<openstudio::epmodel::detail::SizingZone_Impl>()->designSpecificationOutdoorAirSpaceList();
-        if (dsoaSpaceList) {
-          entries.emplace_back(zone, *dsoaSpaceList);
+        auto dsoaObject =
+          sizingZone.getModelObjectTarget<openstudio::epmodel::ModelObject>(openstudio::Sizing_ZoneFields::DesignSpecificationOutdoorAirObjectName);
+        if (dsoaObject
+            && (dsoaObject->optionalCast<openstudio::epmodel::DesignSpecificationOutdoorAirSpaceList>()
+                || dsoaObject->optionalCast<openstudio::epmodel::DesignSpecificationOutdoorAir>())) {
+          entries.emplace_back(zone, *dsoaObject);
         }
       }
 
       // Big picture: CMV extensible groups are not the source of truth. The
-      // source of truth is ThermalZone -> Sizing:Zone ->
-      // DesignSpecification:OutdoorAir:SpaceList. CMV entries are just the E+
+      // source of truth is ThermalZone -> Sizing:Zone -> its effective direct
+      // DSOA or DSOA:SpaceList relationship. CMV entries are just the E+
       // runtime copy of that relationship for this air loop.
       auto cmvImpl = cmv->getImpl<openstudio::epmodel::detail::ControllerMechanicalVentilation_Impl>();
       OS_ASSERT(cmvImpl);
       cmvImpl->clearZoneOutdoorAirEntries();
-      for (const auto& [zone, dsoaSpaceList] : entries) {
-        OS_ASSERT(cmvImpl->addZoneOutdoorAirEntry(zone, dsoaSpaceList));
+      for (const auto& [zone, dsoaObject] : entries) {
+        OS_ASSERT(cmvImpl->addZoneOutdoorAirEntry(zone, dsoaObject));
       }
     }
 
@@ -7368,7 +7373,21 @@ namespace epmodel {
       };
 
       const std::function<void(const ModelObject&)> collectRemovalObject = [&](const ModelObject& object) {
+        if (std::ranges::any_of(removalObjects, [&object](const auto& existing) { return existing.handle() == object.handle(); })) {
+          return;
+        }
         addRemovalObject(object);
+
+        if (auto hvacComponent = object.optionalCast<HVACComponent>()) {
+          for (const auto& child : hvacComponent->children()) {
+            // HVAC ownership is the loop-removal boundary. Non-HVAC children
+            // such as schedules and performance curves may be shared and are
+            // governed by their own parent lifecycle contracts.
+            if (child.optionalCast<HVACComponent>()) {
+              collectRemovalObject(child);
+            }
+          }
+        }
 
         if (auto oaSystem = object.optionalCast<AirLoopHVACOutdoorAirSystem>()) {
           if (auto controllerList =
@@ -7502,17 +7521,27 @@ namespace epmodel {
       std::set<Handle> removedHandles;
       const auto removeModelObject = [&removedHandles, &appendRemoved](ModelObject& object) {
         if (object.handle().isNull() || removedHandles.contains(object.handle())) {
-          return;
+          return false;
         }
-        removedHandles.insert(object.handle());
-        appendRemoved(object.remove());
+        const auto handle = object.handle();
+        auto removed = object.remove();
+        if (removed.empty()) {
+          return false;
+        }
+        removedHandles.insert(handle);
+        appendRemoved(std::move(removed));
+        return true;
       };
 
-      for (auto object : removalObjects) {
-        if (object.optionalCast<ThermalZone>()) {
-          continue;
+      bool madeProgress = true;
+      while (madeProgress) {
+        madeProgress = false;
+        for (auto object : removalObjects) {
+          if (object.optionalCast<ThermalZone>()) {
+            continue;
+          }
+          madeProgress = removeModelObject(object) || madeProgress;
         }
-        removeModelObject(object);
       }
 
       return result;

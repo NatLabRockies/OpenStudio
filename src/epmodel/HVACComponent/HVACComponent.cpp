@@ -14,6 +14,8 @@
 #include "Loop/Loop_Impl.hpp"
 #include "Loop/PlantLoop.hpp"
 #include "Loop/PlantLoop_Impl.hpp"
+#include "ModelObject/PlantEquipmentList.hpp"
+#include "ModelObject/PlantEquipmentList_Impl.hpp"
 #include "Node.hpp"
 #include "Splitter/Splitter.hpp"
 #include "StraightComponent/StraightComponent.hpp"
@@ -197,6 +199,19 @@ namespace epmodel {
       if (!isRemovable()) {
         return {};
       }
+
+      // ModelObjectList automatically drops a removed Model HVAC component.
+      // EnergyPlus persists the equivalent relationship as an extensible row;
+      // erase that whole row before removing the target so it cannot degrade
+      // into an invalid object-type/blank-name pair.
+      const auto component = getObject<openstudio::epmodel::HVACComponent>();
+      const auto equipmentListSources = component.getSources(openstudio::epmodel::PlantEquipmentList::iddObjectType());
+      for (const auto& source : equipmentListSources) {
+        if (auto equipmentList = source.optionalCast<openstudio::epmodel::PlantEquipmentList>()) {
+          OS_ASSERT(equipmentList->removeEquipment(component));
+        }
+      }
+
       disconnect();
       return ParentObject_Impl::remove();
     }

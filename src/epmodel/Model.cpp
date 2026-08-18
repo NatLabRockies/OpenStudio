@@ -752,7 +752,7 @@
 #include "scaffolds/AirLoopHVACUnitaryFurnaceHeatCool_Impl.hpp"
 #include "scaffolds/AirLoopHVACUnitaryFurnaceHeatOnly_Impl.hpp"
 #include "scaffolds/AirLoopHVACUnitaryHeatOnly_Impl.hpp"
-#include "scaffolds/AirLoopHVACUnitaryHeatCool_Impl.hpp"
+#include "StraightComponent/AirLoopHVACUnitaryHeatCool_Impl.hpp"
 #include "StraightComponent/AirLoopHVACUnitaryHeatPumpAirToAir_Impl.hpp"
 #include "scaffolds/AirLoopHVACUnitaryHeatPumpWaterToAir_Impl.hpp"
 #include "StraightComponent/AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl.hpp"
