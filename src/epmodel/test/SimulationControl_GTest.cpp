@@ -8,6 +8,10 @@
 #include "EPModelFixture.hpp"
 #include "../ParentObject/SimulationControl.hpp"
 #include "../ParentObject/SimulationControl_Impl.hpp"
+#include "../ParentObject/Building.hpp"
+#include "../ParentObject/Building_Impl.hpp"
+
+#include <utilities/idd/Building_FieldEnums.hxx>
 
 using namespace openstudio::epmodel;
 
@@ -75,6 +79,19 @@ TEST_F(EPModelFixture, SimulationControl_ScalarAccessors_RoundTrip) {
   simulationControl.resetRunSimulationforWeatherFileRunPeriods();
   EXPECT_TRUE(simulationControl.isRunSimulationforWeatherFileRunPeriodsDefaulted());
   EXPECT_EQ(defaultRunSimulationforWeatherFileRunPeriods, simulationControl.runSimulationforWeatherFileRunPeriods());
+
+  EXPECT_EQ(25, simulationControl.maximumNumberofWarmupDays());
+  EXPECT_TRUE(simulationControl.isMaximumNumberofWarmupDaysDefaulted());
+  EXPECT_TRUE(simulationControl.setMaximumNumberofWarmupDays(50));
+  EXPECT_FALSE(simulationControl.isMaximumNumberofWarmupDaysDefaulted());
+  EXPECT_EQ(50, simulationControl.maximumNumberofWarmupDays());
+  const auto persistedMaximumWarmupDays =
+    model.getUniqueModelObject<Building>().getInt(openstudio::BuildingFields::MaximumNumberofWarmupDays);
+  ASSERT_TRUE(persistedMaximumWarmupDays);
+  EXPECT_EQ(50, *persistedMaximumWarmupDays);
+  simulationControl.resetMaximumNumberofWarmupDays();
+  EXPECT_TRUE(simulationControl.isMaximumNumberofWarmupDaysDefaulted());
+  EXPECT_EQ(25, simulationControl.maximumNumberofWarmupDays());
 
   const bool defaultDoHVACSizingSimulationforSizingPeriods = simulationControl.doHVACSizingSimulationforSizingPeriods();
   EXPECT_TRUE(simulationControl.isDoHVACSizingSimulationforSizingPeriodsDefaulted());

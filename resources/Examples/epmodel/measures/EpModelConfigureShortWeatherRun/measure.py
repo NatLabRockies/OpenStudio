@@ -51,6 +51,10 @@ class EpModelConfigureShortWeatherRun(openstudio.measure.ModelMeasure):
                 simulation_control.setRunSimulationforWeatherFileRunPeriods(True),
                 "Could not enable weather-file run periods.",
             ),
+            (
+                simulation_control.setMaximumNumberofWarmupDays(50),
+                "Could not allow enough warmup days for the replacement HVAC system.",
+            ),
         ]
         for condition, message in updates:
             if not condition:

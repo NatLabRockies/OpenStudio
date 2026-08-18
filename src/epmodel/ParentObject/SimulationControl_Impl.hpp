@@ -44,6 +44,11 @@ namespace epmodel {
       bool setRunSimulationforWeatherFileRunPeriods(bool runSimulationforWeatherFileRunPeriods);
       void resetRunSimulationforWeatherFileRunPeriods();
 
+      int maximumNumberofWarmupDays() const;
+      bool isMaximumNumberofWarmupDaysDefaulted() const;
+      bool setMaximumNumberofWarmupDays(int maximumNumberofWarmupDays);
+      void resetMaximumNumberofWarmupDays();
+
       bool doHVACSizingSimulationforSizingPeriods() const;
       bool isDoHVACSizingSimulationforSizingPeriodsDefaulted() const;
       bool setDoHVACSizingSimulationforSizingPeriods(bool doHVACSizingSimulationforSizingPeriods);

@@ -3,8 +3,8 @@
   <schema_version>3.1</schema_version>
   <name>ep_model_configure_short_weather_run</name>
   <uid>2d18aec8-44aa-49f0-966d-a5e8bca32409</uid>
-  <version_id>ddf7a95d-ce07-4311-b498-a8ec6e7f3ef6</version_id>
-  <version_modified>2026-08-18T05:00:09Z</version_modified>
+  <version_id>ff249765-d4c4-4c36-a9d4-2085826f33b2</version_id>
+  <version_modified>2026-08-18T09:11:21Z</version_modified>
   <xml_checksum>E6950623</xml_checksum>
   <class_name>EpModelConfigureShortWeatherRun</class_name>
   <display_name>EPModel Configure Short Weather Run</display_name>
@@ -38,7 +38,7 @@
       <filename>measure.py</filename>
       <filetype>py</filetype>
       <usage_type>script</usage_type>
-      <checksum>DF7FFDA2</checksum>
+      <checksum>9331EC28</checksum>
     </file>
   </files>
 </measure>

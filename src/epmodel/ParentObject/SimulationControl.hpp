@@ -39,8 +39,8 @@ namespace epmodel {
     // - API: Preserve openstudio::model::SimulationControl scalar accessor names/signatures for SimulationControl fields.
     // - Field Mapping: do*/run*/HVAC sizing-pass APIs map directly to EnergyPlus SimulationControl fields.
     // - Field Mapping: loadsConvergenceToleranceValue, temperatureConvergenceToleranceValue, solarDistribution,
-    //   maximumNumberofWarmupDays, and minimumNumberofWarmupDays are translated via EnergyPlus Building and are
-    //   intentionally excluded from this class's scalar API.
+    //   minimumNumberofWarmupDays are translated via EnergyPlus Building and are intentionally excluded from this class's scalar API.
+    // - Cross-object Mapping: maximumNumberofWarmupDays preserves the canonical SimulationControl API while storing its value on EnergyPlus Building.
     // - ForwardTranslator evidence: ForwardTranslateSimulationControl.cpp writes the retained SimulationControl fields;
     //   ForwardTranslateBuilding.cpp maps the excluded fields from model::SimulationControl to Building.
     // - TODO(parity): Revisit cross-object parity for excluded Building-mapped SimulationControl APIs after scalar saturation.
@@ -73,6 +73,11 @@ namespace epmodel {
     bool setRunSimulationforWeatherFileRunPeriods(bool runSimulationforWeatherFileRunPeriods);
     void setRunSimulationforWeatherFileRunPeriodsNoFail(bool runSimulationforWeatherFileRunPeriods);
     void resetRunSimulationforWeatherFileRunPeriods();
+
+    int maximumNumberofWarmupDays() const;
+    bool isMaximumNumberofWarmupDaysDefaulted() const;
+    bool setMaximumNumberofWarmupDays(int maximumNumberofWarmupDays);
+    void resetMaximumNumberofWarmupDays();
 
     bool doHVACSizingSimulationforSizingPeriods() const;
     bool isDoHVACSizingSimulationforSizingPeriodsDefaulted() const;
