@@ -8,6 +8,7 @@
 #include "TestFailurePoint.hpp"
 
 #include "HVACComponent.hpp"
+#include "Loop/AirLoopHVAC_Impl.hpp"
 #include "Loop/PlantLoop.hpp"
 #include "Loop/PlantLoop_Impl.hpp"
 #include "Model.hpp"
@@ -19,8 +20,6 @@
 #include "Schedule/Schedule.hpp"
 #include "Schedule/Schedule_Impl.hpp"
 #include "Schedule/ScheduleConstant.hpp"
-#include "StraightComponent/SingleDuctTerminalInsertionPlan.hpp"
-#include "StraightComponent/SingleDuctTerminalRemovalPlan.hpp"
 #include "WaterToAirComponent/CoilHeatingWater.hpp"
 #include "WaterToAirComponent/CoilHeatingWater_Impl.hpp"
 
@@ -608,7 +607,7 @@ namespace epmodel {
       auto thisObject = getObject<openstudio::epmodel::ModelObject>();
       auto ownedChildren = children();
       auto terminal = thisObject.cast<StraightComponent>();
-      const bool hadTopology = SingleDuctTerminalRemovalPlan::hasTopology(terminal);
+      const bool hadTopology = AirLoopHVAC_Impl::SingleDuctTerminalRemovalPlan::hasTopology(terminal);
       const auto damperOutlet = thisObject.getModelObjectTarget<Node>(openstudio::AirTerminal_SingleDuct_VAV_ReheatFields::DamperAirOutletNodeName);
       const auto damperOutletHandle = damperOutlet ? boost::optional<Handle>(damperOutlet->handle()) : boost::none;
       bool childHadPlantTopology = false;
@@ -647,10 +646,10 @@ namespace epmodel {
     bool AirTerminalSingleDuctVAVReheat_Impl::removeFromLoop() {
       auto thisObject = getObject<openstudio::epmodel::ModelObject>();
       auto terminal = thisObject.cast<StraightComponent>();
-      const bool hasExternalTopology = SingleDuctTerminalRemovalPlan::hasTopology(terminal);
-      std::unique_ptr<SingleDuctTerminalRemovalPlan> terminalRemovalPlan;
+      const bool hasExternalTopology = AirLoopHVAC_Impl::SingleDuctTerminalRemovalPlan::hasTopology(terminal);
+      std::unique_ptr<AirLoopHVAC_Impl::SingleDuctTerminalRemovalPlan> terminalRemovalPlan;
       if (hasExternalTopology) {
-        terminalRemovalPlan = SingleDuctTerminalRemovalPlan::prepare(terminal);
+        terminalRemovalPlan = AirLoopHVAC_Impl::SingleDuctTerminalRemovalPlan::prepare(terminal);
         if (!terminalRemovalPlan) {
           return false;
         }
@@ -719,7 +718,7 @@ namespace epmodel {
       }
 
       auto terminal = thisObject.cast<StraightComponent>();
-      auto plan = SingleDuctTerminalInsertionPlan::prepare(terminal, node);
+      auto plan = AirLoopHVAC_Impl::SingleDuctTerminalInsertionPlan::prepare(terminal, node);
       if (!plan) {
         LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctVAVReheat",
                  "addToNode requires a terminal-free effective demand branch on the target AirLoopHVAC.");

@@ -5,8 +5,7 @@
 
 #include "StraightComponent/AirTerminalSingleDuctInletSideMixer.hpp"
 #include "StraightComponent/AirTerminalSingleDuctInletSideMixer_Impl.hpp"
-#include "StraightComponent/SingleDuctTerminalInsertionPlan.hpp"
-#include "StraightComponent/SingleDuctTerminalRemovalPlan.hpp"
+#include "Loop/AirLoopHVAC_Impl.hpp"
 
 #include "HVACComponent/ThermalZone.hpp"
 #include "HVACComponent/ThermalZone_Impl.hpp"
@@ -22,7 +21,6 @@
 #include "Node.hpp"
 #include "Node_Impl.hpp"
 #include "Loop/AirLoopHVAC.hpp"
-#include "Loop/AirLoopHVAC_Impl.hpp"
 #include "Mixer/AirLoopHVACZoneMixer.hpp"
 #include "Mixer/AirLoopHVACZoneMixer_Impl.hpp"
 #include "Splitter/AirLoopHVACZoneSplitter.hpp"
@@ -248,8 +246,8 @@ namespace epmodel {
       }
 
       auto terminal = thisObject.cast<StraightComponent>();
-      const bool terminalHasTopology = SingleDuctTerminalRemovalPlan::hasTopology(terminal);
-      auto removalPlan = terminalHasTopology ? SingleDuctTerminalRemovalPlan::prepare(terminal) : nullptr;
+      const bool terminalHasTopology = AirLoopHVAC_Impl::SingleDuctTerminalRemovalPlan::hasTopology(terminal);
+      auto removalPlan = terminalHasTopology ? AirLoopHVAC_Impl::SingleDuctTerminalRemovalPlan::prepare(terminal) : nullptr;
       if (terminalHasTopology && !removalPlan) {
         return false;
       }
@@ -289,7 +287,7 @@ namespace epmodel {
 
       auto thisObject = getObject<ModelObject>();
       auto terminal = thisObject.cast<StraightComponent>();
-      auto plan = SingleDuctTerminalInsertionPlan::prepare(terminal, node);
+      auto plan = AirLoopHVAC_Impl::SingleDuctTerminalInsertionPlan::prepare(terminal, node);
       if (!plan) {
         LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctInletSideMixer",
                  "addToNode requires a terminal-free effective demand branch on the target AirLoopHVAC.");

@@ -13,8 +13,7 @@
 #include "Node.hpp"
 #include "Schedule/Schedule.hpp"
 #include "Schedule/Schedule_Impl.hpp"
-#include "StraightComponent/SingleDuctTerminalInsertionPlan.hpp"
-#include "StraightComponent/SingleDuctTerminalRemovalPlan.hpp"
+#include "Loop/AirLoopHVAC_Impl.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/Logger.hpp>
@@ -113,12 +112,12 @@ namespace epmodel {
         return false;
       }
       auto terminal = getObject<openstudio::epmodel::ModelObject>().cast<StraightComponent>();
-      return !SingleDuctTerminalRemovalPlan::hasTopology(terminal) || static_cast<bool>(SingleDuctTerminalRemovalPlan::prepare(terminal));
+      return !AirLoopHVAC_Impl::SingleDuctTerminalRemovalPlan::hasTopology(terminal) || static_cast<bool>(AirLoopHVAC_Impl::SingleDuctTerminalRemovalPlan::prepare(terminal));
     }
 
     bool AirTerminalSingleDuctVAVHeatAndCoolNoReheat_Impl::removeFromLoop() {
       auto terminal = getObject<openstudio::epmodel::ModelObject>().cast<StraightComponent>();
-      auto plan = SingleDuctTerminalRemovalPlan::prepare(terminal);
+      auto plan = AirLoopHVAC_Impl::SingleDuctTerminalRemovalPlan::prepare(terminal);
       if (!plan) {
         return false;
       }
@@ -133,7 +132,7 @@ namespace epmodel {
 
       auto thisObject = getObject<openstudio::epmodel::ModelObject>();
       auto terminal = thisObject.cast<StraightComponent>();
-      auto plan = SingleDuctTerminalInsertionPlan::prepare(terminal, node);
+      auto plan = AirLoopHVAC_Impl::SingleDuctTerminalInsertionPlan::prepare(terminal, node);
       if (!plan) {
         LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctVAVHeatAndCoolNoReheat",
                  "addToNode requires a terminal-free effective demand branch on the target AirLoopHVAC.");

@@ -19,8 +19,7 @@
 #include "Node.hpp"
 #include "Schedule/Schedule.hpp"
 #include "Schedule/Schedule_Impl.hpp"
-#include "StraightComponent/SingleDuctTerminalInsertionPlan.hpp"
-#include "StraightComponent/SingleDuctTerminalRemovalPlan.hpp"
+#include "Loop/AirLoopHVAC_Impl.hpp"
 #include "StraightComponent/StraightComponent.hpp"
 #include "WaterToAirComponent/CoilHeatingWater.hpp"
 #include "WaterToAirComponent/CoilHeatingWater_Impl.hpp"
@@ -183,7 +182,7 @@ namespace epmodel {
     struct ConstantVolumeReheatTopologyRemovalPlans
     {
       std::unique_ptr<ConstantVolumeReheatAirPathRemovalPlan> coilAirPath;
-      std::unique_ptr<detail::SingleDuctTerminalRemovalPlan> externalTopology;
+      std::unique_ptr<detail::AirLoopHVAC_Impl::SingleDuctTerminalRemovalPlan> externalTopology;
     };
 
     std::unique_ptr<ConstantVolumeReheatTopologyRemovalPlans> prepareConstantVolumeReheatTopologyRemoval(const ModelObject& terminalObject,
@@ -201,8 +200,8 @@ namespace epmodel {
       }
 
       auto terminal = terminalObject.cast<StraightComponent>();
-      if (detail::SingleDuctTerminalRemovalPlan::hasTopology(terminal)) {
-        result->externalTopology = detail::SingleDuctTerminalRemovalPlan::prepare(terminal, containedInletSources);
+      if (detail::AirLoopHVAC_Impl::SingleDuctTerminalRemovalPlan::hasTopology(terminal)) {
+        result->externalTopology = detail::AirLoopHVAC_Impl::SingleDuctTerminalRemovalPlan::prepare(terminal, containedInletSources);
         if (!result->externalTopology) {
           return nullptr;
         }
@@ -401,7 +400,7 @@ namespace epmodel {
       auto terminal = terminalObject.cast<StraightComponent>();
       const auto coil =
         terminalObject.getModelObjectTarget<HVACComponent>(openstudio::AirTerminal_SingleDuct_ConstantVolume_ReheatFields::ReheatCoilName);
-      const bool hasExternalTopology = SingleDuctTerminalRemovalPlan::hasTopology(terminal);
+      const bool hasExternalTopology = AirLoopHVAC_Impl::SingleDuctTerminalRemovalPlan::hasTopology(terminal);
       const bool hasPlantTopology = coil && coil->plantLoop();
       if (!hasExternalTopology && !hasPlantTopology) {
         return true;
@@ -429,7 +428,7 @@ namespace epmodel {
       auto thisObject = getObject<openstudio::epmodel::ModelObject>();
       auto ownedChildren = children();
       auto terminal = thisObject.cast<StraightComponent>();
-      const bool hadTopology = SingleDuctTerminalRemovalPlan::hasTopology(terminal);
+      const bool hadTopology = AirLoopHVAC_Impl::SingleDuctTerminalRemovalPlan::hasTopology(terminal);
       bool childHadPlantTopology = false;
       for (const auto& child : ownedChildren) {
         if (auto component = child.optionalCast<openstudio::epmodel::HVACComponent>(); component && component->plantLoop()) {
@@ -513,7 +512,7 @@ namespace epmodel {
       }
 
       auto terminal = thisObject.cast<StraightComponent>();
-      auto plan = SingleDuctTerminalInsertionPlan::prepare(terminal, node);
+      auto plan = AirLoopHVAC_Impl::SingleDuctTerminalInsertionPlan::prepare(terminal, node);
       if (!plan) {
         LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctConstantVolumeReheat",
                  "addToNode requires a terminal-free effective demand branch on the target AirLoopHVAC.");

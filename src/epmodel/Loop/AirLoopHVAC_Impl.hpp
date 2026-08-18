@@ -10,6 +10,7 @@
 #include "BranchList.hpp"
 #include "HVACComponent/HVACComponent.hpp"
 #include "ModelObject.hpp"
+#include "Node.hpp"
 
 #include <memory>
 #include <vector>
@@ -149,6 +150,101 @@ namespace epmodel {
         boost::optional<openstudio::epmodel::ModelObject> m_replacementTarget;
         boost::optional<openstudio::epmodel::ModelObject> m_thermalZone;
       };
+
+      // Owns the common AirLoopHVAC topology transaction used when inserting
+      // one single-duct terminal. Terminal-specific contained equipment is
+      // prepared by the caller between apply() and commit().
+      class SingleDuctTerminalInsertionPlan
+      {
+       public:
+        static std::unique_ptr<SingleDuctTerminalInsertionPlan> prepare(openstudio::epmodel::StraightComponent& terminal,
+                                                                        openstudio::epmodel::Node& outletNode);
+
+        SingleDuctTerminalInsertionPlan(const SingleDuctTerminalInsertionPlan&) = delete;
+        SingleDuctTerminalInsertionPlan& operator=(const SingleDuctTerminalInsertionPlan&) = delete;
+        SingleDuctTerminalInsertionPlan(SingleDuctTerminalInsertionPlan&&) = delete;
+        SingleDuctTerminalInsertionPlan& operator=(SingleDuctTerminalInsertionPlan&&) = delete;
+        ~SingleDuctTerminalInsertionPlan();
+
+        bool apply();
+        void commit();
+
+       private:
+        SingleDuctTerminalInsertionPlan(openstudio::epmodel::ModelObject terminal, std::unique_ptr<DemandBranchStartReservation> branchReservation,
+                                        openstudio::epmodel::ModelObject outletNode, openstudio::epmodel::ModelObject inletNode,
+                                        bool createdInletNode, unsigned inletPort, unsigned outletPort,
+                                        boost::optional<openstudio::epmodel::ModelObject> airDistributionUnit,
+                                        boost::optional<openstudio::epmodel::ModelObject> equipmentList,
+                                        boost::optional<openstudio::epmodel::ModelObject> previousAirDistributionUnitOutletTarget,
+                                        boost::optional<std::string> previousAirDistributionUnitOutletNodeName, bool assignedTerminalName);
+
+        bool setTerminalPointer(unsigned fieldIndex, const Handle& targetHandle);
+        void rollback();
+
+        openstudio::epmodel::ModelObject m_terminal;
+        std::unique_ptr<DemandBranchStartReservation> m_branchReservation;
+        openstudio::epmodel::ModelObject m_outletNode;
+        openstudio::epmodel::ModelObject m_inletNode;
+        unsigned m_inletPort;
+        unsigned m_outletPort;
+        boost::optional<openstudio::epmodel::ModelObject> m_airDistributionUnit;
+        boost::optional<openstudio::epmodel::ModelObject> m_equipmentList;
+        boost::optional<openstudio::epmodel::ModelObject> m_previousAirDistributionUnitOutletTarget;
+        boost::optional<std::string> m_previousAirDistributionUnitOutletNodeName;
+        bool m_createdInletNode = false;
+        bool m_assignedTerminalName = false;
+        bool m_applyAttempted = false;
+        bool m_applySucceeded = false;
+        bool m_inletAssignmentAttempted = false;
+        bool m_outletAssignmentAttempted = false;
+        bool m_airDistributionUnitUpdateAttempted = false;
+        bool m_zoneRegistered = false;
+        bool m_committed = false;
+      };
+
+      // Preflights the common AirLoopHVAC topology transaction used when
+      // removing one single-duct terminal. Compound terminals prepare their
+      // contained and plant topology beside this plan.
+      class SingleDuctTerminalRemovalPlan
+      {
+       public:
+        static bool hasTopology(const openstudio::epmodel::StraightComponent& terminal);
+        static std::unique_ptr<SingleDuctTerminalRemovalPlan>
+          prepare(openstudio::epmodel::StraightComponent& terminal, const std::vector<openstudio::epmodel::ModelObject>& containedInletSources = {},
+                  const boost::optional<openstudio::epmodel::Node>& authoritativeOutlet = boost::none, bool allowMissingZoneRegistration = false);
+
+        SingleDuctTerminalRemovalPlan(const SingleDuctTerminalRemovalPlan&) = delete;
+        SingleDuctTerminalRemovalPlan& operator=(const SingleDuctTerminalRemovalPlan&) = delete;
+        SingleDuctTerminalRemovalPlan(SingleDuctTerminalRemovalPlan&&) = delete;
+        SingleDuctTerminalRemovalPlan& operator=(SingleDuctTerminalRemovalPlan&&) = delete;
+
+        void commit();
+
+       private:
+        enum class State
+        {
+          Prepared,
+          Committed,
+        };
+
+        SingleDuctTerminalRemovalPlan(openstudio::epmodel::ModelObject terminal, unsigned inletPort, unsigned outletPort,
+                                      std::unique_ptr<DemandBranchStartReservation> branchReservation,
+                                      boost::optional<openstudio::epmodel::ModelObject> inletNode,
+                                      boost::optional<openstudio::epmodel::ModelObject> outletNode,
+                                      boost::optional<openstudio::epmodel::ModelObject> equipmentList,
+                                      boost::optional<openstudio::epmodel::ModelObject> airDistributionUnit);
+
+        openstudio::epmodel::ModelObject m_terminal;
+        unsigned m_inletPort;
+        unsigned m_outletPort;
+        std::unique_ptr<DemandBranchStartReservation> m_branchReservation;
+        boost::optional<openstudio::epmodel::ModelObject> m_inletNode;
+        boost::optional<openstudio::epmodel::ModelObject> m_outletNode;
+        boost::optional<openstudio::epmodel::ModelObject> m_equipmentList;
+        boost::optional<openstudio::epmodel::ModelObject> m_airDistributionUnit;
+        State m_state = State::Prepared;
+      };
+
       bool addBranchForZone(openstudio::epmodel::ThermalZone& thermalZone);
       bool addBranchForZone(openstudio::epmodel::ThermalZone& thermalZone, openstudio::epmodel::HVACComponent& airTerminal);
       bool addBranchForHVACComponent(openstudio::epmodel::HVACComponent& hvacComponent);

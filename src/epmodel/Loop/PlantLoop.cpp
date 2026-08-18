@@ -64,7 +64,6 @@
 #include "StraightComponent/AirTerminalSingleDuctInletSideMixer.hpp"
 #include "StraightComponent/AirTerminalSingleDuctInletSideMixer_Impl.hpp"
 #include "StraightComponent/CompoundTerminalTopologyInspection.hpp"
-#include "StraightComponent/SingleDuctTerminalRemovalPlan.hpp"
 #include "StraightComponent/CoilCoolingLowTempRadiantConstFlow.hpp"
 #include "StraightComponent/CoilCoolingLowTempRadiantConstFlow_Impl.hpp"
 #include "StraightComponent/CoilCoolingLowTempRadiantVarFlow.hpp"
@@ -3683,7 +3682,7 @@ namespace epmodel {
         }
 
         auto terminalAsStraight = terminal->cast<StraightComponent>();
-        auto terminalTopologyProof = SingleDuctTerminalRemovalPlan::prepare(terminalAsStraight, std::vector<ModelObject>{coil.cast<ModelObject>()});
+        auto terminalTopologyProof = AirLoopHVAC_Impl::SingleDuctTerminalRemovalPlan::prepare(terminalAsStraight, std::vector<ModelObject>{coil.cast<ModelObject>()});
         if (!terminalTopologyProof) {
           return nullptr;
         }
@@ -3734,7 +3733,7 @@ namespace epmodel {
      private:
       ContainedReheatCoilDemandBranchAttachmentPlan(CoilHeatingWater coil, AirTerminalSingleDuctConstantVolumeReheat terminal, AirLoopHVAC airLoop,
                                                     ThermalZone thermalZone, ZoneHVACAirDistributionUnit airDistributionUnit, Node airInletNode,
-                                                    Node airOutletNode, std::unique_ptr<SingleDuctTerminalRemovalPlan> terminalTopologyProof,
+                                                    Node airOutletNode, std::unique_ptr<AirLoopHVAC_Impl::SingleDuctTerminalRemovalPlan> terminalTopologyProof,
                                                     std::unique_ptr<DemandBranchRelocationPlan> plantRelocation)
         : m_coil(std::move(coil)),
           m_terminal(std::move(terminal)),
@@ -3755,7 +3754,7 @@ namespace epmodel {
       Node m_airOutletNode;
       // Declared before relocation so rollback completes while the uncommitted
       // read-only terminal topology proof is still alive.
-      std::unique_ptr<SingleDuctTerminalRemovalPlan> m_terminalTopologyProof;
+      std::unique_ptr<AirLoopHVAC_Impl::SingleDuctTerminalRemovalPlan> m_terminalTopologyProof;
       std::unique_ptr<DemandBranchRelocationPlan> m_plantRelocation;
       bool m_committed = false;
     };

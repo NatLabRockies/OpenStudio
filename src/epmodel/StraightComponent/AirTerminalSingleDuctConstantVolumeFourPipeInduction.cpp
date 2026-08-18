@@ -7,7 +7,7 @@
 #include "StraightComponent/AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl.hpp"
 #include "TestFailurePoint.hpp"
 #include "StraightComponent/CompoundTerminalTopologyInspection.hpp"
-#include "StraightComponent/SingleDuctTerminalRemovalPlan.hpp"
+#include "Loop/AirLoopHVAC_Impl.hpp"
 
 #include "HVACComponent/HVACComponent.hpp"
 #include "HVACComponent/HVACComponent_Impl.hpp"
@@ -15,7 +15,6 @@
 #include "HVACComponent/ThermalZone.hpp"
 #include "HVACComponent/ThermalZone_Impl.hpp"
 #include "Loop/AirLoopHVAC.hpp"
-#include "Loop/AirLoopHVAC_Impl.hpp"
 #include "Loop/PlantLoop.hpp"
 #include "Loop/PlantLoop_Impl.hpp"
 #include "Mixer/AirLoopHVACZoneMixer.hpp"
@@ -434,7 +433,7 @@ namespace epmodel {
     struct InductionTopologyRemovalPlans
     {
       std::unique_ptr<InductionContainedAirPathRemovalPlan> containedAirPath;
-      std::unique_ptr<detail::SingleDuctTerminalRemovalPlan> externalTopology;
+      std::unique_ptr<detail::AirLoopHVAC_Impl::SingleDuctTerminalRemovalPlan> externalTopology;
     };
 
     std::unique_ptr<InductionTopologyRemovalPlans> prepareInductionTopologyRemoval(const ModelObject& terminalObject) {
@@ -444,7 +443,7 @@ namespace epmodel {
         return nullptr;
       }
       auto terminal = terminalObject.cast<StraightComponent>();
-      if (detail::SingleDuctTerminalRemovalPlan::hasTopology(terminal)) {
+      if (detail::AirLoopHVAC_Impl::SingleDuctTerminalRemovalPlan::hasTopology(terminal)) {
         std::vector<ModelObject> containedInletSources;
         if (result->containedAirPath->hasContainedAirPath()) {
           const auto mixer =
@@ -452,7 +451,7 @@ namespace epmodel {
           OS_ASSERT(mixer.object);
           containedInletSources.push_back(*mixer.object);
         }
-        result->externalTopology = detail::SingleDuctTerminalRemovalPlan::prepare(
+        result->externalTopology = detail::AirLoopHVAC_Impl::SingleDuctTerminalRemovalPlan::prepare(
           terminal, containedInletSources, result->containedAirPath->authoritativeOutlet(), result->containedAirPath->allowMissingZoneRegistration());
         if (!result->externalTopology) {
           return nullptr;
@@ -775,7 +774,7 @@ namespace epmodel {
         openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeInductionFields::HeatingCoilName);
       const auto cooling = terminalObject.getModelObjectTarget<CoilCoolingWater>(
         openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeInductionFields::CoolingCoilName);
-      const bool hasAirTopology = SingleDuctTerminalRemovalPlan::hasTopology(terminal) || inductionHasContainedTopology(terminalObject);
+      const bool hasAirTopology = AirLoopHVAC_Impl::SingleDuctTerminalRemovalPlan::hasTopology(terminal) || inductionHasContainedTopology(terminalObject);
       const auto heatingLoop = heating ? heating->plantLoop() : boost::none;
       const auto coolingLoop = cooling ? cooling->plantLoop() : boost::none;
       if (!hasAirTopology && !heatingLoop && !coolingLoop) {
@@ -808,7 +807,7 @@ namespace epmodel {
           openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeInductionFields::HeatingCoilName);
         const auto cooling = thisObject.getModelObjectTarget<CoilCoolingWater>(
           openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeInductionFields::CoolingCoilName);
-        if (SingleDuctTerminalRemovalPlan::hasTopology(thisObject.cast<StraightComponent>()) || inductionHasContainedTopology(thisObject)
+        if (AirLoopHVAC_Impl::SingleDuctTerminalRemovalPlan::hasTopology(thisObject.cast<StraightComponent>()) || inductionHasContainedTopology(thisObject)
             || (heating && heating->plantLoop()) || (cooling && cooling->plantLoop())) {
           return {};
         }
@@ -836,7 +835,7 @@ namespace epmodel {
         openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeInductionFields::HeatingCoilName);
       const auto cooling = terminalObject.getModelObjectTarget<CoilCoolingWater>(
         openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeInductionFields::CoolingCoilName);
-      const bool hasAirTopology = SingleDuctTerminalRemovalPlan::hasTopology(terminal) || inductionHasContainedTopology(terminalObject);
+      const bool hasAirTopology = AirLoopHVAC_Impl::SingleDuctTerminalRemovalPlan::hasTopology(terminal) || inductionHasContainedTopology(terminalObject);
       const auto heatingLoop = heating ? heating->plantLoop() : boost::none;
       const auto coolingLoop = cooling ? cooling->plantLoop() : boost::none;
       if (!hasAirTopology && !heatingLoop && !coolingLoop) {

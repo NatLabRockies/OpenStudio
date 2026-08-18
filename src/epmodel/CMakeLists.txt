@@ -2493,10 +2493,6 @@ set(${target_name}_src
   StraightComponent/RefrigerationCondenserWaterCooled.hpp
   StraightComponent/RefrigerationCondenserWaterCooled_Impl.hpp
   StraightComponent/RefrigerationCondenserWaterCooled.cpp
-  StraightComponent/SingleDuctTerminalInsertionPlan.hpp
-  StraightComponent/SingleDuctTerminalInsertionPlan.cpp
-  StraightComponent/SingleDuctTerminalRemovalPlan.hpp
-  StraightComponent/SingleDuctTerminalRemovalPlan.cpp
   StraightComponent/CompoundTerminalTopologyInspection.hpp
   StraightComponent/SolarCollectorFlatPlatePhotovoltaicThermal.hpp
   StraightComponent/SolarCollectorFlatPlatePhotovoltaicThermal_Impl.hpp

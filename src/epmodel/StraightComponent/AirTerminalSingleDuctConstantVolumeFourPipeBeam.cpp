@@ -10,14 +10,12 @@
 #include "StraightComponent/CoilHeatingFourPipeBeam.hpp"
 #include "StraightComponent/CoilHeatingFourPipeBeam_Impl.hpp"
 #include "StraightComponent/CompoundTerminalTopologyInspection.hpp"
-#include "StraightComponent/SingleDuctTerminalInsertionPlan.hpp"
-#include "StraightComponent/SingleDuctTerminalRemovalPlan.hpp"
+#include "Loop/AirLoopHVAC_Impl.hpp"
 
 #include "HVACComponent/ThermalZone.hpp"
 #include "HVACComponent.hpp"
 #include "HVACComponent/ThermalZone_Impl.hpp"
 #include "Loop/AirLoopHVAC.hpp"
-#include "Loop/AirLoopHVAC_Impl.hpp"
 #include "Loop/PlantLoop.hpp"
 #include "Loop/PlantLoop_Impl.hpp"
 #include "Mixer/AirLoopHVACZoneMixer.hpp"
@@ -69,7 +67,7 @@ namespace epmodel {
     {
       boost::optional<CoilCoolingFourPipeBeam> coolingCoil;
       boost::optional<CoilHeatingFourPipeBeam> heatingCoil;
-      std::unique_ptr<detail::SingleDuctTerminalRemovalPlan> externalTopology;
+      std::unique_ptr<detail::AirLoopHVAC_Impl::SingleDuctTerminalRemovalPlan> externalTopology;
     };
 
     std::unique_ptr<FourPipeBeamTopologyRemovalPlans> prepareFourPipeBeamTopologyRemoval(const ModelObject& terminalObject) {
@@ -96,8 +94,8 @@ namespace epmodel {
       }
 
       auto terminal = terminalObject.cast<StraightComponent>();
-      if (detail::SingleDuctTerminalRemovalPlan::hasTopology(terminal)) {
-        result->externalTopology = detail::SingleDuctTerminalRemovalPlan::prepare(terminal);
+      if (detail::AirLoopHVAC_Impl::SingleDuctTerminalRemovalPlan::hasTopology(terminal)) {
+        result->externalTopology = detail::AirLoopHVAC_Impl::SingleDuctTerminalRemovalPlan::prepare(terminal);
         if (!result->externalTopology) {
           return nullptr;
         }
@@ -356,7 +354,7 @@ namespace epmodel {
 
     auto thisObject = getObject<openstudio::epmodel::ModelObject>();
     auto terminal = thisObject.cast<StraightComponent>();
-    auto plan = detail::SingleDuctTerminalInsertionPlan::prepare(terminal, node);
+    auto plan = detail::AirLoopHVAC_Impl::SingleDuctTerminalInsertionPlan::prepare(terminal, node);
     if (!plan) {
       LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctConstantVolumeFourPipeBeam",
                "addToNode requires a terminal-free effective demand branch on the target AirLoopHVAC.");

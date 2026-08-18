@@ -36,7 +36,6 @@
 #include "StraightComponent/FanOnOff.hpp"
 #include "StraightComponent/FanSystemModel.hpp"
 #include "StraightComponent/FanVariableVolume.hpp"
-#include "StraightComponent/SingleDuctTerminalRemovalPlan.hpp"
 #include "StraightComponent/StraightComponent.hpp"
 #include "WaterToAirComponent/CoilHeatingWater.hpp"
 #include "WaterToAirComponent/CoilHeatingWater_Impl.hpp"
@@ -479,7 +478,7 @@ namespace epmodel {
     struct SeriesPIUTopologyRemovalPlans
     {
       std::unique_ptr<SeriesPIUContainedAirPathRemovalPlan> containedAirPath;
-      std::unique_ptr<detail::SingleDuctTerminalRemovalPlan> externalTopology;
+      std::unique_ptr<detail::AirLoopHVAC_Impl::SingleDuctTerminalRemovalPlan> externalTopology;
     };
 
     std::unique_ptr<SeriesPIUTopologyRemovalPlans> prepareSeriesPIUTopologyRemoval(const ModelObject& terminalObject) {
@@ -490,7 +489,7 @@ namespace epmodel {
       }
 
       auto terminal = terminalObject.cast<StraightComponent>();
-      if (detail::SingleDuctTerminalRemovalPlan::hasTopology(terminal)) {
+      if (detail::AirLoopHVAC_Impl::SingleDuctTerminalRemovalPlan::hasTopology(terminal)) {
         std::vector<ModelObject> containedInletSources;
         if (result->containedAirPath->hasContainedAirPath()) {
           const auto mixerRelationship =
@@ -498,7 +497,7 @@ namespace epmodel {
           OS_ASSERT(mixerRelationship.object);
           containedInletSources.push_back(*mixerRelationship.object);
         }
-        result->externalTopology = detail::SingleDuctTerminalRemovalPlan::prepare(
+        result->externalTopology = detail::AirLoopHVAC_Impl::SingleDuctTerminalRemovalPlan::prepare(
           terminal, containedInletSources, result->containedAirPath->authoritativeOutlet(), result->containedAirPath->allowMissingZoneRegistration());
         if (!result->externalTopology) {
           return nullptr;
@@ -1988,7 +1987,7 @@ namespace epmodel {
       auto terminal = terminalObject.cast<StraightComponent>();
       const auto reheat =
         terminalObject.getModelObjectTarget<HVACComponent>(openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::ReheatCoilName);
-      const bool hasAirTopology = SingleDuctTerminalRemovalPlan::hasTopology(terminal) || seriesPIUHasContainedTopology(terminalObject);
+      const bool hasAirTopology = AirLoopHVAC_Impl::SingleDuctTerminalRemovalPlan::hasTopology(terminal) || seriesPIUHasContainedTopology(terminalObject);
       const bool hasPlantTopology = reheat && reheat->plantLoop();
       if (!hasAirTopology && !hasPlantTopology) {
         return true;
@@ -2064,7 +2063,7 @@ namespace epmodel {
       auto terminal = thisObject.cast<StraightComponent>();
       auto reheat = thisObject.getModelObjectTarget<openstudio::epmodel::HVACComponent>(
         openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::ReheatCoilName);
-      const bool hasAirTopology = SingleDuctTerminalRemovalPlan::hasTopology(terminal) || seriesPIUHasContainedTopology(thisObject);
+      const bool hasAirTopology = AirLoopHVAC_Impl::SingleDuctTerminalRemovalPlan::hasTopology(terminal) || seriesPIUHasContainedTopology(thisObject);
       const bool hasPlantTopology = reheat && reheat->plantLoop();
       if (!hasAirTopology && !hasPlantTopology) {
         return false;

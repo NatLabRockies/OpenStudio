@@ -19,7 +19,6 @@
 #include "ModelObject/ZoneHVACEquipmentConnections_Impl.hpp"
 #include "ModelObject/ZoneHVACEquipmentList.hpp"
 #include "Node.hpp"
-#include "StraightComponent/SingleDuctTerminalInsertionPlan.hpp"
 #include "Mixer/AirLoopHVACZoneMixer.hpp"
 #include "Splitter/AirLoopHVACZoneSplitter.hpp"
 
@@ -118,7 +117,7 @@ namespace epmodel {
 
       auto thisObject = getObject<openstudio::epmodel::ModelObject>();
       auto terminal = thisObject.cast<StraightComponent>();
-      auto plan = SingleDuctTerminalInsertionPlan::prepare(terminal, node);
+      auto plan = AirLoopHVAC_Impl::SingleDuctTerminalInsertionPlan::prepare(terminal, node);
       if (!plan) {
         LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctUserDefined",
                  "addToNode requires a terminal-free effective demand branch on the target AirLoopHVAC.");
