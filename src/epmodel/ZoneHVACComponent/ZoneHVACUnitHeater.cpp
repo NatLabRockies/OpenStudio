@@ -178,6 +178,25 @@ namespace epmodel {
       return result;
     }
 
+    std::vector<IdfObject> ZoneHVACUnitHeater_Impl::remove() {
+      const auto ownedChildren = children();
+      ZoneHVACComponent_Impl::removeFromThermalZone();
+      auto removedParent = HVACComponent_Impl::remove();
+      if (removedParent.empty()) {
+        return {};
+      }
+
+      std::vector<IdfObject> result;
+      for (const auto& child : ownedChildren) {
+        if (auto component = child.optionalCast<HVACComponent>()) {
+          auto removed = component->remove();
+          result.insert(result.end(), removed.begin(), removed.end());
+        }
+      }
+      result.insert(result.end(), removedParent.begin(), removedParent.end());
+      return result;
+    }
+
     unsigned ZoneHVACUnitHeater_Impl::inletPort() const {
       return ZoneHVAC_UnitHeaterFields::AirInletNodeName;
     }
