@@ -232,6 +232,96 @@ if(BUILD_TESTING)
   )
   set_tests_properties(OpenStudioCLI.Run_PythonOnly_TwoMeasure PROPERTIES RESOURCE_LOCK "compact_osw")
 
+  add_test(NAME OpenStudioCLI.Run_EPModelFromScratch
+    COMMAND $<TARGET_FILE:openstudio> run -w epmodel_from_scratch.osw
+    WORKING_DIRECTORY "${PROJECT_BINARY_DIR}/resources/Examples/epmodel/"
+  )
+  set_tests_properties(OpenStudioCLI.Run_EPModelFromScratch PROPERTIES
+    RESOURCE_LOCK "epmodel_examples"
+    TIMEOUT 120
+  )
+
+  add_test(NAME OpenStudioCLI.Run_EPModelReferenceBuilding
+    COMMAND $<TARGET_FILE:openstudio> run -w epmodel_reference_building.osw
+    WORKING_DIRECTORY "${PROJECT_BINARY_DIR}/resources/Examples/epmodel/"
+  )
+  set_tests_properties(OpenStudioCLI.Run_EPModelReferenceBuilding PROPERTIES
+    RESOURCE_LOCK "epmodel_examples"
+    TIMEOUT 120
+  )
+
+  add_test(NAME OpenStudioCLI.Run_EPModelFromScratchPackagedUnitary
+    COMMAND $<TARGET_FILE:openstudio> run -w epmodel_from_scratch_packaged_unitary.osw
+    WORKING_DIRECTORY "${PROJECT_BINARY_DIR}/resources/Examples/epmodel/"
+  )
+  set_tests_properties(OpenStudioCLI.Run_EPModelFromScratchPackagedUnitary PROPERTIES
+    RESOURCE_LOCK "epmodel_examples"
+    TIMEOUT 120
+  )
+
+  add_test(NAME OpenStudioCLI.Run_EPModelReferenceBuildingPackagedUnitary
+    COMMAND $<TARGET_FILE:openstudio> run -w epmodel_reference_building_packaged_unitary.osw
+    WORKING_DIRECTORY "${PROJECT_BINARY_DIR}/resources/Examples/epmodel/"
+  )
+  set_tests_properties(OpenStudioCLI.Run_EPModelReferenceBuildingPackagedUnitary PROPERTIES
+    RESOURCE_LOCK "epmodel_examples"
+    TIMEOUT 120
+  )
+
+  add_test(NAME OpenStudioCLI.Run_EPModelFromScratchMultizoneVAV
+    COMMAND $<TARGET_FILE:openstudio> run -w epmodel_from_scratch_multizone_vav.osw
+    WORKING_DIRECTORY "${PROJECT_BINARY_DIR}/resources/Examples/epmodel/"
+  )
+  set_tests_properties(OpenStudioCLI.Run_EPModelFromScratchMultizoneVAV PROPERTIES
+    RESOURCE_LOCK "epmodel_examples"
+    TIMEOUT 120
+  )
+
+  add_test(NAME OpenStudioCLI.Run_EPModelReferenceBuildingMultizoneVAV
+    COMMAND $<TARGET_FILE:openstudio> run -w epmodel_reference_building_multizone_vav.osw
+    WORKING_DIRECTORY "${PROJECT_BINARY_DIR}/resources/Examples/epmodel/"
+  )
+  set_tests_properties(OpenStudioCLI.Run_EPModelReferenceBuildingMultizoneVAV PROPERTIES
+    RESOURCE_LOCK "epmodel_examples"
+    TIMEOUT 120
+  )
+
+  add_test(NAME OpenStudioCLI.Run_EPModelFromScratchPackagedTerminalHeatPumps
+    COMMAND $<TARGET_FILE:openstudio> run -w epmodel_from_scratch_packaged_terminal_heat_pumps.osw
+    WORKING_DIRECTORY "${PROJECT_BINARY_DIR}/resources/Examples/epmodel/"
+  )
+  set_tests_properties(OpenStudioCLI.Run_EPModelFromScratchPackagedTerminalHeatPumps PROPERTIES
+    RESOURCE_LOCK "epmodel_examples"
+    TIMEOUT 120
+  )
+
+  add_test(NAME OpenStudioCLI.Run_EPModelReferenceBuildingPackagedTerminalHeatPumps
+    COMMAND $<TARGET_FILE:openstudio> run -w epmodel_reference_building_packaged_terminal_heat_pumps.osw
+    WORKING_DIRECTORY "${PROJECT_BINARY_DIR}/resources/Examples/epmodel/"
+  )
+  set_tests_properties(OpenStudioCLI.Run_EPModelReferenceBuildingPackagedTerminalHeatPumps PROPERTIES
+    RESOURCE_LOCK "epmodel_examples"
+    TIMEOUT 120
+  )
+
+  add_test(NAME OpenStudioCLI.Run_EPModelFromScratchFourPipeFanCoils
+    COMMAND $<TARGET_FILE:openstudio> run -w epmodel_from_scratch_four_pipe_fan_coils.osw
+    WORKING_DIRECTORY "${PROJECT_BINARY_DIR}/resources/Examples/epmodel/"
+  )
+  set_tests_properties(OpenStudioCLI.Run_EPModelFromScratchFourPipeFanCoils PROPERTIES
+    RESOURCE_LOCK "epmodel_examples"
+    TIMEOUT 120
+  )
+
+  add_test(NAME OpenStudioCLI.Run_EPModelReferenceBuildingFourPipeFanCoils
+    COMMAND $<TARGET_FILE:openstudio> run -w epmodel_reference_building_four_pipe_fan_coils.osw
+    WORKING_DIRECTORY "${PROJECT_BINARY_DIR}/resources/Examples/epmodel/"
+  )
+  set_tests_properties(OpenStudioCLI.Run_EPModelReferenceBuildingFourPipeFanCoils PROPERTIES
+    RESOURCE_LOCK "epmodel_examples"
+    TIMEOUT 120
+  )
+
   add_test(NAME OpenStudioCLI.Run_RubyPython
     COMMAND $<TARGET_FILE:openstudio> run -w compact_ruby_then_python.osw
     WORKING_DIRECTORY "${PROJECT_BINARY_DIR}/resources/Examples/compact_osw/"

@@ -425,8 +425,90 @@ CREATE_SRC_GROUPS("${airflow_resources_src}")
 
 # Copy it for testing
 file(COPY "Examples" DESTINATION .)
+
+if(BUILD_CLI)
+  # Stage EPModel examples with inputs from the exact EnergyPlus distribution
+  # configured for this build. Keeping the inputs beside the workflows gives
+  # the build tree and installed package the same relative layout.
+  set(EPMODEL_EXAMPLE_DIR "${CMAKE_CURRENT_BINARY_DIR}/Examples/epmodel")
+  set(EPMODEL_EXAMPLE_FILES_DIR "${EPMODEL_EXAMPLE_DIR}/files")
+  set(EPMODEL_REFERENCE_BUILDING
+      "${ENERGYPLUS_DIR}/ExampleFiles/RefBldgSmallOfficeNew2004_Chicago.idf")
+  set(EPMODEL_EXAMPLE_WEATHER
+      "${ENERGYPLUS_DIR}/WeatherData/USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw")
+
+  if(NOT EXISTS "${EPMODEL_REFERENCE_BUILDING}" OR NOT EXISTS "${EPMODEL_EXAMPLE_WEATHER}")
+    message(FATAL_ERROR
+      "The configured EnergyPlus distribution does not contain the EPModel example inputs: "
+      "${EPMODEL_REFERENCE_BUILDING};${EPMODEL_EXAMPLE_WEATHER}")
+  endif()
+
+  # configure_file makes these source files CMake inputs, so edits are restaged
+  # automatically before the CTests run.
+  set(EPMODEL_EXAMPLE_RELATIVE_FILES
+    README.md
+    epmodel_from_scratch_four_pipe_fan_coils.osw
+    epmodel_from_scratch_multizone_vav.osw
+    epmodel_from_scratch.osw
+    epmodel_from_scratch_packaged_unitary.osw
+    epmodel_from_scratch_packaged_terminal_heat_pumps.osw
+    epmodel_reference_building_four_pipe_fan_coils.osw
+    epmodel_reference_building_multizone_vav.osw
+    epmodel_reference_building.osw
+    epmodel_reference_building_packaged_unitary.osw
+    epmodel_reference_building_packaged_terminal_heat_pumps.osw
+    measures/EpModelAddFourPipeFanCoils/measure.py
+    measures/EpModelAddFourPipeFanCoils/measure.xml
+    measures/EpModelAddIdealLoads/measure.py
+    measures/EpModelAddIdealLoads/measure.xml
+    measures/EpModelAddMultizoneVAVSystem/measure.py
+    measures/EpModelAddMultizoneVAVSystem/measure.xml
+    measures/EpModelAddPackagedUnitarySystems/measure.py
+    measures/EpModelAddPackagedUnitarySystems/measure.xml
+    measures/EpModelAddPackagedTerminalHeatPumps/measure.py
+    measures/EpModelAddPackagedTerminalHeatPumps/measure.xml
+    measures/EpModelConfigureShortWeatherRun/measure.py
+    measures/EpModelConfigureShortWeatherRun/measure.xml
+    measures/EpModelFromScratch/measure.py
+    measures/EpModelFromScratch/measure.xml
+    measures/EpModelRemoveAllHVACSystems/measure.py
+    measures/EpModelRemoveAllHVACSystems/measure.xml
+  )
+  foreach(EPMODEL_EXAMPLE_RELATIVE_FILE IN LISTS EPMODEL_EXAMPLE_RELATIVE_FILES)
+    configure_file(
+      "${CMAKE_CURRENT_SOURCE_DIR}/Examples/epmodel/${EPMODEL_EXAMPLE_RELATIVE_FILE}"
+      "${EPMODEL_EXAMPLE_DIR}/${EPMODEL_EXAMPLE_RELATIVE_FILE}"
+      COPYONLY
+    )
+  endforeach()
+
+  file(MAKE_DIRECTORY "${EPMODEL_EXAMPLE_FILES_DIR}")
+  configure_file("${CMAKE_CURRENT_SOURCE_DIR}/Examples/epmodel/files/empty.idf.in"
+                 "${EPMODEL_EXAMPLE_FILES_DIR}/empty.idf"
+                 @ONLY)
+  configure_file("${EPMODEL_REFERENCE_BUILDING}"
+                 "${EPMODEL_EXAMPLE_FILES_DIR}/RefBldgSmallOfficeNew2004_Chicago.idf"
+                 COPYONLY)
+  configure_file("${EPMODEL_EXAMPLE_WEATHER}"
+                 "${EPMODEL_EXAMPLE_FILES_DIR}/USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw"
+                 COPYONLY)
+endif()
+
 # And install
-install(DIRECTORY "Examples" DESTINATION . COMPONENT "CLI")
+install(DIRECTORY "Examples" DESTINATION . COMPONENT "CLI"
+  PATTERN "empty.idf.in" EXCLUDE
+  PATTERN "__pycache__" EXCLUDE
+  PATTERN "*.pyc" EXCLUDE
+)
+if(BUILD_CLI)
+  install(FILES
+    "${EPMODEL_EXAMPLE_FILES_DIR}/empty.idf"
+    "${EPMODEL_REFERENCE_BUILDING}"
+    "${EPMODEL_EXAMPLE_WEATHER}"
+    DESTINATION "Examples/epmodel/files"
+    COMPONENT "CLI"
+  )
+endif()
 
 # Copy it for testing
 file(COPY "workflow" DESTINATION .)

@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<measure>
+  <schema_version>3.1</schema_version>
+  <name>ep_model_add_ideal_loads</name>
+  <uid>86f55b40-f309-40fa-abb2-1de6f597f7bb</uid>
+  <version_id>b28bac4d-fabf-44c7-90c0-196afa4e4db7</version_id>
+  <version_modified>2026-08-18T03:32:31Z</version_modified>
+  <xml_checksum>E6950623</xml_checksum>
+  <class_name>EpModelAddIdealLoads</class_name>
+  <display_name>EPModel Add Ideal Loads</display_name>
+  <description>Add an ideal-loads air system to every thermal zone in an HVAC-ready EPModel.</description>
+  <modeler_description>Uses ThermalZone.setUseIdealAirLoads after verifying that no air loops, zone equipment, or plant loops remain.</modeler_description>
+  <arguments />
+  <outputs />
+  <provenances />
+  <tags>
+    <tag>Whole Building</tag>
+  </tags>
+  <attributes>
+    <attribute>
+      <name>Measure Type</name>
+      <value>ModelMeasure</value>
+      <datatype>string</datatype>
+    </attribute>
+    <attribute>
+      <name>Measure Language</name>
+      <value>Python</value>
+      <datatype>string</datatype>
+    </attribute>
+  </attributes>
+  <files>
+    <file>
+      <version>
+        <software_program>OpenStudio</software_program>
+        <identifier>4.0.0</identifier>
+        <min_compatible>4.0.0</min_compatible>
+      </version>
+      <filename>measure.py</filename>
+      <filetype>py</filetype>
+      <usage_type>script</usage_type>
+      <checksum>3576AE6F</checksum>
+    </file>
+  </files>
+</measure>

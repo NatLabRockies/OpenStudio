@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<measure>
+  <schema_version>3.1</schema_version>
+  <name>ep_model_add_four_pipe_fan_coils</name>
+  <uid>32d11001-c284-488b-a970-f1461577bb9a</uid>
+  <version_id>ad8f306c-271d-4cc4-9696-4b81c62b83b3</version_id>
+  <version_modified>2026-08-18T05:52:02Z</version_modified>
+  <xml_checksum>0AC7A2DB</xml_checksum>
+  <class_name>EpModelAddFourPipeFanCoils</class_name>
+  <display_name>EPModel Add Four-Pipe Fan Coils</display_name>
+  <description>Serve every thermostatically controlled zone with a direct four-pipe fan coil on shared hot-water and chilled-water loops.</description>
+  <modeler_description>Exercises direct zone ownership, contained fan and water-coil air paths, shared plant demand branches, and explicit fan-coil sizing without an AirLoopHVAC.</modeler_description>
+  <arguments />
+  <outputs />
+  <provenances />
+  <tags>
+    <tag>HVAC.Zone Equipment</tag>
+  </tags>
+  <attributes>
+    <attribute>
+      <name>Measure Type</name>
+      <value>ModelMeasure</value>
+      <datatype>string</datatype>
+    </attribute>
+    <attribute>
+      <name>Measure Language</name>
+      <value>Python</value>
+      <datatype>string</datatype>
+    </attribute>
+  </attributes>
+  <files>
+    <file>
+      <version>
+        <software_program>OpenStudio</software_program>
+        <identifier>4.0.0</identifier>
+        <min_compatible>4.0.0</min_compatible>
+      </version>
+      <filename>measure.py</filename>
+      <filetype>py</filetype>
+      <usage_type>script</usage_type>
+      <checksum>9B7DDB0F</checksum>
+    </file>
+  </files>
+</measure>
