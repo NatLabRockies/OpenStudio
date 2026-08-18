@@ -609,11 +609,29 @@ namespace epmodel {
     }
 
     std::vector<IdfObject> ZoneHVACPackagedTerminalAirConditioner_Impl::remove() {
+      auto parentModel = model();
+      const auto ownedChildren = children();
       ZoneHVACComponent_Impl::removeFromThermalZone();
       const auto baseName = getObject<ModelObject>().nameString();
       reconcileOwnedOutdoorAirMixer(ZoneHVAC_PackagedTerminalAirConditionerFields::OutdoorAirMixerObjectType,
                                     ZoneHVAC_PackagedTerminalAirConditionerFields::OutdoorAirMixerName, boost::none, boost::none, baseName);
-      return HVACComponent_Impl::remove();
+      auto removedParent = HVACComponent_Impl::remove();
+      if (removedParent.empty()) {
+        return {};
+      }
+
+      std::vector<IdfObject> result;
+      for (const auto& child : ownedChildren) {
+        if (!parentModel.getObject(child.handle())) {
+          continue;
+        }
+        if (auto component = child.optionalCast<HVACComponent>()) {
+          auto removed = component->remove();
+          result.insert(result.end(), removed.begin(), removed.end());
+        }
+      }
+      result.insert(result.end(), removedParent.begin(), removedParent.end());
+      return result;
     }
 
     void ZoneHVACPackagedTerminalAirConditioner_Impl::doCanonicalize(LoadContext& context) {

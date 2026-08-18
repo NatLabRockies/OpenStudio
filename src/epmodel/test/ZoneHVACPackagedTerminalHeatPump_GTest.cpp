@@ -828,10 +828,10 @@ TEST_F(EPModelFixture, ZoneHVACPackagedTerminalHeatPump_ConfiguredRelationshipsS
   EXPECT_TRUE(reloadedZone->equipment().empty());
   EXPECT_TRUE(reloadedModel->getObject(availabilityHandle));
   EXPECT_TRUE(reloadedModel->getObject(fanModeHandle));
-  EXPECT_TRUE(reloadedModel->getObject(fanHandle));
-  EXPECT_TRUE(reloadedModel->getObject(heatingHandle));
-  EXPECT_TRUE(reloadedModel->getObject(coolingHandle));
-  EXPECT_TRUE(reloadedModel->getObject(supplementalHandle));
+  EXPECT_FALSE(reloadedModel->getObject(fanHandle));
+  EXPECT_FALSE(reloadedModel->getObject(heatingHandle));
+  EXPECT_FALSE(reloadedModel->getObject(coolingHandle));
+  EXPECT_FALSE(reloadedModel->getObject(supplementalHandle));
   EXPECT_TRUE(reloadedModel->getConcreteModelObjects<OutdoorAirMixer>().empty());
   EXPECT_EQ(0u, pthpOutdoorAirNodeListEntryCount(*reloadedModel, outdoorAirNodeName));
 }
