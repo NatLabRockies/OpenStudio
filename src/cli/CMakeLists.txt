@@ -232,95 +232,56 @@ if(BUILD_TESTING)
   )
   set_tests_properties(OpenStudioCLI.Run_PythonOnly_TwoMeasure PROPERTIES RESOURCE_LOCK "compact_osw")
 
-  add_test(NAME OpenStudioCLI.Run_EPModelFromScratch
-    COMMAND $<TARGET_FILE:openstudio> run -w epmodel_from_scratch.osw
-    WORKING_DIRECTORY "${PROJECT_BINARY_DIR}/resources/Examples/epmodel/"
-  )
-  set_tests_properties(OpenStudioCLI.Run_EPModelFromScratch PROPERTIES
-    RESOURCE_LOCK "epmodel_examples"
-    TIMEOUT 120
-  )
+  function(add_epmodel_example_test TEST_NAME WORKFLOW TIMEOUT_SECONDS)
+    add_test(NAME ${TEST_NAME}
+      COMMAND $<TARGET_FILE:openstudio> run -w ${WORKFLOW}
+      WORKING_DIRECTORY "${PROJECT_BINARY_DIR}/resources/Examples/epmodel/"
+    )
+    set_tests_properties(${TEST_NAME} PROPERTIES
+      RESOURCE_LOCK "epmodel_examples"
+      TIMEOUT ${TIMEOUT_SECONDS}
+    )
+  endfunction()
 
-  add_test(NAME OpenStudioCLI.Run_EPModelReferenceBuilding
-    COMMAND $<TARGET_FILE:openstudio> run -w epmodel_reference_building.osw
-    WORKING_DIRECTORY "${PROJECT_BINARY_DIR}/resources/Examples/epmodel/"
-  )
-  set_tests_properties(OpenStudioCLI.Run_EPModelReferenceBuilding PROPERTIES
-    RESOURCE_LOCK "epmodel_examples"
-    TIMEOUT 120
-  )
+  add_epmodel_example_test(OpenStudioCLI.Run_EPModelFromScratch
+    epmodel_from_scratch.osw 120)
+  add_epmodel_example_test(OpenStudioCLI.Run_EPModelFromScratchPackagedUnitary
+    epmodel_from_scratch_packaged_unitary.osw 120)
+  add_epmodel_example_test(OpenStudioCLI.Run_EPModelFromScratchMultizoneVAV
+    epmodel_from_scratch_multizone_vav.osw 120)
+  add_epmodel_example_test(OpenStudioCLI.Run_EPModelFromScratchPackagedTerminalHeatPumps
+    epmodel_from_scratch_packaged_terminal_heat_pumps.osw 120)
+  add_epmodel_example_test(OpenStudioCLI.Run_EPModelFromScratchFourPipeFanCoils
+    epmodel_from_scratch_four_pipe_fan_coils.osw 120)
 
-  add_test(NAME OpenStudioCLI.Run_EPModelFromScratchPackagedUnitary
-    COMMAND $<TARGET_FILE:openstudio> run -w epmodel_from_scratch_packaged_unitary.osw
-    WORKING_DIRECTORY "${PROJECT_BINARY_DIR}/resources/Examples/epmodel/"
-  )
-  set_tests_properties(OpenStudioCLI.Run_EPModelFromScratchPackagedUnitary PROPERTIES
-    RESOURCE_LOCK "epmodel_examples"
-    TIMEOUT 120
-  )
-
-  add_test(NAME OpenStudioCLI.Run_EPModelReferenceBuildingPackagedUnitary
-    COMMAND $<TARGET_FILE:openstudio> run -w epmodel_reference_building_packaged_unitary.osw
-    WORKING_DIRECTORY "${PROJECT_BINARY_DIR}/resources/Examples/epmodel/"
-  )
-  set_tests_properties(OpenStudioCLI.Run_EPModelReferenceBuildingPackagedUnitary PROPERTIES
-    RESOURCE_LOCK "epmodel_examples"
-    TIMEOUT 120
-  )
-
-  add_test(NAME OpenStudioCLI.Run_EPModelFromScratchMultizoneVAV
-    COMMAND $<TARGET_FILE:openstudio> run -w epmodel_from_scratch_multizone_vav.osw
-    WORKING_DIRECTORY "${PROJECT_BINARY_DIR}/resources/Examples/epmodel/"
-  )
-  set_tests_properties(OpenStudioCLI.Run_EPModelFromScratchMultizoneVAV PROPERTIES
-    RESOURCE_LOCK "epmodel_examples"
-    TIMEOUT 120
-  )
-
-  add_test(NAME OpenStudioCLI.Run_EPModelReferenceBuildingMultizoneVAV
-    COMMAND $<TARGET_FILE:openstudio> run -w epmodel_reference_building_multizone_vav.osw
-    WORKING_DIRECTORY "${PROJECT_BINARY_DIR}/resources/Examples/epmodel/"
-  )
-  set_tests_properties(OpenStudioCLI.Run_EPModelReferenceBuildingMultizoneVAV PROPERTIES
-    RESOURCE_LOCK "epmodel_examples"
-    TIMEOUT 120
-  )
-
-  add_test(NAME OpenStudioCLI.Run_EPModelFromScratchPackagedTerminalHeatPumps
-    COMMAND $<TARGET_FILE:openstudio> run -w epmodel_from_scratch_packaged_terminal_heat_pumps.osw
-    WORKING_DIRECTORY "${PROJECT_BINARY_DIR}/resources/Examples/epmodel/"
-  )
-  set_tests_properties(OpenStudioCLI.Run_EPModelFromScratchPackagedTerminalHeatPumps PROPERTIES
-    RESOURCE_LOCK "epmodel_examples"
-    TIMEOUT 120
-  )
-
-  add_test(NAME OpenStudioCLI.Run_EPModelReferenceBuildingPackagedTerminalHeatPumps
-    COMMAND $<TARGET_FILE:openstudio> run -w epmodel_reference_building_packaged_terminal_heat_pumps.osw
-    WORKING_DIRECTORY "${PROJECT_BINARY_DIR}/resources/Examples/epmodel/"
-  )
-  set_tests_properties(OpenStudioCLI.Run_EPModelReferenceBuildingPackagedTerminalHeatPumps PROPERTIES
-    RESOURCE_LOCK "epmodel_examples"
-    TIMEOUT 120
-  )
-
-  add_test(NAME OpenStudioCLI.Run_EPModelFromScratchFourPipeFanCoils
-    COMMAND $<TARGET_FILE:openstudio> run -w epmodel_from_scratch_four_pipe_fan_coils.osw
-    WORKING_DIRECTORY "${PROJECT_BINARY_DIR}/resources/Examples/epmodel/"
-  )
-  set_tests_properties(OpenStudioCLI.Run_EPModelFromScratchFourPipeFanCoils PROPERTIES
-    RESOURCE_LOCK "epmodel_examples"
-    TIMEOUT 120
-  )
-
-  add_test(NAME OpenStudioCLI.Run_EPModelReferenceBuildingFourPipeFanCoils
-    COMMAND $<TARGET_FILE:openstudio> run -w epmodel_reference_building_four_pipe_fan_coils.osw
-    WORKING_DIRECTORY "${PROJECT_BINARY_DIR}/resources/Examples/epmodel/"
-  )
-  set_tests_properties(OpenStudioCLI.Run_EPModelReferenceBuildingFourPipeFanCoils PROPERTIES
-    RESOURCE_LOCK "epmodel_examples"
-    TIMEOUT 120
-  )
+  add_epmodel_example_test(OpenStudioCLI.Run_EPModelReferenceFullServiceRestaurant
+    epmodel_reference_full_service_restaurant.osw 300)
+  add_epmodel_example_test(OpenStudioCLI.Run_EPModelReferenceLargeHotel
+    epmodel_reference_large_hotel.osw 300)
+  add_epmodel_example_test(OpenStudioCLI.Run_EPModelReferenceMediumOffice
+    epmodel_reference_medium_office.osw 300)
+  add_epmodel_example_test(OpenStudioCLI.Run_EPModelReferenceMidriseApartment
+    epmodel_reference_midrise_apartment.osw 300)
+  add_epmodel_example_test(OpenStudioCLI.Run_EPModelReferenceOutpatient
+    epmodel_reference_outpatient.osw 300)
+  add_epmodel_example_test(OpenStudioCLI.Run_EPModelReferencePrimarySchool
+    epmodel_reference_primary_school.osw 300)
+  add_epmodel_example_test(OpenStudioCLI.Run_EPModelReferenceQuickServiceRestaurant
+    epmodel_reference_quick_service_restaurant.osw 300)
+  add_epmodel_example_test(OpenStudioCLI.Run_EPModelReferenceSecondarySchool
+    epmodel_reference_secondary_school.osw 300)
+  add_epmodel_example_test(OpenStudioCLI.Run_EPModelReferenceSmallHotel
+    epmodel_reference_small_hotel.osw 300)
+  add_epmodel_example_test(OpenStudioCLI.Run_EPModelReferenceSmallOffice
+    epmodel_reference_small_office.osw 300)
+  add_epmodel_example_test(OpenStudioCLI.Run_EPModelReferenceStandAloneRetail
+    epmodel_reference_stand_alone_retail.osw 300)
+  add_epmodel_example_test(OpenStudioCLI.Run_EPModelReferenceStripMall
+    epmodel_reference_strip_mall.osw 300)
+  add_epmodel_example_test(OpenStudioCLI.Run_EPModelReferenceSupermarket
+    epmodel_reference_supermarket.osw 300)
+  add_epmodel_example_test(OpenStudioCLI.Run_EPModelReferenceWarehouse
+    epmodel_reference_warehouse.osw 300)
 
   add_test(NAME OpenStudioCLI.Run_RubyPython
     COMMAND $<TARGET_FILE:openstudio> run -w compact_ruby_then_python.osw

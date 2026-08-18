@@ -432,15 +432,50 @@ if(BUILD_CLI)
   # the build tree and installed package the same relative layout.
   set(EPMODEL_EXAMPLE_DIR "${CMAKE_CURRENT_BINARY_DIR}/Examples/epmodel")
   set(EPMODEL_EXAMPLE_FILES_DIR "${EPMODEL_EXAMPLE_DIR}/files")
-  set(EPMODEL_REFERENCE_BUILDING
-      "${ENERGYPLUS_DIR}/ExampleFiles/RefBldgSmallOfficeNew2004_Chicago.idf")
+  # file(COPY "Examples" ...) above does not remove files that disappeared
+  # from the source tree. Drop the former five-way Small Office workflows so
+  # an existing development build shows the same curated set as a clean build.
+  file(REMOVE
+    "${EPMODEL_EXAMPLE_DIR}/epmodel_reference_building.osw"
+    "${EPMODEL_EXAMPLE_DIR}/epmodel_reference_building_four_pipe_fan_coils.osw"
+    "${EPMODEL_EXAMPLE_DIR}/epmodel_reference_building_multizone_vav.osw"
+    "${EPMODEL_EXAMPLE_DIR}/epmodel_reference_building_packaged_terminal_heat_pumps.osw"
+    "${EPMODEL_EXAMPLE_DIR}/epmodel_reference_building_packaged_unitary.osw"
+  )
+  set(EPMODEL_REFERENCE_BUILDING_NAMES
+    RefBldgFullServiceRestaurantNew2004_Chicago.idf
+    RefBldgLargeHotelNew2004_Chicago.idf
+    RefBldgMediumOfficeNew2004_Chicago.idf
+    RefBldgMidriseApartmentNew2004_Chicago.idf
+    RefBldgOutPatientNew2004_Chicago.idf
+    RefBldgPrimarySchoolNew2004_Chicago.idf
+    RefBldgQuickServiceRestaurantNew2004_Chicago.idf
+    RefBldgSecondarySchoolNew2004_Chicago.idf
+    RefBldgSmallHotelNew2004_Chicago.idf
+    RefBldgSmallOfficeNew2004_Chicago.idf
+    RefBldgStand-aloneRetailNew2004_Chicago.idf
+    RefBldgStripMallNew2004_Chicago.idf
+    RefBldgSuperMarketNew2004_Chicago.idf
+    RefBldgWarehouseNew2004_Chicago.idf
+  )
+  set(EPMODEL_REFERENCE_BUILDINGS "")
+  foreach(EPMODEL_REFERENCE_BUILDING_NAME IN LISTS EPMODEL_REFERENCE_BUILDING_NAMES)
+    set(EPMODEL_REFERENCE_BUILDING
+        "${ENERGYPLUS_DIR}/ExampleFiles/${EPMODEL_REFERENCE_BUILDING_NAME}")
+    if(NOT EXISTS "${EPMODEL_REFERENCE_BUILDING}")
+      message(FATAL_ERROR
+        "The configured EnergyPlus distribution does not contain the EPModel example input: "
+        "${EPMODEL_REFERENCE_BUILDING}")
+    endif()
+    list(APPEND EPMODEL_REFERENCE_BUILDINGS "${EPMODEL_REFERENCE_BUILDING}")
+  endforeach()
   set(EPMODEL_EXAMPLE_WEATHER
       "${ENERGYPLUS_DIR}/WeatherData/USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw")
 
-  if(NOT EXISTS "${EPMODEL_REFERENCE_BUILDING}" OR NOT EXISTS "${EPMODEL_EXAMPLE_WEATHER}")
+  if(NOT EXISTS "${EPMODEL_EXAMPLE_WEATHER}")
     message(FATAL_ERROR
-      "The configured EnergyPlus distribution does not contain the EPModel example inputs: "
-      "${EPMODEL_REFERENCE_BUILDING};${EPMODEL_EXAMPLE_WEATHER}")
+      "The configured EnergyPlus distribution does not contain the EPModel example weather file: "
+      "${EPMODEL_EXAMPLE_WEATHER}")
   endif()
 
   # configure_file makes these source files CMake inputs, so edits are restaged
@@ -452,11 +487,20 @@ if(BUILD_CLI)
     epmodel_from_scratch.osw
     epmodel_from_scratch_packaged_unitary.osw
     epmodel_from_scratch_packaged_terminal_heat_pumps.osw
-    epmodel_reference_building_four_pipe_fan_coils.osw
-    epmodel_reference_building_multizone_vav.osw
-    epmodel_reference_building.osw
-    epmodel_reference_building_packaged_unitary.osw
-    epmodel_reference_building_packaged_terminal_heat_pumps.osw
+    epmodel_reference_full_service_restaurant.osw
+    epmodel_reference_large_hotel.osw
+    epmodel_reference_medium_office.osw
+    epmodel_reference_midrise_apartment.osw
+    epmodel_reference_outpatient.osw
+    epmodel_reference_primary_school.osw
+    epmodel_reference_quick_service_restaurant.osw
+    epmodel_reference_secondary_school.osw
+    epmodel_reference_small_hotel.osw
+    epmodel_reference_small_office.osw
+    epmodel_reference_stand_alone_retail.osw
+    epmodel_reference_strip_mall.osw
+    epmodel_reference_supermarket.osw
+    epmodel_reference_warehouse.osw
     measures/EpModelAddFourPipeFanCoils/measure.py
     measures/EpModelAddFourPipeFanCoils/measure.xml
     measures/EpModelAddIdealLoads/measure.py
@@ -486,9 +530,13 @@ if(BUILD_CLI)
   configure_file("${CMAKE_CURRENT_SOURCE_DIR}/Examples/epmodel/files/empty.idf.in"
                  "${EPMODEL_EXAMPLE_FILES_DIR}/empty.idf"
                  @ONLY)
-  configure_file("${EPMODEL_REFERENCE_BUILDING}"
-                 "${EPMODEL_EXAMPLE_FILES_DIR}/RefBldgSmallOfficeNew2004_Chicago.idf"
-                 COPYONLY)
+  foreach(EPMODEL_REFERENCE_BUILDING IN LISTS EPMODEL_REFERENCE_BUILDINGS)
+    get_filename_component(EPMODEL_REFERENCE_BUILDING_NAME
+                           "${EPMODEL_REFERENCE_BUILDING}" NAME)
+    configure_file("${EPMODEL_REFERENCE_BUILDING}"
+                   "${EPMODEL_EXAMPLE_FILES_DIR}/${EPMODEL_REFERENCE_BUILDING_NAME}"
+                   COPYONLY)
+  endforeach()
   configure_file("${EPMODEL_EXAMPLE_WEATHER}"
                  "${EPMODEL_EXAMPLE_FILES_DIR}/USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw"
                  COPYONLY)
@@ -503,7 +551,7 @@ install(DIRECTORY "Examples" DESTINATION . COMPONENT "CLI"
 if(BUILD_CLI)
   install(FILES
     "${EPMODEL_EXAMPLE_FILES_DIR}/empty.idf"
-    "${EPMODEL_REFERENCE_BUILDING}"
+    ${EPMODEL_REFERENCE_BUILDINGS}
     "${EPMODEL_EXAMPLE_WEATHER}"
     DESTINATION "Examples/epmodel/files"
     COMPONENT "CLI"

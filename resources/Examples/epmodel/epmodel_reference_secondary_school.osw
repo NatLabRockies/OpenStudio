@@ -1,0 +1,10 @@
+{
+  "weather_file": "files/USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw",
+  "seed_file": "files/RefBldgSecondarySchoolNew2004_Chicago.idf",
+  "steps": [
+    { "measure_dir_name": "EpModelRemoveAllHVACSystems", "arguments": {} },
+    { "measure_dir_name": "EpModelAddMultizoneVAVSystem", "arguments": {} },
+    { "measure_dir_name": "EpModelConfigureShortWeatherRun", "arguments": {} }
+  ],
+  "measure_paths": ["measures"]
+}
