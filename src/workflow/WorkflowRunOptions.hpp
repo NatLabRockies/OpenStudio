@@ -30,6 +30,7 @@ struct WorkflowRunOptions
   unsigned socket_port = 0;
 
   openstudio::path osw_path = "./workflow.osw";
+  openstudio::path output_directory;
 
   RunOptions runOptions;
   /*

@@ -12,6 +12,7 @@ namespace openstudio {
 void WorkflowRunOptions::debug_print() const {
   fmt::print("\nWorkflowRunOptions:\n");
   fmt::print("osw_path={}\n", this->osw_path.string());
+  fmt::print("output_directory={}\n", this->output_directory.string());
   fmt::print("no_simulation={}\n", this->no_simulation);
   fmt::print("show_stdout={}\n", this->show_stdout);
   fmt::print("add_timings={}\n", this->add_timings);

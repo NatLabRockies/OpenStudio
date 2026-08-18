@@ -36,6 +36,13 @@ namespace cli {
 
     app->add_option("-w,--workflow", opt->osw_path, "Specify the FILE path to the workflow to run")->option_text("FILE");
 
+    app
+      ->add_option("-o,--output-directory", opt->output_directory,
+                   "Write workflow outputs beneath DIR. Relative OSW run_directory and out_name paths are resolved beneath DIR; paths that "
+                   "resolve outside DIR are rejected. Relative DIR paths are resolved from the current working directory. Input paths remain "
+                   "relative to the OSW root. The run directory must be a child of DIR and cannot be placed under generated_files or reports.")
+      ->option_text("DIR");
+
     app->add_flag(
       "-m,--measures_only",
       [opt](std::int64_t val) {

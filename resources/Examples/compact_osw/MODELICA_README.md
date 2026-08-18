@@ -20,22 +20,32 @@ Set the variables in the shell before running `openstudio`.
 
 ## Run the Example Workflow
 
-1. Locate the installed `Examples` folder inside your OpenStudio installation (for user packages this is typically `<openstudio-install>/Examples/`). Copy the entire `Examples` directory somewhere writable (for example `~/openstudio-examples/Examples/`). All of the sample OSWs—including `compact_osw/compact_modelica.osw`—live under that tree and expect to create their own `run/` subdirectories. Running directly from the read-only install tree will fail because the CLI cannot write beside the OSW.
-2. Run the OSW with the OpenStudio CLI from any working directory (the example assumes `openstudio` is on your `PATH`; otherwise prefix with the full CLI path):
+1. Locate the installed `Examples` folder inside your OpenStudio installation (for user packages this is typically `<openstudio-install>/Examples/`). The Modelica workflow is `compact_osw/compact_modelica.osw`.
+2. Run the installed OSW directly and use `--output-directory` to send its results to a writable location. The example assumes `openstudio` is on your `PATH`; otherwise use the full path to the installed CLI:
 
    ```bash
-   openstudio run -w /path/to/writable/compact_osw/compact_modelica.osw
+   openstudio run \
+     --output-directory ~/openstudio-runs/compact-modelica \
+     -w <openstudio-install>/Examples/compact_osw/compact_modelica.osw
    ```
+
+   The output directory is resolved from the current working directory when it
+   is relative. The workflow's Modelica seed, measures, and other inputs remain
+   relative to the installed OSW. Relative `run_directory` and `out_name`
+   settings are instead resolved beneath the selected output directory.
+   Absolute settings are accepted only when they point inside that directory;
+   any path that would escape it is rejected. The run directory must be a
+   separate child and cannot be placed under `reports` or `generated_files`.
 
 3. Watch the log output. The CLI prints which Modelica compiler it selected and the exact command line it is about to execute. If the run fails to find `omc`, double‑check the environment variables listed above.
 
-4. Verify the results in `/path/to/writable/compact_osw/run/` (or the `run/` folder beside whatever OSW path you passed):
+4. Verify the results in `~/openstudio-runs/compact-modelica/run/`:
    - `run.log` – contains the compiler selection message and any warnings/errors, in addition to normal OS Workflow logs.
    - `OpenStudioExample.SeedBuilding_res.mat` – contains time series reults and confirms a successful Modelica simulation.
    - `stdout-modelica` – captures the raw Modelica compiler stdout stream; inspect this when you need the exact console output that was generated during the run.
    - `OpenStudioExample.SeedBuilding.log` – useful when troubleshooting Modelica solver issues.
 
-Delete the `run/` directory between iterations if you want a completely clean run; otherwise the CLI will overwrite stale artifacts.
+OpenStudio replaces the `run/` directory at the start of a normal workflow run.
 
 ## Customizing the Workflow
 

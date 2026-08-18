@@ -23,6 +23,6 @@ void OSWorkflow::runEnergyPlusMeasures() {
   LOG(Info, "Finished applying EnergyPlus Measures.");
 
   communicateMeasureAttributes();
-  saveIDFToRootDirIfDebug();
+  saveIDFToOutputDirIfDebug();
 }
 }  // namespace openstudio

@@ -77,16 +77,16 @@ epmodel::Model loadEPModel(const openstudio::filesystem::path& idfPath) {
   return model_.get();
 }
 
-void gatherReports(const openstudio::filesystem::path& runDirPath, const openstudio::filesystem::path& rootDirPath) {
+void gatherReports(const openstudio::filesystem::path& runDirPath, const openstudio::filesystem::path& reportsDirPath,
+                   const openstudio::filesystem::path& inputRootDirPath) {
   namespace fs = openstudio::filesystem;
 
   LOG_FREE(Info, "openstudio.workflow.Util", "Run directory: " << runDirPath);
 
   // It's been wiped out during runInitialization
-  auto reportsDirPath = rootDirPath / "reports";
   fs::create_directories(reportsDirPath);
 
-  LOG_FREE(Info, "openstudio.workflow.Util", "Reports directory" << rootDirPath);
+  LOG_FREE(Info, "openstudio.workflow.Util", "Reports directory: " << reportsDirPath);
 
   // Try to find E+ result file
   auto epHTMPath = runDirPath / "eplustbl.htm";
@@ -109,7 +109,7 @@ void gatherReports(const openstudio::filesystem::path& runDirPath, const openstu
       const std::string dirNameStr = fPath.parent_path().filename().string();
       if (boost::regex_search(dirNameStr, matches, runDirNumbers)) {
         const std::string measure_dir_name(matches[1].first, matches[1].second);
-        const fs::path measureXmlPath = rootDirPath / "measures" / measure_dir_name / "measure.xml";
+        const fs::path measureXmlPath = inputRootDirPath / "measures" / measure_dir_name / "measure.xml";
         std::string measure_class_name;
         if (fs::is_regular_file(measureXmlPath)) {
           measure_class_name = BCLXML(measureXmlPath).className();

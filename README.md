@@ -7,6 +7,32 @@ The OpenStudio SDK allows building researchers and software developers to quickl
 
 More information and documentation is available at the [OpenStudio website](https://www.openstudio.net/). User support is available via the community moderated question and answer resource [unmethours.com](https://unmethours.com/questions/).
 
+## Writing workflow results to another directory
+
+By default, `openstudio run` follows the output paths in the OSW, which usually
+place results beside the input OSW. Use `--output-directory` (or `-o`) when the
+OSW is in a read-only location or when you want to keep each run separate:
+
+```console
+openstudio run --output-directory ./results -w /path/to/workflow.osw
+```
+
+The directory is resolved from the current working directory. Relative
+`run_directory` and `out_name` settings in the OSW are resolved beneath it, so
+their names and layout are preserved. The OSW's `root` continues to locate
+inputs such as seeds, weather files, and measures. Both relative and absolute
+OSW output paths are accepted when they resolve within the selected directory.
+OpenStudio rejects any path, including a `..` path, that would place
+`run_directory` or `out_name` outside it.
+
+The run directory must be a child of the selected directory rather than the
+directory itself. It also cannot be `reports`, `generated_files`, or a child of
+either because OpenStudio manages those locations separately.
+
+With the usual OSW defaults, the command above creates `results/run`,
+`results/out.osw`, `results/reports`, and `results/generated_files`. Omitting
+`--output-directory` retains the longstanding OSW path behavior.
+
 ## Installation Notes (macOS)
 
 For development builds (artifacts downloaded from GitHub Actions), you may encounter a "Damaged" error or "Unidentified Developer" warning on macOS, especially on Apple Silicon (ARM) machines. This is because these builds are not notarized by Apple.

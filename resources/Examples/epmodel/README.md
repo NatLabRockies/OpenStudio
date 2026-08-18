@@ -4,12 +4,12 @@ EPModel (`openstudio::epmodel::Model`) recreates the familiar
 `openstudio::model::Model` API on top of EnergyPlus objects. It loads and saves
 IDF files instead of OSM files, allowing applications and measures to work
 directly with an EnergyPlus model while retaining the established OpenStudio
-API shape.
+API.
 
-EPModel is a work in progress, but these workflows demonstrate substantial
-capability already available through Python measures. Each workflow creates or
-edits an EnergyPlus model and finishes by running EnergyPlus for a short summer
-week.
+EPModel is a work in progress, but substantial capability is already available
+through both Python and Ruby measures. These examples use Python. Each workflow
+creates or edits an EnergyPlus model and finishes by running EnergyPlus for a
+short summer week.
 
 ## Create a new building
 
@@ -76,33 +76,15 @@ receive new equipment; unconditioned zones are left alone.
 | Supermarket | Packaged single-zone gas/electric | `epmodel_reference_supermarket.osw` |
 | Warehouse | Ideal loads | `epmodel_reference_warehouse.osw` |
 
-All workflows use Chicago weather and run from July 21 through July 27. Larger
-reference buildings may take a few minutes to complete.
-
-## Run from a development build
-
-The examples are staged in the build directory:
-
-```console
-cd <openstudio-build>/resources/Examples/epmodel
-../../../Products/openstudio run -w epmodel_core_perimeter_ideal_loads.osw
-../../../Products/openstudio run -w epmodel_reference_medium_office.osw
-```
-
-The executable may be in a different configuration directory on some build
-systems. An absolute path to the build's `openstudio` executable also works.
+All workflows use Chicago weather and run from July 21 through July 27.
 
 ## Run from an installation
 
-Copy the example directory to a writable location before running it. A workflow
-creates `out.osw`, `run`, and `reports` in the working directory.
+Run the installed workflow directly and send its results to a writable
+directory:
 
 ```console
-cp -R <openstudio-install>/Examples/epmodel <writable-directory>/
-cd <writable-directory>/epmodel
-<openstudio-install>/bin/openstudio run -w epmodel_reference_medium_office.osw
+<openstudio-install>/bin/openstudio run \
+  --output-directory <writable-directory>/medium-office-results \
+  -w <openstudio-install>/Examples/epmodel/epmodel_reference_medium_office.osw
 ```
-
-On installations where the CLI is at the installation root, use that
-executable instead. Every workflow uses paths relative to the copied example
-directory.
