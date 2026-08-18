@@ -24,28 +24,28 @@ Removal is therefore still material for this large building, but it no longer pr
 
 ## Ideal-load results
 
-The initial full matrix completed 11 of 16 buildings without severe errors. A typed repair for refrigeration cases made FullServiceRestaurant pass, bringing the current result to 12 of 16.
+The initial full matrix completed 11 of 16 buildings without severe errors. Typed ownership repairs for refrigeration cases and air-cooled chillers bring the current result to 14 of 16.
 
 | Result | Reference buildings |
 | --- | --- |
-| Pass | FullServiceRestaurant, MediumOffice, MidriseApartment, OutPatient, PrimarySchool, QuickServiceRestaurant, SmallHotel, SmallOffice, Stand-aloneRetail, StripMall, SuperMarket, Warehouse |
-| Removal rejected | Hospital, LargeHotel, LargeOffice, SecondarySchool |
+| Pass | FullServiceRestaurant, LargeHotel, MediumOffice, MidriseApartment, OutPatient, PrimarySchool, QuickServiceRestaurant, SecondarySchool, SmallHotel, SmallOffice, Stand-aloneRetail, StripMall, SuperMarket, Warehouse |
+| Removal rejected | Hospital, LargeOffice |
 
-The four rejected buildings contain multiple specialized chillers on `CoolSys1` together with legacy condenser-loop objects that are not yet represented as typed EPModel loops. Plant-loop removal correctly remains atomic instead of deleting only part of this ownership graph. Supporting these files needs a deliberate condenser-loop and multi-chiller ownership implementation; the example measure should not bypass that boundary with raw object deletion.
+LargeHotel and SecondarySchool use air-cooled chillers that are owned only by their chilled-water loop. EPModel now removes one or more of these chillers with that loop, matching canonical Model ownership. Hospital and LargeOffice use water-cooled chillers tied to legacy condenser-loop objects that are not yet represented as typed EPModel loops. Removal correctly remains atomic instead of deleting only part of this ownership graph. Supporting these two files needs a deliberate condenser-loop ownership implementation; the example measure should not bypass that boundary with raw object deletion.
 
 ## Other system results
 
 The first pass ran packaged unitary, multizone VAV, packaged terminal heat pump, and four-pipe fan coil workflows against the 12 buildings that passed the plant-removal boundary. This was 48 additional simulations.
 
-After the ownership, sizing, and outdoor-air corrections, the current result for those 12 buildings is:
+After the ownership, sizing, and outdoor-air corrections, LargeHotel and SecondarySchool also cross the removal boundary. The current result for the 14 supported buildings is:
 
 | Replacement system | Pass | Remaining result |
 | --- | ---: | --- |
-| Ideal loads | 12/12 | None |
-| Four-pipe fan coils | 12/12 | None |
-| Multizone VAV | 11/12 | OutPatient: one warmup-convergence severe error |
-| Packaged terminal heat pumps | 11/12 | OutPatient: two warmup-convergence severe errors |
-| Packaged single-zone unitary | 9/12 | PrimarySchool: six warmup-convergence severe errors; SmallHotel: ten; OutPatient: ten-minute timeout |
+| Ideal loads | 14/14 | None |
+| Four-pipe fan coils | 14/14 | None |
+| Multizone VAV | 13/14 | OutPatient: one warmup-convergence severe error |
+| Packaged terminal heat pumps | 13/14 | OutPatient: two warmup-convergence severe errors |
+| Packaged single-zone unitary | 9/14 | LargeHotel: five warmup-convergence severe errors; PrimarySchool: six; SecondarySchool: eight; SmallHotel: ten; OutPatient: ten-minute timeout |
 
 That pass found two general ownership defects:
 
@@ -57,7 +57,7 @@ Additional current findings:
 - SmallHotel initially could not autosize a PTHP or single-zone packaged unitary system in its zero-cooling-load storage zones. Both measures now select `DesignDayWithLimit` through the typed `SizingZone` API, retaining design-day sizing while providing EnergyPlus's standard floor-area minimum airflow. The PTHP workflow now passes with zero severe errors. The packaged-unitary workflow proceeds through sizing and simulation but reports ten warmup-convergence severe errors.
 - OutPatient VAV and PTHP report one and two warmup-convergence severe errors respectively and still need focused diagnosis.
 - The packaged-unitary measure initially autosized the outdoor-air controller minimum flow instead of using canonical Model's zero minimum. That fixed minimum fought the mechanical-ventilation request and produced tens of thousands of recurring warnings. Restoring the canonical value reduced FullServiceRestaurant from 51,503 warnings to 11, MediumOffice from 325,596 warnings and two severe errors to 35 warnings and zero severe errors, and PrimarySchool from 411,942 warnings to 54.
-- The current packaged-unitary matrix passes 9 of the 12 buildings that cross the HVAC-removal boundary. PrimarySchool reports six warmup-convergence severe errors, SmallHotel reports ten, and OutPatient still exceeds ten minutes because EnergyPlus spends several minutes sizing and warming up its many single-zone systems rather than printing the former warning storm.
+- The current packaged-unitary matrix passes 9 of the 14 buildings that cross the HVAC-removal boundary. Its four completed failures are warmup-convergence errors; OutPatient still exceeds ten minutes because EnergyPlus spends several minutes sizing and warming up its many single-zone systems rather than printing the former warning storm.
 
 ## Other defects found and fixed
 
