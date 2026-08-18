@@ -302,3 +302,53 @@ TEST_F(EPModelFixture, API_Space_Canonicalize_MigratesUnzonedSpaceAssignmentFrom
   ASSERT_TRUE(orphanAssignment);
   EXPECT_EQ(dsoa, *orphanAssignment);
 }
+
+TEST_F(EPModelFixture, API_Space_IntersectAndMatchPartialWall_Reload) {
+  Model model;
+  const std::vector<openstudio::Point3d> southFloorPrint{
+    {0.0, 0.0, 0.0}, {0.0, 4.5, 0.0}, {30.0, 4.5, 0.0}, {30.0, 0.0, 0.0}};
+  const std::vector<openstudio::Point3d> westFloorPrint{
+    {0.0, 4.5, 0.0}, {0.0, 15.5, 0.0}, {4.5, 15.5, 0.0}, {4.5, 4.5, 0.0}};
+
+  auto southSpace = Space::fromFloorPrint(southFloorPrint, 3.6, model, "South Perimeter Space");
+  auto westSpace = Space::fromFloorPrint(westFloorPrint, 3.6, model, "West Perimeter Space");
+  ASSERT_TRUE(southSpace);
+  ASSERT_TRUE(westSpace);
+  ASSERT_EQ(6u, southSpace->surfaces().size());
+  ASSERT_EQ(6u, westSpace->surfaces().size());
+
+  std::vector<Space> spaces{*southSpace, *westSpace};
+  intersectSurfaces(spaces);
+  EXPECT_EQ(7u, southSpace->surfaces().size());
+  EXPECT_EQ(6u, westSpace->surfaces().size());
+
+  matchSurfaces(spaces);
+  size_t matchedSurfaceCount = 0u;
+  for (const auto& space : spaces) {
+    for (const auto& surface : space.surfaces()) {
+      if (surface.adjacentSurface()) {
+        ++matchedSurfaceCount;
+      }
+    }
+  }
+  EXPECT_EQ(2u, matchedSurfaceCount);
+
+  const auto idfPath =
+    openstudio::tempDir() / openstudio::toPath("epmodel-space-intersection-" + openstudio::removeBraces(openstudio::createUUID()) + ".idf");
+  ASSERT_TRUE(model.save(idfPath, true));
+  auto loadedModel = Model::load(idfPath);
+  ASSERT_TRUE(loadedModel);
+
+  const auto loadedSpaces = loadedModel->getConcreteModelObjects<Space>();
+  ASSERT_EQ(2u, loadedSpaces.size());
+  matchedSurfaceCount = 0u;
+  for (const auto& space : loadedSpaces) {
+    for (const auto& surface : space.surfaces()) {
+      if (surface.adjacentSurface()) {
+        ++matchedSurfaceCount;
+      }
+    }
+  }
+  EXPECT_EQ(2u, matchedSurfaceCount);
+  openstudio::filesystem::remove(idfPath);
+}

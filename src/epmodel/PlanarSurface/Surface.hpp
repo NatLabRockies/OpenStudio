@@ -153,7 +153,8 @@ namespace epmodel {
   class EPMODEL_API SurfaceIntersection
   {
    public:
-    SurfaceIntersection(Surface surface1, Surface surface2, std::vector<Surface> newSurfaces1, std::vector<Surface> newSurfaces2);
+    SurfaceIntersection(const Surface& surface1, const Surface& surface2, const std::vector<Surface>& newSurfaces1,
+                        const std::vector<Surface>& newSurfaces2);
 
     // first surface post intersection
     Surface surface1() const;

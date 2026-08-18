@@ -265,6 +265,26 @@ namespace epmodel {
     return getImpl<detail::Space_Impl>()->isEnclosedVolume();
   }
 
+  void intersectSurfaces(std::vector<Space>& t_spaces) {
+    std::vector<Space> spaces(t_spaces);
+    std::sort(spaces.begin(), spaces.end(), [](const Space& a, const Space& b) -> bool { return a.floorArea() < b.floorArea(); });
+
+    std::vector<BoundingBox> bounds;
+    bounds.reserve(spaces.size());
+    for (const Space& space : spaces) {
+      bounds.push_back(space.transformation() * space.boundingBox());
+    }
+
+    for (unsigned i = 0; i < spaces.size(); ++i) {
+      for (unsigned j = i + 1; j < spaces.size(); ++j) {
+        if (!bounds[i].intersects(bounds[j])) {
+          continue;
+        }
+        spaces[i].intersectSurfaces(spaces[j]);
+      }
+    }
+  }
+
   void matchSurfaces(std::vector<Space>& spaces) {
     std::vector<BoundingBox> bounds;
     bounds.reserve(spaces.size());

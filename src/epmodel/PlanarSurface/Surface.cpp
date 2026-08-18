@@ -1013,7 +1013,7 @@ namespace epmodel {
         }
       }
 
-      SurfaceIntersection result(std::move(surface), std::move(otherSurface), std::move(newSurfaces), std::move(newOtherSurfaces));
+      SurfaceIntersection result(surface, otherSurface, newSurfaces, newOtherSurfaces);
       LOG(Info, "Intersection of '" << this->nameString() << "' with '" << result.surface2().nameString() << "' results in " << result);
 
       return result;
@@ -1075,11 +1075,9 @@ namespace epmodel {
 
   }  // namespace detail
 
-  SurfaceIntersection::SurfaceIntersection(Surface surface1, Surface surface2, std::vector<Surface> newSurfaces1, std::vector<Surface> newSurfaces2)
-    : m_surface1(std::move(surface1)),
-      m_surface2(std::move(surface2)),
-      m_newSurfaces1(std::move(newSurfaces1)),
-      m_newSurfaces2(std::move(newSurfaces2)) {}
+  SurfaceIntersection::SurfaceIntersection(const Surface& surface1, const Surface& surface2, const std::vector<Surface>& newSurfaces1,
+                                           const std::vector<Surface>& newSurfaces2)
+    : m_surface1(surface1), m_surface2(surface2), m_newSurfaces1(newSurfaces1), m_newSurfaces2(newSurfaces2) {}
 
   Surface SurfaceIntersection::surface1() const {
     return m_surface1;

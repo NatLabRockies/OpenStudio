@@ -126,6 +126,9 @@ namespace epmodel {
     REGISTER_LOGGER("openstudio.epmodel.Space");
   };
 
+  /** Intersect surfaces between all spaces in the vector. */
+  EPMODEL_API void intersectSurfaces(std::vector<Space>& spaces);
+
   /** Match surfaces and sub surfaces between all spaces in the vector. */
   EPMODEL_API void matchSurfaces(std::vector<Space>& spaces);
 
