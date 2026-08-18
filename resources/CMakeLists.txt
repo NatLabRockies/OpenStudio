@@ -433,15 +433,21 @@ if(BUILD_CLI)
   set(EPMODEL_EXAMPLE_DIR "${CMAKE_CURRENT_BINARY_DIR}/Examples/epmodel")
   set(EPMODEL_EXAMPLE_FILES_DIR "${EPMODEL_EXAMPLE_DIR}/files")
   # file(COPY "Examples" ...) above does not remove files that disappeared
-  # from the source tree. Drop the former five-way Small Office workflows so
-  # an existing development build shows the same curated set as a clean build.
+  # from the source tree. Drop retired workflows so an existing development
+  # build shows the same curated set as a clean build.
   file(REMOVE
     "${EPMODEL_EXAMPLE_DIR}/epmodel_reference_building.osw"
     "${EPMODEL_EXAMPLE_DIR}/epmodel_reference_building_four_pipe_fan_coils.osw"
     "${EPMODEL_EXAMPLE_DIR}/epmodel_reference_building_multizone_vav.osw"
     "${EPMODEL_EXAMPLE_DIR}/epmodel_reference_building_packaged_terminal_heat_pumps.osw"
     "${EPMODEL_EXAMPLE_DIR}/epmodel_reference_building_packaged_unitary.osw"
+    "${EPMODEL_EXAMPLE_DIR}/epmodel_from_scratch.osw"
+    "${EPMODEL_EXAMPLE_DIR}/epmodel_from_scratch_four_pipe_fan_coils.osw"
+    "${EPMODEL_EXAMPLE_DIR}/epmodel_from_scratch_multizone_vav.osw"
+    "${EPMODEL_EXAMPLE_DIR}/epmodel_from_scratch_packaged_terminal_heat_pumps.osw"
+    "${EPMODEL_EXAMPLE_DIR}/epmodel_from_scratch_packaged_unitary.osw"
   )
+  file(REMOVE_RECURSE "${EPMODEL_EXAMPLE_DIR}/measures/EpModelFromScratch")
   set(EPMODEL_REFERENCE_BUILDING_NAMES
     RefBldgFullServiceRestaurantNew2004_Chicago.idf
     RefBldgLargeHotelNew2004_Chicago.idf
@@ -482,11 +488,11 @@ if(BUILD_CLI)
   # automatically before the CTests run.
   set(EPMODEL_EXAMPLE_RELATIVE_FILES
     README.md
-    epmodel_from_scratch_four_pipe_fan_coils.osw
-    epmodel_from_scratch_multizone_vav.osw
-    epmodel_from_scratch.osw
-    epmodel_from_scratch_packaged_unitary.osw
-    epmodel_from_scratch_packaged_terminal_heat_pumps.osw
+    epmodel_core_perimeter_four_pipe_fan_coils.osw
+    epmodel_core_perimeter_ideal_loads.osw
+    epmodel_core_perimeter_multizone_vav.osw
+    epmodel_core_perimeter_packaged_terminal_heat_pumps.osw
+    epmodel_core_perimeter_packaged_unitary.osw
     epmodel_reference_full_service_restaurant.osw
     epmodel_reference_large_hotel.osw
     epmodel_reference_medium_office.osw
@@ -513,8 +519,8 @@ if(BUILD_CLI)
     measures/EpModelAddPackagedTerminalHeatPumps/measure.xml
     measures/EpModelConfigureShortWeatherRun/measure.py
     measures/EpModelConfigureShortWeatherRun/measure.xml
-    measures/EpModelFromScratch/measure.py
-    measures/EpModelFromScratch/measure.xml
+    measures/EpModelCreateCoreAndPerimeterBuilding/measure.py
+    measures/EpModelCreateCoreAndPerimeterBuilding/measure.xml
     measures/EpModelRemoveAllHVACSystems/measure.py
     measures/EpModelRemoveAllHVACSystems/measure.xml
   )

@@ -3,13 +3,13 @@
   "seed_file": "files/empty.idf",
   "steps": [
     {
-      "measure_dir_name": "EpModelFromScratch",
+      "measure_dir_name": "EpModelCreateCoreAndPerimeterBuilding",
       "arguments": {
-        "zone_count": 5
+        "number_of_stories": 2
       }
     },
     {
-      "measure_dir_name": "EpModelAddMultizoneVAVSystem",
+      "measure_dir_name": "EpModelAddFourPipeFanCoils",
       "arguments": {}
     },
     {

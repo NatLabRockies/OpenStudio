@@ -1,23 +1,23 @@
 <?xml version="1.0"?>
 <measure>
   <schema_version>3.1</schema_version>
-  <name>ep_model_from_scratch</name>
+  <name>ep_model_create_core_and_perimeter_building</name>
   <uid>0c3b5f38-2d6f-4ce4-a8c2-c1820da1ac80</uid>
-  <version_id>fa4147f0-72b6-4ae7-86b2-506d77b559fd</version_id>
-  <version_modified>2026-08-18T16:24:42Z</version_modified>
+  <version_id>57c7fe28-d1e1-47e1-9ec6-980f22f86dd6</version_id>
+  <version_modified>2026-08-18T19:21:45Z</version_modified>
   <xml_checksum>E6950623</xml_checksum>
-  <class_name>EpModelFromScratch</class_name>
-  <display_name>EPModel From Scratch</display_name>
-  <description>Create a simple building with one or more detached thermal zones.</description>
-  <modeler_description>Adds geometry, windows, constructions, thermostat schedules, and summer and winter design days.</modeler_description>
+  <class_name>EpModelCreateCoreAndPerimeterBuilding</class_name>
+  <display_name>EPModel Create Core and Perimeter Building</display_name>
+  <description>Create a multistory office with core and perimeter thermal zones.</description>
+  <modeler_description>Creates five zones per story, intersects and matches interior surfaces, adds exterior windows, and assigns thermostats and outdoor-air requirements.</modeler_description>
   <arguments>
     <argument>
-      <name>zone_count</name>
-      <display_name>Number of detached shoebox zones</display_name>
+      <name>number_of_stories</name>
+      <display_name>Number of stories</display_name>
       <type>Integer</type>
       <required>true</required>
       <model_dependent>false</model_dependent>
-      <default_value>1</default_value>
+      <default_value>2</default_value>
     </argument>
   </arguments>
   <outputs />
@@ -47,7 +47,7 @@
       <filename>measure.py</filename>
       <filetype>py</filetype>
       <usage_type>script</usage_type>
-      <checksum>7405E219</checksum>
+      <checksum>73458971</checksum>
     </file>
   </files>
 </measure>

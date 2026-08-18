@@ -243,16 +243,16 @@ if(BUILD_TESTING)
     )
   endfunction()
 
-  add_epmodel_example_test(OpenStudioCLI.Run_EPModelFromScratch
-    epmodel_from_scratch.osw 120)
-  add_epmodel_example_test(OpenStudioCLI.Run_EPModelFromScratchPackagedUnitary
-    epmodel_from_scratch_packaged_unitary.osw 120)
-  add_epmodel_example_test(OpenStudioCLI.Run_EPModelFromScratchMultizoneVAV
-    epmodel_from_scratch_multizone_vav.osw 120)
-  add_epmodel_example_test(OpenStudioCLI.Run_EPModelFromScratchPackagedTerminalHeatPumps
-    epmodel_from_scratch_packaged_terminal_heat_pumps.osw 120)
-  add_epmodel_example_test(OpenStudioCLI.Run_EPModelFromScratchFourPipeFanCoils
-    epmodel_from_scratch_four_pipe_fan_coils.osw 120)
+  add_epmodel_example_test(OpenStudioCLI.Run_EPModelCoreAndPerimeterIdealLoads
+    epmodel_core_perimeter_ideal_loads.osw 120)
+  add_epmodel_example_test(OpenStudioCLI.Run_EPModelCoreAndPerimeterPackagedUnitary
+    epmodel_core_perimeter_packaged_unitary.osw 120)
+  add_epmodel_example_test(OpenStudioCLI.Run_EPModelCoreAndPerimeterMultizoneVAV
+    epmodel_core_perimeter_multizone_vav.osw 120)
+  add_epmodel_example_test(OpenStudioCLI.Run_EPModelCoreAndPerimeterPackagedTerminalHeatPumps
+    epmodel_core_perimeter_packaged_terminal_heat_pumps.osw 120)
+  add_epmodel_example_test(OpenStudioCLI.Run_EPModelCoreAndPerimeterFourPipeFanCoils
+    epmodel_core_perimeter_four_pipe_fan_coils.osw 120)
 
   add_epmodel_example_test(OpenStudioCLI.Run_EPModelReferenceFullServiceRestaurant
     epmodel_reference_full_service_restaurant.osw 300)
