@@ -37,6 +37,16 @@ The four rejected buildings contain multiple specialized chillers on `CoolSys1` 
 
 The first pass ran packaged unitary, multizone VAV, packaged terminal heat pump, and four-pipe fan coil workflows against the 12 buildings that passed the plant-removal boundary. This was 48 additional simulations.
 
+After the ownership, sizing, and outdoor-air corrections, the current result for those 12 buildings is:
+
+| Replacement system | Pass | Remaining result |
+| --- | ---: | --- |
+| Ideal loads | 12/12 | None |
+| Four-pipe fan coils | 12/12 | None |
+| Multizone VAV | 11/12 | OutPatient: one warmup-convergence severe error |
+| Packaged terminal heat pumps | 11/12 | OutPatient: two warmup-convergence severe errors |
+| Packaged single-zone unitary | 9/12 | PrimarySchool: six warmup-convergence severe errors; SmallHotel: ten; OutPatient: ten-minute timeout |
+
 That pass found two general ownership defects:
 
 - Unit heaters left their owned fans and coils behind. This caused six severe errors in MidriseApartment and two each in Stand-aloneRetail and Warehouse for every replacement family. EPModel now matches canonical Model ownership, and focused reruns of the fan-coil workflow pass all three buildings with zero severe errors.
@@ -45,7 +55,7 @@ That pass found two general ownership defects:
 Additional current findings:
 
 - SmallHotel initially could not autosize a PTHP or single-zone packaged unitary system in its zero-cooling-load storage zones. Both measures now select `DesignDayWithLimit` through the typed `SizingZone` API, retaining design-day sizing while providing EnergyPlus's standard floor-area minimum airflow. The PTHP workflow now passes with zero severe errors. The packaged-unitary workflow proceeds through sizing and simulation but reports ten warmup-convergence severe errors.
-- OutPatient VAV and PTHP reported one and two warmup-convergence severe errors respectively and still need focused diagnosis.
+- OutPatient VAV and PTHP report one and two warmup-convergence severe errors respectively and still need focused diagnosis.
 - The packaged-unitary measure initially autosized the outdoor-air controller minimum flow instead of using canonical Model's zero minimum. That fixed minimum fought the mechanical-ventilation request and produced tens of thousands of recurring warnings. Restoring the canonical value reduced FullServiceRestaurant from 51,503 warnings to 11, MediumOffice from 325,596 warnings and two severe errors to 35 warnings and zero severe errors, and PrimarySchool from 411,942 warnings to 54.
 - The current packaged-unitary matrix passes 9 of the 12 buildings that cross the HVAC-removal boundary. PrimarySchool reports six warmup-convergence severe errors, SmallHotel reports ten, and OutPatient still exceeds ten minutes because EnergyPlus spends several minutes sizing and warming up its many single-zone systems rather than printing the former warning storm.
 
