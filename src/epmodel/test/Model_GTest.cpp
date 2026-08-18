@@ -11,6 +11,8 @@
 
 #include "../Loop/AirLoopHVAC.hpp"
 #include "../Loop/AirLoopHVAC_Impl.hpp"
+#include "../LayeredConstruction/Construction.hpp"
+#include "../LayeredConstruction/Construction_Impl.hpp"
 #include "../ModelObject/Branch.hpp"
 #include "../ModelObject/BranchList.hpp"
 #include "../ModelObject/BranchList_Impl.hpp"
@@ -25,10 +27,13 @@
 #include "../../utilities/idf/IdfFile.hpp"
 #include "../../utilities/idf/IdfExtensibleGroup.hpp"
 #include "../../utilities/idf/IdfObject.hpp"
+#include "../../utilities/idf/Workspace.hpp"
 #include <utilities/idd/AirLoopHVAC_FieldEnums.hxx>
 #include <utilities/idd/Branch_FieldEnums.hxx>
 #include <utilities/idd/BranchList_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
+#include <utilities/idd/Schedule_Constant_FieldEnums.hxx>
+#include <utilities/idd/ScheduleTypeLimits_FieldEnums.hxx>
 
 using namespace openstudio::epmodel;
 
@@ -87,6 +92,59 @@ TEST_F(EPModelFixture, Model_TransientNodeFactory) {
   EXPECT_EQ("Node A", nodeA.nameString());
 
   EXPECT_THROW(model.getOrCreateTransientByName<Node>(""), openstudio::Exception);
+}
+
+TEST_F(EPModelFixture, Model_FromGenericWorkspaceHydratesConcreteTypes) {
+  openstudio::IdfFile idf(openstudio::IddFileType::EnergyPlus);
+  openstudio::IdfObject constructionObject(openstudio::IddObjectType::Construction);
+  ASSERT_TRUE(constructionObject.setName("Generic Workspace Construction"));
+  idf.addObject(constructionObject);
+
+  openstudio::IdfObject limitsObject(openstudio::IddObjectType::ScheduleTypeLimits);
+  ASSERT_TRUE(limitsObject.setName("Generic Workspace Limits"));
+  ASSERT_TRUE(limitsObject.setString(openstudio::ScheduleTypeLimitsFields::NumericType, "Continuous"));
+  idf.addObject(limitsObject);
+
+  openstudio::IdfObject scheduleObject(openstudio::IddObjectType::Schedule_Constant);
+  ASSERT_TRUE(scheduleObject.setName("Generic Workspace Schedule"));
+  ASSERT_TRUE(scheduleObject.setString(openstudio::Schedule_ConstantFields::ScheduleTypeLimitsName, "Generic Workspace Limits"));
+  ASSERT_TRUE(scheduleObject.setDouble(openstudio::Schedule_ConstantFields::HourlyValue, 1.0));
+  idf.addObject(scheduleObject);
+
+  openstudio::Workspace workspace(idf, openstudio::StrictnessLevel::Draft);
+  const auto workspaceConstruction = workspace.getObjectByTypeAndName(openstudio::IddObjectType::Construction, "Generic Workspace Construction");
+  ASSERT_TRUE(workspaceConstruction);
+
+  Model model(workspace);
+  const auto construction = model.getConcreteModelObjectByName<Construction>("Generic Workspace Construction");
+  ASSERT_TRUE(construction);
+  EXPECT_EQ(workspaceConstruction->handle(), construction->handle());
+  EXPECT_EQ(1u, model.getConcreteModelObjects<Construction>().size());
+
+  const auto schedule = model.getConcreteModelObjectByName<ScheduleConstant>("Generic Workspace Schedule");
+  ASSERT_TRUE(schedule);
+  const auto limits = schedule->scheduleTypeLimits();
+  ASSERT_TRUE(limits);
+  EXPECT_EQ("Generic Workspace Limits", limits->nameString());
+}
+
+TEST_F(EPModelFixture, Model_FromEPModelWorkspacePreservesConcreteTransientObjects) {
+  Model source;
+  Construction sourceConstruction(source);
+  ASSERT_TRUE(sourceConstruction.setName("EPModel Construction"));
+  Node sourceNode = source.getOrCreateTransientByName<Node>("EPModel Transient Node");
+
+  openstudio::Workspace workspace = source;
+  Model copy(workspace);
+
+  const auto construction = copy.getConcreteModelObjectByName<Construction>("EPModel Construction");
+  ASSERT_TRUE(construction);
+  EXPECT_EQ(sourceConstruction.handle(), construction->handle());
+
+  const auto node = copy.getConcreteModelObjectByName<Node>("EPModel Transient Node");
+  ASSERT_TRUE(node);
+  EXPECT_EQ(sourceNode.handle(), node->handle());
+  EXPECT_TRUE(node->getImpl<openstudio::detail::WorkspaceObject_Impl>()->isTransient());
 }
 
 TEST_F(EPModelFixture, Model_AlwaysOnContinuousSchedule) {

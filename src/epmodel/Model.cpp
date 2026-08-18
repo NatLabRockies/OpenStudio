@@ -945,23 +945,39 @@ namespace epmodel {
     canonicalize(SanitizationPolicy::Repair);
   }
 
-  // Converts/clones an existing Workspace into an epmodel::Model.
-  // This path calls Model_Impl::createObject(const shared_ptr<WorkspaceObject_Impl>&, ...),
-  // which preserves concrete runtime type when the source Workspace already contains epmodel
-  // impl objects. If the source is a generic Workspace, concrete casts fail and the fallback
-  // is ModelObject_Impl, so concrete epmodel queries may return fewer objects.
-  // After cloning, canonicalization runs with Repair policy.
+  // Converts/clones an existing EnergyPlus Workspace into an epmodel::Model.
+  // Existing epmodel objects retain their concrete runtime types and managed relationships.
+  // Generic Workspace objects are materialized through the registered epmodel constructors;
+  // canonicalization can repair model state, but it cannot repair a generic C++ runtime type.
+  // After ingestion, canonicalization runs with Repair policy.
   Model::Model(const openstudio::Workspace& workspace)
     : Workspace(std::shared_ptr<detail::Model_Impl>(new detail::Model_Impl(*(workspace.getImpl<openstudio::detail::Workspace_Impl>()), true))) {
-    openstudio::detail::WorkspaceObject_ImplPtrVector newObjectImplPtrs;
-    HandleMap oldNewHandleMap;
-    if (auto vo = workspace.versionObject()) {
-      newObjectImplPtrs.push_back(getImpl<detail::Model_Impl>()->createObject(vo->getImpl<openstudio::detail::WorkspaceObject_Impl>(), true));
+    const auto workspaceImpl = workspace.getImpl<openstudio::detail::Workspace_Impl>();
+    auto modelImpl = getImpl<detail::Model_Impl>();
+    openstudio::detail::WorkspaceObject_ImplPtrVector objectImplPtrs;
+
+    if (std::dynamic_pointer_cast<detail::Model_Impl>(workspaceImpl)) {
+      if (auto vo = workspace.versionObject()) {
+        objectImplPtrs.push_back(modelImpl->createObject(vo->getImpl<openstudio::detail::WorkspaceObject_Impl>(), true));
+      }
+      for (const WorkspaceObject& object : workspaceImpl->objects()) {
+        objectImplPtrs.push_back(modelImpl->createObject(object.getImpl<openstudio::detail::WorkspaceObject_Impl>(), true));
+      }
+      HandleMap oldNewHandleMap;
+      modelImpl->addClones(objectImplPtrs, oldNewHandleMap, true);
+    } else {
+      const auto materialize = [&modelImpl, &objectImplPtrs](const WorkspaceObject& object) {
+        const auto sourceImpl = object.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+        objectImplPtrs.push_back(modelImpl->createObject(std::as_const(*sourceImpl).idfObject(), true, sourceImpl->isTransient()));
+      };
+      if (auto vo = workspace.versionObject()) {
+        materialize(*vo);
+      }
+      for (const WorkspaceObject& object : workspaceImpl->objects()) {
+        materialize(object);
+      }
+      modelImpl->addObjects(objectImplPtrs);
     }
-    for (const WorkspaceObject& object : workspace.getImpl<openstudio::detail::Workspace_Impl>()->objects()) {
-      newObjectImplPtrs.push_back(getImpl<detail::Model_Impl>()->createObject(object.getImpl<openstudio::detail::WorkspaceObject_Impl>(), true));
-    }
-    getImpl<detail::Model_Impl>()->addClones(newObjectImplPtrs, oldNewHandleMap, true);
     canonicalize(SanitizationPolicy::Repair);
   }
 
