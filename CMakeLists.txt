@@ -279,6 +279,19 @@ endif()
 ###############################################################################
 # Build options
 
+# Keep memory-intensive links from running at the same time while allowing Ninja
+# to use the full requested parallelism for compilation. Set to 0 to leave link
+# scheduling entirely to the build tool.
+set(OPENSTUDIO_MAX_PARALLEL_LINKS "1" CACHE STRING "Maximum concurrent link jobs when using Ninja (0 disables the limit)")
+if(NOT OPENSTUDIO_MAX_PARALLEL_LINKS MATCHES "^[0-9]+$")
+  message(FATAL_ERROR "OPENSTUDIO_MAX_PARALLEL_LINKS must be a non-negative integer")
+endif()
+if(CMAKE_GENERATOR MATCHES "^Ninja" AND OPENSTUDIO_MAX_PARALLEL_LINKS GREATER 0)
+  set_property(GLOBAL APPEND PROPERTY JOB_POOLS openstudio_link_pool=${OPENSTUDIO_MAX_PARALLEL_LINKS})
+  set(CMAKE_JOB_POOL_LINK openstudio_link_pool)
+  message(STATUS "Ninja will run at most ${OPENSTUDIO_MAX_PARALLEL_LINKS} link job(s) at a time")
+endif()
+
 # TODO: should this be only in OpenStudioApplication?
 option(BUILD_PAT "Build PAT" OFF)
 
