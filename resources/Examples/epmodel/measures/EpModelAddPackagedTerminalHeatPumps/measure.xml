@@ -3,13 +3,13 @@
   <schema_version>3.1</schema_version>
   <name>ep_model_add_packaged_terminal_heat_pumps</name>
   <uid>67ae67ce-c5b4-4a13-92c5-7ee68bc5ea33</uid>
-  <version_id>fdc66579-b3bd-4fa0-8c6f-ca50899c33a2</version_id>
-  <version_modified>2026-08-18T08:30:24Z</version_modified>
+  <version_id>ba9e9db7-e847-4494-b018-75d73a7f9382</version_id>
+  <version_modified>2026-08-18T16:34:43Z</version_modified>
   <xml_checksum>0AC7A2DB</xml_checksum>
   <class_name>EpModelAddPackagedTerminalHeatPumps</class_name>
   <display_name>EPModel Add Packaged Terminal Heat Pumps</display_name>
-  <description>Add one autosized packaged terminal heat pump with local outdoor air to every thermostatically controlled zone.</description>
-  <modeler_description>Consumes an HVAC-ready EPModel and builds each PTHP from an on/off fan, single-speed DX heating and cooling coils, supplemental electric heat, and its owned outdoor-air mixer using typed EPModel APIs.</modeler_description>
+  <description>Add a packaged terminal heat pump to every zone with a thermostat.</description>
+  <modeler_description>Each system includes outdoor air, an on/off fan, DX heating and cooling, and supplemental electric heat.</modeler_description>
   <arguments />
   <outputs />
   <provenances />
@@ -38,7 +38,7 @@
       <filename>measure.py</filename>
       <filetype>py</filetype>
       <usage_type>script</usage_type>
-      <checksum>64F1EE38</checksum>
+      <checksum>98430E64</checksum>
     </file>
   </files>
 </measure>

@@ -3,13 +3,13 @@
   <schema_version>3.1</schema_version>
   <name>ep_model_remove_all_hvac_systems</name>
   <uid>52f917d6-e40c-4feb-8285-daf4426d0f19</uid>
-  <version_id>e1ddd6d9-04c6-4fb7-8bfb-ab0f7033072b</version_id>
-  <version_modified>2026-08-18T07:36:03Z</version_modified>
+  <version_id>ca299c46-0439-4be6-9783-82a01d9dcbaf</version_id>
+  <version_modified>2026-08-18T16:24:42Z</version_modified>
   <xml_checksum>E6950623</xml_checksum>
   <class_name>EpModelRemoveAllHVACSystems</class_name>
   <display_name>EPModel Remove All HVAC Systems</display_name>
-  <description>Remove every air loop, zone HVAC component, and plant loop through their public EPModel ownership APIs.</description>
-  <modeler_description>Exercises owner-level HVAC removal and reconciles SimulationControl with the resulting zone-only model. The measure deliberately contains no EnergyPlus object-type deletion list and no raw field or node manipulation.</modeler_description>
+  <description>Remove air loops, zone HVAC equipment, and plant loops from an EPModel.</description>
+  <modeler_description>Removes air systems before plant systems and updates settings that depend on the removed equipment.</modeler_description>
   <arguments />
   <outputs />
   <provenances />
@@ -38,7 +38,7 @@
       <filename>measure.py</filename>
       <filetype>py</filetype>
       <usage_type>script</usage_type>
-      <checksum>D08291C4</checksum>
+      <checksum>B354F3A2</checksum>
     </file>
   </files>
 </measure>

@@ -3,13 +3,13 @@
   <schema_version>3.1</schema_version>
   <name>ep_model_add_multizone_vav_system</name>
   <uid>9f5554bb-3317-4c1a-a4fc-52945656604e</uid>
-  <version_id>3cb07f3a-a330-451b-9fcb-94a214482a18</version_id>
-  <version_modified>2026-08-18T05:52:00Z</version_modified>
+  <version_id>575f267d-6538-4d75-8909-efe700244ccb</version_id>
+  <version_modified>2026-08-18T16:34:41Z</version_modified>
   <xml_checksum>2FBE5B91</xml_checksum>
   <class_name>EpModelAddMultizoneVAVSystem</class_name>
   <display_name>EPModel Add Multizone VAV System</display_name>
-  <description>Serve every thermostatically controlled zone with one multizone VAV system and central hot-water and chilled-water plants.</description>
-  <modeler_description>Consumes the same HVAC-ready contract as the other addition measures, then builds a variable-volume air system with hot-water reheat, a boiler hot-water loop, and an air-cooled-chiller chilled-water loop.</modeler_description>
+  <description>Add one multizone VAV system to the zones with thermostats.</description>
+  <modeler_description>The system uses hot-water reheat, a gas boiler, and an air-cooled chiller.</modeler_description>
   <arguments />
   <outputs />
   <provenances />
@@ -38,7 +38,7 @@
       <filename>measure.py</filename>
       <filetype>py</filetype>
       <usage_type>script</usage_type>
-      <checksum>50869543</checksum>
+      <checksum>B862D18E</checksum>
     </file>
   </files>
 </measure>

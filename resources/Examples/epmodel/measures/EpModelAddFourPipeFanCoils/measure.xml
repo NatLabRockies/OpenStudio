@@ -3,13 +3,13 @@
   <schema_version>3.1</schema_version>
   <name>ep_model_add_four_pipe_fan_coils</name>
   <uid>32d11001-c284-488b-a970-f1461577bb9a</uid>
-  <version_id>ad8f306c-271d-4cc4-9696-4b81c62b83b3</version_id>
-  <version_modified>2026-08-18T05:52:02Z</version_modified>
+  <version_id>36ada74a-750e-4dcd-a68f-da510dfdc332</version_id>
+  <version_modified>2026-08-18T16:34:43Z</version_modified>
   <xml_checksum>0AC7A2DB</xml_checksum>
   <class_name>EpModelAddFourPipeFanCoils</class_name>
   <display_name>EPModel Add Four-Pipe Fan Coils</display_name>
-  <description>Serve every thermostatically controlled zone with a direct four-pipe fan coil on shared hot-water and chilled-water loops.</description>
-  <modeler_description>Exercises direct zone ownership, contained fan and water-coil air paths, shared plant demand branches, and explicit fan-coil sizing without an AirLoopHVAC.</modeler_description>
+  <description>Add a four-pipe fan coil to every zone with a thermostat.</description>
+  <modeler_description>The fan coils share hot-water and chilled-water loops served by a gas boiler and an air-cooled chiller.</modeler_description>
   <arguments />
   <outputs />
   <provenances />
@@ -38,7 +38,7 @@
       <filename>measure.py</filename>
       <filetype>py</filetype>
       <usage_type>script</usage_type>
-      <checksum>9B7DDB0F</checksum>
+      <checksum>83D8E30D</checksum>
     </file>
   </files>
 </measure>

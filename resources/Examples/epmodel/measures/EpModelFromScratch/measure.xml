@@ -3,13 +3,13 @@
   <schema_version>3.1</schema_version>
   <name>ep_model_from_scratch</name>
   <uid>0c3b5f38-2d6f-4ce4-a8c2-c1820da1ac80</uid>
-  <version_id>896c2abc-2041-4daf-ba11-d9f10166f22f</version_id>
-  <version_modified>2026-08-18T04:02:28Z</version_modified>
+  <version_id>fa4147f0-72b6-4ae7-86b2-506d77b559fd</version_id>
+  <version_modified>2026-08-18T16:24:42Z</version_modified>
   <xml_checksum>E6950623</xml_checksum>
   <class_name>EpModelFromScratch</class_name>
   <display_name>EPModel From Scratch</display_name>
-  <description>Build a small HVAC-ready EPModel without SpaceType, SpaceList, or space-load objects.</description>
-  <modeler_description>Creates explicit geometry, zones, constructions, constant schedules, and thermostats using only public typed EPModel APIs.</modeler_description>
+  <description>Create a simple building with one or more detached thermal zones.</description>
+  <modeler_description>Adds geometry, windows, constructions, thermostat schedules, and summer and winter design days.</modeler_description>
   <arguments>
     <argument>
       <name>zone_count</name>
@@ -47,7 +47,7 @@
       <filename>measure.py</filename>
       <filetype>py</filetype>
       <usage_type>script</usage_type>
-      <checksum>E33BC86E</checksum>
+      <checksum>7405E219</checksum>
     </file>
   </files>
 </measure>

@@ -3,13 +3,13 @@
   <schema_version>3.1</schema_version>
   <name>ep_model_add_packaged_unitary_systems</name>
   <uid>10743b9b-f580-44ff-824d-f53375aca640</uid>
-  <version_id>7526a9fa-f6c6-4826-b700-ec374332c4a8</version_id>
-  <version_modified>2026-08-18T08:38:01Z</version_modified>
+  <version_id>55c9ff61-16aa-4edb-98ad-3bd4d7a03c2d</version_id>
+  <version_modified>2026-08-18T16:34:43Z</version_modified>
   <xml_checksum>5BBFC495</xml_checksum>
   <class_name>EpModelAddPackagedUnitarySystems</class_name>
   <display_name>EPModel Add Packaged Unitary Systems</display_name>
-  <description>Add one autosized packaged single-zone air conditioner to every thermostatically controlled zone in an HVAC-ready EPModel.</description>
-  <modeler_description>Builds each system from an AirLoopHVAC, outdoor-air system, AirLoopHVAC:UnitaryHeatCool with an on/off fan, DX cooling coil, gas heating coil, and a constant-volume no-reheat terminal using typed EPModel APIs.</modeler_description>
+  <description>Add a packaged single-zone gas/electric system to every zone with a thermostat.</description>
+  <modeler_description>Each system includes outdoor air, an on/off fan, gas heat, DX cooling, and a constant-volume terminal.</modeler_description>
   <arguments />
   <outputs />
   <provenances />
@@ -39,7 +39,7 @@
       <filename>measure.py</filename>
       <filetype>py</filetype>
       <usage_type>script</usage_type>
-      <checksum>B02CE005</checksum>
+      <checksum>FDF09CE5</checksum>
     </file>
   </files>
 </measure>

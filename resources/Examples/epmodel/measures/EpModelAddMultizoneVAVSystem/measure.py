@@ -8,15 +8,11 @@ class EpModelAddMultizoneVAVSystem(openstudio.measure.ModelMeasure):
         return "EPModel Add Multizone VAV System"
 
     def description(self):
-        return (
-            "Serve every thermostatically controlled zone with one multizone VAV system and central hot-water and "
-            "chilled-water plants."
-        )
+        return "Add one multizone VAV system to the zones with thermostats."
 
     def modeler_description(self):
         return (
-            "Consumes the same HVAC-ready contract as the other addition measures, then builds a variable-volume air "
-            "system with hot-water reheat, a boiler hot-water loop, and an air-cooled-chiller chilled-water loop."
+            "The system uses hot-water reheat, a gas boiler, and an air-cooled chiller."
         )
 
     def arguments(self, model=None):
@@ -37,59 +33,51 @@ class EpModelAddMultizoneVAVSystem(openstudio.measure.ModelMeasure):
 
         schedule = openstudio.epmodel.ScheduleConstant(model)
         schedule.setName(f"{self.SYSTEM_PREFIX} {kind} Setpoint")
-        if not self.require_condition(runner, schedule.setValue(temperature), f"Could not set the {kind.lower()} setpoint."):
-            return None
+        schedule.setValue(temperature)
 
         loop = openstudio.epmodel.PlantLoop(model)
         sizing = loop.sizingPlant()
-        if not self.require_condition(
-            runner,
-            all(
-                [
-                    sizing.setLoopType("Heating" if heating else "Cooling"),
-                    sizing.setDesignLoopExitTemperature(temperature),
-                    sizing.setLoopDesignTemperatureDifference(delta),
-                    loop.setMaximumLoopFlowRate(flow_rate),
-                ]
-            ),
-            f"Could not configure the {kind.lower()} loop sizing.",
-        ):
-            return None
+        sizing.setLoopType("Heating" if heating else "Cooling")
+        sizing.setDesignLoopExitTemperature(temperature)
+        sizing.setLoopDesignTemperatureDifference(delta)
+        loop.setMaximumLoopFlowRate(flow_rate)
 
         pump = openstudio.epmodel.PumpVariableSpeed(model)
         pump.setName(f"{self.SYSTEM_PREFIX} {kind} Pump")
         pump.autosizeRatedPowerConsumption()
+        pump.setRatedFlowRate(flow_rate)
+        pump.setRatedPumpHead(120_000.0)
+        pump.setMotorEfficiency(0.9)
         if not self.require_condition(
             runner,
-            all(
-                [
-                    pump.setRatedFlowRate(flow_rate),
-                    pump.setRatedPumpHead(120_000.0),
-                    pump.setMotorEfficiency(0.9),
-                    pump.setZone(zone),
-                    pump.addToNode(loop.supplyInletNode()),
-                ]
-            ),
-            f"Could not configure and connect the {kind.lower()} pump.",
+            pump.setZone(zone) and pump.addToNode(loop.supplyInletNode()),
+            f"Could not connect the {kind.lower()} pump.",
         ):
             return None
 
         if heating:
             equipment = openstudio.epmodel.BoilerHotWater(model)
             equipment.setName(f"{self.SYSTEM_PREFIX} Hot Water Boiler")
-            if not self.require_condition(runner, equipment.setFuelType("NaturalGas"), "Could not set the boiler fuel type."):
-                return None
+            equipment.setFuelType("NaturalGas")
             equipment.autosizeNominalCapacity()
             equipment.autosizeDesignWaterFlowRate()
             operation = openstudio.epmodel.PlantEquipmentOperationHeatingLoad(model)
-            operation.setName(f"{self.SYSTEM_PREFIX} Hot Water Heating Operation Scheme")
-            operation_is_set = operation.addEquipment(equipment) and loop.setPlantEquipmentOperationHeatingLoad(operation)
+            operation.setName(
+                f"{self.SYSTEM_PREFIX} Hot Water Heating Operation Scheme"
+            )
+            operation_is_set = operation.addEquipment(
+                equipment
+            ) and loop.setPlantEquipmentOperationHeatingLoad(operation)
         else:
             equipment = openstudio.epmodel.ChillerElectricEIR(model)
             equipment.setName(f"{self.SYSTEM_PREFIX} Air-Cooled Chiller")
             operation = openstudio.epmodel.PlantEquipmentOperationCoolingLoad(model)
-            operation.setName(f"{self.SYSTEM_PREFIX} Chilled Water Cooling Operation Scheme")
-            operation_is_set = operation.addEquipment(equipment) and loop.setPlantEquipmentOperationCoolingLoad(operation)
+            operation.setName(
+                f"{self.SYSTEM_PREFIX} Chilled Water Cooling Operation Scheme"
+            )
+            operation_is_set = operation.addEquipment(
+                equipment
+            ) and loop.setPlantEquipmentOperationCoolingLoad(operation)
 
         if not self.require_condition(
             runner,
@@ -117,7 +105,11 @@ class EpModelAddMultizoneVAVSystem(openstudio.measure.ModelMeasure):
                 connected = loop.addDemandBranchForComponent(pipe)
             else:
                 connected = pipe.addToNode(loop.demandOutletNode())
-            if not self.require_condition(runner, connected, f"Could not connect the {kind.lower()} {label.lower()}."):
+            if not self.require_condition(
+                runner,
+                connected,
+                f"Could not connect the {kind.lower()} {label.lower()}.",
+            ):
                 return None
 
         spm = openstudio.epmodel.SetpointManagerScheduled(model)
@@ -133,11 +125,12 @@ class EpModelAddMultizoneVAVSystem(openstudio.measure.ModelMeasure):
 
         return loop
 
-    def build_multizone_air_loop(self, model, runner, hot_water_loop, chilled_water_loop):
+    def build_multizone_air_loop(
+        self, model, runner, hot_water_loop, chilled_water_loop
+    ):
         deck_schedule = openstudio.epmodel.ScheduleConstant(model)
         deck_schedule.setName(f"{self.SYSTEM_PREFIX} Deck Air Setpoint")
-        if not self.require_condition(runner, deck_schedule.setValue(12.8), "Could not set the VAV deck-air setpoint."):
-            return None
+        deck_schedule.setValue(12.8)
 
         air_loop = openstudio.epmodel.AirLoopHVAC(model)
         air_loop.setName(f"{self.SYSTEM_PREFIX} System")
@@ -149,7 +142,9 @@ class EpModelAddMultizoneVAVSystem(openstudio.measure.ModelMeasure):
 
         outdoor_air_system = openstudio.epmodel.AirLoopHVACOutdoorAirSystem(model)
         outdoor_air_system.setName(f"{self.SYSTEM_PREFIX} Outdoor Air System")
-        outdoor_air_system.getControllerOutdoorAir().setName(f"{self.SYSTEM_PREFIX} Outdoor Air Controller")
+        outdoor_air_system.getControllerOutdoorAir().setName(
+            f"{self.SYSTEM_PREFIX} Outdoor Air Controller"
+        )
 
         cooling_coil = openstudio.epmodel.CoilCoolingWater(model)
         cooling_coil.setName(f"{self.SYSTEM_PREFIX} Central Cooling Coil")
@@ -165,7 +160,9 @@ class EpModelAddMultizoneVAVSystem(openstudio.measure.ModelMeasure):
         supply_outlet_node = air_loop.supplyOutletNode()
         for component in [outdoor_air_system, cooling_coil, heating_coil, fan]:
             if not self.require_condition(
-                runner, component.addToNode(supply_outlet_node), f"Could not add {component.nameString()} to the VAV supply path."
+                runner,
+                component.addToNode(supply_outlet_node),
+                f"Could not add {component.nameString()} to the VAV supply path.",
             ):
                 return None
 
@@ -179,7 +176,10 @@ class EpModelAddMultizoneVAVSystem(openstudio.measure.ModelMeasure):
 
         for name, node in [
             ("Deck Air", supply_outlet_node),
-            ("Cooling Coil Outlet", heating_coil.airInletModelObject().get().to_Node().get()),
+            (
+                "Cooling Coil Outlet",
+                heating_coil.airInletModelObject().get().to_Node().get(),
+            ),
             ("Heating Coil Outlet", fan.inletModelObject().get().to_Node().get()),
         ]:
             spm = openstudio.epmodel.SetpointManagerScheduled(model)
@@ -202,7 +202,9 @@ class EpModelAddMultizoneVAVSystem(openstudio.measure.ModelMeasure):
         zones = [zone for zone in all_zones if not zone.thermostat().empty()]
 
         if not zones:
-            runner.registerError("The model has no thermostatically controlled zones to condition.")
+            runner.registerError(
+                "The model has no thermostatically controlled zones to condition."
+            )
             return False
 
         existing = {
@@ -214,22 +216,29 @@ class EpModelAddMultizoneVAVSystem(openstudio.measure.ModelMeasure):
         conflicts = [f"{count} {label}" for label, count in existing.items() if count]
         if conflicts:
             runner.registerError(
-                "The multizone VAV system requires an HVAC-ready model, but found " + ", ".join(conflicts) + "."
+                "Remove the existing HVAC systems before adding multizone VAV; found "
+                + ", ".join(conflicts)
+                + "."
             )
             return False
 
         pump_zone = zones[0]
-        hot_water_loop = self.build_plant_loop(model, runner, pump_zone, True, len(zones))
-        chilled_water_loop = self.build_plant_loop(model, runner, pump_zone, False, len(zones))
+        hot_water_loop = self.build_plant_loop(
+            model, runner, pump_zone, True, len(zones)
+        )
+        chilled_water_loop = self.build_plant_loop(
+            model, runner, pump_zone, False, len(zones)
+        )
 
         if hot_water_loop is None or chilled_water_loop is None:
-            runner.registerError("Could not link the plant pumps to a thermal zone for skin-loss gains.")
             return False
 
         hot_water_loop.setName(f"{self.SYSTEM_PREFIX} Hot Water Loop")
         chilled_water_loop.setName(f"{self.SYSTEM_PREFIX} Chilled Water Loop")
 
-        air_loop = self.build_multizone_air_loop(model, runner, hot_water_loop, chilled_water_loop)
+        air_loop = self.build_multizone_air_loop(
+            model, runner, hot_water_loop, chilled_water_loop
+        )
         if air_loop is None:
             return False
         for zone in zones:
@@ -252,17 +261,9 @@ class EpModelAddMultizoneVAVSystem(openstudio.measure.ModelMeasure):
             ):
                 return False
 
-        if not self.require_condition(
-            runner,
-            len(air_loop.thermalZones()) == len(zones)
-            and len(model.getAirTerminalSingleDuctVAVReheats()) == len(zones),
-            "The VAV system does not serve every controlled zone exactly once.",
-        ):
-            return False
-
         runner.registerFinalCondition(
-            f"Added one multizone VAV air system serving {len(zones)} controlled zone(s), with hot-water reheat, "
-            f"central chilled water, and shared plant loops; left {len(all_zones) - len(zones)} unconditioned zone(s) without HVAC."
+            f"Added one multizone VAV system serving {len(zones)} zone(s); "
+            f"left {len(all_zones) - len(zones)} unconditioned zone(s) unchanged."
         )
         return True
 

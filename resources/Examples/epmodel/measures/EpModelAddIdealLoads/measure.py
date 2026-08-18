@@ -6,10 +6,10 @@ class EpModelAddIdealLoads(openstudio.measure.ModelMeasure):
         return "EPModel Add Ideal Loads"
 
     def description(self):
-        return "Add an ideal-loads air system to every thermal zone in an HVAC-ready EPModel."
+        return "Add ideal heating and cooling to every thermal zone."
 
     def modeler_description(self):
-        return "Uses ThermalZone.setUseIdealAirLoads after verifying that no air loops, zone equipment, or plant loops remain."
+        return "The model must not already contain HVAC systems."
 
     def arguments(self, model=None):
         return openstudio.measure.OSArgumentVector()
@@ -31,19 +31,23 @@ class EpModelAddIdealLoads(openstudio.measure.ModelMeasure):
         }
         conflicts = [f"{count} {label}" for label, count in existing.items() if count]
         if conflicts:
-            runner.registerError("Ideal loads requires an HVAC-ready model, but found " + ", ".join(conflicts) + ".")
+            runner.registerError(
+                "Remove the existing HVAC systems before adding ideal loads; found "
+                + ", ".join(conflicts)
+                + "."
+            )
             return False
 
         for zone in zones:
             if not zone.setUseIdealAirLoads(True):
-                runner.registerError(f"Could not add ideal loads to thermal zone '{zone.nameString()}'.")
+                runner.registerError(
+                    f"Could not add ideal loads to thermal zone '{zone.nameString()}'."
+                )
                 return False
 
-        if len(model.getZoneHVACIdealLoadsAirSystems()) != len(zones):
-            runner.registerError("The number of ideal-loads systems does not match the number of thermal zones.")
-            return False
-
-        runner.registerFinalCondition(f"Added ideal loads to {len(zones)} thermal zone(s).")
+        runner.registerFinalCondition(
+            f"Added ideal loads to {len(zones)} thermal zone(s)."
+        )
         return True
 
 

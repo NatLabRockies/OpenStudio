@@ -8,13 +8,10 @@ class EpModelAddPackagedTerminalHeatPumps(openstudio.measure.ModelMeasure):
         return "EPModel Add Packaged Terminal Heat Pumps"
 
     def description(self):
-        return "Add one autosized packaged terminal heat pump with local outdoor air to every thermostatically controlled zone."
+        return "Add a packaged terminal heat pump to every zone with a thermostat."
 
     def modeler_description(self):
-        return (
-            "Consumes an HVAC-ready EPModel and builds each PTHP from an on/off fan, single-speed DX heating and cooling "
-            "coils, supplemental electric heat, and its owned outdoor-air mixer using typed EPModel APIs."
-        )
+        return "Each system includes outdoor air, an on/off fan, DX heating and cooling, and supplemental electric heat."
 
     def arguments(self, model=None):
         return openstudio.measure.OSArgumentVector()
@@ -33,7 +30,11 @@ class EpModelAddPackagedTerminalHeatPumps(openstudio.measure.ModelMeasure):
 
         all_zones = sorted(model.getThermalZones(), key=lambda zone: zone.nameString())
         zones = [zone for zone in all_zones if not zone.thermostat().empty()]
-        if not self.require_condition(runner, bool(zones), "The model has no thermostatically controlled zones to condition."):
+        if not self.require_condition(
+            runner,
+            bool(zones),
+            "The model has no thermostatically controlled zones to condition.",
+        ):
             return False
 
         existing = {
@@ -46,12 +47,13 @@ class EpModelAddPackagedTerminalHeatPumps(openstudio.measure.ModelMeasure):
         if not self.require_condition(
             runner,
             not conflicts,
-            "Packaged terminal heat pumps require an HVAC-ready model, but found " + ", ".join(conflicts) + ".",
+            "Remove the existing HVAC systems before adding packaged terminal heat pumps; found "
+            + ", ".join(conflicts)
+            + ".",
         ):
             return False
 
         schedule = model.alwaysOnDiscreteSchedule()
-        created = []
         for index, zone in enumerate(zones, 1):
             prefix = f"{self.SYSTEM_PREFIX} {index}"
 
@@ -99,7 +101,11 @@ class EpModelAddPackagedTerminalHeatPumps(openstudio.measure.ModelMeasure):
                 pthp.setSupplementalHeatingCoil(supplemental),
                 pthp.setFanPlacement("BlowThrough"),
             ]
-            if not self.require_condition(runner, all(settings), f"Could not configure the PTHP for '{zone.nameString()}'."):
+            if not self.require_condition(
+                runner,
+                all(settings),
+                f"Could not configure the PTHP for '{zone.nameString()}'.",
+            ):
                 return False
 
             pthp.autosizeSupplyAirFlowRateDuringCoolingOperation()
@@ -117,34 +123,9 @@ class EpModelAddPackagedTerminalHeatPumps(openstudio.measure.ModelMeasure):
             ):
                 return False
 
-            relationships_are_coherent = (
-                not pthp.thermalZone().empty()
-                and pthp.thermalZone().get().handle() == zone.handle()
-                and pthp.supplyAirFan().handle() == fan.handle()
-                and pthp.heatingCoil().handle() == heating.handle()
-                and pthp.coolingCoil().handle() == cooling.handle()
-                and pthp.supplementalHeatingCoil().handle() == supplemental.handle()
-                and not pthp.inletNode().empty()
-                and not pthp.outletNode().empty()
-            )
-            if not self.require_condition(
-                runner,
-                relationships_are_coherent,
-                f"The packaged-terminal relationships for '{zone.nameString()}' are not coherent.",
-            ):
-                return False
-            created.append(pthp)
-
-        if not self.require_condition(
-            runner,
-            len(model.getZoneHVACPackagedTerminalHeatPumps()) == len(zones),
-            "The number of packaged terminal heat pumps does not match the number of controlled zones.",
-        ):
-            return False
-
         runner.registerFinalCondition(
-            f"Added {len(created)} autosized packaged terminal heat pump(s), one for each controlled zone; "
-            f"left {len(all_zones) - len(zones)} unconditioned zone(s) without HVAC."
+            f"Added packaged terminal heat pumps to {len(zones)} zone(s); "
+            f"left {len(all_zones) - len(zones)} unconditioned zone(s) unchanged."
         )
         return True
 
