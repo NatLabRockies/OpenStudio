@@ -7637,6 +7637,56 @@ TEST_F(EPModelFixture, PlantLoop_BoilerControlRemovalLifecycle) {
   openstudio::filesystem::remove(idfPath);
 }
 
+TEST_F(EPModelFixture, PlantLoop_AirCooledChillerSetRemovalLifecycle) {
+  const auto idfPath = openstudio::tempDir() / openstudio::toPath("epmodel-plant-loop-air-cooled-chiller-set-removal.idf");
+
+  Model model;
+  PlantLoop plantLoop(model);
+  ChillerElectricEIR firstChiller(model);
+  ChillerElectricEIR secondChiller(model);
+  ASSERT_TRUE(plantLoop.setName("Air-Cooled Chiller Set Removal Plant Loop"));
+  ASSERT_TRUE(firstChiller.setName("First Owned Air-Cooled Chiller"));
+  ASSERT_TRUE(secondChiller.setName("Second Owned Air-Cooled Chiller"));
+  ASSERT_TRUE(firstChiller.setCondenserType("AirCooled"));
+  ASSERT_TRUE(secondChiller.setCondenserType("EvaporativelyCooled"));
+  ASSERT_TRUE(plantLoop.addSupplyBranchForComponent(firstChiller));
+  ASSERT_TRUE(plantLoop.addSupplyBranchForComponent(secondChiller));
+  ASSERT_TRUE(model.save(idfPath, true));
+
+  auto loadedModel = Model::load(idfPath);
+  ASSERT_TRUE(loadedModel);
+  auto loadedPlantLoop = loadedModel->getConcreteModelObjectByName<PlantLoop>("Air-Cooled Chiller Set Removal Plant Loop");
+  auto loadedFirstChiller = loadedModel->getConcreteModelObjectByName<ChillerElectricEIR>("First Owned Air-Cooled Chiller");
+  auto loadedSecondChiller = loadedModel->getConcreteModelObjectByName<ChillerElectricEIR>("Second Owned Air-Cooled Chiller");
+  ASSERT_TRUE(loadedPlantLoop);
+  ASSERT_TRUE(loadedFirstChiller);
+  ASSERT_TRUE(loadedSecondChiller);
+  ASSERT_TRUE(loadedFirstChiller->plantLoop());
+  ASSERT_TRUE(loadedSecondChiller->plantLoop());
+  EXPECT_EQ(*loadedPlantLoop, *loadedFirstChiller->plantLoop());
+  EXPECT_EQ(*loadedPlantLoop, *loadedSecondChiller->plantLoop());
+  EXPECT_EQ("AirCooled", loadedFirstChiller->condenserType());
+  EXPECT_EQ("EvaporativelyCooled", loadedSecondChiller->condenserType());
+  EXPECT_FALSE(loadedFirstChiller->secondaryPlantLoop());
+  EXPECT_FALSE(loadedSecondChiller->secondaryPlantLoop());
+  EXPECT_FALSE(loadedFirstChiller->tertiaryPlantLoop());
+  EXPECT_FALSE(loadedSecondChiller->tertiaryPlantLoop());
+
+  EXPECT_FALSE(loadedPlantLoop->remove().empty());
+  EXPECT_FALSE(loadedModel->getObject(loadedPlantLoop->handle()));
+  EXPECT_FALSE(loadedModel->getObject(loadedFirstChiller->handle()));
+  EXPECT_FALSE(loadedModel->getObject(loadedSecondChiller->handle()));
+
+  ASSERT_TRUE(loadedModel->save(idfPath, true));
+  auto reloadedModel = Model::load(idfPath);
+  ASSERT_TRUE(reloadedModel);
+  EXPECT_FALSE(reloadedModel->getConcreteModelObjectByName<PlantLoop>("Air-Cooled Chiller Set Removal Plant Loop"));
+  EXPECT_FALSE(reloadedModel->getConcreteModelObjectByName<ChillerElectricEIR>("First Owned Air-Cooled Chiller"));
+  EXPECT_FALSE(reloadedModel->getConcreteModelObjectByName<ChillerElectricEIR>("Second Owned Air-Cooled Chiller"));
+
+  openstudio::filesystem::remove(idfPath);
+}
+
 TEST_F(EPModelFixture, PlantLoop_MultiSideStraightComponentRemovalLifecycle) {
   const auto idfPath = openstudio::tempDir() / openstudio::toPath("epmodel-plant-loop-multi-side-removal.idf");
 

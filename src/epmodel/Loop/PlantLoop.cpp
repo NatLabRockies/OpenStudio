@@ -5380,6 +5380,15 @@ namespace epmodel {
           chiller && selected.retained && (selected.owner == SelectedWaterToWaterOwner::SecondaryDemand) && primaryLoop && (*primaryLoop != plantLoop)
           && condenserLoop && (*condenserLoop == plantLoop) && !chiller->tertiaryPlantLoop();
       }
+      const bool isSelectedOwnedAirCooledChillerSet =
+        (selectedSpecializedComponentCount > 0u) && retainedWaterCoils.empty()
+        && (selectedWaterToWaterComponents.size() == selectedSpecializedComponentCount)
+        && std::ranges::all_of(selectedWaterToWaterComponents, [](const auto& selected) {
+             const auto chiller = selected.component.template optionalCast<ChillerElectricEIR>();
+             return chiller && !selected.retained && (selected.owner == SelectedWaterToWaterOwner::Supply)
+                    && (openstudio::istringEqual(chiller->condenserType(), "AirCooled")
+                        || openstudio::istringEqual(chiller->condenserType(), "EvaporativelyCooled"));
+           });
       bool isSelectedThermalStorageWithOwnedStraightEquipment = false;
       // One exact storage owner can share its loop with ordinary equipment.
       // Its validated sizing child remains selected even when this is the last
@@ -5408,7 +5417,8 @@ namespace epmodel {
         (selectedSpecializedComponentCount == 0u)
         || ((selectedSpecializedComponentCount == 1u) && ((ownedSupplyStraightComponentCount + ownedDemandStraightComponentCount) == 0u))
         || isSelectedEquationFitCompanionPair || isSelectedChillerCondenserWithOwnedSupplyEquipment
-        || isSelectedThermalStorageWithOwnedStraightEquipment || isSelectedWaterHeaterWithOwnedStraightEquipment;
+        || isSelectedOwnedAirCooledChillerSet || isSelectedThermalStorageWithOwnedStraightEquipment
+        || isSelectedWaterHeaterWithOwnedStraightEquipment;
       if (!hasOnlySelectedSupplyComponents || !hasOnlySelectedDemandComponents || !hasSelectedSpecializedCardinality) {
         // Do not remove only the PlantLoop row and leave its canonical graph
         // orphaned. Unsupported ownership combinations must fail atomically
