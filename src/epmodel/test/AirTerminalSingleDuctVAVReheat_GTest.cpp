@@ -753,6 +753,38 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctVAVReheat_Remove_ReconnectsZoneBranc
   EXPECT_TRUE(plantLoop.demandComponents(CoilHeatingWater::iddObjectType()).empty());
 }
 
+TEST_F(EPModelFixture, AirTerminalSingleDuctVAVReheat_Remove_SelectsItsDemandLoopWhenAnotherLoopServesZones) {
+  Model model;
+  AirLoopHVAC firstLoop(model);
+  AirLoopHVAC secondLoop(model);
+  ThermalZone firstZone(model);
+  ThermalZone secondZone(model);
+  ScheduleCompact availability(model);
+  ASSERT_TRUE(availability.setToConstantValue(1.0));
+  CoilHeatingElectric firstCoil(model);
+  CoilHeatingElectric secondCoil(model);
+  AirTerminalSingleDuctVAVReheat firstTerminal(model, availability, firstCoil);
+  AirTerminalSingleDuctVAVReheat secondTerminal(model, availability, secondCoil);
+
+  ASSERT_TRUE(firstLoop.addBranchForZone(firstZone, firstTerminal));
+  ASSERT_TRUE(secondLoop.addBranchForZone(secondZone, secondTerminal));
+  ASSERT_EQ(std::vector<ThermalZone>{firstZone}, firstLoop.thermalZones());
+  ASSERT_EQ(std::vector<ThermalZone>{secondZone}, secondLoop.thermalZones());
+
+  const auto firstTerminalHandle = firstTerminal.handle();
+  const auto firstCoilHandle = firstCoil.handle();
+  EXPECT_FALSE(firstTerminal.remove().empty());
+
+  EXPECT_FALSE(model.getObject(firstTerminalHandle));
+  EXPECT_FALSE(model.getObject(firstCoilHandle));
+  EXPECT_TRUE(model.getObject(secondTerminal.handle()));
+  EXPECT_TRUE(model.getObject(secondCoil.handle()));
+  EXPECT_EQ(std::vector<ThermalZone>{firstZone}, firstLoop.thermalZones());
+  EXPECT_EQ(std::vector<ThermalZone>{secondZone}, secondLoop.thermalZones());
+  ASSERT_TRUE(secondZone.airLoopHVACTerminal());
+  EXPECT_EQ(secondTerminal.handle(), secondZone.airLoopHVACTerminal()->handle());
+}
+
 TEST_F(EPModelFixture, AirTerminalSingleDuctVAVReheat_RemoveFromLoop_CleansPlantBranchWhenTerminalIsNotAirLoopConnected) {
   Model model;
   PlantLoop plantLoop(model);

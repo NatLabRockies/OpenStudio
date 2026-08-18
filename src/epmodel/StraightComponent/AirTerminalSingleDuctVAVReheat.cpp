@@ -613,7 +613,7 @@ namespace epmodel {
       const auto damperOutletHandle = damperOutlet ? boost::optional<Handle>(damperOutlet->handle()) : boost::none;
       bool childHadPlantTopology = false;
       for (const auto& child : ownedChildren) {
-        if (auto component = child.optionalCast<openstudio::epmodel::HVACComponent>(); component && component->plantLoop()) {
+        if (auto waterCoil = child.optionalCast<CoilHeatingWater>(); waterCoil && waterCoil->plantLoop()) {
           childHadPlantTopology = true;
           break;
         }
@@ -677,8 +677,6 @@ namespace epmodel {
               return false;
             }
           }
-        } else if (coil->plantLoop()) {
-          return false;
         }
       }
 

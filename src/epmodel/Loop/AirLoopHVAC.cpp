@@ -157,6 +157,7 @@
 #include <utilities/idf/WorkspaceExtensibleGroup.hpp>
 
 #include <algorithm>
+#include <map>
 #include <set>
 #include <functional>
 #include <memory>
@@ -3431,6 +3432,99 @@ namespace epmodel {
         return terminalOutletNode && (*terminalOutletNode == zoneInletNode);
       };
 
+      std::map<Handle, std::vector<std::pair<Node, bool>>> upstreamNodesByOutlet;
+      for (const auto& component : airLoop.model().getModelObjects<StraightComponent>()) {
+        if (component.iddObject().type() == openstudio::IddObjectType::Node) {
+          continue;
+        }
+        const auto outlet = readOnlyNodeField(component.cast<ModelObject>(), component.outletPort());
+        const auto inlet = readOnlyNodeField(component.cast<ModelObject>(), component.inletPort());
+        if (!outlet.valid || !outlet.node || !inlet.valid || !inlet.node) {
+          continue;
+        }
+        const auto iddName = component.iddObject().name();
+        const bool isTerminal = iddName.starts_with("AirTerminal:") || iddName.starts_with("OS:AirTerminal:");
+        upstreamNodesByOutlet[outlet.node->handle()].emplace_back(*inlet.node, isTerminal);
+      }
+
+      std::set<Handle> allSupplyEndpointHandles;
+      for (const auto& candidateSplitter : airLoop.model().getConcreteModelObjects<AirLoopHVACZoneSplitter>()) {
+        const auto candidateOutlets =
+          readOnlyNodeRows(candidateSplitter.cast<ModelObject>(), openstudio::AirLoopHVAC_ZoneSplitterExtensibleFields::OutletNodeName);
+        if (!candidateOutlets.valid) {
+          continue;
+        }
+        for (const auto& row : candidateOutlets.rows) {
+          allSupplyEndpointHandles.insert(row.second.handle());
+        }
+      }
+      for (const auto& candidatePlenum : supplyPlenums) {
+        const auto candidateOutlets =
+          readOnlyNodeRows(candidatePlenum.cast<ModelObject>(), openstudio::AirLoopHVAC_SupplyPlenumExtensibleFields::OutletNodeName);
+        if (!candidateOutlets.valid) {
+          continue;
+        }
+        for (const auto& row : candidateOutlets.rows) {
+          allSupplyEndpointHandles.insert(row.second.handle());
+        }
+      }
+
+      // Normal single-duct branches have one unambiguous upstream chain from
+      // the zone inlet back to exactly one splitter or supply-plenum outlet.
+      // Resolve that chain once per zone inlet. The exhaustive endpoint scan
+      // remains below as the conservative fallback for mixers and malformed
+      // or ambiguous imported topology.
+      struct DirectSupplyMatch
+      {
+        bool conclusive = false;
+        boost::optional<unsigned> endpoint;
+      };
+      const auto directlyMatchedSupplyEndpoint = [&](const Node& zoneInletNode) -> DirectSupplyMatch {
+        auto currentNode = zoneInletNode;
+        std::set<Handle> visitedNodeHandles{currentNode.handle()};
+        for (unsigned depth = 0u; depth < 64u; ++depth) {
+          boost::optional<unsigned> matchingEndpoint;
+          for (unsigned supplyIndex = 0u; supplyIndex < result.m_supplyEndpoints.size(); ++supplyIndex) {
+            const auto branchStartNode = result.m_supplyEndpoints[supplyIndex].branchStart.optionalCast<Node>();
+            if (!branchStartNode || (*branchStartNode != currentNode)) {
+              continue;
+            }
+            if (matchingEndpoint) {
+              return {};
+            }
+            matchingEndpoint = supplyIndex;
+          }
+          if (matchingEndpoint) {
+            return {true, matchingEndpoint};
+          }
+          if (allSupplyEndpointHandles.contains(currentNode.handle())) {
+            return {true, boost::none};
+          }
+
+          std::vector<Node> upstreamNodes;
+          std::vector<Node> terminalUpstreamNodes;
+          if (const auto it = upstreamNodesByOutlet.find(currentNode.handle()); it != upstreamNodesByOutlet.end()) {
+            for (const auto& [upstreamNode, isTerminal] : it->second) {
+              upstreamNodes.push_back(upstreamNode);
+              if (isTerminal) {
+                terminalUpstreamNodes.push_back(upstreamNode);
+              }
+            }
+          }
+          if (terminalUpstreamNodes.size() == 1u) {
+            upstreamNodes = std::move(terminalUpstreamNodes);
+          }
+          std::ranges::sort(upstreamNodes, [](const Node& left, const Node& right) { return left.handle() < right.handle(); });
+          const auto uniqueEnd = std::ranges::unique(upstreamNodes);
+          upstreamNodes.erase(uniqueEnd.begin(), uniqueEnd.end());
+          if (upstreamNodes.size() != 1u || !visitedNodeHandles.insert(upstreamNodes.front().handle()).second) {
+            return {};
+          }
+          currentNode = upstreamNodes.front();
+        }
+        return {};
+      };
+
       std::vector<bool> supplyUsed(result.m_supplyEndpoints.size(), false);
       std::vector<bool> returnUsed(result.m_returnEndpoints.size(), false);
       for (const auto& connections : airLoop.model().getConcreteModelObjects<ZoneHVACEquipmentConnections>()) {
@@ -3444,8 +3538,16 @@ namespace epmodel {
         }
 
         std::vector<std::pair<unsigned, Node>> supplyMatches;
-        for (unsigned supplyIndex = 0u; supplyIndex < result.m_supplyEndpoints.size(); ++supplyIndex) {
-          for (const auto& zoneInletNode : inletField.nodes) {
+        for (const auto& zoneInletNode : inletField.nodes) {
+          const auto directMatch = directlyMatchedSupplyEndpoint(zoneInletNode);
+          if (directMatch.endpoint) {
+            supplyMatches.emplace_back(*directMatch.endpoint, zoneInletNode);
+            continue;
+          }
+          if (directMatch.conclusive) {
+            continue;
+          }
+          for (unsigned supplyIndex = 0u; supplyIndex < result.m_supplyEndpoints.size(); ++supplyIndex) {
             if (supplyReachesZoneInlet(result.m_supplyEndpoints[supplyIndex], zoneInletNode)) {
               supplyMatches.emplace_back(supplyIndex, zoneInletNode);
             }
@@ -7282,6 +7384,20 @@ namespace epmodel {
     }
 
     std::vector<openstudio::epmodel::ThermalZone> AirLoopHVAC_Impl::thermalZones() const {
+      const auto topology = demandTopologySnapshot();
+      std::vector<openstudio::epmodel::ThermalZone> resolvedZones;
+      for (const auto& branch : topology.branches()) {
+        if (branch.zone
+            && std::ranges::none_of(resolvedZones, [&branch](const auto& existing) { return existing.handle() == branch.zone->handle(); })) {
+          resolvedZones.push_back(*branch.zone);
+        }
+      }
+      if (!resolvedZones.empty() && (resolvedZones.size() == topology.supplyEndpoints().size())) {
+        return resolvedZones;
+      }
+
+      // Preserve the broader traversal fallback for incomplete imported
+      // topology where the snapshot cannot associate every endpoint directly.
       auto zones = subsetCastVector<openstudio::epmodel::ThermalZone>(demandComponents(openstudio::IddObjectType::Zone));
       return zones;
     }

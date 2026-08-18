@@ -140,23 +140,19 @@ namespace epmodel {
         if (!typedInletNode || !typedOutletNode) {
           return nullptr;
         }
-        if (authoritativeOutlet) {
-          for (const auto& candidateAirLoop : terminal.model().getConcreteModelObjects<AirLoopHVAC>()) {
-            auto airLoopImpl = candidateAirLoop.getImpl<AirLoopHVAC_Impl>();
-            OS_ASSERT(airLoopImpl);
-            auto candidateReservation = airLoopImpl->reserveDemandBranchStartBypass(terminal, *authoritativeOutlet, outletField.node);
-            if (!candidateReservation) {
-              continue;
-            }
-            if (branchReservation) {
-              return nullptr;
-            }
-            branchReservation = std::move(candidateReservation);
-          }
-        } else if (const auto airLoop = terminal.airLoopHVAC()) {
-          auto airLoopImpl = airLoop->getImpl<AirLoopHVAC_Impl>();
+        for (const auto& candidateAirLoop : terminal.model().getConcreteModelObjects<AirLoopHVAC>()) {
+          auto airLoopImpl = candidateAirLoop.getImpl<AirLoopHVAC_Impl>();
           OS_ASSERT(airLoopImpl);
-          branchReservation = airLoopImpl->reserveDemandBranchStartBypass(terminal);
+          auto candidateReservation = authoritativeOutlet
+                                        ? airLoopImpl->reserveDemandBranchStartBypass(terminal, *authoritativeOutlet, outletField.node)
+                                        : airLoopImpl->reserveDemandBranchStartBypass(terminal);
+          if (!candidateReservation) {
+            continue;
+          }
+          if (branchReservation) {
+            return nullptr;
+          }
+          branchReservation = std::move(candidateReservation);
         }
         if (!branchReservation) {
           return nullptr;
