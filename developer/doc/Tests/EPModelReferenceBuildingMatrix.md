@@ -45,9 +45,9 @@ That pass found two general ownership defects:
 Additional current findings:
 
 - The SmallHotel PTHP workflow has a separate EnergyPlus sizing failure for a zero-load zone: EnergyPlus cannot determine the fan airflow for PTHP 13.
-- OutPatient VAV and PTHP initially reported one and two severe errors respectively and still need focused diagnosis.
-- The packaged-unitary workflows generate very large recurring outdoor-air-controller warning counts, from about 11,000 to more than 400,000 in affected files. OutPatient exceeded the ten-minute timeout. These results are not acceptable showcase content yet even where EnergyPlus reports no severe error.
-- MediumOffice packaged unitary reported two severe errors and needs focused diagnosis.
+- OutPatient VAV and PTHP reported one and two warmup-convergence severe errors respectively and still need focused diagnosis.
+- The packaged-unitary measure initially autosized the outdoor-air controller minimum flow instead of using canonical Model's zero minimum. That fixed minimum fought the mechanical-ventilation request and produced tens of thousands of recurring warnings. Restoring the canonical value reduced FullServiceRestaurant from 51,503 warnings to 11, MediumOffice from 325,596 warnings and two severe errors to 35 warnings and zero severe errors, and PrimarySchool from 411,942 warnings to 54.
+- PrimarySchool packaged unitary now exposes six warmup-convergence severe errors after the outdoor-air correction. OutPatient still exceeds ten minutes because EnergyPlus spends several minutes sizing and warming up its many single-zone systems, rather than because it is printing the former warning storm.
 
 ## Other defects found and fixed
 

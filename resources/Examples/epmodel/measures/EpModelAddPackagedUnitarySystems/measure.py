@@ -62,7 +62,7 @@ class EpModelAddPackagedUnitarySystems(openstudio.measure.ModelMeasure):
 
             outdoor_air = openstudio.epmodel.AirLoopHVACOutdoorAirSystem(model)
             outdoor_air.setName(f"{system_name} Outdoor Air System")
-            outdoor_air.getControllerOutdoorAir().autosizeMinimumOutdoorAirFlowRate()
+            outdoor_air.getControllerOutdoorAir().setMinimumOutdoorAirFlowRate(0.0)
             outdoor_air.getControllerOutdoorAir().autosizeMaximumOutdoorAirFlowRate()
 
             fan = openstudio.epmodel.FanOnOff(model, schedule)

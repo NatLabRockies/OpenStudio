@@ -3,8 +3,8 @@
   <schema_version>3.1</schema_version>
   <name>ep_model_add_packaged_unitary_systems</name>
   <uid>10743b9b-f580-44ff-824d-f53375aca640</uid>
-  <version_id>1980e405-af06-44f9-88a5-ad8f16e7ddbd</version_id>
-  <version_modified>2026-08-18T05:22:33Z</version_modified>
+  <version_id>80b6f76e-f548-4af8-8bb1-293d4ba91c87</version_id>
+  <version_modified>2026-08-18T08:17:51Z</version_modified>
   <xml_checksum>5BBFC495</xml_checksum>
   <class_name>EpModelAddPackagedUnitarySystems</class_name>
   <display_name>EPModel Add Packaged Unitary Systems</display_name>
@@ -39,7 +39,7 @@
       <filename>measure.py</filename>
       <filetype>py</filetype>
       <usage_type>script</usage_type>
-      <checksum>CD77B627</checksum>
+      <checksum>30D2E850</checksum>
     </file>
   </files>
 </measure>
