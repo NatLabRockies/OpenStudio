@@ -3,8 +3,8 @@
   <schema_version>3.1</schema_version>
   <name>ep_model_add_packaged_terminal_heat_pumps</name>
   <uid>67ae67ce-c5b4-4a13-92c5-7ee68bc5ea33</uid>
-  <version_id>1e9da7ab-37eb-49be-87c1-6ce9297f18dd</version_id>
-  <version_modified>2026-08-18T05:31:29Z</version_modified>
+  <version_id>fdc66579-b3bd-4fa0-8c6f-ca50899c33a2</version_id>
+  <version_modified>2026-08-18T08:30:24Z</version_modified>
   <xml_checksum>0AC7A2DB</xml_checksum>
   <class_name>EpModelAddPackagedTerminalHeatPumps</class_name>
   <display_name>EPModel Add Packaged Terminal Heat Pumps</display_name>
@@ -38,7 +38,7 @@
       <filename>measure.py</filename>
       <filetype>py</filetype>
       <usage_type>script</usage_type>
-      <checksum>BBDA5991</checksum>
+      <checksum>64F1EE38</checksum>
     </file>
   </files>
 </measure>

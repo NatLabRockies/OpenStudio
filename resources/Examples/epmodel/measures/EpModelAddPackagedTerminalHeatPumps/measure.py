@@ -55,6 +55,13 @@ class EpModelAddPackagedTerminalHeatPumps(openstudio.measure.ModelMeasure):
         for index, zone in enumerate(zones, 1):
             prefix = f"{self.SYSTEM_PREFIX} {index}"
 
+            if not self.require_condition(
+                runner,
+                zone.sizingZone().setCoolingDesignAirFlowMethod("DesignDayWithLimit"),
+                f"Could not give '{zone.nameString()}' a minimum design cooling airflow.",
+            ):
+                return False
+
             fan = openstudio.epmodel.FanOnOff(model, schedule)
             fan.setName(f"{prefix} Fan")
             fan.setFanEfficiency(0.7)

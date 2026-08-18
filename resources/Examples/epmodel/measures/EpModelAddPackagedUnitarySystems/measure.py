@@ -55,6 +55,13 @@ class EpModelAddPackagedUnitarySystems(openstudio.measure.ModelMeasure):
         for index, zone in enumerate(zones, 1):
             system_name = f"{self.SYSTEM_PREFIX} {index}"
 
+            if not self.require_condition(
+                runner,
+                zone.sizingZone().setCoolingDesignAirFlowMethod("DesignDayWithLimit"),
+                f"Could not give '{zone.nameString()}' a minimum design cooling airflow.",
+            ):
+                return False
+
             air_loop = openstudio.epmodel.AirLoopHVAC(model)
             air_loop.setName(f"{system_name} Air Loop")
             air_loop.sizingSystem().setCentralCoolingDesignSupplyAirTemperature(12.8)

@@ -44,10 +44,10 @@ That pass found two general ownership defects:
 
 Additional current findings:
 
-- The SmallHotel PTHP workflow has a separate EnergyPlus sizing failure for a zero-load zone: EnergyPlus cannot determine the fan airflow for PTHP 13.
+- SmallHotel initially could not autosize a PTHP or single-zone packaged unitary system in its zero-cooling-load storage zones. Both measures now select `DesignDayWithLimit` through the typed `SizingZone` API, retaining design-day sizing while providing EnergyPlus's standard floor-area minimum airflow. The PTHP workflow now passes with zero severe errors. The packaged-unitary workflow proceeds through sizing and simulation but reports ten warmup-convergence severe errors.
 - OutPatient VAV and PTHP reported one and two warmup-convergence severe errors respectively and still need focused diagnosis.
 - The packaged-unitary measure initially autosized the outdoor-air controller minimum flow instead of using canonical Model's zero minimum. That fixed minimum fought the mechanical-ventilation request and produced tens of thousands of recurring warnings. Restoring the canonical value reduced FullServiceRestaurant from 51,503 warnings to 11, MediumOffice from 325,596 warnings and two severe errors to 35 warnings and zero severe errors, and PrimarySchool from 411,942 warnings to 54.
-- PrimarySchool packaged unitary now exposes six warmup-convergence severe errors after the outdoor-air correction. OutPatient still exceeds ten minutes because EnergyPlus spends several minutes sizing and warming up its many single-zone systems, rather than because it is printing the former warning storm.
+- The current packaged-unitary matrix passes 9 of the 12 buildings that cross the HVAC-removal boundary. PrimarySchool reports six warmup-convergence severe errors, SmallHotel reports ten, and OutPatient still exceeds ten minutes because EnergyPlus spends several minutes sizing and warming up its many single-zone systems rather than printing the former warning storm.
 
 ## Other defects found and fixed
 
