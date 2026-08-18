@@ -1,7 +1,15 @@
 # EPModel examples
 
-These workflows use Python measures to create and edit EnergyPlus models with
-EPModel. Each workflow finishes by running EnergyPlus for a short summer week.
+EPModel (`openstudio::epmodel::Model`) recreates the familiar
+`openstudio::model::Model` API on top of EnergyPlus objects. It loads and saves
+IDF files instead of OSM files, allowing applications and measures to work
+directly with an EnergyPlus model while retaining the established OpenStudio
+API shape.
+
+EPModel is a work in progress, but these workflows demonstrate substantial
+capability already available through Python measures. Each workflow creates or
+edits an EnergyPlus model and finishes by running EnergyPlus for a short summer
+week.
 
 ## Create a new building
 
