@@ -129,6 +129,9 @@ def run_workflow(
     warnings = int(summary.group(1)) if summary else None
     severe_errors = int(summary.group(2)) if summary else None
     detail = "" if process.returncode == 0 else f"CLI exit code {process.returncode}"
+    if status == "Success" and severe_errors not in (None, 0):
+        status = "Severe"
+        detail = f"EnergyPlus reported {severe_errors} severe errors"
     return Result(building, system, status, elapsed, warnings, severe_errors, detail, str(task_dir))
 
 
