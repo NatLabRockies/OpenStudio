@@ -44,6 +44,11 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("seed", type=Path)
     parser.add_argument("--output", type=Path)
+    parser.add_argument(
+        "--air-loop-zones",
+        action="store_true",
+        help="Remove and time each zone branch before removing its air loop",
+    )
     args = parser.parse_args()
 
     seed = args.seed.resolve()
@@ -58,11 +63,32 @@ def main() -> int:
 
     timings = []
     succeeded = True
-    for phase, owners in (
-        ("air_loop", model.getAirLoopHVACs()),
-        ("zone_hvac", model.getZoneHVACComponents()),
-        ("plant_loop", model.getPlantLoops()),
-    ):
+    phases = (
+        ("air_loop", model.getAirLoopHVACs),
+        ("zone_hvac", model.getZoneHVACComponents),
+        ("plant_loop", model.getPlantLoops),
+    )
+    for phase, get_owners in phases:
+        owners_started = time.perf_counter()
+        owners = get_owners()
+        owners_elapsed = time.perf_counter() - owners_started
+        print(f"{phase + '_list':10} {owners_elapsed:9.3f}s owners={len(owners):5}", flush=True)
+        if phase == "air_loop" and args.air_loop_zones:
+            for air_loop in list(owners):
+                for zone in list(air_loop.thermalZones()):
+                    started = time.perf_counter()
+                    removed = air_loop.removeBranchForZone(zone)
+                    elapsed = time.perf_counter() - started
+                    timing = Timing("zone_branch", f"{air_loop.nameString()} / {zone.nameString()}", elapsed, 0, removed)
+                    timings.append(timing)
+                    print(f"zone_branch {elapsed:9.3f}s success={removed!s:5} {timing.name}", flush=True)
+                    if not removed:
+                        succeeded = False
+                        break
+                if not succeeded:
+                    break
+            if not succeeded:
+                break
         phase_timings, succeeded = timed_remove(phase, owners)
         timings.extend(phase_timings)
         if not succeeded:
