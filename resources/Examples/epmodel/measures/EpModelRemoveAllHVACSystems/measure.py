@@ -71,6 +71,31 @@ class EpModelRemoveAllHVACSystems(openstudio.measure.ModelMeasure):
             runner.registerError("Owner-level HVAC removal left " + ", ".join(failures) + ".")
             return False
 
+        # Refrigerated cases can send part of their rejected heat directly to
+        # a zone return-air stream. Once every air system is gone, EnergyPlus
+        # requires that fraction to be zero. Preserve the cases and use their
+        # typed API to reconcile this dependent setting with the zone-only
+        # model.
+        adjusted_refrigeration_cases = 0
+        refrigeration_case_type = openstudio.epmodel.RefrigerationCase.iddObjectType()
+        refrigeration_case_names = [
+            obj.nameString() for obj in model.objects() if obj.iddObject().type() == refrigeration_case_type
+        ]
+        for case_name in refrigeration_case_names:
+            refrigeration_case = model.getRefrigerationCaseByName(case_name)
+            if not refrigeration_case:
+                runner.registerError(f"Could not resolve refrigerated case '{case_name}' through its typed API.")
+                return False
+            refrigeration_case = refrigeration_case.get()
+            if refrigeration_case.underCaseHVACReturnAirFraction() <= 0.0:
+                continue
+            if not refrigeration_case.setUnderCaseHVACReturnAirFraction(0.0):
+                runner.registerError(
+                    f"Could not disconnect refrigerated case '{refrigeration_case.nameString()}' from HVAC return air."
+                )
+                return False
+            adjusted_refrigeration_cases += 1
+
         simulation_control = openstudio.epmodel.getSimulationControl(model)
         sizing_controls = [
             (
@@ -94,7 +119,8 @@ class EpModelRemoveAllHVACSystems(openstudio.measure.ModelMeasure):
         runner.registerFinalCondition(
             f"Removed {initial_object_count - model.numObjects()} model object(s) through the public ownership APIs "
             f"({removed_air_objects} from air-loop removal, {removed_zone_objects} from zone-HVAC removal, "
-            f"and {removed_plant_objects} from plant-loop removal)."
+            f"and {removed_plant_objects} from plant-loop removal) and reconciled "
+            f"{adjusted_refrigeration_cases} refrigerated case(s) with the zone-only model."
         )
         return True
 
