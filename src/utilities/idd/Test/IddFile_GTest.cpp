@@ -8,6 +8,9 @@
 
 #include "../IddKey.hpp"
 
+#include <utilities/idd/IddEnums.hxx>
+#include <utilities/idd/IddFactory.hxx>
+
 #include "../../core/StringStreamLogSink.hpp"
 #include "../../core/Containers.hpp"
 
@@ -129,7 +132,7 @@ TEST_F(IddFixture, OSIddFile) {
     EXPECT_EQ("", logMessage.logMessage());
   }
 
-  EXPECT_EQ(openStudioVersion(), loadedIddFile->version());
+  EXPECT_EQ(IddFactory::instance().getVersion(IddFileType::OpenStudio), loadedIddFile->version());
   EXPECT_EQ(osIddFile.objects().size(), loadedIddFile->objects().size());
   if (osIddFile.objects().size() != loadedIddFile->objects().size()) {
     // get sets of IddObjectType

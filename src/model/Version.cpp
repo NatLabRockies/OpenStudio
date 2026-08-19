@@ -10,6 +10,7 @@
 
 #include <utilities/idd/OS_Version_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
+#include <utilities/idd/IddFactory.hxx>
 
 #include "../utilities/core/Assert.hpp"
 
@@ -73,7 +74,7 @@ namespace model {
 
   Version::Version(const Model& model) : ModelObject(iddObjectType(), model) {
     OS_ASSERT(getImpl<detail::Version_Impl>());
-    setVersionIdentifier(openStudioVersion());
+    setVersionIdentifier(IddFactory::instance().getVersion(IddFileType::OpenStudio));
 
     std::string preReleaseTag = openStudioVersionPrerelease();
     if (!preReleaseTag.empty()) {

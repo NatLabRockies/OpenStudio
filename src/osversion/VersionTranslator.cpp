@@ -147,7 +147,6 @@ namespace osversion {
     m_updateMethods[VersionString("3.9.0")] = &VersionTranslator::update_3_8_0_to_3_9_0;
     m_updateMethods[VersionString("3.10.0")] = &VersionTranslator::update_3_9_0_to_3_10_0;
     m_updateMethods[VersionString("3.11.0")] = &VersionTranslator::update_3_10_0_to_3_11_0;
-    m_updateMethods[VersionString("4.0.0")] = &VersionTranslator::defaultUpdate;
 
     // List of previous versions that may be updated to this one.
     //   - To increment the translator, add an entry for the version just released (branched for
@@ -185,9 +184,9 @@ namespace osversion {
       VersionString("2.9.1"),  VersionString("3.0.0"),  VersionString("3.0.1"),  VersionString("3.1.0"),  VersionString("3.2.0"),
       VersionString("3.2.1"),  VersionString("3.3.0"),  VersionString("3.4.0"),  VersionString("3.5.0"),  VersionString("3.5.1"),
       VersionString("3.6.0"),  VersionString("3.6.1"),  VersionString("3.7.0"),  VersionString("3.8.0"),  VersionString("3.9.0"),
-      VersionString("3.10.0"), VersionString("3.11.0")
+      VersionString("3.10.0")
       // Note: do **not** include the **current** version in m_startVersions, stop at the previous release
-      //VersionString("4.0.0"),
+      //VersionString("3.11.0"),
     };
   }
 
@@ -315,8 +314,10 @@ namespace osversion {
       progressBar->setValue(m_startVersions.size());
     }
 
+    const VersionString latestVersion(IddFactory::instance().getVersion(IddFileType::OpenStudio));
+
     model::OptionalModel result;
-    IdfFile finalModel = m_map[VersionString(openStudioVersion())];
+    IdfFile finalModel = m_map[latestVersion];
     LOG(Debug, "Final model has " << finalModel.numObjects() << " objects in IDF form.");
     m_nObjectsFinalIdf = finalModel.numObjects();
     int numExpectedObjects = m_nObjectsStart + newObjects().size() - deprecatedObjects().size() - untranslatedObjects().size();
@@ -335,7 +336,7 @@ namespace osversion {
     OS_ASSERT(tempModel.strictnessLevel() == StrictnessLevel::Minimal);
     std::vector<std::shared_ptr<InterobjectIssueInformation>> issueInfo = fixInterobjectIssuesStage1(tempModel, m_originalVersion);
     if (!tempModel.isValid(StrictnessLevel::Draft)) {
-      LOG(Error, "Model with Version " << openStudioVersion() << " IDD is not valid to draft " << "strictness level.");
+      LOG(Error, "Model with Version " << latestVersion.str() << " IDD is not valid to draft " << "strictness level.");
       LOG(Error, tempModel.validityReport(StrictnessLevel::Draft));
       return boost::none;
     }
@@ -381,30 +382,34 @@ namespace osversion {
     m_originalVersion = currentVersion;  // save for user
     is.seekg(std::ios_base::beg);        // prep to re-read file
 
+    const VersionString latestVersion(IddFactory::instance().getVersion(IddFileType::OpenStudio));
+
     // bracket allowable versions
     LOG(Debug, "Starting translation from Version " << currentVersion.str() << ".");
     if (currentVersion < VersionString("0.7.0")) {
       LOG(Error, "Version translation is not provided for OpenStudio models created prior to " << "Version 0.7.0.");
       return;
     }
-    if (currentVersion > VersionString(openStudioVersion())) {
+    if (currentVersion > latestVersion) {
       if (m_allowNewerVersions) {
         // if currentVersion is just one ahead, may be a developer using the cloud.
-        // let it pass as if currentVersion == openStudioVersion(), with a warning
-        if (VersionString(openStudioVersion()).isNextVersion(currentVersion)) {
-          LOG(Warn, "Version extracted from file '" << currentVersion.str() << "' is one " << "increment ahead of OpenStudio Version "
-                                                    << openStudioVersion() << ". "
+        // let it pass as if currentVersion == latestVersion, with a warning
+        if (latestVersion.isNextVersion(currentVersion)) {
+          LOG(Warn, "Version extracted from file '" << currentVersion.str() << "' is one " << "increment ahead of OpenStudio model version "
+                                                    << latestVersion.str() << ". "
                                                     << "Proceeding as if these versions are the same. Use with caution.");
-          currentVersion = VersionString(openStudioVersion());
+          currentVersion = latestVersion;
         } else {
           // if currentVersion is farther ahead, log error and return nothing
-          LOG(Error, "Version extracted from file '" << currentVersion.str() << "' is not supported by OpenStudio Version " << openStudioVersion()
+          LOG(Error, "Version extracted from file '" << currentVersion.str() << "' is not supported by OpenStudio model version "
+                                                     << latestVersion.str()
                                                      << ". Please check https://www.openstudio.net for updates.");
           return;
         }
       } else {
         // log error and return nothing
-        LOG(Error, "Version extracted from file '" << currentVersion.str() << "' is newer than current OpenStudio Version " << openStudioVersion()
+        LOG(Error, "Version extracted from file '" << currentVersion.str() << "' is newer than current OpenStudio model version "
+                                                   << latestVersion.str()
                                                    << ". Please check https://www.openstudio.net for updates.");
         return;
       }
@@ -468,7 +473,8 @@ namespace osversion {
 
   IddFileAndFactoryWrapper VersionTranslator::getIddFile(const VersionString& version) {
     IddFileAndFactoryWrapper result(IddFileType::OpenStudio);
-    if (version < VersionString(openStudioVersion())) {
+    const VersionString latestVersion(IddFactory::instance().getVersion(IddFileType::OpenStudio));
+    if (version < latestVersion) {
       OptionalIddFile iddFile = IddFactory::instance().getIddFile(IddFileType::OpenStudio, version);
       if (!iddFile) {
         LOG_AND_THROW("Unable to retrieve OpenStudio Version " << version.str() << " IDD from the IddFactory.");

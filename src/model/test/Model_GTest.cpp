@@ -145,6 +145,7 @@
 #include "../../osversion/VersionTranslator.hpp"
 
 #include <utilities/idd/IddEnums.hxx>
+#include <utilities/idd/IddFactory.hxx>
 #include <OpenStudio.hxx>
 
 #include <boost/algorithm/string/case_conv.hpp>
@@ -1193,7 +1194,7 @@ TEST_F(ModelFixture, Model_load) {
   ASSERT_TRUE(model_);
   auto versionObject_ = model_->versionObject();
   ASSERT_TRUE(versionObject_);
-  EXPECT_EQ(openStudioVersion(), versionObject_->getString(1).get());
+  EXPECT_EQ(IddFactory::instance().getVersion(IddFileType::OpenStudio), versionObject_->getString(1).get());
 
   // Check that the workflowJSON in the companion folder is correctly loaded
   auto workflowJSON = model_->workflowJSON();
