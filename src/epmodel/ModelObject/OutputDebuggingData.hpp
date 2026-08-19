@@ -22,6 +22,17 @@ namespace epmodel {
     class OutputDebuggingData_Impl;
   }
 
+  /** \brief OutputDebuggingData.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-simulation-parameters.html#outputdebuggingdata,Output:DebuggingData}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::OutputDebuggingData</code>. The two reporting switches map directly to EnergyPlus yes/no fields.
+   *
+   * \par Known limitations
+   * Only the fields and relationships listed in this wrapper are available; broader Model-only helpers are not exposed.
+   */
   class EPMODEL_API OutputDebuggingData : public ModelObject
   {
    public:
@@ -34,12 +45,6 @@ namespace epmodel {
     OutputDebuggingData& operator=(OutputDebuggingData&&) = default;
 
     static IddObjectType iddObjectType();
-
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model::OutputDebuggingData scalar accessor names/signatures.
-    // - Field Mapping: reportDebuggingData/reportDuringWarmup map directly to E+ Output:DebuggingData Report Debugging Data/Report During Warmup.
-    // - ForwardTranslator evidence: ForwardTranslateOutputDebuggingData.cpp writes these two boolean fields directly as Yes/No.
-    // - TODO(parity): Keep scalar-only scope for this pass and extend later without breaking preserved API signatures.
     bool reportDebuggingData() const;
     bool setReportDebuggingData(bool reportDebuggingData);
 

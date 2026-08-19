@@ -24,6 +24,26 @@ namespace epmodel {
     class StandardOpaqueMaterial_Impl;
   }
 
+  /** \brief Represents a conventional opaque material layer.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-surface-construction-elements.html#material,Material}.
+   *
+   * \par Important behavior
+   * Thermal conductance, resistivity, resistance, and heat capacity are derived
+   * from the persisted conductivity, density, specific heat, and thickness
+   * fields. They are not independent EnergyPlus fields.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::StandardOpaqueMaterial</code>. The scalar thermal
+   * and optical methods have the same public meaning. Model's phase-change and
+   * EMPD material-property relationships are not available.
+   *
+   * \par Known limitations
+   * Only the direct <code>Material</code> scalar fields are exposed; material
+   * property child objects cannot be assigned here.
+   */
   class EPMODEL_API StandardOpaqueMaterial : public OpaqueMaterial
   {
    public:
@@ -40,13 +60,6 @@ namespace epmodel {
 
     static std::vector<std::string> roughnessValues();
 
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model::StandardOpaqueMaterial scalar accessor names/signatures.
-    // - Field Mapping: roughness/thickness/conductivity/density/specificHeat and thermal/solar/visible absorptance APIs map directly to E+ Material fields.
-    // - Field Mapping: thermalConductivity aliases Conductivity and thermalConductance/resistivity/resistance are derived scalar transforms over mapped fields.
-    // - ForwardTranslator evidence: ForwardTranslateStandardOpaqueMaterial.cpp translates these scalar APIs directly to EnergyPlus Material fields.
-    // - Field Mapping: material-property child object relationships (phase change/EMPD) are intentionally excluded from this scalar-only scaffold pass.
-    // - TODO(parity): Add non-scalar material-property relationship APIs in a dedicated parity pass.
     double thermalConductivity() const;
     bool setThermalConductivity(double value);
 

@@ -23,6 +23,22 @@ namespace epmodel {
     class PlantEquipmentOperationThermalEnergyStorage_Impl;
   }
 
+  /** \brief Selects plant equipment for thermal energy storage operation.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-plant-condenser-control.html#plantequipmentoperationthermalenergystorage,PlantEquipmentOperation:ThermalEnergyStorage}
+   *
+   * \par Important behavior
+   * Component object types and operation types are exposed as strings, while flow-rate methods
+   * support autosizing. The public API covers ten component slots.
+   *
+   * \par OpenStudio Model API
+   * OpenStudio Model has no public wrapper for <code>PlantEquipmentOperation:ThermalEnergyStorage</code>;
+   * this wrapper is new to the EPModel API.
+   *
+   * \par Known limitations
+   * On-Peak and Charging Availability schedules, component names, and node relationships are not exposed through typed public methods.
+   */
   class EPMODEL_API PlantEquipmentOperationThermalEnergyStorage : public PlantEquipmentOperationScheme
   {
    public:
@@ -56,10 +72,6 @@ namespace epmodel {
     static std::vector<std::string> component10ObjectTypeValues();
     static std::vector<std::string> component10OperationTypeValues();
 
-    // Schema Alignment Notes:
-    // - API: Scalar naming follows PlantEquipmentOperation:ThermalEnergyStorage from the EnergyPlus IDD (non-charging/charging temperatures plus component object types/flow rates/operation types).
-    // - Field Mapping: On-Peak and Charging Availability schedules, component names, and node references remain relationship/object-list fields and are intentionally excluded from this scalar scaffold.
-    // - TODO(parity): Add the missing relationship APIs (schedules, component listings, and node links) once scalar parity is satisfied.
     double nonChargingChilledWaterTemperature() const;
     bool setNonChargingChilledWaterTemperature(double nonChargingChilledWaterTemperature);
 

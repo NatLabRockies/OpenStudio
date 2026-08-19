@@ -25,6 +25,17 @@ namespace epmodel {
     class SizingSystem_Impl;
   }
 
+  /** \brief SizingSystem.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-design-objects.html#sizingsystem,Sizing:System}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::SizingSystem</code>. The scalar sizing fields are exposed. Model's <code>airLoopHVAC()</code>, <code>setAirLoopHVAC()</code>, and sizing convenience methods are not available.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API SizingSystem : public ModelObject
   {
    public:
@@ -44,16 +55,6 @@ namespace epmodel {
     static std::vector<std::string> validHeatingDesignAirFlowMethodValues();
     static std::vector<std::string> validSystemOutdoorAirMethodValues();
     static std::vector<std::string> heatingCoilSizingMethodValues();
-
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model SizingSystem scalar accessor names/signatures.
-    // - Field Mapping: sizingOption maps to E+ Sizing:System field Type of Zone Sum to Use.
-    // - Field Mapping: cooling/heatingDesignAirFlowMethod and cooling/heatingDesignAirFlowRate
-    //   map to E+ Cooling/Heating Supply Air Flow Rate Method/Rate fields.
-    // - Field Mapping: AirLoopName is a relationship field and is intentionally excluded from
-    //   scalar accessor coverage.
-    // - ForwardTranslator Evidence: ForwardTranslateSizingSystem confirms these drift mappings.
-    // - TODO(parity): Add relationship accessor parity for AirLoopName in a non-scalar pass.
     std::string typeofLoadtoSizeOn() const;
     bool isTypeofLoadtoSizeOnDefaulted() const;
     bool setTypeofLoadtoSizeOn(const std::string& typeofLoadtoSizeOn);

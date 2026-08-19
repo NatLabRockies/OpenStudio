@@ -23,6 +23,18 @@ namespace epmodel {
     class FuelFactors_Impl;
   }
 
+  /** \brief Represents <code>FuelFactors</code>.
+   *
+   * \par EnergyPlus object
+   * \epobject{input-for-output.html#fuelfactors,FuelFactors}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::FuelFactors</code>.
+   * **Not yet available:** Model relationship and extensible-list conveniences are not exposed unless declared here.
+   *
+   * \par Known limitations
+   * Relationship and extensible data not represented by the public declarations must be maintained by the owning object.
+   */
   class EPMODEL_API FuelFactors : public ModelObject
   {
    public:
@@ -37,13 +49,6 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     static std::vector<std::string> existingFuelResourceNameValues();
-
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::FuelFactors scalar accessor names/signatures for counterpart parity.
-    // - Field Mapping: existingFuelResourceName and scalar emission/source factors map directly to matching E+ FuelFactors fields.
-    // - Field Mapping: All schedule name fields are relationship-like object-list references and are intentionally excluded from scalar scope.
-    // - ForwardTranslator evidence: ForwardTranslateFuelFactors.cpp writes these preserved scalar APIs directly to FuelFactors field enums.
-    // - TODO(parity): Add excluded schedule relationship APIs later without changing these preserved scalar signatures.
     std::string existingFuelResourceName() const;
     bool setExistingFuelResourceName(const std::string& existingFuelResourceName);
 

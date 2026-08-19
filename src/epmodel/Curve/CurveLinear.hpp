@@ -23,6 +23,22 @@ namespace epmodel {
     class CurveLinear_Impl;
   }
 
+  /** \brief Represents a linear curve.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-performance-curves.html#curvelinear,Curve:Linear}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::CurveLinear</code>.
+   *
+   * - <b>Not yet available:</b>
+   *   <code>defaultHeatPumpCoilPLFCorrelationCurve(...)</code>, the factory for
+   *   the standard heat-pump part-load-fraction correlation.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API CurveLinear : public Curve
   {
    public:
@@ -39,11 +55,6 @@ namespace epmodel {
     static std::vector<std::string> validInputUnitTypeforXValues();
     static std::vector<std::string> validOutputUnitTypeValues();
 
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model CurveLinear scalar accessor names/signatures.
-    // - Field Mapping: coefficient/min/max and unit-type APIs map directly to E+ Curve:Linear fields.
-    // - ForwardTranslator evidence: ForwardTranslateCurveLinear.cpp writes these scalar fields directly.
-    // - TODO(parity): Keep this pass scalar-only; relationship APIs remain out of scope.
     double coefficient1Constant() const;
     bool setCoefficient1Constant(double coefficient1Constant);
 

@@ -24,6 +24,17 @@ namespace epmodel {
     class ZoneHVACLowTempRadiantConstFlowDesign_Impl;
   }
 
+  /** \brief ZoneHVACLowTempRadiantConstFlowDesign.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-radiative-convective-units.html#ConstFlowDesign,ZoneHVAC:LowTemperatureRadiant:ConstantFlow:Design}.
+   *
+   * \par OpenStudio Model API
+   * There is no same-name OpenStudio Model class; this is the EnergyPlus design companion for <code>openstudio::model::ZoneHVACLowTempRadiantConstFlow</code>. It is a read-oriented projection whose lifecycle is owned by the corresponding radiant equipment wrapper.
+   *
+   * \par Known limitations
+   * Design fields remain owner-managed by the radiant equipment wrapper.
+   */
   class EPMODEL_API ZoneHVACLowTempRadiantConstFlowDesign : public ModelObject
   {
    public:
@@ -38,20 +49,6 @@ namespace epmodel {
     static IddObjectType iddObjectType();
     static std::vector<std::string> fluidtoRadiantSurfaceHeatTransferModelValues();
     static std::vector<std::string> temperatureControlTypeValues();
-
-    // Schema Alignment Notes:
-    // - Status: Scalar Parity. This is the real persisted EnergyPlus design-side companion object for
-    //   `ZoneHVAC:LowTemperatureRadiant:ConstantFlow`.
-    // - Canonical Counterpart: openstudio::model::ZoneHVACLowTempRadiantConstFlow.
-    // - Why This Wrapper Exists: canonical OpenStudio keeps these fields on the parent radiant wrapper, but EnergyPlus stores them on a
-    //   separate `...:Design` object. Epmodel exposes this split object directly so the parent and transient companion coils can stop
-    //   tunneling through a generic `ModelObject`.
-    // - Documented Delta: there is no same-name canonical `openstudio::model` type. This is an EnergyPlus-facing companion wrapper whose
-    //   main job is to hold persisted design/control storage honestly and transparently.
-
-    // This is an EnergyPlus-only companion type with no canonical public peer.
-    // For now, epmodel keeps the public wrapper read-oriented and reserves
-    // mutation for the owning parent and `*_Impl` code paths.
     boost::optional<Schedule> changeoverDelayTimePeriodSchedule() const;
 
     std::string fluidtoRadiantSurfaceHeatTransferModel() const;

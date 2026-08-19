@@ -28,6 +28,25 @@ namespace epmodel {
     class WaterHeaterHeatPump_Impl;
   }
 
+/** \brief A pumped-condenser heat-pump water heater used as zone equipment.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-water-heaters.html#waterheaterheatpumppumpedcondenser,WaterHeater:HeatPump:PumpedCondenser}
+ *
+ * \par Important behavior
+ * The tank (WaterHeater:Mixed or WaterHeater:Stratified), water-heating coil, and fan are typed children connected to parent-owned air and condenser-water paths. EPModel adds fanOutletNode(), mixedAirNode(), outdoorAirNode(), reliefAirNode(), condenserWaterInletNode(), and condenserWaterOutletNode().
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model class is <code>openstudio::model::WaterHeaterHeatPump</code>.
+ * EPModel exposes raw control-sensor height/weight fields and additional node
+ * roles; Model instead exposes <code>controlSensorLocationInStratifiedTank()</code>
+ * and autosized flow-result queries.
+ *
+ * \par Known limitations
+ * <code>controlSensorLocationInStratifiedTank()</code> is not available because
+ * EnergyPlus stores the resulting control-sensor heights; autosized flow-result
+ * queries and other higher-level tank conveniences remain limited.
+ */
   class EPMODEL_API WaterHeaterHeatPump : public ZoneHVACComponent
   {
    public:
@@ -47,22 +66,6 @@ namespace epmodel {
     static std::vector<std::string> parasiticHeatRejectionLocationValues();
     static std::vector<std::string> tankElementControlLogicValues();
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. The attached tank, DX coil, fan, schedules, and owned internal topology are now surfaced directly on the
-    //   parent, but a few higher-level canonical conveniences remain outside the EnergyPlus-backed epmodel surface.
-    // - Canonical Counterpart: openstudio::model::WaterHeaterHeatPump.
-    // - Implemented Parity: Dead-band, condenser-water, evaporator-air, inlet-air configuration, compressor/fan placement, parasitic load,
-    //   and tank-control scalars map directly to the EnergyPlus object. The attached tank, DX coil, fan, schedule links, and meaningful
-    //   internal node roles are now exposed through ordinary parent methods instead of raw relationship state.
-    // - Documented Delta: epmodel does not currently mirror canonical conveniences like `controlSensorLocationInStratifiedTank()` because the
-    //   EnergyPlus object stores the resulting control-sensor heights rather than that higher-level token directly. Epmodel also adds
-    //   parent-level internal node helpers such as `fanOutletNode()`, `mixedAirNode()`, `outdoorAirNode()`, `reliefAirNode()`,
-    //   `condenserWaterInletNode()`, and `condenserWaterOutletNode()` so the owned compound topology is inspectable from the parent.
-    // - Field/Storage Mapping: Scalar data lives directly on the EnergyPlus object while child equipment and the owned air and condenser-water
-    //   topology are maintained through explicit attachment state and parent-owned node fields.
-    // - Evidence: `src/model/WaterHeaterHeatPump.hpp`, `src/model/WaterHeaterHeatPump.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateWaterHeaterHeatPump.cpp`, and `src/epmodel/test/WaterHeaterHeatPump_GTest.cpp`.
-    // - Remaining Parity Work: Revisit any remaining canonical conveniences only if they still belong on the public model wrapper after this
-    //   direct child and node surface is in place.
     boost::optional<Schedule> availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);
     void resetAvailabilitySchedule();

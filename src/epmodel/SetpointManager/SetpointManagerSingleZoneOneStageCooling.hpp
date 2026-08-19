@@ -21,6 +21,21 @@ namespace epmodel {
     class SetpointManagerSingleZoneOneStageCooling_Impl;
   }
 
+  /** \brief Sets one-stage cooling supply-air setpoints for one control zone.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-setpoint-managers.html#setpointmanagersinglezoneonestagecooling,SetpointManager:SingleZone:OneStageCooling}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::SetpointManagerSingleZoneOneStageCooling</code>.
+   *
+   * - <b>Not yet available:</b> <code>controlZone()</code>,
+   *   <code>setControlZone(...)</code>, and <code>resetControlZone()</code>.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API SetpointManagerSingleZoneOneStageCooling : public SetpointManager
   {
    public:
@@ -35,18 +50,6 @@ namespace epmodel {
     static IddObjectType iddObjectType();
     static std::vector<std::string> controlVariableValues();
 
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model scalar accessor names/signatures for model-counterpart compatibility.
-    // - Field Mapping: coolingStageOnSupplyAirSetpointTemperature and coolingStageOffSupplyAirSetpointTemperature
-    //   map directly to E+ SetpointManager:SingleZone:OneStageCooling scalar fields.
-    // - Field Mapping: controlVariable is preserved through inherited SetpointManager API and maps to
-    //   fixed legacy semantics ("Temperature") because current E+ SetpointManager:SingleZone:OneStageCooling
-    //   has no explicit Control Variable field.
-    // - ForwardTranslator Evidence: ForwardTranslateSetpointManagerSingleZoneOneStageCooling.cpp maps these same
-    //   scalar fields and treats Control Zone Name and Setpoint Node or NodeList Name as relationship mappings.
-    // - Field Mapping: Relationship fields Control Zone Name and Setpoint Node or NodeList Name are intentionally
-    //   excluded from scalar-only scaffolding.
-    // - TODO(parity): Add non-scalar relationship parity for control-zone linkage in a follow-up pass.
     std::string controlVariable() const;
     bool setControlVariable(const std::string& controlVariable);
 

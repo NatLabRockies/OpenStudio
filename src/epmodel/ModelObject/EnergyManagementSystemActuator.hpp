@@ -22,6 +22,18 @@ namespace epmodel {
     class EnergyManagementSystemActuator_Impl;
   }
 
+  /** \brief Represents <code>EnergyManagementSystem:Actuator</code>.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-energy-management-system-ems.html#energymanagementsystemactuator,EnergyManagementSystem:Actuator}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::EnergyManagementSystemActuator</code>.
+   * **Not yet available:** Model typed object-target, program-body, and EMS relationship conveniences are not exposed unless declared by this wrapper.
+   *
+   * \par Known limitations
+   * Typed relationship and extensible-list conveniences not represented by the public declarations are unavailable.
+   */
   class EPMODEL_API EnergyManagementSystemActuator : public ModelObject
   {
    public:
@@ -37,16 +49,6 @@ namespace epmodel {
     EnergyManagementSystemActuator& operator=(EnergyManagementSystemActuator&&) = default;
 
     static IddObjectType iddObjectType();
-
-    // Schema Alignment Notes:
-    // - API: Preserves the canonical actuator constructor plus the main actuated-component and scalar accessors.
-    // - Field Mapping: `actuatedComponent` resolves the real EnergyPlus `Actuated Component Unique Name` field. That field is still string-backed in the
-    //   current schema metadata, so epmodel resolves it by exact object name instead of a live object-list reference.
-    // - Field Mapping: `actuatedComponentType` -> EnergyPlus `Actuated Component Type`.
-    // - Field Mapping: `actuatedComponentControlType` -> EnergyPlus `Actuated Component Control Type`.
-    // - Documented Delta: Space-load-specific zone-or-space targeting convenience is still not exposed in epmodel.
-    // - ForwardTranslator evidence: ForwardTranslateEnergyManagementSystemActuator.cpp writes these scalar fields directly and uses the
-    //   actuated-component relationship as the source of the emitted unique name.
     boost::optional<ModelObject> actuatedComponent() const;
     bool setActuatedComponent(const ModelObject& actuatedComponent);
 

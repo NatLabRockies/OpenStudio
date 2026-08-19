@@ -18,8 +18,21 @@ namespace epmodel {
     class OpaqueMaterial_Impl;
   }
 
-  /** An OpaqueMaterial is a Material that serves as a base class for all opaque layers in
-   *  LayeredConstructions. */
+  /** \brief Base class for opaque material layers.
+   *
+   * \par EnergyPlus object
+   * This class has no single EnergyPlus object. Its thermal, solar, and visible
+   * properties are shared by concrete opaque material objects.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::OpaqueMaterial</code>. The shared scalar property
+   * and derived thermal methods have the same public meaning.
+   *
+   * \par Known limitations
+   * A concrete material type is required to create a persisted EnergyPlus
+   * object; this base does not select one.
+   */
   class EPMODEL_API OpaqueMaterial : public Material
   {
    public:

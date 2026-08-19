@@ -20,6 +20,17 @@ namespace epmodel {
     class SiteGroundTemperatureFCfactorMethod_Impl;
   }
 
+  /** \brief SiteGroundTemperatureFCfactorMethod.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-location-climate-weather-file-access.html#sitegroundtemperaturefcfactormethod,Site:GroundTemperature:FCfactorMethod}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::SiteGroundTemperatureFCfactorMethod</code>. The twelve monthly temperatures map directly to EnergyPlus. EPModel uses named month methods rather than Model's month-indexed and all-month helper family.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API SiteGroundTemperatureFCfactorMethod : public ModelObject
   {
    public:
@@ -32,12 +43,6 @@ namespace epmodel {
     SiteGroundTemperatureFCfactorMethod& operator=(SiteGroundTemperatureFCfactorMethod&&) = default;
 
     static IddObjectType iddObjectType();
-
-    // Schema Alignment Notes:
-    // - API: Preserved from openstudio::model counterpart accessor naming/signatures.
-    // - Field Mapping: Month scalar APIs map directly to EnergyPlus Site:GroundTemperature:FCfactorMethod fields.
-    // - Translator Evidence: ForwardTranslateSiteGroundTemperatureFCfactorMethod.cpp writes the same 12 monthly fields.
-    // - TODO(parity): Add legacy non-scalar helper APIs in a follow-up parity pass.
     double januaryGroundTemperature() const;
     bool isJanuaryGroundTemperatureDefaulted() const;
     bool setJanuaryGroundTemperature(double januaryGroundTemperature);

@@ -26,6 +26,23 @@ namespace epmodel {
     class ZoneHVACLowTemperatureRadiantElectric_Impl;
   }
 
+/** \brief An electric low-temperature radiant system serving a thermal zone.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-radiative-convective-units.html#zonehvaclowtemperatureradiantelectric,ZoneHVAC:LowTemperatureRadiant:Electric} and
+ * \epobject{group-radiative-convective-units.html#zonehvaclowtemperatureradiantsurfacegroup,ZoneHVAC:LowTemperatureRadiant:SurfaceGroup}
+ *
+ * \par Important behavior
+ * setRadiantSurfaceType() snapshots matching zone surfaces into the persisted surface group, which is the EnergyPlus representation of the selected surfaces.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model class is <code>openstudio::model::ZoneHVACLowTemperatureRadiantElectric</code>.
+ * EPModel adds a <code>surfaceGroup()</code> view over the persisted EnergyPlus
+ * surface rows; Model instead provides its thermal-zone convenience methods.
+ *
+ * \par Known limitations
+ * Later zone or surface edits do not automatically resynchronize the persisted surface group.
+ */
   class EPMODEL_API ZoneHVACLowTemperatureRadiantElectric : public ZoneHVACComponent
   {
    public:
@@ -40,22 +57,6 @@ namespace epmodel {
     static IddObjectType iddObjectType();
     static std::vector<std::string> temperatureControlTypeValues();
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. The scalar radiant-electric fields are aligned, and epmodel now preserves the canonical
-    //   schedule and radiant-surface APIs through the persisted EnergyPlus surface-group storage.
-    // - Canonical Counterpart: openstudio::model::ZoneHVACLowTemperatureRadiantElectric.
-    // - Implemented Parity: `availabilitySchedule`, `heatingSetpointTemperatureSchedule`, `radiantSurfaceType`,
-    //   `surfaces()`, `maximumElectricalPowertoPanel`, `temperatureControlType`, `setpointControlType`, and
-    //   `heatingThrottlingRange` map onto the EnergyPlus parent object plus its referenced surface group.
-    // - Why This Type Is Slightly Different: canonical OpenStudio stores a higher-level `RadiantSurfaceType` selector.
-    //   EnergyPlus does not. It stores the flattened result as a referenced `ZoneHVAC:LowTemperatureRadiant:SurfaceGroup`.
-    //   Epmodel therefore preserves the canonical API additively while staying anchored to EnergyPlus storage.
-    // - Documented Delta: `setRadiantSurfaceType(...)` currently snapshots the matching zone surfaces into the persisted
-    //   EnergyPlus surface group. Later zone or surface edits do not yet automatically resynchronize that group.
-    // - Field/Storage Mapping: Scalar values and schedules live on the EnergyPlus parent object, while the selected surfaces
-    //   live on the referenced EnergyPlus surface-group object.
-    // - Evidence: `src/model/ZoneHVACLowTemperatureRadiantElectric.hpp`, `src/model/ZoneHVACLowTemperatureRadiantElectric.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateZoneHVACLowTemperatureRadiantElectric.cpp`, and `src/epmodel/test/ZoneHVACLowTemperatureRadiantElectric_GTest.cpp`.
-    // - Remaining Parity Work: Add automatic surface-group resynchronization after later zone or surface edits.
 
     static std::vector<std::string> radiantSurfaceTypeValues();
 

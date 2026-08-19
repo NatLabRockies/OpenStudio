@@ -20,6 +20,20 @@ namespace epmodel {
     class PipeAdiabatic_Impl;
   }
 
+/** \brief An adiabatic plant pipe.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-node-branch-management.html#pipeadiabatic,Pipe:Adiabatic}
+ *
+ * \par Important behavior
+ * The inherited straight-component inlet/outlet topology maps to Pipe:Adiabatic.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model type is <code>openstudio::model::PipeAdiabatic</code>.
+ *
+ * \par Known limitations
+ * No type-specific scalar API is provided.
+ */
   class EPMODEL_API PipeAdiabatic : public StraightComponent
   {
    public:
@@ -36,13 +50,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - Status: Near Parity. The canonical type-specific `PipeAdiabatic` surface is small and already preserved in epmodel.
-    // - Canonical Counterpart: openstudio::model::PipeAdiabatic.
-    // - Implemented Parity: `inletPort`, `outletPort`, and the otherwise minimal type shape match the canonical wrapper while inherited straight-component topology behavior carries the usable API.
-    // - Field/Storage Mapping: `Pipe:Adiabatic` stores only name and node-link fields, and epmodel keeps those links implicit through inherited topology helpers rather than new pipe-local scalar APIs.
-    // - Evidence: `src/model/PipeAdiabatic.hpp` defines the canonical type-specific surface, and `src/energyplus/ForwardTranslator/ForwardTranslatePipeAdiabatic.cpp` maps inherited inlet/outlet topology to EnergyPlus node-name fields.
-    // - Remaining Parity Work: Confirm whether any additional type-local relationship convenience beyond inherited `StraightComponent` behavior is needed as broader relationship coverage matures.
 
    protected:
     using ImplType = detail::PipeAdiabatic_Impl;

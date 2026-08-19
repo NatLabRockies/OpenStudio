@@ -22,6 +22,17 @@ namespace epmodel {
     class SurfacePropertyLocalEnvironment_Impl;
   }
 
+  /** \brief SurfacePropertyLocalEnvironment.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-advanced-surface-concepts.html#surfacePropertylocalEnvironment,SurfaceProperty:LocalEnvironment}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::SurfacePropertyLocalEnvironment</code>. <b>Changed:</b> EPModel exposes direct construction from <code>Model</code>; Model construction requires a surface or subsurface. The object identity is exposed, but Model's surface, schedule, surrounding-surface, outdoor-air-node, and ground-surface relationships are not available.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API SurfacePropertyLocalEnvironment : public ModelObject
   {
    public:
@@ -34,13 +45,6 @@ namespace epmodel {
     SurfacePropertyLocalEnvironment& operator=(SurfacePropertyLocalEnvironment&&) = default;
 
     static IddObjectType iddObjectType();
-
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model::SurfacePropertyLocalEnvironment naming and constrains the current surface-local scalar exposure to the required Name field.
-    // - Field Mapping: The object name maps to the SurfaceProperty:LocalEnvironment Name field, while all exterior surface, schedule, surrounding surfaces, outdoor air node,
-    //   and ground surfaces fields remain relationship references excluded from this scalar pass.
-    // - ForwardTranslator evidence: ForwardTranslateSurfacePropertyLocalEnvironment continues to drive the preserved relationship wiring.
-    // - TODO(parity): Layer in relationship helpers after the scalar saturation milestone settles.
 
    protected:
     using ImplType = detail::SurfacePropertyLocalEnvironment_Impl;

@@ -23,6 +23,20 @@ namespace epmodel {
     class HeatPumpAirToWaterFuelFiredCooling_Impl;
   }
 
+/** \brief A fuel-fired air-to-water cooling heat pump.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-plant-equipment.html#plhp_fuelfired,HeatPump:AirToWater:FuelFired:Cooling}
+ *
+ * \par Important behavior
+ * The fuel, performance, schedule, curve, and air-side fields map directly to the EnergyPlus object and plant/air topology follows the straight-component ports.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model type is <code>openstudio::model::HeatPumpAirToWaterFuelFiredCooling</code>.
+ *
+ * \par Known limitations
+ * Broader operating-mode and system relationship conveniences are not exposed.
+ */
   class EPMODEL_API HeatPumpAirToWaterFuelFiredCooling : public StraightComponent
   {
    public:
@@ -44,14 +58,6 @@ namespace epmodel {
     static std::vector<std::string> outdoorAirTemperatureCurveInputVariableValues();
     static std::vector<std::string> waterTemperatureCurveInputVariableValues();
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity.
-    // - Canonical Counterpart: openstudio::model::HeatPumpAirToWaterFuelFiredCooling.
-    // - Implemented Parity: Preserves the canonical constructor defaults, the companion-heating relationship, required/optional curve target helpers, the plant-supply-only `addToNode(...)` contract, and the scalar fuel, capacity, COP, flow, sizing, temperature, and power APIs with matching autosize/default behavior.
-    // - Documented Delta: Air-source node handling remains intentionally omitted because epmodel does not currently project the translator-created `OutdoorAir:Node` companion object into a canonical wrapper-level helper.
-    // - Field/Storage Mapping: Scalar and object-target accessors map directly to persisted `HeatPump:AirToWater:FuelFired:Cooling` fields, while plant connectivity stays on the cooling object's water node fields.
-    // - Evidence: `src/model/HeatPumpAirToWaterFuelFiredCooling.hpp`, `src/model/HeatPumpAirToWaterFuelFiredCooling.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateHeatPumpAirToWaterFuelFiredCooling.cpp`.
-    // - Remaining Parity Work: Add the omitted air-source-node helper if epmodel later chooses to model the translator-emitted `OutdoorAir:Node` companion relationship directly.
     boost::optional<HeatPumpAirToWaterFuelFiredHeating> companionHeatingHeatPump() const;
     bool setCompanionHeatingHeatPump(const HeatPumpAirToWaterFuelFiredHeating& heatPumpAirToWaterFuelFiredHeating);
     void resetCompanionHeatingHeatPump();

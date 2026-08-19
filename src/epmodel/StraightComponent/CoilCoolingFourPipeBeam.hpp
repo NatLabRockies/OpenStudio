@@ -20,6 +20,19 @@ namespace epmodel {
     class CoilCoolingFourPipeBeam_Impl;
   }
 
+  /** \brief Represents a chilled-water coil used by a four-pipe beam terminal.
+   *
+   * \par EnergyPlus object
+   * No standalone EnergyPlus object. EPModel stores <code>OS:Coil:Cooling:FourPipeBeam</code> as a persisted OpenStudio extension child of \epobject{group-air-distribution-equipment.html#airterminalsingleductconstantvolumefourpipebeam,AirTerminal:SingleDuct:ConstantVolume:FourPipeBeam}.
+   *
+   * \par Important behavior
+   * The child provides water-side ports; plant connection follows the parent terminal and plant branch topology.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::CoilCoolingFourPipeBeam</code>. <b>Not yet available:</b> the beam cooling performance-modifier curves and rated-per-beam-length/temperature-difference setters and default-state queries. The EPModel child remains a narrow plant-side view.
+   * \par Known limitations
+   * Use the owning terminal for complete air-side and coil relationships.
+   */
   class EPMODEL_API CoilCoolingFourPipeBeam : public StraightComponent
   {
    public:

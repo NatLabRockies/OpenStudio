@@ -23,6 +23,19 @@ namespace epmodel {
     class CurveQuadraticLinear_Impl;
   }
 
+  /** \brief Represents a quadratic-linear curve.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-performance-curves.html#curvequadraticlinear,Curve:QuadraticLinear}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::CurveQuadraticLinear</code>.
+   * No known public API differences.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API CurveQuadraticLinear : public Curve
   {
    public:
@@ -39,12 +52,6 @@ namespace epmodel {
     static std::vector<std::string> validInputUnitTypeforXValues();
     static std::vector<std::string> validInputUnitTypeforYValues();
     static std::vector<std::string> validOutputUnitTypeValues();
-
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model CurveQuadraticLinear scalar accessor names/signatures.
-    // - Field Mapping: coefficients/min-max/unit-type APIs map directly to E+ Curve:QuadraticLinear fields.
-    // - ForwardTranslator evidence: ForwardTranslateCurveQuadraticLinear.cpp writes these scalar fields directly.
-    // - TODO(parity): Keep this pass scalar-only; relationship APIs remain out of scope.
 
     // Coefficient terms (these map directly to the EnergyPlus Curve:QuadraticLinear coefficients)
     double coefficient1Constant() const;

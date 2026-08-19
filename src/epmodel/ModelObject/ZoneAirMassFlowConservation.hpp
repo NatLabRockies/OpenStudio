@@ -22,6 +22,17 @@ namespace epmodel {
     class ZoneAirMassFlowConservation_Impl;
   }
 
+  /** \brief ZoneAirMassFlowConservation.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-airflow.html#zoneairmassflowconservation,ZoneAirMassFlowConservation}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::ZoneAirMassFlowConservation</code>. The air-mass-flow balancing choices map directly to EnergyPlus. The deprecated Model boolean <code>adjustZoneMixingForZoneAirMassFlowBalance()</code> family is not exposed; use EPModel's string-valued replacement.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API ZoneAirMassFlowConservation : public ModelObject
   {
    public:
@@ -37,13 +48,6 @@ namespace epmodel {
     static std::vector<std::string> adjustZoneMixingandReturnForAirMassFlowBalanceValues();
     static std::vector<std::string> infiltrationBalancingMethodValues();
     static std::vector<std::string> infiltrationBalancingZonesValues();
-
-    // Schema Alignment Notes:
-    // - API: preserve the openstudio::model scalar accessor names/signatures for the adjust-zone-mixing/return and infiltration
-    //   balancing choices.
-    // - Field Mapping: these getters/setters map directly to the EnergyPlus ZoneAirMassFlowConservation fields documented by
-    //   ForwardTranslateZoneAirMassFlowConservation.cpp.
-    // - TODO(parity): expose any relationship-like connections (mixer/infiltration sources) once scalar saturation is complete.
     std::string adjustZoneMixingandReturnForAirMassFlowBalance() const;
     bool isAdjustZoneMixingandReturnForAirMassFlowBalanceDefaulted() const;
     bool setAdjustZoneMixingandReturnForAirMassFlowBalance(const std::string& adjustZoneMixingandReturnForAirMassFlowBalance);

@@ -24,6 +24,17 @@ namespace epmodel {
     class SkyTemperature_Impl;
   }
 
+  /** \brief SkyTemperature.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-location-climate-weather-file-access.html#weatherpropertyskytemperature,WeatherProperty:SkyTemperature}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::SkyTemperature</code>, which does not expose these EnergyPlus fields. EPModel adds <code>calculationType()</code>, <code>setCalculationType()</code>, <code>useWeatherFileHorizontalIR()</code>, and their default/reset helpers.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API SkyTemperature : public ModelObject
   {
    public:
@@ -48,12 +59,6 @@ namespace epmodel {
     bool setUseWeatherFileHorizontalIR(bool useWeatherFileHorizontalIR);
     bool isUseWeatherFileHorizontalIRDefaulted() const;
     void resetUseWeatherFileHorizontalIR();
-
-    // Schema Alignment Notes:
-    // - API: preserves the openstudio::model::SkyTemperature name/signature and keeps the same EnergyPlus counterpart for parity.
-    // - Field Mapping: calculationType() and useWeatherFileHorizontalIR() map directly to WeatherProperty:SkyTemperature's Calculation Type and Use Weather File Horizontal IR fields via WeatherProperty_SkyTemperatureFields; Name and Schedule Name remain object-list relationships managed by the ModelObject base.
-    // - Field Mapping: ForwardTranslator::translateSkyTemperature generates WeatherProperty:SkyTemperature for exports, so this epmodel type mirrors that alignment while keeping the existing API names.
-    // - TODO(parity): add object-list helpers for the Schedule Name relationship once non-scalar coverage is required.
 
    protected:
     using ImplType = detail::SkyTemperature_Impl;

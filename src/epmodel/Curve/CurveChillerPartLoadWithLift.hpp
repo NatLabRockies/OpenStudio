@@ -23,6 +23,18 @@ namespace epmodel {
     class CurveChillerPartLoadWithLift_Impl;
   }
 
+  /** \brief Represents a chiller part-load curve with lift.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-performance-curves.html#curvechillerpartloadwithlift,Curve:ChillerPartLoadWithLift}
+   *
+   * \par OpenStudio Model API
+   * OpenStudio Model has no public wrapper for this EnergyPlus object. This
+   * wrapper is new to the EPModel API.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API CurveChillerPartLoadWithLift : public Curve
   {
    public:
@@ -41,10 +53,6 @@ namespace epmodel {
     static std::vector<std::string> validInputUnitTypeforzValues();
     static std::vector<std::string> validOutputUnitTypeValues();
 
-    // Schema Alignment Notes:
-    // - API: No openstudio::model counterpart exists; accessor names are IDD-derived.
-    // - Field Mapping: coefficient/min/max and unit-type APIs map directly to E+ Curve:ChillerPartLoadWithLift fields.
-    // - TODO(parity): Keep this pass scalar-only; relationship APIs remain out of scope.
     double coefficient1C1() const;
     bool setCoefficient1C1(double coefficient1C1);
 

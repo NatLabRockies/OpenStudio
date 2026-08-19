@@ -23,6 +23,19 @@ namespace epmodel {
     class CurveExponentialSkewNormal_Impl;
   }
 
+  /** \brief Represents an exponential skew-normal curve.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-performance-curves.html#curveexponentialskewnormal,Curve:ExponentialSkewNormal}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::CurveExponentialSkewNormal</code>.
+   * No known public API differences.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API CurveExponentialSkewNormal : public Curve
   {
    public:
@@ -38,12 +51,6 @@ namespace epmodel {
 
     static std::vector<std::string> validInputUnitTypeforxValues();
     static std::vector<std::string> validOutputUnitTypeValues();
-
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model CurveExponentialSkewNormal scalar accessor names/signatures.
-    // - Field Mapping: coefficient/min/max and unit-type APIs map directly to E+ Curve:ExponentialSkewNormal fields.
-    // - ForwardTranslator evidence: ForwardTranslateCurveExponentialSkewNormal.cpp writes these scalar fields directly.
-    // - TODO(parity): Keep this pass scalar-only; relationship APIs remain out of scope.
 
     double coefficient1C1() const;
     bool setCoefficient1C1(double coefficient1C1);

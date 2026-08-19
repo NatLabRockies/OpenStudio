@@ -24,6 +24,24 @@ namespace epmodel {
     class AirTerminalSingleDuctConstantVolumeNoReheat_Impl;
   }
 
+  /**
+   * \brief Constant-volume single-duct terminal without reheat.
+   *
+   * \par EnergyPlus object
+   * Encapsulates \epobject{group-air-distribution-equipment.html#airterminalsingleductconstantvolumenoreheat,AirTerminal:SingleDuct:ConstantVolume:NoReheat}.
+   *
+   * \par Important behavior
+   * The availability schedule is required for translation; constructors seed it and the getter repairs missing
+   * persisted state. `addToNode` and `removeFromLoop` operate on the existing AirLoopHVAC zone branch and maintain
+   * paired terminal inlet/outlet nodes and zone-equipment registration.
+   *
+   * \par OpenStudio Model API
+   * Counterpart: `openstudio::model::AirTerminalSingleDuctConstantVolumeNoReheat`. The schedule and airflow APIs
+   * are represented, including autosizing controls. The epmodel default constructor additionally seeds the schedule.
+   *
+   * \par Known limitations
+   * The terminal must be added to an existing epmodel ZoneSplitter/ZoneMixer branch; broader family-specific topology insertion paths are not exposed.
+   */
   class EPMODEL_API AirTerminalSingleDuctConstantVolumeNoReheat : public StraightComponent
   {
    public:
@@ -40,19 +58,6 @@ namespace epmodel {
 
     bool addToNode(Node& node);
 
-    // Connectivity Notes:
-    // - Canonical Counterpart: openstudio::model::AirTerminalSingleDuctConstantVolumeNoReheat.
-    // - `addToNode` is intentionally scoped to an AirLoopHVAC demand-side zone branch node: it creates a terminal inlet node, rewires the
-    //   ZoneSplitter branch outlet to that inlet node, points the terminal outlet at the zone air node, updates an owning ADU outlet when
-    //   present, and registers the terminal on the served zone equipment list.
-    // - `removeFromLoop` reverses the entity-owned side effects by reconnecting the ZoneSplitter branch to the zone air node through the
-    //   shared StraightComponent removal path, removing the zone equipment-list entry, clearing any ADU outlet/terminal references, and
-    //   clearing this terminal's node pointers.
-    // - The availability schedule remains a required object relationship: constructors seed it, the getter repairs missing persisted state,
-    //   and translation depends on it. Node connectivity is likewise treated as a paired inlet/outlet relationship.
-    // - Documented Delta: canonical `model` accepts a broader set of demand insertion paths. This epmodel wrapper currently requires the
-    //   target node to already be the ZoneSplitter/Mixer branch node produced by the epmodel AirLoopHVAC zone-branch topology.
-    // - Scalar Delta: `autosizedMaximumAirFlowRate` remains a typed `boost::none` stub until epmodel exposes family-specific sizing results.
     Schedule availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);
 

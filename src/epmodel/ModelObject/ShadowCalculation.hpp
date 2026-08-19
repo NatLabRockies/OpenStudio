@@ -23,6 +23,17 @@ namespace epmodel {
     class ShadowCalculation_Impl;
   }
 
+  /** \brief ShadowCalculation.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-simulation-parameters.html#shadowcalculation,ShadowCalculation}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::ShadowCalculation</code>. Scalar shadow-calculation settings map directly to EnergyPlus. Model's <code>numberofShadingZoneGroups()</code>, <code>addShadingZoneGroup()</code>, and shading-zone-group removal/access methods are not available.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API ShadowCalculation : public ModelObject
   {
    public:
@@ -47,12 +58,6 @@ namespace epmodel {
 
     static std::vector<std::string> skyDiffuseModelingAlgorithmValues();
     static std::vector<std::string> validSkyDiffuseModelingAlgorithmValues();
-
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model ShadowCalculation scalar accessor names/signatures, including legacy casing/wording.
-    // - Field Mapping: Scalar APIs below map directly to EnergyPlus ShadowCalculation fields with matching semantics.
-    // - ForwardTranslator Evidence: ForwardTranslateShadowCalculation.cpp writes these preserved APIs to the same E+ fields.
-    // - TODO(parity): Keep shading-zone-group extensible relationship APIs out of this scalar-only scaffold pass.
     std::string shadingCalculationMethod() const;
     bool setShadingCalculationMethod(const std::string& shadingCalculationMethod);
 

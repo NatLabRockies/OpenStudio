@@ -23,6 +23,21 @@ namespace epmodel {
     class CoilCoolingDXVariableRefrigerantFlow_Impl;
   }
 
+  /** \brief Represents a variable-refrigerant-flow DX cooling coil.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-heating-and-cooling-coils.html#coilcoolingdxvariablerefrigerantflow,Coil:Cooling:DX:VariableRefrigerantFlow}.
+   *
+   * \par Important behavior
+   * EPModel exposes the fixed serial air path through <code>StraightComponent</code> while retaining the EnergyPlus scalar and curve relationships.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::CoilCoolingDXVariableRefrigerantFlow</code>.
+   * <b>Changed:</b> EPModel adds the straight-component inlet/outlet surface. <b>Not yet available:</b> autosized-result helpers; standalone <code>addToNode()</code> insertion remains rejected.
+   *
+   * \par Known limitations
+   * This coil is intended for compound VRF or terminal ownership rather than general standalone loop insertion.
+   */
   class EPMODEL_API CoilCoolingDXVariableRefrigerantFlow : public StraightComponent
   {
    public:
@@ -36,23 +51,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. The scalar rating surface is aligned, the required schedule/curve relationships are exposed, and epmodel still
-    //   treats the coil as a serial air-side component with a deliberately rejected standalone insertion path.
-    // - Canonical Counterpart: openstudio::model::CoilCoolingDXVariableRefrigerantFlow.
-    // - Implemented Parity: `availabilitySchedule`, the two cooling-capacity modifier curve relationships, the scalar rating surface, and their
-    //   autosize helpers preserve the canonical public contract. epmodel also exposes the inherited straight-component inlet and outlet surface
-    //   because the EnergyPlus object has a fixed one-inlet/one-outlet air path.
-    // - Documented Delta: Unlike the canonical model wrapper, epmodel promotes this coil to `StraightComponent` so compound component owners can
-    //   rely on the standard serial air-path API. That additive base-class change does not make the coil general loop equipment here:
-    //   `addToNode(...)` is still rejected intentionally.
-    // - Field/Storage Mapping: The preserved scalar fields, required schedule pointer, and required curve pointers map directly to EnergyPlus
-    //   `Coil:Cooling:DX:VariableRefrigerantFlow` storage, and the inherited straight-component topology uses the fixed coil air inlet/outlet
-    //   node fields on that same object.
-    // - Evidence: `src/model/CoilCoolingDXVariableRefrigerantFlow.hpp`, `src/model/CoilCoolingDXVariableRefrigerantFlow.cpp`,
-    //   `src/energyplus/ForwardTranslator/ForwardTranslateCoilCoolingDXVariableRefrigerantFlow.cpp`, and
-    //   `src/epmodel/test/CoilCoolingDXVariableRefrigerantFlow_GTest.cpp`.
-    // - Remaining Parity Work: Autosized-result query helpers remain omitted until shared sizing-result plumbing exists.
     Schedule availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);
 

@@ -22,6 +22,20 @@ namespace epmodel {
     class PlantEquipmentOperationUncontrolled_Impl;
   }
 
+  /** \brief Selects plant equipment for uncontrolled operation.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-plant-condenser-control.html#plantequipmentoperationuncontrolled,PlantEquipmentOperation:Uncontrolled}
+   *
+   * \par OpenStudio Model API
+   * OpenStudio Model has no public wrapper for
+   * <code>PlantEquipmentOperation:Uncontrolled</code>; this wrapper is new to
+   * the EPModel API.
+   *
+   * \par Known limitations
+   * The required equipment-list relationship is not exposed through typed
+   * public methods.
+   */
   class EPMODEL_API PlantEquipmentOperationUncontrolled : public PlantEquipmentOperationScheme
   {
    public:
@@ -35,11 +49,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - API: IDD-derived name follows EnergyPlus IDD PlantEquipmentOperation:Uncontrolled.
-    // - Field Mapping: Name remains available through the base ModelObject scalar API.
-    // - Field Mapping: Equipment List Name is a PlantAndCondenserEquipmentLists object list (see PlantEquipmentOperation_UncontrolledFields::EquipmentListName and ForwardTranslatePlantEquipmentOperationSchemes mapping) and is intentionally excluded from scalar accessors.
-    // - TODO(parity): Add helper APIs for the referenced PlantAndCondenserEquipmentLists once scalar parity work is complete.
 
    protected:
     using ImplType = detail::PlantEquipmentOperationUncontrolled_Impl;

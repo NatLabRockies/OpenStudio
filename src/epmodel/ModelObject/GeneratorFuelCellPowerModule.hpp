@@ -23,6 +23,18 @@ namespace epmodel {
     class GeneratorFuelCellPowerModule_Impl;
   }
 
+  /** \brief Represents <code>Generator:FuelCell:PowerModule</code>.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-electric-load-center-generator.html#generatorfuelcellpowermodule,Generator:FuelCell:PowerModule}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::GeneratorFuelCellPowerModule</code>.
+   * **Not yet available:** Model parent, node, curve, schedule, and extensible constituent conveniences are not exposed unless declared here.
+   *
+   * \par Known limitations
+   * Relationship and extensible data not represented by the public declarations must be maintained by the owning object.
+   */
   class EPMODEL_API GeneratorFuelCellPowerModule : public ModelObject
   {
    public:
@@ -38,13 +50,6 @@ namespace epmodel {
 
     static std::vector<std::string> efficiencyCurveModeValues();
     static std::vector<std::string> skinLossCalculationModeValues();
-
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model scalar accessor names/signatures for counterpart parity.
-    // - Field Mapping: Scalar APIs map directly to Generator:FuelCell:PowerModule scalar fields.
-    // - ForwardTranslator evidence: ForwardTranslateGeneratorFuelCellPowerModule writes these scalar fields directly,
-    //   while curve/zone/node linkage fields are translated via relationship targets.
-    // - TODO(parity): Add preserved relationship APIs incrementally for curve, zone, dilution node, and parent linkage.
     std::string efficiencyCurveMode() const;
     bool setEfficiencyCurveMode(const std::string& efficiencyCurveMode);
     void resetEfficiencyCurveMode();

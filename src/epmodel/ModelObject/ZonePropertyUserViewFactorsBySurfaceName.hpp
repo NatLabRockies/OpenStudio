@@ -22,6 +22,17 @@ namespace epmodel {
     class ZonePropertyUserViewFactorsBySurfaceName_Impl;
   }
 
+  /** \brief ZonePropertyUserViewFactorsBySurfaceName.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-advanced-surface-concepts.html#zonepropertyuserviewfactorsbysurfacename,ZoneProperty:UserViewFactors:BySurfaceName}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::ZonePropertyUserViewFactorsBySurfaceName</code>. <b>Changed:</b> EPModel exposes direct construction from <code>Model</code>; Model construction requires a thermal zone. This object is relationship-driven, and EPModel does not expose its zone/space references or extensible view-factor entries.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API ZonePropertyUserViewFactorsBySurfaceName : public ModelObject
   {
    public:
@@ -34,11 +45,6 @@ namespace epmodel {
     ZonePropertyUserViewFactorsBySurfaceName& operator=(ZonePropertyUserViewFactorsBySurfaceName&&) = default;
 
     static IddObjectType iddObjectType();
-
-    // Schema Alignment Notes:
-    // - API: Preserved the openstudio::model naming (ZonePropertyUserViewFactorsBySurfaceName) and rely on translateZonePropertyUserViewFactorsBySurfaceName for the translation wiring.
-    // - Field Mapping: Zone/ZoneList/Space/SpaceList references plus the extensible FromSurface/ToSurface/ViewFactor entries are relationship-driven and intentionally excluded from this scalar-only scaffolding pass.
-    // - TODO(parity): Add view-factor collection helpers once the relational scaffolding work completes.
 
    protected:
     using ImplType = detail::ZonePropertyUserViewFactorsBySurfaceName_Impl;

@@ -22,6 +22,18 @@ namespace epmodel {
     class ConvergenceLimits_Impl;
   }
 
+  /** \brief Represents <code>ConvergenceLimits</code>.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-simulation-parameters.html#convergencelimits,ConvergenceLimits}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::ConvergenceLimits</code>.
+   * The EPModel declaration exposes the EnergyPlus-backed fields shown here; Model conveniences for typed relationships, extensible groups, or OpenStudio-only fields are not available unless declared here.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API ConvergenceLimits : public ModelObject
   {
    public:
@@ -34,13 +46,6 @@ namespace epmodel {
     ConvergenceLimits& operator=(ConvergenceLimits&&) = default;
 
     static IddObjectType iddObjectType();
-
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model ConvergenceLimits scalar accessor names/signatures.
-    // - Field Mapping: minimumSystemTimestep and *Plant/*HVAC iteration APIs map directly to E+ ConvergenceLimits fields.
-    // - Field Mapping: minimumSystemTimestep constructor default mirrors ForwardTranslator fallback behavior for blank values.
-    // - TODO(parity): Keep relationship APIs out of scope for this scalar-only scaffold pass.
-
     boost::optional<int> minimumSystemTimestep() const;
     bool setMinimumSystemTimestep(int minimumSystemTimestep);
     void resetMinimumSystemTimestep();

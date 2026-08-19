@@ -24,6 +24,17 @@ namespace epmodel {
     class AirLoopHVACDedicatedOutdoorAirSystem_Impl;
   }
 
+  /** \brief Represents the EnergyPlus AirLoopHVAC:DedicatedOutdoorAirSystem object.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-air-path.html#airloophvacdedicatedoutdoorairsystem,AirLoopHVAC:DedicatedOutdoorAirSystem}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::AirLoopHVACDedicatedOutdoorAirSystem</code>. <b>Changed:</b> EPModel also permits direct construction from <code>Model</code>. EPModel requires each served air loop to have its own outdoor-air system and retains that system when the DOAS is removed.
+   *
+   * \par Known limitations
+   * Adding/removing air loops updates aligned EnergyPlus extensible rows and owned mixer/splitter topology; broader equipment lifecycle and clone workflows remain restricted.
+   */
   class EPMODEL_API AirLoopHVACDedicatedOutdoorAirSystem : public ModelObject
   {
    public:
@@ -38,14 +49,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. Scalar state, ordered AirLoopHVAC membership, straight conditioned equipment, and selected two-stream heat recovery are present; the wider dedicated-OA equipment lifecycle remains bounded.
-    // - Canonical Counterpart: openstudio::model::AirLoopHVACDedicatedOutdoorAirSystem.
-    // - Implemented Parity: Construction from an outdoor-air system, availability scheduling, ordered membership, reverse lookup, one-based `airLoopIndex`, idempotent same-owner addition, membership removal, served-loop deletion, owned mixer/splitter cleanup, fan and plant-connected water-coil projection, and coordinated sensible-and-latent heat-recovery placement preserve the selected canonical public transitions used by repository DOAS workflows.
-    // - Documented Delta: EPModel additionally exposes a Model constructor for direct EnergyPlus object creation. It rejects an AirLoopHVAC or outdoor-air system already owned by another DOAS without mutation; canonical Model currently reports success for the former and removes the competing DOAS for the latter. EPModel also requires a served AirLoopHVAC to have its own outdoor-air system because direct EnergyPlus DOAS mixer/splitter rows cannot otherwise be formed. Removing the DOAS currently retains its outdoor-air system while removing the EnergyPlus-only mixer and splitter; canonical Model removes the outdoor-air system too.
-    // - Field/Storage Mapping: Preheat/precool values map directly. Each AirLoopHVAC membership is stored in three aligned EnergyPlus extensible rows: the DOAS AirLoopHVAC name, the common mixer relief inlet, and the common splitter outdoor-air outlet. The associated outdoor-air system uses a transient conceptual controller list for Controller:OutdoorAir and a distinct persisted list for Controller:WaterCoil rows. The EnergyPlus IDD's missing object-list types for the mixer and splitter links are corrected in `resources/energyplus/ProposedEnergy+.idd` so these relationships remain tracked pointers.
-    // - Evidence: `src/model/AirLoopHVACDedicatedOutdoorAirSystem.*`, `src/energyplus/ForwardTranslator/ForwardTranslateAirLoopHVACDedicatedOutdoorAirSystem.cpp`, `../OpenStudio-resources/model/simulationtests/doas.rb`, `../OpenStudio-resources/model/simulationtests/doas_heatexchanger_airtoair_sensibleandlatent.rb`, `src/epmodel/test/AirLoopHVACDedicatedOutdoorAirSystem_GTest.cpp`, and `src/epmodel/test/HeatExchangerAirToAirSensibleAndLatent_GTest.cpp`.
-    // - Remaining Parity Work: Add outdoor-air-system removal, clone behavior, broader two-stream equipment/ordering, and operational heat-recovery validation before claiming the wider class lifecycle.
     AirLoopHVACOutdoorAirSystem airLoopHVACOutdoorAirSystem() const;
     Schedule availabilitySchedule() const;
 

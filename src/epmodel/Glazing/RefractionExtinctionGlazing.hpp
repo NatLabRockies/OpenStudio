@@ -18,6 +18,25 @@ namespace epmodel {
     class RefractionExtinctionGlazing_Impl;
   }
 
+  /** \brief Represents glazing using refraction and extinction coefficients.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-surface-construction-elements.html#windowmaterialglazingrefractionextinctionmethod,WindowMaterial:Glazing:RefractionExtinctionMethod}.
+   *
+   * \par Important behavior
+   * Solar and visible index/extinction inputs are stored independently from
+   * the infrared and conductivity fields. <code>solarDiffusing</code> has a
+   * no-fail setter for preserving imported values outside normal validation.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::RefractionExtinctionGlazing</code>. The optical
+   * and scalar accessors have the same public meaning. Model's thermal
+   * conductivity/conductance/resistance convenience setters are not available.
+   *
+   * \par Known limitations
+   * No spectral-data relationship is exposed by this wrapper.
+   */
   class EPMODEL_API RefractionExtinctionGlazing : public Glazing
   {
    public:
@@ -32,13 +51,6 @@ namespace epmodel {
     RefractionExtinctionGlazing& operator=(RefractionExtinctionGlazing&&) = default;
 
     static IddObjectType iddObjectType();
-
-    // Schema Alignment Notes:
-    // - API: Keeps openstudio::model::RefractionExtinctionGlazing scalar accessor names for thickness, optical index/extinction fields,
-    //   conductivity/dirt-correction defaults, and Solar Diffusing so existing epmodel unblock matches the translator surface.
-    // - Field Mapping: Maps each accessor to OS:WindowMaterial:Glazing:RefractionExtinctionMethod via
-    //   OS_WindowMaterial_Glazing_RefractionExtinctionMethodFields.
-    // - ForwardTranslator evidence: ForwardTranslateRefractionExtinctionGlazing.cpp maintains the same EnergyPlus field names for these scalar inputs.
 
     double thickness() const;
     bool setThickness(double thickness);

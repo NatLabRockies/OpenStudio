@@ -23,6 +23,20 @@ namespace epmodel {
     class HeatPumpAirToWater_Impl;
   }
 
+/** \brief An air-to-water heat pump.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-plant-equipment.html#plhp_air_to_water,HeatPump:AirToWater}
+ *
+ * \par Important behavior
+ * Operating-mode, defrost, control, part-load, crankcase-heater, schedule, air-node, and curve fields map directly to HeatPump:AirToWater.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model type is <code>openstudio::model::HeatPumpAirToWater</code>.
+ *
+ * \par Known limitations
+ * Heating/cooling operating-mode child wrappers and loop lookup helpers are not available.
+ */
   class EPMODEL_API HeatPumpAirToWater : public StraightComponent
   {
    public:
@@ -41,14 +55,6 @@ namespace epmodel {
     static std::vector<std::string> heatPumpDefrostControlValues();
     static std::vector<std::string> controlTypeValues();
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. The canonical scalar surface plus direct schedule, curve, and air-node helpers are present, while plant-side operation-mode helpers remain out of scope.
-    // - Canonical Counterpart: openstudio::model::HeatPumpAirToWater.
-    // - Implemented Parity: The wrapper now matches the canonical operating-mode, defrost, control, part-load, crankcase-heater, multiplier, operating-mode schedule, air-node-name, and direct curve relationship helpers with matching constructor defaults.
-    // - Documented Delta: Heating/cooling operation-mode child wrappers and loop lookup helpers remain intentionally omitted because epmodel does not yet expose those canonical child types for `HeatPump:AirToWater`.
-    // - Field/Storage Mapping: These APIs map directly to persisted `HeatPump:AirToWater` fields used by the forward translator, including the wrapper-level schedule, air-node, and curve references.
-    // - Evidence: `src/model/HeatPumpAirToWater.hpp`, `src/model/HeatPumpAirToWater.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateHeatPumpAirToWater.cpp`.
-    // - Remaining Parity Work: Add the omitted heating/cooling operation-mode and loop lookup helpers without changing the preserved relationship signatures.
     std::string operatingModeControlMethod() const;
     bool setOperatingModeControlMethod(const std::string& operatingModeControlMethod);
     bool isOperatingModeControlMethodDefaulted() const;

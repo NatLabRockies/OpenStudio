@@ -24,6 +24,20 @@ namespace epmodel {
     class ZoneHVACEquipmentConnections_Impl;
   }
 
+  /** \brief ZoneHVACEquipmentConnections.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-zone-equipment.html#zonehvacequipmentconnections,ZoneHVAC:EquipmentConnections}.
+   *
+   * \par OpenStudio Model API
+   * OpenStudio Model has no public wrapper for this EnergyPlus object. Zone equipment
+   * owns the node and equipment-list references; the wrapper does not independently
+   * manage that ownership.
+   *
+   * \par Known limitations
+   * The wrapper exposes only the persisted zone-equipment connection fields supported
+   * by the EnergyPlus object.
+   */
   class EPMODEL_API ZoneHVACEquipmentConnections : public ModelObject
   {
    public:

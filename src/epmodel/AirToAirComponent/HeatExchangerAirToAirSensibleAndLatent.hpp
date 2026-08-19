@@ -25,6 +25,17 @@ namespace epmodel {
     class HeatExchangerAirToAirSensibleAndLatent_Impl;
   }
 
+  /** \brief Represents the EnergyPlus HeatExchanger:AirToAir:SensibleAndLatent object.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-heat-recovery.html#heatexchangerairtoairsensibleandlatent,HeatExchanger:AirToAir:SensibleAndLatent}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::HeatExchangerAirToAirSensibleAndLatent</code>. <b>Not yet available:</b> historical 75% effectiveness compatibility helpers, airflow-network equivalent-duct helpers, and arbitrary multi-exchanger ordering conveniences.
+   *
+   * \par Known limitations
+   * The four-air-port placement is coordinated as one component; specialized outdoor-air-system workflows are the supported topology.
+   */
   class EPMODEL_API HeatExchangerAirToAirSensibleAndLatent : public AirToAirComponent
   {
    public:
@@ -60,17 +71,6 @@ namespace epmodel {
     bool setLatentEffectivenessofCoolingAirFlowCurve(const Curve& curve);
     void resetLatentEffectivenessofCoolingAirFlowCurve();
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. The direct EnergyPlus schedule and effectiveness-curve relationships are aligned.
-    // - Canonical Counterpart: openstudio::model::HeatExchangerAirToAirSensibleAndLatent.
-    // - Implemented Parity: The required availability schedule, four optional effectiveness curves, scalar effectiveness, frost-control, defrost,
-    //   and economizer-lockout accessors preserve the canonical model-facing field semantics. Outdoor-air-system placement and removal coordinate
-    //   all four air ports as one component; a dedicated system keeps its mixer outlet on the secondary inlet through save/load and later mutation.
-    // - Documented Delta: Historical 75% effectiveness compatibility helpers and airflow-network helpers are not exposed.
-    // - Field/Storage Mapping: Preserved scalar APIs map directly to `HeatExchanger:AirToAir:SensibleAndLatent` fields in EnergyPlus storage. One outdoor-air equipment-list row participates in both the outdoor and relief traversals through its primary and secondary node fields.
-    // - Evidence: `src/model/HeatExchangerAirToAirSensibleAndLatent.hpp`, `src/model/HeatExchangerAirToAirSensibleAndLatent.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateHeatExchangerAirToAirSensibleAndLatent.cpp`, and `src/epmodel/test/HeatExchangerAirToAirSensibleAndLatent_GTest.cpp` define and exercise the selected scalar and two-stream behavior.
-    // - Remaining Parity Work: Add compatibility and airflow-network helpers, arbitrary multi-heat-exchanger ordering evidence, and numerical
-    //   performance validation when a workflow requires them.
     /** @name Field Accessors */
     //@{
 

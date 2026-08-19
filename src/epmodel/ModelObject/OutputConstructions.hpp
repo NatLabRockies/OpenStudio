@@ -22,6 +22,17 @@ namespace epmodel {
     class OutputConstructions_Impl;
   }
 
+  /** \brief OutputConstructions.
+   *
+   * \par EnergyPlus object
+   * \epobject{input-for-output.html#outputconstructions,Output:Constructions}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::OutputConstructions</code>. The two report switches map directly to the EnergyPlus Details Type fields.
+   *
+   * \par Known limitations
+   * Only the fields and relationships listed in this wrapper are available; broader Model-only helpers are not exposed.
+   */
   class EPMODEL_API OutputConstructions : public ModelObject
   {
    public:
@@ -34,12 +45,6 @@ namespace epmodel {
     OutputConstructions& operator=(OutputConstructions&&) = default;
 
     static IddObjectType iddObjectType();
-
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model::OutputConstructions scalar accessor names/signatures.
-    // - Field Mapping: reportConstructions/reportMaterials map onto E+ Output:Constructions Details Type 1/2 key presence.
-    // - ForwardTranslator evidence: ForwardTranslateOutputConstructions.cpp emits canonical key ordering based on these booleans.
-    // - TODO(parity): Keep these boolean APIs stable while extending translator-parity behaviors.
     bool reportConstructions() const;
     bool setReportConstructions(bool reportConstructions);
 

@@ -22,6 +22,35 @@ namespace epmodel {
     class AvailabilityManagerNightCycle_Impl;
   }
 
+  /** \brief Cycles an air loop during unoccupied periods to meet night-cycle conditions.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-system-availability-managers.html#availabilitymanagernightcycle,AvailabilityManager:NightCycle}
+   *
+   * \par Important behavior
+   * A newly constructed manager initializes thermostat tolerance to 1.0 and
+   * cycling runtime to 3600.0 seconds. <code>airLoopHVAC()</code> is derived
+   * from the assigned loop and returns an air loop only when the owning loop is
+   * an <code>AirLoopHVAC</code>.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::AvailabilityManagerNightCycle</code>.
+   *
+   * - <b>Not yet available:</b> <code>applicabilitySchedule()</code> and
+   *   <code>setApplicabilitySchedule(...)</code>,
+   *   <code>fanSchedule()</code>, and the control, cooling-control,
+   *   heating-control, and heating-fans-only thermal-zone relationship methods
+   *   (<code>controlThermalZones()</code>,
+   *   <code>setControlThermalZones(...)</code>,
+   *   <code>resetControlThermalZones()</code>, and the corresponding methods
+   *   for the other three zone groups).
+   *
+   * \par Known limitations
+   * The manager's scalar controls and loop discovery are available, but its
+   * applicability schedule, fan schedule, and thermal-zone lists cannot yet be
+   * configured through typed EPModel methods.
+   */
   class EPMODEL_API AvailabilityManagerNightCycle : public AvailabilityManager
   {
    public:
@@ -38,11 +67,6 @@ namespace epmodel {
     static std::vector<std::string> controlTypeValues();
     static std::vector<std::string> cyclingRunTimeControlTypeValues();
 
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model scalar accessor names/signatures for this model-counterpart class.
-    // - Field Mapping: scalar APIs map directly to E+ AvailabilityManager:NightCycle fields
-    //   (Control Type, Thermostat Tolerance, Cycling Run Time, Cycling Run Time Control Type).
-    // - TODO(parity): Keep relationship fields (schedule links and zone-list targets) out of this scalar-only scaffold pass.
     boost::optional<AirLoopHVAC> airLoopHVAC() const;
 
     std::string controlType() const;

@@ -24,6 +24,17 @@ namespace epmodel {
 
   /** MaterialPropertyPhaseChange is a ModelObject that wraps the EnergyPlus IDD object
  * 'MaterialProperty:PhaseChange'. */
+  /** \brief MaterialPropertyPhaseChange.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-surface-construction-elements.html#materialpropertyphasechange,MaterialProperty:PhaseChange}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::MaterialPropertyPhaseChange</code>. The temperature-coefficient field is exposed. Model's material relationship and temperature/enthalpy extensible rows are not available.
+   *
+   * \par Known limitations
+   * Only the fields and relationships listed in this wrapper are available; broader Model-only helpers are not exposed.
+   */
   class EPMODEL_API MaterialPropertyPhaseChange : public ModelObject
   {
    public:
@@ -36,15 +47,6 @@ namespace epmodel {
     MaterialPropertyPhaseChange& operator=(MaterialPropertyPhaseChange&&) = default;
 
     static IddObjectType iddObjectType();
-
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model::MaterialPropertyPhaseChange scalar accessor names/signatures.
-    // - Field Mapping: temperatureCoefficientforThermalConductivity maps to E+ field Temperature Coefficient for Thermal Conductivity.
-    // - ForwardTranslator evidence: ForwardTranslateMaterialPropertyPhaseChange.cpp writes
-    //   modelObject.temperatureCoefficientforThermalConductivity() to MaterialProperty:PhaseChange
-    //   Temperature Coefficient for Thermal Conductivity.
-    // - Exclusions: material/materialName relationship and extensible temperature-enthalpy APIs are intentionally excluded in this scalar-only pass.
-    // - TODO(parity): Add material relationship and extensible Temperature/Enthalpy APIs in a dedicated relationship/extensible parity pass.
     /** Temperature coefficient for thermal conductivity. */
     double temperatureCoefficientforThermalConductivity() const;
     bool isTemperatureCoefficientforThermalConductivityDefaulted() const;

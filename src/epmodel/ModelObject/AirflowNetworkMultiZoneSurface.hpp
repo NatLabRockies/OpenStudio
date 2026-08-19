@@ -23,6 +23,17 @@ namespace epmodel {
     class AirflowNetworkMultiZoneSurface_Impl;
   }
 
+  /** \brief Represents the EnergyPlus AirflowNetwork:MultiZone:Surface object.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-airflow-network.html#airflownetworkmultizonesurface,AirflowNetwork:MultiZone:Surface}
+   *
+   * \par OpenStudio Model API
+   * OpenStudio Model has no public wrapper for this EnergyPlus object. This wrapper is new to the EPModel API.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations beyond the public fields and relationships exposed by this wrapper.
+   */
   class EPMODEL_API AirflowNetworkMultiZoneSurface : public ModelObject
   {
    public:
@@ -39,15 +50,6 @@ namespace epmodel {
     static std::vector<std::string> ventilationControlModeValues();
     static std::vector<std::string> equivalentRectangleMethodValues();
 
-    // Schema Alignment Notes:
-    // - API: This no-counterpart epmodel type uses IDD-derived class/accessor naming.
-    // - Field Mapping: Scalar APIs map directly to EnergyPlus AirflowNetwork:MultiZone:Surface scalar fields.
-    // - Field Mapping: Name remains provided by base ModelObject naming APIs.
-    // - Field Mapping: Surface Name, Leakage Component Name, External Node Name, Ventilation Control Zone
-    //   Temperature Setpoint Schedule Name, Venting Availability Schedule Name, and Occupant Ventilation
-    //   Control Name are relationship-like object-list links and excluded from scalar accessors.
-    // - ForwardTranslator evidence: translateAirflowNetworkSurface writes all exposed scalar fields directly.
-    // - TODO(parity): Add typed relationship APIs if/when non-scalar parity work is prioritized.
     double windowDoorOpeningFactororCrackFactor() const;
     bool isWindowDoorOpeningFactororCrackFactorDefaulted() const;
     bool setWindowDoorOpeningFactororCrackFactor(double windowDoorOpeningFactororCrackFactor);

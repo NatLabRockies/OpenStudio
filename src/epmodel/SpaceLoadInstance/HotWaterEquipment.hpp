@@ -23,6 +23,17 @@ namespace epmodel {
     class HotWaterEquipment_Impl;
   }
 
+  /** \brief Represents the EnergyPlus HotWaterEquipment object.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-internal-gains-people-lights-other.html#hotwaterequipment,HotWaterEquipment}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::HotWaterEquipment</code>. <b>Not yet available:</b> the Model definition, schedule, and zone/space relationship methods. EPModel exposes direct design-level and fraction fields plus compatibility multiplier methods.
+   *
+   * \par Known limitations
+   * The compatibility multiplier scales the stored design-level fields because EnergyPlus has no dedicated multiplier field.
+   */
   class EPMODEL_API HotWaterEquipment : public ModelObject
   {
    public:
@@ -38,14 +49,6 @@ namespace epmodel {
 
     static std::vector<std::string> designLevelCalculationMethodValues();
 
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::HotWaterEquipment scalar API names/signatures where present.
-    // - Field Mapping: designLevel/powerPerFloorArea/powerPerPerson map to E+ fields Design Level/Power per Floor Area/Power per Person.
-    // - Field Mapping: schedule and zone/space target references are relationship fields and intentionally excluded.
-    // - Field Mapping: setMultiplier/resetMultiplier are preserved compatibility methods; no dedicated E+ multiplier field exists.
-    // - ForwardTranslator evidence: ForwardTranslateHotWaterEquipment.cpp applies model multiplier directly to translated
-    //   design-level scalar fields in HotWaterEquipment.
-    // - TODO(parity): Add relationship APIs and richer definition-backed behavior without changing scalar signatures.
     std::string designLevelCalculationMethod() const;
     bool isDesignLevelCalculationMethodDefaulted() const;
     bool setDesignLevelCalculationMethod(const std::string& designLevelCalculationMethod);

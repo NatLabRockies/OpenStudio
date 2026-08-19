@@ -24,6 +24,19 @@ namespace epmodel {
     class CoilSystemCoolingWater_Impl;
   }
 
+  /** \brief Represents a water-coil cooling system.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-heating-and-cooling-coils.html#coilsystemcoolingwater,CoilSystem:Cooling:Water}.
+   *
+   * \par Important behavior
+   * Referenced child coils and the supported contained air path are stored through the EnergyPlus object-list fields.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::CoilSystemCoolingWater</code>. <b>Added:</b> EPModel exposes <code>addToNode()</code>. The Model-only <code>assignEnergyPlusIDDDefaults()</code> helper is not exposed. Broader containing-component, clone/remove, and higher-level air-node convenience methods remain unavailable.
+   * \par Known limitations
+   * Use the supported compound-parent workflows for loop placement.
+   */
   class EPMODEL_API CoilSystemCoolingWater : public StraightComponent
   {
    public:
@@ -42,20 +55,6 @@ namespace epmodel {
 
     bool addToNode(Node& node);
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. The canonical schedule, cooling-coil, companion-coil, constructor-default, and current insertion-path helpers are
-    //   now present, while broader model-owned topology conveniences remain out of scope.
-    // - Canonical Counterpart: openstudio::model::CoilSystemCoolingWater.
-    // - Implemented Parity: The default constructors, `availabilitySchedule`, `coolingCoil`, `companionCoilUsedForHeatRecovery`, their
-    //   relationship setters/reset, the main scalar controls, child traversal, and the current supply-side plus outboard-OA `addToNode(...)`
-    //   paths preserve the bounded canonical slice.
-    // - Documented Delta: Broader containing-component, clone/remove, and higher-level air-node convenience behavior from canonical
-    //   `openstudio::model::CoilSystemCoolingWater` are not exposed yet.
-    // - Field/Storage Mapping: Preserved schedule and coil relationships map directly to EnergyPlus `CoilSystem:Cooling:Water` object-list
-    //   fields, while the implemented scalars map directly to the remaining control fields.
-    // - Evidence: `src/model/CoilSystemCoolingWater.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateCoilSystemCoolingWater.cpp`, and `src/epmodel/test/CoilSystemCoolingWater_GTest.cpp`.
-    // - Remaining Parity Work: Add the remaining containing-component, clone/remove, and higher-level air-node conveniences without changing the
-    //   preserved relationship signatures.
     Schedule availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);
 

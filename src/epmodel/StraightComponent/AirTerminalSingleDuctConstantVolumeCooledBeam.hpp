@@ -24,6 +24,26 @@ namespace epmodel {
     class AirTerminalSingleDuctConstantVolumeCooledBeam_Impl;
   }
 
+  /**
+   * \brief Constant-volume cooled beam terminal with a typed chilled-water coil and beam sizing fields.
+   *
+   * \par EnergyPlus object
+   * Encapsulates `OS:AirTerminal:SingleDuct:ConstantVolume:CooledBeam`. This is an OpenStudio schema object,
+   * not a direct EnergyPlus object.
+   *
+   * \par Important behavior
+   * The cooling coil and terminal share the zone-branch and chilled-water topology. `addToNode` prepares that
+   * topology, and removal cleans the owned coil only after the parent and plant references can be removed safely.
+   *
+   * \par OpenStudio Model API
+   * Counterpart: `openstudio::model::AirTerminalSingleDuctConstantVolumeCooledBeam`. Beam sizing fields, availability,
+   * cooling-coil relationships, and zone/plant insertion are represented. The epmodel constructor is also available
+   * without the Model API's required coil relationship.
+   *
+   * \par Known limitations
+   * The OS-prefixed object and coil do not round-trip through the EnergyPlus-schema `epmodel::Model::load` path.
+   * Deep cloning and family-specific autosized-result queries are not exposed.
+   */
   class EPMODEL_API AirTerminalSingleDuctConstantVolumeCooledBeam : public StraightComponent
   {
    public:
@@ -42,27 +62,6 @@ namespace epmodel {
 
     static std::vector<std::string> cooledBeamTypeValues();
 
-    // Schema Alignment Notes:
-    // - Status: Near Parity at topology evidence level R2. The cooled-beam scalar surface is aligned, and the availability schedule, typed
-    //   cooling coil, zone branch, shared-plenum, and chilled-water removal paths participate in one prepared transaction. Deep-clone behavior,
-    //   persistence, and the family-specific autosized-result query helpers remain outside the demonstrated surface.
-    // - Canonical Counterpart: openstudio::model::AirTerminalSingleDuctConstantVolumeCooledBeam.
-    // - Implemented Parity: `availabilitySchedule`, `coilCoolingCooledBeam`, `setAvailabilitySchedule`, `setCoolingCoil`, `addToNode`,
-    //   remove-time loop cleanup and owned-coil deletion, `cooledBeamType`, `supplyAirVolumetricFlowRate`,
-    //   `maximumTotalChilledWaterVolumetricFlowRate`,
-    //   `numberofBeams`, `beamLength`, `designInletWaterTemperature`, `designOutletWaterTemperature`, and `coefficientofInductionKin`
-    //   are exposed while keeping connectivity behavior focused on the canonical zone-branch and chilled-water plant paths.
-    // - Field/Storage Mapping: The availability-schedule pointer, canonical `HVACComponent` cooling-coil relationship, and preserved scalars map
-    //   directly to the OpenStudio `OS:AirTerminal:SingleDuct:ConstantVolume:CooledBeam` fields. The projected plant Branch row identifies its
-    //   `CoilCoolingCooledBeam` by exact type and water-node endpoints because that row has no managed component-name relationship.
-    // - Documented Delta: The epmodel-only default constructor is retained. The OS-prefixed terminal and coil objects cannot round-trip through
-    //   the EnergyPlus-schema `epmodel::Model::load` path, so persistence is not claimed. Deep cloning and family-specific autosized-result
-    //   helpers remain pending shared infrastructure.
-    // - Evidence: `src/model/AirTerminalSingleDuctConstantVolumeCooledBeam.hpp`, `src/model/AirTerminalSingleDuctConstantVolumeCooledBeam.cpp`,
-    //   `src/energyplus/ForwardTranslator/ForwardTranslateAirTerminalSingleDuctConstantVolumeCooledBeam.cpp`, and
-    //   `src/epmodel/test/AirTerminalSingleDuctConstantVolumeCooledBeam_GTest.cpp`.
-    // - Remaining Parity Work: Resolve EnergyPlus-native persistence storage, add canonical deep-clone behavior for the owned coil, and expose
-    //   the family-specific autosized-result query helpers once shared clone and sizing-result plumbing exists.
     Schedule availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);
 

@@ -23,6 +23,24 @@ namespace epmodel {
     class LifeCycleCostUsePriceEscalation_Impl;
   }
 
+/** \brief Defines resource-price escalation factors for life-cycle cost analysis.
+ *
+ * \par EnergyPlus object
+ * \epobject{lifecyclecost-usepriceescalation.html#lifecyclecostusepriceescalation,LifeCycleCost:UsePriceEscalation}
+ *
+ * \par Important behavior
+ * The resource, escalation start date, and year-by-year escalation values are stored in the object's extensible fields.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model class is <code>openstudio::model::LifeCycleCostUsePriceEscalation</code>.
+ * <b>Not yet available:</b> Model's <code>numYears()</code>,
+ * <code>yearEscalation()</code>, and <code>setYearEscalation()</code> methods
+ * for the year-by-year escalation extensible rows are not exposed by EPModel.
+ *
+ * \par Known limitations
+ * The escalation object does not own a resource meter or perform the economic
+ * calculation; EnergyPlus consumes its stored assumptions during simulation.
+ */
   class EPMODEL_API LifeCycleCostUsePriceEscalation : public ParentObject
   {
    public:
@@ -39,11 +57,6 @@ namespace epmodel {
     static std::vector<std::string> resourceValues();
     static std::vector<std::string> escalationStartMonthValues();
 
-    // Schema Alignment Notes:
-    // - API: No openstudio::model counterpart is used for this epmodel type in scaffold inventory; IDD-derived scalar naming is applied.
-    // - Field Mapping: resource, escalationStartYear, and escalationStartMonth map directly to LifeCycleCost:UsePriceEscalation scalar fields.
-    // - Field Mapping: extensible Year 1 Escalation (+ extensible years) is excluded from this scalar-only scaffold pass.
-    // - TODO(parity): Add typed extensible escalation-year APIs if/when extensible scaffold scope is enabled.
 
     // Resource value
     std::string resource() const;

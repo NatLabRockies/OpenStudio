@@ -29,6 +29,21 @@ namespace epmodel {
     class ControllerOutdoorAir_Impl;
   }
 
+/** \brief Controls outdoor-air intake and economizer operation for an air-side system.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-controllers.html#controlleroutdoorair,Controller:OutdoorAir}
+ *
+ * \par Important behavior
+ * Schedule, flow, economizer, lockout, minimum-limit, heat-recovery-bypass, and humidistat fields map directly to the controller. Blank optional relationships are initialized and canonicalized without guessing unresolved names.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model class is <code>openstudio::model::ControllerOutdoorAir</code>.
+ * <b>Not yet available:</b> Model's outdoor-air-system removal, AirflowNetwork outdoor-airflow helpers, and autosizing-result methods are not exposed.
+ *
+ * \par Known limitations
+ * Air-loop outdoor-air-system ownership and mechanical-ventilation relationships are separate objects; this wrapper does not own them.
+ */
   class EPMODEL_API ControllerOutdoorAir : public ParentObject
   {
    public:
@@ -49,17 +64,6 @@ namespace epmodel {
     static std::vector<std::string> heatRecoveryBypassControlTypeValues();
     static std::vector<std::string> economizerOperationStagingValues();
 
-    // Schema Alignment Notes:
-    // - API: Preserves the openstudio::model::ControllerOutdoorAir scalar, schedule, curve, humidistat-zone, mechanical-ventilation,
-    //   and ordinary outdoor-air-system relationship signatures.
-    // - Field Mapping: These APIs map directly to EnergyPlus Controller:OutdoorAir fields and configured object lists.
-    // - Load Repair: Optional schedule, curve, and zone references are resolved observationally; invalid references are cleared, and
-    //   High Humidity Control is normalized with the humidistat-zone relationship. Valid shared imported mechanical-ventilation controllers
-    //   are cloned per outdoor-air-controller owner; malformed relationship evidence is cleared before any required replacement is created.
-    // - Ownership: Mechanical-ventilation assignment enforces one exact raw-and-managed owner and preserves replaced CMVs. Direct deletion
-    //   semantics for Controller:OutdoorAir and Controller:MechanicalVentilation remain deferred.
-    // - Documented Delta: An active dedicated-outdoor-air-system projection keeps its Controller:OutdoorAir transient, so these
-    //   relationship fields remain in memory only until the controller is returned to ordinary persisted ownership.
 
     boost::optional<Schedule> minimumOutdoorAirSchedule() const;
     bool setMinimumOutdoorAirSchedule(Schedule& schedule);

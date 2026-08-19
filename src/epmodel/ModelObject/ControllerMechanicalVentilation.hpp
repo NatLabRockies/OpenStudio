@@ -25,6 +25,22 @@ namespace epmodel {
     class ControllerMechanicalVentilation_Impl;
   }
 
+  /** \brief Represents <code>Controller:MechanicalVentilation</code>.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-controllers.html#controllermechanicalventilation,Controller:MechanicalVentilation}
+   *
+   * \par Important behavior
+   * Load repair restores a missing or incompatible availability schedule and can clone a valid shared controller so each outdoor-air controller has one managed relationship.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::ControllerMechanicalVentilation</code>.
+   * <b>Changed:</b> <code>controllerOutdoorAir()</code> returns an optional relationship and is limited to the supported managed outdoor-air chain.
+   * <b>Not yet available:</b> <code>hasZonesWithDesignSpecificationOutdoorAir()</code>.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API ControllerMechanicalVentilation : public ModelObject
   {
    public:
@@ -39,15 +55,6 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     static std::vector<std::string> systemOutdoorAirMethodValues();
-
-    // Schema Alignment Notes:
-    // - Canonical Counterpart: openstudio::model::ControllerMechanicalVentilation.
-    // - Implemented Parity: Canonical required availability schedule API and scalar controls.
-    // - EPModel Behavior: The optional inverse is exposed only for one exact raw-and-managed Controller:OutdoorAir claim; owner-managed zone rows
-    //   synchronize only through an exact outdoor-air-system and AirLoop owner chain.
-    // - Field Storage: Relationships use EnergyPlus object-list pointers; load repair restores a missing or incompatible required schedule and
-    //   deterministically clones valid shared imported CMVs so each outdoor-air controller has one.
-    // - Remaining Parity: Direct Controller:MechanicalVentilation and Controller:OutdoorAir deletion semantics remain deferred.
     Schedule availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);
     bool demandControlledVentilation() const;

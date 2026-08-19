@@ -22,6 +22,17 @@ namespace epmodel {
     class AirflowNetworkDistributionComponentDuct_Impl;
   }
 
+  /** \brief Represents the EnergyPlus AirflowNetwork:Distribution:Component:Duct object.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-airflow-network.html#airflownetworkdistributioncomponentduct,AirflowNetwork:Distribution:Component:Duct}
+   *
+   * \par OpenStudio Model API
+   * OpenStudio Model has no public wrapper for this EnergyPlus object. This wrapper is new to the EPModel API.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations beyond the public fields and relationships exposed by this wrapper.
+   */
   class EPMODEL_API AirflowNetworkDistributionComponentDuct : public ModelObject
   {
    public:
@@ -35,13 +46,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - API: This no-counterpart epmodel type uses IDD-derived class/accessor naming.
-    // - Field Mapping: Scalar APIs map directly to EnergyPlus
-    //   AirflowNetwork:Distribution:Component:Duct scalar fields.
-    // - ForwardTranslator evidence: translateAirflowNetworkDuct writes all scalar fields below directly.
-    // - Field Mapping: Name is inherited from ModelObject; no additional relationship-like scalar fields exist here.
-    // - TODO(parity): Re-evaluate naming if a future model-counterpart parity layer is introduced.
     double ductLength() const;
     bool setDuctLength(double ductLength);
 

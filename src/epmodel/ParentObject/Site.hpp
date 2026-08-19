@@ -24,6 +24,21 @@ namespace epmodel {
     class Site_Impl;
   }
 
+/** \brief Defines the geographic site location and site-level simulation settings.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-location-climate-weather-file-access.html#sitelocation,Site:Location}
+ *
+ * \par Important behavior
+ * Latitude, longitude, time zone, elevation, and site-location controls are stored on Site:Location. The terrain methods are a projected view of the EnergyPlus Building Terrain field, because Site:Location has no terrain field.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model class is <code>openstudio::model::Site</code>.
+ * <b>Not yet available:</b> Model's weather-file, climate-zone, ground-temperature, water-mains, and ground-reflectance relationships are not exposed.
+ *
+ * \par Known limitations
+ * Terrain is persisted on the related Building object; callers should keep the Building wrapper in the same model when using the projected terrain API.
+ */
   class EPMODEL_API Site : public ParentObject
   {
    public:
@@ -39,16 +54,6 @@ namespace epmodel {
 
     static std::vector<std::string> validTerrainValues();
 
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::Site scalar accessor names/signatures for this model-counterpart class.
-    // - Field Mapping: latitude/longitude/timeZone/elevation/keepSiteLocationInformation map directly to EnergyPlus
-    //   Site:Location scalar fields.
-    // - Field Mapping: terrain API maps to EnergyPlus Building/Terrain (cross-object drift), per ForwardTranslator behavior.
-    // - Field Mapping: weather-file, climate-zones, and shading-group accessors are relationship APIs and are intentionally
-    //   excluded from this scalar-only scaffold.
-    // - ForwardTranslator evidence: ForwardTranslateSite.cpp writes Site:Location scalar fields while
-    //   ForwardTranslateBuilding.cpp maps model::Site::terrain() to Building/Terrain.
-    // - TODO(parity): Add non-scalar Site relationship APIs in a dedicated parity pass.
     double latitude() const;
     bool isLatitudeDefaulted() const;
     bool setLatitude(double latitude);

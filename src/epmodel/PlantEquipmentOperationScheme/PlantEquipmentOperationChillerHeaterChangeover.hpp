@@ -20,6 +20,25 @@ namespace epmodel {
     class PlantEquipmentOperationChillerHeaterChangeover_Impl;
   }
 
+  /** \brief Selects plant equipment for chiller heater changeover operation.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-plant-condenser-control.html#plantequipmentoperationchillerheaterchangeover,PlantEquipmentOperation:ChillerHeaterChangeover}
+   *
+   * \par Important behavior
+   * If the backup heating setpoint is left blank, EnergyPlus uses the primary
+   * heating setpoint at outdoor low temperature. The backup outdoor temperature
+   * is a separate optional input.
+   *
+   * \par OpenStudio Model API
+   * OpenStudio Model has no public wrapper for
+   * <code>PlantEquipmentOperation:ChillerHeaterChangeover</code>; this wrapper
+   * is new to the EPModel API.
+   *
+   * \par Known limitations
+   * The zone-list, load-operation-scheme, and dedicated heat-pump relationships
+   * are not exposed through typed public methods.
+   */
   class EPMODEL_API PlantEquipmentOperationChillerHeaterChangeover : public PlantEquipmentOperationScheme
   {
    public:
@@ -33,11 +52,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - API: IDD-derived PlantEquipmentOperation:ChillerHeaterChangeover naming is preserved for this no-counterpart type.
-    // - Field Mapping: Required cooling/heating setpoint fields, optional secondary setpoints, and the Boiler Setpoint Temperature Offset map directly to the same-named EnergyPlus fields; the backup setpoint follows the IDD note that it falls back to the outdoor low setpoint when blank.
-    // - Field Mapping: Relationship-like object-list fields (Name/ControlSchemeList, Zone Load Polling ZoneList Name, the four load scheme references, and the dedicated PLHP object names) are intentionally excluded from this scalar-only pass.
-    // - TODO(parity): Add relationship APIs/ForwardTranslator wiring for the excluded fields once scalar saturation completes.
     double primaryCoolingPlantSetpointTemperature() const;
     bool setPrimaryCoolingPlantSetpointTemperature(double primaryCoolingPlantSetpointTemperature);
 

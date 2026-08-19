@@ -20,6 +20,17 @@ namespace epmodel {
     class SiteGroundTemperatureDeep_Impl;
   }
 
+  /** \brief SiteGroundTemperatureDeep.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-location-climate-weather-file-access.html#sitegroundtemperaturedeep,Site:GroundTemperature:Deep}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::SiteGroundTemperatureDeep</code>. The twelve monthly temperatures map directly to EnergyPlus. EPModel uses named month methods rather than Model's month-indexed and all-month helper family.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API SiteGroundTemperatureDeep : public ModelObject
   {
    public:
@@ -32,10 +43,6 @@ namespace epmodel {
     SiteGroundTemperatureDeep& operator=(SiteGroundTemperatureDeep&&) = default;
 
     static IddObjectType iddObjectType();
-
-    // Schema Alignment Notes:
-    // - API: Preserved from openstudio::model counterpart.
-    // - Field Mapping: Month scalar APIs map directly to Site:GroundTemperature:Deep fields.
     double januaryDeepGroundTemperature() const;
     bool isJanuaryDeepGroundTemperatureDefaulted() const;
     bool setJanuaryDeepGroundTemperature(double januaryDeepGroundTemperature);

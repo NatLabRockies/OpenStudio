@@ -22,6 +22,25 @@ namespace epmodel {
     class Shade_Impl;
   }
 
+  /** \brief Represents a fabric or solid shade shading material.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-surface-construction-elements.html#windowmaterialshade,WindowMaterial:Shade}.
+   *
+   * \par Important behavior
+   * Solar and visible absorptance are derived from the corresponding
+   * transmittance and reflectance values. Thermal resistance and conductance
+   * are likewise derived from conductivity and thickness.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::Shade</code>. The thermal, optical, spacing, and
+   * opening-factor methods have the same public meaning.
+   *
+   * \par Known limitations
+   * This wrapper represents shade material properties only; placement and
+   * shading-control relationships belong to other objects.
+   */
   class EPMODEL_API Shade : public ShadingMaterial
   {
    public:
@@ -35,12 +54,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - API: Mirror openstudio::model::Shade scalar accessors (thermals and optical coefficients) so the epmodel facade stays
-    //         compatible with the existing public surface/shading material API.
-    // - Field Mapping: Each accessor reads/writes the EnergyPlus WindowMaterial:Shade fields consumed by
-    //         energyplus::ForwardTranslator::translateShade (ForwardTranslator/ForwardTranslateShade.cpp).
-    // - TODO(parity): Keep the derived absorptance/thermal helpers aligned with the model counterpart as the field semantics evolve.
     double thermalConductivity() const;
     bool setThermalConductivity(double value);
 

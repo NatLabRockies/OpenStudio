@@ -18,8 +18,19 @@ namespace epmodel {
     class GasLayer_Impl;
   }
 
-  /** A GasLayer is a FenestrationMaterial that serves as a base class for gaseous layers in
-   *  fenestration LayeredConstructions (e.g. the gas gap between panes of glass). */
+  /** \brief Base class for gaseous layers in fenestration constructions.
+   *
+   * \par EnergyPlus object
+   * No single EnergyPlus object. Concrete subclasses represent
+   * \epobject{group-surface-construction-elements.html#windowmaterialgas,WindowMaterial:Gas} and \epobject{group-surface-construction-elements.html#windowmaterialgasmixture,WindowMaterial:GasMixture}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::GasLayer</code>. No known public API differences.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API GasLayer : public FenestrationMaterial
   {
    public:

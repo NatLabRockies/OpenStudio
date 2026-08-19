@@ -23,6 +23,17 @@ namespace epmodel {
     class ExteriorLights_Impl;
   }
 
+  /** \brief Represents the EnergyPlus Exterior:Lights object.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-exterior-energy-use-equipment.html#exteriorlights,Exterior:Lights}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::ExteriorLights</code>. <b>Not yet available:</b> the Model definition, schedule, and facility relationship methods. EPModel exposes control option, end-use subcategory, and multiplier.
+   *
+   * \par Known limitations
+   * EPModel stores the compatibility multiplier in the EnergyPlus Design Level field; EnergyPlus has no separate multiplier field.
+   */
   class EPMODEL_API ExteriorLights : public ModelObject
   {
    public:
@@ -39,14 +50,6 @@ namespace epmodel {
     static std::vector<std::string> controlOptionValues();
     static std::vector<std::string> validControlOptionValues();
 
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::ExteriorLights scalar accessor names/signatures.
-    // - Field Mapping: controlOption/endUseSubcategory map directly to E+ Exterior:Lights Control Option/End-Use Subcategory.
-    // - Field Mapping: multiplier API currently delegates to E+ Exterior:Lights Design Level (no direct E+ multiplier field).
-    // - Field Mapping: Schedule Name is excluded as a relationship field in this scalar-only scaffold pass.
-    // - ForwardTranslator evidence: ForwardTranslateExteriorLights.cpp writes Design Level from
-    //   definition.designLevel() * modelObject.multiplier(), and maps controlOption/endUseSubcategory directly.
-    // - TODO(parity): Add relationship/definition graph parity without changing preserved scalar signatures.
     std::string controlOption() const;
     bool isControlOptionDefaulted() const;
     bool setControlOption(const std::string& controlOption);

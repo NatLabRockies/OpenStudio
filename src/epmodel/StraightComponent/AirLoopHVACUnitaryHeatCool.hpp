@@ -27,6 +27,26 @@ namespace epmodel {
     class AirLoopHVACUnitaryHeatCool_Impl;
   }
 
+  /**
+   * \brief Unitary air conditioner with separately typed fan, heating-coil, cooling-coil, and optional reheat-coil links.
+   *
+   * \par EnergyPlus object
+   * Encapsulates \epobject{group-unitary-equipment.html#airloophvacunitaryheatcool,AirLoopHVAC:UnitaryHeatCool}.
+   *
+   * \par Important behavior
+   * The child components form one parent-owned serial air path. Fan placement determines the path order, and the
+   * outlet-node helpers expose the meaningful internal boundaries. `addToNode` inserts the compound on an air-loop
+   * supply path.
+   *
+   * \par OpenStudio Model API
+   * There is no separate `openstudio::model` counterpart for this EnergyPlus-native type. The API follows the
+   * corresponding unitary Model wrappers for schedules, child relationships, control fields, and autosized supply
+   * airflow fields, while adding direct access to the internal outlet nodes.
+   *
+   * \par Known limitations
+   * Broader unitary topology conveniences are not exposed; use the typed child and node relationships for the
+   * supported serial path.
+   */
   class EPMODEL_API AirLoopHVACUnitaryHeatCool : public StraightComponent
   {
    public:
@@ -49,17 +69,6 @@ namespace epmodel {
     static std::vector<std::string> dehumidificationControlTypeValues();
     static std::vector<std::string> reheatCoilObjectTypeValues();
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity.
-    // - Canonical Counterpart: None; this is an EnergyPlus-native type. Its contract follows the fully implemented canonical unitary siblings.
-    // - Implemented Parity: The wrapper is a supply-side StraightComponent. Its availability and operating-mode schedules, controlling
-    //   zone, fan, heating coil, cooling coil, and optional reheat coil are typed relationships. The unitary owns the HVAC children and
-    //   maintains their serial air path for blow-through and draw-through fan placement.
-    // - Field Mapping: Scalar APIs map directly to AirLoopHVAC:UnitaryHeatCool numeric/choice fields. Object type/name pairs are
-    //   synchronized by typed relationship mutation and canonicalization.
-    // - Evidence: The sibling AirLoopHVACUnitaryHeatPumpAirToAir and AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass wrappers provide the ownership,
-    //   supply-connection, and contained-air-path contracts.
-    // - Remaining Parity Work: Add broader topology conveniences only when another supported unitary contract establishes their semantics.
     Schedule availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);
 

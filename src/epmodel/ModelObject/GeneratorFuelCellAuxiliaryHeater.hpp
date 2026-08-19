@@ -23,6 +23,18 @@ namespace epmodel {
     class GeneratorFuelCellAuxiliaryHeater_Impl;
   }
 
+  /** \brief Represents <code>Generator:FuelCell:AuxiliaryHeater</code>.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-electric-load-center-generator.html#generatorfuelcellauxiliaryheater,Generator:FuelCell:AuxiliaryHeater}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::GeneratorFuelCellAuxiliaryHeater</code>.
+   * **Not yet available:** Model parent, node, curve, schedule, and extensible constituent conveniences are not exposed unless declared here.
+   *
+   * \par Known limitations
+   * Relationship and extensible data not represented by the public declarations must be maintained by the owning object.
+   */
   class EPMODEL_API GeneratorFuelCellAuxiliaryHeater : public ModelObject
   {
    public:
@@ -38,15 +50,6 @@ namespace epmodel {
 
     static std::vector<std::string> skinLossDestinationValues();
     static std::vector<std::string> heatingCapacityUnitsValues();
-
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model scalar accessor names/signatures for counterpart parity.
-    // - Field Mapping: Scalar APIs map directly to Generator:FuelCell:AuxiliaryHeater scalar fields.
-    // - Field Mapping: maximumHeatingCapacityinKmolperSecond and minimumHeatingCapacityinKmolperSecond preserve
-    //   model API names and are mapped directly to the matching E+ fields.
-    // - ForwardTranslator evidence: ForwardTranslateGeneratorFuelCellAuxiliaryHeater writes these scalar fields
-    //   directly and handles Zone Name to Receive Skin Losses as a relationship target.
-    // - TODO(parity): Add preserved relationship APIs incrementally for zone linkage and parent fuel-cell references.
     double excessAirRatio() const;
     bool setExcessAirRatio(double excessAirRatio);
     void resetExcessAirRatio();

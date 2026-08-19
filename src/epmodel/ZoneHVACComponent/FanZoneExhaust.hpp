@@ -25,6 +25,20 @@ namespace epmodel {
     class FanZoneExhaust_Impl;
   }
 
+/** \brief An exhaust fan serving a thermal zone.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-fans.html#fanzoneexhaust,Fan:ZoneExhaust}
+ *
+ * \par Important behavior
+ * Zone attachment is represented through the EnergyPlus zone equipment list and exhaust-node fields; orphaned transient inlet and outlet nodes are removed on detachment.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model class is <code>openstudio::model::FanZoneExhaust</code>.
+ *
+ * \par Known limitations
+ * AirflowNetwork helpers and separate air-loop exhaust-system ownership are not exposed.
+ */
   class EPMODEL_API FanZoneExhaust : public ZoneHVACComponent
   {
    public:
@@ -40,14 +54,6 @@ namespace epmodel {
 
     static std::vector<std::string> systemAvailabilityManagerCouplingModeValues();
 
-    // Schema Alignment Notes:
-    // - Status: Partial Topology Parity. The exhaust-fan scalar and schedule fields plus direct thermal-zone lifecycle are aligned; the wider exhaust-system surface remains bounded.
-    // - Canonical Counterpart: openstudio::model::FanZoneExhaust.
-    // - Implemented Parity: Scalar and schedule getters/setters map directly to the EnergyPlus object. Inherited `addToThermalZone`, `thermalZone`, and `removeFromThermalZone` preserve zone equipment and exhaust-node ownership through movement and save/load.
-    // - Documented Delta: AirflowNetwork helpers are not yet exposed on this wrapper.
-    // - Field/Storage Mapping: Scalar values are stored directly on the EnergyPlus object. Thermal-zone ownership is projected through `ZoneHVAC:EquipmentList` and `ZoneHVAC:EquipmentConnections` exhaust-node rows; transient inlet/outlet nodes are removed when orphaned.
-    // - Evidence: `src/model/FanZoneExhaust.hpp`, `src/model/FanZoneExhaust.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateFanZoneExhaust.cpp`, and `src/epmodel/test/FanZoneExhaust_GTest.cpp`.
-    // - Remaining Parity Work: Bound AirflowNetwork and air-loop exhaust-system ownership separately.
     boost::optional<Schedule> availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);
     void resetAvailabilitySchedule();

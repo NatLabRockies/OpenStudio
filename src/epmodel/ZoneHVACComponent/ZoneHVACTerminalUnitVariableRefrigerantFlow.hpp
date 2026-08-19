@@ -34,6 +34,24 @@ namespace epmodel {
     class ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl;
   }
 
+/** \brief A variable-refrigerant-flow terminal unit serving a thermal zone.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-zone-forced-air-units.html#zonehvacterminalunitvariablerefrigerantflow,ZoneHVAC:TerminalUnit:VariableRefrigerantFlow}
+ *
+ * \par Important behavior
+ * Contained fan and coils share a parent-owned air path, and a local outdoor-air mixer is an additive child convenience. Moving a live terminal between a main branch and outdoor-air stream requires removing its existing air-loop placement first.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model class is <code>openstudio::model::ZoneHVACTerminalUnitVariableRefrigerantFlow</code>.
+ * EPModel adds explicit boundary-node accessors, an outdoor-air mixer view,
+ * and persisted-child traversal; Model instead exposes
+ * <code>isFluidTemperatureControl()</code> and an autosized supplemental-heater
+ * temperature query.
+ *
+ * \par Known limitations
+ * A detached EPModel terminal retains materialized boundary nodes and its local mixer. Clone and sizing conveniences and the unselected relief-stream role are not fully aligned with Model.
+ */
   class EPMODEL_API ZoneHVACTerminalUnitVariableRefrigerantFlow : public ZoneHVACComponent
   {
    public:
@@ -54,26 +72,6 @@ namespace epmodel {
     static IddObjectType iddObjectType();
     static std::vector<std::string> supplyAirFanPlacementValues();
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. The scalar fields, standard outdoor-unit relationship, and contained fan/coil air path are aligned, but broader
-    //   VRF terminal parity remains incomplete.
-    // - Canonical Counterpart: openstudio::model::ZoneHVACTerminalUnitVariableRefrigerantFlow.
-    // - Implemented Parity: Supply-air and outdoor-air flow scalars, parasitic electric loads, rated heating ratio, supplemental-heater limits,
-    //   fan-placement helpers, schedules, controlling-zone and standard VRF outdoor-unit links, direct air-loop and outdoor-air-stream placement,
-    //   and contained fan/coil child accessors preserve the canonical wrapper behavior. The contained supply fan, cooling coil, heating coil, and
-    //   optional supplemental heating coil share a parent-owned air path, with direct access to its meaningful internal node roles.
-    // - Documented Delta: `fanOutletNode()`, `coolingCoilOutletNode()`, and `heatingCoilOutletNode()` are exposed as additive conveniences so
-    //   callers can inspect and rename the meaningful node roles owned by the compound, even when those roles alias each other or the parent
-    //   outlet in a valid configuration. The owned outdoor-air mixer is also exposed as an additive child convenience. Moving a live terminal
-    //   between a main branch and an outdoor-air stream requires an explicit `removeFromAirLoopHVAC()` so a rejected destination cannot detach
-    //   the established path. Unlike Model, a detached EPModel terminal retains materialized boundary nodes and its local mixer so its
-    //   EnergyPlus-native child path remains internally valid; Model creates the boundary nodes on zone attachment and synthesizes the mixer
-    //   during translation.
-    // - Field/Storage Mapping: Scalar values live directly on the EnergyPlus object while the fan/coil/schedule/node topology is represented
-    //   through explicit child state, a persisted outdoor-air mixer whenever the unit owns its local OA path, and transient epmodel nodes.
-    // - Evidence: `src/model/ZoneHVACTerminalUnitVariableRefrigerantFlow.hpp`, `src/model/ZoneHVACTerminalUnitVariableRefrigerantFlow.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateZoneHVACTerminalUnitVariableRefrigerantFlow.cpp`, and `src/epmodel/test/ZoneHVACTerminalUnitVariableRefrigerantFlow_GTest.cpp`.
-    // - Remaining Parity Work: Align clone and sizing conveniences and the unselected relief-stream topology role; add omitted relationship
-    //   helpers only if the canonical wrapper still exposes them directly.
 
     Schedule terminalUnitAvailabilityschedule() const;
     bool setTerminalUnitAvailabilityschedule(Schedule& schedule);

@@ -22,6 +22,21 @@ namespace epmodel {
     class ConnectorMixer_Impl;
   }
 
+  /** \brief Represents an EnergyPlus connector that combines branch flows.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-node-branch-management.html#connectormixer,Connector:Mixer}.
+   *
+   * \par Important behavior
+   * Relationships are projected from EnergyPlus branch and node topology and mutators maintain that topology.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::ConnectorMixer</code>.
+   * <b>Added: explicit inlet-object enumeration, assignment, and branch removal methods such as <code>inletModelObjects()</code>, <code>setInletModelObject()</code>, and <code>removePortForBranch()</code>.</b>
+   *
+   * \par Known limitations
+   * Connector relationships are represented through EnergyPlus branch topology.
+   */
   class EPMODEL_API ConnectorMixer : public Mixer
   {
    public:
@@ -35,13 +50,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. The connector-specific branch-port surface is present within the representative loop-topology contract.
-    // - Canonical Counterpart: openstudio::model::ConnectorMixer.
-    // - Implemented Parity: Connector-specific inlet/outlet port traversal, branch indexing, outlet lookup, and branch removal APIs preserve the canonical connector-mixer topology contract.
-    // - Field/Storage Mapping: Public behavior is organized around EnergyPlus `Connector:Mixer` branch topology rather than OpenStudio connection storage.
-    // - Evidence: `src/model/ConnectorMixer.hpp` and the loop topology family establish the canonical connector-specific branch API this wrapper is preserving.
-    // - Remaining Parity Work: Add connector-specific loop integration only for a concrete workflow or shared topology defect.
     unsigned outletPort() const override;
     unsigned inletPort(unsigned branchIndex) const override;
     unsigned nextInletPort() const override;

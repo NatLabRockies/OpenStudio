@@ -24,6 +24,20 @@ namespace epmodel {
     class PipeIndoor_Impl;
   }
 
+/** \brief An indoor plant pipe.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-node-branch-management.html#pipeindoor,Pipe:Indoor}
+ *
+ * \par Important behavior
+ * The inherited straight-component inlet/outlet topology and pipe scalars map to Pipe:Indoor.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model type is <code>openstudio::model::PipeIndoor</code>.
+ *
+ * \par Known limitations
+ * No additional type-specific limitation is known beyond shared straight-component topology.
+ */
   class EPMODEL_API PipeIndoor : public StraightComponent
   {
    public:
@@ -39,19 +53,6 @@ namespace epmodel {
 
     static std::vector<std::string> environmentTypeValues();
 
-    // Schema Alignment Notes:
-    // - Status: Near Parity. The canonical PipeIndoor scalar surface, object relationships, and plant-loop-only topology behavior are present.
-    // - Canonical Counterpart: openstudio::model::PipeIndoor.
-    // - Implemented Parity: `construction`, `environmentType`, `ambientTemperatureZone`, `ambientTemperatureSchedule`,
-    //   `ambientAirVelocitySchedule`, `pipeInsideDiameter`, `pipeLength`, and plant-loop-only `addToNode(...)` preserve the canonical wrapper behavior
-    //   that maps cleanly to `Pipe:Indoor`.
-    // - Documented Delta: epmodel still relies on inherited HVACComponent/StraightComponent topology helpers instead of the broader canonical
-    //   component/fuel-type public surface, which remains a shared epmodel base-class gap.
-    // - Field/Storage Mapping: The wrapper maps directly to EnergyPlus `Pipe:Indoor` construction, ambient zone/schedule, node-name, and scalar fields.
-    // - Evidence: `src/model/PipeIndoor.hpp`, `src/model/PipeIndoor.cpp`, `src/model/test/PipeIndoor_GTest.cpp`, and
-    //   `src/energyplus/ForwardTranslator/ForwardTranslatePipeIndoor.cpp` define and exercise the canonical behavior this wrapper preserves.
-    // - Remaining Parity Work: Close the remaining shared HVACComponent base-surface gaps so PipeIndoor can inherit the missing canonical
-    //   component/fuel-type conveniences without adding type-local divergence.
 
     /** @name Topology */
     //@{

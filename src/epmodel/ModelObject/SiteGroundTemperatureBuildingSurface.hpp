@@ -20,6 +20,17 @@ namespace epmodel {
     class SiteGroundTemperatureBuildingSurface_Impl;
   }
 
+  /** \brief SiteGroundTemperatureBuildingSurface.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-location-climate-weather-file-access.html#sitegroundtemperaturebuildingsurface,Site:GroundTemperature:BuildingSurface}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::SiteGroundTemperatureBuildingSurface</code>. The twelve monthly temperatures map directly to EnergyPlus; resetting a value restores the IDD default. EPModel uses named month methods rather than Model's month-indexed and all-month helper family.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API SiteGroundTemperatureBuildingSurface : public ModelObject
   {
    public:
@@ -32,11 +43,6 @@ namespace epmodel {
     SiteGroundTemperatureBuildingSurface& operator=(SiteGroundTemperatureBuildingSurface&& other) = default;
 
     static IddObjectType iddObjectType();
-
-    // Schema Alignment Notes:
-    // - API: Mirrors the openstudio::model SiteGroundTemperatureBuildingSurface scalar accessor names/signatures for each month.
-    // - Field Mapping: Monthly ground temperatures delegate directly to Site:GroundTemperature:BuildingSurface month fields (see ForwardTranslateSiteGroundTemperatureBuildingSurface).
-    // - Field Mapping: Resets clear the field string so the IDD default (18°C) repopulates on the next read.
     double januaryGroundTemperature() const;
     bool isJanuaryGroundTemperatureDefaulted() const;
     bool setJanuaryGroundTemperature(double januaryGroundTemperature);

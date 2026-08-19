@@ -24,6 +24,26 @@ namespace epmodel {
     class AirTerminalSingleDuctInletSideMixer_Impl;
   }
 
+  /**
+   * \brief Inlet-side mixer terminal for combining primary and secondary air streams.
+   *
+   * \par EnergyPlus object
+   * Encapsulates \epobject{group-air-distribution-equipment.html#airterminalsingleductmixer,AirTerminal:SingleDuct:Mixer}.
+   *
+   * \par Important behavior
+   * `addToNode` accepts only the matching epmodel AirLoopHVAC zone-branch node and rewires the splitter, terminal,
+   * AirDistributionUnit, and zone-equipment references as one operation. Removal restores the original branch and
+   * deletes the transient inlet node created by the terminal.
+   *
+   * \par OpenStudio Model API
+   * Counterpart: `openstudio::model::AirTerminalSingleDuctInletSideMixer`. The mixer node, ventilation-rate mode,
+   * and supported branch lifecycle are represented. The Model API additionally provides `controlForOutdoorAir` and
+   * the DesignSpecificationOutdoorAir relationship.
+   *
+   * \par Known limitations
+   * Broader local-topology insertion is not supported, and this object is not a supported implicit
+   * AirLoopHVAC clone-last source when its secondary inlet is owned by downstream zone equipment.
+   */
   class EPMODEL_API AirTerminalSingleDuctInletSideMixer : public StraightComponent
   {
    public:
@@ -39,25 +59,6 @@ namespace epmodel {
 
     static std::vector<std::string> perPersonVentilationRateModeValues();
     bool addToNode(Node& node);
-
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. The persisted mixer node/object references plus the bounded epmodel zone-branch add/remove path are aligned,
-    //   but the broader canonical local-topology surface and the OS-only outdoor-air control API remain intentionally narrower.
-    // - Canonical Counterpart: openstudio::model::AirTerminalSingleDuctInletSideMixer.
-    // - Implemented Parity: `perPersonVentilationRateMode`, `secondaryAirInletNode`, `addToNode`, and `removeFromLoop` preserve the
-    //   current epmodel AirLoopHVAC zone-branch contract for this `AirTerminal:SingleDuct:Mixer` wrapper.
-    // - Topology Gate: `addToNode` only accepts a node that is already the matched ZoneSplitter/ZoneMixer branch node for an AirLoopHVAC demand branch;
-    //   it rejects foreign-model, non-loop, and mismatched-branch nodes, then rewires the splitter outlet, terminal inlet/outlet, ADU outlet, and zone equipment list.
-    // - Cleanup Surface: `remove` and `removeFromLoop` reverse those entity-owned branch side effects by restoring the original branch node, clearing stale ADU and zone-equipment references,
-    //   and deleting the transient inlet node when this wrapper created it.
-    // - Documented Delta: This wrapper keeps the same default-constructor shape as the canonical model object, but it intentionally omits the canonical
-    //   `controlForOutdoorAir` API plus the associated DesignSpecificationOutdoorAir export path from the openstudio::model surface. It is explicitly
-    //   unsupported as an implicit AirLoopHVAC clone-last source because its secondary inlet may be owned by downstream ZoneHVAC equipment that cannot
-    //   be re-homed transactionally by the current epmodel topology API.
-    // - Field/Storage Mapping: The preserved scalar and direct object links map directly to the EnergyPlus `AirTerminal:SingleDuct:Mixer` fields,
-    //   while the connectivity methods update those node/object references to match the current zone-branch topology.
-    // - Evidence: `src/model/AirTerminalSingleDuctInletSideMixer.hpp`, `src/model/AirTerminalSingleDuctInletSideMixer.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirTerminalSingleDuctInletSideMixer.cpp`, and `src/epmodel/test/AirTerminalSingleDuctInletSideMixer_GTest.cpp`.
-    // - Remaining Parity Work: Broaden the local-topology surface only if canonical insertion behavior needs to be mirrored more fully.
 
     /** @name Per Person Ventilation Rate Mode */
     //@{

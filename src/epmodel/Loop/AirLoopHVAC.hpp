@@ -36,6 +36,21 @@ namespace epmodel {
 
   class Model;
 
+  /** \brief Represents an air-side HVAC loop and its supply and demand branches.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-air-distribution.html#airloophvac,AirLoopHVAC}.
+   *
+   * \par Important behavior
+   * A loop may be constructed as single-duct or dual-duct. Dual-duct operations maintain the common return and both supply paths as one topology.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::AirLoopHVAC</code>.
+   * <b>Not yet available: several SQL autosized-result helpers, <code>clone()</code>, <code>multiAddBranchForZone()</code>, <code>removeSupplySplitter()</code>, and broad multi-splitter conveniences.</b>
+   *
+   * \par Known limitations
+   * Inlet-side mixers and user-defined terminal shapes without unambiguous branch ownership are rejected by supported topology mutators.
+   */
   class EPMODEL_API AirLoopHVAC : public Loop
   {
    public:
@@ -49,20 +64,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. The representative single- and dual-duct topology contract is present; the wider canonical convenience surface
-    //   remains incomplete.
-    // - Canonical Counterpart: openstudio::model::AirLoopHVAC.
-    // - Implemented Parity: Core scalars, supply/demand nodes and traversal, branch mutation, plenums, supported terminal ownership, outdoor-air and
-    //   DOAS lookup, thermal zones, sizing, schedules, night-cycle control, and availability managers preserve the main canonical loop behavior.
-    //   Dual-duct removal owns both supply leaves and the common return; supply traversal projects the stored two-speed DX adapter.
-    // - Documented Delta: The wider canonical multi-splitter and outdoor-node convenience surface remains incomplete. Inlet-side-mixer and
-    //   user-defined-terminal shapes without a proven ownership contract are rejected before mutation.
-    // - Field/Storage Mapping: Connector, splitter, mixer, branch, and node relationships are projected from EnergyPlus topology rather than
-    //   exposed as scalar name fields.
-    // - Evidence: `src/model/AirLoopHVAC.hpp`, the air-loop translators, focused epmodel air-loop/terminal tests, and
-    //   `src/epmodel/test/idf/IDF_SmallOffice_GTest.cpp` define the selected contract.
-    // - Remaining Parity Work: Add broader multi-splitter, outdoor-node, or higher-level conveniences only for a concrete workflow or shared defect.
     boost::optional<double> designSupplyAirFlowRate() const;
     bool setDesignSupplyAirFlowRate(double designSupplyAirFlowRate);
     void resetDesignSupplyAirFlowRate();

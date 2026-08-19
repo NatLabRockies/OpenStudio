@@ -25,6 +25,20 @@ namespace epmodel {
     class FluidCoolerSingleSpeed_Impl;
   }
 
+/** \brief A single-speed fluid cooler.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-condenser-equipment.html#fluidcoolersinglespeed,FluidCooler:SingleSpeed}
+ *
+ * \par Important behavior
+ * The outdoor-air inlet node relationship maintains the EnergyPlus OutdoorAir node declaration and plant placement is supply-side only.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model type is <code>openstudio::model::FluidCoolerSingleSpeed</code>.
+ *
+ * \par Known limitations
+ * Autosized-value getters cannot resolve SQL sizing results.
+ */
   class EPMODEL_API FluidCoolerSingleSpeed : public StraightComponent
   {
    public:
@@ -40,20 +54,6 @@ namespace epmodel {
 
     static std::vector<std::string> performanceInputMethodValues();
 
-    // Schema Alignment Notes:
-    // - Status: Parity with documented deltas. The canonical single-speed fluid-cooler scalar surface, outdoor-air inlet relationship, and plant-supply
-    //   placement rule are present, while resolved autosized-value lookup remains out of scope.
-    // - Canonical Counterpart: openstudio::model::FluidCoolerSingleSpeed.
-    // - Implemented Parity: The preserved API matches the canonical performance, capacity, temperature, autosize-token, and optional outdoor-air Node
-    //   accessors with matching default behavior; inherited `addToNode(...)` follows the canonical plant-supply-only insertion contract. The Node API
-    //   owns only field A5 and its generated `OutdoorAir:NodeList` declaration, preserves caller-owned Nodes and direct `OutdoorAir:Node` objects, and
-    //   lets direct declarations take precedence over conflicting NodeList rows.
-    // - Documented Delta: The `autosized*()` getters remain intentionally unresolved because epmodel does not yet expose SQL-backed sizing results.
-    // - Field/Storage Mapping: Scalar accessors and `outdoorAirInletNode()` map directly to EnergyPlus `FluidCooler:SingleSpeed` fields. Configured A5
-    //   is an optional NodeType field and remains blank at construction; the outdoor-air claim is bounded to the canonical Model API and configured
-    //   IDD because its current forward translator does not emit that field.
-    // - Evidence: `src/model/FluidCoolerSingleSpeed.hpp`, `src/model/FluidCoolerSingleSpeed.cpp`, and EnergyPlus `FluidCooler:SingleSpeed` field A5.
-    // - Remaining Parity Work: Wire `autosized*()` to resolved sizing results without changing the preserved scalar signatures.
     boost::optional<Node> outdoorAirInletNode() const;
     bool setOutdoorAirInletNode(const Node& node);
     void resetOutdoorAirInletNode();

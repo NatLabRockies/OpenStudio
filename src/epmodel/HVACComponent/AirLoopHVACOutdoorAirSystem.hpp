@@ -24,6 +24,31 @@ namespace epmodel {
     class AirLoopHVACOutdoorAirSystem_Impl;
   }
 
+  /** \brief Represents an outdoor-air system attached to an air loop.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-air-distribution.html#airloophvacoutdoorairsystem,AirLoopHVAC:OutdoorAirSystem}, with its
+   * \epobject{group-controllers.html#controlleroutdoorair,Controller:OutdoorAir}, outdoor-air node list, and outdoor-air
+   * equipment list companions.
+   *
+   * \par Important behavior
+   * On a dual-duct air loop, <code>addToNode</code> accepts the common main supply
+   * branch; the outdoor-air relationship is not moved onto an individual deck.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::AirLoopHVACOutdoorAirSystem</code>.
+   * <b>Not yet available:</b> <code>airLoop()</code> and the
+   * <code>airflowNetworkDistributionNode()</code> and
+   * <code>getAirflowNetworkDistributionNode()</code> convenience methods.
+   * <b>Changed:</b> the dual-duct insertion rule is limited to the common branch
+   * described above.
+   *
+   * \par Known limitations
+   * Controller and outdoor-air equipment relationships are exposed through the
+   * supported node and component APIs; unsupported air-loop shapes are rejected
+   * rather than assigned ambiguous ownership.
+   */
   class EPMODEL_API AirLoopHVACOutdoorAirSystem : public HVACComponent
   {
    public:
@@ -37,15 +62,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. The outdoor-air-system topology surface is present, but the canonical wrapper still exposes additional convenience and distribution-node behavior.
-    // - Canonical Counterpart: openstudio::model::AirLoopHVACOutdoorAirSystem.
-    // - Implemented Parity: Return/outdoor/relief/mixed air ports, node accessors, component traversal, controller wiring, water-coil controller projection, DOAS reverse lookup, and `addToNode` preserve the main canonical OA-system topology behavior on single- and dual-duct main supply branches. Outdoor- and relief-stream mutation keeps the mixer and outdoor-air controller node fields aligned; dedicated outdoor-air mutation also keeps the connector splitter inlet and mixer outlet aligned. Public traversal projects a coherent two-speed DX coil while the equipment list retains its EnergyPlus `CoilSystem:Cooling:DX` adapter.
-    // - Documented Delta: EPModel accepts `addToNode` on a dual-duct loop only along the common main supply branch. Canonical Model also accepts the first deck outlet, but EPModel's OA relationship is owned by the common branch and rejects either deck rather than silently moving a deck-requested system. EPModel also omits the canonical airloop convenience helpers and AirflowNetwork distribution-node surface exposed on this class.
-    // - Field/Storage Mapping: Controller List Name and Outdoor Air Equipment List Name map to companion objects and are intentionally exposed via relationship APIs, not scalar string accessors. A dedicated system keeps its conceptual Controller:OutdoorAir in a transient controller list while the persisted EnergyPlus list contains only water-coil controllers in airflow order.
-    // - Evidence: `src/model/AirLoopHVACOutdoorAirSystem.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirLoopHVACOutdoorAirSystem.cpp`, `src/epmodel/test/AirLoopHVACOutdoorAirSystem_GTest.cpp`, `src/epmodel/test/AirLoopHVACDedicatedOutdoorAirSystem_GTest.cpp`, and `src/epmodel/test/HeatExchangerAirToAirSensibleAndLatent_GTest.cpp` show the selected topology, persistence, controller projection, and relief and two-stream lifecycles.
-    // - Remaining Parity Work: Add the remaining airloop convenience and distribution-node APIs; broader two-stream equipment and ordering remain workflow-bounded.
-    // Mirroring openstudio::model API shape.
     unsigned returnAirPort() const;
     boost::optional<ModelObject> returnAirModelObject() const;
 

@@ -23,6 +23,17 @@ namespace epmodel {
     class AirflowNetworkMultiZoneExternalNode_Impl;
   }
 
+  /** \brief Represents the EnergyPlus AirflowNetwork:MultiZone:ExternalNode object.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-airflow-network.html#airflownetworkmultizoneexternalnode,AirflowNetwork:MultiZone:ExternalNode}
+   *
+   * \par OpenStudio Model API
+   * OpenStudio Model has no public wrapper for this EnergyPlus object. This wrapper is new to the EPModel API.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations beyond the public fields and relationships exposed by this wrapper.
+   */
   class EPMODEL_API AirflowNetworkMultiZoneExternalNode : public ModelObject
   {
    public:
@@ -38,15 +49,6 @@ namespace epmodel {
 
     static std::vector<std::string> windAngleTypeValues();
 
-    // Schema Alignment Notes:
-    // - API: This no-counterpart epmodel type uses IDD-derived class/accessor naming.
-    // - Field Mapping: externalNodeHeight, symmetricWindPressureCoefficientCurve, and windAngleType
-    //   map directly to EnergyPlus AirflowNetwork:MultiZone:ExternalNode scalar fields.
-    // - Field Mapping: Wind Pressure Coefficient Curve Name is an object-list target-link field and
-    //   is intentionally excluded from scalar accessors.
-    // - ForwardTranslator evidence: translateAirflowNetworkExternalNode writes these same scalar
-    //   fields directly to the EnergyPlus object.
-    // - TODO(parity): Add typed relationship APIs for curve linkage after scalar scaffold saturation.
     double externalNodeHeight() const;
     bool isExternalNodeHeightDefaulted() const;
     bool setExternalNodeHeight(double externalNodeHeight);

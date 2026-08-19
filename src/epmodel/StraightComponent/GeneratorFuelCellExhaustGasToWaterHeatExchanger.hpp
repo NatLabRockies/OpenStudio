@@ -25,6 +25,20 @@ namespace epmodel {
     class GeneratorFuelCellExhaustGasToWaterHeatExchanger_Impl;
   }
 
+/** \brief A fuel-cell exhaust-gas-to-water heat exchanger.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-electric-load-center-generator.html#generator-fuelcell-exhaustgastowaterheatexchanger,Generator:FuelCell:ExhaustGasToWaterHeatExchanger}
+ *
+ * \par Important behavior
+ * The scalar fields and plant-side topology map directly to the EnergyPlus generator object.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model type is <code>openstudio::model::GeneratorFuelCellExhaustGasToWaterHeatExchanger</code>.
+ *
+ * \par Known limitations
+ * Fuel-cell generator ownership and broader generator-system relationships are not exposed here.
+ */
   class EPMODEL_API GeneratorFuelCellExhaustGasToWaterHeatExchanger : public StraightComponent
   {
    public:
@@ -41,14 +55,6 @@ namespace epmodel {
 
     static std::vector<std::string> heatExchangerCalculationMethodValues();
 
-    // Schema Alignment Notes:
-    // - Status: Near Parity. The canonical scalar surface, exhaust-air-node helper, and parent-generator lookup are present, while OS App clone/child conveniences remain out of scope.
-    // - Canonical Counterpart: openstudio::model::GeneratorFuelCellExhaustGasToWaterHeatExchanger.
-    // - Implemented Parity: The wrapper now preserves the canonical constructor overload, exhaust-air node relationship API, parent `GeneratorFuelCell` lookup, plant-loop-only `addToNode(...)` behavior on either supply or demand side, and the heat-recovery / method-parameter scalar accessors.
-    // - Documented Delta: epmodel does not currently preserve the canonical OS App-oriented clone/child behavior that clones through the owning `GeneratorFuelCell`.
-    // - Field/Storage Mapping: These accessors map directly to EnergyPlus `Generator:FuelCell:ExhaustGasToWaterHeatExchanger` scalar fields used by the forward translator.
-    // - Evidence: `src/model/GeneratorFuelCellExhaustGasToWaterHeatExchanger.hpp`, `src/model/GeneratorFuelCellExhaustGasToWaterHeatExchanger.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateGeneratorFuelCellExhaustGasToWaterHeatExchanger.cpp`.
-    // - Remaining Parity Work: Preserve the canonical parent-owned clone/child behavior if epmodel later needs the same library-dragging semantics.
     double heatRecoveryWaterMaximumFlowRate() const;
     bool setHeatRecoveryWaterMaximumFlowRate(double heatRecoveryWaterMaximumFlowRate);
     void resetHeatRecoveryWaterMaximumFlowRate();

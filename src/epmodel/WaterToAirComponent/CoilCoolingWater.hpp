@@ -24,6 +24,38 @@ namespace epmodel {
     class CoilCoolingWater_Impl;
   }
 
+  /** \brief Represents a chilled-water cooling coil with separate air and water connections.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-heating-and-cooling-coils.html#coilcoolingwater,Coil:Cooling:Water}
+   *
+   * \par Important behavior
+   * A missing availability-schedule target found while loading is repaired with
+   * the model's always-on discrete schedule. The water-coil controller is
+   * inferred from its persisted sensor and actuator node references. The
+   * airflow-network helper stores an
+   * <code>AirflowNetwork:Distribution:Component:Coil</code> object and repairs
+   * its coil-object-type field when needed.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::CoilCoolingWater</code>.
+   *
+   * - <b>Changed:</b> <code>getAirflowNetworkEquivalentDuct(...)</code> and
+   *   <code>airflowNetworkEquivalentDuct()</code> use
+   *   <code>AirflowNetworkDistributionComponentCoil</code>, the EnergyPlus
+   *   companion wrapper, instead of Model's
+   *   <code>AirflowNetworkEquivalentDuct</code>.
+   * - <b>Changed:</b> The autosized design-value queries are present, but
+   *   return no value because EPModel does not read SQL sizing results.
+   * - <b>Added:</b> EPModel provides <code>typeOfAnalysisValues()</code> and
+   *   <code>heatExchangerConfigurationValues()</code> for the EnergyPlus
+   *   choice fields; the Model header does not provide these helpers.
+   *
+   * \par Known limitations
+   * If more than one airflow-network coil component is attached, the getter
+   * warns and returns the first component in the resolved source order.
+   */
   class EPMODEL_API CoilCoolingWater : public WaterToAirComponent
   {
    public:
@@ -41,38 +73,6 @@ namespace epmodel {
     static std::vector<std::string> typeOfAnalysisValues();
     static std::vector<std::string> heatExchangerConfigurationValues();
 
-    // Schema Alignment Notes:
-    // - Status: Parity with documented deltas. The scalar design fields, availability schedule surface, controller
-    //   linkage, and equivalent-duct helper surface now align.
-    // - Canonical Counterpart: openstudio::model::CoilCoolingWater.
-    // - Implemented Parity: `setAvailabilitySchedule`, `setAvailableSchedule`, `controllerWaterCoil`,
-    //   `designWaterFlowRate`, `designAirFlowRate`, `designInletWaterTemperature`,
-    //   `designInletAirTemperature`, `designOutletAirTemperature`, `designInletAirHumidityRatio`,
-    //   `designOutletAirHumidityRatio`, `typeOfAnalysis`, `heatExchangerConfiguration`,
-    //   `getAirflowNetworkEquivalentDuct`, `airflowNetworkEquivalentDuct`, `children`, and their autosize/setter helpers
-    //   preserve the canonical coil-facing API.
-    // - Documented Delta: For malformed imported data with no persisted availability schedule, the getter repairs
-    //   storage to the model always-on discrete schedule before returning it. When the coil is attached to multiple
-    //   `AirflowNetwork:Distribution:Component:Coil` objects, `airflowNetworkEquivalentDuct()` warns and returns the
-    //   first component in the current resolved-source order. Autosized sizing-result accessors,
-    //   including `autosizedDesignCoilLoad()`, still return `none` because epmodel does not resolve SQL-backed sizing
-    //   outputs yet.
-    // - Field/Storage Mapping: The availability schedule and scalar design fields map directly to EnergyPlus
-    //   `Coil:Cooling:Water`. Controller linkage is inferred from the persisted `Controller:WaterCoil` sensor and actuator
-    //   nodes because the EnergyPlus controller object does not store a direct back-reference to the coil. `addToNode()`
-    //   also mirrors the canonical wrapper's parent-system protections by rejecting direct AirLoop insertion when the
-    //   coil is the primary child of `CoilSystemCoolingWater` or any `CoilSystemCoolingWaterHeatExchangerAssisted`,
-    //   and by suppressing/removing inferred controllers when the coil is used inside `CoilSystemCoolingWater` or a
-    //   compound air terminal. The
-    //   equivalent-duct helper surface persists the linked `AirflowNetwork:Distribution:Component:Coil` relationship and
-    //   its scalar geometry fields; when reusing malformed imported data, the helper also repairs the stored
-    //   `Coil Object Type` field back to `Coil:Cooling:Water`. If malformed imported data omits the required
-    //   availability schedule, the getter repairs the persisted schedule reference to the model always-on discrete
-    //   schedule.
-    // - Evidence: `src/model/CoilCoolingWater.hpp`, `src/model/CoilCoolingWater.cpp`,
-    //   `src/energyplus/ForwardTranslator/ForwardTranslateCoilCoolingWater.cpp`,
-    //   `src/energyplus/ForwardTranslator/ForwardTranslateAirflowNetwork.cpp`, and
-    //   `src/model/test/CoilCoolingWater_GTest.cpp`, and `src/epmodel/test/CoilCoolingWater_GTest.cpp`.
     Schedule availabilitySchedule() const;
 
     /** \deprecated */

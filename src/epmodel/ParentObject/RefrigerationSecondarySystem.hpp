@@ -25,6 +25,21 @@ namespace epmodel {
     class RefrigerationSecondarySystem_Impl;
   }
 
+/** \brief Defines a secondary refrigeration fluid system.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-refrigeration.html#refrigerationsecondarysystem,Refrigeration:SecondarySystem}
+ *
+ * \par Important behavior
+ * Circulating-fluid, evaporator, pump, phase-change, pipe-distribution, and control fields are stored directly on the secondary-system object.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model class is <code>openstudio::model::RefrigerationSecondarySystem</code>.
+ * <b>Not yet available:</b> Case, walk-in, and air-chiller collections, refrigeration-system attachment, glycol concentration, and pump-curve relationships are not exposed.
+ *
+ * \par Known limitations
+ * Cases and the primary refrigeration system reference this object; they are not owned by it.
+ */
   class EPMODEL_API RefrigerationSecondarySystem : public ParentObject
   {
    public:
@@ -41,19 +56,6 @@ namespace epmodel {
     static std::vector<std::string> circulatingFluidNameValues();
     static std::vector<std::string> pumpDriveTypeValues();
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. The selected scalar controls and both optional heat-gain ThermalZone relationships are aligned.
-    // - Canonical Counterpart: openstudio::model::RefrigerationSecondarySystem.
-    // - Implemented Parity: The selected scalar methods plus distribution-piping and receiver/separator zone relationships preserve
-    //   canonical public signatures. Zone setters validate configured object lists without coupling their related UA scalars.
-    // - Field/Storage Mapping: Scalars and both zones map directly to EnergyPlus Refrigeration:SecondarySystem fields; the zone fields
-    //   use the configured ZoneNames object list.
-    // - Canonicalization: Blank zone fields are valid and require no repair. Unresolved imported references remain untouched until an
-    //   explicit typed setter or reset; ordinary APIs assume canonical state.
-    // - Evidence: `src/model/RefrigerationSecondarySystem.hpp`, `src/model/RefrigerationSecondarySystem.cpp`,
-    //   `resources/energyplus/ProposedEnergy+.idd`, and `src/epmodel/test/RefrigerationSecondarySystem_GTest.cpp`.
-    // - Remaining Parity Work: Refrigerated load lists, the variable-speed pump curve, full family removal, and object-level clone
-    //   behavior remain a separate refrigeration architecture phase.
 
     /** @name Field accessors */
     //@{

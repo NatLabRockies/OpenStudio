@@ -22,6 +22,24 @@ namespace epmodel {
     class ChillerAbsorption_Impl;
   }
 
+  /** \brief Represents a steam- or hot-water-fired absorption chiller.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-plant-equipment.html#chillerabsorption,Chiller:Absorption}
+   *
+   * \par Important behavior
+   * Attaching a generator plant loop selects <code>HotWater</code> as the
+   * generator heat source; removing that loop restores <code>Steam</code>.
+   * Selecting <code>Steam</code> while a generator loop is attached is rejected.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::ChillerAbsorption</code>. No known public API
+   * differences.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API ChillerAbsorption : public WaterToWaterComponent
   {
    public:
@@ -38,16 +56,6 @@ namespace epmodel {
     static std::vector<std::string> chillerFlowModeValues();
     static std::vector<std::string> generatorHeatSourceTypeValues();
 
-    // Schema Alignment Notes:
-    // - Status: Near Parity. The canonical scalar surface, loop conveniences, generator-loop routing behavior, and autosized-value query helpers are aligned.
-    // - Canonical Counterpart: openstudio::model::ChillerAbsorption.
-    // - Implemented Parity: Canonical constructor defaults, scalar accessors, autosized-value query helpers, chilled/condenser/generator loop
-    //   conveniences, and generator-loop routing semantics preserve the model-side API shape, including the Steam/HotWater generator-heat-source
-    //   transitions when attaching or removing the tertiary generator loop.
-    // - Field/Storage Mapping: Scalar wrappers target EnergyPlus `Chiller:Absorption` fields directly, while loop conveniences read the underlying
-    //   water-to-water topology links rather than duplicating them as separate persisted data.
-    // - Evidence: `src/model/ChillerAbsorption.hpp`, `src/model/ChillerAbsorption.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateChillerAbsorption.cpp` establish the canonical scalar contract and field mapping.
-    // - Remaining Parity Work: None within the current canonical public surface.
 
     boost::optional<double> nominalCapacity() const;
     bool isNominalCapacityAutosized() const;

@@ -24,6 +24,19 @@ namespace epmodel {
     class CoolingTowerVariableSpeed_Impl;
   }
 
+  /** \brief Represents a variable-speed cooling tower.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-condenser-equipment.html#coolingtowervariablespeed,CoolingTower:VariableSpeed}.
+   *
+   * \par Important behavior
+   * The persisted scalar, schedule, and currently supported performance relationships use the EnergyPlus coil topology.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::CoolingTowerVariableSpeed</code>. No known public API differences after comparing the headers; parameter names differ only trivially in a few setters.
+   * \par Known limitations
+   * No known EPModel-specific limitations beyond the listed API differences.
+   */
   class EPMODEL_API CoolingTowerVariableSpeed : public StraightComponent
   {
    public:
@@ -42,19 +55,6 @@ namespace epmodel {
     static std::vector<std::string> blowdownCalculationModeValues();
     static std::vector<std::string> cellControlValues();
 
-    // Schema Alignment Notes:
-    // - Status: Parity with documented deltas. The canonical variable-speed cooling-tower wrapper surface is present, including the
-    //   model-coefficient, fan-power curve, basin-heater, blowdown, and plant-supply insertion helpers.
-    // - Canonical Counterpart: openstudio::model::CoolingTowerVariableSpeed.
-    // - Implemented Parity: The preserved API matches the canonical constructor defaults, autosize/default behavior, object relationships,
-    //   and plant supply `addToNode(...)` path for the current public wrapper surface.
-    // - Documented Delta: epmodel still inherits the shared HVACComponent/StraightComponent base-surface gaps around broader canonical
-    //   convenience re-exposure; this wrapper does not add type-local divergence.
-    // - Field/Storage Mapping: These accessors map directly to EnergyPlus `CoolingTower:VariableSpeed` scalar and object-list fields used by
-    //   the forward translator.
-    // - Evidence: `src/model/CoolingTowerVariableSpeed.hpp`, `src/model/CoolingTowerVariableSpeed.cpp`, and
-    //   `src/energyplus/ForwardTranslator/ForwardTranslateCoolingTowerVariableSpeed.cpp`.
-    // - Remaining Parity Work: None within the current canonical public surface.
     boost::optional<std::string> modelType() const;
     bool setModelType(const std::string& modelType);
     void resetModelType();

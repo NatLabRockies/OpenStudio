@@ -23,6 +23,18 @@ namespace epmodel {
     class ExternalInterface_Impl;
   }
 
+  /** \brief Represents <code>ExternalInterface</code>.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-externalinterface.html#externalinterface,ExternalInterface}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::ExternalInterface</code>.
+   * **Not yet available:** Model typed FMU/component relationships and OpenStudio-only export controls are not exposed unless represented by an EnergyPlus field here.
+   *
+   * \par Known limitations
+   * Typed relationship and extensible-list conveniences not represented by the public declarations are unavailable.
+   */
   class EPMODEL_API ExternalInterface : public ModelObject
   {
    public:
@@ -37,11 +49,6 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     static std::vector<std::string> nameofExternalInterfaceValues();
-
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model scalar accessor names/signatures for this model-counterpart class.
-    // - Field Mapping: nameofExternalInterface maps directly to EnergyPlus ExternalInterface: Name of External Interface.
-    // - TODO(parity): Keep this mapping unless upstream model API changes for ExternalInterface parity milestones.
     /** @name Name of External Interface */
     //@{
     std::string nameofExternalInterface() const;

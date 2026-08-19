@@ -21,6 +21,27 @@ namespace epmodel {
     class SetpointManagerMixedAir_Impl;
   }
 
+  /** \brief Sets a mixed-air setpoint using a reference setpoint and fan nodes.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-setpoint-managers.html#setpointmanagermixedair,SetpointManager:MixedAir}
+   *
+   * \par Important behavior
+   * When <code>addToNode</code> succeeds, EPModel derives the reference setpoint node
+   * from the air-loop supply outlet and synchronizes the fan inlet and outlet nodes
+   * from the air loop.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::SetpointManagerMixedAir</code>.
+   *
+   * - <b>Not yet available:</b> <code>setReferenceSetpointNode(...)</code>,
+   *   <code>setFanInletNode(...)</code>, <code>setFanOutletNode(...)</code>,
+   *   and <code>updateFanInletOutletNodes(...)</code>.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API SetpointManagerMixedAir : public SetpointManager
   {
    public:

@@ -21,6 +21,17 @@ namespace epmodel {
     class ZoneMixing_Impl;
   }
 
+  /** \brief ZoneMixing.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-airflow.html#zonemixing,ZoneMixing}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::ZoneMixing</code>. <b>Changed:</b> EPModel exposes direct construction from <code>Model</code>; Model construction requires a thermal zone or space. The scalar flow-rate choices and delta temperature are exposed. Model's zone, space, and schedule relationships are not available.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API ZoneMixing : public ModelObject
   {
    public:
@@ -33,12 +44,6 @@ namespace epmodel {
     ZoneMixing& operator=(ZoneMixing&&) = default;
 
     static IddObjectType iddObjectType();
-
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model scalar accessor names/signatures for ZoneMixing flow-rate choices and delta temperature.
-    // - Field Mapping: designFlowRate, flowRateperFloorArea, flowRateperPerson, airChangesperHour, and deltaTemperature map directly to the EnergyPlus ZoneMixing numeric fields while designFlowRateCalculationMethod reflects the required choice string (see ForwardTranslateZoneMixing.cpp for the upstream mapping).
-    // - Field Mapping: Relationship targets (Zone/Space pointers and schedule references) are intentionally excluded from this scalar-only pass.
-    // - TODO(parity): Reintroduce zone/space/schedule relationship APIs once the relationship-focused iteration begins.
     std::string designFlowRateCalculationMethod() const;
 
     boost::optional<double> designFlowRate() const;

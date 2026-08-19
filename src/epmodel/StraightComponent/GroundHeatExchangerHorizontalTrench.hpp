@@ -24,6 +24,20 @@ namespace epmodel {
     class GroundHeatExchangerHorizontalTrench_Impl;
   }
 
+/** \brief A horizontal-trench ground heat exchanger.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-condenser-equipment.html#groundheatexchangerhorizontaltrench,GroundHeatExchanger:HorizontalTrench}
+ *
+ * \par Important behavior
+ * Undisturbed-ground model links and scalar trench fields map directly to EnergyPlus; plant placement is supply-side only.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model type is <code>openstudio::model::GroundHeatExchangerHorizontalTrench</code>.
+ *
+ * \par Known limitations
+ * No additional type-specific limitation is known beyond shared straight-component topology.
+ */
   class EPMODEL_API GroundHeatExchangerHorizontalTrench : public StraightComponent
   {
    public:
@@ -38,19 +52,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - Status: Parity with documented deltas.
-    // - Canonical Counterpart: openstudio::model::GroundHeatExchangerHorizontalTrench.
-    // - Implemented Parity: The canonical constructor defaults, undisturbed-ground-model relationship, deprecated compatibility shims, scalar accessors,
-    //   and plant-side non-demand `addToNode(...)` behavior are preserved.
-    // - Documented Delta: epmodel still inherits any broader shared StraightComponent/HVACComponent public-surface gaps; this wrapper adds no new
-    //   type-local divergence.
-    // - Field/Storage Mapping: Scalar accessors map directly to EnergyPlus `GroundHeatExchanger:HorizontalTrench` numeric fields, and the
-    //   undisturbed-ground-model helper keeps the paired type/name fields aligned with the linked EnergyPlus object used directly by simulation.
-    // - Evidence: `src/model/GroundHeatExchangerHorizontalTrench.hpp`, `src/model/GroundHeatExchangerHorizontalTrench.cpp`,
-    //   `src/energyplus/ForwardTranslator/ForwardTranslateGroundHeatExchangerHorizontalTrench.cpp`, and
-    //   `src/epmodel/test/GroundHeatExchangerHorizontalTrench_GTest.cpp`.
-    // - Remaining Parity Work: None within the current canonical public surface.
     OS_DEPRECATED(3, 6, 0) static std::vector<std::string> groundTemperatureModelValues();
 
     double designFlowRate() const;

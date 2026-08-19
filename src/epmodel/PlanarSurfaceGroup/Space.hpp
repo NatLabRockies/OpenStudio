@@ -31,23 +31,20 @@ namespace epmodel {
     class Space_Impl;
   }
 
+  /** \brief Represents the EnergyPlus Space object.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-thermal-zone-description-geometry.html#space,Space}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::Space</code>. <b>Changed:</b> design-specification outdoor air is routed through <code>Sizing:Zone</code> and <code>DesignSpecification:OutdoorAir:SpaceList</code>, rather than an OS:Space field. EPModel stores ceiling height, volume, and floor area directly on <code>Space</code>.
+   *
+   * \par Known limitations
+   * Surface assignment synchronizes redundant BuildingSurface Zone Name fields. Unzoned-space outdoor-air assignment uses an orphan space-list object.
+   */
   class EPMODEL_API Space : public PlanarSurfaceGroup
   {
    public:
-    // Schema Alignment Notes:
-    // - API: designSpecificationOutdoorAir()/setDesignSpecificationOutdoorAir()
-    //   currently route through ThermalZone -> Sizing:Zone ->
-    //   DesignSpecification:OutdoorAir:SpaceList in epmodel.
-    // - Field Mapping: openstudio::model stores Space DSOA directly on
-    //   OS:Space, while epmodel stores zone-scoped DSOA assignment in
-    //   Sizing:Zone (DesignSpecification Outdoor Air Object Name).
-    // - Current behavior: setDesignSpecificationOutdoorAir(...) is supported for
-    //   both zoned and unzoned spaces.
-    //   Zoned spaces write through ThermalZone -> Sizing:Zone -> DSOA:SpaceList.
-    //   Unzoned spaces write to an orphan DSOA:SpaceList owned by the Model.
-    // - Canonical storage: setThermalZone and load canonicalization synchronize
-    //   the redundant BuildingSurface:Detailed Zone Name for every surface in
-    //   this space; ordinary surface APIs may therefore assume that pair agrees.
     explicit Space(const Model& model);
 
     static boost::optional<Space> fromFloorPrint(const std::vector<Point3d>& floorPrint, double floorHeight, const Model& model,
@@ -61,13 +58,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model Space scalar accessor names/signatures for
-    //   ceilingHeight, volume, and floorArea.
-    // - Field Mapping: These APIs map directly to EnergyPlus Space fields
-    //   Ceiling Height, Volume, and Floor Area.
-    // - ForwardTranslator evidence: ForwardTranslateSpace.cpp only forwards these
-    //   fields when hard-set (non-default), matching default/autocalculate behavior.
     double ceilingHeight() const;
     bool setCeilingHeight(double ceilingHeight);
     bool isCeilingHeightDefaulted() const;

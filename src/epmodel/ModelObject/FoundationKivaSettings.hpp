@@ -21,6 +21,18 @@ namespace epmodel {
     class FoundationKivaSettings_Impl;
   }
 
+  /** \brief Represents <code>Foundation:Kiva:Settings</code>.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-advanced-surface-concepts.html#foundation-kiva-settings,Foundation:Kiva:Settings}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::FoundationKivaSettings</code>.
+   * The EPModel declaration exposes the EnergyPlus-backed fields shown here; Model conveniences for typed relationships, extensible groups, or OpenStudio-only fields are not available unless declared here.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API FoundationKivaSettings : public ModelObject
   {
    public:
@@ -36,12 +48,6 @@ namespace epmodel {
 
     static std::vector<std::string> deepGroundBoundaryConditionValues();
     static std::vector<std::string> simulationTimestepValues();
-
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model FoundationKivaSettings scalar accessor names/signatures.
-    // - Field Mapping: API methods map directly to Foundation:Kiva:Settings scalar fields.
-    // - Field Mapping: DeepGroundDepth preserves autocalculate behavior via string token in the same field.
-    // - TODO(parity): Extend beyond scalar scope only after scalar saturation.
     double soilConductivity() const;
     bool isSoilConductivityDefaulted() const;
     bool setSoilConductivity(double soilConductivity);

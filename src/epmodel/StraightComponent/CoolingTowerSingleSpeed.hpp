@@ -22,6 +22,21 @@ namespace epmodel {
     class CoolingTowerSingleSpeed_Impl;
   }
 
+  /** \brief Represents a single-speed cooling tower.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-condenser-equipment.html#coolingtowersinglespeed,CoolingTower:SingleSpeed}.
+   *
+   * \par Important behavior
+   * Tower performance, flow, control, schedule, and plant-supply fields map directly to the EnergyPlus tower object.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::CoolingTowerSingleSpeed</code>.
+   * Not yet available: the supply-water-storage-tank object relationship.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations beyond the listed API differences.
+   */
   class EPMODEL_API CoolingTowerSingleSpeed : public StraightComponent
   {
    public:
@@ -41,14 +56,6 @@ namespace epmodel {
     static std::vector<std::string> capacityControlValues();
     static std::vector<std::string> cellControlValues();
 
-    // Schema Alignment Notes:
-    // - Status: Loop and Schedule Parity. The canonical single-speed cooling-tower scalar surface plus plant supply insertion and schedule relationships are present, while tank/object-link helpers remain out of scope.
-    // - Canonical Counterpart: openstudio::model::CoolingTowerSingleSpeed.
-    // - Implemented Parity: The preserved scalar API matches the tower performance, flow, free-convection, and control accessors with matching autosize/default behavior, and the basin/blowdown schedule relationships plus plant supply `addToNode(...)` path now match the current canonical slice.
-    // - Documented Delta: Storage-tank and other object-link helpers remain intentionally excluded from this pass.
-    // - Field/Storage Mapping: These accessors map directly to EnergyPlus `CoolingTower:SingleSpeed` scalar fields used by the forward translator.
-    // - Evidence: `src/model/CoolingTowerSingleSpeed.hpp`, `src/model/CoolingTowerSingleSpeed.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateCoolingTowerSingleSpeed.cpp`.
-    // - Remaining Parity Work: Add the omitted storage-tank/object-link helpers without changing the preserved scalar signatures.
     boost::optional<double> designWaterFlowRate() const;
     bool isDesignWaterFlowRateAutosized() const;
     bool setDesignWaterFlowRate(double designWaterFlowRate);

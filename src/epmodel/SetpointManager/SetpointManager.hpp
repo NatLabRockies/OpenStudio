@@ -19,6 +19,20 @@ namespace epmodel {
     class SetpointManager_Impl;
   }
 
+  /** \brief Base interface for EnergyPlus setpoint managers.
+   *
+   * \par EnergyPlus object
+   * No single EnergyPlus object. This is the common interface for concrete
+   * <code>SetpointManager:*</code> objects.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::SetpointManager</code>.
+   * No known public API differences.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API SetpointManager : public HVACComponent
   {
    public:
@@ -28,14 +42,6 @@ namespace epmodel {
     SetpointManager& operator=(const SetpointManager&) = default;
     SetpointManager& operator=(SetpointManager&&) = default;
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity.
-    // - Canonical Counterpart: openstudio::model::SetpointManager.
-    // - Implemented Parity: Setpoint-node attachment, control-variable access, placement eligibility, and inherited loop,
-    //   air-loop, plant-loop, and outdoor-air-system ownership queries follow the attached Node.
-    // - Field/Storage Mapping: Concrete EnergyPlus setpoint-manager objects persist their setpoint Node field directly;
-    //   reverse Node discovery and loop ownership are live relationship views over that target.
-    // - Remaining Parity Work: Characterize clone/disconnect behavior and subtype-specific placement and control relationships.
     boost::optional<Node> setpointNode() const;
     std::string controlVariable() const;
     bool setControlVariable(const std::string& value);

@@ -22,6 +22,23 @@ namespace epmodel {
     class ElectricLoadCenterInverterPVWatts_Impl;
   }
 
+  /** \brief Represents a PVWatts inverter.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-electric-load-center-generator.html#electricloadcenterinverterpvwatts,ElectricLoadCenter:Inverter:PVWatts}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::ElectricLoadCenterInverterPVWatts</code>.
+   *
+   * - <b>Not yet available:</b> The Model Inverter relationship methods
+   *   <code>electricLoadCenterDistribution()</code>, <code>thermalZone()</code>,
+   *   <code>setThermalZone(...)</code>, and <code>resetThermalZone()</code>.
+   *
+   * \par Known limitations
+   * Connect the inverter to an electric-load-center distribution or zone with
+   * lower-level object references when needed.
+   */
   class EPMODEL_API ElectricLoadCenterInverterPVWatts : public ModelObject
   {
    public:
@@ -35,12 +52,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - API: Preserves existing openstudio::model accessor names/signatures for counterpart parity.
-    // - Field Mapping: dcToACSizeRatio <-> ElectricLoadCenter:Inverter:PVWatts "DC to AC Size Ratio".
-    // - Field Mapping: inverterEfficiency <-> ElectricLoadCenter:Inverter:PVWatts "Inverter Efficiency".
-    // - ForwardTranslator evidence: ForwardTranslateElectricLoadCenterInverterPVWatts maps these exact model APIs to matching E+ fields.
-    // - TODO(parity): add non-scalar APIs incrementally without changing preserved scalar signatures.
     /** @name DC to AC Size Ratio */
     //@{
     double dcToACSizeRatio() const;

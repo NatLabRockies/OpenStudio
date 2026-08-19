@@ -22,6 +22,18 @@ namespace epmodel {
     class ExternalInterfaceFunctionalMockupUnitImportFromVariable_Impl;
   }
 
+  /** \brief Represents <code>ExternalInterface:FunctionalMockupUnitImport:From:Variable</code>.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-externalinterface.html#externalinterfacefunctionalmockupunitimportfromvariable,ExternalInterface:FunctionalMockupUnitImport:From:Variable}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::ExternalInterfaceFunctionalMockupUnitImportFromVariable</code>.
+   * **Not yet available:** Model typed FMU/component relationships and OpenStudio-only export controls are not exposed unless represented by an EnergyPlus field here.
+   *
+   * \par Known limitations
+   * Typed relationship and extensible-list conveniences not represented by the public declarations are unavailable.
+   */
   class EPMODEL_API ExternalInterfaceFunctionalMockupUnitImportFromVariable : public ModelObject
   {
    public:
@@ -36,18 +48,6 @@ namespace epmodel {
     ExternalInterfaceFunctionalMockupUnitImportFromVariable& operator=(ExternalInterfaceFunctionalMockupUnitImportFromVariable&&) = default;
 
     static IddObjectType iddObjectType();
-
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::ExternalInterfaceFunctionalMockupUnitImportFromVariable scalar accessor names/signatures.
-    // - Field Mapping: outputVariableIndexKeyName -> ExternalInterface:FunctionalMockupUnitImport:From:Variable,
-    //   Output:Variable Index Key Name.
-    // - Field Mapping: outputVariableName -> ExternalInterface:FunctionalMockupUnitImport:From:Variable, Output:Variable Name.
-    // - Field Mapping: fMUInstanceName -> ExternalInterface:FunctionalMockupUnitImport:From:Variable, FMU Instance Name.
-    // - Field Mapping: fMUVariableName -> ExternalInterface:FunctionalMockupUnitImport:From:Variable, FMU Variable Name.
-    // - Field Mapping: fMUFile / setFMUFile are relationship APIs in openstudio::model and excluded from scalar scaffold.
-    // - ForwardTranslator evidence: ForwardTranslateExternalInterfaceFunctionalMockupUnitImportFromVariable.cpp writes
-    //   FMU File Name from modelObject.fMUFile().fMUFileName().
-    // - TODO(parity): Add relationship APIs incrementally without changing preserved scalar signatures.
     std::string outputVariableIndexKeyName() const;
     bool setOutputVariableIndexKeyName(const std::string& outputVariableIndexKeyName);
 

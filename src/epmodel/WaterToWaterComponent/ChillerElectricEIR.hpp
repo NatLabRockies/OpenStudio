@@ -25,6 +25,26 @@ namespace epmodel {
     class ChillerElectricEIR_Impl;
   }
 
+  /** \brief Represents an electric chiller using an energy-input-ratio performance model.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-plant-equipment.html#chillerelectriceir,Chiller:Electric:EIR}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::ChillerElectricEIR</code>.
+   *
+   * - <b>Renamed:</b> The enum-list helpers are named
+   *   <code>condenserTypeValues()</code>, <code>chillerFlowModeValues()</code>,
+   *   and <code>condenserFlowControlValues()</code>; Model calls these
+   *   <code>validCondenserTypeValues()</code>,
+   *   <code>validChillerFlowModeValues()</code>, and
+   *   <code>validCondenserFlowControlValues()</code>.
+   *
+   * \par Known limitations
+   * The autosized-value query methods return no value because EPModel does not
+   * yet surface the corresponding autosized results for this family.
+   */
   class EPMODEL_API ChillerElectricEIR : public WaterToWaterComponent
   {
    public:
@@ -43,18 +63,6 @@ namespace epmodel {
     static std::vector<std::string> chillerFlowModeValues();
     static std::vector<std::string> condenserFlowControlValues();
 
-    // Schema Alignment Notes:
-    // - Status: Parity with documented deltas. The canonical scalar, curve, schedule, and loop convenience surface is aligned.
-    // - Canonical Counterpart: openstudio::model::ChillerElectricEIR.
-    // - Implemented Parity: Canonical constructor defaults, required and optional relationship fields, chilled/condenser/heat-recovery loop conveniences,
-    //   loop-aware condenser-type restrictions, and shared tertiary-routing behavior preserve the model-side API shape.
-    // - Documented Delta: Autosized-value helpers remain epmodel stubs that return `none` until autosized results are surfaced here, and the static
-    //   enum-helper names are `*Values()` instead of the canonical `valid*Values()` names.
-    // - Field/Storage Mapping: Scalar wrappers target EnergyPlus `Chiller:Electric:EIR` fields directly, while curve, schedule, and node relationships are
-    //   persisted as ordinary object links on the same object and interpreted through the shared water-to-water topology layer.
-    // - Evidence: `src/model/ChillerElectricEIR.hpp`, `src/model/ChillerElectricEIR.cpp`,
-    //   `src/energyplus/ForwardTranslator/ForwardTranslateChillerElectricEIR.cpp`, and `src/epmodel/test/ChillerElectricEIR_GTest.cpp`.
-    // - Remaining Parity Work: Surface real autosized values for the condenser-flow and heat-recovery sizing helpers instead of the current `none` stubs.
     boost::optional<double> referenceCapacity() const;
     bool isReferenceCapacityAutosized() const;
     bool setReferenceCapacity(boost::optional<double> referenceCapacity);

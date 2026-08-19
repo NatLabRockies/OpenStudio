@@ -27,6 +27,23 @@ namespace epmodel {
     class AirLoopHVACUnitarySystem_Impl;
   }
 
+/** \brief A unitary heating and cooling system used as zone equipment or on an air loop.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-unitary-equipment.html#airloophvacunitarysystem,AirLoopHVAC:UnitarySystem}
+ *
+ * \par Important behavior
+ * Its fan and coil children share a parent-owned serial air path when moved between zone equipment and an air loop. EPModel adds fanOutletNode(), coolingCoilOutletNode(), and heatingCoilOutletNode().
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model class is <code>openstudio::model::AirLoopHVACUnitarySystem</code>.
+ * EPModel adds explicit fan and coil outlet node accessors and additional
+ * supply-air method setters. Model additionally provides design-specification,
+ * outdoor-temperature-sensor, and autosized supply-flow helpers.
+ *
+ * \par Known limitations
+ * Broader node-level conveniences, SQL-backed autosized values, and validation for every child family are not yet exposed.
+ */
   class EPMODEL_API AirLoopHVACUnitarySystem : public ZoneHVACComponent
   {
    public:
@@ -48,21 +65,6 @@ namespace epmodel {
     static std::vector<std::string> supplyAirFlowRateMethodDuringHeatingOperationValues();
     static std::vector<std::string> supplyAirFlowRateMethodWhenNoCoolingorHeatingisRequiredValues();
 
-    // Schema Alignment Notes:
-    // - Status: Near Parity for selected air-loop workloads. Scalar fields and direct object links are aligned, and the owned internal air
-    //   path is maintained through parent-owned epmodel nodes.
-    // - Canonical Counterpart: openstudio::model::AirLoopHVACUnitarySystem.
-    // - Implemented Parity: Controlling-zone, schedule, fan, heating/cooling/supplemental-heating coil, and the control/airflow scalar
-    //   fields preserve the main canonical wrapper contract. Child assignment and canonicalization keep the EnergyPlus object-type
-    //   discriminators aligned with those relationships. The owned fan/cooling/heating/supplemental chain shares a stable parent-maintained
-    //   air path, including the selected assisted DX/heat-exchanger cooling assembly, with direct access to the meaningful outlet node roles
-    //   on the compound. Moves between supply-branch and direct zone-equipment ownership preserve one owner and the contained child path.
-    // - Documented Delta: `fanOutletNode()`, `coolingCoilOutletNode()`, and `heatingCoilOutletNode()` are additive epmodel conveniences for
-    //   the owned serial air path. Broader node-level topology convenience and deeper child-family validation remain intentionally omitted.
-    // - Field/Storage Mapping: Scalar values live directly on the EnergyPlus object while schedules, fan, coil, and internal-node
-    //   relationships are explicit parent-owned object links in epmodel.
-    // - Evidence: `src/model/AirLoopHVACUnitarySystem.hpp`, `src/model/AirLoopHVACUnitarySystem.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirLoopHVACUnitarySystem.cpp`, and `src/epmodel/test/AirLoopHVACUnitarySystem_GTest.cpp`.
-    // - Remaining Parity Work: Add any remaining node-level conveniences only if the canonical wrapper still exposes them directly.
     std::string controlType() const;
     bool isControlTypeDefaulted() const;
     bool setControlType(const std::string& controlType);

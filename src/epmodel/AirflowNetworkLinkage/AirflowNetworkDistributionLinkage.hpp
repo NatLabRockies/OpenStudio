@@ -22,6 +22,17 @@ namespace epmodel {
     class AirflowNetworkDistributionLinkage_Impl;
   }
 
+  /** \brief Represents the EnergyPlus AirflowNetwork:Distribution:Linkage object.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-airflow-network.html#airflownetworkdistributionlinkage,AirflowNetwork:Distribution:Linkage}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::AirflowNetworkDistributionLinkage</code>. <b>Not yet available:</b> typed <code>node1()</code>, <code>node2()</code>, <code>component()</code>, and <code>thermalZone()</code> accessors and their setter/resetter methods.
+   *
+   * \par Known limitations
+   * Node, component, and thermal-zone links are stored as EnergyPlus object-list fields; use the owning AirflowNetwork topology to maintain them.
+   */
   class EPMODEL_API AirflowNetworkDistributionLinkage : public ModelObject
   {
    public:
@@ -35,12 +46,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - API: This type currently keeps IDD-derived class/API naming in epmodel.
-    // - Field Mapping: Name remains available via base ModelObject scalar API.
-    // - Field Mapping: Node 1 Name, Node 2 Name, Component Name, and Thermal Zone Name are
-    //   relationship-like object-list links and excluded from scalar accessors.
-    // - TODO(parity): Add typed relationship APIs if/when non-scalar parity work is prioritized.
 
    protected:
     using ImplType = detail::AirflowNetworkDistributionLinkage_Impl;

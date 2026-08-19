@@ -22,6 +22,17 @@ namespace epmodel {
     class OutputControlReportingTolerances_Impl;
   }
 
+  /** \brief OutputControlReportingTolerances.
+   *
+   * \par EnergyPlus object
+   * \epobject{input-for-output.html#outputcontrolreportingtolerances,OutputControl:ReportingTolerances}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::OutputControlReportingTolerances</code>. The two tolerance fields map directly to EnergyPlus.
+   *
+   * \par Known limitations
+   * Only the fields and relationships listed in this wrapper are available; broader Model-only helpers are not exposed.
+   */
   class EPMODEL_API OutputControlReportingTolerances : public ModelObject
   {
    public:
@@ -34,14 +45,6 @@ namespace epmodel {
     OutputControlReportingTolerances& operator=(OutputControlReportingTolerances&&) = default;
 
     static IddObjectType iddObjectType();
-
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model::OutputControlReportingTolerances accessor names/signatures.
-    // - Field Mapping: toleranceforTimeHeatingSetpointNotMet and toleranceforTimeCoolingSetpointNotMet map directly to
-    //   E+ OutputControl:ReportingTolerances scalar fields.
-    // - ForwardTranslator evidence: model ForwardTranslateOutputControlReportingTolerances.cpp uses these same scalar APIs
-    //   and maps directly to the same EnergyPlus field names.
-    // - TODO(parity): Keep scalar API stable while adding broader parity behavior in future passes.
     double toleranceforTimeHeatingSetpointNotMet() const;
     bool isToleranceforTimeHeatingSetpointNotMetDefaulted() const;
     bool setToleranceforTimeHeatingSetpointNotMet(double toleranceforTimeHeatingSetpointNotMet);

@@ -23,6 +23,21 @@ namespace epmodel {
     class RefrigerationCondenserAirCooled_Impl;
   }
 
+/** \brief Defines an air-cooled refrigeration condenser.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-refrigeration.html#refrigerationcondenseraircooled,Refrigeration:Condenser:AirCooled}
+ *
+ * \par Important behavior
+ * Subcooling, fan control, fan power, airflow, refrigerant inventory, and end-use fields map directly to the condenser object.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model class is <code>openstudio::model::RefrigerationCondenserAirCooled</code>.
+ * <b>Not yet available:</b> Model's air-inlet thermal-zone, heat-rejection curve, and refrigeration-system relationship methods are not exposed.
+ *
+ * \par Known limitations
+ * The condenser does not own the refrigeration system or compressor relationships.
+ */
   class EPMODEL_API RefrigerationCondenserAirCooled : public ParentObject
   {
    public:
@@ -38,13 +53,6 @@ namespace epmodel {
 
     static std::vector<std::string> condenserFanSpeedControlTypeValues();
 
-    // Schema Alignment Notes:
-    // - API: preserve openstudio::model::RefrigerationCondenserAirCooled scalar accessor names/signatures for each numeric/string field that maps directly to
-    //   the EnergyPlus Refrigeration:Condenser:AirCooled fields listed below.
-    // - Field Mapping: ForwardTranslateRefrigerationCondenserAirCooled.cpp demonstrates that the retained scalars (subcooling difference, fan control type,
-    //   fan power, minimum flow ratio, end-use subcategory, and refrigerant inventory fields) write to Refrigeration_Condenser_AirCooledFields enums.
-    // - Field Mapping: the rated effective total heat rejection rate curve and air inlet node/zone reference fields describe richer relationships and are intentionally
-    //   excluded from this scalar-only scaffold.
 
     /** @name Getters */
     //@{

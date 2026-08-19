@@ -19,8 +19,27 @@ namespace epmodel {
 
   }  // namespace detail
 
-  /** HeatExchangerDesiccantBalancedFlowPerformanceDataType1 is a ModelObject that wraps the EnergyPlus IDD object
-   * 'HeatExchanger:Desiccant:BalancedFlow:PerformanceDataType1'. */
+  /** \brief Stores performance coefficients and operating limits for a balanced-flow desiccant heat exchanger.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-heat-recovery.html#heatexchangerdesiccantbalancedflowperformancedatatype1,HeatExchanger:Desiccant:BalancedFlow:PerformanceDataType1}.
+   *
+   * \par Important behavior
+   * The nominal-air-flow and nominal-air-face-velocity autosized queries are
+   * API-compatible but return no value because EPModel does not read SQL
+   * sizing results. The scalar coefficient and limit fields are persisted on
+   * this object.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::HeatExchangerDesiccantBalancedFlowPerformanceDataType1</code>.
+   * The scalar and sizing methods have the same public names; Model's
+   * <code>heatExchangerDesiccantBalancedFlows()</code> reverse navigation to
+   * containing heat exchangers is not available.
+   *
+   * \par Known limitations
+   * No additional relationship or SQL-sizing-result support is provided.
+   */
   class EPMODEL_API HeatExchangerDesiccantBalancedFlowPerformanceDataType1 : public ModelObject
   {
    public:
@@ -43,11 +62,6 @@ namespace epmodel {
     /** @name Field Accessors */
     //@{
 
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model scalar accessor names/signatures for this counterpart class.
-    // - Field Mapping: Preserved scalar APIs map directly to matching E+ HeatExchanger:Desiccant:BalancedFlow:PerformanceDataType1 fields.
-    // - ForwardTranslator evidence: ForwardTranslateHeatExchangerDesiccantBalancedFlowPerformanceDataType1 writes these scalar fields one-to-one.
-    // - TODO(parity): Add non-scalar relationship APIs in a dedicated pass.
 
     // Nominal Air Flow Rate
     bool isNominalAirFlowRateAutosized() const;

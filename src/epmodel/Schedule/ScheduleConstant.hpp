@@ -22,6 +22,19 @@ namespace epmodel {
     class ScheduleConstant_Impl;
   }
 
+  /** \brief Provides one constant schedule value for the entire year.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-schedules.html#scheduleconstant,Schedule:Constant}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::ScheduleConstant</code>. No known public API
+   * differences.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API ScheduleConstant : public Schedule
   {
    public:
@@ -35,12 +48,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::ScheduleConstant scalar API names/signatures where mappable in epmodel.
-    // - Field Mapping: value/setValue map to EnergyPlus Schedule:Constant field Hourly Value.
-    // - Field Mapping: scheduleTypeLimits is relationship-like (Schedule Type Limits Name object-list target) and excluded.
-    // - ForwardTranslator evidence: ForwardTranslateScheduleConstant.cpp writes ScheduleTypeLimitsName and value -> HourlyValue.
-    // - TODO(parity): Add relationship APIs incrementally without changing preserved scalar signatures.
     /** @name Accessors */
     //@{
     double value() const;

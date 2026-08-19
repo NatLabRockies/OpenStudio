@@ -20,6 +20,27 @@ namespace epmodel {
     class PhotovoltaicPerformanceSandia_Impl;
   }
 
+  /** \brief Represents Sandia photovoltaic module performance parameters.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-electric-load-center-generator.html#photovoltaicperformancesandia,PhotovoltaicPerformance:Sandia}
+   *
+   * \par Important behavior
+   * The EPModel constructor creates the object without selecting a database
+   * record; its scalar parameters must be populated by the caller.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::PhotovoltaicPerformanceSandia</code>.
+   *
+   * - <b>Not yet available:</b> <code>sandiaModulePerformanceNames()</code>
+   *   and <code>fromSandiaDatabase(...)</code>.
+   *
+   * \par Known limitations
+   * The embedded Sandia database lookup and its default-record behavior are
+   * not available; use the scalar parameter setters to provide a complete
+   * module record.
+   */
   class EPMODEL_API PhotovoltaicPerformanceSandia : public ModelObject
   {
    public:
@@ -32,12 +53,6 @@ namespace epmodel {
     PhotovoltaicPerformanceSandia& operator=(PhotovoltaicPerformanceSandia&&) = default;
 
     static IddObjectType iddObjectType();
-
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model PhotovoltaicPerformanceSandia scalar accessor naming/signatures.
-    // - Field Mapping: Preserved API maps directly to EnergyPlus PhotovoltaicPerformance:Sandia scalar fields.
-    // - Field Mapping: sandiaDatabaseParameterDeltaTc delegates to field enum SandiaDatabaseParameterDelta_Tc_.
-    // - TODO(parity): Add non-scalar Sandia DB convenience APIs only if/when parity scope expands.
 
     /** @name Field accessors */
     //@{

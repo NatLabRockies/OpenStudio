@@ -23,6 +23,28 @@ namespace epmodel {
     class GeneratorWindTurbine_Impl;
   }
 
+  /** \brief Represents a wind-turbine generator.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-electric-load-center-generator.html#generatorwindturbine,Generator:WindTurbine}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::GeneratorWindTurbine</code>.
+   *
+   * - <b>Not yet available:</b> <code>setAvailabilitySchedule(...)</code> and
+   *   the inherited <code>availabilitySchedule()</code> getter.
+   * - <b>Added:</b> <code>rotorTypeValues()</code> and
+   *   <code>powerControlValues()</code> expose the valid EnergyPlus choice keys.
+   * - <b>Not yet available:</b> The Model Generator metadata methods
+   *   <code>generatorObjectType()</code>, <code>ratedElectricPowerOutput()</code>,
+   *   <code>ratedThermaltoElectricalPowerRatio()</code>, and
+   *   <code>electricLoadCenterDistribution()</code>.
+   *
+   * \par Known limitations
+   * If availability scheduling is needed, assign it through a lower-level
+   * object reference; the turbine-performance scalar fields are available.
+   */
   class EPMODEL_API GeneratorWindTurbine : public ModelObject
   {
    public:
@@ -39,13 +61,6 @@ namespace epmodel {
     static std::vector<std::string> rotorTypeValues();
     static std::vector<std::string> powerControlValues();
 
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model::GeneratorWindTurbine scalar accessor names/signatures for counterpart parity.
-    // - Field Mapping: Preserved scalar APIs map directly to EnergyPlus Generator:WindTurbine scalar fields.
-    // - ForwardTranslator evidence: ForwardTranslateGeneratorWindTurbine writes these scalar APIs directly to matching
-    //   Generator:WindTurbine fields.
-    // - API: AvailabilitySchedule remains excluded in this scalar-only pass because it is a relationship field.
-    // - TODO(parity): Add relationship APIs in a dedicated relationship pass.
     std::string rotorType() const;
     bool setRotorType(const std::string& rotorType);
 

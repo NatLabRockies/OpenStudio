@@ -22,6 +22,20 @@ namespace epmodel {
     class ParentObject_Impl;
   }
 
+/** \brief Base class for parent-backed and compound EnergyPlus objects.
+ *
+ * \par EnergyPlus object
+ * No single EnergyPlus object; concrete subclasses wrap individual parent objects.
+ *
+ * \par Important behavior
+ * Concrete subclasses use this base for direct EnergyPlus-backed storage and parent-owned relationships.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model class is <code>openstudio::model::ParentObject</code>.
+ *
+ * \par Known limitations
+ * Object-specific fields and relationships are available only on concrete subclasses.
+ */
   class EPMODEL_API ParentObject : public ModelObject
   {
    public:

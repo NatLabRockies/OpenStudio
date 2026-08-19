@@ -31,6 +31,25 @@ namespace epmodel {
     class ZoneHVACLowTempRadiantVarFlow_Impl;
   }
 
+/** \brief A variable-flow low-temperature radiant system serving a thermal zone.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-radiative-convective-units.html#zonehvaclowtemperatureradiantvariableflow,ZoneHVAC:LowTemperatureRadiant:VariableFlow},
+ * \epobject{group-radiative-convective-units.html#zonehvaclowtemperatureradiantvariableflowdesign,ZoneHVAC:LowTemperatureRadiant:VariableFlow:Design}, and
+ * \epobject{group-radiative-convective-units.html#zonehvaclowtemperatureradiantsurfacegroup,ZoneHVAC:LowTemperatureRadiant:SurfaceGroup}
+ *
+ * \par Important behavior
+ * Optional heating and cooling coil children are transient views over parent and design fields; setRadiantSurfaceType() snapshots matching zone surfaces into the persisted surface group.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model class is <code>openstudio::model::ZoneHVACLowTempRadiantVarFlow</code>.
+ * EPModel exposes the design companion and surface-group views and the full
+ * EnergyPlus design/control field surface. Model additionally provides
+ * hydronic-tubing-length and thermal-zone conveniences.
+ *
+ * \par Known limitations
+ * Later zone or surface edits do not automatically resynchronize the persisted surface group; SQL-backed autosized results are unavailable.
+ */
   class EPMODEL_API ZoneHVACLowTempRadiantVarFlow : public ZoneHVACComponent
   {
    public:
@@ -53,25 +72,6 @@ namespace epmodel {
     static std::vector<std::string> coolingDesignCapacityMethodValues();
     static std::vector<std::string> condensationControlTypeValues();
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. The hydronic and control scalars are aligned, epmodel preserves the canonical optional
-    //   heating/cooling companion coils as transient child views, and the canonical radiant-surface APIs now route through
-    //   the persisted EnergyPlus surface-group object and design companion object.
-    // - Canonical Counterpart: openstudio::model::ZoneHVACLowTempRadiantVarFlow.
-    // - Why This Type Is Slightly Different: canonical OpenStudio splits this family into one parent object plus optional
-    //   heating/cooling coil wrappers and a higher-level `RadiantSurfaceType` selector. EnergyPlus does not persist those
-    //   child coil objects or that selector directly. It stores the flattened result on the parent radiant object, the
-    //   persisted `...:Design` object, and a referenced `ZoneHVAC:LowTemperatureRadiant:SurfaceGroup`.
-    // - Implemented Parity: The canonical availability schedule, optional heating/cooling companion coils, radiant-surface
-    //   APIs, and changeover schedule are preserved additively while staying anchored to that EnergyPlus storage shape.
-    // - Documented Delta: `setRadiantSurfaceType(...)` currently snapshots the matching zone surfaces into the EnergyPlus
-    //   surface group. Later zone/surface edits do not yet automatically resynchronize that group.
-    // - Field/Storage Mapping: Main hydronic fields live on the EnergyPlus object, design-side controls live on the
-    //   EnergyPlus design object, the surface selection lives as a referenced EnergyPlus surface group, and the transient
-    //   child coils are views over those persisted parent fields rather than standalone EnergyPlus objects.
-    // - Evidence: `src/model/ZoneHVACLowTempRadiantVarFlow.hpp`, `src/model/ZoneHVACLowTempRadiantVarFlow.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateZoneHVACLowTempRadiantVarFlow.cpp`, and `src/epmodel/test/ZoneHVACLowTempRadiantVarFlow_GTest.cpp`.
-    // - Remaining Parity Work: Add automatic surface-group resynchronization after later zone/surface edits and close any
-    //   remaining relationship gaps.
 
     boost::optional<Schedule> availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);

@@ -22,6 +22,18 @@ namespace epmodel {
     class EnergyManagementSystemInternalVariable_Impl;
   }
 
+  /** \brief Represents <code>EnergyManagementSystem:InternalVariable</code>.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-energy-management-system-ems.html#energymanagementsysteminternalvariable,EnergyManagementSystem:InternalVariable}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::EnergyManagementSystemInternalVariable</code>.
+   * **Not yet available:** Model typed object-target, program-body, and EMS relationship conveniences are not exposed unless declared by this wrapper.
+   *
+   * \par Known limitations
+   * Typed relationship and extensible-list conveniences not represented by the public declarations are unavailable.
+   */
   class EPMODEL_API EnergyManagementSystemInternalVariable : public ModelObject
   {
    public:
@@ -34,14 +46,6 @@ namespace epmodel {
     EnergyManagementSystemInternalVariable& operator=(EnergyManagementSystemInternalVariable&&) = default;
 
     static IddObjectType iddObjectType();
-
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model::EnergyManagementSystemInternalVariable class and scalar accessor names/signatures.
-    // - Field Mapping: internalDataIndexKeyName -> EnergyPlus EnergyManagementSystem:InternalVariable, Internal Data Index Key Name.
-    // - Field Mapping: internalDataType -> EnergyPlus EnergyManagementSystem:InternalVariable, Internal Data Type.
-    // - ForwardTranslator evidence: ForwardTranslateEnergyManagementSystemInternalVariable.cpp writes InternalDataIndexKeyName and InternalDataType from these APIs.
-    // - TODO(parity): Add relationship-aware UID substitution behavior (if needed) without changing these scalar API signatures.
-
     /** @name Internal Data Index Key Name */
     //@{
     std::string internalDataIndexKeyName() const;

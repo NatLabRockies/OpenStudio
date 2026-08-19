@@ -22,6 +22,17 @@ namespace epmodel {
     class SurfacePropertySurroundingSurfaces_Impl;
   }
 
+  /** \brief SurfacePropertySurroundingSurfaces.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-advanced-surface-concepts.html#surfacePropertySurroundingSurfaces,SurfaceProperty:SurroundingSurfaces}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::SurfacePropertySurroundingSurfaces</code>. The sky and ground view factors, including autocalculate behavior, are exposed. Schedule and surrounding-surface extensible relationships are not available.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API SurfacePropertySurroundingSurfaces : public ModelObject
   {
    public:
@@ -34,13 +45,6 @@ namespace epmodel {
     SurfacePropertySurroundingSurfaces& operator=(SurfacePropertySurroundingSurfaces&&) = default;
 
     static IddObjectType iddObjectType();
-
-    // Schema Alignment Notes:
-    // - API: Preserves the openstudio::model scalar API names (skyViewFactor / groundViewFactor plus autocalculate helpers) while keeping the object-name API on ModelObject.
-    // - Field Mapping: ForwardTranslateSurfacePropertySurroundingSurfaces.cpp proves that skyViewFactor and groundViewFactor map directly to
-    //   EnergyPlus SurfaceProperty_SurroundingSurfaces fields SkyViewFactor and GroundViewFactor.
-    // - Field Mapping: SkyTemperatureScheduleName, GroundTemperatureScheduleName, and the SurroundingSurface extensible groups are relationship fields
-    //   (schedule pointers and extensible links) and are intentionally excluded from the scalar API surface here.
     boost::optional<double> skyViewFactor() const;
     bool setSkyViewFactor(double skyViewFactor);
     bool isSkyViewFactorAutocalculated() const;

@@ -22,6 +22,23 @@ namespace epmodel {
     class CentralHeatPumpSystem_Impl;
   }
 
+  /** \brief Represents a central heat pump system serving cooling, source, and heating plant loops.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-plant-equipment.html#centralheatpumpsystem,CentralHeatPumpSystem}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::CentralHeatPumpSystem</code>.
+   *
+   * - <b>Not yet available:</b> Module management methods
+   *   <code>modules()</code>, <code>addModule(...)</code>,
+   *   <code>removeModule(...)</code>, and <code>removeAllModules()</code>.
+   *
+   * \par Known limitations
+   * The EPModel wrapper exposes the system-level fields and three plant-loop
+   * views, but not the Model module-list graph.
+   */
   class EPMODEL_API CentralHeatPumpSystem : public WaterToWaterComponent
   {
    public:
@@ -37,14 +54,6 @@ namespace epmodel {
 
     static std::vector<std::string> controlMethodValues();
 
-    // Schema Alignment Notes:
-    // - Status: Near Parity. The scalar, ancillary-schedule, and three-loop convenience surface is aligned, while the module-list graph remains outside current epmodel scope.
-    // - Canonical Counterpart: openstudio::model::CentralHeatPumpSystem.
-    // - Implemented Parity: `controlMethod`, `ancillaryPower`, ancillary-operation schedule, cooling/source/heating loop conveniences, and three-loop attachment behavior preserve the main canonical wrapper behavior that epmodel can support directly.
-    // - Documented Delta: Module-list/module-object APIs remain omitted because epmodel does not yet model `CentralHeatPumpSystemModule` or `ModelObjectList`.
-    // - Field/Storage Mapping: Scalar and schedule wrappers map directly to EnergyPlus `CentralHeatPumpSystem` fields while the three loop ports continue to use the shared water-to-water topology layer.
-    // - Evidence: `src/model/CentralHeatPumpSystem.hpp`, `src/model/CentralHeatPumpSystem.cpp`, and the matching forward translator for this type.
-    // - Remaining Parity Work: Add the omitted module-list graph only once epmodel gains the missing supporting object families.
     /** @name ControlMethod */
     //@{
     std::string controlMethod() const;

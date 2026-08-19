@@ -23,6 +23,21 @@ namespace epmodel {
     class RefrigerationGasCoolerAirCooled_Impl;
   }
 
+/** \brief Defines an air-cooled gas cooler for a transcritical refrigeration system.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-refrigeration.html#refrigerationgascooleraircooled,Refrigeration:GasCooler:AirCooled}
+ *
+ * \par Important behavior
+ * Fan control, transition and condensing temperatures, approach values, airflow, refrigerant inventory, and end-use fields map directly to the object.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model class is <code>openstudio::model::RefrigerationGasCoolerAirCooled</code>.
+ * <b>Not yet available:</b> Model's rated-total-heat-rejection curve relationship is not exposed.
+ *
+ * \par Known limitations
+ * The gas cooler does not own the refrigeration system or compressor relationships.
+ */
   class EPMODEL_API RefrigerationGasCoolerAirCooled : public ParentObject
   {
    public:
@@ -38,12 +53,6 @@ namespace epmodel {
 
     static std::vector<std::string> gasCoolerFanSpeedControlTypeValues();
 
-    // Schema Alignment Notes:
-    // - API: preserve openstudio::model::RefrigerationGasCoolerAirCooled scalar accessor names/signatures while keeping the epmodel type under ParentObject.
-    // - Field Mapping: ForwardTranslateRefrigerationGasCoolerAirCooled.cpp maps the retained scalars to the EnergyPlus Refrigeration:GasCooler:AirCooled fields via
-    //   Refrigeration_GasCooler_AirCooledFields.
-    // - Field Mapping: the rated total heat rejection rate curve and air inlet node/zone references describe richer object relationships and are intentionally
-    //   absent from this scalar-only scaffold.
 
     /** @name Getters */
     //@{

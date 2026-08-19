@@ -23,6 +23,18 @@ namespace epmodel {
     class CurveCubicLinear_Impl;
   }
 
+  /** \brief Represents a cubic-linear curve.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-performance-curves.html#curvecubiclinear,Curve:CubicLinear}
+   *
+   * \par OpenStudio Model API
+   * OpenStudio Model has no public wrapper for this EnergyPlus object. This
+   * wrapper is new to the EPModel API.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API CurveCubicLinear : public Curve
   {
    public:
@@ -40,10 +52,6 @@ namespace epmodel {
     static std::vector<std::string> validInputUnitTypeforYValues();
     static std::vector<std::string> validOutputUnitTypeValues();
 
-    // Schema Alignment Notes:
-    // - API: No openstudio::model counterpart exists; accessor names are IDD-derived.
-    // - Field Mapping: coefficient/min/max and unit-type APIs map directly to E+ Curve:CubicLinear fields.
-    // - TODO(parity): Keep this pass scalar-only; relationship APIs remain out of scope.
     double coefficient1Constant() const;
     bool setCoefficient1Constant(double coefficient1Constant);
 

@@ -22,6 +22,18 @@ namespace epmodel {
     class SetpointManagerSystemNodeResetTemperature_Impl;
   }
 
+  /** \brief Resets a temperature setpoint from a reference system node.
+   *
+   * \par EnergyPlus object
+   * <code>SetpointManager:SystemNodeReset:Temperature</code>
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::SetpointManagerSystemNodeResetTemperature</code>.
+   * No known public API differences.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API SetpointManagerSystemNodeResetTemperature : public SetpointManager
   {
    public:
@@ -37,19 +49,6 @@ namespace epmodel {
 
     static std::vector<std::string> controlVariableValues();
 
-    // Schema Alignment Notes:
-    // - Status: Near Parity. The scalar reset rule, reference-node relationship, and inherited setpoint-node attachment are aligned.
-    // - Canonical Counterpart: openstudio::model::SetpointManagerSystemNodeResetTemperature.
-    // - Implemented Parity: Preserves the canonical scalar accessors, reference-node relationship, and inherited setpoint-node attachment.
-    // - Field Mapping: setpointatLowReferenceTemperature, setpointatHighReferenceTemperature,
-    //   lowReferenceTemperature, and highReferenceTemperature map directly to
-    //   E+ SetpointManager:SystemNodeReset:Temperature scalar fields.
-    // - ForwardTranslator Evidence: ForwardTranslateSetpointManagerSystemNodeResetTemperature writes these exact
-    //   scalar fields plus control variable using preserved model API names.
-    // - Field Mapping: referenceNode maps directly to E+ Reference Node Name; inherited addToNode/setpointNode behavior maps
-    //   Setpoint Node or NodeList Name.
-    // - Canonicalization: Load resolves persisted reference and setpoint node names once; ordinary relationship getters are observational.
-    // - Remaining Parity Work: Broader clone and workflow evidence remains demand-driven.
     double setpointatLowReferenceTemperature() const;
     bool setSetpointatLowReferenceTemperature(double setpointatLowReferenceTemperature);
 

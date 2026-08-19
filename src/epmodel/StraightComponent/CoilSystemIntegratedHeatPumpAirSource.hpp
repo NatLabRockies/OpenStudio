@@ -25,6 +25,21 @@ namespace epmodel {
     class CoilSystemIntegratedHeatPumpAirSource_Impl;
   }
 
+  /** \brief Represents a air-source integrated heat-pump coil system.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-heating-and-cooling-coils.html#ASIHPIO,CoilSystem:IntegratedHeatPump:AirSource}.
+   *
+   * \par Important behavior
+   * Referenced child coils and the supported contained air path are stored through the EnergyPlus object-list fields.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::CoilSystemIntegratedHeatPumpAirSource</code>.
+   * Not yet available: broader containing-component, clone/remove, and higher-level air-node convenience methods.
+   *
+   * \par Known limitations
+   * Use the supported compound-parent workflows for loop placement.
+   */
   class EPMODEL_API CoilSystemIntegratedHeatPumpAirSource : public StraightComponent
   {
    public:
@@ -43,23 +58,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. The scalar control surface and referenced-coil relationships are aligned, while standalone node-link behavior
-    //   remains intentionally rejected.
-    // - Canonical Counterpart: openstudio::model::CoilSystemIntegratedHeatPumpAirSource.
-    // - Implemented Parity: The canonical temperature-limit, load-control, speed-level, and water-flow control scalars are preserved alongside
-    //   the eight coil-reference relationships (`spaceCoolingCoil`, `spaceHeatingCoil`, `dedicatedWaterHeatingCoil`, `scwhCoil`,
-    //   `scdwhCoolingCoil`, `scdwhWaterHeatingCoil`, `shdwhHeatingCoil`, and `shdwhWaterHeatingCoil`).
-    // - Documented Delta: epmodel keeps this as a serial `StraightComponent` for compound ownership, but `addToNode(...)` remains rejected
-    //   intentionally and no extra loop-placement surface is introduced.
-    // - Field/Storage Mapping: The preserved scalars and referenced-coil relationships map directly to EnergyPlus
-    //   `CoilSystem:IntegratedHeatPump:AirSource` storage.
-    // - Default Seeding: The no-arg constructor seeds canonical default subcomponents using existing epmodel wrappers, along with the scalar
-    //   defaults already carried by the integrated system.
-    // - Evidence: `src/model/CoilSystemIntegratedHeatPumpAirSource.hpp`, `src/model/CoilSystemIntegratedHeatPumpAirSource.cpp`,
-    //   `src/energyplus/ForwardTranslator/ForwardTranslateCoilSystemIntegratedHeatPumpAirSource.cpp`, and
-    //   `src/epmodel/test/CoilSystemIntegratedHeatPumpAirSource_GTest.cpp`.
-    // - Remaining Parity Work: Higher-level loop-link helpers remain outside this bounded slice.
     StraightComponent spaceCoolingCoil() const;
     StraightComponent spaceHeatingCoil() const;
     HVACComponent dedicatedWaterHeatingCoil() const;

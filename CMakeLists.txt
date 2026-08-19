@@ -1254,6 +1254,7 @@ if(BUILD_DOCUMENTATION)
   if (DOXYGEN_VERSION VERSION_GREATER_EQUAL 1.8.9)
     set(DOXYGEN_HTML_HEADER "${PROJECT_SOURCE_DIR}/doc/html/header-1.8.9.html") # Adds searchdata.js
   endif()
+  set(DOXYGEN_DEFAULT_HTML_HEADER "${DOXYGEN_HTML_HEADER}")
 
   configure_file(${PROJECT_SOURCE_DIR}/doc/index.html ${PROJECT_BINARY_DIR}/doc/index.html COPYONLY)
 
@@ -1278,6 +1279,8 @@ if(BUILD_DOCUMENTATION)
     set(DOXY_ADDITIONAL_DIR "")
     set(DOXY_EXCLUDE_DIR "")
     set(DOXY_TAGFILES "")
+    set(DOXYGEN_HTML_HEADER "${DOXYGEN_DEFAULT_HTML_HEADER}")
+    set(DOXY_PREPARE_COMMAND)
 
 
     # Specific settings
@@ -1290,10 +1293,25 @@ if(BUILD_DOCUMENTATION)
       set(DOXY_TAGFILES "utilities_idd/utilities_idd.tag=../../utilities_idd/html")
     elseif(${D} STREQUAL "model")
       set(DOXY_TAGFILES "utilities_idd/utilities_idd.tag=../../utilities_idd/html utilities/utilities.tag=../../utilities/html")
+    elseif(${D} STREQUAL "epmodel")
+      set(DOXY_TAGFILES "utilities_idd/utilities_idd.tag=../../utilities_idd/html utilities/utilities.tag=../../utilities/html model/model.tag=../../model/html")
+      set(DOXYGEN_HTML_HEADER "${PROJECT_SOURCE_DIR}/doc/html/epmodel-header.html")
+      set(EPMODEL_CLASS_FAMILIES "${PROJECT_BINARY_DIR}/doc/epmodel_class_families.hpp")
+      set(DOXY_ADDITIONAL_DIR "\"${EPMODEL_CLASS_FAMILIES}\"")
+      # Derive this browsing page from the existing source-tree families. The
+      # generation complexity avoids introducing yet another hierarchy for the
+      # model classes through Doxygen groups or additional class metadata.
+      set(DOXY_PREPARE_COMMAND
+        COMMAND "${CMAKE_COMMAND}"
+          "-DOPENSTUDIO_SOURCE_DIR=${PROJECT_SOURCE_DIR}"
+          "-DOUTPUT=${EPMODEL_CLASS_FAMILIES}"
+          -P "${PROJECT_SOURCE_DIR}/CMake/GenerateEPModelClassFamilies.cmake"
+      )
     endif()
     configure_file(${PROJECT_SOURCE_DIR}/Doxyfile.in ${PROJECT_BINARY_DIR}/doc/${DOC_NAME}.cfg)
 
     add_custom_target(openstudio_${DOC_NAME}_doc
+      ${DOXY_PREPARE_COMMAND}
       COMMAND ${CMAKE_COMMAND} -E remove_directory "${DOC_NAME}"
       COMMAND ${CMAKE_COMMAND} -E make_directory "${DOC_NAME}"
       COMMAND ${DOXYGEN_EXECUTABLE} ${DOC_NAME}.cfg
@@ -1317,12 +1335,17 @@ if(BUILD_DOCUMENTATION)
     openstudio_utilities_doc
     openstudio_utilities_idd_doc
   )
+  add_dependencies(openstudio_epmodel_doc
+    openstudio_model_doc
+  )
 
   add_custom_target(ALL_DOXYGEN)
   add_dependencies(ALL_DOXYGEN ${ALL_CPP_DOC_TARGETS})
 
   add_custom_target(ALL_RDOC)
-  add_dependencies(ALL_RDOC ${ALL_RDOC_TARGETS})
+  if(ALL_RDOC_TARGETS)
+    add_dependencies(ALL_RDOC ${ALL_RDOC_TARGETS})
+  endif()
 
   # Zip documentation
   if(WIN32)

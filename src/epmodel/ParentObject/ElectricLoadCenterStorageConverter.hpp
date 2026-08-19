@@ -23,6 +23,21 @@ namespace epmodel {
     class ElectricLoadCenterStorageConverter_Impl;
   }
 
+/** \brief Defines the conversion efficiency and standby behavior of an electric storage converter.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-electric-load-center-generator.html#electricloadcenterstorageconverter,ElectricLoadCenter:Storage:Converter}
+ *
+ * \par Important behavior
+ * A newly created converter defaults simple fixed efficiency to 0.95; efficiency method, input power, standby, and radiative-fraction fields then map directly to EnergyPlus.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model class is <code>openstudio::model::ElectricLoadCenterStorageConverter</code>.
+ * <b>Not yet available:</b> Model's availability schedule, efficiency curve, thermal-zone, and electric-load-center distribution relationships are not exposed.
+ *
+ * \par Known limitations
+ * The converter is not connected to storage by this wrapper; load-center ownership is represented by the referencing distribution object.
+ */
   class EPMODEL_API ElectricLoadCenterStorageConverter : public ParentObject
   {
    public:
@@ -38,16 +53,6 @@ namespace epmodel {
 
     static std::vector<std::string> powerConversionEfficiencyMethodValues();
 
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::ElectricLoadCenterStorageConverter scalar accessor names/signatures.
-    // - Field Mapping: powerConversionEfficiencyMethod, simpleFixedEfficiency, designMaximumContinuousInputPower,
-    //   ancillaryPowerConsumedInStandby, and radiativeFraction map directly to EnergyPlus
-    //   ElectricLoadCenter:Storage:Converter scalar fields.
-    // - Field Mapping: Availability Schedule Name, Efficiency Function of Power Curve Name, Zone Name,
-    //   and parent linkage are relationship-like fields and intentionally excluded from scalar accessor scope.
-    // - ForwardTranslator evidence: ForwardTranslateElectricLoadCenterStorageConverter.cpp writes these scalar
-    //   fields directly to ElectricLoadCenter:Storage:Converter.
-    // - TODO(parity): Add relationship APIs incrementally without changing preserved scalar signatures.
     std::string powerConversionEfficiencyMethod() const;
 
     // simpleFixedEfficiency field

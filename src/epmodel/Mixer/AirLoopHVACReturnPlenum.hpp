@@ -24,6 +24,21 @@ namespace epmodel {
     class AirLoopHVACReturnPlenum_Impl;
   }
 
+  /** \brief Represents an air-loop return plenum serving a thermal zone.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-air-path.html#airloophvacreturnplenum,AirLoopHVAC:ReturnPlenum}.
+   *
+   * \par Important behavior
+   * The plenum zone and its inlet/outlet node topology are kept consistent when attached to or removed from an air loop.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::AirLoopHVACReturnPlenum</code>.
+   * <b>Not yet available: <code>addBranchForZone()</code>, induced-air outlet conveniences, and AirflowNetwork distribution-node helpers.</b>
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API AirLoopHVACReturnPlenum : public Mixer
   {
    public:
@@ -37,14 +52,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - Status: Near Parity. The return-plenum mixer, plenum-zone relationships, and zone attachment/removal topology are present; induced-air behavior remains incomplete.
-    // - Canonical Counterpart: openstudio::model::AirLoopHVACReturnPlenum.
-    // - Implemented Parity: `thermalZone`, `setThermalZone`, `resetThermalZone`, `addToNode`, shared `ThermalZone::setReturnPlenum` and `removeReturnPlenum` topology, outlet/inlet ports, and Mixer branch mutation map directly to the EnergyPlus return-plenum object.
-    // - Documented Delta: addBranchForZone, induced-air outlets, and the AirflowNetwork convenience surface remain deferred.
-    // - Field/Storage Mapping: The plenum zone, zone node, outlet node, and extensible inlet nodes are explicit EnergyPlus-backed relationships.
-    // - Evidence: `src/model/AirLoopHVACReturnPlenum.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirLoopHVACReturnPlenum.cpp`, and `src/epmodel/test/AirLoopHVACReturnPlenum_GTest.cpp`.
-    // - Remaining Parity Work: Add induced-air and AirflowNetwork conveniences when their adjacent topology is available.
     boost::optional<ThermalZone> thermalZone() const;
     bool setThermalZone(const ThermalZone& thermalZone);
     void resetThermalZone();

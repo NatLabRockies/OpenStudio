@@ -22,6 +22,18 @@ namespace epmodel {
     class EnergyManagementSystemTrendVariable_Impl;
   }
 
+  /** \brief Represents <code>EnergyManagementSystem:TrendVariable</code>.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-energy-management-system-ems.html#energymanagementsystemtrendvariable,EnergyManagementSystem:TrendVariable}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::EnergyManagementSystemTrendVariable</code>.
+   * **Not yet available:** Model typed object-target, program-body, and EMS relationship conveniences are not exposed unless declared by this wrapper.
+   *
+   * \par Known limitations
+   * Typed relationship and extensible-list conveniences not represented by the public declarations are unavailable.
+   */
   class EPMODEL_API EnergyManagementSystemTrendVariable : public ModelObject
   {
    public:
@@ -34,13 +46,6 @@ namespace epmodel {
     EnergyManagementSystemTrendVariable& operator=(EnergyManagementSystemTrendVariable&&) = default;
 
     static IddObjectType iddObjectType();
-
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model::EnergyManagementSystemTrendVariable scalar accessor names/signatures.
-    // - Field Mapping: emsVariableName -> EnergyPlus EnergyManagementSystem:TrendVariable, EMS Variable Name.
-    // - Field Mapping: numberOfTimestepsToBeLogged -> EnergyPlus EnergyManagementSystem:TrendVariable, Number of Timesteps to be Logged.
-    // - ForwardTranslator evidence: ForwardTranslateEnergyManagementSystemTrendVariable.cpp writes these same scalar fields from the preserved APIs.
-    // - TODO(parity): Add relationship/object-target overloads (emsVariableObject and typed setEMSVariableName overloads) incrementally without changing scalar signatures.
     std::string emsVariableName() const;
     bool setEMSVariableName(const std::string& eMSVariableName);
 

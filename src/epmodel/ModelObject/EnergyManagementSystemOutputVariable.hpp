@@ -23,6 +23,18 @@ namespace epmodel {
     class EnergyManagementSystemOutputVariable_Impl;
   }
 
+  /** \brief Represents <code>EnergyManagementSystem:OutputVariable</code>.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-energy-management-system-ems.html#energymanagementsystemoutputvariable,EnergyManagementSystem:OutputVariable}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::EnergyManagementSystemOutputVariable</code>.
+   * **Not yet available:** Model typed object-target, program-body, and EMS relationship conveniences are not exposed unless declared by this wrapper.
+   *
+   * \par Known limitations
+   * Typed relationship and extensible-list conveniences not represented by the public declarations are unavailable.
+   */
   class EPMODEL_API EnergyManagementSystemOutputVariable : public ModelObject
   {
    public:
@@ -38,13 +50,6 @@ namespace epmodel {
 
     static std::vector<std::string> typeOfDataInVariableValues();
     static std::vector<std::string> updateFrequencyValues();
-
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model::EnergyManagementSystemOutputVariable scalar accessor names/signatures.
-    // - Field Mapping: emsVariableName/typeOfDataInVariable/updateFrequency/units map directly to E+ EnergyManagementSystem:OutputVariable fields.
-    // - Field Mapping: emsProgramOrSubroutineName and object-handle overload APIs are relationship-like and intentionally excluded from scalar scaffold.
-    // - ForwardTranslator evidence: ForwardTranslateEnergyManagementSystemOutputVariable.cpp writes these same scalar fields from the preserved APIs.
-    // - TODO(parity): Add relationship-aware APIs incrementally without changing these scalar signatures.
     /** EMS Variable Name */
     //@{
     std::string emsVariableName() const;

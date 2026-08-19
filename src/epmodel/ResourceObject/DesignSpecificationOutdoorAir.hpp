@@ -27,6 +27,28 @@ namespace epmodel {
     class DesignSpecificationOutdoorAir_Impl;
   }
 
+  /** \brief Specifies outdoor-air flow requirements for a zone or space.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-design-objects.html#designspecificationoutdoorair,DesignSpecification:OutdoorAir}.
+   *
+   * \par Important behavior
+   * Blank scalar fields remain blank in the stored object, while getters
+   * project the OpenStudio Model defaults (<code>Sum</code> and 0.0). A blank
+   * outdoor-air schedule field is repaired with a uniquely resolved persisted
+   * schedule only when loading; missing or ambiguous names are not guessed.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::DesignSpecificationOutdoorAir</code>. The Model
+   * class exposes the same public fields and schedule relationship. EPModel is
+   * a <code>ModelObject</code>; the Model counterpart is a
+   * <code>ResourceObject</code>.
+   *
+   * \par Known limitations
+   * The EnergyPlus Proportional Control Minimum Outdoor Air Flow Rate Schedule
+   * field has no public API in either wrapper.
+   */
   class EPMODEL_API DesignSpecificationOutdoorAir : public ModelObject
   {
    public:
@@ -45,25 +67,6 @@ namespace epmodel {
     /** \deprecated */
     static std::vector<std::string> validOutdoorAirMethodValues();
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. The canonical scalar/default surface and optional outdoor-air flow-rate fraction schedule relationship are exposed,
-    //   while the proportional-control schedule and canonical resource-lifecycle differences remain documented deltas.
-    // - Canonical Counterpart: openstudio::model::DesignSpecificationOutdoorAir.
-    // - Implemented Parity: Outdoor-air method and flow inputs expose canonical values, default flags, reset behavior, and configured key discovery.
-    //   Blank scalar storage remains canonical: getters project `Sum` and 0.0 without eagerly writing those values. The canonical optional schedule
-    //   relationship supports validated assignment, reset, save/load, and post-load mutation.
-    // - Documented Delta: EnergyPlus also has a Proportional Control Minimum Outdoor Air Flow Rate Schedule Name field, but the canonical Model wrapper
-    //   has no corresponding public API, so epmodel does not expose it. This epmodel wrapper remains a `ModelObject` rather than the canonical
-    //   `ResourceObject`; broader resource lifecycle parity is not claimed.
-    // - Field/Storage Mapping: `outdoorAirFlowRateFractionSchedule()` maps to EnergyPlus `Outdoor Air Schedule Name`; the referenced schedule remains
-    //   an independent model resource. Scalar fields map directly to EnergyPlus, but blank A2/N1 project canonical Model defaults (`Sum`/0.0) rather
-    //   than the configured EnergyPlus defaults (`Flow/Person`/0.00944).
-    // - Canonicalization: Blank scalar storage is preserved. A unique persisted schedule name is reattached during load repair; blank, missing, or
-    //   ambiguous names are not invented or guessed. Ordinary getters remain observational and assume canonical resolved relationships.
-    // - Evidence: `src/model/DesignSpecificationOutdoorAir.hpp`, `src/model/ScheduleTypeRegistry.cpp`,
-    //   `resources/energyplus/ProposedEnergy+.idd`, and `src/epmodel/test/DesignSpecificationOutdoorAir_GTest.cpp`.
-    // - Remaining Parity Work: Revisit the proportional-control schedule and ResourceObject lifecycle only if the canonical API or epmodel ownership
-    //   contract expands.
 
     std::string outdoorAirMethod() const;
     bool isOutdoorAirMethodDefaulted() const;

@@ -22,6 +22,17 @@ namespace epmodel {
     class AirflowNetworkMultiZoneReferenceCrackConditions_Impl;
   }
 
+  /** \brief Represents the EnergyPlus AirflowNetwork:MultiZone:ReferenceCrackConditions object.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-airflow-network.html#airflownetworkmultizonereferencecrackconditions,AirflowNetwork:MultiZone:ReferenceCrackConditions}
+   *
+   * \par OpenStudio Model API
+   * OpenStudio Model has no public wrapper for this EnergyPlus object. This wrapper is new to the EPModel API.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations beyond the public fields and relationships exposed by this wrapper.
+   */
   class EPMODEL_API AirflowNetworkMultiZoneReferenceCrackConditions : public ModelObject
   {
    public:
@@ -35,14 +46,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - API: This no-counterpart epmodel type uses IDD-derived class/accessor naming.
-    // - Field Mapping: referenceTemperature, referenceBarometricPressure, and referenceHumidityRatio
-    //   map directly to EnergyPlus AirflowNetwork:MultiZone:ReferenceCrackConditions scalar fields.
-    // - Field Mapping: Name remains provided by base ModelObject naming APIs.
-    // - ForwardTranslator evidence: translateAirflowNetworkReferenceCrackConditions writes Name,
-    //   Reference Temperature, Reference Barometric Pressure, and Reference Humidity Ratio directly.
-    // - TODO(parity): Add relationship APIs only if future schema evolution introduces linked fields.
     double referenceTemperature() const;
     bool setReferenceTemperature(double referenceTemperature);
 

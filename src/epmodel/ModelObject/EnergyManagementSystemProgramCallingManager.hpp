@@ -25,6 +25,21 @@ namespace epmodel {
     class EnergyManagementSystemProgramCallingManager_Impl;
   }
 
+  /** \brief Represents <code>EnergyManagementSystem:ProgramCallingManager</code>.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-energy-management-system-ems.html#energymanagementsystemprogramcallingmanager,EnergyManagementSystem:ProgramCallingManager}
+   *
+   * \par Important behavior
+   * Program names are stored in EnergyPlus extensible rows and preserve their calling order.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::EnergyManagementSystemProgramCallingManager</code>.
+   * **Not yet available:** Model typed object-target, program-body, and EMS relationship conveniences are not exposed unless declared by this wrapper.
+   *
+   * \par Known limitations
+   * Typed relationship and extensible-list conveniences not represented by the public declarations are unavailable.
+   */
   class EPMODEL_API EnergyManagementSystemProgramCallingManager : public ModelObject
   {
    public:
@@ -39,13 +54,6 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     static std::vector<std::string> validCallingPointValues();
-
-    // Schema Alignment Notes:
-    // - API: Preserves the canonical calling-point and program-list surface.
-    // - Field Mapping: `callingPoint` -> EnergyPlus `Energy Plus Model Calling Point`.
-    // - Field Mapping: `programs` and related mutators use the real EnergyPlus extensible `Program Name` rows through `WorkspaceExtensibleGroup`.
-    // - ForwardTranslator evidence: ForwardTranslateEnergyManagementSystemProgramCallingManager.cpp writes the calling point and copies the same
-    //   extensible program rows.
     std::string callingPoint() const;
     bool setCallingPoint(const std::string& callingPoint);
 

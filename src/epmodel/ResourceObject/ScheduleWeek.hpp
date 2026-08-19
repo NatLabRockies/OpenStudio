@@ -23,6 +23,20 @@ namespace epmodel {
     class ScheduleWeek_Impl;
   }
 
+  /** \brief Selects the day schedules used for each day type in a week.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-schedules.html#scheduleweekdaily,Schedule:Week:Daily}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::ScheduleWeek</code>. The twelve day-schedule
+   * relationship methods have the same names and meaning.
+   *
+   * \par Known limitations
+   * The referenced day schedules are stored as EnergyPlus object-list links;
+   * this class does not own or duplicate those schedule objects.
+   */
   class EPMODEL_API ScheduleWeek : public ResourceObject
   {
    public:
@@ -36,15 +50,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity.
-    // - API: Preserves openstudio::model counterpart naming (`ScheduleWeek`).
-    // - Canonical Counterpart: openstudio::model::ScheduleWeek.
-    // - Implemented Parity: Day schedule relationship methods for all 12 day types.
-    // - Field Mapping: Sunday..CustomDay2 schedule day links map to EnergyPlus Schedule:Week:Daily pointer fields.
-    // - ForwardTranslator evidence: `ForwardTranslateScheduleWeek.cpp` maps counterpart schedule-day APIs to Schedule_Week_DailyFields::*Schedule_DayName fields.
-    // - Field Mapping: Name remains available through inherited ModelObject scalar accessors.
-    // - Remaining Parity Work: None for day schedule relationship APIs.
 
     boost::optional<ScheduleDay> sundaySchedule() const;
     bool setSundaySchedule(const ScheduleDay& scheduleDay);

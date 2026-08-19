@@ -26,6 +26,33 @@ namespace epmodel {
     class CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_Impl;
   }
 
+  /** \brief Represents a variable-speed air-to-water heat-pump water-heating coil.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-heating-and-cooling-coils.html#coil-waterheating-airtowaterheatpump-variablespeed,Coil:WaterHeating:AirToWaterHeatPump:VariableSpeed}
+   *
+   * \par Important behavior
+   * Speed-data wrappers are transient views backed by the coil's EnergyPlus
+   * extensible speed rows. The availability schedule getter repairs a missing
+   * target with the model's always-on discrete schedule. EnergyPlus
+   * <code>Number of Speeds</code> is maintained from the row count; an empty
+   * speed list clears that field. The autocalculated airflow queries currently
+   * return no value.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::CoilWaterHeatingAirToWaterHeatPumpVariableSpeed</code>.
+   * EPModel exposes the same coil fields and speed methods, but derives from
+   * <code>WaterToAirComponent</code> so the air/water topology methods are
+   * available. EPModel also provides
+   * <code>evaporatorAirTemperatureTypeforCurveObjectsValues()</code> and a
+   * <code>children()</code> query for its curve and speed-row wrappers.
+   *
+   * \par Known limitations
+   * <code>addToNode()</code> and <code>addToSplitter()</code> reject direct loop
+   * placement. This coil is expected to be owned and connected by its
+   * compound heat-pump water-heater parent.
+   */
   class EPMODEL_API CoilWaterHeatingAirToWaterHeatPumpVariableSpeed : public WaterToAirComponent
   {
    public:
@@ -41,30 +68,6 @@ namespace epmodel {
 
     static std::vector<std::string> evaporatorAirTemperatureTypeforCurveObjectsValues();
 
-    // Schema Alignment Notes:
-    // - Status: Parity with documented deltas.
-    // - Canonical Counterpart: openstudio::model::CoilWaterHeatingAirToWaterHeatPumpVariableSpeed.
-    // - Implemented Parity: The canonical availability schedule, part-load curve, optional crankcase-heater curve,
-    //   scalar rating surface, autosized-query stubs, and speed-data child APIs are exposed here. The required
-    //   availability-schedule reference also follows the canonical getter-repair pattern: a missing target is repaired
-    //   on read by wiring the model always-on discrete schedule. epmodel preserves the
-    //   canonical speed-data children as transient ParentObject wrappers: detached transient wrappers hold their own
-    //   OpenStudio-style fields until added to a parent coil, while attached transient wrappers read and write a specific
-    //   EnergyPlus extensible speed row on the parent object.
-    // - Documented Delta: epmodel promotes this wrapper to `WaterToAirComponent` so the real evaporator-air and
-    //   condenser-water ports are explicit. This is an additive hierarchy change compared to canonical model.
-    // - Documented Delta: Generic loop-placement APIs remain intentionally rejected because this coil is normally owned
-    //   by a compound heat-pump water-heater parent.
-    // - Documented Delta: `AirflowNetworkEquivalentDuct` parity is still deferred. High-level child traversal therefore
-    //   returns the part-load curve, optional crankcase-heater curve, and speed-data children, but not the canonical
-    //   AirflowNetwork companion. The autosized query methods are also API-preserving stubs for now: they return `none`
-    //   until epmodel grows the SQL-backed autosized result lookup used by the canonical model layer.
-    // - Field/Storage Mapping: Most scalar fields map directly to the corresponding EnergyPlus
-    //   `Coil:WaterHeating:AirToWaterHeatPump:VariableSpeed` fields. `Number of Speeds` remains an EnergyPlus parent
-    //   field but epmodel derives and maintains it from the current extensible-row count instead of exposing a direct
-    //   accessor. When the coil has no speeds, epmodel clears the field rather than writing `0`, matching the current
-    //   translator expectation that zero-speed coils stay untranslated. The canonical speed-data children are backed by the parent's real EnergyPlus extensible speed rows,
-    //   not by separate persisted EnergyPlus objects.
     Schedule availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);
 

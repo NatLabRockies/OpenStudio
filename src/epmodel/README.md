@@ -133,7 +133,7 @@ table becomes stale quickly, and declarations alone do not show behavior.
 
 For a particular class, check:
 
-1. its public header and `Schema Alignment Notes`;
+1. its public header and class-level Doxygen documentation;
 2. its implementation and tests under `src/epmodel/test`;
 3. any translator, Ruby, Python, or simulation test that uses it;
 4. `resources/energyplus/ProposedEnergy+.idd` and
@@ -162,13 +162,14 @@ tests that belong in the normal build.
 A workflow shows that its particular path works. It does not prove that every
 method on the classes it touches is complete.
 
-## Header notes
+## Public class documentation
 
-Public wrapper headers use `Schema Alignment Notes` for class-specific facts.
-They should identify the Model counterpart, say what works, explain unusual
-EnergyPlus storage, list intentional differences, and state what is still
-missing. EnergyPlus-only wrappers should simply say that no Model counterpart
-exists.
+Public wrapper headers document the exact EnergyPlus object, non-obvious
+behavior, public API differences from OpenStudio Model, and known limitations.
+The documentation is written for SDK users and avoids internal maturity labels.
+Types without an OpenStudio Model wrapper say so directly. Transient or
+projected wrappers explain which parent object fields or extensible rows they
+expose. See [AGENTS.md](AGENTS.md) for the required format and review rules.
 
 ## Ruby and Python bindings
 

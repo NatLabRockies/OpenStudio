@@ -21,6 +21,31 @@ namespace epmodel {
     class PhotovoltaicPerformanceSimple_Impl;
   }
 
+  /** \brief Represents simple photovoltaic performance parameters.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-electric-load-center-generator.html#photovoltaicperformancesimple,PhotovoltaicPerformance:Simple}
+   *
+   * \par Important behavior
+   * Setting <code>fixedEfficiency</code> selects the <code>Fixed</code>
+   * conversion mode; resetting it restores the EPModel default fixed
+   * efficiency.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::PhotovoltaicPerformanceSimple</code>.
+   *
+   * - <b>Not yet available:</b> <code>efficiencySchedule()</code>,
+   *   <code>setEfficiencySchedule(...)</code>, and
+   *   <code>resetEfficiencySchedule()</code>.
+   * - <b>Added:</b> <code>conversionEfficiencyInputModeValues()</code> and
+   *   <code>setConversionEfficiencyInputMode(...)</code> expose and edit the
+   *   EnergyPlus input-mode choice directly.
+   *
+   * \par Known limitations
+   * A caller that needs scheduled efficiency must bind the schedule through a
+   * lower-level object reference.
+   */
   class EPMODEL_API PhotovoltaicPerformanceSimple : public ModelObject
   {
    public:
@@ -36,11 +61,6 @@ namespace epmodel {
 
     static std::vector<std::string> conversionEfficiencyInputModeValues();
 
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model PhotovoltaicPerformanceSimple scalar accessor naming/signatures.
-    // - Field Mapping: Preserved APIs map directly to EnergyPlus PhotovoltaicPerformance:Simple scalar fields.
-    // - Field Mapping: Relationship field EfficiencyScheduleName is intentionally excluded from scalar-only scaffold scope.
-    // - TODO(parity): Add non-scalar schedule relationship APIs only if/when parity scope expands.
     double fractionOfSurfaceAreaWithActiveSolarCells() const;
     bool isfractionOfSurfaceAreaWithActiveSolarCellsDefaulted() const;
     bool setFractionOfSurfaceAreaWithActiveSolarCells(double fractionOfSurfaceAreaWithActiveSolarCells);

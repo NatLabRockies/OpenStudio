@@ -21,6 +21,17 @@ namespace epmodel {
     class PythonPluginTrendVariable_Impl;
   }
 
+  /** \brief PythonPluginTrendVariable.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-python-plugins.html#pythonplugintrendvariable,PythonPlugin:TrendVariable}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::PythonPluginTrendVariable</code>. The number-of-timesteps field is exposed. The Python-plugin-variable relationship is not available.
+   *
+   * \par Known limitations
+   * Only the fields and relationships listed in this wrapper are available; broader Model-only helpers are not exposed.
+   */
   class EPMODEL_API PythonPluginTrendVariable : public ModelObject
   {
    public:
@@ -36,11 +47,6 @@ namespace epmodel {
 
     /** Field accessors for Number of Timesteps to be Logged. */
     //@{
-    // Schema Alignment Notes:
-    // - API: Expose only the simple scalar Number of Timesteps to be Logged accessor while the PythonPluginVariable relationship field remains pending.
-    // - Field Mapping: Number of Timesteps to be Logged maps directly to OS_PythonPlugin_TrendVariableFields::NumberofTimestepstobeLogged.
-    // - Field Mapping: Name of a Python Plugin Variable is a reference to PythonPluginVariable and is intentionally excluded from this scalar-only run.
-    // - TODO(parity): Reintroduce pythonPluginVariable getter/setter once PythonPluginVariable has been scaffolded in epmodel.
     int numberofTimestepstobeLogged() const;
     bool setNumberofTimestepstobeLogged(int numberofTimestepstobeLogged);
     //@}

@@ -21,6 +21,25 @@ namespace epmodel {
     class AvailabilityManagerScheduledOn_Impl;
   }
 
+  /** \brief Keeps a loop available according to an availability schedule.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-system-availability-managers.html#availabilitymanagerscheduledon,AvailabilityManager:ScheduledOn}
+   *
+   * \par Important behavior
+   * A newly constructed manager creates a constant schedule with value 1.0.
+   * <code>setSchedule()</code> enforces the EnergyPlus Availability schedule
+   * type, and loading repairs a missing or unresolved schedule by reconnecting
+   * a named schedule or creating a new constant-one schedule.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::AvailabilityManagerScheduledOn</code>.
+   * No known public API differences.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API AvailabilityManagerScheduledOn : public AvailabilityManager
   {
    public:
@@ -34,11 +53,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - API: Preserves model-counterpart class naming for AvailabilityManagerScheduledOn.
-    // - Field Mapping: EnergyPlus AvailabilityManager:ScheduledOn exposes only Schedule Name beyond Name.
-    // - Implemented Parity: `schedule()` and `setSchedule(...)` now expose the shared schedule relationship surface.
-    // - ForwardTranslator evidence: model::ForwardTranslateAvailabilityManagerScheduledOn maps only Schedule Name.
     Schedule schedule() const;
     bool setSchedule(Schedule& schedule);
 

@@ -23,6 +23,17 @@ namespace epmodel {
     class SiteWaterMainsTemperature_Impl;
   }
 
+  /** \brief SiteWaterMainsTemperature.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-location-climate-weather-file-access.html#sitewatermainstemperature,Site:WaterMainsTemperature}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::SiteWaterMainsTemperature</code>. The calculation and temperature fields are exposed. Model's <code>temperatureSchedule()</code>, <code>setTemperatureSchedule()</code>, and <code>resetTemperatureSchedule()</code> are not available.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API SiteWaterMainsTemperature : public ModelObject
   {
    public:
@@ -39,14 +50,6 @@ namespace epmodel {
     static std::vector<std::string> calculationMethodValues();
 
     static std::vector<std::string> validCalculationMethodValues();
-
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model SiteWaterMainsTemperature scalar accessor names/signatures.
-    // - Field Mapping: calculationMethod, annualAverageOutdoorAirTemperature,
-    //   maximumDifferenceInMonthlyAverageOutdoorAirTemperatures, temperatureMultiplier, and temperatureOffset map directly
-    //   to EnergyPlus Site:WaterMainsTemperature scalar fields.
-    // - Field Mapping: temperatureSchedule is intentionally excluded in this scalar-only pass because it is an object-list relationship field.
-    // - TODO(parity): Add relationship helpers in a dedicated non-scalar parity pass.
     std::string calculationMethod() const;
     bool setCalculationMethod(const std::string& calculationMethod);
 

@@ -22,6 +22,18 @@ namespace epmodel {
     class CoolingTowerPerformanceYorkCalc_Impl;
   }
 
+  /** \brief Represents <code>CoolingTowerPerformance:YorkCalc</code>.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-condenser-equipment.html#coolingtowerperformanceyorkcalc,CoolingTowerPerformance:YorkCalc}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::CoolingTowerPerformanceYorkCalc</code>.
+   * The EPModel declaration exposes the EnergyPlus-backed fields shown here; Model conveniences for typed relationships, extensible groups, or OpenStudio-only fields are not available unless declared here.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API CoolingTowerPerformanceYorkCalc : public ModelObject
   {
    public:
@@ -34,13 +46,6 @@ namespace epmodel {
     CoolingTowerPerformanceYorkCalc& operator=(CoolingTowerPerformanceYorkCalc&&) = default;
 
     static IddObjectType iddObjectType();
-
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model CoolingTowerPerformanceYorkCalc scalar names/signatures.
-    // - Field Mapping: APIs delegate directly to CoolingTowerPerformance:YorkCalc scalar fields in E+.
-    // - Field Mapping: maximumLiquidtoGasRatio maps to CoolingTowerPerformance:YorkCalc Maximum Liquid to Gas Ratio.
-    // - TODO(parity): Keep mappings aligned if EnergyPlus renames CoolingTowerPerformance:YorkCalc fields.
-
     double minimumInletAirWetBulbTemperature() const;
     bool setMinimumInletAirWetBulbTemperature(double minimumInletAirWetBulbTemperature);
 

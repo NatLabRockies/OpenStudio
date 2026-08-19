@@ -26,6 +26,17 @@ namespace epmodel {
     class ZoneControlContaminantController_Impl;
   }
 
+  /** \brief ZoneControlContaminantController.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-zone-controls-thermostats.html#zonecontrolcontaminantcontroller,ZoneControl:ContaminantController}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::ZoneControlContaminantController</code>. The controlled-zone and five schedule relationships are exposed. EnergyPlus's maximum-carbon-dioxide field and broader ownership helpers are not available.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API ZoneControlContaminantController : public ModelObject
   {
    public:
@@ -38,15 +49,6 @@ namespace epmodel {
     ZoneControlContaminantController& operator=(ZoneControlContaminantController&&) = default;
 
     static IddObjectType iddObjectType();
-
-    // Schema Alignment Notes:
-    // - Status: Near Parity for the canonical public relationship surface.
-    // - Canonical Counterpart: openstudio::model::ZoneControlContaminantController.
-    // - Implemented Parity: Controlled-zone observation and the five canonical optional schedule getter/setter/reset relationships.
-    // - Field/Storage Mapping: controlledZone maps to E+ Zone Name; schedule setters use the five matching ScheduleNames fields with
-    //   canonical availability or non-negative concentration limits. The E+-only Maximum Carbon Dioxide Concentration field is not exposed.
-    // - Documented Delta: Existing ThermalZone assignment, replacement, reset, clone, and removal behavior is unchanged by this API-only phase.
-    // - Remaining Parity Work: Broader ThermalZone ownership and direct clone/removal lifecycle parity remains demand-driven.
 
     boost::optional<ThermalZone> controlledZone() const;
 

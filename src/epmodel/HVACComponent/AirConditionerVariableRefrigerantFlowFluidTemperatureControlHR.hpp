@@ -24,6 +24,33 @@ namespace epmodel {
     class AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR_Impl;
   }
 
+  /** \brief Models a heat-recovery variable-refrigerant-flow outdoor unit with fluid-temperature control.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-variable-refrigerant-flow-equipment.html#airconditionervariablerefrigerantflowfluidtemperaturecontrolhr,AirConditioner:VariableRefrigerantFlow:FluidTemperatureControl:HR},
+   * with related \epobject{group-variable-refrigerant-flow-equipment.html#zoneterminalunitlist,ZoneTerminalUnitList} and curve objects.
+   *
+   * \par Important behavior
+   * The constructor creates the required outdoor-unit curves, loading rows, and
+   * default refrigerant-property objects. Terminal membership is stored through
+   * the associated terminal-unit list.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR</code>.
+   * <b>Not yet available:</b> the Model loading-index API, including
+   * <code>addLoadingIndex</code>, <code>removeLoadingIndex</code>,
+   * <code>removeAllLoadingIndexes</code>, and <code>loadingIndexes</code>;
+   * autosized-result helpers such as
+   * <code>autosizedGrossRatedTotalCoolingCapacity()</code>,
+   * <code>autosizedGrossRatedHeatingCapacity()</code>,
+   * <code>autosizedRatedEvaporativeCapacity()</code>, and
+   * <code>autosizedResistiveDefrostHeaterCapacity()</code>.
+   *
+   * \par Known limitations
+   * Loading-index rows can be accessed only through the EnergyPlus-backed fields
+   * currently exposed by this wrapper, not as Model-style objects.
+   */
   class EPMODEL_API AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR : public HVACComponent
   {
    public:
@@ -45,16 +72,6 @@ namespace epmodel {
     static std::vector<std::string> defrostStrategyValues();
     static std::vector<std::string> defrostControlValues();
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. The long scalar VRF heat-recovery surface, terminal ownership, and outdoor-unit curve relationships are aligned. Canonical loading rows exist in EnergyPlus storage but do not yet have a Model-shaped public API.
-    // - Canonical Counterpart: openstudio::model::AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR.
-    // - Implemented Parity: The preserved scalar API surface mirrors the canonical heat-recovery, refrigerant, defrost, pipe, and compressor-field contract exposed in the model type. The constructor creates the two required outdoor-unit curves, three complete compressor-loading rows, and one shared built-in refrigerant dataset through `Model`.
-    // - Documented Delta: epmodel does not expose a Model-shaped `LoadingIndex` API or autosized-result conveniences yet.
-    // - Field/Storage Mapping: The preserved scalars and three outdoor-unit curve relationships map directly to EnergyPlus
-    //   `AirConditioner:VariableRefrigerantFlow:FluidTemperatureControl:HR` storage. Terminal ownership is stored in the referenced
-    //   `ZoneTerminalUnitList`; refrigerant tables remain model-owned EnergyPlus objects and survive consumer removal.
-    // - Evidence: `src/model/AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR.hpp`, `src/model/AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirConditionerVariableRefrigerantFlowFluidTemperatureControlHR.cpp`, `src/epmodel/test/AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR_GTest.cpp`, and `src/model/test/AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR_GTest.cpp`.
-    // - Remaining Parity Work: Add the omitted loading-index API when a workflow requires mutation beyond the complete default graph.
     Schedule availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);
 

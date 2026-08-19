@@ -25,6 +25,17 @@ namespace epmodel {
     class DesignSpecificationOutdoorAirSpaceList_Impl;
   }
 
+  /** \brief Represents <code>DesignSpecification:OutdoorAir:SpaceList</code>.
+   *
+   * \par EnergyPlus object
+   * Represents \epobject{group-design-objects.html#designspecificationoutdoorairspacelist,DesignSpecification:OutdoorAir:SpaceList}.
+   *
+   * \par OpenStudio Model API
+   * OpenStudio Model has no public wrapper for <code>DesignSpecification:OutdoorAir:SpaceList</code>; this wrapper is new to the EPModel API.
+   *
+   * \par Known limitations
+   * Relationship-row mutation and higher-level topology conveniences remain owner-managed or unavailable through this wrapper.
+   */
   class EPMODEL_API DesignSpecificationOutdoorAirSpaceList : public ModelObject
   {
    public:
@@ -37,12 +48,6 @@ namespace epmodel {
     DesignSpecificationOutdoorAirSpaceList& operator=(DesignSpecificationOutdoorAirSpaceList&&) = default;
 
     static IddObjectType iddObjectType();
-
-    // Schema Alignment Notes:
-    // - API: This no-counterpart epmodel type keeps IDD-derived class/API naming.
-    // - Field Mapping: This object has no simple non-name scalar fields; only relationship-like extensible links.
-    // - Field Mapping: Space/DESIGNSPECIFICATION references remain impl-only via extensible-group APIs.
-    // - TODO(parity): Add public relationship APIs incrementally after scalar saturation.
     std::vector<Space> spaces() const;
     boost::optional<DesignSpecificationOutdoorAir> designSpecificationOutdoorAir(const Space& space) const;
 

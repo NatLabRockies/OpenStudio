@@ -23,6 +23,20 @@ namespace epmodel {
     class AirflowNetworkDistributionNode_Impl;
   }
 
+  /** \brief Represents the EnergyPlus AirflowNetwork:Distribution:Node object.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-airflow-network.html#airflownetworkdistributionnode,AirflowNetwork:Distribution:Node}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::AirflowNetworkDistributionNode</code>.
+   * <b>Changed:</b> EPModel exposes the EnergyPlus <code>Component Object Type or Node Type</code> choice directly;
+   * Model instead provides typed <code>node()</code>, <code>airLoopHVACZoneMixer()</code>,
+   * <code>airLoopHVACZoneSplitter()</code>, and <code>airLoopHVACOutdoorAirSystem()</code> getters.
+   *
+   * \par Known limitations
+   * The component-or-node target is an EnergyPlus object-list relationship and is not exposed as a typed EPModel mutator.
+   */
   class EPMODEL_API AirflowNetworkDistributionNode : public ModelObject
   {
    public:
@@ -38,15 +52,6 @@ namespace epmodel {
 
     static std::vector<std::string> componentObjectTypeorNodeTypeValues();
 
-    // Schema Alignment Notes:
-    // - API: This no-counterpart epmodel type uses IDD-derived class/accessor naming.
-    // - Field Mapping: componentObjectTypeorNodeType and nodeHeight map directly to EnergyPlus
-    //   AirflowNetwork:Distribution:Node scalar fields.
-    // - Field Mapping: Component Name or Node Name is a relationship-like target-link field and is
-    //   intentionally excluded from scalar accessors.
-    // - ForwardTranslator evidence: translateAirflowNetworkDistributionNode writes
-    //   Component Object Type or Node Type and Node Height directly.
-    // - TODO(parity): Add relationship APIs after scalar scaffold saturation.
 
     // Component Object Type or Node Type accessors.
     std::string componentObjectTypeorNodeType() const;

@@ -23,6 +23,20 @@ namespace epmodel {
     class Branch_Impl;
   }
 
+  /** \brief Represents <code>Branch</code>.
+   *
+   * \par EnergyPlus object
+   * Represents \epobject{group-node-branch-management.html#branch,Branch}.
+   *
+   * \par Important behavior
+   * The ordered component and node rows are the saved loop topology; <code>components()</code> resolves those rows to live EPModel objects.
+   *
+   * \par OpenStudio Model API
+   * OpenStudio Model has no public wrapper for <code>Branch</code>; this wrapper is new to the EPModel API.
+   *
+   * \par Known limitations
+   * Relationship-row mutation and higher-level topology conveniences remain owner-managed or unavailable through this wrapper.
+   */
   class EPMODEL_API Branch : public ModelObject
   {
    public:
@@ -37,14 +51,6 @@ namespace epmodel {
     std::vector<ModelObject> components() const;
     boost::optional<Node> componentInletNode(unsigned index) const;
     boost::optional<Node> componentOutletNode(unsigned index) const;
-
-    // Schema Alignment Notes:
-    // - API: This no-counterpart type keeps IDD-derived class/API naming.
-    // - Field Mapping: Name remains available through base ModelObject scalar API.
-    // - Field Mapping: Pressure Drop Curve Name and extensible component/node fields are relationship-like link fields and are excluded from scalar accessors.
-    // - ForwardTranslator evidence: ForwardTranslatePlantLoop and ForwardTranslateAirLoopHVAC populate Branch as a connectivity/linkage object.
-    // - TODO(parity): Add explicit relationship APIs incrementally after scalar scaffold saturation.
-
     static IddObjectType iddObjectType();
 
    protected:

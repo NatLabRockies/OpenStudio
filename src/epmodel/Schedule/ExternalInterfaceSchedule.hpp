@@ -22,6 +22,28 @@ namespace epmodel {
     class ExternalInterfaceSchedule_Impl;
   }
 
+  /** \brief Provides a schedule value supplied by an external interface.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-externalinterface.html#externalinterfaceschedule,ExternalInterface:Schedule}
+   *
+   * \par Important behavior
+   * The initial value is used during warm-up and system sizing.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::ExternalInterfaceSchedule</code>.
+   *
+   * - <b>Not yet available:</b> <code>exportToBCVTB()</code>,
+   *   <code>isExportToBCVTBDefaulted()</code>,
+   *   <code>setExportToBCVTB(...)</code>, and
+   *   <code>resetExportToBCVTB()</code>. These methods expose the
+   *   OpenStudio-only <code>OS:ExternalInterface:Schedule</code> field.
+   *
+   * \par Known limitations
+   * EnergyPlus <code>ExternalInterface:Schedule</code> has no ExportToBCVTB
+   * field, so that OpenStudio Model setting cannot be stored in this wrapper.
+   */
   class EPMODEL_API ExternalInterfaceSchedule : public Schedule
   {
    public:
@@ -36,14 +58,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::ExternalInterfaceSchedule constructor and scalar accessor names/signatures where mappable to E+.
-    // - Field Mapping: initialValue -> ExternalInterface:Schedule, Initial Value.
-    // - Field Mapping: scheduleTypeLimits is relationship-like (Schedule Type Limits Name object-list target) and excluded from scalar scaffold.
-    // - API Drift: exportToBCVTB/isExportToBCVTBDefaulted/setExportToBCVTB/resetExportToBCVTB are OS-only fields
-    //   (OS:ExternalInterface:Schedule ExportToBCVTB) and are not present on EnergyPlus ExternalInterface:Schedule.
-    // - ForwardTranslator evidence: ForwardTranslateExternalInterfaceSchedule.cpp writes only ScheduleTypeLimitsName and InitialValue to E+.
-    // - TODO(parity): Add relationship APIs incrementally without changing preserved scalar signatures.
     // Initial Value accessors
     double initialValue() const;
     bool setInitialValue(double initialValue);

@@ -22,6 +22,17 @@ namespace epmodel {
     class AirflowNetworkDistributionComponentConstantPressureDrop_Impl;
   }
 
+  /** \brief Represents the EnergyPlus AirflowNetwork:Distribution:Component:ConstantPressureDrop object.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-airflow-network.html#airflownetworkdistributioncomponentconstantpressuredrop,AirflowNetwork:Distribution:Component:ConstantPressureDrop}
+   *
+   * \par OpenStudio Model API
+   * OpenStudio Model has no public wrapper for this EnergyPlus object. This wrapper is new to the EPModel API.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations beyond the public fields and relationships exposed by this wrapper.
+   */
   class EPMODEL_API AirflowNetworkDistributionComponentConstantPressureDrop : public ModelObject
   {
    public:
@@ -35,14 +46,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - API: This no-counterpart type uses IDD-derived class/accessor naming.
-    // - Field Mapping: pressureDifferenceAcrosstheComponent maps directly to EnergyPlus
-    //   AirflowNetwork:Distribution:Component:ConstantPressureDrop field
-    //   Pressure Difference Across the Component.
-    // - ForwardTranslator evidence: translateAirflowNetworkConstantPressureDrop writes
-    //   PressureDifferenceAcrosstheComponent directly from modelObject.pressureDrop().
-    // - TODO(parity): Align with potential model-counterpart semantics during later parity work.
     double pressureDifferenceAcrosstheComponent() const;
     bool setPressureDifferenceAcrosstheComponent(double pressureDifferenceAcrosstheComponent);
 

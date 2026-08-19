@@ -25,6 +25,31 @@ namespace epmodel {
     class CoilSystemCoolingDX_Impl;
   }
 
+  /** \brief Represents the EnergyPlus virtual container for a DX cooling coil and its controls.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-heating-and-cooling-coils.html#coilsystemcoolingdx,CoilSystem:Cooling:DX}
+   *
+   * \par Important behavior
+   * Before topology operations, the linked cooling coil, availability schedule,
+   * and node fields must be coherent. When the wrapper is added to an air-loop
+   * supply branch or a dedicated outdoor-air stream, EPModel synchronizes the
+   * supported child coil's inlet and outlet nodes with the container and uses
+   * the outlet as the sensor node. The public navigation methods expose the
+   * linked cooling coil and sensor node; the linked coil may be a
+   * <code>Coil:Cooling:DX</code> or <code>Coil:Cooling:DX:TwoSpeed</code> object.
+   *
+   * \par OpenStudio Model API
+   * OpenStudio Model has no public wrapper for
+   * <code>CoilSystem:Cooling:DX</code>. This wrapper is new to the EPModel API.
+   *
+   * \par Known limitations
+   * Topology operations currently support only linked
+   * <code>Coil:Cooling:DX</code> and <code>Coil:Cooling:DX:TwoSpeed</code>
+   * objects. Other child-coil types allowed by the EnergyPlus schema may be
+   * stored and inspected, but they are not yet integrated into this wrapper's
+   * topology operations.
+   */
   class EPMODEL_API CoilSystemCoolingDX : public StraightComponent
   {
    public:
@@ -41,24 +66,6 @@ namespace epmodel {
     static std::vector<std::string> coolingCoilObjectTypeValues();
     static std::vector<std::string> dehumidificationControlTypeValues();
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. This EnergyPlus storage adapter preserves scalar fields and the bounded curve-fit and two-speed DX branch
-    //   lifecycles plus two-speed DX dedicated-outdoor-air placement without becoming the public component reported by topology traversal.
-    // - Canonical Counterpart: None. `openstudio::model` creates this EnergyPlus object during translation rather than exposing a same-name class.
-    // - Implemented Parity: For exactly `CoilCoolingDX` and `CoilCoolingDXTwoSpeed`, the adapter keeps its inlet, outlet, sensor, child-coil, and
-    //   availability-schedule relationships aligned during direct supply-branch placement, movement, detachment, restoration, and reload. The
-    //   same projection and lifecycle contract applies to a two-speed coil on a dedicated outdoor-air stream.
-    //   Whole-AirLoopHVAC teardown removes the persisted adapter and referenced coil together for every loaded coil family so it cannot leave an
-    //   invalid orphan without air nodes.
-    // - Documented Delta: Public AirLoopHVAC and outdoor-air-system traversal project the linked cooling coil, while Branch, OA equipment-list,
-    //   and concrete-object access retain the persisted `CoilSystem:Cooling:DX` record. Topology mutation belongs to the linked coil rather than
-    //   this adapter's public API.
-    // - Field/Storage Mapping: Scalars map directly to `CoilSystem:Cooling:DX`; inlet/outlet use StraightComponent ports, and sensor and cooling
-    //   coil are read-only public relationships.
-    // - Evidence: `src/epmodel/test/CoilCoolingDX_GTest.cpp`, `src/epmodel/test/CoilCoolingDXTwoSpeed_GTest.cpp`,
-    //   and `src/epmodel/test/CoilSystemCoolingDX_GTest.cpp`.
-    // - Remaining Parity Work: Characterize curve-fit DX on dedicated outdoor air and other EnergyPlus-supported child coil families before
-    //   widening the adapter's topology contract beyond `CoilCoolingDX` and `CoilCoolingDXTwoSpeed`.
     boost::optional<Node> sensorNode() const;
     boost::optional<ModelObject> coolingCoil() const;
     std::string coolingCoilObjectType() const;

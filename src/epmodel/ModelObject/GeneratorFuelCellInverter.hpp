@@ -23,6 +23,18 @@ namespace epmodel {
     class GeneratorFuelCellInverter_Impl;
   }
 
+  /** \brief Represents <code>Generator:FuelCell:Inverter</code>.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-electric-load-center-generator.html#generatorfuelcellinverter,Generator:FuelCell:Inverter}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::GeneratorFuelCellInverter</code>.
+   * **Not yet available:** Model parent, node, curve, schedule, and extensible constituent conveniences are not exposed unless declared here.
+   *
+   * \par Known limitations
+   * Relationship and extensible data not represented by the public declarations must be maintained by the owning object.
+   */
   class EPMODEL_API GeneratorFuelCellInverter : public ModelObject
   {
    public:
@@ -37,14 +49,6 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     static std::vector<std::string> inverterEfficiencyCalculationModeValues();
-
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model scalar accessor naming/signatures for counterpart parity.
-    // - Field Mapping: inverterEfficiencyCalculationMode and inverterEfficiency map directly to
-    //   Generator:FuelCell:Inverter fields Inverter Efficiency Calculation Mode and Inverter Efficiency.
-    // - ForwardTranslator evidence: ForwardTranslateGeneratorFuelCellInverter writes these scalar fields directly,
-    //   while Efficiency Function of DC Power Curve Name is handled as a relationship field.
-    // - TODO(parity): Add preserved relationship APIs incrementally for efficiencyFunctionofDCPowerCurve and parent linkage.
     std::string inverterEfficiencyCalculationMode() const;
     bool setInverterEfficiencyCalculationMode(const std::string& inverterEfficiencyCalculationMode);
     void resetInverterEfficiencyCalculationMode();

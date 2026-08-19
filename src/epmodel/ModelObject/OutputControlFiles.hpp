@@ -22,6 +22,17 @@ namespace epmodel {
     class OutputControlFiles_Impl;
   }
 
+  /** \brief OutputControlFiles.
+   *
+   * \par EnergyPlus object
+   * \epobject{input-for-output.html#outputcontrolfiles,OutputControl:Files}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::OutputControlFiles</code>. The output switches map directly to EnergyPlus yes/no fields. EnergyPlus <code>OutputEND</code> is not configurable here and the Model translator writes <code>Yes</code>.
+   *
+   * \par Known limitations
+   * Only the fields and relationships listed in this wrapper are available; broader Model-only helpers are not exposed.
+   */
   class EPMODEL_API OutputControlFiles : public ModelObject
   {
    public:
@@ -34,13 +45,6 @@ namespace epmodel {
     OutputControlFiles& operator=(OutputControlFiles&&) = default;
 
     static IddObjectType iddObjectType();
-
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model::OutputControlFiles scalar accessor names/signatures.
-    // - Field Mapping: output* scalar APIs map directly to E+ OutputControl:Files yes/no fields.
-    // - Field Mapping: E+ OutputControl:Files OutputEND has no openstudio::model scalar API; ForwardTranslator keeps it hardcoded to "Yes".
-    // - ForwardTranslator evidence: ForwardTranslateOutputControlFiles.cpp writes these preserved output* APIs directly.
-    // - TODO(parity): Keep scalar API stable while extending any non-scalar parity behavior in future passes.
     bool outputCSV() const;
     bool setOutputCSV(bool outputCSV);
 

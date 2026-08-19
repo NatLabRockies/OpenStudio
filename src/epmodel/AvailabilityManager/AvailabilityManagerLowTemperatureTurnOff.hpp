@@ -20,6 +20,29 @@ namespace epmodel {
     class AvailabilityManagerLowTemperatureTurnOff_Impl;
   }
 
+  /** \brief Turns availability off when a sensor temperature falls below a limit.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-system-availability-managers.html#availabilitymanagerlowtemperatureturnoff,AvailabilityManager:LowTemperatureTurnOff}
+   *
+   * \par Important behavior
+   * A newly constructed manager initializes its temperature limit to 30.0.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::AvailabilityManagerLowTemperatureTurnOff</code>.
+   *
+   * - <b>Not yet available:</b> <code>loop()</code>,
+   *   <code>sensorNode()</code>, <code>setSensorNode(...)</code>,
+   *   <code>resetSensorNode()</code>, <code>applicabilitySchedule()</code>,
+   *   and <code>setApplicabilitySchedule(...)</code>.
+   *
+   * \par Known limitations
+   * The EPModel wrapper currently exposes only the scalar temperature limit.
+   * It cannot be passed to typed loop-assignment APIs until its sensor-node and
+   * applicability-schedule relationships and availability-manager base
+   * interface are exposed.
+   */
   class EPMODEL_API AvailabilityManagerLowTemperatureTurnOff : public ModelObject
   {
    public:
@@ -35,10 +58,6 @@ namespace epmodel {
 
     /** @name Temperature Accessors */
     //@{
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model scalar accessor name/signature for this model-counterpart class.
-    // - Field Mapping: temperature maps to E+ AvailabilityManager:LowTemperatureTurnOff Temperature.
-    // - TODO(parity): Keep relationship fields sensorNode and applicabilitySchedule out of this scalar-only scaffold pass.
     double temperature() const;
     bool setTemperature(double temperature);
     //@}

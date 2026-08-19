@@ -23,6 +23,17 @@ namespace epmodel {
     class OutputVariable_Impl;
   }
 
+  /** \brief OutputVariable.
+   *
+   * \par EnergyPlus object
+   * \epobject{input-for-output.html#outputvariable,Output:Variable}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::OutputVariable</code>. Key value, variable name, and reporting frequency are exposed. Model's schedule relationship and <code>exportToBCVTB()</code> setting are not available.
+   *
+   * \par Known limitations
+   * Only the fields and relationships listed in this wrapper are available; broader Model-only helpers are not exposed.
+   */
   class EPMODEL_API OutputVariable : public ModelObject
   {
    public:
@@ -37,16 +48,6 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     static std::vector<std::string> reportingFrequencyValues();
-
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model::OutputVariable scalar accessor names/signatures.
-    // - Field Mapping: keyValue/variableName/reportingFrequency map directly to E+ Output:Variable Key Value/Variable Name/Reporting Frequency.
-    // - API Semantics: variableName is required (strict getter); keyValue/reportingFrequency are defaultable with reset/isDefaulted helpers.
-    // - Field Mapping: schedule() APIs are relationship-like (Schedule Name object target) and are intentionally excluded from scalar scaffold.
-    // - Field Mapping: exportToBCVTB APIs are OS-only and not present on E+ Output:Variable, so excluded from this epmodel scalar class.
-    // - ForwardTranslator evidence: ForwardTranslateOutputVariable.cpp writes Key Value, Variable Name, and Reporting Frequency from these preserved APIs.
-    // - TODO(parity): Add relationship and OS-side parity behavior incrementally without changing these scalar signatures.
-    // Key Value
     std::string keyValue() const;
     bool isKeyValueDefaulted() const;
     bool setKeyValue(const std::string& keyValue);

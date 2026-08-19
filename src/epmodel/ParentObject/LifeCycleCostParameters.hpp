@@ -26,6 +26,21 @@ namespace epmodel {
     class LifeCycleCostParameters_Impl;
   }
 
+/** \brief Defines the global economic assumptions for life-cycle cost analysis.
+ *
+ * \par EnergyPlus object
+ * \epobject{lifecyclecost-parameters.html#lifecyclecostparameters,LifeCycleCost:Parameters}
+ *
+ * \par Important behavior
+ * Discounting, inflation, analysis-period, tax, electricity-cost, and constant-dollar fields are stored directly on the object.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model class is <code>openstudio::model::LifeCycleCostParameters</code>.
+ * <b>Not yet available:</b> Model's analysis-type, NIST, and fuel-specific inflation helpers are not exposed.
+ *
+ * \par Known limitations
+ * This wrapper stores assumptions only; life-cycle cost calculations and component costs are handled by EnergyPlus and related objects.
+ */
   class EPMODEL_API LifeCycleCostParameters : public ParentObject
   {
    public:
@@ -48,15 +63,6 @@ namespace epmodel {
     static std::vector<std::string> validInflationApproachValues();
     static std::vector<std::string> validDepreciationMethodValues();
 
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::LifeCycleCostParameters scalar accessor names/signatures where mappable to EnergyPlus.
-    // - Field Mapping: discountingConvention, inflationApproach, real/nominal discount rates, inflation, base/service date, length, tax,
-    //   and depreciationMethod map directly to LifeCycleCost:Parameters scalar fields.
-    // - ForwardTranslator evidence: ForwardTranslateLifeCycleCostParameters.cpp writes these same fields directly to
-    //   LifeCycleCost:Parameters.
-    // - Field Mapping: model-only APIs (analysisType / NIST escalation toggles / fuel-specific escalation rates) are not scalar fields on
-    //   EnergyPlus LifeCycleCost:Parameters and are intentionally excluded from this scaffold pass.
-    // - TODO(parity): Revisit model-only LCC abstractions if epmodel introduces cross-object helper behavior.
     std::string discountingConvention() const;
     bool isDiscountingConventionDefaulted() const;
     bool setDiscountingConvention(const std::string& discountingConvention);

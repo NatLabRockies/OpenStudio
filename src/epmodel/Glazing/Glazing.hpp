@@ -18,8 +18,20 @@ namespace epmodel {
     class Glazing_Impl;
   }
 
-  /** A Glazing is a FenestrationMaterial that serves as a base class for glass layers in
-   *  fenestration LayeredConstructions. */
+  /** \brief Base class for glass layers in fenestration constructions.
+   *
+   * \par EnergyPlus object
+   * This class has no single EnergyPlus object. Concrete glazing subclasses
+   * encapsulate the applicable <code>WindowMaterial:*</code> object.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::Glazing</code>. No additional public API
+   * differences are known.
+   *
+   * \par Known limitations
+   * This abstract class cannot be persisted without a concrete glazing type.
+   */
   class EPMODEL_API Glazing : public FenestrationMaterial
   {
    public:

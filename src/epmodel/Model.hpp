@@ -36,6 +36,17 @@ namespace epmodel {
     Repair,
   };
 
+  /** \brief Results and messages produced while validating and repairing an EPModel.
+   *
+   * \par EnergyPlus object
+   * This is an EPModel runtime report and has no EnergyPlus object.
+   *
+   * \par OpenStudio Model API
+   * There is no corresponding `openstudio::model` class. This report is specific to EPModel loading and repair.
+   *
+   * \par Known limitations
+   * The report records counts and messages; it does not provide structured per-object repair records.
+   */
   struct EPMODEL_API SanitizationReport
   {
     unsigned infoCount{0};
@@ -66,6 +77,24 @@ namespace epmodel {
     void addLoadError(LoadContext& ctx, const std::string& message);
   }  // namespace detail
 
+  /** \brief An EnergyPlus-IDF-backed model and the owner of EPModel objects.
+   *
+   * \par EnergyPlus object
+   * This class has no single EnergyPlus object; it owns the workspace containing the concrete IDD objects.
+   *
+   * \par Important behavior
+   * Loading and construction validate and repair persisted relationships according to the selected sanitization policy.
+   * `clone()` copies the workspace, while transient wrappers are resolved by type and name rather than saved as
+   * independent EnergyPlus objects. SQL sizing results are attached through `setSqlFile()` when available.
+   *
+   * \par OpenStudio Model API
+   * This is the EPModel workspace/model type rather than a counterpart to `openstudio::model::Model`. It provides
+   * IDF-backed object creation, loading, saving, canonicalization, built-in schedules, and transient-object lookup.
+   *
+   * \par Known limitations
+   * Conversion from OSM requires the existing version and forward translators, and not every OpenStudio Model
+   * convenience or relationship can be represented by EnergyPlus storage.
+   */
   class EPMODEL_API Model : public openstudio::Workspace
   {
    public:

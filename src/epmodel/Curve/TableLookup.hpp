@@ -24,6 +24,28 @@ namespace epmodel {
     class TableLookup_Impl;
   }
 
+  /** \brief Represents a multi-dimensional table lookup curve.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-performance-tables.html#tablelookup,Table:Lookup}, together with its
+   * \epobject{group-performance-tables.html#tableindependentvariablelist,Table:IndependentVariableList} and
+   * \epobject{group-performance-tables.html#tableindependentvariable,Table:IndependentVariable} companion objects.
+   *
+   * \par Important behavior
+   * Output values are stored in this object's extensible fields. Independent
+   * variables are referenced by extensible rows on the companion
+   * <code>Table:IndependentVariableList</code>; the typed relationship methods
+   * create that list when needed and add or remove its rows.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::TableLookup</code>.
+   * No known public API differences.
+   *
+   * \par Known limitations
+   * <code>evaluate()</code> is not implemented for table lookup curves; it
+   * logs a warning and returns <code>-9999.0</code>.
+   */
   class EPMODEL_API TableLookup : public Curve
   {
    public:
@@ -42,11 +64,6 @@ namespace epmodel {
 
     static std::vector<std::string> outputUnitTypeValues();
     static std::vector<std::string> validOutputUnitTypeValues();
-
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model TableLookup scalar accessor names/signatures.
-    // - Field Mapping: Scalars map directly to Table:Lookup fields via Table_LookupFields and ForwardTranslateTableLookup.cpp writes the same fields.
-    // - Field Mapping: IndependentVariableListName and Output Value extensibles are represented with typed object/extensible APIs.
 
     std::string normalizationMethod() const;
     bool setNormalizationMethod(const std::string& normalizationMethod);

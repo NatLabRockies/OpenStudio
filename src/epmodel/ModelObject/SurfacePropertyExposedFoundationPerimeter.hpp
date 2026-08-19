@@ -23,15 +23,17 @@ namespace epmodel {
     class SurfacePropertyExposedFoundationPerimeter_Impl;
   }
 
-  // Schema Alignment Notes:
-  // - API: This has-counterpart type preserves existing openstudio::model accessor names/signatures.
-  // - Field Mapping: exposedPerimeterCalculationMethod maps to E+ SurfaceProperty:ExposedFoundationPerimeter, Exposed Perimeter Calculation Method.
-  // - Field Mapping: totalExposedPerimeter maps to E+ Total Exposed Perimeter (N1, optional real, min 0).
-  // - Field Mapping: exposedPerimeterFraction maps to E+ Exposed Perimeter Fraction (N2, default 1.0, min 0, max 1).
-  // - Field Mapping: Surface Name excluded as object-list relationship field.
-  // - Field Mapping: Surface Segment Exposed excluded as extensible boolean-choice field.
-  // - TODO(parity): Add relationship APIs after scalar saturation without changing scalar signatures.
-
+  /** \brief SurfacePropertyExposedFoundationPerimeter.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-advanced-surface-concepts.html#surfaceproperty-exposedfoundationperimeter,SurfaceProperty:ExposedFoundationPerimeter}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::SurfacePropertyExposedFoundationPerimeter</code>. <b>Changed:</b> EPModel exposes direct construction from <code>Model</code> and adds <code>exposedPerimeterCalculationMethodValues()</code>; Model construction requires a surface and perimeter inputs. The exposed-perimeter fields are available; <code>surface()</code> and extensible segment entries are not.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API SurfacePropertyExposedFoundationPerimeter : public ModelObject
   {
    public:

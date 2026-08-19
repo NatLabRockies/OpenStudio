@@ -22,6 +22,23 @@ namespace epmodel {
     class BoilerSteam_Impl;
   }
 
+  /**
+   * \brief Steam boiler with fuel, efficiency, flow, pressure, sizing, curve, and end-use controls.
+   *
+   * \par EnergyPlus object
+   * Encapsulates \epobject{group-plant-equipment.html#boilersteam,Boiler:Steam}.
+   *
+   * \par Important behavior
+   * Scalar values, including the part-load fuel-use coefficients, are stored directly on the boiler object; plant
+   * connectivity uses the inherited straight-component node relationship.
+   *
+   * \par OpenStudio Model API
+   * Counterpart: `openstudio::model::BoilerSteam`. The boiler performance, flow, part-load coefficient, sizing, and end-use scalar
+   * APIs are represented with their default/autosize behavior.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations beyond the inherited plant-node contract.
+   */
   class EPMODEL_API BoilerSteam : public StraightComponent
   {
    public:
@@ -37,14 +54,6 @@ namespace epmodel {
 
     static std::vector<std::string> fuelTypeValues();
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. The canonical boiler-steam scalar surface is present, and the node topology is mostly inherited, but explicit relationship helpers remain limited.
-    // - Canonical Counterpart: openstudio::model::BoilerSteam.
-    // - Implemented Parity: The preserved scalar API covers the boiler performance, flow, curve, sizing, and end-use fields with matching default/autosize behavior.
-    // - Documented Delta: Relationship helpers beyond the inherited StraightComponent node contract remain intentionally limited in this pass.
-    // - Field/Storage Mapping: These accessors map directly to EnergyPlus `Boiler:Steam` scalar fields used by the forward translator.
-    // - Evidence: `src/model/BoilerSteam.hpp` and `src/energyplus/ForwardTranslator/ForwardTranslateBoilerSteam.cpp`.
-    // - Remaining Parity Work: Add any remaining relationship convenience around the inlet and outlet nodes without changing the preserved scalar signatures.
     std::string fuelType() const;
     bool setFuelType(const std::string& fuelType);
 

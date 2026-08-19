@@ -25,6 +25,21 @@ namespace epmodel {
     class SubSurface_Impl;
   }
 
+  /** \brief Represents the EnergyPlus FenestrationSurface:Detailed object.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-thermal-zone-description-geometry.html#fenestrationsurfacedetailed,FenestrationSurface:Detailed}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::SubSurface</code>. <b>Not yet available:</b>
+   * Model shading-control and several surface-property/window-geometry relationship methods. EPModel exposes geometry,
+   * construction, parent-surface, adjacent-subsurface, and frame/divider relationships, together with the persisted
+   * scalar fields.
+   *
+   * \par Known limitations
+   * Shading controls and several Model-only surface-property and window-geometry relationships are not represented by
+   * the current EPModel API; EnergyPlus still constrains which parent and adjacent-subsurface links are valid.
+   */
   class EPMODEL_API SubSurface : public PlanarSurface
   {
    public:
@@ -40,14 +55,6 @@ namespace epmodel {
 
     static std::vector<std::string> validSubSurfaceTypeValues();
 
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::SubSurface scalar accessor names/signatures.
-    // - Field Mapping: These APIs map to FenestrationSurface:Detailed fields in the EnergyPlus schema.
-    // - Field Mapping: Construction Name, Building Surface Name, Outside Boundary Condition Object,
-    //   Frame and Divider Name, and extensible vertex coordinates are relationship/non-scalar fields and are excluded.
-    // - ForwardTranslator evidence: ForwardTranslateSubSurface.cpp maps subSurfaceType, viewFactortoGround,
-    //   and multiplier directly to FenestrationSurface:Detailed.
-    // - TODO(parity): Add geometry and typed relationship APIs in later parity milestones.
 
     std::string subSurfaceType() const;
     bool isSubSurfaceTypeDefaulted() const;

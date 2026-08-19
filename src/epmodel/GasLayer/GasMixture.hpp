@@ -22,6 +22,30 @@ namespace epmodel {
     class GasMixture_Impl;
   }
 
+  /** \brief Represents a mixture of up to four gases in a fenestration construction.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-surface-construction-elements.html#windowmaterialgasmixture,WindowMaterial:GasMixture}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::GasMixture</code>.
+   *
+   * - <b>Changed:</b> The EPModel constructor accepts only the model and creates
+   *   the default four-gas mixture. Set the thickness, gas types, and fractions
+   *   after construction to use other values.
+   * - <b>Not yet available:</b> Indexed gas access and mutation through
+   *   <code>getGasType()</code>, <code>getGasFraction()</code>,
+   *   <code>setGas()</code>, <code>setGasType()</code>,
+   *   <code>setGasFraction()</code>, and <code>addGas()</code>.
+   * - <b>Not yet available:</b> Mixture helpers
+   *   <code>setFractions()</code> and <code>balanceFractions()</code>, and the
+   *   temperature-dependent thermal-property calculation methods.
+   *
+   * \par Known limitations
+   * Individual field setters do not balance gas fractions. Callers must keep
+   * the number of gases, populated gas entries, and fraction sum consistent.
+   */
   class EPMODEL_API GasMixture : public GasLayer
   {
    public:
@@ -41,10 +65,6 @@ namespace epmodel {
     static std::vector<std::string> gas3TypeValues();
     static std::vector<std::string> gas4TypeValues();
 
-    // Schema Alignment Notes:
-    // - API: preserve openstudio::model GasMixture scalar accessor names/signatures for the EnergyPlus WindowMaterial:GasMixture counterpart.
-    // - Field Mapping: Thickness, Number of Gases in Mixture, and Gas 1-4 Type/Fraction fields map directly to the EnergyPlus schema.
-    // - Optionality: Gas 3 and Gas 4 Type/Fraction fields are optional, so reset helpers are provided to clear those values when needed.
     double thickness() const;
     bool setThickness(double thickness);
 

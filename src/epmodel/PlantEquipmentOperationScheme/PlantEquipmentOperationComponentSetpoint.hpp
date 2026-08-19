@@ -23,6 +23,24 @@ namespace epmodel {
     class PlantEquipmentOperationComponentSetpoint_Impl;
   }
 
+  /** \brief Selects plant equipment for component setpoint operation.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-plant-condenser-control.html#plantequipmentoperationcomponentsetpoint,PlantEquipmentOperation:ComponentSetpoint}
+   *
+   * \par Important behavior
+   * The public <code>component1...</code> methods address only the first
+   * extensible component row. Construction creates that row when needed and
+   * initializes its flow rate and operation type.
+   *
+   * \par OpenStudio Model API
+   * OpenStudio Model has no public wrapper for <code>PlantEquipmentOperation:ComponentSetpoint</code>;
+   * this wrapper is new to the EPModel API.
+   *
+   * \par Known limitations
+   * Equipment object/name and node-setpoint relationships and additional component rows are not exposed.
+   * <code>autosizedComponent1FlowRate()</code> currently returns an empty optional even when the row is marked autosize.
+   */
   class EPMODEL_API PlantEquipmentOperationComponentSetpoint : public PlantEquipmentOperationScheme
   {
    public:
@@ -36,11 +54,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - API: This no-counterpart type exposes the first Component entry's simple scalars and keeps IDD-derived naming to honor the contract.
-    // - Field Mapping: Component 1 Flow Rate and Operation 1 Type map directly to their EnergyPlus fields in PlantEquipmentOperation:ComponentSetpoint.
-    // - Field Mapping: Equipment Object Type/Name and node-setpoint references are relationship-like fields inside the extensible group and intentionally excluded in this scalar-only pass.
-    // - TODO(parity): Add typed group helpers once relationship APIs or full extensible handling becomes required.
     boost::optional<double> component1FlowRate() const;
     bool setComponent1FlowRate(double component1FlowRate);
     bool isComponent1FlowRateAutosized() const;

@@ -23,6 +23,17 @@ namespace epmodel {
     class ElectricEquipment_Impl;
   }
 
+  /** \brief Represents the EnergyPlus ElectricEquipment object.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-internal-gains-people-lights-other.html#electricequipment,ElectricEquipment}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::ElectricEquipment</code>. <b>Not yet available:</b> the Model definition, schedule, and zone/space relationship methods. EPModel exposes direct EnergyPlus design-level and fraction fields plus compatibility multiplier methods.
+   *
+   * \par Known limitations
+   * The compatibility multiplier scales the stored design-level fields because EnergyPlus has no dedicated multiplier field.
+   */
   class EPMODEL_API ElectricEquipment : public ModelObject
   {
    public:
@@ -38,14 +49,6 @@ namespace epmodel {
 
     static std::vector<std::string> designLevelCalculationMethodValues();
 
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::ElectricEquipment scalar API names/signatures where present.
-    // - Field Mapping: powerPerFloorArea/powerPerPerson map to E+ fields Watts per Floor Area/Watts per Person.
-    // - Field Mapping: schedule and zone/space target references are relationship fields and intentionally excluded.
-    // - Field Mapping: setMultiplier/resetMultiplier are preserved compatibility methods; no dedicated E+ multiplier field exists.
-    // - ForwardTranslator evidence: ForwardTranslateElectricEquipment.cpp applies model multiplier directly to translated
-    //   design-level scalar fields in ElectricEquipment.
-    // - TODO(parity): Add relationship APIs and richer design-level compatibility behavior without changing scalar signatures.
     std::string designLevelCalculationMethod() const;
     bool isDesignLevelCalculationMethodDefaulted() const;
     bool setDesignLevelCalculationMethod(const std::string& designLevelCalculationMethod);

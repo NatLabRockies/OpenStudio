@@ -22,6 +22,18 @@ namespace epmodel {
     class EnergyManagementSystemCurveOrTableIndexVariable_Impl;
   }
 
+  /** \brief Represents <code>EnergyManagementSystem:CurveOrTableIndexVariable</code>.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-energy-management-system-ems.html#energymanagementsystemcurveortableindexvariable,EnergyManagementSystem:CurveOrTableIndexVariable}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::EnergyManagementSystemCurveOrTableIndexVariable</code>.
+   * **Not yet available:** Model typed object-target, program-body, and EMS relationship conveniences are not exposed unless declared by this wrapper.
+   *
+   * \par Known limitations
+   * Typed relationship and extensible-list conveniences not represented by the public declarations are unavailable.
+   */
   class EPMODEL_API EnergyManagementSystemCurveOrTableIndexVariable : public ModelObject
   {
    public:
@@ -34,13 +46,6 @@ namespace epmodel {
     EnergyManagementSystemCurveOrTableIndexVariable& operator=(EnergyManagementSystemCurveOrTableIndexVariable&&) = default;
 
     static IddObjectType iddObjectType();
-
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model::EnergyManagementSystemCurveOrTableIndexVariable class naming.
-    // - Field Mapping: EnergyPlus field Curveor Table Object Name is relationship-like and intentionally excluded from scalar accessor scaffold.
-    // - ForwardTranslator evidence: ForwardTranslateEnergyManagementSystemCurveOrTableIndexVariable.cpp writes CurveorTableObjectName from modelObject.curveOrTableObject().
-    // - TODO(parity): Add relationship APIs incrementally (curveOrTableObject/setCurveOrTableObject) without changing scalar scaffolding conventions.
-
    protected:
     using ImplType = detail::EnergyManagementSystemCurveOrTableIndexVariable_Impl;
 

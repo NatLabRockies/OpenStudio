@@ -23,6 +23,19 @@ namespace epmodel {
     class CurveTriquadratic_Impl;
   }
 
+  /** \brief Represents a triquadratic curve.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-performance-curves.html#curvetriquadratic,Curve:Triquadratic}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::CurveTriquadratic</code>.
+   * No known public API differences.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API CurveTriquadratic : public Curve
   {
    public:
@@ -41,11 +54,6 @@ namespace epmodel {
     static std::vector<std::string> validInputUnitTypeforZValues();
     static std::vector<std::string> validOutputUnitTypeValues();
 
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model CurveTriquadratic scalar accessor names/signatures.
-    // - Field Mapping: coefficient/min/max and unit-type APIs map directly to E+ Curve:Triquadratic fields.
-    // - ForwardTranslator evidence: ForwardTranslateCurveTriquadratic.cpp writes these scalar fields directly.
-    // - TODO(parity): Keep this pass scalar-only; relationship APIs remain out of scope.
     /** @name Field accessors */
     //@{
 

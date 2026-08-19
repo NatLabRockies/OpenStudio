@@ -23,6 +23,21 @@ namespace epmodel {
     class ZoneHVACBaseboardRadiantConvectiveWaterDesign_Impl;
   }
 
+/** \brief The design-side data used by a radiant-convective hot-water baseboard.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-radiative-convective-units.html#zonehvac-baseboard-radiantconvective-water-design,ZoneHVAC:Baseboard:RadiantConvective:Water:Design}
+ *
+ * \par Important behavior
+ * This EPModel type exposes the split-out design-capacity and convergence fields directly.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model class is <code>There is no same-name openstudio::model wrapper; its behavior is part of openstudio::model::ZoneHVACBaseboardRadiantConvectiveWater.</code>.
+ *
+ * \par Known limitations
+ * It is a persisted EnergyPlus companion rather than an independent OpenStudio
+ * Model component, and it has no zone or plant topology of its own.
+ */
   class EPMODEL_API ZoneHVACBaseboardRadiantConvectiveWaterDesign : public ModelObject
   {
    public:
@@ -37,14 +52,6 @@ namespace epmodel {
     static IddObjectType iddObjectType();
     static std::vector<std::string> heatingDesignCapacityMethodValues();
 
-    // Schema Alignment Notes:
-    // - Status: Scalar Parity. This split design-side wrapper exposes a small scalar surface and has no direct same-name canonical model peer.
-    // - Canonical Counterpart: openstudio::model::ZoneHVACBaseboardRadiantConvectiveWater.
-    // - Implemented Parity: The design-capacity method, heating-capacity sizing scalars, convergence tolerance, radiant fraction, and people-incident radiant fraction map directly to the EnergyPlus design-only fields.
-    // - Documented Delta: This epmodel type is an EnergyPlus split-out design object with no same-name canonical `openstudio::model` wrapper, so the closest canonical behavior is represented by the broader ZoneHVACBaseboardRadiantConvectiveWater wrapper.
-    // - Field/Storage Mapping: The object carries only scalar design inputs; no additional relationship-only children exist beyond the base name storage.
-    // - Evidence: `src/model/ZoneHVACBaseboardRadiantConvectiveWater.hpp`, `src/model/ZoneHVACBaseboardRadiantConvectiveWater.cpp`, and `src/epmodel/test/ZoneHVACBaseboardRadiantConvectiveWaterDesign_GTest.cpp`.
-    // - Remaining Parity Work: Keep the split-design scalar surface aligned with the canonical baseboard wrapper and document any future split-out deltas here.
     std::string heatingDesignCapacityMethod() const;
     bool setHeatingDesignCapacityMethod(const std::string& heatingDesignCapacityMethod);
     void resetHeatingDesignCapacityMethod();

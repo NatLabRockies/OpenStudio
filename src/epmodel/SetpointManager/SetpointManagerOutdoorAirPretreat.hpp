@@ -22,6 +22,18 @@ namespace epmodel {
     class SetpointManagerOutdoorAirPretreat_Impl;
   }
 
+  /** \brief Sets pretreatment air conditions from outdoor-air, return-air, and mixed-air stream nodes.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-setpoint-managers.html#setpointmanageroutdoorairpretreat,SetpointManager:OutdoorAirPretreat}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::SetpointManagerOutdoorAirPretreat</code>.
+   * No known public API differences.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API SetpointManagerOutdoorAirPretreat : public SetpointManager
   {
    public:
@@ -37,13 +49,6 @@ namespace epmodel {
 
     static std::vector<std::string> controlVariableValues();
 
-    // Schema Alignment Notes:
-    // - Status: Near Parity.
-    // - Canonical Counterpart: openstudio::model::SetpointManagerOutdoorAirPretreat.
-    // - Implemented Parity: Scalar limits, control-variable behavior, the four stream-node relationships, resets, node renames,
-    //   and inherited setpoint-node placement use the canonical public API shape.
-    // - Field/Storage Mapping: Scalar limits and all five Node fields map directly to `SetpointManager:OutdoorAirPretreat` storage.
-    // - Remaining Parity Work: Characterize automatic outdoor-air-system fallback for incomplete imported objects and clone behavior.
     double minimumSetpointTemperature() const;
     bool isMinimumSetpointTemperatureDefaulted() const;
     bool setMinimumSetpointTemperature(double minimumSetpointTemperature);

@@ -24,6 +24,19 @@ namespace epmodel {
     class CoilCoolingDXMultiSpeed_Impl;
   }
 
+  /** \brief Represents a multispeed direct-expansion cooling coil.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-heating-and-cooling-coils.html#coilcoolingdxmultispeed,Coil:Cooling:DX:MultiSpeed}.
+   *
+   * \par Important behavior
+   * The persisted scalar, schedule, and currently supported stage-control relationships use the EnergyPlus coil topology.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::CoilCoolingDXMultiSpeed</code>. <b>Added:</b> EPModel exposes <code>addToNode()</code>. <b>Not yet available:</b> the Model stage-data ownership and extensible stage-list methods such as <code>addStage()</code>, <code>setStages()</code>, and <code>removeStage()</code>.
+   * \par Known limitations
+   * No known EPModel-specific limitations beyond the listed API differences.
+   */
   class EPMODEL_API CoilCoolingDXMultiSpeed : public StraightComponent
   {
    public:
@@ -42,19 +55,6 @@ namespace epmodel {
 
     bool addToNode(Node& node);
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. The canonical scalar DX-coil surface plus the current epmodel schedule / crankcase-curve relationship slice and
-    //   supply-side air-loop insertion path are present, while stage-data, AFN, and tank-link helpers remain out of scope.
-    // - Canonical Counterpart: openstudio::model::CoilCoolingDXMultiSpeed.
-    // - Implemented Parity: The scalar condenser, fuel, basin-heater, and compressor/capacity helpers preserve the canonical naming, defaults,
-    //   and autosize behavior; `availabilitySchedule`, `basinHeaterOperatingSchedule`, and
-    //   `crankcaseHeaterCapacityFunctionofTemperatureCurve` preserve the bounded relationship slice; `addToNode` preserves the current epmodel
-    //   supply-side air-loop insertion path.
-    // - Documented Delta: Stage data, AFN, tank-link helpers, and broader node-link topology from canonical `openstudio::model::CoilCoolingDXMultiSpeed`
-    //   are not exposed yet.
-    // - Field/Storage Mapping: Preserved scalars and the bounded relationship slice map directly to EnergyPlus `Coil:Cooling:DX:MultiSpeed` fields.
-    // - Evidence: `src/model/CoilCoolingDXMultiSpeed.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateCoilCoolingDXMultiSpeed.cpp`, and `src/epmodel/test/CoilCoolingDXMultiSpeed_GTest.cpp`.
-    // - Remaining Parity Work: Add stage-data, AFN, tank-link, and broader topology helpers without changing the preserved scalar signatures.
     boost::optional<Schedule> availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);
     void resetAvailabilitySchedule();

@@ -28,6 +28,20 @@ namespace epmodel {
     class WaterHeaterHeatPumpWrappedCondenser_Impl;
   }
 
+/** \brief A wrapped-condenser heat-pump water heater used as zone equipment.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-water-heaters.html#waterheaterheatpumpwrappedcondenser,WaterHeater:HeatPump:WrappedCondenser}
+ *
+ * \par Important behavior
+ * The WaterHeater:Stratified tank, wrapped water-heating coil, and fan are typed children connected to the parent-owned air path; EPModel adds fanOutletNode(), mixedAirNode(), outdoorAirNode(), and reliefAirNode().
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model class is <code>openstudio::model::WaterHeaterHeatPumpWrappedCondenser</code>.
+ *
+ * \par Known limitations
+ * Higher-level OpenStudio conveniences are not recreated where the EnergyPlus object stores only resulting wrapped-condenser fields.
+ */
   class EPMODEL_API WaterHeaterHeatPumpWrappedCondenser : public ZoneHVACComponent
   {
    public:
@@ -47,21 +61,6 @@ namespace epmodel {
     static std::vector<std::string> parasiticHeatRejectionLocationValues();
     static std::vector<std::string> tankElementControlLogicValues();
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. The attached tank, DX coil, fan, schedules, and owned internal topology are now surfaced directly on the
-    //   parent, but a few higher-level canonical conveniences remain outside the EnergyPlus-backed epmodel surface.
-    // - Canonical Counterpart: openstudio::model::WaterHeaterHeatPumpWrappedCondenser.
-    // - Implemented Parity: Dead-band, condenser location, evaporator-air flow, inlet-air configuration, compressor/fan placement, parasitic
-    //   load, and tank-control scalars map directly to the EnergyPlus object. The attached tank, wrapped DX coil, fan, schedules, and
-    //   meaningful internal node roles are now exposed through ordinary parent methods instead of raw relationship state.
-    // - Documented Delta: epmodel still follows the EnergyPlus-backed wrapped-condenser object closely, so any canonical convenience that
-    //   only exists as an OpenStudio-side abstraction remains documented instead of being recreated implicitly. Epmodel also adds
-    //   parent-level internal node helpers such as `fanOutletNode()`, `mixedAirNode()`, `outdoorAirNode()`, and `reliefAirNode()` so the
-    //   owned compound topology is inspectable from the parent.
-    // - Field/Storage Mapping: Scalar values live directly on the EnergyPlus object while child equipment and the owned air topology are
-    //   maintained through explicit attachment state and parent-owned node fields.
-    // - Evidence: `src/model/WaterHeaterHeatPumpWrappedCondenser.hpp`, `src/model/WaterHeaterHeatPumpWrappedCondenser.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateWaterHeaterHeatPumpWrappedCondenser.cpp`, and `src/epmodel/test/WaterHeaterHeatPumpWrappedCondenser_GTest.cpp`.
-    // - Remaining Parity Work: Resolve the `Tank Element Control Logic` default mismatch only if the canonical model continues to diverge from the EnergyPlus default.
     boost::optional<Schedule> availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);
     void resetAvailabilitySchedule();

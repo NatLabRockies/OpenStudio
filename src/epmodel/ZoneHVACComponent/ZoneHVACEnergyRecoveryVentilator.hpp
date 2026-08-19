@@ -28,6 +28,22 @@ namespace epmodel {
     class ZoneHVACEnergyRecoveryVentilator_Impl;
   }  // namespace detail
 
+/** \brief An energy-recovery ventilator serving a thermal zone.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-zone-forced-air-units.html#zonehvacenergyrecoveryventilator,ZoneHVAC:EnergyRecoveryVentilator}
+ *
+ * \par Important behavior
+ * The heat exchanger and supply/exhaust fans share a parent-owned dual-path topology; EPModel exposes outdoor-air, supply-fan-inlet, exhaust-fan-inlet, and relief-air node roles.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model class is <code>openstudio::model::ZoneHVACEnergyRecoveryVentilator</code>.
+ * EPModel adds the explicit fan-inlet, outdoor-air, exhaust, and relief node
+ * accessors; Model additionally exposes autosized supply/exhaust flow queries.
+ *
+ * \par Known limitations
+ * Availability-manager relationships and SQL-backed autosized flow results are not exposed.
+ */
   class EPMODEL_API ZoneHVACEnergyRecoveryVentilator : public ZoneHVACComponent
   {
    public:
@@ -41,21 +57,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. The scalar ventilation fields are aligned, and the owned heat-exchanger/fan topology is now kept consistent
-    //   through parent-owned epmodel nodes, but broader ERV parity remains incomplete.
-    // - Canonical Counterpart: openstudio::model::ZoneHVACEnergyRecoveryVentilator.
-    // - Implemented Parity: `availabilitySchedule`, `heatExchanger`, `supplyAirFan`, `exhaustAirFan`, optional `controller`,
-    //   `supplyAirFlowRate`, `exhaustAirFlowRate`, `ventilationRateperUnitFloorArea`, `ventilationRateperOccupant`, and `children()`
-    //   preserve the main canonical wrapper behavior. The owned heat exchanger and fans now share a parent-owned dual-path topology with
-    //   direct access to the meaningful outdoor-air, supply-fan-inlet, exhaust-fan-inlet, and relief-air node roles on the compound.
-    // - Documented Delta: The parent-level node conveniences are additive epmodel APIs. Availability-manager relationships still remain
-    //   outside the public wrapper.
-    // - Field/Storage Mapping: Scalar values are stored directly on the EnergyPlus object while the owned child equipment and node wiring are
-    //   represented through explicit child-object state and transient epmodel nodes.
-    // - Evidence: `src/model/ZoneHVACEnergyRecoveryVentilator.hpp`, `src/model/ZoneHVACEnergyRecoveryVentilator.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateZoneHVACEnergyRecoveryVentilator.cpp`, and `src/epmodel/test/ZoneHVACEnergyRecoveryVentilator_GTest.cpp`.
-    // - Remaining Parity Work: Expose any remaining relationship helpers only if the canonical model surface still needs them as public
-    //   epmodel APIs.
 
     Schedule availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);

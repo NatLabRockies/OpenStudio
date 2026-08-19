@@ -22,6 +22,20 @@ namespace epmodel {
     class FFactorGroundFloorConstruction_Impl;
   }
 
+  /** \brief Defines an F-factor ground-floor construction.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-surface-construction-elements.html#constructionffactorgroundfloor,Construction:FfactorGroundFloor}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::FFactorGroundFloorConstruction</code>. The
+   * <code>fFactor()</code>, <code>area()</code>, and
+   * <code>perimeterExposed()</code> fields have the same public meaning.
+   *
+   * \par Known limitations
+   * The object exposes only the three EnergyPlus scalar fields.
+   */
   class EPMODEL_API FFactorGroundFloorConstruction : public ConstructionBase
   {
    public:
@@ -34,15 +48,6 @@ namespace epmodel {
     FFactorGroundFloorConstruction& operator=(FFactorGroundFloorConstruction&&) = default;
 
     static IddObjectType iddObjectType();
-
-    // Schema Alignment Notes: Preserve OpenStudio API names/signatures and map to
-    // Construction:FfactorGroundFloor scalar fields.
-    //   - fFactor -> field F-Factor
-    //   - area -> field Area
-    //   - perimeterExposed -> field PerimeterExposed
-    // ForwardTranslator: ForwardTranslateFFactorGroundFloorConstruction.cpp maps the three OS
-    // scalars directly to the EnergyPlus fields.
-    // TODO(parity): Add non-scalar/relationship APIs if needed in later parity passes.
 
     double fFactor() const;
     bool setFFactor(double fFactor);

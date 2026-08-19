@@ -23,6 +23,22 @@ namespace epmodel {
     class CoilCoolingLowTempRadiantVarFlow_Impl;
   }
 
+  /** \brief Represents a cooling-coil view of a variable-flow low-temperature radiant system.
+   *
+   * \par EnergyPlus object
+   * No standalone EnergyPlus object. EPModel projects <code>OS:Coil:Cooling:LowTemperatureRadiant:VariableFlow</code> onto \epobject{group-radiative-convective-units.html#zonehvaclowtemperatureradiantvariableflow,ZoneHVAC:LowTemperatureRadiant:VariableFlow} parent storage.
+   *
+   * \par Important behavior
+   * This transient child writes its scalar and schedule fields through to the parent design/coil storage and maps
+   * its water ports to the parent's <code>Cooling Water Inlet Node Name</code> and <code>Cooling Water Outlet Node Name</code> fields.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::CoilCoolingLowTempRadiantVarFlow</code>.
+   * <b>Changed:</b> the child is transient and cannot be persisted or placed independently as a plant component.
+   *
+   * \par Known limitations
+   * Use the owning parent object for persistence and complete topology.
+   */
   class EPMODEL_API CoilCoolingLowTempRadiantVarFlow : public StraightComponent
   {
    public:
@@ -40,23 +56,6 @@ namespace epmodel {
     static std::vector<std::string> coolingDesignCapacityMethodValues();
     static std::vector<std::string> condensationControlTypeValues();
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. epmodel preserves the canonical optional cooling-coil child as a transient
-    //   straight-component view over parent-owned EnergyPlus storage.
-    // - Canonical Counterpart: openstudio::model::CoilCoolingLowTempRadiantVarFlow.
-    // - Why This Type Is Slightly Different: canonical OpenStudio factors this family into one parent radiant object
-    //   plus optional heating/cooling coil children. EnergyPlus does not persist a standalone cooling coil here; it
-    //   stores the cooling-coil state directly on the parent radiant object and the persisted `...:Design` companion.
-    //   Epmodel keeps the canonical child shape additively by exposing a transient child that reads and writes those
-    //   parent-owned fields.
-    // - Implemented Parity: The canonical cooling-capacity, cold-water-flow, control schedule, throttling,
-    //   condensation-control, and water-node APIs are available through this transient child wrapper.
-    // - Plant Loop Behavior: The child is still transient, but it now supports the canonical plant-loop API surface.
-    //   Epmodel persists the parent radiant unit on the branch and projects that stored parent row back to this
-    //   transient cooling coil in high-level plant-loop traversal when the branch water-node pair matches the
-    //   cooling-side role.
-    // - Field/Storage Mapping: Cooling-side scalar fields live on the parent `ZoneHVAC:LowTemperatureRadiant:VariableFlow`
-    //   object and its persisted `...:Design` companion object. This child is a write-through view over that storage.
     boost::optional<double> maximumColdWaterFlow() const;
     bool isMaximumColdWaterFlowDefaulted() const;
     bool isMaximumColdWaterFlowAutosized() const;

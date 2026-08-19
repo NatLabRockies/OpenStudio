@@ -25,8 +25,21 @@ namespace epmodel {
     class BuildingStory_Impl;
   }
 
-  /** BuildingStory is a transient OpenStudio concept backed by OS:BuildingStory IDD storage.
-   *  It owns a companion SpaceList that IS written to the EnergyPlus IDF. */
+  /** \brief Represents a building story and its associated spaces.
+   *
+   * \par EnergyPlus object
+   * No standalone EnergyPlus object; this is a projected wrapper backed by <code>OS:BuildingStory</code> storage and a companion \epobject{group-thermal-zone-description-geometry.html#spacelist,SpaceList}.
+   *
+   * \par Important behavior
+   * Story metadata and the space association are written through the companion <code>SpaceList</code>.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::BuildingStory</code>.
+   * Model-only story conveniences such as default construction/schedule sets, rendering color, coordinate searches, and bounding-box helpers are not exposed.
+   *
+   * \par Known limitations
+   * Story metadata is projected through the companion <code>SpaceList</code>; it is not an independent EnergyPlus object.
+   */
   class EPMODEL_API BuildingStory : public ModelObject
   {
    public:

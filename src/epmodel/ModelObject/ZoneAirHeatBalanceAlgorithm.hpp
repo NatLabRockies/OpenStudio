@@ -22,6 +22,17 @@ namespace epmodel {
     class ZoneAirHeatBalanceAlgorithm_Impl;
   }
 
+  /** \brief ZoneAirHeatBalanceAlgorithm.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-simulation-parameters.html#zoneairheatbalancealgorithm,ZoneAirHeatBalanceAlgorithm}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::ZoneAirHeatBalanceAlgorithm</code>. The algorithm and heat-balance switches map directly to EnergyPlus. Simulation-control relationships are not exposed.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API ZoneAirHeatBalanceAlgorithm : public ModelObject
   {
    public:
@@ -35,12 +46,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
     static std::vector<std::string> validAlgorithmValues();
-
-    // Schema Alignment Notes:
-    // - API: preserve openstudio::model scalar accessor names/signatures for Algorithm and the Do Space Heat Balance choices.
-    // - Field Mapping: Algorithm, Do Space Heat Balance for Sizing, and Do Space Heat Balance for Simulation map directly to
-    //   the EnergyPlus ZoneAirHeatBalanceAlgorithm fields via ForwardTranslateZoneAirHeatBalanceAlgorithm.cpp (Yes/No choices).
-    // - TODO(parity): expose SimulationControl relationships after scalar saturation is complete.
 
     std::string algorithm() const;
     bool isAlgorithmDefaulted() const;

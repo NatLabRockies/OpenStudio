@@ -27,6 +27,20 @@ namespace epmodel {
     class Surface_Impl;
   }
 
+  /** \brief Represents the EnergyPlus BuildingSurface:Detailed object.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-thermal-zone-description-geometry.html#buildingsurfacedetailed,BuildingSurface:Detailed}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::Surface</code>. <b>Not yet available:</b>
+   * Model surface-property and AirflowNetwork relationship methods. EPModel exposes vertices,
+   * sub-surfaces, space/construction, adjacent-surface, and intersection operations alongside the scalar
+   * BuildingSurface fields.
+   *
+   * \par Known limitations
+   * Surface-to-space assignment synchronizes the redundant EnergyPlus Zone Name; EnergyPlus geometry and adjacency rules constrain round-tripping.
+   */
   class EPMODEL_API Surface : public PlanarSurface
   {
    public:
@@ -48,14 +62,6 @@ namespace epmodel {
     static std::vector<std::string> validSunExposureValues();
     static std::vector<std::string> validWindExposureValues();
 
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model Surface scalar accessor names/signatures.
-    // - Field Mapping: These APIs map to BuildingSurface:Detailed fields in the EnergyPlus schema.
-    // - Field Mapping: Construction Name and Space Name are exposed by the relationship APIs below; setSpace also synchronizes the redundant Zone Name
-    //   from the Space's ThermalZone. Outside Boundary Condition Object and broader adjacent-object convenience remain separate relationship work.
-    // - ForwardTranslator evidence: ForwardTranslateSurface.cpp maps surfaceType, outsideBoundaryCondition,
-    //   sunExposure, windExposure, and viewFactortoGround directly to BuildingSurface:Detailed.
-    // - TODO(parity): Extend the remaining non-scalar relationship conveniences only when supported workflows require them.
     std::string surfaceType() const;
     bool setSurfaceType(const std::string& surfaceType);
 
@@ -149,7 +155,18 @@ namespace epmodel {
     explicit Surface(std::shared_ptr<detail::Surface_Impl> impl);
   };
 
-  /** SurfaceIntersection contains detailed information about a surface intersection. */
+  /** \brief Describes the surfaces produced when two surfaces are intersected.
+   *
+   * \par EnergyPlus object
+   * This runtime result has no EnergyPlus object; its surfaces are persisted through the concrete surface objects it contains.
+   *
+   * \par OpenStudio Model API
+   * There is no separate `openstudio::model` object; the value groups the original and newly generated surfaces returned
+   * by an intersection operation.
+   *
+   * \par Known limitations
+   * It is a result value, not an independently persisted or attached model object.
+   */
   class EPMODEL_API SurfaceIntersection
   {
    public:

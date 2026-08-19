@@ -23,6 +23,19 @@ namespace epmodel {
     class CurveQuintLinear_Impl;
   }
 
+  /** \brief Represents a quint-linear curve.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-performance-curves.html#curvequintlinear,Curve:QuintLinear}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::CurveQuintLinear</code>.
+   * No known public API differences.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API CurveQuintLinear : public Curve
   {
    public:
@@ -41,12 +54,6 @@ namespace epmodel {
     static std::vector<std::string> inputUnitTypeforxValues();
     static std::vector<std::string> inputUnitTypeforyValues();
     static std::vector<std::string> inputUnitTypeforzValues();
-
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model CurveQuintLinear scalar accessor names/signatures.
-    // - Field Mapping: coefficient/min-max and input-unit APIs map directly to E+ Curve:QuintLinear fields.
-    // - ForwardTranslator evidence: ForwardTranslateCurveQuintLinear.cpp writes these scalar fields directly.
-    // - TODO(parity): Keep this pass scalar-only; relationship APIs remain out of scope.
 
     double coefficient1Constant() const;
     bool setCoefficient1Constant(double coefficient1Constant);

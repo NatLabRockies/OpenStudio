@@ -24,6 +24,19 @@ namespace epmodel {
     class DesignDay_Impl;
   }
 
+  /** \brief Represents the EnergyPlus SizingPeriod:DesignDay object.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-location-climate-weather-file-access.html#sizingperioddesignday,SizingPeriod:DesignDay}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::DesignDay</code>. <b>Not yet available:</b>
+   * the Model schedule-field relationship methods. EPModel preserves scalar names and legacy aliases such as
+   * <code>humidityIndicating*</code> and <code>ashraeTau*</code>.
+   *
+   * \par Known limitations
+   * Humidity aliases map to the EnergyPlus humidity-condition fields, and ASHRAE tau aliases map to the two optical-depth fields; valid fields depend on the selected indicator types.
+   */
   class EPMODEL_API DesignDay : public ModelObject
   {
    public:
@@ -44,18 +57,6 @@ namespace epmodel {
     static std::vector<std::string> validSolarModelIndicatorValues();
     static std::vector<std::string> validBeginEnvironmentResetModeValues();
 
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model DesignDay scalar accessor names/signatures,
-    //   including legacy aliases (humidityIndicating*, ashraeTau*).
-    // - Field Mapping: These scalar APIs map to E+ SizingPeriod:DesignDay fields.
-    // - Field Mapping: Legacy alias methods humidityIndicating* map to current
-    //   HumidityConditionType and wet-bulb/humidity-ratio/enthalpy scalar fields.
-    // - Field Mapping: ashraeTaub/ashraeTaud map to E+ fields
-    //   ASHRAEClearSkyOpticalDepthforBeamIrradiance_taub_ and
-    //   ASHRAEClearSkyOpticalDepthforDiffuseIrradiance_taud_.
-    // - ForwardTranslator Evidence: ForwardTranslateDesignDay confirms these mappings and
-    //   conditional field usage by humidity/solar indicator type.
-    // - TODO(parity): Add relationship schedule-field APIs in a dedicated non-scalar pass.
 
     double maximumDryBulbTemperature() const;
     bool isMaximumDryBulbTemperatureDefaulted() const;

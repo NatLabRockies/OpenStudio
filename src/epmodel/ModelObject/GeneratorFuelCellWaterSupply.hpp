@@ -23,6 +23,18 @@ namespace epmodel {
     class GeneratorFuelCellWaterSupply_Impl;
   }
 
+  /** \brief Represents <code>Generator:FuelCell:WaterSupply</code>.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-electric-load-center-generator.html#generatorfuelcellwatersupply,Generator:FuelCell:WaterSupply}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::GeneratorFuelCellWaterSupply</code>.
+   * **Not yet available:** Model parent, node, curve, schedule, and extensible constituent conveniences are not exposed unless declared here.
+   *
+   * \par Known limitations
+   * Relationship and extensible data not represented by the public declarations must be maintained by the owning object.
+   */
   class EPMODEL_API GeneratorFuelCellWaterSupply : public ModelObject
   {
    public:
@@ -37,14 +49,6 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     static std::vector<std::string> waterTemperatureModelingModeValues();
-
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model scalar accessor names/signatures for counterpart parity.
-    // - Field Mapping: pumpHeatLossFactor and waterTemperatureModelingMode map directly to
-    //   Generator:FuelCell:WaterSupply fields Pump Heat Loss Factor and Water Temperature Modeling Mode.
-    // - ForwardTranslator evidence: ForwardTranslateGeneratorFuelCellWaterSupply writes these scalar fields directly,
-    //   while curve/node/schedule references are handled as relationship targets.
-    // - TODO(parity): Add preserved relationship APIs incrementally for reformer curve references and water node/schedule linkage.
     double pumpHeatLossFactor() const;
     bool setPumpHeatLossFactor(double pumpHeatLossFactor);
     void resetPumpHeatLossFactor();

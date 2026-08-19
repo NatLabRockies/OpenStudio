@@ -22,6 +22,17 @@ namespace epmodel {
     class OutputControlTimestamp_Impl;
   }
 
+  /** \brief OutputControlTimestamp.
+   *
+   * \par EnergyPlus object
+   * \epobject{input-for-output.html#outputcontrol_timestamp,OutputControl:Timestamp}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::OutputControlTimestamp</code>. The two boolean settings map to EnergyPlus yes/no fields. The EPModel setter is named <code>setISO8601Format()</code>.
+   *
+   * \par Known limitations
+   * Only the fields and relationships listed in this wrapper are available; broader Model-only helpers are not exposed.
+   */
   class EPMODEL_API OutputControlTimestamp : public ModelObject
   {
    public:
@@ -34,14 +45,6 @@ namespace epmodel {
     OutputControlTimestamp& operator=(OutputControlTimestamp&&) = default;
 
     static IddObjectType iddObjectType();
-
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model::OutputControlTimestamp scalar accessor names/signatures.
-    // - Field Mapping: iso8601Format/timestampAtBeginningOfInterval map directly to E+ OutputControl:Timestamp
-    //   ISO8601 Format / Timestamp at Beginning of Interval.
-    // - ForwardTranslator evidence: model ForwardTranslateOutputControlTimestamp.cpp writes these preserved APIs
-    //   directly to matching E+ fields with Yes/No conversion.
-    // - TODO(parity): Keep scalar API stable while adding broader parity behavior in future passes.
     bool iso8601Format() const;
     bool setISO8601Format(bool iso8601Format);
 

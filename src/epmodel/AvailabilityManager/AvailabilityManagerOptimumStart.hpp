@@ -21,6 +21,34 @@ namespace epmodel {
     class AvailabilityManagerOptimumStart_Impl;
   }
 
+  /** \brief Determines when a loop should start to reach its occupied conditions.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-system-availability-managers.html#availabilitymanageroptimumstart,AvailabilityManager:OptimumStart}
+   *
+   * \par Important behavior
+   * A newly constructed manager initializes control type to
+   * <code>MaximumofZoneList</code>, the control algorithm to
+   * <code>AdaptiveTemperatureGradient</code>, maximum start time to 6.0 hours,
+   * the cooling and heating gradients to 3.0 and 3.0, the initial gradients to
+   * 2.0 and 2.0, constant start time to 2.0 hours, and the previous-day count
+   * to 3.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::AvailabilityManagerOptimumStart</code>.
+   *
+   * - <b>Not yet available:</b> <code>loop()</code>,
+   *   <code>applicabilitySchedule()</code>,
+   *   <code>setApplicabilitySchedule(...)</code>,
+   *   <code>controlZone()</code>, <code>setControlZone(...)</code>, and
+   *   <code>resetControlZone()</code>.
+   *
+   * \par Known limitations
+   * The EPModel wrapper currently exposes scalar fields only. It cannot be
+   * passed to typed loop-assignment APIs or fully configured through typed
+   * applicability-schedule and control-zone relationships.
+   */
   class EPMODEL_API AvailabilityManagerOptimumStart : public ModelObject
   {
    public:
@@ -37,15 +65,6 @@ namespace epmodel {
     static std::vector<std::string> controlTypeValues();
     static std::vector<std::string> controlAlgorithmValues();
 
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model scalar accessor names/signatures for this model-counterpart class.
-    // - Field Mapping: controlType/controlAlgorithm and numeric gradient/start-time fields map directly to
-    //   E+ AvailabilityManager:OptimumStart scalar fields.
-    // - ForwardTranslator evidence: model::ForwardTranslateAvailabilityManagerOptimumStart writes these
-    //   same scalar fields directly (ControlType, MaximumValueforOptimumStartTime, ControlAlgorithm,
-    //   Constant/Initial Temperature Gradients, ConstantStartTime, NumberofPreviousDays).
-    // - TODO(parity): Keep relationship/link fields (Applicability Schedule Name, Fan Schedule Name,
-    //   Control Zone Name, Zone List Name) out of this scalar-only scaffold pass.
     std::string controlType() const;
     bool setControlType(const std::string& controlType);
 

@@ -25,6 +25,29 @@ namespace epmodel {
     class CoilWaterHeatingAirToWaterHeatPump_Impl;
   }
 
+  /** \brief Represents a pumped air-to-water heat-pump water-heating coil.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-heating-and-cooling-coils.html#coilwaterheatingairtowaterheatpumppumped,Coil:WaterHeating:AirToWaterHeatPump:Pumped}
+   *
+   * \par Important behavior
+   * The availability schedule getter repairs a missing persisted target with
+   * the model's always-on discrete schedule. Curve relationships and the
+   * evaporator-air and condenser-water node fields are stored directly on the
+   * EnergyPlus object. Autosized-value queries currently return no value.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::CoilWaterHeatingAirToWaterHeatPump</code>.
+   * EPModel exposes the same coil fields and curve relationships, but derives
+   * from <code>WaterToAirComponent</code> so the air/water topology methods are
+   * available.
+   *
+   * \par Known limitations
+   * <code>addToNode()</code> and <code>addToSplitter()</code> reject direct loop
+   * placement. This coil is expected to be owned and connected by its
+   * compound heat-pump water-heater parent.
+   */
   class EPMODEL_API CoilWaterHeatingAirToWaterHeatPump : public WaterToAirComponent
   {
    public:
@@ -47,23 +70,6 @@ namespace epmodel {
 
     static std::vector<std::string> evaporatorAirTemperatureTypeforCurveObjectsValues();
 
-    // Schema Alignment Notes:
-    // - Status: Parity with documented deltas. The canonical constructor, field-level getter/setter, required
-    //   schedule-repair, and curve-ownership surface is preserved here.
-    // - Canonical Counterpart: openstudio::model::CoilWaterHeatingAirToWaterHeatPump.
-    // - Implemented Parity: `availabilitySchedule`, the seven required curve relationships plus the optional
-    //   crankcase-heater curve when attached, the canonical constructors, the scalar rating getters/setters,
-    //   pump/fan flags, and the flow autosize-state helpers preserve the canonical field contract.
-    // - Documented Delta: epmodel promotes this wrapper to `WaterToAirComponent` so the real evaporator-air and condenser-water ports are explicit. This is an additive hierarchy change compared to canonical model.
-    // - Documented Delta: Despite the base-class promotion, generic loop-placement APIs remain intentionally rejected because this coil is normally owned by a compound heat-pump water-heater parent.
-    // - Documented Delta: Autosized-value query helpers currently return `none`. That matches the documented pattern
-    //   already used by the nearby water-to-air equation-fit coils until epmodel grows canonical SQL-backed autosized
-    //   results.
-    // - Field/Storage Mapping: The availability schedule and curve relationships map directly to EnergyPlus
-    //   `Coil:WaterHeating:AirToWaterHeatPump:Pumped` storage, together with the real air and water node fields.
-    // - Evidence: `src/model/CoilWaterHeatingAirToWaterHeatPump.hpp`, `src/model/CoilWaterHeatingAirToWaterHeatPump.cpp`,
-    //   `src/energyplus/ForwardTranslator/ForwardTranslateCoilWaterHeatingAirToWaterHeatPump.cpp`, and
-    //   `src/epmodel/test/CoilWaterHeatingAirToWaterHeatPump_GTest.cpp`.
     Schedule availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& availabilitySchedule);
 

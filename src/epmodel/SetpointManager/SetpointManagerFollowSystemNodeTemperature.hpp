@@ -22,6 +22,18 @@ namespace epmodel {
     class SetpointManagerFollowSystemNodeTemperature_Impl;
   }
 
+  /** \brief Sets a setpoint by following the temperature at another system node.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-setpoint-managers.html#setpointmanagerfollowsystemnodetemperature,SetpointManager:FollowSystemNodeTemperature}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::SetpointManagerFollowSystemNodeTemperature</code>.
+   * No known public API differences.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API SetpointManagerFollowSystemNodeTemperature : public SetpointManager
   {
    public:
@@ -38,17 +50,6 @@ namespace epmodel {
     static std::vector<std::string> controlVariableValues();
     static std::vector<std::string> referenceTemperatureTypeValues();
 
-    // Schema Alignment Notes:
-    // - Status: Near Parity. The scalar follow rule, reference-node relationship, and inherited setpoint-node attachment are aligned.
-    // - Canonical Counterpart: openstudio::model::SetpointManagerFollowSystemNodeTemperature.
-    // - Implemented Parity: Preserves the canonical scalar accessors, reference-node relationship, and inherited setpoint-node attachment.
-    // - Field Mapping: referenceTemperatureType, offsetTemperatureDifference, maximumLimitSetpointTemperature, and
-    //   minimumLimitSetpointTemperature map directly to E+ SetpointManager:FollowSystemNodeTemperature fields.
-    // - Field/Storage Mapping: referenceNode maps directly to E+ Reference Node Name; inherited addToNode/setpointNode behavior maps
-    //   Setpoint Node or NodeList Name.
-    // - Canonicalization: Load resolves persisted reference and setpoint node names once; ordinary relationship getters are observational.
-    // - Evidence: Relationship tests cover validation, persisted-name repair, save/load mutation, reset, and removal.
-    // - Remaining Parity Work: Broader clone and workflow evidence remains demand-driven.
 
     boost::optional<Node> referenceNode() const;
     bool setReferenceNode(const Node& node);

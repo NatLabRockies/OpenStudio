@@ -22,6 +22,18 @@ namespace epmodel {
     class SetpointManagerSystemNodeResetHumidity_Impl;
   }
 
+  /** \brief Resets a humidity-ratio setpoint from a reference system node.
+   *
+   * \par EnergyPlus object
+   * <code>SetpointManager:SystemNodeReset:Humidity</code>
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::SetpointManagerSystemNodeResetHumidity</code>.
+   * No known public API differences.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API SetpointManagerSystemNodeResetHumidity : public SetpointManager
   {
    public:
@@ -37,19 +49,6 @@ namespace epmodel {
 
     static std::vector<std::string> controlVariableValues();
 
-    // Schema Alignment Notes:
-    // - Status: Near Parity. The scalar reset rule, reference-node relationship, and inherited setpoint-node attachment are aligned.
-    // - Canonical Counterpart: openstudio::model::SetpointManagerSystemNodeResetHumidity.
-    // - Implemented Parity: Preserves the canonical scalar accessors, reference-node relationship, and inherited setpoint-node attachment.
-    // - Field Mapping: setpointatLowReferenceHumidityRatio, setpointatHighReferenceHumidityRatio,
-    //   lowReferenceHumidityRatio, and highReferenceHumidityRatio map directly to
-    //   E+ SetpointManager:SystemNodeReset:Humidity scalar fields.
-    // - ForwardTranslator Evidence: ForwardTranslateSetpointManagerSystemNodeResetHumidity writes these exact
-    //   scalar fields plus control variable using preserved model API names.
-    // - Field Mapping: referenceNode maps directly to E+ Reference Node Name; inherited addToNode/setpointNode behavior maps
-    //   Setpoint Node or NodeList Name.
-    // - Canonicalization: Load resolves persisted reference and setpoint node names once; ordinary relationship getters are observational.
-    // - Remaining Parity Work: Broader clone and workflow evidence remains demand-driven.
     double setpointatLowReferenceHumidityRatio() const;
     bool setSetpointatLowReferenceHumidityRatio(double setpointatLowReferenceHumidityRatio);
 

@@ -16,6 +16,21 @@ namespace epmodel {
     class Mixer_Impl;
   }  // namespace detail
 
+  /** \brief Base interface for components that combine multiple inlet branches.
+   *
+   * \par EnergyPlus object
+   * No single EnergyPlus object. Concrete mixer types provide the persisted object.
+   *
+   * \par Important behavior
+   * Relationships are projected from EnergyPlus branch and node topology and mutators maintain that topology.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::Mixer</code>.
+   * <b>Added: explicit inlet and outlet model-object mutators, including <code>setInletModelObject()</code>, <code>resetInletModelObject()</code>, <code>setOutletModelObject()</code>, and <code>resetOutletModelObject()</code>.</b>
+   *
+   * \par Known limitations
+   * This abstract interface does not identify a concrete EnergyPlus object.
+   */
   class EPMODEL_API Mixer : public HVACComponent
   {
    public:
@@ -25,13 +40,6 @@ namespace epmodel {
     Mixer& operator=(const Mixer&) = default;
     Mixer& operator=(Mixer&&) = default;
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. The canonical branch-oriented mixer API is present within the representative loop-topology contract.
-    // - Canonical Counterpart: openstudio::model::Mixer.
-    // - Implemented Parity: Outlet/inlet port queries, inlet-object traversal, branch indexing, branch creation, and branch removal preserve the canonical mixer topology contract.
-    // - Field/Storage Mapping: Mixer branch linkage is expressed through EnergyPlus-backed connector topology rather than model-side `Connection` storage.
-    // - Evidence: `src/model/Mixer.hpp` defines the canonical branch API surface; the zone-mixer and loop topology wrappers exercise that contract in epmodel.
-    // - Remaining Parity Work: Add connector-specific behavior only for a concrete workflow or shared topology defect.
     virtual boost::optional<ModelObject> outletModelObject() const;
     virtual bool setOutletModelObject(const ModelObject& modelObject);
     virtual void resetOutletModelObject();

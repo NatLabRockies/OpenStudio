@@ -20,6 +20,17 @@ namespace epmodel {
     class SiteGroundTemperatureUndisturbedXing_Impl;
   }
 
+  /** \brief SiteGroundTemperatureUndisturbedXing.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-location-climate-weather-file-access.html#sitegroundtemperatureundisturbedxing,Site:GroundTemperature:Undisturbed:Xing}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::SiteGroundTemperatureUndisturbedXing</code>. The soil, average surface temperature, and monthly phase scalars map directly to EnergyPlus. The name/reference relationship is not exposed as a typed API.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API SiteGroundTemperatureUndisturbedXing : public ModelObject
   {
    public:
@@ -32,13 +43,6 @@ namespace epmodel {
     SiteGroundTemperatureUndisturbedXing& operator=(SiteGroundTemperatureUndisturbedXing&&) = default;
 
     static IddObjectType iddObjectType();
-
-    // Schema Alignment Notes:
-    // - API: Preserved openstudio::model accessor names/signatures for counterpart parity.
-    // - Field Mapping: Scalar APIs map directly to Site:GroundTemperature:Undisturbed:Xing numeric fields.
-    // - Translator Evidence: ForwardTranslateSiteGroundTemperatureUndisturbedXing.cpp writes these same eight fields.
-    // - Field Mapping: Name is a reference-provider field (UndisturbedGroundTemperatureModelNames) and is excluded from scalar APIs.
-    // - TODO(parity): Keep relationship/link convenience APIs out of scalar scaffold scope.
     double soilThermalConductivity() const;
     bool setSoilThermalConductivity(double soilThermalConductivity);
 

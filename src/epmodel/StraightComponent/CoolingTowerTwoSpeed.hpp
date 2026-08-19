@@ -22,6 +22,21 @@ namespace epmodel {
     class CoolingTowerTwoSpeed_Impl;
   }
 
+  /** \brief Represents a two-speed cooling tower.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-condenser-equipment.html#coolingtowertwospeed,CoolingTower:TwoSpeed}.
+   *
+   * \par Important behavior
+   * Tower performance, flow, control, schedule, and plant-supply fields map directly to the EnergyPlus tower object.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::CoolingTowerTwoSpeed</code>.
+   * Not yet available: the supply-water-storage-tank object relationship.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations beyond the listed API differences.
+   */
   class EPMODEL_API CoolingTowerTwoSpeed : public StraightComponent
   {
    public:
@@ -40,14 +55,6 @@ namespace epmodel {
     static std::vector<std::string> blowdownCalculationModeValues();
     static std::vector<std::string> cellControlValues();
 
-    // Schema Alignment Notes:
-    // - Status: Parity with documented deltas. The canonical two-speed cooling-tower scalar surface, plant-supply insertion rule, and schedule relationships are present, while the storage-tank object link remains out of scope.
-    // - Canonical Counterpart: openstudio::model::CoolingTowerTwoSpeed.
-    // - Implemented Parity: The preserved API covers the canonical tower performance, fan-power, flow, blowdown, cell-control, basin-heater, thermal-design, and end-use fields with matching default/autosize behavior, and the basin/blowdown schedule relationships plus plant supply `addToNode(...)` path match the current canonical slice.
-    // - Documented Delta: The supply-water-storage-tank object link remains intentionally excluded from this pass.
-    // - Field/Storage Mapping: These accessors map directly to EnergyPlus `CoolingTower:TwoSpeed` scalar fields used by the forward translator.
-    // - Evidence: `src/model/CoolingTowerTwoSpeed.hpp` and `src/energyplus/ForwardTranslator/ForwardTranslateCoolingTowerTwoSpeed.cpp`.
-    // - Remaining Parity Work: None within the current canonical public surface; the non-public storage-tank linkage remains intentionally excluded.
     boost::optional<double> designWaterFlowRate() const;
     bool isDesignWaterFlowRateAutosized() const;
     bool setDesignWaterFlowRate(double designWaterFlowRate);

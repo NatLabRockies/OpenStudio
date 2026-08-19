@@ -25,6 +25,20 @@ namespace epmodel {
     class ChillerElectricReformulatedEIR_Impl;
   }
 
+  /** \brief Represents an electric chiller using the reformulated energy-input-ratio model.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-plant-equipment.html#chillerelectricreformulatedeir,Chiller:Electric:ReformulatedEIR}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::ChillerElectricReformulatedEIR</code>. No known
+   * public API differences.
+   *
+   * \par Known limitations
+   * The autosized-value query methods return no value because EPModel does not
+   * yet surface the corresponding autosized results for this family.
+   */
   class EPMODEL_API ChillerElectricReformulatedEIR : public WaterToWaterComponent
   {
    public:
@@ -43,16 +57,6 @@ namespace epmodel {
     static std::vector<std::string> validCondenserFlowControlValues();
     static std::vector<std::string> validElectricInputToCoolingOutputRatioFunctionOfPLRTypeValues();
 
-    // Schema Alignment Notes:
-    // - Status: Parity with documented deltas. The canonical scalar, curve, schedule, and loop convenience surface is aligned.
-    // - Canonical Counterpart: openstudio::model::ChillerElectricReformulatedEIR.
-    // - Implemented Parity: Canonical constructor defaults, required and optional relationship fields, chilled/condenser/heat-recovery loop conveniences,
-    //   and shared tertiary-routing behavior preserve the model-side API shape.
-    // - Documented Delta: Autosized-value helpers are present but remain epmodel stubs that return `none` until autosized results are surfaced here.
-    // - Field/Storage Mapping: Scalar wrappers target EnergyPlus `Chiller:Electric:ReformulatedEIR` fields directly, while curve, schedule, and node
-    //   relationships are persisted as ordinary object links on the same object and interpreted through the shared water-to-water topology layer.
-    // - Evidence: `src/model/ChillerElectricReformulatedEIR.hpp`, `src/model/ChillerElectricReformulatedEIR.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateChillerElectricReformulatedEIR.cpp`.
-    // - Remaining Parity Work: Additional work should factor shared abstractions only when multiple chiller wrappers need the same non-generic behavior.
     boost::optional<double> referenceCapacity() const;
     bool isReferenceCapacityAutosized() const;
     bool setReferenceCapacity(boost::optional<double> referenceCapacity);

@@ -22,6 +22,17 @@ namespace epmodel {
     class SizingParameters_Impl;
   }
 
+  /** \brief SizingParameters.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-design-objects.html#sizingparameters,Sizing:Parameters}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::SizingParameters</code>. The heating factor, cooling factor, and averaging-window fields map directly to EnergyPlus.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API SizingParameters : public ModelObject
   {
    public:
@@ -34,13 +45,6 @@ namespace epmodel {
     SizingParameters& operator=(SizingParameters&&) = default;
 
     static IddObjectType iddObjectType();
-
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model SizingParameters scalar accessor names/signatures.
-    // - Field Mapping: heatingSizingFactor, coolingSizingFactor, and timestepsinAveragingWindow map directly to E+ Sizing:Parameters fields.
-    // - Field Mapping: ForwardTranslator evidence confirms direct mapping for these three scalar fields.
-    // - API: Sizing factor default values follow E+ Sizing:Parameters IDD defaults in epmodel.
-    // - TODO(parity): Keep scalar-only scope for this pass; relationship/object-link behavior is out of scope.
     double heatingSizingFactor() const;
     bool isHeatingSizingFactorDefaulted() const;
     bool setHeatingSizingFactor(double heatingSizingFactor);

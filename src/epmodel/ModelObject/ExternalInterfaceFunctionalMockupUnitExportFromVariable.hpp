@@ -22,6 +22,18 @@ namespace epmodel {
     class ExternalInterfaceFunctionalMockupUnitExportFromVariable_Impl;
   }
 
+  /** \brief Represents <code>ExternalInterface:FunctionalMockupUnitExport:From:Variable</code>.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-externalinterface.html#externalinterfacefunctionalmockupunitexportfromvariable,ExternalInterface:FunctionalMockupUnitExport:From:Variable}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::ExternalInterfaceFunctionalMockupUnitExportFromVariable</code>.
+   * **Not yet available:** Model typed FMU/component relationships and OpenStudio-only export controls are not exposed unless represented by an EnergyPlus field here.
+   *
+   * \par Known limitations
+   * Typed relationship and extensible-list conveniences not represented by the public declarations are unavailable.
+   */
   class EPMODEL_API ExternalInterfaceFunctionalMockupUnitExportFromVariable : public ModelObject
   {
    public:
@@ -35,14 +47,6 @@ namespace epmodel {
     ExternalInterfaceFunctionalMockupUnitExportFromVariable& operator=(ExternalInterfaceFunctionalMockupUnitExportFromVariable&&) = default;
 
     static IddObjectType iddObjectType();
-
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::ExternalInterfaceFunctionalMockupUnitExportFromVariable scalar accessor names/signatures.
-    // - Field Mapping: outputVariableIndexKeyName -> ExternalInterface:FunctionalMockupUnitExport:From:Variable,
-    //   Output Variable Index Key Name.
-    // - Field Mapping: outputVariableName -> ExternalInterface:FunctionalMockupUnitExport:From:Variable, Output Variable Name.
-    // - Field Mapping: fMUVariableName -> ExternalInterface:FunctionalMockupUnitExport:From:Variable, FMU Variable Name.
-    // - TODO(parity): Revisit only if upstream model API changes for FMU export parity milestones.
     std::string outputVariableIndexKeyName() const;
     bool setOutputVariableIndexKeyName(const std::string& outputVariableIndexKeyName);
 

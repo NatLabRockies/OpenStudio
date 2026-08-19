@@ -32,6 +32,20 @@ namespace epmodel {
     class ZoneHVACWaterToAirHeatPump_Impl;
   }
 
+/** \brief A water-to-air heat pump serving a thermal zone.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-zone-forced-air-units.html#zonehvacwatertoairheatpump,ZoneHVAC:WaterToAirHeatPump}
+ *
+ * \par Important behavior
+ * The fan, cooling coil, heating coil, and supplemental heater share a parent-owned air path. A locally owned outdoor-air path maintains its OutdoorAir:Mixer companion; EPModel adds internal node accessors and the mixer child.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model class is <code>openstudio::model::ZoneHVACWaterToAirHeatPump</code>.
+ *
+ * \par Known limitations
+ * Outdoor-air mixer-only node roles and remaining Model relationship conveniences are not exposed.
+ */
   class EPMODEL_API ZoneHVACWaterToAirHeatPump : public ZoneHVACComponent
   {
    public:
@@ -48,21 +62,6 @@ namespace epmodel {
     static std::vector<std::string> fanPlacementValues();
     static std::vector<std::string> heatPumpCoilWaterFlowModeValues();
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. The scalar water-to-air heat-pump fields are aligned, and the contained fan/coil air path is now kept
-    //   consistent through parent-owned epmodel nodes, but broader water-to-air heat-pump parity remains incomplete.
-    // - Canonical Counterpart: openstudio::model::ZoneHVACWaterToAirHeatPump.
-    // - Implemented Parity: The supply-air, outdoor-air, supplemental-heater, and DX sizing scalar groups map directly to the EnergyPlus
-    //   object. The contained supply fan, cooling coil, heating coil, and supplemental heating coil now share a parent-owned air path with
-    //   direct access to the meaningful fan-outlet, cooling-coil-outlet, heating-coil-outlet, and outdoor-air-mixer node roles on the
-    //   compound.
-    // - Documented Delta: These node accessors are additive conveniences so callers can inspect and rename the internal node roles owned by
-    //   the compound, even when some roles alias each other or the parent outlet in a valid configuration. The owned outdoor-air mixer is
-    //   also exposed as an additive child convenience.
-    // - Field/Storage Mapping: Scalar values live directly on the EnergyPlus object while fan and coil topology is represented through
-    //   explicit child-object state, a persisted outdoor-air mixer whenever the unit owns its local OA path, and transient epmodel nodes.
-    // - Evidence: `src/model/ZoneHVACWaterToAirHeatPump.hpp`, `src/model/ZoneHVACWaterToAirHeatPump.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateZoneHVACWaterToAirHeatPump.cpp`, and `src/epmodel/test/ZoneHVACWaterToAirHeatPump_GTest.cpp`.
-    // - Remaining Parity Work: Add any remaining canonical relationship conveniences only if the model wrapper still exposes them as public API.
 
     Schedule availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);

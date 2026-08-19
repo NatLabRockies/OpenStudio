@@ -18,8 +18,24 @@ namespace epmodel {
     class ConstructionBase_Impl;
   }
 
-  /** ConstructionBase is an abstract base class for all construction types that can be assigned
-   *  to a PlanarSurface. */
+  /** \brief Base class for constructions assigned to planar surfaces.
+   *
+   * \par EnergyPlus object
+   * This class has no single EnergyPlus object. Concrete subclasses encapsulate
+   * layered, air-boundary, or ground-construction objects.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::ConstructionBase</code>. EPModel provides the
+   * construction classification queries, but not Model's inherited material
+   * convenience methods or standards/rendering helpers such as
+   * <code>uFactor()</code>, <code>heatCapacity()</code>, and
+   * <code>standardsInformation()</code>.
+   *
+   * \par Known limitations
+   * A concrete construction type is required to create a persisted EnergyPlus
+   * object.
+   */
   class EPMODEL_API ConstructionBase : public ResourceObject
   {
    public:

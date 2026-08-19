@@ -26,6 +26,22 @@ namespace epmodel {
     class ZoneHVACFourPipeFanCoil_Impl;
   }
 
+/** \brief A four-pipe fan-coil unit serving a thermal zone.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-zone-forced-air-units.html#zonehvacfourpipefancoil,ZoneHVAC:FourPipeFanCoil}
+ *
+ * \par Important behavior
+ * The fan and heating/cooling coils share a parent-owned serial path. A locally owned OutdoorAir:Mixer companion is maintained while unattached, including at zero outdoor-air flow. EPModel adds fanOutletNode() and coolingCoilOutletNode().
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model class is <code>openstudio::model::ZoneHVACFourPipeFanCoil</code>.
+ * EPModel adds fan/cooling-coil outlet node accessors. Model additionally has
+ * outdoor-air mixer-name and autosized-flow/temperature result helpers.
+ *
+ * \par Known limitations
+ * Mixer-only node roles and SQL-backed autosized flow/temperature results are not exposed.
+ */
   class EPMODEL_API ZoneHVACFourPipeFanCoil : public ZoneHVACComponent
   {
    public:
@@ -41,24 +57,6 @@ namespace epmodel {
     static std::vector<std::string> capacityControlMethodValues();
     static std::vector<std::string> outdoorAirMixerObjectTypeValues();
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. The core scalar fields and contained equipment links are present, and the contained fan/coil air path is now kept
-    //   consistent through parent-owned epmodel nodes, but broader fan-coil parity remains incomplete.
-    // - Canonical Counterpart: openstudio::model::ZoneHVACFourPipeFanCoil.
-    // - Implemented Parity: `capacityControlMethod`, supply-air flow scalars, hot/cold water flow scalars, convergence tolerances, supply-air
-    //   temperature limits, and the fan/coil child accessors preserve the canonical wrapper behavior. The contained supply fan, cooling coil,
-    //   and heating coil now share a parent-owned air path with direct access to the meaningful fan-outlet and cooling-coil-outlet roles on
-    //   the compound.
-    // - Documented Delta: `fanOutletNode()` and `coolingCoilOutletNode()` are exposed as additive conveniences so callers can inspect and
-    //   rename the meaningful node roles owned by the compound, even when those roles alias each other or the parent outlet in a valid
-    //   configuration. A configured locally owned fan coil internally maintains the complete EnergyPlus OutdoorAir:Mixer companion, including
-    //   while unattached and at zero outdoor-air flow; inlet-side/AirLoop attachment keeps that local companion absent. The mixer-only node roles remain outside the
-    //   public wrapper for now.
-    // - Field/Storage Mapping: The component's fan, heating/cooling coils, and schedule links are modeled explicitly rather than flattened into
-    //   scalar references, and the contained air-path nodes are synchronized through transient Node objects.
-    // - Evidence: `src/model/ZoneHVACFourPipeFanCoil.hpp`, `src/model/ZoneHVACFourPipeFanCoil.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateZoneHVACFourPipeFanCoil.cpp`, and `src/epmodel/test/ZoneHVACFourPipeFanCoil_GTest.cpp`.
-    // - Remaining Parity Work: Add any remaining canonical fan-coil relationship conveniences only if the model wrapper still exposes them as
-    //   public API.
 
     Schedule availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);

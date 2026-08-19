@@ -26,6 +26,20 @@ namespace epmodel {
     class HeaderedPumpsVariableSpeed_Impl;
   }
 
+/** \brief A bank of variable-speed headered pumps.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-pumps.html#headeredpumpsvariablespeed,HeaderedPumps:VariableSpeed}
+ *
+ * \par Important behavior
+ * Pump-bank scalars, flow-rate schedule, thermal-zone relationship, and plant placement map to HeaderedPumps:VariableSpeed.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model type is <code>openstudio::model::HeaderedPumpsVariableSpeed</code>.
+ *
+ * \par Known limitations
+ * No additional type-specific limitation is known beyond shared straight-component topology.
+ */
   class EPMODEL_API HeaderedPumpsVariableSpeed : public StraightComponent
   {
    public:
@@ -43,13 +57,6 @@ namespace epmodel {
     static std::vector<std::string> pumpControlTypeValues();
     static std::vector<std::string> designPowerSizingMethodValues();
 
-    // Schema Alignment Notes:
-    // - Status: Near Parity. The canonical scalar variable-speed pump-bank surface, direct schedule and thermal-zone relationships, and plant-loop placement contract are present.
-    // - Canonical Counterpart: openstudio::model::HeaderedPumpsVariableSpeed.
-    // - Implemented Parity: Preserved scalar accessor names/signatures cover total flow, pump-bank count, sequencing scheme, head, power, efficiency, part-load coefficients, minimum flow fraction, control type, radiative fraction, design-power sizing, and end-use metadata with matching autosize behavior; pump-flow-rate schedule and thermal-zone links preserve canonical typed target APIs; `addToNode(...)` is limited to plant-loop placement like the canonical wrapper.
-    // - Field/Storage Mapping: The preserved scalar APIs map directly to EnergyPlus `HeaderedPumps:VariableSpeed` scalar fields used by the forward translator.
-    // - Evidence: `src/model/HeaderedPumpsVariableSpeed.hpp` defines the canonical wrapper surface, and `src/energyplus/ForwardTranslator/ForwardTranslateHeaderedPumpsVariableSpeed.cpp` confirms the direct scalar mapping and autosize tokens.
-    // - Remaining Parity Work: Evaluate further convenience APIs separately from this direct EnergyPlus-field surface.
 
     boost::optional<double> totalRatedFlowRate() const;
     bool isTotalRatedFlowRateAutosized() const;

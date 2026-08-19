@@ -24,6 +24,20 @@ namespace epmodel {
     class ZoneHVACBaseboardRadiantConvectiveElectric_Impl;
   }
 
+/** \brief An electric radiant-convective baseboard heater serving a thermal zone.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-radiative-convective-units.html#zonehvacbaseboardradiantconvectiveelectric,ZoneHVAC:Baseboard:RadiantConvective:Electric}
+ *
+ * \par Important behavior
+ * Availability, heating-capacity, efficiency, radiant-fraction, and thermal-zone attachment methods are available.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model class is <code>openstudio::model::ZoneHVACBaseboardRadiantConvectiveElectric</code>.
+ *
+ * \par Known limitations
+ * Surface coverage is derived from the attached zone and emitted through extensible rows, not exposed as a separate public collection.
+ */
   class EPMODEL_API ZoneHVACBaseboardRadiantConvectiveElectric : public ZoneHVACComponent
   {
    public:
@@ -39,20 +53,6 @@ namespace epmodel {
 
     static std::vector<std::string> heatingDesignCapacityMethodValues();
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. The canonical availability-schedule and scalar field groups are present, and thermal-zone attachment matches
-    //   the canonical wrapper shape. Derived surface coverage is still not exposed directly on the public epmodel wrapper.
-    // - Canonical Counterpart: openstudio::model::ZoneHVACBaseboardRadiantConvectiveElectric.
-    // - Implemented Parity: `availabilitySchedule`, `heatingDesignCapacityMethod`, heating-capacity scalars, `autosizedHeatingDesignCapacity`,
-    //   `efficiency`, `fractionRadiant`, `fractionofRadiantEnergyIncidentonPeople`, and the thermal-zone attach/remove APIs preserve the
-    //   canonical wrapper behavior.
-    // - Documented Delta: Canonical model derives the emitted radiant surface fractions from all surfaces in the attached thermal zone.
-    //   Epmodel does not yet expose that derived surface coverage as a first-class public API on this wrapper.
-    // - Field/Storage Mapping: The scalar fields map directly to the underlying EnergyPlus object. Surface membership remains derived from
-    //   the attached thermal zone and is emitted through the parent object's extensible rows at translation time.
-    // - Evidence: `src/model/ZoneHVACBaseboardRadiantConvectiveElectric.hpp`, `src/model/ZoneHVACBaseboardRadiantConvectiveElectric.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateZoneHVACBaseboardRadiantConvectiveElectric.cpp`, and `src/epmodel/test/ZoneHVACBaseboardRadiantConvectiveElectric_GTest.cpp`.
-    // - Remaining Parity Work: If surface and envelope relationships become a stronger first-class concern in epmodel, decide whether the
-    //   canonical derived surface coverage should become directly inspectable here.
 
     Schedule availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);

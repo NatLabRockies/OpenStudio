@@ -22,6 +22,17 @@ namespace epmodel {
     class AirflowNetworkDistributionComponentLeakageRatio_Impl;
   }
 
+  /** \brief Represents the EnergyPlus AirflowNetwork:Distribution:Component:LeakageRatio object.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-airflow-network.html#airflownetworkdistributioncomponentleakageratio,AirflowNetwork:Distribution:Component:LeakageRatio}
+   *
+   * \par OpenStudio Model API
+   * OpenStudio Model has no public wrapper for this EnergyPlus object. This wrapper is new to the EPModel API.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations beyond the public fields and relationships exposed by this wrapper.
+   */
   class EPMODEL_API AirflowNetworkDistributionComponentLeakageRatio : public ModelObject
   {
    public:
@@ -35,13 +46,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - API: This no-counterpart type uses IDD-derived class/accessor naming.
-    // - Field Mapping: effectiveLeakageRatio, maximumFlowRate, referencePressureDifference, and
-    //   airMassFlowExponent map directly to EnergyPlus
-    //   AirflowNetwork:Distribution:Component:LeakageRatio scalar fields.
-    // - TODO(parity): Re-evaluate naming if a future model-counterpart parity layer is introduced.
-    // Effective leakage ratio accessors
     boost::optional<double> effectiveLeakageRatio() const;
     bool setEffectiveLeakageRatio(double effectiveLeakageRatio);
     void resetEffectiveLeakageRatio();

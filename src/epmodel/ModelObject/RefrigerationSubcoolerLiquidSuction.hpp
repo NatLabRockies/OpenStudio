@@ -20,6 +20,17 @@ namespace epmodel {
     class RefrigerationSubcoolerLiquidSuction_Impl;
   }
 
+  /** \brief RefrigerationSubcoolerLiquidSuction.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-refrigeration.html#refrigerationsubcooler,Refrigeration:Subcooler}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::RefrigerationSubcoolerLiquidSuction</code>. This typed wrapper uses <code>Refrigeration:Subcooler</code> with <code>Subcooler Type</code> fixed to <code>LiquidSuction</code>. The Model relationship to a refrigeration system is not available.
+   *
+   * \par Known limitations
+   * Only the fields and relationships listed in this wrapper are available; broader Model-only helpers are not exposed.
+   */
   class EPMODEL_API RefrigerationSubcoolerLiquidSuction : public RefrigerationSubcooler
   {
    public:
@@ -32,11 +43,6 @@ namespace epmodel {
     RefrigerationSubcoolerLiquidSuction& operator=(RefrigerationSubcoolerLiquidSuction&&) = default;
 
     static IddObjectType iddObjectType();
-
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model scalar accessor names/signatures for the liquid suction subcooler.
-    // - Field Mapping: Liquid suction design subcooling, liquid inlet, and vapor inlet temperature fields map directly to
-    //   Refrigeration:Subcooler fields while Subcooler Type stays fixed to LiquidSuction for this typed wrapper.
     boost::optional<double> liquidSuctionDesignSubcoolingTemperatureDifference() const;
     bool setLiquidSuctionDesignSubcoolingTemperatureDifference(double liquidSuctionDesignSubcoolingTemperatureDifference);
     void resetLiquidSuctionDesignSubcoolingTemperatureDifference();

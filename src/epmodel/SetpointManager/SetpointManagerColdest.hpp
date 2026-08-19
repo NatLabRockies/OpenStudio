@@ -21,6 +21,18 @@ namespace epmodel {
     class SetpointManagerColdest_Impl;
   }
 
+  /** \brief Selects a supply-air setpoint based on the coldest zone.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-setpoint-managers.html#setpointmanagercoldest,SetpointManager:Coldest}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::SetpointManagerColdest</code>.
+   * No known public API differences.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API SetpointManagerColdest : public SetpointManager
   {
    public:
@@ -37,11 +49,6 @@ namespace epmodel {
     static std::vector<std::string> controlVariableValues();
     static std::vector<std::string> strategyValues();
 
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model scalar accessor names/signatures for model-counterpart compatibility.
-    // - Field Mapping: minimumSetpointTemperature, maximumSetpointTemperature, and strategy map directly to E+ SetpointManager:Coldest fields.
-    // - Field Mapping: Relationship fields Setpoint Node or NodeList Name and HVAC Air Loop Name are intentionally excluded from scalar-only scaffolding.
-    // - TODO(parity): Add non-scalar relationship parity for loop/name linkage in a follow-up pass.
 
     double minimumSetpointTemperature() const;
     bool setMinimumSetpointTemperature(double minimumSetpointTemperature);

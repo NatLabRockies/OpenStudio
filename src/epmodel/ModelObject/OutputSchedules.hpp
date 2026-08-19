@@ -23,6 +23,17 @@ namespace epmodel {
     class OutputSchedules_Impl;
   }
 
+  /** \brief OutputSchedules.
+   *
+   * \par EnergyPlus object
+   * \epobject{input-for-output.html#outputschedules,Output:Schedules}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::OutputSchedules</code>. The key-field setting maps directly to EnergyPlus. The object is unique within a model.
+   *
+   * \par Known limitations
+   * Only the fields and relationships listed in this wrapper are available; broader Model-only helpers are not exposed.
+   */
   class EPMODEL_API OutputSchedules : public ModelObject
   {
    public:
@@ -38,12 +49,6 @@ namespace epmodel {
 
     static std::vector<std::string> keyFieldValues();
     static std::vector<std::string> validKeyFieldValues();
-
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model::OutputSchedules class/accessor naming for counterpart parity.
-    // - Field Mapping: keyField maps directly to EnergyPlus Output:Schedules Key Field.
-    // - ForwardTranslator evidence: ForwardTranslateOutputSchedules.cpp writes model keyField() to Output:Schedules Key Field.
-    // - TODO(parity): Keep this scalar API stable while adding any broader output-configuration behavior in later parity passes.
     std::string keyField() const;
     bool setKeyField(const std::string& keyField);
 

@@ -23,12 +23,31 @@ namespace epmodel {
     class ScheduleBase_Impl;
   }
 
-  /** ScheduleBase is a ResourceObject that serves as a base class for Schedule and ScheduleDay,
-   *  that is, objects with ScheduleTypeLimits. This class provides getters and setters for
-   *  ScheduleTypeLimits. Note that while users can explicitly set their own ScheduleTypeLimits,
-   *  we recommend using the \link ScheduleTypeRegistry ScheduleTypeRegistry\endlink and
-   *  related non-member functions, or letting user \link ModelObject ModelObjects\endlink set
-   *  this field, instead. */
+  /** \brief Provides the shared schedule type-limits relationship.
+   *
+   * \par EnergyPlus object
+   * This class has no single EnergyPlus object. It is the base for schedule
+   * objects that carry a <code>Schedule Type Limits Name</code> field,
+   * including \epobject{group-schedules.html#scheduledayinterval,Schedule:Day:Interval} and concrete objects derived
+   * from <code>Schedule</code>.
+   *
+   * \par Important behavior
+   * <code>setScheduleTypeLimits()</code> accepts a limits object from the same
+   * model and writes the object-list relationship. <code>ensureNoLeapDays()</code>
+   * delegates to the concrete schedule type; interval-based schedule days have
+   * no date fields to change.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::ScheduleBase</code>. EPModel provides the same
+   * public methods. Its schedule-type-limits setter does not reproduce Model's
+   * use-based compatibility checks; it checks model ownership and the IDD
+   * relationship instead.
+   *
+   * \par Known limitations
+   * EPModel does not validate schedule values against the selected limits when
+   * the relationship is set.
+   */
   class EPMODEL_API ScheduleBase : public ResourceObject
   {
    public:
@@ -51,17 +70,10 @@ namespace epmodel {
     /** @name Setters */
     //@{
 
-    /** Returns true if scheduleTypeLimits is compatible with this object and is actually set.
-     *  The operation will fail if the Schedule or ScheduleDay is in use in a way that restricts
-     *  the allowable ScheduleTypeLimits and the new value (scheduleTypeLimits) is incompatible
-     *  with that use. For instance, if a Schedule is used with a Lights object, then only
-     *  properly configured fractional ScheduleTypeLimits will succeed. ScheduleDay objects used
-     *  in a ScheduleRuleset or a ScheduleRule are restricted to use ScheduleTypeLimits compatible
-     *  with those of their (ScheduleRuleset or ScheduleRule) parent. */
+    /** Returns true if the limits object belongs to this model and the relationship is set. */
     bool setScheduleTypeLimits(const ScheduleTypeLimits& scheduleTypeLimits);
 
-    /** Returns true if the scheduleTypeLimits() of this object is successfully cleared. Will fail
-     *  if this object is being used by an object that expects it to have a ScheduleTypeLimits. */
+    /** Returns true if the schedule type-limits relationship is cleared. */
     bool resetScheduleTypeLimits();
 
     // ensure that this object does not contain the date 2/29

@@ -23,6 +23,32 @@ namespace epmodel {
     class GeneratorPVWatts_Impl;
   }
 
+  /** \brief Represents a PVWatts photovoltaic generator.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-electric-load-center-generator.html#generatorpvwatts,Generator:PVWatts}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::GeneratorPVWatts</code>.
+   *
+   * - <b>Changed:</b> Model constructors require a DC system capacity and may
+   *   also accept a surface; the EPModel constructor accepts only the model.
+   * - <b>Not yet available:</b> <code>surface()</code>,
+   *   <code>setSurface(...)</code>, and <code>resetSurface()</code>.
+   * - <b>Added:</b> <code>pvWattsVersionValues()</code>,
+   *   <code>moduleTypeValues()</code>, and <code>arrayTypeValues()</code> expose
+   *   the valid EnergyPlus choice keys.
+   * - <b>Not yet available:</b> The Model Generator metadata methods
+   *   <code>generatorObjectType()</code>, <code>ratedElectricPowerOutput()</code>,
+   *   <code>availabilitySchedule()</code>,
+   *   <code>ratedThermaltoElectricalPowerRatio()</code>, and
+   *   <code>electricLoadCenterDistribution()</code>.
+   *
+   * \par Known limitations
+   * Surface-based array geometry and generator placement metadata must be
+   * handled through lower-level object references when needed.
+   */
   class EPMODEL_API GeneratorPVWatts : public ModelObject
   {
    public:
@@ -40,13 +66,6 @@ namespace epmodel {
     static std::vector<std::string> moduleTypeValues();
     static std::vector<std::string> arrayTypeValues();
 
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model::GeneratorPVWatts scalar accessor names/signatures.
-    // - Field Mapping: Preserved scalar APIs map to EnergyPlus Generator:PVWatts scalar fields.
-    // - Field Mapping: API uses Tilt/Azimuth scalar accessors and excludes SurfaceName relationship API in this pass.
-    // - ForwardTranslator evidence: ForwardTranslateGeneratorPVWatts writes Array Geometry Type as TiltAzimuth when
-    //   surface is absent and writes Tilt Angle/Azimuth Angle from these preserved scalar getters.
-    // - TODO(parity): Add preserved relationship API for surface-driven geometry in a dedicated relationship pass.
     std::string pvWattsVersion() const;
 
     double dcSystemCapacity() const;

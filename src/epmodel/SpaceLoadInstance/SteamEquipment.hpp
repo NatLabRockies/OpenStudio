@@ -23,6 +23,17 @@ namespace epmodel {
     class SteamEquipment_Impl;
   }
 
+  /** \brief Represents the EnergyPlus SteamEquipment object.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-internal-gains-people-lights-other.html#steamequipment,SteamEquipment}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::SteamEquipment</code>. <b>Not yet available:</b> the Model definition, schedule, and zone/space relationship methods. EPModel exposes direct design-level and fraction fields plus compatibility multiplier methods.
+   *
+   * \par Known limitations
+   * The compatibility multiplier scales the stored design-level fields because EnergyPlus has no dedicated multiplier field.
+   */
   class EPMODEL_API SteamEquipment : public ModelObject
   {
    public:
@@ -38,20 +49,6 @@ namespace epmodel {
 
     static std::vector<std::string> designLevelCalculationMethodValues();
 
-    // Schema Alignment Notes:
-    // - IDD type: SteamEquipment (EnergyPlus 24.x)
-    // - API: Preserve openstudio::model::SteamEquipment scalar API names/signatures where present.
-    // - Field Mapping: designLevel/powerPerFloorArea/powerPerPerson map to E+ fields
-    //     Design Level / Power per Floor Area / Power per Person via SteamEquipmentFields.
-    // - Field Mapping: fractionLatent/fractionRadiant/fractionLost map to Fraction Latent/Radiant/Lost.
-    // - Field Mapping: endUseSubcategory maps to End-Use Subcategory (default "General").
-    // - Field Mapping: Zone or ZoneList or Space or SpaceList Name and Schedule Name are
-    //     relationship fields (\object-list) and intentionally excluded from scalar accessors.
-    // - Field Mapping: setMultiplier/resetMultiplier are preserved compatibility methods;
-    //     no dedicated E+ multiplier field exists on SteamEquipment.
-    // - ForwardTranslator evidence: ForwardTranslateSteamEquipment.cpp applies model multiplier
-    //     directly to translated design-level scalar fields.
-    // - TODO(parity): Add relationship APIs and richer definition-backed behavior without changing scalar signatures.
     std::string designLevelCalculationMethod() const;
     bool isDesignLevelCalculationMethodDefaulted() const;
     bool setDesignLevelCalculationMethod(const std::string& designLevelCalculationMethod);

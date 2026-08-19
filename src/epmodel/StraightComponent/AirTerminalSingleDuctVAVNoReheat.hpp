@@ -25,6 +25,25 @@ namespace epmodel {
     class AirTerminalSingleDuctVAVNoReheat_Impl;
   }
 
+  /**
+   * \brief Variable-air-volume terminal without reheat.
+   *
+   * \par EnergyPlus object
+   * Encapsulates \epobject{group-air-distribution-equipment.html#airterminalsingleductvavnoreheat,AirTerminal:SingleDuct:VAV:NoReheat}.
+   *
+   * \par Important behavior
+   * The default constructor creates an always-on availability schedule and autosizes maximum airflow. `addToNode`
+   * rewires the supported zone branch, updates AirDistributionUnit and zone-equipment references, and creates a
+   * temporary inlet node that `removeFromLoop` cleans up.
+   *
+   * \par OpenStudio Model API
+   * Counterpart: `openstudio::model::AirTerminalSingleDuctVAVNoReheat`. Schedule, airflow, and branch lifecycle
+   * methods are represented.
+   *
+   * \par Known limitations
+   * The epmodel target must already be the ZoneSplitter/ZoneMixer branch node. DesignSpecificationOutdoorAir and
+   * broader Model demand insertion paths are not exposed.
+   */
   class EPMODEL_API AirTerminalSingleDuctVAVNoReheat : public StraightComponent
   {
    public:
@@ -43,24 +62,6 @@ namespace epmodel {
 
     bool addToNode(Node& node);
 
-    // Schema Alignment Notes:
-    // - Status: Near Parity.
-    // - Canonical Counterpart: openstudio::model::AirTerminalSingleDuctVAVNoReheat.
-    // - Implemented Parity: The canonical `(Model, Schedule)` constructor requires and assigns the availability schedule. `addToNode` is scoped
-    //   to an AirLoopHVAC demand-side zone branch node: it creates a terminal inlet node, rewires the
-    //   ZoneSplitter branch outlet to that inlet node, points the terminal outlet at the zone air node, updates an owning ADU outlet when
-    //   present, and registers the terminal on the served zone equipment list.
-    //   `removeFromLoop` reverses those side effects by reconnecting the ZoneSplitter branch to the zone air node through the shared
-    //   StraightComponent removal path, removing the zone equipment-list entry, clearing any ADU outlet/terminal references, clearing this
-    //   terminal's node pointers, and removing the temporary inlet node.
-    // - Documented Delta: The legacy `(Model)` constructor remains available and creates an always-on availability schedule. Canonical
-    //   `model` accepts a broader set of demand insertion paths; this epmodel wrapper currently requires the target node to already be the
-    //   ZoneSplitter/Mixer branch node produced by the epmodel AirLoopHVAC zone-branch topology. DSOA/OA-control behavior remains outside this
-    //   public surface.
-    // - Field/Storage Mapping: The preserved scalars map directly to EnergyPlus `AirTerminal:SingleDuct:VAV:NoReheat` fields; connectivity is
-    //   represented by paired inlet/outlet node relationships.
-    // - Evidence: `src/model/AirTerminalSingleDuctVAVNoReheat.hpp`, `src/model/AirTerminalSingleDuctVAVNoReheat.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirTerminalSingleDuctVAVNoReheat.cpp`, and `src/epmodel/test/AirTerminalSingleDuctVAVNoReheat_GTest.cpp`.
-    // - Remaining Parity Work: Support the broader canonical demand insertion paths and the canonical DSOA/OA-control surface.
     Schedule availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);
 

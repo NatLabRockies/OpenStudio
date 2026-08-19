@@ -24,6 +24,23 @@ namespace epmodel {
     class ShadingControl_Impl;
   }
 
+  /** \brief Specifies when and how a window shading device is controlled.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-thermal-zone-description-geometry.html#windowpropertyshadingcontrol,WindowShadingControl}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::ShadingControl</code>. EPModel exposes the
+   * EnergyPlus scalar fields and the additional
+   * <code>shadingControlSequenceNumber()</code> accessors. Model relationship
+   * methods for the zone, construction, shading material, schedules,
+   * daylighting control, and controlled subsurfaces are not available.
+   *
+   * \par Known limitations
+   * This wrapper cannot assign the shading-control relationships or the
+   * extensible fenestration-surface list.
+   */
   class EPMODEL_API ShadingControl : public ModelObject
   {
    public:
@@ -41,16 +58,6 @@ namespace epmodel {
     static std::vector<std::string> shadingControlTypeValues();
     static std::vector<std::string> typeofSlatAngleControlforBlindsValues();
     static std::vector<std::string> multipleSurfaceControlTypeValues();
-
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model ShadingControl scalar accessor names/signatures while living under the ResourceObject bucket.
-    // - Field Mapping: Each scalar we expose maps directly to a WindowShadingControl field (ShadingType, ShadingControlType,
-    //   Shading Control Sequence Number, Setpoint, Glare Control Is Active, Type of Slat Angle Control for Blinds, Setpoint 2,
-    //   and Multiple Surface Control Type) via WindowShadingControlFields enum values.
-    // - Field Mapping: Relationship-like fields (Zone, Construction with Shading, Shading Device Material, Schedule,
-    //   Slat Angle Schedule, Daylighting Control, and extensible Fenestration Surface names) are intentionally excluded from
-    //   scalar-only coverage.
-    // - TODO(parity): Add the omitted relationship APIs once relationship handling is bootstrapped for this bucket.
 
     std::string shadingType() const;
     bool setShadingType(const std::string& shadingType);

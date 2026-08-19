@@ -22,6 +22,23 @@ namespace epmodel {
     class GroundHeatExchangerVertical_Impl;
   }
 
+/** \brief One g-function value pair for a vertical ground heat exchanger.
+ *
+ * \par EnergyPlus object
+ * No standalone EnergyPlus object. Each instance exposes one extensible row of
+ * the parent \epobject{group-condenser-equipment.html#groundheatexchangerresponsefactors,GroundHeatExchanger:ResponseFactors} object: g-Function
+ * Ln(T/Ts) Value 1 and g-Function g Value 1.
+ *
+ * \par Important behavior
+ * The logarithmic time value and g-function value are stored as a value object used by GroundHeatExchangerVertical extensible rows.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model type is <code>openstudio::model::GFunction</code>.
+ *
+ * \par Known limitations
+ * The value is an immutable, detached entry. Use
+ * <code>GroundHeatExchangerVertical::addGFunction(...)</code> to store it.
+ */
   class EPMODEL_API GFunction
   {
    public:
@@ -34,6 +51,22 @@ namespace epmodel {
     double m_gValue;
   };
 
+/** \brief A vertical ground heat exchanger.
+ *
+ * \par EnergyPlus object
+ * Composite wrapper for \epobject{group-condenser-equipment.html#groundheatexchangersystem,GroundHeatExchanger:System},
+ * \epobject{group-condenser-equipment.html#groundheatexchangerverticalproperties,GroundHeatExchanger:Vertical:Properties}, and
+ * \epobject{group-condenser-equipment.html#groundheatexchangerresponsefactors,GroundHeatExchanger:ResponseFactors}.
+ *
+ * \par Important behavior
+ * The wrapper projects GroundHeatExchanger:System, GroundHeatExchanger:Vertical:Properties, and GroundHeatExchanger:ResponseFactors storage; g-functions are stored as response-factor extensible rows.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model type is <code>openstudio::model::GroundHeatExchangerVertical</code>.
+ *
+ * \par Known limitations
+ * groundTemperature() and maximumLengthofSimulation() have no direct EnergyPlus fields, and undisturbed-ground models are limited to supported EnergyPlus object-list types.
+ */
   class EPMODEL_API GroundHeatExchangerVertical : public StraightComponent
   {
    public:
@@ -48,24 +81,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - Status: Parity with documented deltas.
-    // - Canonical Counterpart: openstudio::model::GroundHeatExchangerVertical.
-    // - Implemented Parity: The canonical constructors, undisturbed-ground-model relationship, g-function extensible helpers, plant-side non-demand
-    //   `addToNode(...)` behavior, and the scalar accessors that map cleanly onto EnergyPlus `GroundHeatExchanger:System`,
-    //   `GroundHeatExchanger:Vertical:Properties`, and `GroundHeatExchanger:ResponseFactors` storage are preserved.
-    // - Documented Delta: Canonical `groundTemperature()` and `maximumLengthofSimulation()` helpers remain intentionally omitted because the EnergyPlus
-    //   persisted schema has no direct fields for that OpenStudio-only state and epmodel does not yet add surrogate storage for them.
-    // - Documented Delta: The undisturbed-ground-model relationship is still constrained by the EnergyPlus object-list on
-    //   `GroundHeatExchanger:System`, so epmodel can only persist the supported undisturbed-ground model families instead of every
-    //   arbitrary `ModelObject` the canonical OSM wrapper can temporarily point at before translation.
-    // - Field/Storage Mapping: Design-flow, ground-property, and undisturbed-ground-model helpers write through the linked
-    //   `GroundHeatExchanger:System`; borehole and pipe geometry write through the linked `GroundHeatExchanger:Vertical:Properties`; g-function
-    //   extensibles and response-factor scalars live on the wrapped `GroundHeatExchanger:ResponseFactors` object itself.
-    // - Evidence: `src/model/GroundHeatExchangerVertical.hpp`, `src/model/GroundHeatExchangerVertical.cpp`,
-    //   `src/energyplus/ForwardTranslator/ForwardTranslateGroundHeatExchangerVertical.cpp`, and
-    //   `src/epmodel/test/GroundHeatExchangerVertical_GTest.cpp`.
-    // - Remaining Parity Work: Add the documented-delta OpenStudio-only scalar helpers only if epmodel later adopts a justified storage strategy for them.
 
     bool addGFunction(double gFunctionLN, double gFunctionGValue);
     bool addGFunction(GFunction gFunc);

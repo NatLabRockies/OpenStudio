@@ -25,6 +25,34 @@ namespace epmodel {
     class CoilUserDefined_Impl;
   }
 
+  /** \brief Represents an EMS-controlled user-defined coil.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-user-defined-hvac-and-plant-component.html#coiluserdefined,Coil:UserDefined}, together with its referenced
+   * \epobject{group-energy-management-system-ems.html#energymanagementsystemprogramcallingmanager,EnergyManagementSystem:ProgramCallingManager},
+   * \epobject{group-energy-management-system-ems.html#energymanagementsystemprogram,EnergyManagementSystem:Program}, and
+   * \epobject{group-energy-management-system-ems.html#energymanagementsystemactuator,EnergyManagementSystem:Actuator} objects.
+   *
+   * \par Important behavior
+   * The overall and initialization program accessors are derived from the
+   * first program row on their calling managers because EnergyPlus stores those
+   * links on the manager. Actuator accessors manage real EnergyPlus actuator
+   * objects targeting this coil. Removing the coil also removes the associated
+   * EMS child objects returned by <code>children()</code>.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::CoilUserDefined</code>. EPModel additionally
+   * exposes the inherited water-to-air topology operations
+   * (<code>addToNode()</code>, <code>disconnectAirSide()</code>, and
+   * <code>removeFromAirLoopHVAC()</code>) and a <code>children()</code> query
+   * for its persisted EMS companion objects.
+   *
+   * \par Known limitations
+   * EMS program and actuator behavior remains subject to EnergyPlus EMS
+   * calling-manager and actuator validation. Removing the coil also removes
+   * the associated EMS child objects returned by <code>children()</code>.
+   */
   class EPMODEL_API CoilUserDefined : public WaterToAirComponent
   {
    public:
@@ -38,19 +66,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - Status: Near Parity. The canonical EMS-heavy companion-object surface is preserved in epmodel, but it is expressed over the real EnergyPlus
-    //   storage layout instead of the OpenStudio-only direct pointer fields.
-    // - Canonical Counterpart: openstudio::model::CoilUserDefined.
-    // - Implemented Parity: the required program calling managers, derived overall/initialization programs, actuator helpers, ambient-zone relationship,
-    //   topology-derived `numberofAirConnections`, shared component/fuel-type helpers, `children`, seeded-child cleanup on `remove`,
-    //   and `renameEMSSubComponents` match the canonical bounded wrapper contract.
-    // - Field/Storage Mapping: the two program-calling-manager relationships map directly to the EnergyPlus `Coil:UserDefined` fields, while
-    //   `overallSimulationProgram` and `initializationSimulationProgram` are derived from the first program row on those managers because EnergyPlus
-    //   stores the program relationship there instead of on the coil object itself.
-    // - Field/Storage Mapping: actuator helpers resolve and manage the real EnergyPlus `EnergyManagementSystem:Actuator` objects that target this coil.
-    // - Evidence: `src/model/CoilUserDefined.hpp`, `src/model/CoilUserDefined.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateCoilUserDefined.cpp`,
-    //   and `src/model/test/CoilUserDefined_GTest.cpp`.
     int numberofAirConnections() const;
     bool addToNode(Node& node);
     void disconnectAirSide();
