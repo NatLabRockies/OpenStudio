@@ -1,0 +1,5 @@
+{
+  "weather_file": "files/USA_CO_Golden-NREL.724666_TMY3.epw",
+  "seed_file": "files/nlr_east_entrance_building_v1_11_5.osm",
+  "steps": []
+}

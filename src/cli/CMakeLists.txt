@@ -243,6 +243,11 @@ if(BUILD_TESTING)
     )
   endfunction()
 
+  add_epmodel_example_test(OpenStudioCLI.Run_EPModelExistingOSMAsIs
+    epmodel_existing_osm_as_is.osw 120)
+  add_epmodel_example_test(OpenStudioCLI.Run_EPModelExistingOSMReplaceHVAC
+    epmodel_existing_osm_replace_hvac.osw 120)
+
   add_epmodel_example_test(OpenStudioCLI.Run_EPModelCoreAndPerimeterIdealLoads
     epmodel_core_perimeter_ideal_loads.osw 120)
   add_epmodel_example_test(OpenStudioCLI.Run_EPModelCoreAndPerimeterPackagedUnitary

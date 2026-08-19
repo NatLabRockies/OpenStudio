@@ -1,11 +1,10 @@
 {
-  "weather_file": "files/USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw",
+  "weather_file": "files/USA_CO_Golden-NREL.724666_TMY3.epw",
+  "seed_file": "files/nlr_east_entrance_building_v1_11_5.osm",
   "steps": [
     {
-      "measure_dir_name": "EpModelCreateCoreAndPerimeterBuilding",
-      "arguments": {
-        "number_of_stories": 2
-      }
+      "measure_dir_name": "EpModelRemoveAllHVACSystems",
+      "arguments": {}
     },
     {
       "measure_dir_name": "EpModelAddPackagedUnitarySystems",

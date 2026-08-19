@@ -446,6 +446,7 @@ if(BUILD_CLI)
     "${EPMODEL_EXAMPLE_DIR}/epmodel_from_scratch_multizone_vav.osw"
     "${EPMODEL_EXAMPLE_DIR}/epmodel_from_scratch_packaged_terminal_heat_pumps.osw"
     "${EPMODEL_EXAMPLE_DIR}/epmodel_from_scratch_packaged_unitary.osw"
+    "${EPMODEL_EXAMPLE_FILES_DIR}/golden_co_2013_amy.epw"
   )
   file(REMOVE_RECURSE "${EPMODEL_EXAMPLE_DIR}/measures/EpModelFromScratch")
   set(EPMODEL_REFERENCE_BUILDING_NAMES
@@ -475,14 +476,17 @@ if(BUILD_CLI)
     endif()
     list(APPEND EPMODEL_REFERENCE_BUILDINGS "${EPMODEL_REFERENCE_BUILDING}")
   endforeach()
-  set(EPMODEL_EXAMPLE_WEATHER
-      "${ENERGYPLUS_DIR}/WeatherData/USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw")
-
-  if(NOT EXISTS "${EPMODEL_EXAMPLE_WEATHER}")
-    message(FATAL_ERROR
-      "The configured EnergyPlus distribution does not contain the EPModel example weather file: "
-      "${EPMODEL_EXAMPLE_WEATHER}")
-  endif()
+  set(EPMODEL_EXAMPLE_WEATHERS
+    "${ENERGYPLUS_DIR}/WeatherData/USA_CO_Golden-NREL.724666_TMY3.epw"
+    "${ENERGYPLUS_DIR}/WeatherData/USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw"
+  )
+  foreach(EPMODEL_EXAMPLE_WEATHER IN LISTS EPMODEL_EXAMPLE_WEATHERS)
+    if(NOT EXISTS "${EPMODEL_EXAMPLE_WEATHER}")
+      message(FATAL_ERROR
+        "The configured EnergyPlus distribution does not contain the EPModel example weather file: "
+        "${EPMODEL_EXAMPLE_WEATHER}")
+    endif()
+  endforeach()
 
   # configure_file makes these source files CMake inputs, so edits are restaged
   # automatically before the CTests run.
@@ -493,6 +497,8 @@ if(BUILD_CLI)
     epmodel_core_perimeter_multizone_vav.osw
     epmodel_core_perimeter_packaged_terminal_heat_pumps.osw
     epmodel_core_perimeter_packaged_unitary.osw
+    epmodel_existing_osm_as_is.osw
+    epmodel_existing_osm_replace_hvac.osw
     epmodel_reference_full_service_restaurant.osw
     epmodel_reference_large_hotel.osw
     epmodel_reference_medium_office.osw
@@ -507,6 +513,7 @@ if(BUILD_CLI)
     epmodel_reference_strip_mall.osw
     epmodel_reference_supermarket.osw
     epmodel_reference_warehouse.osw
+    files/nlr_east_entrance_building_v1_11_5.osm
     measures/EpModelAddFourPipeFanCoils/measure.py
     measures/EpModelAddFourPipeFanCoils/measure.xml
     measures/EpModelAddIdealLoads/measure.py
@@ -533,9 +540,6 @@ if(BUILD_CLI)
   endforeach()
 
   file(MAKE_DIRECTORY "${EPMODEL_EXAMPLE_FILES_DIR}")
-  configure_file("${CMAKE_CURRENT_SOURCE_DIR}/Examples/epmodel/files/empty.idf.in"
-                 "${EPMODEL_EXAMPLE_FILES_DIR}/empty.idf"
-                 @ONLY)
   foreach(EPMODEL_REFERENCE_BUILDING IN LISTS EPMODEL_REFERENCE_BUILDINGS)
     get_filename_component(EPMODEL_REFERENCE_BUILDING_NAME
                            "${EPMODEL_REFERENCE_BUILDING}" NAME)
@@ -543,22 +547,24 @@ if(BUILD_CLI)
                    "${EPMODEL_EXAMPLE_FILES_DIR}/${EPMODEL_REFERENCE_BUILDING_NAME}"
                    COPYONLY)
   endforeach()
-  configure_file("${EPMODEL_EXAMPLE_WEATHER}"
-                 "${EPMODEL_EXAMPLE_FILES_DIR}/USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw"
-                 COPYONLY)
+  foreach(EPMODEL_EXAMPLE_WEATHER IN LISTS EPMODEL_EXAMPLE_WEATHERS)
+    get_filename_component(EPMODEL_EXAMPLE_WEATHER_NAME
+                           "${EPMODEL_EXAMPLE_WEATHER}" NAME)
+    configure_file("${EPMODEL_EXAMPLE_WEATHER}"
+                   "${EPMODEL_EXAMPLE_FILES_DIR}/${EPMODEL_EXAMPLE_WEATHER_NAME}"
+                   COPYONLY)
+  endforeach()
 endif()
 
 # And install
 install(DIRECTORY "Examples" DESTINATION . COMPONENT "CLI"
-  PATTERN "empty.idf.in" EXCLUDE
   PATTERN "__pycache__" EXCLUDE
   PATTERN "*.pyc" EXCLUDE
 )
 if(BUILD_CLI)
   install(FILES
-    "${EPMODEL_EXAMPLE_FILES_DIR}/empty.idf"
     ${EPMODEL_REFERENCE_BUILDINGS}
-    "${EPMODEL_EXAMPLE_WEATHER}"
+    ${EPMODEL_EXAMPLE_WEATHERS}
     DESTINATION "Examples/epmodel/files"
     COMPONENT "CLI"
   )
