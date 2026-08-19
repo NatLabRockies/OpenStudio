@@ -22,6 +22,17 @@ namespace epmodel {
     class AirflowNetworkMultiZoneComponentZoneExhaustFan_Impl;
   }
 
+  /** \brief Represents the EnergyPlus AirflowNetwork:MultiZone:Component:ZoneExhaustFan object.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-airflow-network.html#airflownetworkmultizonecomponentzoneexhaustfan,AirflowNetwork:MultiZone:Component:ZoneExhaustFan}
+   *
+   * \par OpenStudio Model API
+   * OpenStudio Model has no public wrapper for this EnergyPlus object. This wrapper is new to the EPModel API.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations beyond the public fields and relationships exposed by this wrapper.
+   */
   class EPMODEL_API AirflowNetworkMultiZoneComponentZoneExhaustFan : public ModelObject
   {
    public:
@@ -35,15 +46,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - API: This no-counterpart epmodel type uses IDD-derived class/accessor naming.
-    // - Field Mapping: Scalar APIs map directly to EnergyPlus
-    //   AirflowNetwork:MultiZone:Component:ZoneExhaustFan fields N1/N2.
-    // - Field Mapping: Name and Reference Crack Conditions are relationship-like object-list fields
-    //   and are intentionally excluded from scalar accessors.
-    // - ForwardTranslator evidence: translateAirflowNetworkZoneExhaustFan writes N1/N2 from linked crack
-    //   properties and maps Reference Crack Conditions through a linked reference object name.
-    // - TODO(parity): Add relationship APIs after scalar scaffold saturation.
     double airMassFlowCoefficientWhentheZoneExhaustFanisOffatReferenceConditions() const;
     bool setAirMassFlowCoefficientWhentheZoneExhaustFanisOffatReferenceConditions(
       double airMassFlowCoefficientWhentheZoneExhaustFanisOffatReferenceConditions);

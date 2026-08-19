@@ -22,6 +22,31 @@ namespace epmodel {
     class Gas_Impl;
   }
 
+  /** \brief Represents a single gas layer in a fenestration construction.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-surface-construction-elements.html#windowmaterialgas,WindowMaterial:Gas}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::Gas</code>.
+   *
+   * - <b>Changed:</b> The EPModel constructor accepts only the model and creates
+   *   an air layer 0.003 m thick. Set the gas type and thickness after
+   *   construction to use other values.
+   * - <b>Not yet available:</b> The temperature-dependent calculation methods
+   *   <code>getThermalConductivity()</code>,
+   *   <code>getThermalConductance()</code>,
+   *   <code>getThermalResistivity()</code>,
+   *   <code>getThermalResistance()</code>, <code>getViscosity()</code>, and
+   *   <code>getSpecificHeat()</code>.
+   * - <b>Not yet available:</b> Reset methods for the individual custom-gas
+   *   coefficients, molecular weight, and specific heat ratio.
+   *
+   * \par Known limitations
+   * EPModel stores custom-gas coefficients but does not yet calculate thermal
+   * properties from them.
+   */
   class EPMODEL_API Gas : public GasLayer
   {
    public:
@@ -38,10 +63,6 @@ namespace epmodel {
     static std::vector<std::string> validGasTypes();
     static std::vector<std::string> gasTypeValues();
 
-    // Schema Alignment Notes:
-    // - API: preserve openstudio::model Gas scalar accessor names/signatures for the Gas Layer counterpart.
-    // - Field Mapping: Gas Type, Thickness, conductivity/viscosity/specific heat coefficients, and molecular weight/specific heat ratio map directly to EnergyPlus WindowMaterial:Gas fields.
-    // - Field Mapping: Custom coefficient setters are provided because they are only used when Gas Type==Custom.
     std::string gasType() const;
     bool setGasType(const std::string& gasType);
 

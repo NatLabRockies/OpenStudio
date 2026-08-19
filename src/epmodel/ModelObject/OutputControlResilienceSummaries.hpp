@@ -23,6 +23,17 @@ namespace epmodel {
     class OutputControlResilienceSummaries_Impl;
   }
 
+  /** \brief OutputControlResilienceSummaries.
+   *
+   * \par EnergyPlus object
+   * \epobject{input-for-output.html#OutputControlResilienceSummaries,OutputControl:ResilienceSummaries}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::OutputControlResilienceSummaries</code>. The heat-index algorithm field and its valid-value helpers are exposed.
+   *
+   * \par Known limitations
+   * Only the fields and relationships listed in this wrapper are available; broader Model-only helpers are not exposed.
+   */
   class EPMODEL_API OutputControlResilienceSummaries : public ModelObject
   {
    public:
@@ -41,12 +52,6 @@ namespace epmodel {
 
     /** @name Getters */
     //@{
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model::OutputControlResilienceSummaries accessor names/signatures.
-    // - Field Mapping: heatIndexAlgorithm maps directly to E+ OutputControl:ResilienceSummaries Heat Index Algorithm.
-    // - ForwardTranslator evidence: model ForwardTranslateOutputControlResilienceSummaries.cpp maps this same scalar API
-    //   directly to OutputControl:ResilienceSummaries Heat Index Algorithm.
-    // - TODO(parity): Keep scalar API stable while broader epmodel parity is developed.
     std::string heatIndexAlgorithm() const;
     //@}
 

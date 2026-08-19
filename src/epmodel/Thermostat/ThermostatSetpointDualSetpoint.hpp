@@ -22,6 +22,17 @@ namespace epmodel {
     class ThermostatSetpointDualSetpoint_Impl;
   }
 
+  /** \brief Represents the EnergyPlus ThermostatSetpoint:DualSetpoint object.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-zone-controls-thermostats.html#thermostatsetpointdualsetpoint,ThermostatSetpoint:DualSetpoint}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::ThermostatSetpointDualSetpoint</code>. Heating/cooling schedules and cutout/setpoint differences are represented, including deprecated schedule aliases.
+   *
+   * \par Known limitations
+   * The temperature difference is synchronized to an attached ZoneControl:Thermostat; unattached runtime state does not yet persist across save/load, and imported single-heating/single-cooling objects are projected into this wrapper.
+   */
   class EPMODEL_API ThermostatSetpointDualSetpoint : public Thermostat
   {
    public:
@@ -35,18 +46,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - Status: Near Parity. The canonical thermostat base and the dual-setpoint schedule/temperature-difference surface are preserved.
-    // - Canonical Counterpart: openstudio::model::ThermostatSetpointDualSetpoint.
-    // - Implemented Parity: Heating/cooling schedule relationships, deprecated schedule aliases, and the cutout/setpoint temperature-difference
-    //   accessors mirror the canonical model surface.
-    // - Field/Storage Mapping: Schedule relationships bind directly to the EnergyPlus Heating/Cooling Setpoint Temperature Schedule Name object-list
-    //   fields. TemperatureDifferenceBetweenCutoutAndSetpoint synchronizes to the attached ZoneControl:Thermostat companion when a zone owns the
-    //   thermostat, and epmodel keeps runtime thermostat-local state for the unattached canonical API behavior.
-    // - Documented Delta: ThermostatSetpoint:SingleCooling and ThermostatSetpoint:SingleHeating continue to be imported into this wrapper shape, so
-    //   schedule semantics still reflect the imported EnergyPlus object type when loaded from those source objects.
-    // - Remaining Parity Work: Persist unattached temperature-difference state across save/load boundaries without depending on a zone attachment, and
-    //   add canonical schedule-type validation in the heating/cooling schedule setters.
     boost::optional<Schedule> heatingSetpointTemperatureSchedule() const;
     boost::optional<Schedule> coolingSetpointTemperatureSchedule() const;
 

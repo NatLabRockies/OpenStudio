@@ -22,6 +22,20 @@ namespace epmodel {
     class TemperingValve_Impl;
   }
 
+/** \brief A tempering valve in a plant loop.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-plant-condenser-flow-control.html#temperingvalve,TemperingValve}
+ *
+ * \par Important behavior
+ * Stream/source, setpoint, pump-outlet node relationships, and plant-supply placement map directly to TemperingValve.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model type is <code>openstudio::model::TemperingValve</code>.
+ *
+ * \par Known limitations
+ * Broader shared HVACComponent conveniences are not exposed.
+ */
   class EPMODEL_API TemperingValve : public StraightComponent
   {
    public:
@@ -35,14 +49,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - Status: Near Parity. The canonical tempering-valve node surface and plant-supply placement contract are now preserved in epmodel.
-    // - Canonical Counterpart: openstudio::model::TemperingValve.
-    // - Implemented Parity: The preserved node accessors match the stream/source, setpoint, and pump-outlet relationships from the canonical model; `addToNode(...)` is limited to plant-loop supply placement and seeds the required control nodes from the attached plant topology.
-    // - Documented Delta: TemperingValve still inherits the shared epmodel HVACComponent/StraightComponent base-surface gaps around the broader canonical component/fuel-type conveniences; this wrapper does not add a type-local workaround.
-    // - Field/Storage Mapping: These accessors map directly to EnergyPlus `TemperingValve` node fields used by the forward translator.
-    // - Evidence: `src/model/TemperingValve.hpp`, `src/model/TemperingValve.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateTemperingValve.cpp`.
-    // - Remaining Parity Work: Close the remaining shared HVACComponent base-surface gaps so TemperingValve can inherit the missing canonical component/fuel-type conveniences without adding type-local divergence.
     boost::optional<Node> stream2SourceNode() const;
     bool setStream2SourceNode(const Node& stream2SourceNode);
     void resetStream2SourceNode();

@@ -23,6 +23,21 @@ namespace epmodel {
     class AirLoopHVACZoneMixer_Impl;
   }
 
+  /** \brief Represents the mixer that combines zone return-air branches.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-air-path.html#airloophvaczonemixer,AirLoopHVAC:ZoneMixer}.
+   *
+   * \par Important behavior
+   * Relationships are projected from EnergyPlus branch and node topology and mutators maintain that topology.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::AirLoopHVACZoneMixer</code>.
+   * <b>Not yet available: <code>airflowNetworkDistributionNode()</code> and <code>getAirflowNetworkDistributionNode()</code>. Added: <code>airLoopHVAC()</code> and explicit inlet branch enumeration, assignment, and removal methods.</b>
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API AirLoopHVACZoneMixer : public Mixer
   {
    public:
@@ -36,14 +51,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. The zone-mixer topology surface is present, but the canonical wrapper exposes additional airflow-network convenience APIs.
-    // - Canonical Counterpart: openstudio::model::AirLoopHVACZoneMixer.
-    // - Implemented Parity: Outlet/inlet port access, branch indexing, inlet-object enumeration, branch removal, and inlet-object assignment preserve the canonical zone-mixer topology contract.
-    // - Documented Delta: epmodel still omits the AirflowNetwork distribution-node convenience API present in the canonical wrapper.
-    // - Field/Storage Mapping: `AirLoopHVAC:ZoneMixer` outlet-node and extensible inlet-node fields are represented as relationship fields.
-    // - Evidence: `src/model/AirLoopHVACZoneMixer.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirLoopHVACZoneMixer.cpp`, and `src/epmodel/test/idf/IDF_SmallOffice_GTest.cpp` exercise the same branch-index and outlet-node behavior.
-    // - Remaining Parity Work: Add the AirflowNetwork convenience wrappers only if epmodel needs to mirror that additional model-side surface.
     boost::optional<AirLoopHVAC> airLoopHVAC() const;
     unsigned outletPort() const override;
     unsigned inletPort(unsigned branchIndex) const override;

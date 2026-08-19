@@ -29,6 +29,20 @@ namespace epmodel {
     class PlanarSurface_Impl;
   }
 
+  /** \brief Abstract base for planar geometry belonging to a surface group.
+   *
+   * \par EnergyPlus object
+   * This class has no single EnergyPlus object; concrete `Surface` and `SubSurface` provide persisted vertices,
+   * while the \epobject{group-thermal-zone-description-geometry.html#internalmass,InternalMass}-backed `InteriorPartitionSurface` projects its area without EnergyPlus vertices.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model base is `openstudio::model::PlanarSurface`; concrete subclasses provide
+   * geometry, parent-space, and boundary-condition behavior.
+   *
+   * \par Known limitations
+   * EnergyPlus stores geometry differently for building, fenestration, and internal-mass objects, so concrete wrappers
+   * determine which geometry and adjacency operations can round-trip.
+   */
   class EPMODEL_API PlanarSurface : public ParentObject
   {
    public:

@@ -23,6 +23,17 @@ namespace epmodel {
     class RefrigerationTranscriticalSystem_Impl;
   }
 
+  /** \brief RefrigerationTranscriticalSystem.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-refrigeration.html#refrigerationtranscriticalsystem,Refrigeration:TranscriticalSystem}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::RefrigerationTranscriticalSystem</code>. The exposed scalar controls and two suction-piping zones are available. Model's case, walk-in, compressor, and gas-cooler relationship helpers are not available.
+   *
+   * \par Known limitations
+   * Only the fields and relationships listed in this wrapper are available; broader Model-only helpers are not exposed.
+   */
   class EPMODEL_API RefrigerationTranscriticalSystem : public ModelObject
   {
    public:
@@ -36,20 +47,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
     static std::vector<std::string> refrigerationSystemWorkingFluidTypeValues();
-
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. The scalar controls and the two optional suction-piping ThermalZone relationships are aligned.
-    // - Canonical Counterpart: openstudio::model::RefrigerationTranscriticalSystem.
-    // - Implemented Parity: The selected scalar methods and both optional suction-piping zone relationships preserve the canonical
-    //   public signatures. Zone setters validate the configured object list and do not couple the related UA scalars.
-    // - Field/Storage Mapping: Scalars and both zone relationships map directly to EnergyPlus Refrigeration:TranscriticalSystem fields;
-    //   the zone fields use the configured ZoneNames object list.
-    // - Canonicalization: Blank zone fields are valid and require no repair. Unresolved imported references remain untouched until an
-    //   explicit typed setter or reset; ordinary APIs assume canonical state.
-    // - Evidence: `src/model/RefrigerationTranscriticalSystem.hpp`, `src/model/RefrigerationTranscriticalSystem.cpp`,
-    //   `resources/energyplus/ProposedEnergy+.idd`, and `src/epmodel/test/RefrigerationTranscriticalSystem_GTest.cpp`.
-    // - Remaining Parity Work: Refrigerated case/walk-in lists, compressor lists, the gas cooler relationship, and object-level clone
-    //   behavior remain deferred.
     double receiverPressure() const;
     bool isReceiverPressureDefaulted() const;
     bool setReceiverPressure(double receiverPressure);

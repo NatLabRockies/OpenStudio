@@ -20,6 +20,35 @@ namespace epmodel {
     class AvailabilityManagerNightVentilation_Impl;
   }
 
+  /** \brief Controls night ventilation using outdoor temperature and flow-fraction limits.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-system-availability-managers.html#availabilitymanagernightventilation,AvailabilityManager:NightVentilation}
+   *
+   * \par Important behavior
+   * A newly constructed manager initializes the ventilation temperature
+   * difference to 2.0, the low limit to 15.0, and the night-venting flow
+   * fraction to 0.333.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::AvailabilityManagerNightVentilation</code>.
+   *
+   * - <b>Not yet available:</b> <code>loop()</code>, the applicability and
+   *   ventilation-temperature schedule methods, and the control-zone methods:
+   *   <code>applicabilitySchedule()</code>,
+   *   <code>setApplicabilitySchedule(...)</code>,
+   *   <code>ventilationTemperatureSchedule()</code>,
+   *   <code>setVentilationTemperatureSchedule(...)</code>,
+   *   <code>resetVentilationTemperatureSchedule()</code>,
+   *   <code>controlZone()</code>, <code>setControlZone(...)</code>, and
+   *   <code>resetControlZone()</code>.
+   *
+   * \par Known limitations
+   * The EPModel wrapper currently exposes scalar fields only. It cannot be
+   * passed to typed loop-assignment APIs or fully configured through typed
+   * schedule and control-zone relationships.
+   */
   class EPMODEL_API AvailabilityManagerNightVentilation : public ModelObject
   {
    public:
@@ -33,11 +62,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model scalar accessor names/signatures for this model-counterpart class.
-    // - Field Mapping: ventilationTemperatureDifference, ventilationTemperatureLowLimit, and
-    //   nightVentingFlowFraction map directly to E+ AvailabilityManager:NightVentilation fields.
-    // - TODO(parity): Keep relationship fields (Applicability/Fan/VentilationTemperature schedules and ControlZone) out of this scalar-only scaffold pass.
     /** ventilationTemperatureDifference */
     double ventilationTemperatureDifference() const;
     bool setVentilationTemperatureDifference(double ventilationTemperatureDifference);

@@ -22,6 +22,28 @@ namespace epmodel {
     class ElectricLoadCenterStorageSimple_Impl;
   }
 
+  /** \brief Represents a simple electrical storage device.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-electric-load-center-generator.html#electricloadcenterstoragesimple,ElectricLoadCenter:Storage:Simple}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::ElectricLoadCenterStorageSimple</code>.
+   *
+   * - <b>Not yet available:</b> <code>availabilitySchedule()</code>,
+   *   <code>isAvailabilityScheduleDefaulted()</code>,
+   *   <code>setAvailabilitySchedule(...)</code>, and
+   *   <code>resetAvailabilitySchedule()</code>.
+   * - <b>Not yet available:</b> The Model ElectricalStorage relationship
+   *   methods <code>electricLoadCenterDistribution()</code>,
+   *   <code>thermalZone()</code>, <code>setThermalZone(...)</code>, and
+   *   <code>resetThermalZone()</code>.
+   *
+   * \par Known limitations
+   * Assign schedule, electric-load-center, and thermal-zone relationships
+   * through lower-level object references when needed.
+   */
   class EPMODEL_API ElectricLoadCenterStorageSimple : public ModelObject
   {
    public:
@@ -35,12 +57,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model::ElectricLoadCenterStorageSimple scalar accessor names/signatures.
-    // - Field Mapping: scalar APIs map directly to ElectricLoadCenter:Storage:Simple scalar fields.
-    // - Field Mapping: Availability Schedule Name and Zone Name are relationship-like fields and are intentionally excluded.
-    // - ForwardTranslator evidence: ForwardTranslateElectricLoadCenterStorageSimple maps these preserved scalar APIs directly.
-    // - TODO(parity): Add relationship APIs incrementally without breaking preserved scalar signatures.
     double radiativeFractionforZoneHeatGains() const;
     bool isRadiativeFractionforZoneHeatGainsDefaulted() const;
     bool setRadiativeFractionforZoneHeatGains(double radiativeFractionforZoneHeatGains);

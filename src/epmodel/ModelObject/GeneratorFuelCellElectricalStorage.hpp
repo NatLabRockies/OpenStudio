@@ -23,6 +23,18 @@ namespace epmodel {
     class GeneratorFuelCellElectricalStorage_Impl;
   }
 
+  /** \brief Represents <code>Generator:FuelCell:ElectricalStorage</code>.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-electric-load-center-generator.html#generatorfuelcellelectricalstorage,Generator:FuelCell:ElectricalStorage}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::GeneratorFuelCellElectricalStorage</code>.
+   * **Not yet available:** Model parent, node, curve, schedule, and extensible constituent conveniences are not exposed unless declared here.
+   *
+   * \par Known limitations
+   * Relationship and extensible data not represented by the public declarations must be maintained by the owning object.
+   */
   class EPMODEL_API GeneratorFuelCellElectricalStorage : public ModelObject
   {
    public:
@@ -37,15 +49,6 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     static std::vector<std::string> choiceofModelValues();
-
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model scalar accessor naming/signatures for counterpart parity.
-    // - Field Mapping: Scalar APIs map directly to Generator:FuelCell:ElectricalStorage fields Choice of Model,
-    //   Nominal Charging Energetic Efficiency, Nominal Discharging Energetic Efficiency,
-    //   Simple Maximum Capacity, Simple Maximum Power Draw, Simple Maximum Power Store, and Initial Charge State.
-    // - ForwardTranslator evidence: ForwardTranslateGeneratorFuelCellElectricalStorage writes these scalar fields
-    //   directly, with no relationship-field translation in this object.
-    // - TODO(parity): Add preserved non-scalar APIs incrementally if/when relationship behavior is required.
     std::string choiceofModel() const;
     bool setChoiceofModel(const std::string& choiceofModel);
     void resetChoiceofModel();

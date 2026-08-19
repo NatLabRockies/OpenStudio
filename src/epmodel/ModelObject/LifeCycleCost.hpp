@@ -23,6 +23,17 @@ namespace epmodel {
     class LifeCycleCost_Impl;
   }
 
+  /** \brief LifeCycleCost.
+   *
+   * \par EnergyPlus object
+   * \epobject{lifecyclecost-recurringcosts.html#lifecyclecostrecurringcosts,LifeCycleCost:RecurringCosts}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::LifeCycleCost</code>. The cost timing and category fields are exposed. Model-only item, item-type, cost-units, and cost-calculation helpers are not available.
+   *
+   * \par Known limitations
+   * Only the fields and relationships listed in this wrapper are available; broader Model-only helpers are not exposed.
+   */
   class EPMODEL_API LifeCycleCost : public ModelObject
   {
    public:
@@ -38,12 +49,6 @@ namespace epmodel {
 
     static std::vector<std::string> validCategoryValues();
     static std::vector<std::string> validStartOfCostsValues();
-
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model LifeCycleCost scalar accessor naming/signatures where they map to current schema.
-    // - Field Mapping: This scaffold targets EnergyPlus LifeCycleCost:RecurringCosts and maps category/cost/start-of-costs/years/months/repeat-period fields directly.
-    // - Field Mapping: item/itemType/costUnits APIs remain excluded in this scalar pass because they are OpenStudio object-link semantics, not direct E+ scalar fields.
-    // - TODO(parity): Add annual escalation rate only if/when openstudio::model counterpart surface is intentionally expanded.
 
     std::string category() const;
     bool setCategory(const std::string& category);

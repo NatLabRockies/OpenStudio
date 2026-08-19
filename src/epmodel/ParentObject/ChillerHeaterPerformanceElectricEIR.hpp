@@ -23,6 +23,21 @@ namespace epmodel {
     class ChillerHeaterPerformanceElectricEIR_Impl;
   }
 
+/** \brief Stores the performance data for an electric EIR chiller-heater.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-plant-equipment.html#chillerheaterperformancelectriceir,ChillerHeaterPerformance:Electric:EIR}
+ *
+ * \par Important behavior
+ * Reference-mode, flow, temperature, efficiency, curve, and sizing fields are stored directly on the performance object.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model class is <code>openstudio::model::ChillerHeaterPerformanceElectricEIR</code>.
+ * <b>Not yet available:</b> Model's performance-curve setters, autosizing and sizing-result helpers, and reverse navigation to <code>CentralHeatPumpSystem</code> modules and systems are not exposed.
+ *
+ * \par Known limitations
+ * The performance object is a data resource; chiller-heater equipment relationships are managed by the referencing equipment object.
+ */
   class EPMODEL_API ChillerHeaterPerformanceElectricEIR : public ParentObject
   {
    public:
@@ -41,12 +56,6 @@ namespace epmodel {
     static std::vector<std::string> coolingModeTemperatureCurveCondenserWaterIndependentVariableValues();
     static std::vector<std::string> heatingModeTemperatureCurveCondenserWaterIndependentVariableValues();
 
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::ChillerHeaterPerformanceElectricEIR scalar API names/signatures for counterpart compatibility.
-    // - Field Mapping: Preserved scalar APIs map directly to EnergyPlus ChillerHeaterPerformance:Electric:EIR scalar fields.
-    // - Field Mapping: Curve-name relationship fields are intentionally excluded from this scalar-only scaffold.
-    // - ForwardTranslator evidence: translateChillerHeaterPerformanceElectricEIR writes autosize and scalar values directly to matching fields.
-    // - TODO(parity): Add excluded relationship/reverse-lookup APIs in a dedicated parity pass.
     boost::optional<double> referenceCoolingModeEvaporatorCapacity() const;
     bool isReferenceCoolingModeEvaporatorCapacityAutosized() const;
     bool setReferenceCoolingModeEvaporatorCapacity(double referenceCoolingModeEvaporatorCapacity);

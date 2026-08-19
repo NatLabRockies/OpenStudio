@@ -24,6 +24,27 @@ namespace epmodel {
     class CoilCoolingDXCurveFitPerformance_Impl;
   }
 
+  /** \brief Defines the performance and operating-mode relationships for a curve-fit DX cooling coil.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-coil-cooling-dx.html#coilcoolingdxcurvefitperformance,Coil:Cooling:DX:CurveFit:Performance}.
+   *
+   * \par Important behavior
+   * A newly created object and a loaded object with a blank basin-heater
+   * schedule are assigned the model's always-on discrete schedule. A nonblank
+   * unresolved schedule name is not guessed or replaced.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::CoilCoolingDXCurveFitPerformance</code>.
+   * EPModel also keeps a one-argument constructor for creating an initially
+   * unlinked performance object. The Model reverse-navigation method
+   * <code>coilCoolingDXs()</code> is not available.
+   *
+   * \par Known limitations
+   * Reverse navigation to the DX coils that reference this performance object
+   * is not available.
+   */
   class EPMODEL_API CoilCoolingDXCurveFitPerformance : public ModelObject
   {
    public:
@@ -43,19 +64,6 @@ namespace epmodel {
     static std::vector<std::string> validCapacityControlMethodValues();
     static std::vector<std::string> validCompressorFuelTypeValues();
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity.
-    // - Canonical Counterpart: openstudio::model::CoilCoolingDXCurveFitPerformance.
-    // - Implemented Parity: Scalar fields, the required base operating mode, both optional alternative operating modes, the optional
-    //   crankcase-heater temperature curve, and the required evaporative-condenser basin-heater schedule preserve their canonical public API
-    //   and configured EnergyPlus relationship constraints.
-    // - Documented Delta: The existing one-argument constructor remains available for internal/default EPModel construction.
-    // - Field/Storage Mapping: Scalars and relationships map directly to `Coil:Cooling:DX:CurveFit:Performance` fields; constructors and
-    //   blank-only load repair attach the always-on basin-heater schedule without changing unresolved nonblank imports.
-    // - Evidence: `src/model/CoilCoolingDXCurveFitPerformance.hpp` and
-    //   `src/epmodel/test/CoilCoolingDXCurveFitPerformance_GTest.cpp`.
-    // - Remaining Parity Work: `children()`, removal/clone equivalence, and reverse navigation remain outside this direct-relationship phase;
-    //   the optional operating modes remain ordinary referenced resources under current EPModel lifetime policy.
     double crankcaseHeaterCapacity() const;
     bool setCrankcaseHeaterCapacity(double crankcaseHeaterCapacity);
 

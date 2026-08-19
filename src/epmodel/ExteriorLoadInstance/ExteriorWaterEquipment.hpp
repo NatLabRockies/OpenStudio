@@ -22,6 +22,17 @@ namespace epmodel {
     class ExteriorWaterEquipment_Impl;
   }
 
+  /** \brief Represents the EnergyPlus Exterior:WaterEquipment object.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-exterior-energy-use-equipment.html#exteriorwaterequipment,Exterior:WaterEquipment}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::ExteriorWaterEquipment</code>. <b>Not yet available:</b> the Model definition, schedule, and facility relationship methods. EPModel exposes end-use subcategory and multiplier. EnergyPlus Fuel Use Type is fixed to <code>Water</code>.
+   *
+   * \par Known limitations
+   * EPModel stores the compatibility multiplier in the EnergyPlus Design Level field; EnergyPlus has no separate multiplier field.
+   */
   class EPMODEL_API ExteriorWaterEquipment : public ModelObject
   {
    public:
@@ -35,15 +46,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::ExteriorWaterEquipment scalar accessor names/signatures.
-    // - Field Mapping: multiplier API maps to E+ Exterior:WaterEquipment Design Level.
-    // - Field Mapping: endUseSubcategory maps directly to E+ End-Use Subcategory.
-    // - Field Mapping: Fuel Use Type is translator-fixed to "Water"; no corresponding scalar model API.
-    // - Field Mapping: relationship fields (Schedule Name and related definition/facility graph) are excluded.
-    // - ForwardTranslator evidence: ForwardTranslateExteriorWaterEquipment.cpp writes DesignLevel from
-    //   definition.designLevel() * modelObject.multiplier(), writes FuelUseType="Water", and writes EndUseSubcategory directly.
-    // - TODO(parity): Add excluded relationship APIs without changing preserved scalar signatures.
     double multiplier() const;
     bool isMultiplierDefaulted() const;
     bool setMultiplier(double multiplier);

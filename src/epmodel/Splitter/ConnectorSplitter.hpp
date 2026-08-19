@@ -22,6 +22,21 @@ namespace epmodel {
     class ConnectorSplitter_Impl;
   }
 
+  /** \brief Represents an EnergyPlus connector that distributes branch flows.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-node-branch-management.html#connectorsplitter,Connector:Splitter}.
+   *
+   * \par Important behavior
+   * Relationships are projected from EnergyPlus branch and node topology and mutators maintain that topology.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::ConnectorSplitter</code>.
+   * <b>Added: explicit outlet-object enumeration, assignment, and branch-removal methods for EnergyPlus connector topology.</b>
+   *
+   * \par Known limitations
+   * Connector relationships are represented through EnergyPlus branch topology.
+   */
   class EPMODEL_API ConnectorSplitter : public Splitter
   {
    public:
@@ -35,13 +50,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. The connector-specific branch-port surface is present within the representative loop-topology contract.
-    // - Canonical Counterpart: openstudio::model::ConnectorSplitter.
-    // - Implemented Parity: Connector-specific inlet/outlet port traversal, branch indexing, inlet lookup, and branch removal APIs preserve the canonical connector-splitter topology contract.
-    // - Field/Storage Mapping: Public behavior is organized around EnergyPlus `Connector:Splitter` branch topology rather than OpenStudio connection storage.
-    // - Evidence: `src/model/ConnectorSplitter.hpp` and the loop topology family establish the canonical connector-specific branch API this wrapper is preserving.
-    // - Remaining Parity Work: Add connector-specific loop integration only for a concrete workflow or shared topology defect.
     unsigned inletPort() const override;
     unsigned outletPort(unsigned branchIndex) const override;
     unsigned nextOutletPort() const override;

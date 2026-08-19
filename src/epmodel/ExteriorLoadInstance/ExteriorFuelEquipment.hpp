@@ -26,6 +26,17 @@ namespace epmodel {
     class ExteriorFuelEquipment_Impl;
   }
 
+  /** \brief Represents the EnergyPlus Exterior:FuelEquipment object.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-exterior-energy-use-equipment.html#exteriorfuelequipment,Exterior:FuelEquipment}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::ExteriorFuelEquipment</code>. <b>Not yet available:</b> the Model definition, schedule, and facility relationship methods. EPModel exposes the scalar fuel, end-use, and multiplier surface.
+   *
+   * \par Known limitations
+   * EPModel stores the compatibility multiplier in the EnergyPlus Design Level field; EnergyPlus has no separate multiplier field.
+   */
   class EPMODEL_API ExteriorFuelEquipment : public ModelObject
   {
    public:
@@ -42,14 +53,6 @@ namespace epmodel {
     static std::vector<std::string> fuelTypeValues();
     static std::vector<std::string> validFuelTypeValues();
 
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::ExteriorFuelEquipment scalar accessor names/signatures.
-    // - Field Mapping: multiplier API maps to E+ Exterior:FuelEquipment Design Level.
-    // - Field Mapping: fuelType/endUseSubcategory map to E+ Fuel Use Type/End-Use Subcategory.
-    // - Field Mapping: relationship fields (Schedule Name and related definition/facility graph) are excluded.
-    // - ForwardTranslator evidence: ForwardTranslateExteriorFuelEquipment.cpp writes DesignLevel from
-    //   definition.designLevel() * modelObject.multiplier(), and writes FuelUseType/EndUseSubcategory directly.
-    // - TODO(parity): Add excluded relationship APIs without changing preserved scalar signatures.
 
     std::string fuelType() const;
     bool setFuelType(const FuelType& fuelType);

@@ -22,6 +22,23 @@ namespace epmodel {
     class CoilHeatingWaterBaseboard_Impl;
   }
 
+  /** \brief Represents a heating-coil view of a convective water baseboard.
+   *
+   * \par EnergyPlus object
+   * No standalone EnergyPlus object. EPModel projects <code>OS:Coil:Heating:Water:Baseboard</code> onto \epobject{group-radiative-convective-units.html#zonehvacbaseboardconvectivewater,ZoneHVAC:Baseboard:Convective:Water} parent storage.
+   *
+   * \par Important behavior
+   * This transient child writes its scalar and schedule fields through to parent-owned storage and maps its plant
+   * ports to the parent's <code>Water Inlet Node Name</code> and <code>Water Outlet Node Name</code> fields.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::CoilHeatingWaterBaseboard</code>.
+   * <b>Changed:</b> the child is transient and cannot be persisted or placed independently as a plant component.
+   * <b>Not yet available:</b> the Model <code>inletPort()</code> and <code>outletPort()</code> convenience methods.
+   *
+   * \par Known limitations
+   * Use the owning parent object for persistence and complete topology.
+   */
   class EPMODEL_API CoilHeatingWaterBaseboard : public StraightComponent
   {
    public:
@@ -46,18 +63,6 @@ namespace epmodel {
     // canonical child shape by exposing a transient straight-component view that
     // reads and writes that parent-owned storage.
     //
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. epmodel now exposes the canonical heating-coil companion as a transient straight-component view over the
-    //   parent baseboard object.
-    // - Canonical Counterpart: openstudio::model::CoilHeatingWaterBaseboard.
-    // - Implemented Parity: The water-side ports, sizing fields, defaults, autosize helpers, and loop-placement behavior are available
-    //   through the canonical child wrapper surface.
-    // - Documented Delta: This child is transient in epmodel because EnergyPlus does not persist a standalone coil object for this family.
-    //   The child writes through to the parent `ZoneHVAC:Baseboard:Convective:Water` object and its water-node fields.
-    // - Field/Storage Mapping: All coil fields map directly to the parent EnergyPlus baseboard object. The transient child is a canonical
-    //   view over those parent-owned fields rather than a separate persisted object.
-    // - Remaining Parity Work: Autosized query access still returns `none` on this transient child because epmodel does not yet project
-    //   SQL-backed autosized results back through this wrapper.
     std::string heatingDesignCapacityMethod() const;
     bool setHeatingDesignCapacityMethod(const std::string& heatingDesignCapacityMethod);
 

@@ -157,33 +157,84 @@ Use these references when needed:
   write-through mapping explicit, document it in the type notes, and avoid
   inventing fake persisted children.
 
-## Schema Alignment Notes
+## Public class documentation
 
-Type-local parity status belongs in `Schema Alignment Notes` blocks in
-`src/epmodel/**/*.hpp`.
+Every public class or struct in `src/epmodel/**/*.hpp` must have a type-level
+Doxygen comment immediately before its declaration. Write for an SDK user
+deciding whether and how to use the type. Do not publish internal maturity
+labels such as "partial parity", "canonical counterpart", or "implemented
+parity".
 
-Required bullets:
+Use this structure:
 
-- `Status`
-- `Canonical Counterpart`
-- `Implemented Parity`
+```cpp
+/** \brief What the class represents.
+ *
+ * \par EnergyPlus object
+ * <code>Exact:IDD:Object:Name</code>
+ *
+ * \par Important behavior
+ * Optional. Document only validation, ownership, side effects, automatic
+ * maintenance, persistence, or lifecycle behavior that is not evident from
+ * the public declarations.
+ *
+ * \par OpenStudio Model API
+ * Identify the corresponding `openstudio::model` class and list only methods
+ * that are unavailable, renamed, added, or observably different in EPModel.
+ *
+ * \par Known limitations
+ * State behavioral or workflow restrictions that are not already explained by
+ * the method comparison.
+ */
+```
 
-Optional bullets when useful:
+`EnergyPlus object`, `OpenStudio Model API`, and `Known limitations` are
+required. `Important behavior` is optional and must not restate constructors,
+getters, setters, or the EnergyPlus-backed architecture explained by the
+EPModel overview.
 
-- `Documented Delta`
-- `Field/Storage Mapping`
-- `Evidence`
+For `EnergyPlus object`:
 
-`Remaining Parity Work` is required unless the type is truly at parity with
-only documented deltas remaining.
+- Use the exact IDD spelling, for example
+  `<code>Coil:Heating:Electric</code>`. Do not repeat the corresponding
+  `IddObjectType` enum.
+- For an abstract class, say that it has no single EnergyPlus object and name
+  the concrete family it represents.
+- For a composite wrapper, identify the primary object and the companion object
+  types needed to represent it.
+- For a transient or projected wrapper, say that there is no standalone
+  EnergyPlus object, identify the parent object and exact fields or extensible
+  rows being exposed, and explain attach/detach persistence when relevant.
 
-Status vocabulary:
+For `OpenStudio Model API`:
 
-- `Scaffolded`
-- `Scalar Parity`
-- `Partial Parity`
-- `Near Parity`
-- `Parity with documented deltas`
+- Use plain language such as "The corresponding OpenStudio Model class is...".
+- If OpenStudio Model has no public wrapper, say so explicitly. Describe the
+  wrapper as new to the EPModel API, not as a new EnergyPlus type.
+- If the class was renamed, give both fully qualified names. State a reason only
+  when it is established by code, tests, or project history.
+- Group differences under bold `Not yet available`, `Renamed`, `Changed`, or
+  `Added` labels as applicable.
+- Name exact methods when the list is short. Summarize a method family when a
+  full overload list would obscure the useful information.
+- Write out replacement method names. Do not use shorthand such as "the 2017
+  methods".
+- Explain domain-specific qualifiers encoded in method names when their meaning
+  is not evident to an SDK user, such as the rating-standard editions denoted
+  by `2017` and `2023`.
+- Do not list unchanged methods. Say "No known public API differences" only
+  after a deliberate header and behavior comparison. While an audit is
+  incomplete, say "API comparison not yet completed" instead.
+
+`Known limitations` is for runtime, topology, ownership, binding, or workflow
+restrictions, not a duplicate list of missing methods. After a deliberate
+review, use "No known EPModel-specific limitations" when appropriate so the
+reader can distinguish a reviewed class from an undocumented one.
+
+Verify every public claim against the EPModel and Model headers, implementations,
+focused tests, translators, and the configured EnergyPlus IDD as applicable.
+Commented-out declarations are not public Model API and must not be reported as
+missing EPModel methods.
 
 ## Build
 

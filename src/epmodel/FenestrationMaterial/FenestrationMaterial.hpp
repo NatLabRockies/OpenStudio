@@ -19,10 +19,22 @@ namespace epmodel {
     class FenestrationMaterial_Impl;
   }
 
-  /** A FenestrationMaterial is a Material that serves as a base class for all materials used in
-   *  fenestration (window/door) constructions, including glazing layers, gas layers, and shading
-   *  materials. It also provides gas property coefficients used by EnergyPlus for U-factor
-   *  calculations. */
+  /** \brief Base class for fenestration materials and shared gas properties.
+   *
+   * \par EnergyPlus object
+   * This class has no single EnergyPlus object. It supplies the gas-property
+   * coefficients and reference temperatures used by EnergyPlus fenestration
+   * calculations; concrete glazing, gas, and shading classes encapsulate the
+   * actual material objects.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::FenestrationMaterial</code>. The shared static gas
+   * property methods have the same public meaning.
+   *
+   * \par Known limitations
+   * This class cannot be persisted as a standalone material object.
+   */
   class EPMODEL_API FenestrationMaterial : public Material
   {
    public:

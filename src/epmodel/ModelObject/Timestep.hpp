@@ -20,6 +20,17 @@ namespace epmodel {
     class Timestep_Impl;
   }
 
+  /** \brief Timestep.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-simulation-parameters.html#timestep,Timestep}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::Timestep</code>. The number-of-timesteps-per-hour field maps directly to EnergyPlus.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API Timestep : public ModelObject
   {
    public:
@@ -32,10 +43,6 @@ namespace epmodel {
     Timestep& operator=(Timestep&&) = default;
 
     static IddObjectType iddObjectType();
-
-    // Schema Alignment Notes:
-    // - API: numberOfTimestepsPerHour getter/setter map to OS_TimestepFields::NumberofTimestepsperHour.
-    // - Field Mapping: this object represents the EnergyPlus Timestep object; the scalar ties to the "Number of Timesteps per Hour" field created via ForwardTranslator Timestep steps.
     int numberOfTimestepsPerHour() const;
 
     bool setNumberOfTimestepsPerHour(int numberOfTimestepsPerHour);

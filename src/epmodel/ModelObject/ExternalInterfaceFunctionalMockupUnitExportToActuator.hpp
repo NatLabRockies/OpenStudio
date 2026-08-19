@@ -22,6 +22,18 @@ namespace epmodel {
     class ExternalInterfaceFunctionalMockupUnitExportToActuator_Impl;
   }
 
+  /** \brief Represents <code>ExternalInterface:FunctionalMockupUnitExport:To:Actuator</code>.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-externalinterface.html#externalinterfacefunctionalmockupunitexporttoactuator,ExternalInterface:FunctionalMockupUnitExport:To:Actuator}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::ExternalInterfaceFunctionalMockupUnitExportToActuator</code>.
+   * **Not yet available:** Model typed FMU/component relationships and OpenStudio-only export controls are not exposed unless represented by an EnergyPlus field here.
+   *
+   * \par Known limitations
+   * Typed relationship and extensible-list conveniences not represented by the public declarations are unavailable.
+   */
   class EPMODEL_API ExternalInterfaceFunctionalMockupUnitExportToActuator : public ModelObject
   {
    public:
@@ -34,16 +46,6 @@ namespace epmodel {
     ExternalInterfaceFunctionalMockupUnitExportToActuator& operator=(ExternalInterfaceFunctionalMockupUnitExportToActuator&&) = default;
 
     static IddObjectType iddObjectType();
-
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::ExternalInterfaceFunctionalMockupUnitExportToActuator scalar accessor names/signatures.
-    // - Field Mapping: actuatedComponentType -> ExternalInterface:FunctionalMockupUnitExport:To:Actuator, Actuated Component Type.
-    // - Field Mapping: actuatedComponentControlType -> ExternalInterface:FunctionalMockupUnitExport:To:Actuator, Actuated Component Control Type.
-    // - Field Mapping: fMUVariableName -> ExternalInterface:FunctionalMockupUnitExport:To:Actuator, FMU Variable Name.
-    // - Field Mapping: initialValue -> ExternalInterface:FunctionalMockupUnitExport:To:Actuator, Initial Value.
-    // - Field Mapping: actuatedComponentUnique is relationship-like (object target) and excluded from scalar scaffold.
-    // - ForwardTranslator evidence: ForwardTranslateExternalInterfaceFunctionalMockupUnitExportToActuator.cpp writes these scalar fields directly.
-    // - TODO(parity): Add relationship APIs incrementally without changing preserved scalar signatures.
     /** Actuated Component Type */
     //@{
     std::string actuatedComponentType() const;

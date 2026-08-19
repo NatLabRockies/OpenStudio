@@ -24,6 +24,19 @@ namespace epmodel {
     class CoilWaterHeatingDesuperheater_Impl;
   }
 
+  /** \brief Represents a water-heating desuperheater coil.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-heating-and-cooling-coils.html#coilwaterheatingdesuperheater,Coil:WaterHeating:Desuperheater}.
+   *
+   * \par Important behavior
+   * The required setpoint schedule and availability schedule map to the EnergyPlus object; the direct one-argument constructor remains IDF-compatible.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::CoilWaterHeatingDesuperheater</code>. <b>Added:</b> EPModel exposes <code>addToNode()</code>. <b>Not yet available:</b> <code>addToHeatRejectionTarget()</code> and <code>removeFromHeatRejectionTarget()</code>, plus broader tank-link conveniences.
+   * \par Known limitations
+   * The one-argument constructor does not synthesize the required setpoint schedule.
+   */
   class EPMODEL_API CoilWaterHeatingDesuperheater : public StraightComponent
   {
    public:
@@ -38,23 +51,6 @@ namespace epmodel {
     CoilWaterHeatingDesuperheater& operator=(CoilWaterHeatingDesuperheater&&) = default;
 
     static IddObjectType iddObjectType();
-
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. The canonical scalar and schedule surfaces plus the bounded relationship slice are present, while tank-link and
-    //   broader node-link helpers remain out of scope.
-    // - Canonical Counterpart: openstudio::model::CoilWaterHeatingDesuperheater.
-    // - Implemented Parity: The canonical constructor accepts the required setpoint temperature schedule. Availability and setpoint relationships
-    //   enforce their canonical schedule types, and canonicalization repairs blank availability while preserving malformed nonblank evidence. The
-    //   dead-band, heat-reclaim, water-flow, pump-power, parasitic-load, curve, heating-source, child-traversal, and `addToNode(...)` surfaces remain.
-    // - Documented Delta: The one-argument constructor remains for direct EnergyPlus compatibility, where blank availability is valid, but its result
-    //   is structurally incomplete until `setSetpointTemperatureSchedule(...)` succeeds. Tank-link helpers remain out of scope.
-    // - Field/Storage Mapping: `availabilitySchedule()` maps to A2 and `setpointTemperatureSchedule()` maps to required A3. Preserved scalars and other
-    //   relationships map directly to EnergyPlus `Coil:WaterHeating:Desuperheater` fields. There is intentionally no setpoint reset API.
-    // - Canonicalization: Ordinary getters are observational and assume managed schedule pointers. Repair attaches always-on only for truly blank
-    //   availability, reattaches unique eligible persisted names through validated setters, never invents a setpoint schedule, and preserves and
-    //   reports unresolved, ambiguous, or incompatible nonblank evidence.
-    // - Evidence: `src/model/CoilWaterHeatingDesuperheater.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateCoilWaterHeatingDesuperheater.cpp`, and `src/epmodel/test/CoilWaterHeatingDesuperheater_GTest.cpp`.
-    // - Remaining Parity Work: Add the omitted tank-link and broader relationship helpers without changing the preserved public signatures.
 
     Schedule availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);

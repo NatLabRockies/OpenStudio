@@ -22,6 +22,17 @@ namespace epmodel {
     class AirLoopHVACOutdoorAirSystemEquipmentList_Impl;
   }
 
+  /** \brief Represents the EnergyPlus AirLoopHVAC:OutdoorAirSystem:EquipmentList object.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-air-distribution.html#airloophvacoutdoorairsystemequipmentlist,AirLoopHVAC:OutdoorAirSystem:EquipmentList}
+   *
+   * \par OpenStudio Model API
+   * OpenStudio Model has no public wrapper for this EnergyPlus object. This wrapper is new to the EPModel API.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations beyond the public fields and relationships exposed by this wrapper.
+   */
   class EPMODEL_API AirLoopHVACOutdoorAirSystemEquipmentList : public ModelObject
   {
    public:
@@ -33,11 +44,6 @@ namespace epmodel {
     AirLoopHVACOutdoorAirSystemEquipmentList& operator=(const AirLoopHVACOutdoorAirSystemEquipmentList&) = default;
     AirLoopHVACOutdoorAirSystemEquipmentList& operator=(AirLoopHVACOutdoorAirSystemEquipmentList&&) = default;
 
-    // Schema Alignment Notes:
-    // - API: This no-counterpart type keeps IDD-derived class/API naming.
-    // - Field Mapping: Name remains available through base ModelObject scalar API.
-    // - Field Mapping: Extensible fields (Component Object Type, Component Name) are relationship-like link fields and excluded from scalar accessors.
-    // - TODO(parity): Add relationship parity APIs incrementally after scalar saturation.
     std::vector<ModelObject> equipment() const;
     static IddObjectType iddObjectType();
 

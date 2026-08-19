@@ -19,6 +19,20 @@ namespace epmodel {
     class Schedule_Impl;
   }
 
+  /** \brief Base class for EnergyPlus-backed schedules.
+   *
+   * \par EnergyPlus object
+   * This class has no single EnergyPlus object. It is the base for concrete
+   * schedule-family objects such as \epobject{group-schedules.html#schedulecompact,Schedule:Compact},
+   * \epobject{group-schedules.html#scheduleconstant,Schedule:Constant}, and \epobject{group-schedules.html#schedulefile,Schedule:File}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::Schedule</code>. No known public API differences.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API Schedule : public ScheduleBase
   {
    public:

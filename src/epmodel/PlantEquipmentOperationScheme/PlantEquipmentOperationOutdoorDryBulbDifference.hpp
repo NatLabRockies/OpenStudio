@@ -23,6 +23,27 @@ namespace epmodel {
     class PlantEquipmentOperationOutdoorDryBulbDifference_Impl;
   }
 
+  /** \brief Selects plant equipment for outdoor-dry bulb difference operation.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-plant-condenser-control.html#plantequipmentoperationoutdoordrybulbdifference,PlantEquipmentOperation:OutdoorDryBulbDifference}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::PlantEquipmentOperationOutdoorDryBulbDifference</code>.
+   *
+   * - <b>Not yet available:</b> <code>referenceTemperatureNode()</code>,
+   *   <code>setReferenceTemperatureNode(...)</code>, and
+   *   <code>resetReferenceTemperatureNode()</code>.
+   * - <b>Not yet available:</b> The load-range and equipment methods inherited
+   *   from <code>PlantEquipmentOperationRangeBasedScheme</code>, including
+   *   <code>addLoadRange(...)</code>, <code>removeLoadRange(...)</code>,
+   *   <code>loadRangeUpperLimits()</code>, <code>equipment(...)</code>, the
+   *   add/replace/remove equipment methods, and <code>clearLoadRanges()</code>.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API PlantEquipmentOperationOutdoorDryBulbDifference : public PlantEquipmentOperationScheme
   {
    public:
@@ -36,10 +57,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - API: Mirrors EnergyPlus PlantEquipmentOperation:OutdoorDryBulbDifference by re-exposing the same dry-bulb temperature difference range scalars from the first/last extensible groups.
-    // - Field Mapping: maximumUpperLimit()/minimumLowerLimit() read the Dry-Bulb Temperature Difference Range 1 upper/lower limit fields.
-    // - TODO(parity): Add helpers for the reference temperature node and range equipment list relationships once general relationship scaffolding arrives.
     double maximumUpperLimit() const;
     double minimumLowerLimit() const;
 

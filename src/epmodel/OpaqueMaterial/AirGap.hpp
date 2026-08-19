@@ -22,6 +22,25 @@ namespace epmodel {
     class AirGap_Impl;
   }
 
+  /** \brief Represents a thermal-resistance air gap.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-surface-construction-elements.html#materialairgap,Material:AirGap}.
+   *
+   * \par Important behavior
+   * The constructor writes the supplied thermal resistance to the EnergyPlus
+   * <code>Thermal Resistance</code> field. The shared opaque-material thermal
+   * methods resolve this field rather than a thickness-based material model.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::AirGap</code>. The thermal-resistance accessor and
+   * setter have the same public meaning.
+   *
+   * \par Known limitations
+   * An air gap has no material thickness or conductivity to derive; its thermal
+   * resistance is the defining input.
+   */
   class EPMODEL_API AirGap : public OpaqueMaterial
   {
    public:
@@ -34,12 +53,6 @@ namespace epmodel {
     AirGap& operator=(AirGap&&) = default;
 
     static IddObjectType iddObjectType();
-
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model::AirGap scalar accessor names/signatures.
-    // - Field Mapping: thermalResistance/setThermalResistance map to E+ Material:AirGap Thermal Resistance.
-    // - ForwardTranslator evidence: ForwardTranslateAirGap.cpp writes model AirGap::thermalResistance directly to Material:AirGap Thermal Resistance.
-    // - TODO(parity): Introduce an epmodel OpaqueMaterial hierarchy and migrate AirGap inheritance when broader opaque-material parity lands.
 
    protected:
     using ImplType = detail::AirGap_Impl;

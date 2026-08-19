@@ -22,6 +22,18 @@ namespace epmodel {
     class EnergyManagementSystemSubroutine_Impl;
   }
 
+  /** \brief Represents <code>EnergyManagementSystem:Subroutine</code>.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-energy-management-system-ems.html#energymanagementsystemsubroutine,EnergyManagementSystem:Subroutine}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::EnergyManagementSystemSubroutine</code>.
+   * **Not yet available:** Model typed object-target, program-body, and EMS relationship conveniences are not exposed unless declared by this wrapper.
+   *
+   * \par Known limitations
+   * Typed relationship and extensible-list conveniences not represented by the public declarations are unavailable.
+   */
   class EPMODEL_API EnergyManagementSystemSubroutine : public ModelObject
   {
    public:
@@ -34,13 +46,6 @@ namespace epmodel {
     EnergyManagementSystemSubroutine& operator=(EnergyManagementSystemSubroutine&&) = default;
 
     static IddObjectType iddObjectType();
-
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model::EnergyManagementSystemSubroutine class naming.
-    // - Field Mapping: EnergyPlus Subroutine Program Line is an extensible/non-scalar field and intentionally excluded from simple scalar accessor scaffold.
-    // - ForwardTranslator evidence: ForwardTranslateEnergyManagementSystemSubroutine.cpp copies OS extensible ProgramLine entries to E+ extensible ProgramLine entries.
-    // - TODO(parity): Add non-scalar body/lines/referencedObjects APIs incrementally without changing scalar scaffolding conventions.
-
    protected:
     using ImplType = detail::EnergyManagementSystemSubroutine_Impl;
 

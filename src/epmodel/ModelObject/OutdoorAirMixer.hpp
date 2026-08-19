@@ -21,6 +21,17 @@ namespace epmodel {
     class OutdoorAirMixer_Impl;
   }
 
+  /** \brief OutdoorAirMixer.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-air-distribution.html#outdoorairmixer,OutdoorAir:Mixer}.
+   *
+   * \par OpenStudio Model API
+   * There is no corresponding <code>openstudio::model</code> class; this wrapper exposes the configured node targets.
+   *
+   * \par Known limitations
+   * There is no corresponding <code>openstudio::model</code> class; this wrapper exposes the configured node targets.
+   */
   class EPMODEL_API OutdoorAirMixer : public ModelObject
   {
    public:

@@ -23,6 +23,26 @@ namespace epmodel {
     class ElectricLoadCenterStorageLiIonNMCBattery_Impl;
   }
 
+  /** \brief Represents a lithium-ion nickel-manganese-cobalt battery.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-electric-load-center-generator.html#electricloadcenterstorage-liionbattery,ElectricLoadCenter:Storage:LiIonNMCBattery}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::ElectricLoadCenterStorageLiIonNMCBattery</code>.
+   *
+   * - <b>Not yet available:</b> <code>availabilitySchedule()</code> and
+   *   <code>setAvailabilitySchedule(...)</code>.
+   * - <b>Not yet available:</b> The Model ElectricalStorage relationship
+   *   methods <code>electricLoadCenterDistribution()</code>,
+   *   <code>thermalZone()</code>, <code>setThermalZone(...)</code>, and
+   *   <code>resetThermalZone()</code>.
+   *
+   * \par Known limitations
+   * Assign schedule, electric-load-center, and thermal-zone relationships
+   * through lower-level object references when needed.
+   */
   class EPMODEL_API ElectricLoadCenterStorageLiIonNMCBattery : public ModelObject
   {
    public:
@@ -41,14 +61,6 @@ namespace epmodel {
 
     static std::vector<std::string> lifetimeModelValues();
 
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model::ElectricLoadCenterStorageLiIonNMCBattery scalar accessor names/signatures.
-    // - Field Mapping: scalar APIs map directly to ElectricLoadCenter:Storage:LiIonNMCBattery scalar fields.
-    // - Field Mapping: Availability Schedule Name and Zone Name are relationship-like fields and intentionally excluded.
-    // - ForwardTranslator evidence: ForwardTranslateElectricLoadCenterStorageLiIonNMCBattery maps these scalar APIs directly.
-    // - Naming Drift: Getter `dctoDCChargingEfficiency` and setter `setDCtoDCChargingEfficiency` both map to
-    //   `DCtoDCChargingEfficiency` to preserve existing model API.
-    // - TODO(parity): Add relationship APIs incrementally without changing preserved scalar signatures.
     double radiativeFraction() const;
     bool setRadiativeFraction(double radiativeFraction);
 

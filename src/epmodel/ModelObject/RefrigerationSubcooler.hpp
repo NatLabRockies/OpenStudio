@@ -22,6 +22,17 @@ namespace epmodel {
     class RefrigerationSubcooler_Impl;
   }
 
+  /** \brief RefrigerationSubcooler.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-refrigeration.html#refrigerationsubcooler,Refrigeration:Subcooler}.
+   *
+   * \par OpenStudio Model API
+   * There is no corresponding <code>openstudio::model::RefrigerationSubcooler</code> base class. This EPModel base represents the shared EnergyPlus object fields; typed subclasses select the subcooler type.
+   *
+   * \par Known limitations
+   * There is no corresponding <code>openstudio::model::RefrigerationSubcooler</code> base class. This EPModel base represents the shared EnergyPlus object fields; typed subclasses select the subcooler type.
+   */
   class EPMODEL_API RefrigerationSubcooler : public ModelObject
   {
    public:

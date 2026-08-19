@@ -22,6 +22,19 @@ namespace epmodel {
     class AirToAirComponent_Impl;
   }
 
+  /** \brief Abstract base for components with two air streams.
+   *
+   * \par EnergyPlus object
+   * This class has no single EnergyPlus object; concrete subclasses such as
+   * \epobject{group-heat-recovery.html#heatexchangerairtoairsensibleandlatent,HeatExchanger:AirToAir:SensibleAndLatent} and \epobject{group-heat-recovery.html#heatexchangerdesiccantbalancedflow,HeatExchanger:Desiccant:BalancedFlow} provide the persisted objects.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model base is `openstudio::model::AirToAirComponent`; concrete subclasses provide
+   * the type-specific fields and relationships.
+   *
+   * \par Known limitations
+   * The base does not establish a universal connection policy; each concrete air-to-air component owns its topology.
+   */
   class EPMODEL_API AirToAirComponent : public HVACComponent
   {
    public:

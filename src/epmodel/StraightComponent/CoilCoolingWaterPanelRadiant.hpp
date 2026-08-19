@@ -24,6 +24,20 @@ namespace epmodel {
     class CoilCoolingWaterPanelRadiant_Impl;
   }
 
+  /** \brief Represents a cooling-coil view of a radiant-convective water panel.
+   *
+   * \par EnergyPlus object
+   * No standalone EnergyPlus object. EPModel projects <code>OS:Coil:Cooling:Water:Panel:Radiant</code> onto \epobject{group-radiative-convective-units.html#zonehvaccoolingpanelradiantconvectivewater,ZoneHVAC:CoolingPanel:RadiantConvective:Water} parent storage.
+   *
+   * \par Important behavior
+   * This transient child writes its scalar and schedule fields through to parent-owned storage and maps its water
+   * ports to the parent's <code>Water Inlet Node Name</code> and <code>Water Outlet Node Name</code> fields.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::CoilCoolingWaterPanelRadiant</code>. <b>Changed:</b> the child is transient and cannot be persisted or placed independently as a plant component. EPModel additionally exposes explicit default-state queries for the parent-backed EnergyPlus fields.
+   * \par Known limitations
+   * Use the owning parent object for persistence and complete topology.
+   */
   class EPMODEL_API CoilCoolingWaterPanelRadiant : public StraightComponent
   {
    public:
@@ -41,26 +55,6 @@ namespace epmodel {
     static std::vector<std::string> coolingDesignCapacityMethodValues();
     static std::vector<std::string> controlTypeValues();
     static std::vector<std::string> condensationControlTypeValues();
-
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. epmodel preserves the canonical coil child as a
-    //   transient straight-component view over the parent cooling panel object.
-    // - Canonical Counterpart: openstudio::model::CoilCoolingWaterPanelRadiant.
-    // - Why This Type Is Slightly Different: canonical OpenStudio factors the
-    //   cooling panel family into one parent ZoneHVAC object plus a cooling-coil
-    //   child. EnergyPlus does not persist a standalone coil object here; all of
-    //   the coil state is flattened onto the parent
-    //   `ZoneHVAC:CoolingPanel:RadiantConvective:Water` object. Epmodel keeps
-    //   the canonical child shape additively by exposing a transient coil that
-    //   reads and writes those parent-owned fields.
-    // - Implemented Parity: The canonical scalar, schedule, autosizing, and
-    //   water-node APIs are available through this child wrapper.
-    // - Documented Delta: Because this child is transient, it is not currently
-    //   allowed to place itself independently on a plant loop. `addToNode(...)`
-    //   therefore returns `false` instead of pretending there is a persisted
-    //   loop component behind the child wrapper.
-    // - Field/Storage Mapping: Every field exposed here writes through to the
-    //   persisted parent cooling-panel object.
 
     double ratedInletWaterTemperature() const;
     bool isRatedInletWaterTemperatureDefaulted() const;

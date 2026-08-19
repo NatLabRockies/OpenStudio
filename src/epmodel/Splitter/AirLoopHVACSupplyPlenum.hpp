@@ -24,6 +24,21 @@ namespace epmodel {
     class AirLoopHVACSupplyPlenum_Impl;
   }
 
+  /** \brief Represents an air-loop supply plenum serving a thermal zone.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-air-path.html#airloophvacsupplyplenum,AirLoopHVAC:SupplyPlenum}.
+   *
+   * \par Important behavior
+   * Relationships are projected from EnergyPlus branch and node topology and mutators maintain that topology.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::AirLoopHVACSupplyPlenum</code>.
+   * <b>Not yet available: <code>addBranchForZone()</code> and AirflowNetwork distribution-node conveniences. Added: explicit outlet branch enumeration, assignment, and removal methods.</b>
+   *
+   * \par Known limitations
+   * A new zone branch cannot currently be created through an installed plenum.
+   */
   class EPMODEL_API AirLoopHVACSupplyPlenum : public Splitter
   {
    public:
@@ -37,17 +52,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. The supply plenum has canonical Splitter behavior, a plenum-zone relationship, and insertion into existing
-    //   single- or dual-duct AirLoopHVAC zone branches.
-    // - Canonical Counterpart: openstudio::model::AirLoopHVACSupplyPlenum.
-    // - Implemented Parity: `thermalZone`, `setThermalZone`, `resetThermalZone`, `addToNode`, inlet/outlet port access, and Splitter branch
-    //   mutation map directly to the EnergyPlus supply-plenum object. Supply-path ownership follows the selected demand inlet, including the
-    //   secondary path of a dual-duct loop.
-    // - Documented Delta: Adding a brand-new zone branch through the plenum and the AirflowNetwork convenience surface remain deferred.
-    // - Field/Storage Mapping: The plenum zone relationship is maintained through EnergyPlus-backed node and branch topology rather than through a separate scalar field.
-    // - Evidence: `src/model/AirLoopHVACSupplyPlenum.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirLoopHVACSupplyPlenum.cpp`, and `src/epmodel/test/AirLoopHVACSupplyPlenum_GTest.cpp` cover the same zone-plenum behavior.
-    // - Remaining Parity Work: Add new-zone branch creation through an installed plenum.
     boost::optional<ThermalZone> thermalZone() const;
     bool setThermalZone(const ThermalZone& thermalZone);
     void resetThermalZone();

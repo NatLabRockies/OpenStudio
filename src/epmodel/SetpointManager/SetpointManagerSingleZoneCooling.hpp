@@ -20,6 +20,21 @@ namespace epmodel {
     class SetpointManagerSingleZoneCooling_Impl;
   }
 
+  /** \brief Sets a cooling supply-air setpoint for one control zone.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-setpoint-managers.html#setpointmanagersinglezonecooling,SetpointManager:SingleZone:Cooling}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::SetpointManagerSingleZoneCooling</code>.
+   *
+   * - <b>Not yet available:</b> <code>controlZone()</code>,
+   *   <code>setControlZone(...)</code>, and <code>resetControlZone()</code>.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API SetpointManagerSingleZoneCooling : public SetpointManager
   {
    public:
@@ -33,15 +48,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model scalar accessor names/signatures for model-counterpart compatibility.
-    // - Field Mapping: minimumSupplyAirTemperature and maximumSupplyAirTemperature map directly to
-    //   E+ SetpointManager:SingleZone:Cooling scalar fields.
-    // - Field Mapping: Relationship fields Control Zone Name, Zone Node Name, Zone Inlet Node Name,
-    //   and Setpoint Node or NodeList Name are intentionally excluded from scalar-only scaffolding.
-    // - Field Mapping: Control Variable is preserved through inherited SetpointManager API and maps to
-    //   E+ SetpointManager:SingleZone:Cooling Control Variable.
-    // - TODO(parity): Add non-scalar relationship parity for control-zone and node linkage in a follow-up pass.
     double minimumSupplyAirTemperature() const;
     bool setMinimumSupplyAirTemperature(double minimumSupplyAirTemperature);
 

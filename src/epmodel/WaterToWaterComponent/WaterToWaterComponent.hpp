@@ -22,11 +22,33 @@ namespace epmodel {
     class WaterToWaterComponent_Impl;
   }
 
-  // Water-to-water equipment can participate in more than one plant-side flow
-  // path. The common case is a load side and a source or condenser side. This
-  // base class makes those two sides explicit so concrete equipment can expose
-  // meaningful topology navigation without each wrapper reimplementing the same
-  // port and loop plumbing.
+  /** \brief Base class for equipment connected to two or more plant-side flow paths.
+   *
+   * \par EnergyPlus object
+   * No single EnergyPlus object. This class represents the shared topology
+   * surface of concrete water-to-water equipment, whose primary objects are
+   * described by the derived classes.
+   *
+   * \par Important behavior
+   * The supply and demand sides correspond to the primary and secondary plant
+   * loops. The optional tertiary side supports equipment such as heat-recovery
+   * chillers.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::WaterToWaterComponent</code>.
+   *
+   * - <b>Not yet available:</b> <code>clone(...)</code> from the Model base
+   *   API. The inherited EPModel <code>addToNode(...)</code> and
+   *   <code>remove()</code> methods provide the corresponding topology
+   *   operations.
+   * - <b>Added:</b> Typed <code>tertiaryInletPort()</code> and
+   *   <code>tertiaryOutletPort()</code> accessors.
+   *
+   * \par Known limitations
+   * Loop and port operations are interpreted from EnergyPlus plant topology;
+   * this base does not provide a separate OpenStudio connection graph.
+   */
   class EPMODEL_API WaterToWaterComponent : public HVACComponent
   {
    public:
@@ -36,14 +58,6 @@ namespace epmodel {
     WaterToWaterComponent& operator=(const WaterToWaterComponent&) = default;
     WaterToWaterComponent& operator=(WaterToWaterComponent&&) = default;
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. The shared two- and three-loop topology surface is present, but the canonical convenience API on the model side is broader than the base epmodel wrapper.
-    // - Canonical Counterpart: openstudio::model::WaterToWaterComponent.
-    // - Implemented Parity: Supply/demand/tertiary port accessors, loop accessors, removal helpers, and tertiary-node attachment preserve the canonical topology contract for water-to-water equipment.
-    // - Documented Delta: The epmodel base stays focused on topology plumbing; derived types own most scalar and equipment-specific parity notes.
-    // - Field/Storage Mapping: Public loop accessors resolve against EnergyPlus-backed plant topology rather than a persisted OpenStudio-side connection graph.
-    // - Evidence: `src/model/WaterToWaterComponent.hpp` and `src/model/WaterToWaterComponent.cpp` define the canonical shared behavior and topology expectations.
-    // - Remaining Parity Work: Expand only if new shared water-to-water convenience behavior becomes necessary across multiple derived wrappers.
     unsigned supplyInletPort() const;
     unsigned supplyOutletPort() const;
 

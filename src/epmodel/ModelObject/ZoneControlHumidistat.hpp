@@ -24,6 +24,17 @@ namespace epmodel {
     class ZoneControlHumidistat_Impl;
   }
 
+  /** \brief ZoneControlHumidistat.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-zone-controls-thermostats.html#zonecontrolhumidistat,ZoneControl:Humidistat}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::ZoneControlHumidistat</code>. The controlled-zone and humidifying/dehumidifying schedule relationships are exposed; schedule setters enforce their supported humidity limits.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API ZoneControlHumidistat : public ModelObject
   {
    public:
@@ -36,14 +47,6 @@ namespace epmodel {
     ZoneControlHumidistat& operator=(ZoneControlHumidistat&&) = default;
 
     static IddObjectType iddObjectType();
-
-    // Schema Alignment Notes:
-    // - Status: Near Parity for the schedule and ThermalZone ownership relationships represented by this EnergyPlus object.
-    // - Canonical Counterpart: openstudio::model::ZoneControlHumidistat.
-    // - Implemented Parity: Controlled-zone inverse and optional humidifying/dehumidifying relative-humidity schedule relationships.
-    // - Field Mapping: Zone Name and the two setpoint schedule fields are EnergyPlus object-list pointers; schedule setters enforce continuous Percent [0, 100] limits.
-    // - Ownership: ThermalZone owns its attached humidistat and removes it on replacement, reset, or zone removal; schedules remain caller-owned.
-    // - Remaining Parity Work: None for these relationship and ownership APIs.
     boost::optional<ThermalZone> controlledZone() const;
 
     boost::optional<Schedule> humidifyingRelativeHumiditySetpointSchedule() const;

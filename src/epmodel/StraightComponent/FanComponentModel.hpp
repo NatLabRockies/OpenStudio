@@ -26,6 +26,20 @@ namespace epmodel {
     class FanComponentModel_Impl;
   }
 
+/** \brief A fan using the component-model performance representation.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-fans.html#fancomponentmodel,Fan:ComponentModel}
+ *
+ * \par Important behavior
+ * Required and optional performance curves, availability schedule, and scalar sizing and efficiency fields are stored on the Fan:ComponentModel object.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model type is <code>openstudio::model::FanComponentModel</code>.
+ *
+ * \par Known limitations
+ * AirflowNetwork helpers and autosized convenience getters are not available.
+ */
   class EPMODEL_API FanComponentModel : public StraightComponent
   {
    public:
@@ -48,14 +62,6 @@ namespace epmodel {
 
     bool addToNode(Node& node);
 
-    // Schema Alignment Notes:
-    // - Status: Near Parity. The core fan-component scalar surface, required and optional curve relationships, constructor defaults, and node insertion are aligned.
-    // - Canonical Counterpart: openstudio::model::FanComponentModel.
-    // - Implemented Parity: The canonical constructors, required and optional curve relationships, `assignDefaultOptionalCurves()`, and the availability-schedule plus scalar sizing, pulley/belt, efficiency, VFD, and end-use-subcategory accessors preserve the main `openstudio::model::FanComponentModel` behavior.
-    // - Documented Delta: Autosized convenience getters and airflow-network helpers from the canonical model remain absent.
-    // - Field/Storage Mapping: The availability schedule and curve references are typed object relationships, while the scalar fields map directly to `Fan:ComponentModel` storage in EnergyPlus.
-    // - Evidence: `src/model/FanComponentModel.hpp`, `src/model/FanComponentModel.cpp`, `src/model/test/FanComponentModel_GTest.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateFanComponentModel.cpp` anchor the canonical API and translation behavior.
-    // - Remaining Parity Work: Add the remaining autosized convenience getters and any airflow-network helper surface if epmodel later grows the corresponding fan helper types.
     Schedule availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);
 

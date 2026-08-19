@@ -23,6 +23,17 @@ namespace epmodel {
     class SurfacePropertyConvectionCoefficients_Impl;
   }
 
+  /** \brief SurfacePropertyConvectionCoefficients.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-advanced-surface-concepts.html#surfacepropertyconvectioncoefficients,SurfaceProperty:ConvectionCoefficients}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::SurfacePropertyConvectionCoefficients</code>. <b>Changed:</b> EPModel exposes direct construction from <code>Model</code>; Model construction requires a surface, subsurface, or internal-mass object. The scalar convection-coefficient fields map directly to EnergyPlus; surface and schedule relationships are not available.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API SurfacePropertyConvectionCoefficients : public ModelObject
   {
    public:
@@ -40,12 +51,6 @@ namespace epmodel {
     static std::vector<std::string> convectionCoefficient1TypeValues();
     static std::vector<std::string> convectionCoefficient2LocationValues();
     static std::vector<std::string> convectionCoefficient2TypeValues();
-
-    // Schema Alignment Notes:
-    // - API: This has-counterpart type preserves existing model accessor names/signatures.
-    // - Field Mapping: Scalar APIs map directly to SurfaceProperty:ConvectionCoefficients choice/numeric fields.
-    // - Field Mapping: Surface Name, Schedule Name, and User Curve Name fields remain excluded as relationship fields.
-    // - TODO(parity): Add relationship APIs after scalar saturation without changing scalar signatures.
     boost::optional<std::string> convectionCoefficient1Location() const;
     bool setConvectionCoefficient1Location(const std::string& convectionCoefficient1Location);
     void resetConvectionCoefficient1Location();

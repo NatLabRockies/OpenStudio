@@ -26,6 +26,24 @@ namespace epmodel {
     class AirTerminalSingleDuctSeriesPIUReheat_Impl;
   }
 
+  /**
+   * \brief Series powered induction unit with a fan, reheat coil, and secondary-air exhaust path.
+   *
+   * \par EnergyPlus object
+   * Encapsulates \epobject{group-air-distribution-equipment.html#airterminalsingleductseriespiureheat,AirTerminal:SingleDuct:SeriesPIU:Reheat}.
+   *
+   * \par Important behavior
+   * `addToNode` supports terminal-only and served-zone branches. A served zone receives secondary-air exhaust,
+   * equipment, and AirDistributionUnit projections; removal reverses those links and cleans child and plant paths.
+   *
+   * \par OpenStudio Model API
+   * Counterpart: `openstudio::model::AirTerminalSingleDuctSeriesPIUReheat`. The fan/reheat-coil relationships,
+   * schedule, PIU scalar controls, and supported branch lifecycle are represented.
+   *
+   * \par Known limitations
+   * The legacy Model-only assembly constructor remains available, but epmodel does not expose `secondaryAirInletPort`,
+   * `clone`, or autosized-result helpers. Broader AirLoop-level zone attachment is separate work.
+   */
   class EPMODEL_API AirTerminalSingleDuctSeriesPIUReheat : public StraightComponent
   {
    public:
@@ -43,26 +61,6 @@ namespace epmodel {
     static std::vector<std::string> fanControlTypeValues();
     static std::vector<std::string> heatingControlTypeValues();
 
-    // Schema Alignment Notes:
-    // - Status: Near Parity. Terminal-only and zone-serving demand-branch insertion/removal are aligned, while the broader canonical
-    //   clone/autosized-result surface remains narrower.
-    // - Canonical Counterpart: openstudio::model::AirTerminalSingleDuctSeriesPIUReheat.
-    // - Implemented Parity: The canonical `(Model, HVACComponent fan, HVACComponent reheatCoil)` constructor establishes both required child
-    //   relationships. `availabilitySchedule`, validated `fan` and `reheatCoil` relationships, and PIU control scalars are preserved.
-    //   `addToNode` atomically supports both terminal-only splitter-to-mixer branches and zone-serving branches; only a served zone receives
-    //   secondary-air exhaust, equipment, and ADU projections. `remove()` and `removeFromLoop()` preserve canonical ownership semantics.
-    // - Documented Delta: The legacy `(Model)` constructor remains available for incremental object assembly and does not establish the fan
-    //   or reheat coil. epmodel still omits `secondaryAirInletPort`, `clone(...)`, and autosized-result convenience helpers. AirLoop-level
-    //   attachment of a zone to an already inserted single-duct terminal is shared AirLoopHVAC work.
-    //   Child replacement accepts supported, same-model EnergyPlus fan and coil wrappers only when they are not already owned or air-side
-    //   connected, so one persisted child cannot be stolen between compound parents.
-    // - Field/Storage Mapping: The preserved scalars map directly to EnergyPlus `AirTerminal:SingleDuct:SeriesPIU:Reheat` fields; epmodel
-    //   rewires the zone branch through a terminal-owned inlet node, persists a distinct secondary inlet node and terminal-owned zone mixer,
-    //   projects the fan and reheat-coil air nodes through that mixer, records the secondary node on the owning zone exhaust-node list,
-    //   synchronizes the PIU fan availability to the serving air loop, and cleans zone, ADU, mixer, child-node, and plant references in the
-    //   supported teardown paths.
-    // - Evidence: `src/model/AirTerminalSingleDuctSeriesPIUReheat.hpp`, `src/model/AirTerminalSingleDuctSeriesPIUReheat.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirTerminalSingleDuctSeriesPIUReheat.cpp`, and `src/epmodel/test/AirTerminalSingleDuctSeriesPIUReheat_GTest.cpp`.
-    // - Remaining Parity Work: Add the omitted clone, secondary-port, and autosized-result helpers if a later campaign needs the broader canonical surface.
     boost::optional<Schedule> availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);
     void resetAvailabilitySchedule();

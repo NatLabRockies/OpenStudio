@@ -22,7 +22,18 @@ namespace epmodel {
     class PlanarSurfaceGroup_Impl;
   }
 
-  /** PlanarSurfaceGroup is an abstract class representing a group that holds many PlanarSurfaces. */
+  /** \brief Abstract base for a group that owns planar surfaces and coordinate transforms.
+   *
+   * \par EnergyPlus object
+   * This class has no single EnergyPlus object; \epobject{group-thermal-zone-description-geometry.html#space,Space} is the concrete persisted group represented by this API.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model base is `openstudio::model::PlanarSurfaceGroup`; concrete groups provide
+   * the persisted parent object and surface collection.
+   *
+   * \par Known limitations
+   * Transform and bounding-box behavior depends on the concrete group and its persisted coordinate fields.
+   */
   class EPMODEL_API PlanarSurfaceGroup : public ModelObject
   {
    public:

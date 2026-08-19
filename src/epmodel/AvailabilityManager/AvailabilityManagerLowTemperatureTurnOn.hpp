@@ -21,6 +21,24 @@ namespace epmodel {
     class AvailabilityManagerLowTemperatureTurnOn_Impl;
   }
 
+  /** \brief Turns availability on when a sensor temperature falls below a limit.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-system-availability-managers.html#availabilitymanagerlowtemperatureturnon,AvailabilityManager:LowTemperatureTurnOn}
+   *
+   * \par Important behavior
+   * A newly constructed manager initializes its temperature limit to 30.0.
+   * Its sensor node is a live relationship and can be reset without removing
+   * the availability manager from its assigned loop.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::AvailabilityManagerLowTemperatureTurnOn</code>.
+   * No known public API differences.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API AvailabilityManagerLowTemperatureTurnOn : public AvailabilityManager
   {
    public:
@@ -34,10 +52,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - API: Inherits AvailabilityManager so this object participates in loop assignment and live reverse discovery.
-    // - Field Mapping: temperature maps to E+ AvailabilityManager:LowTemperatureTurnOn Temperature.
-    // - Field Mapping: sensorNode maps to E+ AvailabilityManager:LowTemperatureTurnOn Sensor Node Name as a managed Node target.
     boost::optional<Node> sensorNode() const;
     bool setSensorNode(const Node& node);
     void resetSensorNode();

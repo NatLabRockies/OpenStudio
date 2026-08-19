@@ -26,6 +26,17 @@ namespace epmodel {
     class PlantEquipmentOperationSchemes_Impl;
   }
 
+  /** \brief PlantEquipmentOperationSchemes.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-plant-condenser-control.html#plantequipmentoperationschemes,PlantEquipmentOperationSchemes}.
+   *
+   * \par OpenStudio Model API
+   * There is no corresponding <code>openstudio::model</code> class. EPModel exposes typed inspection of configured scheme rows, but not public mutation of the underlying extensible rows.
+   *
+   * \par Known limitations
+   * There is no corresponding <code>openstudio::model</code> class. EPModel exposes typed inspection of configured scheme rows, but not public mutation of the underlying extensible rows.
+   */
   class EPMODEL_API PlantEquipmentOperationSchemes : public ModelObject
   {
    public:
@@ -39,13 +50,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
     static std::vector<std::string> controlSchemeObjectTypeValues();
-
-    // Schema Alignment Notes:
-    // - API: Public epmodel owner wrapper is intentionally read-only; typed PlantLoop-facing mutation remains on the impl layer.
-    // - Field Mapping: Exposes typed inspection of the heating, cooling, primary, and component-setpoint control-scheme rows stored on the
-    //   EnergyPlus PlantEquipmentOperationSchemes object instead of mirroring numbered extensible-row accessors.
-    // - Canonical Counterpart: There is no direct openstudio::model public counterpart for this owner object; it exists here to back the
-    //   canonical PlantLoop parity surface without exposing raw extensible-row mutation.
 
     boost::optional<PlantEquipmentOperationHeatingLoad> plantEquipmentOperationHeatingLoad() const;
     boost::optional<Schedule> plantEquipmentOperationHeatingLoadSchedule() const;

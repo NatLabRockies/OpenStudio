@@ -25,6 +25,17 @@ namespace epmodel {
     class AirLoopHVACControllerList_Impl;
   }
 
+  /** \brief Represents the EnergyPlus AirLoopHVAC:ControllerList object.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-air-distribution.html#airloophvaccontrollerlist,AirLoopHVAC:ControllerList}
+   *
+   * \par OpenStudio Model API
+   * OpenStudio Model has no public wrapper for this EnergyPlus object. This wrapper is new to the EPModel API.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations beyond the public fields and relationships exposed by this wrapper.
+   */
   class EPMODEL_API AirLoopHVACControllerList : public ModelObject
   {
    public:
@@ -38,10 +49,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - API: This no-counterpart type keeps IDD-derived naming and list-management semantics.
-    // - Field Mapping: IDD extensible fields (Controller Object Type, Controller Name) are relationship-like and intentionally excluded from scalar accessors.
-    // - TODO(parity): Add scalar accessors only if future schema adds non-relationship scalar fields.
     std::vector<ModelObject> controllers() const;
 
     boost::optional<ControllerOutdoorAir> optionalControllerOutdoorAir() const;

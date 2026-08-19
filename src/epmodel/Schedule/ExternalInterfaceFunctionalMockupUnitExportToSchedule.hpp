@@ -22,6 +22,23 @@ namespace epmodel {
     class ExternalInterfaceFunctionalMockupUnitExportToSchedule_Impl;
   }
 
+  /** \brief Provides a schedule value exported from EnergyPlus to an FMU.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-externalinterface.html#externalinterfacefunctionalmockupunitexporttoschedule,ExternalInterface:FunctionalMockupUnitExport:To:Schedule}
+   *
+   * \par Important behavior
+   * The initial value is used by EnergyPlus during sizing and warm-up before
+   * FMU values are available.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::ExternalInterfaceFunctionalMockupUnitExportToSchedule</code>.
+   * No known public API differences.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API ExternalInterfaceFunctionalMockupUnitExportToSchedule : public Schedule
   {
    public:
@@ -36,15 +53,6 @@ namespace epmodel {
     ExternalInterfaceFunctionalMockupUnitExportToSchedule& operator=(ExternalInterfaceFunctionalMockupUnitExportToSchedule&&) = default;
 
     static IddObjectType iddObjectType();
-
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::ExternalInterfaceFunctionalMockupUnitExportToSchedule scalar accessor names/signatures.
-    // - Field Mapping: fMUVariableName -> ExternalInterface:FunctionalMockupUnitExport:To:Schedule, FMU Variable Name.
-    // - Field Mapping: initialValue -> ExternalInterface:FunctionalMockupUnitExport:To:Schedule, Initial Value.
-    // - Field Mapping: scheduleTypeLimits is relationship-like (object-list target) and excluded from scalar scaffold.
-    // - ForwardTranslator evidence: ForwardTranslateExternalInterfaceFunctionalMockupUnitExportToSchedule.cpp writes FMU Variable Name
-    //   and Initial Value directly from these APIs.
-    // - TODO(parity): Add relationship APIs incrementally without changing preserved scalar signatures.
 
     /** @name FMU Variable Name */
     //@{

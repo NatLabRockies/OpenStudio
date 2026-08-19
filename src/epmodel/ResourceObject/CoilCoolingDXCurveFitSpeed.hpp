@@ -21,6 +21,28 @@ namespace epmodel {
     class CoilCoolingDXCurveFitSpeed_Impl;
   }
 
+  /** \brief Defines one speed row for a curve-fit DX cooling operating mode.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-coil-cooling-dx.html#coilcoolingdxcurvefitspeed,Coil:Cooling:DX:CurveFit:Speed}.
+   *
+   * \par Important behavior
+   * The object is an extensible speed row when attached to an operating mode.
+   * Its autosized sensible-heat-ratio query returns no value until EPModel can
+   * read EnergyPlus SQL sizing results; <code>applySizingValues()</code> can
+   * therefore only apply a value when one is available.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::CoilCoolingDXCurveFitSpeed</code>. The deprecated
+   * <code>ratedEvaporatorFanPowerPerVolumeFlowRate()</code> accessor remains
+   * available in both APIs. The <code>2017</code> and <code>2023</code>
+   * accessors select the EnergyPlus rating-standard editions and are also
+   * available in both APIs.
+   *
+   * \par Known limitations
+   * Reverse navigation to containing operating modes is not available.
+   */
   class EPMODEL_API CoilCoolingDXCurveFitSpeed : public ModelObject
   {
    public:
@@ -34,14 +56,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity.
-    // - Canonical Counterpart: openstudio::model::CoilCoolingDXCurveFitSpeed.
-    // - Implemented Parity: Canonical constructor defaults, scalar fields, and all eight optional curve relationships expose the canonical
-    //   getter, setter, and reset signatures.
-    // - Field/Storage Mapping: Scalars and curve pointers map directly to `Coil:Cooling:DX:CurveFit:Speed` fields.
-    // - Evidence: `src/model/CoilCoolingDXCurveFitSpeed.hpp` and `src/epmodel/test/CoilCoolingDXCurveFitSpeed_GTest.cpp`.
-    // - Remaining Parity Work: Add operating-mode reverse navigation, clone/removal equivalence, autosized results, and broader scripting evidence.
 
     /** @name Field Accessors */
     //@{

@@ -23,6 +23,17 @@ namespace epmodel {
     class SolarCollectorPerformanceFlatPlate_Impl;
   }
 
+  /** \brief SolarCollectorPerformanceFlatPlate.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-solar-collectors.html#solarcollectorperformanceflatplate,SolarCollectorPerformance:FlatPlate}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::SolarCollectorPerformanceFlatPlate</code>. <b>Changed:</b> EPModel exposes direct construction from <code>Model</code>; the Model constructor is not public. The collector area, test, and coefficient fields map directly to EnergyPlus.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API SolarCollectorPerformanceFlatPlate : public ModelObject
   {
    public:
@@ -38,13 +49,6 @@ namespace epmodel {
 
     static std::vector<std::string> testFluidValues();
     static std::vector<std::string> testCorrelationTypeValues();
-
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::SolarCollectorPerformanceFlatPlate scalar accessor names/signatures.
-    // - Field Mapping: grossArea, testFluid, testFlowRate, testCorrelationType, and coefficient* APIs map directly to E+ SolarCollectorPerformance:FlatPlate fields.
-    // - ForwardTranslator evidence: ForwardTranslateSolarCollectorPerformanceFlatPlate.cpp writes these exact API getters to matching IDF fields.
-    // - Field Mapping: Name remains inherited via ModelObject naming API; this scaffold only adds class-specific scalar accessors.
-    // - TODO(parity): Keep scalar signature parity while adding any future non-scalar behavior incrementally.
     double grossArea() const;
     bool setGrossArea(double grossArea);
 

@@ -22,6 +22,18 @@ namespace epmodel {
     class ExternalInterfaceFunctionalMockupUnitExportToVariable_Impl;
   }
 
+  /** \brief Represents <code>ExternalInterface:FunctionalMockupUnitExport:To:Variable</code>.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-externalinterface.html#externalinterfacefunctionalmockupunitexporttovariable,ExternalInterface:FunctionalMockupUnitExport:To:Variable}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::ExternalInterfaceFunctionalMockupUnitExportToVariable</code>.
+   * **Not yet available:** Model typed FMU/component relationships and OpenStudio-only export controls are not exposed unless represented by an EnergyPlus field here.
+   *
+   * \par Known limitations
+   * Typed relationship and extensible-list conveniences not represented by the public declarations are unavailable.
+   */
   class EPMODEL_API ExternalInterfaceFunctionalMockupUnitExportToVariable : public ModelObject
   {
    public:
@@ -34,14 +46,6 @@ namespace epmodel {
     ExternalInterfaceFunctionalMockupUnitExportToVariable& operator=(ExternalInterfaceFunctionalMockupUnitExportToVariable&&) = default;
 
     static IddObjectType iddObjectType();
-
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::ExternalInterfaceFunctionalMockupUnitExportToVariable scalar accessor names/signatures.
-    // - Field Mapping: fMUVariableName -> ExternalInterface:FunctionalMockupUnitExport:To:Variable, FMU Variable Name.
-    // - Field Mapping: initialValue -> ExternalInterface:FunctionalMockupUnitExport:To:Variable, Initial Value.
-    // - ForwardTranslator evidence: ForwardTranslateExternalInterfaceFunctionalMockupUnitExportToVariable.cpp writes FMU Variable Name and
-    //   Initial Value directly from these APIs.
-    // - TODO(parity): Revisit only if upstream model API changes for FMU export parity milestones.
     std::string fMUVariableName() const;
     bool setFMUVariableName(const std::string& fMUVariableName);
 

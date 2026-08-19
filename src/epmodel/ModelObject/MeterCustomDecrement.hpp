@@ -23,6 +23,17 @@ namespace epmodel {
     class MeterCustomDecrement_Impl;
   }
 
+  /** \brief MeterCustomDecrement.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-simulation-parameters.html#metercustomdecrement,Meter:CustomDecrement}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::MeterCustomDecrement</code>. The resource type and source-meter name are exposed. Model's extensible key/output-variable groups are not available.
+   *
+   * \par Known limitations
+   * Only the fields and relationships listed in this wrapper are available; broader Model-only helpers are not exposed.
+   */
   class EPMODEL_API MeterCustomDecrement : public ModelObject
   {
    public:
@@ -37,15 +48,6 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     static std::vector<std::string> fuelTypeValues();
-
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::MeterCustomDecrement scalar accessor naming/signatures for counterpart parity.
-    // - Field Mapping: fuelType maps to EnergyPlus Meter:CustomDecrement field Resource Type.
-    // - Field Mapping: sourceMeterName maps to EnergyPlus Meter:CustomDecrement field Source Meter Name.
-    // - Field Mapping: Extensible Key Name / Output Variable or Meter Name pairs are relationship-like and excluded from scalar scope.
-    // - ForwardTranslator evidence: ForwardTranslateMeterCustomDecrement.cpp writes modelObject.fuelType() and sourceMeterName() to
-    //   Meter_CustomDecrementFields::ResourceType and Meter_CustomDecrementFields::SourceMeterName.
-    // - TODO(parity): Add non-scalar extensible key/variable group APIs without changing these scalar signatures.
     boost::optional<std::string> fuelType() const;
     bool setFuelType(const std::string& fuelType);
     void resetFuelType();

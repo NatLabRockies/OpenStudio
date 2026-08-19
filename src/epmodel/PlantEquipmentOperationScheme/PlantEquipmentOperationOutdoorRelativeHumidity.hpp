@@ -23,6 +23,24 @@ namespace epmodel {
     class PlantEquipmentOperationOutdoorRelativeHumidity_Impl;
   }
 
+  /** \brief Selects plant equipment for outdoor-relative humidity operation.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-plant-condenser-control.html#plantequipmentoperationoutdoorrelativehumidity,PlantEquipmentOperation:OutdoorRelativeHumidity}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::PlantEquipmentOperationOutdoorRelativeHumidity</code>.
+   *
+   * - <b>Not yet available:</b> The load-range and equipment methods inherited
+   *   from <code>PlantEquipmentOperationRangeBasedScheme</code>, including
+   *   <code>addLoadRange(...)</code>, <code>removeLoadRange(...)</code>,
+   *   <code>loadRangeUpperLimits()</code>, <code>equipment(...)</code>, the
+   *   add/replace/remove equipment methods, and <code>clearLoadRanges()</code>.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API PlantEquipmentOperationOutdoorRelativeHumidity : public PlantEquipmentOperationScheme
   {
    public:
@@ -36,10 +54,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - API: Mirrors EnergyPlus PlantEquipmentOperation:OutdoorRelativeHumidity by exposing the same relative humidity range scalars that the model counterpart surfaces.
-    // - Field Mapping: maximumUpperLimit() and minimumLowerLimit() read the Relative Humidity Range Upper/Lower Limit values from the last/first extensible groups.
-    // - TODO(parity): Add explicit helpers for the range equipment list once the general extensible scaffolding lands.
     double maximumUpperLimit() const;
     double minimumLowerLimit() const;
 

@@ -27,6 +27,20 @@ namespace epmodel {
     class PumpConstantSpeed_Impl;
   }
 
+/** \brief A constant-speed plant pump.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-pumps.html#pumpconstantspeed,Pump:ConstantSpeed}
+ *
+ * \par Important behavior
+ * Pump flow, head, power, efficiency, control, curve, schedule, thermal-zone, and plant-placement fields map directly to Pump:ConstantSpeed.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model type is <code>openstudio::model::PumpConstantSpeed</code>.
+ *
+ * \par Known limitations
+ * No additional type-specific limitation is known beyond shared straight-component topology.
+ */
   class EPMODEL_API PumpConstantSpeed : public StraightComponent
   {
    public:
@@ -43,16 +57,6 @@ namespace epmodel {
     static std::vector<std::string> pumpControlTypeValues();
     static std::vector<std::string> designPowerSizingMethodValues();
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. The canonical scalar pump surface, direct schedule/curve/zone relationships, and plant-loop placement contract are present.
-    // - Canonical Counterpart: openstudio::model::PumpConstantSpeed.
-    // - Implemented Parity: Preserved scalar accessor names/signatures cover flow, head, power, efficiency, control type, impeller/rotation,
-    //   radiative fraction, design-power sizing, and end-use metadata with matching autosize semantics; direct relationships preserve canonical
-    //   signatures and typed target validation; `addToNode(...)` is limited to plant-loop placement like the canonical wrapper.
-    // - Documented Delta: Broader canonical behavior outside the direct EnergyPlus field surface remains deferred.
-    // - Field/Storage Mapping: Scalars and relationships map directly to their EnergyPlus `Pump:ConstantSpeed` fields and object lists.
-    // - Evidence: `src/model/PumpConstantSpeed.hpp`, `src/model/PumpConstantSpeed.cpp`, and the configured EnergyPlus IDD define the canonical signatures, schedule constraints, curve target object list, and direct field mappings.
-    // - Remaining Parity Work: Add other canonical behavior only when demanded by a concrete workflow.
 
     // ratedFlowRate
     boost::optional<double> ratedFlowRate() const;

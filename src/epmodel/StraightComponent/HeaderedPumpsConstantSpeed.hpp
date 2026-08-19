@@ -26,6 +26,20 @@ namespace epmodel {
     class HeaderedPumpsConstantSpeed_Impl;
   }
 
+/** \brief A bank of constant-speed headered pumps.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-pumps.html#headeredpumpsconstantspeed,HeaderedPumps:ConstantSpeed}
+ *
+ * \par Important behavior
+ * Pump-bank scalars, flow-rate schedule, thermal-zone relationship, and plant placement map to HeaderedPumps:ConstantSpeed.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model type is <code>openstudio::model::HeaderedPumpsConstantSpeed</code>.
+ *
+ * \par Known limitations
+ * No additional type-specific limitation is known beyond shared straight-component topology.
+ */
   class EPMODEL_API HeaderedPumpsConstantSpeed : public StraightComponent
   {
    public:
@@ -43,13 +57,6 @@ namespace epmodel {
     static std::vector<std::string> pumpControlTypeValues();
     static std::vector<std::string> designPowerSizingMethodValues();
 
-    // Schema Alignment Notes:
-    // - Status: Near Parity. The canonical scalar pump-bank surface, direct schedule and thermal-zone relationships, and plant-loop placement contract are present.
-    // - Canonical Counterpart: openstudio::model::HeaderedPumpsConstantSpeed.
-    // - Implemented Parity: Preserved scalar accessor names/signatures cover total flow, pump-bank count, sequencing scheme, head, power, efficiency, control type, radiative fraction, design-power sizing, and end-use metadata with matching autosize behavior; pump-flow-rate schedule and thermal-zone links preserve canonical typed target APIs; `addToNode(...)` is limited to plant-loop placement like the canonical wrapper.
-    // - Field/Storage Mapping: The preserved scalar APIs map directly to EnergyPlus `HeaderedPumps:ConstantSpeed` scalar fields used by the forward translator.
-    // - Evidence: `src/model/HeaderedPumpsConstantSpeed.hpp` defines the canonical wrapper surface, and `src/energyplus/ForwardTranslator/ForwardTranslateHeaderedPumpsConstantSpeed.cpp` confirms the direct scalar mapping and autosize tokens.
-    // - Remaining Parity Work: Evaluate further convenience APIs separately from this direct EnergyPlus-field surface.
 
     boost::optional<double> totalRatedFlowRate() const;
     bool isTotalRatedFlowRateAutosized() const;

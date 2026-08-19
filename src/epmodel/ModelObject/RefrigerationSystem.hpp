@@ -23,6 +23,17 @@ namespace epmodel {
     class RefrigerationSystem_Impl;
   }
 
+  /** \brief RefrigerationSystem.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-refrigeration.html#refrigerationsystem,Refrigeration:System}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::RefrigerationSystem</code>. The exposed scalar controls and suction-piping zone are available. Model's case, walk-in, compressor, condenser, subcooler, and other refrigeration relationship helpers are not available.
+   *
+   * \par Known limitations
+   * Only the fields and relationships listed in this wrapper are available; broader Model-only helpers are not exposed.
+   */
   class EPMODEL_API RefrigerationSystem : public ModelObject
   {
    public:
@@ -39,20 +50,6 @@ namespace epmodel {
     static std::vector<std::string> refrigerationSystemWorkingFluidTypeValues();
     static std::vector<std::string> suctionTemperatureControlTypeValues();
     static std::vector<std::string> intercoolerTypeValues();
-
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. The selected scalar controls and optional suction-piping ThermalZone relationship are aligned.
-    // - Canonical Counterpart: openstudio::model::RefrigerationSystem.
-    // - Implemented Parity: The selected scalar methods and suction-piping zone preserve the canonical public signatures. The zone
-    //   setter validates the configured object list and does not couple Sum UA Suction Piping.
-    // - Field/Storage Mapping: Scalars and the zone map directly to EnergyPlus Refrigeration:System fields; choice helpers mirror IDD
-    //   key lookups, and the zone field uses the configured ZoneNames object list.
-    // - Canonicalization: A blank zone field is valid and requires no repair. Unresolved imported references remain untouched until an
-    //   explicit typed setter or reset; ordinary APIs assume canonical state.
-    // - Evidence: `src/model/RefrigerationSystem.hpp`, `src/model/RefrigerationSystem.cpp`,
-    //   `resources/energyplus/ProposedEnergy+.idd`, and `src/epmodel/test/RefrigerationSystem_GTest.cpp`.
-    // - Remaining Parity Work: Refrigerated load and transfer lists, condenser/compressor references, subcoolers, full family removal,
-    //   and object-level clone behavior remain a separate refrigeration architecture phase.
     double minimumCondensingTemperature() const;
     bool setMinimumCondensingTemperature(double minimumCondensingTemperature);
 

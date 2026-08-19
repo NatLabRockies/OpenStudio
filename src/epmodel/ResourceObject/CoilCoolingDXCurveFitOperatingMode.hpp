@@ -22,6 +22,31 @@ namespace epmodel {
     class CoilCoolingDXCurveFitOperatingMode_Impl;
   }
 
+  /** \brief Describes one operating mode for a curve-fit DX cooling system.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-coil-cooling-dx.html#coilcoolingdxcurvefitoperatingmode,Coil:Cooling:DX:CurveFit:OperatingMode}.
+   *
+   * \par Important behavior
+   * Speed entries are stored as extensible rows on this object. Adding, moving,
+   * replacing, or removing a speed changes those persisted rows; a speed from
+   * another model is rejected without changing the list.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::CoilCoolingDXCurveFitOperatingMode</code>.
+   * The Model API also provides performance reverse navigation and sizing
+   * helpers (<code>coilCoolingDXCurveFitPerformances()</code>,
+   * <code>autosizedRatedGrossTotalCoolingCapacity()</code>,
+   * <code>autosizedRatedEvaporatorAirFlowRate()</code>,
+   * <code>autosizedRatedCondenserAirFlowRate()</code>,
+   * <code>autosizedNominalEvaporativeCondenserPumpPower()</code>,
+   * <code>autosize()</code>, and <code>applySizingValues()</code>); EPModel
+   * does not.
+   *
+   * \par Known limitations
+   * EPModel does not resolve autosized values from EnergyPlus SQL results.
+   */
   class EPMODEL_API CoilCoolingDXCurveFitOperatingMode : public ModelObject
   {
    public:
@@ -37,17 +62,6 @@ namespace epmodel {
 
     static std::vector<std::string> condenserTypeValues();
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity.
-    // - Canonical Counterpart: openstudio::model::CoilCoolingDXCurveFitOperatingMode.
-    // - Implemented Parity: Canonical constructor defaults, scalar fields, and ordered speed lookup, insertion, reordering, replacement, and
-    //   removal use the canonical public signatures. Invalid cross-model speed mutations leave the stored list unchanged.
-    // - Field/Storage Mapping: Scalar values and ordered `CoilCoolingDXCurveFitSpeed` relationships map directly to
-    //   `Coil:Cooling:DX:CurveFit:OperatingMode` fields and extensible speed-name rows.
-    // - Evidence: `src/model/CoilCoolingDXCurveFitOperatingMode.hpp` and
-    //   `src/epmodel/test/CoilCoolingDXCurveFitOperatingMode_GTest.cpp`.
-    // - Remaining Parity Work: Add performance reverse navigation, sizing-result helpers, clone/removal equivalence, and broader scripting
-    //   evidence outside the curve-fit air-loop workflow.
     boost::optional<double> ratedGrossTotalCoolingCapacity() const;
     bool isRatedGrossTotalCoolingCapacityAutosized() const;
     bool setRatedGrossTotalCoolingCapacity(double ratedGrossTotalCoolingCapacity);

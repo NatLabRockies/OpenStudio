@@ -27,6 +27,34 @@ namespace epmodel {
     class ScheduleDay_Impl;
   }
 
+  /** \brief Stores time-value intervals for one day of a schedule.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-schedules.html#scheduledayinterval,Schedule:Day:Interval}
+   *
+   * \par Important behavior
+   * Values are stored as sorted <code>Until: time</code> extensible rows.
+   * <code>addValue()</code> rejects times no later than 30 seconds and times
+   * after 24:00, rejects NaN and infinite values, and replaces the value at an
+   * existing endpoint. <code>clearValues()</code> leaves a single 24:00 value
+   * of zero. <code>timeSeries()</code> uses the selected EnergyPlus
+   * interpolation mode (<code>No</code>, <code>Average</code>, or
+   * <code>Linear</code>).
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::ScheduleDay</code>.
+   *
+   * - <b>Not yet available:</b> The constructor taking an initial
+   *   <code>double</code> value.
+   * - <b>Not yet available:</b>
+   *   <code>isScheduleTypeLimitsDefaulted()</code>.
+   * - <b>Added:</b> <code>interpolatetoTimestepValues()</code> returns the
+   *   EnergyPlus choices accepted by the interpolation field.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API ScheduleDay : public ScheduleBase
   {
    public:
@@ -47,7 +75,7 @@ namespace epmodel {
     bool isInterpolatetoTimestepDefaulted() const;
     void resetInterpolatetoTimestep();
 
-    /** Returns false if time is less than or equal to 0 days or greater than 1 day. Replaces existing value for same time. */
+    /** Returns false if time is no later than 30 seconds or greater than 1 day. Replaces existing value for same time. */
     bool addValue(const openstudio::Time& untilTime, double value);
 
     /** Remove a value added by addValue at the exact time.  Returns the removed

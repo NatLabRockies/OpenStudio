@@ -23,6 +23,17 @@ namespace epmodel {
     class Lights_Impl;
   }
 
+  /** \brief Represents the EnergyPlus Lights object.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-internal-gains-people-lights-other.html#lights-000,Lights}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::Lights</code>. <b>Not yet available:</b> the Model definition, schedule, and zone/space relationship methods. EPModel exposes lighting design-level/fraction scalars and compatibility multiplier methods.
+   *
+   * \par Known limitations
+   * The compatibility multiplier scales the stored lighting design-level fields because EnergyPlus has no dedicated multiplier field.
+   */
   class EPMODEL_API Lights : public ModelObject
   {
    public:
@@ -38,13 +49,6 @@ namespace epmodel {
 
     static std::vector<std::string> designLevelCalculationMethodValues();
 
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::Lights scalar API names/signatures where present.
-    // - Field Mapping: lightingLevel/powerPerFloorArea/powerPerPerson map to E+ fields Lighting Level/Watts per Floor Area/Watts per Person.
-    // - Field Mapping: schedule and zone/space target references are relationship fields and intentionally excluded.
-    // - Field Mapping: setMultiplier/resetMultiplier are preserved compatibility methods; no dedicated E+ multiplier field exists.
-    // - ForwardTranslator evidence: ForwardTranslateLights.cpp applies model multiplier directly to translated design-level scalar fields in Lights.
-    // - TODO(parity): Add relationship APIs and definition-backed behavior without changing scalar signatures.
     std::string designLevelCalculationMethod() const;
     bool isDesignLevelCalculationMethodDefaulted() const;
     bool setDesignLevelCalculationMethod(const std::string& designLevelCalculationMethod);

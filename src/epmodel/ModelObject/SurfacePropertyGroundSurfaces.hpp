@@ -19,13 +19,17 @@ namespace epmodel {
   namespace detail {
     class SurfacePropertyGroundSurfaces_Impl;
   }
-
-  // Schema Alignment Notes:
-  // - API: All scalar work for SurfaceProperty:GroundSurfaces is routed through the base ModelObject name API because
-  //   the E+ object only exposes Name plus Ground Surface extensible properties.
-  // - Field Mapping: Name maps directly to openstudio::detail::WorkspaceObject, while the extensible Ground Surface groups
-  //   (Name, View Factor, Temperature Schedule, Reflectance Schedule) are relationship-like and excluded by contract.
-  // - TODO(parity): Add extensible helpers without touching the scalar accessor surface once non-scalar parity work begins.
+  /** \brief SurfacePropertyGroundSurfaces.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-advanced-surface-concepts.html#surfacePropertyGroundSurfaces,SurfaceProperty:GroundSurfaces}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::SurfacePropertyGroundSurfaces</code>. EPModel currently exposes only the object identity; ground-surface groups and the local-environment relationship are not public APIs.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API SurfacePropertyGroundSurfaces : public ModelObject
   {
    public:

@@ -22,6 +22,25 @@ namespace epmodel {
     class ScheduleYear_Impl;
   }
 
+  /** \brief Selects a schedule week for each part of a year.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-schedules.html#scheduleyear,Schedule:Year}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::ScheduleYear</code>.
+   *
+   * - <b>Not yet available:</b> <code>dates()</code>,
+   *   <code>scheduleWeeks()</code>, <code>addScheduleWeek(...)</code>,
+   *   <code>clearScheduleWeeks()</code>, and
+   *   <code>getScheduleWeek(...)</code>.
+   *
+   * \par Known limitations
+   * EPModel can load and preserve a <code>Schedule:Year</code> object, but its
+   * public typed API cannot create or edit the date-to-week assignments that
+   * determine which schedule applies during the year.
+   */
   class EPMODEL_API ScheduleYear : public Schedule
   {
    public:
@@ -34,15 +53,6 @@ namespace epmodel {
     ScheduleYear& operator=(ScheduleYear&&) = default;
 
     static IddObjectType iddObjectType();
-
-    // Schema Alignment Notes:
-    // - Status: Scalar Parity. The typed wrapper now preserves the literal EnergyPlus object identity for `Schedule:Year`, but the canonical `ScheduleYear` relationship APIs are still missing.
-    // - Canonical Counterpart: openstudio::model::ScheduleYear.
-    // - Implemented Parity: Inherited scalar accessors remain available, including Name and Schedule Type Limits linkage.
-    // - Documented Delta: Week/date relationship APIs are not yet exposed, and canonical `ScheduleRuleset` remains separate future work.
-    // - Field/Storage Mapping: The wrapper maps directly to EnergyPlus `Schedule:Year`; extensible WeekSchedule/Start/End groups remain outside the current scalar scaffold.
-    // - Evidence: `src/model/ScheduleYear.hpp` defines the canonical `ScheduleYear` wrapper while EnergyPlus persists the underlying object as `Schedule:Year`.
-    // - Remaining Parity Work: Add the `ScheduleYear` week/date relationship APIs. Decide separately how epmodel should model canonical `ScheduleRuleset`.
 
    protected:
     using ImplType = detail::ScheduleYear_Impl;

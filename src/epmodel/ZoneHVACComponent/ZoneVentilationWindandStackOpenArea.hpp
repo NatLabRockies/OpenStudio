@@ -26,6 +26,20 @@ namespace epmodel {
     class ZoneVentilationWindandStackOpenArea_Impl;
   }
 
+/** \brief A wind-and-stack natural-ventilation opening serving a thermal zone.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-airflow.html#zoneventilationwindandstackopenarea,ZoneVentilation:WindandStackOpenArea}
+ *
+ * \par Important behavior
+ * Opening, environmental, schedule, and thermal-zone attachment methods are available.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model class is <code>openstudio::model::ZoneVentilationWindandStackOpenArea</code>.
+ *
+ * \par Known limitations
+ * There is no type-specific equipment topology beyond shared thermal-zone attachment.
+ */
   class EPMODEL_API ZoneVentilationWindandStackOpenArea : public ZoneHVACComponent
   {
    public:
@@ -39,15 +53,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - Status: Scalar and Schedule Parity. The opening and environmental scalar fields and canonical schedule relationships are aligned.
-    // - Canonical Counterpart: openstudio::model::ZoneVentilationWindandStackOpenArea.
-    // - Implemented Parity: `openingAreaFractionSchedule`, the optional indoor/outdoor and delta-temperature schedules, and the opening and
-    //   environmental scalar fields map directly to the EnergyPlus object.
-    // - Documented Delta: The wrapper relies on the established ZoneHVACComponent thermal-zone attachment surface and adds no type-local topology behavior.
-    // - Field/Storage Mapping: Scalar values and schedule pointers are stored directly on the EnergyPlus object, with no child objects to synchronize.
-    // - Evidence: `src/model/ZoneVentilationWindandStackOpenArea.hpp`, `src/model/ZoneVentilationWindandStackOpenArea.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateZoneVentilationWindandStackOpenArea.cpp`, `src/energyplus/ReverseTranslator/ReverseTranslateZoneVentilationWindandStackOpenArea.cpp`, and `src/epmodel/test/ZoneVentilationWindandStackOpenArea_GTest.cpp`.
-    // - Remaining Parity Work: None within the current canonical public surface.
 
     /** @name Field Accessors */
     //@{

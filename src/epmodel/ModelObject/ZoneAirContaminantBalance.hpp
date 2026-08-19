@@ -20,6 +20,17 @@ namespace epmodel {
     class ZoneAirContaminantBalance_Impl;
   }
 
+  /** \brief ZoneAirContaminantBalance.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-simulation-parameters.html#zoneaircontaminantbalance,ZoneAirContaminantBalance}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::ZoneAirContaminantBalance</code>. EPModel adds <code>genericContaminantConcentration()</code> and its setter/reset/default helpers. Model's <code>outdoorCarbonDioxideSchedule()</code>, <code>setOutdoorCarbonDioxideSchedule()</code>, and <code>resetOutdoorCarbonDioxideSchedule()</code> are not available.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API ZoneAirContaminantBalance : public ModelObject
   {
    public:
@@ -32,13 +43,6 @@ namespace epmodel {
     ZoneAirContaminantBalance& operator=(ZoneAirContaminantBalance&&) = default;
 
     static IddObjectType iddObjectType();
-
-    // Schema Alignment Notes:
-    // - API: Preserve the openstudio::model carbon dioxide boolean accessors while mapping to the EnergyPlus ZoneAirContaminantBalance
-    //   fields written by ForwardTranslateZoneAirContaminantBalance.cpp.
-    // - Field Mapping: Generic contaminant concentration is an additional EnergyPlus scalar with the usual Yes/No semantics.
-    // - Field Mapping: Outdoor Carbon Dioxide/Generic Contaminant Schedule Name fields remain object-list relationships and are intentionally
-    //   excluded from this scalar-only scaffold.
     bool carbonDioxideConcentration() const;
     bool isCarbonDioxideConcentrationDefaulted() const;
     bool setCarbonDioxideConcentration(bool carbonDioxideConcentration);

@@ -24,6 +24,17 @@ namespace epmodel {
     class ZoneHVACLowTempRadiantVarFlowDesign_Impl;
   }
 
+  /** \brief ZoneHVACLowTempRadiantVarFlowDesign.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-radiative-convective-units.html#zonehvaclowtemperatureradiantvariableflowdesign,ZoneHVAC:LowTemperatureRadiant:VariableFlow:Design}.
+   *
+   * \par OpenStudio Model API
+   * There is no same-name OpenStudio Model class; this is the EnergyPlus design companion for <code>openstudio::model::ZoneHVACLowTempRadiantVarFlow</code>. It is a read-oriented projection whose lifecycle is owned by the corresponding radiant equipment wrapper.
+   *
+   * \par Known limitations
+   * Design fields remain owner-managed by the radiant equipment wrapper.
+   */
   class EPMODEL_API ZoneHVACLowTempRadiantVarFlowDesign : public ModelObject
   {
    public:
@@ -42,17 +53,6 @@ namespace epmodel {
     static std::vector<std::string> heatingDesignCapacityMethodValues();
     static std::vector<std::string> coolingDesignCapacityMethodValues();
     static std::vector<std::string> condensationControlTypeValues();
-
-    // Schema Alignment Notes:
-    // - Status: Scalar Parity. This is the real persisted EnergyPlus design-side companion object for
-    //   `ZoneHVAC:LowTemperatureRadiant:VariableFlow`.
-    // - Canonical Counterpart: openstudio::model::ZoneHVACLowTempRadiantVarFlow.
-    // - Why This Wrapper Exists: canonical OpenStudio keeps these controls and design-side relationships on the parent
-    //   and transient companion coils, while EnergyPlus stores them on a separate `...:Design` object.
-    // - Implemented Parity: The read-side schedule, design-method, control-type, throttling, tubing, and
-    //   condensation-control accessors needed by the canonical parent and transient child views are available.
-    // - Documented Delta: there is no same-name canonical `openstudio::model` type. This is an EnergyPlus-facing
-    //   companion wrapper whose public API is intentionally read-oriented.
 
     boost::optional<Schedule> heatingControlTemperatureSchedule() const;
     boost::optional<Schedule> coolingControlTemperatureSchedule() const;

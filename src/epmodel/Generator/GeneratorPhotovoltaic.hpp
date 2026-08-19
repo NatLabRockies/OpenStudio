@@ -23,6 +23,34 @@ namespace epmodel {
     class GeneratorPhotovoltaic_Impl;
   }
 
+  /** \brief Represents a photovoltaic generator that references a performance object.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-electric-load-center-generator.html#generatorphotovoltaic-000,Generator:Photovoltaic}. The generator references a
+   * <code>PhotovoltaicPerformance:*</code> object through its performance
+   * fields.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::GeneratorPhotovoltaic</code>.
+   *
+   * - <b>Not yet available:</b> The Model factories
+   *   <code>simple()</code>, <code>equivalentOneDiode()</code>,
+   *   <code>sandia()</code>, and <code>fromSandiaDatabase(...)</code>.
+   * - <b>Not yet available:</b> The surface relationship
+   *   (<code>surface()</code>, <code>setSurface(...)</code>, and
+   *   <code>resetSurface()</code>), the
+   *   <code>photovoltaicPerformance()</code> getter, and the rated-power and
+   *   availability-schedule methods with their setters and resetters.
+   * - <b>Not yet available:</b> The Model Generator metadata methods
+   *   <code>generatorObjectType()</code>,
+   *   <code>ratedThermaltoElectricalPowerRatio()</code>, and
+   *   <code>electricLoadCenterDistribution()</code>.
+   *
+   * \par Known limitations
+   * The referenced performance object and generator relationships must be
+   * connected through companion wrappers or lower-level object references.
+   */
   class EPMODEL_API GeneratorPhotovoltaic : public ModelObject
   {
    public:
@@ -38,16 +66,6 @@ namespace epmodel {
 
     static std::vector<std::string> heatTransferIntegrationModeValues();
 
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model::GeneratorPhotovoltaic scalar accessor names/signatures for counterpart parity.
-    // - Field Mapping: API numberOfModulesInParallel maps to E+ field NumberofSeriesStringsinParallel.
-    // - Field Mapping: API numberOfModulesInSeries maps to E+ field NumberofModulesinSeries.
-    // - ForwardTranslator evidence: ForwardTranslateGeneratorPhotovoltaic writes NumberofSeriesStringsinParallel from
-    //   modelObject.numberOfModulesInParallel() and NumberofModulesinSeries from modelObject.numberOfModulesInSeries().
-    // - ForwardTranslator evidence: model::ratedElectricPowerOutput is not translated for Generator:Photovoltaic in E+
-    //   and is intentionally excluded from this scalar scaffold.
-    // - TODO(parity): Add preserved relationship APIs (surface, photovoltaicPerformance, availabilitySchedule) in a
-    //   dedicated relationship pass.
     std::string heatTransferIntegrationMode() const;
     bool isHeatTransferIntegrationModeDefaulted() const;
     bool setHeatTransferIntegrationMode(const std::string& heatTransferIntegrationMode);

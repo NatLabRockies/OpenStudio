@@ -22,6 +22,24 @@ namespace epmodel {
     class PythonPluginSearchPaths_Impl;
   }
 
+  /** \brief Controls the built-in directories added to the Python plugin search path.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-python-plugins.html#subsec:plugin-search-paths,PythonPlugin:SearchPaths}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::PythonPluginSearchPaths</code>. The three
+   * directory toggles are available with the same meaning, but EPModel uses
+   * <code>...ToSearchPath</code> method names while Model uses
+   * <code>...toSearchPath</code>. Model's custom search-path list methods
+   * (<code>searchPaths()</code>, <code>addSearchPath()</code>, and
+   * <code>clearSearchPaths()</code>) are not available.
+   *
+   * \par Known limitations
+   * Only the three EnergyPlus boolean toggles are exposed; custom search-path
+   * extensible rows cannot be edited through this wrapper.
+   */
   class EPMODEL_API PythonPluginSearchPaths : public ModelObject
   {
    public:
@@ -35,14 +53,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model counterpart scalar semantics for PythonPlugin:SearchPaths control toggles.
-    // - Field Mapping: These scalars map directly to the EnergyPlus fields
-    //   Add Current Working Directory to Search Path, Add Input File Directory to Search Path, and
-    //   Add epin Environment Variable to Search Path via PythonPlugin_SearchPathsFields enums.
-    // - ForwardTranslator evidence: ForwardTranslatePythonPluginInstance.cpp builds PythonPlugin:SearchPaths with the
-    //   same field values while managing search-path extensible entries.
-    // - Excluded Fields: The Search Path extensible group remains omitted from this scalar-only pass.
 
     bool addCurrentWorkingDirectoryToSearchPath() const;
     bool setAddCurrentWorkingDirectoryToSearchPath(bool addCurrentWorkingDirectoryToSearchPath);

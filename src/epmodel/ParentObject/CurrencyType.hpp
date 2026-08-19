@@ -22,6 +22,20 @@ namespace epmodel {
     class CurrencyType_Impl;
   }
 
+/** \brief Defines the monetary unit used by life-cycle cost calculations.
+ *
+ * \par EnergyPlus object
+ * \epobject{currencytype.html#currencytype,CurrencyType}
+ *
+ * \par Important behavior
+ * The monetary-unit value is stored directly on the EnergyPlus object.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model class is <code>openstudio::model::CurrencyType</code>.
+ *
+ * \par Known limitations
+ * No currency conversion or cost calculation is performed by this wrapper.
+ */
   class EPMODEL_API CurrencyType : public ParentObject
   {
    public:
@@ -37,11 +51,6 @@ namespace epmodel {
 
     /** @name Monetary unit access */
     //@{
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::CurrencyType scalar API naming/signatures.
-    // - Field Mapping: monetaryUnit maps to EnergyPlus CurrencyType/Monetary Unit.
-    // - ForwardTranslator evidence: ForwardTranslateCurrencyType.cpp currently emits CurrencyType without setting Monetary Unit.
-    // - TODO(parity): Align ForwardTranslator behavior with preserved monetaryUnit mapping when parity work reaches translators.
     boost::optional<std::string> monetaryUnit() const;
     bool setMonetaryUnit(const std::string& monetaryUnit);
     //@}

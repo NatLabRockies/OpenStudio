@@ -23,6 +23,18 @@ namespace epmodel {
     class EnergyManagementSystemMeteredOutputVariable_Impl;
   }
 
+  /** \brief Represents <code>EnergyManagementSystem:MeteredOutputVariable</code>.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-energy-management-system-ems.html#energymanagementsystemmeteredoutputvariable,EnergyManagementSystem:MeteredOutputVariable}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::EnergyManagementSystemMeteredOutputVariable</code>.
+   * **Not yet available:** Model typed object-target, program-body, and EMS relationship conveniences are not exposed unless declared by this wrapper.
+   *
+   * \par Known limitations
+   * Typed relationship and extensible-list conveniences not represented by the public declarations are unavailable.
+   */
   class EPMODEL_API EnergyManagementSystemMeteredOutputVariable : public ModelObject
   {
    public:
@@ -40,13 +52,6 @@ namespace epmodel {
     static std::vector<std::string> resourceTypeValues();
     static std::vector<std::string> groupTypeValues();
     static std::vector<std::string> endUseCategoryValues();
-
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model::EnergyManagementSystemMeteredOutputVariable scalar accessor names/signatures.
-    // - Field Mapping: updateFrequency/resourceType/groupType/endUseCategory map directly to E+ EnergyManagementSystem:MeteredOutputVariable fields.
-    // - Field Mapping: endUseSubcategory and units remain optional scalar string fields with reset APIs.
-    // - ForwardTranslator evidence: ForwardTranslateEnergyManagementSystemMeteredOutputVariable.cpp writes these scalar fields from the same API names.
-    // - TODO(parity): Add relationship-style APIs (EMS program/subroutine and object-handle variable resolution) separately without changing scalar signatures.
     std::string emsVariableName() const;
     bool setEMSVariableName(const std::string& eMSVariableName);
 

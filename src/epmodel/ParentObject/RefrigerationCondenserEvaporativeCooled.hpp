@@ -26,6 +26,21 @@ namespace epmodel {
     class RefrigerationCondenserEvaporativeCooled_Impl;
   }
 
+/** \brief Defines an evaporatively cooled refrigeration condenser.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-refrigeration.html#refrigerationcondenserevaporativecooled,Refrigeration:Condenser:EvaporativeCooled}
+ *
+ * \par Important behavior
+ * Heat-rejection, subcooling, fan, approach-temperature, capacity-factor, airflow, pump, water, refrigerant-inventory, and end-use fields are stored directly.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model class is <code>openstudio::model::RefrigerationCondenserEvaporativeCooled</code>.
+ * <b>Not yet available:</b> Refrigeration-system attachment and removal methods are not exposed.
+ *
+ * \par Known limitations
+ * System membership and associated compressor relationships are managed by the referencing refrigeration system.
+ */
   class EPMODEL_API RefrigerationCondenserEvaporativeCooled : public ParentObject
   {
    public:
@@ -41,17 +56,6 @@ namespace epmodel {
 
     static std::vector<std::string> fanSpeedControlTypeValues();
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. The scalar surface and optional evaporative-condenser availability schedule are aligned.
-    // - Canonical Counterpart: openstudio::model::RefrigerationCondenserEvaporativeCooled.
-    // - Implemented Parity: The direct scalar fields and availability schedule preserve canonical assignment, validation, reset, reload, and
-    //   referenced-resource lifetime behavior.
-    // - Documented Delta: Air inlet node, evaporative water supply tank, and RefrigerationSystem ownership helpers remain outside this slice.
-    // - Field/Storage Mapping: Scalars and the optional schedule reference map directly to EnergyPlus
-    //   Refrigeration:Condenser:EvaporativeCooled fields.
-    // - Evidence: `src/model/RefrigerationCondenserEvaporativeCooled.hpp`, `src/model/RefrigerationCondenserEvaporativeCooled.cpp`,
-    //   `src/energyplus/ForwardTranslator/ForwardTranslateRefrigerationCondenserEvaporativeCooled.cpp`, and the epmodel condenser tests.
-    // - Remaining Parity Work: Add the deferred air, tank, and refrigeration-system relationships only with their owning lifecycle contracts.
 
     /** @name Field accessors */
     //@{

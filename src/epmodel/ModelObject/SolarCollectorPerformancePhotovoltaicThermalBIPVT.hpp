@@ -22,6 +22,17 @@ namespace epmodel {
     class SolarCollectorPerformancePhotovoltaicThermalBIPVT_Impl;
   }
 
+  /** \brief SolarCollectorPerformancePhotovoltaicThermalBIPVT.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-solar-collectors.html#solarcollectorperformancephotovoltaicthermalBIPVT,SolarCollectorPerformance:PhotovoltaicThermal:BIPVT}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::SolarCollectorPerformancePhotovoltaicThermalBIPVT</code>. The scalar BIPVT performance fields map directly to EnergyPlus. Model's <code>boundaryConditionsModel()</code>, <code>setBoundaryConditionsModel()</code>, <code>availabilitySchedule()</code>, and <code>setAvailabilitySchedule()</code> relationships are not available.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API SolarCollectorPerformancePhotovoltaicThermalBIPVT : public ModelObject
   {
    public:
@@ -34,13 +45,6 @@ namespace epmodel {
     SolarCollectorPerformancePhotovoltaicThermalBIPVT& operator=(SolarCollectorPerformancePhotovoltaicThermalBIPVT&&) = default;
 
     static IddObjectType iddObjectType();
-
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::SolarCollectorPerformancePhotovoltaicThermalBIPVT scalar accessor names/signatures.
-    // - Field Mapping: Scalar APIs map directly to E+ SolarCollectorPerformance:PhotovoltaicThermal:BIPVT fields.
-    // - ForwardTranslator evidence: ForwardTranslateSolarCollectorPerformancePhotovoltaicThermalBIPVT.cpp writes these exact getters to matching IDF fields.
-    // - Field Mapping: BoundaryConditionsModelName and AvailabilityScheduleName remain excluded in epmodel scalar scaffold as relationship fields.
-    // - TODO(parity): Add relationship APIs incrementally without changing these scalar signatures.
     double effectivePlenumGapThicknessBehindPVModules() const;
     bool setEffectivePlenumGapThicknessBehindPVModules(double effectivePlenumGapThicknessBehindPVModules);
 

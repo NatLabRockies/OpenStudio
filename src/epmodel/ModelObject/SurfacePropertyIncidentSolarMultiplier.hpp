@@ -20,6 +20,17 @@ namespace epmodel {
     class SurfacePropertyIncidentSolarMultiplier_Impl;
   }
 
+  /** \brief SurfacePropertyIncidentSolarMultiplier.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-advanced-surface-concepts.html#surfacepropertyincidentsolarmultiplier,SurfaceProperty:IncidentSolarMultiplier}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::SurfacePropertyIncidentSolarMultiplier</code>. <b>Changed:</b> EPModel exposes direct construction from <code>Model</code>; Model construction requires a subsurface. The incident-solar multiplier is exposed; surface and schedule relationships are not available.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API SurfacePropertyIncidentSolarMultiplier : public ModelObject
   {
    public:
@@ -32,11 +43,6 @@ namespace epmodel {
     SurfacePropertyIncidentSolarMultiplier& operator=(SurfacePropertyIncidentSolarMultiplier&&) = default;
 
     static IddObjectType iddObjectType();
-
-    // Schema Alignment Notes:
-    // - API: Preserve the openstudio::model scalar accessor naming (incidentSolarMultiplier/setIncidentSolarMultiplier) for this model-counterpart type.
-    // - Field Mapping: incidentSolarMultiplier maps to SurfaceProperty:IncidentSolarMultiplier's Incident Solar Multiplier field and defaults to 1.0 per translateSurfacePropertyIncidentSolarMultiplier.
-    // - Field Mapping: Surface Name (GlazedExtSubSurfNames) and Incident Solar Multiplier Schedule Name (ScheduleNames) are object-list references and therefore excluded here.
     double incidentSolarMultiplier() const;
     bool setIncidentSolarMultiplier(double incidentSolarMultiplier);
 

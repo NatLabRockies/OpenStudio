@@ -22,6 +22,17 @@ namespace epmodel {
     class RefrigerationCondenserCascade_Impl;
   }
 
+  /** \brief RefrigerationCondenserCascade.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-refrigeration.html#refrigerationcondensercascade,Refrigeration:Condenser:Cascade}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::RefrigerationCondenserCascade</code>. The rated condenser, control, and refrigerant-inventory fields are exposed. Model's broader refrigeration relationship helpers are not available.
+   *
+   * \par Known limitations
+   * Only the fields and relationships listed in this wrapper are available; broader Model-only helpers are not exposed.
+   */
   class EPMODEL_API RefrigerationCondenserCascade : public ModelObject
   {
    public:
@@ -36,13 +47,6 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     static std::vector<std::string> condensingTemperatureControlTypeValues();
-
-    // Schema Alignment Notes:
-    // - API: preserve the openstudio::model RefrigerationCondenserCascade scalar accessor naming/signatures while translating to the
-    //   EnergyPlus Refrigeration:Condenser:Cascade object.
-    // - Field Mapping: ForwardTranslateRefrigerationCondenserCascade.cpp inserts these scalars into Refrigeration_Condenser_CascadeFields (rated temps,
-    //   control type, and optional refrigerant inventories).
-    // - TODO(parity): Expand beyond simple scalars once relationship-like fields are handled by richer epmodel types.
 
     double ratedCondensingTemperature() const;
     bool setRatedCondensingTemperature(double ratedCondensingTemperature);

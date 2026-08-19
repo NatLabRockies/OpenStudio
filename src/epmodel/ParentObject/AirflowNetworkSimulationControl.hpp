@@ -23,6 +23,21 @@ namespace epmodel {
     class AirflowNetworkSimulationControl_Impl;
   }
 
+/** \brief Controls the EnergyPlus AirflowNetwork simulation.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-airflow-network.html#airflownetworksimulationcontrol,AirflowNetwork:SimulationControl}
+ *
+ * \par Important behavior
+ * The airflow-network, wind-pressure, initialization, convergence, and building-geometry controls are stored directly on this object.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model class is <code>openstudio::model::AirflowNetworkSimulationControl</code>.
+ * <b>Renamed:</b> EPModel's <code>ratioofBuildingWidthAlongShortAxistoWidthAlongLongAxis()</code> replaces Model's <code>buildingAspectRatio()</code>, with corresponding setter, default-check, and reset methods.
+ *
+ * \par Known limitations
+ * This wrapper exposes the simulation-control object only; airflow-network surface, opening, and crack objects are separate types.
+ */
   class EPMODEL_API AirflowNetworkSimulationControl : public ModelObject
   {
    public:
@@ -43,13 +58,6 @@ namespace epmodel {
     static std::vector<std::string> initializationTypeValues();
     static std::vector<std::string> solverValues();
 
-    // Schema Alignment Notes:
-    // - API: This no-counterpart epmodel type uses IDD-derived class/accessor naming.
-    // - Field Mapping: All scalar accessors map directly to EnergyPlus AirflowNetwork:SimulationControl fields.
-    // - Field Mapping: Name is handled by base ModelObject naming API and is intentionally not duplicated here.
-    // - ForwardTranslator evidence: model::AirflowNetworkSimulationControl uses alias buildingAspectRatio for
-    //   field Ratio of Building Width Along Short Axis to Width Along Long Axis; epmodel keeps IDD-derived naming.
-    // - TODO(parity): Revisit cross-layer naming aliasing only if epmodel adopts model-counterpart naming policy.
     std::string airflowNetworkControl() const;
     bool isAirflowNetworkControlDefaulted() const;
     bool setAirflowNetworkControl(const std::string& airflowNetworkControl);

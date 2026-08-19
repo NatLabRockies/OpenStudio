@@ -23,6 +23,25 @@ namespace epmodel {
     class StraightComponent_Impl;
   }
 
+/** \brief The shared base for one-inlet/one-outlet HVAC components.
+ *
+ * \par EnergyPlus object
+ * No single EnergyPlus object. This abstract base represents HVAC object types
+ * with one inlet node field and one outlet node field.
+ *
+ * \par Important behavior
+ * Inlet and outlet ports, model objects, and loop removal are resolved from EnergyPlus-backed topology rather than OpenStudio connection objects.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model type is <code>openstudio::model::StraightComponent</code>.
+ *
+ * - <b>Not yet available:</b> The base-class
+ *   <code>airLoopHVAC()</code> convenience method. Concrete EPModel components
+ *   can still be reached through their loop topology.
+ *
+ * \par Known limitations
+ * No additional EPModel-specific limitations are known at this base level.
+ */
   class EPMODEL_API StraightComponent : public HVACComponent
   {
    public:
@@ -33,14 +52,6 @@ namespace epmodel {
     StraightComponent& operator=(const StraightComponent&) = default;
     StraightComponent& operator=(StraightComponent&&) = default;
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. The canonical single-inlet/single-outlet topology contract is present, but the base straight-component surface is still slightly narrower than `openstudio::model`.
-    // - Canonical Counterpart: openstudio::model::StraightComponent.
-    // - Implemented Parity: `removeFromLoop`, `inletPort`, `outletPort`, `inletModelObject`, and `outletModelObject` preserve the canonical straight-component topology contract used throughout air and plant equipment wrappers.
-    // - Documented Delta: The base epmodel wrapper does not yet re-expose the canonical `airLoopHVAC()` override or other model-side convenience beyond what already comes from `HVACComponent`.
-    // - Field/Storage Mapping: Inlet and outlet relationships are resolved from EnergyPlus-backed loop topology and transient connective-tissue objects rather than OpenStudio `Connection` storage.
-    // - Evidence: `src/model/StraightComponent.hpp` defines the canonical base surface that this wrapper is matching selectively.
-    // - Remaining Parity Work: Add any remaining base-level convenience overrides once the loop/topology family is fully normalized.
     bool removeFromLoop();
 
     unsigned inletPort() const;

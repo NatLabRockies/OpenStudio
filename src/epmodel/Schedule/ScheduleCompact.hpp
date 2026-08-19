@@ -22,6 +22,26 @@ namespace epmodel {
     class ScheduleCompact_Impl;
   }
 
+  /** \brief Represents a compact schedule made from EnergyPlus extensible rows.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-schedules.html#schedulecompact,Schedule:Compact}
+   *
+   * \par Important behavior
+   * <code>setToConstantValue()</code> replaces all extensible rows with the
+   * EnergyPlus sequence <code>Through: 12/31</code>, <code>For: AllDays</code>,
+   * <code>Until: 24:00</code>, and the supplied value. The constant-value
+   * queries return a value when there are four rows and the final row contains
+   * a numeric value; they do not validate the text labels in the first rows.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::ScheduleCompact</code>. No known public API
+   * differences.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API ScheduleCompact : public Schedule
   {
    public:
@@ -36,13 +56,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::ScheduleCompact scalar API names/signatures where mappable in epmodel.
-    // - Field Mapping: setToConstantValue/isConstantValue/constantValue map to Schedule:Compact extensible rows
-    //   ("Through: 12/31", "For: AllDays", "Until: 24:00", <numeric value>).
-    // - Field Mapping: scheduleTypeLimits is relationship-like (Schedule Type Limits Name object-list target) and excluded.
-    // - ForwardTranslator evidence: ForwardTranslateScheduleCompact.cpp forwards/extensible group schedule data directly.
-    // - TODO(parity): Add non-scalar schedule data editing APIs incrementally without changing preserved scalar signatures.
     /** @name Constant value scalar accessors */
     //@{
     bool setToConstantValue(double value);

@@ -25,6 +25,17 @@ namespace epmodel {
     class SizingPlant_Impl;
   }
 
+  /** \brief SizingPlant.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-design-objects.html#sizingplant,Sizing:Plant}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::SizingPlant</code>. The scalar sizing fields and typed PlantLoop relationship are exposed. Imported legacy condenser-loop targets are not surfaced through the PlantLoop API; retargeting preserves the existing sizing companions while changing ownership.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API SizingPlant : public ModelObject
   {
    public:
@@ -41,16 +52,6 @@ namespace epmodel {
     static std::vector<std::string> loopTypeValues();
     static std::vector<std::string> sizingOptionValues();
     static std::vector<std::string> coincidentSizingFactorModeValues();
-
-    // Schema Alignment Notes:
-    // - Status: Partial Parity.
-    // - Canonical Counterpart: openstudio::model::SizingPlant.
-    // - Implemented Parity: Scalar accessors and the total PlantLoop back-reference are available.
-    // - Field/Storage Mapping: PlantorCondenserLoopName is stored as a typed Sizing:Plant target to its owning PlantLoop. Valid imported
-    //   legacy CondenserLoop targets are preserved, but remain outside this PlantLoop-only public relationship API.
-    // - Retarget Semantics: Retargeting exchanges the owning PlantLoops of the two existing Sizing:Plant companions. The receiving object
-    //   and its field values therefore move to the requested PlantLoop while preserving exactly one companion for each affected source
-    //   and target loop.
     PlantLoop plantLoop() const;
     bool setPlantLoop(const PlantLoop& plantLoop);
 

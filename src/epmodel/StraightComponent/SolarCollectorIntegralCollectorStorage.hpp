@@ -21,6 +21,20 @@ namespace epmodel {
     class SolarCollectorIntegralCollectorStorage_Impl;
   }
 
+/** \brief An integral-collector-storage solar collector.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-solar-collectors.html#solarcollectorintegralcollectorstorage,SolarCollector:IntegralCollectorStorage}
+ *
+ * \par Important behavior
+ * Bottom-surface boundary-condition and maximum-flow fields map directly to SolarCollector:IntegralCollectorStorage.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model type is <code>openstudio::model::SolarCollectorIntegralCollectorStorage</code>.
+ *
+ * \par Known limitations
+ * Collector, surface, and explicit node relationship helpers are not available.
+ */
   class EPMODEL_API SolarCollectorIntegralCollectorStorage : public StraightComponent
   {
    public:
@@ -36,15 +50,6 @@ namespace epmodel {
 
     static std::vector<std::string> bottomSurfaceBoundaryConditionsTypeValues();
 
-    // Schema Alignment Notes:
-    // - Status: Scalar Parity. The canonical integral-collector-storage scalar surface is present, while collector, surface, and node helpers remain out of scope.
-    // - Canonical Counterpart: openstudio::model::SolarCollectorIntegralCollectorStorage.
-    // - Implemented Parity: The preserved scalar API matches the bottom-surface boundary-condition and maximum-flow-rate accessors with matching default behavior.
-    // - Documented Delta: Collector-storage parameters, boundary-condition model linkage, and inlet/outlet node helpers remain intentionally excluded from this scalar pass.
-    // - Field/Storage Mapping: These accessors map directly to EnergyPlus `SolarCollector:IntegralCollectorStorage` scalar fields used by the forward translator.
-    // - Evidence: `src/model/SolarCollectorIntegralCollectorStorage.hpp`, `src/model/SolarCollectorIntegralCollectorStorage.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateSolarCollectorIntegralCollectorStorage.cpp`.
-    // - Remaining Parity Work: Add the omitted relationship helpers without changing the preserved scalar signatures.
-    // Bottom surface boundary conditions type
     std::string bottomSurfaceBoundaryConditionsType() const;
     bool isBottomSurfaceBoundaryConditionsTypeDefaulted() const;
 

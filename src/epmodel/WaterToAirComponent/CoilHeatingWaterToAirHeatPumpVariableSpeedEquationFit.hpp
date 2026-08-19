@@ -27,6 +27,31 @@ namespace epmodel {
     class CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit_Impl;
   }
 
+  /** \brief Represents a variable-speed water-to-air heating heat-pump coil.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-heating-and-cooling-coils.html#coilheatingwatertoairheatpumpvariablespeedequationfit,Coil:Heating:WaterToAirHeatPump:VariableSpeedEquationFit}
+   *
+   * \par Important behavior
+   * Speed-data wrappers are transient views backed by the coil's EnergyPlus
+   * extensible speed rows: attached wrappers write the parent row, while
+   * detached wrappers retain their own values until attached. Autosized-value
+   * queries do not read SQL sizing results and return no value.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit</code>.
+   *
+   * - <b>Changed:</b> The airflow-network equivalent-duct methods use
+   *   <code>AirflowNetworkDistributionComponentCoil</code> instead of
+   *   Model's <code>AirflowNetworkEquivalentDuct</code>.
+   * - <b>Changed:</b> Autosized-value queries remain API-compatible but return
+   *   no value because EPModel does not read SQL sizing results.
+   *
+   * \par Known limitations
+   * Speed rows are persisted on the parent coil; they are not independent
+   * EnergyPlus objects that can be saved separately.
+   */
   class EPMODEL_API CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit : public WaterToAirComponent
   {
    public:
@@ -41,23 +66,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - Status: Parity with documented deltas.
-    // - Canonical Counterpart: openstudio::model::CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit.
-    // - Implemented Parity: The canonical availability schedule, part-load curve, scalar speed-level fields, and speed-data child APIs are
-    //   exposed here. epmodel preserves the canonical speed-data children as transient ParentObject wrappers: detached transient wrappers
-    //   hold their own OpenStudio-style fields until added to a parent coil, while attached transient wrappers read and write a specific
-    //   EnergyPlus extensible speed row on the parent object.
-    // - Documented Delta: The autosized query methods are API-preserving stubs for now: they return `none` until epmodel grows the
-    //   SQL-backed autosized result lookup used by the canonical model layer.
-    // - Documented Delta: The canonical equivalent-duct helper surface is exposed here through epmodel's
-    //   `AirflowNetworkDistributionComponentCoil`, which is the EnergyPlus-side surrogate written by the model-layer
-    //   `AirflowNetworkEquivalentDuct` translator path for coils.
-    // - Field/Storage Mapping: Scalar fields map directly to the corresponding EnergyPlus
-    //   `Coil:Heating:WaterToAirHeatPump:VariableSpeedEquationFit` fields. The canonical speed-data children are backed by the parent's real
-    //   EnergyPlus extensible speed rows, not by separate persisted EnergyPlus objects.
-    // - Evidence: `src/model/CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit.hpp`, `src/model/CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateCoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit.cpp`, and `src/epmodel/test/CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit_GTest.cpp`.
-    // - Remaining Parity Work: Add SQL-backed autosized result lookup if epmodel needs canonical autosized-value parity.
     Schedule availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);
 

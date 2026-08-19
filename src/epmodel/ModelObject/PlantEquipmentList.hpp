@@ -22,6 +22,17 @@ namespace epmodel {
     class PlantEquipmentList_Impl;
   }
 
+  /** \brief PlantEquipmentList.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-plant-condenser-control.html#plantequipmentlist,PlantEquipmentList}.
+   *
+   * \par OpenStudio Model API
+   * There is no corresponding <code>openstudio::model</code> class. EPModel exposes typed HVAC equipment relationships for the extensible equipment rows; raw row/index APIs are not exposed.
+   *
+   * \par Known limitations
+   * There is no corresponding <code>openstudio::model</code> class. EPModel exposes typed HVAC equipment relationships for the extensible equipment rows; raw row/index APIs are not exposed.
+   */
   class EPMODEL_API PlantEquipmentList : public ModelObject
   {
    public:
@@ -34,12 +45,6 @@ namespace epmodel {
     PlantEquipmentList& operator=(PlantEquipmentList&&) = default;
 
     static IddObjectType iddObjectType();
-
-    // Schema Alignment Notes:
-    // - API: High-level equipment-list relationship helper for plant operation schemes.
-    // - Field Mapping: Extensible fields (Equipment Object Type, Equipment Name) are intentionally not exposed as scalar mutators.
-    // - Canonical Counterpart: openstudio::model range-based operation schemes use ModelObjectList and translate to PlantEquipmentList.
-    //   epmodel is already EnergyPlus-native, so this wrapper owns the equivalent PlantEquipmentList relationships directly.
     std::vector<HVACComponent> equipment() const;
     bool addEquipment(const HVACComponent& equipment);
     bool removeEquipment(const HVACComponent& equipment);

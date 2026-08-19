@@ -16,6 +16,21 @@ namespace epmodel {
     class Splitter_Impl;
   }  // namespace detail
 
+  /** \brief Base interface for components that distribute one inlet to branches.
+   *
+   * \par EnergyPlus object
+   * No single EnergyPlus object. Concrete splitter types provide the persisted object.
+   *
+   * \par Important behavior
+   * Relationships are projected from EnergyPlus branch and node topology and mutators maintain that topology.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::Splitter</code>.
+   * <b>No known public API differences.</b>
+   *
+   * \par Known limitations
+   * This abstract interface does not identify a concrete EnergyPlus object.
+   */
   class EPMODEL_API Splitter : public HVACComponent
   {
    public:
@@ -25,13 +40,6 @@ namespace epmodel {
     Splitter& operator=(const Splitter&) = default;
     Splitter& operator=(Splitter&&) = default;
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. The canonical branch-oriented splitter API is present within the representative loop-topology contract.
-    // - Canonical Counterpart: openstudio::model::Splitter.
-    // - Implemented Parity: Inlet/outlet port queries, outlet-object traversal, branch indexing, branch creation, and branch removal preserve the canonical splitter topology contract.
-    // - Field/Storage Mapping: Splitter branch linkage is expressed through EnergyPlus-backed connector topology rather than model-side `Connection` storage.
-    // - Evidence: `src/model/Splitter.hpp` defines the canonical branch API surface; the zone-splitter and loop topology wrappers exercise that contract in epmodel.
-    // - Remaining Parity Work: Add connector-specific behavior only for a concrete workflow or shared topology defect.
     virtual boost::optional<ModelObject> inletModelObject() const;
     virtual unsigned inletPort() const;
     virtual unsigned outletPort(unsigned branchIndex) const;

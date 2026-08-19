@@ -22,6 +22,18 @@ namespace epmodel {
     class ExternalInterfaceVariable_Impl;
   }
 
+  /** \brief Represents <code>ExternalInterface:Variable</code>.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-externalinterface.html#externalinterfacevariable,ExternalInterface:Variable}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::ExternalInterfaceVariable</code>.
+   * **Not yet available:** Model typed FMU/component relationships and OpenStudio-only export controls are not exposed unless represented by an EnergyPlus field here.
+   *
+   * \par Known limitations
+   * Typed relationship and extensible-list conveniences not represented by the public declarations are unavailable.
+   */
   class EPMODEL_API ExternalInterfaceVariable : public ModelObject
   {
    public:
@@ -34,13 +46,6 @@ namespace epmodel {
     ExternalInterfaceVariable& operator=(ExternalInterfaceVariable&&) = default;
 
     static IddObjectType iddObjectType();
-
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::ExternalInterfaceVariable scalar accessor names/signatures.
-    // - Field Mapping: initialValue -> ExternalInterface:Variable, Initial Value.
-    // - Field Mapping: exportToBCVTB APIs are OS-only (OS:ExternalInterface:Variable) and not present on
-    //   EnergyPlus ExternalInterface:Variable; ForwardTranslator evidence confirms only Initial Value is written.
-    // - TODO(parity): Add OS-only/export behavior only when epmodel supports OS-level schema parity.
     double initialValue() const;
     bool setInitialValue(double initialValue);
 

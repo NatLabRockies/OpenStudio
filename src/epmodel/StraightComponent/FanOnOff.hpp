@@ -25,6 +25,20 @@ namespace epmodel {
     class FanOnOff_Impl;
   }
 
+/** \brief An on/off fan.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-fans.html#fanonoff,Fan:OnOff}
+ *
+ * \par Important behavior
+ * Availability and curve relationships are typed object links; contained-fan placement preserves the one-in/one-out path.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model type is <code>openstudio::model::FanOnOff</code>.
+ *
+ * \par Known limitations
+ * AirflowNetwork helpers are not available.
+ */
   class EPMODEL_API FanOnOff : public StraightComponent
   {
    public:
@@ -43,14 +57,6 @@ namespace epmodel {
 
     bool addToNode(Node& node);
 
-    // Schema Alignment Notes:
-    // - Status: Near Parity. The canonical curve relationships, constructor defaults, and contained-fan topology rules are aligned, while the airflow-network surface remains absent.
-    // - Canonical Counterpart: openstudio::model::FanOnOff.
-    // - Implemented Parity: The canonical constructors, curve relationships, contained-fan `addToNode` behavior, and the availability-schedule, fan total-efficiency, fan-efficiency, pressure-rise, maximum-flow-rate, motor, and end-use-subcategory accessors preserve the main `openstudio::model::FanOnOff` behavior, including autosize/reset semantics for flow rate.
-    // - Documented Delta: Epmodel still omits the airflow-network fan helper surface from `openstudio::model::FanOnOff`.
-    // - Field/Storage Mapping: The availability schedule and both curve references are typed object relationships, while the remaining scalar fields map directly to `Fan:OnOff` storage in EnergyPlus.
-    // - Evidence: `src/model/FanOnOff.hpp`, `src/model/FanOnOff.cpp`, `src/model/test/FanOnOff_GTest.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateFanOnOff.cpp` establish the canonical API and translation behavior.
-    // - Remaining Parity Work: Add airflow-network relationship support once epmodel grows the corresponding fan helper surface.
     Schedule availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);
 

@@ -23,6 +23,17 @@ namespace epmodel {
     class PerformancePrecisionTradeoffs_Impl;
   }
 
+  /** \brief PerformancePrecisionTradeoffs.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-simulation-parameters.html#performanceprecisiontradeoffs,PerformancePrecisionTradeoffs}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::PerformancePrecisionTradeoffs</code>. The exposed performance and precision settings map directly to EnergyPlus.
+   *
+   * \par Known limitations
+   * Only the fields and relationships listed in this wrapper are available; broader Model-only helpers are not exposed.
+   */
   class EPMODEL_API PerformancePrecisionTradeoffs : public ModelObject
   {
    public:
@@ -41,12 +52,6 @@ namespace epmodel {
 
     static std::vector<std::string> overrideModeValues();
     static std::vector<std::string> validOverrideModeValues();
-
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::PerformancePrecisionTradeoffs scalar accessor names/signatures.
-    // - Field Mapping: all scalar APIs map directly to E+ PerformancePrecisionTradeoffs fields with matching concepts.
-    // - ForwardTranslator evidence: ForwardTranslatePerformancePrecisionTradeoffs.cpp writes these preserved APIs directly to these fields.
-    // - TODO(parity): Keep scalar API stable while extending non-scalar parity behavior in later scaffold passes.
     bool useCoilDirectSolutions() const;
     bool isUseCoilDirectSolutionsDefaulted() const;
     bool setUseCoilDirectSolutions(bool useCoilDirectSolutions);

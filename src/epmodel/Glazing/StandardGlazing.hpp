@@ -22,6 +22,30 @@ namespace epmodel {
     class StandardGlazing_Impl;
   }
 
+  /** \brief Represents a standard detailed glazing layer.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-surface-construction-elements.html#windowmaterialglazing,WindowMaterial:Glazing}.
+   *
+   * \par Important behavior
+   * Thermal conductance, resistivity, and resistance are derived from the
+   * persisted conductivity and thickness fields. Optical data type and
+   * normal-incidence fields remain direct EnergyPlus inputs.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::StandardGlazing</code>. Inherited optical helpers
+   * including
+   * <code>interiorVisibleAbsorptance()</code> and
+   * <code>exteriorVisibleAbsorptance()</code>. Model's
+   * <code>windowGlassSpectralDataSet()</code>,
+   * <code>setWindowGlassSpectralDataSet()</code>, and
+   * <code>resetWindowGlassSpectralDataSet()</code> relationship methods are
+   * not available.
+   *
+   * \par Known limitations
+   * A spectral-data set cannot be assigned through this wrapper.
+   */
   class EPMODEL_API StandardGlazing : public Glazing
   {
    public:
@@ -36,12 +60,6 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     static std::vector<std::string> opticalDataTypeValues();
-
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model::StandardGlazing scalar accessor names/signatures for optical/thermal/basic scalar fields.
-    // - Field Mapping: Optical data type, thickness, solar/visible/infrared transmittance and reflectance, conductivity, dirt correction, and thermal conductance/resistivity/resistance map directly to OS_WindowMaterial_Glazing field enums.
-    // - ForwardTranslator evidence: ForwardTranslator/ForwardTranslateStandardGlazing.cpp keeps these scalar fields aligned with the EnergyPlus OS:WindowMaterial:Glazing schema.
-    // - Field Mapping: Window Glass Spectral Data Set Name is a material-property relationship and is intentionally excluded during this scalar-only scaffolding run.
 
     std::string opticalDataType() const;
     bool setOpticalDataType(const std::string& opticalDataType);

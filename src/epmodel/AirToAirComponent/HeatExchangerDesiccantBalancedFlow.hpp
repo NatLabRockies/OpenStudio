@@ -24,6 +24,17 @@ namespace epmodel {
     class HeatExchangerDesiccantBalancedFlow_Impl;
   }
 
+  /** \brief Represents the EnergyPlus HeatExchanger:Desiccant:BalancedFlow object.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-heat-recovery.html#heatexchangerdesiccantbalancedflow,HeatExchanger:Desiccant:BalancedFlow}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::HeatExchangerDesiccantBalancedFlow</code>. <b>Not yet available:</b> the Model airflow-network equivalent-duct helpers.
+   *
+   * \par Known limitations
+   * The four air-stream nodes and performance object relationship must remain consistent for outdoor-air or relief placement.
+   */
   class EPMODEL_API HeatExchangerDesiccantBalancedFlow : public AirToAirComponent
   {
    public:
@@ -39,16 +50,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - Status: Near Parity. The selected schedule, performance-object, economizer-lockout, and two-stream topology behavior is aligned.
-    // - Canonical Counterpart: openstudio::model::HeatExchangerDesiccantBalancedFlow.
-    // - Implemented Parity: Construction supplies the required availability schedule and performance data; relationship replacement, validation,
-    //   shared-child removal, `economizerLockout`, and coordinated outdoor/relief placement follow the selected canonical behavior.
-    // - Documented Delta: Epmodel does not yet expose the airflow-network equivalent-duct helpers present in `openstudio::model`.
-    // - Field/Storage Mapping: The schedule, performance type/name pair, and economizer lockout map directly to
-    //   `HeatExchanger:Desiccant:BalancedFlow` storage; the two air streams use its four node fields.
-    // - Evidence: `src/model/HeatExchangerDesiccantBalancedFlow.hpp`, `src/model/HeatExchangerDesiccantBalancedFlow.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateHeatExchangerDesiccantBalancedFlow.cpp` anchor the canonical API and translator behavior.
-    // - Remaining Parity Work: Add airflow-network equivalent-duct helpers and numerical performance comparison when a workflow requires them.
 
     Schedule availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);

@@ -23,6 +23,19 @@ namespace epmodel {
     class CurveExponentialDecay_Impl;
   }
 
+  /** \brief Represents an exponential-decay curve.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-performance-curves.html#curveexponentialdecay,Curve:ExponentialDecay}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::CurveExponentialDecay</code>.
+   * No known public API differences.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API CurveExponentialDecay : public Curve
   {
    public:
@@ -39,11 +52,6 @@ namespace epmodel {
     static std::vector<std::string> validInputUnitTypeforxValues();
     static std::vector<std::string> validOutputUnitTypeValues();
 
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model CurveExponentialDecay scalar accessor names/signatures.
-    // - Field Mapping: coefficient/min/max and unit-type APIs map directly to E+ Curve:ExponentialDecay fields.
-    // - ForwardTranslator evidence: ForwardTranslateCurveExponentialDecay.cpp writes these scalar fields directly.
-    // - TODO(parity): Keep this pass scalar-only; relationship APIs remain out of scope.
     double coefficient1C1() const;
     bool setCoefficient1C1(double coefficient1C1);
 

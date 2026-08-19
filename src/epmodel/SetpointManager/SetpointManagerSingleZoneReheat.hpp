@@ -22,6 +22,24 @@ namespace epmodel {
     class SetpointManagerSingleZoneReheat_Impl;
   }
 
+  /** \brief Sets a reheat supply-air setpoint for one control zone.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-setpoint-managers.html#setpointmanagersinglezonereheat,SetpointManager:SingleZone:Reheat}
+   *
+   * \par Important behavior
+   * When added to an air-loop node, EPModel attempts to infer the first demand-zone control zone and its zone-air inlet node.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::SetpointManagerSingleZoneReheat</code>.
+   *
+   * - <b>Not yet available:</b> <code>setControlZone(...)</code> and
+   *   <code>resetControlZone()</code>.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API SetpointManagerSingleZoneReheat : public SetpointManager
   {
    public:
@@ -37,14 +55,6 @@ namespace epmodel {
 
     static std::vector<std::string> controlVariableValues();
 
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model scalar accessor names/signatures for model-counterpart compatibility.
-    // - Field Mapping: minimumSupplyAirTemperature and maximumSupplyAirTemperature map directly to
-    //   E+ SetpointManager:SingleZone:Reheat scalar fields.
-    // - Field Mapping: addToNode projects the control zone, zone air node, zone inlet node, and setpoint node relationships
-    //   required by EnergyPlus, and canonicalization repairs those derived node fields from the control-zone relationship.
-    // - Field Mapping: Control Variable is preserved through inherited SetpointManager API and maps to
-    //   E+ SetpointManager:SingleZone:Reheat Control Variable.
     double minimumSupplyAirTemperature() const;
     bool setMinimumSupplyAirTemperature(double minimumSupplyAirTemperature);
 

@@ -20,6 +20,17 @@ namespace epmodel {
     class OutsideSurfaceConvectionAlgorithm_Impl;
   }
 
+  /** \brief OutsideSurfaceConvectionAlgorithm.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-simulation-parameters.html#surfaceconvectionalgorithmoutside,SurfaceConvectionAlgorithm:Outside}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::OutsideSurfaceConvectionAlgorithm</code>. The algorithm methods and valid-value list map directly to the EnergyPlus algorithm field.
+   *
+   * \par Known limitations
+   * Only the fields and relationships listed in this wrapper are available; broader Model-only helpers are not exposed.
+   */
   class EPMODEL_API OutsideSurfaceConvectionAlgorithm : public ModelObject
   {
    public:
@@ -32,10 +43,6 @@ namespace epmodel {
     OutsideSurfaceConvectionAlgorithm& operator=(OutsideSurfaceConvectionAlgorithm&&) = default;
 
     static IddObjectType iddObjectType();
-
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model scalar accessor names/signatures for this model-counterpart class.
-    // - Field Mapping: Algorithm maps directly to E+ SurfaceConvectionAlgorithm:Outside field A1.
     static std::vector<std::string> validAlgorithmValues();
 
     /** @name Algorithm field */

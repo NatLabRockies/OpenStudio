@@ -26,6 +26,28 @@ namespace epmodel {
     class AirConditionerVariableRefrigerantFlow_Impl;
   }
 
+  /**
+   * \brief Variable-refrigerant-flow outdoor unit with typed performance curves and terminal-unit membership.
+   *
+   * \par EnergyPlus object
+   * Encapsulates \epobject{group-variable-refrigerant-flow-equipment.html#airconditionervariablerefrigerantflow,AirConditioner:VariableRefrigerantFlow}.
+   *
+   * \par Important behavior
+   * Terminal membership is exclusive and duplicate-safe. `addToNode` inserts the unit on the plant-loop demand side;
+   * terminal and performance-curve relationships are maintained as typed references, including the optional piping,
+   * heat-recovery, and defrost curves.
+   *
+   * \par OpenStudio Model API
+   * Counterpart: `openstudio::model::AirConditionerVariableRefrigerantFlow`. The epmodel API covers the scalar,
+   * schedule, curve, master-thermostat, and terminal relationships. It also exposes the internal terminal/plant
+   * topology through `addToNode` and `terminals()`.
+   *
+   * \par Known limitations
+   * The EPModel constructor does not create the Model API's optional default cooling/heating and cooling-piping
+   * correction curves. The Model-only fuel/defrost, basin/crankcase, evaporative- or water-condenser, and resistive-
+   * defrost field groups are not carried yet, nor are their autosize helpers. Broader AirLoopHVAC/VRF coupling and
+   * family-specific autosized-result helpers are not exposed.
+   */
   class EPMODEL_API AirConditionerVariableRefrigerantFlow : public StraightComponent
   {
    public:
@@ -50,38 +72,6 @@ namespace epmodel {
     void removeAllTerminals();
     std::vector<ZoneHVACTerminalUnitVariableRefrigerantFlow> terminals() const;
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. Core VRF scalar controls, sizing/performance fields, direct schedule/zone relationships, the standard cooling
-    //   and heating performance curves, the cooling/heating piping and heat-recovery fields, the defrost EIR curve, and the standard VRF terminal
-    //   relationship are aligned.
-    // - Canonical Counterpart: openstudio::model::AirConditionerVariableRefrigerantFlow.
-    // - Implemented Parity: The selected scalar methods, availability/thermostat-priority/basin schedules, master-thermostat zone, ten standard
-    //   cooling- and ten standard heating-curve relationships, the five piping scalars and two piping-curve relationships, the ten heat-recovery
-    //   scalars and four heat-recovery curve relationships, terminal relationship, and demand-side `addToNode` preserve the canonical contract and
-    //   current plant-loop insertion behavior. Terminal membership is deliberately exclusive and duplicate-safe rather than reproducing the
-    //   canonical wrapper's duplicate and competing-list inconsistencies. The heat-recovery performance fields remain independent of the A28
-    //   heat-pump waste-heat-recovery flag.
-    // - Documented Delta: The canonical Model constructor creates default objects for the standard cooling- and heating-curve relationships,
-    //   while the EPModel constructor deliberately leaves these optional EnergyPlus fields blank pending a separate numerical-default and
-    //   canonicalization decision. The canonical Model constructor also creates a default cooling piping correction curve; EPModel leaves that
-    //   optional field blank pending the same numerical-default decision, and both constructors leave the heating piping correction curve blank.
-    //   Both constructors leave all four optional heat-recovery curves blank, so the documented EnergyPlus constants of 0.9 for cooling capacity
-    //   and 1.1 for cooling energy, heating capacity, and heating energy apply. `addToNode` is intentionally limited to PlantLoop demand-side
-    //   insertion, and no broader VRF topology or coupling between curve relationships and their adjacent scalar controls is claimed here.
-    // - Field/Storage Mapping: Most preserved scalar methods map directly to EnergyPlus `AirConditioner:VariableRefrigerantFlow` fields. Terminal
-    //   membership uses the EnergyPlus `ZoneTerminalUnitList` object with pointer-backed extensible entries. Cooling/heating temperature modifiers
-    //   and the defrost EIR curve use `BivariateFunctions`; cooling/heating boundary, part-load, and combination curves use `UnivariateFunctions`.
-    //   Both piping length correction fields accept the configured `UnivariateFunctions` and `BivariateFunctions` lists, while all four heat-
-    //   recovery modifier fields accept `BivariateFunctions`. The canonical outdoor-temperature API names map to EnergyPlus's minimum/maximum
-    //   condenser-inlet-node-temperature fields. Canonical construction and blank-field repair materialize 0.0/20.0 there where EnergyPlus
-    //   configures no defaults, 0.083 rather than the configured 0.15 for both capacity time constants, and 0.5 rather than the configured 1.0 for
-    //   the initial heating capacity and energy fractions. `condenserType()` follows the canonical defaulted readback behavior by deriving
-    //   `AirCooled` versus `WaterCooled` from current plant-loop attachment when blank.
-    // - Ownership: VRF removal owns only its terminal list and deliberately preserves every referenced standard-VRF performance curve, including
-    //   the piping, heat-recovery, and defrost EIR curves; full all-curve ownership remains deferred.
-    // - Evidence: `src/model/AirConditionerVariableRefrigerantFlow.hpp`, `src/model/AirConditionerVariableRefrigerantFlow.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirConditionerVariableRefrigerantFlow.cpp`, and `src/epmodel/test/AirConditionerVariableRefrigerantFlow_GTest.cpp`.
-    // - Remaining Parity Work: Decide standard cooling/heating and cooling-piping numerical default-curve construction and any full all-curve
-    //   ownership contract separately.
     Schedule availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);
 

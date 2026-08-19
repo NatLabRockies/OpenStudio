@@ -23,6 +23,20 @@ namespace epmodel {
     class ChillerElectric_Impl;
   }
 
+  /** \brief Represents the direct EnergyPlus electric chiller object.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-plant-equipment.html#chillerelectric,Chiller:Electric}
+   *
+   * \par OpenStudio Model API
+   * There is no corresponding <code>openstudio::model</code> wrapper for this
+   * exact EnergyPlus object. OpenStudio Model exposes more specific electric
+   * chiller wrappers instead, such as EIR and reformulated-EIR chillers.
+   *
+   * \par Known limitations
+   * This type is an EPModel-only direct wrapper; applications needing the
+   * canonical Model API should use one of the specific Model chiller classes.
+   */
   class EPMODEL_API ChillerElectric : public WaterToWaterComponent
   {
    public:
@@ -51,14 +65,6 @@ namespace epmodel {
     boost::optional<Node> heatRecoveryInletNode() const;
     boost::optional<Node> heatRecoveryOutletNode() const;
 
-    // Schema Alignment Notes:
-    // - Status: Scalar Parity. This type wraps the direct EnergyPlus `Chiller:Electric` object and exposes useful topology accessors, but it does not have a same-name canonical model counterpart.
-    // - Canonical Counterpart: none.
-    // - Implemented Parity: Scalar accessors for condenser type, nominal capacity/COP, part-load ratios, condenser behavior, chilled-water and condenser-water sizing, heat recovery, end-use metadata, and thermosiphon settings preserve the public IDD-derived API.
-    // - Documented Delta: `chilledWaterLoop`, `condenserWaterLoop`, and `heatRecoveryLoop` style navigation are epmodel convenience APIs for EnergyPlus plant topology; canonical `openstudio::model` represents this space through more specific chiller wrappers rather than a one-to-one `ChillerElectric` type.
-    // - Field/Storage Mapping: The public API is organized around EnergyPlus `Chiller:Electric` storage and loop wiring, not around a canonical OpenStudio class name.
-    // - Evidence: `src/model/ChillerElectricEIR.hpp`, `src/model/ChillerElectricReformulatedEIR.hpp`, `src/model/ChillerElectricASHRAE205.hpp`, and the matching forward translators show how the canonical model splits this EnergyPlus space across multiple more specific wrappers.
-    // - Remaining Parity Work: Keep this note conservative and revisit only if a future canonical wrapper is introduced for the aggregated EnergyPlus `Chiller:Electric` object.
     std::string condenserType() const;
     bool isCondenserTypeDefaulted() const;
     bool setCondenserType(const std::string& condenserType);

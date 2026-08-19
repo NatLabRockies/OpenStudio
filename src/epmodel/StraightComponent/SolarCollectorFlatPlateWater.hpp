@@ -21,6 +21,20 @@ namespace epmodel {
     class SolarCollectorFlatPlateWater_Impl;
   }
 
+/** \brief A flat-plate water solar collector.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-solar-collectors.html#solarcollectorflatplatewater,SolarCollector:FlatPlate:Water}
+ *
+ * \par Important behavior
+ * Performance relationship, maximum flow, and plant-supply placement map directly to SolarCollector:FlatPlate:Water.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model type is <code>openstudio::model::SolarCollectorFlatPlateWater</code>.
+ *
+ * \par Known limitations
+ * The canonical surface()/setSurface() relationship is not available because EPModel has no shared planar-surface wrapper.
+ */
   class EPMODEL_API SolarCollectorFlatPlateWater : public StraightComponent
   {
    public:
@@ -34,17 +48,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity.
-    // - Canonical Counterpart: openstudio::model::SolarCollectorFlatPlateWater.
-    // - Implemented Parity: Default `SolarCollectorPerformanceFlatPlate` ownership, performance replacement/reset, maximum-flow-rate accessors, and
-    //   inherited `addToNode(...)` now follow the canonical plant-supply-only behavior.
-    // - Documented Delta: The canonical `surface()` / `setSurface(...)` API remains deferred because epmodel does not yet have the shared
-    //   planar-surface/shading-surface wrapper abstraction needed to preserve the canonical `PlanarSurface` signature cleanly.
-    // - Field/Storage Mapping: The performance relationship and maximum-flow-rate accessor map directly to EnergyPlus
-    //   `SolarCollector:FlatPlate:Water` fields used by the forward translator.
-    // - Evidence: `src/model/SolarCollectorFlatPlateWater.hpp`, `src/model/SolarCollectorFlatPlateWater.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateSolarCollectorFlatPlateWater.cpp`.
-    // - Remaining Parity Work: Add canonical surface helpers once the shared epmodel planar/shading-surface support is in scope.
 
     /** @name Solar collector performance */
     //@{

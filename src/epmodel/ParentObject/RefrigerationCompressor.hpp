@@ -24,6 +24,21 @@ namespace epmodel {
     class RefrigerationCompressor_Impl;
   }
 
+/** \brief Defines a compressor used by a refrigeration system.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-refrigeration.html#refrigerationcompressor,Refrigeration:Compressor}
+ *
+ * \par Important behavior
+ * Rated superheat, return-gas, liquid, subcooling, operation mode, and end-use fields are stored directly on the object.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model class is <code>openstudio::model::RefrigerationCompressor</code>.
+ * <b>Not yet available:</b> Compressor-capacity and power-curve relationships and refrigeration-system attachment/removal methods are not exposed.
+ *
+ * \par Known limitations
+ * System membership and compressor staging are managed by the referencing refrigeration-system object.
+ */
   class EPMODEL_API RefrigerationCompressor : public ParentObject
   {
    public:
@@ -39,14 +54,6 @@ namespace epmodel {
 
     static std::vector<std::string> modeofOperationValues();
 
-    // Schema Alignment Notes:
-    // - API: preserve openstudio::model::RefrigerationCompressor scalar accessors for the numeric rating fields plus end-use subcategory
-    //   and mode of operation.
-    // - Field Mapping: these scalars map directly to Refrigeration:Compressor fields enumerated in Refrigeration_Compressor_FieldEnums and
-    //   are confirmed by ForwardTranslateRefrigerationCompressor.cpp.
-    // - Field Mapping: curve attachment fields (Refrigeration Compressor Power Curve Name, Refrigeration Compressor Capacity Curve Name,
-    //   Transcritical Compressor Power Curve Name, Transcritical Compressor Capacity Curve Name) remain relationship-like and are excluded
-    //   from this scalar-only scaffold.
 
     /** @name Scalar Accessors */
     //@{

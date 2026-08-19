@@ -24,6 +24,21 @@ namespace epmodel {
     class AirTerminalDualDuctConstantVolume_Impl;
   }
 
+  /** \brief Represents a constant-volume dual-duct air terminal.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-air-distribution-equipment.html#airterminaldualductconstantvolume,AirTerminal:DualDuct:ConstantVolume}.
+   *
+   * \par Important behavior
+   * Separate terminal inlet and outlet node relationships follow the supported dual-duct air-loop insertion and removal topology.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::AirTerminalDualDuctConstantVolume</code>.
+   * <b>Not yet available: the SQL-backed <code>autosizedMaximumAirFlowRate()</code> result helper.</b>
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API AirTerminalDualDuctConstantVolume : public Mixer
   {
    public:
@@ -37,14 +52,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - Status: Near Parity for the directly stored EnergyPlus fields and tested dual-duct topology.
-    // - Canonical Counterpart: openstudio::model::AirTerminalDualDuctConstantVolume.
-    // - Implemented Parity: availability-schedule access, `maximumAirFlowRate`, autosize support, constructor defaults, `hotAirInletNode`, `coldAirInletNode`, and the tested dual-duct `addToNode`/`remove` connectivity path are implemented here.
-    // - Documented Delta: SQL-backed `autosizedMaximumAirFlowRate()` remains outside this direct-IDF wrapper.
-    // - Field/Storage Mapping: `AvailabilityScheduleName` remains an underlying IDD relationship field used by the constructor and translator; Air Outlet/Hot Air Inlet/Cold Air Inlet node fields are surfaced through the preserved node accessors and shared AirLoopHVAC topology helpers.
-    // - Evidence: `src/model/AirTerminalDualDuctConstantVolume.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirTerminalDualDuctConstantVolume.cpp`, and `src/epmodel/test/AirTerminalDualDuctConstantVolume_GTest.cpp` cover the same scalar mapping plus supported connectivity.
-    // - Remaining Parity Work: Add SQL-backed autosized-result convenience only when an epmodel sizing-results workflow needs it.
     Schedule availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);
 

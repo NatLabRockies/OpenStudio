@@ -22,6 +22,20 @@ namespace epmodel {
     class PlantComponentUserDefined_Impl;
   }
 
+/** \brief A user-defined plant component.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-user-defined-hvac-and-plant-component.html#plantcomponentuserdefined,PlantComponent:UserDefined}
+ *
+ * \par Important behavior
+ * Plant Connection 1 fields and inherited plant placement map directly to PlantComponent:UserDefined; EnergyPlus connections 2–4 are exposed as pass-through scalar fields.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model type is <code>openstudio::model::PlantComponentUserDefined</code>.
+ *
+ * \par Known limitations
+ * OpenStudio EMS program, actuator, and ambient-zone companion relationships are not projected onto the EnergyPlus object.
+ */
   class EPMODEL_API PlantComponentUserDefined : public StraightComponent
   {
    public:
@@ -44,23 +58,6 @@ namespace epmodel {
     static std::vector<std::string> plantConnection4LoadingModeValues();
     static std::vector<std::string> plantConnection4LoopFlowRequestModeValues();
 
-    // Schema Alignment Notes:
-    // - Status: Scalar Parity. The EnergyPlus-backed wrapper currently preserves the direct scalar surface and inherited straight-component
-    //   plant-loop placement behavior, but it does not project the canonical OpenStudio-only EMS companion-object API.
-    // - Canonical Counterpart: openstudio::model::PlantComponentUserDefined.
-    // - Implemented Parity: The preserved API covers the canonical one-connection straight-component contract, constructor defaults for the required
-    //   Plant Connection 1 fields, the canonical Plant Connection 1 loading/flow-request modes, and inherited straight-component plant-loop
-    //   insertion/removal behavior. The wrapper also preserves the underlying EnergyPlus Number of Plant Loop Connections and Plant Connection 2-4
-    //   loading/flow-request scalar fields as direct pass-through accessors, while restricting new writes to the canonical one-connection value.
-    // - Documented Delta: The canonical wrapper's EMS program, actuator, and ambient-zone relationships live on the OpenStudio `OS:PlantComponent:UserDefined`
-    //   schema, not directly on the EnergyPlus `PlantComponent:UserDefined` object, so that companion-object surface is intentionally not exposed here.
-    //   The Number of Plant Loop Connections and additional Plant Connection 2-4 scalar accessors are EnergyPlus-facing pass-through fields, not
-    //   canonical `openstudio::model` relationship projections.
-    // - Field/Storage Mapping: These accessors map directly to the EnergyPlus `PlantComponent:UserDefined` scalar fields used by the forward translator.
-    // - Evidence: `src/model/PlantComponentUserDefined.hpp`, `src/model/PlantComponentUserDefined.cpp`, and
-    //   `src/energyplus/ForwardTranslator/ForwardTranslatePlantComponentUserDefined.cpp`.
-    // - Remaining Parity Work: Add any future user-defined companion-object API only if epmodel adopts an explicit projection strategy over the EnergyPlus
-    //   object, similar to other wrappers that preserve OpenStudio-only child relationships.
     int numberOfPlantLoopConnections() const;
     bool setNumberOfPlantLoopConnections(int numberOfPlantLoopConnections);
 

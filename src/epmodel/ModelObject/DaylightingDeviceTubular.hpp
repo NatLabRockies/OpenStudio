@@ -22,6 +22,18 @@ namespace epmodel {
     class DaylightingDeviceTubular_Impl;
   }
 
+  /** \brief Represents <code>DaylightingDevice:Tubular</code>.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-daylighting.html#daylightingdevicetubular,DaylightingDevice:Tubular}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::DaylightingDeviceTubular</code>.
+   * **Not yet available:** Model surface, construction, and extensible transition/shelf relationship conveniences are not exposed unless declared here.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API DaylightingDeviceTubular : public ModelObject
   {
    public:
@@ -34,16 +46,6 @@ namespace epmodel {
     DaylightingDeviceTubular& operator=(DaylightingDeviceTubular&&) = default;
 
     static IddObjectType iddObjectType();
-
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model scalar accessor naming/signatures for counterpart parity.
-    // - Field Mapping: diameter, totalLength, and effectiveThermalResistance map directly to
-    //   DaylightingDevice:Tubular scalar fields Diameter, Total Length, and Effective Thermal Resistance.
-    // - Field Mapping: Dome Name, Diffuser Name, Construction Name, and extensible Transition Zone fields
-    //   are relationship-like links and intentionally excluded from scalar accessors.
-    // - ForwardTranslator evidence: translateDaylightingDeviceTubular writes these three scalar fields
-    //   directly from modelObject.diameter(), modelObject.totalLength(), and modelObject.effectiveThermalResistance().
-    // - TODO(parity): Add typed relationship/extensible APIs during non-scalar parity work.
     double diameter() const;
     bool setDiameter(double diameter);
 

@@ -20,6 +20,22 @@ namespace epmodel {
     class ResourceObject_Impl;
   }
 
+  /** \brief Base class for reusable EnergyPlus resource objects.
+   *
+   * \par EnergyPlus object
+   * This class has no single EnergyPlus object. Concrete subclasses wrap
+   * individual resource objects and may opt into the resource lifecycle or
+   * transient behavior provided by this base.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model base class is
+   * <code>openstudio::model::ResourceObject</code>. No additional public
+   * methods are exposed by either base class.
+   *
+   * \par Known limitations
+   * Object-specific fields and relationships are available only on concrete
+   * resource subclasses.
+   */
   class EPMODEL_API ResourceObject : public ModelObject
   {
    public:

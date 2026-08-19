@@ -26,6 +26,30 @@ namespace epmodel {
     class ThermalStorageChilledWaterStratified_Impl;
   }
 
+  /** \brief Represents stratified chilled-water thermal storage.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-water-heaters.html#thermalstoragechilledwaterstratified,ThermalStorage:ChilledWater:Stratified}
+   *
+   * \par Important behavior
+   * Construction and loading maintain a linked <code>WaterHeater:Sizing</code>
+   * companion. Removing detached storage removes its uniquely linked sizing
+   * object as well; connected storage must be detached from its plant loop
+   * before direct removal.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::ThermalStorageChilledWaterStratified</code>.
+   *
+   * - <b>Added:</b> Default-state queries and reset methods for use-side and
+   *   source-side heat-transfer effectiveness and design-flow fields.
+   *
+   * \par Known limitations
+   * The default ambient schedule is a <code>ScheduleConstant</code>, not the
+   * Model-side <code>ScheduleRuleset</code>. Direct removal is rejected while
+   * connected, and model-specific clone/sizing-application behavior is not
+   * reproduced beyond the EPModel sizing companion support.
+   */
   class EPMODEL_API ThermalStorageChilledWaterStratified : public WaterToWaterComponent
   {
    public:
@@ -43,14 +67,6 @@ namespace epmodel {
     static std::vector<std::string> ambientTemperatureIndicatorValues();
     static std::vector<std::string> inletModeValues();
 
-    // Schema Alignment Notes:
-    // - Status: Near Parity with documented deltas. The canonical scalar, relationship, loop-classification, and autosized-helper surface is aligned, while the default ambient schedule subtype and deeper model-side clone/sizing-application workflows still differ.
-    // - Canonical Counterpart: openstudio::model::ThermalStorageChilledWaterStratified.
-    // - Implemented Parity: Scalar accessors plus setpoint/ambient/use-side/source-side schedules, ambient zone/object links, WaterHeaterSizing ownership, exact detached storage-and-sizing removal, cooling classification/fuel reporting, and SQL-backed autosized helpers preserve the canonical model API shape.
-    // - Documented Delta: The constructor seeds the default ambient schedule with `ScheduleConstant` because epmodel does not yet expose canonical `ScheduleRuleset`; connected direct removal remains conservatively rejected in favor of loop-owned detach operations, and clone and sizing-application behavior remain inherited rather than matching the model-side overrides.
-    // - Field/Storage Mapping: Wrappers target EnergyPlus `ThermalStorage:ChilledWater:Stratified` fields directly, including schedule and thermal-zone object references; autosized helpers resolve against shared epmodel SQL-backed component-sizing results.
-    // - Evidence: `src/model/ThermalStorageChilledWaterStratified.hpp`, `src/model/ThermalStorageChilledWaterStratified.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateThermalStorageChilledWaterStratified.cpp`.
-    // - Remaining Parity Work: Add canonical `ScheduleRuleset` support for the seeded ambient schedule if epmodel adopts that schedule family, and expand only if later work needs connected direct removal, model-side clone behavior, or richer sizing application helpers.
 
     double tankVolume() const;
     bool setTankVolume(double tankVolume);

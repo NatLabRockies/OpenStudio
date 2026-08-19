@@ -24,6 +24,17 @@ namespace epmodel {
     class NodeList_Impl;
   }
 
+  /** \brief NodeList.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-node-branch-management.html#nodelist,NodeList}.
+   *
+   * \par OpenStudio Model API
+   * There is no corresponding <code>openstudio::model</code> class; this wrapper reads the node targets, but node-list mutation is not exposed.
+   *
+   * \par Known limitations
+   * There is no corresponding <code>openstudio::model</code> class; this wrapper reads the node targets, but node-list mutation is not exposed.
+   */
   class EPMODEL_API NodeList : public ModelObject
   {
    public:

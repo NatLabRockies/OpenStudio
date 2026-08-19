@@ -23,6 +23,24 @@ namespace epmodel {
     class ChillerAbsorptionIndirect_Impl;
   }
 
+  /** \brief Represents an indirect absorption chiller with generator-side performance curves.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-plant-equipment.html#chillerabsorptionindirect,Chiller:Absorption:Indirect}
+   *
+   * \par Important behavior
+   * Attaching a generator plant loop selects <code>HotWater</code> as the
+   * generator heat source; removing that loop restores <code>Steam</code>.
+   * Selecting <code>Steam</code> while a generator loop is attached is rejected.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::ChillerAbsorptionIndirect</code>. No known public
+   * API differences.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API ChillerAbsorptionIndirect : public WaterToWaterComponent
   {
    public:
@@ -39,17 +57,6 @@ namespace epmodel {
     static std::vector<std::string> chillerFlowModeValues();
     static std::vector<std::string> generatorHeatSourceTypeValues();
 
-    // Schema Alignment Notes:
-    // - Status: Near Parity. The canonical scalar, curve, topology, and autosized-helper surface is aligned.
-    // - Canonical Counterpart: openstudio::model::ChillerAbsorptionIndirect.
-    // - Implemented Parity: Canonical constructor defaults, required curve relationships, chilled/condenser/generator loop conveniences,
-    //   generator-loop routing semantics, HVAC classification, and SQL-backed autosized-value helpers preserve the model-side API shape.
-    // - Field/Storage Mapping: Scalar wrappers target EnergyPlus `Chiller:Absorption:Indirect` fields directly; curve and loop relationships are
-    //   persisted as normal object links on the same object and interpreted through the shared water-to-water topology layer, while autosized
-    //   helper queries resolve against the shared epmodel SQL-backed component-sizing lookup.
-    // - Evidence: `src/model/ChillerAbsorptionIndirect.hpp`, `src/model/ChillerAbsorptionIndirect.cpp`, and
-    //   `src/energyplus/ForwardTranslator/ForwardTranslateChillerAbsorptionIndirect.cpp`.
-    // - Remaining Parity Work: None within the current canonical public surface.
     boost::optional<double> nominalCapacity() const;
     bool isNominalCapacityAutosized() const;
     bool setNominalCapacity(double nominalCapacity);

@@ -27,6 +27,20 @@ namespace epmodel {
     class PumpVariableSpeed_Impl;
   }
 
+/** \brief A variable-speed plant pump.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-pumps.html#pumpvariablespeed,Pump:VariableSpeed}
+ *
+ * \par Important behavior
+ * Pump flow, head, power, efficiency, RPM, pressure, curve, schedule, thermal-zone, and plant-placement fields map directly to Pump:VariableSpeed.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model type is <code>openstudio::model::PumpVariableSpeed</code>.
+ *
+ * \par Known limitations
+ * No additional type-specific limitation is known beyond shared straight-component topology.
+ */
   class EPMODEL_API PumpVariableSpeed : public StraightComponent
   {
    public:
@@ -45,16 +59,6 @@ namespace epmodel {
     static std::vector<std::string> validPumpControlTypeValues();
     static std::vector<std::string> vfdControlTypeValues();
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. The canonical scalar pump surface and all direct schedule, curve, and zone relationships are present.
-    // - Canonical Counterpart: openstudio::model::PumpVariableSpeed.
-    // - Implemented Parity: Preserved accessor names/signatures cover the existing scalar surface plus pump flow rate, pump curve,
-    //   pump RPM, minimum/maximum pressure, minimum/maximum RPM, and zone relationships, including reset behavior and typed target validation.
-    // - Documented Delta: Broader canonical behavior outside the direct EnergyPlus field surface remains deferred.
-    // - Field/Storage Mapping: Scalars and relationships map directly to their EnergyPlus `Pump:VariableSpeed` fields.
-    // - Evidence: `src/model/PumpVariableSpeed.hpp`, `src/model/PumpVariableSpeed.cpp`, and the configured EnergyPlus IDD define the
-    //   canonical signatures, schedule constraints, supported pump curve types, and direct field mappings.
-    // - Remaining Parity Work: Add other canonical behavior only when demanded by a concrete workflow.
     boost::optional<double> ratedFlowRate() const;
     bool isRatedFlowRateDefaulted() const;
     bool isRatedFlowRateAutosized() const;

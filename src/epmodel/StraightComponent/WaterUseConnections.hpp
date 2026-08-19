@@ -24,6 +24,20 @@ namespace epmodel {
     class WaterUseConnections_Impl;
   }
 
+/** \brief Connections for water-use equipment and plant demand.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-water-systems.html#wateruseconnections,WaterUse:Connections}
+ *
+ * \par Important behavior
+ * Hot/cold supply schedules, water-use-equipment extensible rows, drain-water heat-exchanger fields, and plant-demand placement map directly to WaterUse:Connections.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model type is <code>openstudio::model::WaterUseConnections</code>.
+ *
+ * \par Known limitations
+ * EnergyPlus-only supply and reclamation storage-tank fields are not exposed.
+ */
   class EPMODEL_API WaterUseConnections : public StraightComponent
   {
    public:
@@ -40,18 +54,6 @@ namespace epmodel {
     static std::vector<std::string> drainWaterHeatExchangerTypeValues();
     static std::vector<std::string> drainWaterHeatExchangerDestinationValues();
 
-    // Schema Alignment Notes:
-    // - Status: Parity with documented deltas. The canonical water-use-connections wrapper surface is present.
-    // - Canonical Counterpart: openstudio::model::WaterUseConnections.
-    // - Implemented Parity: Hot/cold supply-temperature schedule relationships, water-use-equipment extensible ownership, plant-demand-only
-    //   placement behavior, and the drain-water-heat-exchanger scalar accessors now match the canonical counterpart.
-    // - Documented Delta: The EnergyPlus-only supply and reclamation storage-tank fields remain intentionally unwrapped because the canonical
-    //   `openstudio::model::WaterUseConnections` surface does not expose them either.
-    // - Field/Storage Mapping: Schedule relationships use direct object-list pointers plus shared epmodel schedule-type validation,
-    //   equipment membership uses `WaterUse:Connections` extensible rows, and drain-water helpers map directly to the matching scalar
-    //   fields consumed by the forward translator.
-    // - Evidence: `src/model/WaterUseConnections.hpp`, `src/model/WaterUseConnections.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateWaterUseConnections.cpp`.
-    // - Remaining Parity Work: None for the current canonical counterpart surface.
     boost::optional<Schedule> hotWaterSupplyTemperatureSchedule() const;
     bool setHotWaterSupplyTemperatureSchedule(Schedule& hotWaterSupplyTemperatureSchedule);
     void resetHotWaterSupplyTemperatureSchedule();

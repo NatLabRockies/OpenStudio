@@ -23,7 +23,24 @@ namespace epmodel {
     class PythonPluginInstance_Impl;
   }
 
-  /** PythonPluginInstance is a ModelObject that wraps the EnergyPlus IDD object 'PythonPlugin:Instance'. */
+  /** \brief Identifies a Python plugin class and module for EnergyPlus.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-python-plugins.html#pythonplugininstance,PythonPlugin:Instance}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::PythonPluginInstance</code>. EPModel stores the
+   * Python module name directly with <code>pythonModuleName()</code> and
+   * <code>setPythonModuleName()</code>; the Model API instead exposes the
+   * <code>externalFile()</code> relationship and file-inspection helpers
+   * (<code>findPluginClassNameInFile()</code> and
+   * <code>validPluginClassNamesInFile()</code>).
+   *
+   * \par Known limitations
+   * EPModel does not inspect an external Python file or validate that the
+   * module contains the named plugin class.
+   */
   class EPMODEL_API PythonPluginInstance : public ModelObject
   {
    public:
@@ -37,14 +54,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - API: Preserve the openstudio::model counterpart names (runDuringWarmupDays, pluginClassName) and expose the
-    //   PythonModuleName IDD field as a scalar-only accessor for direct EnergyPlus parity.
-    // - Field Mapping: The EnergyPlus PythonPlugin:Instance fields (Run During Warmup Days, Python Module Name, Plugin Class
-    //   Name) map directly to these scalars; Run During Warmup Days keeps Yes/No semantics with is...Defaulted/reset.
-    // - ForwardTranslator evidence: ForwardTranslatePythonPluginInstance.cpp drives PythonModuleName from the linked ExternalFile
-    //   and propagates the pluginClassName/runDuringWarmupDays values to the translated IDF.
-    // - TODO(parity): Reconcile pythonModuleName with the ExternalFile helper once Python plugin resources gain richer APIs.
 
     bool runDuringWarmupDays() const;
     bool setRunDuringWarmupDays(bool runDuringWarmupDays);

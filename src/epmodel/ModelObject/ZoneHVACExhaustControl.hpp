@@ -27,6 +27,34 @@ namespace epmodel {
     class ZoneHVACExhaustControl_Impl;
   }
 
+  /** \brief Represents controlled exhaust flow from a thermal zone to a central exhaust system.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-air-path.html#zonehvacexhaustcontrol,ZoneHVAC:ExhaustControl}
+   *
+   * \par Important behavior
+   * A newly constructed control uses <code>Scheduled</code> flow control and
+   * an autosized design exhaust flow rate. Its typed relationship methods
+   * resolve the availability schedule, zone, inlet and outlet nodes, optional
+   * supply node or node list, and exhaust schedules. Exhaust-system ownership
+   * is derived from the outlet node's membership in an
+   * <code>AirLoopHVAC:ZoneMixer</code>; zone registration, mixer routing, and
+   * private-node cleanup are maintained by
+   * <code>AirLoopHVACExhaustSystem</code>.
+   *
+   * \par OpenStudio Model API
+   * OpenStudio Model has no public wrapper for
+   * <code>ZoneHVAC:ExhaustControl</code>. This wrapper is new to the EPModel
+   * API.
+   *
+   * \par Known limitations
+   * Use <code>AirLoopHVACExhaustSystem::addZone()</code> to create and attach a
+   * control when the zone is part of a central exhaust system. Standalone
+   * removal is rejected when the control's inlet or outlet nodes have shared,
+   * duplicate, or external claims that cannot be removed safely. Ownership
+   * lookup also returns no system when an outlet is claimed by more than one
+   * exhaust-system mixer.
+   */
   class EPMODEL_API ZoneHVACExhaustControl : public ModelObject
   {
    public:
@@ -42,14 +70,6 @@ namespace epmodel {
 
     static std::vector<std::string> flowControlTypeValues();
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. This EnergyPlus-only flow-control object exposes its persisted state and read-only topology relationships.
-    // - Canonical Counterpart: None. `ZoneHVAC:ExhaustControl` has no same-name openstudio::model wrapper.
-    // - Implemented Parity: Direct scalar fields, schedule targets, zone and node targets, unique central-exhaust-system reverse ownership, and owner-controlled add/remove lifecycle are available without exposing relationship mutators on the control.
-    // - Documented Delta: Zone registration, central mixer routing, and private-node cleanup are intentionally mutated only through `AirLoopHVACExhaustSystem`; the control itself exposes read-only topology relationships.
-    // - Field/Storage Mapping: Zone, inlet/outlet nodes, optional supply node or NodeList, and schedules map directly to their EnergyPlus relationship fields; central-system ownership is derived from the control outlet's unique zone-mixer inlet membership.
-    // - Evidence: `resources/energyplus/ProposedEnergy+.idd` and `src/epmodel/test/ZoneHVACExhaustControl_GTest.cpp`.
-    // - Remaining Parity Work: Characterize movement or malformed-import repair only when a representative workflow requires them.
     boost::optional<Schedule> availabilitySchedule() const;
     boost::optional<ThermalZone> thermalZone() const;
     boost::optional<Node> inletNode() const;

@@ -28,6 +28,20 @@ namespace epmodel {
     class FanVariableVolume_Impl;
   }
 
+/** \brief A variable-volume fan.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-fans.html#fanvariablevolume,Fan:VariableVolume}
+ *
+ * \par Important behavior
+ * The availability schedule and scalar fields map directly to Fan:VariableVolume, and convertToFanSystemModel() preserves the canonical conversion workflow.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model type is <code>openstudio::model::FanVariableVolume</code>.
+ *
+ * \par Known limitations
+ * AirflowNetwork helpers and the autosized maximum-flow convenience are not available.
+ */
   class EPMODEL_API FanVariableVolume : public StraightComponent
   {
    public:
@@ -49,14 +63,6 @@ namespace epmodel {
     /** \deprecated */
     static std::vector<std::string> validFanPowerMinimumFlowRateInputMethodValues();
 
-    // Schema Alignment Notes:
-    // - Status: Near Parity. The canonical constructors, scalar surface, and FanSystemModel conversion helper are aligned, while the airflow-network surface remains absent.
-    // - Canonical Counterpart: openstudio::model::FanVariableVolume.
-    // - Implemented Parity: The canonical constructors, scalar accessors, fan-power input-method helpers, and `convertToFanSystemModel()` preserve the main `openstudio::model::FanVariableVolume` behavior, including autosize/reset semantics for flow rate.
-    // - Documented Delta: Epmodel still omits the airflow-network fan helper surface and autosized-maximum-flow-rate convenience from `openstudio::model::FanVariableVolume`.
-    // - Field/Storage Mapping: The availability schedule is represented as a typed `Schedule` relationship, while the scalar fields map directly to `Fan:VariableVolume` storage in EnergyPlus.
-    // - Evidence: `src/model/FanVariableVolume.hpp`, `src/model/FanVariableVolume.cpp`, `src/model/test/FanVariableVolume_GTest.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateFanVariableVolume.cpp` establish the canonical API and translation behavior.
-    // - Remaining Parity Work: Add airflow-network relationship support and the autosized flow-rate convenience once epmodel grows the corresponding fan helper surface.
     Schedule availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);
 

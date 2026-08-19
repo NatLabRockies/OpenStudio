@@ -22,6 +22,18 @@ namespace epmodel {
     class EnergyManagementSystemProgram_Impl;
   }
 
+  /** \brief Represents <code>EnergyManagementSystem:Program</code>.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-energy-management-system-ems.html#energymanagementsystemprogram,EnergyManagementSystem:Program}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::EnergyManagementSystemProgram</code>.
+   * **Not yet available:** Model typed object-target, program-body, and EMS relationship conveniences are not exposed unless declared by this wrapper.
+   *
+   * \par Known limitations
+   * Typed relationship and extensible-list conveniences not represented by the public declarations are unavailable.
+   */
   class EPMODEL_API EnergyManagementSystemProgram : public ModelObject
   {
    public:
@@ -34,13 +46,6 @@ namespace epmodel {
     EnergyManagementSystemProgram& operator=(EnergyManagementSystemProgram&&) = default;
 
     static IddObjectType iddObjectType();
-
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model::EnergyManagementSystemProgram class naming.
-    // - Field Mapping: EnergyPlus Program Line is an extensible/non-scalar field and intentionally excluded from simple scalar accessor scaffold.
-    // - ForwardTranslator evidence: ForwardTranslateEnergyManagementSystemProgram.cpp maps OS extensible ProgramLine entries to E+ extensible ProgramLine entries.
-    // - TODO(parity): Add non-scalar body/lines/referencedObjects APIs incrementally without changing scalar scaffolding conventions.
-
    protected:
     using ImplType = detail::EnergyManagementSystemProgram_Impl;
 

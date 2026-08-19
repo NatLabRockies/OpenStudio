@@ -24,6 +24,20 @@ namespace epmodel {
     class SpaceList_Impl;
   }
 
+  /** \brief SpaceList.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-thermal-zone-description-geometry.html#spacelist,SpaceList}.
+   *
+   * \par OpenStudio Model API
+   * OpenStudio Model has no public wrapper for this EnergyPlus object. The EPModel
+   * wrapper exposes the extensible list through <code>spaces()</code> and can append
+   * a referenced Space with <code>addSpace()</code>.
+   *
+   * \par Known limitations
+   * Ownership and lifecycle of the referenced spaces remain with their owning objects;
+   * existing entries cannot be removed or reordered through this wrapper.
+   */
   class EPMODEL_API SpaceList : public ModelObject
   {
    public:

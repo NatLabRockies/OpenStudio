@@ -30,6 +30,36 @@ namespace epmodel {
     class AirLoopHVACExhaustSystem_Impl;
   }
 
+  /** \brief Represents a central exhaust system serving one or more thermal zones.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-air-path.html#airloophvacexhaustsystem,AirLoopHVAC:ExhaustSystem}, together with its required
+   * \epobject{group-air-path.html#airloophvaczonemixer,AirLoopHVAC:ZoneMixer} and central fan.
+   *
+   * \par Important behavior
+   * The fan constructors accept an unconnected
+   * <code>Fan:SystemModel</code> or <code>Fan:ComponentModel</code> and create
+   * the mixer and connecting nodes needed to route exhaust to that fan.
+   * <code>addZone()</code> registers the zone exhaust inlet, adds the control's
+   * outlet to the mixer, and returns a <code>ZoneHVACExhaustControl</code>.
+   * <code>zoneHVACExhaustControls()</code> reports controls in the order of
+   * the mixer inlets. Removing a system or one of its controls removes the
+   * topology owned by the system and disconnects, but does not remove, the
+   * caller-provided fan.
+   *
+   * \par OpenStudio Model API
+   * OpenStudio Model has no public wrapper for
+   * <code>AirLoopHVAC:ExhaustSystem</code>. This wrapper is new to the EPModel
+   * API.
+   *
+   * \par Known limitations
+   * A zone can be added only when its exhaust-node registration can be
+   * maintained exclusively; shared <code>NodeList</code> registrations are
+   * rejected. The fan constructors also reject fans from another model or
+   * fans that are already connected. A system created with the model-only
+   * constructor has no automatically created fan or mixer and must be wired
+   * before it can add zones.
+   */
   class EPMODEL_API AirLoopHVACExhaustSystem : public ModelObject
   {
    public:
@@ -45,14 +75,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. This EnergyPlus-only owner exposes its required persisted relationships and a bounded owning lifecycle.
-    // - Canonical Counterpart: None. `AirLoopHVAC:ExhaustSystem` has no same-name openstudio::model wrapper.
-    // - Implemented Parity: Typed constructors directly wire a supported central fan behind an owned zone mixer; `addZone` and control removal keep ordered mixer rows, zone exhaust-node registration, private nodes, persistence, and reverse ownership coherent. The required relationships remain available as read-only typed views.
-    // - Documented Delta: The schema/import Model constructor remains topology-incomplete by design. The owning lifecycle retains and disconnects the caller-provided fan when the system is removed, and it does not expose independent mixer, fan, or node setters.
-    // - Field/Storage Mapping: `Zone Mixer Name` targets `AirLoopHVAC:ZoneMixer`; `Fan Object Type` discriminates the `Fan Name` target between `Fan:SystemModel` and `Fan:ComponentModel`.
-    // - Evidence: `resources/energyplus/ProposedEnergy+.idd` and `src/epmodel/test/AirLoopHVACExhaustSystem_GTest.cpp`.
-    // - Remaining Parity Work: Broaden malformed-import canonicalization only from observed cases.
     boost::optional<AirLoopHVACZoneMixer> zoneMixer() const;
     boost::optional<HVACComponent> fan() const;
     std::vector<ZoneHVACExhaustControl> zoneHVACExhaustControls() const;

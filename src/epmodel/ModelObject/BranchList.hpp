@@ -25,6 +25,20 @@ namespace epmodel {
     class BranchList_Impl;
   }
 
+  /** \brief Represents <code>BranchList</code>.
+   *
+   * \par EnergyPlus object
+   * Represents \epobject{group-node-branch-management.html#branchlist,BranchList}.
+   *
+   * \par Important behavior
+   * The extensible branch-name rows preserve loop ordering and are resolved by <code>branches()</code>.
+   *
+   * \par OpenStudio Model API
+   * OpenStudio Model has no public wrapper for <code>BranchList</code>; this wrapper is new to the EPModel API.
+   *
+   * \par Known limitations
+   * Relationship-row mutation and higher-level topology conveniences remain owner-managed or unavailable through this wrapper.
+   */
   class EPMODEL_API BranchList : public ModelObject
   {
    public:
@@ -35,14 +49,6 @@ namespace epmodel {
     BranchList(BranchList&& other) = default;
     BranchList& operator=(const BranchList&) = default;
     BranchList& operator=(BranchList&&) = default;
-
-    // Schema Alignment Notes:
-    // - API: This no-counterpart type keeps IDD-derived class/API naming.
-    // - Field Mapping: Name remains available through base ModelObject scalar API.
-    // - Field Mapping: Extensible Branch Name entries are relationship-like object-list links and are intentionally excluded from scalar accessors.
-    // - ForwardTranslator evidence: ForwardTranslateAirLoopHVAC wires AirLoopHVAC::BranchListName as topology linkage, confirming BranchList's role as a
-    //   relationship/index object.
-    // - TODO(parity): Add explicit relationship helper APIs incrementally after scalar scaffold saturation.
     std::vector<Branch> branches() const;
 
     static IddObjectType iddObjectType();

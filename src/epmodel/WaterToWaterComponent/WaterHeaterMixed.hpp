@@ -35,6 +35,26 @@ namespace epmodel {
 
   }
 
+  /** \brief Represents a mixed water heater with use-side and source-side plant connections.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-water-heaters.html#waterheatermixed,WaterHeater:Mixed}
+   *
+   * \par Important behavior
+   * Construction creates and links a <code>WaterHeater:Sizing</code> companion.
+   * The ambient-indicator setter accepts <code>ThermalZone</code> as an alias
+   * for the EnergyPlus <code>Zone</code> value and stores the normalized value.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::WaterHeaterMixed</code>. No known public API
+   * differences.
+   *
+   * \par Known limitations
+   * The EPModel wrapper does not reproduce the deeper Model clone workflow;
+   * plant-loop ownership and the linked sizing companion should be managed
+   * through the typed EPModel topology APIs.
+   */
   class EPMODEL_API WaterHeaterMixed : public WaterToWaterComponent
   {
    public:
@@ -55,17 +75,6 @@ namespace epmodel {
     static std::vector<std::string> ambientTemperatureIndicatorValues();
     static std::vector<std::string> sourceSideFlowControlModeValues();
 
-    // Schema Alignment Notes:
-    // - Status: Near Parity. The canonical scalar, schedule/curve, topology, HVAC-classification, and autosized-helper surface is aligned.
-    // - Canonical Counterpart: openstudio::model::WaterHeaterMixed.
-    // - Implemented Parity: Canonical constructor defaults, scalar accessors, setpoint/ambient/use-side schedules, ambient zone/object links,
-    //   part-load-factor curve, WaterHeaterSizing ownership, source-side loop routing conveniences, HVAC classification, and SQL-backed autosized
-    //   helpers preserve the model-side API shape.
-    // - Documented Delta: Deeper canonical clone workflows remain outside the current epmodel scope.
-    // - Field/Storage Mapping: Wrappers target EnergyPlus `WaterHeater:Mixed` fields directly; source-side aliases resolve against the shared
-    //   EnergyPlus-backed plant topology, and autosized helper queries resolve against the shared epmodel SQL-backed component-sizing lookup.
-    // - Evidence: `src/model/WaterHeaterMixed.hpp`, `src/model/WaterHeaterMixed.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateWaterHeaterMixed.cpp`.
-    // - Remaining Parity Work: Expand only if later work needs the remaining canonical clone behavior.
 
     // Tank volume
     boost::optional<double> tankVolume() const;

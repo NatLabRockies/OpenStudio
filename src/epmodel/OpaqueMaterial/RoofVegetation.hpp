@@ -24,6 +24,26 @@ namespace epmodel {
     class RoofVegetation_Impl;
   }
 
+  /** \brief Represents a vegetated roof material layer.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-surface-construction-elements.html#materialroofvegetation,Material:RoofVegetation}.
+   *
+   * \par Important behavior
+   * The generic thermal-conductivity, density, and specific-heat methods are
+   * aliases for the corresponding dry-soil fields. Moisture-content and
+   * diffusion settings remain separate fields on the same EnergyPlus object.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::RoofVegetation</code>. EPModel adds direct
+   * thermal/optical derived helpers and reflectance setters. Model's
+   * <code>soilLayerName()</code> relationship is not available.
+   *
+   * \par Known limitations
+   * The referenced soil-layer relationship cannot be assigned through this
+   * wrapper.
+   */
   class EPMODEL_API RoofVegetation : public OpaqueMaterial
   {
    public:
@@ -40,13 +60,6 @@ namespace epmodel {
     static std::vector<std::string> roughnessValues();
     static std::vector<std::string> moistureDiffusionCalculationMethodValues();
 
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model::RoofVegetation scalar accessor names/signatures.
-    // - Field Mapping: APIs map directly to E+ Material:RoofVegetation scalar fields.
-    // - Field Mapping: thermalConductivity aliases ConductivityofDrySoil, and density/specificHeat aliases dry-soil fields.
-    // - ForwardTranslator evidence: ForwardTranslateRoofVegetation.cpp writes these scalar APIs directly to Material:RoofVegetation fields.
-    // - Exclusion: relationship-like SoilLayerName field accessors are intentionally excluded in this scalar-only scaffold pass.
-    // - TODO(parity): add relationship field APIs in a dedicated parity pass.
     double heightofPlants() const;
     bool isHeightofPlantsDefaulted() const;
     bool setHeightofPlants(double heightofPlants);

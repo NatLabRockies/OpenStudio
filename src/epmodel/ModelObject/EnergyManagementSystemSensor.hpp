@@ -24,6 +24,18 @@ namespace epmodel {
     class EnergyManagementSystemSensor_Impl;
   }
 
+  /** \brief Represents <code>EnergyManagementSystem:Sensor</code>.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-energy-management-system-ems.html#energymanagementsystemsensor,EnergyManagementSystem:Sensor}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::EnergyManagementSystemSensor</code>.
+   * **Not yet available:** Model typed object-target, program-body, and EMS relationship conveniences are not exposed unless declared by this wrapper.
+   *
+   * \par Known limitations
+   * Typed relationship and extensible-list conveniences not represented by the public declarations are unavailable.
+   */
   class EPMODEL_API EnergyManagementSystemSensor : public ModelObject
   {
    public:
@@ -36,14 +48,6 @@ namespace epmodel {
     EnergyManagementSystemSensor& operator=(EnergyManagementSystemSensor&&) = default;
 
     static IddObjectType iddObjectType();
-
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model::EnergyManagementSystemSensor scalar accessor names/signatures.
-    // - Field Mapping: keyName -> EnergyPlus EnergyManagementSystem:Sensor, Output Variable or Output Meter Index Key Name.
-    // - Field Mapping: outputVariableOrMeterName -> EnergyPlus EnergyManagementSystem:Sensor, Output Variable or Output Meter Name.
-    // - ForwardTranslator evidence: ForwardTranslateEnergyManagementSystemSensor.cpp writes these fields directly.
-    // - TODO(parity): Add outputVariable/outputMeter relationship APIs incrementally without changing these scalar signatures.
-
     /** @name Key name accessors */
     //@{
     boost::optional<std::string> keyName() const;

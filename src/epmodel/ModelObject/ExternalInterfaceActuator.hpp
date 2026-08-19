@@ -22,6 +22,18 @@ namespace epmodel {
     class ExternalInterfaceActuator_Impl;
   }
 
+  /** \brief Represents <code>ExternalInterface:Actuator</code>.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-externalinterface.html#externalinterfaceactuator,ExternalInterface:Actuator}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::ExternalInterfaceActuator</code>.
+   * **Not yet available:** Model typed FMU/component relationships and OpenStudio-only export controls are not exposed unless represented by an EnergyPlus field here.
+   *
+   * \par Known limitations
+   * Typed relationship and extensible-list conveniences not represented by the public declarations are unavailable.
+   */
   class EPMODEL_API ExternalInterfaceActuator : public ModelObject
   {
    public:
@@ -34,19 +46,6 @@ namespace epmodel {
     ExternalInterfaceActuator& operator=(ExternalInterfaceActuator&&) = default;
 
     static IddObjectType iddObjectType();
-
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::ExternalInterfaceActuator scalar accessor names/signatures where mappable to E+.
-    // - Field Mapping: actuatedComponentType -> ExternalInterface:Actuator, Actuated Component Type.
-    // - Field Mapping: actuatedComponentControlType -> ExternalInterface:Actuator, Actuated Component Control Type.
-    // - Field Mapping: optionalInitialValue -> ExternalInterface:Actuator, Optional Initial Value.
-    // - Field Mapping: actuatedComponentUnique is relationship-like (object target) and excluded from scalar scaffold.
-    // - Field Mapping: exportToBCVTB / isExportToBCVTBDefaulted / setExportToBCVTB / resetExportToBCVTB are OS-only
-    //   fields (OS:ExternalInterface:Actuator) and not present in ExternalInterface:Actuator; ForwardTranslator evidence
-    //   confirms no EnergyPlus mapping for these APIs.
-    // - TODO(parity): Add relationship APIs incrementally without changing preserved scalar signatures.
-
-    // Actuated Component Control Type
     std::string actuatedComponentControlType() const;
     bool setActuatedComponentControlType(const std::string& actuatedComponentControlType);
 

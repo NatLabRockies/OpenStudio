@@ -28,6 +28,23 @@ namespace epmodel {
     class ZoneHVACPackagedTerminalAirConditioner_Impl;
   }
 
+/** \brief A packaged terminal air conditioner serving a thermal zone.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-zone-forced-air-units.html#zonehvacpackagedterminalairconditioner,ZoneHVAC:PackagedTerminalAirConditioner}
+ *
+ * \par Important behavior
+ * The fan and coils share a parent-owned serial path. A locally owned outdoor-air path maintains its OutdoorAir:Mixer companion; zero flow or parent removal cleans up that private companion. EPModel adds fanOutletNode(), coolingCoilOutletNode(), and heatingCoilOutletNode().
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model class is <code>openstudio::model::ZoneHVACPackagedTerminalAirConditioner</code>.
+ * EPModel adds explicit fan and coil outlet node accessors and a
+ * <code>children()</code> view; Model instead provides outdoor-air mixer-name,
+ * mixer-type, and autosized flow helpers.
+ *
+ * \par Known limitations
+ * Outdoor-air mixer references, mixer-only node roles, and SQL-backed autosized flow results are maintained internally but not exposed.
+ */
   class EPMODEL_API ZoneHVACPackagedTerminalAirConditioner : public ZoneHVACComponent
   {
    public:
@@ -43,23 +60,6 @@ namespace epmodel {
     static std::vector<std::string> fanPlacementValues();
     static std::vector<std::string> validFanPlacementValues();
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. The flow and fan-placement scalars are aligned, and the contained fan/coil air path is now kept consistent
-    //   through parent-owned epmodel nodes, but broader PTAC parity remains incomplete.
-    // - Canonical Counterpart: openstudio::model::ZoneHVACPackagedTerminalAirConditioner.
-    // - Implemented Parity: Supply-air and outdoor-air flow scalars, `noLoadSupplyAirFlowRateControlSetToLowSpeed`, and `fanPlacement`
-    //   map directly to the EnergyPlus object. Availability and fan-mode schedules use the canonical limits, and genuinely blank availability
-    //   and configured fan-mode schedules are repaired on load without replacing unresolved names. The contained fan and coils share a
-    //   parent-owned air path with direct access to the meaningful fan-outlet, cooling-coil-outlet, and heating-coil-outlet roles on the compound.
-    // - Documented Delta: `fanOutletNode()`, `coolingCoilOutletNode()`, and `heatingCoilOutletNode()` are exposed as additive conveniences
-    //   so callers can inspect and rename the meaningful node roles owned by the compound, even when those roles alias each other or the
-    //   parent outlet in a valid configuration. Outdoor-air mixer references and OA-mixer-only node roles remain outside the public wrapper.
-    // - Field/Storage Mapping: Scalar values live directly on the EnergyPlus object while schedules and contained equipment are modeled
-    //   explicitly through child-object state and transient epmodel nodes. A nonzero local outdoor-air path owns the required persisted
-    //   `OutdoorAir:Mixer` and outdoor-air node declaration; all-zero flow and parent removal clean up only that private companion.
-    // - Evidence: `src/model/ZoneHVACPackagedTerminalAirConditioner.hpp`, `src/model/ZoneHVACPackagedTerminalAirConditioner.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateZoneHVACPackagedTerminalAirConditioner.cpp`, and `src/epmodel/test/ZoneHVACPackagedTerminalAirConditioner_GTest.cpp`, including configured reload and post-load mutation coverage.
-    // - Remaining Parity Work: Outdoor-air mixer references and OA-mixer-only node roles remain intentionally omitted from the public
-    //   wrapper even though the EnergyPlus topology is maintained internally. Add them later only if direct public inspection is needed.
 
     Schedule availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);

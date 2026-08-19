@@ -24,6 +24,25 @@ namespace epmodel {
     class HeatPumpWaterToWaterEquationFitCooling_Impl;
   }
 
+  /** \brief Represents a cooling water-to-water heat pump using equation-fit performance curves.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-plant-equipment.html#heatpumpwatertowaterequationfitcooling,HeatPump:WaterToWater:EquationFit:Cooling}
+   *
+   * \par Important behavior
+   * The model-only constructor creates and attaches default capacity and
+   * compressor-power curves; the curve-taking constructor uses the supplied
+   * curve objects.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::HeatPumpWaterToWaterEquationFitCooling</code>. No
+   * known public API differences.
+   *
+   * \par Known limitations
+   * The autosized-value query methods return no value because EPModel does not
+   * yet surface the corresponding autosized results for this family.
+   */
   class EPMODEL_API HeatPumpWaterToWaterEquationFitCooling : public WaterToWaterComponent
   {
    public:
@@ -39,18 +58,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - Status: Parity with documented deltas. The canonical curve, companion, constructor, scalar, and deprecated alias
-    //   surface is preserved here.
-    // - Canonical Counterpart: openstudio::model::HeatPumpWaterToWaterEquationFitCooling.
-    // - Implemented Parity: The curve-taking constructor, default curve creation, load/source flow, capacity/power,
-    //   coefficient of performance, sizing, required cooling curve relationships, companion heating heat-pump link, and
-    //   deprecated coefficient aliases preserve the canonical model API shape.
-    // - Documented Delta: Autosized-value query helpers still return `none` because epmodel does not yet resolve
-    //   SQL-backed autosized results for this family.
-    // - Field/Storage Mapping: The public wrapper preserves canonical openstudio::model load/source semantics while storing scalar values on the EnergyPlus equation-fit cooling fields directly; node-port topology intentionally maps supply ports to EnergyPlus load-side fields and demand ports to source-side fields.
-    // - Evidence: `src/model/HeatPumpWaterToWaterEquationFitCooling.hpp`, `src/model/HeatPumpWaterToWaterEquationFitCooling.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateHeatPumpWaterToWaterEquationFitCooling.cpp`.
-    // - Remaining Parity Work: Loop-coupling ergonomics remain inherited from the shared water-to-water base.
 
     // Reference load-side flow rate
     boost::optional<double> referenceLoadSideFlowRate() const;

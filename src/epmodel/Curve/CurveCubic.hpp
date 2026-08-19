@@ -23,6 +23,19 @@ namespace epmodel {
     class CurveCubic_Impl;
   }
 
+  /** \brief Represents a cubic curve.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-performance-curves.html#curvecubic,Curve:Cubic}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::CurveCubic</code>.
+   * No known public API differences.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API CurveCubic : public Curve
   {
    public:
@@ -38,12 +51,6 @@ namespace epmodel {
 
     static std::vector<std::string> validInputUnitTypeforXValues();
     static std::vector<std::string> validOutputUnitTypeValues();
-
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model CurveCubic scalar accessor names/signatures.
-    // - Field Mapping: coefficient/min/max and unit-type APIs map directly to E+ Curve:Cubic fields.
-    // - Field Mapping: Input/Output unit type default/reset behavior mirrors ForwardTranslator default-omission checks.
-    // - TODO(parity): Keep this pass scalar-only; relationship APIs remain out of scope.
 
     double coefficient1Constant() const;
     bool setCoefficient1Constant(double coefficient1Constant);

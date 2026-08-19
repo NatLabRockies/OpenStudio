@@ -23,6 +23,18 @@ namespace epmodel {
     class EnvironmentalImpactFactors_Impl;
   }
 
+  /** \brief Represents <code>EnvironmentalImpactFactors</code>.
+   *
+   * \par EnergyPlus object
+   * \epobject{input-for-output.html#environmentalimpactfactors,EnvironmentalImpactFactors}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::EnvironmentalImpactFactors</code>.
+   * The EPModel declaration exposes the EnergyPlus-backed fields shown here; Model conveniences for typed relationships, extensible groups, or OpenStudio-only fields are not available unless declared here.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API EnvironmentalImpactFactors : public ModelObject
   {
    public:
@@ -35,13 +47,6 @@ namespace epmodel {
     EnvironmentalImpactFactors& operator=(EnvironmentalImpactFactors&&) = default;
 
     static IddObjectType iddObjectType();
-
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::EnvironmentalImpactFactors scalar accessor names/signatures, including deprecated aliases.
-    // - Field Mapping: districtHeatingWaterEfficiency, districtCoolingCOP, districtHeatingSteamConversionEfficiency, and totalCarbonEquivalentEmissionFactorFrom* map directly to matching E+ EnvironmentalImpactFactors fields.
-    // - Field Mapping: Deprecated compatibility aliases districtHeatingEfficiency/steamConversionEfficiency delegate to preserved primary APIs.
-    // - ForwardTranslator evidence: ForwardTranslateEnvironmentalImpactFactors.cpp writes these six scalar fields directly.
-    // - TODO(parity): Keep scalar-only scope for this pass; add non-scalar behavior later if needed without changing preserved signatures.
     double districtHeatingWaterEfficiency() const;
     OS_DEPRECATED(3, 7, 0) double districtHeatingEfficiency() const;
     bool setDistrictHeatingWaterEfficiency(double districtHeatingWaterEfficiency);

@@ -22,6 +22,17 @@ namespace epmodel {
     class AirflowNetworkDistributionComponentFan_Impl;
   }
 
+  /** \brief Represents the EnergyPlus AirflowNetwork:Distribution:Component:Fan object.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-airflow-network.html#airflownetworkdistributioncomponentfan,AirflowNetwork:Distribution:Component:Fan}
+   *
+   * \par OpenStudio Model API
+   * OpenStudio Model has no public wrapper for this EnergyPlus object. This wrapper is new to the EPModel API.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations beyond the public fields and relationships exposed by this wrapper.
+   */
   class EPMODEL_API AirflowNetworkDistributionComponentFan : public ModelObject
   {
    public:
@@ -35,14 +46,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - API: This no-counterpart epmodel type uses IDD-derived class/API naming.
-    // - Field Mapping: Name remains available through base ModelObject scalar API.
-    // - Field Mapping: Fan Name and Supply Fan Object Type are relationship-like target-link fields
-    //   and are intentionally excluded from scalar accessors.
-    // - ForwardTranslator evidence: translateAirflowNetworkFan writes Fan Name plus Supply Fan
-    //   Object Type from linked fan objects.
-    // - TODO(parity): Add relationship APIs after scalar scaffold saturation.
 
    protected:
     using ImplType = detail::AirflowNetworkDistributionComponentFan_Impl;

@@ -25,6 +25,17 @@ namespace epmodel {
     class SizingZone_Impl;
   }
 
+  /** \brief SizingZone.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-design-objects.html#sizingzone,Sizing:Zone}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::SizingZone</code>. The scalar sizing fields and design-specification-zone-air-distribution values are exposed. Model's <code>zoneHumidistatDehumidificationSetPointSchedule()</code> and <code>zoneHumidistatHumidificationSetPointSchedule()</code> relationships are not available.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API SizingZone : public ModelObject
   {
    public:
@@ -49,18 +60,6 @@ namespace epmodel {
     static std::vector<std::string> heatingCoilSizingMethodValues();
 
     ThermalZone thermalZone() const;
-
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model SizingZone scalar accessor names/signatures for model-counterpart parity.
-    // - Field Mapping: Most scalar accessors map directly to EnergyPlus Sizing:Zone fields (same semantic names).
-    // - Field Mapping: sizingOption maps to EnergyPlus Sizing:Zone field Type of Space Sum to Use.
-    // - Field Mapping: DSZAD API delegates through Sizing:Zone.Design Specification Zone Air Distribution Object Name
-    //   to DesignSpecification:ZoneAirDistribution scalar fields.
-    // - ForwardTranslator Evidence: ForwardTranslateSizingZone maps DSZAD values through a linked
-    //   DesignSpecification:ZoneAirDistribution object and otherwise writes Sizing:Zone scalars directly.
-    // - TODO(parity): Add non-scalar relationship fields (schedules/targets) in a dedicated relationship pass.
-
-    // Cooling and heating supply air temperature
     std::string zoneCoolingDesignSupplyAirTemperatureInputMethod() const;
     double zoneCoolingDesignSupplyAirTemperature() const;
     double zoneCoolingDesignSupplyAirTemperatureDifference() const;

@@ -22,6 +22,17 @@ namespace epmodel {
     class AirflowNetworkOccupantVentilationControl_Impl;
   }
 
+  /** \brief Represents the EnergyPlus AirflowNetwork:OccupantVentilationControl object.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-airflow-network.html#airflownetworkoccupantventilationcontrol,AirflowNetwork:OccupantVentilationControl}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::AirflowNetworkOccupantVentilationControl</code>. <b>Not yet available:</b> <code>thermalComfortLowTemperatureCurve()</code>, <code>thermalComfortHighTemperatureCurve()</code>, <code>openingProbabilitySchedule()</code>, <code>closingProbabilitySchedule()</code>, and their setters/resetters.
+   *
+   * \par Known limitations
+   * The four curve/schedule relationships are not exposed by the EPModel wrapper.
+   */
   class EPMODEL_API AirflowNetworkOccupantVentilationControl : public ModelObject
   {
    public:
@@ -35,16 +46,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - API: Preserve existing openstudio::model scalar accessor names/signatures for this counterpart type.
-    // - Field Mapping: maximumPredictedPercentageofDissatisfiedThreshold maps to the EnergyPlus field
-    //   Maximum Threshold for Persons Dissatisfied PPD.
-    // - Field Mapping: Relationship-like reference fields are intentionally excluded from scalar scaffold accessors:
-    //   Thermal Comfort Low Temperature Curve Name, Thermal Comfort High Temperature Curve Name,
-    //   Opening Probability Schedule Name, and Closing Probability Schedule Name.
-    // - ForwardTranslator evidence: translateAirflowNetworkOccupantVentilationControl writes the same scalar fields
-    //   (minimum/maximum thresholds, boundary point, occupancy check) directly to EnergyPlus.
-    // - TODO(parity): Add relationship APIs in a follow-up parity pass if needed.
     double minimumOpeningTime() const;
     bool isMinimumOpeningTimeDefaulted() const;
     bool setMinimumOpeningTime(double minimumOpeningTime);

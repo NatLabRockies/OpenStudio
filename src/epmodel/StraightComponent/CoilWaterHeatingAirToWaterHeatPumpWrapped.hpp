@@ -25,6 +25,19 @@ namespace epmodel {
     class CoilWaterHeatingAirToWaterHeatPumpWrapped_Impl;
   }
 
+  /** \brief Represents a wrapped evaporator coil of an air-to-water heat-pump water heater.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-heating-and-cooling-coils.html#coilwaterheatingairtowaterheatpumpwrapped,Coil:WaterHeating:AirToWaterHeatPump:Wrapped}.
+   *
+   * \par Important behavior
+   * The persisted scalar and currently supported schedule, curve, and node relationships map directly to the EnergyPlus object.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::CoilWaterHeatingAirToWaterHeatPumpWrapped</code>. EPModel exposes additional explicit default-state queries for EnergyPlus fields. <b>Not yet available:</b> broader AirflowNetwork, tank-link, and higher-level topology conveniences.
+   * \par Known limitations
+   * No known EPModel-specific limitations beyond the listed API differences.
+   */
   class EPMODEL_API CoilWaterHeatingAirToWaterHeatPumpWrapped : public StraightComponent
   {
    public:
@@ -40,15 +53,6 @@ namespace epmodel {
 
     static std::vector<std::string> evaporatorAirTemperatureTypeforCurveObjectsValues();
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. The scalar rating/control surface, required availability schedule, and six canonical curve relationships are aligned.
-    // - Canonical Counterpart: openstudio::model::CoilWaterHeatingAirToWaterHeatPumpWrapped.
-    // - Implemented Parity: The wrapped-coil scalar getters/setters, required availability schedule, five required performance curves, and optional crankcase-heater curve preserve the canonical bounded contract. Construction and load canonicalization supply only genuinely blank required relationships.
-    // - Documented Delta: epmodel promotes this wrapper to `StraightComponent` so the real evaporator-air ports are explicit. This is an additive hierarchy change compared to canonical model.
-    // - Documented Delta: Despite the base-class promotion, generic loop-placement APIs remain intentionally rejected because this coil is normally owned by a compound wrapped-condenser parent.
-    // - Field/Storage Mapping: The schedule, curves, and scalar APIs map directly to EnergyPlus `Coil:WaterHeating:AirToWaterHeatPump:Wrapped` storage, including the real evaporator-air node fields.
-    // - Evidence: `src/model/CoilWaterHeatingAirToWaterHeatPumpWrapped.hpp`, `src/model/CoilWaterHeatingAirToWaterHeatPumpWrapped.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateCoilWaterHeatingAirToWaterHeatPumpWrapped.cpp`, and `src/epmodel/test/CoilWaterHeatingAirToWaterHeatPumpWrapped_GTest.cpp`.
-    // - Remaining Parity Work: Compound-parent removal and topology policy remain with `WaterHeaterHeatPumpWrappedCondenser`; this wrapper does not claim curve-resource ownership through `children()` or `remove()`.
     Schedule availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);
 

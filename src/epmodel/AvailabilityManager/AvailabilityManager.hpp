@@ -21,6 +21,25 @@ namespace epmodel {
     class AvailabilityManager_Impl;
   }
 
+  /** \brief Base class for availability managers assigned to plant or air loops.
+   *
+   * \par EnergyPlus object
+   * No single EnergyPlus object. The concrete wrappers represent
+   * <code>AvailabilityManager:*</code> objects; only wrappers that expose the
+   * typed availability-manager interface derive from this class.
+   *
+   * \par Important behavior
+   * <code>loop()</code> discovers the owning loop from the model's
+   * <code>AvailabilityManagerAssignmentList</code> objects.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::AvailabilityManager</code>. No known public API
+   * differences.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API AvailabilityManager : public ModelObject
   {
    public:

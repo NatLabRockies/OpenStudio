@@ -20,6 +20,22 @@ namespace epmodel {
     class Construction_Impl;
   }
 
+  /** \brief Represents a conventional layered construction.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-surface-construction-elements.html#construction-000,Construction}. Its extensible layer fields reference material
+   * objects.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::Construction</code>. EPModel exposes the inherited
+   * layer APIs, but Model's <code>reverseConstruction()</code> helper is not
+   * available.
+   *
+   * \par Known limitations
+   * Layer relationships must be managed through the inherited layer methods;
+   * this wrapper does not add alternate relationship helpers.
+   */
   class EPMODEL_API Construction : public LayeredConstruction
   {
    public:
@@ -32,12 +48,6 @@ namespace epmodel {
     Construction& operator=(Construction&&) = default;
 
     static IddObjectType iddObjectType();
-
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model class/API naming for this model-counterpart type.
-    // - Field Mapping: Name remains available through base ModelObject scalar API.
-    // - Field Mapping: Construction layer fields are extensible relationship links and are intentionally excluded from scalar accessors.
-    // - TODO(parity): Add layer relationship APIs when LayeredConstruction/ConstructionBase epmodel families are scaffolded.
 
    protected:
     using ImplType = detail::Construction_Impl;

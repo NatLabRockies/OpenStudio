@@ -22,6 +22,17 @@ namespace epmodel {
     class PythonPluginVariable_Impl;
   }
 
+  /** \brief PythonPluginVariable.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-python-plugins.html#pythonpluginvariables,PythonPlugin:Variables}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::PythonPluginVariable</code>. The object has only its inherited name field; EPModel exposes source trend/output-variable queries. Model-side relationship mutation is not available.
+   *
+   * \par Known limitations
+   * Only the fields and relationships listed in this wrapper are available; broader Model-only helpers are not exposed.
+   */
   class EPMODEL_API PythonPluginVariable : public ModelObject
   {
    public:
@@ -34,11 +45,6 @@ namespace epmodel {
     PythonPluginVariable& operator=(PythonPluginVariable&&) = default;
 
     static IddObjectType iddObjectType();
-
-    // Schema Alignment Notes:
-    // - Field Mapping: Name is the only simple scalar on OS:PythonPlugin:Variable and is provided by ModelObject::nameString/setName.
-    // - Relationship Field: PythonPluginTrendVariable and PythonPluginOutputVariable reference this object via their PythonPluginVariableName fields, so we expose the sources here.
-    // - TODO(parity): Extend scalar accessors when the schema adds additional data fields beyond Name.
     std::vector<PythonPluginTrendVariable> pythonPluginTrendVariables() const;
     std::vector<PythonPluginOutputVariable> pythonPluginOutputVariables() const;
 

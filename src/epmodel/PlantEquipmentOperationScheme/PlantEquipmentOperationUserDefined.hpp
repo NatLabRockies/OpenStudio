@@ -20,6 +20,20 @@ namespace epmodel {
     class PlantEquipmentOperationUserDefined_Impl;
   }
 
+  /** \brief Selects plant equipment for user defined operation.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-user-defined-hvac-and-plant-component.html#plantequipmentoperationuserdefined,PlantEquipmentOperation:UserDefined}
+   *
+   * \par OpenStudio Model API
+   * OpenStudio Model has no public wrapper for
+   * <code>PlantEquipmentOperation:UserDefined</code>; this wrapper is new to
+   * the EPModel API.
+   *
+   * \par Known limitations
+   * Program-calling-manager relationships and the extensible equipment rows
+   * are not exposed through typed public methods.
+   */
   class EPMODEL_API PlantEquipmentOperationUserDefined : public PlantEquipmentOperationScheme
   {
    public:
@@ -33,11 +47,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - API: IDD-derived PlantEquipmentOperation:UserDefined naming is preserved per the EnergyPlus IDD.
-    // - Field Mapping: Name is exposed through the base ModelObject scalar API.
-    // - Field Mapping: Main Model Program Calling Manager Name, Initialization Program Calling Manager Name, and the extensible Equipment Object Type/Name pairs are relationship-like object-list concepts and intentionally excluded from this scalar-only pass.
-    // - TODO(parity): Add targeted helpers for the excluded program/equipment references once extensible/relationship support is required.
 
    protected:
     using ImplType = detail::PlantEquipmentOperationUserDefined_Impl;

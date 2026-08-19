@@ -21,6 +21,18 @@ namespace epmodel {
     class SetpointManagerFollowOutdoorAirTemperature_Impl;
   }
 
+  /** \brief Sets a setpoint by following outdoor-air temperature.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-setpoint-managers.html#setpointmanagerfollowoutdoorairtemperature,SetpointManager:FollowOutdoorAirTemperature}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::SetpointManagerFollowOutdoorAirTemperature</code>.
+   * No known public API differences.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API SetpointManagerFollowOutdoorAirTemperature : public SetpointManager
   {
    public:
@@ -34,12 +46,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model scalar accessor names/signatures for model-counterpart compatibility.
-    // - Field Mapping: referenceTemperatureType, offsetTemperatureDifference, maximumSetpointTemperature, and
-    //   minimumSetpointTemperature map directly to E+ SetpointManager:FollowOutdoorAirTemperature fields.
-    // - Field Mapping: Relationship field Setpoint Node or NodeList Name is intentionally excluded from scalar-only scaffolding.
-    // - TODO(parity): Add non-scalar relationship parity for explicit setpoint node linkage in a follow-up pass.
 
     std::string referenceTemperatureType() const;
     bool setReferenceTemperatureType(const std::string& value);

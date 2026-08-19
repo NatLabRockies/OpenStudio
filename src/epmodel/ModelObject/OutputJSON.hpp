@@ -23,6 +23,17 @@ namespace epmodel {
     class OutputJSON_Impl;
   }
 
+  /** \brief OutputJSON.
+   *
+   * \par EnergyPlus object
+   * \epobject{input-for-output.html#outputjson,Output:JSON}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::OutputJSON</code>. The option type and output switches map directly to EnergyPlus.
+   *
+   * \par Known limitations
+   * Only the fields and relationships listed in this wrapper are available; broader Model-only helpers are not exposed.
+   */
   class EPMODEL_API OutputJSON : public ModelObject
   {
    public:
@@ -37,14 +48,6 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     static std::vector<std::string> optionTypeValues();
-
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model::OutputJSON scalar accessor names/signatures.
-    // - Field Mapping: optionType/outputJSON/outputCBOR/outputMessagePack map directly to E+ Output:JSON Option Type/Output JSON/Output CBOR/Output MessagePack.
-    // - ForwardTranslator evidence: ForwardTranslateOutputJSON.cpp writes these preserved APIs directly to Output:JSON fields.
-    // - TODO(parity): Keep scalar API stable while extending any non-scalar parity behavior in future passes.
-
-    // optionType
     std::string optionType() const;
     bool setOptionType(const std::string& optionType);
 

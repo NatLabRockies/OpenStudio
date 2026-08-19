@@ -24,6 +24,21 @@ namespace epmodel {
     class CoilCoolingDXTwoStageWithHumidityControlMode_Impl;
   }
 
+  /** \brief Represents a two-stage DX cooling coil with humidity-control mode.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-heating-and-cooling-coils.html#coilcoolingdxtwostagewithhumiditycontrolmode,Coil:Cooling:DX:TwoStageWithHumidityControlMode}.
+   *
+   * \par Important behavior
+   * The persisted scalar and currently supported schedule, curve, and node relationships map directly to the EnergyPlus object.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::CoilCoolingDXTwoStageWithHumidityControlMode</code>.
+   * Not yet available: broader AirflowNetwork, tank-link, and higher-level topology conveniences.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations beyond the listed API differences.
+   */
   class EPMODEL_API CoilCoolingDXTwoStageWithHumidityControlMode : public StraightComponent
   {
    public:
@@ -37,20 +52,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. The scalar two-stage DX surface, relationship-bearing schedule / curve / stage-object helpers, and the current epmodel
-    //   supply-side air-loop insertion path are present, while canonical default stage-performance object seeding and broader OA / DOAS topology remain out
-    //   of scope.
-    // - Canonical Counterpart: openstudio::model::CoilCoolingDXTwoStageWithHumidityControlMode.
-    // - Implemented Parity: The scalar compressor, humidity-control, basin-heater, and stage-count helpers preserve the canonical naming and defaults;
-    //   optional availability / basin-heater schedules, the crankcase-heater curve, the four stage-performance links, and the current supply-side
-    //   `addToNode` path are also preserved.
-    // - Documented Delta: Canonical constructor seeding of fully populated default `CoilPerformanceDXCooling` child graphs and broader OA / DOAS topology
-    //   acceptance are deferred. The current `epmodel::CoilPerformanceDXCooling` wrapper remains scalar-only.
-    // - Field/Storage Mapping: Preserved scalars map directly to EnergyPlus `Coil:Cooling:DX:TwoStageWithHumidityControlMode` fields.
-    // - Evidence: `src/model/CoilCoolingDXTwoStageWithHumidityControlMode.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateCoilCoolingDXTwoStageWithHumidityControlMode.cpp`, and `src/epmodel/test/CoilCoolingDXTwoStageWithHumidityControlMode_GTest.cpp`.
-    // - Remaining Parity Work: Add canonical default stage-performance child seeding once `epmodel::CoilPerformanceDXCooling` gains its curve
-    //   relationships, and widen topology acceptance only where the current epmodel air-loop graph can prove it.
     boost::optional<Schedule> availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);
     void resetAvailabilitySchedule();

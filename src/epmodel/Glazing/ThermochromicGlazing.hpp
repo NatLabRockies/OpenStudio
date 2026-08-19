@@ -18,6 +18,23 @@ namespace epmodel {
     class ThermochromicGlazing_Impl;
   }
 
+  /** \brief Groups temperature-dependent standard glazing layers.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-surface-construction-elements.html#windowmaterialglazinggroupthermochromic,WindowMaterial:GlazingGroup:Thermochromic}. Its extensible rows
+   * refer to standard glazing objects and switching temperatures.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::ThermochromicGlazing</code>. EPModel currently
+   * exposes no public group-management methods. Model's
+   * <code>thermochromicGroups()</code>, add/remove, indexing, and standard-
+   * glazing relationship methods are not available.
+   *
+   * \par Known limitations
+   * Temperature-dependent glazing rows cannot yet be created or edited through
+   * this wrapper.
+   */
   class EPMODEL_API ThermochromicGlazing : public Glazing
   {
    public:
@@ -30,14 +47,6 @@ namespace epmodel {
     ThermochromicGlazing& operator=(ThermochromicGlazing&&) = default;
 
     static IddObjectType iddObjectType();
-
-    // Schema Alignment Notes:
-    // - API: Mirrors openstudio::model::ThermochromicGlazing naming so the translator still operates on the same type
-    //   while this scaffold defers the extensible-group helpers to later iterations.
-    // - Field Mapping: Represents OS:WindowMaterial:GlazingGroup:Thermochromic and its extensible groups through
-    //   OS_WindowMaterial_GlazingGroup_ThermochromicExtensibleFields, matching ForwardTranslateThermochromicGlazing.
-    // - ForwardTranslator evidence: ForwardTranslateThermochromicGlazing.cpp keeps the StandardGlazing references in sync;
-    //   reverse translation reads the same extensible data.
 
    protected:
     using ImplType = detail::ThermochromicGlazing_Impl;

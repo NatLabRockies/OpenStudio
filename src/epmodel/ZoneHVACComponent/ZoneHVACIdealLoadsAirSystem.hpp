@@ -25,6 +25,20 @@ namespace epmodel {
     class ZoneHVACIdealLoadsAirSystem_Impl;
   }
 
+/** \brief An ideal-loads air system serving a thermal zone.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-zone-forced-air-units.html#zonehvacidealloadsairsystem,ZoneHVAC:IdealLoadsAirSystem}
+ *
+ * \par Important behavior
+ * Heating, cooling, humidification/dehumidification, flow-limit, schedule, outdoor-air-specification, and thermal-zone methods are available.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model class is <code>openstudio::model::ZoneHVACIdealLoadsAirSystem</code>.
+ *
+ * \par Known limitations
+ * Zone and node relationships are maintained through shared zone-equipment topology; additional non-schedule Model relationship conveniences are not exposed.
+ */
   class EPMODEL_API ZoneHVACIdealLoadsAirSystem : public ZoneHVACComponent
   {
    public:
@@ -38,18 +52,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. The ideal-loads scalar, schedule, and direct DesignSpecification:OutdoorAir fields are aligned, while broader
-    //   zone relationships remain topology-driven.
-    // - Canonical Counterpart: openstudio::model::ZoneHVACIdealLoadsAirSystem.
-    // - Implemented Parity: The cooling/heating/dehumidification scalar groups, flow limits, five optional schedule relationships, and the direct
-    //   DesignSpecification:OutdoorAir relationship map directly to the EnergyPlus object.
-    // - Documented Delta: Zone and node references remain relationship-only links and are intentionally not exposed as scalar fields.
-    // - Field/Storage Mapping: Scalars, schedules, and the direct DesignSpecification:OutdoorAir reference live on the EnergyPlus object while
-    //   zone membership is maintained through thermal-zone topology. The EnergyPlus Zone Supply Air Node is the component outlet and belongs to
-    //   the zone inlet list; Zone Exhaust Air Node is the component inlet and belongs to the zone exhaust list.
-    // - Evidence: `src/model/ZoneHVACIdealLoadsAirSystem.hpp`, `src/model/ZoneHVACIdealLoadsAirSystem.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateZoneHVACIdealLoadsAirSystem.cpp`, `src/energyplus/ReverseTranslator/ReverseTranslateZoneHVACIdealLoadsAirSystem.cpp`, and `src/epmodel/test/ZoneHVACIdealLoadsAirSystem_GTest.cpp`.
-    // - Remaining Parity Work: Add the remaining canonical non-schedule relationship helpers when their ownership semantics are implemented.
     static std::vector<std::string> heatingLimitValues();
     static std::vector<std::string> coolingLimitValues();
     static std::vector<std::string> dehumidificationControlTypeValues();

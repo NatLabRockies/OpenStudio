@@ -21,6 +21,20 @@ namespace epmodel {
     class ZoneHVACAirDistributionUnit_Impl;
   }
 
+  /** \brief ZoneHVACAirDistributionUnit.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-zone-equipment.html#zonehvacairdistributionunit,ZoneHVAC:AirDistributionUnit}.
+   *
+   * \par OpenStudio Model API
+   * OpenStudio Model has no public wrapper for this EnergyPlus object. The wrapper is
+   * read-only for its air-terminal and outlet-node relationships; those links are
+   * maintained by the owning zone-equipment topology.
+   *
+   * \par Known limitations
+   * Attachment and removal are governed by the owning zone-equipment connections;
+   * standalone lifecycle semantics are restricted.
+   */
   class EPMODEL_API ZoneHVACAirDistributionUnit : public ModelObject
   {
    public:

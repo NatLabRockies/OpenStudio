@@ -25,6 +25,21 @@ namespace epmodel {
     class AirTerminalDualDuctVAV_Impl;
   }
 
+  /** \brief Represents a variable-air-volume dual-duct air terminal.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-air-distribution-equipment.html#airterminaldualductvav,AirTerminal:DualDuct:VAV}.
+   *
+   * \par Important behavior
+   * Separate terminal inlet and outlet node relationships follow the supported dual-duct air-loop insertion and removal topology.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::AirTerminalDualDuctVAV</code>.
+   * <b>Not yet available: the SQL-backed <code>autosizedMaximumDamperAirFlowRate()</code> result helper.</b>
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API AirTerminalDualDuctVAV : public Mixer
   {
    public:
@@ -38,14 +53,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - Status: Near Parity for directly stored EnergyPlus relationships, scalars, and tested dual-duct topology.
-    // - Canonical Counterpart: openstudio::model::AirTerminalDualDuctVAV.
-    // - Implemented Connectivity Surface: availability, DSOA, and minimum-air-flow-turndown relationships; constructor defaults; `hotAirInletNode`; `coldAirInletNode`; and shared `addToNode`/`remove` topology are implemented here.
-    // - Documented Delta: SQL-backed autosized-value convenience remains outside this direct-IDF wrapper.
-    // - Field/Storage Mapping: `AvailabilityScheduleName`, `DesignSpecificationOutdoorAirObjectName`, and `MinimumAirFlowTurndownScheduleName` remain underlying relationship fields; Air Outlet/Hot Air Inlet/Cold Air Inlet node fields are surfaced through node accessors and shared AirLoopHVAC topology helpers.
-    // - Evidence: `src/model/AirTerminalDualDuctVAV.cpp` and `src/energyplus/ForwardTranslator/ForwardTranslateAirTerminalDualDuctVAV.cpp` document the canonical field mapping; `src/model/test/AirTerminalDualDuctVAV_GTest.cpp` and `src/epmodel/test/AirTerminalDualDuctVAV_GTest.cpp` cover the tested insertion, removal, reuse, and cleanup behavior.
-    // - Remaining Parity Work: Add SQL-backed autosized-result convenience only when an epmodel sizing-results workflow needs it.
     boost::optional<Schedule> availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);
     void resetAvailabilitySchedule();

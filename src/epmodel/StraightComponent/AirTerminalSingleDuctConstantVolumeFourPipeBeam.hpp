@@ -24,6 +24,26 @@ namespace epmodel {
     class AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl;
   }
 
+  /**
+   * \brief Constant-volume four-pipe beam terminal with separate hot- and chilled-water coil relationships.
+   *
+   * \par EnergyPlus object
+   * Encapsulates \epobject{group-air-distribution-equipment.html#airterminalsingleductconstantvolumefourpipebeam,AirTerminal:SingleDuct:ConstantVolume:FourPipeBeam}.
+   *
+   * \par Important behavior
+   * The terminal maintains primary-air, zone, and two plant branches. `addToNode` registers the terminal on the
+   * resolved zone equipment list; removal prepares both coil branches and deletes owned coils only after teardown
+   * succeeds.
+   *
+   * \par OpenStudio Model API
+   * Counterpart: `openstudio::model::AirTerminalSingleDuctConstantVolumeFourPipeBeam`. Availability schedules, typed
+   * coils, primary-air nodes, loop/node conveniences, and beam sizing fields are represented. The epmodel coil wrappers
+   * are narrow plant-compatible handles for connectivity cleanup.
+   *
+   * \par Known limitations
+   * OS-prefixed child persistence, ambiguous projected Branch identity, two-coil same-PlantLoop batch removal, deep
+   * cloning, and family-specific autosized-result queries are not fully supported.
+   */
   class EPMODEL_API AirTerminalSingleDuctConstantVolumeFourPipeBeam : public StraightComponent
   {
    public:
@@ -39,25 +59,6 @@ namespace epmodel {
     static IddObjectType iddObjectType();
     bool addToNode(Node& node);
 
-    // Schema Alignment Notes:
-    // - Status: Near Parity. The scalar surface, typed coil relationships, primary-air nodes, plant-loop conveniences, current zone-branch insertion,
-    //   and owner-local child removal are exposed, while deep-clone behavior and the family-specific autosized-result helpers remain omitted.
-    // - Canonical Counterpart: openstudio::model::AirTerminalSingleDuctConstantVolumeFourPipeBeam.
-    // - Implemented Parity: `primaryAirAvailabilitySchedule`, `coolingAvailabilitySchedule`, `heatingAvailabilitySchedule`, `primaryAirInletNode`,
-    //   `primaryAirOutletNode`, typed `coolingCoil` / `heatingCoil` getters and setters, chilled- and hot-water loop/node conveniences, `addToNode`,
-    //   `designPrimaryAirVolumeFlowRate`, `designChilledWaterVolumeFlowRate`, `designHotWaterVolumeFlowRate`, `zoneTotalBeamLength`, and
-    //   `ratedPrimaryAirFlowRateperBeamLength` preserve the canonical field and topology contracts that are practical here.
-    // - Documented Delta: Dedicated `CoilCoolingFourPipeBeam` and `CoilHeatingFourPipeBeam` wrappers are intentionally narrow plant-compatible
-    //   child-coil handles for connectivity cleanup; broader child coil scalar helpers remain outside this campaign pass.
-    // - Field/Storage Mapping: The availability schedules, preserved scalars, child coil relationships, and inherited straight-component inlet/outlet
-    //   node fields retain the local epmodel field contract. `addToNode` uses the current epmodel zone-branch path and registers the terminal
-    //   on the owning thermal-zone equipment list when one is resolved. Terminal removal prepares the air, zone, plenum, owned-child, and separate
-    //   plant-loop graphs before mutation, then deletes its owned cooling and heating coils only after successful topology and parent removal.
-    // - Evidence: `src/model/AirTerminalSingleDuctConstantVolumeFourPipeBeam.hpp`, `src/model/AirTerminalSingleDuctConstantVolumeFourPipeBeam.cpp`,
-    //   `src/energyplus/ForwardTranslator/ForwardTranslateAirTerminalSingleDuctConstantVolumeFourPipeBeam.cpp`, and the focused epmodel tests.
-    // - Remaining Parity Work: Resolve OS-prefixed child persistence and Branch identity when both projected endpoint links are absent, add a batch
-    //   plan for two coil branches on one PlantLoop, add canonical deep-clone behavior for owned coils, and expose the family-specific
-    //   autosized-result query helpers once shared plumbing exists.
     Schedule primaryAirAvailabilitySchedule() const;
     bool setPrimaryAirAvailabilitySchedule(Schedule& schedule);
 

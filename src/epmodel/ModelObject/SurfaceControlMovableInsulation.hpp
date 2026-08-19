@@ -23,6 +23,17 @@ namespace epmodel {
     class SurfaceControlMovableInsulation_Impl;
   }
 
+  /** \brief SurfaceControlMovableInsulation.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-advanced-surface-concepts.html#surfacecontrolmovableinsulation,SurfaceControl:MovableInsulation}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::SurfaceControlMovableInsulation</code>. <b>Changed:</b> EPModel exposes direct construction from <code>Model</code>; Model construction requires a surface and material. Model relationship helpers for schedules and surfaces are not available.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API SurfaceControlMovableInsulation : public ModelObject
   {
    public:
@@ -37,12 +48,6 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     static std::vector<std::string> insulationTypeValues();
-
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model SurfaceControlMovableInsulation scalar accessor names/signatures.
-    // - Field Mapping: insulationType maps directly to E+ SurfaceControl:MovableInsulation InsulationType field.
-    // - Field Mapping: SurfaceName, MaterialName, ScheduleName are relationship fields and excluded from this scaffold.
-    // - TODO(parity): Add non-scalar relationship APIs incrementally after scalar saturation.
 
     /** @name Getters */
     //@{

@@ -26,6 +26,17 @@ namespace epmodel {
     class ModelObject_Impl;
   }
 
+  /** \brief ModelObject.
+   *
+   * \par EnergyPlus object
+   * This class has no single EnergyPlus object; concrete subclasses determine the persisted object.
+   *
+   * \par OpenStudio Model API
+   * This base supplies model-object identity, targets, sources, and shared object operations; concrete subclasses determine the EnergyPlus object type.
+   *
+   * \par Known limitations
+   * This base supplies model-object identity, targets, sources, and shared object operations; concrete subclasses determine the EnergyPlus object type.
+   */
   class EPMODEL_API ModelObject : public openstudio::WorkspaceObject
   {
    public:

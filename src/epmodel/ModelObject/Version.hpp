@@ -22,6 +22,17 @@ namespace epmodel {
     class Version_Impl;
   }
 
+  /** \brief Version.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-simulation-parameters.html#version,Version}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::Version</code>. EPModel exposes public <code>setVersionIdentifier()</code> plus default-state and reset accessors; the Model-only <code>prereleaseIdentifier()</code> and <code>setPrereleaseIdentifier()</code> are not available.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API Version : public ModelObject
   {
    public:
@@ -34,11 +45,6 @@ namespace epmodel {
     Version& operator=(Version&&) = default;
 
     static IddObjectType iddObjectType();
-
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model Version scalar accessor names/signatures.
-    // - Field Mapping: versionIdentifier maps to the EnergyPlus Version Identifier field.
-    // - ForwardTranslator::translateVersion writes ENERGYPLUS_VERSION into the Version Identifier field by default.
     /** @name Version identifier field */
     //@{
     std::string versionIdentifier() const;

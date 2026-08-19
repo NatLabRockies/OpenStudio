@@ -24,6 +24,17 @@ namespace epmodel {
 
   /** MaterialPropertyPhaseChangeHysteresis is a ModelObject that wraps the EnergyPlus IDD object
  * 'MaterialProperty:PhaseChangeHysteresis'. */
+  /** \brief MaterialPropertyPhaseChangeHysteresis.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-surface-construction-elements.html#materialpropertyphasechangehysteresis,MaterialProperty:PhaseChangeHysteresis}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::MaterialPropertyPhaseChangeHysteresis</code>. The scalar phase-change and hysteresis fields are exposed. Model's material relationship is not available.
+   *
+   * \par Known limitations
+   * Only the fields and relationships listed in this wrapper are available; broader Model-only helpers are not exposed.
+   */
   class EPMODEL_API MaterialPropertyPhaseChangeHysteresis : public ModelObject
   {
    public:
@@ -36,14 +47,6 @@ namespace epmodel {
     MaterialPropertyPhaseChangeHysteresis& operator=(MaterialPropertyPhaseChangeHysteresis&&) = default;
 
     static IddObjectType iddObjectType();
-
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model::MaterialPropertyPhaseChangeHysteresis scalar accessor names/signatures.
-    // - Field Mapping: all scalar APIs map 1:1 to E+ MaterialProperty:PhaseChangeHysteresis numeric fields.
-    // - ForwardTranslator evidence: ForwardTranslateMaterialPropertyPhaseChangeHysteresis.cpp writes these exact APIs
-    //   to matching MaterialProperty:PhaseChangeHysteresis fields.
-    // - Exclusions: material/materialName relationship field (Name in E+) is intentionally excluded in this scalar-only pass.
-    // - TODO(parity): Add material relationship APIs in a dedicated non-scalar parity pass.
     double latentHeatduringtheEntirePhaseChangeProcess() const;
     bool setLatentHeatduringtheEntirePhaseChangeProcess(double latentHeatduringtheEntirePhaseChangeProcess);
 

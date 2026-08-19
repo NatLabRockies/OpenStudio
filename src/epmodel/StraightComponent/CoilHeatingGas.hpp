@@ -23,6 +23,21 @@ namespace epmodel {
     class CoilHeatingGas_Impl;
   }
 
+  /** \brief Represents a fuel-fired heating coil.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-heating-and-cooling-coils.html#coilheatinggas-000,Coil:Heating:Fuel}.
+   *
+   * \par Important behavior
+   * The one-argument constructor uses an always-on availability schedule; fuel-coil fields remain directly editable.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::CoilHeatingGas</code>; this is the Model
+   * name for EnergyPlus's <code>Coil:Heating:Fuel</code> object. <b>Added:</b> EPModel exposes <code>addToNode()</code>
+   * and parasitic electric/gas load fields. <b>Not yet available:</b> AirflowNetwork helpers.
+   * \par Known limitations
+   * No known EPModel-specific limitations beyond the listed API differences.
+   */
   class EPMODEL_API CoilHeatingGas : public StraightComponent
   {
    public:
@@ -39,25 +54,6 @@ namespace epmodel {
 
     bool addToNode(Node& node);
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. The canonical gas-coil scalar and schedule surfaces, optional part-load-fraction curve, and direct-branch
-    //   setpoint-node synchronization are present, while broader AFN helpers remain out of scope.
-    // - Canonical Counterpart: openstudio::model::CoilHeatingGas.
-    // - Implemented Parity: `fuelType`, burner efficiency, parasitic loads, and nominal-capacity helpers preserve the canonical naming and autosize
-    //   behavior; the canonical schedule constructor, typed availability relationship, validated optional univariate
-    //   `partLoadFractionCorrelationCurve`, and child traversal preserve the bounded relationship slice.
-    //   Direct air-loop and outdoor-air placement derives EnergyPlus `Temperature Setpoint Node Name` from the current outlet through insertion,
-    //   adjacent-component rewiring, detachment, and reload, matching canonical translation without adding a public setpoint-node API.
-    // - Documented Delta: The one-argument constructor remains as an EnergyPlus-compatible convenience that selects always-on availability. AFN
-    //   helpers from canonical `openstudio::model::CoilHeatingGas` are not exposed yet.
-    // - Field/Storage Mapping: Preserved scalars and relationships map directly to EnergyPlus `Coil:Heating:Fuel` fields; the storage-only
-    //   temperature-setpoint node follows the outlet only while the coil is direct branch equipment. The PLF field accepts only the configured
-    //   `UnivariateFunctions` object list.
-    // - Canonicalization: Ordinary availability access is observational. Managed relationships are revalidated through their typed setters; unique
-    //   eligible persisted names are reattached. Only truly blank availability is repaired to always-on, while blank PLF remains valid and malformed
-    //   nonblank evidence is preserved and reported.
-    // - Evidence: `src/model/CoilHeatingGas.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateCoilHeatingGas.cpp`, and `src/epmodel/test/CoilHeatingGas_GTest.cpp`.
-    // - Remaining Parity Work: Add AFN helpers without changing the preserved scalar signatures.
     Schedule availabilitySchedule() const;
 
     /** \deprecated */

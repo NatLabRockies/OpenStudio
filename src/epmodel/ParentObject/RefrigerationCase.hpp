@@ -25,6 +25,21 @@ namespace epmodel {
     class RefrigerationCase_Impl;
   }
 
+/** \brief Defines a refrigerated display case and its heat and moisture loads.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-refrigeration.html#refrigerationcase,Refrigeration:Case}
+ *
+ * \par Important behavior
+ * Case temperature, capacity, lighting, anti-sweat, infiltration, defrost, fan, and refrigeration-load fields map directly to EnergyPlus.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model class is <code>openstudio::model::RefrigerationCase</code>.
+ * <b>Not yet available:</b> Model's compressor-rack, secondary-system, refrigeration-system, thermal-zone, curve, and detailed per-door/defrost relationship and convenience methods are not exposed.
+ *
+ * \par Known limitations
+ * The case does not own the refrigeration system, compressor, condenser, or case-rack relationship.
+ */
   class EPMODEL_API RefrigerationCase : public ParentObject
   {
    public:
@@ -43,14 +58,6 @@ namespace epmodel {
     static std::vector<std::string> caseDefrostTypeValues();
     static std::vector<std::string> defrostEnergyCorrectionCurveTypeValues();
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. Scalar fields and six optional direct schedule relationships are aligned.
-    // - Canonical Counterpart: openstudio::model::RefrigerationCase.
-    // - Implemented Parity: Availability, lighting, defrost, drip-down, restocking, and credit-fraction schedules preserve canonical
-    //   getter/setter/reset signatures with registered schedule type validation.
-    // - Field/Storage Mapping: Those schedules map directly to Refrigeration:Case ScheduleNames fields; retained scalar fields map through
-    //   Refrigeration_Case_FieldEnums.
-    // - Remaining Parity Work: Zone, curve, under-case return-air-node, and refrigeration-system ownership relationships remain omitted.
 
     /** @name Getters */
     //@{

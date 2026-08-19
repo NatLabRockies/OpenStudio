@@ -34,6 +34,21 @@ namespace epmodel {
     class PlantLoop_Impl;
   }
 
+  /** \brief Represents a plant-side HVAC loop and its equipment branches.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-plant-condenser-loops.html#plantloop,PlantLoop}.
+   *
+   * \par Important behavior
+   * Relationships are projected from EnergyPlus branch and node topology and mutators maintain that topology.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::PlantLoop</code>.
+   * <b>Not yet available: <code>clone()</code>, SQL autosized-result helpers, and Model value-list methods such as <code>validFluidTypeValues()</code>, <code>validLoadDistributionSchemeValues()</code>, and <code>validCommonPipeSimulationValues()</code>.</b>
+   *
+   * \par Known limitations
+   * Plant operation-scheme ownership is represented by the loop's operation-scheme lists; individual scheme wrappers do not provide a loop back-link.
+   */
   class EPMODEL_API PlantLoop : public Loop
   {
    public:
@@ -46,19 +61,6 @@ namespace epmodel {
     PlantLoop& operator=(PlantLoop&&) = default;
 
     static IddObjectType iddObjectType();
-
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. The representative loop, companion, and branch-mutation contract is present; the wider canonical convenience
-    //   surface remains incomplete.
-    // - Canonical Counterpart: openstudio::model::PlantLoop.
-    // - Implemented Parity: Core operating scalars, fluid properties, setpoint helpers, operation schemes and schedules, sizing and availability
-    //   ownership, supply/demand nodes, mixers, splitters, traversal, and exact branch add/remove operations preserve the main topology contract.
-    // - Documented Delta: clone/remove specializations and autosized-result helpers remain omitted.
-    // - Field/Storage Mapping: Branch and connector linkage is expressed through topology APIs over EnergyPlus-backed loop structure rather than
-    //   exposed as scalar mixer/splitter branch-name fields.
-    // - Evidence: `src/model/PlantLoop.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslatePlantLoop.cpp`, and focused epmodel loop/component
-    //   tests define the selected contract.
-    // - Remaining Parity Work: Add clone/remove specializations or autosized-result helpers only for a concrete workflow or shared defect.
 
     std::string loadDistributionScheme() const;
     bool setLoadDistributionScheme(const std::string& scheme);

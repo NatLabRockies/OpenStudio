@@ -18,8 +18,22 @@ namespace epmodel {
     class Material_Impl;
   }
 
-  /** A Material is a ResourceObject that serves as a base class for all objects that can be used
-   *  in LayeredConstructions. */
+  /** \brief Base class for materials that can be used in layered constructions.
+   *
+   * \par EnergyPlus object
+   * This class has no single EnergyPlus object. Concrete material subclasses
+   * encapsulate the applicable material object and implement the shared
+   * thickness and optical queries where those fields exist.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::Material</code>. EPModel does not provide Model's
+   * <code>standardsInformation()</code> helper.
+   *
+   * \par Known limitations
+   * A base Material may not have meaningful thickness or optical values;
+   * concrete subclasses define which shared queries are supported.
+   */
   class EPMODEL_API Material : public ResourceObject
   {
    public:

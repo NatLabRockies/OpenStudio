@@ -25,6 +25,20 @@ namespace epmodel {
     class EvaporativeFluidCoolerSingleSpeed_Impl;
   }
 
+/** \brief A single-speed evaporative fluid cooler.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-condenser-equipment.html#evaporativefluidcoolersinglespeed,EvaporativeFluidCooler:SingleSpeed}
+ *
+ * \par Important behavior
+ * The blowdown makeup-water schedule is validated as a volumetric-flow schedule, and plant placement is supply-side only.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model type is <code>openstudio::model::EvaporativeFluidCoolerSingleSpeed</code>.
+ *
+ * \par Known limitations
+ * The legacy storage-tank helper is not available.
+ */
   class EPMODEL_API EvaporativeFluidCoolerSingleSpeed : public StraightComponent
   {
    public:
@@ -43,19 +57,6 @@ namespace epmodel {
     static std::vector<std::string> evaporationLossModeValues();
     static std::vector<std::string> blowdownCalculationModeValues();
 
-    // Schema Alignment Notes:
-    // - Status: Parity with documented deltas. The canonical scalar and blowdown-schedule surfaces plus the plant-supply placement rule are present,
-    //   while the legacy storage-tank placeholder remains out of scope.
-    // - Canonical Counterpart: openstudio::model::EvaporativeFluidCoolerSingleSpeed.
-    // - Implemented Parity: The preserved API matches the canonical design-flow, fan-power, spray-water, performance, and capacity accessors with
-    //   matching autosize/default behavior. The optional blowdown makeup-water schedule validates canonical volumetric-flow limits, and inherited
-    //   `addToNode(...)` follows the canonical plant-supply-only insertion contract.
-    // - Documented Delta: The legacy storage-tank helper remains intentionally absent.
-    // - Field/Storage Mapping: These accessors map directly to EnergyPlus `EvaporativeFluidCooler:SingleSpeed` scalar and schedule fields used by the
-    //   forward translator.
-    // - Evidence: `src/model/EvaporativeFluidCoolerSingleSpeed.hpp`, `src/model/EvaporativeFluidCoolerSingleSpeed.cpp`, and
-    //   `src/energyplus/ForwardTranslator/ForwardTranslateEvaporativeFluidCoolerSingleSpeed.cpp`.
-    // - Remaining Parity Work: Decide whether the legacy storage-tank placeholder should remain intentionally unsupported.
 
     boost::optional<double> designAirFlowRate() const;
     bool isDesignAirFlowRateAutosized() const;

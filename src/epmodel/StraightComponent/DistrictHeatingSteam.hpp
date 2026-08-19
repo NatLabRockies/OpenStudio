@@ -22,6 +22,20 @@ namespace epmodel {
     class DistrictHeatingSteam_Impl;
   }
 
+/** \brief A district steam-heating plant component.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-plant-equipment.html#districtheatingsteam,DistrictHeating:Steam}
+ *
+ * \par Important behavior
+ * The constructor seeds the capacity-fraction schedule; addToNode() accepts plant-supply placement only.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model type is <code>openstudio::model::DistrictHeatingSteam</code>.
+ *
+ * \par Known limitations
+ * autosizedNominalCapacity() cannot resolve SQL sizing results.
+ */
   class EPMODEL_API DistrictHeatingSteam : public StraightComponent
   {
    public:
@@ -35,18 +49,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - Status: Parity with documented deltas. The canonical district-heating-steam wrapper surface, constructor default schedule seeding, and plant-supply
-    //   placement contract are present, while autosized-result lookup remains a documented gap.
-    // - Canonical Counterpart: openstudio::model::DistrictHeatingSteam.
-    // - Implemented Parity: The nominal-capacity accessors, capacity-fraction schedule getter/setter, constructor default schedule seeding, and
-    //   plant-supply-only `addToNode(...)` behavior match the canonical wrapper surface.
-    // - Documented Delta: Resolved autosized nominal-capacity lookup remains intentionally unavailable because epmodel does not yet expose SQL-backed sizing
-    //   results.
-    // - Field/Storage Mapping: These accessors map directly to the EnergyPlus `DistrictHeating:Steam` nominal-capacity and capacity-fraction-schedule fields
-    //   used by the forward translator.
-    // - Evidence: `src/model/DistrictHeatingSteam.hpp`, `src/model/DistrictHeatingSteam.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateDistrictHeatingSteam.cpp`.
-    // - Remaining Parity Work: Wire `autosizedNominalCapacity()` to resolved sizing results once epmodel exposes the needed simulation-result query surface.
     boost::optional<double> nominalCapacity() const;
     Schedule capacityFractionSchedule() const;
     bool isNominalCapacityAutosized() const;

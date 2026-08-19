@@ -23,7 +23,24 @@ namespace epmodel {
     class LayeredConstruction_Impl;
   }
 
-  /** LayeredConstruction is an abstract base class for constructions composed of material layers. */
+  /** \brief Base class for constructions composed of material layers.
+   *
+   * \par EnergyPlus object
+   * This class has no single EnergyPlus object. Concrete subclasses persist
+   * construction objects whose extensible fields reference material layers.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::LayeredConstruction</code>. EPModel provides layer
+   * lookup, mutation, validation, null-layer queries, and uniqueness handling;
+   * Model-only convenience methods such as <code>insulation()</code>,
+   * <code>isSymmetric()</code>, and <code>reverseEqualLayers()</code> are not
+   * available.
+   *
+   * \par Known limitations
+   * Layer validity depends on the concrete construction and EnergyPlus material
+   * rules; this base does not choose compatible layers automatically.
+   */
   class EPMODEL_API LayeredConstruction : public ConstructionBase
   {
    public:

@@ -23,6 +23,24 @@ namespace epmodel {
     class PlantEquipmentOperationOutdoorDewpoint_Impl;
   }
 
+  /** \brief Selects plant equipment for outdoor-dewpoint operation.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-plant-condenser-control.html#plantequipmentoperationoutdoordewpoint,PlantEquipmentOperation:OutdoorDewpoint}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::PlantEquipmentOperationOutdoorDewpoint</code>.
+   *
+   * - <b>Not yet available:</b> The load-range and equipment methods inherited
+   *   from <code>PlantEquipmentOperationRangeBasedScheme</code>, including
+   *   <code>addLoadRange(...)</code>, <code>removeLoadRange(...)</code>,
+   *   <code>loadRangeUpperLimits()</code>, <code>equipment(...)</code>, the
+   *   add/replace/remove equipment methods, and <code>clearLoadRanges()</code>.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API PlantEquipmentOperationOutdoorDewpoint : public PlantEquipmentOperationScheme
   {
    public:
@@ -36,10 +54,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - API: Wraps the EnergyPlus PlantEquipmentOperation:OutdoorDewpoint object with the same scalar dewpoint-range helpers used by the model counterpart.
-    // - Field Mapping: maximumUpperLimit() and minimumLowerLimit() read the Dewpoint Temperature Range Upper/Lower Limit values from the last/first extensible groups.
-    // - TODO(parity): Add explicit extensible load-range/equipment list helpers once the general extensible-handling scaffold lands.
     double maximumUpperLimit() const;
     double minimumLowerLimit() const;
 

@@ -23,6 +23,18 @@ namespace epmodel {
     class CoilSystemHeatingDX_Impl;
   }
 
+  /** \brief Represents <code>CoilSystem:Heating:DX</code>.
+   *
+   * \par EnergyPlus object
+   * Represents \epobject{group-heating-and-cooling-coils.html#coilsystemheatingdx,CoilSystem:Heating:DX}.
+   *
+   * \par OpenStudio Model API
+   * OpenStudio Model has no public wrapper for <code>CoilSystem:Heating:DX</code>; this wrapper is new to the EPModel API.
+   * The public EPModel surface currently exposes only the EnergyPlus heating-coil object-type selector; availability-schedule and heating-coil relationships remain owner-managed.
+   *
+   * \par Known limitations
+   * Relationship-row mutation and higher-level topology conveniences remain owner-managed or unavailable through this wrapper.
+   */
   class EPMODEL_API CoilSystemHeatingDX : public ModelObject
   {
    public:
@@ -37,12 +49,6 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     static std::vector<std::string> heatingCoilObjectTypeValues();
-
-    // Schema Alignment Notes:
-    // - API: This no-counterpart type uses IDD-derived class/accessor naming.
-    // - Field Mapping: heatingCoilObjectType maps directly to CoilSystem:Heating:DX Heating Coil Object Type.
-    // - Field Mapping: Availability Schedule Name and Heating Coil Name are relationship-like fields and intentionally excluded.
-    // - TODO(parity): Add relationship APIs after scalar saturation without changing scalar signatures.
     /** @name HeatingCoilObjectType */
     //@{
     std::string heatingCoilObjectType() const;

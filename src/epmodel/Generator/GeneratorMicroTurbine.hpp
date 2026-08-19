@@ -23,6 +23,34 @@ namespace epmodel {
     class GeneratorMicroTurbine_Impl;
   }
 
+  /** \brief Represents a microturbine generator.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-electric-load-center-generator.html#generatormicroturbine,Generator:MicroTurbine}
+   *
+   * \par Important behavior
+   * When the maximum full-load electrical power field is blank,
+   * <code>maximumFullLoadElectricalPowerOutput()</code> returns the reference
+   * electrical power output, matching the EnergyPlus defaulting behavior.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::GeneratorMicroTurbine</code>.
+   *
+   * - <b>Not yet available:</b> Availability-schedule methods;
+   *   electrical-power and electrical-efficiency curve methods;
+   *   ancillary-power curve methods; exhaust-air flow and temperature curve
+   *   methods; and <code>generatorMicroTurbineHeatRecovery()</code>.
+   * - <b>Not yet available:</b> The Model Generator metadata methods
+   *   <code>generatorObjectType()</code>, <code>ratedElectricPowerOutput()</code>,
+   *   <code>ratedThermaltoElectricalPowerRatio()</code>, and
+   *   <code>electricLoadCenterDistribution()</code>.
+   *
+   * \par Known limitations
+   * Configure curve, heat-recovery, and availability inputs through companion
+   * wrappers or lower-level object references when those relationships are
+   * needed.
+   */
   class EPMODEL_API GeneratorMicroTurbine : public ModelObject
   {
    public:
@@ -38,15 +66,6 @@ namespace epmodel {
 
     static std::vector<std::string> validFuelTypeValues();
 
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model::GeneratorMicroTurbine scalar accessor names/signatures.
-    // - Field Mapping: Preserved scalar APIs map directly to EnergyPlus Generator:MicroTurbine scalar fields.
-    // - Field Mapping: maximumFullLoadElectricalPowerOutput preserves model fallback behavior and delegates to
-    //   Reference Electrical Power Output when the E+ field is blank.
-    // - API: GeneratorMicroTurbineHeatRecovery-linked scalar semantics remain on the counterpart heat-recovery class.
-    // - Field Mapping: ForwardTranslateGeneratorMicroTurbine evidence shows heat-recovery scalar fields are populated
-    //   from GeneratorMicroTurbineHeatRecovery and are excluded from this scalar-only pass.
-    // - TODO(parity): Add excluded relationship and heat-recovery-linked APIs in a dedicated parity pass.
     double referenceElectricalPowerOutput() const;
     bool setReferenceElectricalPowerOutput(double referenceElectricalPowerOutput);
 

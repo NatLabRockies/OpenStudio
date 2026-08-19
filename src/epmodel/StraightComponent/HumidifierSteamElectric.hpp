@@ -22,6 +22,20 @@ namespace epmodel {
     class HumidifierSteamElectric_Impl;
   }
 
+/** \brief An electric steam humidifier.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-humidifiers-and-dehumidifiers.html#humidifiersteamelectric,Humidifier:Steam:Electric}
+ *
+ * \par Important behavior
+ * Availability, node, capacity, efficiency, and water-use fields map directly to Humidifier:Steam:Electric.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model type is <code>openstudio::model::HumidifierSteamElectric</code>.
+ *
+ * \par Known limitations
+ * No additional type-specific limitation is known beyond shared straight-component topology.
+ */
   class EPMODEL_API HumidifierSteamElectric : public StraightComponent
   {
    public:
@@ -37,19 +51,6 @@ namespace epmodel {
 
     bool addToNode(Node& node);
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. The canonical steam-electric humidifier preserves the scalar and availability-schedule surface, while the storage-tank helper remains out of scope and `addToNode` parity stays intentionally narrowed.
-    // - Canonical Counterpart: openstudio::model::HumidifierSteamElectric.
-    // - Implemented Parity: `availabilitySchedule`, `setAvailabilitySchedule`, and `resetAvailabilitySchedule` preserve the canonical schedule relationship,
-    //   rated-capacity and rated-power preserve the canonical optional/default/autosize behavior, and rated-fan-power plus standby-power preserve the
-    //   canonical optional scalar behavior used by the forward translator.
-    // - Documented Delta: The wrapper currently relies on inherited inlet/outlet model-object helpers, matching the canonical wrapper today; the
-    //   water-storage-tank helper remains intentionally omitted, autosized-result queries still return `boost::none` until epmodel sizing results exist,
-    //   and `addToNode` remains intentionally narrower than canonical behavior by accepting only air-loop supply placement plus OA-system outboard OA/relief nodes.
-    // - Field/Storage Mapping: These accessors map directly to EnergyPlus `Humidifier:Steam:Electric` fields used by the forward translator.
-    // - Evidence: `src/model/HumidifierSteamElectric.hpp`, `src/model/HumidifierSteamElectric.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateHumidifierSteamElectric.cpp`.
-    // - Remaining Parity Work: Restore broader canonical `addToNode` parity if this family is widened beyond the current supply/OA-only guardrails, add the
-    //   omitted water-storage-tank helper if that relationship is surfaced in epmodel, and resolve real autosized-result values once epmodel sizing results exist.
     boost::optional<Schedule> availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);
     void resetAvailabilitySchedule();

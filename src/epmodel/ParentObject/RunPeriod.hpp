@@ -22,6 +22,20 @@ namespace epmodel {
     class RunPeriod_Impl;
   }
 
+/** \brief Defines the dates and weather-file rules for a simulation run period.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-location-climate-weather-file-access.html#runperiod,RunPeriod}
+ *
+ * \par Important behavior
+ * The begin/end dates, weather holidays, daylight-saving, rain/snow indicators, weekend-holiday rule, and repeat count are stored directly. The convenience predicates isAnnual(), isPartialYear(), and isRepeated() interpret those fields.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model class is <code>openstudio::model::RunPeriod</code>.
+ *
+ * \par Known limitations
+ * The run period does not contain weather data; weather-file availability and weather properties come from the simulation environment.
+ */
   class EPMODEL_API RunPeriod : public ParentObject
   {
    public:
@@ -35,16 +49,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::RunPeriod scalar API names/signatures, including legacy get* naming.
-    // - Field Mapping: begin/end date and weather-flag APIs map directly to EnergyPlus RunPeriod scalar fields.
-    // - Field Mapping: get/setNumTimePeriodRepeats maps to RunPeriod BeginYear/EndYear because EnergyPlus RunPeriod
-    //   has no Number of Times Runperiod to be Repeated field.
-    // - ForwardTranslator evidence: BeginYear/EndYear and DayofWeekforStartDay are derived from model::YearDescription
-    //   in ForwardTranslateRunPeriod.cpp and intentionally excluded from RunPeriod scalar accessors.
-    // - ForwardTranslator evidence: UseWeatherFileHolidays/DaylightSavings are currently hard-set to "No" during
-    //   translation; keep preserved RunPeriod APIs mapped to the underlying RunPeriod fields.
-    // - TODO(parity): Align translator behavior with preserved RunPeriod weather-flag semantics in parity follow-up.
 
     int getBeginMonth() const;
     bool setBeginMonth(int month);

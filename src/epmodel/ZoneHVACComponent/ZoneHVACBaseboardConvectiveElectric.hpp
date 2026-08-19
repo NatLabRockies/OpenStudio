@@ -20,6 +20,23 @@ namespace epmodel {
     class ZoneHVACBaseboardConvectiveElectric_Impl;
   }
 
+/** \brief An electric convective baseboard heater serving a thermal zone.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-radiative-convective-units.html#zonehvacbaseboardconvectiveelectric,ZoneHVAC:Baseboard:Convective:Electric}
+ *
+ * \par Important behavior
+ * Availability, nominal-capacity, efficiency, autosizing, and thermal-zone attachment methods are available.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model class is <code>openstudio::model::ZoneHVACBaseboardConvectiveElectric</code>.
+ * Model also provides <code>autosizedNominalCapacity()</code> and its inherited
+ * thermal-zone convenience methods; EPModel exposes the autosize operation but
+ * does not provide the SQL-backed result query.
+ *
+ * \par Known limitations
+ * No additional type-specific topology is represented beyond shared zone-equipment attachment, and SQL sizing results are unavailable.
+ */
   class EPMODEL_API ZoneHVACBaseboardConvectiveElectric : public ZoneHVACComponent
   {
    public:
@@ -33,19 +50,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - Status: Scalar and Schedule Parity. The canonical availability relationship and two scalar field groups are exposed, and the
-    //   remaining public surface is intentionally small.
-    // - Canonical Counterpart: openstudio::model::ZoneHVACBaseboardConvectiveElectric.
-    // - Implemented Parity: `availabilitySchedule` and its validated setter preserve the required canonical relationship; `nominalCapacity`
-    //   and `efficiency` map directly to the matching EnergyPlus ZoneHVAC:Baseboard:Convective:Electric fields, including the
-    //   autosize/default helpers.
-    // - Documented Delta: The wrapper relies on the established ZoneHVACComponent thermal-zone attachment surface and adds no type-local
-    //   topology behavior.
-    // - Field/Storage Mapping: The schedule pointer and scalar values are stored directly in the matching EnergyPlus fields, with no child
-    //   objects to synchronize.
-    // - Evidence: `src/model/ZoneHVACBaseboardConvectiveElectric.hpp`, `src/model/ZoneHVACBaseboardConvectiveElectric.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateZoneHVACBaseboardConvectiveElectric.cpp`, and `src/epmodel/test/ZoneHVACBaseboardConvectiveElectric_GTest.cpp`.
-    // - Remaining Parity Work: None within the current canonical public surface.
 
     Schedule availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);

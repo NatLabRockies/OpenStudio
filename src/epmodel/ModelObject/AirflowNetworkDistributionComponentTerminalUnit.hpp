@@ -23,6 +23,17 @@ namespace epmodel {
     class AirflowNetworkDistributionComponentTerminalUnit_Impl;
   }
 
+  /** \brief Represents the EnergyPlus AirflowNetwork:Distribution:Component:TerminalUnit object.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-airflow-network.html#airflownetworkdistributioncomponentterminalunit,AirflowNetwork:Distribution:Component:TerminalUnit}
+   *
+   * \par OpenStudio Model API
+   * OpenStudio Model has no public wrapper for this EnergyPlus object. This wrapper is new to the EPModel API.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations beyond the public fields and relationships exposed by this wrapper.
+   */
   class EPMODEL_API AirflowNetworkDistributionComponentTerminalUnit : public ModelObject
   {
    public:
@@ -38,13 +49,6 @@ namespace epmodel {
 
     static std::vector<std::string> terminalUnitObjectTypeValues();
 
-    // Schema Alignment Notes:
-    // - API: This no-counterpart type uses IDD-derived class/accessor naming.
-    // - Field Mapping: terminalUnitObjectType, airPathLength, and airPathHydraulicDiameter map
-    //   directly to EnergyPlus AirflowNetwork:Distribution:Component:TerminalUnit scalar fields.
-    // - Field Mapping: Terminal Unit Name is an object-list target-link field and is intentionally
-    //   excluded from scalar accessors.
-    // - TODO(parity): Add relationship APIs after scalar scaffold saturation.
     std::string terminalUnitObjectType() const;
     bool setTerminalUnitObjectType(const std::string& terminalUnitObjectType);
 

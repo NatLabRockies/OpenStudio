@@ -23,6 +23,17 @@ namespace epmodel {
     class WaterUseEquipment_Impl;
   }
 
+  /** \brief Represents the EnergyPlus WaterUse:Equipment object.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-water-systems.html#wateruseequipment,WaterUse:Equipment}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::WaterUseEquipment</code>. <b>Not yet available:</b> water-use connection, schedule, zone, and fraction relationship methods. EPModel exposes end-use subcategory and peak-flow scalars.
+   *
+   * \par Known limitations
+   * Use the owning water-use connection workflow for the object-list relationships; this wrapper manages only the persisted scalar surface.
+   */
   class EPMODEL_API WaterUseEquipment : public ModelObject
   {
    public:
@@ -36,14 +47,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::WaterUseEquipment scalar-field naming for endUseSubcategory and peakFlowRate.
-    // - Field Mapping: endUseSubcategory and peakFlowRate map directly to EnergyPlus WaterUse:Equipment fields.
-    // - Field Mapping: Flow Rate Fraction Schedule Name, Target Temperature Schedule Name, Hot/Cold Water Supply
-    //   Temperature Schedule Name, Zone Name, Sensible Fraction Schedule Name, and Latent Fraction Schedule Name are
-    //   relationship-like references and intentionally excluded from scalar accessor generation in this run.
-    // - ForwardTranslator evidence: ForwardTranslateWaterUseEquipment.cpp reads these exact scalars while the remaining
-    //   relationship fields drive schedule/zone/definition wiring.
     std::string endUseSubcategory() const;
     bool isEndUseSubcategoryDefaulted() const;
     bool setEndUseSubcategory(const std::string& endUseSubcategory);

@@ -29,6 +29,17 @@ namespace epmodel {
     class WaterHeaterSizing_Impl;
   }
 
+  /** \brief WaterHeaterSizing.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-water-heaters.html#waterheatersizing,WaterHeater:Sizing}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::WaterHeaterSizing</code>. <b>Changed:</b> EPModel also permits direct construction from <code>Model</code>; Model construction requires a water-to-water component. The sizing fields and typed water-heater relationship are exposed.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API WaterHeaterSizing : public ModelObject
   {
    public:
@@ -44,12 +55,6 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     static std::vector<std::string> designModeValues();
-
-    // Schema Alignment Notes:
-    // - API: Preserve the openstudio::model scalar accessor names/signatures for this model-counterpart class.
-    // - Field Mapping: All declared scalars map directly to the EnergyPlus WaterHeater:Sizing fields referenced in ForwardTranslateWaterHeaterSizing.cpp.
-    // - Field Mapping: Water Heater Name preserves the canonical owning WaterToWaterComponent relationship via the same object-list field.
-    // - Evidence: `src/model/WaterHeaterSizing.hpp`, `src/model/WaterHeaterSizing.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateWaterHeaterSizing.cpp`.
 
     /** @name Field accessors */
     //@{

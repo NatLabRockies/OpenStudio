@@ -24,6 +24,17 @@ namespace epmodel {
     class SpaceInfiltrationDesignFlowRate_Impl;
   }
 
+  /** \brief Represents the EnergyPlus ZoneInfiltration:DesignFlowRate object.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-airflow.html#zoneinfiltrationdesignflowrate,ZoneInfiltration:DesignFlowRate}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::SpaceInfiltrationDesignFlowRate</code>. <b>Not yet available:</b> the Model <code>schedule()</code>, <code>setSchedule()</code>, and <code>resetSchedule()</code> methods and the Space/SpaceType relationship APIs. EPModel exposes the scalar calculation-method and flow inputs.
+   *
+   * \par Known limitations
+   * The EnergyPlus object is zone-infiltration storage; relationship assignment must be maintained by the owning space/zone workflow.
+   */
   class EPMODEL_API SpaceInfiltrationDesignFlowRate : public ModelObject
   {
    public:
@@ -40,11 +51,6 @@ namespace epmodel {
     static std::vector<std::string> designFlowRateCalculationMethodValues();
     static std::vector<std::string> densityBasisValues();
 
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model scalar accessor names for the ZoneInfiltration:DesignFlowRate model-counterpart.
-    // - Field Mapping: designFlowRateCalculationMethod, design/flow constants, and densityBasis map directly to the EnergyPlus fields.
-    // - Field Mapping: Space/SpaceType relationships plus schedule references are intentionally excluded from this scalar-only API.
-    // - TODO(parity): Add relationship helpers once scheduler/space targets migrate.
     std::string designFlowRateCalculationMethod() const;
 
     boost::optional<double> designFlowRate() const;

@@ -23,6 +23,17 @@ namespace epmodel {
     class MeterCustom_Impl;
   }
 
+  /** \brief MeterCustom.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-simulation-parameters.html#metercustom,Meter:Custom}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::MeterCustom</code>. The resource type is exposed. Model's extensible key/output-variable groups are not available.
+   *
+   * \par Known limitations
+   * Only the fields and relationships listed in this wrapper are available; broader Model-only helpers are not exposed.
+   */
   class EPMODEL_API MeterCustom : public ModelObject
   {
    public:
@@ -37,14 +48,6 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     static std::vector<std::string> fuelTypeValues();
-
-    /** Schema alignment notes:
-   * - API: Preserve openstudio::model::MeterCustom scalar accessor naming/signatures for counterpart parity.
-   * - Field Mapping: API fuelType maps to EnergyPlus Meter:Custom field Resource Type.
-   * - Field Mapping: Extensible Key Name / Output Variable or Meter Name pairs are relationship-like and excluded from scalar scope.
-   * - ForwardTranslator evidence: ForwardTranslateMeterCustom.cpp writes modelObject.fuelType() to Meter_CustomFields::ResourceType.
-   * - TODO(parity): Add non-scalar extensible key/variable group APIs without changing these scalar signatures.
-   */
     boost::optional<std::string> fuelType() const;
     bool setFuelType(const std::string& fuelType);
     void resetFuelType();

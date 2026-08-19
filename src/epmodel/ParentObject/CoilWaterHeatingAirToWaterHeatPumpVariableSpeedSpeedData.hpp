@@ -21,16 +21,46 @@ namespace epmodel {
     class CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData_Impl;
   }
 
+  /** \brief Represents one performance-data speed for a variable-speed air-to-water heat-pump water heater.
+   *
+   * \par EnergyPlus object
+   * No standalone EnergyPlus object. This class exposes one extensible speed-data
+   * row on \epobject{group-heating-and-cooling-coils.html#coil-waterheating-airtowaterheatpump-variablespeed,Coil:WaterHeating:AirToWaterHeatPump:VariableSpeed}.
+   * The row contains the rated values and performance-curve references
+   * represented by this class.
+   *
+   * \par Important behavior
+   * The wrapper is transient. A detached instance keeps its values and curve
+   * references in the EPModel runtime object. When passed to the owning coil's
+   * <code>addSpeed(...)</code>, those values are copied into one extensible row
+   * and the wrapper becomes a live view of that row; setters then update the
+   * parent row. Removing a row through the owning coil detaches the wrapper.
+   * Calling <code>remove()</code> on an attached wrapper also removes its parent
+   * speed row.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData</code>.
+   * - <b>Added:</b> <code>cOPFunctionofTemperatureCurve()</code>,
+   *   <code>cOPFunctionofAirFlowFractionCurve()</code>, and
+   *   <code>cOPFunctionofWaterFlowFractionCurve()</code> are mixed-case aliases
+   *   for <code>copFunctionofTemperatureCurve()</code>,
+   *   <code>copFunctionofAirFlowFractionCurve()</code>, and
+   *   <code>copFunctionofWaterFlowFractionCurve()</code>, respectively.
+   * No other known public API differences.
+   *
+   * \par Known limitations
+   * This class cannot be persisted as an independent EnergyPlus object; use the
+   * owning <code>Coil:WaterHeating:AirToWaterHeatPump:VariableSpeed</code>
+   * object to add or remove speed rows. Removing a loaded speed row does not
+   * copy its parent-row values into the detached wrapper; read or copy values
+   * before removal when they must be retained.
+   */
   class EPMODEL_API CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData : public ParentObject
   {
    public:
     static constexpr bool is_transient = true;  // This is a Transient ModelObject
 
-    // This wrapper preserves the canonical OpenStudio speed-data child object
-    // for a family that EnergyPlus stores as extensible rows on the parent coil.
-    // A detached transient speed-data object keeps its own OpenStudio-style
-    // fields until it is added to a parent coil. An attached transient
-    // speed-data object is a live view over one specific parent extensible row.
     explicit CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData(const Model& model);
 
     virtual ~CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData() override = default;
@@ -41,18 +71,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - Status: Parity with documented deltas.
-    // - Canonical Counterpart: openstudio::model::CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData.
-    // - Implemented Parity: The canonical scalar and curve relationships are exposed here. Detached instances behave
-    //   like the canonical OpenStudio speed-data object. Attached instances are transient views over one parent
-    //   EnergyPlus extensible row, and removing an attached transient wrapper removes the parent speed row too.
-    // - Documented Delta: This child is transient in epmodel because EnergyPlus does not persist a standalone
-    //   speed-data object.
-    // - Field/Storage Mapping: Detached instances store their own OS-style fields. Attached instances route through the
-    //   parent's `Coil:WaterHeating:AirToWaterHeatPump:VariableSpeed` extensible row using `WorkspaceExtensibleGroup`.
-    // - API Note: The lowercase `copFunctionof...` getters mirror the canonical model API. The legacy mixed-case
-    //   `cOPFunctionof...` getters remain as compatibility aliases over the same underlying fields.
     double ratedWaterHeatingCapacity() const;
     bool setRatedWaterHeatingCapacity(double ratedWaterHeatingCapacity);
 

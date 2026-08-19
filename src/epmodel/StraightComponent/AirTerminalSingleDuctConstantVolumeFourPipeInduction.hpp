@@ -23,6 +23,26 @@ namespace epmodel {
     class AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl;
   }
 
+  /**
+   * \brief Constant-volume four-pipe induction terminal with primary and induced-air paths and optional water coils.
+   *
+   * \par EnergyPlus object
+   * Encapsulates \epobject{group-air-distribution-equipment.html#airterminalsingleductconstantvolumefourpipeinduction,AirTerminal:SingleDuct:ConstantVolume:FourPipeInduction}.
+   *
+   * \par Important behavior
+   * `addToNode` is transactional on the supported zone branch: it creates the terminal-owned inlet/mixer path and
+   * projects the induced-air path through the heating and optional cooling coils. Removal clears zone, ADU, node,
+   * mixer, and plant references together.
+   *
+   * \par OpenStudio Model API
+   * Counterpart: `openstudio::model::AirTerminalSingleDuctConstantVolumeFourPipeInduction`. Availability, typed coil
+   * relationships, induced-air access, scalar fields, and zone-branch insertion are represented. The epmodel no-arg
+   * constructor and raw optional cooling-coil target are additional assembly conveniences.
+   *
+   * \par Known limitations
+   * Autosized-result queries and broader local-topology conveniences are not exposed. Removal currently rejects the
+   * uncommon case where both contained coils share one PlantLoop.
+   */
   class EPMODEL_API AirTerminalSingleDuctConstantVolumeFourPipeInduction : public StraightComponent
   {
    public:
@@ -37,33 +57,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. The canonical availability schedule, coil relationships, induced-air node, transactional zone-branch lifecycle,
-    //   and separate hot/chilled-water branch cleanup are surfaced, while broader autosized-result helpers remain intentionally narrower.
-    // - Canonical Counterpart: openstudio::model::AirTerminalSingleDuctConstantVolumeFourPipeInduction.
-    // - Implemented Parity: `availabilitySchedule`, `setHeatingCoil`, `setCoolingCoil`, `inducedAirInletNode`, `inducedAirInletPort`,
-    //   guarded zone-branch `addToNode`, prepared `remove`/`removeFromLoop` teardown, child-coil ownership, the scalar accessors, and the explicit
-    //   heating-coil constructor preserve the relationship surface that is practical on the current epmodel zone-branch path. Removal preflight
-    //   inspects unresolved references without materializing new nodes or attachments.
-    // - Documented Delta: The optional epmodel-only no-arg constructor seeds the current defaulted flow parameters as a convenience while leaving
-    //   availability unset; canonical model exposes only the heating-coil constructor. The optional cooling coil is exposed as a raw epmodel
-    //   `HVACComponent` target. Child replacement accepts the exact same-model EnergyPlus water-coil type only when it is not already owned or
-    //   air-side connected, so one persisted child cannot be stolen between compound parents. The wrapper still omits the canonical
-    //   autosized-result helpers and broader topology conveniences such as the model-side exhaust-node convenience surface. Removal refuses the
-    //   uncommon case where both contained coils belong to the same PlantLoop until one loop-level batch-removal plan can cover both branches.
-    // - Field/Storage Mapping: The availability schedule, heating/cooling coil targets, induced-air inlet node, preserved scalars, and inherited
-    //   straight-component inlet/outlet node fields all store directly on the EnergyPlus `AirTerminal:SingleDuct:ConstantVolume:FourPipeInduction`
-    //   object. `addToNode` only inserts on the current epmodel zone-branch path when the target node is the matching same-model
-    //   ZoneSplitter/ZoneMixer branch node for an AirLoopHVAC and the terminal is not already connected; on success it creates the transient
-    //   branch inlet node and a terminal-owned zone mixer, then projects the induced-air path through the heating and optional cooling coils
-    //   into that mixer. Removal clears zone equipment registration, terminal and child node fields, `ZoneHVAC:AirDistributionUnit`
-    //   references, the contained mixer, and child-coil plant demand branches in one prepared transaction; it also clears the induced-air linkage
-    //   when that stored exhaust node belongs exclusively to the terminal being removed. Load repair may identify an otherwise orphaned heating
-    //   coil from the exact contained air path and detach only that path while preserving valid water branches.
-    // - Evidence: `src/model/AirTerminalSingleDuctConstantVolumeFourPipeInduction.hpp`, `src/model/AirTerminalSingleDuctConstantVolumeFourPipeInduction.cpp`,
-    //   and `src/epmodel/test/AirTerminalSingleDuctConstantVolumeFourPipeInduction_GTest.cpp`.
-    // - Remaining Parity Work: Add the omitted autosized-result helpers and any broader canonical topology conveniences if shared infrastructure later
-    //   makes them practical.
 
     boost::optional<Schedule> availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);
