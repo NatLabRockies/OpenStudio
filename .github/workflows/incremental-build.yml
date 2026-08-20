@@ -1,4 +1,4 @@
-name: Build and Test (Ubuntu 22.04)
+name: Build and Test (Ubuntu 24.04)
 
 on:
   push:
@@ -43,11 +43,11 @@ jobs:
       EXCLUDED_TESTS: "BCLFixture.RemoteBCL_BCLSearchResult"
 
     container: # Define the Docker container for the job. All subsequent steps run inside it.
-      image: nrel/openstudio-cmake-tools:jammy-main
+      image: nrel/openstudio-cmake-tools:noble-main
       options: --privileged -u root -e "LANG=en_US.UTF-8" # These options are passed to the 'docker run' command internally
       volumes: # envs don't work in volume definition for containers
         - "/srv/data/jenkins/docker-volumes/conan-data/.conan2:/github/home/.conan2" # Conan cache
-        - "/srv/data/jenkins/docker-volumes/ubuntu-2204:/github/home/Ubuntu"
+        - "/srv/data/jenkins/docker-volumes/ubuntu-2404:/github/home/Ubuntu"
 
     defaults:
       run:
@@ -387,7 +387,7 @@ jobs:
       - name: Upload build artifacts with metadata
         uses: actions/upload-artifact@v4
         with:
-          name: ubuntu-2204-${{ github.head_ref || github.ref_name }}-${{ github.sha }}
+          name: ubuntu-2404-${{ github.head_ref || github.ref_name }}-${{ github.sha }}
           path: |
             ${{ env.OPENSTUDIO_DOCKER_VOLUME }}/${{ env.OPENSTUDIO_SOURCE_NAME }}/${{ env.OPENSTUDIO_BUILD_NAME }}/*.deb
             ${{ env.OPENSTUDIO_DOCKER_VOLUME }}/${{ env.OPENSTUDIO_SOURCE_NAME }}/${{ env.OPENSTUDIO_BUILD_NAME }}/_CPack_Packages/Linux/TGZ/*.tar.gz

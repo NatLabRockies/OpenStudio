@@ -98,7 +98,7 @@ jobs:
         include:
           - platform: centos-9-x64
             pretty: CentOS 9 (AlmaLinux) x64
-            os: ubuntu-22.04
+            os: ubuntu-24.04
             container_image: nrel/openstudio-cmake-tools:almalinux9-main
             container_options: "--privileged -u root -e LANG=en_US.UTF-8"
             test_suffix: CentOS-9
@@ -110,49 +110,20 @@ jobs:
             cpack_generators: "RPM;TGZ"
             max_jobs: 4
             exclude_regex: "BCLFixture.RemoteBCLMetaSearchTest"
-          - platform: ubuntu-2204-x64
-            pretty: Ubuntu 22.04 x64
-            os: ubuntu-22.04
-            container_image: nrel/openstudio-cmake-tools:jammy-main
-            container_options: "--privileged -u root -e LANG=en_US.UTF-8"
-            test_suffix: Ubuntu-2204
-            pip_package: true
-            docker_trigger: true
-            upload_globs: |
-              *.deb
-              *OpenStudio*x86_64.tar.gz
-            cpack_generators: "DEB;TGZ"
-            max_jobs: 3
-            exclude_regex: "ModelFixture.PythonPluginInstance_NotPYFile"
           - platform: ubuntu-2404-x64
             pretty: Ubuntu 24.04 x64
             os: ubuntu-24.04
             container_image: nrel/openstudio-cmake-tools:noble-main
             container_options: "--privileged -u root -e LANG=en_US.UTF-8"
             test_suffix: Ubuntu-2404
-            pip_package: false
-            docker_trigger: false
+            pip_package: true
+            docker_trigger: true
             upload_globs: |
               *.deb
               *OpenStudio*x86_64.tar.gz
             cpack_generators: "DEB;TGZ"
             max_jobs: 4
             exclude_regex: ""
-          - platform: ubuntu-2204-arm64
-            pretty: Ubuntu 22.04 ARM64
-            os: ubuntu-22.04-arm
-            container_image: nrel/openstudio-cmake-tools:jammy-main
-            container_options: "--privileged -u root -e LANG=en_US.UTF-8"
-            test_suffix: Ubuntu-2204-ARM64
-            pip_package: false
-            docker_trigger: false
-            upload_globs: |
-              *.deb
-              *OpenStudio*arm64.tar.gz
-            cpack_generators: "DEB;TGZ"
-            max_jobs: 3
-            # SqlFileFixture.AnnualTotalCosts needed until E+ itself disables ffp-contract on arm64 GCC
-            exclude_regex: "SqlFileFixture.AnnualTotalCosts|OpenStudioCLI.*test_measure_manager"
           - platform: ubuntu-2404-arm64
             pretty: Ubuntu 24.04 ARM64
             os: ubuntu-24.04-arm
@@ -571,10 +542,10 @@ jobs:
           S3_PREFIX: ${{ github.ref_type == 'tag' && format('releases/{0}', github.ref_name) || format('{0}', github.ref_name) }}
         run: |
 
-          # Find the 22.04 deb file locally
-          DEB_FILE=$(find . -name "*22.04*.deb" | head -n 1)
+          # Find the 24.04 deb file locally
+          DEB_FILE=$(find . -name "*24.04*.deb" | head -n 1)
           if [ -z "$DEB_FILE" ]; then
-            echo "::error::Could not find Ubuntu 22.04 deb file in installers directory"
+            echo "::error::Could not find Ubuntu 24.04 deb file in installers directory"
             ls -la
             exit 1
           fi
@@ -590,7 +561,7 @@ jobs:
 
           # Parse version from filename
           # Expected format: OpenStudio-<Version>-<Platform>.deb
-          if [[ "$FILENAME" =~ OpenStudio-(.+)-Ubuntu-22\.04.*\.deb ]]; then
+          if [[ "$FILENAME" =~ OpenStudio-(.+)-Ubuntu-24\.04.*\.deb ]]; then
              OS_VERSION_FULL=${BASH_REMATCH[1]}
           elif [[ "$FILENAME" =~ OpenStudio-(.+)-Linux.*\.deb ]]; then
              OS_VERSION_FULL=${BASH_REMATCH[1]}
