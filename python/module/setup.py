@@ -94,7 +94,7 @@ setup(
     long_description_content_type="text/markdown",
     url="https://github.com/NREL/OpenStudio",
     author="Alliance for Energy Innovation, LLC, and other contributors",
-    author_email="openstudio@nrel.gov",
+    author_email="openstudio@nlr.gov",
     maintainer="Julien Marrec",
     maintainer_email="contact@effibem.com",
     license="BSD3",
