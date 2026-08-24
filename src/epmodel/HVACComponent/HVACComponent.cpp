@@ -157,15 +157,10 @@ namespace epmodel {
 
     boost::optional<ZoneHVACComponent> HVACComponent_Impl::containingZoneHVACComponent() const {
       const auto thisObject = getObject<ModelObject>();
-      // Compound ownership is persisted as a pointer from the parent to this
-      // child. Start with that reverse-pointer index instead of scanning every
-      // zone HVAC object in the model.
-      for (const auto& source : thisObject.sources()) {
-        if (auto zoneEquipment = source.optionalCast<openstudio::epmodel::ZoneHVACComponent>()) {
-          const auto children = zoneEquipment->children();
-          if (std::ranges::find(children, thisObject) != children.end()) {
-            return zoneEquipment;
-          }
+      for (const auto& zoneEquipment : model().getModelObjects<openstudio::epmodel::ZoneHVACComponent>()) {
+        const auto children = zoneEquipment.children();
+        if (std::ranges::find(children, thisObject) != children.end()) {
+          return zoneEquipment;
         }
       }
       return boost::none;
@@ -173,15 +168,14 @@ namespace epmodel {
 
     boost::optional<HVACComponent> HVACComponent_Impl::containingHVACComponent() const {
       const auto thisObject = getObject<ModelObject>();
-      for (const auto& source : thisObject.sources()) {
-        if (auto component = source.optionalCast<openstudio::epmodel::HVACComponent>()) {
-          if (component->handle() == thisObject.handle()) {
-            continue;
-          }
-          const auto children = component->children();
-          if (std::ranges::find(children, thisObject) != children.end()) {
-            return component;
-          }
+      for (const auto& component : model().getModelObjects<openstudio::epmodel::HVACComponent>()) {
+        if (component.handle() == thisObject.handle()) {
+          continue;
+        }
+
+        const auto children = component.children();
+        if (std::ranges::find(children, thisObject) != children.end()) {
+          return component;
         }
       }
       return boost::none;
