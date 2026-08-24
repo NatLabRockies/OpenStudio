@@ -33,7 +33,7 @@ namespace epmodel {
 
       boost::optional<AirLoopHVAC> airLoopHVAC() const override;
       boost::optional<PlantLoop> plantLoop() const override;
-      boost::optional<AirLoopHVACOutdoorAirSystem> airLoopHVACOutdoorAirSystem() const;
+      boost::optional<AirLoopHVACOutdoorAirSystem> airLoopHVACOutdoorAirSystem() const override;
       boost::optional<ModelObject> inletModelObject() const override;
       boost::optional<ModelObject> outletModelObject() const override;
 
