@@ -19,7 +19,7 @@ TEST_F(BCLFixture, LocalBCL_AuthKey) {
   EXPECT_TRUE(LocalBCL::instance().setProdAuthKey(defaultProdAuthKey));
   EXPECT_EQ(defaultProdAuthKey, LocalBCL::instance().prodAuthKey());
 
-  // Don't bother testing this since bcl7.development.nrel.gov is internal only
+  // Don't bother testing this since bcl7.development.nlr.gov is internal only
   //EXPECT_TRUE(LocalBCL::instance().setDevAuthKey(defaultDevAuthKey));
   //EXPECT_EQ(defaultDevAuthKey, LocalBCL::instance().devAuthKey());
 }
@@ -32,7 +32,7 @@ TEST_F(BCLFixture, RemoteBCLTest) {
   EXPECT_EQ(prodAuthKey, remoteBCL.prodAuthKey());
   EXPECT_EQ(remoteBCL.prodAuthKey(), remoteBCL.authKey());
 
-  // Don't bother testing this since bcl7.development.nrel.gov is internal only
+  // Don't bother testing this since bcl7.development.nlr.gov is internal only
   // set temporary development auth key
   //remoteBCL.setDevAuthKey(devAuthKey);
   //EXPECT_EQ(devAuthKey, remoteBCL.devAuthKey());

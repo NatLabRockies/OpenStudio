@@ -1386,7 +1386,7 @@ set(CPACK_RPM_PACKAGE_URL "https://www.openstudio.net")
 
 # The actual .deb file name on disk
 set(CPACK_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}-${OPENSTUDIO_LONG_VERSION}-${CMAKE_SYSTEM_NAME}")
-set(CPACK_PACKAGE_CONTACT "openstudio@nrel.gov")
+set(CPACK_PACKAGE_CONTACT "openstudio@nlr.gov")
 
 if(APPLE)
   set(CPACK_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}-${OPENSTUDIO_LONG_VERSION}-${CMAKE_SYSTEM_NAME}-${ARCH}")

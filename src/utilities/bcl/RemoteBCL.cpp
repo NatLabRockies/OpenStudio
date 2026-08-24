@@ -36,7 +36,7 @@ pugi::xml_node RemoteQueryResponse::root() const {
 // as it will allow us to change http_client_config (SSL settings etc) in  only one place
 web::http::client::http_client RemoteBCL::getClient(const std::string& url, unsigned timeOutSeconds) {
   web::http::client::http_client_config config;
-  // bcl.nrel.gov can be slow to respond to client requests so bump the default of 30 seconds to 60 to account for lengthy response time.
+  // bcl.nlr.gov can be slow to respond to client requests so bump the default of 30 seconds to 60 to account for lengthy response time.
   // this is timeout is for each send and receive operation on the client and not the entire client session.
   config.set_timeout(std::chrono::seconds(timeOutSeconds));
   config.set_validate_certificates(false);
