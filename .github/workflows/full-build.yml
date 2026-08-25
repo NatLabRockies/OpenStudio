@@ -5,7 +5,7 @@ on:
     branches:
       - develop
       - master
-      - os-4.0-dev
+      - os-4.0-dev1
     tags:
       - "v*"
   schedule:
@@ -476,7 +476,7 @@ jobs:
             ${{ env.OPENSTUDIO_BUILD }}/${{ env.TEST_DASHBOARD_RELATIVE }}
 
       - name: Create packages
-        if: ${{ success() && !cancelled() }}
+        if: ${{ !cancelled() }}
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         run: |
           . ./conanbuild.sh
@@ -489,14 +489,8 @@ jobs:
           find . -name "*.o" -type f -delete || true
           df -h .
 
-      - name: Fail job on test failures
-        if: ${{ steps.ctest.outputs.exit_code != '0' }}
-        run: |
-          echo "::error::CTest suite failed with exit code ${{ steps.ctest.outputs.exit_code }}"
-          exit 1
-
       - name: Upload DEB installer
-        if: contains(matrix.cpack_generators, 'DEB')
+        if: ${{ !cancelled() && contains(matrix.cpack_generators, 'DEB') }}
         uses: actions/upload-artifact@v4
         with:
           name: OS-Installers-${{ matrix.platform }}-DEB-${{ github.sha }}
@@ -504,7 +498,7 @@ jobs:
           if-no-files-found: ignore
 
       - name: Upload RPM installer
-        if: contains(matrix.cpack_generators, 'RPM')
+        if: ${{ !cancelled() && contains(matrix.cpack_generators, 'RPM') }}
         uses: actions/upload-artifact@v4
         with:
           name: OS-Installers-${{ matrix.platform }}-RPM-${{ github.sha }}
@@ -512,6 +506,7 @@ jobs:
           if-no-files-found: ignore
 
       - name: Upload TGZ installer
+        if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
           name: OS-Installers-${{ matrix.platform }}-TGZ-${{ github.sha }}
@@ -519,18 +514,24 @@ jobs:
           if-no-files-found: ignore
 
       - name: Upload WHEEL installer
-        if: matrix.pip_package
+        if: ${{ !cancelled() && matrix.pip_package }}
         uses: actions/upload-artifact@v4
         with:
           name: OS-Installers-${{ matrix.platform }}-WHEEL-${{ github.sha }}
           path: ${{ env.OPENSTUDIO_BUILD }}/*.whl
           if-no-files-found: ignore
 
+      - name: Fail job on test failures
+        if: ${{ always() && steps.ctest.outputs.exit_code != '0' }}
+        run: |
+          echo "::error::CTest suite failed with exit code ${{ steps.ctest.outputs.exit_code }}"
+          exit 1
+
   linux-publish:
     name: Publish Linux Artifacts
     needs: [linux-build]
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true'
+    if: ${{ !cancelled() && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true') }}
     steps:
       - name: Download all installers
         uses: actions/download-artifact@v4
@@ -990,7 +991,8 @@ jobs:
         fi
 
     - name: Create packages
-      if: ${{ success() && !cancelled() }}
+      id: create_packages
+      if: ${{ !cancelled() }}
       working-directory: ${{ env.OPENSTUDIO_BUILD }}
       env:
         COPYFILE_DISABLE: 1
@@ -1006,7 +1008,7 @@ jobs:
         df -h .
 
     - name: Ad-hoc Sign Inner Installer (Fix "Killed" Error)
-      if: ${{ success() && !cancelled() }}
+      if: ${{ !cancelled() && steps.create_packages.outcome == 'success' }}
       working-directory: ${{ env.OPENSTUDIO_BUILD }}
       env:
         # Check if we have a real ID; if not, we must patch the installer
@@ -1027,7 +1029,7 @@ jobs:
         done
 
     - name: Sign DMG and Notarize
-      if: ${{ steps.create_packages.outcome == 'success' && (github.ref == 'refs/heads/develop' || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true' || matrix.os == 'macOS') }}
+      if: ${{ !cancelled() && steps.create_packages.outcome == 'success' && (github.ref == 'refs/heads/develop' || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true') }}
       working-directory: ${{ env.OPENSTUDIO_BUILD }}
       env:
         APPLE_CERT_DATA: ${{ secrets.APPLE_CERT_DATA }}
@@ -1166,7 +1168,7 @@ jobs:
         if-no-files-found: ignore
 
     - name: Fail job on test failures
-      if: ${{ steps.mac_ctest.outputs.exit_code != '0' }}
+      if: ${{ always() && steps.mac_ctest.outputs.exit_code != '0' }}
       run: |
         echo "::error::CTest suite failed with exit code ${{ steps.mac_ctest.outputs.exit_code }}"
         exit 1
@@ -1174,7 +1176,7 @@ jobs:
     name: Publish MacOS Artifacts
     needs: [macos-build]
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true'
+    if: ${{ !cancelled() && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true') }}
     steps:
       - name: Download all installers
         uses: actions/download-artifact@v4
@@ -1576,13 +1578,13 @@ jobs:
           }
 
       - name: Create packages
-        if: ${{ success() && !cancelled() }}
+        if: ${{ !cancelled() }}
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         run: |
           & $env:ComSpec /c "call conanbuild.bat && cpack -C ${{ env.BUILD_TYPE }}"
 
       - name: Code sign installer
-        if: success() && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true')
+        if: ${{ !cancelled() && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true') }}
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         run: |
           # Check if signing client exists
@@ -1662,13 +1664,8 @@ jobs:
           Get-ChildItem -Path . -Include "*.obj" -Recurse -Force | Remove-Item -Force -ErrorAction SilentlyContinue
           Get-PSDrive C | Select-Object Used,Free
 
-      - name: Fail job on test failures
-        if: ${{ steps.ctest.outputs.exit_code != '0' }}
-        run: |
-          echo "::error::CTest suite failed with exit code ${{ steps.ctest.outputs.exit_code }}"
-          exit 1
-
       - name: Upload Signed EXE installer
+        if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
           name: OS-Installers-${{ matrix.platform }}-EXE-${{ github.sha }}
@@ -1676,17 +1673,24 @@ jobs:
           if-no-files-found: ignore
 
       - name: Upload Signed TGZ installer
+        if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
           name: OS-Installers-${{ matrix.platform }}-TGZ-${{ github.sha }}
           path: ${{ env.OPENSTUDIO_BUILD }}/_CPack_Packages/win64/TGZ/*.tar.gz
           if-no-files-found: ignore
 
+      - name: Fail job on test failures
+        if: ${{ always() && steps.ctest.outputs.exit_code != '0' }}
+        run: |
+          echo "::error::CTest suite failed with exit code ${{ steps.ctest.outputs.exit_code }}"
+          exit 1
+
   windows-publish:
     name: Publish Windows Artifacts
     needs: [windows-build]
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true'
+    if: ${{ !cancelled() && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true') }}
     steps:
       - name: Download all installers
         uses: actions/download-artifact@v4
