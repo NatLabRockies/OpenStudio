@@ -123,7 +123,7 @@ namespace energyplus {
 
     // CondenserType
     if ((s = modelObject.condenserType())) {
-      idfObject.setString(ChillerHeaterPerformance_Electric_EIRFields::CondenserType, s.get());
+      // idfObject.setString(ChillerHeaterPerformance_Electric_EIRFields::CondenserType, s.get());
     }
 
     // CoolingModeTemperatureCurveCondenserWaterIndependentVariable

@@ -41,7 +41,7 @@ namespace energyplus {
 
     // ControlMethod
     if ((s = modelObject.controlMethod())) {
-      idfObject.setString(CentralHeatPumpSystemFields::ControlMethod, s.get());
+      // idfObject.setString(CentralHeatPumpSystemFields::ControlMethod, s.get());
     }
 
     // AncillaryPower
