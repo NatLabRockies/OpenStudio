@@ -603,6 +603,10 @@ if(MSVC)
   # warning level 3
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W3")
 
+  # Remove unreferenced COMDATs (functions/data) before they reach the linker.
+  # Shrinks object files; does NOT reduce dllexport'd symbol counts (verified empirically).
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Zc:inline")
+
   # warning level 4 - DLM: we should shoot for this
   #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
 
@@ -1707,7 +1711,9 @@ if (MSVC)
     # within the same library. This may result in less efficient function calls.
 
     # The potential inefficiency goes away if we use LTO linking
-    target_link_libraries(openstudiolib PRIVATE -IGNORE:4217,4049)
+    foreach(_os_lib openstudiolib openstudiomodellib openstudioepmodellib openstudioutilitieslib)
+      target_link_libraries(${_os_lib} PRIVATE -IGNORE:4217,4049)
+    endforeach()
     if(CMAKE_SIZEOF_VOID_P EQUAL 8) # only applies to 64 bit windows platforms
       if (BUILD_RUBY_BINDINGS)
         target_link_libraries(openstudio_rb PRIVATE -IGNORE:4217,4049)
