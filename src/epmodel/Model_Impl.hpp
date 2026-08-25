@@ -81,7 +81,7 @@ namespace epmodel {
 
      private:
       friend class openstudio::epmodel::test::ScopedTestFailure;
-      friend EPMODEL_API bool testFailurePointReached(const Model& model, TestFailurePoint point);
+      friend bool testFailurePointReached(const Model& model, TestFailurePoint point);
 
       std::shared_ptr<openstudio::SqlFile> m_sqlFile;
       TestFailurePoint m_testFailurePoint = TestFailurePoint::None;

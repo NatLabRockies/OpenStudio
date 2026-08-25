@@ -6,8 +6,6 @@
 #ifndef EPMODEL_TESTFAILUREPOINT_HPP
 #define EPMODEL_TESTFAILUREPOINT_HPP
 
-#include "EPModelAPI.hpp"
-
 namespace openstudio {
 namespace epmodel {
 
@@ -49,7 +47,7 @@ namespace epmodel {
       SizingPlantAfterFirstCompanionPointerWritten,
     };
 
-    EPMODEL_API bool testFailurePointReached(const Model& model, TestFailurePoint point);
+    bool testFailurePointReached(const Model& model, TestFailurePoint point);
 
   }  // namespace detail
 }  // namespace epmodel
