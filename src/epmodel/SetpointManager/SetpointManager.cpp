@@ -8,6 +8,7 @@
 
 #include "Loop/AirLoopHVAC.hpp"
 #include "HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
+#include "Loop/Loop.hpp"
 #include "Loop/PlantLoop.hpp"
 #include "Mixer/Mixer.hpp"
 #include "Model.hpp"
@@ -123,6 +124,34 @@ namespace epmodel {
       }
 
       return false;
+    }
+
+    boost::optional<Loop> SetpointManager_Impl::loop() const {
+      if (auto node = setpointNode()) {
+        return node->loop();
+      }
+      return boost::none;
+    }
+
+    boost::optional<AirLoopHVAC> SetpointManager_Impl::airLoopHVAC() const {
+      if (auto node = setpointNode()) {
+        return node->airLoopHVAC();
+      }
+      return boost::none;
+    }
+
+    boost::optional<PlantLoop> SetpointManager_Impl::plantLoop() const {
+      if (auto node = setpointNode()) {
+        return node->plantLoop();
+      }
+      return boost::none;
+    }
+
+    boost::optional<AirLoopHVACOutdoorAirSystem> SetpointManager_Impl::airLoopHVACOutdoorAirSystem() const {
+      if (auto node = setpointNode()) {
+        return node->airLoopHVACOutdoorAirSystem();
+      }
+      return boost::none;
     }
 
     void SetpointManager_Impl::doCanonicalize(LoadContext& context) {

@@ -23,6 +23,31 @@ namespace epmodel {
     class SetpointManagerScheduled_Impl;
   }
 
+  /** \brief Applies a scheduled setpoint at a target node.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-setpoint-managers.html#setpointmanagerscheduled,SetpointManager:Scheduled}
+   *
+   * \par Important behavior
+   * The schedule setter uses the schedule type expected by the selected control
+   * variable; use <code>setControlVariableAndSchedule()</code> when changing both
+   * together.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::SetpointManagerScheduled</code>.
+   *
+   * - <b>Changed:</b> OpenStudio Model constructors require a schedule, and
+   *   one overload also accepts the control variable. The EPModel constructor
+   *   accepts only the model; assign the schedule after construction.
+   * - <b>Added:</b> <code>isControlVariableDefaulted()</code>,
+   *   <code>resetControlVariable()</code>, and
+   *   <code>scheduleAsModelObject()</code>.
+   *
+   * \par Known limitations
+   * The EPModel constructor creates the manager without a schedule; set one with
+   * <code>setSchedule</code> or <code>setControlVariableAndSchedule</code> after construction.
+   */
   class EPMODEL_API SetpointManagerScheduled : public SetpointManager
   {
    public:
@@ -37,11 +62,6 @@ namespace epmodel {
     static IddObjectType iddObjectType();
     static std::vector<std::string> controlVariableValues();
 
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model naming for controlVariableValues plus existing schedule presence helpers.
-    // - Field Mapping: controlVariable delegates to E+ SetpointManager:Scheduled Control Variable.
-    // - Implemented Parity: `schedule`, `setSchedule`, and `setControlVariableAndSchedule` expose the canonical
-    //   schedule relationship surface; setpoint-node attachment is inherited from SetpointManager::addToNode.
     bool isControlVariableDefaulted() const;
     void resetControlVariable();
 

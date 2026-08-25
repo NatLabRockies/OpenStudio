@@ -10,8 +10,13 @@
 #include "Node.hpp"
 
 #include <utilities/core/Assert.hpp>
+#include <utilities/core/StringHelpers.hpp>
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/OutdoorAir_Mixer_FieldEnums.hxx>
+#include <utilities/idf/IdfObject_Impl.hpp>
+#include <utilities/idf/WorkspaceObject_Impl.hpp>
+
+#include <array>
 
 namespace openstudio {
 namespace epmodel {
@@ -97,11 +102,65 @@ namespace epmodel {
     }
 
     void OutdoorAirMixer_Impl::doCanonicalize(LoadContext& context) {
-      (void)context;
-      resolvedNodeTarget(mixedAirNodeField);
-      resolvedNodeTarget(outdoorAirNodeField);
-      resolvedNodeTarget(reliefAirNodeField);
-      resolvedNodeTarget(returnAirNodeField);
+      const auto mixer = getObject<OutdoorAirMixer>();
+      auto workspaceImpl = mixer.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+      OS_ASSERT(workspaceImpl);
+      const std::array fields = {mixedAirNodeField, outdoorAirNodeField, reliefAirNodeField, returnAirNodeField};
+      for (const auto field : fields) {
+        const auto stored = mixer.getField(field, false);
+        const auto raw = workspaceImpl->openstudio::detail::IdfObject_Impl::getString(field, false, true);
+        const bool hasRaw = raw && !raw->empty();
+        boost::optional<Node> managed;
+        if (stored && !stored->empty()) {
+          const auto handle = openstudio::toUUID(*stored);
+          const auto target = handle.isNull() ? boost::optional<WorkspaceObject>() : model().getObject(handle);
+          managed = target ? target->optionalCast<Node>() : boost::none;
+        }
+
+        if (managed) {
+          unsigned sameNameCount = 0u;
+          for (const auto& node : model().getConcreteModelObjects<Node>()) {
+            if (openstudio::istringEqual(node.nameString(), managed->nameString())) {
+              ++sameNameCount;
+            }
+          }
+          const auto rawHandle = hasRaw ? openstudio::toUUID(*raw) : Handle();
+          const bool rawAgrees = !hasRaw || (!rawHandle.isNull() && rawHandle == managed->handle())
+                                 || (rawHandle.isNull() && openstudio::istringEqual(*raw, managed->nameString()));
+          if (sameNameCount != 1u || !rawAgrees) {
+            detail::addLoadWarning(context, "Preserved ambiguous OutdoorAir:Mixer node evidence on '" + mixer.nameString() + "'.");
+          }
+          continue;
+        }
+        if (!hasRaw) {
+          continue;
+        }
+
+        boost::optional<Node> uniqueNode;
+        const auto rawHandle = openstudio::toUUID(*raw);
+        for (const auto& node : model().getConcreteModelObjects<Node>()) {
+          const bool matches =
+            (!rawHandle.isNull() && node.handle() == rawHandle) || (rawHandle.isNull() && openstudio::istringEqual(node.nameString(), *raw));
+          if (!matches) {
+            continue;
+          }
+          if (uniqueNode) {
+            uniqueNode = boost::none;
+            break;
+          }
+          uniqueNode = node;
+        }
+        if (!uniqueNode) {
+          detail::addLoadWarning(context, "Preserved unresolved or ambiguous OutdoorAir:Mixer node evidence on '" + mixer.nameString() + "'.");
+          continue;
+        }
+        if (context.repairEnabled()) {
+          OS_ASSERT(setPointer(field, uniqueNode->handle(), false));
+          detail::addLoadInfo(context, "Resolved an OutdoorAir:Mixer node relationship on '" + mixer.nameString() + "'.");
+        } else {
+          detail::addLoadWarning(context, "OutdoorAir:Mixer '" + mixer.nameString() + "' has an unresolved managed node relationship.");
+        }
+      }
     }
 
   }  // namespace detail

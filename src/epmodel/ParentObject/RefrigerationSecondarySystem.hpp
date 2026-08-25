@@ -19,11 +19,27 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class ThermalZone;
 
   namespace detail {
     class RefrigerationSecondarySystem_Impl;
   }
 
+/** \brief Defines a secondary refrigeration fluid system.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-refrigeration.html#refrigerationsecondarysystem,Refrigeration:SecondarySystem}
+ *
+ * \par Important behavior
+ * Circulating-fluid, evaporator, pump, phase-change, pipe-distribution, and control fields are stored directly on the secondary-system object.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model class is <code>openstudio::model::RefrigerationSecondarySystem</code>.
+ * <b>Not yet available:</b> Case, walk-in, and air-chiller collections, refrigeration-system attachment, glycol concentration, and pump-curve relationships are not exposed.
+ *
+ * \par Known limitations
+ * Cases and the primary refrigeration system reference this object; they are not owned by it.
+ */
   class EPMODEL_API RefrigerationSecondarySystem : public ParentObject
   {
    public:
@@ -40,12 +56,6 @@ namespace epmodel {
     static std::vector<std::string> circulatingFluidNameValues();
     static std::vector<std::string> pumpDriveTypeValues();
 
-    // Schema Alignment Notes:
-    // - API: preserve openstudio::model::RefrigerationSecondarySystem scalar accessor naming/signatures for the numeric and string fields backed by
-    //   the EnergyPlus Refrigeration:SecondarySystem object.
-    // - Field Mapping: ForwardTranslateRefrigerationSecondarySystem.cpp documents how the retained scalars write to Refrigeration_SecondarySystemFields.
-    // - Field Mapping: richer relationship fields (case/walk-in lists, the variable-speed pump curve, zone references, etc.) are handled elsewhere and intentionally
-    //   excluded from this scalar-only scaffold.
 
     /** @name Field accessors */
     //@{
@@ -107,10 +117,18 @@ namespace epmodel {
     bool setSumUADistributionPiping(double sumUADistributionPiping);
     void resetSumUADistributionPiping();
 
+    boost::optional<ThermalZone> distributionPipingZone() const;
+    bool setDistributionPipingZone(const ThermalZone& thermalZone);
+    void resetDistributionPipingZone();
+
     double sumUAReceiverSeparatorShell() const;
     bool isSumUAReceiverSeparatorShellDefaulted() const;
     bool setSumUAReceiverSeparatorShell(double sumUAReceiverSeparatorShell);
     void resetSumUAReceiverSeparatorShell();
+
+    boost::optional<ThermalZone> receiverSeparatorZone() const;
+    bool setReceiverSeparatorZone(const ThermalZone& thermalZone);
+    void resetReceiverSeparatorZone();
 
     double evaporatorRefrigerantInventory() const;
     bool isEvaporatorRefrigerantInventoryDefaulted() const;

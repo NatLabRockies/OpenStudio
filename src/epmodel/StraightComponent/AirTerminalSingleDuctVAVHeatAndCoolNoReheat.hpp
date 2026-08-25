@@ -24,6 +24,24 @@ namespace epmodel {
     class AirTerminalSingleDuctVAVHeatAndCoolNoReheat_Impl;
   }
 
+  /**
+   * \brief Variable-air-volume terminal that supports heating and cooling without a reheat coil.
+   *
+   * \par EnergyPlus object
+   * Encapsulates \epobject{group-air-distribution-equipment.html#airterminalsingleductvavheatandcoolnoreheat,AirTerminal:SingleDuct:VAV:HeatAndCool:NoReheat}.
+   *
+   * \par Important behavior
+   * Branch insertion rewires the terminal inlet/outlet, AirDistributionUnit outlet, and zone equipment registration;
+   * removal clears those references and the temporary inlet node.
+   *
+   * \par OpenStudio Model API
+   * Counterpart: `openstudio::model::AirTerminalSingleDuctVAVHeatAndCoolNoReheat`. The schedule, turndown schedule,
+   * airflow, control, and supported zone-branch insertion APIs are represented.
+   *
+   * \par Known limitations
+   * `addToNode` currently requires the target to be the epmodel AirLoopHVAC ZoneSplitter/ZoneMixer branch node;
+   * broader Model insertion paths are not exposed.
+   */
   class EPMODEL_API AirTerminalSingleDuctVAVHeatAndCoolNoReheat : public StraightComponent
   {
    public:
@@ -39,13 +57,6 @@ namespace epmodel {
 
     bool addToNode(Node& node);
 
-    // Schema Alignment Notes:
-    // - Status: Connectivity Parity for the current epmodel zone-branch topology.
-    // - Canonical Counterpart: openstudio::model::AirTerminalSingleDuctVAVHeatAndCoolNoReheat.
-    // - Implemented Parity: `addToNode`, inherited `remove`, and `removeFromLoop` preserve terminal node wiring, AirLoopHVAC demand continuity, ZoneHVAC equipment registration, existing ADU references, and temporary inlet-node cleanup.
-    // - Documented Delta: canonical `model` accepts a broader set of demand insertion paths. This epmodel wrapper currently requires the target node to already be the ZoneSplitter/Mixer branch node produced by the epmodel AirLoopHVAC zone-branch topology.
-    // - Field/Storage Mapping: Scalars and links map directly to EnergyPlus `AirTerminal:SingleDuct:VAV:HeatAndCool:NoReheat` and `ZoneHVAC:AirDistributionUnit` fields; node links are resolved through epmodel transient Node targets.
-    // - Evidence: `src/model/AirTerminalSingleDuctVAVHeatAndCoolNoReheat.hpp`, `src/model/AirTerminalSingleDuctVAVHeatAndCoolNoReheat.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirTerminalSingleDuctVAVHeatAndCoolNoReheat.cpp`, and `src/epmodel/test/AirTerminalSingleDuctVAVHeatAndCoolNoReheat_GTest.cpp`.
     boost::optional<Schedule> availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);
     void resetAvailabilitySchedule();

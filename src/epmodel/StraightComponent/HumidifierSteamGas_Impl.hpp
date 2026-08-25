@@ -12,6 +12,7 @@
 
 namespace openstudio {
 namespace epmodel {
+  class Curve;
   class Node;
   class Schedule;
   namespace detail {
@@ -68,6 +69,11 @@ namespace epmodel {
       bool isInletWaterTemperatureOptionDefaulted() const;
       bool setInletWaterTemperatureOption(const std::string& inletWaterTemperatureOption);
       void resetInletWaterTemperatureOption();
+
+      // Thermal Efficiency Modifier Curve
+      boost::optional<Curve> thermalEfficiencyModifierCurve() const;
+      bool setThermalEfficiencyModifierCurve(const Curve& curve);
+      void resetThermalEfficiencyModifierCurve();
 
       std::vector<std::string> inletWaterTemperatureOptionValues() const;
     };

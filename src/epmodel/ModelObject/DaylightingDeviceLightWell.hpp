@@ -22,6 +22,18 @@ namespace epmodel {
     class DaylightingDeviceLightWell_Impl;
   }
 
+  /** \brief Represents <code>DaylightingDevice:LightWell</code>.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-daylighting.html#daylightingdevicelightwell,DaylightingDevice:LightWell}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::DaylightingDeviceLightWell</code>.
+   * **Not yet available:** Model surface, construction, and extensible transition/shelf relationship conveniences are not exposed unless declared here.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API DaylightingDeviceLightWell : public ModelObject
   {
    public:
@@ -34,15 +46,6 @@ namespace epmodel {
     DaylightingDeviceLightWell& operator=(DaylightingDeviceLightWell&&) = default;
 
     static IddObjectType iddObjectType();
-
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model accessor names/signatures for counterpart parity.
-    // - Field Mapping: heightofWell, perimeterofBottomofWell, areaofBottomofWell, and visibleReflectanceofWellWalls
-    //   map directly to DaylightingDevice:LightWell scalar fields in EnergyPlus.
-    // - Field Mapping: Exterior Window Name is a relationship-like link field and is intentionally excluded from scalar accessors.
-    // - TODO(parity): Add typed relationship APIs for Exterior Window Name during non-scalar parity work.
-
-    // Field: Height of Well
     double heightofWell() const;
     bool setHeightofWell(double heightofWell);
 

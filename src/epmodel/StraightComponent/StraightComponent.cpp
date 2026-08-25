@@ -12,8 +12,18 @@
 #include "Loop/PlantLoop_Impl.hpp"
 #include "HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
 #include "HVACComponent/AirLoopHVACOutdoorAirSystem_Impl.hpp"
+#include "AirToAirComponent/AirToAirComponent.hpp"
+#include "AirToAirComponent/AirToAirComponent_Impl.hpp"
 #include "ModelObject/AirLoopHVACOutdoorAirSystemEquipmentList.hpp"
 #include "ModelObject/AirLoopHVACOutdoorAirSystemEquipmentList_Impl.hpp"
+#include "ModelObject/CoilSystemCoolingDX.hpp"
+#include "ModelObject/CoilSystemCoolingDX_Impl.hpp"
+#include "ModelObject/OutdoorAirMixer.hpp"
+#include "ParentObject/ControllerOutdoorAir.hpp"
+#include "StraightComponent/CoilHeatingGas.hpp"
+#include "StraightComponent/CoilHeatingGas_Impl.hpp"
+#include "StraightComponent/CoilSystemCoolingWaterHeatExchangerAssisted.hpp"
+#include "StraightComponent/CoilSystemCoolingWaterHeatExchangerAssisted_Impl.hpp"
 #include "Splitter/AirLoopHVACZoneSplitter.hpp"
 #include "Mixer/AirLoopHVACZoneMixer.hpp"
 #include "Branch.hpp"
@@ -23,18 +33,77 @@
 #include "Node.hpp"
 #include "WaterToAirComponent/WaterToAirComponent.hpp"
 #include "WaterToAirComponent/WaterToAirComponent_Impl.hpp"
+#include "ZoneHVACComponent/ZoneHVACTerminalUnitVariableRefrigerantFlow.hpp"
+#include "ZoneHVACComponent/ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/Compare.hpp>
 #include <utilities/core/Logger.hpp>
 #include <utilities/idd/IddFieldProperties.hpp>
 #include <utilities/idd/AirLoopHVAC_FieldEnums.hxx>
+#include <utilities/idd/Controller_OutdoorAir_FieldEnums.hxx>
 
 #include <sstream>
 
 namespace openstudio {
 namespace epmodel {
   namespace detail {
+
+    bool StraightComponent_Impl::updateAdjacentBranchComponentNode(const ModelObject& object, const Node& node, bool inlet, bool airSide) {
+      auto mutableObject = object;
+
+      if (airSide) {
+        if (auto heatingCoil = mutableObject.optionalCast<CoilHeatingGas>()) {
+          auto heatingCoilImpl = heatingCoil->getImpl<CoilHeatingGas_Impl>();
+          OS_ASSERT(heatingCoilImpl);
+          if (!heatingCoilImpl->setPointer(inlet ? heatingCoil->inletPort() : heatingCoil->outletPort(), node.handle(), false)) {
+            return false;
+          }
+          heatingCoilImpl->syncTemperatureSetpointNode();
+          return true;
+        }
+        if (auto coilSystem = mutableObject.optionalCast<CoilSystemCoolingDX>()) {
+          auto coilSystemImpl = coilSystem->getImpl<CoilSystemCoolingDX_Impl>();
+          OS_ASSERT(coilSystemImpl);
+          if (!coilSystemImpl->setPointer(inlet ? coilSystem->inletPort() : coilSystem->outletPort(), node.handle(), false)) {
+            return false;
+          }
+          return coilSystemImpl->syncCoolingCoilNodes();
+        }
+        if (auto oaSystem = mutableObject.optionalCast<AirLoopHVACOutdoorAirSystem>()) {
+          auto mixer = oaSystem->getImpl<AirLoopHVACOutdoorAirSystem_Impl>()->outdoorAirMixer();
+          auto controller = oaSystem->getControllerOutdoorAir();
+          if (inlet) {
+            return mixer.setPointer(oaSystem->returnAirPort(), node.handle())
+                   && controller.setPointer(openstudio::Controller_OutdoorAirFields::ReturnAirNodeName, node.handle());
+          }
+          return mixer.setPointer(oaSystem->mixedAirPort(), node.handle())
+                 && controller.setPointer(openstudio::Controller_OutdoorAirFields::MixedAirNodeName, node.handle());
+        }
+        if (auto coilSystem = mutableObject.optionalCast<CoilSystemCoolingWaterHeatExchangerAssisted>()) {
+          auto impl = coilSystem->getImpl<CoilSystemCoolingWaterHeatExchangerAssisted_Impl>();
+          return inlet ? impl->setAirInletNode(node) : impl->setAirOutletNode(node);
+        }
+        if (auto terminal = mutableObject.optionalCast<ZoneHVACTerminalUnitVariableRefrigerantFlow>()) {
+          auto impl = terminal->getImpl<ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl>();
+          return impl->setAirBoundaryNode(node, inlet);
+        }
+        if (auto waterToAir = mutableObject.optionalCast<WaterToAirComponent>()) {
+          return waterToAir->setPointer(inlet ? waterToAir->airInletPort() : waterToAir->airOutletPort(), node.handle());
+        }
+        if (auto airToAir = mutableObject.optionalCast<AirToAirComponent>()) {
+          return airToAir->setPointer(inlet ? airToAir->primaryAirInletPort() : airToAir->primaryAirOutletPort(), node.handle());
+        }
+      } else if (auto waterToAir = mutableObject.optionalCast<WaterToAirComponent>()) {
+        return waterToAir->setPointer(inlet ? waterToAir->waterInletPort() : waterToAir->waterOutletPort(), node.handle());
+      }
+
+      if (auto straight = mutableObject.optionalCast<StraightComponent>()) {
+        return straight->setPointer(inlet ? straight->inletPort() : straight->outletPort(), node.handle());
+      }
+
+      return true;
+    }
 
     bool StraightComponent_Impl::addToOutdoorAirSystem(AirLoopHVACOutdoorAirSystem& oaSystem, Node& node) {
       auto thisObject = getObject<ModelObject>();
@@ -61,7 +130,9 @@ namespace epmodel {
         return false;
       }
 
-      auto path = onOutdoorAirStream ? oaSystem.oaComponents() : oaSystem.reliefComponents();
+      auto oaSystemImpl = oaSystem.getImpl<openstudio::epmodel::detail::AirLoopHVACOutdoorAirSystem_Impl>();
+      OS_ASSERT(oaSystemImpl);
+      auto path = onOutdoorAirStream ? oaSystemImpl->outdoorAirStreamComponents() : oaSystemImpl->reliefAirStreamComponents();
       const auto nodeIt = std::find_if(path.begin(), path.end(), [&](const auto& object) { return object.handle() == node.handle(); });
       if (nodeIt == path.end()) {
         return false;
@@ -69,8 +140,6 @@ namespace epmodel {
 
       auto inletNode = node;
       auto outletNode = node;
-      auto oaSystemImpl = oaSystem.getImpl<openstudio::epmodel::detail::AirLoopHVACOutdoorAirSystem_Impl>();
-      OS_ASSERT(oaSystemImpl);
 
       if (path.size() == 1u) {
         auto newNode = model().getOrCreateTransientByName<openstudio::epmodel::Node>(node.nameString() + " - " + thisObject.nameString() + " Outlet");
@@ -135,20 +204,20 @@ namespace epmodel {
       }
 
       const auto thisObject = getObject<ModelObject>();
-      const bool onOutdoorAirStream = oaSystem.oaComponent(handle()).has_value();
-      const bool onReliefStream = oaSystem.reliefComponent(handle()).has_value();
+      auto oaSystemImpl = oaSystem.getImpl<openstudio::epmodel::detail::AirLoopHVACOutdoorAirSystem_Impl>();
+      OS_ASSERT(oaSystemImpl);
+      const bool onOutdoorAirStream = oaSystemImpl->isOutdoorAirStreamComponent(handle());
+      const bool onReliefStream = oaSystemImpl->isReliefAirStreamComponent(handle());
       if (!onOutdoorAirStream && !onReliefStream) {
         return false;
       }
 
-      auto path = onOutdoorAirStream ? oaSystem.oaComponents() : oaSystem.reliefComponents();
+      auto path = onOutdoorAirStream ? oaSystemImpl->outdoorAirStreamComponents() : oaSystemImpl->reliefAirStreamComponents();
       auto it = std::find_if(path.begin(), path.end(), [&](const auto& object) { return object.handle() == thisObject.handle(); });
       if (it == path.end()) {
         return false;
       }
 
-      auto oaSystemImpl = oaSystem.getImpl<openstudio::epmodel::detail::AirLoopHVACOutdoorAirSystem_Impl>();
-      OS_ASSERT(oaSystemImpl);
       const auto index = static_cast<std::size_t>(std::distance(path.begin(), it));
       if (path.size() == 3u) {
         if (onOutdoorAirStream) {
@@ -200,11 +269,24 @@ namespace epmodel {
     }
 
     bool StraightComponent_Impl::addToNode(Node& node) {
-      if (auto owner = getObject<openstudio::epmodel::HVACComponent>().containingHVACComponent()) {
+      auto thisComponent = getObject<openstudio::epmodel::HVACComponent>();
+      if (auto owner = thisComponent.containingHVACComponent()) {
         LOG_FREE(Warn, "openstudio.epmodel.StraightComponent",
                  "Refusing to move " << getObject<ModelObject>().briefDescription() << " onto node '" << node.nameString()
                                      << "' because its air-side connectivity is owned by " << owner->briefDescription() << ".");
         return false;
+      }
+
+      // Reject active adjacency without mistaking the retained node fields of a
+      // detached EnergyPlus-backed object for a live connection.
+      const auto currentLoop = thisComponent.loop();
+      const auto currentOASystem = thisComponent.airLoopHVACOutdoorAirSystem();
+      if (currentLoop || currentOASystem) {
+        const auto inletObject = inletModelObject();
+        const auto outletObject = outletModelObject();
+        if ((inletObject && (inletObject->handle() == node.handle())) || (outletObject && (outletObject->handle() == node.handle()))) {
+          return false;
+        }
       }
 
       const auto nodeName = node.name();
@@ -222,8 +304,7 @@ namespace epmodel {
 
       const auto thisName = thisObject.nameString();
 
-      auto thisComponent = getObject<openstudio::epmodel::HVACComponent>();
-      if (thisComponent.loop() && !removeFromLoop()) {
+      if ((currentLoop || currentOASystem) && !removeFromLoop()) {
         LOG_FREE(Warn, "openstudio.epmodel.StraightComponent",
                  "Failed to detach " << thisObject.briefDescription() << " from its existing loop topology before adding it to node '"
                                      << node.nameString() << "'.");
@@ -231,7 +312,15 @@ namespace epmodel {
       }
 
       if (auto oaSystem = node.airLoopHVACOutdoorAirSystem()) {
-        return addToOutdoorAirSystem(*oaSystem, node);
+        const auto outboardOANode = oaSystem->outboardOANode();
+        const auto outboardReliefNode = oaSystem->outboardReliefNode();
+        const bool onOutdoorAirStream = oaSystem->oaComponent(node.handle()).has_value() || (outboardOANode && (*outboardOANode == node));
+        const bool onReliefStream = oaSystem->reliefComponent(node.handle()).has_value() || (outboardReliefNode && (*outboardReliefNode == node));
+        if (onOutdoorAirStream || onReliefStream) {
+          return addToOutdoorAirSystem(*oaSystem, node);
+        }
+        // Return- and mixed-air endpoints are owned by the OA system but can
+        // also be valid nodes on its containing air-loop supply branch.
       }
 
       boost::optional<openstudio::epmodel::AirLoopHVAC> airLoop = node.airLoopHVAC();
@@ -273,6 +362,12 @@ namespace epmodel {
           if (isSupplyOutlet && airLoop->isDualDuct()) {
             newInletName = *nodeName + " - " + thisName + " Inlet";
             newOutletName = *nodeName;
+          } else if (airLoop->isDualDuct()) {
+            // The main branch ends at the deck splitter, not at either deck
+            // outlet. Give its first component a distinct outlet so the
+            // splitter inlet follows the branch endpoint.
+            newInletName = supplyInlet.nameString();
+            newOutletName = *nodeName + " - " + thisName + " Outlet";
           } else {
             newInletName = supplyInlet.nameString();
             newOutletName = airLoop->supplyOutletNode().nameString();
@@ -378,15 +473,8 @@ namespace epmodel {
             if (!branch->getImpl<openstudio::epmodel::detail::Branch_Impl>()->setComponentInletNode(insertIndex + 1u, newNode)) {
               return false;
             }
-            if (auto straightComponent = components[i].optionalCast<openstudio::epmodel::StraightComponent>()) {
-              if (!straightComponent->setPointer(straightComponent->inletPort(), newNode.handle())) {
-                return false;
-              }
-            } else if (auto waterToAirComponent = components[i].optionalCast<openstudio::epmodel::WaterToAirComponent>()) {
-              const auto port = airLoop ? waterToAirComponent->airInletPort() : waterToAirComponent->waterInletPort();
-              if (!waterToAirComponent->setPointer(port, newNode.handle())) {
-                return false;
-              }
+            if (!updateAdjacentBranchComponentNode(components[i], newNode, true, airLoop.has_value())) {
+              return false;
             }
           } else {
             // The upstream component currently uses nodeName as its outlet; reroute it to newNodeName.
@@ -394,15 +482,8 @@ namespace epmodel {
             if (!branch->getImpl<openstudio::epmodel::detail::Branch_Impl>()->setComponentOutletNode(insertIndex - 1u, newNode)) {
               return false;
             }
-            if (auto straightComponent = components[i].optionalCast<openstudio::epmodel::StraightComponent>()) {
-              if (!straightComponent->setPointer(straightComponent->outletPort(), newNode.handle())) {
-                return false;
-              }
-            } else if (auto waterToAirComponent = components[i].optionalCast<openstudio::epmodel::WaterToAirComponent>()) {
-              const auto port = airLoop ? waterToAirComponent->airOutletPort() : waterToAirComponent->waterOutletPort();
-              if (!waterToAirComponent->setPointer(port, newNode.handle())) {
-                return false;
-              }
+            if (!updateAdjacentBranchComponentNode(components[i], newNode, false, airLoop.has_value())) {
+              return false;
             }
           }
 
@@ -502,6 +583,17 @@ namespace epmodel {
       return boost::none;
     }
 
+    bool StraightComponent_Impl::isDemandBranchStartComponent() const {
+      const auto component = getObject<openstudio::epmodel::ModelObject>().optionalCast<openstudio::epmodel::StraightComponent>();
+      const auto airLoop = component ? component->airLoopHVAC() : boost::optional<openstudio::epmodel::AirLoopHVAC>();
+      if (!component || !airLoop) {
+        return false;
+      }
+      auto airLoopImpl = airLoop->getImpl<openstudio::epmodel::detail::AirLoopHVAC_Impl>();
+      OS_ASSERT(airLoopImpl);
+      return airLoopImpl->isDemandBranchStartComponent(*component);
+    }
+
     bool StraightComponent_Impl::removeFromLoop() {
       auto thisObject = getObject<openstudio::epmodel::ModelObject>();
 
@@ -530,31 +622,44 @@ namespace epmodel {
       }
 
       for (auto oaSystem : model().getConcreteModelObjects<openstudio::epmodel::AirLoopHVACOutdoorAirSystem>()) {
-        if (oaSystem.component(handle())) {
+        auto oaSystemImpl = oaSystem.getImpl<openstudio::epmodel::detail::AirLoopHVACOutdoorAirSystem_Impl>();
+        OS_ASSERT(oaSystemImpl);
+        if (oaSystemImpl->isOutdoorAirStreamComponent(handle()) || oaSystemImpl->isReliefAirStreamComponent(handle())) {
           return removeFromOutdoorAirSystem(oaSystem);
         }
       }
 
       if (auto loop = thisComponent->airLoopHVAC()) {
-        auto splitter = loop->zoneSplitter();
-        auto mixer = loop->zoneMixer();
-
-        const auto splitterBranchIndex = splitter.branchIndexForOutletModelObject(inletNode->cast<ModelObject>());
-        const auto mixerBranchIndex = mixer.branchIndexForInletModelObject(outletNode->cast<ModelObject>());
-        const bool isZoneBranch = (splitterBranchIndex == mixerBranchIndex)
-                                  && (splitter.outletModelObject(splitterBranchIndex) == inletNode->cast<ModelObject>())
-                                  && (mixer.inletModelObject(mixerBranchIndex) == outletNode->cast<ModelObject>());
-
-        if (isZoneBranch) {
-          splitter.setOutletModelObject(splitterBranchIndex, outletNode->cast<ModelObject>());
-        } else {
-          auto branchList = loop->getImpl<openstudio::epmodel::detail::AirLoopHVAC_Impl>()->branchList();
-          const auto branches = branchList.branches();
-          if (branches.empty()) {
+        auto loopImpl = loop->getImpl<openstudio::epmodel::detail::AirLoopHVAC_Impl>();
+        OS_ASSERT(loopImpl);
+        if (loopImpl->isDemandBranchStartComponent(*thisComponent)) {
+          // A terminal may start at a ZoneSplitter outlet or at a
+          // SupplyPlenum outlet. Let the effective demand graph replace the
+          // endpoint in the connector that actually owns it.
+          if (!loopImpl->bypassDemandBranchStartComponent(*thisComponent)) {
             return false;
           }
-          auto branch = branches.front();
-          auto components = branch.components();
+        } else {
+          auto branchList = loopImpl->branchList();
+          const auto branches = branchList.branches();
+          boost::optional<openstudio::epmodel::Branch> owningBranch;
+          std::vector<ModelObject> components;
+          unsigned matchingBranches = 0u;
+          for (const auto& candidate : branches) {
+            const auto candidateComponents = candidate.components();
+            if (std::ranges::find(candidateComponents, thisObject) == candidateComponents.end()) {
+              continue;
+            }
+            owningBranch = candidate;
+            components = candidateComponents;
+            ++matchingBranches;
+          }
+          if (!owningBranch || matchingBranches != 1u) {
+            return false;
+          }
+
+          auto branch = *owningBranch;
+          bool removedFromSupplyBranch = false;
           for (unsigned i = 0; i < components.size(); ++i) {
             if (components[i] != thisObject) {
               continue;
@@ -563,15 +668,28 @@ namespace epmodel {
               if (!branch.getImpl<openstudio::epmodel::detail::Branch_Impl>()->setComponentInletNode(i + 1u, *inletNode)) {
                 return false;
               }
+              if (!updateAdjacentBranchComponentNode(components[i + 1u], *inletNode, true, true)) {
+                return false;
+              }
+            } else if (i > 0u) {
+              if (!branch.getImpl<openstudio::epmodel::detail::Branch_Impl>()->setComponentOutletNode(i - 1u, *outletNode)) {
+                return false;
+              }
+              if (!updateAdjacentBranchComponentNode(components[i - 1u], *outletNode, false, true)) {
+                return false;
+              }
             }
             if (!branch.getImpl<openstudio::epmodel::detail::Branch_Impl>()->removeComponent(i)) {
               return false;
             }
+            removedFromSupplyBranch = true;
             break;
+          }
+          if (!removedFromSupplyBranch) {
+            return false;
           }
         }
 
-        auto loopImpl = loop->getImpl<openstudio::epmodel::detail::AirLoopHVAC_Impl>();
         loopImpl->syncControllerMechanicalVentilationZoneOutdoorAirEntries();
         loopImpl->syncSetpointManagerMixedAirFanNodes();
         return true;
@@ -656,8 +774,18 @@ namespace epmodel {
         return;
       }
 
-      setPointer(inletPort(), Handle(), false);
-      setPointer(outletPort(), Handle(), false);
+      // Node derives from StraightComponent but uses port 0 as a sentinel: its
+      // topology is inferred from the loop rather than stored in object fields.
+      // Clearing field 0 would clear the Node name and leave invalid reverse
+      // pointers behind when the Node is subsequently removed.
+      const auto inlet = inletPort();
+      if (inlet != 0u) {
+        setPointer(inlet, Handle(), false);
+      }
+      const auto outlet = outletPort();
+      if (outlet != 0u) {
+        setPointer(outlet, Handle(), false);
+      }
     }
 
   }  // namespace detail

@@ -5,12 +5,16 @@
 
 #include "ParentObject/RefrigerationSecondarySystem.hpp"
 #include "ParentObject/RefrigerationSecondarySystem_Impl.hpp"
+#include "HVACComponent/ThermalZone.hpp"
+#include "HVACComponent/ThermalZone_Impl.hpp"
 
 #include "Model.hpp"
 
 #include <utilities/idd/IddFactory.hxx>
 #include <utilities/idd/Refrigeration_SecondarySystem_FieldEnums.hxx>
 #include <utilities/core/Assert.hpp>
+#include <utilities/core/Logger.hpp>
+#include <utilities/idf/IdfObject_Impl.hpp>
 
 #include <boost/optional.hpp>
 
@@ -240,6 +244,31 @@ namespace epmodel {
       OS_ASSERT(setString(Refrigeration_SecondarySystemFields::SumUADistributionPiping, ""));
     }
 
+    boost::optional<ThermalZone> RefrigerationSecondarySystem_Impl::distributionPipingZone() const {
+      return getObject<ModelObject>().getModelObjectTarget<ThermalZone>(Refrigeration_SecondarySystemFields::DistributionPipingZoneName);
+    }
+
+    bool RefrigerationSecondarySystem_Impl::setDistributionPipingZone(const ThermalZone& thermalZone) {
+      constexpr auto field = Refrigeration_SecondarySystemFields::DistributionPipingZoneName;
+      if (thermalZone.model() != model()) {
+        LOG_FREE(Warn, "openstudio.epmodel.RefrigerationSecondarySystem",
+                 "Cannot set the distribution-piping zone because it belongs to a different model.");
+        return false;
+      }
+      if (!model().canBeTarget(thermalZone.handle(), iddObject().objectLists(field))) {
+        LOG_FREE(Warn, "openstudio.epmodel.RefrigerationSecondarySystem",
+                 "Cannot set the distribution-piping zone because ThermalZone is not accepted by the field.");
+        return false;
+      }
+      return setPointer(field, thermalZone.handle(), false);
+    }
+
+    void RefrigerationSecondarySystem_Impl::resetDistributionPipingZone() {
+      constexpr auto field = Refrigeration_SecondarySystemFields::DistributionPipingZoneName;
+      OS_ASSERT(setPointer(field, Handle(), false));
+      OS_ASSERT(openstudio::detail::IdfObject_Impl::setString(field, "", false));
+    }
+
     double RefrigerationSecondarySystem_Impl::sumUAReceiverSeparatorShell() const {
       const auto value = getDouble(Refrigeration_SecondarySystemFields::SumUAReceiver_SeparatorShell, true);
       OS_ASSERT(value);
@@ -258,6 +287,31 @@ namespace epmodel {
 
     void RefrigerationSecondarySystem_Impl::resetSumUAReceiverSeparatorShell() {
       OS_ASSERT(setString(Refrigeration_SecondarySystemFields::SumUAReceiver_SeparatorShell, ""));
+    }
+
+    boost::optional<ThermalZone> RefrigerationSecondarySystem_Impl::receiverSeparatorZone() const {
+      return getObject<ModelObject>().getModelObjectTarget<ThermalZone>(Refrigeration_SecondarySystemFields::Receiver_SeparatorZoneName);
+    }
+
+    bool RefrigerationSecondarySystem_Impl::setReceiverSeparatorZone(const ThermalZone& thermalZone) {
+      constexpr auto field = Refrigeration_SecondarySystemFields::Receiver_SeparatorZoneName;
+      if (thermalZone.model() != model()) {
+        LOG_FREE(Warn, "openstudio.epmodel.RefrigerationSecondarySystem",
+                 "Cannot set the receiver/separator zone because it belongs to a different model.");
+        return false;
+      }
+      if (!model().canBeTarget(thermalZone.handle(), iddObject().objectLists(field))) {
+        LOG_FREE(Warn, "openstudio.epmodel.RefrigerationSecondarySystem",
+                 "Cannot set the receiver/separator zone because ThermalZone is not accepted by the field.");
+        return false;
+      }
+      return setPointer(field, thermalZone.handle(), false);
+    }
+
+    void RefrigerationSecondarySystem_Impl::resetReceiverSeparatorZone() {
+      constexpr auto field = Refrigeration_SecondarySystemFields::Receiver_SeparatorZoneName;
+      OS_ASSERT(setPointer(field, Handle(), false));
+      OS_ASSERT(openstudio::detail::IdfObject_Impl::setString(field, "", false));
     }
 
     double RefrigerationSecondarySystem_Impl::evaporatorRefrigerantInventory() const {
@@ -496,6 +550,18 @@ namespace epmodel {
     getImpl<detail::RefrigerationSecondarySystem_Impl>()->resetSumUADistributionPiping();
   }
 
+  boost::optional<ThermalZone> RefrigerationSecondarySystem::distributionPipingZone() const {
+    return getImpl<detail::RefrigerationSecondarySystem_Impl>()->distributionPipingZone();
+  }
+
+  bool RefrigerationSecondarySystem::setDistributionPipingZone(const ThermalZone& thermalZone) {
+    return getImpl<detail::RefrigerationSecondarySystem_Impl>()->setDistributionPipingZone(thermalZone);
+  }
+
+  void RefrigerationSecondarySystem::resetDistributionPipingZone() {
+    getImpl<detail::RefrigerationSecondarySystem_Impl>()->resetDistributionPipingZone();
+  }
+
   double RefrigerationSecondarySystem::sumUAReceiverSeparatorShell() const {
     return getImpl<detail::RefrigerationSecondarySystem_Impl>()->sumUAReceiverSeparatorShell();
   }
@@ -510,6 +576,18 @@ namespace epmodel {
 
   void RefrigerationSecondarySystem::resetSumUAReceiverSeparatorShell() {
     getImpl<detail::RefrigerationSecondarySystem_Impl>()->resetSumUAReceiverSeparatorShell();
+  }
+
+  boost::optional<ThermalZone> RefrigerationSecondarySystem::receiverSeparatorZone() const {
+    return getImpl<detail::RefrigerationSecondarySystem_Impl>()->receiverSeparatorZone();
+  }
+
+  bool RefrigerationSecondarySystem::setReceiverSeparatorZone(const ThermalZone& thermalZone) {
+    return getImpl<detail::RefrigerationSecondarySystem_Impl>()->setReceiverSeparatorZone(thermalZone);
+  }
+
+  void RefrigerationSecondarySystem::resetReceiverSeparatorZone() {
+    getImpl<detail::RefrigerationSecondarySystem_Impl>()->resetReceiverSeparatorZone();
   }
 
   double RefrigerationSecondarySystem::evaporatorRefrigerantInventory() const {

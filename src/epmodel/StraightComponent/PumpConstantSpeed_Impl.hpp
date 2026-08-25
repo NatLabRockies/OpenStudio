@@ -14,6 +14,9 @@
 namespace openstudio {
 namespace epmodel {
   class Node;
+  class Curve;
+  class Schedule;
+  class ThermalZone;
   namespace detail {
 
     class EPMODEL_API PumpConstantSpeed_Impl : public StraightComponent_Impl
@@ -60,6 +63,14 @@ namespace epmodel {
       bool setPumpControlType(const std::string& pumpControlType);
       void resetPumpControlType();
 
+      boost::optional<Schedule> pumpFlowRateSchedule() const;
+      bool setPumpFlowRateSchedule(Schedule& schedule);
+      void resetPumpFlowRateSchedule();
+
+      boost::optional<Curve> pumpCurve() const;
+      bool setPumpCurve(const Curve& curve);
+      void resetPumpCurve();
+
       boost::optional<double> impellerDiameter() const;
       bool setImpellerDiameter(double impellerDiameter);
       void resetImpellerDiameter();
@@ -67,6 +78,10 @@ namespace epmodel {
       boost::optional<double> rotationalSpeed() const;
       bool setRotationalSpeed(double rotationalSpeed);
       void resetRotationalSpeed();
+
+      boost::optional<ThermalZone> zone() const;
+      bool setZone(const ThermalZone& thermalZone);
+      void resetZone();
 
       boost::optional<double> skinLossRadiativeFraction() const;
       bool setSkinLossRadiativeFraction(double skinLossRadiativeFraction);

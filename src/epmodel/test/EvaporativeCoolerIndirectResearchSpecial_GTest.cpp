@@ -20,9 +20,34 @@
 #include "../StraightComponent/EvaporativeCoolerIndirectResearchSpecial_Impl.hpp"
 #include "../StraightComponent/Node.hpp"
 
+#include <utilities/core/StringHelpers.hpp>
 #include <utilities/idd/EvaporativeCooler_Indirect_ResearchSpecial_FieldEnums.hxx>
+#include <utilities/idd/OutdoorAir_NodeList_FieldEnums.hxx>
+#include <utilities/idf/Handle.hpp>
+#include <utilities/idf/WorkspaceExtensibleGroup.hpp>
 
 using namespace openstudio::epmodel;
+
+namespace {
+
+unsigned outdoorAirDeclarationCount(const Model& model, const std::string& nodeName) {
+  unsigned result = 0;
+  for (const auto& object : model.getObjectsByType(openstudio::IddObjectType::OutdoorAir_NodeList)) {
+    for (const auto& group : object.extensibleGroups()) {
+      auto workspaceGroup = group.optionalCast<openstudio::WorkspaceExtensibleGroup>();
+      if (!workspaceGroup) {
+        continue;
+      }
+      auto listedNodeName = workspaceGroup->getString(openstudio::OutdoorAir_NodeListExtensibleFields::NodeorNodeListName);
+      if (listedNodeName && openstudio::istringEqual(*listedNodeName, nodeName)) {
+        ++result;
+      }
+    }
+  }
+  return result;
+}
+
+}  // namespace
 
 TEST_F(EPModelFixture, EvaporativeCoolerIndirectResearchSpecial_DefaultConstructor) {
   Model model;
@@ -49,6 +74,69 @@ TEST_F(EPModelFixture, EvaporativeCoolerIndirectResearchSpecial_DefaultConstruct
 
   EXPECT_DOUBLE_EQ(0.1, evaporativeCooler.waterPumpPowerSizingFactor());
   EXPECT_DOUBLE_EQ(1.0, evaporativeCooler.secondaryAirFlowScalingFactor());
+}
+
+TEST_F(EPModelFixture, EvaporativeCoolerIndirectResearchSpecial_SecondaryAirNodeStorageLifecycle) {
+  const auto idfPath = openstudio::tempDir() / openstudio::toPath("epmodel-indirect-evaporative-secondary-air-roundtrip.idf");
+
+  Model model;
+  EvaporativeCoolerIndirectResearchSpecial cooler(model);
+  ASSERT_TRUE(cooler.setName("Indirect Evaporative Cooler"));
+
+  const auto inletField = openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::SecondaryAirInletNodeName;
+  const auto outletField = openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::SecondaryAirOutletNodeName;
+  auto inletNode = cooler.getModelObjectTarget<Node>(inletField);
+  auto outletNode = cooler.getModelObjectTarget<Node>(outletField);
+  ASSERT_TRUE(inletNode);
+  ASSERT_TRUE(outletNode);
+  EXPECT_EQ("Indirect Evaporative Cooler Secondary Air Inlet", inletNode->nameString());
+  EXPECT_EQ("Indirect Evaporative Cooler Secondary Air Outlet", outletNode->nameString());
+  EXPECT_EQ(1u, outdoorAirDeclarationCount(model, inletNode->nameString()));
+
+  const auto oldInletName = inletNode->nameString();
+  ASSERT_TRUE(cooler.setName("Renamed Indirect Evaporative Cooler"));
+  inletNode = cooler.getModelObjectTarget<Node>(inletField);
+  outletNode = cooler.getModelObjectTarget<Node>(outletField);
+  ASSERT_TRUE(inletNode);
+  ASSERT_TRUE(outletNode);
+  EXPECT_EQ("Renamed Indirect Evaporative Cooler Secondary Air Inlet", inletNode->nameString());
+  EXPECT_EQ("Renamed Indirect Evaporative Cooler Secondary Air Outlet", outletNode->nameString());
+  EXPECT_EQ(0u, outdoorAirDeclarationCount(model, oldInletName));
+  EXPECT_EQ(1u, outdoorAirDeclarationCount(model, inletNode->nameString()));
+
+  ASSERT_TRUE(model.save(idfPath, true));
+  auto loadedModel = Model::load(idfPath);
+  ASSERT_TRUE(loadedModel);
+  auto loadedCooler = loadedModel->getConcreteModelObjectByName<EvaporativeCoolerIndirectResearchSpecial>("Renamed Indirect Evaporative Cooler");
+  ASSERT_TRUE(loadedCooler);
+  inletNode = loadedCooler->getModelObjectTarget<Node>(inletField);
+  outletNode = loadedCooler->getModelObjectTarget<Node>(outletField);
+  ASSERT_TRUE(inletNode);
+  ASSERT_TRUE(outletNode);
+  EXPECT_EQ(1u, outdoorAirDeclarationCount(*loadedModel, inletNode->nameString()));
+
+  ASSERT_TRUE(loadedCooler->setPointer(inletField, openstudio::Handle()));
+  ASSERT_TRUE(loadedCooler->setPointer(outletField, openstudio::Handle()));
+  ASSERT_TRUE(loadedModel->save(idfPath, true));
+  auto repairedModel = Model::load(idfPath);
+  ASSERT_TRUE(repairedModel);
+  auto repairedCooler = repairedModel->getConcreteModelObjectByName<EvaporativeCoolerIndirectResearchSpecial>("Renamed Indirect Evaporative Cooler");
+  ASSERT_TRUE(repairedCooler);
+  inletNode = repairedCooler->getModelObjectTarget<Node>(inletField);
+  outletNode = repairedCooler->getModelObjectTarget<Node>(outletField);
+  ASSERT_TRUE(inletNode);
+  ASSERT_TRUE(outletNode);
+  EXPECT_EQ("Renamed Indirect Evaporative Cooler Secondary Air Inlet", inletNode->nameString());
+  EXPECT_EQ("Renamed Indirect Evaporative Cooler Secondary Air Outlet", outletNode->nameString());
+  EXPECT_EQ(1u, outdoorAirDeclarationCount(*repairedModel, inletNode->nameString()));
+
+  const auto repairedInletName = inletNode->nameString();
+  const auto repairedCoolerHandle = repairedCooler->handle();
+  repairedCooler->remove();
+  EXPECT_FALSE(repairedModel->getObject(repairedCoolerHandle));
+  EXPECT_EQ(0u, outdoorAirDeclarationCount(*repairedModel, repairedInletName));
+
+  openstudio::filesystem::remove(idfPath);
 }
 
 TEST_F(EPModelFixture, EvaporativeCoolerIndirectResearchSpecial_RelationshipAndScalarAccessors_RoundTrip) {

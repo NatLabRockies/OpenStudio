@@ -115,6 +115,35 @@ TEST_F(EPModelFixture, ZoneHVACUnitHeater_TopologyAndChildren) {
   EXPECT_EQ(coil, children[1]);
 }
 
+TEST_F(EPModelFixture, ZoneHVACUnitHeater_RemoveDeletesOwnedFanAndCoil) {
+  Model model;
+  ThermalZone zone(model);
+  ZoneHVACUnitHeater unitHeater(model);
+  FanConstantVolume fan(model);
+  CoilHeatingElectric coil(model);
+  ASSERT_TRUE(unitHeater.setSupplyAirFan(fan));
+  ASSERT_TRUE(unitHeater.setHeatingCoil(coil));
+  ASSERT_TRUE(unitHeater.addToThermalZone(zone));
+
+  const auto unitHeaterHandle = unitHeater.handle();
+  const auto fanHandle = fan.handle();
+  const auto coilHandle = coil.handle();
+  auto connections = zone.getImpl<detail::ThermalZone_Impl>()->zoneHVACEquipmentConnections();
+  ASSERT_TRUE(connections);
+  auto equipmentList = connections->zoneHVACEquipmentList();
+  ASSERT_EQ(1u, equipmentList.equipment().size());
+
+  const auto removed = unitHeater.remove();
+
+  EXPECT_FALSE(removed.empty());
+  EXPECT_FALSE(model.getObject(unitHeaterHandle));
+  EXPECT_FALSE(model.getObject(fanHandle));
+  EXPECT_FALSE(model.getObject(coilHandle));
+  EXPECT_TRUE(equipmentList.equipment().empty());
+  EXPECT_TRUE(connections->zoneAirInletNodes().empty());
+  EXPECT_TRUE(connections->zoneAirExhaustNodes().empty());
+}
+
 TEST_F(EPModelFixture, ZoneHVACUnitHeater_HvacRelationships_RoundTrip) {
   Model model;
   ZoneHVACUnitHeater unitHeater(model);

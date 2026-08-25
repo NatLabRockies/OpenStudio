@@ -43,9 +43,25 @@ if (BUILD_PYTHON_PIP_PACKAGE)
     )
   endforeach()
 
+  set(python_package_runtime_targets openstudiolib)
+  if(MSVC)
+    list(APPEND python_package_runtime_targets
+      openstudiomodellib
+      openstudioepmodellib
+      openstudioutilitieslib
+    )
+  endif()
+
+  set(python_package_runtime_copy_commands)
+  foreach(runtime_target IN LISTS python_package_runtime_targets)
+    list(APPEND python_package_runtime_copy_commands
+      COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:${runtime_target}> "openstudio/"
+    )
+  endforeach()
+
   add_custom_target(python_package
     COMMAND ${CMAKE_COMMAND} -E rm -Rf "build/" "dist/" "openstudio.egg-info/"
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:openstudiolib> "openstudio/"
+    ${python_package_runtime_copy_commands}
     COMMAND ${CMAKE_COMMAND} -E echo "To create the package, cd 'Products/python_package/'"
     COMMAND ${CMAKE_COMMAND} -E echo "${Python_EXECUTABLE} setup.py bdist_wheel"
     COMMAND ${CMAKE_COMMAND} -E echo "${Python_EXECUTABLE} -m twine upload --verbose --skip-existing --repository ${PYTHON_PIP_REPOSITORY} dist/*"
@@ -53,6 +69,7 @@ if (BUILD_PYTHON_PIP_PACKAGE)
       ${ALL_PYTHON_BINDING_TARGETS}
       ${ALL_PYTHON_PACKAGE_TARGETS}
       ${ALL_PYTHON_PACKAGE_GENERATED_SRCS}
+      ${python_package_runtime_targets}
     WORKING_DIRECTORY ${PYTHON_PACKAGE_FOLDER}
   )
 

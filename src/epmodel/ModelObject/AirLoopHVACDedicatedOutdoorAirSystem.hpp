@@ -10,20 +10,36 @@
 #include "ModelObject.hpp"
 
 #include <memory>
+#include <vector>
 
 namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class AirLoopHVACOutdoorAirSystem;
+  class Schedule;
+  class AirLoopHVAC;
 
   namespace detail {
     class AirLoopHVACDedicatedOutdoorAirSystem_Impl;
   }
 
+  /** \brief Represents the EnergyPlus AirLoopHVAC:DedicatedOutdoorAirSystem object.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-air-path.html#airloophvacdedicatedoutdoorairsystem,AirLoopHVAC:DedicatedOutdoorAirSystem}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::AirLoopHVACDedicatedOutdoorAirSystem</code>. <b>Changed:</b> EPModel also permits direct construction from <code>Model</code>. EPModel requires each served air loop to have its own outdoor-air system and retains that system when the DOAS is removed.
+   *
+   * \par Known limitations
+   * Adding/removing air loops updates aligned EnergyPlus extensible rows and owned mixer/splitter topology; broader equipment lifecycle and clone workflows remain restricted.
+   */
   class EPMODEL_API AirLoopHVACDedicatedOutdoorAirSystem : public ModelObject
   {
    public:
     explicit AirLoopHVACDedicatedOutdoorAirSystem(const Model& model);
+    explicit AirLoopHVACDedicatedOutdoorAirSystem(const AirLoopHVACOutdoorAirSystem& oaSystem);
 
     virtual ~AirLoopHVACDedicatedOutdoorAirSystem() override = default;
     AirLoopHVACDedicatedOutdoorAirSystem(const AirLoopHVACDedicatedOutdoorAirSystem& other) = default;
@@ -33,11 +49,9 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model scalar accessor names/signatures for this model-counterpart class.
-    // - Field Mapping: preheat/precool design temperature and humidity ratio map directly to same-named E+ fields.
-    // - Field Mapping: Outdoor air system, schedule, mixer/splitter names, and extensible air-loop references are relationship-like and excluded.
-    // - TODO(parity): Add non-scalar relationship APIs incrementally after scalar saturation.
+    AirLoopHVACOutdoorAirSystem airLoopHVACOutdoorAirSystem() const;
+    Schedule availabilitySchedule() const;
+
     double preheatDesignTemperature() const;
     bool setPreheatDesignTemperature(double preheatDesignTemperature);
 
@@ -49,6 +63,18 @@ namespace epmodel {
 
     double precoolDesignHumidityRatio() const;
     bool setPrecoolDesignHumidityRatio(double precoolDesignHumidityRatio);
+
+    unsigned int numberofAirLoops() const;
+    std::vector<AirLoopHVAC> airLoops() const;
+    boost::optional<unsigned> airLoopIndex(const AirLoopHVAC& airLoopHVAC) const;
+
+    bool setAirLoopHVACOutdoorAirSystem(const AirLoopHVACOutdoorAirSystem& airLoopHVACOutdoorAirSystem);
+    bool setAvailabilitySchedule(Schedule& schedule);
+    bool addAirLoop(const AirLoopHVAC& airLoopHVAC);
+    bool removeAirLoop(const AirLoopHVAC& airLoopHVAC);
+    bool removeAirLoop(unsigned groupIndex);
+    void removeAllAirLoops();
+    bool addAirLoops(const std::vector<AirLoopHVAC>& airLoopHVACs);
 
    protected:
     using ImplType = detail::AirLoopHVACDedicatedOutdoorAirSystem_Impl;

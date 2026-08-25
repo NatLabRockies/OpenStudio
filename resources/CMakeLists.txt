@@ -133,6 +133,7 @@ set(utilities_resources_src
   utilities/SqlFile/1ZoneEvapCooler-V24-2-0.sql
   utilities/SqlFile/1ZoneEvapCooler-V25-1-0.sql
   utilities/SqlFile/1ZoneEvapCooler-V25-2-0.sql
+  utilities/SqlFile/1ZoneEvapCooler-V26-1-0.sql
   utilities/xml/base.xml
   utilities/xml/hpxml_with_error.xml
   utilities/xml/schema/HPXML.xsd
@@ -424,8 +425,150 @@ CREATE_SRC_GROUPS("${airflow_resources_src}")
 
 # Copy it for testing
 file(COPY "Examples" DESTINATION .)
+
+if(BUILD_CLI)
+  # Stage EPModel examples with inputs from the exact EnergyPlus distribution
+  # configured for this build. Keeping the inputs beside the workflows gives
+  # the build tree and installed package the same relative layout.
+  set(EPMODEL_EXAMPLE_DIR "${CMAKE_CURRENT_BINARY_DIR}/Examples/epmodel")
+  set(EPMODEL_EXAMPLE_FILES_DIR "${EPMODEL_EXAMPLE_DIR}/files")
+  # file(COPY "Examples" ...) above does not remove files that disappeared
+  # from the source tree. Drop retired workflows so an existing development
+  # build shows the same curated set as a clean build.
+  file(REMOVE
+    "${EPMODEL_EXAMPLE_DIR}/epmodel_reference_building.osw"
+    "${EPMODEL_EXAMPLE_DIR}/epmodel_reference_building_four_pipe_fan_coils.osw"
+    "${EPMODEL_EXAMPLE_DIR}/epmodel_reference_building_multizone_vav.osw"
+    "${EPMODEL_EXAMPLE_DIR}/epmodel_reference_building_packaged_terminal_heat_pumps.osw"
+    "${EPMODEL_EXAMPLE_DIR}/epmodel_reference_building_packaged_unitary.osw"
+    "${EPMODEL_EXAMPLE_DIR}/epmodel_from_scratch.osw"
+    "${EPMODEL_EXAMPLE_DIR}/epmodel_from_scratch_four_pipe_fan_coils.osw"
+    "${EPMODEL_EXAMPLE_DIR}/epmodel_from_scratch_multizone_vav.osw"
+    "${EPMODEL_EXAMPLE_DIR}/epmodel_from_scratch_packaged_terminal_heat_pumps.osw"
+    "${EPMODEL_EXAMPLE_DIR}/epmodel_from_scratch_packaged_unitary.osw"
+    "${EPMODEL_EXAMPLE_FILES_DIR}/golden_co_2013_amy.epw"
+  )
+  file(REMOVE_RECURSE "${EPMODEL_EXAMPLE_DIR}/measures/EpModelFromScratch")
+  set(EPMODEL_REFERENCE_BUILDING_NAMES
+    RefBldgFullServiceRestaurantNew2004_Chicago.idf
+    RefBldgLargeHotelNew2004_Chicago.idf
+    RefBldgMediumOfficeNew2004_Chicago.idf
+    RefBldgMidriseApartmentNew2004_Chicago.idf
+    RefBldgOutPatientNew2004_Chicago.idf
+    RefBldgPrimarySchoolNew2004_Chicago.idf
+    RefBldgQuickServiceRestaurantNew2004_Chicago.idf
+    RefBldgSecondarySchoolNew2004_Chicago.idf
+    RefBldgSmallHotelNew2004_Chicago.idf
+    RefBldgSmallOfficeNew2004_Chicago.idf
+    RefBldgStand-aloneRetailNew2004_Chicago.idf
+    RefBldgStripMallNew2004_Chicago.idf
+    RefBldgSuperMarketNew2004_Chicago.idf
+    RefBldgWarehouseNew2004_Chicago.idf
+  )
+  set(EPMODEL_REFERENCE_BUILDINGS "")
+  foreach(EPMODEL_REFERENCE_BUILDING_NAME IN LISTS EPMODEL_REFERENCE_BUILDING_NAMES)
+    set(EPMODEL_REFERENCE_BUILDING
+        "${ENERGYPLUS_DIR}/ExampleFiles/${EPMODEL_REFERENCE_BUILDING_NAME}")
+    if(NOT EXISTS "${EPMODEL_REFERENCE_BUILDING}")
+      message(FATAL_ERROR
+        "The configured EnergyPlus distribution does not contain the EPModel example input: "
+        "${EPMODEL_REFERENCE_BUILDING}")
+    endif()
+    list(APPEND EPMODEL_REFERENCE_BUILDINGS "${EPMODEL_REFERENCE_BUILDING}")
+  endforeach()
+  set(EPMODEL_EXAMPLE_WEATHERS
+    "${ENERGYPLUS_DIR}/WeatherData/USA_CO_Golden-NREL.724666_TMY3.epw"
+    "${ENERGYPLUS_DIR}/WeatherData/USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw"
+  )
+  foreach(EPMODEL_EXAMPLE_WEATHER IN LISTS EPMODEL_EXAMPLE_WEATHERS)
+    if(NOT EXISTS "${EPMODEL_EXAMPLE_WEATHER}")
+      message(FATAL_ERROR
+        "The configured EnergyPlus distribution does not contain the EPModel example weather file: "
+        "${EPMODEL_EXAMPLE_WEATHER}")
+    endif()
+  endforeach()
+
+  # configure_file makes these source files CMake inputs, so edits are restaged
+  # automatically before the CTests run.
+  set(EPMODEL_EXAMPLE_RELATIVE_FILES
+    README.md
+    epmodel_core_perimeter_four_pipe_fan_coils.osw
+    epmodel_core_perimeter_ideal_loads.osw
+    epmodel_core_perimeter_multizone_vav.osw
+    epmodel_core_perimeter_packaged_terminal_heat_pumps.osw
+    epmodel_core_perimeter_packaged_unitary.osw
+    epmodel_existing_osm_as_is.osw
+    epmodel_existing_osm_replace_hvac.osw
+    epmodel_reference_full_service_restaurant.osw
+    epmodel_reference_large_hotel.osw
+    epmodel_reference_medium_office.osw
+    epmodel_reference_midrise_apartment.osw
+    epmodel_reference_outpatient.osw
+    epmodel_reference_primary_school.osw
+    epmodel_reference_quick_service_restaurant.osw
+    epmodel_reference_secondary_school.osw
+    epmodel_reference_small_hotel.osw
+    epmodel_reference_small_office.osw
+    epmodel_reference_stand_alone_retail.osw
+    epmodel_reference_strip_mall.osw
+    epmodel_reference_supermarket.osw
+    epmodel_reference_warehouse.osw
+    files/nlr_east_entrance_building_v1_11_5.osm
+    measures/EpModelAddFourPipeFanCoils/measure.py
+    measures/EpModelAddFourPipeFanCoils/measure.xml
+    measures/EpModelAddIdealLoads/measure.py
+    measures/EpModelAddIdealLoads/measure.xml
+    measures/EpModelAddMultizoneVAVSystem/measure.py
+    measures/EpModelAddMultizoneVAVSystem/measure.xml
+    measures/EpModelAddPackagedUnitarySystems/measure.py
+    measures/EpModelAddPackagedUnitarySystems/measure.xml
+    measures/EpModelAddPackagedTerminalHeatPumps/measure.py
+    measures/EpModelAddPackagedTerminalHeatPumps/measure.xml
+    measures/EpModelConfigureShortWeatherRun/measure.py
+    measures/EpModelConfigureShortWeatherRun/measure.xml
+    measures/EpModelCreateCoreAndPerimeterBuilding/measure.py
+    measures/EpModelCreateCoreAndPerimeterBuilding/measure.xml
+    measures/EpModelRemoveAllHVACSystems/measure.py
+    measures/EpModelRemoveAllHVACSystems/measure.xml
+  )
+  foreach(EPMODEL_EXAMPLE_RELATIVE_FILE IN LISTS EPMODEL_EXAMPLE_RELATIVE_FILES)
+    configure_file(
+      "${CMAKE_CURRENT_SOURCE_DIR}/Examples/epmodel/${EPMODEL_EXAMPLE_RELATIVE_FILE}"
+      "${EPMODEL_EXAMPLE_DIR}/${EPMODEL_EXAMPLE_RELATIVE_FILE}"
+      COPYONLY
+    )
+  endforeach()
+
+  file(MAKE_DIRECTORY "${EPMODEL_EXAMPLE_FILES_DIR}")
+  foreach(EPMODEL_REFERENCE_BUILDING IN LISTS EPMODEL_REFERENCE_BUILDINGS)
+    get_filename_component(EPMODEL_REFERENCE_BUILDING_NAME
+                           "${EPMODEL_REFERENCE_BUILDING}" NAME)
+    configure_file("${EPMODEL_REFERENCE_BUILDING}"
+                   "${EPMODEL_EXAMPLE_FILES_DIR}/${EPMODEL_REFERENCE_BUILDING_NAME}"
+                   COPYONLY)
+  endforeach()
+  foreach(EPMODEL_EXAMPLE_WEATHER IN LISTS EPMODEL_EXAMPLE_WEATHERS)
+    get_filename_component(EPMODEL_EXAMPLE_WEATHER_NAME
+                           "${EPMODEL_EXAMPLE_WEATHER}" NAME)
+    configure_file("${EPMODEL_EXAMPLE_WEATHER}"
+                   "${EPMODEL_EXAMPLE_FILES_DIR}/${EPMODEL_EXAMPLE_WEATHER_NAME}"
+                   COPYONLY)
+  endforeach()
+endif()
+
 # And install
-install(DIRECTORY "Examples" DESTINATION . COMPONENT "CLI")
+install(DIRECTORY "Examples" DESTINATION . COMPONENT "CLI"
+  PATTERN "__pycache__" EXCLUDE
+  PATTERN "*.pyc" EXCLUDE
+)
+if(BUILD_CLI)
+  install(FILES
+    ${EPMODEL_REFERENCE_BUILDINGS}
+    ${EPMODEL_EXAMPLE_WEATHERS}
+    DESTINATION "Examples/epmodel/files"
+    COMPONENT "CLI"
+  )
+endif()
 
 # Copy it for testing
 file(COPY "workflow" DESTINATION .)

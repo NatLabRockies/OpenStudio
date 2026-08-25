@@ -7,6 +7,7 @@
 #define EPMODEL_MODEL_IMPL_HPP
 
 #include "EPModelAPI.hpp"
+#include "TestFailurePoint.hpp"
 
 #include "../utilities/core/Logger.hpp"
 #include "../utilities/idf/Workspace_Impl.hpp"
@@ -25,6 +26,10 @@ class SqlFile;
 namespace epmodel {
 
   class Model;
+
+  namespace test {
+    class ScopedTestFailure;
+  }
 
   namespace detail {
 
@@ -75,7 +80,11 @@ namespace epmodel {
       REGISTER_LOGGER("openstudio.epmodel.Model");
 
      private:
+      friend class openstudio::epmodel::test::ScopedTestFailure;
+      friend bool testFailurePointReached(const Model& model, TestFailurePoint point);
+
       std::shared_ptr<openstudio::SqlFile> m_sqlFile;
+      TestFailurePoint m_testFailurePoint = TestFailurePoint::None;
     };
 
   }  // namespace detail

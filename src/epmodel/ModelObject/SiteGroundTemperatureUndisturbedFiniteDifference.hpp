@@ -20,6 +20,17 @@ namespace epmodel {
     class SiteGroundTemperatureUndisturbedFiniteDifference_Impl;
   }
 
+  /** \brief SiteGroundTemperatureUndisturbedFiniteDifference.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-location-climate-weather-file-access.html#sitegroundtemperatureundisturbedfinitedifference,Site:GroundTemperature:Undisturbed:FiniteDifference}.
+   *
+   * \par OpenStudio Model API
+   * There is no corresponding OpenStudio Model class. EPModel exposes the scalar soil and evapotranspiration inputs; the EnergyPlus name/reference relationship is not exposed as a typed API.
+   *
+   * \par Known limitations
+   * The wrapper is limited to the persisted scalar soil and evapotranspiration inputs; it does not provide higher-level ground-temperature ownership or workflow helpers.
+   */
   class EPMODEL_API SiteGroundTemperatureUndisturbedFiniteDifference : public ModelObject
   {
    public:
@@ -32,12 +43,6 @@ namespace epmodel {
     SiteGroundTemperatureUndisturbedFiniteDifference& operator=(SiteGroundTemperatureUndisturbedFiniteDifference&&) = default;
 
     static IddObjectType iddObjectType();
-
-    // Schema Alignment Notes:
-    // - API: This no-counterpart epmodel type uses IDD-derived class/accessor naming.
-    // - Field Mapping: Scalar APIs map directly to Site:GroundTemperature:Undisturbed:FiniteDifference fields.
-    // - Field Mapping: Name is a reference-provider field (UndisturbedGroundTempModels) and is excluded from scalar APIs.
-    // - TODO(parity): Keep relationship-style naming/link convenience APIs out of scope for scalar scaffold saturation.
     double soilThermalConductivity() const;
     bool setSoilThermalConductivity(double soilThermalConductivity);
 

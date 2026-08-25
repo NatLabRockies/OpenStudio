@@ -16,11 +16,29 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class Schedule;
 
   namespace detail {
     class SetpointManagerOutdoorAirReset_Impl;
   }
 
+  /** \brief Resets a setpoint across outdoor-air temperature conditions.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-setpoint-managers.html#setpointmanageroutdoorairreset,SetpointManager:OutdoorAirReset}
+   *
+   * \par Important behavior
+   * The optional second reset pair and schedule are represented as optional
+   * fields; reset methods remove those fields rather than writing placeholder
+   * values.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::SetpointManagerOutdoorAirReset</code>.
+   * No known public API differences.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API SetpointManagerOutdoorAirReset : public SetpointManager
   {
    public:
@@ -36,16 +54,6 @@ namespace epmodel {
 
     static std::vector<std::string> controlVariableValues();
 
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model scalar accessor names/signatures for model-counterpart compatibility.
-    // - Field Mapping: setpointatOutdoorLowTemperature, outdoorLowTemperature,
-    //   setpointatOutdoorHighTemperature, outdoorHighTemperature,
-    //   setpointatOutdoorLowTemperature2, outdoorLowTemperature2,
-    //   setpointatOutdoorHighTemperature2, and outdoorHighTemperature2 map directly to
-    //   E+ SetpointManager:OutdoorAirReset scalar fields.
-    // - Field Mapping: Relationship fields Setpoint Node or NodeList Name and Schedule Name are intentionally excluded
-    //   from scalar-only scaffolding.
-    // - TODO(parity): Add non-scalar relationship parity for explicit schedule and setpoint-node linkage.
 
     bool isControlVariableDefaulted() const;
     void resetControlVariable();
@@ -61,6 +69,10 @@ namespace epmodel {
 
     double outdoorHighTemperature() const;
     bool setOutdoorHighTemperature(double outdoorHighTemperature);
+
+    boost::optional<Schedule> schedule() const;
+    bool setSchedule(Schedule& schedule);
+    void resetSchedule();
 
     boost::optional<double> setpointatOutdoorLowTemperature2() const;
     bool setSetpointatOutdoorLowTemperature2(double setpointatOutdoorLowTemperature2);

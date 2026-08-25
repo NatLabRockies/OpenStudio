@@ -33,6 +33,10 @@ namespace epmodel {
       double outdoorHighTemperature() const;
       bool setOutdoorHighTemperature(double outdoorHighTemperature);
 
+      boost::optional<Schedule> schedule() const;
+      bool setSchedule(Schedule& schedule);
+      void resetSchedule();
+
       boost::optional<double> setpointatOutdoorLowTemperature2() const;
       bool setSetpointatOutdoorLowTemperature2(boost::optional<double> setpointatOutdoorLowTemperature2);
       void resetSetpointatOutdoorLowTemperature2();

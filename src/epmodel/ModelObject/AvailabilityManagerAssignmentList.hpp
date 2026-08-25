@@ -19,11 +19,23 @@ namespace epmodel {
   class AirLoopHVAC;
   class Loop;
   class Model;
+  class PlantLoop;
 
   namespace detail {
     class AvailabilityManagerAssignmentList_Impl;
   }
 
+  /** \brief Represents the EnergyPlus AvailabilityManagerAssignmentList object.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-air-distribution.html#availabilitymanagerassignmentlist,AvailabilityManagerAssignmentList}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::AvailabilityManagerAssignmentList</code>. <b>Changed:</b> EPModel also permits direct construction from <code>Model</code>; the public Model constructor takes a <code>Loop</code>. <b>Not yet available:</b> <code>containingZoneHVACComponent()</code>.
+   *
+   * \par Known limitations
+   * Assignment order is represented by EnergyPlus list rows; ZoneHVAC ownership and ambiguous multi-loop assignment are not characterized.
+   */
   class EPMODEL_API AvailabilityManagerAssignmentList : public ModelObject
   {
    public:
@@ -61,6 +73,7 @@ namespace epmodel {
     //@{
     boost::optional<Loop> loop() const;
     boost::optional<AirLoopHVAC> airLoopHVAC() const;
+    boost::optional<PlantLoop> plantLoop() const;
     //@}
 
    protected:

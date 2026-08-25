@@ -21,6 +21,23 @@ namespace epmodel {
     class PlantEquipmentOperationRangeBasedScheme_Impl;
   }
 
+  /** \brief Provides shared load-range and equipment-list operations for range-based plant schemes.
+   *
+   * \par EnergyPlus object
+   * No single EnergyPlus object. This is a shared interface for the concrete
+   * plant operation scheme objects in this family.
+   *
+   * \par Important behavior
+   * Construction and <code>clearLoadRanges()</code> leave one range in place. Range equipment
+   * is stored through an EnergyPlus <code>PlantEquipmentList</code>.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::PlantEquipmentOperationRangeBasedScheme</code>.
+   * No known public API differences.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API PlantEquipmentOperationRangeBasedScheme : public PlantEquipmentOperationScheme
   {
    public:
@@ -32,9 +49,6 @@ namespace epmodel {
     PlantEquipmentOperationRangeBasedScheme& operator=(const PlantEquipmentOperationRangeBasedScheme&) = default;
     PlantEquipmentOperationRangeBasedScheme& operator=(PlantEquipmentOperationRangeBasedScheme&&) = default;
 
-    // Schema Alignment Notes:
-    // - Canonical Counterpart: openstudio::model::PlantEquipmentOperationRangeBasedScheme.
-    // - API: Mirrors the canonical load-range/equipment API. epmodel stores each range's equipment in an EnergyPlus PlantEquipmentList.
     double maximumUpperLimit() const;
     double minimumLowerLimit() const;
     bool addLoadRange(double upperLimit, const std::vector<HVACComponent>& equipment);

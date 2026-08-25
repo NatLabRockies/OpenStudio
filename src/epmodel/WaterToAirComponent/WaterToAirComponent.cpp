@@ -425,6 +425,18 @@ namespace epmodel {
         return insertOnBranch(node, *branch, waterInletPort(), waterOutletPort());
       }
 
+      if (auto oaSystem = node.airLoopHVACOutdoorAirSystem()) {
+        const auto outboardOANode = oaSystem->outboardOANode();
+        const auto outboardReliefNode = oaSystem->outboardReliefNode();
+        const bool onOutdoorAirStream = oaSystem->oaComponent(node.handle()).has_value() || (outboardOANode && (*outboardOANode == node));
+        const bool onReliefStream = oaSystem->reliefComponent(node.handle()).has_value() || (outboardReliefNode && (*outboardReliefNode == node));
+        if (onOutdoorAirStream || onReliefStream) {
+          return addToOutdoorAirSystem(*oaSystem, node);
+        }
+        // Return- and mixed-air endpoints are also air-loop supply nodes. Let
+        // the ordinary air-loop insertion path handle those nodes.
+      }
+
       if (auto airLoop = node.airLoopHVAC()) {
         if (containingHVACComponent()) {
           return false;

@@ -18,7 +18,7 @@ class ModelMeasureNameTest < Minitest::Test
     measure = ModelMeasureName.new
 
     # make an empty model
-    model = OpenStudio::Model::Model.new
+    model = OpenStudio::EPModel::Model.new
 
     # get arguments and test that they are what we are expecting
     arguments = measure.arguments(model)
@@ -35,7 +35,7 @@ class ModelMeasureNameTest < Minitest::Test
     runner = OpenStudio::Measure::OSRunner.new(osw)
 
     # make an empty model
-    model = OpenStudio::Model::Model.new
+    model = OpenStudio::EPModel::Model.new
 
     # get arguments
     arguments = measure.arguments(model)
@@ -75,12 +75,12 @@ class ModelMeasureNameTest < Minitest::Test
     osw = OpenStudio::WorkflowJSON.new
     runner = OpenStudio::Measure::OSRunner.new(osw)
 
-    # load the test model
-    translator = OpenStudio::OSVersion::VersionTranslator.new
-    path = "#{File.dirname(__FILE__)}/example_model.osm"
-    model = translator.loadModel(path)
-    refute_empty(model)
-    model = model.get
+    # create a small seed model
+    model = OpenStudio::EPModel::Model.new
+    4.times do |index|
+      space = OpenStudio::EPModel::Space.new(model)
+      space.setName("Seed Space #{index + 1}")
+    end
 
     # store the number of spaces in the seed model
     num_spaces_seed = model.getSpaces.size
@@ -130,7 +130,8 @@ class ModelMeasureNameTest < Minitest::Test
     assert_equal('The building finished with 5 spaces.', result.stepFinalCondition.get)
 
     # save the model to test output directory
-    output_file_path = "#{File.dirname(__FILE__)}/output/test_output.osm"
-    model.save(output_file_path, true)
+    output_directory = "#{File.dirname(__FILE__)}/output"
+    FileUtils.mkdir_p(output_directory)
+    model.save(OpenStudio::Path.new("#{output_directory}/test_output.idf"), true)
   end
 end

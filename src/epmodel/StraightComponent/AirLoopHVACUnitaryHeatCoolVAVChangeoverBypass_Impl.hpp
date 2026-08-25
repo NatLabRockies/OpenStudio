@@ -15,6 +15,7 @@ namespace epmodel {
 
   class Node;
   class HVACComponent;
+  class Mixer;
   class Schedule;
 
   namespace detail {
@@ -104,6 +105,12 @@ namespace epmodel {
 
       double minimumRuntimeBeforeOperatingModeChange() const;
       bool setMinimumRuntimeBeforeOperatingModeChange(double runtime);
+
+      unsigned plenumorMixerAirPort() const;
+      Node plenumorMixerNode() const;
+      boost::optional<Mixer> plenumorMixer() const;
+      bool setPlenumorMixer(const Mixer& returnPathComponent);
+      void resetPlenumorMixer();
 
       std::vector<std::string> supplyAirFanPlacementValues() const;
       std::vector<std::string> priorityControlModeValues() const;

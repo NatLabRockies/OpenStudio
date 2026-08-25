@@ -22,6 +22,17 @@ namespace epmodel {
     class AirflowNetworkDistributionDuctViewFactors_Impl;
   }
 
+  /** \brief Represents the EnergyPlus AirflowNetwork:Distribution:DuctViewFactors object.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-airflow-network.html#airflownetworkdistributionductviewfactor,AirflowNetwork:Distribution:DuctViewFactors}
+   *
+   * \par OpenStudio Model API
+   * OpenStudio Model has no public wrapper for this EnergyPlus object. This wrapper is new to the EPModel API.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations beyond the public fields and relationships exposed by this wrapper.
+   */
   class EPMODEL_API AirflowNetworkDistributionDuctViewFactors : public ModelObject
   {
    public:
@@ -35,15 +46,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - API: This no-counterpart epmodel type uses IDD-derived class/accessor naming.
-    // - Field Mapping: Scalar APIs map directly to EnergyPlus
-    //   AirflowNetwork:Distribution:DuctViewFactors scalar fields.
-    // - ForwardTranslator evidence: translateAirflowNetworkDuctViewFactors writes these scalar fields directly.
-    // - Field Mapping: Linkage Name and extensible Surface Name/View Factor pairs are relationship/extensible fields
-    //   and intentionally excluded from simple scalar accessor scaffolding.
-    // - TODO(parity): Re-evaluate naming/coverage if a future model-counterpart parity layer is introduced.
-    // Duct surface exposure fraction accessors
     double ductSurfaceExposureFraction() const;
     bool isDuctSurfaceExposureFractionDefaulted() const;
     bool setDuctSurfaceExposureFraction(double ductSurfaceExposureFraction);

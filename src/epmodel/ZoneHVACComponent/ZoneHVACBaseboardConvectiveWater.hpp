@@ -26,6 +26,22 @@ namespace epmodel {
     class ZoneHVACBaseboardConvectiveWater_Impl;
   }
 
+/** \brief A hot-water convective baseboard heater serving a thermal zone.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-radiative-convective-units.html#zonehvacbaseboardconvectivewater,ZoneHVAC:Baseboard:Convective:Water}
+ *
+ * \par Important behavior
+ * heatingCoil() is a transient view over parent-owned water fields, and plant-loop attachment through it updates the parent water-node fields. EPModel also provides a default constructor.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model class is <code>openstudio::model::ZoneHVACBaseboardConvectiveWater</code>.
+ * EPModel adds the design-capacity method/value surface and a no-argument
+ * constructor; the Model wrapper instead requires its canonical coil inputs.
+ *
+ * \par Known limitations
+ * The heating coil is not an independently persisted EnergyPlus object and must be used through its parent view; EPModel SQL sizing results are not available.
+ */
   class EPMODEL_API ZoneHVACBaseboardConvectiveWater : public ZoneHVACComponent
   {
    public:
@@ -40,21 +56,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. The direct EnergyPlus scalar surface and the canonical availability-schedule / heating-coil APIs are now
-    //   present. epmodel preserves the canonical heating coil as a transient child view over the parent baseboard object because
-    //   EnergyPlus does not persist a standalone coil object for this family.
-    // - Canonical Counterpart: openstudio::model::ZoneHVACBaseboardConvectiveWater.
-    // - Implemented Parity: `availabilitySchedule`, `heatingCoil`, the parent scalar fields, and the canonical thermal-zone attachment
-    //   behavior are available on the wrapper. The transient child coil also preserves canonical plant-loop placement and traversal behavior.
-    // - Documented Delta: The heating coil is transient in epmodel because EnergyPlus stores the real plant-side object identity on the
-    //   parent `ZoneHVAC:Baseboard:Convective:Water` object rather than as a separate standalone coil object. epmodel also keeps the
-    //   additive default constructor even though the canonical `openstudio::model` wrapper only exposes the schedule-and-coil constructor.
-    // - Field/Storage Mapping: Availability schedule, water nodes, and the scalar sizing fields live directly on the EnergyPlus parent
-    //   object. The transient child coil reads and writes those parent-owned fields rather than owning separate persisted storage.
-    // - Evidence: `src/model/ZoneHVACBaseboardConvectiveWater.hpp`, `src/model/ZoneHVACBaseboardConvectiveWater.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateZoneHVACBaseboardConvectiveWater.cpp`, and `src/epmodel/test/ZoneHVACBaseboardConvectiveWater_GTest.cpp`.
-    // - Remaining Parity Work: None beyond keeping the canonical parent and transient-child surfaces aligned with future canonical-model
-    //   changes.
     Schedule availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);
 

@@ -14,6 +14,7 @@ namespace openstudio {
 namespace epmodel {
 
   class Schedule;
+  class Curve;
 
   namespace detail {
 
@@ -26,6 +27,7 @@ namespace epmodel {
       unsigned inletPort() const override;
       unsigned outletPort() const override;
       bool addToNode(Node& node) override;
+      void doCanonicalize(LoadContext& context) override;
 
       Schedule availabilitySchedule() const;
       bool setAvailabilitySchedule(Schedule& schedule);
@@ -74,6 +76,10 @@ namespace epmodel {
       bool setCrankcaseHeaterCapacity(double crankcaseHeaterCapacity);
       void resetCrankcaseHeaterCapacity();
 
+      boost::optional<Curve> crankcaseHeaterCapacityFunctionofTemperatureCurve() const;
+      bool setCrankcaseHeaterCapacityFunctionofTemperatureCurve(const Curve& curve);
+      void resetCrankcaseHeaterCapacityFunctionofTemperatureCurve();
+
       double maximumAmbientTemperatureforCrankcaseHeaterOperation() const;
       bool isMaximumAmbientTemperatureforCrankcaseHeaterOperationDefaulted() const;
       bool setMaximumAmbientTemperatureforCrankcaseHeaterOperation(double maximumAmbientTemperatureforCrankcaseHeaterOperation);
@@ -84,7 +90,25 @@ namespace epmodel {
       bool setEvaporatorAirTemperatureTypeforCurveObjects(const std::string& evaporatorAirTemperatureTypeforCurveObjects);
       void resetEvaporatorAirTemperatureTypeforCurveObjects();
 
+      Curve heatingCapacityFunctionofTemperatureCurve() const;
+      bool setHeatingCapacityFunctionofTemperatureCurve(const Curve& curve);
+
+      Curve heatingCapacityFunctionofAirFlowFractionCurve() const;
+      bool setHeatingCapacityFunctionofAirFlowFractionCurve(const Curve& curve);
+
+      Curve heatingCOPFunctionofTemperatureCurve() const;
+      bool setHeatingCOPFunctionofTemperatureCurve(const Curve& curve);
+
+      Curve heatingCOPFunctionofAirFlowFractionCurve() const;
+      bool setHeatingCOPFunctionofAirFlowFractionCurve(const Curve& curve);
+
+      Curve partLoadFractionCorrelationCurve() const;
+      bool setPartLoadFractionCorrelationCurve(const Curve& curve);
+
       std::vector<std::string> evaporatorAirTemperatureTypeforCurveObjectsValues() const;
+
+     private:
+      bool setValidatedCurve(unsigned field, const Curve& curve, const char* relationshipName);
     };
 
   }  // namespace detail

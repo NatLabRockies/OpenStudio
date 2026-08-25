@@ -8,24 +8,38 @@
 
 #include "HVACComponent.hpp"
 #include "HVACComponent/ThermalZone.hpp"
+#include "Loop/AirLoopHVAC.hpp"
 #include "Model.hpp"
 #include "ModelObject.hpp"
 #include "ModelObject/ModelObject_Impl.hpp"
+#include "ModelObject/OutdoorAirMixer.hpp"
+#include "ModelObject/OutdoorAirMixer_Impl.hpp"
 #include "Schedule/Schedule.hpp"
 #include "Schedule/Schedule_Impl.hpp"
 #include "Schedule/ScheduleConstant.hpp"
 #include "StraightComponent/Node.hpp"
 #include "StraightComponent/StraightComponent.hpp"
+#include "StraightComponent/AirTerminalSingleDuctInletSideMixer.hpp"
+#include "StraightComponent/AirTerminalSingleDuctInletSideMixer_Impl.hpp"
 #include "WaterToAirComponent/WaterToAirComponent.hpp"
 #include "WaterToAirComponent/WaterToAirComponent_Impl.hpp"
 
 #include <boost/none.hpp>
 
+#include <algorithm>
+#include <array>
+#include <set>
+#include <vector>
+
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
 #include <utilities/idd/IddFactory.hxx>
 #include <utilities/idd/IddEnums.hxx>
+#include <utilities/idd/OutdoorAir_Mixer_FieldEnums.hxx>
+#include <utilities/idd/OutdoorAir_NodeList_FieldEnums.hxx>
 #include <utilities/idd/ZoneHVAC_FourPipeFanCoil_FieldEnums.hxx>
+#include <utilities/idf/IdfObject_Impl.hpp>
+#include <utilities/idf/WorkspaceExtensibleGroup.hpp>
 
 namespace openstudio {
 namespace epmodel {
@@ -68,10 +82,144 @@ namespace epmodel {
       return component.getImpl<detail::ModelObject_Impl>()->resolvedNodeTarget(outletPort);
     }
 
+    boost::optional<ModelObject> readOnlyManagedTarget(const ModelObject& owner, unsigned field) {
+      const auto stored = owner.getField(field, false);
+      if (!stored || stored->empty()) {
+        return boost::none;
+      }
+      const auto handle = openstudio::toUUID(*stored);
+      if (handle.isNull()) {
+        return boost::none;
+      }
+      const auto target = owner.model().getObject(handle);
+      return target ? target->optionalCast<ModelObject>() : boost::none;
+    }
+
+    boost::optional<std::string> rawFieldValue(const ModelObject& owner, unsigned field) {
+      auto workspaceImpl = owner.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+      OS_ASSERT(workspaceImpl);
+      return workspaceImpl->openstudio::detail::IdfObject_Impl::getString(field, false, true);
+    }
+
+    bool fourPipeFanCoilMixerNodeEvidenceIsMalformed(const OutdoorAirMixer& mixer) {
+      const std::array<unsigned, 4> fields = {
+        openstudio::OutdoorAir_MixerFields::MixedAirNodeName, openstudio::OutdoorAir_MixerFields::OutdoorAirStreamNodeName,
+        openstudio::OutdoorAir_MixerFields::ReliefAirStreamNodeName, openstudio::OutdoorAir_MixerFields::ReturnAirStreamNodeName};
+      std::vector<Handle> resolvedHandles;
+      for (const auto field : fields) {
+        const auto managed = readOnlyManagedTarget(mixer, field);
+        const auto raw = rawFieldValue(mixer, field);
+        const bool hasRaw = raw && !raw->empty();
+        if (managed) {
+          const auto node = managed->optionalCast<Node>();
+          if (!node) {
+            return true;
+          }
+          if (hasRaw) {
+            const auto rawHandle = openstudio::toUUID(*raw);
+            if ((!rawHandle.isNull() && rawHandle != node->handle()) || (rawHandle.isNull() && !openstudio::istringEqual(*raw, node->nameString()))) {
+              return true;
+            }
+          }
+          if (std::ranges::count_if(mixer.model().getConcreteModelObjects<Node>(),
+                                    [&node](const auto& candidate) { return openstudio::istringEqual(candidate.nameString(), node->nameString()); })
+              != 1u) {
+            return true;
+          }
+          resolvedHandles.push_back(node->handle());
+        } else if (hasRaw) {
+          const auto rawHandle = openstudio::toUUID(*raw);
+          unsigned matchCount = 0u;
+          boost::optional<Handle> matchedHandle;
+          for (const auto& node : mixer.model().getConcreteModelObjects<Node>()) {
+            if ((!rawHandle.isNull() && node.handle() == rawHandle) || (rawHandle.isNull() && openstudio::istringEqual(node.nameString(), *raw))) {
+              ++matchCount;
+              matchedHandle = node.handle();
+            }
+          }
+          if (matchCount != 1u) {
+            return true;
+          }
+          OS_ASSERT(matchedHandle);
+          resolvedHandles.push_back(*matchedHandle);
+        }
+      }
+      return std::set<Handle>(resolvedHandles.begin(), resolvedHandles.end()).size() != resolvedHandles.size();
+    }
+
+    bool fourPipeFanCoilMixerTopologyIsExact(const ZoneHVACFourPipeFanCoil& fanCoil, const OutdoorAirMixer& mixer) {
+      const std::array<unsigned, 4> mixerNodeFields = {
+        openstudio::OutdoorAir_MixerFields::MixedAirNodeName, openstudio::OutdoorAir_MixerFields::OutdoorAirStreamNodeName,
+        openstudio::OutdoorAir_MixerFields::ReliefAirStreamNodeName, openstudio::OutdoorAir_MixerFields::ReturnAirStreamNodeName};
+      std::array<boost::optional<Node>, 4> mixerNodes;
+      for (unsigned i = 0u; i < mixerNodeFields.size(); ++i) {
+        const auto target = readOnlyManagedTarget(mixer, mixerNodeFields[i]);
+        const auto node = target ? target->optionalCast<Node>() : boost::none;
+        if (!node) {
+          return false;
+        }
+        mixerNodes[i] = node;
+        if (std::ranges::count_if(fanCoil.model().getConcreteModelObjects<Node>(),
+                                  [&node](const auto& candidate) { return openstudio::istringEqual(candidate.nameString(), node->nameString()); })
+            != 1u) {
+          return false;
+        }
+      }
+      if (std::set<Handle>{mixerNodes[0]->handle(), mixerNodes[1]->handle(), mixerNodes[2]->handle(), mixerNodes[3]->handle()}.size() != 4u) {
+        return false;
+      }
+      const auto fanCoilInlet = readOnlyManagedTarget(fanCoil, ZoneHVAC_FourPipeFanCoilFields::AirInletNodeName);
+      const auto fanTarget = readOnlyManagedTarget(fanCoil, ZoneHVAC_FourPipeFanCoilFields::SupplyAirFanName);
+      const auto fan = fanTarget ? fanTarget->optionalCast<StraightComponent>() : boost::none;
+      const auto fanInlet = fan ? readOnlyManagedTarget(*fan, fan->inletPort()) : boost::none;
+      if (!fanCoilInlet || !fanInlet || fanCoilInlet->handle() != mixerNodes[3]->handle() || fanInlet->handle() != mixerNodes[0]->handle()) {
+        return false;
+      }
+      unsigned declarationCount = 0u;
+      for (const auto& nodeList : fanCoil.model().getObjectsByType(openstudio::IddObjectType::OutdoorAir_NodeList)) {
+        for (const auto& group : nodeList.extensibleGroups()) {
+          const auto listedName = group.getString(openstudio::OutdoorAir_NodeListExtensibleFields::NodeorNodeListName);
+          if (listedName && openstudio::istringEqual(*listedName, mixerNodes[1]->nameString())) {
+            ++declarationCount;
+          }
+        }
+      }
+      return declarationCount == 1u;
+    }
+
+    std::string uniqueFourPipeFanCoilObjectName(const Model& model, const std::string& baseName) {
+      if (model.getObjectsByName(baseName, true).empty()) {
+        return baseName;
+      }
+      for (unsigned suffix = 2u;; ++suffix) {
+        const auto candidate = baseName + " " + std::to_string(suffix);
+        if (model.getObjectsByName(candidate, true).empty()) {
+          return candidate;
+        }
+      }
+    }
+
+    void reserveUniqueFourPipeFanCoilName(ZoneHVACFourPipeFanCoil& fanCoil, const Model& model) {
+      const auto internalNodeNameIsTaken = [&model](const std::string& fanCoilName) {
+        return static_cast<bool>(model.getConcreteModelObjectByName<Node>(fanCoilName + " Air Inlet Node"))
+               || static_cast<bool>(model.getConcreteModelObjectByName<Node>(fanCoilName + " Air Outlet Node"))
+               || static_cast<bool>(model.getConcreteModelObjectByName<Node>(fanCoilName + " Fan Outlet Node"))
+               || static_cast<bool>(model.getConcreteModelObjectByName<Node>(fanCoilName + " Cooling Coil Outlet Node"))
+               || static_cast<bool>(model.getConcreteModelObjectByName<Node>(fanCoilName + " Mixed Air Node"))
+               || static_cast<bool>(model.getConcreteModelObjectByName<Node>(fanCoilName + " OA Node"))
+               || static_cast<bool>(model.getConcreteModelObjectByName<Node>(fanCoilName + " Relief Air Node"))
+               || static_cast<bool>(model.getConcreteModelObjectByName<OutdoorAirMixer>(fanCoilName + " OA Mixer"));
+      };
+      while (internalNodeNameIsTaken(fanCoil.nameString())) {
+        OS_ASSERT(fanCoil.setName(model.nextName(fanCoil.iddObjectType(), false)));
+      }
+    }
+
   }  // namespace
 
   ZoneHVACFourPipeFanCoil::ZoneHVACFourPipeFanCoil(const Model& model) : ZoneHVACComponent(ZoneHVACFourPipeFanCoil::iddObjectType(), model) {
     OS_ASSERT(getImpl<detail::ZoneHVACFourPipeFanCoil_Impl>());
+    reserveUniqueFourPipeFanCoilName(*this, model);
 
     ScheduleConstant alwaysOn(model);
     OS_ASSERT(alwaysOn.setValue(1.0));
@@ -392,6 +540,35 @@ namespace epmodel {
       if (auto heatingCoil = getObject<ModelObject>().getModelObjectTarget<HVACComponent>(ZoneHVAC_FourPipeFanCoilFields::HeatingCoilName)) {
         result.push_back(*heatingCoil);
       }
+      if (auto outdoorAirMixer =
+            getObject<ModelObject>().getModelObjectTarget<OutdoorAirMixer>(ZoneHVAC_FourPipeFanCoilFields::OutdoorAirMixerName)) {
+        result.push_back(*outdoorAirMixer);
+      }
+      return result;
+    }
+
+    std::vector<IdfObject> ZoneHVACFourPipeFanCoil_Impl::remove() {
+      const auto ownedChildren = children();
+      ZoneHVACComponent_Impl::removeFromThermalZone();
+      const auto baseName = getObject<ModelObject>().nameString();
+      reconcileOwnedOutdoorAirMixer(ZoneHVAC_FourPipeFanCoilFields::OutdoorAirMixerObjectType, ZoneHVAC_FourPipeFanCoilFields::OutdoorAirMixerName,
+                                    boost::none, boost::none, baseName);
+      auto removedParent = HVACComponent_Impl::remove();
+      if (removedParent.empty()) {
+        return {};
+      }
+
+      // Removing the parent releases the containment guard. Each captured
+      // water-to-air child can then heal its independently managed plant branch
+      // through its ordinary remove path.
+      std::vector<IdfObject> result;
+      for (const auto& child : ownedChildren) {
+        if (auto component = child.optionalCast<HVACComponent>()) {
+          auto removed = component->remove();
+          result.insert(result.end(), removed.begin(), removed.end());
+        }
+      }
+      result.insert(result.end(), removedParent.begin(), removedParent.end());
       return result;
     }
 
@@ -401,6 +578,14 @@ namespace epmodel {
 
     unsigned ZoneHVACFourPipeFanCoil_Impl::outletPort() const {
       return ZoneHVAC_FourPipeFanCoilFields::AirOutletNodeName;
+    }
+
+    bool ZoneHVACFourPipeFanCoil_Impl::addToNode(Node& node) {
+      if (!ZoneHVACComponent_Impl::addToNode(node)) {
+        return false;
+      }
+      maintainContainedAirPath();
+      return true;
     }
 
     bool ZoneHVACFourPipeFanCoil_Impl::addToThermalZone(ThermalZone& thermalZone) {
@@ -418,6 +603,70 @@ namespace epmodel {
     }
 
     void ZoneHVACFourPipeFanCoil_Impl::doCanonicalize(LoadContext& context) {
+      const auto fanCoil = getObject<ZoneHVACFourPipeFanCoil>();
+      const auto mixerInspection =
+        inspectOwnedOutdoorAirMixer(ZoneHVAC_FourPipeFanCoilFields::OutdoorAirMixerObjectType, ZoneHVAC_FourPipeFanCoilFields::OutdoorAirMixerName);
+      const bool configured = readOnlyManagedTarget(fanCoil, ZoneHVAC_FourPipeFanCoilFields::SupplyAirFanName)
+                              && readOnlyManagedTarget(fanCoil, ZoneHVAC_FourPipeFanCoilFields::CoolingCoilName)
+                              && readOnlyManagedTarget(fanCoil, ZoneHVAC_FourPipeFanCoilFields::HeatingCoilName);
+      const auto fanCoilInlet = readOnlyManagedTarget(fanCoil, ZoneHVAC_FourPipeFanCoilFields::AirInletNodeName);
+      bool hasInletSideAttachment = false;
+      if (fanCoilInlet) {
+        for (const auto& terminal : model().getConcreteModelObjects<AirTerminalSingleDuctInletSideMixer>()) {
+          const auto terminalOutlet = readOnlyManagedTarget(terminal, terminal.outletPort());
+          if (terminalOutlet && terminalOutlet->handle() == fanCoilInlet->handle()) {
+            hasInletSideAttachment = true;
+            break;
+          }
+        }
+      }
+      const bool shouldOwnMixer = configured && !hasInletSideAttachment;
+      boost::optional<OutdoorAirMixer> inspectedMixer;
+      if (mixerInspection.mixerHandle) {
+        const auto object = model().getObject(*mixerInspection.mixerHandle);
+        inspectedMixer = object ? object->optionalCast<OutdoorAirMixer>() : boost::none;
+      }
+      const bool mixerTopologyExact = inspectedMixer && fourPipeFanCoilMixerTopologyIsExact(fanCoil, *inspectedMixer);
+      const bool expectedTypeIsExact = !configured || shouldOwnMixer;
+      const bool objectTypeIsCanonical = expectedTypeIsExact ? mixerInspection.objectTypeIsExact : !mixerInspection.objectTypeHasEvidence;
+      const bool relationshipIsCanonical =
+        (!configured && mixerInspection.state == OwnedOutdoorAirMixerRelationshipState::Blank)
+        || (shouldOwnMixer && mixerInspection.state == OwnedOutdoorAirMixerRelationshipState::Exact && mixerTopologyExact)
+        || (configured && !shouldOwnMixer && mixerInspection.state == OwnedOutdoorAirMixerRelationshipState::Blank);
+
+      if (!context.repairEnabled()) {
+        if (!relationshipIsCanonical || !objectTypeIsCanonical) {
+          detail::addLoadWarning(context, "ZoneHVAC:FourPipeFanCoil '" + fanCoil.nameString()
+                                            + "' has a noncanonical OutdoorAir:Mixer relationship; ReportOnly preserved it.");
+        }
+        return;
+      }
+
+      if (mixerInspection.state == OwnedOutdoorAirMixerRelationshipState::Malformed) {
+        detail::addLoadWarning(context, "Preserved ambiguous, unresolved, or shared OutdoorAir:Mixer evidence on ZoneHVAC:FourPipeFanCoil '"
+                                          + fanCoil.nameString() + "'.");
+        return;
+      }
+      if (inspectedMixer && fourPipeFanCoilMixerNodeEvidenceIsMalformed(*inspectedMixer)) {
+        detail::addLoadWarning(context, "Preserved ambiguous or unresolved OutdoorAir:Mixer node evidence on ZoneHVAC:FourPipeFanCoil '"
+                                          + fanCoil.nameString() + "'.");
+        return;
+      }
+
+      if (!configured) {
+        if (mixerInspection.state == OwnedOutdoorAirMixerRelationshipState::Exact) {
+          reconcileOwnedOutdoorAirMixer(ZoneHVAC_FourPipeFanCoilFields::OutdoorAirMixerObjectType,
+                                        ZoneHVAC_FourPipeFanCoilFields::OutdoorAirMixerName, boost::none, boost::none, fanCoil.nameString());
+        }
+        if (mixerInspection.state == OwnedOutdoorAirMixerRelationshipState::Exact || !mixerInspection.objectTypeIsExact) {
+          OS_ASSERT(setString(ZoneHVAC_FourPipeFanCoilFields::OutdoorAirMixerObjectType, "OutdoorAir:Mixer"));
+          detail::addLoadInfo(context,
+                              "Restored the staged OutdoorAir:Mixer discriminator on ZoneHVAC:FourPipeFanCoil '" + fanCoil.nameString() + "'.");
+        }
+        repairContainedAirPath(context);
+        return;
+      }
+
       repairContainedAirPath(context);
     }
 
@@ -533,9 +782,10 @@ namespace epmodel {
     }
 
     bool ZoneHVACFourPipeFanCoil_Impl::setOutdoorAirMixerObjectType(const std::string& outdoorAirMixerObjectType) {
-      const bool result = setString(ZoneHVAC_FourPipeFanCoilFields::OutdoorAirMixerObjectType, outdoorAirMixerObjectType);
-      OS_ASSERT(result);
-      return result;
+      if (!openstudio::istringEqual(outdoorAirMixerObjectType, "OutdoorAir:Mixer")) {
+        return false;
+      }
+      return setString(ZoneHVAC_FourPipeFanCoilFields::OutdoorAirMixerObjectType, outdoorAirMixerObjectType);
     }
 
     boost::optional<Schedule> ZoneHVACFourPipeFanCoil_Impl::outdoorAirSchedule() const {
@@ -621,6 +871,19 @@ namespace epmodel {
         return false;
       }
 
+      const auto thisObject = getObject<ModelObject>();
+      const auto currentFan = thisObject.getModelObjectTarget<HVACComponent>(ZoneHVAC_FourPipeFanCoilFields::SupplyAirFanName);
+      if (auto owner = fan.containingHVACComponent(); owner && owner->handle() != thisObject.handle()) {
+        return false;
+      }
+      if (fan.airLoopHVAC()) {
+        return false;
+      }
+      if (currentFan && currentFan->handle() == fan.handle()) {
+        maintainContainedAirPath();
+        return true;
+      }
+
       bool isAllowedType = false;
       const auto fanType = fan.iddObject().type();
       if (fanType == IddObjectType::OS_Fan_SystemModel || fanType == IddObjectType::Fan_SystemModel) {
@@ -657,6 +920,19 @@ namespace epmodel {
         return false;
       }
 
+      const auto thisObject = getObject<ModelObject>();
+      const auto currentCoolingCoil = thisObject.getModelObjectTarget<HVACComponent>(ZoneHVAC_FourPipeFanCoilFields::CoolingCoilName);
+      if (auto owner = coolingCoil.containingHVACComponent(); owner && owner->handle() != thisObject.handle()) {
+        return false;
+      }
+      if (coolingCoil.airLoopHVAC()) {
+        return false;
+      }
+      if (currentCoolingCoil && currentCoolingCoil->handle() == coolingCoil.handle()) {
+        maintainContainedAirPath();
+        return true;
+      }
+
       const auto coolingCoilType = coolingCoil.iddObject().type();
       const bool isAllowedType = (coolingCoilType == IddObjectType::OS_Coil_Cooling_Water)
                                  || (coolingCoilType == IddObjectType::OS_CoilSystem_Cooling_Water_HeatExchangerAssisted)
@@ -676,6 +952,19 @@ namespace epmodel {
     bool ZoneHVACFourPipeFanCoil_Impl::setHeatingCoil(const HVACComponent& heatingCoil) {
       if (heatingCoil.model() != model()) {
         return false;
+      }
+
+      const auto thisObject = getObject<ModelObject>();
+      const auto currentHeatingCoil = thisObject.getModelObjectTarget<HVACComponent>(ZoneHVAC_FourPipeFanCoilFields::HeatingCoilName);
+      if (auto owner = heatingCoil.containingHVACComponent(); owner && owner->handle() != thisObject.handle()) {
+        return false;
+      }
+      if (heatingCoil.airLoopHVAC()) {
+        return false;
+      }
+      if (currentHeatingCoil && currentHeatingCoil->handle() == heatingCoil.handle()) {
+        maintainContainedAirPath();
+        return true;
       }
 
       const auto heatingCoilType = heatingCoil.iddObject().type();
@@ -885,6 +1174,33 @@ namespace epmodel {
       auto fanObject = thisObject.getModelObjectTarget<HVACComponent>(ZoneHVAC_FourPipeFanCoilFields::SupplyAirFanName);
       auto coolingObject = thisObject.getModelObjectTarget<HVACComponent>(ZoneHVAC_FourPipeFanCoilFields::CoolingCoilName);
       auto heatingObject = thisObject.getModelObjectTarget<HVACComponent>(ZoneHVAC_FourPipeFanCoilFields::HeatingCoilName);
+      if (context && fanObject) {
+        const auto owner = fanObject->containingHVACComponent();
+        if ((owner && owner->handle() != thisObject.handle()) || fanObject->airLoopHVAC()) {
+          detail::addLoadWarning(*context, "Dropped shared or externally connected fan reference from ZoneHVAC:FourPipeFanCoil '"
+                                             + thisObject.nameString() + "'.");
+          OS_ASSERT(setPointer(ZoneHVAC_FourPipeFanCoilFields::SupplyAirFanName, Handle(), false));
+          fanObject = boost::none;
+        }
+      }
+      if (context && coolingObject) {
+        const auto owner = coolingObject->containingHVACComponent();
+        if ((owner && owner->handle() != thisObject.handle()) || coolingObject->airLoopHVAC()) {
+          detail::addLoadWarning(*context, "Dropped shared or externally connected cooling-coil reference from ZoneHVAC:FourPipeFanCoil '"
+                                             + thisObject.nameString() + "'.");
+          OS_ASSERT(setPointer(ZoneHVAC_FourPipeFanCoilFields::CoolingCoilName, Handle(), false));
+          coolingObject = boost::none;
+        }
+      }
+      if (context && heatingObject) {
+        const auto owner = heatingObject->containingHVACComponent();
+        if ((owner && owner->handle() != thisObject.handle()) || heatingObject->airLoopHVAC()) {
+          detail::addLoadWarning(*context, "Dropped shared or externally connected heating-coil reference from ZoneHVAC:FourPipeFanCoil '"
+                                             + thisObject.nameString() + "'.");
+          OS_ASSERT(setPointer(ZoneHVAC_FourPipeFanCoilFields::HeatingCoilName, Handle(), false));
+          heatingObject = boost::none;
+        }
+      }
       auto fan = fanObject ? fanObject->optionalCast<StraightComponent>() : boost::none;
       auto cooling =
         (coolingObject && isFourPipeFanCoilAirPathComponent(*coolingObject)) ? boost::optional<HVACComponent>(*coolingObject) : boost::none;
@@ -944,6 +1260,49 @@ namespace epmodel {
 
       changed = setPointer(inletPort(), inletNode.handle(), false) || changed;
       changed = setPointer(outletPort(), outletNode.handle(), false) || changed;
+
+      // A directly owned zone path always includes the fan coil's local
+      // OutdoorAir:Mixer, even when its maximum outdoor-air flow is zero.
+      // Inlet-side/AirLoop attachment supplies already-mixed air and therefore
+      // keeps both fan-coil mixer fields blank.
+      const bool isAirLoopAttached = allowChildNodeRecovery ? hasManagedAirLoopPathReference() : static_cast<bool>(airLoopHVAC());
+      const bool usesHiddenMixedAir = fan && cooling && heating && !isAirLoopAttached;
+      boost::optional<Node> sourceNode;
+      if (usesHiddenMixedAir) {
+        const HVACComponent* firstComponent = nullptr;
+        if (fan) {
+          firstComponent = &(*fan);
+        } else if (cooling) {
+          firstComponent = &(*cooling);
+        } else if (heating) {
+          firstComponent = &(*heating);
+        }
+        OS_ASSERT(firstComponent);
+
+        if (auto currentMixer = thisObject.getModelObjectTarget<OutdoorAirMixer>(ZoneHVAC_FourPipeFanCoilFields::OutdoorAirMixerName)) {
+          sourceNode = currentMixer->mixedAirNode();
+        }
+        if (allowChildNodeRecovery) {
+          const auto firstInletPort = fourPipeFanCoilAirInletPort(*firstComponent);
+          if (auto candidate = firstComponent->getImpl<detail::ModelObject_Impl>()->resolvedNodeTarget(firstInletPort)) {
+            if ((*candidate != inletNode) && (*candidate != outletNode)) {
+              sourceNode = candidate;
+            }
+          }
+        }
+        if (!sourceNode) {
+          sourceNode = Node(model());
+          OS_ASSERT(sourceNode->setName(uniqueFourPipeFanCoilObjectName(model(), baseName + " Mixed Air Node")));
+        }
+
+        changed = reconcileOwnedOutdoorAirMixer(ZoneHVAC_FourPipeFanCoilFields::OutdoorAirMixerObjectType,
+                                                ZoneHVAC_FourPipeFanCoilFields::OutdoorAirMixerName, sourceNode, inletNode, baseName)
+                  || changed;
+      } else if (fan && cooling && heating) {
+        changed = reconcileOwnedOutdoorAirMixer(ZoneHVAC_FourPipeFanCoilFields::OutdoorAirMixerObjectType,
+                                                ZoneHVAC_FourPipeFanCoilFields::OutdoorAirMixerName, boost::none, boost::none, baseName)
+                  || changed;
+      }
 
       boost::optional<Node> fanOutlet;
       if (fan && (cooling || heating)) {
@@ -1024,7 +1383,9 @@ namespace epmodel {
       }
 
       if (fan) {
-        changed = fan->getImpl<detail::ModelObject_Impl>()->setPointer(fan->inletPort(), inletNode.handle(), false) || changed;
+        changed =
+          fan->getImpl<detail::ModelObject_Impl>()->setPointer(fan->inletPort(), sourceNode ? sourceNode->handle() : inletNode.handle(), false)
+          || changed;
         if (fanOutlet) {
           changed = fan->getImpl<detail::ModelObject_Impl>()->setPointer(fan->outletPort(), fanOutlet->handle(), false) || changed;
         } else {
@@ -1039,7 +1400,9 @@ namespace epmodel {
           if (fanOutlet) {
             changed = cooling->getImpl<detail::ModelObject_Impl>()->setPointer(coolingAirInletPort, fanOutlet->handle(), false) || changed;
           } else {
-            changed = cooling->getImpl<detail::ModelObject_Impl>()->setPointer(coolingAirInletPort, inletNode.handle(), false) || changed;
+            changed = cooling->getImpl<detail::ModelObject_Impl>()->setPointer(coolingAirInletPort,
+                                                                               sourceNode ? sourceNode->handle() : inletNode.handle(), false)
+                      || changed;
           }
         }
         if (coolingAirOutletPort != 0u) {
@@ -1060,7 +1423,9 @@ namespace epmodel {
           } else if (fanOutlet) {
             changed = heating->getImpl<detail::ModelObject_Impl>()->setPointer(heatingAirInletPort, fanOutlet->handle(), false) || changed;
           } else {
-            changed = heating->getImpl<detail::ModelObject_Impl>()->setPointer(heatingAirInletPort, inletNode.handle(), false) || changed;
+            changed = heating->getImpl<detail::ModelObject_Impl>()->setPointer(heatingAirInletPort,
+                                                                               sourceNode ? sourceNode->handle() : inletNode.handle(), false)
+                      || changed;
           }
         }
         if (heatingAirOutletPort != 0u) {

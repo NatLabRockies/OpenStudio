@@ -13,6 +13,9 @@
 
 namespace openstudio {
 namespace epmodel {
+
+  class ThermalZone;
+
   namespace detail {
 
     class EPMODEL_API RefrigerationSecondarySystem_Impl : public ParentObject_Impl
@@ -78,10 +81,18 @@ namespace epmodel {
       bool setSumUADistributionPiping(double sumUADistributionPiping);
       void resetSumUADistributionPiping();
 
+      boost::optional<ThermalZone> distributionPipingZone() const;
+      bool setDistributionPipingZone(const ThermalZone& thermalZone);
+      void resetDistributionPipingZone();
+
       double sumUAReceiverSeparatorShell() const;
       bool isSumUAReceiverSeparatorShellDefaulted() const;
       bool setSumUAReceiverSeparatorShell(double sumUAReceiverSeparatorShell);
       void resetSumUAReceiverSeparatorShell();
+
+      boost::optional<ThermalZone> receiverSeparatorZone() const;
+      bool setReceiverSeparatorZone(const ThermalZone& thermalZone);
+      void resetReceiverSeparatorZone();
 
       double evaporatorRefrigerantInventory() const;
       bool isEvaporatorRefrigerantInventoryDefaulted() const;

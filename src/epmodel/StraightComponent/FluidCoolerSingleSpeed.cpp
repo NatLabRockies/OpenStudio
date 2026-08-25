@@ -8,13 +8,21 @@
 
 #include "Loop/PlantLoop.hpp"
 #include "Model.hpp"
+#include "ModelObject/ModelObject.hpp"
 #include "StraightComponent/Node.hpp"
 
 #include <utilities/core/Assert.hpp>
+#include <utilities/core/Logger.hpp>
 #include <utilities/core/StringHelpers.hpp>
+#include <utilities/core/UUID.hpp>
 #include <utilities/idd/FluidCooler_SingleSpeed_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/IddFactory.hxx>
+#include <utilities/idd/IddObject.hpp>
+#include <utilities/idd/OutdoorAir_NodeList_FieldEnums.hxx>
+#include <utilities/idf/WorkspaceExtensibleGroup.hpp>
+
+#include <algorithm>
 
 namespace openstudio {
 namespace epmodel {
@@ -47,6 +55,18 @@ namespace epmodel {
 
   std::vector<std::string> FluidCoolerSingleSpeed::performanceInputMethodValues() {
     return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), openstudio::FluidCooler_SingleSpeedFields::PerformanceInputMethod);
+  }
+
+  boost::optional<Node> FluidCoolerSingleSpeed::outdoorAirInletNode() const {
+    return getImpl<detail::FluidCoolerSingleSpeed_Impl>()->outdoorAirInletNode();
+  }
+
+  bool FluidCoolerSingleSpeed::setOutdoorAirInletNode(const Node& node) {
+    return getImpl<detail::FluidCoolerSingleSpeed_Impl>()->setOutdoorAirInletNode(node);
+  }
+
+  void FluidCoolerSingleSpeed::resetOutdoorAirInletNode() {
+    getImpl<detail::FluidCoolerSingleSpeed_Impl>()->resetOutdoorAirInletNode();
   }
 
   std::string FluidCoolerSingleSpeed::performanceInputMethod() const {
@@ -192,6 +212,233 @@ namespace epmodel {
       }
 
       return false;
+    }
+
+    boost::optional<Node> FluidCoolerSingleSpeed_Impl::outdoorAirInletNode() const {
+      constexpr auto field = openstudio::FluidCooler_SingleSpeedFields::OutdoorAirInletNodeName;
+      const auto managedValue = getObject<ModelObject>().getField(field, false);
+      if (!managedValue || managedValue->empty()) {
+        return boost::none;
+      }
+      const auto targetHandle = openstudio::toUUID(*managedValue);
+      if (targetHandle.isNull()) {
+        return boost::none;
+      }
+      return model().getModelObject<Node>(targetHandle);
+    }
+
+    bool FluidCoolerSingleSpeed_Impl::setOutdoorAirInletNode(const Node& node) {
+      if (node.model() != model()) {
+        LOG_FREE(Warn, "openstudio.epmodel.FluidCoolerSingleSpeed",
+                 "Cannot set the outdoor air inlet Node because the Node belongs to a different model.");
+        return false;
+      }
+
+      constexpr auto field = openstudio::FluidCooler_SingleSpeedFields::OutdoorAirInletNodeName;
+      const auto previousRaw = openstudio::detail::IdfObject_Impl::getString(field, false, true).value_or("");
+      const auto previousNode = outdoorAirInletNode();
+      const auto previousName = previousNode ? previousNode->nameString() : previousRaw;
+      if (!setPointer(field, node.handle(), false)) {
+        return false;
+      }
+      if (maintainOutdoorAirInletNode(previousName)) {
+        return true;
+      }
+
+      const bool restored =
+        previousNode ? setPointer(field, previousNode->handle(), false)
+                     : (setPointer(field, openstudio::Handle(), false) && openstudio::detail::IdfObject_Impl::setString(field, previousRaw, false));
+      if (!restored) {
+        LOG_FREE(Error, "openstudio.epmodel.FluidCoolerSingleSpeed",
+                 "Failed to restore the previous outdoor air inlet Node after declaration maintenance failed.");
+      }
+      removeUnusedOutdoorAirInletNode(node.nameString());
+      return false;
+    }
+
+    void FluidCoolerSingleSpeed_Impl::resetOutdoorAirInletNode() {
+      constexpr auto field = openstudio::FluidCooler_SingleSpeedFields::OutdoorAirInletNodeName;
+      const auto previousRaw = openstudio::detail::IdfObject_Impl::getString(field, false, true).value_or("");
+      const auto previousNode = outdoorAirInletNode();
+      const auto previousName = previousNode ? previousNode->nameString() : previousRaw;
+      if (setPointer(field, openstudio::Handle(), false) && openstudio::detail::IdfObject_Impl::setString(field, "", false)) {
+        removeUnusedOutdoorAirInletNode(previousName);
+        return;
+      }
+
+      const bool restored =
+        previousNode ? setPointer(field, previousNode->handle(), false)
+                     : (setPointer(field, openstudio::Handle(), false) && openstudio::detail::IdfObject_Impl::setString(field, previousRaw, false));
+      if (!restored) {
+        LOG_FREE(Error, "openstudio.epmodel.FluidCoolerSingleSpeed", "Failed to restore the outdoor air inlet Node after reset failed.");
+      }
+    }
+
+    bool FluidCoolerSingleSpeed_Impl::maintainOutdoorAirInletNode(const std::string& previousNodeName) {
+      const auto currentNode = outdoorAirInletNode();
+      if (!currentNode) {
+        return false;
+      }
+      const auto currentNodeName = currentNode->nameString();
+
+      const auto directDeclarations = model().getObjectsByType(openstudio::IddObjectType::OutdoorAir_Node);
+      const bool declaredByOutdoorAirNode =
+        std::ranges::any_of(directDeclarations, [&](const auto& object) { return openstudio::istringEqual(object.nameString(), currentNodeName); });
+
+      bool declaredAsOutdoorAir = declaredByOutdoorAirNode;
+      if (declaredByOutdoorAirNode) {
+        removeOutdoorAirNodeListEntries(currentNodeName);
+      } else {
+        for (const auto& object : model().getObjectsByType(openstudio::IddObjectType::OutdoorAir_NodeList)) {
+          for (const auto& group : object.extensibleGroups()) {
+            const auto workspaceGroup = group.optionalCast<openstudio::WorkspaceExtensibleGroup>();
+            if (!workspaceGroup) {
+              continue;
+            }
+            const auto nodeName = workspaceGroup->getString(openstudio::OutdoorAir_NodeListExtensibleFields::NodeorNodeListName);
+            if (nodeName && openstudio::istringEqual(*nodeName, currentNodeName)) {
+              declaredAsOutdoorAir = true;
+              break;
+            }
+          }
+          if (declaredAsOutdoorAir) {
+            break;
+          }
+        }
+      }
+
+      if (!declaredAsOutdoorAir) {
+        auto nodeList = ModelObject::create(openstudio::IddObjectType::OutdoorAir_NodeList, model());
+        auto group = nodeList.pushExtensibleGroup().optionalCast<openstudio::WorkspaceExtensibleGroup>();
+        if (!(group && group->setString(openstudio::OutdoorAir_NodeListExtensibleFields::NodeorNodeListName, currentNodeName))) {
+          nodeList.remove();
+          return false;
+        }
+      }
+
+      if (!previousNodeName.empty() && !openstudio::istringEqual(previousNodeName, currentNodeName)) {
+        removeUnusedOutdoorAirInletNode(previousNodeName);
+      }
+      return true;
+    }
+
+    unsigned FluidCoolerSingleSpeed_Impl::removeOutdoorAirNodeListEntries(const std::string& nodeName) {
+      unsigned removedEntries = 0;
+      for (auto object : model().getObjectsByType(openstudio::IddObjectType::OutdoorAir_NodeList)) {
+        const auto groups = object.extensibleGroups();
+        std::vector<unsigned> matchingGroups;
+        for (const auto& group : groups) {
+          const auto workspaceGroup = group.optionalCast<openstudio::WorkspaceExtensibleGroup>();
+          if (!workspaceGroup) {
+            continue;
+          }
+          const auto listedNodeName = workspaceGroup->getString(openstudio::OutdoorAir_NodeListExtensibleFields::NodeorNodeListName);
+          if (listedNodeName && openstudio::istringEqual(*listedNodeName, nodeName)) {
+            matchingGroups.push_back(workspaceGroup->groupIndex());
+          }
+        }
+
+        removedEntries += static_cast<unsigned>(matchingGroups.size());
+        if (!matchingGroups.empty() && (matchingGroups.size() == groups.size())) {
+          object.remove();
+          continue;
+        }
+        for (auto it = matchingGroups.rbegin(); it != matchingGroups.rend(); ++it) {
+          object.eraseExtensibleGroup(*it);
+        }
+      }
+      return removedEntries;
+    }
+
+    void FluidCoolerSingleSpeed_Impl::removeUnusedOutdoorAirInletNode(const std::string& nodeName) {
+      if (nodeName.empty()) {
+        return;
+      }
+
+      constexpr auto ownerField = openstudio::FluidCooler_SingleSpeedFields::OutdoorAirInletNodeName;
+      for (const auto& object : model().objects()) {
+        if (object.iddObject().type() == openstudio::IddObjectType::OutdoorAir_NodeList) {
+          continue;
+        }
+        for (unsigned fieldIndex = 0; fieldIndex < object.numFields(); ++fieldIndex) {
+          if ((object.handle() == handle()) && (fieldIndex == ownerField)) {
+            continue;
+          }
+          const auto iddField = object.iddObject().getField(fieldIndex);
+          if (!(iddField && (iddField->properties().type == openstudio::IddFieldType::NodeType))) {
+            continue;
+          }
+          const auto fieldValue = object.getString(fieldIndex);
+          if (fieldValue && openstudio::istringEqual(*fieldValue, nodeName)) {
+            return;
+          }
+        }
+      }
+
+      removeOutdoorAirNodeListEntries(nodeName);
+    }
+
+    void FluidCoolerSingleSpeed_Impl::doCanonicalize(LoadContext& context) {
+      StraightComponent_Impl::doCanonicalize(context);
+
+      constexpr auto field = openstudio::FluidCooler_SingleSpeedFields::OutdoorAirInletNodeName;
+      const auto rawNodeName = openstudio::detail::IdfObject_Impl::getString(field, false, true);
+      auto node = outdoorAirInletNode();
+      if (!node && !(rawNodeName && !rawNodeName->empty())) {
+        return;
+      }
+
+      if (!node) {
+        node = resolvedNodeTarget(field);
+      }
+      if (!node) {
+        detail::addLoadWarning(context, "Preserved unresolved outdoor air inlet Node reference '" + rawNodeName.value_or("")
+                                          + "' for single-speed fluid cooler '" + getObject<ModelObject>().nameString() + "'.");
+        return;
+      }
+      const auto nodeName = node->nameString();
+
+      bool hasDirectDeclaration = false;
+      bool hasNodeListDeclaration = false;
+      for (const auto& object : model().getObjectsByType(openstudio::IddObjectType::OutdoorAir_Node)) {
+        if (openstudio::istringEqual(object.nameString(), nodeName)) {
+          hasDirectDeclaration = true;
+          break;
+        }
+      }
+      for (const auto& object : model().getObjectsByType(openstudio::IddObjectType::OutdoorAir_NodeList)) {
+        for (const auto& group : object.extensibleGroups()) {
+          const auto workspaceGroup = group.optionalCast<openstudio::WorkspaceExtensibleGroup>();
+          const auto listedNodeName = workspaceGroup ? workspaceGroup->getString(openstudio::OutdoorAir_NodeListExtensibleFields::NodeorNodeListName)
+                                                     : boost::optional<std::string>();
+          if (listedNodeName && openstudio::istringEqual(*listedNodeName, nodeName)) {
+            hasNodeListDeclaration = true;
+            break;
+          }
+        }
+        if (hasNodeListDeclaration) {
+          break;
+        }
+      }
+      const bool needsRepair = hasDirectDeclaration ? hasNodeListDeclaration : !hasNodeListDeclaration;
+
+      if (!maintainOutdoorAirInletNode()) {
+        detail::addLoadError(context, "Failed to maintain the outdoor-air declaration for single-speed fluid cooler '"
+                                        + getObject<ModelObject>().nameString() + "'.");
+      } else if (needsRepair) {
+        detail::addLoadInfo(context,
+                            "Repaired the outdoor-air declaration for single-speed fluid cooler '" + getObject<ModelObject>().nameString() + "'.");
+      }
+    }
+
+    std::vector<IdfObject> FluidCoolerSingleSpeed_Impl::remove() {
+      if (!isRemovable()) {
+        return {};
+      }
+      const auto outdoorAirNode = outdoorAirInletNode();
+      const auto nodeName = outdoorAirNode ? outdoorAirNode->nameString() : std::string{};
+      removeUnusedOutdoorAirInletNode(nodeName);
+      return StraightComponent_Impl::remove();
     }
 
     std::vector<std::string> FluidCoolerSingleSpeed_Impl::performanceInputMethodValues() const {

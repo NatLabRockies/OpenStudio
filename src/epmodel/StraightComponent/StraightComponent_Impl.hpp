@@ -34,7 +34,12 @@ namespace epmodel {
 
       virtual bool addToNode(Node& node) override;
 
+      // Keep a neighboring branch component's storage aligned when a branch
+      // row is inserted, bypassed, or removed.
+      static bool updateAdjacentBranchComponentNode(const ModelObject& object, const Node& node, bool inlet, bool airSide);
+
      protected:
+      bool isDemandBranchStartComponent() const;
       bool addToOutdoorAirSystem(AirLoopHVACOutdoorAirSystem& oaSystem, Node& node);
       bool removeFromOutdoorAirSystem(AirLoopHVACOutdoorAirSystem& oaSystem);
     };

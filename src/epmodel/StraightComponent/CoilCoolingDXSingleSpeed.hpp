@@ -24,6 +24,59 @@ namespace epmodel {
     class CoilCoolingDXSingleSpeed_Impl;
   }
 
+  /** \brief Represents a single-speed direct-expansion cooling coil.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-heating-and-cooling-coils.html#coilcoolingdxsinglespeed,Coil:Cooling:DX:SingleSpeed}
+   *
+   * \par Important behavior
+   * Schedule and curve relationship setters reject objects from another model
+   * or object types that are not accepted by the corresponding EnergyPlus
+   * field, leaving the existing relationship unchanged. During
+   * canonicalization, a genuinely blank availability relationship is repaired
+   * with the model's always-on schedule. Setting a condenser air inlet node
+   * maintains its outdoor-air declaration and removes obsolete
+   * <code>OutdoorAir:NodeList</code> entries when they are no longer used.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::CoilCoolingDXSingleSpeed</code>.
+   *
+   * - <b>Not yet available:</b> The deprecated
+   *   <code>ratedEvaporatorFanPowerPerVolumeFlowRate()</code> getter and both
+   *   <code>setRatedEvaporatorFanPowerPerVolumeFlowRate(...)</code> setter
+   *   overloads are not available. The replacement fields distinguish the
+   *   evaporator-fan power used by the 2017 and 2023 editions of the ANSI/AHRI
+   *   210/240 rating procedure. Use
+   *   <code>ratedEvaporatorFanPowerPerVolumeFlowRate2017()</code>,
+   *   <code>setRatedEvaporatorFanPowerPerVolumeFlowRate2017(...)</code>,
+   *   <code>ratedEvaporatorFanPowerPerVolumeFlowRate2023()</code>, and
+   *   <code>setRatedEvaporatorFanPowerPerVolumeFlowRate2023(...)</code>
+   *   instead.
+   * - <b>Not yet available:</b> Optional-value setter overloads are not
+   *   available for the scalar fields that have them in OpenStudio Model,
+   *   including rated COP, fan-power values, latent-performance values,
+   *   evaporative-condenser values, crankcase-heater capacity, and basin-heater
+   *   values. EPModel provides concrete-value setters; for autosizable fields,
+   *   use <code>autosizeRatedTotalCoolingCapacity()</code>,
+   *   <code>autosizeRatedSensibleHeatRatio()</code>,
+   *   <code>autosizeRatedAirFlowRate()</code>,
+   *   <code>autosizeEvaporativeCondenserAirFlowRate()</code>, or
+   *   <code>autosizeEvaporativeCondenserPumpRatedPowerConsumption()</code>.
+   * - <b>Not yet available:</b>
+   *   <code>getAirflowNetworkEquivalentDuct(...)</code> and
+   *   <code>airflowNetworkEquivalentDuct()</code>.
+   * - <b>Not yet available:</b> Simulation-result accessors for autosized
+   *   values: <code>autosizedRatedAirFlowRate()</code>,
+   *   <code>autosizedRatedTotalCoolingCapacity()</code>,
+   *   <code>autosizedRatedSensibleHeatRatio()</code>,
+   *   <code>autosizedEvaporativeCondenserAirFlowRate()</code>, and
+   *   <code>autosizedEvaporativeCondenserPumpRatedPowerConsumption()</code>.
+   *
+   * \par Known limitations
+   * <code>addToNode()</code> currently supports the air-loop supply path. It
+   * rejects demand-branch nodes and outboard outdoor-air-system nodes.
+   */
   class EPMODEL_API CoilCoolingDXSingleSpeed : public StraightComponent
   {
    public:
@@ -42,20 +95,6 @@ namespace epmodel {
 
     static std::vector<std::string> condenserTypeValues();
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. The canonical scalar DX-coil surface plus the required schedule / curve relationships and the current epmodel
-    //   supply-side air-loop insertion path are present, while condenser-air-node, AFN, tank-link, and broader OA / DOAS topology helpers remain
-    //   out of scope.
-    // - Canonical Counterpart: openstudio::model::CoilCoolingDXSingleSpeed.
-    // - Implemented Parity: The scalar rated/capacity/efficiency and evaporative-condenser APIs preserve the canonical naming, defaults, autosize
-    //   behavior, and 2017/2023 fan-power variants; `availabilitySchedule`, the five required performance curves, optional crankcase and basin
-    //   schedule links, the relationship constructor, and the current supply-side air-loop `addToNode` path preserve the bounded canonical slice.
-    // - Documented Delta: Condenser-air node, AFN, tank-link, and broader OA / DOAS topology helpers from canonical
-    //   `openstudio::model::CoilCoolingDXSingleSpeed` are not exposed yet.
-    // - Field/Storage Mapping: Preserved scalars and relationships map directly to EnergyPlus `Coil:Cooling:DX:SingleSpeed` fields.
-    // - Evidence: `src/model/CoilCoolingDXSingleSpeed.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateCoilCoolingDXSingleSpeed.cpp`, and `src/epmodel/test/CoilCoolingDXSingleSpeed_GTest.cpp`.
-    // - Remaining Parity Work: Add condenser-air-node, AFN, tank-link, and broader OA / DOAS topology helpers without changing the preserved
-    //   scalar signatures.
     Schedule availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);
 
@@ -81,6 +120,9 @@ namespace epmodel {
     boost::optional<Schedule> basinHeaterOperatingSchedule() const;
     bool setBasinHeaterOperatingSchedule(Schedule& schedule);
     void resetBasinHeaterOperatingSchedule();
+
+    boost::optional<std::string> condenserAirInletNodeName() const;
+    bool setCondenserAirInletNodeName(const boost::optional<std::string>& condenserAirInletNodeName);
 
     std::string condenserType() const;
     bool setCondenserType(const std::string& condenserType);

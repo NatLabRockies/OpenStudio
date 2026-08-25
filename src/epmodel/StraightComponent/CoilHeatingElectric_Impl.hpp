@@ -44,6 +44,8 @@ namespace epmodel {
       void resetNominalCapacity();
       void autosizeNominalCapacity();
       boost::optional<double> autosizedNominalCapacity() const;
+
+      void doCanonicalize(LoadContext& context) override;
     };
 
   }  // namespace detail

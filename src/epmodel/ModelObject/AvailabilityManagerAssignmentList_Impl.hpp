@@ -16,6 +16,7 @@ namespace epmodel {
   class AirLoopHVAC;
   class AvailabilityManager;
   class Loop;
+  class PlantLoop;
 
   namespace detail {
 
@@ -48,6 +49,7 @@ namespace epmodel {
       //@{
       boost::optional<openstudio::epmodel::Loop> loop() const;
       boost::optional<openstudio::epmodel::AirLoopHVAC> airLoopHVAC() const;
+      boost::optional<openstudio::epmodel::PlantLoop> plantLoop() const;
       //@}
 
       void doCanonicalize(LoadContext& context) override;

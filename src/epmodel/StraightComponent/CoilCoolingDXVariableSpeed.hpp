@@ -24,6 +24,21 @@ namespace epmodel {
     class CoilCoolingDXVariableSpeed_Impl;
   }
 
+  /** \brief Represents a variable-speed direct-expansion cooling coil.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-heating-and-cooling-coils.html#coilcoolingdxvariablespeed,Coil:Cooling:DX:VariableSpeed}.
+   *
+   * \par Important behavior
+   * The persisted scalar, schedule, and currently supported performance relationships use the EnergyPlus coil topology.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::CoilCoolingDXVariableSpeed</code>.
+   * Not yet available: the corresponding speed-data family and owning speed-list API, plus broader node-link conveniences.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations beyond the listed API differences.
+   */
   class EPMODEL_API CoilCoolingDXVariableSpeed : public StraightComponent
   {
    public:
@@ -42,20 +57,6 @@ namespace epmodel {
 
     bool addToNode(Node& node);
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. Required availability / PLF-curve behavior, optional basin / crankcase relationships, bounded child traversal,
-    //   and the current epmodel supply-side air-loop insertion path are present, while the canonical speed-data family and broader OA / DOAS topology
-    //   remain out of scope.
-    // - Canonical Counterpart: openstudio::model::CoilCoolingDXVariableSpeed.
-    // - Implemented Parity: The speed-level capacity, airflow, compressor, condenser, and evaporative-condenser helpers preserve the canonical naming and
-    //   autosize behavior; the required availability schedule, constructor-with-part-load-fraction curve, and energy-part-load-fraction curve are now
-    //   preserved; and optional basin-heater and crankcase-heater relationship helpers are exposed for the current bounded slice.
-    // - Documented Delta: Canonical variable-speed stage-data / speed-list parity remains deferred because epmodel does not yet expose the
-    //   `CoilCoolingDXVariableSpeedSpeedData` family or its owning list surface.
-    // - Field/Storage Mapping: Preserved scalars map directly to EnergyPlus `Coil:Cooling:DX:VariableSpeed` fields.
-    // - Evidence: `src/model/CoilCoolingDXVariableSpeed.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateCoilCoolingDXVariableSpeed.cpp`, and `src/epmodel/test/CoilCoolingDXVariableSpeed_GTest.cpp`.
-    // - Remaining Parity Work: Add canonical speed-data / speed-list parity once epmodel has a viable representation for the `SpeedData` family, and widen
-    //   topology acceptance only where the current epmodel air-loop graph can prove it.
     Schedule availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);
 

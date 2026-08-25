@@ -179,8 +179,13 @@ namespace epmodel {
       const auto thisName = thisObject.nameString();
       auto components = branch.components();
       if (components.empty()) {
-        const std::string newInletName = *nodeName;
-        const std::string newOutletName = *nodeName + " - " + thisName + " Outlet";
+        const auto plantLoop = node.plantLoop();
+        // A loop outlet is the terminal node of its empty anchor branch, so
+        // insertion belongs upstream of that endpoint.
+        const bool insertsBeforeLoopOutlet = plantLoop && ((plantLoop->supplyOutletNode() == node) || (plantLoop->demandOutletNode() == node));
+        const std::string newNodeName = *nodeName + " - " + thisName + (insertsBeforeLoopOutlet ? " Inlet" : " Outlet");
+        const std::string newInletName = insertsBeforeLoopOutlet ? newNodeName : *nodeName;
+        const std::string newOutletName = insertsBeforeLoopOutlet ? *nodeName : newNodeName;
 
         if (!branch.getImpl<detail::Branch_Impl>()->appendComponent(thisObject, newInletName, newOutletName)) {
           return false;

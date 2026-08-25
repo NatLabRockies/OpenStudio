@@ -77,16 +77,14 @@ namespace epmodel {
 
     static bool surfaceMatchesRadiantSelection(const openstudio::epmodel::Surface& surface, const std::string& radiantSurfaceType) {
       const auto surfaceType = surface.surfaceType();
-      const bool isCeilingLike = openstudio::istringEqual(surfaceType, "RoofCeiling") || openstudio::istringEqual(surfaceType, "Roof")
-                                 || openstudio::istringEqual(surfaceType, "Ceiling");
       if (openstudio::istringEqual(radiantSurfaceType, "Ceilings")) {
-        return isCeilingLike;
+        return openstudio::epmodel::Surface::isCeilingLike(surfaceType);
       }
       if (openstudio::istringEqual(radiantSurfaceType, "Floors")) {
         return openstudio::istringEqual(surfaceType, "Floor");
       }
       if (openstudio::istringEqual(radiantSurfaceType, "CeilingsandFloors")) {
-        return isCeilingLike || openstudio::istringEqual(surfaceType, "Floor");
+        return openstudio::epmodel::Surface::isCeilingLike(surfaceType) || openstudio::istringEqual(surfaceType, "Floor");
       }
       if (openstudio::istringEqual(radiantSurfaceType, "AllSurfaces")) {
         return true;

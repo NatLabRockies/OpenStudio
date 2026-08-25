@@ -23,6 +23,17 @@ namespace epmodel {
     class OutputEnvironmentalImpactFactors_Impl;
   }
 
+  /** \brief OutputEnvironmentalImpactFactors.
+   *
+   * \par EnergyPlus object
+   * \epobject{input-for-output.html#outputenvironmentalimpactfactors,Output:EnvironmentalImpactFactors}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::OutputEnvironmentalImpactFactors</code>. The reporting-frequency field maps directly to EnergyPlus.
+   *
+   * \par Known limitations
+   * Only the fields and relationships listed in this wrapper are available; broader Model-only helpers are not exposed.
+   */
   class EPMODEL_API OutputEnvironmentalImpactFactors : public ModelObject
   {
    public:
@@ -37,12 +48,6 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     static std::vector<std::string> reportingFrequencyValues();
-
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model::OutputEnvironmentalImpactFactors scalar accessor names/signatures.
-    // - Field Mapping: reportingFrequency maps directly to E+ Output:EnvironmentalImpactFactors Reporting Frequency.
-    // - ForwardTranslator evidence: ForwardTranslateOutputEnvironmentalImpactFactors.cpp writes reportingFrequency directly to Reporting Frequency.
-    // - TODO(parity): Keep scalar API stable while extending broader translator-coupled behavior in later parity passes.
     /** @name Reporting frequency scalar */
     //@{
     std::string reportingFrequency() const;

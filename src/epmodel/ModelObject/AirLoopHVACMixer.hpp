@@ -22,6 +22,17 @@ namespace epmodel {
     class AirLoopHVACMixer_Impl;
   }
 
+  /** \brief Represents the EnergyPlus AirLoopHVAC:Mixer object.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-air-path.html#airloophvacmixer,AirLoopHVAC:Mixer}
+   *
+   * \par OpenStudio Model API
+   * OpenStudio Model has no public wrapper for this EnergyPlus object. This wrapper is new to the EPModel API.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations beyond the public fields and relationships exposed by this wrapper.
+   */
   class EPMODEL_API AirLoopHVACMixer : public ModelObject
   {
    public:
@@ -35,11 +46,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - API: This no-counterpart type keeps IDD-derived class/API naming.
-    // - Field Mapping: Name remains available through base ModelObject scalar API.
-    // - Field Mapping: Outlet Node Name and extensible Inlet Node Name fields are relationship-like node links and excluded from scalar accessors.
-    // - TODO(parity): Add relationship APIs incrementally after scalar saturation.
 
    protected:
     using ImplType = detail::AirLoopHVACMixer_Impl;

@@ -20,6 +20,17 @@ namespace epmodel {
     class SiteGroundTemperatureShallow_Impl;
   }
 
+  /** \brief SiteGroundTemperatureShallow.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-location-climate-weather-file-access.html#sitegroundtemperatureshallow,Site:GroundTemperature:Shallow}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::SiteGroundTemperatureShallow</code>. The twelve monthly surface-ground temperatures map directly to EnergyPlus. EPModel uses named month methods rather than Model's month-indexed and all-month helper family.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API SiteGroundTemperatureShallow : public ModelObject
   {
    public:
@@ -32,12 +43,6 @@ namespace epmodel {
     SiteGroundTemperatureShallow& operator=(SiteGroundTemperatureShallow&&) = default;
 
     static IddObjectType iddObjectType();
-
-    // Schema Alignment Notes:
-    // - API: Preserved openstudio::model month accessor names/signatures delegate to epmodel scalar fields.
-    // - Field Mapping: <Month>SurfaceGroundTemperature maps to Site:GroundTemperature:Shallow <Month> Surface Ground Temperature.
-    // - Translator Evidence: ForwardTranslateSiteGroundTemperatureShallow.cpp writes these same 12 monthly fields.
-    // - TODO(parity): Add legacy non-scalar helper APIs in a follow-up parity pass.
     double januarySurfaceGroundTemperature() const;
     bool isJanuarySurfaceGroundTemperatureDefaulted() const;
     bool setJanuarySurfaceGroundTemperature(double januarySurfaceGroundTemperature);

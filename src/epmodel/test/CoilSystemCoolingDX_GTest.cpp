@@ -88,7 +88,7 @@ TEST_F(EPModelFixture, CoilSystemCoolingDX_ScalarAccessors_RoundTrip) {
   EXPECT_DOUBLE_EQ(2.0, system.outdoorAirDXCoolingCoilLeavingMinimumAirTemperature());
 }
 
-TEST_F(EPModelFixture, CoilSystemCoolingDX_ImplOnlyNavigation) {
+TEST_F(EPModelFixture, CoilSystemCoolingDX_PublicCoolingCoilNavigation) {
   Model model;
   CoilCoolingDXSingleSpeed coil(model);
   CoilSystemCoolingDX system(model);
@@ -96,9 +96,7 @@ TEST_F(EPModelFixture, CoilSystemCoolingDX_ImplOnlyNavigation) {
   ASSERT_TRUE(system.setCoolingCoilObjectType("Coil:Cooling:DX:SingleSpeed"));
   ASSERT_TRUE(system.setPointer(openstudio::CoilSystem_Cooling_DXFields::CoolingCoilName, coil.handle()));
 
-  auto systemImpl = system.getImpl<openstudio::epmodel::detail::CoilSystemCoolingDX_Impl>();
-  ASSERT_TRUE(systemImpl);
-  auto coilFromSystem = systemImpl->coolingCoil();
+  auto coilFromSystem = system.coolingCoil();
   ASSERT_TRUE(coilFromSystem);
   EXPECT_EQ(coil.cast<ModelObject>(), *coilFromSystem);
 

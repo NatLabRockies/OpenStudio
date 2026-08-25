@@ -15,16 +15,41 @@
 namespace openstudio {
 namespace epmodel {
 
+  class CoilCoolingDXCurveFitOperatingMode;
+  class Curve;
   class Model;
+  class Schedule;
 
   namespace detail {
     class CoilCoolingDXCurveFitPerformance_Impl;
   }
 
+  /** \brief Defines the performance and operating-mode relationships for a curve-fit DX cooling coil.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-coil-cooling-dx.html#coilcoolingdxcurvefitperformance,Coil:Cooling:DX:CurveFit:Performance}.
+   *
+   * \par Important behavior
+   * A newly created object and a loaded object with a blank basin-heater
+   * schedule are assigned the model's always-on discrete schedule. A nonblank
+   * unresolved schedule name is not guessed or replaced.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::CoilCoolingDXCurveFitPerformance</code>.
+   * EPModel also keeps a one-argument constructor for creating an initially
+   * unlinked performance object. The Model reverse-navigation method
+   * <code>coilCoolingDXs()</code> is not available.
+   *
+   * \par Known limitations
+   * Reverse navigation to the DX coils that reference this performance object
+   * is not available.
+   */
   class EPMODEL_API CoilCoolingDXCurveFitPerformance : public ModelObject
   {
    public:
     explicit CoilCoolingDXCurveFitPerformance(const Model& model);
+    explicit CoilCoolingDXCurveFitPerformance(const Model& model, const CoilCoolingDXCurveFitOperatingMode& baseOperatingMode);
 
     virtual ~CoilCoolingDXCurveFitPerformance() override = default;
     CoilCoolingDXCurveFitPerformance(const CoilCoolingDXCurveFitPerformance& other) = default;
@@ -39,13 +64,12 @@ namespace epmodel {
     static std::vector<std::string> validCapacityControlMethodValues();
     static std::vector<std::string> validCompressorFuelTypeValues();
 
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model scalar accessor names/signatures for this model-counterpart class.
-    // - Field Mapping: Preserved scalar APIs map directly to matching E+ Coil:Cooling:DX:CurveFit:Performance fields.
-    // - ForwardTranslator evidence: ForwardTranslateCoilCoolingDXCurveFitPerformance writes these scalar fields one-to-one.
-    // - TODO(parity): Add relationship/object-link APIs (operating modes, schedule, curve) in a dedicated non-scalar pass.
     double crankcaseHeaterCapacity() const;
     bool setCrankcaseHeaterCapacity(double crankcaseHeaterCapacity);
+
+    boost::optional<Curve> crankcaseHeaterCapacityFunctionofTemperatureCurve() const;
+    bool setCrankcaseHeaterCapacityFunctionofTemperatureCurve(const Curve& curve);
+    void resetCrankcaseHeaterCapacityFunctionofTemperatureCurve();
 
     double minimumOutdoorDryBulbTemperatureforCompressorOperation() const;
     bool setMinimumOutdoorDryBulbTemperatureforCompressorOperation(double minimumOutdoorDryBulbTemperatureforCompressorOperation);
@@ -65,8 +89,22 @@ namespace epmodel {
     double evaporativeCondenserBasinHeaterSetpointTemperature() const;
     bool setEvaporativeCondenserBasinHeaterSetpointTemperature(double evaporativeCondenserBasinHeaterSetpointTemperature);
 
+    Schedule evaporativeCondenserBasinHeaterOperatingSchedule() const;
+    bool setEvaporativeCondenserBasinHeaterOperatingSchedule(Schedule& schedule);
+
     std::string compressorFuelType() const;
     bool setCompressorFuelType(const std::string& compressorFuelType);
+
+    CoilCoolingDXCurveFitOperatingMode baseOperatingMode() const;
+    bool setBaseOperatingMode(const CoilCoolingDXCurveFitOperatingMode& baseOperatingMode);
+
+    boost::optional<CoilCoolingDXCurveFitOperatingMode> alternativeOperatingMode1() const;
+    bool setAlternativeOperatingMode1(const CoilCoolingDXCurveFitOperatingMode& alternativeOperatingMode1);
+    void resetAlternativeOperatingMode1();
+
+    boost::optional<CoilCoolingDXCurveFitOperatingMode> alternativeOperatingMode2() const;
+    bool setAlternativeOperatingMode2(const CoilCoolingDXCurveFitOperatingMode& alternativeOperatingMode2);
+    void resetAlternativeOperatingMode2();
 
    protected:
     using ImplType = detail::CoilCoolingDXCurveFitPerformance_Impl;

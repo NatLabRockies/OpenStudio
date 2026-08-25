@@ -7,7 +7,7 @@
 #define EPMODEL_CONSTRUCTIONAIRBOUNDARY_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "ConstructionBase/ConstructionBase.hpp"
 
 #include <utilities/idd/IddEnums.hxx>
 
@@ -23,7 +23,29 @@ namespace epmodel {
     class ConstructionAirBoundary_Impl;
   }
 
-  class EPMODEL_API ConstructionAirBoundary : public ModelObject
+  /** \brief Defines an air-boundary construction and its simple-mixing inputs.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-surface-construction-elements.html#constructionairboundary,Construction:AirBoundary}.
+   *
+   * \par Important behavior
+   * The legacy solar/daylighting and radiant-exchange methods are retained for
+   * source compatibility, but their setters return false, their value lists
+   * are empty, and their getters report the fixed legacy value
+   * <code>GroupedZones</code>; those concepts no longer have EnergyPlus fields.
+   * The constructor initializes simple-mixing air changes per hour to 0.0.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::ConstructionAirBoundary</code>. EPModel exposes
+   * the same legacy methods; its retained solar/radiant value helpers return
+   * empty lists. Model's <code>simpleMixingSchedule()</code> relationship and
+   * its setter/resetter are not available.
+   *
+   * \par Known limitations
+   * A simple-mixing schedule cannot be assigned through this wrapper.
+   */
+  class EPMODEL_API ConstructionAirBoundary : public ConstructionBase
   {
    public:
     explicit ConstructionAirBoundary(const Model& model);
@@ -40,18 +62,6 @@ namespace epmodel {
     static std::vector<std::string> radiantExchangeMethodValues();
     static std::vector<std::string> airExchangeMethodValues();
 
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::ConstructionAirBoundary scalar accessor names/signatures, including legacy
-    //   solar/radiant methods retained for compatibility.
-    // - Field Mapping: airExchangeMethod and simpleMixingAirChangesPerHour map directly to E+
-    //   Construction:AirBoundary fields Air Exchange Method and Simple Mixing Air Changes per Hour.
-    // - Field Mapping: Legacy solar/radiant methods no longer map to current E+ fields and intentionally retain
-    //   model-side compatibility behavior.
-    // - ForwardTranslator evidence: ForwardTranslateConstructionAirBoundary.cpp writes only airExchangeMethod,
-    //   simpleMixingAirChangesPerHour, and optional SimpleMixingScheduleName.
-    // - Field Mapping: simpleMixingSchedule is an object-link field and is intentionally excluded from scalar accessors.
-    // - TODO(parity): Add relationship API for simpleMixingSchedule later without changing preserved scalar signatures.
-    // - Ruby parity: required/default-backed scalar getters remain strict (non-optional) with impl-level presence asserts.
     std::string solarAndDaylightingMethod() const;
     bool isSolarAndDaylightingMethodDefaulted() const;
     bool setSolarAndDaylightingMethod(const std::string& solarAndDaylightingMethod);

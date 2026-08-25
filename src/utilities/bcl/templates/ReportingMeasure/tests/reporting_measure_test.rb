@@ -31,6 +31,10 @@ class ReportingMeasureNameTest < Minitest::Test
     return "#{run_dir(test_name)}/run/eplusout.sql"
   end
 
+  def epmodel_path(test_name)
+    return "#{run_dir(test_name)}/run/model-measures.idf"
+  end
+
   def report_path(test_name)
     return "#{run_dir(test_name)}/report.html"
   end
@@ -90,7 +94,7 @@ class ReportingMeasureNameTest < Minitest::Test
     measure = ReportingMeasureName.new
 
     # Make an empty model
-    model = OpenStudio::Model::Model.new
+    model = OpenStudio::EPModel::Model.new
 
     # get arguments and test that they are what we are expecting
     arguments = measure.arguments(model)
@@ -115,14 +119,14 @@ class ReportingMeasureNameTest < Minitest::Test
     runner = OpenStudio::Measure::OSRunner.new(osw)
 
     # Make an empty model
-    model = OpenStudio::Model::Model.new
+    model = OpenStudio::EPModel::Model.new
 
     # get arguments
     arguments = measure.arguments(model)
     argument_map = OpenStudio::Measure.convertOSArgumentVectorToMap(arguments)
 
-    # temp set path so idf_output_requests work
-    runner.setLastOpenStudioModelPath(model_in_path_default)
+    # temp set model so idf_output_requests work
+    runner.setLastOpenStudioModel(model)
 
     # get the energyplus output requests, this will be done automatically by OS App and PAT
     idf_output_requests = measure.energyPlusOutputRequests(runner, argument_map)
@@ -133,11 +137,12 @@ class ReportingMeasureNameTest < Minitest::Test
     setup_test(test_name, idf_output_requests)
 
     assert_path_exists(model_out_path(test_name))
+    assert_path_exists(epmodel_path(test_name))
     assert_path_exists(sql_path(test_name))
     assert_path_exists(epw_path)
 
     # set up runner, this will happen automatically when measure is run in PAT or OpenStudio
-    runner.setLastOpenStudioModelPath(model_out_path(test_name))
+    runner.setLastOpenStudioModelPath(epmodel_path(test_name))
     runner.setLastEpwFilePath(epw_path)
     runner.setLastEnergyPlusSqlFilePath(sql_path(test_name))
 
@@ -180,7 +185,7 @@ class ReportingMeasureNameTest < Minitest::Test
     runner = OpenStudio::Measure::OSRunner.new(osw)
 
     # Make an empty model
-    model = OpenStudio::Model::Model.new
+    model = OpenStudio::EPModel::Model.new
 
     # get arguments
     arguments = measure.arguments(model)
@@ -200,8 +205,8 @@ class ReportingMeasureNameTest < Minitest::Test
       argument_map[arg.name] = temp_arg_var
     end
 
-    # temp set path so idf_output_requests work
-    runner.setLastOpenStudioModelPath(model_in_path_default)
+    # temp set model so idf_output_requests work
+    runner.setLastOpenStudioModel(model)
 
     # get the energyplus output requests, this will be done automatically by OS App and PAT
     idf_output_requests = measure.energyPlusOutputRequests(runner, argument_map)
@@ -213,11 +218,12 @@ class ReportingMeasureNameTest < Minitest::Test
     setup_test(test_name, idf_output_requests)
 
     assert_path_exists(model_out_path(test_name))
+    assert_path_exists(epmodel_path(test_name))
     assert_path_exists(sql_path(test_name))
     assert_path_exists(epw_path)
 
     # set up runner, this will happen automatically when measure is run in PAT or OpenStudio
-    runner.setLastOpenStudioModelPath(model_out_path(test_name))
+    runner.setLastOpenStudioModelPath(epmodel_path(test_name))
     runner.setLastEpwFilePath(epw_path)
     runner.setLastEnergyPlusSqlFilePath(sql_path(test_name))
 
@@ -259,17 +265,17 @@ class ReportingMeasureNameTest < Minitest::Test
     runner = OpenStudio::Measure::OSRunner.new(osw)
 
     # Make an empty model
-    model = OpenStudio::Model::Model.new
+    model = OpenStudio::EPModel::Model.new
 
     # get arguments
     arguments = measure.arguments(model)
     argument_map = OpenStudio::Measure.convertOSArgumentVectorToMap(arguments)
 
-    assert_empty(model.outputJSON)
+    assert_empty(model.getOptionalOutputJSON)
 
     assert(measure.modelOutputRequests(model, runner, argument_map))
 
-    refute_empty(model.outputJSON)
+    refute_empty(model.getOptionalOutputJSON)
     output_json = model.getOutputJSON
     assert_equal('TimeSeriesAndTabular', output_json.optionType)
     assert(output_json.outputJSON)
@@ -286,7 +292,7 @@ class ReportingMeasureNameTest < Minitest::Test
     runner = OpenStudio::Measure::OSRunner.new(osw)
 
     # Make an empty model
-    model = OpenStudio::Model::Model.new
+    model = OpenStudio::EPModel::Model.new
 
     # get arguments
     arguments = measure.arguments(model)
@@ -305,11 +311,10 @@ class ReportingMeasureNameTest < Minitest::Test
       argument_map[arg.name] = temp_arg_var
     end
 
-    assert_empty(model.outputJSON)
+    assert_empty(model.getOptionalOutputJSON)
 
     assert(measure.modelOutputRequests(model, runner, argument_map))
 
-    assert_empty(model.outputJSON)
+    assert_empty(model.getOptionalOutputJSON)
   end
 end
-

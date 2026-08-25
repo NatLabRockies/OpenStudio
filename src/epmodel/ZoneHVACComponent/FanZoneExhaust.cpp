@@ -12,6 +12,8 @@
 #include "ModelObject/ZoneHVACEquipmentConnections.hpp"
 #include "ModelObject/ZoneHVACEquipmentConnections_Impl.hpp"
 #include "ModelObject/ZoneHVACEquipmentList.hpp"
+#include "Schedule/Schedule.hpp"
+#include "Schedule/Schedule_Impl.hpp"
 #include "StraightComponent/Node.hpp"
 
 #include <utilities/core/Assert.hpp>
@@ -42,6 +44,18 @@ namespace epmodel {
   std::vector<std::string> FanZoneExhaust::systemAvailabilityManagerCouplingModeValues() {
     return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
                           openstudio::Fan_ZoneExhaustFields::SystemAvailabilityManagerCouplingMode);
+  }
+
+  boost::optional<Schedule> FanZoneExhaust::availabilitySchedule() const {
+    return getImpl<detail::FanZoneExhaust_Impl>()->availabilitySchedule();
+  }
+
+  bool FanZoneExhaust::setAvailabilitySchedule(Schedule& schedule) {
+    return getImpl<detail::FanZoneExhaust_Impl>()->setAvailabilitySchedule(schedule);
+  }
+
+  void FanZoneExhaust::resetAvailabilitySchedule() {
+    getImpl<detail::FanZoneExhaust_Impl>()->resetAvailabilitySchedule();
   }
 
   double FanZoneExhaust::fanTotalEfficiency() const {
@@ -88,12 +102,48 @@ namespace epmodel {
     return getImpl<detail::FanZoneExhaust_Impl>()->setEndUseSubcategory(endUseSubcategory);
   }
 
+  boost::optional<Schedule> FanZoneExhaust::flowFractionSchedule() const {
+    return getImpl<detail::FanZoneExhaust_Impl>()->flowFractionSchedule();
+  }
+
+  bool FanZoneExhaust::setFlowFractionSchedule(Schedule& schedule) {
+    return getImpl<detail::FanZoneExhaust_Impl>()->setFlowFractionSchedule(schedule);
+  }
+
+  void FanZoneExhaust::resetFlowFractionSchedule() {
+    getImpl<detail::FanZoneExhaust_Impl>()->resetFlowFractionSchedule();
+  }
+
   std::string FanZoneExhaust::systemAvailabilityManagerCouplingMode() const {
     return getImpl<detail::FanZoneExhaust_Impl>()->systemAvailabilityManagerCouplingMode();
   }
 
   bool FanZoneExhaust::setSystemAvailabilityManagerCouplingMode(const std::string& systemAvailabilityManagerCouplingMode) {
     return getImpl<detail::FanZoneExhaust_Impl>()->setSystemAvailabilityManagerCouplingMode(systemAvailabilityManagerCouplingMode);
+  }
+
+  boost::optional<Schedule> FanZoneExhaust::minimumZoneTemperatureLimitSchedule() const {
+    return getImpl<detail::FanZoneExhaust_Impl>()->minimumZoneTemperatureLimitSchedule();
+  }
+
+  bool FanZoneExhaust::setMinimumZoneTemperatureLimitSchedule(Schedule& schedule) {
+    return getImpl<detail::FanZoneExhaust_Impl>()->setMinimumZoneTemperatureLimitSchedule(schedule);
+  }
+
+  void FanZoneExhaust::resetMinimumZoneTemperatureLimitSchedule() {
+    getImpl<detail::FanZoneExhaust_Impl>()->resetMinimumZoneTemperatureLimitSchedule();
+  }
+
+  boost::optional<Schedule> FanZoneExhaust::balancedExhaustFractionSchedule() const {
+    return getImpl<detail::FanZoneExhaust_Impl>()->balancedExhaustFractionSchedule();
+  }
+
+  bool FanZoneExhaust::setBalancedExhaustFractionSchedule(Schedule& schedule) {
+    return getImpl<detail::FanZoneExhaust_Impl>()->setBalancedExhaustFractionSchedule(schedule);
+  }
+
+  void FanZoneExhaust::resetBalancedExhaustFractionSchedule() {
+    getImpl<detail::FanZoneExhaust_Impl>()->resetBalancedExhaustFractionSchedule();
   }
 
 }  // namespace epmodel
@@ -136,11 +186,14 @@ namespace epmodel {
         return;
       }
 
+      auto inlet = inletNode();
+      auto outlet = outletNode();
+
       auto zoneImpl = zone->getImpl<detail::ThermalZone_Impl>();
       if (auto connections = zoneImpl->zoneHVACEquipmentConnections()) {
         auto connectionsImpl = connections->getImpl<detail::ZoneHVACEquipmentConnections_Impl>();
         OS_ASSERT(connectionsImpl);
-        if (auto inlet = inletNode()) {
+        if (inlet) {
           OS_ASSERT(connectionsImpl->removeZoneAirExhaustNode(*inlet));
         }
       }
@@ -157,6 +210,11 @@ namespace epmodel {
       }
 
       disconnect();
+      for (auto node : {inlet, outlet}) {
+        if (node && node->sources().empty()) {
+          node->remove();
+        }
+      }
     }
 
     unsigned FanZoneExhaust_Impl::inletPort() const {
@@ -165,6 +223,19 @@ namespace epmodel {
 
     unsigned FanZoneExhaust_Impl::outletPort() const {
       return openstudio::Fan_ZoneExhaustFields::AirOutletNodeName;
+    }
+
+    boost::optional<openstudio::epmodel::Schedule> FanZoneExhaust_Impl::availabilitySchedule() const {
+      return getObject<ModelObject>().getModelObjectTarget<openstudio::epmodel::Schedule>(
+        openstudio::Fan_ZoneExhaustFields::AvailabilityScheduleName);
+    }
+
+    bool FanZoneExhaust_Impl::setAvailabilitySchedule(openstudio::epmodel::Schedule& schedule) {
+      return ModelObject_Impl::setSchedule(openstudio::Fan_ZoneExhaustFields::AvailabilityScheduleName, "FanZoneExhaust", "Availability", schedule);
+    }
+
+    void FanZoneExhaust_Impl::resetAvailabilitySchedule() {
+      OS_ASSERT(setString(openstudio::Fan_ZoneExhaustFields::AvailabilityScheduleName, ""));
     }
 
     double FanZoneExhaust_Impl::fanTotalEfficiency() const {
@@ -214,6 +285,19 @@ namespace epmodel {
       return result;
     }
 
+    boost::optional<openstudio::epmodel::Schedule> FanZoneExhaust_Impl::flowFractionSchedule() const {
+      return getObject<ModelObject>().getModelObjectTarget<openstudio::epmodel::Schedule>(
+        openstudio::Fan_ZoneExhaustFields::FlowFractionScheduleName);
+    }
+
+    bool FanZoneExhaust_Impl::setFlowFractionSchedule(openstudio::epmodel::Schedule& schedule) {
+      return ModelObject_Impl::setSchedule(openstudio::Fan_ZoneExhaustFields::FlowFractionScheduleName, "FanZoneExhaust", "Flow Fraction", schedule);
+    }
+
+    void FanZoneExhaust_Impl::resetFlowFractionSchedule() {
+      OS_ASSERT(setString(openstudio::Fan_ZoneExhaustFields::FlowFractionScheduleName, ""));
+    }
+
     std::string FanZoneExhaust_Impl::systemAvailabilityManagerCouplingMode() const {
       const auto value = getString(openstudio::Fan_ZoneExhaustFields::SystemAvailabilityManagerCouplingMode, true);
       OS_ASSERT(value);
@@ -222,6 +306,34 @@ namespace epmodel {
 
     bool FanZoneExhaust_Impl::setSystemAvailabilityManagerCouplingMode(const std::string& systemAvailabilityManagerCouplingMode) {
       return setString(openstudio::Fan_ZoneExhaustFields::SystemAvailabilityManagerCouplingMode, systemAvailabilityManagerCouplingMode);
+    }
+
+    boost::optional<openstudio::epmodel::Schedule> FanZoneExhaust_Impl::minimumZoneTemperatureLimitSchedule() const {
+      return getObject<ModelObject>().getModelObjectTarget<openstudio::epmodel::Schedule>(
+        openstudio::Fan_ZoneExhaustFields::MinimumZoneTemperatureLimitScheduleName);
+    }
+
+    bool FanZoneExhaust_Impl::setMinimumZoneTemperatureLimitSchedule(openstudio::epmodel::Schedule& schedule) {
+      return ModelObject_Impl::setSchedule(openstudio::Fan_ZoneExhaustFields::MinimumZoneTemperatureLimitScheduleName, "FanZoneExhaust",
+                                           "Minimum Zone Temperature Limit", schedule);
+    }
+
+    void FanZoneExhaust_Impl::resetMinimumZoneTemperatureLimitSchedule() {
+      OS_ASSERT(setString(openstudio::Fan_ZoneExhaustFields::MinimumZoneTemperatureLimitScheduleName, ""));
+    }
+
+    boost::optional<openstudio::epmodel::Schedule> FanZoneExhaust_Impl::balancedExhaustFractionSchedule() const {
+      return getObject<ModelObject>().getModelObjectTarget<openstudio::epmodel::Schedule>(
+        openstudio::Fan_ZoneExhaustFields::BalancedExhaustFractionScheduleName);
+    }
+
+    bool FanZoneExhaust_Impl::setBalancedExhaustFractionSchedule(openstudio::epmodel::Schedule& schedule) {
+      return ModelObject_Impl::setSchedule(openstudio::Fan_ZoneExhaustFields::BalancedExhaustFractionScheduleName, "FanZoneExhaust",
+                                           "Balanced Exhaust Fraction", schedule);
+    }
+
+    void FanZoneExhaust_Impl::resetBalancedExhaustFractionSchedule() {
+      OS_ASSERT(setString(openstudio::Fan_ZoneExhaustFields::BalancedExhaustFractionScheduleName, ""));
     }
 
     std::vector<std::string> FanZoneExhaust_Impl::systemAvailabilityManagerCouplingModeValues() const {

@@ -24,6 +24,17 @@ namespace epmodel {
     class RefrigerationWalkIn_Impl;
   }
 
+  /** \brief RefrigerationWalkIn.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-refrigeration.html#refrigerationwalkin,Refrigeration:WalkIn}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::RefrigerationWalkIn</code>. The exposed scalar walk-in fields are available. Model's schedules, defrost-cycle parameters, and zone-boundary relationship APIs are not available.
+   *
+   * \par Known limitations
+   * Only the fields and relationships listed in this wrapper are available; broader Model-only helpers are not exposed.
+   */
   class EPMODEL_API RefrigerationWalkIn : public ModelObject
   {
    public:
@@ -39,14 +50,6 @@ namespace epmodel {
 
     static std::vector<std::string> defrostTypeValues();
     static std::vector<std::string> defrostControlTypeValues();
-
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model scalar naming/signatures for the RefrigerationWalkIn counterpart while keeping
-    //   defrost/zone boundary schedules/objects excluded from this scalar-only effort.
-    // - Field Mapping: All simple scalar getters/setters delegate to Refrigeration_WalkInFields enums documented in
-    //   ForwardTranslator/ForwardTranslateRefrigerationWalkIn.cpp.
-    // - Field Mapping: Relationship-only fields (schedule names, WalkInDefrostCycleParameters, zone boundary object lists)
-    //   remain excluded until scalar saturation completes.
     double ratedCoilCoolingCapacity() const;
     bool setRatedCoilCoolingCapacity(double ratedCoilCoolingCapacity);
 

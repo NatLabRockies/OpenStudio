@@ -7,9 +7,12 @@
 #include "ParentObject/SimulationControl_Impl.hpp"
 
 #include "Model.hpp"
+#include "ParentObject/Building.hpp"
+#include "ParentObject/Building_Impl.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
+#include <utilities/idd/Building_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/SimulationControl_FieldEnums.hxx>
 
@@ -127,6 +130,22 @@ namespace epmodel {
 
   void SimulationControl::resetRunSimulationforWeatherFileRunPeriods() {
     getImpl<detail::SimulationControl_Impl>()->resetRunSimulationforWeatherFileRunPeriods();
+  }
+
+  int SimulationControl::maximumNumberofWarmupDays() const {
+    return getImpl<detail::SimulationControl_Impl>()->maximumNumberofWarmupDays();
+  }
+
+  bool SimulationControl::isMaximumNumberofWarmupDaysDefaulted() const {
+    return getImpl<detail::SimulationControl_Impl>()->isMaximumNumberofWarmupDaysDefaulted();
+  }
+
+  bool SimulationControl::setMaximumNumberofWarmupDays(int maximumNumberofWarmupDays) {
+    return getImpl<detail::SimulationControl_Impl>()->setMaximumNumberofWarmupDays(maximumNumberofWarmupDays);
+  }
+
+  void SimulationControl::resetMaximumNumberofWarmupDays() {
+    getImpl<detail::SimulationControl_Impl>()->resetMaximumNumberofWarmupDays();
   }
 
   bool SimulationControl::doHVACSizingSimulationforSizingPeriods() const {
@@ -272,6 +291,28 @@ namespace epmodel {
 
     void SimulationControl_Impl::resetRunSimulationforWeatherFileRunPeriods() {
       OS_ASSERT(setString(openstudio::SimulationControlFields::RunSimulationforWeatherFileRunPeriods, ""));
+    }
+
+    int SimulationControl_Impl::maximumNumberofWarmupDays() const {
+      const auto building = model().getUniqueModelObject<Building>();
+      const auto value = building.getInt(openstudio::BuildingFields::MaximumNumberofWarmupDays, true);
+      OS_ASSERT(value);
+      return *value;
+    }
+
+    bool SimulationControl_Impl::isMaximumNumberofWarmupDaysDefaulted() const {
+      const auto building = model().getUniqueModelObject<Building>();
+      return !building.getInt(openstudio::BuildingFields::MaximumNumberofWarmupDays, false);
+    }
+
+    bool SimulationControl_Impl::setMaximumNumberofWarmupDays(int maximumNumberofWarmupDays) {
+      auto building = model().getUniqueModelObject<Building>();
+      return building.setInt(openstudio::BuildingFields::MaximumNumberofWarmupDays, maximumNumberofWarmupDays);
+    }
+
+    void SimulationControl_Impl::resetMaximumNumberofWarmupDays() {
+      auto building = model().getUniqueModelObject<Building>();
+      OS_ASSERT(building.setString(openstudio::BuildingFields::MaximumNumberofWarmupDays, ""));
     }
 
     bool SimulationControl_Impl::doHVACSizingSimulationforSizingPeriods() const {

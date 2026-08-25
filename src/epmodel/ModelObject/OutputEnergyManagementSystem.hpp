@@ -23,6 +23,17 @@ namespace epmodel {
     class OutputEnergyManagementSystem_Impl;
   }
 
+  /** \brief OutputEnergyManagementSystem.
+   *
+   * \par EnergyPlus object
+   * \epobject{input-for-output.html#outputenergymanagementsystem,Output:EnergyManagementSystem}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::OutputEnergyManagementSystem</code>. The three reporting settings map directly to EnergyPlus. No additional EMS relationship API is exposed.
+   *
+   * \par Known limitations
+   * Only the fields and relationships listed in this wrapper are available; broader Model-only helpers are not exposed.
+   */
   class EPMODEL_API OutputEnergyManagementSystem : public ModelObject
   {
    public:
@@ -39,12 +50,6 @@ namespace epmodel {
     static std::vector<std::string> actuatorAvailabilityDictionaryReportingValues();
     static std::vector<std::string> internalVariableAvailabilityDictionaryReportingValues();
     static std::vector<std::string> eMSRuntimeLanguageDebugOutputLevelValues();
-
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model::OutputEnergyManagementSystem accessor names/signatures, including eMSRuntimeLanguageDebugOutputLevel casing.
-    // - Field Mapping: actuatorAvailabilityDictionaryReporting/internalVariableAvailabilityDictionaryReporting/eMSRuntimeLanguageDebugOutputLevel map directly to E+ Output:EnergyManagementSystem fields.
-    // - ForwardTranslator evidence: ForwardTranslateOutputEnergyManagementSystem.cpp writes these same three fields from the preserved model APIs.
-    // - TODO(parity): Keep scalar API stable while extending any non-scalar/translator-parity behavior in future passes.
     std::string actuatorAvailabilityDictionaryReporting() const;
     bool isActuatorAvailabilityDictionaryReportingDefaulted() const;
     bool setActuatorAvailabilityDictionaryReporting(const std::string& actuatorAvailabilityDictionaryReporting);

@@ -29,12 +29,12 @@ void OSWorkflow::runInitialization() {
 
   state = State::Initialization;
 
-  auto rootDir = workflowJSON.absoluteRootDir();
-  LOG(Debug, "The root_dir for the datapoint is " << rootDir);
+  auto outputDirectory = absoluteOutputDirectory();
+  LOG(Debug, "The output directory for the datapoint is " << outputDirectory);
 
-  detailedTimeBlock("Wiping directories", [this, &rootDir]() {
+  detailedTimeBlock("Wiping directories", [this, &outputDirectory]() {
     {
-      auto generatedFilesDir = rootDir / "generated_files";
+      auto generatedFilesDir = outputDirectory / "generated_files";
       if (openstudio::filesystem::is_directory(generatedFilesDir)) {
         LOG(Debug, "Removing existing generated files directory: " << generatedFilesDir);
         openstudio::filesystem::remove_all(generatedFilesDir);
@@ -50,7 +50,7 @@ void OSWorkflow::runInitialization() {
         workflowJSON.addFilePath(fp);
       }
 
-      auto reportsDir = rootDir / "reports";
+      auto reportsDir = outputDirectory / "reports";
       if (openstudio::filesystem::is_directory(reportsDir)) {
         LOG(Debug, "Removing existing reports directory: " << reportsDir);
         openstudio::filesystem::remove_all(reportsDir);

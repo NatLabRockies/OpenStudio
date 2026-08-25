@@ -16,11 +16,24 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class Node;
 
   namespace detail {
     class SetpointManagerFollowSystemNodeTemperature_Impl;
   }
 
+  /** \brief Sets a setpoint by following the temperature at another system node.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-setpoint-managers.html#setpointmanagerfollowsystemnodetemperature,SetpointManager:FollowSystemNodeTemperature}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::SetpointManagerFollowSystemNodeTemperature</code>.
+   * No known public API differences.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API SetpointManagerFollowSystemNodeTemperature : public SetpointManager
   {
    public:
@@ -37,13 +50,10 @@ namespace epmodel {
     static std::vector<std::string> controlVariableValues();
     static std::vector<std::string> referenceTemperatureTypeValues();
 
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model scalar accessor names/signatures for model-counterpart compatibility.
-    // - Field Mapping: referenceTemperatureType, offsetTemperatureDifference, maximumLimitSetpointTemperature, and
-    //   minimumLimitSetpointTemperature map directly to E+ SetpointManager:FollowSystemNodeTemperature fields.
-    // - Field Mapping: Relationship fields Reference Node Name and Setpoint Node or NodeList Name are intentionally
-    //   excluded from scalar-only scaffolding.
-    // - TODO(parity): Add non-scalar relationship parity for explicit reference/setpoint node linkage in a follow-up pass.
+
+    boost::optional<Node> referenceNode() const;
+    bool setReferenceNode(const Node& node);
+    void resetReferenceNode();
 
     std::string referenceTemperatureType() const;
     bool setReferenceTemperatureType(const std::string& referenceTemperatureType);

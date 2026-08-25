@@ -21,6 +21,20 @@ namespace epmodel {
     class SetpointManagerMultiZoneHumidityMaximum_Impl;
   }
 
+  /** \brief Sets a humidity-ratio setpoint from the maximum zone humidity condition.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-setpoint-managers.html#setpointmanagermultizonehumiditymaximum,SetpointManager:MultiZone:Humidity:Maximum}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::SetpointManagerMultiZoneHumidityMaximum</code>.
+   * No known public API differences.
+   *
+   * \par Known limitations
+   * <code>controlVariable()</code> always returns <code>MaximumHumidityRatio</code>,
+   * and <code>setControlVariable</code> accepts only that value; the EnergyPlus
+   * object has no control-variable field.
+   */
   class EPMODEL_API SetpointManagerMultiZoneHumidityMaximum : public SetpointManager
   {
    public:
@@ -36,15 +50,6 @@ namespace epmodel {
 
     static std::vector<std::string> controlVariableValues();
 
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model scalar accessor names/signatures for model-counterpart compatibility.
-    // - Field Mapping: minimumSetpointHumidityRatio and maximumSetpointHumidityRatio map directly to
-    //   E+ SetpointManager:MultiZone:Humidity:Maximum fields.
-    // - Field Mapping: controlVariable is preserved as a fixed-value API ("MaximumHumidityRatio")
-    //   even though the E+ object has no explicit control-variable field.
-    // - Field Mapping: Relationship fields HVAC Air Loop Name and Setpoint Node or NodeList Name are
-    //   intentionally excluded from scalar-only scaffolding.
-    // - TODO(parity): Add non-scalar relationship parity for explicit loop/node linkage in a follow-up pass.
     std::string controlVariable() const;
     bool setControlVariable(const std::string& controlVariable);
 

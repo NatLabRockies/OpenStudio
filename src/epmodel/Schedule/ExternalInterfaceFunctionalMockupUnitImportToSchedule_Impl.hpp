@@ -35,6 +35,9 @@ namespace epmodel {
       double initialValue() const;
       bool setInitialValue(double initialValue);
       //@}
+
+     protected:
+      unsigned scheduleTypeLimitsFieldIndex() const override;
     };
 
   }  // namespace detail

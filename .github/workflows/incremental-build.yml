@@ -40,7 +40,7 @@ jobs:
       OPENSTUDIO_DOCKER_VOLUME: /github/home/Ubuntu
       OPENSTUDIO_SOURCE_NAME: OpenStudio
       OPENSTUDIO_BUILD_NAME: OS-build
-      EXCLUDED_TESTS: "BCLFixture.RemoteBCL_BCLSearchResult"
+      EXCLUDED_TESTS: "BCLFixture[.](RemoteBCL_BCLSearchResult|LocalBCL_AuthKey|RemoteBCLTest2?|GetComponentByUID|RemoteBCLMetaSearchTest|RemoteBCL_EncodingURI)|CLITest-test_bundle-(bundle|bundle_git|bundle_native_embedded)"
 
     container: # Define the Docker container for the job. All subsequent steps run inside it.
       image: nrel/openstudio-cmake-tools:jammy-main

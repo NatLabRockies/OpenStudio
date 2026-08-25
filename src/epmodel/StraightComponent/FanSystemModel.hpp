@@ -28,6 +28,24 @@ namespace epmodel {
     class FanSystemModel_Impl;
   }
 
+/** \brief One speed entry for a system-model fan.
+ *
+ * \par EnergyPlus object
+ * No standalone EnergyPlus object. Each instance exposes one extensible speed
+ * row of its parent \epobject{group-fans.html#fansystemmodel,Fan:SystemModel}: Speed Flow Fraction 1 and, when
+ * present, Speed Electric Power Fraction 1.
+ *
+ * \par Important behavior
+ * The flow and optional electric-power fractions are value objects used by FanSystemModel speed extensibles.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model type is <code>openstudio::model::FanSystemModelSpeed</code>.
+ *
+ * \par Known limitations
+ * The value is an immutable, detached entry. Use
+ * <code>FanSystemModel::addSpeed(...)</code> or
+ * <code>FanSystemModel::setSpeeds(...)</code> to store it on a fan.
+ */
   class EPMODEL_API FanSystemModelSpeed
   {
    public:
@@ -46,6 +64,20 @@ namespace epmodel {
 
   EPMODEL_API std::ostream& operator<<(std::ostream& out, const FanSystemModelSpeed& speed);
 
+/** \brief A fan using the EnergyPlus system-model representation.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-fans.html#fansystemmodel,Fan:SystemModel}
+ *
+ * \par Important behavior
+ * Availability, electric-power curve, motor-loss zone, and speed data are represented directly, with speed data stored in Fan:SystemModel extensible groups.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model type is <code>openstudio::model::FanSystemModel</code>.
+ *
+ * \par Known limitations
+ * AirflowNetwork helpers are not available.
+ */
   class EPMODEL_API FanSystemModel : public StraightComponent
   {
    public:
@@ -62,14 +94,6 @@ namespace epmodel {
     static std::vector<std::string> speedControlMethodValues();
     static std::vector<std::string> designPowerSizingMethodValues();
 
-    // Schema Alignment Notes:
-    // - Status: Near Parity. The canonical curve, thermal-zone, and extensible-speed APIs are aligned, while the airflow-network helper surface remains absent.
-    // - Canonical Counterpart: openstudio::model::FanSystemModel.
-    // - Implemented Parity: The constructor defaults, availability-schedule wiring, scalar sizing surface, electric-power curve relationship, motor-loss-zone relationship, and extensible speed APIs preserve the main `openstudio::model::FanSystemModel` behavior.
-    // - Documented Delta: Epmodel still omits the airflow-network helper surface from `openstudio::model::FanSystemModel`.
-    // - Field/Storage Mapping: The availability schedule, electric-power curve, and motor-loss zone are typed object relationships, while multi-speed data maps directly to `Fan:SystemModel` extensible groups in EnergyPlus.
-    // - Evidence: `src/model/FanSystemModel.hpp`, `src/model/FanSystemModel.cpp`, `src/model/test/FanSystemModel_GTest.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateFanSystemModel.cpp` anchor the canonical API and translation behavior.
-    // - Remaining Parity Work: Add airflow-network relationship support once epmodel grows the corresponding fan helper surface.
     Schedule availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);
 

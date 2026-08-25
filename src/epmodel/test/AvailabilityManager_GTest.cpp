@@ -8,11 +8,19 @@
 #include "EPModelFixture.hpp"
 
 #include "../Loop/AirLoopHVAC.hpp"
+#include "../Loop/PlantLoop.hpp"
+#include "../Loop/PlantLoop_Impl.hpp"
+#include "../Model.hpp"
 #include "../ModelObject/AvailabilityManagerAssignmentList.hpp"
+#include "../ModelObject/AvailabilityManagerAssignmentList_Impl.hpp"
 #include "../AvailabilityManager/AvailabilityManagerScheduledOn.hpp"
 #include "../AvailabilityManager/AvailabilityManagerScheduledOn_Impl.hpp"
 #include "../AvailabilityManager/AvailabilityManagerNightCycle.hpp"
 #include "../AvailabilityManager/AvailabilityManagerNightVentilation.hpp"
+#include "../Schedule/ScheduleConstant.hpp"
+#include "../Schedule/ScheduleConstant_Impl.hpp"
+
+#include <utilities/core/Filesystem.hpp>
 
 using namespace openstudio::epmodel;
 
@@ -141,4 +149,100 @@ TEST_F(EPModelFixture, AirLoopHVAC_AvailabilityManagerApis) {
   managers = airLoop.availabilityManagers();
   ASSERT_EQ(1u, managers.size());
   EXPECT_TRUE(managers.front().optionalCast<AvailabilityManagerScheduledOn>());
+}
+
+TEST_F(EPModelFixture, PlantLoop_AvailabilityManagerAssignmentLifecycle) {
+  const auto idfPath = openstudio::tempDir() / openstudio::toPath("epmodel-plant-availability-manager-lifecycle.idf");
+
+  Model model;
+  PlantLoop plantLoop(model);
+  ScheduleConstant firstSchedule(model);
+  ScheduleConstant secondSchedule(model);
+  AvailabilityManagerScheduledOn firstManager(model);
+  AvailabilityManagerScheduledOn secondManager(model);
+  ASSERT_TRUE(plantLoop.setName("Availability Control Plant Loop"));
+  ASSERT_TRUE(firstSchedule.setName("First Availability Schedule"));
+  ASSERT_TRUE(secondSchedule.setName("Second Availability Schedule"));
+  ASSERT_TRUE(firstManager.setName("First Plant Availability Manager"));
+  ASSERT_TRUE(secondManager.setName("Second Plant Availability Manager"));
+  ASSERT_TRUE(firstSchedule.setValue(1.0));
+  ASSERT_TRUE(secondSchedule.setValue(0.5));
+  ASSERT_TRUE(firstManager.setSchedule(firstSchedule));
+  ASSERT_TRUE(secondManager.setSchedule(secondSchedule));
+
+  ASSERT_TRUE(plantLoop.addAvailabilityManager(firstManager));
+  ASSERT_TRUE(plantLoop.addAvailabilityManager(secondManager, 1u));
+  ASSERT_EQ(2u, plantLoop.availabilityManagers().size());
+  EXPECT_EQ(secondManager, plantLoop.availabilityManagers()[0]);
+  EXPECT_EQ(firstManager, plantLoop.availabilityManagers()[1]);
+  ASSERT_TRUE(plantLoop.setAvailabilityManagerPriority(firstManager, 1u));
+  EXPECT_EQ(firstManager, plantLoop.availabilityManagers()[0]);
+  EXPECT_EQ(secondManager, plantLoop.availabilityManagers()[1]);
+  ASSERT_TRUE(firstManager.loop());
+  ASSERT_TRUE(secondManager.loop());
+  EXPECT_EQ(plantLoop.handle(), firstManager.loop()->handle());
+  EXPECT_EQ(plantLoop.handle(), secondManager.loop()->handle());
+  EXPECT_EQ(firstSchedule, firstManager.schedule());
+  EXPECT_EQ(secondSchedule, secondManager.schedule());
+  ASSERT_TRUE(model.save(idfPath, true));
+
+  auto loadedModel = Model::load(idfPath);
+  ASSERT_TRUE(loadedModel);
+  auto loadedPlantLoop = loadedModel->getConcreteModelObjectByName<PlantLoop>("Availability Control Plant Loop");
+  auto loadedFirstManager = loadedModel->getConcreteModelObjectByName<AvailabilityManagerScheduledOn>("First Plant Availability Manager");
+  auto loadedSecondManager = loadedModel->getConcreteModelObjectByName<AvailabilityManagerScheduledOn>("Second Plant Availability Manager");
+  auto loadedFirstSchedule = loadedModel->getConcreteModelObjectByName<ScheduleConstant>("First Availability Schedule");
+  auto loadedSecondSchedule = loadedModel->getConcreteModelObjectByName<ScheduleConstant>("Second Availability Schedule");
+  ASSERT_TRUE(loadedPlantLoop);
+  ASSERT_TRUE(loadedFirstManager);
+  ASSERT_TRUE(loadedSecondManager);
+  ASSERT_TRUE(loadedFirstSchedule);
+  ASSERT_TRUE(loadedSecondSchedule);
+
+  ASSERT_EQ(2u, loadedPlantLoop->availabilityManagers().size());
+  EXPECT_EQ(*loadedFirstManager, loadedPlantLoop->availabilityManagers()[0]);
+  EXPECT_EQ(*loadedSecondManager, loadedPlantLoop->availabilityManagers()[1]);
+  EXPECT_EQ(1u, loadedPlantLoop->availabilityManagerPriority(*loadedFirstManager));
+  EXPECT_EQ(2u, loadedPlantLoop->availabilityManagerPriority(*loadedSecondManager));
+  ASSERT_TRUE(loadedFirstManager->loop());
+  ASSERT_TRUE(loadedSecondManager->loop());
+  EXPECT_EQ(loadedPlantLoop->handle(), loadedFirstManager->loop()->handle());
+  EXPECT_EQ(loadedPlantLoop->handle(), loadedSecondManager->loop()->handle());
+  EXPECT_EQ(*loadedFirstSchedule, loadedFirstManager->schedule());
+  EXPECT_EQ(*loadedSecondSchedule, loadedSecondManager->schedule());
+
+  ASSERT_TRUE(loadedPlantLoop->setAvailabilityManagerPriority(*loadedSecondManager, 1u));
+  EXPECT_EQ(*loadedSecondManager, loadedPlantLoop->availabilityManagers()[0]);
+  EXPECT_EQ(*loadedFirstManager, loadedPlantLoop->availabilityManagers()[1]);
+  ASSERT_TRUE(loadedPlantLoop->removeAvailabilityManager(*loadedSecondManager));
+  ASSERT_EQ(1u, loadedPlantLoop->availabilityManagers().size());
+  EXPECT_EQ(*loadedFirstManager, loadedPlantLoop->availabilityManagers().front());
+  EXPECT_FALSE(loadedSecondManager->loop());
+  EXPECT_TRUE(loadedModel->getObject(loadedSecondManager->handle()));
+  EXPECT_TRUE(loadedModel->getObject(loadedSecondSchedule->handle()));
+
+  ASSERT_TRUE(loadedPlantLoop->addAvailabilityManager(*loadedSecondManager, 1u));
+  ASSERT_EQ(2u, loadedPlantLoop->availabilityManagers().size());
+  EXPECT_EQ(*loadedSecondManager, loadedPlantLoop->availabilityManagers()[0]);
+  EXPECT_EQ(*loadedFirstManager, loadedPlantLoop->availabilityManagers()[1]);
+
+  const auto firstManagerHandle = loadedFirstManager->handle();
+  const auto plantLoopHandle = loadedPlantLoop->handle();
+  EXPECT_FALSE(loadedFirstManager->remove().empty());
+  EXPECT_FALSE(loadedModel->getObject(firstManagerHandle));
+  ASSERT_EQ(1u, loadedPlantLoop->availabilityManagers().size());
+  EXPECT_EQ(*loadedSecondManager, loadedPlantLoop->availabilityManagers().front());
+  ASSERT_TRUE(loadedSecondManager->loop());
+  EXPECT_EQ(plantLoopHandle, loadedSecondManager->loop()->handle());
+
+  loadedPlantLoop->resetAvailabilityManagers();
+  EXPECT_TRUE(loadedPlantLoop->availabilityManagers().empty());
+  EXPECT_FALSE(loadedSecondManager->loop());
+  EXPECT_TRUE(loadedModel->getObject(loadedSecondManager->handle()));
+  EXPECT_TRUE(loadedModel->getObject(loadedFirstSchedule->handle()));
+  EXPECT_TRUE(loadedModel->getObject(loadedSecondSchedule->handle()));
+  EXPECT_TRUE(loadedModel->getObject(plantLoopHandle));
+  EXPECT_EQ(1u, loadedModel->getConcreteModelObjects<AvailabilityManagerAssignmentList>().size());
+
+  openstudio::filesystem::remove(idfPath);
 }

@@ -41,7 +41,7 @@ void OSWorkflow::runOpenStudioMeasures() {
 
   communicateMeasureAttributes();
   workspace_ = openstudio::Workspace(*epModel_);
-  saveIDFToRootDirIfDebug();
+  saveIDFToOutputDirIfDebug();
 }
 
 }  // namespace openstudio

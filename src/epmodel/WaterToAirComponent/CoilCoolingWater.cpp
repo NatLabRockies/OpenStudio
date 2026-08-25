@@ -8,6 +8,9 @@
 
 #include "HVACComponent/ControllerWaterCoil.hpp"
 #include "HVACComponent/ControllerWaterCoil_Impl.hpp"
+#include "HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
+#include "HVACComponent/AirLoopHVACOutdoorAirSystem_Impl.hpp"
+#include "ModelObject/AirLoopHVACDedicatedOutdoorAirSystem.hpp"
 #include "Loop/AirLoopHVAC.hpp"
 #include "Loop/AirLoopHVAC_Impl.hpp"
 #include "Model.hpp"
@@ -39,25 +42,33 @@ namespace epmodel {
   namespace {
 
     // EnergyPlus stores the controller-side relationship only through nodes.
-    // Matching the controller's actuator and sensor nodes against the coil's
-    // water inlet and air outlet gives us the same user-facing association
-    // without inventing a separate epmodel-only back-reference.
+    // The actuator node is stable while a plant-connected coil is detached or
+    // moved on the air side. Prefer the exact two-node match, then accept one
+    // unambiguous actuator-node match so the same controller survives the move.
     boost::optional<ControllerWaterCoil> inferControllerForCoil(const CoilCoolingWater& coil) {
       const auto waterInlet = coil.waterInletModelObject();
       const auto airOutlet = coil.airOutletModelObject();
-      if (!waterInlet || !airOutlet) {
+      if (!waterInlet) {
         return boost::none;
       }
 
+      boost::optional<ControllerWaterCoil> actuatorMatch;
       for (const auto& controller : coil.model().getConcreteModelObjects<ControllerWaterCoil>()) {
         const auto actuatorNode = controller.actuatorNode();
         const auto sensorNode = controller.sensorNode();
-        if (actuatorNode && sensorNode && actuatorNode->handle() == waterInlet->handle() && sensorNode->handle() == airOutlet->handle()) {
+        if (!actuatorNode || actuatorNode->handle() != waterInlet->handle()) {
+          continue;
+        }
+        if (airOutlet && sensorNode && sensorNode->handle() == airOutlet->handle()) {
           return controller;
         }
+        if (actuatorMatch) {
+          return boost::none;
+        }
+        actuatorMatch = controller;
       }
 
-      return boost::none;
+      return actuatorMatch;
     }
 
     // Canonical OpenStudio suppresses a dedicated ControllerWaterCoil when the
@@ -140,9 +151,37 @@ namespace epmodel {
     }
 
     void syncAirLoopWaterCoilControllers(const CoilCoolingWater& coil) {
+      if (auto oaSystem = coil.airLoopHVACOutdoorAirSystem()) {
+        OS_ASSERT(oaSystem->getImpl<detail::AirLoopHVACOutdoorAirSystem_Impl>()->syncWaterCoilControllers());
+        return;
+      }
       if (auto airLoop = coil.airLoopHVAC()) {
         airLoop->getImpl<detail::AirLoopHVAC_Impl>()->syncSupplyWaterCoilControllers();
+        return;
       }
+      for (const auto& assistedSystem : coil.model().getConcreteModelObjects<CoilSystemCoolingWaterHeatExchangerAssisted>()) {
+        const auto coolingCoil =
+          assistedSystem.getModelObjectTarget<ModelObject>(openstudio::CoilSystem_Cooling_Water_HeatExchangerAssistedFields::CoolingCoilName);
+        if (!coolingCoil || coolingCoil->handle() != coil.handle()) {
+          continue;
+        }
+        if (auto airLoop = assistedSystem.airLoopHVAC()) {
+          airLoop->getImpl<detail::AirLoopHVAC_Impl>()->syncSupplyWaterCoilControllers();
+        }
+        return;
+      }
+    }
+
+    void removeControllerWaterCoil(ControllerWaterCoil& controller) {
+      // NodeType fields participate in epmodel's live pointer graph, but they
+      // are not Workspace object-list fields and generic removal does not
+      // clear their reverse pointers. Detach them explicitly before deleting
+      // the controller so later loop traversal cannot encounter its handle.
+      auto controllerImpl = controller.getImpl<detail::ControllerWaterCoil_Impl>();
+      OS_ASSERT(controllerImpl);
+      (void)controllerImpl->setPointer(openstudio::Controller_WaterCoilFields::SensorNodeName, openstudio::Handle(), false);
+      (void)controllerImpl->setPointer(openstudio::Controller_WaterCoilFields::ActuatorNodeName, openstudio::Handle(), false);
+      controller.remove();
     }
 
   }  // namespace
@@ -409,27 +448,48 @@ namespace epmodel {
         return false;
       }
 
+      syncControllerAfterAirTopologyChange();
+      return true;
+    }
+
+    void CoilCoolingWater_Impl::syncControllerAfterAirTopologyChange() {
+      auto thisCoil = getObject<openstudio::epmodel::CoilCoolingWater>();
       if (containingZoneHVACComponent()) {
-        return true;
+        return;
       }
 
       if (isContainedByCoolingWaterSystem(thisCoil)) {
         if (auto controller = inferControllerForCoil(thisCoil)) {
-          controller->remove();
+          removeControllerWaterCoil(*controller);
           syncAirLoopWaterCoilControllers(thisCoil);
         }
-        return true;
+        return;
+      }
+
+      if (auto containingComponent = containingHVACComponent(); containingComponent) {
+        const auto containingType = containingComponent->iddObject().name();
+        if (containingType.starts_with("AirTerminal:") || containingType.starts_with("OS:AirTerminal:")) {
+          if (auto controller = inferControllerForCoil(thisCoil)) {
+            removeControllerWaterCoil(*controller);
+            syncAirLoopWaterCoilControllers(thisCoil);
+          }
+          return;
+        }
       }
 
       const auto waterInlet = thisCoil.waterInletModelObject();
       const auto airOutlet = thisCoil.airOutletModelObject();
       if (!waterInlet || !airOutlet) {
-        return true;
+        if (auto controller = inferControllerForCoil(thisCoil)) {
+          removeControllerWaterCoil(*controller);
+          syncAirLoopWaterCoilControllers(thisCoil);
+        }
+        return;
       }
       const auto actuatorNode = waterInlet->optionalCast<Node>();
       const auto sensorNode = airOutlet->optionalCast<Node>();
       if (!actuatorNode || !sensorNode) {
-        return true;
+        return;
       }
 
       if (auto controller = inferControllerForCoil(thisCoil)) {
@@ -440,7 +500,7 @@ namespace epmodel {
         OS_ASSERT(controller->setActuatorNode(*actuatorNode));
         OS_ASSERT(controller->setSensorNode(*sensorNode));
         syncAirLoopWaterCoilControllers(thisCoil);
-        return true;
+        return;
       }
 
       ControllerWaterCoil controller(model());
@@ -448,7 +508,6 @@ namespace epmodel {
       OS_ASSERT(controller.setActuatorNode(*actuatorNode));
       OS_ASSERT(controller.setSensorNode(*sensorNode));
       syncAirLoopWaterCoilControllers(thisCoil);
-      return true;
     }
 
     std::vector<ModelObject> CoilCoolingWater_Impl::children() const {
@@ -465,7 +524,7 @@ namespace epmodel {
       }
 
       if (auto controller = inferControllerForCoil(getObject<openstudio::epmodel::CoilCoolingWater>())) {
-        controller->remove();
+        removeControllerWaterCoil(*controller);
         syncAirLoopWaterCoilControllers(getObject<openstudio::epmodel::CoilCoolingWater>());
       }
 
@@ -478,7 +537,7 @@ namespace epmodel {
 
     bool CoilCoolingWater_Impl::removeFromPlantLoop() {
       if (auto controller = inferControllerForCoil(getObject<openstudio::epmodel::CoilCoolingWater>())) {
-        controller->remove();
+        removeControllerWaterCoil(*controller);
         syncAirLoopWaterCoilControllers(getObject<openstudio::epmodel::CoilCoolingWater>());
       }
       return WaterToAirComponent_Impl::removeFromPlantLoop();

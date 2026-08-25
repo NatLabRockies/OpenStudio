@@ -22,9 +22,25 @@ namespace epmodel {
     class CoilHeatingElectric_Impl;
   }
 
+  /** \brief Represents a electric heating coil.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-heating-and-cooling-coils.html#coilheatingelectric,Coil:Heating:Electric}.
+   *
+   * \par Important behavior
+   * The one-argument constructor uses an always-on availability schedule; direct IDF data may still contain blank availability.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::CoilHeatingElectric</code>.
+   * Not yet available: AirflowNetwork helpers.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations beyond the listed API differences.
+   */
   class EPMODEL_API CoilHeatingElectric : public StraightComponent
   {
    public:
+    explicit CoilHeatingElectric(const Model& model, Schedule& schedule);
     explicit CoilHeatingElectric(const Model& model);
 
     virtual ~CoilHeatingElectric() override = default;
@@ -37,17 +53,6 @@ namespace epmodel {
 
     bool addToNode(Node& node);
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. The canonical electric-coil scalar surface plus the required availability-schedule and optional temperature-setpoint-node
-    //   relationships are present, while broader AFN helpers remain out of scope.
-    // - Canonical Counterpart: openstudio::model::CoilHeatingElectric.
-    // - Implemented Parity: `efficiency` and `nominalCapacity` preserve the canonical scalar API and autosize behavior; `availabilitySchedule` and
-    //   `temperatureSetpointNode` preserve the bounded relationship slice; `addToNode` preserves the current epmodel supply-side and OA-system insertion
-    //   paths.
-    // - Documented Delta: AFN helpers from canonical `openstudio::model::CoilHeatingElectric` are not exposed yet.
-    // - Field/Storage Mapping: Preserved scalars and relationships map directly to EnergyPlus `Coil:Heating:Electric` fields.
-    // - Evidence: `src/model/CoilHeatingElectric.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateCoilHeatingElectric.cpp`, and `src/epmodel/test/CoilHeatingElectric_GTest.cpp`.
-    // - Remaining Parity Work: Add AFN helpers without changing the preserved scalar signatures.
     Schedule availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);
 

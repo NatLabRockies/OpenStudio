@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<measure>
+  <schema_version>3.1</schema_version>
+  <name>ep_model_create_core_and_perimeter_building</name>
+  <uid>0c3b5f38-2d6f-4ce4-a8c2-c1820da1ac80</uid>
+  <version_id>57c7fe28-d1e1-47e1-9ec6-980f22f86dd6</version_id>
+  <version_modified>2026-08-18T19:21:45Z</version_modified>
+  <xml_checksum>E6950623</xml_checksum>
+  <class_name>EpModelCreateCoreAndPerimeterBuilding</class_name>
+  <display_name>EPModel Create Core and Perimeter Building</display_name>
+  <description>Create a multistory office with core and perimeter thermal zones.</description>
+  <modeler_description>Creates five zones per story, intersects and matches interior surfaces, adds exterior windows, and assigns thermostats and outdoor-air requirements.</modeler_description>
+  <arguments>
+    <argument>
+      <name>number_of_stories</name>
+      <display_name>Number of stories</display_name>
+      <type>Integer</type>
+      <required>true</required>
+      <model_dependent>false</model_dependent>
+      <default_value>2</default_value>
+    </argument>
+  </arguments>
+  <outputs />
+  <provenances />
+  <tags>
+    <tag>Whole Building</tag>
+  </tags>
+  <attributes>
+    <attribute>
+      <name>Measure Type</name>
+      <value>ModelMeasure</value>
+      <datatype>string</datatype>
+    </attribute>
+    <attribute>
+      <name>Measure Language</name>
+      <value>Python</value>
+      <datatype>string</datatype>
+    </attribute>
+  </attributes>
+  <files>
+    <file>
+      <version>
+        <software_program>OpenStudio</software_program>
+        <identifier>4.0.0</identifier>
+        <min_compatible>4.0.0</min_compatible>
+      </version>
+      <filename>measure.py</filename>
+      <filetype>py</filetype>
+      <usage_type>script</usage_type>
+      <checksum>73458971</checksum>
+    </file>
+  </files>
+</measure>

@@ -20,11 +20,26 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class Schedule;
 
   namespace detail {
     class ZoneVentilationWindandStackOpenArea_Impl;
   }
 
+/** \brief A wind-and-stack natural-ventilation opening serving a thermal zone.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-airflow.html#zoneventilationwindandstackopenarea,ZoneVentilation:WindandStackOpenArea}
+ *
+ * \par Important behavior
+ * Opening, environmental, schedule, and thermal-zone attachment methods are available.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model class is <code>openstudio::model::ZoneVentilationWindandStackOpenArea</code>.
+ *
+ * \par Known limitations
+ * There is no type-specific equipment topology beyond shared thermal-zone attachment.
+ */
   class EPMODEL_API ZoneVentilationWindandStackOpenArea : public ZoneHVACComponent
   {
    public:
@@ -38,20 +53,15 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. The opening and environmental scalar fields are aligned, but the schedule-driven control surface remains relationship-driven.
-    // - Canonical Counterpart: openstudio::model::ZoneVentilationWindandStackOpenArea.
-    // - Implemented Parity: `openingArea`, `openingEffectiveness`, `effectiveAngle`, `heightDifference`, `dischargeCoefficientforOpening`, and the indoor/outdoor temperature and wind limits map directly to the EnergyPlus object.
-    // - Documented Delta: Schedule-based inputs such as opening-area fraction, min/max indoor/outdoor temperature schedules, and delta-temperature schedules remain relationship-only.
-    // - Field/Storage Mapping: Scalar values are stored directly on the EnergyPlus object while schedule inputs are managed through separate relationship state.
-    // - Evidence: `src/model/ZoneVentilationWindandStackOpenArea.hpp`, `src/model/ZoneVentilationWindandStackOpenArea.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateZoneVentilationWindandStackOpenArea.cpp`, `src/energyplus/ReverseTranslator/ReverseTranslateZoneVentilationWindandStackOpenArea.cpp`, and `src/epmodel/test/ZoneVentilationWindandStackOpenArea_GTest.cpp`.
-    // - Remaining Parity Work: Add schedule helpers only if the canonical model surface continues to expose them directly.
 
     /** @name Field Accessors */
     //@{
 
     double openingArea() const;
     bool setOpeningArea(double openingArea);
+
+    Schedule openingAreaFractionSchedule() const;
+    bool setOpeningAreaFractionSchedule(Schedule& schedule);
 
     boost::optional<double> openingEffectiveness() const;
     bool isOpeningEffectivenessAutocalculated() const;
@@ -71,18 +81,33 @@ namespace epmodel {
 
     double minimumIndoorTemperature() const;
     bool setMinimumIndoorTemperature(double minimumIndoorTemperature);
+    boost::optional<Schedule> minimumIndoorTemperatureSchedule() const;
+    bool setMinimumIndoorTemperatureSchedule(Schedule& schedule);
+    void resetMinimumIndoorTemperatureSchedule();
 
     double maximumIndoorTemperature() const;
     bool setMaximumIndoorTemperature(double maximumIndoorTemperature);
+    boost::optional<Schedule> maximumIndoorTemperatureSchedule() const;
+    bool setMaximumIndoorTemperatureSchedule(Schedule& schedule);
+    void resetMaximumIndoorTemperatureSchedule();
 
     double deltaTemperature() const;
     bool setDeltaTemperature(double deltaTemperature);
+    boost::optional<Schedule> deltaTemperatureSchedule() const;
+    bool setDeltaTemperatureSchedule(Schedule& schedule);
+    void resetDeltaTemperatureSchedule();
 
     double minimumOutdoorTemperature() const;
     bool setMinimumOutdoorTemperature(double minimumOutdoorTemperature);
+    boost::optional<Schedule> minimumOutdoorTemperatureSchedule() const;
+    bool setMinimumOutdoorTemperatureSchedule(Schedule& schedule);
+    void resetMinimumOutdoorTemperatureSchedule();
 
     double maximumOutdoorTemperature() const;
     bool setMaximumOutdoorTemperature(double maximumOutdoorTemperature);
+    boost::optional<Schedule> maximumOutdoorTemperatureSchedule() const;
+    bool setMaximumOutdoorTemperatureSchedule(Schedule& schedule);
+    void resetMaximumOutdoorTemperatureSchedule();
 
     double maximumWindSpeed() const;
     bool setMaximumWindSpeed(double maximumWindSpeed);

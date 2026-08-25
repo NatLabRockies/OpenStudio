@@ -9,6 +9,7 @@
 #include "Loop/Loop_Impl.hpp"
 
 #include <boost/optional.hpp>
+#include <memory>
 #include <string>
 
 namespace openstudio {
@@ -18,6 +19,8 @@ namespace epmodel {
   class BranchList;
   class AvailabilityManager;
   class AvailabilityManagerAssignmentList;
+  class ChillerElectricEIR;
+  class CoilHeatingWater;
   class ConnectorMixer;
   class ConnectorSplitter;
   class HVACComponent;
@@ -30,9 +33,12 @@ namespace epmodel {
   class Schedule;
   class SizingPlant;
   class Splitter;
+  class StraightComponent;
+  class WaterToAirComponent;
 
   namespace detail {
     struct LoadContext;
+    class AirTerminalSingleDuctVAVReheat_Impl;
 
     class EPMODEL_API PlantLoop_Impl : public Loop_Impl
     {
@@ -74,6 +80,8 @@ namespace epmodel {
       bool removeSupplyBranchWithComponent(openstudio::epmodel::HVACComponent hvacComponent);
       bool addDemandBranchForComponent(openstudio::epmodel::HVACComponent hvacComponent, bool tertiary = false);
       bool removeDemandBranchWithComponent(openstudio::epmodel::HVACComponent hvacComponent);
+
+      std::vector<openstudio::IdfObject> remove() override;
 
       boost::optional<openstudio::epmodel::Branch> branchForNode(const openstudio::epmodel::Node& node) const;
 
@@ -150,6 +158,70 @@ namespace epmodel {
       void doCanonicalize(LoadContext& context) override;
 
      private:
+      class PipeBranchAttachmentPlan;
+      class PipeBranchRemovalPlan;
+      class DemandBranchRelocationPlan;
+      class ExactPlantBranchTopologyInspection;
+      class ChillerElectricEIRHeatRecoveryDemandBranchAttachmentPlan;
+      class PlantLoopEIRHeatPumpTopologyInspection;
+      class PlantLoopEIRHeatPumpSourceDemandBranchAttachmentPlan;
+      class PlantLoopEIRHeatPumpHeatRecoveryDemandBranchAttachmentPlan;
+      class PlantLoopEIRHeatPumpSourceDemandBranchRemovalPlan;
+      class FluidToFluidHeatExchangerDemandBranchAttachmentPlan;
+      class ThermalStorageChilledWaterStratifiedDemandBranchAttachmentPlan;
+      class EquationFitHeatPumpDemandBranchAttachmentPlan;
+      class WaterCoilDemandBranchAttachmentPlan;
+      class ContainedReheatCoilDemandBranchAttachmentPlan;
+      class FourPipeFanCoilDemandBranchAttachmentPlan;
+
+      // Carries a fully validated single-component demand-branch teardown
+      // across retained-component ownership operations. It is private
+      // implementation machinery, not part of the PlantLoop wrapper API.
+      class DemandBranchRemovalPlan
+      {
+       public:
+        ~DemandBranchRemovalPlan();
+
+        DemandBranchRemovalPlan(const DemandBranchRemovalPlan&) = delete;
+        DemandBranchRemovalPlan& operator=(const DemandBranchRemovalPlan&) = delete;
+        DemandBranchRemovalPlan(DemandBranchRemovalPlan&&) = delete;
+        DemandBranchRemovalPlan& operator=(DemandBranchRemovalPlan&&) = delete;
+
+        void commit();
+
+       private:
+        struct State;
+
+        explicit DemandBranchRemovalPlan(std::unique_ptr<State> state);
+
+        std::unique_ptr<State> m_state;
+        bool m_committed = false;
+
+        friend class PlantLoop_Impl;
+      };
+
+      using WaterCoilDemandBranchRemovalPlan = DemandBranchRemovalPlan;
+      using CoilHeatingWaterDemandBranchRemovalPlan = DemandBranchRemovalPlan;
+      using BeamCoilDemandBranchRemovalPlan = DemandBranchRemovalPlan;
+      using ChillerCondenserDemandBranchRemovalPlan = DemandBranchRemovalPlan;
+
+      enum class DemandBranchPostDisconnectUpdate
+      {
+        None,
+        ChillerCondenserAirCooled,
+        PlantLoopEIRHeatPumpAirSource,
+      };
+
+      std::unique_ptr<WaterCoilDemandBranchRemovalPlan> prepareWaterCoilDemandBranchRemoval(const openstudio::epmodel::WaterToAirComponent& coil);
+      std::unique_ptr<WaterCoilDemandBranchRemovalPlan> prepareCoilHeatingWaterDemandBranchRemoval(const openstudio::epmodel::CoilHeatingWater& coil);
+      std::unique_ptr<BeamCoilDemandBranchRemovalPlan> prepareBeamCoilDemandBranchRemoval(const openstudio::epmodel::StraightComponent& coil);
+      std::unique_ptr<ChillerCondenserDemandBranchRemovalPlan>
+        prepareChillerCondenserDemandBranchRemoval(const openstudio::epmodel::ChillerElectricEIR& chiller);
+      std::unique_ptr<DemandBranchRemovalPlan>
+        prepareDemandBranchRemoval(const openstudio::epmodel::HVACComponent& component, unsigned inletPort, unsigned outletPort,
+                                   bool waterToAirComponent,
+                                   DemandBranchPostDisconnectUpdate postDisconnectUpdate = DemandBranchPostDisconnectUpdate::None);
+
       openstudio::epmodel::PlantEquipmentOperationSchemes plantEquipmentOperationSchemes() const;
       bool syncConnectorPorts(openstudio::epmodel::ConnectorSplitter& splitter, openstudio::epmodel::ConnectorMixer& mixer,
                               const openstudio::epmodel::Branch& inletBranch, const openstudio::epmodel::Branch& outletBranch,
@@ -157,6 +229,15 @@ namespace epmodel {
 
       boost::optional<openstudio::epmodel::Branch> supplyBranchForNode(const openstudio::epmodel::Node& node) const;
       boost::optional<openstudio::epmodel::Branch> demandBranchForNode(const openstudio::epmodel::Node& node) const;
+
+      friend class AirTerminalSingleDuctVAVReheat_Impl;
+      friend class AirTerminalSingleDuctConstantVolumeReheat_Impl;
+      friend class AirTerminalSingleDuctVAVHeatAndCoolReheat_Impl;
+      friend class AirTerminalSingleDuctSeriesPIUReheat_Impl;
+      friend class AirTerminalSingleDuctParallelPIUReheat_Impl;
+      friend class AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl;
+      friend class AirTerminalSingleDuctConstantVolumeCooledBeam_Impl;
+      friend class AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl;
     };
 
   }  // namespace detail

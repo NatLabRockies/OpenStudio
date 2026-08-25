@@ -50,3 +50,65 @@ def test_json():
     assert "Version" in d
     assert "Building" in d
     assert d["Building"]["Building 1"]["north_axis"] == 0
+
+
+def test_epmodel_loop_returns_wrapped_nodes():
+    model = openstudio.epmodel.Model()
+    air_loop = openstudio.epmodel.AirLoopHVAC(model, True)
+
+    supply_outlet_nodes = air_loop.supplyOutletNodes()
+
+    assert isinstance(supply_outlet_nodes, tuple)
+    assert len(supply_outlet_nodes) == 2
+    assert all(isinstance(node, openstudio.epmodel.Node) for node in supply_outlet_nodes)
+
+
+def test_epmodel_doas_accepts_and_returns_wrapped_air_loops():
+    model = openstudio.epmodel.Model()
+    dedicated_oa = openstudio.epmodel.AirLoopHVACOutdoorAirSystem(model)
+    doas = openstudio.epmodel.AirLoopHVACDedicatedOutdoorAirSystem(dedicated_oa)
+    served_loop = openstudio.epmodel.AirLoopHVAC(model)
+    served_oa = openstudio.epmodel.AirLoopHVACOutdoorAirSystem(model)
+
+    assert served_oa.addToNode(served_loop.supplyOutletNode())
+    assert doas.addAirLoop(served_loop)
+
+    air_loops = doas.airLoops()
+    assert len(air_loops) == 1
+    assert isinstance(air_loops[0], openstudio.epmodel.AirLoopHVAC)
+    assert air_loops[0].handle() == served_loop.handle()
+
+
+def test_epmodel_sizing_plant_retarget_swaps_companions():
+    model = openstudio.epmodel.Model()
+    source_loop = openstudio.epmodel.PlantLoop(model)
+    target_loop = openstudio.epmodel.PlantLoop(model)
+    source_sizing = source_loop.sizingPlant()
+    target_sizing = target_loop.sizingPlant()
+
+    assert source_sizing.setPlantLoop(target_loop)
+    assert source_sizing.plantLoop().handle() == target_loop.handle()
+    assert target_sizing.plantLoop().handle() == source_loop.handle()
+    assert target_loop.sizingPlant().handle() == source_sizing.handle()
+    assert source_loop.sizingPlant().handle() == target_sizing.handle()
+
+
+def test_epmodel_zone_hvac_python_module_imports_cross_module_vrf_types():
+    model = openstudio.epmodel.Model()
+    terminal = openstudio.epmodel.ZoneHVACTerminalUnitVariableRefrigerantFlow(model)
+    outdoor_unit = openstudio.epmodel.AirConditionerVariableRefrigerantFlow(model)
+
+    assert isinstance(terminal, openstudio.epmodel.ZoneHVACTerminalUnitVariableRefrigerantFlow)
+    assert outdoor_unit.addTerminal(terminal)
+    terminals = outdoor_unit.terminals()
+    assert len(terminals) == 1
+    assert isinstance(terminals[0], openstudio.epmodel.ZoneHVACTerminalUnitVariableRefrigerantFlow)
+
+
+def test_epmodel_recent_zone_exhaust_relationships_are_available_in_python():
+    model = openstudio.epmodel.Model()
+    fan = openstudio.epmodel.FanZoneExhaust(model)
+
+    assert fan.setAvailabilitySchedule(model.alwaysOnDiscreteSchedule())
+    assert fan.setFlowFractionSchedule(model.alwaysOnContinuousSchedule())
+    assert fan.setBalancedExhaustFractionSchedule(model.alwaysOnContinuousSchedule())

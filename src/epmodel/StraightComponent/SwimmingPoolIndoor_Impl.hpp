@@ -12,6 +12,9 @@
 
 namespace openstudio {
 namespace epmodel {
+
+  class Schedule;
+
   namespace detail {
 
     class SwimmingPoolIndoor_Impl : public StraightComponent_Impl
@@ -26,6 +29,15 @@ namespace epmodel {
 
       double averageDepth() const;
       bool setAverageDepth(double averageDepth);
+
+      Schedule activityFactorSchedule() const;
+      bool setActivityFactorSchedule(Schedule& schedule);
+
+      Schedule makeupWaterSupplySchedule() const;
+      bool setMakeupWaterSupplySchedule(Schedule& schedule);
+
+      Schedule coverSchedule() const;
+      bool setCoverSchedule(Schedule& schedule);
 
       double coverEvaporationFactor() const;
       bool isCoverEvaporationFactorDefaulted() const;
@@ -53,11 +65,22 @@ namespace epmodel {
       double poolMiscellaneousEquipmentPower() const;
       bool setPoolMiscellaneousEquipmentPower(double poolMiscellaneousEquipmentPower);
 
+      Schedule setpointTemperatureSchedule() const;
+      bool setSetpointTemperatureSchedule(Schedule& schedule);
+
       double maximumNumberofPeople() const;
       bool setMaximumNumberofPeople(double maximumNumberofPeople);
 
+      Schedule peopleSchedule() const;
+      bool setPeopleSchedule(Schedule& schedule);
+
+      Schedule peopleHeatGainSchedule() const;
+      bool setPeopleHeatGainSchedule(Schedule& schedule);
+
       boost::optional<Node> poolWaterInletNode() const;
       boost::optional<Node> poolWaterOutletNode() const;
+
+      void doCanonicalize(LoadContext& context) override;
     };
 
   }  // namespace detail

@@ -7,6 +7,7 @@
 
 %include <epmodel/EPModel_Common_Include.i>
 %import <epmodel/EPModel.i>
+%import <epmodel/Loop/EPModelLoop.i>
 
 %include <epmodel/ModelObject/ModelObject.hpp>
 
@@ -14,10 +15,12 @@ EPMODELOBJECT_WRAP(Timestep, <epmodel/ModelObject/Timestep.hpp>, 1, 1)
 EPMODELOBJECT_WRAP(WaterHeaterSizing, <epmodel/ModelObject/WaterHeaterSizing.hpp>, 0, 1)
 EPMODELOBJECT_WRAP(PlantEquipmentOperationSchemes, <epmodel/ModelObject/PlantEquipmentOperationSchemes.hpp>, 0, 1)
 EPMODELOBJECT_WRAP(PlantEquipmentList, <epmodel/ModelObject/PlantEquipmentList.hpp>, 0, 1)
+EPMODELOBJECT_WRAP(BuildingStory, <epmodel/ModelObject/BuildingStory.hpp>, 0, 1)
 EPMODELOBJECT_WRAP(SolarCollectorPerformanceFlatPlate, <epmodel/ModelObject/SolarCollectorPerformanceFlatPlate.hpp>, 0, 1)
 EPMODELOBJECT_WRAP(SolarCollectorPerformanceIntegralCollectorStorage, <epmodel/ModelObject/SolarCollectorPerformanceIntegralCollectorStorage.hpp>, 0, 1)
 EPMODELOBJECT_WRAP(SolarCollectorPerformancePhotovoltaicThermalBIPVT, <epmodel/ModelObject/SolarCollectorPerformancePhotovoltaicThermalBIPVT.hpp>, 0, 1)
 EPMODELOBJECT_WRAP(SolarCollectorPerformancePhotovoltaicThermalSimple, <epmodel/ModelObject/SolarCollectorPerformancePhotovoltaicThermalSimple.hpp>, 0, 1)
+EPMODELOBJECT_WRAP(SpaceList, <epmodel/ModelObject/SpaceList.hpp>, 0, 1)
 EPMODELOBJECT_WRAP(SurfaceControlMovableInsulation, <epmodel/ModelObject/SurfaceControlMovableInsulation.hpp>, 0, 1)
 EPMODELOBJECT_WRAP(AirflowNetworkDistributionComponentCoil, <epmodel/ModelObject/AirflowNetworkDistributionComponentCoil.hpp>, 0, 1)
 EPMODELOBJECT_WRAP(AirflowNetworkDistributionComponentConstantPressureDrop, <epmodel/ModelObject/AirflowNetworkDistributionComponentConstantPressureDrop.hpp>, 0, 1)
@@ -59,6 +62,7 @@ EPMODELOBJECT_WRAP(AirflowNetworkDistributionComponentLeakageRatio, <epmodel/Mod
 EPMODELOBJECT_WRAP(AirflowNetworkDistributionComponentOutdoorAirFlow, <epmodel/ModelObject/AirflowNetworkDistributionComponentOutdoorAirFlow.hpp>, 0, 1)
 EPMODELOBJECT_WRAP(AirflowNetworkDistributionComponentTerminalUnit, <epmodel/ModelObject/AirflowNetworkDistributionComponentTerminalUnit.hpp>, 0, 1)
 EPMODELOBJECT_WRAP(AirLoopHVACDedicatedOutdoorAirSystem, <epmodel/ModelObject/AirLoopHVACDedicatedOutdoorAirSystem.hpp>, 0, 1)
+EPMODELOBJECT_WRAP(AirLoopHVACExhaustSystem, <epmodel/ModelObject/AirLoopHVACExhaustSystem.hpp>, 0, 1)
 EPMODELOBJECT_WRAP(ZoneCapacitanceMultiplierResearchSpecial, <epmodel/ModelObject/ZoneCapacitanceMultiplierResearchSpecial.hpp>, 1, 1)
 EPMODELOBJECT_WRAP(ZoneAirContaminantBalance, <epmodel/ModelObject/ZoneAirContaminantBalance.hpp>, 1, 1)
 EPMODELOBJECT_WRAP(ZoneAirHeatBalanceAlgorithm, <epmodel/ModelObject/ZoneAirHeatBalanceAlgorithm.hpp>, 1, 1)
@@ -165,7 +169,6 @@ EPMODELOBJECT_WRAP(AvailabilityManagerAssignmentList, <epmodel/ModelObject/Avail
 EPMODELOBJECT_WRAP(MaterialPropertyMoisturePenetrationDepthSettings, <epmodel/ModelObject/MaterialPropertyMoisturePenetrationDepthSettings.hpp>, 0, 1)
 EPMODELOBJECT_WRAP(MaterialPropertyPhaseChange, <epmodel/ModelObject/MaterialPropertyPhaseChange.hpp>, 0, 1)
 EPMODELOBJECT_WRAP(MaterialPropertyPhaseChangeHysteresis, <epmodel/ModelObject/MaterialPropertyPhaseChangeHysteresis.hpp>, 0, 1)
-EPMODELOBJECT_WRAP(CoilSystemCoolingDX, <epmodel/ModelObject/CoilSystemCoolingDX.hpp>, 0, 1)
 EPMODELOBJECT_WRAP(CoilSystemHeatingDX, <epmodel/ModelObject/CoilSystemHeatingDX.hpp>, 0, 1)
 EPMODELOBJECT_WRAP(OutdoorAirMixer, <epmodel/ModelObject/OutdoorAirMixer.hpp>, 0, 1)
 EPMODELOBJECT_WRAP(NodeList, <epmodel/ModelObject/NodeList.hpp>, 0, 1)
@@ -173,5 +176,6 @@ EPMODELOBJECT_WRAP(SizingZone, <epmodel/ModelObject/SizingZone.hpp>, 0, 1)
 EPMODELOBJECT_WRAP(ZoneHVACAirDistributionUnit, <epmodel/ModelObject/ZoneHVACAirDistributionUnit.hpp>, 0, 1)
 EPMODELOBJECT_WRAP(ZoneHVACEquipmentConnections, <epmodel/ModelObject/ZoneHVACEquipmentConnections.hpp>, 0, 1)
 EPMODELOBJECT_WRAP(ZoneHVACEquipmentList, <epmodel/ModelObject/ZoneHVACEquipmentList.hpp>, 0, 1)
+EPMODELOBJECT_WRAP(ZoneHVACExhaustControl, <epmodel/ModelObject/ZoneHVACExhaustControl.hpp>, 0, 1)
 
 #endif

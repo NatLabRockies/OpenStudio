@@ -17,11 +17,23 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class ThermalZone;
 
   namespace detail {
     class RefrigerationTranscriticalSystem_Impl;
   }
 
+  /** \brief RefrigerationTranscriticalSystem.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-refrigeration.html#refrigerationtranscriticalsystem,Refrigeration:TranscriticalSystem}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::RefrigerationTranscriticalSystem</code>. The exposed scalar controls and two suction-piping zones are available. Model's case, walk-in, compressor, and gas-cooler relationship helpers are not available.
+   *
+   * \par Known limitations
+   * Only the fields and relationships listed in this wrapper are available; broader Model-only helpers are not exposed.
+   */
   class EPMODEL_API RefrigerationTranscriticalSystem : public ModelObject
   {
    public:
@@ -35,15 +47,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
     static std::vector<std::string> refrigerationSystemWorkingFluidTypeValues();
-
-    // Schema Alignment Notes:
-    // - API: Preserve the openstudio::model scalar accessor names/signatures for receiverPressure, subcoolerEffectiveness,
-    //   refrigerationSystemWorkingFluidType, sumUASuctionPipingforMediumTemperatureLoads, sumUASuctionPipingforLowTemperatureLoads, and endUseSubcategory.
-    // - Field Mapping: Each scalar maps directly to the EnergyPlus Refrigeration:TranscriticalSystem fields documented in
-    //   ForwardTranslator::translateRefrigerationTranscriticalSystem.
-    // - Field Mapping: Medium/Low temperature Refrigerated CaseAndWalkInList, compressor lists, Refrigeration Gas Cooler, and
-    //   suction piping zone relationship fields are intentionally excluded from this scalar-only surface.
-    // - TODO(parity): Add non-scalar relationship APIs later without changing scalar signatures.
     double receiverPressure() const;
     bool isReceiverPressureDefaulted() const;
     bool setReceiverPressure(double receiverPressure);
@@ -62,10 +65,18 @@ namespace epmodel {
     bool setSumUASuctionPipingforMediumTemperatureLoads(double sumUASuctionPipingforMediumTemperatureLoads);
     void resetSumUASuctionPipingforMediumTemperatureLoads();
 
+    boost::optional<ThermalZone> mediumTemperatureSuctionPipingZone() const;
+    bool setMediumTemperatureSuctionPipingZone(const ThermalZone& thermalZone);
+    void resetMediumTemperatureSuctionPipingZone();
+
     double sumUASuctionPipingforLowTemperatureLoads() const;
     bool isSumUASuctionPipingforLowTemperatureLoadsDefaulted() const;
     bool setSumUASuctionPipingforLowTemperatureLoads(double sumUASuctionPipingforLowTemperatureLoads);
     void resetSumUASuctionPipingforLowTemperatureLoads();
+
+    boost::optional<ThermalZone> lowTemperatureSuctionPipingZone() const;
+    bool setLowTemperatureSuctionPipingZone(const ThermalZone& thermalZone);
+    void resetLowTemperatureSuctionPipingZone();
 
     std::string endUseSubcategory() const;
     bool isEndUseSubcategoryDefaulted() const;

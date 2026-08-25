@@ -54,7 +54,7 @@ void OSWorkflow::runTranslator() {
   });
   LOG(Info, "Successfully staged epmodel as IDF");
 
-  saveIDFToRootDirIfDebug();
+  saveIDFToOutputDirIfDebug();
 }
 
 }  // namespace openstudio

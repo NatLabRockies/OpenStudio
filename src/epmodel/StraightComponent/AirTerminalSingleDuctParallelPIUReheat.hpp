@@ -26,6 +26,25 @@ namespace epmodel {
     class AirTerminalSingleDuctParallelPIUReheat_Impl;
   }
 
+  /**
+   * \brief Parallel powered induction unit with a fan, reheat coil, and secondary-air exhaust path.
+   *
+   * \par EnergyPlus object
+   * Encapsulates \epobject{group-air-distribution-equipment.html#airterminalsingleductparallelpiureheat,AirTerminal:SingleDuct:ParallelPIU:Reheat}.
+   *
+   * \par Important behavior
+   * `addToNode` supports terminal-only and zone-serving demand branches. For a served zone it creates the secondary
+   * inlet/mixer path, updates zone exhaust and AirDistributionUnit references, and registers equipment atomically.
+   * Removal prepares the air, zone, plenum, child, and optional plant graphs before mutation.
+   *
+   * \par OpenStudio Model API
+   * Counterpart: `openstudio::model::AirTerminalSingleDuctParallelPIUReheat`. The fan/reheat-coil relationships,
+   * schedules, PIU controls, branch lifecycle, and child ownership are represented.
+   *
+   * \par Known limitations
+   * Autosized-result query helpers are not exposed. Child replacement requires supported same-model, unconnected fan
+   * and coil wrappers.
+   */
   class EPMODEL_API AirTerminalSingleDuctParallelPIUReheat : public StraightComponent
   {
    public:
@@ -43,14 +62,6 @@ namespace epmodel {
     static std::vector<std::string> fanControlTypeValues();
     static std::vector<std::string> heatingControlTypeValues();
 
-    // Schema Alignment Notes:
-    // - Status: Connectivity parity is implemented for the current epmodel zone-branch insertion/removal path, including add/remove cleanup, child ownership, and secondary-air exhaust wiring.
-    // - Canonical Counterpart: openstudio::model::AirTerminalSingleDuctParallelPIUReheat.
-    // - Implemented Parity: The `(Model, Schedule, HVACComponent fan, HVACComponent reheatCoil)` constructor, `availabilitySchedule`, `fan`, `reheatCoil`, `secondaryAirInletNode`, `secondaryAirInletPort`, `addToNode`, the custom `removeFromLoop` cleanup path, child ownership, and the preserved PIU control scalars follow the canonical terminal behavior used by current epmodel loop and translator code.
-    // - Documented Delta: epmodel currently omits the canonical autosized-result query helpers and `setInducedAirPlenumZone(ThermalZone&)` until the shared sizing and plenum infrastructure are broad enough to support them without stubs or local workarounds.
-    // - Field/Storage Mapping: The preserved scalars map directly to EnergyPlus `AirTerminal:SingleDuct:ParallelPIU:Reheat` fields; epmodel rewires the zone branch through a terminal-owned inlet node, persists a distinct secondary inlet node, records that node on the zone exhaust `NodeList`, synchronizes fan availability to the serving air loop, and cleans zone, ADU, and plant references in the supported `remove()`/`removeFromLoop()` teardown paths, including the stale-zone cleanup regression path.
-    // - Evidence: `src/model/AirTerminalSingleDuctParallelPIUReheat.hpp`, `src/model/AirTerminalSingleDuctParallelPIUReheat.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirTerminalSingleDuctParallelPIUReheat.cpp`, and `src/epmodel/test/AirTerminalSingleDuctParallelPIUReheat_GTest.cpp`.
-    // - Remaining Parity Work: Add the omitted autosized-result helpers if a later campaign needs sizing-result convenience parity.
     Schedule availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);
 

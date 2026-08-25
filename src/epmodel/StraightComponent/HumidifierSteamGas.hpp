@@ -17,12 +17,27 @@ namespace epmodel {
 
   class Model;
   class Node;
+  class Curve;
   class Schedule;
 
   namespace detail {
     class HumidifierSteamGas_Impl;
   }
 
+/** \brief A gas-fired steam humidifier.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-humidifiers-and-dehumidifiers.html#humidifiersteamgas,Humidifier:Steam:Gas}
+ *
+ * \par Important behavior
+ * Availability, node, capacity, efficiency, and fuel-use fields map directly to Humidifier:Steam:Gas.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model type is <code>openstudio::model::HumidifierSteamGas</code>.
+ *
+ * \par Known limitations
+ * No additional type-specific limitation is known beyond shared straight-component topology.
+ */
   class EPMODEL_API HumidifierSteamGas : public StraightComponent
   {
    public:
@@ -40,22 +55,6 @@ namespace epmodel {
 
     static std::vector<std::string> inletWaterTemperatureOptionValues();
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. The canonical steam-gas humidifier preserves the scalar and availability-schedule surface, while the
-    //   thermal-efficiency-modifier-curve and water-storage-tank helpers remain out of scope and `addToNode` parity stays intentionally narrowed.
-    // - Canonical Counterpart: openstudio::model::HumidifierSteamGas.
-    // - Implemented Parity: `availabilitySchedule`, `setAvailabilitySchedule`, and `resetAvailabilitySchedule` preserve the canonical
-    //   schedule relationship; the scalar API matches the rated-capacity, gas-use, efficiency, fan-power, auxiliary-power, and
-    //   inlet-water-temperature accessors with matching autosize/default behavior; and `addToNode` enforces the current supply/OA-only guardrails.
-    // - Documented Delta: The wrapper currently relies on inherited inlet/outlet model-object helpers, matching the canonical wrapper
-    //   today; the thermal-efficiency-modifier-curve and water-storage-tank helpers remain intentionally omitted; autosized-result
-    //   queries still return `boost::none` until epmodel sizing results exist; and `addToNode` remains narrower than canonical behavior
-    //   by accepting only air-loop supply placement plus OA-system outboard OA/relief nodes.
-    // - Field/Storage Mapping: These accessors map directly to EnergyPlus `Humidifier:Steam:Gas` fields used by the forward translator.
-    // - Evidence: `src/model/HumidifierSteamGas.hpp`, `src/model/HumidifierSteamGas.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateHumidifierSteamGas.cpp`.
-    // - Remaining Parity Work: Restore broader canonical `addToNode` parity if this family is widened beyond the current supply/OA-only
-    //   guardrails, add the omitted thermal-efficiency-modifier-curve and water-storage-tank helpers if those relationships are surfaced
-    //   in epmodel, and resolve real autosized-result values once epmodel sizing results exist.
 
     boost::optional<Schedule> availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);
@@ -98,6 +97,11 @@ namespace epmodel {
     bool isInletWaterTemperatureOptionDefaulted() const;
     bool setInletWaterTemperatureOption(const std::string& inletWaterTemperatureOption);
     void resetInletWaterTemperatureOption();
+
+    // Thermal Efficiency Modifier Curve
+    boost::optional<Curve> thermalEfficiencyModifierCurve() const;
+    bool setThermalEfficiencyModifierCurve(const Curve& curve);
+    void resetThermalEfficiencyModifierCurve();
 
    protected:
     using ImplType = detail::HumidifierSteamGas_Impl;

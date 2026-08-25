@@ -20,6 +20,18 @@ namespace epmodel {
     class FoundationKiva_Impl;
   }
 
+  /** \brief Represents <code>Foundation:Kiva</code>.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-advanced-surface-concepts.html#foundationkiva,Foundation:Kiva}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::FoundationKiva</code>.
+   * **Not yet available:** Model relationship and extensible-list conveniences are not exposed unless declared here.
+   *
+   * \par Known limitations
+   * Relationship and extensible data not represented by the public declarations must be maintained by the owning object.
+   */
   class EPMODEL_API FoundationKiva : public ModelObject
   {
    public:
@@ -32,12 +44,6 @@ namespace epmodel {
     FoundationKiva& operator=(FoundationKiva&&) = default;
 
     static IddObjectType iddObjectType();
-
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model scalar accessor names/signatures for this model-counterpart class.
-    // - Field Mapping: Scalar APIs map directly to same-named EnergyPlus Foundation:Kiva numeric fields.
-    // - Field Mapping: Material/construction references, linked surfaces, and custom block extensible groups are excluded as relationship APIs.
-    // - TODO(parity): Add excluded relationship/extensible APIs after scalar saturation without changing these scalar signatures.
     boost::optional<double> initialIndoorAirTemperature();
     bool setInitialIndoorAirTemperature(double initialIndoorAirTemperature);
 

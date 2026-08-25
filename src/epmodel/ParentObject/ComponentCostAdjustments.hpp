@@ -22,6 +22,21 @@ namespace epmodel {
     class ComponentCostAdjustments_Impl;
   }
 
+/** \brief Defines component cost adjustment factors used by life-cycle cost calculations.
+ *
+ * \par EnergyPlus object
+ * \epobject{cost-estimating.html#componentcostadjustments,ComponentCost:Adjustments}
+ *
+ * \par Important behavior
+ * The cost-adjustment percentages and regional adjustment factor are persisted as scalar fields.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model class is <code>openstudio::model::ComponentCostAdjustments</code>.
+ * <b>Renamed:</b> EPModel uses <code>designandEngineeringFees()</code>, <code>miscellaneousCostperConditionedArea()</code>, and <code>permitsBondingandInsurance()</code>; Model capitalizes the corresponding words as <code>designAndEngineeringFees()</code>, <code>miscellaneousCostPerConditionedArea()</code>, and <code>permitsBondingAndInsurance()</code>.
+ *
+ * \par Known limitations
+ * This object supplies cost inputs; it does not calculate or own life-cycle cost results.
+ */
   class EPMODEL_API ComponentCostAdjustments : public ParentObject
   {
    public:
@@ -35,11 +50,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - API: This no-counterpart type uses IDD-derived class/accessor naming.
-    // - Field Mapping: Preserved scalar APIs map directly to EnergyPlus ComponentCost:Adjustments scalar fields.
-    // - Field Mapping: Relationship-like fields are not present on this object; scalar-only coverage is complete for this scaffold pass.
-    // - TODO(parity): Revisit naming only if a model-counterpart parity target is introduced.
 
     boost::optional<double> miscellaneousCostperConditionedArea() const;
     bool setMiscellaneousCostperConditionedArea(double miscellaneousCostperConditionedArea);

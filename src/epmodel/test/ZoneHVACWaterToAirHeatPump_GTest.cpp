@@ -9,16 +9,22 @@
 #include "../HVACComponent/ThermalZone.hpp"
 #include "../Loop/AirLoopHVAC.hpp"
 #include "../Loop/PlantLoop.hpp"
+#include "../Loop/PlantLoop_Impl.hpp"
 #include "../ModelObject/OutdoorAirMixer.hpp"
+#include "../ModelObject/OutdoorAirMixer_Impl.hpp"
 #include "../Schedule/ScheduleCompact.hpp"
 #include "../Schedule/ScheduleConstant.hpp"
 #include "../Schedule/ScheduleConstant_Impl.hpp"
+#include "../StraightComponent/CoilHeatingElectric.hpp"
 #include "../StraightComponent/FanOnOff.hpp"
 #include "../StraightComponent/Node.hpp"
 #include "../WaterToAirComponent/CoilCoolingWaterToAirHeatPumpEquationFit.hpp"
+#include "../WaterToAirComponent/CoilCoolingWaterToAirHeatPumpEquationFit_Impl.hpp"
 #include "../WaterToAirComponent/CoilHeatingWater.hpp"
 #include "../WaterToAirComponent/CoilHeatingWaterToAirHeatPumpEquationFit.hpp"
+#include "../WaterToAirComponent/CoilHeatingWaterToAirHeatPumpEquationFit_Impl.hpp"
 #include "../ZoneHVACComponent/ZoneHVACWaterToAirHeatPump.hpp"
+#include "../ZoneHVACComponent/ZoneHVACWaterToAirHeatPump_Impl.hpp"
 
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/ZoneHVAC_WaterToAirHeatPump_FieldEnums.hxx>
@@ -240,6 +246,112 @@ TEST_F(EPModelFixture, ZoneHVACWaterToAirHeatPump_OutdoorAirMixerIsExposedWhenUs
   EXPECT_EQ(*wahp.mixedAirNode(), *wahp.outdoorAirMixer()->mixedAirNode());
   EXPECT_EQ(*wahp.outdoorAirNode(), *wahp.outdoorAirMixer()->outdoorAirNode());
   EXPECT_EQ(*wahp.reliefAirNode(), *wahp.outdoorAirMixer()->reliefAirNode());
+}
+
+TEST_F(EPModelFixture, ZoneHVACWaterToAirHeatPump_SourceWaterBranchesSurviveReloadAndCanMove) {
+  const auto idfPath = openstudio::tempDir() / openstudio::toPath("epmodel-water-to-air-heat-pump-source-water.idf");
+
+  Model model;
+  ThermalZone zone(model);
+  PlantLoop sourceLoop(model);
+  FanOnOff fan(model);
+  CoilHeatingWaterToAirHeatPumpEquationFit heatingCoil(model);
+  CoilCoolingWaterToAirHeatPumpEquationFit coolingCoil(model);
+  CoilHeatingElectric supplementalHeatingCoil(model);
+  ZoneHVACWaterToAirHeatPump wahp(model);
+
+  ASSERT_TRUE(sourceLoop.setName("Original WTAHP Source Loop"));
+  ASSERT_TRUE(heatingCoil.setName("WTAHP Source Heating Coil"));
+  ASSERT_TRUE(coolingCoil.setName("WTAHP Source Cooling Coil"));
+  ASSERT_TRUE(wahp.setName("Source Water WTAHP"));
+  ASSERT_TRUE(wahp.setOutdoorAirFlowRateDuringCoolingOperation(0.05));
+  ASSERT_TRUE(wahp.setOutdoorAirFlowRateDuringHeatingOperation(0.05));
+  ASSERT_TRUE(wahp.setOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded(0.02));
+  ASSERT_TRUE(wahp.setFanPlacement("DrawThrough"));
+  ASSERT_TRUE(wahp.setSupplyAirFan(fan));
+  ASSERT_TRUE(wahp.setHeatingCoil(heatingCoil));
+  ASSERT_TRUE(wahp.setCoolingCoil(coolingCoil));
+  ASSERT_TRUE(wahp.setSupplementalHeatingCoil(supplementalHeatingCoil));
+  ASSERT_TRUE(wahp.addToThermalZone(zone));
+  ASSERT_TRUE(sourceLoop.addDemandBranchForComponent(heatingCoil));
+  ASSERT_TRUE(sourceLoop.addDemandBranchForComponent(coolingCoil));
+  EXPECT_EQ(2u, sourceLoop.demandComponents(CoilHeatingWaterToAirHeatPumpEquationFit::iddObjectType()).size()
+                  + sourceLoop.demandComponents(CoilCoolingWaterToAirHeatPumpEquationFit::iddObjectType()).size());
+  EXPECT_EQ(1u, model.getObjectsByType(openstudio::IddObjectType::OutdoorAir_NodeList).size());
+  ASSERT_TRUE(model.save(idfPath, true));
+
+  auto loadedModel = Model::load(idfPath);
+  ASSERT_TRUE(loadedModel);
+  auto loadedSourceLoop = loadedModel->getConcreteModelObjectByName<PlantLoop>("Original WTAHP Source Loop");
+  auto loadedHeatingCoil = loadedModel->getConcreteModelObjectByName<CoilHeatingWaterToAirHeatPumpEquationFit>("WTAHP Source Heating Coil");
+  auto loadedCoolingCoil = loadedModel->getConcreteModelObjectByName<CoilCoolingWaterToAirHeatPumpEquationFit>("WTAHP Source Cooling Coil");
+  auto loadedWahp = loadedModel->getConcreteModelObjectByName<ZoneHVACWaterToAirHeatPump>("Source Water WTAHP");
+  ASSERT_TRUE(loadedSourceLoop);
+  ASSERT_TRUE(loadedHeatingCoil);
+  ASSERT_TRUE(loadedCoolingCoil);
+  ASSERT_TRUE(loadedWahp);
+  ASSERT_TRUE(loadedHeatingCoil->plantLoop());
+  ASSERT_TRUE(loadedCoolingCoil->plantLoop());
+  EXPECT_EQ(*loadedSourceLoop, *loadedHeatingCoil->plantLoop());
+  EXPECT_EQ(*loadedSourceLoop, *loadedCoolingCoil->plantLoop());
+  ASSERT_TRUE(loadedHeatingCoil->containingHVACComponent());
+  ASSERT_TRUE(loadedCoolingCoil->containingHVACComponent());
+  EXPECT_EQ(*loadedWahp, *loadedHeatingCoil->containingHVACComponent());
+  EXPECT_EQ(*loadedWahp, *loadedCoolingCoil->containingHVACComponent());
+  ASSERT_TRUE(loadedWahp->outdoorAirMixer());
+  EXPECT_EQ(1u, loadedModel->getObjectsByType(openstudio::IddObjectType::OutdoorAir_NodeList).size());
+
+  EXPECT_TRUE(loadedSourceLoop->removeDemandBranchWithComponent(*loadedHeatingCoil));
+  EXPECT_TRUE(loadedSourceLoop->removeDemandBranchWithComponent(*loadedCoolingCoil));
+  EXPECT_FALSE(loadedHeatingCoil->plantLoop());
+  EXPECT_FALSE(loadedCoolingCoil->plantLoop());
+  EXPECT_FALSE(loadedHeatingCoil->waterInletModelObject());
+  EXPECT_FALSE(loadedHeatingCoil->waterOutletModelObject());
+  EXPECT_FALSE(loadedCoolingCoil->waterInletModelObject());
+  EXPECT_FALSE(loadedCoolingCoil->waterOutletModelObject());
+  ASSERT_TRUE(loadedHeatingCoil->containingHVACComponent());
+  ASSERT_TRUE(loadedCoolingCoil->containingHVACComponent());
+  EXPECT_EQ(*loadedWahp, *loadedHeatingCoil->containingHVACComponent());
+  EXPECT_EQ(*loadedWahp, *loadedCoolingCoil->containingHVACComponent());
+  EXPECT_FALSE(loadedSourceLoop->remove().empty());
+
+  PlantLoop replacementSourceLoop(*loadedModel);
+  ASSERT_TRUE(replacementSourceLoop.setName("Replacement WTAHP Source Loop"));
+  EXPECT_TRUE(replacementSourceLoop.addDemandBranchForComponent(*loadedHeatingCoil));
+  EXPECT_TRUE(replacementSourceLoop.addDemandBranchForComponent(*loadedCoolingCoil));
+  ASSERT_TRUE(loadedHeatingCoil->plantLoop());
+  ASSERT_TRUE(loadedCoolingCoil->plantLoop());
+  EXPECT_EQ(replacementSourceLoop, *loadedHeatingCoil->plantLoop());
+  EXPECT_EQ(replacementSourceLoop, *loadedCoolingCoil->plantLoop());
+  EXPECT_TRUE(loadedWahp->inletNode());
+  EXPECT_TRUE(loadedWahp->outletNode());
+  EXPECT_TRUE(loadedWahp->outdoorAirMixer());
+
+  openstudio::filesystem::remove(idfPath);
+}
+
+TEST_F(EPModelFixture, ZoneHVACWaterToAirHeatPump_RemovalCleansOwnedOutdoorAirPath) {
+  Model model;
+  ThermalZone zone(model);
+  FanOnOff fan(model);
+  CoilHeatingWaterToAirHeatPumpEquationFit heatingCoil(model);
+  CoilCoolingWaterToAirHeatPumpEquationFit coolingCoil(model);
+  CoilHeatingElectric supplementalHeatingCoil(model);
+  ZoneHVACWaterToAirHeatPump wahp(model);
+
+  ASSERT_TRUE(wahp.setSupplyAirFan(fan));
+  ASSERT_TRUE(wahp.setHeatingCoil(heatingCoil));
+  ASSERT_TRUE(wahp.setCoolingCoil(coolingCoil));
+  ASSERT_TRUE(wahp.setSupplementalHeatingCoil(supplementalHeatingCoil));
+  ASSERT_TRUE(wahp.addToThermalZone(zone));
+  ASSERT_TRUE(wahp.outdoorAirMixer());
+  const auto mixerHandle = wahp.outdoorAirMixer()->handle();
+  EXPECT_EQ(1u, model.getObjectsByType(openstudio::IddObjectType::OutdoorAir_NodeList).size());
+
+  EXPECT_FALSE(wahp.remove().empty());
+  EXPECT_FALSE(model.getObject(mixerHandle));
+  EXPECT_TRUE(model.getConcreteModelObjects<OutdoorAirMixer>().empty());
+  EXPECT_TRUE(model.getObjectsByType(openstudio::IddObjectType::OutdoorAir_NodeList).empty());
 }
 
 TEST_F(EPModelFixture, ZoneHVACWaterToAirHeatPump_ScheduleRelationships_RoundTrip) {

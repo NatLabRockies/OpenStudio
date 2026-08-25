@@ -12,6 +12,8 @@
 #include "HVACComponent/ThermalZone_Impl.hpp"
 #include "Loop/AirLoopHVAC.hpp"
 #include "Model.hpp"
+#include "ModelObject/OutdoorAirMixer.hpp"
+#include "ModelObject/OutdoorAirMixer_Impl.hpp"
 #include "ModelObject/ModelObject_Impl.hpp"
 #include "ModelObject/ZoneHVACEquipmentConnections.hpp"
 #include "ModelObject/ZoneHVACEquipmentConnections_Impl.hpp"
@@ -22,7 +24,11 @@
 #include "StraightComponent/Node.hpp"
 
 #include <utilities/core/Assert.hpp>
+#include <utilities/core/StringHelpers.hpp>
+#include <utilities/idf/WorkspaceExtensibleGroup.hpp>
 #include <utilities/idd/AirTerminal_SingleDuct_Mixer_FieldEnums.hxx>
+#include <utilities/idd/OutdoorAir_Mixer_FieldEnums.hxx>
+#include <utilities/idd/OutdoorAir_NodeList_FieldEnums.hxx>
 
 #include <algorithm>
 
@@ -100,6 +106,111 @@ namespace openstudio {
 namespace epmodel {
   namespace detail {
 
+    namespace {
+
+      unsigned removeOutdoorAirNodeListEntries(const Model& model, const std::string& nodeName) {
+        unsigned removedEntries = 0u;
+        for (auto object : model.getObjectsByType(openstudio::IddObjectType::OutdoorAir_NodeList)) {
+          const auto groups = object.extensibleGroups();
+          std::vector<unsigned> matchingGroups;
+          for (const auto& group : groups) {
+            auto workspaceGroup = group.optionalCast<openstudio::WorkspaceExtensibleGroup>();
+            if (!workspaceGroup) {
+              continue;
+            }
+            const auto listedNodeName = workspaceGroup->getString(openstudio::OutdoorAir_NodeListExtensibleFields::NodeorNodeListName);
+            if (listedNodeName && openstudio::istringEqual(*listedNodeName, nodeName)) {
+              matchingGroups.push_back(workspaceGroup->groupIndex());
+            }
+          }
+
+          removedEntries += static_cast<unsigned>(matchingGroups.size());
+          if (!matchingGroups.empty() && (matchingGroups.size() == groups.size())) {
+            object.remove();
+            continue;
+          }
+          for (auto it = matchingGroups.rbegin(); it != matchingGroups.rend(); ++it) {
+            object.eraseExtensibleGroup(*it);
+          }
+        }
+        return removedEntries;
+      }
+
+      bool ensureOutdoorAirNodeListEntry(const Model& model, const std::string& nodeName) {
+        for (const auto& object : model.getObjectsByType(openstudio::IddObjectType::OutdoorAir_Node)) {
+          if (openstudio::istringEqual(object.nameString(), nodeName)) {
+            return removeOutdoorAirNodeListEntries(model, nodeName) > 0u;
+          }
+        }
+
+        unsigned existingEntries = 0u;
+        for (const auto& object : model.getObjectsByType(openstudio::IddObjectType::OutdoorAir_NodeList)) {
+          for (const auto& group : object.extensibleGroups()) {
+            auto workspaceGroup = group.optionalCast<openstudio::WorkspaceExtensibleGroup>();
+            if (!workspaceGroup) {
+              continue;
+            }
+            const auto listedNodeName = workspaceGroup->getString(openstudio::OutdoorAir_NodeListExtensibleFields::NodeorNodeListName);
+            if (listedNodeName && openstudio::istringEqual(*listedNodeName, nodeName)) {
+              ++existingEntries;
+            }
+          }
+        }
+
+        if (existingEntries == 1u) {
+          return false;
+        }
+        if (existingEntries > 1u) {
+          removeOutdoorAirNodeListEntries(model, nodeName);
+        }
+
+        auto nodeList = ModelObject::create(openstudio::IddObjectType::OutdoorAir_NodeList, model);
+        auto group = nodeList.pushExtensibleGroup().optionalCast<openstudio::WorkspaceExtensibleGroup>();
+        if (!(group && group->setString(openstudio::OutdoorAir_NodeListExtensibleFields::NodeorNodeListName, nodeName))) {
+          nodeList.remove();
+          return false;
+        }
+        return true;
+      }
+
+      unsigned removeUnusedOutdoorAirNodeListEntries(const Model& model, const std::string& nodeName) {
+        if (nodeName.empty()) {
+          return 0u;
+        }
+
+        for (const auto& object : model.objects()) {
+          if (object.iddObject().type() == openstudio::IddObjectType::OutdoorAir_NodeList) {
+            continue;
+          }
+          for (unsigned fieldIndex = 0u; fieldIndex < object.numFields(); ++fieldIndex) {
+            const auto iddField = object.iddObject().getField(fieldIndex);
+            if (!(iddField && (iddField->properties().type == openstudio::IddFieldType::NodeType))) {
+              continue;
+            }
+            const auto fieldValue = object.getString(fieldIndex);
+            if (fieldValue && openstudio::istringEqual(*fieldValue, nodeName)) {
+              return 0u;
+            }
+          }
+        }
+
+        return removeOutdoorAirNodeListEntries(model, nodeName);
+      }
+
+      std::string uniqueObjectName(const Model& model, const std::string& baseName) {
+        if (model.getObjectsByName(baseName, true).empty()) {
+          return baseName;
+        }
+        for (unsigned suffix = 2u;; ++suffix) {
+          const auto candidate = baseName + " " + std::to_string(suffix);
+          if (model.getObjectsByName(candidate, true).empty()) {
+            return candidate;
+          }
+        }
+      }
+
+    }  // namespace
+
     unsigned ZoneHVACComponent_Impl::inletPort() const {
       return 0u;
     }
@@ -120,6 +231,188 @@ namespace epmodel {
         return boost::none;
       }
       return getObject<ModelObject>().getModelObjectTarget<Node>(outletPort());
+    }
+
+    ZoneHVACComponent_Impl::OwnedOutdoorAirMixerRelationshipInspection
+      ZoneHVACComponent_Impl::inspectOwnedOutdoorAirMixer(unsigned objectTypeField, unsigned objectNameField) const {
+      const auto owner = getObject<ModelObject>();
+      auto workspaceImpl = owner.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+      OS_ASSERT(workspaceImpl);
+      const auto rawType = workspaceImpl->openstudio::detail::IdfObject_Impl::getString(objectTypeField, false, true);
+      const auto rawName = workspaceImpl->openstudio::detail::IdfObject_Impl::getString(objectNameField, false, true);
+      const bool hasTypeEvidence = rawType && !rawType->empty();
+      const bool hasNameEvidence = rawName && !rawName->empty();
+      const bool typeIsExact = hasTypeEvidence && openstudio::istringEqual(*rawType, "OutdoorAir:Mixer");
+
+      boost::optional<OutdoorAirMixer> mixer;
+      const auto storedTarget = owner.getField(objectNameField, false);
+      if (storedTarget && !storedTarget->empty() && !openstudio::toUUID(*storedTarget).isNull()) {
+        const auto managedHandle = openstudio::toUUID(*storedTarget);
+        const auto target = model().getObject(managedHandle);
+        mixer = target ? target->optionalCast<OutdoorAirMixer>() : boost::none;
+        if (!mixer) {
+          return {OwnedOutdoorAirMixerRelationshipState::Malformed, boost::none, hasTypeEvidence, typeIsExact};
+        }
+        if (hasNameEvidence) {
+          const auto rawHandle = openstudio::toUUID(*rawName);
+          if ((!rawHandle.isNull() && rawHandle != mixer->handle())
+              || (rawHandle.isNull() && !openstudio::istringEqual(*rawName, mixer->nameString()))) {
+            return {OwnedOutdoorAirMixerRelationshipState::Malformed, boost::none, hasTypeEvidence, typeIsExact};
+          }
+        }
+      } else if (hasNameEvidence) {
+        const auto rawHandle = openstudio::toUUID(*rawName);
+        for (const auto& candidate : model().getConcreteModelObjects<OutdoorAirMixer>()) {
+          const bool matches = (!rawHandle.isNull() && candidate.handle() == rawHandle)
+                               || (rawHandle.isNull() && openstudio::istringEqual(candidate.nameString(), *rawName));
+          if (!matches) {
+            continue;
+          }
+          if (mixer) {
+            return {OwnedOutdoorAirMixerRelationshipState::Malformed, boost::none, hasTypeEvidence, typeIsExact};
+          }
+          mixer = candidate;
+        }
+        if (!mixer) {
+          return {OwnedOutdoorAirMixerRelationshipState::Malformed, boost::none, hasTypeEvidence, typeIsExact};
+        }
+      } else {
+        return {OwnedOutdoorAirMixerRelationshipState::Blank, boost::none, hasTypeEvidence, typeIsExact};
+      }
+
+      unsigned sameNameCount = 0u;
+      for (const auto& candidate : model().getConcreteModelObjects<OutdoorAirMixer>()) {
+        if (openstudio::istringEqual(candidate.nameString(), mixer->nameString())) {
+          ++sameNameCount;
+        }
+      }
+      if (sameNameCount != 1u) {
+        return {OwnedOutdoorAirMixerRelationshipState::Malformed, boost::none, hasTypeEvidence, typeIsExact};
+      }
+      for (const auto& source : mixer->sources()) {
+        if (source.handle() != owner.handle()) {
+          return {OwnedOutdoorAirMixerRelationshipState::Malformed, boost::none, hasTypeEvidence, typeIsExact};
+        }
+      }
+
+      unsigned globalClaimCount = 0u;
+      for (const auto& candidate : model().objects()) {
+        auto candidateWorkspaceImpl = candidate.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+        OS_ASSERT(candidateWorkspaceImpl);
+        for (unsigned field = 0u; field < candidate.numFields(); ++field) {
+          const auto iddField = candidate.iddObject().getField(field);
+          if (!iddField || !std::ranges::any_of(iddField->properties().objectLists, [](const auto& objectList) {
+                return openstudio::istringEqual(objectList, "OutdoorAirMixers");
+              })) {
+            continue;
+          }
+          const auto stored = candidate.getField(field, false);
+          const auto raw = candidateWorkspaceImpl->openstudio::detail::IdfObject_Impl::getString(field, false, true);
+          const auto storedHandle = stored ? openstudio::toUUID(*stored) : Handle();
+          const auto rawHandle = raw ? openstudio::toUUID(*raw) : Handle();
+          const bool claims = (!storedHandle.isNull() && storedHandle == mixer->handle())
+                              || (raw && !raw->empty()
+                                  && ((!rawHandle.isNull() && rawHandle == mixer->handle())
+                                      || (rawHandle.isNull() && openstudio::istringEqual(*raw, mixer->nameString()))));
+          if (!claims) {
+            continue;
+          }
+          ++globalClaimCount;
+          if (candidate.handle() != owner.handle() || field != objectNameField) {
+            return {OwnedOutdoorAirMixerRelationshipState::Malformed, boost::none, hasTypeEvidence, typeIsExact};
+          }
+        }
+      }
+      if (globalClaimCount != 1u) {
+        return {OwnedOutdoorAirMixerRelationshipState::Malformed, boost::none, hasTypeEvidence, typeIsExact};
+      }
+      return {OwnedOutdoorAirMixerRelationshipState::Exact, mixer->handle(), hasTypeEvidence, typeIsExact};
+    }
+
+    bool ZoneHVACComponent_Impl::reconcileOwnedOutdoorAirMixer(unsigned objectTypeField, unsigned objectNameField,
+                                                               const boost::optional<Node>& mixedAirNode, const boost::optional<Node>& returnAirNode,
+                                                               const std::string& baseName) {
+      auto owner = getObject<ModelObject>();
+      const auto inspection = inspectOwnedOutdoorAirMixer(objectTypeField, objectNameField);
+      if (inspection.state == OwnedOutdoorAirMixerRelationshipState::Malformed) {
+        return false;
+      }
+      boost::optional<OutdoorAirMixer> mixer;
+      if (inspection.mixerHandle) {
+        const auto object = model().getObject(*inspection.mixerHandle);
+        mixer = object ? object->optionalCast<OutdoorAirMixer>() : boost::none;
+        OS_ASSERT(mixer);
+      }
+      boost::optional<std::string> previousOutdoorAirNodeName;
+      if (mixer) {
+        if (auto node = mixer->outdoorAirNode()) {
+          previousOutdoorAirNodeName = node->nameString();
+        }
+      }
+
+      const bool enabled = mixedAirNode && returnAirNode;
+      bool changed = false;
+      if (!enabled) {
+        const auto currentMixerType = owner.getString(objectTypeField, true);
+        if (currentMixerType && !currentMixerType->empty()) {
+          OS_ASSERT(owner.setString(objectTypeField, ""));
+          changed = true;
+        }
+
+        bool ownerIsOnlySource = false;
+        if (mixer) {
+          ownerIsOnlySource = true;
+          for (const auto& source : mixer->sources()) {
+            if (source.handle() != owner.handle()) {
+              ownerIsOnlySource = false;
+              break;
+            }
+          }
+        }
+        changed = setPointer(objectNameField, Handle(), false) || changed;
+        if (mixer && ownerIsOnlySource && !mixer->remove().empty()) {
+          changed = true;
+        }
+        if (previousOutdoorAirNodeName) {
+          changed = (removeUnusedOutdoorAirNodeListEntries(model(), *previousOutdoorAirNodeName) > 0u) || changed;
+        }
+        return changed;
+      }
+
+      if (!mixer) {
+        mixer = OutdoorAirMixer(model());
+        if (!mixer->setName(uniqueObjectName(model(), baseName + " OA Mixer"))) {
+          OS_ASSERT(mixer->setName(model().nextName(OutdoorAirMixer::iddObjectType(), true)));
+        }
+      }
+
+      changed = setPointer(objectNameField, mixer->handle(), false) || changed;
+      const std::string expectedMixerType = mixer->iddObject().name();
+      const auto currentMixerType = owner.getString(objectTypeField, true);
+      if (!currentMixerType || !openstudio::istringEqual(*currentMixerType, expectedMixerType)) {
+        OS_ASSERT(owner.setString(objectTypeField, expectedMixerType));
+        changed = true;
+      }
+
+      auto outdoorAirNode = mixer->outdoorAirNode();
+      if (!outdoorAirNode) {
+        outdoorAirNode = Node(model());
+        OS_ASSERT(outdoorAirNode->setName(uniqueObjectName(model(), baseName + " OA Node")));
+      }
+      auto reliefAirNode = mixer->reliefAirNode();
+      if (!reliefAirNode) {
+        reliefAirNode = Node(model());
+        OS_ASSERT(reliefAirNode->setName(uniqueObjectName(model(), baseName + " Relief Air Node")));
+      }
+      changed = mixer->setPointer(openstudio::OutdoorAir_MixerFields::MixedAirNodeName, mixedAirNode->handle()) || changed;
+      changed = mixer->setPointer(openstudio::OutdoorAir_MixerFields::OutdoorAirStreamNodeName, outdoorAirNode->handle()) || changed;
+      changed = mixer->setPointer(openstudio::OutdoorAir_MixerFields::ReliefAirStreamNodeName, reliefAirNode->handle()) || changed;
+      changed = mixer->setPointer(openstudio::OutdoorAir_MixerFields::ReturnAirStreamNodeName, returnAirNode->handle()) || changed;
+      changed = ensureOutdoorAirNodeListEntry(model(), outdoorAirNode->nameString()) || changed;
+      if (previousOutdoorAirNodeName && !openstudio::istringEqual(*previousOutdoorAirNodeName, outdoorAirNode->nameString())) {
+        changed = (removeUnusedOutdoorAirNodeListEntries(model(), *previousOutdoorAirNodeName) > 0u) || changed;
+      }
+      return changed;
     }
 
     boost::optional<ThermalZone> ZoneHVACComponent_Impl::thermalZone() const {
@@ -306,6 +599,10 @@ namespace epmodel {
         if (!candidate) {
           continue;
         }
+        const auto connectionType = candidate->getString(openstudio::AirTerminal_SingleDuct_MixerFields::MixerConnectionType, true);
+        if (!connectionType || !openstudio::istringEqual(*connectionType, "InletSide")) {
+          continue;
+        }
         auto terminalOutlet = candidate->outletModelObject();
         if (terminalOutlet && (*terminalOutlet == node.cast<ModelObject>())) {
           inletSideMixer = candidate;
@@ -367,6 +664,12 @@ namespace epmodel {
         return node->airLoopHVAC();
       }
       return boost::none;
+    }
+
+    bool ZoneHVACComponent_Impl::hasManagedAirLoopPathReference() const {
+      const auto object = getObject<ModelObject>();
+      return !object.getSources(IddObjectType::Branch).empty() || !object.getSources(IddObjectType::AirTerminal_SingleDuct_Mixer).empty()
+             || !object.getSources(IddObjectType::AirLoopHVAC_OutdoorAirSystem_EquipmentList).empty();
     }
 
     bool ZoneHVACComponent_Impl::removeFromAirLoopHVAC() {

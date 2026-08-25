@@ -26,6 +26,17 @@ namespace epmodel {
     class ModelObject_Impl;
   }
 
+  /** \brief ModelObject.
+   *
+   * \par EnergyPlus object
+   * This class has no single EnergyPlus object; concrete subclasses determine the persisted object.
+   *
+   * \par OpenStudio Model API
+   * This base supplies model-object identity, targets, sources, and shared object operations; concrete subclasses determine the EnergyPlus object type.
+   *
+   * \par Known limitations
+   * This base supplies model-object identity, targets, sources, and shared object operations; concrete subclasses determine the EnergyPlus object type.
+   */
   class EPMODEL_API ModelObject : public openstudio::WorkspaceObject
   {
    public:
@@ -58,6 +69,41 @@ namespace epmodel {
         if (target) {
           result.emplace_back(*target);
         }
+      }
+      return result;
+    }
+
+    /** Get all objects of type T that point to this object. This method is preferred over the
+     *  WorkspaceObject equivalent, as its use does not require knowledge of the IddObjectType. */
+    template <AnyModelObject T>
+    std::vector<T> getModelObjectSources() const {
+      std::vector<T> result;
+      std::vector<WorkspaceObject> wos = sources();
+      result.reserve(wos.size());
+      for (const WorkspaceObject& wo : wos) {
+        boost::optional<T> oSource = wo.optionalCast<T>();
+        if (oSource) {
+          result.emplace_back(*oSource);
+        }
+      }
+      return result;
+    }
+
+    /** Get all objects of type T that point to this object. Preferred usage (do not use with
+     *  abstract classes):
+     *
+     *  \code
+     *  PeopleVector myZonesPeople = zone.getModelObjectSources<People>(People::iddObjectType());
+     *  \endcode
+     **/
+    template <AnyModelObject T>
+    std::vector<T> getModelObjectSources(IddObjectType iddObjectType) const {
+      std::vector<T> result;
+      std::vector<WorkspaceObject> wos = getSources(iddObjectType);
+      result.reserve(wos.size());
+      for (const WorkspaceObject& wo : wos) {
+        // assume iddObjectType is valid for T
+        result.emplace_back(wo.cast<T>());
       }
       return result;
     }

@@ -6,7 +6,7 @@
 #ifndef EPMODEL_STANDARDGLAZING_IMPL_HPP
 #define EPMODEL_STANDARDGLAZING_IMPL_HPP
 
-#include "ModelObject_Impl.hpp"
+#include "Glazing/Glazing_Impl.hpp"
 
 #include <boost/optional.hpp>
 #include <string>
@@ -17,18 +17,18 @@ namespace epmodel {
 
   namespace detail {
 
-    class EPMODEL_API StandardGlazing_Impl : public ModelObject_Impl
+    class EPMODEL_API StandardGlazing_Impl : public Glazing_Impl
     {
      public:
-      using ModelObject_Impl::ModelObject_Impl;
+      using Glazing_Impl::Glazing_Impl;
       virtual ~StandardGlazing_Impl() override = default;
 
       std::string opticalDataType() const;
       bool setOpticalDataType(const std::string& opticalDataType);
       std::vector<std::string> opticalDataTypeValues() const;
 
-      double thickness() const;
-      bool setThickness(double thickness);
+      double thickness() const override;
+      bool setThickness(double thickness) override;
 
       double solarTransmittance() const;
       bool setSolarTransmittance(double value);
@@ -105,8 +105,8 @@ namespace epmodel {
       double interiorVisibleReflectance() const;
       double exteriorVisibleReflectance() const;
 
-      boost::optional<double> interiorVisibleAbsorptance() const;
-      boost::optional<double> exteriorVisibleAbsorptance() const;
+      boost::optional<double> interiorVisibleAbsorptance() const override;
+      boost::optional<double> exteriorVisibleAbsorptance() const override;
     };
 
   }  // namespace detail

@@ -17,12 +17,43 @@
 #include "../Schedule/ScheduleConstant.hpp"
 #include "../WaterToAirComponent/CoilHeatingWater.hpp"
 
+#include <utilities/idd/AirLoopHVAC_UnitaryHeatPump_AirToAir_FieldEnums.hxx>
+
 using namespace openstudio::epmodel;
 
 TEST_F(EPModelFixture, AirLoopHVACUnitaryHeatPumpAirToAir_DefaultConstructor) {
   Model model;
   AirLoopHVACUnitaryHeatPumpAirToAir unitary(model);
   EXPECT_EQ(AirLoopHVACUnitaryHeatPumpAirToAir::iddObjectType(), unitary.iddObject().type());
+}
+
+TEST_F(EPModelFixture, AirLoopHVACUnitaryHeatPumpAirToAir_RenamedSystemsKeepDistinctContainedAirPaths) {
+  Model model;
+  FanOnOff firstFan(model);
+  CoilHeatingDXSingleSpeed firstHeating(model);
+  CoilCoolingDXSingleSpeed firstCooling(model);
+  AirLoopHVACUnitaryHeatPumpAirToAir firstUnitary(model);
+  ASSERT_TRUE(firstUnitary.setSupplyAirFan(firstFan));
+  ASSERT_TRUE(firstUnitary.setHeatingCoil(firstHeating));
+  ASSERT_TRUE(firstUnitary.setCoolingCoil(firstCooling));
+  ASSERT_TRUE(firstUnitary.inletModelObject());
+  ASSERT_TRUE(firstUnitary.coolingCoilOutletNode());
+  const auto firstInletHandle = firstUnitary.inletModelObject()->handle();
+  const auto firstCoolingOutletHandle = firstUnitary.coolingCoilOutletNode()->handle();
+  ASSERT_TRUE(firstUnitary.setName("Renamed Air-to-Air Unitary Heat Pump"));
+
+  FanOnOff secondFan(model);
+  CoilHeatingDXSingleSpeed secondHeating(model);
+  CoilCoolingDXSingleSpeed secondCooling(model);
+  AirLoopHVACUnitaryHeatPumpAirToAir secondUnitary(model);
+  ASSERT_TRUE(secondUnitary.setSupplyAirFan(secondFan));
+  ASSERT_TRUE(secondUnitary.setHeatingCoil(secondHeating));
+  ASSERT_TRUE(secondUnitary.setCoolingCoil(secondCooling));
+  ASSERT_TRUE(secondUnitary.inletModelObject());
+  ASSERT_TRUE(secondUnitary.coolingCoilOutletNode());
+
+  EXPECT_NE(firstInletHandle, secondUnitary.inletModelObject()->handle());
+  EXPECT_NE(firstCoolingOutletHandle, secondUnitary.coolingCoilOutletNode()->handle());
 }
 
 TEST_F(EPModelFixture, AirLoopHVACUnitaryHeatPumpAirToAir_RelationshipConstructorAndChildren) {
@@ -41,6 +72,11 @@ TEST_F(EPModelFixture, AirLoopHVACUnitaryHeatPumpAirToAir_RelationshipConstructo
   EXPECT_EQ(heating.handle(), unitary.heatingCoil().handle());
   EXPECT_EQ(cooling.handle(), unitary.coolingCoil().handle());
   EXPECT_EQ(supplemental.handle(), unitary.supplementalHeatingCoil().handle());
+  EXPECT_EQ(fan.iddObject().name(), unitary.getString(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAirFields::SupplyAirFanObjectType).get());
+  EXPECT_EQ(heating.iddObject().name(), unitary.getString(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAirFields::HeatingCoilObjectType).get());
+  EXPECT_EQ(cooling.iddObject().name(), unitary.getString(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAirFields::CoolingCoilObjectType).get());
+  EXPECT_EQ(supplemental.iddObject().name(),
+            unitary.getString(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAirFields::SupplementalHeatingCoilObjectType).get());
 
   const auto children = unitary.children();
   ASSERT_EQ(4u, children.size());
@@ -297,4 +333,30 @@ TEST_F(EPModelFixture, AirLoopHVACUnitaryHeatPumpAirToAir_CanonicalizeRepairsCon
   EXPECT_EQ(*expectedCoolingOutlet, *unitary.coolingCoilOutletNode());
   EXPECT_EQ(*expectedHeatingOutlet, *unitary.heatingCoilOutletNode());
   EXPECT_EQ(*expectedFanOutlet, *unitary.fanOutletNode());
+}
+
+TEST_F(EPModelFixture, AirLoopHVACUnitaryHeatPumpAirToAir_CanonicalizeRepairsChildObjectTypes) {
+  Model model;
+  FanOnOff fan(model);
+  CoilHeatingDXSingleSpeed heating(model);
+  CoilCoolingDXSingleSpeed cooling(model);
+  CoilHeatingElectric supplemental(model);
+  AirLoopHVACUnitaryHeatPumpAirToAir unitary(model);
+
+  ASSERT_TRUE(unitary.setSupplyAirFan(fan));
+  ASSERT_TRUE(unitary.setHeatingCoil(heating));
+  ASSERT_TRUE(unitary.setCoolingCoil(cooling));
+  ASSERT_TRUE(unitary.setSupplementalHeatingCoil(supplemental));
+  ASSERT_TRUE(unitary.setString(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAirFields::SupplyAirFanObjectType, ""));
+  ASSERT_TRUE(unitary.setString(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAirFields::HeatingCoilObjectType, ""));
+  ASSERT_TRUE(unitary.setString(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAirFields::CoolingCoilObjectType, ""));
+  ASSERT_TRUE(unitary.setString(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAirFields::SupplementalHeatingCoilObjectType, ""));
+
+  const auto report = model.canonicalize();
+  EXPECT_EQ(0u, report.errorCount);
+  EXPECT_EQ(fan.iddObject().name(), unitary.getString(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAirFields::SupplyAirFanObjectType).get());
+  EXPECT_EQ(heating.iddObject().name(), unitary.getString(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAirFields::HeatingCoilObjectType).get());
+  EXPECT_EQ(cooling.iddObject().name(), unitary.getString(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAirFields::CoolingCoilObjectType).get());
+  EXPECT_EQ(supplemental.iddObject().name(),
+            unitary.getString(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAirFields::SupplementalHeatingCoilObjectType).get());
 }

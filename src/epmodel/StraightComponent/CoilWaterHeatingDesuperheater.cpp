@@ -15,8 +15,11 @@
 #include "Schedule/Schedule_Impl.hpp"
 
 #include <utilities/core/Assert.hpp>
+#include <utilities/core/Logger.hpp>
+#include <utilities/core/UUID.hpp>
 #include <utilities/idd/Coil_WaterHeating_Desuperheater_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
+#include <utilities/idf/IdfObject_Impl.hpp>
 
 namespace openstudio {
 namespace epmodel {
@@ -47,6 +50,15 @@ namespace epmodel {
     OS_ASSERT(ok);
   }
 
+  CoilWaterHeatingDesuperheater::CoilWaterHeatingDesuperheater(const Model& model, Schedule& setpointTemperatureSchedule)
+    : CoilWaterHeatingDesuperheater(model) {
+    if (!setSetpointTemperatureSchedule(setpointTemperatureSchedule)) {
+      remove();
+      throw openstudio::Exception("Unable to set " + briefDescription() + "'s Setpoint Temperature Schedule to "
+                                  + setpointTemperatureSchedule.briefDescription() + ".");
+    }
+  }
+
   CoilWaterHeatingDesuperheater::CoilWaterHeatingDesuperheater(std::shared_ptr<detail::CoilWaterHeatingDesuperheater_Impl> impl)
     : StraightComponent(std::move(impl)) {}
 
@@ -60,6 +72,18 @@ namespace epmodel {
 
   bool CoilWaterHeatingDesuperheater::setAvailabilitySchedule(Schedule& schedule) {
     return getImpl<detail::CoilWaterHeatingDesuperheater_Impl>()->setAvailabilitySchedule(schedule);
+  }
+
+  void CoilWaterHeatingDesuperheater::resetAvailabilitySchedule() {
+    getImpl<detail::CoilWaterHeatingDesuperheater_Impl>()->resetAvailabilitySchedule();
+  }
+
+  Schedule CoilWaterHeatingDesuperheater::setpointTemperatureSchedule() const {
+    return getImpl<detail::CoilWaterHeatingDesuperheater_Impl>()->setpointTemperatureSchedule();
+  }
+
+  bool CoilWaterHeatingDesuperheater::setSetpointTemperatureSchedule(Schedule& schedule) {
+    return getImpl<detail::CoilWaterHeatingDesuperheater_Impl>()->setSetpointTemperatureSchedule(schedule);
   }
 
   boost::optional<CurveBiquadratic> CoilWaterHeatingDesuperheater::heatReclaimEfficiencyFunctionofTemperatureCurve() const {
@@ -239,20 +263,124 @@ namespace epmodel {
     }
 
     Schedule CoilWaterHeatingDesuperheater_Impl::availabilitySchedule() const {
-      auto value =
-        getObject<ModelObject>().getModelObjectTarget<Schedule>(openstudio::Coil_WaterHeating_DesuperheaterFields::AvailabilityScheduleName);
-      if (!value) {
-        value = this->model().alwaysOnDiscreteSchedule();
-        OS_ASSERT(value);
-        const_cast<CoilWaterHeatingDesuperheater_Impl*>(this)->setAvailabilitySchedule(*value);
-        value = getObject<ModelObject>().getModelObjectTarget<Schedule>(openstudio::Coil_WaterHeating_DesuperheaterFields::AvailabilityScheduleName);
-      }
+      constexpr auto field = openstudio::Coil_WaterHeating_DesuperheaterFields::AvailabilityScheduleName;
+      const auto managedValue = getObject<ModelObject>().getField(field, false);
+      OS_ASSERT(managedValue && !managedValue->empty());
+      const auto targetHandle = openstudio::toUUID(*managedValue);
+      OS_ASSERT(!targetHandle.isNull());
+      const auto value = model().getModelObject<Schedule>(targetHandle);
       OS_ASSERT(value);
       return *value;
     }
 
     bool CoilWaterHeatingDesuperheater_Impl::setAvailabilitySchedule(Schedule& schedule) {
-      return setPointer(openstudio::Coil_WaterHeating_DesuperheaterFields::AvailabilityScheduleName, schedule.handle(), false);
+      return ModelObject_Impl::setSchedule(openstudio::Coil_WaterHeating_DesuperheaterFields::AvailabilityScheduleName,
+                                           "CoilWaterHeatingDesuperheater", "Availability", schedule);
+    }
+
+    void CoilWaterHeatingDesuperheater_Impl::resetAvailabilitySchedule() {
+      constexpr auto field = openstudio::Coil_WaterHeating_DesuperheaterFields::AvailabilityScheduleName;
+      OS_ASSERT(setPointer(field, Handle(), false));
+      OS_ASSERT(openstudio::detail::IdfObject_Impl::setString(field, "", false));
+    }
+
+    Schedule CoilWaterHeatingDesuperheater_Impl::setpointTemperatureSchedule() const {
+      constexpr auto field = openstudio::Coil_WaterHeating_DesuperheaterFields::SetpointTemperatureScheduleName;
+      const auto managedValue = getObject<ModelObject>().getField(field, false);
+      OS_ASSERT(managedValue && !managedValue->empty());
+      const auto targetHandle = openstudio::toUUID(*managedValue);
+      OS_ASSERT(!targetHandle.isNull());
+      const auto value = model().getModelObject<Schedule>(targetHandle);
+      OS_ASSERT(value);
+      return *value;
+    }
+
+    bool CoilWaterHeatingDesuperheater_Impl::setSetpointTemperatureSchedule(Schedule& schedule) {
+      return ModelObject_Impl::setSchedule(openstudio::Coil_WaterHeating_DesuperheaterFields::SetpointTemperatureScheduleName,
+                                           "CoilWaterHeatingDesuperheater", "Setpoint Temperature", schedule);
+    }
+
+    void CoilWaterHeatingDesuperheater_Impl::doCanonicalize(LoadContext& context) {
+      StraightComponent_Impl::doCanonicalize(context);
+
+      const auto coil = getObject<ModelObject>();
+      const auto coilName = coil.nameString();
+
+      const auto reconcileSchedule = [&](unsigned field, const std::string& relationshipName, bool availability, auto&& setRelationship) {
+        if (auto schedule = coil.getModelObjectTarget<Schedule>(field)) {
+          boost::optional<Schedule> uniqueEligibleSchedule;
+          bool ambiguous = false;
+          for (const auto& candidate : model().getObjectsByName(schedule->nameString(), true)) {
+            if (auto namedSchedule = candidate.optionalCast<Schedule>()) {
+              if (!model().canBeTarget(namedSchedule->handle(), iddObject().objectLists(field))) {
+                continue;
+              }
+              if (uniqueEligibleSchedule) {
+                ambiguous = true;
+                break;
+              }
+              uniqueEligibleSchedule = *namedSchedule;
+            }
+          }
+
+          if (!ambiguous && uniqueEligibleSchedule && (uniqueEligibleSchedule->handle() == schedule->handle()) && setRelationship(*schedule)) {
+            return;
+          }
+          detail::addLoadWarning(context, "Preserved an ambiguous, ineligible, or incompatible " + relationshipName
+                                            + " on Coil:WaterHeating:Desuperheater '" + coilName + "'.");
+          return;
+        }
+
+        const auto rawName = openstudio::detail::IdfObject_Impl::getString(field, false, true);
+        if (rawName && !rawName->empty()) {
+          boost::optional<Schedule> uniqueEligibleSchedule;
+          bool ambiguous = false;
+          for (const auto& candidate : model().getObjectsByName(*rawName, true)) {
+            if (auto schedule = candidate.optionalCast<Schedule>()) {
+              if (!model().canBeTarget(schedule->handle(), iddObject().objectLists(field))) {
+                continue;
+              }
+              if (uniqueEligibleSchedule) {
+                ambiguous = true;
+                break;
+              }
+              uniqueEligibleSchedule = *schedule;
+            }
+          }
+
+          if (uniqueEligibleSchedule && !ambiguous) {
+            if (setRelationship(*uniqueEligibleSchedule)) {
+              detail::addLoadInfo(context, "Reattached " + relationshipName + " '" + uniqueEligibleSchedule->nameString()
+                                             + "' to Coil:WaterHeating:Desuperheater '" + coilName + "'.");
+            } else {
+              detail::addLoadWarning(context, "Preserved incompatible " + relationshipName + " reference '" + *rawName
+                                                + "' on Coil:WaterHeating:Desuperheater '" + coilName + "'.");
+            }
+          } else {
+            detail::addLoadWarning(context, "Preserved unresolved or ambiguous " + relationshipName + " reference '" + *rawName
+                                              + "' on Coil:WaterHeating:Desuperheater '" + coilName + "'.");
+          }
+          return;
+        }
+
+        if (availability && context.repairEnabled()) {
+          auto alwaysOn = model().alwaysOnDiscreteSchedule();
+          if (setRelationship(alwaysOn)) {
+            detail::addLoadInfo(context, "Attached the always-on availability schedule to Coil:WaterHeating:Desuperheater '" + coilName + "'.");
+          } else {
+            detail::addLoadError(context,
+                                 "Failed to attach the always-on availability schedule to Coil:WaterHeating:Desuperheater '" + coilName + "'.");
+          }
+          return;
+        }
+
+        detail::addLoadWarning(context, "Coil:WaterHeating:Desuperheater '" + coilName + "' has a blank " + relationshipName + ".");
+      };
+
+      reconcileSchedule(openstudio::Coil_WaterHeating_DesuperheaterFields::AvailabilityScheduleName, "availability schedule", true,
+                        [&](Schedule& schedule) { return setAvailabilitySchedule(schedule); });
+      reconcileSchedule(openstudio::Coil_WaterHeating_DesuperheaterFields::SetpointTemperatureScheduleName, "required setpoint temperature schedule",
+                        false, [&](Schedule& schedule) { return setSetpointTemperatureSchedule(schedule); });
     }
 
     boost::optional<CurveBiquadratic> CoilWaterHeatingDesuperheater_Impl::heatReclaimEfficiencyFunctionofTemperatureCurve() const {

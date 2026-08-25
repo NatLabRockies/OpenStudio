@@ -27,6 +27,17 @@ namespace epmodel {
     class ZoneHVACEquipmentList_Impl;
   }
 
+  /** \brief ZoneHVACEquipmentList.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-zone-equipment.html#zonehvacequipmentlist,ZoneHVAC:EquipmentList}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::ZoneHVACEquipmentList</code>. <b>Changed:</b> EPModel also permits direct construction from <code>Model</code>; Model construction requires a thermal zone. The load-distribution field and typed equipment-priority relationships are exposed.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API ZoneHVACEquipmentList : public ModelObject
   {
    public:
@@ -42,11 +53,6 @@ namespace epmodel {
     static IddObjectType iddObjectType();
     static std::vector<std::string> loadDistributionSchemeValues();
     static std::vector<std::string> validLoadDistributionSchemeValues();
-
-    // Schema Alignment Notes:
-    // - API: loadDistributionScheme()/setLoadDistributionScheme()/resetLoadDistributionScheme() map directly to the E+ ZoneHVAC:EquipmentList
-    //   field 'Load Distribution Scheme'.
-    // - Field Mapping: default semantics are preserved via isLoadDistributionSchemeDefaulted() and resetLoadDistributionScheme().
     std::string loadDistributionScheme() const;
     bool setLoadDistributionScheme(const std::string& loadDistributionScheme);
     bool isLoadDistributionSchemeDefaulted() const;

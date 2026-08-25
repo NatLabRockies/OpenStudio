@@ -22,6 +22,21 @@ namespace epmodel {
     class SimulationControl_Impl;
   }
 
+/** \brief Controls which EnergyPlus sizing and simulation phases are run.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-simulation-parameters.html#simulationcontrol,SimulationControl}
+ *
+ * \par Important behavior
+ * Zone, system, plant, HVAC-sizing, weather-run-period, and warmup/pass-limit controls map directly to the simulation-control object. The no-fail setters preserve requested values without normal validation.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model class is <code>openstudio::model::SimulationControl</code>.
+ * <b>Not yet available:</b> Model's run-period/environment collections, convergence limits, heat-balance and surface-convection algorithms, timestep, shadow, contaminant, and solar-distribution relationships are not exposed.
+ *
+ * \par Known limitations
+ * This wrapper selects simulation phases but does not run EnergyPlus or inspect simulation results.
+ */
   class EPMODEL_API SimulationControl : public ParentObject
   {
    public:
@@ -35,15 +50,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::SimulationControl scalar accessor names/signatures for SimulationControl fields.
-    // - Field Mapping: do*/run*/HVAC sizing-pass APIs map directly to EnergyPlus SimulationControl fields.
-    // - Field Mapping: loadsConvergenceToleranceValue, temperatureConvergenceToleranceValue, solarDistribution,
-    //   maximumNumberofWarmupDays, and minimumNumberofWarmupDays are translated via EnergyPlus Building and are
-    //   intentionally excluded from this class's scalar API.
-    // - ForwardTranslator evidence: ForwardTranslateSimulationControl.cpp writes the retained SimulationControl fields;
-    //   ForwardTranslateBuilding.cpp maps the excluded fields from model::SimulationControl to Building.
-    // - TODO(parity): Revisit cross-object parity for excluded Building-mapped SimulationControl APIs after scalar saturation.
     bool doZoneSizingCalculation() const;
     bool isDoZoneSizingCalculationDefaulted() const;
     bool setDoZoneSizingCalculation(bool doZoneSizingCalculation);
@@ -73,6 +79,11 @@ namespace epmodel {
     bool setRunSimulationforWeatherFileRunPeriods(bool runSimulationforWeatherFileRunPeriods);
     void setRunSimulationforWeatherFileRunPeriodsNoFail(bool runSimulationforWeatherFileRunPeriods);
     void resetRunSimulationforWeatherFileRunPeriods();
+
+    int maximumNumberofWarmupDays() const;
+    bool isMaximumNumberofWarmupDaysDefaulted() const;
+    bool setMaximumNumberofWarmupDays(int maximumNumberofWarmupDays);
+    void resetMaximumNumberofWarmupDays();
 
     bool doHVACSizingSimulationforSizingPeriods() const;
     bool isDoHVACSizingSimulationforSizingPeriodsDefaulted() const;

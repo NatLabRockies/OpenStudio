@@ -6,8 +6,7 @@
 #ifndef EPMODEL_SIMPLEGLAZING_IMPL_HPP
 #define EPMODEL_SIMPLEGLAZING_IMPL_HPP
 
-#include "EPModelAPI.hpp"
-#include "ModelObject_Impl.hpp"
+#include "Glazing/Glazing_Impl.hpp"
 
 #include <boost/optional.hpp>
 
@@ -16,10 +15,10 @@ namespace epmodel {
 
   namespace detail {
 
-    class EPMODEL_API SimpleGlazing_Impl : public ModelObject_Impl
+    class EPMODEL_API SimpleGlazing_Impl : public Glazing_Impl
     {
      public:
-      using ModelObject_Impl::ModelObject_Impl;
+      using Glazing_Impl::Glazing_Impl;
       virtual ~SimpleGlazing_Impl() override = default;
 
       double uFactor() const;

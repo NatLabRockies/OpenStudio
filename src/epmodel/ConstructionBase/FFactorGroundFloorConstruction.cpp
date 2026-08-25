@@ -16,7 +16,7 @@ namespace openstudio {
 namespace epmodel {
 
   FFactorGroundFloorConstruction::FFactorGroundFloorConstruction(const Model& model, double fFactor, double area, double perimeterExposed)
-    : ModelObject(FFactorGroundFloorConstruction::iddObjectType(), model) {
+    : ConstructionBase(FFactorGroundFloorConstruction::iddObjectType(), model) {
     const bool okFFactor = setFFactor(fFactor);
     OS_ASSERT(okFFactor);
     const bool okArea = setArea(area);
@@ -26,7 +26,7 @@ namespace epmodel {
   }
 
   FFactorGroundFloorConstruction::FFactorGroundFloorConstruction(std::shared_ptr<detail::FFactorGroundFloorConstruction_Impl> impl)
-    : ModelObject(std::move(impl)) {}
+    : ConstructionBase(std::move(impl)) {}
 
   IddObjectType FFactorGroundFloorConstruction::iddObjectType() {
     return IddObjectType::Construction_FfactorGroundFloor;

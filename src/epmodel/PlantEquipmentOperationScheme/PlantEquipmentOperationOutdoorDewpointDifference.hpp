@@ -23,6 +23,27 @@ namespace epmodel {
     class PlantEquipmentOperationOutdoorDewpointDifference_Impl;
   }
 
+  /** \brief Selects plant equipment for outdoor-dewpoint difference operation.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-plant-condenser-control.html#plantequipmentoperationoutdoordewpointdifference,PlantEquipmentOperation:OutdoorDewpointDifference}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::PlantEquipmentOperationOutdoorDewpointDifference</code>.
+   *
+   * - <b>Not yet available:</b> <code>referenceTemperatureNode()</code>,
+   *   <code>setReferenceTemperatureNode(...)</code>, and
+   *   <code>resetReferenceTemperatureNode()</code>.
+   * - <b>Not yet available:</b> The load-range and equipment methods inherited
+   *   from <code>PlantEquipmentOperationRangeBasedScheme</code>, including
+   *   <code>addLoadRange(...)</code>, <code>removeLoadRange(...)</code>,
+   *   <code>loadRangeUpperLimits()</code>, <code>equipment(...)</code>, the
+   *   add/replace/remove equipment methods, and <code>clearLoadRanges()</code>.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API PlantEquipmentOperationOutdoorDewpointDifference : public PlantEquipmentOperationScheme
   {
    public:
@@ -36,10 +57,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - API: Mirrors the EnergyPlus PlantEquipmentOperation:OutdoorDewpointDifference object by exposing the same dewpoint-difference range scalars the model counterpart surfaces.
-    // - Field Mapping: maximumUpperLimit() and minimumLowerLimit() read the Dewpoint Temperature Difference Range upper/lower limit values from the last/first extensible groups.
-    // - TODO(parity): Add helpers for the reference temperature node and range-equipment-list relationships once the general extensible-handling scaffolding arrives.
     double maximumUpperLimit() const;
     double minimumLowerLimit() const;
 

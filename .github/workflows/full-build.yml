@@ -109,7 +109,7 @@ jobs:
               *OpenStudio*x86_64.tar.gz
             cpack_generators: "RPM;TGZ"
             max_jobs: 4
-            exclude_regex: "BCLFixture.RemoteBCLMetaSearchTest|OpenStudioCLI|MeasureFixture"
+            exclude_regex: "BCLFixture[.](RemoteBCL_BCLSearchResult|LocalBCL_AuthKey|RemoteBCLTest2?|GetComponentByUID|RemoteBCLMetaSearchTest|RemoteBCL_EncodingURI)|CLITest-test_bundle-(bundle|bundle_git|bundle_native_embedded)|OpenStudioCLI.*|MeasureFixture.*"
           - platform: ubuntu-2204-x64
             pretty: Ubuntu 22.04 x64
             os: ubuntu-22.04
@@ -123,7 +123,7 @@ jobs:
               *OpenStudio*x86_64.tar.gz
             cpack_generators: "DEB;TGZ"
             max_jobs: 3
-            exclude_regex: "ModelFixture.PythonPluginInstance_NotPYFile|OpenStudioCLI|MeasureFixture"
+            exclude_regex: "ModelFixture.PythonPluginInstance_NotPYFile|BCLFixture[.](RemoteBCL_BCLSearchResult|LocalBCL_AuthKey|RemoteBCLTest2?|GetComponentByUID|RemoteBCLMetaSearchTest|RemoteBCL_EncodingURI)|CLITest-test_bundle-(bundle|bundle_git|bundle_native_embedded)|OpenStudioCLI.*|MeasureFixture.*"
           - platform: ubuntu-2404-x64
             pretty: Ubuntu 24.04 x64
             os: ubuntu-24.04
@@ -137,7 +137,7 @@ jobs:
               *OpenStudio*x86_64.tar.gz
             cpack_generators: "DEB;TGZ"
             max_jobs: 4
-            exclude_regex: "OpenStudioCLI|MeasureFixture"
+            exclude_regex: "BCLFixture[.](RemoteBCL_BCLSearchResult|LocalBCL_AuthKey|RemoteBCLTest2?|GetComponentByUID|RemoteBCLMetaSearchTest|RemoteBCL_EncodingURI)|CLITest-test_bundle-(bundle|bundle_git|bundle_native_embedded)|OpenStudioCLI.*|MeasureFixture.*"
           - platform: ubuntu-2204-arm64
             pretty: Ubuntu 22.04 ARM64
             os: ubuntu-22.04-arm
@@ -152,7 +152,7 @@ jobs:
             cpack_generators: "DEB;TGZ"
             max_jobs: 3
             # SqlFileFixture.AnnualTotalCosts needed until E+ itself disables ffp-contract on arm64 GCC
-            exclude_regex: "SqlFileFixture.AnnualTotalCosts|OpenStudioCLI|MeasureFixture"
+            exclude_regex: "SqlFileFixture.AnnualTotalCosts|BCLFixture[.](RemoteBCL_BCLSearchResult|LocalBCL_AuthKey|RemoteBCLTest2?|GetComponentByUID|RemoteBCLMetaSearchTest|RemoteBCL_EncodingURI)|CLITest-test_bundle-(bundle|bundle_git|bundle_native_embedded)|OpenStudioCLI.*|MeasureFixture.*"
           - platform: ubuntu-2404-arm64
             pretty: Ubuntu 24.04 ARM64
             os: ubuntu-24.04-arm
@@ -167,7 +167,7 @@ jobs:
             cpack_generators: "DEB;TGZ"
             max_jobs: 4
             # SqlFileFixture.AnnualTotalCosts needed until E+ itself disables ffp-contract on arm64 GCC
-            exclude_regex: "SqlFileFixture.AnnualTotalCosts|OpenStudioCLI|MeasureFixture"
+            exclude_regex: "SqlFileFixture.AnnualTotalCosts|BCLFixture[.](RemoteBCL_BCLSearchResult|LocalBCL_AuthKey|RemoteBCLTest2?|GetComponentByUID|RemoteBCLMetaSearchTest|RemoteBCL_EncodingURI)|CLITest-test_bundle-(bundle|bundle_git|bundle_native_embedded)|OpenStudioCLI.*|MeasureFixture.*"
     defaults:
       run:
         shell: bash
@@ -339,8 +339,7 @@ jobs:
             -DPython_EXECUTABLE:FILEPATH="$SYSTEM_PYTHON_PATH" \
             -DPYTHON_VERSION:STRING=${{ env.PYTHON_REQUIRED_VERSION }} \
             -DSYSTEM_RUBY_EXECUTABLE="$SYSTEM_RUBY_PATH" \
-            -DENABLE_PCH:BOOL=${{ env.ENABLE_PCH }} \
-            -DCMAKE_JOB_POOL_LINK:STRING=console
+            -DENABLE_PCH:BOOL=${{ env.ENABLE_PCH }}
 
       - name: Build with Ninja
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
@@ -659,7 +658,7 @@ jobs:
             python-arch: x64
             dmg_glob: "*.dmg"
             tar_glob: "*OpenStudio*x86_64.tar.gz"
-            exclude_regex: "OpenStudioCLI|MeasureFixture"
+            exclude_regex: "BCLFixture[.](RemoteBCL_BCLSearchResult|LocalBCL_AuthKey|RemoteBCLTest2?|GetComponentByUID|RemoteBCLMetaSearchTest|RemoteBCL_EncodingURI)|CLITest-test_bundle-(bundle|bundle_git|bundle_native_embedded)|OpenStudioCLI.*|MeasureFixture.*"
             max_jobs: 3
           - macos_dev_target: "13.0"
             platform: macos-arm64
@@ -671,7 +670,7 @@ jobs:
             python-arch: arm64
             dmg_glob: "*.dmg"
             tar_glob: "*OpenStudio*arm64.tar.gz"
-            exclude_regex: "OpenStudioCLI|MeasureFixture"
+            exclude_regex: "BCLFixture[.](RemoteBCL_BCLSearchResult|LocalBCL_AuthKey|RemoteBCLTest2?|GetComponentByUID|RemoteBCLMetaSearchTest|RemoteBCL_EncodingURI)|CLITest-test_bundle-(bundle|bundle_git|bundle_native_embedded)|OpenStudioCLI.*|MeasureFixture.*"
             max_jobs: 3
     env:
       MAX_BUILD_THREADS: ${{ matrix.max_jobs }}
@@ -871,7 +870,6 @@ jobs:
           -DPYTHON_VERSION:STRING=${{ env.PYTHON_REQUIRED_VERSION }} \
           -DPython_ROOT_DIR:PATH="$(dirname $(dirname $SYSTEM_PYTHON_PATH))" \
           -DENABLE_PCH:BOOL=${{ env.ENABLE_PCH }} \
-          -DCMAKE_JOB_POOL_LINK:STRING=console \
           ../${{ env.OPENSTUDIO_SOURCE }}
 
     - name: Build with Ninja
@@ -1229,7 +1227,7 @@ jobs:
             python-arch: x64
             allow_failure: false
             max_jobs: 4
-            exclude_regex: "OpenStudioCLI|MeasureFixture"
+            exclude_regex: "BCLFixture[.](RemoteBCL_BCLSearchResult|LocalBCL_AuthKey|RemoteBCLTest2?|GetComponentByUID|RemoteBCLMetaSearchTest|RemoteBCL_EncodingURI)|CLITest-test_bundle-(bundle|bundle_git|bundle_native_embedded)|OpenStudioCLI.*|MeasureFixture.*"
     defaults:
       run:
         shell: pwsh
@@ -1357,7 +1355,7 @@ jobs:
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         run: |
           $sccacheExe = (Get-Command sccache).Source
-          & $env:ComSpec /c "call conanbuild.bat && cmake -G Ninja -DCMAKE_C_COMPILER_LAUNCHER=`"$sccacheExe`" -DCMAKE_CXX_COMPILER_LAUNCHER=`"$sccacheExe`" -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE:STRING=${{ env.BUILD_TYPE }} -DBUILD_TESTING:BOOL=ON -DCPACK_GENERATOR:STRING=`"IFW;TGZ`" -DBUILD_PYTHON_BINDINGS:BOOL=ON -DBUILD_PYTHON_PIP_PACKAGE:BOOL=OFF -DPython_EXECUTABLE:FILEPATH=`"$env:SYSTEM_PYTHON_PATH`" -DPYTHON_VERSION:STRING=${{ env.PYTHON_REQUIRED_VERSION }} -DSYSTEM_RUBY_EXECUTABLE=`"%SYSTEM_RUBY_PATH%`" -DENABLE_PCH:BOOL=${{ env.ENABLE_PCH }} -DCMAKE_JOB_POOL_LINK:STRING=console `"../${{ env.OPENSTUDIO_SOURCE }}"`"
+          & $env:ComSpec /c "call conanbuild.bat && cmake -G Ninja -DCMAKE_C_COMPILER_LAUNCHER=`"$sccacheExe`" -DCMAKE_CXX_COMPILER_LAUNCHER=`"$sccacheExe`" -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE:STRING=${{ env.BUILD_TYPE }} -DBUILD_TESTING:BOOL=ON -DCPACK_GENERATOR:STRING=`"IFW;TGZ`" -DBUILD_PYTHON_BINDINGS:BOOL=ON -DBUILD_PYTHON_PIP_PACKAGE:BOOL=OFF -DPython_EXECUTABLE:FILEPATH=`"$env:SYSTEM_PYTHON_PATH`" -DPYTHON_VERSION:STRING=${{ env.PYTHON_REQUIRED_VERSION }} -DSYSTEM_RUBY_EXECUTABLE=`"%SYSTEM_RUBY_PATH%`" -DENABLE_PCH:BOOL=${{ env.ENABLE_PCH }} `"../${{ env.OPENSTUDIO_SOURCE }}"`"
 
       - name: Build with Ninja
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
@@ -1730,4 +1728,3 @@ jobs:
             filename=$(basename "$file")
             aws s3 cp "$file" "s3://${AWS_S3_BUCKET}/${S3_PREFIX}/${filename}" --acl public-read
           done
-

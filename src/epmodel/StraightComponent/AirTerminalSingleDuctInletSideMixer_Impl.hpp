@@ -37,6 +37,9 @@ namespace epmodel {
       boost::optional<Node> secondaryAirInletNode() const;
 
       std::vector<std::string> perPersonVentilationRateModeValues() const;
+
+     protected:
+      void doCanonicalize(LoadContext& context) override;
     };
 
   }  // namespace detail

@@ -22,6 +22,18 @@ namespace epmodel {
     class ExternalInterfaceFunctionalMockupUnitImportToVariable_Impl;
   }
 
+  /** \brief Represents <code>ExternalInterface:FunctionalMockupUnitImport:To:Variable</code>.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-externalinterface.html#externalinterfacefunctionalmockupunitimporttovariable,ExternalInterface:FunctionalMockupUnitImport:To:Variable}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::ExternalInterfaceFunctionalMockupUnitImportToVariable</code>.
+   * **Not yet available:** Model typed FMU/component relationships and OpenStudio-only export controls are not exposed unless represented by an EnergyPlus field here.
+   *
+   * \par Known limitations
+   * Typed relationship and extensible-list conveniences not represented by the public declarations are unavailable.
+   */
   class EPMODEL_API ExternalInterfaceFunctionalMockupUnitImportToVariable : public ModelObject
   {
    public:
@@ -34,15 +46,6 @@ namespace epmodel {
     ExternalInterfaceFunctionalMockupUnitImportToVariable& operator=(ExternalInterfaceFunctionalMockupUnitImportToVariable&&) = default;
 
     static IddObjectType iddObjectType();
-
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::ExternalInterfaceFunctionalMockupUnitImportToVariable scalar accessor names/signatures.
-    // - Field Mapping: fMUInstanceName -> ExternalInterface:FunctionalMockupUnitImport:To:Variable, FMU Instance Name.
-    // - Field Mapping: fMUVariableName -> ExternalInterface:FunctionalMockupUnitImport:To:Variable, FMU Variable Name.
-    // - Field Mapping: initialValue -> ExternalInterface:FunctionalMockupUnitImport:To:Variable, Initial Value.
-    // - Field Mapping: fMUFile / setFMUFile are relationship APIs and excluded from scalar scaffold.
-    // - ForwardTranslator evidence: ForwardTranslateExternalInterfaceFunctionalMockupUnitImportToVariable.cpp writes these scalar fields directly.
-    // - TODO(parity): Add relationship APIs incrementally without changing preserved scalar signatures.
     std::string fMUInstanceName() const;
     bool setFMUInstanceName(const std::string& fMUInstanceName);
 

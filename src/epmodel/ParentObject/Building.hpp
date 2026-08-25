@@ -14,6 +14,9 @@
 #include <memory>
 
 namespace openstudio {
+
+class Transformation;
+
 namespace epmodel {
 
   class Model;
@@ -22,6 +25,21 @@ namespace epmodel {
     class Building_Impl;
   }
 
+/** \brief Defines building-level geometry and simulation settings.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-simulation-parameters.html#building,Building}
+ *
+ * \par Important behavior
+ * North-axis, terrain, loads-convergence limits, solar-distribution, maximum warmup days, and geometry fields map directly to the EnergyPlus object.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model class is <code>openstudio::model::Building</code>.
+ * <b>Not yet available:</b> Model's space/thermal-zone collections, space-load and standards relationships, building-level load helpers, and geometry convenience methods are not exposed by this wrapper.
+ *
+ * \par Known limitations
+ * Relationships represented by other EnergyPlus objects, such as space loads and sizing, are not owned by this wrapper.
+ */
   class EPMODEL_API Building : public ModelObject
   {
    public:
@@ -35,16 +53,13 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::Building scalar API naming/signatures for this model-counterpart class.
-    // - Field Mapping: northAxis maps directly to EnergyPlus Building/North Axis.
-    // - Field Mapping: Terrain and warmup/convergence/solar-distribution fields are represented by model::Site and
-    //   model::SimulationControl in ForwardTranslator flow and intentionally excluded from this class's scalar API.
-    // - TODO(parity): Add cross-object parity wiring for Site/SimulationControl-derived Building fields after scalar saturation.
     double northAxis() const;
     bool setNorthAxis(double northAxis);
     bool isNorthAxisDefaulted() const;
     void resetNorthAxis();
+
+    /// Returns the Transformation from the Building coordinate system to world coordinates.
+    Transformation transformation() const;
 
    protected:
     explicit Building(const Model& model);

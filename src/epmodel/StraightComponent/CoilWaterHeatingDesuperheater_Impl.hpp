@@ -27,6 +27,10 @@ namespace epmodel {
 
       Schedule availabilitySchedule() const;
       bool setAvailabilitySchedule(Schedule& schedule);
+      void resetAvailabilitySchedule();
+
+      Schedule setpointTemperatureSchedule() const;
+      bool setSetpointTemperatureSchedule(Schedule& schedule);
 
       boost::optional<CurveBiquadratic> heatReclaimEfficiencyFunctionofTemperatureCurve() const;
       bool setHeatReclaimEfficiencyFunctionofTemperatureCurve(const CurveBiquadratic& curveBiquadratic);
@@ -78,6 +82,8 @@ namespace epmodel {
       bool isOffCycleParasiticElectricLoadDefaulted() const;
       bool setOffCycleParasiticElectricLoad(double offCycleParasiticElectricLoad);
       void resetOffCycleParasiticElectricLoad();
+
+      void doCanonicalize(LoadContext& context) override;
     };
 
   }  // namespace detail

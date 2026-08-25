@@ -23,6 +23,20 @@ namespace epmodel {
     class EvaporativeCoolerDirectResearchSpecial_Impl;
   }
 
+/** \brief A direct evaporative cooler using the ResearchSpecial performance model.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-evaporative-coolers.html#evaporativecoolerdirectresearchspecial,EvaporativeCooler:Direct:ResearchSpecial}
+ *
+ * \par Important behavior
+ * Outlet-sensor and node relationships are maintained when placed on a supply branch or outdoor-air system. The constructor seeds the required blowdown concentration ratio to 2.0 and uses the always-on discrete schedule.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model type is <code>openstudio::model::EvaporativeCoolerDirectResearchSpecial</code>.
+ *
+ * \par Known limitations
+ * The canonical schedule-taking constructor and SQL-backed autosized result queries are not available.
+ */
   class EPMODEL_API EvaporativeCoolerDirectResearchSpecial : public StraightComponent
   {
    public:
@@ -36,21 +50,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - Status: Parity with documented deltas. The canonical direct-research evaporative-cooler wrapper surface and placement behavior are present, with
-    //   only epmodel-wide autosized-value lookup still deferred.
-    // - Canonical Counterpart: openstudio::model::EvaporativeCoolerDirectResearchSpecial.
-    // - Implemented Parity: Availability schedule, sensor-node/curve relationships, scalar field accessors, and `addToNode(...)` now follow the
-    //   canonical direct-research evaporative-cooler behavior, including outlet-sensor propagation on supply-side and OA-system placement.
-    // - Documented Delta: The constructor seeds `blowdownConcentrationRatio()` to the EnergyPlus minimum of `2.0` because the persisted schema does not
-    //   accept the canonical model-side `0.0` placeholder; epmodel still exposes only the single-argument constructor and therefore defaults the required
-    //   availability schedule to `Model::alwaysOnDiscreteSchedule()` instead of accepting the canonical `(Model, Schedule&)` constructor; and
-    //   `autosizedRecirculatingWaterPumpPowerConsumption()` / `autosizedPrimaryAirDesignFlowRate()` still return none because epmodel does not yet resolve
-    //   autosized sizing results from SQL output.
-    // - Field/Storage Mapping: These accessors map directly to EnergyPlus `EvaporativeCooler:Direct:ResearchSpecial` fields and node/object-list targets.
-    // - Evidence: `src/model/EvaporativeCoolerDirectResearchSpecial.hpp`, `src/model/EvaporativeCoolerDirectResearchSpecial.cpp`, and
-    //   `src/energyplus/ForwardTranslator/ForwardTranslateEvaporativeCoolerDirectResearchSpecial.cpp`.
-    // - Remaining Parity Work: Wire these autosized accessors to epmodel sizing-result lookup once that shared infrastructure exists.
     Schedule availabilitySchedule() const;
     Schedule availableSchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);

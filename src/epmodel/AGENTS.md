@@ -1,28 +1,30 @@
-# epmodel Agent Notes
+# EPModel development rules
 
-These notes are specific to work under `src/epmodel/`.
+These rules apply to work under `src/epmodel/`.
 
-## Read First
+## Start here
 
 When working on epmodel parity or topology behavior, read these first:
 
 - `src/epmodel/README.md`
-- `doc/idd-schema-alignment/os_hvac_concepts.md`
+- `src/epmodel/AirSystemTopology.md` for air-system topology work
+- `src/epmodel/PlantSystemTopology.md` for plant-system topology work
+- `src/epmodel/HVACComponentRoadmap.md` for horizontal HVAC wrapper priorities
 
-Also keep these references available when needed:
+Use these references when needed:
 
-- `doc/idd-schema-alignment/InputOutputReference.pdf` for EnergyPlus field
-  semantics
-- `resources/energyplus/` for authoritative EnergyPlus schema shape, field
+- `resources/energyplus/` for EnergyPlus schema shape, field
   order, extensibles, and object-list relationships
+- the Input Output Reference distributed with the configured EnergyPlus
+  version for field semantics
 
-Status, queue order, and next-task planning belong in campaign state or
-dedicated campaign notes, not in README documents.
+## Implementation
 
-## Working Style Preferences
-
-Apply these preferences unless the user asks otherwise.
-
+- Treat canonical form as the normal API contract. Construction and load
+  canonicalization establish the desired model invariants; ordinary getters
+  and mutators then assume those invariants instead of rediscovering or
+  conditionally repairing them throughout the implementation. Keep validation
+  at genuine input, ownership, and transaction boundaries.
 - Preserve public `openstudio::model` API shape for parity work. Do not add
   new public APIs unless divergence is intentional and explicitly documented.
 - For EnergyPlus-only connective-tissue types with no canonical
@@ -41,7 +43,7 @@ Apply these preferences unless the user asks otherwise.
   logic. Inline the code unless a helper clearly improves readability.
 - Reduce layers and duplicate naming. Do not introduce separate impl-only
   names for the same conceptual object when the public name already works.
-- Keep public wrapper classes thin. For parity-oriented types, put
+- Keep public wrapper classes thin. For classes that follow the Model API, put
   substantive behavior, relationship mutation, and helper logic in `*_Impl`.
 - In public wrapper headers, group accessors by field or concept. Prefer
   getter / setter / reset blocks for one field at a time over separate
@@ -66,20 +68,56 @@ Apply these preferences unless the user asks otherwise.
 - Do not reach into raw extensible-group mechanics from unrelated code. If a
   caller needs structured extensible mutation, add a private impl-level API on
   the owning type and keep storage manipulation there.
-- Add short intent comments where code depends on topology assumptions,
-  canonicalization contracts, or parity-driven invariants.
+- Add short comments where code depends on topology assumptions, repair rules,
+  or API invariants.
 - Prefer object-level identity comparisons over raw handle comparisons when
   the wrappers already express the relationship clearly.
 - In epmodel tests, prefer public wrapper APIs and typed `Model` queries.
   Avoid low-level `Workspace`/`IdfObject` helpers unless the test is
   explicitly about that layer.
+- Test through public APIs by default. A test may use `*_Impl` or low-level
+  `Workspace`/`IdfObject` operations only to construct malformed, unresolved,
+  or otherwise persisted state that validated public setters cannot represent.
+  A narrowly scoped unit test for an internal-only type may exercise its
+  `*_Impl` behavior when no public operation exists; do not use that exception
+  to test behavior already exposed by a public wrapper.
+- Deterministic failure injection must use scoped test support and then invoke
+  the ordinary public operation. Do not add test-only arguments, result
+  signals, callbacks, flags, or overloads to production wrapper or `*_Impl`
+  methods. Assert externally observable behavior, include a public-API retry,
+  and do not test plan internals or implementation sequencing.
+- Explain genuine production rejections with a concrete log message at the
+  decision point. Failure-injection selectors are test control, not diagnostics
+  and not part of an operation's result.
 - In epmodel tests, construct the concrete wrapper under test rather than
   using `ModelObject::create(...)` as a shortcut.
 
-## Canonicalization Policy
+## Topology mutation plans
 
-- Canonicalization is the central repair and assurance phase. It should run at
-  model construction and load boundaries, not as an ad hoc runtime crutch.
+- Use a `*Plan` for a multi-object topology change with a distinct prepare and
+  commit boundary. Plans are one-shot and non-copyable, and they track an
+  explicit prepared/committed state.
+- A read-only preflight plan proves every owner, endpoint, and removal before
+  mutation. Its `commit()` performs only the already-proven invariant writes
+  and does not return a recoverable failure.
+- A provisional-mutation plan may create or rewire state while preparing. Its
+  destructor restores the exact original representation and removes only
+  objects that the plan created. This includes both managed object targets and
+  unresolved raw backing text when either representation is possible.
+- Enroll an attempted mutation in the plan before calling a setter. A setter
+  may partially write and still report failure.
+- Finish all fallible preparation, including preparation of nested plans,
+  before any plan crosses its commit boundary. Commit nested plans in an
+  explicit dependency order, then make the outer `commit()` a state-only or
+  otherwise no-fail operation.
+- Reserve `Guard` for scoped temporary restoration and `Snapshot` for captured
+  state that has no prepare/commit lifecycle. Do not call either one a plan
+  merely because it participates in rollback.
+
+## Canonicalization
+
+- Canonicalization repairs imported models. It should run during construction
+  and loading, not as an ad hoc runtime fallback.
 - Canonicalizers must converge the model to a valid epmodel state.
 - Prefer repair over rejection when the intended structure can be recovered
   reasonably from persisted EnergyPlus-backed storage.
@@ -87,15 +125,14 @@ Apply these preferences unless the user asks otherwise.
   the minimum invalid content necessary to restore validity.
 - Do not leave partially repaired or internally contradictory topology behind.
 - Outside canonicalizers, normal API methods should not invoke
-  canonicalization. They should assume canonical state and rely on established
-  invariants.
-- When cross-type ordering is not guaranteed, refactor canonicalization scope
-  upward so ordering is guaranteed there instead of adding runtime fallback
-  paths.
+  canonicalization or repeat canonical-state checks defensively. They should
+  assume canonical state and rely on established invariants.
+- When one type must be repaired before another, put that ordering in a common
+  owner such as the Model canonicalizer. Do not add runtime fallback paths.
 - After canonicalization, prefer assertions and direct logic over fallback
   branches for guaranteed states.
-- Canonicalizers must log meaningful repairs, drops, normalizations, and
-  failed repair attempts through `addLoadInfo`, `addLoadWarning`, and
+- Canonicalizers must log repairs, removals, normalization, and failed repair
+  attempts through `addLoadInfo`, `addLoadWarning`, and
   `addLoadError`.
 - Keep canonicalization logic close to the owning type so repair decisions
   remain local, explicit, and reviewable.
@@ -115,44 +152,99 @@ Apply these preferences unless the user asks otherwise.
   node-field helpers so resolved nodes are linked back to the owning field and
   later renames stay tracked.
 - When canonical `openstudio::model` exposes OS-only companion objects that do
-  not exist as standalone EnergyPlus objects, epmodel may model them additively
-  as transient child wrappers backed by persisted parent storage. Keep that
+  not exist as standalone EnergyPlus objects, epmodel may represent them as
+  transient child wrappers backed by persisted parent storage. Keep that
   write-through mapping explicit, document it in the type notes, and avoid
   inventing fake persisted children.
 
-## Schema Alignment Notes Convention
+## Public class documentation
 
-Type-local parity status belongs in `Schema Alignment Notes` blocks in
-`src/epmodel/**/*.hpp`.
+Every public class or struct in `src/epmodel/**/*.hpp` must have a type-level
+Doxygen comment immediately before its declaration. Write for an SDK user
+deciding whether and how to use the type. Do not publish internal maturity
+labels such as "partial parity", "canonical counterpart", or "implemented
+parity".
 
-Required bullets:
+Use this structure:
 
-- `Status`
-- `Canonical Counterpart`
-- `Implemented Parity`
+```cpp
+/** \brief What the class represents.
+ *
+ * \par EnergyPlus object
+ * <code>Exact:IDD:Object:Name</code>
+ *
+ * \par Important behavior
+ * Optional. Document only validation, ownership, side effects, automatic
+ * maintenance, persistence, or lifecycle behavior that is not evident from
+ * the public declarations.
+ *
+ * \par OpenStudio Model API
+ * Identify the corresponding `openstudio::model` class and list only methods
+ * that are unavailable, renamed, added, or observably different in EPModel.
+ *
+ * \par Known limitations
+ * State behavioral or workflow restrictions that are not already explained by
+ * the method comparison.
+ */
+```
 
-Optional bullets when useful:
+`EnergyPlus object`, `OpenStudio Model API`, and `Known limitations` are
+required. `Important behavior` is optional and must not restate constructors,
+getters, setters, or the EnergyPlus-backed architecture explained by the
+EPModel overview.
 
-- `Documented Delta`
-- `Field/Storage Mapping`
-- `Evidence`
+For `EnergyPlus object`:
 
-`Remaining Parity Work` is required unless the type is truly at parity with
-only documented deltas remaining.
+- Use the exact IDD spelling, for example
+  `<code>Coil:Heating:Electric</code>`. Do not repeat the corresponding
+  `IddObjectType` enum.
+- For an abstract class, say that it has no single EnergyPlus object and name
+  the concrete family it represents.
+- For a composite wrapper, identify the primary object and the companion object
+  types needed to represent it.
+- For a transient or projected wrapper, say that there is no standalone
+  EnergyPlus object, identify the parent object and exact fields or extensible
+  rows being exposed, and explain attach/detach persistence when relevant.
 
-Status vocabulary:
+For `OpenStudio Model API`:
 
-- `Scaffolded`
-- `Scalar Parity`
-- `Partial Parity`
-- `Near Parity`
-- `Parity with documented deltas`
+- Use plain language such as "The corresponding OpenStudio Model class is...".
+- If OpenStudio Model has no public wrapper, say so explicitly. Describe the
+  wrapper as new to the EPModel API, not as a new EnergyPlus type.
+- If the class was renamed, give both fully qualified names. State a reason only
+  when it is established by code, tests, or project history.
+- Group differences under bold `Not yet available`, `Renamed`, `Changed`, or
+  `Added` labels as applicable.
+- Name exact methods when the list is short. Summarize a method family when a
+  full overload list would obscure the useful information.
+- Write out replacement method names. Do not use shorthand such as "the 2017
+  methods".
+- Explain domain-specific qualifiers encoded in method names when their meaning
+  is not evident to an SDK user, such as the rating-standard editions denoted
+  by `2017` and `2023`.
+- Do not list unchanged methods. Say "No known public API differences" only
+  after a deliberate header and behavior comparison. While an audit is
+  incomplete, say "API comparison not yet completed" instead.
 
-## Review Guidlines
+`Known limitations` is for runtime, topology, ownership, binding, or workflow
+restrictions, not a duplicate list of missing methods. After a deliberate
+review, use "No known EPModel-specific limitations" when appropriate so the
+reader can distinguish a reviewed class from an undocumented one.
 
-For any non trivial code changes use dedicated sub agents to review for *at minimum* the following items.
+Verify every public claim against the EPModel and Model headers, implementations,
+focused tests, translators, and the configured EnergyPlus IDD as applicable.
+Commented-out declarations are not public Model API and must not be reported as
+missing EPModel methods.
 
-- Adherence to the agent notes in this file
-- Adherence to the epmodel/README.md
-- Any required updates to epmodel/README.md to maintain consistency between code and README.
-- Consistency with prior art in similar data types and bodies of code.
+## Build
+
+- Use `-j24` for local compilation and build commands during EPModel work;
+  otherwise follow the repository's normal build invocation.
+
+## Review
+
+Have separate agents review nontrivial code changes. At minimum, check:
+
+- these rules and `epmodel/README.md`;
+- whether the README needs to change with the code; and
+- similar EPModel classes and tests.

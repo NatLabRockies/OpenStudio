@@ -6,12 +6,15 @@
 #include "StraightComponent/BoilerHotWater.hpp"
 #include "StraightComponent/BoilerHotWater_Impl.hpp"
 
+#include "Curve/Curve.hpp"
+#include "Curve/Curve_Impl.hpp"
 #include "Loop/PlantLoop.hpp"
 #include "Loop/PlantLoop_Impl.hpp"
 #include "Model.hpp"
 #include "Node.hpp"
 
 #include <utilities/core/Assert.hpp>
+#include <utilities/core/Logger.hpp>
 #include <utilities/core/StringHelpers.hpp>
 #include <utilities/idd/Boiler_HotWater_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
@@ -107,6 +110,18 @@ namespace epmodel {
 
   void BoilerHotWater::resetEfficiencyCurveTemperatureEvaluationVariable() {
     getImpl<detail::BoilerHotWater_Impl>()->resetEfficiencyCurveTemperatureEvaluationVariable();
+  }
+
+  boost::optional<Curve> BoilerHotWater::normalizedBoilerEfficiencyCurve() const {
+    return getImpl<detail::BoilerHotWater_Impl>()->normalizedBoilerEfficiencyCurve();
+  }
+
+  bool BoilerHotWater::setNormalizedBoilerEfficiencyCurve(const Curve& normalizedBoilerEfficiencyCurve) {
+    return getImpl<detail::BoilerHotWater_Impl>()->setNormalizedBoilerEfficiencyCurve(normalizedBoilerEfficiencyCurve);
+  }
+
+  void BoilerHotWater::resetNormalizedBoilerEfficiencyCurve() {
+    getImpl<detail::BoilerHotWater_Impl>()->resetNormalizedBoilerEfficiencyCurve();
   }
 
   boost::optional<double> BoilerHotWater::designWaterFlowRate() const {
@@ -329,6 +344,33 @@ namespace epmodel {
 
     void BoilerHotWater_Impl::resetEfficiencyCurveTemperatureEvaluationVariable() {
       OS_ASSERT(setString(openstudio::Boiler_HotWaterFields::EfficiencyCurveTemperatureEvaluationVariable, ""));
+    }
+
+    boost::optional<Curve> BoilerHotWater_Impl::normalizedBoilerEfficiencyCurve() const {
+      return getObject<ModelObject>().getModelObjectTarget<Curve>(openstudio::Boiler_HotWaterFields::NormalizedBoilerEfficiencyCurveName);
+    }
+
+    bool BoilerHotWater_Impl::setNormalizedBoilerEfficiencyCurve(const Curve& normalizedBoilerEfficiencyCurve) {
+      if (normalizedBoilerEfficiencyCurve.model() != model()) {
+        LOG_FREE(Warn, "openstudio.epmodel.BoilerHotWater",
+                 "Cannot set the normalized boiler efficiency curve because the curve belongs to a different model.");
+        return false;
+      }
+
+      const auto field = openstudio::Boiler_HotWaterFields::NormalizedBoilerEfficiencyCurveName;
+      if (!model().canBeTarget(normalizedBoilerEfficiencyCurve.handle(), iddObject().objectLists(field))) {
+        LOG_FREE(Warn, "openstudio.epmodel.BoilerHotWater",
+                 "Cannot set the normalized boiler efficiency curve because curve type '"
+                   << normalizedBoilerEfficiencyCurve.iddObject().type().valueName()
+                   << "' is not accepted by the Boiler:HotWater normalized boiler efficiency curve field.");
+        return false;
+      }
+
+      return setPointer(field, normalizedBoilerEfficiencyCurve.handle(), false);
+    }
+
+    void BoilerHotWater_Impl::resetNormalizedBoilerEfficiencyCurve() {
+      OS_ASSERT(setPointer(openstudio::Boiler_HotWaterFields::NormalizedBoilerEfficiencyCurveName, Handle(), false));
     }
 
     boost::optional<double> BoilerHotWater_Impl::designWaterFlowRate() const {

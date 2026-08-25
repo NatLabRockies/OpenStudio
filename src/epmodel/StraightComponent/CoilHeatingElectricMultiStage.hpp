@@ -22,6 +22,21 @@ namespace epmodel {
     class CoilHeatingElectricMultiStage_Impl;
   }
 
+  /** \brief Represents a multistage electric heating coil.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-heating-and-cooling-coils.html#coilheatingelectricmultistage,Coil:Heating:Electric:MultiStage}.
+   *
+   * \par Important behavior
+   * The persisted scalar, schedule, and currently supported stage-control relationships use the EnergyPlus coil topology.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::CoilHeatingElectricMultiStage</code>.
+   * Not yet available: stage-data ownership and extensible stage-list APIs.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations beyond the listed API differences.
+   */
   class EPMODEL_API CoilHeatingElectricMultiStage : public StraightComponent
   {
    public:
@@ -37,16 +52,6 @@ namespace epmodel {
 
     bool addToNode(Node& node);
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. The bounded availability-schedule surface is present, but the canonical stage-data family remains model-owned.
-    // - Canonical Counterpart: openstudio::model::CoilHeatingElectricMultiStage.
-    // - Implemented Parity: `availabilitySchedule` preserves the bounded canonical relationship slice for this campaign; the current implementation keeps
-    //   `numberOfStages` as a scalar field mirror because epmodel still lacks the canonical stage-data family and owning extensible-list behavior.
-    // - Documented Delta: Stage-data ownership and extensible stage-list APIs from canonical `openstudio::model::CoilHeatingElectricMultiStage` are not
-    //   exposed yet, and standalone `addToNode(...)` remains intentionally rejected to match the canonical wrapper.
-    // - Field/Storage Mapping: The preserved relationship and scalar APIs map directly to EnergyPlus `Coil:Heating:Electric:MultiStage` fields.
-    // - Evidence: `src/model/CoilHeatingElectricMultiStage.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateCoilHeatingElectricMultiStage.cpp`, and `src/epmodel/test/CoilHeatingElectricMultiStage_GTest.cpp`.
-    // - Remaining Parity Work: Add the canonical stage-data family and owning extensible-list behavior without changing the preserved scalar signatures.
     Schedule availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);
 

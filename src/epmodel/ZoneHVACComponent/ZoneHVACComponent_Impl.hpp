@@ -42,7 +42,7 @@ namespace epmodel {
 
       bool addToNode(Node& node) override;
       boost::optional<AirLoopHVAC> airLoopHVAC() const override;
-      bool removeFromAirLoopHVAC();
+      virtual bool removeFromAirLoopHVAC();
 
       boost::optional<ModelObject> airInletModelObject() const;
       boost::optional<ModelObject> airOutletModelObject() const;
@@ -50,6 +50,43 @@ namespace epmodel {
       bool setReturnPlenum(const ThermalZone& plenumZone);
       void removeReturnPlenum();
       boost::optional<AirLoopHVACReturnPlenum> returnPlenum() const;
+
+     protected:
+      enum class OwnedOutdoorAirMixerRelationshipState
+      {
+        Blank,
+        Exact,
+        Malformed,
+      };
+
+      struct OwnedOutdoorAirMixerRelationshipInspection
+      {
+        OwnedOutdoorAirMixerRelationshipState state = OwnedOutdoorAirMixerRelationshipState::Blank;
+        boost::optional<Handle> mixerHandle;
+        bool objectTypeHasEvidence = false;
+        bool objectTypeIsExact = false;
+      };
+
+      // Observational counterpart to reconciliation. It classifies only the
+      // persisted owner-to-mixer relationship and never resolves raw names or
+      // changes pointers. Family canonicalizers can then decide whether their
+      // exact local topology is safe to repair.
+      OwnedOutdoorAirMixerRelationshipInspection inspectOwnedOutdoorAirMixer(unsigned objectTypeField, unsigned objectNameField) const;
+
+      // Load canonicalization must not discover AirLoop ownership through Node::airLoopHVAC():
+      // that inverse traverses every loop and can reach a sibling whose node lists have not yet
+      // been canonicalized. Managed Branch, inlet-side-mixer, and outdoor-air equipment-list
+      // references are the observational ownership evidence needed by contained-air-path repair;
+      // normal public API paths can continue using the full inverse after the model is canonical.
+      bool hasManagedAirLoopPathReference() const;
+
+      // Some EnergyPlus zone equipment owns an OutdoorAir:Mixer that has no
+      // separate public Model object. Keep the persisted companion, its four
+      // nodes, and the outdoor-air node declaration aligned with the owner's
+      // local mixed-air path. Passing no mixed/return nodes removes only the
+      // companion owned by this object.
+      bool reconcileOwnedOutdoorAirMixer(unsigned objectTypeField, unsigned objectNameField, const boost::optional<Node>& mixedAirNode,
+                                         const boost::optional<Node>& returnAirNode, const std::string& baseName);
     };
 
   }  // namespace detail

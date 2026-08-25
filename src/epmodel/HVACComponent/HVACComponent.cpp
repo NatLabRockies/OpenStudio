@@ -14,6 +14,8 @@
 #include "Loop/Loop_Impl.hpp"
 #include "Loop/PlantLoop.hpp"
 #include "Loop/PlantLoop_Impl.hpp"
+#include "ModelObject/PlantEquipmentList.hpp"
+#include "ModelObject/PlantEquipmentList_Impl.hpp"
 #include "Node.hpp"
 #include "Splitter/Splitter.hpp"
 #include "StraightComponent/StraightComponent.hpp"
@@ -41,6 +43,10 @@ namespace epmodel {
 
   boost::optional<PlantLoop> HVACComponent::plantLoop() const {
     return getImpl<detail::HVACComponent_Impl>()->plantLoop();
+  }
+
+  boost::optional<AirLoopHVACOutdoorAirSystem> HVACComponent::airLoopHVACOutdoorAirSystem() const {
+    return getImpl<detail::HVACComponent_Impl>()->airLoopHVACOutdoorAirSystem();
   }
 
   boost::optional<HVACComponent> HVACComponent::containingHVACComponent() const {
@@ -139,6 +145,16 @@ namespace epmodel {
       return boost::none;
     }
 
+    boost::optional<AirLoopHVACOutdoorAirSystem> HVACComponent_Impl::airLoopHVACOutdoorAirSystem() const {
+      const auto thisObject = getObject<openstudio::epmodel::ModelObject>();
+      for (const auto& oaSystem : model().getConcreteModelObjects<openstudio::epmodel::AirLoopHVACOutdoorAirSystem>()) {
+        if (oaSystem.component(thisObject.handle())) {
+          return oaSystem;
+        }
+      }
+      return boost::none;
+    }
+
     boost::optional<ZoneHVACComponent> HVACComponent_Impl::containingZoneHVACComponent() const {
       const auto thisObject = getObject<ModelObject>();
       for (const auto& zoneEquipment : model().getModelObjects<openstudio::epmodel::ZoneHVACComponent>()) {
@@ -183,6 +199,19 @@ namespace epmodel {
       if (!isRemovable()) {
         return {};
       }
+
+      // ModelObjectList automatically drops a removed Model HVAC component.
+      // EnergyPlus persists the equivalent relationship as an extensible row;
+      // erase that whole row before removing the target so it cannot degrade
+      // into an invalid object-type/blank-name pair.
+      const auto component = getObject<openstudio::epmodel::HVACComponent>();
+      const auto equipmentListSources = component.getSources(openstudio::epmodel::PlantEquipmentList::iddObjectType());
+      for (const auto& source : equipmentListSources) {
+        if (auto equipmentList = source.optionalCast<openstudio::epmodel::PlantEquipmentList>()) {
+          OS_ASSERT(equipmentList->removeEquipment(component));
+        }
+      }
+
       disconnect();
       return ParentObject_Impl::remove();
     }

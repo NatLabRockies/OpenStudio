@@ -6,20 +6,38 @@
 #ifndef EPMODEL_AIRCONDITIONERVARIABLEREFRIGERANTFLOWFLUIDTEMPERATURECONTROL_IMPL_HPP
 #define EPMODEL_AIRCONDITIONERVARIABLEREFRIGERANTFLOWFLUIDTEMPERATURECONTROL_IMPL_HPP
 
-#include "ModelObject_Impl.hpp"
+#include "HVACComponent_Impl.hpp"
 
 #include <vector>
 
 namespace openstudio {
 namespace epmodel {
 
+  class ModelObject;
+  class Curve;
+  class Schedule;
+  class AirConditionerVariableRefrigerantFlowFluidTemperatureControl;
+  class ZoneHVACTerminalUnitVariableRefrigerantFlow;
+
   namespace detail {
 
-    class EPMODEL_API AirConditionerVariableRefrigerantFlowFluidTemperatureControl_Impl : public ModelObject_Impl
+    class EPMODEL_API AirConditionerVariableRefrigerantFlowFluidTemperatureControl_Impl : public HVACComponent_Impl
     {
      public:
-      using ModelObject_Impl::ModelObject_Impl;
+      using HVACComponent_Impl::HVACComponent_Impl;
       virtual ~AirConditionerVariableRefrigerantFlowFluidTemperatureControl_Impl() override = default;
+
+      std::vector<IdfObject> remove() override;
+
+      Schedule availabilitySchedule() const;
+      bool setAvailabilitySchedule(Schedule& schedule);
+
+      bool addTerminal(ZoneHVACTerminalUnitVariableRefrigerantFlow& terminal);
+      void removeTerminal(ZoneHVACTerminalUnitVariableRefrigerantFlow& terminal);
+      void removeAllTerminals();
+      std::vector<ZoneHVACTerminalUnitVariableRefrigerantFlow> terminals() const;
+
+      boost::optional<ModelObject> ensureTerminalUnitList();
 
       std::string refrigerantType() const;
       bool setRefrigerantType(const std::string& refrigerantType);
@@ -77,6 +95,12 @@ namespace epmodel {
       double outdoorUnitFanFlowRatePerUnitofRatedEvaporativeCapacity() const;
       bool setOutdoorUnitFanFlowRatePerUnitofRatedEvaporativeCapacity(double outdoorUnitFanFlowRatePerUnitofRatedEvaporativeCapacity);
 
+      Curve outdoorUnitEvaporatingTemperatureFunctionofSuperheatingCurve() const;
+      bool setOutdoorUnitEvaporatingTemperatureFunctionofSuperheatingCurve(const Curve& curve);
+
+      Curve outdoorUnitCondensingTemperatureFunctionofSubcoolingCurve() const;
+      bool setOutdoorUnitCondensingTemperatureFunctionofSubcoolingCurve(const Curve& curve);
+
       double diameterofMainPipeConnectingOutdoorUnittotheFirstBranchJoint() const;
       bool setDiameterofMainPipeConnectingOutdoorUnittotheFirstBranchJoint(double diameterofMainPipeConnectingOutdoorUnittotheFirstBranchJoint);
 
@@ -114,6 +138,10 @@ namespace epmodel {
       std::string defrostControl() const;
       bool setDefrostControl(const std::string& defrostControl);
 
+      boost::optional<Curve> defrostEnergyInputRatioModifierFunctionofTemperatureCurve() const;
+      bool setDefrostEnergyInputRatioModifierFunctionofTemperatureCurve(const Curve& curve);
+      void resetDefrostEnergyInputRatioModifierFunctionofTemperatureCurve();
+
       double defrostTimePeriodFraction() const;
       bool setDefrostTimePeriodFraction(double defrostTimePeriodFraction);
 
@@ -127,6 +155,12 @@ namespace epmodel {
 
       double compressorMaximumDeltaPressure() const;
       bool setCompressorMaximumDeltaPressure(double compressorMaximumDeltaPressure);
+
+     private:
+      friend class openstudio::epmodel::AirConditionerVariableRefrigerantFlowFluidTemperatureControl;
+
+      void createDefaultPerformance();
+      boost::optional<ModelObject> terminalUnitList() const;
 
       std::vector<std::string> refrigerantTypeValues() const;
       std::vector<std::string> refrigerantTemperatureControlAlgorithmforIndoorUnitValues() const;

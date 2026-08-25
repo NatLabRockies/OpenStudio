@@ -7,6 +7,8 @@
 #include "SetpointManager/SetpointManagerOutdoorAirReset_Impl.hpp"
 
 #include "Model.hpp"
+#include "Schedule/Schedule.hpp"
+#include "Schedule/Schedule_Impl.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/idd/IddEnums.hxx>
@@ -91,6 +93,18 @@ namespace epmodel {
     const bool result = getImpl<detail::SetpointManagerOutdoorAirReset_Impl>()->setOutdoorHighTemperature(outdoorHighTemperature);
     OS_ASSERT(result);
     return result;
+  }
+
+  boost::optional<Schedule> SetpointManagerOutdoorAirReset::schedule() const {
+    return getImpl<detail::SetpointManagerOutdoorAirReset_Impl>()->schedule();
+  }
+
+  bool SetpointManagerOutdoorAirReset::setSchedule(Schedule& schedule) {
+    return getImpl<detail::SetpointManagerOutdoorAirReset_Impl>()->setSchedule(schedule);
+  }
+
+  void SetpointManagerOutdoorAirReset::resetSchedule() {
+    getImpl<detail::SetpointManagerOutdoorAirReset_Impl>()->resetSchedule();
   }
 
   boost::optional<double> SetpointManagerOutdoorAirReset::setpointatOutdoorLowTemperature2() const {
@@ -231,6 +245,21 @@ namespace epmodel {
       return result;
     }
 
+    boost::optional<Schedule> SetpointManagerOutdoorAirReset_Impl::schedule() const {
+      return getObject<ModelObject>().getModelObjectTarget<Schedule>(openstudio::SetpointManager_OutdoorAirResetFields::ScheduleName);
+    }
+
+    bool SetpointManagerOutdoorAirReset_Impl::setSchedule(Schedule& schedule) {
+      return ModelObject_Impl::setSchedule(openstudio::SetpointManager_OutdoorAirResetFields::ScheduleName, "SetpointManagerOutdoorAirReset",
+                                           "Setpoint Manager Outdoor Air Reset", schedule);
+    }
+
+    void SetpointManagerOutdoorAirReset_Impl::resetSchedule() {
+      constexpr auto field = openstudio::SetpointManager_OutdoorAirResetFields::ScheduleName;
+      OS_ASSERT(setPointer(field, Handle(), false));
+      OS_ASSERT(openstudio::detail::IdfObject_Impl::setString(field, "", false));
+    }
+
     bool SetpointManagerOutdoorAirReset_Impl::setSetpointatOutdoorLowTemperature2(boost::optional<double> setpointatOutdoorLowTemperature2) {
       bool result = false;
       if (setpointatOutdoorLowTemperature2) {
@@ -363,6 +392,32 @@ namespace epmodel {
         OS_ASSERT(setDouble(openstudio::SetpointManager_OutdoorAirResetFields::OutdoorHighTemperature, 24.0));
         detail::addLoadInfo(context, "Set default Outdoor High Temperature to 24 for SetpointManager:OutdoorAirReset '"
                                        + getObject<ModelObject>().nameString() + "'.");
+      }
+
+      constexpr auto scheduleField = openstudio::SetpointManager_OutdoorAirResetFields::ScheduleName;
+      const auto rawScheduleName = openstudio::detail::IdfObject_Impl::getString(scheduleField, false, true);
+      if (rawScheduleName && !rawScheduleName->empty()) {
+        boost::optional<Schedule> uniqueSchedule;
+        bool ambiguous = false;
+        for (const auto& candidate : model().getObjectsByName(*rawScheduleName, true)) {
+          if (auto schedule = candidate.optionalCast<Schedule>()) {
+            if (uniqueSchedule) {
+              ambiguous = true;
+              break;
+            }
+            uniqueSchedule = *schedule;
+          }
+        }
+
+        const auto owner = getObject<ModelObject>();
+        if (uniqueSchedule && !ambiguous) {
+          OS_ASSERT(setPointer(scheduleField, uniqueSchedule->handle(), false));
+          detail::addLoadInfo(context, "Reattached schedule '" + uniqueSchedule->nameString() + "' to SetpointManager:OutdoorAirReset '"
+                                         + owner.nameString() + "'.");
+        } else {
+          detail::addLoadWarning(context, "Preserved unresolved or ambiguous schedule reference '" + *rawScheduleName
+                                            + "' on SetpointManager:OutdoorAirReset '" + owner.nameString() + "'.");
+        }
       }
     }
 

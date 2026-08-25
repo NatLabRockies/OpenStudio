@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<measure>
+  <schema_version>3.1</schema_version>
+  <name>ep_model_add_multizone_vav_system</name>
+  <uid>9f5554bb-3317-4c1a-a4fc-52945656604e</uid>
+  <version_id>575f267d-6538-4d75-8909-efe700244ccb</version_id>
+  <version_modified>2026-08-18T16:34:41Z</version_modified>
+  <xml_checksum>2FBE5B91</xml_checksum>
+  <class_name>EpModelAddMultizoneVAVSystem</class_name>
+  <display_name>EPModel Add Multizone VAV System</display_name>
+  <description>Add one multizone VAV system to the zones with thermostats.</description>
+  <modeler_description>The system uses hot-water reheat, a gas boiler, and an air-cooled chiller.</modeler_description>
+  <arguments />
+  <outputs />
+  <provenances />
+  <tags>
+    <tag>HVAC.Air Distribution</tag>
+  </tags>
+  <attributes>
+    <attribute>
+      <name>Measure Type</name>
+      <value>ModelMeasure</value>
+      <datatype>string</datatype>
+    </attribute>
+    <attribute>
+      <name>Measure Language</name>
+      <value>Python</value>
+      <datatype>string</datatype>
+    </attribute>
+  </attributes>
+  <files>
+    <file>
+      <version>
+        <software_program>OpenStudio</software_program>
+        <identifier>4.0.0</identifier>
+        <min_compatible>4.0.0</min_compatible>
+      </version>
+      <filename>measure.py</filename>
+      <filetype>py</filetype>
+      <usage_type>script</usage_type>
+      <checksum>B862D18E</checksum>
+    </file>
+  </files>
+</measure>

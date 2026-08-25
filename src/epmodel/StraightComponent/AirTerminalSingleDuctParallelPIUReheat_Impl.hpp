@@ -29,6 +29,7 @@ namespace epmodel {
       unsigned inletPort() const override;
       unsigned outletPort() const override;
       std::vector<ModelObject> children() const override;
+      bool isRemovable() const override;
       std::vector<openstudio::IdfObject> remove() override;
       bool removeFromLoop() override;
       bool addToNode(Node& node) override;
@@ -99,6 +100,13 @@ namespace epmodel {
 
       std::vector<std::string> fanControlTypeValues() const;
       std::vector<std::string> heatingControlTypeValues() const;
+
+     private:
+      void doCanonicalize(LoadContext& context) override;
+      bool maintainContainedAirPath();
+      bool repairContainedAirPath(LoadContext& context);
+      bool reconcileContainedAirPath(bool allowChildNodeRecovery, LoadContext* context);
+      class InsertionPlan;
     };
 
   }  // namespace detail

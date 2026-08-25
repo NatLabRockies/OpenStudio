@@ -7,7 +7,7 @@
 #define EPMODEL_MASSLESSOPAQUEMATERIAL_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "OpaqueMaterial/OpaqueMaterial.hpp"
 
 #include <utilities/idd/IddEnums.hxx>
 
@@ -24,7 +24,23 @@ namespace epmodel {
     class MasslessOpaqueMaterial_Impl;
   }
 
-  class EPMODEL_API MasslessOpaqueMaterial : public ModelObject
+  /** \brief Represents an opaque material defined by resistance and surface absorptances.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-surface-construction-elements.html#materialnomass,Material:NoMass}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::MasslessOpaqueMaterial</code>. The roughness,
+   * thermal-resistance, and absorptance methods have the same public meaning.
+   * Model's material-property relationships for phase change and EMPD are not
+   * available.
+   *
+   * \par Known limitations
+   * This wrapper exposes the scalar <code>Material:NoMass</code> fields only;
+   * material-property child objects cannot be assigned here.
+   */
+  class EPMODEL_API MasslessOpaqueMaterial : public OpaqueMaterial
   {
    public:
     explicit MasslessOpaqueMaterial(const Model& model, const std::string& roughness = "Smooth", double thermalResistance = 0.1);
@@ -39,29 +55,20 @@ namespace epmodel {
 
     static std::vector<std::string> roughnessValues();
 
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model::MasslessOpaqueMaterial scalar accessor names/signatures.
-    // - Field Mapping: roughness, thermalResistance, and thermal/solar/visible absorptance APIs map directly to E+ Material:NoMass fields.
-    // - ForwardTranslator evidence: ForwardTranslateMasslessOpaqueMaterial.cpp writes these scalar APIs directly to Material:NoMass fields.
-    // - Field Mapping: material-property child-object relationships are intentionally excluded from this scalar-only scaffold pass.
-    // - TODO(parity): Add non-scalar material-property relationship APIs in a dedicated parity pass.
     std::string roughness() const;
     bool setRoughness(const std::string& roughness);
 
-    double thermalResistance() const;
-    bool setThermalResistance(double thermalResistance);
-
-    boost::optional<double> thermalAbsorptance() const;
+    double thermalAbsorptance() const;
     bool isThermalAbsorptanceDefaulted() const;
     bool setThermalAbsorptance(double thermalAbsorptance);
     void resetThermalAbsorptance();
 
-    boost::optional<double> solarAbsorptance() const;
+    double solarAbsorptance() const;
     bool isSolarAbsorptanceDefaulted() const;
     bool setSolarAbsorptance(double solarAbsorptance);
     void resetSolarAbsorptance();
 
-    boost::optional<double> visibleAbsorptance() const;
+    double visibleAbsorptance() const;
     bool isVisibleAbsorptanceDefaulted() const;
     bool setVisibleAbsorptance(double visibleAbsorptance);
     void resetVisibleAbsorptance();

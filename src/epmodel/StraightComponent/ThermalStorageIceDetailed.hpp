@@ -26,6 +26,20 @@ namespace epmodel {
     class ThermalStorageIceDetailed_Impl;
   }
 
+/** \brief A detailed ice thermal-storage component.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-water-heaters.html#thermalstorageicedetailed,ThermalStorage:Ice:Detailed}
+ *
+ * \par Important behavior
+ * Availability, charging/discharging curves, scalar storage fields, and plant-demand placement map directly to ThermalStorage:Ice:Detailed.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model type is <code>openstudio::model::ThermalStorageIceDetailed</code>.
+ *
+ * \par Known limitations
+ * Broader topology behavior remains outside this wrapper slice.
+ */
   class EPMODEL_API ThermalStorageIceDetailed : public StraightComponent
   {
    public:
@@ -43,14 +57,6 @@ namespace epmodel {
     static std::vector<std::string> chargingCurveVariableSpecificationsValues();
     static std::vector<std::string> thawProcessIndicatorValues();
 
-    // Schema Alignment Notes:
-    // - Status: Near Parity. The canonical availability-schedule, curve, scalar, and plant-demand-side node surface is present for the bounded slice.
-    // - Canonical Counterpart: openstudio::model::ThermalStorageIceDetailed.
-    // - Implemented Parity: `availabilitySchedule`, `dischargingCurve`, `chargingCurve`, the preserved scalar API, and plant-demand-side `addToNode(...)`
-    //   match the canonical wrapper surface and default behavior for this campaign slice.
-    // - Field/Storage Mapping: These accessors map directly to EnergyPlus `ThermalStorage:Ice:Detailed` scalar fields used by the forward translator.
-    // - Evidence: `src/model/ThermalStorageIceDetailed.hpp`, `src/model/ThermalStorageIceDetailed.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateThermalStorageIceDetailed.cpp`.
-    // - Remaining Parity Work: Broader epmodel topology work remains outside this entity slice.
 
     boost::optional<Schedule> availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);

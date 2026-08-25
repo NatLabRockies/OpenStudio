@@ -29,6 +29,7 @@ namespace epmodel {
 
       bool addToNode(Node& node) override;
       std::vector<ModelObject> children() const override;
+      std::vector<IdfObject> remove() override;
 
       Schedule availabilitySchedule() const;
       bool setAvailabilitySchedule(Schedule& schedule);

@@ -18,11 +18,24 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class Schedule;
+  class Curve;
 
   namespace detail {
     class HeatExchangerAirToAirSensibleAndLatent_Impl;
   }
 
+  /** \brief Represents the EnergyPlus HeatExchanger:AirToAir:SensibleAndLatent object.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-heat-recovery.html#heatexchangerairtoairsensibleandlatent,HeatExchanger:AirToAir:SensibleAndLatent}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::HeatExchangerAirToAirSensibleAndLatent</code>. <b>Not yet available:</b> historical 75% effectiveness compatibility helpers, airflow-network equivalent-duct helpers, and arbitrary multi-exchanger ordering conveniences.
+   *
+   * \par Known limitations
+   * The four-air-port placement is coordinated as one component; specialized outdoor-air-system workflows are the supported topology.
+   */
   class EPMODEL_API HeatExchangerAirToAirSensibleAndLatent : public AirToAirComponent
   {
    public:
@@ -39,14 +52,25 @@ namespace epmodel {
     static std::vector<std::string> heatExchangerTypeValues();
     static std::vector<std::string> frostControlTypeValues();
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. Scalar effectiveness and control fields are aligned, but the canonical relationship/performance-surface is still incomplete.
-    // - Canonical Counterpart: openstudio::model::HeatExchangerAirToAirSensibleAndLatent.
-    // - Implemented Parity: The scalar effectiveness, frost-control, defrost, and economizer-lockout accessors preserve the canonical model-facing field semantics.
-    // - Documented Delta: Epmodel does not yet expose the canonical availability schedule, curve/table relationship APIs, or the historical 75% effectiveness compatibility helpers that remain part of `openstudio::model`.
-    // - Field/Storage Mapping: Preserved scalar APIs map directly to `HeatExchanger:AirToAir:SensibleAndLatent` fields in EnergyPlus storage.
-    // - Evidence: `src/model/HeatExchangerAirToAirSensibleAndLatent.hpp`, `src/model/HeatExchangerAirToAirSensibleAndLatent.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateHeatExchangerAirToAirSensibleAndLatent.cpp` define the canonical surface and scalar translation behavior.
-    // - Remaining Parity Work: Add the schedule and curve/table relationship APIs, plus any remaining compatibility helpers, when the epmodel relationship surface is ready for them.
+    Schedule availabilitySchedule() const;
+    bool setAvailabilitySchedule(Schedule& schedule);
+
+    boost::optional<Curve> sensibleEffectivenessofHeatingAirFlowCurve() const;
+    bool setSensibleEffectivenessofHeatingAirFlowCurve(const Curve& curve);
+    void resetSensibleEffectivenessofHeatingAirFlowCurve();
+
+    boost::optional<Curve> latentEffectivenessofHeatingAirFlowCurve() const;
+    bool setLatentEffectivenessofHeatingAirFlowCurve(const Curve& curve);
+    void resetLatentEffectivenessofHeatingAirFlowCurve();
+
+    boost::optional<Curve> sensibleEffectivenessofCoolingAirFlowCurve() const;
+    bool setSensibleEffectivenessofCoolingAirFlowCurve(const Curve& curve);
+    void resetSensibleEffectivenessofCoolingAirFlowCurve();
+
+    boost::optional<Curve> latentEffectivenessofCoolingAirFlowCurve() const;
+    bool setLatentEffectivenessofCoolingAirFlowCurve(const Curve& curve);
+    void resetLatentEffectivenessofCoolingAirFlowCurve();
+
     /** @name Field Accessors */
     //@{
 

@@ -22,6 +22,23 @@ namespace epmodel {
     class SpaceType_Impl;
   }
 
+  /** \brief Names a group of spaces for EnergyPlus processing.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-thermal-zone-description-geometry.html#spacelist,SpaceList}. Despite its OpenStudio name, this EPModel type
+   * encapsulates SpaceList rather than a standalone EnergyPlus SpaceType
+   * object.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::SpaceType</code>, whose object is an OpenStudio
+   * resource with extensive space-load and standards relationships. EPModel
+   * currently exposes only inherited name access; those Model relationships
+   * and load helpers are not available.
+   *
+   * \par Known limitations
+   * Spaces cannot yet be added, removed, or queried through this wrapper.
+   */
   class EPMODEL_API SpaceType : public ModelObject
   {
    public:
@@ -34,17 +51,6 @@ namespace epmodel {
     SpaceType& operator=(SpaceType&&) = default;
 
     static IddObjectType iddObjectType();
-
-    // Schema Alignment Notes:
-    // - IDD type: SpaceList (EnergyPlus). Target class: SpaceType (openstudio::model counterpart).
-    // - API: Preserves openstudio::model counterpart naming (`SpaceType`).
-    // - Field Mapping: The EnergyPlus SpaceList IDD object has only one non-extensible field: Name
-    //   (field index 0). All remaining fields are extensible "Space Name" entries which are
-    //   \object-list relationship fields and are excluded from scalar scaffold APIs.
-    // - ForwardTranslator evidence: openstudio::model::SpaceType forward-translates to
-    //   SpaceList (Name field only for non-relationship content).
-    // - Field Mapping: Name remains available through inherited ModelObject scalar accessors.
-    // - TODO(parity): Add Space membership relationship methods in a dedicated parity pass.
 
    protected:
     using ImplType = detail::SpaceType_Impl;

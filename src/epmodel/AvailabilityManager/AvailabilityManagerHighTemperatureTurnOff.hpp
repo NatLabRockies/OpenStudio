@@ -20,6 +20,27 @@ namespace epmodel {
     class AvailabilityManagerHighTemperatureTurnOff_Impl;
   }
 
+  /** \brief Turns availability off when a sensor temperature exceeds a limit.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-system-availability-managers.html#availabilitymanagerhightemperatureturnoff,AvailabilityManager:HighTemperatureTurnOff}
+   *
+   * \par Important behavior
+   * A newly constructed manager initializes its temperature limit to 30.0.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::AvailabilityManagerHighTemperatureTurnOff</code>.
+   *
+   * - <b>Not yet available:</b> <code>loop()</code>,
+   *   <code>sensorNode()</code>, <code>setSensorNode(...)</code>, and
+   *   <code>resetSensorNode()</code>.
+   *
+   * \par Known limitations
+   * The EPModel wrapper currently exposes only the scalar temperature limit.
+   * It cannot be passed to typed loop-assignment APIs until its sensor-node
+   * relationship and availability-manager base interface are exposed.
+   */
   class EPMODEL_API AvailabilityManagerHighTemperatureTurnOff : public ModelObject
   {
    public:
@@ -33,10 +54,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model scalar accessor name/signature for this model-counterpart class.
-    // - Field Mapping: temperature maps to E+ AvailabilityManager:HighTemperatureTurnOff Temperature.
-    // - TODO(parity): Keep relationship field sensorNode out of this scalar-only scaffold pass.
     double temperature() const;
     bool setTemperature(double temperature);
 

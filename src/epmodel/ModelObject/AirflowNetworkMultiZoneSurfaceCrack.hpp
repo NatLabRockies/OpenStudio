@@ -22,6 +22,17 @@ namespace epmodel {
     class AirflowNetworkMultiZoneSurfaceCrack_Impl;
   }
 
+  /** \brief Represents the EnergyPlus AirflowNetwork:MultiZone:Surface:Crack object.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-airflow-network.html#airflownetworkmultizonesurfacecrack,AirflowNetwork:MultiZone:Surface:Crack}
+   *
+   * \par OpenStudio Model API
+   * OpenStudio Model has no public wrapper for this EnergyPlus object. This wrapper is new to the EPModel API.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations beyond the public fields and relationships exposed by this wrapper.
+   */
   class EPMODEL_API AirflowNetworkMultiZoneSurfaceCrack : public ModelObject
   {
    public:
@@ -35,17 +46,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - API: This no-counterpart epmodel type uses IDD-derived class/accessor naming.
-    // - Field Mapping: airMassFlowCoefficientatReferenceConditions and airMassFlowExponent map
-    //   directly to EnergyPlus AirflowNetwork:MultiZone:Surface:Crack scalar fields.
-    // - Field Mapping: Name remains provided by base ModelObject naming APIs.
-    // - Field Mapping: Reference Crack Conditions is a relationship-like object-list field and is
-    //   intentionally excluded from scalar accessors.
-    // - ForwardTranslator evidence: translateAirflowNetworkCrack writes Name, Air Mass Flow
-    //   Coefficient at Reference Conditions, Air Mass Flow Exponent, and optional Reference Crack
-    //   Conditions directly to AirflowNetwork:MultiZone:Surface:Crack.
-    // - TODO(parity): Add relationship APIs after scalar scaffold saturation.
     /** Accessors for Air Mass Flow Coefficient at Reference Conditions. */
     double airMassFlowCoefficientatReferenceConditions() const;
     bool setAirMassFlowCoefficientatReferenceConditions(double airMassFlowCoefficientatReferenceConditions);

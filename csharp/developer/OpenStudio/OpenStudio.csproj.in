@@ -55,6 +55,9 @@ openstudio_csharp.dll
 openstudio_model_csharp.dll
 openstudio_translators_csharp.dll
 openstudiolib.dll
+openstudiomodellib.dll
+openstudioepmodellib.dll
+openstudioutilitieslib.dll
  -->
 
   <Target Name="IncludeReferencedLibInPackage" DependsOnTargets="BuildOnlySettings;ResolveReferences">
@@ -75,7 +78,7 @@ openstudiolib.dll
     <!-- for Windows -->
     <ItemGroup Condition=" $(IsWindows) ">
       <TfmSpecificPackageFile Include="../Products/Release/openstudio*csharp.dll" PackagePath="lib/$(TargetFramework)" />
-      <TfmSpecificPackageFile Include="../Products/Release/openstudiolib.dll" PackagePath="lib/$(TargetFramework)" />
+      <TfmSpecificPackageFile Include="../Products/Release/openstudio*lib.dll" PackagePath="lib/$(TargetFramework)" />
     </ItemGroup>
 
     <!-- for Linux -->

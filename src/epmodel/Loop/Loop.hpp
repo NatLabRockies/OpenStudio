@@ -38,6 +38,21 @@ namespace epmodel {
   class Node;
   class Splitter;
 
+  /** \brief Base interface for air and plant HVAC loops.
+   *
+   * \par EnergyPlus object
+   * No single EnergyPlus object. Concrete loop types provide the persisted object.
+   *
+   * \par Important behavior
+   * Relationships are projected from EnergyPlus branch and node topology and mutators maintain that topology.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::Loop</code>.
+   * <b>No known public API differences.</b>
+   *
+   * \par Known limitations
+   * This abstract interface does not provide loop-family-specific fields.
+   */
   class EPMODEL_API Loop : public ParentObject
   {
    public:

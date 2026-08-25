@@ -18,11 +18,28 @@ namespace epmodel {
 
   class Model;
   class Node;
+  class Schedule;
+  class DesignSpecificationOutdoorAir;
 
   namespace detail {
     class AirTerminalDualDuctVAV_Impl;
   }
 
+  /** \brief Represents a variable-air-volume dual-duct air terminal.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-air-distribution-equipment.html#airterminaldualductvav,AirTerminal:DualDuct:VAV}.
+   *
+   * \par Important behavior
+   * Separate terminal inlet and outlet node relationships follow the supported dual-duct air-loop insertion and removal topology.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::AirTerminalDualDuctVAV</code>.
+   * <b>Not yet available: the SQL-backed <code>autosizedMaximumDamperAirFlowRate()</code> result helper.</b>
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API AirTerminalDualDuctVAV : public Mixer
   {
    public:
@@ -36,14 +53,18 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - Status: Connectivity parity for the tested dual-duct add/remove path and inlet-node wiring.
-    // - Canonical Counterpart: openstudio::model::AirTerminalDualDuctVAV.
-    // - Implemented Connectivity Surface: constructor defaults used by the dual-duct path, `hotAirInletNode`, `coldAirInletNode`, and the shared `addToNode`/`remove` topology behavior are implemented here.
-    // - Documented Delta: epmodel still does not expose canonical `availabilitySchedule()`, DSOA, minimum-air-flow-turndown, or autosized-value convenience wrappers even though the underlying IDD relationship fields remain stored.
-    // - Field/Storage Mapping: `AvailabilityScheduleName`, `DesignSpecificationOutdoorAirObjectName`, and `MinimumAirFlowTurndownScheduleName` remain underlying relationship fields; Air Outlet/Hot Air Inlet/Cold Air Inlet node fields are surfaced through node accessors and shared AirLoopHVAC topology helpers.
-    // - Evidence: `src/model/AirTerminalDualDuctVAV.cpp` and `src/energyplus/ForwardTranslator/ForwardTranslateAirTerminalDualDuctVAV.cpp` document the canonical field mapping; `src/model/test/AirTerminalDualDuctVAV_GTest.cpp` and `src/epmodel/test/AirTerminalDualDuctVAV_GTest.cpp` cover the tested insertion, removal, reuse, and cleanup behavior.
-    // - Remaining Parity Work: Reintroduce the omitted schedule, DSOA, and turndown wrappers only if broader model API parity is needed outside this connectivity campaign.
+    boost::optional<Schedule> availabilitySchedule() const;
+    bool setAvailabilitySchedule(Schedule& schedule);
+    void resetAvailabilitySchedule();
+
+    boost::optional<DesignSpecificationOutdoorAir> designSpecificationOutdoorAirObject() const;
+    bool setDesignSpecificationOutdoorAirObject(const DesignSpecificationOutdoorAir& designSpecificationOutdoorAir);
+    void resetDesignSpecificationOutdoorAirObject();
+
+    boost::optional<Schedule> minimumAirFlowTurndownSchedule() const;
+    bool setMinimumAirFlowTurndownSchedule(Schedule& schedule);
+    void resetMinimumAirFlowTurndownSchedule();
+
     boost::optional<double> maximumDamperAirFlowRate() const;
     bool isMaximumDamperAirFlowRateAutosized() const;
     bool setMaximumDamperAirFlowRate(double maximumDamperAirFlowRate);

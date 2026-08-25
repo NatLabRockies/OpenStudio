@@ -12,9 +12,38 @@
 #include "../Loop/PlantLoop.hpp"
 #include "../Splitter/AirLoopHVACZoneSplitter.hpp"
 #include "../StraightComponent/EvaporativeFluidCoolerTwoSpeed.hpp"
+#include "../StraightComponent/EvaporativeFluidCoolerTwoSpeed_Impl.hpp"
 #include "../StraightComponent/Node.hpp"
+#include "../Schedule/ScheduleConstant.hpp"
+#include "../Schedule/ScheduleConstant_Impl.hpp"
+#include "../ResourceObject/ScheduleTypeLimits.hpp"
+
+#include <utilities/core/Filesystem.hpp>
+#include <utilities/core/UUID.hpp>
+#include <utilities/idf/WorkspaceObject_Impl.hpp>
+
+#include <utility>
 
 using namespace openstudio::epmodel;
+
+namespace {
+class ScopedTwoSpeedCoolerFileRemoval
+{
+ public:
+  explicit ScopedTwoSpeedCoolerFileRemoval(openstudio::path path) : m_path(std::move(path)) {}
+  ~ScopedTwoSpeedCoolerFileRemoval() {
+    boost::system::error_code error;
+    boost::filesystem::remove(m_path, error);
+  }
+
+ private:
+  openstudio::path m_path;
+};
+
+openstudio::path uniqueTwoSpeedCoolerPath(const std::string& stem) {
+  return openstudio::tempDir() / openstudio::toPath(stem + "-" + openstudio::removeBraces(openstudio::createUUID()) + ".idf");
+}
+}  // namespace
 
 TEST_F(EPModelFixture, EvaporativeFluidCoolerTwoSpeed_DefaultConstructor) {
   Model model;
@@ -74,6 +103,102 @@ TEST_F(EPModelFixture, EvaporativeFluidCoolerTwoSpeed_DefaultConstructor) {
   EXPECT_DOUBLE_EQ(0.008, evap.driftLossPercent());
   EXPECT_EQ("ConcentrationRatio", evap.blowdownCalculationMode());
   EXPECT_DOUBLE_EQ(3.0, evap.blowdownConcentrationRatio());
+  EXPECT_FALSE(evap.blowdownMakeupWaterUsageSchedule());
+}
+
+TEST_F(EPModelFixture, EvaporativeFluidCoolerTwoSpeed_BlowdownScheduleValidationAndReset) {
+  Model model;
+  EvaporativeFluidCoolerTwoSpeed cooler(model);
+  ScheduleConstant schedule(model);
+  ASSERT_TRUE(schedule.setValue(0.0001));
+  ASSERT_TRUE(cooler.setBlowdownMakeupWaterUsageSchedule(schedule));
+  ASSERT_TRUE(cooler.blowdownMakeupWaterUsageSchedule());
+  EXPECT_EQ(schedule.handle(), cooler.blowdownMakeupWaterUsageSchedule()->handle());
+  ASSERT_TRUE(schedule.scheduleTypeLimits());
+  ASSERT_TRUE(schedule.scheduleTypeLimits()->numericType());
+  EXPECT_EQ("Continuous", schedule.scheduleTypeLimits()->numericType().get());
+  EXPECT_EQ("VolumetricFlowRate", schedule.scheduleTypeLimits()->unitType());
+  ASSERT_TRUE(schedule.scheduleTypeLimits()->lowerLimitValue());
+  EXPECT_DOUBLE_EQ(0.0, schedule.scheduleTypeLimits()->lowerLimitValue().get());
+  EXPECT_FALSE(schedule.scheduleTypeLimits()->upperLimitValue());
+
+  ScheduleConstant incompatible(model);
+  ScheduleTypeLimits incompatibleLimits(model);
+  ASSERT_TRUE(incompatibleLimits.setNumericType("Continuous"));
+  ASSERT_TRUE(incompatibleLimits.setUnitType("Dimensionless"));
+  ASSERT_TRUE(incompatible.setScheduleTypeLimits(incompatibleLimits));
+  Model foreignModel;
+  ScheduleConstant foreign(foreignModel);
+  EXPECT_FALSE(cooler.setBlowdownMakeupWaterUsageSchedule(incompatible));
+  EXPECT_FALSE(cooler.setBlowdownMakeupWaterUsageSchedule(foreign));
+  EXPECT_EQ(schedule.handle(), cooler.blowdownMakeupWaterUsageSchedule()->handle());
+
+  constexpr auto field = openstudio::EvaporativeFluidCooler_TwoSpeedFields::BlowdownMakeupWaterUsageScheduleName;
+  auto workspaceImpl = cooler.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  ASSERT_TRUE(workspaceImpl);
+  ASSERT_TRUE(workspaceImpl->setPointer(field, openstudio::Handle(), false));
+  ASSERT_TRUE(workspaceImpl->openstudio::detail::IdfObject_Impl::setString(field, "Unresolved Two Speed Blowdown", false));
+  EXPECT_FALSE(cooler.setBlowdownMakeupWaterUsageSchedule(incompatible));
+  EXPECT_EQ("Unresolved Two Speed Blowdown", workspaceImpl->openstudio::detail::IdfObject_Impl::getString(field, false, true).value_or(""));
+  cooler.resetBlowdownMakeupWaterUsageSchedule();
+  EXPECT_FALSE(cooler.blowdownMakeupWaterUsageSchedule());
+  EXPECT_TRUE(workspaceImpl->openstudio::detail::IdfObject_Impl::getString(field, false, true).value_or("").empty());
+}
+
+TEST_F(EPModelFixture, EvaporativeFluidCoolerTwoSpeed_BlowdownScheduleSurvivesReloadReplacementAndRemoval) {
+  const auto firstPath = uniqueTwoSpeedCoolerPath("epmodel-evaporative-fluid-cooler-two-first");
+  const auto secondPath = uniqueTwoSpeedCoolerPath("epmodel-evaporative-fluid-cooler-two-second");
+  const ScopedTwoSpeedCoolerFileRemoval removeFirst(firstPath);
+  const ScopedTwoSpeedCoolerFileRemoval removeSecond(secondPath);
+
+  Model model;
+  EvaporativeFluidCoolerTwoSpeed cooler(model);
+  ScheduleConstant original(model);
+  ASSERT_TRUE(cooler.setName("Reloadable Two Speed Evaporative Fluid Cooler"));
+  ASSERT_TRUE(original.setName("Original Two Speed Blowdown"));
+  ASSERT_TRUE(original.setValue(0.0001));
+  ASSERT_TRUE(cooler.setBlowdownMakeupWaterUsageSchedule(original));
+  ASSERT_TRUE(model.save(firstPath, true));
+
+  auto loadedModel = Model::load(firstPath);
+  ASSERT_TRUE(loadedModel);
+  auto loadedCooler = loadedModel->getConcreteModelObjectByName<EvaporativeFluidCoolerTwoSpeed>("Reloadable Two Speed Evaporative Fluid Cooler");
+  auto loadedOriginal = loadedModel->getConcreteModelObjectByName<ScheduleConstant>("Original Two Speed Blowdown");
+  ASSERT_TRUE(loadedCooler);
+  ASSERT_TRUE(loadedOriginal);
+  ASSERT_TRUE(loadedCooler->blowdownMakeupWaterUsageSchedule());
+  EXPECT_EQ(loadedOriginal->handle(), loadedCooler->blowdownMakeupWaterUsageSchedule()->handle());
+
+  ScheduleConstant replacement(*loadedModel);
+  ASSERT_TRUE(replacement.setName("Replacement Two Speed Blowdown"));
+  ASSERT_TRUE(replacement.setValue(0.0002));
+  ASSERT_TRUE(loadedCooler->setBlowdownMakeupWaterUsageSchedule(replacement));
+  ASSERT_TRUE(loadedModel->save(secondPath, true));
+
+  auto reloadedModel = Model::load(secondPath);
+  ASSERT_TRUE(reloadedModel);
+  auto reloadedCooler = reloadedModel->getConcreteModelObjectByName<EvaporativeFluidCoolerTwoSpeed>("Reloadable Two Speed Evaporative Fluid Cooler");
+  auto reloadedOriginal = reloadedModel->getConcreteModelObjectByName<ScheduleConstant>("Original Two Speed Blowdown");
+  auto reloadedReplacement = reloadedModel->getConcreteModelObjectByName<ScheduleConstant>("Replacement Two Speed Blowdown");
+  ASSERT_TRUE(reloadedCooler);
+  ASSERT_TRUE(reloadedOriginal);
+  ASSERT_TRUE(reloadedReplacement);
+  EXPECT_EQ(reloadedReplacement->handle(), reloadedCooler->blowdownMakeupWaterUsageSchedule()->handle());
+  reloadedCooler->resetBlowdownMakeupWaterUsageSchedule();
+  ASSERT_TRUE(reloadedModel->save(secondPath, true));
+
+  auto resetModel = Model::load(secondPath);
+  ASSERT_TRUE(resetModel);
+  auto resetCooler = resetModel->getConcreteModelObjectByName<EvaporativeFluidCoolerTwoSpeed>("Reloadable Two Speed Evaporative Fluid Cooler");
+  auto resetOriginal = resetModel->getConcreteModelObjectByName<ScheduleConstant>("Original Two Speed Blowdown");
+  auto resetReplacement = resetModel->getConcreteModelObjectByName<ScheduleConstant>("Replacement Two Speed Blowdown");
+  ASSERT_TRUE(resetCooler);
+  ASSERT_TRUE(resetOriginal);
+  ASSERT_TRUE(resetReplacement);
+  EXPECT_FALSE(resetCooler->blowdownMakeupWaterUsageSchedule());
+  EXPECT_FALSE(resetCooler->remove().empty());
+  EXPECT_TRUE(resetModel->getObject(resetOriginal->handle()));
+  EXPECT_TRUE(resetModel->getObject(resetReplacement->handle()));
 }
 
 TEST_F(EPModelFixture, EvaporativeFluidCoolerTwoSpeed_ScalarAccessors_RoundTrip) {

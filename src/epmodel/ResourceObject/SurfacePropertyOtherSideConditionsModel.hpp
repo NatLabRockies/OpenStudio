@@ -22,6 +22,21 @@ namespace epmodel {
     class SurfacePropertyOtherSideConditionsModel_Impl;
   }
 
+  /** \brief Selects the model used to calculate a surface's other-side conditions.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-advanced-surface-concepts.html#surfacepropertyothersideconditionsmodel,SurfaceProperty:OtherSideConditionsModel}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::SurfacePropertyOtherSideConditionsModel</code>.
+   * The <code>typeOfModeling()</code> field and its default/reset behavior have
+   * the same public meaning in both APIs.
+   *
+   * \par Known limitations
+   * This wrapper exposes only the EnergyPlus modeling-type field; it does not
+   * add relationships beyond that object.
+   */
   class EPMODEL_API SurfacePropertyOtherSideConditionsModel : public ModelObject
   {
    public:
@@ -37,12 +52,6 @@ namespace epmodel {
 
     static std::vector<std::string> typeOfModelingValues();
 
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model API names/signatures for SurfacePropertyOtherSideConditionsModel.
-    // - Field Mapping: `typeOfModeling` forwards directly to the EnergyPlus SurfaceProperty:OtherSideConditionsModel
-    //   field (SurfaceProperty_OtherSideConditionsModelFields::TypeofModeling).
-    // - ForwardTranslator evidence: ForwardTranslateSurfacePropertyOtherSideConditionsModel.cpp writes the same field
-    //   when translating the openstudio::model counterpart and confirms the default choice semantics.
     std::string typeOfModeling() const;
     bool isTypeOfModelingDefaulted() const;
 

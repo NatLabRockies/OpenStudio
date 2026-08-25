@@ -7,7 +7,7 @@
 #define EPMODEL_STANDARDOPAQUEMATERIAL_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "OpaqueMaterial/OpaqueMaterial.hpp"
 
 #include <utilities/idd/IddEnums.hxx>
 
@@ -24,7 +24,27 @@ namespace epmodel {
     class StandardOpaqueMaterial_Impl;
   }
 
-  class EPMODEL_API StandardOpaqueMaterial : public ModelObject
+  /** \brief Represents a conventional opaque material layer.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-surface-construction-elements.html#material,Material}.
+   *
+   * \par Important behavior
+   * Thermal conductance, resistivity, resistance, and heat capacity are derived
+   * from the persisted conductivity, density, specific heat, and thickness
+   * fields. They are not independent EnergyPlus fields.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::StandardOpaqueMaterial</code>. The scalar thermal
+   * and optical methods have the same public meaning. Model's phase-change and
+   * EMPD material-property relationships are not available.
+   *
+   * \par Known limitations
+   * Only the direct <code>Material</code> scalar fields are exposed; material
+   * property child objects cannot be assigned here.
+   */
+  class EPMODEL_API StandardOpaqueMaterial : public OpaqueMaterial
   {
    public:
     explicit StandardOpaqueMaterial(const Model& model, const std::string& roughness = "Smooth", double thickness = 0.1, double conductivity = 0.1,
@@ -40,13 +60,6 @@ namespace epmodel {
 
     static std::vector<std::string> roughnessValues();
 
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model::StandardOpaqueMaterial scalar accessor names/signatures.
-    // - Field Mapping: roughness/thickness/conductivity/density/specificHeat and thermal/solar/visible absorptance APIs map directly to E+ Material fields.
-    // - Field Mapping: thermalConductivity aliases Conductivity and thermalConductance/resistivity/resistance are derived scalar transforms over mapped fields.
-    // - ForwardTranslator evidence: ForwardTranslateStandardOpaqueMaterial.cpp translates these scalar APIs directly to EnergyPlus Material fields.
-    // - Field Mapping: material-property child object relationships (phase change/EMPD) are intentionally excluded from this scalar-only scaffold pass.
-    // - TODO(parity): Add non-scalar material-property relationship APIs in a dedicated parity pass.
     double thermalConductivity() const;
     bool setThermalConductivity(double value);
 
@@ -55,9 +68,6 @@ namespace epmodel {
 
     double thermalResistivity() const;
     bool setThermalResistivity(double value);
-
-    double thermalResistance() const;
-    bool setThermalResistance(double value);
 
     boost::optional<double> thermalReflectance() const;
     bool setThermalReflectance(boost::optional<double> value);

@@ -10,6 +10,15 @@
 %import <epmodel/HVACComponent/EPModelHVACComponent.i>
 %import <epmodel/StraightComponent/EPModelStraightComponent.i>
 
+#ifdef SWIGPYTHON
+  // The standard VRF outdoor unit owns the terminal collection wrappers in
+  // the StraightComponent module. Import those proxy names before this module
+  // emits the concrete terminal helpers and their Python return annotations.
+  %pythoncode %{
+from openstudioepmodelstraightcomponent import OptionalZoneHVACTerminalUnitVariableRefrigerantFlow, ZoneHVACTerminalUnitVariableRefrigerantFlowVector
+  %}
+#endif
+
 EPMODELOBJECT_WRAP(ZoneHVACComponent, <epmodel/ZoneHVACComponent/ZoneHVACComponent.hpp>, 0, 0)
 EPMODELOBJECT_WRAP(AirLoopHVACUnitarySystem, <epmodel/ZoneHVACComponent/AirLoopHVACUnitarySystem.hpp>, 0, 1)
 EPMODELOBJECT_WRAP(ZoneHVACBaseboardConvectiveElectric, <epmodel/ZoneHVACComponent/ZoneHVACBaseboardConvectiveElectric.hpp>, 0, 1)

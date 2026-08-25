@@ -32,7 +32,8 @@ namespace workflow {
     Workspace loadIDF(const openstudio::filesystem::path& idfPath);
     epmodel::Model loadEPModel(const openstudio::filesystem::path& idfPath);
 
-    void gatherReports(const openstudio::filesystem::path& runDirPath, const openstudio::filesystem::path& rootDirPath);
+    void gatherReports(const openstudio::filesystem::path& runDirPath, const openstudio::filesystem::path& reportsDirPath,
+                       const openstudio::filesystem::path& inputRootDirPath);
 
     bool addResultMeasureInfo(WorkflowStepResult& result, BCLMeasure& measure);
 

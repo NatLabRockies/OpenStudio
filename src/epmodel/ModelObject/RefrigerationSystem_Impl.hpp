@@ -13,6 +13,8 @@
 namespace openstudio {
 namespace epmodel {
 
+  class ThermalZone;
+
   namespace detail {
 
     class EPMODEL_API RefrigerationSystem_Impl : public ModelObject_Impl
@@ -40,6 +42,10 @@ namespace epmodel {
       bool setSumUASuctionPiping(double sumUASuctionPiping);
       bool isSumUASuctionPipingDefaulted() const;
       void resetSumUASuctionPiping();
+
+      boost::optional<ThermalZone> suctionPipingZone() const;
+      bool setSuctionPipingZone(const ThermalZone& thermalZone);
+      void resetSuctionPipingZone();
 
       std::string endUseSubcategory() const;
       bool setEndUseSubcategory(const std::string& endUseSubcategory);

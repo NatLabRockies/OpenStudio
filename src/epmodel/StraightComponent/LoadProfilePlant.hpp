@@ -26,6 +26,20 @@ namespace epmodel {
     class LoadProfilePlant_Impl;
   }
 
+/** \brief A plant load-profile component.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-non-zone-equipment.html#loadprofileplant,LoadProfile:Plant}
+ *
+ * \par Important behavior
+ * Load and flow-fraction schedules, scalar fields, and demand-side placement map directly to LoadProfile:Plant. The default load schedule uses ScheduleCompact.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model type is <code>openstudio::model::LoadProfilePlant</code>.
+ *
+ * \par Known limitations
+ * ScheduleRuleset is not available for the default seeded schedule; EPModel also exposes some EnergyPlus default/reset helpers not present in Model.
+ */
   class EPMODEL_API LoadProfilePlant : public StraightComponent
   {
    public:
@@ -42,21 +56,6 @@ namespace epmodel {
 
     static std::vector<std::string> plantLoopFluidTypeValues();
 
-    // Schema Alignment Notes:
-    // - Status: Parity with documented deltas. The canonical load-profile-plant wrapper surface, constructor seeding, required schedule relationships, and
-    //   plant-demand placement contract are present.
-    // - Canonical Counterpart: openstudio::model::LoadProfilePlant.
-    // - Implemented Parity: `loadSchedule()`, `setLoadSchedule(...)`, `flowRateFractionSchedule()`, `setFlowRateFractionSchedule(...)`,
-    //   both public constructors, and demand-side-only `addToNode(...)` match the canonical wrapper surface alongside the scalar accessors.
-    // - Documented Delta: The default seeded load schedule uses `ScheduleCompact` because epmodel does not yet expose `ScheduleRuleset`.
-    // - Documented Delta: epmodel currently retains the extra default/reset helpers inherited from the underlying EnergyPlus field semantics:
-    //   `plantLoopFluidTypeValues()`, `isPlantLoopFluidTypeDefaulted()`, `resetPlantLoopFluidType()`, `isDegreeofSubCoolingDefaulted()`,
-    //   `resetDegreeofSubCooling()`, `isDegreeofLoopSubCoolingDefaulted()`, and `resetDegreeofLoopSubCooling()`.
-    // - Field/Storage Mapping: The wrapper maps directly to `LoadProfile:Plant` node, schedule, flow, fluid-type, and subcooling fields used by the
-    //   forward translator.
-    // - Evidence: `src/model/LoadProfilePlant.hpp`, `src/model/LoadProfilePlant.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateLoadProfilePlant.cpp`.
-    // - Remaining Parity Work: Replace the default seeded `ScheduleCompact` with the canonical `ScheduleRuleset` once epmodel exposes that schedule family,
-    //   then reassess whether the extra epmodel-only default/reset helpers should remain public.
     Schedule loadSchedule() const;
     bool setLoadSchedule(Schedule& schedule);
 

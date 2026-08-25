@@ -27,6 +27,20 @@ namespace epmodel {
 
   }
 
+/** \brief A refrigeration compressor rack.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-refrigeration.html#refrigerationcompressorrack,Refrigeration:CompressorRack}
+ *
+ * \par Important behavior
+ * Rack capacity, curve, condenser schedule, heat-rejection-zone, and plant-demand placement fields map directly to Refrigeration:CompressorRack.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model type is <code>openstudio::model::RefrigerationCompressorRack</code>.
+ *
+ * \par Known limitations
+ * Refrigerated case, walk-in, and air-chiller list relationships are not available.
+ */
   class EPMODEL_API RefrigerationCompressorRack : public StraightComponent
   {
    public:
@@ -43,14 +57,6 @@ namespace epmodel {
     static std::vector<std::string> condenserTypeValues();
     static std::vector<std::string> waterCooledLoopFlowTypeValues();
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. The canonical scalar, curve, schedule, heat-rejection-zone, and plant-demand-only placement behavior are present, while the refrigerated case/walk-in list surface remains deferred.
-    // - Canonical Counterpart: openstudio::model::RefrigerationCompressorRack.
-    // - Implemented Parity: Constructor defaults, the compressor-rack COP and condenser-fan curve helpers, the condenser schedules, the heat-rejection-zone convenience, and plant-demand-only `addToNode(...)` now match canonical behavior alongside the preserved scalar API.
-    // - Documented Delta: The refrigerated case/walk-in/air-chiller list helpers remain omitted because epmodel does not yet model the required `ModelObjectList` / `Refrigeration:CaseAndWalkInList` ownership layer.
-    // - Field/Storage Mapping: These accessors map directly to EnergyPlus `Refrigeration:CompressorRack` scalar fields, object pointers, and condenser node fields used by the forward translator.
-    // - Evidence: `src/model/RefrigerationCompressorRack.hpp`, `src/model/RefrigerationCompressorRack.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateRefrigerationCompressorRack.cpp`.
-    // - Remaining Parity Work: Add the refrigerated load-list convenience once epmodel grows the missing list-object support needed to persist canonical rack ownership semantics.
 
     // Heat rejection
     std::string heatRejectionLocation() const;

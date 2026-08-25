@@ -6,16 +6,16 @@
 #ifndef EPMODEL_CONSTRUCTIONWITHINTERNALSOURCE_IMPL_HPP
 #define EPMODEL_CONSTRUCTIONWITHINTERNALSOURCE_IMPL_HPP
 
-#include "ModelObject_Impl.hpp"
+#include "LayeredConstruction/LayeredConstruction_Impl.hpp"
 
 namespace openstudio {
 namespace epmodel {
   namespace detail {
 
-    class EPMODEL_API ConstructionWithInternalSource_Impl : public ModelObject_Impl
+    class EPMODEL_API ConstructionWithInternalSource_Impl : public LayeredConstruction_Impl
     {
      public:
-      using ModelObject_Impl::ModelObject_Impl;
+      using LayeredConstruction_Impl::LayeredConstruction_Impl;
       virtual ~ConstructionWithInternalSource_Impl() override = default;
 
       int sourcePresentAfterLayerNumber() const;

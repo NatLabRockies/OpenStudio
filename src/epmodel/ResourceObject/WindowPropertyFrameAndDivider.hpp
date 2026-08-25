@@ -24,7 +24,22 @@ namespace epmodel {
     class WindowPropertyFrameAndDivider_Impl;
   }
 
-  /** WindowPropertyFrameAndDivider is a ModelObject that wraps the OpenStudio IDD object 'OS:WindowProperty:FrameAndDivider'. */
+  /** \brief Defines frame, divider, reveal, and sill properties for a window.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-thermal-zone-description-geometry.html#windowpropertyframeanddivider,WindowProperty:FrameAndDivider}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::WindowPropertyFrameAndDivider</code>. Its public
+   * scalar getters, setters, default checks, and resets have the same names and
+   * meaning. The Model counterpart wraps <code>OS:WindowProperty:FrameAndDivider</code>;
+   * this EPModel class stores the EnergyPlus object directly.
+   *
+   * \par Known limitations
+   * The wrapper exposes the scalar EnergyPlus fields only; geometry consumers
+   * must apply them through the window/subsurface relationships.
+   */
   class EPMODEL_API WindowPropertyFrameAndDivider : public ModelObject
   {
    public:
@@ -38,12 +53,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
     static std::vector<std::string> dividerTypeValues();
-
-    // Schema Alignment Notes:
-    // - API: Preserves the openstudio::model WindowPropertyFrameAndDivider scalar interface while living in the ResourceObject bucket.
-    // - Field Mapping: Each getter/setter delegates to OS_WindowProperty_FrameAndDividerFields via WindowPropertyFrameAndDivider_Impl, with outsideRevealDepth feeding surface vertex offsets instead of a direct EnergyPlus field write.
-    // - ForwardTranslator evidence: ForwardTranslateWindowPropertyFrameAndDivider.cpp writes the same scalars and records reveal geometry adjustments for sub-surface translation.
-    // - TODO(parity): Surface-aligned reveal helpers remain to be introduced once the translator writes OutsideRevealDepth explicitly.
 
     double frameWidth() const;
     bool isFrameWidthDefaulted() const;

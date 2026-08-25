@@ -24,6 +24,20 @@ namespace epmodel {
     class GeneratorFuelCellStackCooler_Impl;
   }
 
+/** \brief A fuel-cell stack cooler.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-electric-load-center-generator.html#generatorfuelcellstackcooler,Generator:FuelCell:StackCooler}
+ *
+ * \par Important behavior
+ * The scalar fields and plant-side topology map directly to the EnergyPlus generator object.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model type is <code>openstudio::model::GeneratorFuelCellStackCooler</code>.
+ *
+ * \par Known limitations
+ * Fuel-cell generator ownership and broader generator-system relationships are not exposed here.
+ */
   class EPMODEL_API GeneratorFuelCellStackCooler : public StraightComponent
   {
    public:
@@ -37,14 +51,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - Status: Near Parity. The canonical scalar surface, plant-loop-only placement rule, and parent-generator lookup are present, while OS App clone/child conveniences remain out of scope.
-    // - Canonical Counterpart: openstudio::model::GeneratorFuelCellStackCooler.
-    // - Implemented Parity: The wrapper now preserves the canonical plant-loop-only `addToNode(...)` behavior on either supply or demand side, the parent `GeneratorFuelCell` lookup, and the stack-temperature, flow, heat-transfer, pump, and fan-coefficient scalar accessors.
-    // - Documented Delta: epmodel does not currently preserve the canonical OS App-oriented clone/child behavior that clones through the owning `GeneratorFuelCell`.
-    // - Field/Storage Mapping: These accessors map directly to EnergyPlus `Generator:FuelCell:StackCooler` scalar fields used by the forward translator.
-    // - Evidence: `src/model/GeneratorFuelCellStackCooler.hpp`, `src/model/GeneratorFuelCellStackCooler.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateGeneratorFuelCellStackCooler.cpp`.
-    // - Remaining Parity Work: Preserve the canonical parent-owned clone/child behavior if epmodel later needs the same library-dragging semantics.
     double nominalStackTemperature() const;
     bool setNominalStackTemperature(double nominalStackTemperature);
     void resetNominalStackTemperature();

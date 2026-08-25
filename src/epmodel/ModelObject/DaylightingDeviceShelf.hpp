@@ -22,6 +22,18 @@ namespace epmodel {
     class DaylightingDeviceShelf_Impl;
   }
 
+  /** \brief Represents <code>DaylightingDevice:Shelf</code>.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-daylighting.html#daylightingdeviceshelf,DaylightingDevice:Shelf}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::DaylightingDeviceShelf</code>.
+   * **Not yet available:** Model surface, construction, and extensible transition/shelf relationship conveniences are not exposed unless declared here.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API DaylightingDeviceShelf : public ModelObject
   {
    public:
@@ -34,16 +46,6 @@ namespace epmodel {
     DaylightingDeviceShelf& operator=(DaylightingDeviceShelf&&) = default;
 
     static IddObjectType iddObjectType();
-
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model scalar accessor naming/signature for counterpart parity.
-    // - Field Mapping: viewFactortoOutsideShelf maps directly to DaylightingDevice:Shelf field
-    //   View Factor to Outside Shelf.
-    // - Field Mapping: WindowName, InsideShelfName, OutsideShelfName, and OutsideShelfConstructionName
-    //   are relationship-like link fields and intentionally excluded from scalar accessors.
-    // - ForwardTranslator evidence: translateDaylightingDeviceShelf writes ViewFactortoOutsideShelf
-    //   directly from modelObject.viewFactortoOutsideShelf() when present.
-    // - TODO(parity): Add typed relationship APIs for shelf/window linkage during non-scalar parity work.
     boost::optional<double> viewFactortoOutsideShelf() const;
     bool setViewFactortoOutsideShelf(double viewFactortoOutsideShelf);
     void resetViewFactortoOutsideShelf();

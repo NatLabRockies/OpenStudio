@@ -28,6 +28,30 @@ namespace epmodel {
   // This base class makes that contract explicit so concrete coils can expose the
   // same side-specific navigation surface as model::WaterToAirComponent without
   // each wrapper reimplementing the same plumbing.
+  /** \brief Base class for components with separate air-side and water-side connections.
+   *
+   * \par EnergyPlus object
+   * This class has no single EnergyPlus object. It supplies shared navigation
+   * and topology operations for concrete water-to-air component objects such as
+   * \epobject{group-heating-and-cooling-coils.html#coilcoolingwater,Coil:Cooling:Water} and
+   * \epobject{group-heating-and-cooling-coils.html#coilheatingwater,Coil:Heating:Water}.
+   *
+   * \par Important behavior
+   * The side-specific ports and loop queries are resolved from EnergyPlus node,
+   * branch, and loop topology. Supported add, disconnect, and remove operations
+   * update that persisted topology rather than an OpenStudio connection graph.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::WaterToAirComponent</code>.
+   *
+   * - <b>Not yet available:</b> <code>clone(Model)</code>.
+   *
+   * \par Known limitations
+   * Topology operations require the component to be in a supported EnergyPlus
+   * air and plant arrangement; they do not create a general-purpose connection
+   * graph.
+   */
   class EPMODEL_API WaterToAirComponent : public HVACComponent
   {
    public:
@@ -36,15 +60,6 @@ namespace epmodel {
     WaterToAirComponent(WaterToAirComponent&& other) = default;
     WaterToAirComponent& operator=(const WaterToAirComponent&) = default;
     WaterToAirComponent& operator=(WaterToAirComponent&&) = default;
-
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. The base air/water topology plumbing is present, but canonical convenience and cloning behavior are not fully mirrored.
-    // - Canonical Counterpart: openstudio::model::WaterToAirComponent.
-    // - Implemented Parity: `airInletPort`, `airOutletPort`, `airInletModelObject`, `airOutletModelObject`, `waterInletPort`, `waterOutletPort`, `waterInletModelObject`, `waterOutletModelObject`, `airLoopHVAC`, `plantLoop`, `addToNode`, `addToSplitter`, `remove`, `disconnectWaterSide`, `disconnectAirSide`, `removeFromAirLoopHVAC`, and `removeFromPlantLoop` preserve the canonical cross-stream topology contract.
-    // - Documented Delta: `clone(Model)` is not exposed in epmodel, and the wrapper stays thinner than canonical model because it does not reintroduce model-side convenience around derived object creation.
-    // - Field/Storage Mapping: Air and water side links are resolved through EnergyPlus-backed node/topology ownership rather than model-side connection storage.
-    // - Evidence: `src/model/WaterToAirComponent.hpp` and `src/model/WaterToAirComponent.cpp` define the canonical base behavior; `src/model/test/CoilCoolingWater_GTest.cpp`, `src/model/test/CoilHeatingWater_GTest.cpp`, and `src/epmodel/test/IDF_5ZoneAirCooled_GTest.cpp` exercise the associated topology semantics.
-    // - Remaining Parity Work: Add the missing clone and any remaining canonical convenience behaviors once the derived wrapper families are fully normalized.
 
     unsigned airInletPort() const;
     unsigned airOutletPort() const;

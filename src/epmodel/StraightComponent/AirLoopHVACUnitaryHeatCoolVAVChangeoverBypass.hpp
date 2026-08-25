@@ -7,6 +7,7 @@
 #define EPMODEL_AIRLOOPHVACUNITARYHEATCOOLVAVCHANGEOVERBYPASS_HPP
 
 #include "EPModelAPI.hpp"
+#include "Mixer/Mixer.hpp"
 #include "StraightComponent/StraightComponent.hpp"
 
 #include <memory>
@@ -25,6 +26,25 @@ namespace epmodel {
     class AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_Impl;
   }
 
+  /**
+   * \brief Changeover-bypass VAV unitary system with a supply fan, heating coil, cooling coil, and internal bypass path.
+   *
+   * \par EnergyPlus object
+   * Encapsulates \epobject{group-unitary-equipment.html#airloophvacunitaryheatcoolvavchangeoverbypass,AirLoopHVAC:UnitaryHeatCool:VAVChangeoverBypass}.
+   *
+   * \par Important behavior
+   * The fan and coils are maintained as a parent-owned serial path. `addToNode` connects the unitary to an air-loop
+   * supply path and exposes the fan, cooling-coil, and heating-coil outlet nodes. The optional bypass return can be
+   * connected to a zone mixer or return plenum.
+   *
+   * \par OpenStudio Model API
+   * Counterpart: `openstudio::model::AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass`. The epmodel API covers the
+   * unitary scalar controls, schedules, child relationships, and insertion path, plus internal outlet-node helpers.
+   * EPModel also exposes direct internal outlet-node and plenum/mixer navigation for the supported serial path.
+   *
+   * \par Known limitations
+   * Return-plenum zone-assignment conveniences and broader local-topology insertion paths are not exposed.
+   */
   class EPMODEL_API AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass : public StraightComponent
   {
    public:
@@ -46,21 +66,6 @@ namespace epmodel {
 
     bool addToNode(Node& node);
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. The core airflow/control scalars and direct object-link fields are aligned, and the owned internal air path is now maintained through parent-owned epmodel nodes.
-    // - Canonical Counterpart: openstudio::model::AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass.
-    // - Implemented Parity: Availability schedule, outdoor-air-flow-rate multiplier schedule, supply fan,
-    //   supply-air-fan operating mode schedule, heating coil, cooling coil, and the scalar airflow/control fields preserve the main
-    //   canonical wrapper contract. The relationship constructor and child traversal now match the canonical wrapper's owned-component slice.
-    //   The owned fan/cooling/heating chain also shares a stable parent-maintained air path, with direct
-    //   access to the meaningful outlet node roles on the compound.
-    // - Documented Delta: `fanOutletNode()`, `coolingCoilOutletNode()`, and `heatingCoilOutletNode()` are additive epmodel conveniences
-    //   for the owned serial air path. Node names and plenum-or-mixer topology conveniences beyond that owned chain remain intentionally
-    //   omitted.
-    // - Field/Storage Mapping: Scalar values map directly to EnergyPlus unitary-system flow and control fields, while schedule, fan/coil,
-    //   and internal-node relationships are explicit parent-owned object links in epmodel.
-    // - Evidence: `src/model/AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass.hpp`, `src/model/AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirLoopHVACUnitaryHeatCoolVAVChangeoverBypass.cpp`, and `src/epmodel/test/AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_GTest.cpp`.
-    // - Remaining Parity Work: Add the omitted node and plenum-link helpers only if the canonical wrapper still exposes them directly.
     boost::optional<Schedule> availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);
     void resetAvailabilitySchedule();
@@ -133,6 +138,12 @@ namespace epmodel {
 
     double minimumRuntimeBeforeOperatingModeChange() const;
     bool setMinimumRuntimeBeforeOperatingModeChange(double runtime);
+
+    unsigned plenumorMixerAirPort() const;
+    Node plenumorMixerNode() const;
+    boost::optional<Mixer> plenumorMixer() const;
+    bool setPlenumorMixer(const Mixer& returnPathComponent);
+    void resetPlenumorMixer();
 
    protected:
     using ImplType = detail::AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_Impl;

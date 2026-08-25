@@ -25,6 +25,17 @@ namespace epmodel {
     class SizingPlant_Impl;
   }
 
+  /** \brief SizingPlant.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-design-objects.html#sizingplant,Sizing:Plant}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::SizingPlant</code>. The scalar sizing fields and typed PlantLoop relationship are exposed. Imported legacy condenser-loop targets are not surfaced through the PlantLoop API; retargeting preserves the existing sizing companions while changing ownership.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API SizingPlant : public ModelObject
   {
    public:
@@ -41,18 +52,9 @@ namespace epmodel {
     static std::vector<std::string> loopTypeValues();
     static std::vector<std::string> sizingOptionValues();
     static std::vector<std::string> coincidentSizingFactorModeValues();
+    PlantLoop plantLoop() const;
+    bool setPlantLoop(const PlantLoop& plantLoop);
 
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model SizingPlant scalar accessor names/signatures.
-    // - Field Mapping: loopType, designLoopExitTemperature, loopDesignTemperatureDifference,
-    //   sizingOption, zoneTimestepsinAveragingWindow, and coincidentSizingFactorMode map
-    //   directly to E+ Sizing:Plant fields.
-    // - Field Mapping: PlantorCondenserLoopName is a relationship field and is intentionally
-    //   excluded from scalar accessor coverage.
-    // - ForwardTranslator Evidence: ForwardTranslateSizingPlant and ForwardTranslatePlantLoop
-    //   confirm direct scalar mappings and the owning PlantLoop relationship.
-    // - TODO(parity): Add relationship accessors for PlantorCondenserLoopName in a dedicated
-    //   non-scalar parity pass.
     std::string loopType() const;
     bool setLoopType(const std::string& loopType);
 

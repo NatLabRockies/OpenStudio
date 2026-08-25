@@ -23,6 +23,21 @@ namespace epmodel {
     class CoilPerformanceDXCooling_Impl;
   }
 
+/** \brief Stores performance data for a curve-fit DX cooling coil.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-heating-and-cooling-coils.html#coilperformancedxcooling,CoilPerformance:DX:Cooling}
+ *
+ * \par Important behavior
+ * Rated-capacity, airflow, condenser, fan-power, and performance-curve fields are stored directly on the object.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model class is <code>openstudio::model::CoilPerformanceDXCooling</code>.
+ * <b>Not yet available:</b> Model's performance-curve relationships, condenser-air-inlet node, autosizing and SQL-result helpers, and reverse navigation to the referencing DX coil are not exposed.
+ *
+ * \par Known limitations
+ * The performance object does not own the DX coil or its operating-mode relationships.
+ */
   class EPMODEL_API CoilPerformanceDXCooling : public ParentObject
   {
    public:
@@ -38,12 +53,6 @@ namespace epmodel {
 
     static std::vector<std::string> condenserTypeValues();
 
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::CoilPerformanceDXCooling scalar API names/signatures for counterpart compatibility.
-    // - Field Mapping: Preserved scalar APIs map directly to EnergyPlus CoilPerformance:DX:Cooling scalar fields.
-    // - Field Mapping: Curve and node relationship fields are intentionally excluded from this scalar-only scaffold.
-    // - ForwardTranslator evidence: translateCoilPerformanceDXCooling writes the same scalar/autosize fields with matching semantics.
-    // - TODO(parity): Add excluded relationship APIs (curves/node) in a dedicated parity pass.
     boost::optional<double> grossRatedTotalCoolingCapacity() const;
     bool isGrossRatedTotalCoolingCapacityAutosized() const;
     bool setGrossRatedTotalCoolingCapacity(double grossRatedTotalCoolingCapacity);

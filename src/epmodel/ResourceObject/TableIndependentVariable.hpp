@@ -25,6 +25,28 @@ namespace epmodel {
     class TableIndependentVariable_Impl;
   }
 
+  /** \brief Defines one independent-variable axis for a table lookup.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-performance-tables.html#tableindependentvariable,Table:IndependentVariable}.
+   *
+   * \par Important behavior
+   * Values are stored as extensible EnergyPlus groups. The
+   * <code>tableLookups()</code> method finds table objects that reference this
+   * variable; it does not transfer ownership of them. Values can be replaced
+   * as a group with <code>setValues()</code>.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::TableIndependentVariable</code>. EPModel exposes
+   * the same value and table-lookup methods and additionally exposes explicit
+   * default-state queries and resets for interpolation, extrapolation, and
+   * unit type.
+   *
+   * \par Known limitations
+   * Table lookup reverse navigation is limited to persisted references; this
+   * wrapper does not create or update the referencing table objects.
+   */
   class EPMODEL_API TableIndependentVariable : public ResourceObject
   {
    public:
@@ -44,12 +66,6 @@ namespace epmodel {
     static std::vector<std::string> validExtrapolationMethodValues();
     static std::vector<std::string> unitTypeValues();
     static std::vector<std::string> validUnitTypeValues();
-
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model scalar accessor names/signatures for TableIndependentVariable.
-    // - Field Mapping: Each scalar maps directly to the corresponding Table:IndependentVariable field via Table_IndependentVariableFields enums.
-    // - ForwardTranslator evidence: ForwardTranslateTableIndependentVariable.cpp writes the same Table:IndependentVariable fields while feeding Table:Lookup via extensible Value lines.
-    // - Field Mapping: Value extensibles are represented with typed extensible-group APIs.
 
     std::string interpolationMethod() const;
     bool isInterpolationMethodDefaulted() const;

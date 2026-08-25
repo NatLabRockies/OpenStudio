@@ -9,9 +9,12 @@
 #include "../Curve/CurveBiquadratic.hpp"
 #include "../Curve/CurveQuadratic.hpp"
 #include "../Loop/PlantLoop.hpp"
+#include "../Loop/PlantLoop_Impl.hpp"
+#include "../ModelObject/SizingPlant.hpp"
 #include "../Schedule/ScheduleConstant.hpp"
 #include "../StraightComponent/Node.hpp"
 #include "../WaterToWaterComponent/ChillerElectricEIR.hpp"
+#include "../WaterToWaterComponent/ChillerElectricEIR_Impl.hpp"
 
 #include <utilities/idd/Chiller_Electric_EIR_FieldEnums.hxx>
 
@@ -363,4 +366,352 @@ TEST_F(EPModelFixture, ChillerElectricEIR_AddToNodeDemandRoutingParity) {
   EXPECT_EQ(replacementCondenserLoop.handle(), chiller.condenserWaterLoop()->handle());
   ASSERT_TRUE(chiller.chilledWaterLoop());
   EXPECT_EQ(chilledWaterLoop.handle(), chiller.chilledWaterLoop()->handle());
+}
+
+TEST_F(EPModelFixture, ChillerElectricEIR_SequentialLastOwnerLoopRemovalLifecycle) {
+  const auto idfPath = openstudio::tempDir() / openstudio::toPath("epmodel-chiller-electric-eir-sequential-last-owner-removal.idf");
+
+  Model model;
+  PlantLoop chilledWaterLoop(model);
+  PlantLoop condenserWaterLoop(model);
+  PlantLoop heatRecoveryLoop(model);
+  ChillerElectricEIR chiller(model);
+  ASSERT_TRUE(chilledWaterLoop.setName("Final Electric EIR Chilled Water Loop"));
+  ASSERT_TRUE(condenserWaterLoop.setName("Second Electric EIR Condenser Water Loop"));
+  ASSERT_TRUE(heatRecoveryLoop.setName("First Electric EIR Heat Recovery Loop"));
+  ASSERT_TRUE(chiller.setName("Sequential Deleted Electric EIR Chiller"));
+  ASSERT_TRUE(chilledWaterLoop.addSupplyBranchForComponent(chiller));
+  ASSERT_TRUE(condenserWaterLoop.addDemandBranchForComponent(chiller));
+  ASSERT_TRUE(heatRecoveryLoop.addDemandBranchForComponent(chiller));
+  ASSERT_TRUE(model.save(idfPath, true));
+
+  auto loadedModel = Model::load(idfPath);
+  ASSERT_TRUE(loadedModel);
+  auto loadedChilledWaterLoop = loadedModel->getConcreteModelObjectByName<PlantLoop>("Final Electric EIR Chilled Water Loop");
+  auto loadedCondenserWaterLoop = loadedModel->getConcreteModelObjectByName<PlantLoop>("Second Electric EIR Condenser Water Loop");
+  auto loadedHeatRecoveryLoop = loadedModel->getConcreteModelObjectByName<PlantLoop>("First Electric EIR Heat Recovery Loop");
+  auto loadedChiller = loadedModel->getConcreteModelObjectByName<ChillerElectricEIR>("Sequential Deleted Electric EIR Chiller");
+  ASSERT_TRUE(loadedChilledWaterLoop);
+  ASSERT_TRUE(loadedCondenserWaterLoop);
+  ASSERT_TRUE(loadedHeatRecoveryLoop);
+  ASSERT_TRUE(loadedChiller);
+  ASSERT_TRUE(loadedChiller->chilledWaterLoop());
+  ASSERT_TRUE(loadedChiller->condenserWaterLoop());
+  ASSERT_TRUE(loadedChiller->heatRecoveryLoop());
+  EXPECT_EQ("WaterCooled", loadedChiller->condenserType());
+
+  const auto chillerHandle = loadedChiller->handle();
+  const auto removeOwnerLoop = [&](PlantLoop& loop) {
+    std::vector<openstudio::Handle> topologyHandles;
+    for (const auto& component : loop.supplyComponents()) {
+      if (component.handle() != chillerHandle) {
+        topologyHandles.push_back(component.handle());
+      }
+    }
+    for (const auto& component : loop.demandComponents()) {
+      if (component.handle() != chillerHandle) {
+        topologyHandles.push_back(component.handle());
+      }
+    }
+    const auto loopHandle = loop.handle();
+    const auto sizingPlantHandle = loop.sizingPlant().handle();
+    EXPECT_FALSE(loop.remove().empty());
+    EXPECT_FALSE(loadedModel->getObject(loopHandle));
+    EXPECT_FALSE(loadedModel->getObject(sizingPlantHandle));
+    for (const auto& handle : topologyHandles) {
+      EXPECT_FALSE(loadedModel->getObject(handle));
+    }
+  };
+
+  removeOwnerLoop(*loadedHeatRecoveryLoop);
+  ASSERT_TRUE(loadedModel->getObject(chillerHandle));
+  EXPECT_FALSE(loadedChiller->heatRecoveryLoop());
+  EXPECT_FALSE(loadedChiller->heatRecoveryInletNode());
+  EXPECT_FALSE(loadedChiller->heatRecoveryOutletNode());
+  ASSERT_TRUE(loadedChiller->chilledWaterLoop());
+  ASSERT_TRUE(loadedChiller->condenserWaterLoop());
+  EXPECT_EQ(*loadedChilledWaterLoop, *loadedChiller->chilledWaterLoop());
+  EXPECT_EQ(*loadedCondenserWaterLoop, *loadedChiller->condenserWaterLoop());
+  EXPECT_TRUE(loadedChiller->chilledWaterInletNode());
+  EXPECT_TRUE(loadedChiller->chilledWaterOutletNode());
+  EXPECT_TRUE(loadedChiller->condenserInletNode());
+  EXPECT_TRUE(loadedChiller->condenserOutletNode());
+  EXPECT_EQ("WaterCooled", loadedChiller->condenserType());
+
+  removeOwnerLoop(*loadedCondenserWaterLoop);
+  ASSERT_TRUE(loadedModel->getObject(chillerHandle));
+  EXPECT_FALSE(loadedChiller->condenserWaterLoop());
+  EXPECT_FALSE(loadedChiller->condenserInletNode());
+  EXPECT_FALSE(loadedChiller->condenserOutletNode());
+  EXPECT_FALSE(loadedChiller->heatRecoveryLoop());
+  ASSERT_TRUE(loadedChiller->chilledWaterLoop());
+  EXPECT_EQ(*loadedChilledWaterLoop, *loadedChiller->chilledWaterLoop());
+  EXPECT_TRUE(loadedChiller->chilledWaterInletNode());
+  EXPECT_TRUE(loadedChiller->chilledWaterOutletNode());
+  EXPECT_EQ("AirCooled", loadedChiller->condenserType());
+
+  removeOwnerLoop(*loadedChilledWaterLoop);
+  EXPECT_FALSE(loadedModel->getObject(chillerHandle));
+
+  ASSERT_TRUE(loadedModel->save(idfPath, true));
+  auto reloadedModel = Model::load(idfPath);
+  ASSERT_TRUE(reloadedModel);
+  EXPECT_FALSE(reloadedModel->getConcreteModelObjectByName<PlantLoop>("First Electric EIR Heat Recovery Loop"));
+  EXPECT_FALSE(reloadedModel->getConcreteModelObjectByName<PlantLoop>("Second Electric EIR Condenser Water Loop"));
+  EXPECT_FALSE(reloadedModel->getConcreteModelObjectByName<PlantLoop>("Final Electric EIR Chilled Water Loop"));
+  EXPECT_FALSE(reloadedModel->getConcreteModelObjectByName<ChillerElectricEIR>("Sequential Deleted Electric EIR Chiller"));
+
+  openstudio::filesystem::remove(idfPath);
+}
+
+TEST_F(EPModelFixture, ChillerElectricEIR_TripleOwnerLoopRemovalLifecycle) {
+  const auto idfPath = openstudio::tempDir() / openstudio::toPath("epmodel-chiller-electric-eir-triple-owner-primary-removal.idf");
+
+  Model model;
+  PlantLoop chilledWaterLoop(model);
+  PlantLoop condenserWaterLoop(model);
+  PlantLoop heatRecoveryLoop(model);
+  ChillerElectricEIR chiller(model);
+  ASSERT_TRUE(chilledWaterLoop.setName("Removed Chiller Chilled Water Loop"));
+  ASSERT_TRUE(condenserWaterLoop.setName("Surviving Chiller Condenser Water Loop"));
+  ASSERT_TRUE(heatRecoveryLoop.setName("Surviving Chiller Heat Recovery Loop"));
+  ASSERT_TRUE(chiller.setName("Surviving Triple Owner Chiller"));
+  ASSERT_TRUE(chilledWaterLoop.addSupplyBranchForComponent(chiller));
+  ASSERT_TRUE(condenserWaterLoop.addDemandBranchForComponent(chiller));
+  ASSERT_TRUE(heatRecoveryLoop.addDemandBranchForComponent(chiller));
+  ASSERT_TRUE(model.save(idfPath, true));
+
+  auto loadedModel = Model::load(idfPath);
+  ASSERT_TRUE(loadedModel);
+  auto loadedChilledWaterLoop = loadedModel->getConcreteModelObjectByName<PlantLoop>("Removed Chiller Chilled Water Loop");
+  auto loadedCondenserWaterLoop = loadedModel->getConcreteModelObjectByName<PlantLoop>("Surviving Chiller Condenser Water Loop");
+  auto loadedHeatRecoveryLoop = loadedModel->getConcreteModelObjectByName<PlantLoop>("Surviving Chiller Heat Recovery Loop");
+  auto loadedChiller = loadedModel->getConcreteModelObjectByName<ChillerElectricEIR>("Surviving Triple Owner Chiller");
+  ASSERT_TRUE(loadedChilledWaterLoop);
+  ASSERT_TRUE(loadedCondenserWaterLoop);
+  ASSERT_TRUE(loadedHeatRecoveryLoop);
+  ASSERT_TRUE(loadedChiller);
+  ASSERT_TRUE(loadedChiller->chilledWaterLoop());
+  ASSERT_TRUE(loadedChiller->condenserWaterLoop());
+  ASSERT_TRUE(loadedChiller->heatRecoveryLoop());
+  EXPECT_EQ(*loadedChilledWaterLoop, *loadedChiller->chilledWaterLoop());
+  EXPECT_EQ(*loadedCondenserWaterLoop, *loadedChiller->condenserWaterLoop());
+  EXPECT_EQ(*loadedHeatRecoveryLoop, *loadedChiller->heatRecoveryLoop());
+  EXPECT_EQ(1u, loadedChilledWaterLoop->supplyComponents(ChillerElectricEIR::iddObjectType()).size());
+  EXPECT_EQ(1u, loadedCondenserWaterLoop->demandComponents(ChillerElectricEIR::iddObjectType()).size());
+  EXPECT_EQ(1u, loadedHeatRecoveryLoop->demandComponents(ChillerElectricEIR::iddObjectType()).size());
+  EXPECT_TRUE(loadedChiller->chilledWaterInletNode());
+  EXPECT_TRUE(loadedChiller->chilledWaterOutletNode());
+  EXPECT_TRUE(loadedChiller->condenserInletNode());
+  EXPECT_TRUE(loadedChiller->condenserOutletNode());
+  EXPECT_TRUE(loadedChiller->heatRecoveryInletNode());
+  EXPECT_TRUE(loadedChiller->heatRecoveryOutletNode());
+  EXPECT_EQ("WaterCooled", loadedChiller->condenserType());
+
+  std::vector<openstudio::Handle> chilledWaterTopologyHandles;
+  for (const auto& component : loadedChilledWaterLoop->supplyComponents()) {
+    if (component.handle() != loadedChiller->handle()) {
+      chilledWaterTopologyHandles.push_back(component.handle());
+    }
+  }
+  for (const auto& component : loadedChilledWaterLoop->demandComponents()) {
+    chilledWaterTopologyHandles.push_back(component.handle());
+  }
+  const auto chilledWaterLoopHandle = loadedChilledWaterLoop->handle();
+  const auto chilledWaterSizingHandle = loadedChilledWaterLoop->sizingPlant().handle();
+  const auto chillerHandle = loadedChiller->handle();
+  EXPECT_FALSE(loadedChilledWaterLoop->remove().empty());
+  EXPECT_FALSE(loadedModel->getObject(chilledWaterLoopHandle));
+  EXPECT_FALSE(loadedModel->getObject(chilledWaterSizingHandle));
+  for (const auto& handle : chilledWaterTopologyHandles) {
+    EXPECT_FALSE(loadedModel->getObject(handle));
+  }
+  EXPECT_TRUE(loadedModel->getObject(chillerHandle));
+  EXPECT_FALSE(loadedChiller->chilledWaterLoop());
+  EXPECT_FALSE(loadedChiller->chilledWaterInletNode());
+  EXPECT_FALSE(loadedChiller->chilledWaterOutletNode());
+  ASSERT_TRUE(loadedChiller->condenserWaterLoop());
+  ASSERT_TRUE(loadedChiller->heatRecoveryLoop());
+  EXPECT_EQ(*loadedCondenserWaterLoop, *loadedChiller->condenserWaterLoop());
+  EXPECT_EQ(*loadedHeatRecoveryLoop, *loadedChiller->heatRecoveryLoop());
+  EXPECT_EQ(1u, loadedCondenserWaterLoop->demandComponents(ChillerElectricEIR::iddObjectType()).size());
+  EXPECT_EQ(1u, loadedHeatRecoveryLoop->demandComponents(ChillerElectricEIR::iddObjectType()).size());
+  EXPECT_TRUE(loadedChiller->condenserInletNode());
+  EXPECT_TRUE(loadedChiller->condenserOutletNode());
+  EXPECT_TRUE(loadedChiller->heatRecoveryInletNode());
+  EXPECT_TRUE(loadedChiller->heatRecoveryOutletNode());
+  EXPECT_EQ("WaterCooled", loadedChiller->condenserType());
+
+  PlantLoop replacementChilledWaterLoop(*loadedModel);
+  ASSERT_TRUE(replacementChilledWaterLoop.setName("Replacement Chiller Chilled Water Loop"));
+  ASSERT_TRUE(replacementChilledWaterLoop.addSupplyBranchForComponent(*loadedChiller));
+  ASSERT_TRUE(loadedModel->save(idfPath, true));
+
+  auto reloadedModel = Model::load(idfPath);
+  ASSERT_TRUE(reloadedModel);
+  auto reloadedChilledWaterLoop = reloadedModel->getConcreteModelObjectByName<PlantLoop>("Replacement Chiller Chilled Water Loop");
+  auto reloadedCondenserWaterLoop = reloadedModel->getConcreteModelObjectByName<PlantLoop>("Surviving Chiller Condenser Water Loop");
+  auto reloadedHeatRecoveryLoop = reloadedModel->getConcreteModelObjectByName<PlantLoop>("Surviving Chiller Heat Recovery Loop");
+  auto reloadedChiller = reloadedModel->getConcreteModelObjectByName<ChillerElectricEIR>("Surviving Triple Owner Chiller");
+  ASSERT_TRUE(reloadedChilledWaterLoop);
+  ASSERT_TRUE(reloadedCondenserWaterLoop);
+  ASSERT_TRUE(reloadedHeatRecoveryLoop);
+  ASSERT_TRUE(reloadedChiller);
+  EXPECT_FALSE(reloadedModel->getConcreteModelObjectByName<PlantLoop>("Removed Chiller Chilled Water Loop"));
+  ASSERT_TRUE(reloadedChiller->chilledWaterLoop());
+  ASSERT_TRUE(reloadedChiller->condenserWaterLoop());
+  ASSERT_TRUE(reloadedChiller->heatRecoveryLoop());
+  EXPECT_EQ(*reloadedChilledWaterLoop, *reloadedChiller->chilledWaterLoop());
+  EXPECT_EQ(*reloadedCondenserWaterLoop, *reloadedChiller->condenserWaterLoop());
+  EXPECT_EQ(*reloadedHeatRecoveryLoop, *reloadedChiller->heatRecoveryLoop());
+  EXPECT_EQ(1u, reloadedChilledWaterLoop->supplyComponents(ChillerElectricEIR::iddObjectType()).size());
+  EXPECT_EQ(1u, reloadedCondenserWaterLoop->demandComponents(ChillerElectricEIR::iddObjectType()).size());
+  EXPECT_EQ(1u, reloadedHeatRecoveryLoop->demandComponents(ChillerElectricEIR::iddObjectType()).size());
+  EXPECT_TRUE(reloadedChiller->chilledWaterInletNode());
+  EXPECT_TRUE(reloadedChiller->chilledWaterOutletNode());
+  EXPECT_TRUE(reloadedChiller->condenserInletNode());
+  EXPECT_TRUE(reloadedChiller->condenserOutletNode());
+  EXPECT_TRUE(reloadedChiller->heatRecoveryInletNode());
+  EXPECT_TRUE(reloadedChiller->heatRecoveryOutletNode());
+  EXPECT_EQ("WaterCooled", reloadedChiller->condenserType());
+
+  std::vector<openstudio::Handle> condenserWaterTopologyHandles;
+  for (const auto& component : reloadedCondenserWaterLoop->supplyComponents()) {
+    condenserWaterTopologyHandles.push_back(component.handle());
+  }
+  for (const auto& component : reloadedCondenserWaterLoop->demandComponents()) {
+    if (component.handle() != reloadedChiller->handle()) {
+      condenserWaterTopologyHandles.push_back(component.handle());
+    }
+  }
+  const auto condenserWaterLoopHandle = reloadedCondenserWaterLoop->handle();
+  const auto condenserWaterSizingHandle = reloadedCondenserWaterLoop->sizingPlant().handle();
+  const auto reloadedChillerHandle = reloadedChiller->handle();
+  EXPECT_FALSE(reloadedCondenserWaterLoop->remove().empty());
+  EXPECT_FALSE(reloadedModel->getObject(condenserWaterLoopHandle));
+  EXPECT_FALSE(reloadedModel->getObject(condenserWaterSizingHandle));
+  for (const auto& handle : condenserWaterTopologyHandles) {
+    EXPECT_FALSE(reloadedModel->getObject(handle));
+  }
+  EXPECT_TRUE(reloadedModel->getObject(reloadedChillerHandle));
+  EXPECT_FALSE(reloadedChiller->condenserWaterLoop());
+  EXPECT_FALSE(reloadedChiller->condenserInletNode());
+  EXPECT_FALSE(reloadedChiller->condenserOutletNode());
+  ASSERT_TRUE(reloadedChiller->chilledWaterLoop());
+  ASSERT_TRUE(reloadedChiller->heatRecoveryLoop());
+  EXPECT_EQ(*reloadedChilledWaterLoop, *reloadedChiller->chilledWaterLoop());
+  EXPECT_EQ(*reloadedHeatRecoveryLoop, *reloadedChiller->heatRecoveryLoop());
+  EXPECT_EQ(1u, reloadedChilledWaterLoop->supplyComponents(ChillerElectricEIR::iddObjectType()).size());
+  EXPECT_EQ(1u, reloadedHeatRecoveryLoop->demandComponents(ChillerElectricEIR::iddObjectType()).size());
+  EXPECT_TRUE(reloadedChiller->chilledWaterInletNode());
+  EXPECT_TRUE(reloadedChiller->chilledWaterOutletNode());
+  EXPECT_TRUE(reloadedChiller->heatRecoveryInletNode());
+  EXPECT_TRUE(reloadedChiller->heatRecoveryOutletNode());
+  EXPECT_EQ("AirCooled", reloadedChiller->condenserType());
+
+  PlantLoop replacementCondenserWaterLoop(*reloadedModel);
+  ASSERT_TRUE(replacementCondenserWaterLoop.setName("Replacement Chiller Condenser Water Loop"));
+  ASSERT_TRUE(replacementCondenserWaterLoop.addDemandBranchForComponent(*reloadedChiller));
+  EXPECT_EQ("WaterCooled", reloadedChiller->condenserType());
+  ASSERT_TRUE(reloadedModel->save(idfPath, true));
+
+  auto finalModel = Model::load(idfPath);
+  ASSERT_TRUE(finalModel);
+  auto finalChilledWaterLoop = finalModel->getConcreteModelObjectByName<PlantLoop>("Replacement Chiller Chilled Water Loop");
+  auto finalCondenserWaterLoop = finalModel->getConcreteModelObjectByName<PlantLoop>("Replacement Chiller Condenser Water Loop");
+  auto finalHeatRecoveryLoop = finalModel->getConcreteModelObjectByName<PlantLoop>("Surviving Chiller Heat Recovery Loop");
+  auto finalChiller = finalModel->getConcreteModelObjectByName<ChillerElectricEIR>("Surviving Triple Owner Chiller");
+  ASSERT_TRUE(finalChilledWaterLoop);
+  ASSERT_TRUE(finalCondenserWaterLoop);
+  ASSERT_TRUE(finalHeatRecoveryLoop);
+  ASSERT_TRUE(finalChiller);
+  EXPECT_FALSE(finalModel->getConcreteModelObjectByName<PlantLoop>("Removed Chiller Chilled Water Loop"));
+  EXPECT_FALSE(finalModel->getConcreteModelObjectByName<PlantLoop>("Surviving Chiller Condenser Water Loop"));
+  ASSERT_TRUE(finalChiller->chilledWaterLoop());
+  ASSERT_TRUE(finalChiller->condenserWaterLoop());
+  ASSERT_TRUE(finalChiller->heatRecoveryLoop());
+  EXPECT_EQ(*finalChilledWaterLoop, *finalChiller->chilledWaterLoop());
+  EXPECT_EQ(*finalCondenserWaterLoop, *finalChiller->condenserWaterLoop());
+  EXPECT_EQ(*finalHeatRecoveryLoop, *finalChiller->heatRecoveryLoop());
+  EXPECT_EQ(1u, finalChilledWaterLoop->supplyComponents(ChillerElectricEIR::iddObjectType()).size());
+  EXPECT_EQ(1u, finalCondenserWaterLoop->demandComponents(ChillerElectricEIR::iddObjectType()).size());
+  EXPECT_EQ(1u, finalHeatRecoveryLoop->demandComponents(ChillerElectricEIR::iddObjectType()).size());
+  EXPECT_TRUE(finalChiller->chilledWaterInletNode());
+  EXPECT_TRUE(finalChiller->chilledWaterOutletNode());
+  EXPECT_TRUE(finalChiller->condenserInletNode());
+  EXPECT_TRUE(finalChiller->condenserOutletNode());
+  EXPECT_TRUE(finalChiller->heatRecoveryInletNode());
+  EXPECT_TRUE(finalChiller->heatRecoveryOutletNode());
+  EXPECT_EQ("WaterCooled", finalChiller->condenserType());
+
+  std::vector<openstudio::Handle> heatRecoveryTopologyHandles;
+  for (const auto& component : finalHeatRecoveryLoop->supplyComponents()) {
+    heatRecoveryTopologyHandles.push_back(component.handle());
+  }
+  for (const auto& component : finalHeatRecoveryLoop->demandComponents()) {
+    if (component.handle() != finalChiller->handle()) {
+      heatRecoveryTopologyHandles.push_back(component.handle());
+    }
+  }
+  const auto heatRecoveryLoopHandle = finalHeatRecoveryLoop->handle();
+  const auto heatRecoverySizingHandle = finalHeatRecoveryLoop->sizingPlant().handle();
+  const auto finalChillerHandle = finalChiller->handle();
+  EXPECT_FALSE(finalHeatRecoveryLoop->remove().empty());
+  EXPECT_FALSE(finalModel->getObject(heatRecoveryLoopHandle));
+  EXPECT_FALSE(finalModel->getObject(heatRecoverySizingHandle));
+  for (const auto& handle : heatRecoveryTopologyHandles) {
+    EXPECT_FALSE(finalModel->getObject(handle));
+  }
+  ASSERT_TRUE(finalModel->getObject(finalChillerHandle));
+  EXPECT_FALSE(finalChiller->heatRecoveryLoop());
+  EXPECT_FALSE(finalChiller->heatRecoveryInletNode());
+  EXPECT_FALSE(finalChiller->heatRecoveryOutletNode());
+  ASSERT_TRUE(finalChiller->chilledWaterLoop());
+  ASSERT_TRUE(finalChiller->condenserWaterLoop());
+  EXPECT_EQ(*finalChilledWaterLoop, *finalChiller->chilledWaterLoop());
+  EXPECT_EQ(*finalCondenserWaterLoop, *finalChiller->condenserWaterLoop());
+  EXPECT_EQ(1u, finalChilledWaterLoop->supplyComponents(ChillerElectricEIR::iddObjectType()).size());
+  EXPECT_EQ(1u, finalCondenserWaterLoop->demandComponents(ChillerElectricEIR::iddObjectType()).size());
+  EXPECT_TRUE(finalChiller->chilledWaterInletNode());
+  EXPECT_TRUE(finalChiller->chilledWaterOutletNode());
+  EXPECT_TRUE(finalChiller->condenserInletNode());
+  EXPECT_TRUE(finalChiller->condenserOutletNode());
+  EXPECT_EQ("WaterCooled", finalChiller->condenserType());
+
+  PlantLoop replacementHeatRecoveryLoop(*finalModel);
+  ASSERT_TRUE(replacementHeatRecoveryLoop.setName("Replacement Chiller Heat Recovery Loop"));
+  ASSERT_TRUE(replacementHeatRecoveryLoop.addDemandBranchForComponent(*finalChiller));
+  ASSERT_TRUE(finalModel->save(idfPath, true));
+
+  auto completedModel = Model::load(idfPath);
+  ASSERT_TRUE(completedModel);
+  auto completedChilledWaterLoop = completedModel->getConcreteModelObjectByName<PlantLoop>("Replacement Chiller Chilled Water Loop");
+  auto completedCondenserWaterLoop = completedModel->getConcreteModelObjectByName<PlantLoop>("Replacement Chiller Condenser Water Loop");
+  auto completedHeatRecoveryLoop = completedModel->getConcreteModelObjectByName<PlantLoop>("Replacement Chiller Heat Recovery Loop");
+  auto completedChiller = completedModel->getConcreteModelObjectByName<ChillerElectricEIR>("Surviving Triple Owner Chiller");
+  ASSERT_TRUE(completedChilledWaterLoop);
+  ASSERT_TRUE(completedCondenserWaterLoop);
+  ASSERT_TRUE(completedHeatRecoveryLoop);
+  ASSERT_TRUE(completedChiller);
+  EXPECT_FALSE(completedModel->getConcreteModelObjectByName<PlantLoop>("Removed Chiller Chilled Water Loop"));
+  EXPECT_FALSE(completedModel->getConcreteModelObjectByName<PlantLoop>("Surviving Chiller Condenser Water Loop"));
+  EXPECT_FALSE(completedModel->getConcreteModelObjectByName<PlantLoop>("Surviving Chiller Heat Recovery Loop"));
+  ASSERT_TRUE(completedChiller->chilledWaterLoop());
+  ASSERT_TRUE(completedChiller->condenserWaterLoop());
+  ASSERT_TRUE(completedChiller->heatRecoveryLoop());
+  EXPECT_EQ(*completedChilledWaterLoop, *completedChiller->chilledWaterLoop());
+  EXPECT_EQ(*completedCondenserWaterLoop, *completedChiller->condenserWaterLoop());
+  EXPECT_EQ(*completedHeatRecoveryLoop, *completedChiller->heatRecoveryLoop());
+  EXPECT_EQ(1u, completedChilledWaterLoop->supplyComponents(ChillerElectricEIR::iddObjectType()).size());
+  EXPECT_EQ(1u, completedCondenserWaterLoop->demandComponents(ChillerElectricEIR::iddObjectType()).size());
+  EXPECT_EQ(1u, completedHeatRecoveryLoop->demandComponents(ChillerElectricEIR::iddObjectType()).size());
+  EXPECT_TRUE(completedChiller->chilledWaterInletNode());
+  EXPECT_TRUE(completedChiller->chilledWaterOutletNode());
+  EXPECT_TRUE(completedChiller->condenserInletNode());
+  EXPECT_TRUE(completedChiller->condenserOutletNode());
+  EXPECT_TRUE(completedChiller->heatRecoveryInletNode());
+  EXPECT_TRUE(completedChiller->heatRecoveryOutletNode());
+  EXPECT_EQ("WaterCooled", completedChiller->condenserType());
+
+  openstudio::filesystem::remove(idfPath);
 }

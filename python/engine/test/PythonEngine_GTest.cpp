@@ -11,6 +11,7 @@
 #include "../../../src/measure/OSRunner.hpp"
 #include "../../../src/epmodel/Model.hpp"
 #include "../../../src/scriptengine/ScriptEngine.hpp"
+#include "../../../src/utilities/core/Assert.hpp"
 
 #include <fmt/format.h>
 

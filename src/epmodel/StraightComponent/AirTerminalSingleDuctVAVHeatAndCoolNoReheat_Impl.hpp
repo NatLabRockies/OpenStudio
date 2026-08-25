@@ -25,6 +25,7 @@ namespace epmodel {
 
       unsigned inletPort() const override;
       unsigned outletPort() const override;
+      bool isRemovable() const override;
       bool removeFromLoop() override;
       boost::optional<ZoneHVACAirDistributionUnit> zoneHVACAirDistributionUnit() const;
       bool addToNode(Node& node) override;

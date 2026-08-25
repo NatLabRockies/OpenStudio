@@ -4,6 +4,7 @@
 ***********************************************************************************************************************/
 
 #include "Time.hpp"
+#include "../core/ASCIIStrings.hpp"
 
 using namespace std;
 using namespace boost;
@@ -198,6 +199,50 @@ int Time::totalSeconds() const {
 // reference to impl
 const Time::ImplType Time::impl() const {
   return m_impl;
+}
+
+Time Time::fromUntilString(const std::string& untilField) {
+  std::string upper = ascii_to_upper_copy(untilField);
+
+  {
+    // Strip optional "Until" prefix (case-insensitive), with or without
+    // trailing colon. E+ accepts "Until:", "Until ", "until:", "until ",
+    // etc.
+    const auto untilPos = upper.find("UNTIL");
+    if (untilPos != std::string::npos) {
+      std::size_t afterUntil = untilPos + 5;  // skip "UNTIL"
+      if (afterUntil < upper.size() && (upper[afterUntil] == ':' || upper[afterUntil] == ' ')) {
+        ++afterUntil;  // skip the separator
+      }
+      upper = upper.substr(afterUntil);
+      ascii_trim(upper);
+    }
+    // fmt::print("New upper: '{}'\n", upper);
+  }
+
+  const auto colonPos = upper.find(':');
+  if (colonPos == std::string::npos) {
+    LOG_AND_THROW("Could not find a colon in the time string: '" << upper << "'");
+  }
+
+  try {
+    const int hours = std::stoi(upper.substr(0, colonPos));
+    const int mins = std::stoi(upper.substr(colonPos + 1));
+    return {0, hours, mins};
+  } catch (...) {
+    LOG_AND_THROW("Failed to parse time string: '" << upper << "'");
+  }
+}
+
+std::string Time::toUntilString(bool includePrefix) const {
+  int h = hours() + 24 * days();
+  int m = minutes() + static_cast<int>(floor(seconds() / 60.0 + 0.5));
+  if (m >= 60) {
+    ++h;
+    m -= 60;
+  }
+  auto pad = [](int v) { return (v < 10 ? "0" : "") + to_string(v); };
+  return (includePrefix ? "Until: " : "") + pad(h) + ":" + pad(m);
 }
 
 // std::ostream operator<<

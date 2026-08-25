@@ -23,6 +23,17 @@ namespace epmodel {
     class People_Impl;
   }
 
+  /** \brief Represents the EnergyPlus People object.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-internal-gains-people-lights-other.html#people,People}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::People</code>. <b>Not yet available:</b> the Model schedule, space, and space-type relationship methods. EPModel exposes the scalar comfort/activity fields and compatibility multiplier methods.
+   *
+   * \par Known limitations
+   * The compatibility multiplier scales the stored people-count or density fields because EnergyPlus has no dedicated multiplier field.
+   */
   class EPMODEL_API People : public ModelObject
   {
    public:
@@ -38,15 +49,6 @@ namespace epmodel {
 
     static std::vector<std::string> clothingInsulationCalculationMethodValues();
 
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::People scalar API names/signatures where present.
-    // - Field Mapping: clothingInsulationCalculationMethod/coldStressTemperatureThreshold/heatStressTemperatureThreshold map directly
-    //   to E+ People fields with the same semantic meaning.
-    // - Field Mapping: schedule and space/space-type target references are relationship fields and intentionally excluded.
-    // - Field Mapping: setMultiplier/resetMultiplier are preserved compatibility methods; E+ People has no dedicated multiplier field.
-    // - ForwardTranslator evidence: ForwardTranslatePeople.cpp applies model multiplier directly to translated Number of People,
-    //   People per Floor Area, and Floor Area per Person scalar fields.
-    // - TODO(parity): Add relationship and definition-backed APIs without changing preserved scalar signatures.
 
     // Clothing insulation calculation method
     std::string clothingInsulationCalculationMethod() const;

@@ -19,11 +19,27 @@ namespace epmodel {
 
   class Model;
   class Node;
+  class Schedule;
+  class ThermalZone;
 
   namespace detail {
     class HeaderedPumpsVariableSpeed_Impl;
   }
 
+/** \brief A bank of variable-speed headered pumps.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-pumps.html#headeredpumpsvariablespeed,HeaderedPumps:VariableSpeed}
+ *
+ * \par Important behavior
+ * Pump-bank scalars, flow-rate schedule, thermal-zone relationship, and plant placement map to HeaderedPumps:VariableSpeed.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model type is <code>openstudio::model::HeaderedPumpsVariableSpeed</code>.
+ *
+ * \par Known limitations
+ * No additional type-specific limitation is known beyond shared straight-component topology.
+ */
   class EPMODEL_API HeaderedPumpsVariableSpeed : public StraightComponent
   {
    public:
@@ -41,14 +57,6 @@ namespace epmodel {
     static std::vector<std::string> pumpControlTypeValues();
     static std::vector<std::string> designPowerSizingMethodValues();
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. The canonical scalar variable-speed pump-bank surface and plant-loop placement contract are present, while schedule, zone, and richer relationship helpers remain out of scope.
-    // - Canonical Counterpart: openstudio::model::HeaderedPumpsVariableSpeed.
-    // - Implemented Parity: Preserved scalar accessor names/signatures cover total flow, pump-bank count, sequencing scheme, head, power, efficiency, part-load coefficients, minimum flow fraction, control type, radiative fraction, design-power sizing, and end-use metadata with matching autosize behavior; `addToNode(...)` is limited to plant-loop placement like the canonical wrapper.
-    // - Documented Delta: `pumpFlowRateSchedule` and thermal-zone linkage helpers from canonical `openstudio::model::HeaderedPumpsVariableSpeed` are not exposed yet.
-    // - Field/Storage Mapping: The preserved scalar APIs map directly to EnergyPlus `HeaderedPumps:VariableSpeed` scalar fields used by the forward translator.
-    // - Evidence: `src/model/HeaderedPumpsVariableSpeed.hpp` defines the canonical wrapper surface, and `src/energyplus/ForwardTranslator/ForwardTranslateHeaderedPumpsVariableSpeed.cpp` confirms the direct scalar mapping and autosize tokens.
-    // - Remaining Parity Work: Add the omitted schedule, thermal-zone, and relationship helpers without changing the preserved scalar signatures.
 
     boost::optional<double> totalRatedFlowRate() const;
     bool isTotalRatedFlowRateAutosized() const;
@@ -94,6 +102,14 @@ namespace epmodel {
 
     std::string pumpControlType() const;
     bool setPumpControlType(const std::string& pumpControlType);
+
+    boost::optional<Schedule> pumpFlowRateSchedule() const;
+    bool setPumpFlowRateSchedule(Schedule& schedule);
+    void resetPumpFlowRateSchedule();
+
+    boost::optional<ThermalZone> thermalZone() const;
+    bool setThermalZone(const ThermalZone& thermalZone);
+    void resetThermalZone();
 
     double skinLossRadiativeFraction() const;
     bool setSkinLossRadiativeFraction(double skinLossRadiativeFraction);

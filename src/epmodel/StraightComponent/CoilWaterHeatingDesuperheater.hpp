@@ -24,10 +24,25 @@ namespace epmodel {
     class CoilWaterHeatingDesuperheater_Impl;
   }
 
+  /** \brief Represents a water-heating desuperheater coil.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-heating-and-cooling-coils.html#coilwaterheatingdesuperheater,Coil:WaterHeating:Desuperheater}.
+   *
+   * \par Important behavior
+   * The required setpoint schedule and availability schedule map to the EnergyPlus object; the direct one-argument constructor remains IDF-compatible.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::CoilWaterHeatingDesuperheater</code>. <b>Added:</b> EPModel exposes <code>addToNode()</code>. <b>Not yet available:</b> <code>addToHeatRejectionTarget()</code> and <code>removeFromHeatRejectionTarget()</code>, plus broader tank-link conveniences.
+   * \par Known limitations
+   * The one-argument constructor does not synthesize the required setpoint schedule.
+   */
   class EPMODEL_API CoilWaterHeatingDesuperheater : public StraightComponent
   {
    public:
+    /** EnergyPlus-compatible construction. The object remains structurally incomplete until a setpoint temperature schedule is supplied. */
     explicit CoilWaterHeatingDesuperheater(const Model& model);
+    explicit CoilWaterHeatingDesuperheater(const Model& model, Schedule& setpointTemperatureSchedule);
 
     virtual ~CoilWaterHeatingDesuperheater() override = default;
     CoilWaterHeatingDesuperheater(const CoilWaterHeatingDesuperheater& other) = default;
@@ -37,19 +52,12 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. The canonical scalar surface plus the required availability-schedule and bounded relationship slice are present, while tank-link and broader node-link helpers remain out of scope.
-    // - Canonical Counterpart: openstudio::model::CoilWaterHeatingDesuperheater.
-    // - Implemented Parity: The dead-band, heat-reclaim, water-flow, pump-power, and parasitic-load helpers preserve the canonical scalar API; `availabilitySchedule`,
-    //   the optional reclaim-efficiency curve, the optional heating-source relationship, curve child traversal, and the canonical `addToNode(...)` rejection preserve
-    //   the current bounded relationship slice.
-    // - Documented Delta: Tank-link helpers remain out of scope for this wrapper.
-    // - Field/Storage Mapping: Preserved scalars and relationships map directly to EnergyPlus `Coil:WaterHeating:Desuperheater` fields.
-    // - Evidence: `src/model/CoilWaterHeatingDesuperheater.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateCoilWaterHeatingDesuperheater.cpp`, and `src/epmodel/test/CoilWaterHeatingDesuperheater_GTest.cpp`.
-    // - Remaining Parity Work: Add the omitted tank-link and broader relationship helpers without changing the preserved scalar signatures.
-
     Schedule availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);
+    void resetAvailabilitySchedule();
+
+    Schedule setpointTemperatureSchedule() const;
+    bool setSetpointTemperatureSchedule(Schedule& schedule);
 
     boost::optional<CurveBiquadratic> heatReclaimEfficiencyFunctionofTemperatureCurve() const;
     bool setHeatReclaimEfficiencyFunctionofTemperatureCurve(const CurveBiquadratic& curveBiquadratic);

@@ -27,6 +27,33 @@ namespace epmodel {
     class ScheduleFile_Impl;
   }
 
+  /** \brief Reads schedule values from an external text file.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-schedules.html#schedulefile,Schedule:File}
+   *
+   * \par Important behavior
+   * The string overload of <code>setMinutesperItem()</code> returns false for
+   * text that is not an integer.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::ScheduleFile</code>.
+   *
+   * - <b>Not yet available:</b> The constructors that accept an
+   *   <code>ExternalFile</code> or a file path.
+   * - <b>Not yet available:</b> <code>externalFile()</code>,
+   *   <code>csvFile()</code>, <code>translatedFilePath()</code>, and the
+   *   <code>translateFileWithRelativePath()</code> getter, default query,
+   *   setter, and reset methods.
+   * - <b>Changed:</b> <code>setMinutesperItem(const std::string&)</code> is
+   *   deprecated in OpenStudio Model but is not marked deprecated in EPModel.
+   *
+   * \par Known limitations
+   * EPModel does not provide a typed file/path relationship for this object.
+   * Callers can edit the EnergyPlus scalar fields, but must use lower-level
+   * object access to supply or inspect the <code>File Name</code> field.
+   */
   class EPMODEL_API ScheduleFile : public Schedule
   {
    public:
@@ -44,18 +71,6 @@ namespace epmodel {
 
     static std::vector<std::string> columnSeparatorValues();
     static std::vector<std::string> minutesperItemValues();
-
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::ScheduleFile scalar accessor names/signatures where fields map to E+ Schedule:File.
-    // - Field Mapping: columnNumber, rowstoSkipatTop, numberofHoursofData, columnSeparator, interpolatetoTimestep,
-    //   minutesperItem, and adjustScheduleforDaylightSavings map directly to EnergyPlus Schedule:File scalar fields.
-    // - ForwardTranslator evidence: ForwardTranslateScheduleFile.cpp writes these preserved APIs directly to Schedule:File fields.
-    // - Field Mapping: ScheduleTypeLimitsName and FileName are intentionally excluded in this scalar-only pass
-    //   (relationship/file-path behavior is handled separately from scalar accessors).
-    // - TODO(parity): Add relationship and path-translation parity APIs incrementally after scalar scaffold saturation.
-
-    // std::string fileName() const;
-    // bool setFileName(std::string fileName);
 
     int columnNumber() const;
     bool setColumnNumber(int columnNumber);

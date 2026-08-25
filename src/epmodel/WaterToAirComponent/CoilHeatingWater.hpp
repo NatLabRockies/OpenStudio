@@ -24,6 +24,35 @@ namespace epmodel {
     class CoilHeatingWater_Impl;
   }
 
+  /** \brief Represents a hot-water heating coil with separate air and water connections.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-heating-and-cooling-coils.html#coilheatingwater,Coil:Heating:Water}
+   *
+   * \par Important behavior
+   * A missing availability-schedule target found while loading is repaired with
+   * the model's always-on discrete schedule. The water-coil controller is
+   * inferred from shared sensor and actuator node references. The airflow-
+   * network helper stores an <code>AirflowNetwork:Distribution:Component:Coil</code>
+   * companion and repairs its coil-object-type field when needed.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::CoilHeatingWater</code>.
+   *
+   * - <b>Changed:</b> The airflow-network equivalent-duct methods use
+   *   <code>AirflowNetworkDistributionComponentCoil</code> instead of
+   *   Model's <code>AirflowNetworkEquivalentDuct</code>.
+   * - <b>Changed:</b> Autosized-value queries are present, but return no value
+   *   because EPModel does not read SQL sizing results.
+   * - <b>Added:</b> EPModel provides <code>performanceInputMethodValues()</code>
+   *   for the EnergyPlus choice field; the Model header does not provide this
+   *   helper.
+   *
+   * \par Known limitations
+   * If more than one airflow-network coil component is attached, the getter
+   * warns and returns the first component in the resolved source order.
+   */
   class EPMODEL_API CoilHeatingWater : public WaterToAirComponent
   {
    public:
@@ -40,32 +69,6 @@ namespace epmodel {
 
     static std::vector<std::string> performanceInputMethodValues();
 
-    // Schema Alignment Notes:
-    // - Status: Parity with documented deltas. The scalar design fields, availability schedule surface, inferred
-    //   controller linkage, and equivalent-duct helper surface now align.
-    // - Canonical Counterpart: openstudio::model::CoilHeatingWater.
-    // - Implemented Parity: `availabilitySchedule`, `setAvailabilitySchedule`, deprecated availability aliases,
-    //   `controllerWaterCoil`, `uFactorTimesAreaValue`, `maximumWaterFlowRate`, `performanceInputMethod`,
-    //   `ratedCapacity`, `ratedInletWaterTemperature`, `ratedInletAirTemperature`, `ratedOutletWaterTemperature`,
-    //   `ratedOutletAirTemperature`, `ratedRatioForAirAndWaterConvection`, `getAirflowNetworkEquivalentDuct`,
-    //   `airflowNetworkEquivalentDuct`, and the related autosize helpers preserve the canonical coil-facing API.
-    // - Documented Delta: For malformed imported data with no persisted availability schedule, the getter repairs
-    //   storage to the model always-on discrete schedule before returning it. When the coil is attached to multiple
-    //   `AirflowNetwork:Distribution:Component:Coil` objects, `airflowNetworkEquivalentDuct()` warns and returns the
-    //   first attached component. Autosized-value query accessors currently return `none` because epmodel does not yet
-    //   expose canonical SQL-backed autosized results.
-    // - Field/Storage Mapping: The availability schedule and scalar design fields map directly to EnergyPlus
-    //   `Coil:Heating:Water`. Controller linkage is inferred from the persisted `Controller:WaterCoil` actuator and
-    //   sensor nodes because EnergyPlus stores the relationship through shared nodes rather than a direct back-reference.
-    //   The equivalent-duct helper surface persists the linked `AirflowNetwork:Distribution:Component:Coil`
-    //   relationship and its scalar geometry fields; the impl-level `children()` traversal includes those attached
-    //   distribution components, and when reusing malformed imported data the helper repairs the stored `Coil Object
-    //   Type` field back to `Coil:Heating:Water`. If malformed imported data omits the required availability
-    //   schedule, the getter repairs the persisted schedule reference to the model always-on discrete schedule.
-    // - Evidence: `src/model/CoilHeatingWater.hpp`, `src/model/CoilHeatingWater.cpp`,
-    //   `src/energyplus/ForwardTranslator/ForwardTranslateCoilHeatingWater.cpp`,
-    //   `src/energyplus/ForwardTranslator/ForwardTranslateAirflowNetwork.cpp`, and
-    //   `src/model/test/CoilHeatingWater_GTest.cpp`.
     Schedule availabilitySchedule() const;
 
     /** \deprecated */

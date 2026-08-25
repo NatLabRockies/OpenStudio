@@ -99,6 +99,8 @@ namespace epmodel {
       bool setZoneControlHumidistat(const openstudio::epmodel::ZoneControlHumidistat& humidistat);
       void resetZoneControlHumidistat();
 
+      std::vector<openstudio::IdfObject> remove() override;
+
       boost::optional<openstudio::epmodel::ZoneControlContaminantController> zoneControlContaminantController() const;
       bool setZoneControlContaminantController(const openstudio::epmodel::ZoneControlContaminantController& contaminantController);
       void resetZoneControlContaminantController();
@@ -106,6 +108,19 @@ namespace epmodel {
       boost::optional<openstudio::epmodel::ModelObject> returnAirModelObject() const;
       std::vector<openstudio::epmodel::ModelObject> returnAirModelObjects() const;
       openstudio::epmodel::Node zoneAirNode() const;
+      boost::optional<openstudio::epmodel::Node> plenumZoneNode();
+      void clearConditioningForPlenum();
+
+      bool setSupplyPlenum(const openstudio::epmodel::ThermalZone& plenumZone);
+      bool setSupplyPlenum(const openstudio::epmodel::ThermalZone& plenumZone, unsigned branchIndex);
+      void removeSupplyPlenum();
+      void removeSupplyPlenum(const openstudio::epmodel::AirLoopHVAC& airLoop);
+      void removeSupplyPlenum(unsigned branchIndex);
+      void removeSupplyPlenum(const openstudio::epmodel::AirLoopHVAC& airLoop, unsigned branchIndex);
+      bool setReturnPlenum(const openstudio::epmodel::ThermalZone& plenumZone);
+      bool setReturnPlenum(const openstudio::epmodel::ThermalZone& plenumZone, openstudio::epmodel::AirLoopHVAC& airLoop);
+      void removeReturnPlenum();
+      void removeReturnPlenum(openstudio::epmodel::AirLoopHVAC& airLoop);
 
       bool addEquipment(const openstudio::epmodel::ModelObject& equipment);
       bool removeEquipment(const openstudio::epmodel::ModelObject& equipment);

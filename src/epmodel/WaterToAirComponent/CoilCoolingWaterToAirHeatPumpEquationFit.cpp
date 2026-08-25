@@ -904,6 +904,11 @@ namespace epmodel {
     }
 
     void CoilCoolingWaterToAirHeatPumpEquationFit_Impl::setConstructorSharedDefaults(const Model& model) {
+      autosizeRatedAirFlowRate();
+      autosizeRatedWaterFlowRate();
+      autosizeRatedTotalCoolingCapacity();
+      autosizeRatedSensibleCoolingCapacity();
+      OS_ASSERT(setRatedCoolingCoefficientofPerformance(3.0));
       OS_ASSERT(setRatedEnteringWaterTemperature(30.0));
       OS_ASSERT(setRatedEnteringAirDryBulbTemperature(27.0));
       OS_ASSERT(setRatedEnteringAirWetBulbTemperature(19.0));

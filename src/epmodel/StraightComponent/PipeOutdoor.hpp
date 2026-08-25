@@ -23,6 +23,20 @@ namespace epmodel {
     class PipeOutdoor_Impl;
   }
 
+/** \brief An outdoor plant pipe.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-node-branch-management.html#pipeoutdoor,Pipe:Outdoor}
+ *
+ * \par Important behavior
+ * The inherited straight-component inlet/outlet topology and pipe scalars map to Pipe:Outdoor.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model type is <code>openstudio::model::PipeOutdoor</code>.
+ *
+ * \par Known limitations
+ * No additional type-specific limitation is known beyond shared straight-component topology.
+ */
   class EPMODEL_API PipeOutdoor : public StraightComponent
   {
    public:
@@ -36,20 +50,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - Status: Near Parity. The canonical PipeOutdoor scalar surface, object relationships, and plant-loop-only topology behavior are present.
-    // - Canonical Counterpart: openstudio::model::PipeOutdoor.
-    // - Implemented Parity: `construction`, `ambientTemperatureOutdoorAirNode`, `pipeInsideDiameter`, `pipeLength`, and plant-loop-only
-    //   `addToNode(...)` preserve the canonical wrapper behavior that maps directly to `Pipe:Outdoor`.
-    // - Documented Delta: PipeOutdoor still inherits the shared epmodel HVACComponent/StraightComponent base-surface gaps around the broader
-    //   canonical component/fuel-type conveniences; this wrapper does not add a type-local workaround.
-    // - Field/Storage Mapping: The wrapper maps directly to EnergyPlus `Pipe:Outdoor` construction, outdoor-air-node, and scalar fields.
-    //   The canonical forward translator synthesizes an `OutdoorAir:NodeList` when no ambient outdoor-air node is assigned.
-    // - Evidence: `src/model/PipeOutdoor.hpp`, `src/model/PipeOutdoor.cpp`, `src/model/test/PipeOutdoor_GTest.cpp`,
-    //   `src/energyplus/ForwardTranslator/ForwardTranslatePipeOutdoor.cpp`, and `src/energyplus/Test/PipeOutdoor_GTest.cpp`
-    //   define and exercise the canonical behavior this wrapper preserves.
-    // - Remaining Parity Work: Close the remaining shared HVACComponent base-surface gaps so PipeOutdoor can inherit the missing canonical
-    //   component/fuel-type conveniences without adding type-local divergence.
 
     /** @name Topology */
     //@{

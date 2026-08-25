@@ -21,6 +21,22 @@ namespace epmodel {
     class SurfacePropertyOtherSideCoefficients_Impl;
   }
 
+  /** \brief Defines coefficients for calculating a surface's other-side temperature.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-advanced-surface-concepts.html#surfacepropertyothersidecoefficients,SurfaceProperty:OtherSideCoefficients}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::SurfacePropertyOtherSideCoefficients</code>.
+   * EPModel exposes the same scalar fields and default/reset operations, but
+   * not Model's <code>constantTemperatureSchedule()</code> relationship and
+   * its setter/resetter.
+   *
+   * \par Known limitations
+   * The constant-temperature schedule relationship cannot be assigned through
+   * this wrapper.
+   */
   class EPMODEL_API SurfacePropertyOtherSideCoefficients : public ModelObject
   {
    public:
@@ -33,16 +49,6 @@ namespace epmodel {
     SurfacePropertyOtherSideCoefficients& operator=(SurfacePropertyOtherSideCoefficients&&) = default;
 
     static IddObjectType iddObjectType();
-
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model scalar accessor names/signatures for SurfacePropertyOtherSideCoefficients.
-    // - Field Mapping: Each scalar maps to the corresponding EnergyPlus SurfaceProperty:OtherSideCoefficients field via
-    //   SurfaceProperty_OtherSideCoefficientsFields (combined film coefficient, constant temperature, temperature
-    //   coefficients, and the optional min/max limits). The constant temperature schedule field is a relationship and is
-    //   intentionally excluded from this scalar-only scaffold pass.
-    // - ForwardTranslator evidence: ForwardTranslateSurfacePropertyOtherSideCoefficients.cpp writes the same EnergyPlus
-    //   fields with the same Yes/No semantics and autosized default handling.
-    // - TODO(parity): Reintroduce schedule relationship helpers once epmodel schedule scaffolding advances.
 
     boost::optional<double> combinedConvectiveRadiativeFilmCoefficient() const;
     bool setCombinedConvectiveRadiativeFilmCoefficient(double combinedConvectiveRadiativeFilmCoefficient);

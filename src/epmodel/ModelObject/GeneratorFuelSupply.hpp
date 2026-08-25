@@ -23,6 +23,18 @@ namespace epmodel {
     class GeneratorFuelSupply_Impl;
   }
 
+  /** \brief Represents <code>Generator:FuelSupply</code>.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-electric-load-center-generator.html#generatorfuelsupply,Generator:FuelSupply}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::GeneratorFuelSupply</code>.
+   * **Not yet available:** Model parent, node, curve, schedule, and extensible constituent conveniences are not exposed unless declared here.
+   *
+   * \par Known limitations
+   * Relationship and extensible data not represented by the public declarations must be maintained by the owning object.
+   */
   class EPMODEL_API GeneratorFuelSupply : public ModelObject
   {
    public:
@@ -38,18 +50,6 @@ namespace epmodel {
 
     static std::vector<std::string> fuelTemperatureModelingModeValues();
     static std::vector<std::string> fuelTypeValues();
-
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model scalar accessor names/signatures for counterpart parity.
-    // - Field Mapping: fuelTemperatureModelingMode, compressorHeatLossFactor, fuelType,
-    //   liquidGenericFuelLowerHeatingValue, liquidGenericFuelHigherHeatingValue,
-    //   liquidGenericFuelMolecularWeight, liquidGenericFuelCO2EmissionFactor map directly
-    //   to Generator:FuelSupply scalar fields.
-    // - Field Mapping: numberofConstituentsinGaseousConstituentFuelSupply follows existing
-    //   model behavior and reflects extensible group count.
-    // - ForwardTranslator evidence: ForwardTranslateGeneratorFuelSupply writes these scalar
-    //   fields directly and handles node/schedule/curve/extensible constituent relationships separately.
-    // - TODO(parity): Add excluded relationship/extensible APIs incrementally.
     std::string fuelTemperatureModelingMode() const;
     bool setFuelTemperatureModelingMode(const std::string& fuelTemperatureModelingMode);
     void resetFuelTemperatureModelingMode();

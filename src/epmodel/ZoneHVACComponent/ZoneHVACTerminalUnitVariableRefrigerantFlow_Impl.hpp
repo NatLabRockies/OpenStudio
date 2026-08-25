@@ -16,6 +16,7 @@ namespace openstudio {
 namespace epmodel {
 
   class HVACComponent;
+  class AirLoopHVACOutdoorAirSystem;
   class Node;
   class OutdoorAirMixer;
   class Schedule;
@@ -122,14 +123,21 @@ namespace epmodel {
       boost::optional<ThermalZone> controllingZoneorThermostatLocation() const;
       bool setControllingZoneorThermostatLocation(const ThermalZone& thermalZone);
       void resetControllingZoneorThermostatLocation();
+      boost::optional<HVACComponent> vrfSystem() const;
 
       std::vector<ModelObject> children() const override;
 
       unsigned inletPort() const override;
       unsigned outletPort() const override;
+      bool addToNode(Node& node) override;
       bool addToThermalZone(ThermalZone& thermalZone) override;
       void removeFromThermalZone() override;
+      bool removeFromAirLoopHVAC() override;
+      void disconnect() override;
+      std::vector<IdfObject> remove() override;
       void doCanonicalize(LoadContext& context) override;
+
+      bool setAirBoundaryNode(const Node& node, bool inlet);
 
       bool isFluidTemperatureControl() const;
 
@@ -142,6 +150,8 @@ namespace epmodel {
       boost::optional<double> autosizedOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded() const;
 
      private:
+      bool addToOutdoorAirSystem(AirLoopHVACOutdoorAirSystem& oaSystem, Node& node);
+      bool removeFromOutdoorAirSystem(AirLoopHVACOutdoorAirSystem& oaSystem);
       bool maintainContainedAirPath();
       bool repairContainedAirPath(LoadContext& context);
       bool reconcileContainedAirPath(bool allowChildNodeRecovery, LoadContext* context = nullptr);

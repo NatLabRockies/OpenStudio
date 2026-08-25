@@ -23,6 +23,18 @@ namespace epmodel {
     class PlantEquipmentOperationHeatingLoad_Impl;
   }
 
+  /** \brief Selects plant equipment for heating load operation.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-plant-condenser-control.html#plantequipmentoperationheatingload,PlantEquipmentOperation:HeatingLoad}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::PlantEquipmentOperationHeatingLoad</code>.
+   * No known public API differences.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API PlantEquipmentOperationHeatingLoad : public PlantEquipmentOperationRangeBasedScheme
   {
    public:
@@ -36,9 +48,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - Canonical Counterpart: openstudio::model::PlantEquipmentOperationHeatingLoad.
-    // - API: Inherits the range/equipment helpers from PlantEquipmentOperationRangeBasedScheme.
 
    protected:
     using ImplType = detail::PlantEquipmentOperationHeatingLoad_Impl;

@@ -23,6 +23,24 @@ namespace epmodel {
     class PlantEquipmentOperationOutdoorWetBulb_Impl;
   }
 
+  /** \brief Selects plant equipment for outdoor-wet bulb operation.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-plant-condenser-control.html#plantequipmentoperationoutdoorwetbulb,PlantEquipmentOperation:OutdoorWetBulb}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::PlantEquipmentOperationOutdoorWetBulb</code>.
+   *
+   * - <b>Not yet available:</b> The load-range and equipment methods inherited
+   *   from <code>PlantEquipmentOperationRangeBasedScheme</code>, including
+   *   <code>addLoadRange(...)</code>, <code>removeLoadRange(...)</code>,
+   *   <code>loadRangeUpperLimits()</code>, <code>equipment(...)</code>, the
+   *   add/replace/remove equipment methods, and <code>clearLoadRanges()</code>.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API PlantEquipmentOperationOutdoorWetBulb : public PlantEquipmentOperationScheme
   {
    public:
@@ -36,14 +54,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    /**
-     * @name Outdoor wet-bulb range scalars
-     *
-     * Schema Alignment Notes:
-     * - API: Exposes the PlantEquipmentOperation:OutdoorWetBulb wet-bulb range scalars so the epmodel API matches the openstudio::model counterpart.
-     * - Field Mapping: maximumUpperLimit() and minimumLowerLimit() read the Wet-Bulb Temperature Range upper/lower limits from the last/first extensible groups.
-     * - TODO(parity): Add direct helpers for related equipment lists once the generic extensible scaffolding arrives.
-     */
     //@{
     double maximumUpperLimit() const;
     double minimumLowerLimit() const;

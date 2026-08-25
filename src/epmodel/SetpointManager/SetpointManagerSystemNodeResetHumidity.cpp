@@ -7,8 +7,10 @@
 #include "SetpointManager/SetpointManagerSystemNodeResetHumidity_Impl.hpp"
 
 #include "Model.hpp"
+#include "StraightComponent/Node.hpp"
 
 #include <utilities/core/Assert.hpp>
+#include <utilities/core/UUID.hpp>
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/IddFactory.hxx>
 #include <utilities/idd/SetpointManager_SystemNodeReset_Humidity_FieldEnums.hxx>
@@ -84,6 +86,18 @@ namespace epmodel {
     return result;
   }
 
+  boost::optional<Node> SetpointManagerSystemNodeResetHumidity::referenceNode() const {
+    return getImpl<detail::SetpointManagerSystemNodeResetHumidity_Impl>()->referenceNode();
+  }
+
+  bool SetpointManagerSystemNodeResetHumidity::setReferenceNode(const Node& node) {
+    return getImpl<detail::SetpointManagerSystemNodeResetHumidity_Impl>()->setReferenceNode(node);
+  }
+
+  void SetpointManagerSystemNodeResetHumidity::resetReferenceNode() {
+    getImpl<detail::SetpointManagerSystemNodeResetHumidity_Impl>()->resetReferenceNode();
+  }
+
 }  // namespace epmodel
 }  // namespace openstudio
 
@@ -142,6 +156,32 @@ namespace epmodel {
       return result;
     }
 
+    boost::optional<openstudio::epmodel::Node> SetpointManagerSystemNodeResetHumidity_Impl::referenceNode() const {
+      constexpr auto field = openstudio::SetpointManager_SystemNodeReset_HumidityFields::ReferenceNodeName;
+      const auto managedValue = getObject<ModelObject>().getField(field, false);
+      if (!managedValue || managedValue->empty()) {
+        return boost::none;
+      }
+      const auto targetHandle = openstudio::toUUID(*managedValue);
+      if (targetHandle.isNull()) {
+        return boost::none;
+      }
+      return model().getModelObject<openstudio::epmodel::Node>(targetHandle);
+    }
+
+    bool SetpointManagerSystemNodeResetHumidity_Impl::setReferenceNode(const openstudio::epmodel::Node& node) {
+      if (node.model() != model()) {
+        return false;
+      }
+      return getObject<ModelObject>().setPointer(openstudio::SetpointManager_SystemNodeReset_HumidityFields::ReferenceNodeName, node.handle());
+    }
+
+    void SetpointManagerSystemNodeResetHumidity_Impl::resetReferenceNode() {
+      constexpr auto field = openstudio::SetpointManager_SystemNodeReset_HumidityFields::ReferenceNodeName;
+      OS_ASSERT(setPointer(field, Handle(), false));
+      OS_ASSERT(openstudio::detail::IdfObject_Impl::setString(field, "", false));
+    }
+
     boost::optional<openstudio::epmodel::Node> SetpointManagerSystemNodeResetHumidity_Impl::setpointNode() const {
       return getObject<ModelObject>().getModelObjectTarget<openstudio::epmodel::Node>(
         openstudio::SetpointManager_SystemNodeReset_HumidityFields::SetpointNodeorNodeListName);
@@ -165,6 +205,7 @@ namespace epmodel {
 
     void SetpointManagerSystemNodeResetHumidity_Impl::doCanonicalize(LoadContext& context) {
       SetpointManager_Impl::doCanonicalize(context);
+      (void)resolvedNodeTarget(openstudio::SetpointManager_SystemNodeReset_HumidityFields::ReferenceNodeName);
       canonicalizeSetpointNodeField(context, openstudio::SetpointManager_SystemNodeReset_HumidityFields::SetpointNodeorNodeListName);
 
       if (auto value = getString(openstudio::SetpointManager_SystemNodeReset_HumidityFields::ControlVariable, true)) {

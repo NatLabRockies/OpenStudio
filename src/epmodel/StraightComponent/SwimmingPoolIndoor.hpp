@@ -21,11 +21,26 @@ namespace epmodel {
 
   class Model;
   class Node;
+  class Schedule;
 
   namespace detail {
     class SwimmingPoolIndoor_Impl;
   }
 
+/** \brief An indoor swimming pool.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-internal-gains-people-lights-other.html#swimmingpoolindoor,SwimmingPool:Indoor}
+ *
+ * \par Important behavior
+ * Pool scalars, six water-temperature schedules, water nodes, and demand-side placement map directly to SwimmingPool:Indoor. ScheduleRuleset defaults are represented by equivalent Schedule:Constant objects.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model type is <code>openstudio::model::SwimmingPoolIndoor</code>.
+ *
+ * \par Known limitations
+ * The surface relationship is not available; EPModel-only cover default/reset helpers differ from Model.
+ */
   class EPMODEL_API SwimmingPoolIndoor : public StraightComponent
   {
    public:
@@ -39,24 +54,17 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. The canonical indoor-swimming-pool scalar surface and plant-demand placement contract are present, while the
-    //   surface and schedule relationship helpers remain out of scope.
-    // - Canonical Counterpart: openstudio::model::SwimmingPoolIndoor.
-    // - Implemented Parity: The preserved scalar API matches the cover-factor, heating-flow, miscellaneous-power, depth, and occupancy
-    //   accessors, including the canonical exposed constructor defaults for average depth, maximum people, heating flow, and miscellaneous
-    //   power; `addToNode(...)` now mirrors the canonical plant-demand-only restriction; and the pool water node convenience getters project
-    //   the straight-component inlet/outlet topology the same way the canonical wrapper does.
-    // - Documented Delta: Surface-name and all schedule relationship helpers remain intentionally omitted from this EnergyPlus-first wrapper,
-    //   and the `isCover*Defaulted()` / `resetCover*()` helpers are epmodel-only conveniences with no canonical counterpart.
-    // - Field/Storage Mapping: Scalar accessors write directly to EnergyPlus `SwimmingPool:Indoor` fields, while pool water node helpers resolve
-    //   the same inlet/outlet node fields used by loop topology and forward translation.
-    // - Evidence: `src/model/SwimmingPoolIndoor.hpp`, `src/model/SwimmingPoolIndoor.cpp`,
-    //   `src/energyplus/ForwardTranslator/ForwardTranslateSwimmingPoolIndoor.cpp`, and `src/model/test/SwimmingPoolIndoor_GTest.cpp`.
-    // - Remaining Parity Work: Add the omitted surface and schedule relationship helpers and decide whether the epmodel-only cover default/reset
-    //   helpers should remain a documented divergence or be folded back behind canonical-style behavior.
     double averageDepth() const;
     bool setAverageDepth(double averageDepth);
+
+    Schedule activityFactorSchedule() const;
+    bool setActivityFactorSchedule(Schedule& schedule);
+
+    Schedule makeupWaterSupplySchedule() const;
+    bool setMakeupWaterSupplySchedule(Schedule& schedule);
+
+    Schedule coverSchedule() const;
+    bool setCoverSchedule(Schedule& schedule);
 
     double coverEvaporationFactor() const;
     bool isCoverEvaporationFactorDefaulted() const;
@@ -84,8 +92,17 @@ namespace epmodel {
     double poolMiscellaneousEquipmentPower() const;
     bool setPoolMiscellaneousEquipmentPower(double poolMiscellaneousEquipmentPower);
 
+    Schedule setpointTemperatureSchedule() const;
+    bool setSetpointTemperatureSchedule(Schedule& schedule);
+
     double maximumNumberofPeople() const;
     bool setMaximumNumberofPeople(double maximumNumberofPeople);
+
+    Schedule peopleSchedule() const;
+    bool setPeopleSchedule(Schedule& schedule);
+
+    Schedule peopleHeatGainSchedule() const;
+    bool setPeopleHeatGainSchedule(Schedule& schedule);
 
     boost::optional<Node> poolWaterInletNode() const;
     boost::optional<Node> poolWaterOutletNode() const;

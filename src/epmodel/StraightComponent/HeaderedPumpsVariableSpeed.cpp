@@ -6,11 +6,16 @@
 #include "StraightComponent/HeaderedPumpsVariableSpeed.hpp"
 #include "StraightComponent/HeaderedPumpsVariableSpeed_Impl.hpp"
 
+#include "HVACComponent/ThermalZone.hpp"
+#include "HVACComponent/ThermalZone_Impl.hpp"
 #include "Loop/PlantLoop.hpp"
 #include "Model.hpp"
+#include "Schedule/Schedule.hpp"
+#include "Schedule/Schedule_Impl.hpp"
 #include "StraightComponent/Node.hpp"
 
 #include <utilities/core/Assert.hpp>
+#include <utilities/core/Logger.hpp>
 #include <utilities/core/StringHelpers.hpp>
 #include <utilities/idd/HeaderedPumps_VariableSpeed_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
@@ -193,6 +198,30 @@ namespace epmodel {
 
   bool HeaderedPumpsVariableSpeed::setPumpControlType(const std::string& pumpControlType) {
     return getImpl<detail::HeaderedPumpsVariableSpeed_Impl>()->setPumpControlType(pumpControlType);
+  }
+
+  boost::optional<Schedule> HeaderedPumpsVariableSpeed::pumpFlowRateSchedule() const {
+    return getImpl<detail::HeaderedPumpsVariableSpeed_Impl>()->pumpFlowRateSchedule();
+  }
+
+  bool HeaderedPumpsVariableSpeed::setPumpFlowRateSchedule(Schedule& schedule) {
+    return getImpl<detail::HeaderedPumpsVariableSpeed_Impl>()->setPumpFlowRateSchedule(schedule);
+  }
+
+  void HeaderedPumpsVariableSpeed::resetPumpFlowRateSchedule() {
+    getImpl<detail::HeaderedPumpsVariableSpeed_Impl>()->resetPumpFlowRateSchedule();
+  }
+
+  boost::optional<ThermalZone> HeaderedPumpsVariableSpeed::thermalZone() const {
+    return getImpl<detail::HeaderedPumpsVariableSpeed_Impl>()->thermalZone();
+  }
+
+  bool HeaderedPumpsVariableSpeed::setThermalZone(const ThermalZone& thermalZone) {
+    return getImpl<detail::HeaderedPumpsVariableSpeed_Impl>()->setThermalZone(thermalZone);
+  }
+
+  void HeaderedPumpsVariableSpeed::resetThermalZone() {
+    getImpl<detail::HeaderedPumpsVariableSpeed_Impl>()->resetThermalZone();
   }
 
   double HeaderedPumpsVariableSpeed::skinLossRadiativeFraction() const {
@@ -440,6 +469,59 @@ namespace epmodel {
 
     bool HeaderedPumpsVariableSpeed_Impl::setPumpControlType(const std::string& pumpControlType) {
       return setString(openstudio::HeaderedPumps_VariableSpeedFields::PumpControlType, pumpControlType);
+    }
+
+    boost::optional<Schedule> HeaderedPumpsVariableSpeed_Impl::pumpFlowRateSchedule() const {
+      return getObject<ModelObject>().getModelObjectTarget<Schedule>(openstudio::HeaderedPumps_VariableSpeedFields::PumpFlowRateScheduleName);
+    }
+
+    bool HeaderedPumpsVariableSpeed_Impl::setPumpFlowRateSchedule(Schedule& schedule) {
+      if (schedule.model() != model()) {
+        LOG_FREE(Warn, "openstudio.epmodel.HeaderedPumpsVariableSpeed",
+                 "Cannot set the pump flow rate schedule because the schedule belongs to a different model.");
+        return false;
+      }
+
+      const bool result = setSchedule(openstudio::HeaderedPumps_VariableSpeedFields::PumpFlowRateScheduleName, "HeaderedPumpsVariableSpeed",
+                                      "Pump Flow Rate Schedule", schedule);
+      if (!result) {
+        LOG_FREE(Warn, "openstudio.epmodel.HeaderedPumpsVariableSpeed",
+                 "Cannot set the pump flow rate schedule because its ScheduleTypeLimits are incompatible.");
+      }
+      return result;
+    }
+
+    void HeaderedPumpsVariableSpeed_Impl::resetPumpFlowRateSchedule() {
+      OS_ASSERT(setPointer(openstudio::HeaderedPumps_VariableSpeedFields::PumpFlowRateScheduleName, Handle(), false));
+    }
+
+    boost::optional<ThermalZone> HeaderedPumpsVariableSpeed_Impl::thermalZone() const {
+      return getObject<ModelObject>().getModelObjectTarget<ThermalZone>(openstudio::HeaderedPumps_VariableSpeedFields::ZoneName);
+    }
+
+    bool HeaderedPumpsVariableSpeed_Impl::setThermalZone(const ThermalZone& thermalZone) {
+      if (thermalZone.model() != model()) {
+        LOG_FREE(Warn, "openstudio.epmodel.HeaderedPumpsVariableSpeed",
+                 "Cannot set the thermal zone because the thermal zone belongs to a different model.");
+        return false;
+      }
+
+      const auto field = openstudio::HeaderedPumps_VariableSpeedFields::ZoneName;
+      if (!model().canBeTarget(thermalZone.handle(), iddObject().objectLists(field))) {
+        LOG_FREE(Warn, "openstudio.epmodel.HeaderedPumpsVariableSpeed",
+                 "Cannot set the thermal zone because ThermalZone is not accepted by the HeaderedPumps:VariableSpeed thermal zone field.");
+        return false;
+      }
+
+      if (!setPointer(field, thermalZone.handle(), false)) {
+        LOG_FREE(Warn, "openstudio.epmodel.HeaderedPumpsVariableSpeed", "Failed to set the thermal zone relationship.");
+        return false;
+      }
+      return true;
+    }
+
+    void HeaderedPumpsVariableSpeed_Impl::resetThermalZone() {
+      OS_ASSERT(setPointer(openstudio::HeaderedPumps_VariableSpeedFields::ZoneName, Handle(), false));
     }
 
     double HeaderedPumpsVariableSpeed_Impl::skinLossRadiativeFraction() const {

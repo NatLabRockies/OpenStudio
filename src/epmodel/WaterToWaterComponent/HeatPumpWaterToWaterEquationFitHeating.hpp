@@ -24,6 +24,25 @@ namespace epmodel {
     class HeatPumpWaterToWaterEquationFitHeating_Impl;
   }
 
+  /** \brief Represents a heating water-to-water heat pump using equation-fit performance curves.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-plant-equipment.html#heatpumpwatertowaterequationfitheating,HeatPump:WaterToWater:EquationFit:Heating}
+   *
+   * \par Important behavior
+   * The model-only constructor creates and attaches default capacity and
+   * compressor-power curves; the curve-taking constructor uses the supplied
+   * curve objects.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::HeatPumpWaterToWaterEquationFitHeating</code>. No
+   * known public API differences.
+   *
+   * \par Known limitations
+   * The autosized-value query methods return no value because EPModel does not
+   * yet surface the corresponding autosized results for this family.
+   */
   class EPMODEL_API HeatPumpWaterToWaterEquationFitHeating : public WaterToWaterComponent
   {
    public:
@@ -39,18 +58,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - Status: Parity with documented deltas. The canonical curve, companion, constructor, scalar, and deprecated alias
-    //   surface is preserved here.
-    // - Canonical Counterpart: openstudio::model::HeatPumpWaterToWaterEquationFitHeating.
-    // - Implemented Parity: The curve-taking constructor, default curve creation, load/source flow, capacity/power,
-    //   coefficient of performance, sizing, required heating curve relationships, companion cooling heat-pump link, and
-    //   deprecated coefficient aliases preserve the canonical model API shape.
-    // - Documented Delta: Autosized-value query helpers still return `none` because epmodel does not yet resolve
-    //   SQL-backed autosized results for this family.
-    // - Field/Storage Mapping: Scalar wrappers target the EnergyPlus `WaterToWater` equation-fit heating fields directly, with legacy rated/reference naming preserved where canonical model behavior expects it.
-    // - Evidence: `src/model/HeatPumpWaterToWaterEquationFitHeating.hpp`, `src/model/HeatPumpWaterToWaterEquationFitHeating.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateHeatPumpWaterToWaterEquationFitHeating.cpp`.
-    // - Remaining Parity Work: Loop-coupling ergonomics remain inherited from the shared water-to-water base.
 
     // Reference load-side flow rate
     boost::optional<double> referenceLoadSideFlowRate() const;

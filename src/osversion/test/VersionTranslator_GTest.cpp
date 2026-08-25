@@ -34,6 +34,7 @@
 #include <utilities/idd/OS_Version_FieldEnums.hxx>
 #include <utilities/idd/OS_AirLoopHVAC_UnitarySystem_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
+#include <utilities/idd/IddFactory.hxx>
 #include "../../utilities/core/Compare.hpp"
 
 #include <resources.hxx>
@@ -405,7 +406,7 @@ TEST_F(OSVersionFixture,VersionTranslator_0_7_4_NameRefsTranslated) {
 }
 
 TEST_F(OSVersionFixture,Profile_ModelLoading_LatestVersion) {
-  VersionString thisVersion(openStudioVersion());
+  VersionString thisVersion(IddFactory::instance().getVersion(IddFileType::OpenStudio));
   openstudio::path modelPath = exampleModelPath(thisVersion);
 
   model::OptionalModel oModel = model::Model::load(modelPath);
@@ -446,7 +447,7 @@ TEST_F(OSVersionFixture,ModelLoading_PreserveHandles) {
 }
 
 TEST_F(OSVersionFixture,Profile_ComponentLoading_LatestVersion) {
-  VersionString thisVersion(openStudioVersion());
+  VersionString thisVersion(IddFactory::instance().getVersion(IddFileType::OpenStudio));
   openstudio::path componentPath = exampleComponentPath(thisVersion);
 
   model::OptionalComponent oComponent = model::Component::load(componentPath);

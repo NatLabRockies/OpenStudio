@@ -38,8 +38,7 @@ namespace epmodel {
     }
 
     void Mixer_Impl::resetOutletModelObject() {
-      auto mixer = getObject<openstudio::epmodel::Mixer>();
-      mixer.setPointer(outletPort(), Handle());
+      setPointer(outletPort(), Handle(), false);
     }
 
     boost::optional<ModelObject> Mixer_Impl::inletModelObject(unsigned branchIndex) const {
@@ -108,12 +107,11 @@ namespace epmodel {
 
     void Mixer_Impl::removePortForBranch(unsigned branchIndex) {
       const auto next = nextBranchIndex();
-      auto mixer = getObject<openstudio::epmodel::Mixer>();
       if (branchIndex >= next) {
         return;
       }
 
-      mixer.setPointer(inletPort(branchIndex), Handle());
+      setPointer(inletPort(branchIndex), Handle(), false);
       for (unsigned i = branchIndex + 1; i < next; ++i) {
         auto mo = inletModelObject(i);
         OS_ASSERT(mo);
@@ -122,7 +120,7 @@ namespace epmodel {
         }
       }
 
-      mixer.setPointer(inletPort(next - 1u), Handle());
+      setPointer(inletPort(next - 1u), Handle(), false);
     }
 
     bool Mixer_Impl::setInletModelObject(unsigned branchIndex, const ModelObject& modelObject) {
@@ -134,8 +132,7 @@ namespace epmodel {
     }
 
     void Mixer_Impl::resetInletModelObject(unsigned branchIndex) {
-      auto mixer = getObject<openstudio::epmodel::Mixer>();
-      mixer.setPointer(inletPort(branchIndex), Handle());
+      setPointer(inletPort(branchIndex), Handle(), false);
     }
 
   }  // namespace detail

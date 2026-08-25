@@ -20,6 +20,20 @@ namespace epmodel {
     class Duct_Impl;
   }
 
+/** \brief A straight duct component.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-node-branch-management.html#duct,Duct}
+ *
+ * \par Important behavior
+ * The inherited straight-component topology maps its inlet and outlet nodes to the EnergyPlus Duct object.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model type is <code>openstudio::model::Duct</code>.
+ *
+ * \par Known limitations
+ * No type-specific scalar API is provided.
+ */
   class EPMODEL_API Duct : public StraightComponent
   {
    public:
@@ -33,13 +47,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - Status: Near Parity. The canonical type-specific surface is already minimal and remains aligned through inherited `StraightComponent` topology behavior.
-    // - Canonical Counterpart: openstudio::model::Duct.
-    // - Implemented Parity: The wrapper preserves the canonical API shape, with no extra type-specific scalar surface beyond inherited straight-component topology behavior.
-    // - Field/Storage Mapping: EnergyPlus `Duct` stores only inlet/outlet node links, and epmodel keeps those links implicit through inherited topology helpers rather than adding new duct-local scalar APIs.
-    // - Evidence: `src/model/Duct.hpp` shows the canonical type-specific surface is empty, and `src/energyplus/ForwardTranslator/ForwardTranslateDuct.cpp` maps inherited inlet/outlet topology to EnergyPlus node-name fields.
-    // - Remaining Parity Work: Confirm whether any additional type-local convenience beyond inherited `StraightComponent` behavior is needed as broader relationship coverage matures.
 
    protected:
     using ImplType = detail::Duct_Impl;

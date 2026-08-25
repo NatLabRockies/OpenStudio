@@ -29,6 +29,9 @@ namespace epmodel {
       boost::optional<double> initialValue() const;
       bool setInitialValue(double initialValue);
       //@}
+
+     protected:
+      unsigned scheduleTypeLimitsFieldIndex() const override;
     };
 
   }  // namespace detail

@@ -15,10 +15,28 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class Schedule;
   namespace detail {
     class ZoneHVACBaseboardConvectiveElectric_Impl;
   }
 
+/** \brief An electric convective baseboard heater serving a thermal zone.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-radiative-convective-units.html#zonehvacbaseboardconvectiveelectric,ZoneHVAC:Baseboard:Convective:Electric}
+ *
+ * \par Important behavior
+ * Availability, nominal-capacity, efficiency, autosizing, and thermal-zone attachment methods are available.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model class is <code>openstudio::model::ZoneHVACBaseboardConvectiveElectric</code>.
+ * Model also provides <code>autosizedNominalCapacity()</code> and its inherited
+ * thermal-zone convenience methods; EPModel exposes the autosize operation but
+ * does not provide the SQL-backed result query.
+ *
+ * \par Known limitations
+ * No additional type-specific topology is represented beyond shared zone-equipment attachment, and SQL sizing results are unavailable.
+ */
   class EPMODEL_API ZoneHVACBaseboardConvectiveElectric : public ZoneHVACComponent
   {
    public:
@@ -32,14 +50,10 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - Status: Scalar Parity. The two scalar field groups are exposed with canonical-style accessors, and the remaining public surface is intentionally small.
-    // - Canonical Counterpart: openstudio::model::ZoneHVACBaseboardConvectiveElectric.
-    // - Implemented Parity: `nominalCapacity` and `efficiency` map directly to the matching EnergyPlus ZoneHVAC:Baseboard:Convective:Electric fields, including the autosize/default helpers.
-    // - Documented Delta: There are no meaningful relationship or topology helpers on this wrapper yet, so the public API stays scalar-only.
-    // - Field/Storage Mapping: EnergyPlus-backed storage is read and written through the scalar field accessors, with no additional child objects to synchronize.
-    // - Evidence: `src/model/ZoneHVACBaseboardConvectiveElectric.hpp`, `src/model/ZoneHVACBaseboardConvectiveElectric.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateZoneHVACBaseboardConvectiveElectric.cpp`, and `src/epmodel/test/ZoneHVACBaseboardConvectiveElectric_GTest.cpp`.
-    // - Remaining Parity Work: None beyond keeping the scalar API aligned with future canonical changes.
+
+    Schedule availabilitySchedule() const;
+    bool setAvailabilitySchedule(Schedule& schedule);
+
     /** @name Nominal capacity accessors */
     //@{
     boost::optional<double> nominalCapacity() const;

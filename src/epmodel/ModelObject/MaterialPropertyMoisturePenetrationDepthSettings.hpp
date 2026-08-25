@@ -25,6 +25,17 @@ namespace epmodel {
 
   /** MaterialPropertyMoisturePenetrationDepthSettings is a ModelObject that wraps the EnergyPlus IDD object
  * 'MaterialProperty:MoisturePenetrationDepth:Settings'. */
+  /** \brief MaterialPropertyMoisturePenetrationDepthSettings.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-surface-construction-elements.html#materialpropertymoisturepenetrationdepthsettings,MaterialProperty:MoisturePenetrationDepth:Settings}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::MaterialPropertyMoisturePenetrationDepthSettings</code>. The scalar moisture coefficients and penetration-depth autocalculate tokens are exposed. Model's material relationship is not available.
+   *
+   * \par Known limitations
+   * Only the fields and relationships listed in this wrapper are available; broader Model-only helpers are not exposed.
+   */
   class EPMODEL_API MaterialPropertyMoisturePenetrationDepthSettings : public ModelObject
   {
    public:
@@ -37,13 +48,6 @@ namespace epmodel {
     MaterialPropertyMoisturePenetrationDepthSettings& operator=(MaterialPropertyMoisturePenetrationDepthSettings&&) = default;
 
     static IddObjectType iddObjectType();
-
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model scalar accessor names/signatures for this model-counterpart class.
-    // - Field Mapping: moistureEquationCoefficientA/B/C/D map to E+ fields Moisture Equation Coefficient a/b/c/d.
-    // - Field Mapping: surfaceLayerPenetrationDepth and deepLayerPenetrationDepth preserve autocalculate token behavior in the same fields.
-    // - Field Mapping: Name/material relationship field is intentionally excluded from this scalar-only scaffold pass.
-    // - TODO(parity): Add non-scalar material relationship API when relationship scaffolding is in scope.
     double waterVaporDiffusionResistanceFactor() const;
     bool setWaterVaporDiffusionResistanceFactor(double waterVaporDiffusionResistanceFactor);
 

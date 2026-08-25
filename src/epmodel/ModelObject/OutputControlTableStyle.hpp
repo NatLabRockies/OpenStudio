@@ -23,6 +23,17 @@ namespace epmodel {
     class OutputControlTableStyle_Impl;
   }
 
+  /** \brief OutputControlTableStyle.
+   *
+   * \par EnergyPlus object
+   * \epobject{outputcontrol-table-style.html#outputcontroltablestyle,OutputControl:Table:Style}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::OutputControlTableStyle</code>. The column-separator and unit-conversion fields map directly to EnergyPlus.
+   *
+   * \par Known limitations
+   * Only the fields and relationships listed in this wrapper are available; broader Model-only helpers are not exposed.
+   */
   class EPMODEL_API OutputControlTableStyle : public ModelObject
   {
    public:
@@ -38,12 +49,6 @@ namespace epmodel {
 
     static std::vector<std::string> columnSeparatorValues();
     static std::vector<std::string> unitConversionValues();
-
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model::OutputControlTableStyle scalar accessor names/signatures.
-    // - Field Mapping: columnSeparator/unitConversion map directly to E+ OutputControl:Table:Style Column Separator/Unit Conversion.
-    // - ForwardTranslator evidence: ForwardTranslateOutputControlTableStyle.cpp writes these preserved APIs directly to matching E+ fields.
-    // - TODO(parity): Keep scalar API stable while extending any non-scalar parity behavior in future passes.
     std::string columnSeparator() const;
     bool setColumnSeparator(const std::string& columnSeparator);
 

@@ -19,11 +19,28 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class ThermalZone;
+  class Curve;
+  class Schedule;
 
   namespace detail {
     class PumpVariableSpeed_Impl;
   }
 
+/** \brief A variable-speed plant pump.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-pumps.html#pumpvariablespeed,Pump:VariableSpeed}
+ *
+ * \par Important behavior
+ * Pump flow, head, power, efficiency, RPM, pressure, curve, schedule, thermal-zone, and plant-placement fields map directly to Pump:VariableSpeed.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model type is <code>openstudio::model::PumpVariableSpeed</code>.
+ *
+ * \par Known limitations
+ * No additional type-specific limitation is known beyond shared straight-component topology.
+ */
   class EPMODEL_API PumpVariableSpeed : public StraightComponent
   {
    public:
@@ -42,14 +59,6 @@ namespace epmodel {
     static std::vector<std::string> validPumpControlTypeValues();
     static std::vector<std::string> vfdControlTypeValues();
 
-    // Schema Alignment Notes:
-    // - Status: Scalar Parity. The canonical scalar pump surface is largely present, while schedule, curve, and other relationship-backed helpers remain out of scope.
-    // - Canonical Counterpart: openstudio::model::PumpVariableSpeed.
-    // - Implemented Parity: Preserved scalar accessor names/signatures cover flow, head, power, efficiency, part-load coefficients, minimum flow, control type, impeller data, VFD control, skin-loss fraction, and design-power sizing metadata with matching default/autosize behavior.
-    // - Documented Delta: `pumpFlowRateSchedule`, `pumpCurve`, `pumpRPMSchedule`, `minimumPressureSchedule`, and other relationship-backed helpers from canonical `openstudio::model::PumpVariableSpeed` are not exposed yet.
-    // - Field/Storage Mapping: The preserved scalar APIs map directly to EnergyPlus `Pump:VariableSpeed` scalar fields used by the forward translator.
-    // - Evidence: `src/model/PumpVariableSpeed.hpp` defines the canonical scalar and relationship surface, and `src/energyplus/ForwardTranslator/ForwardTranslatePumpVariableSpeed.cpp` confirms the direct scalar field mapping and autosize tokens.
-    // - Remaining Parity Work: Add the omitted schedule, curve, pressure, and relationship helpers without changing the preserved scalar signatures.
     boost::optional<double> ratedFlowRate() const;
     bool isRatedFlowRateDefaulted() const;
     bool isRatedFlowRateAutosized() const;
@@ -109,6 +118,17 @@ namespace epmodel {
     bool setPumpControlType(const std::string& pumpControlType);
     void resetPumpControlType();
 
+    boost::optional<Schedule> pumpFlowRateSchedule() const;
+    bool setPumpFlowRateSchedule(Schedule& schedule);
+    void resetPumpFlowRateSchedule();
+
+    boost::optional<Curve> pumpCurve() const;
+
+    /** Returns false if curve is not a CurveLinear, CurveQuadratic, CurveCubic or CurveQuartic. */
+    bool setPumpCurve(const Curve& curve);
+
+    void resetPumpCurve();
+
     boost::optional<double> impellerDiameter() const;
     bool setImpellerDiameter(double impellerDiameter);
     void resetImpellerDiameter();
@@ -116,6 +136,30 @@ namespace epmodel {
     boost::optional<std::string> vFDControlType() const;
     bool setVFDControlType(const std::string& vFDControlType);
     void resetVFDControlType();
+
+    boost::optional<Schedule> pumpRPMSchedule() const;
+    bool setPumpRPMSchedule(Schedule& schedule);
+    void resetPumpRPMSchedule();
+
+    boost::optional<Schedule> minimumRPMSchedule() const;
+    bool setMinimumRPMSchedule(Schedule& schedule);
+    void resetMinimumRPMSchedule();
+
+    boost::optional<Schedule> maximumRPMSchedule() const;
+    bool setMaximumRPMSchedule(Schedule& schedule);
+    void resetMaximumRPMSchedule();
+
+    boost::optional<ThermalZone> zone() const;
+    bool setZone(const ThermalZone& thermalZone);
+    void resetZone();
+
+    boost::optional<Schedule> minimumPressureSchedule() const;
+    bool setMinimumPressureSchedule(Schedule& schedule);
+    void resetMinimumPressureSchedule();
+
+    boost::optional<Schedule> maximumPressureSchedule() const;
+    bool setMaximumPressureSchedule(Schedule& schedule);
+    void resetMaximumPressureSchedule();
 
     double skinLossRadiativeFraction() const;
     bool setSkinLossRadiativeFraction(double skinLossRadiativeFraction);

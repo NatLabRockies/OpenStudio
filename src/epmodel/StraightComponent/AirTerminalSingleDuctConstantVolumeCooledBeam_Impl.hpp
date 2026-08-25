@@ -14,6 +14,7 @@ namespace openstudio {
 namespace epmodel {
 
   class AirLoopHVAC;
+  class HVACComponent;
   class ModelObject;
   class Schedule;
   class ZoneHVACAirDistributionUnit;
@@ -29,6 +30,7 @@ namespace epmodel {
       unsigned inletPort() const override;
       unsigned outletPort() const override;
       bool addToNode(Node& node) override;
+      bool isRemovable() const override;
       bool removeFromLoop() override;
       std::vector<openstudio::IdfObject> remove() override;
       std::vector<ModelObject> children() const override;
@@ -36,8 +38,8 @@ namespace epmodel {
       Schedule availabilitySchedule() const;
       bool setAvailabilitySchedule(Schedule& schedule);
 
-      ModelObject coilCoolingCooledBeam() const;
-      bool setCoolingCoil(ModelObject& coilCoolingCooledBeam);
+      HVACComponent coilCoolingCooledBeam() const;
+      bool setCoolingCoil(HVACComponent& coilCoolingCooledBeam);
 
       std::string cooledBeamType() const;
       bool setCooledBeamType(const std::string& cooledBeamType);

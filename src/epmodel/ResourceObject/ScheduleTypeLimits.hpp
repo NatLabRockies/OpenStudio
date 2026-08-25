@@ -26,8 +26,21 @@ namespace epmodel {
     class ScheduleTypeLimits_Impl;
   }
 
-  /** ScheduleTypeLimits is a ModelObject that wraps the EnergyPlus IDD object
- * 'ScheduleTypeLimits'. */
+  /** \brief Defines the valid range, numeric type, and units for a schedule.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-schedules.html#scheduletypelimits,ScheduleTypeLimits}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::ScheduleTypeLimits</code>. EPModel exposes the
+   * same field accessors. Model-only helpers <code>units()</code> and
+   * <code>isCompatible()</code> are not available.
+   *
+   * \par Known limitations
+   * Unit conversion and compatibility checks are not performed by this
+   * wrapper.
+   */
   class EPMODEL_API ScheduleTypeLimits : public ModelObject
   {
    public:
@@ -44,11 +57,6 @@ namespace epmodel {
     static std::vector<std::string> numericTypeValues();
     static std::vector<std::string> unitTypeValues();
 
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model scalar accessor names/signatures for this counterpart class.
-    // - Field Mapping: lowerLimitValue, upperLimitValue, numericType, and unitType map directly to EnergyPlus ScheduleTypeLimits fields.
-    // - ForwardTranslator evidence: ForwardTranslateScheduleTypeLimits.cpp reads OS_ScheduleTypeLimits fields and writes matching E+ ScheduleTypeLimits fields.
-    // - TODO(parity): Keep units/unit-conversion helper behavior in model; epmodel scaffold remains scalar-only in this pass.
     boost::optional<double> lowerLimitValue() const;
     bool setLowerLimitValue(double lowerLimitValue);
     void resetLowerLimitValue();

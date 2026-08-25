@@ -20,6 +20,43 @@ namespace epmodel {
     class AvailabilityManagerHybridVentilation_Impl;
   }
 
+  /** \brief Controls availability using outdoor conditions and hybrid-ventilation settings.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-system-availability-managers.html#availabilitymanagerhybridventilation,AvailabilityManager:HybridVentilation}
+   *
+   * \par Important behavior
+   * A newly constructed manager sets rain indicators to enabled, maximum wind
+   * speed to 40.0 m/s, outdoor temperature limits to 20.0 and 30.0 °C, outdoor
+   * enthalpy limits to 20,000 and 30,000 J/kg, outdoor dewpoint limits to 15.0
+   * and 30.0 °C, and both minimum operation times to 0.0 minutes. The current
+   * wrapper exposes those scalar fields directly; its schedule, zone, curve,
+   * and ventilation-object relationships are not part of the typed API.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::AvailabilityManagerHybridVentilation</code>.
+   *
+   * - <b>Not yet available:</b> <code>loop()</code> and the constructor overload
+   *   accepting the ventilation-control-mode and minimum-outdoor-ventilation
+   *   schedules.
+   * - <b>Not yet available:</b> The controlled-zone, required and optional
+   *   schedule, opening-factor curve, and zone-ventilation-object relationship
+   *   methods: <code>controlledZone()</code>,
+   *   <code>setControlledZone(...)</code>, <code>resetControlledZone()</code>,
+   *   <code>ventilationControlModeSchedule()</code>,
+   *   <code>setVentilationControlModeSchedule(...)</code>,
+   *   <code>minimumOutdoorVentilationAirSchedule()</code>,
+   *   <code>setMinimumOutdoorVentilationAirSchedule(...)</code>,
+   *   <code>openingFactorFunctionofWindSpeedCurve()</code> and its setter and
+   *   reset method, the Airflow Network and simple-control schedule methods,
+   *   and <code>zoneVentilationObject()</code> with its setter and reset method.
+   *
+   * \par Known limitations
+   * The EPModel wrapper currently exposes scalar fields only. It cannot be
+   * passed to typed loop-assignment APIs or fully configured through typed
+   * relationship methods.
+   */
   class EPMODEL_API AvailabilityManagerHybridVentilation : public ModelObject
   {
    public:
@@ -33,12 +70,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model scalar accessor names/signatures for this model-counterpart class.
-    // - Field Mapping: scalar APIs map directly to E+ AvailabilityManager:HybridVentilation fields
-    //   (Use Weather File Rain Indicators, wind/temp/enthalpy/dewpoint limits, and minimum operation times).
-    // - TODO(parity): Keep relationship fields (HVAC Air Loop Name, Control Zone Name, schedule/curve links,
-    //   ZoneVentilation Object Name) out of this scalar-only scaffold pass.
     bool useWeatherFileRainIndicators() const;
     bool setUseWeatherFileRainIndicators(bool useWeatherFileRainIndicators);
 

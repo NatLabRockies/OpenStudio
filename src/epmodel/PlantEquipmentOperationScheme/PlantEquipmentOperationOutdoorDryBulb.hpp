@@ -23,6 +23,24 @@ namespace epmodel {
     class PlantEquipmentOperationOutdoorDryBulb_Impl;
   }
 
+  /** \brief Selects plant equipment for outdoor-dry bulb operation.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-plant-condenser-control.html#plantequipmentoperationoutdoordrybulb,PlantEquipmentOperation:OutdoorDryBulb}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::PlantEquipmentOperationOutdoorDryBulb</code>.
+   *
+   * - <b>Not yet available:</b> The load-range and equipment methods inherited
+   *   from <code>PlantEquipmentOperationRangeBasedScheme</code>, including
+   *   <code>addLoadRange(...)</code>, <code>removeLoadRange(...)</code>,
+   *   <code>loadRangeUpperLimits()</code>, <code>equipment(...)</code>, the
+   *   add/replace/remove equipment methods, and <code>clearLoadRanges()</code>.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API PlantEquipmentOperationOutdoorDryBulb : public PlantEquipmentOperationScheme
   {
    public:
@@ -36,10 +54,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - API: Mirrors EnergyPlus PlantEquipmentOperation:OutdoorDryBulb by re-exposing the same dry-bulb range scalars that the model counterpart surfaces.
-    // - Field Mapping: maximumUpperLimit() and minimumLowerLimit() read the Dry-Bulb Temperature Range upper/lower limit values from the last/first extensible groups.
-    // - TODO(parity): Add helpers for the rangelist relationships once the generic extensible scaffolding lands.
     double maximumUpperLimit() const;
     double minimumLowerLimit() const;
 

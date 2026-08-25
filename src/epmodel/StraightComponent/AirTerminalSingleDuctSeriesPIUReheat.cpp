@@ -5,15 +5,23 @@
 
 #include "StraightComponent/AirTerminalSingleDuctSeriesPIUReheat.hpp"
 #include "StraightComponent/AirTerminalSingleDuctSeriesPIUReheat_Impl.hpp"
+#include "TestFailurePoint.hpp"
+#include "StraightComponent/CompoundTerminalTopologyInspection.hpp"
 
 #include "HVACComponent/ThermalZone.hpp"
 #include "HVACComponent/ThermalZone_Impl.hpp"
 #include "HVACComponent.hpp"
 #include "Loop/AirLoopHVAC.hpp"
+#include "Loop/AirLoopHVAC_Impl.hpp"
 #include "Loop/PlantLoop.hpp"
+#include "Loop/PlantLoop_Impl.hpp"
 #include "Mixer/AirLoopHVACZoneMixer.hpp"
+#include "Mixer/AirLoopHVACZoneMixer_Impl.hpp"
 #include "Model.hpp"
 #include "ModelObject.hpp"
+#include "ModelObject/ModelObject_Impl.hpp"
+#include "ModelObject/NodeList.hpp"
+#include "ModelObject/NodeList_Impl.hpp"
 #include "ModelObject/ZoneHVACAirDistributionUnit.hpp"
 #include "ModelObject/ZoneHVACAirDistributionUnit_Impl.hpp"
 #include "ModelObject/ZoneHVACEquipmentConnections.hpp"
@@ -28,11 +36,20 @@
 #include "StraightComponent/FanOnOff.hpp"
 #include "StraightComponent/FanSystemModel.hpp"
 #include "StraightComponent/FanVariableVolume.hpp"
+#include "StraightComponent/StraightComponent.hpp"
+#include "WaterToAirComponent/CoilHeatingWater.hpp"
+#include "WaterToAirComponent/CoilHeatingWater_Impl.hpp"
+#include "WaterToAirComponent/WaterToAirComponent.hpp"
+#include "WaterToAirComponent/WaterToAirComponent_Impl.hpp"
 
 #include <algorithm>
+#include <memory>
+#include <vector>
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/Logger.hpp>
 #include <utilities/core/StringHelpers.hpp>
+#include <utilities/core/UUID.hpp>
+#include <utilities/idd/AirLoopHVAC_ZoneMixer_FieldEnums.hxx>
 #include <utilities/idd/AirTerminal_SingleDuct_SeriesPIU_Reheat_FieldEnums.hxx>
 #include <utilities/idd/Coil_Heating_Electric_FieldEnums.hxx>
 #include <utilities/idd/Coil_Heating_Fuel_FieldEnums.hxx>
@@ -44,26 +61,36 @@
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/IddFactory.hxx>
 #include <utilities/idd/IddObject.hpp>
+#include <utilities/idd/NodeList_FieldEnums.hxx>
 #include <utilities/idd/ZoneHVAC_AirDistributionUnit_FieldEnums.hxx>
+#include <utilities/idd/ZoneHVAC_EquipmentConnections_FieldEnums.hxx>
+#include <utilities/idf/IdfExtensibleGroup.hpp>
+#include <utilities/idf/WorkspaceObject_Impl.hpp>
 
 namespace openstudio {
 namespace epmodel {
 
   namespace {
 
+    using detail::ExistingNodeField;
+    using detail::ExistingNodeRows;
+    using detail::existingNodeCollectionField;
+    using detail::existingNodeField;
+    using detail::existingNodeRows;
+    using detail::existingObjectField;
+    using detail::hasExactSources;
+    using detail::isSoleOwnedChild;
+
     bool isSupportedSeriesPIUFan(const HVACComponent& hvacComponent) {
       const auto type = hvacComponent.iddObject().type();
       return (type == IddObjectType::Fan_ConstantVolume) || (type == IddObjectType::Fan_SystemModel) || (type == IddObjectType::Fan_OnOff)
-             || (type == IddObjectType::Fan_VariableVolume) || (type == IddObjectType::OS_Fan_ConstantVolume)
-             || (type == IddObjectType::OS_Fan_SystemModel) || (type == IddObjectType::OS_Fan_OnOff)
-             || (type == IddObjectType::OS_Fan_VariableVolume);
+             || (type == IddObjectType::Fan_VariableVolume);
     }
 
     bool isSupportedSeriesPIUReheatCoil(const HVACComponent& hvacComponent) {
       const auto type = hvacComponent.iddObject().type();
       return (type == IddObjectType::Coil_Heating_Electric) || (type == IddObjectType::Coil_Heating_Fuel)
-             || (type == IddObjectType::Coil_Heating_Water) || (type == IddObjectType::OS_Coil_Heating_Electric)
-             || (type == IddObjectType::OS_Coil_Heating_Gas) || (type == IddObjectType::OS_Coil_Heating_Water);
+             || (type == IddObjectType::Coil_Heating_Water);
     }
 
     boost::optional<ThermalZone> owningThermalZoneForZoneNode(const Model& model, const Node& node) {
@@ -103,21 +130,6 @@ namespace epmodel {
       return boost::none;
     }
 
-    boost::optional<ThermalZone> thermalZoneContainingExhaustNode(const Model& model, const Node& node) {
-      for (const auto& thermalZone : model.getConcreteModelObjects<ThermalZone>()) {
-        auto zoneImpl = thermalZone.getImpl<detail::ThermalZone_Impl>();
-        OS_ASSERT(zoneImpl);
-        auto connections = zoneImpl->zoneHVACEquipmentConnections();
-        if (connections) {
-          const auto exhaustNodes = connections->zoneAirExhaustNodes();
-          if (std::ranges::find(exhaustNodes, node) != exhaustNodes.end()) {
-            return thermalZone;
-          }
-        }
-      }
-      return boost::none;
-    }
-
     bool registerTerminalWithZone(ThermalZone& thermalZone, const ModelObject& terminal) {
       auto zoneImpl = thermalZone.getImpl<detail::ThermalZone_Impl>();
       OS_ASSERT(zoneImpl);
@@ -137,38 +149,541 @@ namespace epmodel {
       return zoneImpl->getZoneHVACEquipmentList().removeEquipment(terminal);
     }
 
-    bool syncFanAvailabilityWithLoop(HVACComponent& fan, Schedule& schedule) {
-      const auto type = fan.iddObject().type();
-      if (type == IddObjectType::Fan_ConstantVolume || type == IddObjectType::OS_Fan_ConstantVolume) {
-        return fan.setPointer(openstudio::Fan_ConstantVolumeFields::AvailabilityScheduleName, schedule.handle());
+    void assertSuccessfulMutation(bool result) {
+      OS_ASSERT(result);
+      (void)result;
+    }
+
+    struct AirFields
+    {
+      unsigned inlet;
+      unsigned outlet;
+    };
+
+    boost::optional<AirFields> seriesPIUFanAirFields(const HVACComponent& fan) {
+      switch (fan.iddObject().type().value()) {
+        case IddObjectType::Fan_ConstantVolume:
+          return AirFields{openstudio::Fan_ConstantVolumeFields::AirInletNodeName, openstudio::Fan_ConstantVolumeFields::AirOutletNodeName};
+        case IddObjectType::Fan_SystemModel:
+          return AirFields{openstudio::Fan_SystemModelFields::AirInletNodeName, openstudio::Fan_SystemModelFields::AirOutletNodeName};
+        case IddObjectType::Fan_OnOff:
+          return AirFields{openstudio::Fan_OnOffFields::AirInletNodeName, openstudio::Fan_OnOffFields::AirOutletNodeName};
+        case IddObjectType::Fan_VariableVolume:
+          return AirFields{openstudio::Fan_VariableVolumeFields::AirInletNodeName, openstudio::Fan_VariableVolumeFields::AirOutletNodeName};
+        default:
+          return boost::none;
       }
-      if (type == IddObjectType::Fan_SystemModel || type == IddObjectType::OS_Fan_SystemModel) {
-        return fan.setPointer(openstudio::Fan_SystemModelFields::AvailabilityScheduleName, schedule.handle());
+    }
+
+    boost::optional<AirFields> seriesPIUCoilAirFields(const HVACComponent& coil) {
+      switch (coil.iddObject().type().value()) {
+        case IddObjectType::Coil_Heating_Electric:
+          return AirFields{openstudio::Coil_Heating_ElectricFields::AirInletNodeName, openstudio::Coil_Heating_ElectricFields::AirOutletNodeName};
+        case IddObjectType::Coil_Heating_Fuel:
+          return AirFields{openstudio::Coil_Heating_FuelFields::AirInletNodeName, openstudio::Coil_Heating_FuelFields::AirOutletNodeName};
+        case IddObjectType::Coil_Heating_Water:
+          return AirFields{openstudio::Coil_Heating_WaterFields::AirInletNodeName, openstudio::Coil_Heating_WaterFields::AirOutletNodeName};
+        default:
+          return boost::none;
       }
-      if (type == IddObjectType::Fan_OnOff || type == IddObjectType::OS_Fan_OnOff) {
-        return fan.setPointer(openstudio::Fan_OnOffFields::AvailabilityScheduleName, schedule.handle());
+    }
+
+    bool seriesPIUHasContainedTopology(const ModelObject& terminal) {
+      if (existingObjectField(terminal, openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::SecondaryAirInletNodeName).set
+          || existingObjectField(terminal, openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::ZoneMixerName).set) {
+        return true;
       }
-      if (type == IddObjectType::Fan_VariableVolume || type == IddObjectType::OS_Fan_VariableVolume) {
-        return fan.setPointer(openstudio::Fan_VariableVolumeFields::AvailabilityScheduleName, schedule.handle());
+      for (const auto& [relationshipField, airFieldResolver] :
+           {std::pair<unsigned, boost::optional<AirFields> (*)(const HVACComponent&)>(
+              openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::FanName, seriesPIUFanAirFields),
+            std::pair<unsigned, boost::optional<AirFields> (*)(const HVACComponent&)>(
+              openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::ReheatCoilName, seriesPIUCoilAirFields)}) {
+        const auto relationship = existingObjectField(terminal, relationshipField);
+        const auto component = relationship.object ? relationship.object->optionalCast<HVACComponent>() : boost::none;
+        const auto airFields = component ? airFieldResolver(*component) : boost::none;
+        if (component && airFields
+            && (existingObjectField(component->cast<ModelObject>(), airFields->inlet).set
+                || existingObjectField(component->cast<ModelObject>(), airFields->outlet).set)) {
+          return true;
+        }
       }
       return false;
+    }
+
+    // A Series PIU owns a second air lane and two internal nodes in addition
+    // to the normal terminal branch. This plan proves that graph exactly and
+    // commits its teardown only after the external and plant plans are ready.
+    class SeriesPIUContainedAirPathRemovalPlan
+    {
+     public:
+      static std::unique_ptr<SeriesPIUContainedAirPathRemovalPlan> prepare(const ModelObject& terminal) {
+        const auto fanRelationship = existingObjectField(terminal, openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::FanName);
+        const auto coilRelationship = existingObjectField(terminal, openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::ReheatCoilName);
+        const auto fan = fanRelationship.object ? fanRelationship.object->optionalCast<HVACComponent>() : boost::none;
+        const auto coil = coilRelationship.object ? coilRelationship.object->optionalCast<HVACComponent>() : boost::none;
+        if (!fanRelationship.set || !coilRelationship.set || !fan || !coil || !isSupportedSeriesPIUFan(*fan) || !isSupportedSeriesPIUReheatCoil(*coil)
+            || !isSoleOwnedChild(terminal, *fan) || !isSoleOwnedChild(terminal, *coil)) {
+          return nullptr;
+        }
+
+        const auto fanFields = seriesPIUFanAirFields(*fan);
+        const auto coilFields = seriesPIUCoilAirFields(*coil);
+        const auto storedCoilType = terminal.getString(openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::ReheatCoilObjectType, false, true);
+        if (!fanFields || !coilFields || !storedCoilType || !openstudio::istringEqual(*storedCoilType, coil->iddObject().name())) {
+          return nullptr;
+        }
+
+        const auto primary = existingNodeField(terminal, openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::SupplyAirInletNodeName);
+        const auto secondary = existingNodeField(terminal, openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::SecondaryAirInletNodeName);
+        const auto terminalOutlet = existingNodeField(terminal, openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::OutletNodeName);
+        const auto mixerRelationship = existingObjectField(terminal, openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::ZoneMixerName);
+        const auto fanInlet = existingNodeField(fan->cast<ModelObject>(), fanFields->inlet);
+        const auto fanOutlet = existingNodeField(fan->cast<ModelObject>(), fanFields->outlet);
+        const auto coilInlet = existingNodeField(coil->cast<ModelObject>(), coilFields->inlet);
+        const auto coilOutlet = existingNodeField(coil->cast<ModelObject>(), coilFields->outlet);
+
+        const bool hasPrimary = primary.set;
+        const bool hasSecondary = secondary.set;
+        if (!hasPrimary && !hasSecondary) {
+          if (terminalOutlet.set || mixerRelationship.set || fanInlet.set || fanOutlet.set || coilInlet.set || coilOutlet.set) {
+            return nullptr;
+          }
+          return std::unique_ptr<SeriesPIUContainedAirPathRemovalPlan>(
+            new SeriesPIUContainedAirPathRemovalPlan(terminal, fan->cast<ModelObject>(), *fanFields, coil->cast<ModelObject>(), *coilFields));
+        }
+
+        if (hasPrimary && !hasSecondary) {
+          if (!primary.node || !terminalOutlet.set || !terminalOutlet.node || mixerRelationship.set || fanInlet.set || fanOutlet.set || coilInlet.set
+              || coilOutlet.set) {
+            return nullptr;
+          }
+          auto result = std::unique_ptr<SeriesPIUContainedAirPathRemovalPlan>(
+            new SeriesPIUContainedAirPathRemovalPlan(terminal, fan->cast<ModelObject>(), *fanFields, coil->cast<ModelObject>(), *coilFields));
+          result->m_terminalOnly = true;
+          return result;
+        }
+
+        if (!hasPrimary || !primary.node || !secondary.node || !fanInlet.node || !fanOutlet.node || !coilInlet.node || !coilOutlet.node
+            || !mixerRelationship.set || !mixerRelationship.object) {
+          return nullptr;
+        }
+        const auto mixer = mixerRelationship.object->optionalCast<AirLoopHVACZoneMixer>();
+        if (!mixer || !hasExactSources(mixer->cast<ModelObject>(), {terminal.handle()})) {
+          return nullptr;
+        }
+        const auto mixerOutlet = existingNodeField(mixer->cast<ModelObject>(), openstudio::AirLoopHVAC_ZoneMixerFields::OutletNodeName);
+        const auto mixerInlets = existingNodeRows(mixer->cast<ModelObject>(), openstudio::AirLoopHVAC_ZoneMixerExtensibleFields::InletNodeName);
+        if (!mixerOutlet.node || !mixerInlets.valid || mixer->extensibleGroups().size() != 2u || mixerInlets.rows.size() != 2u
+            || mixerInlets.rows[0].first != 0u || mixerInlets.rows[0].second.handle() != secondary.node->handle() || mixerInlets.rows[1].first != 1u
+            || mixerInlets.rows[1].second.handle() != primary.node->handle() || fanInlet.node->handle() != mixerOutlet.node->handle()
+            || fanOutlet.node->handle() != coilInlet.node->handle()) {
+          return nullptr;
+        }
+        const auto authoritativeOutlet = *coilOutlet.node;
+        const std::vector<Handle> graphNodeHandles{primary.node->handle(), secondary.node->handle(), authoritativeOutlet.handle(),
+                                                   mixerOutlet.node->handle(), fanOutlet.node->handle()};
+        std::vector<Handle> uniqueGraphNodeHandles = graphNodeHandles;
+        std::ranges::sort(uniqueGraphNodeHandles);
+        if (std::ranges::unique(uniqueGraphNodeHandles).begin() != uniqueGraphNodeHandles.end()
+            || !hasExactSources(mixerOutlet.node->cast<ModelObject>(), {mixer->handle(), fan->handle()})
+            || !hasExactSources(fanOutlet.node->cast<ModelObject>(), {fan->handle(), coil->handle()})) {
+          return nullptr;
+        }
+
+        struct ExhaustMatch
+        {
+          ZoneHVACEquipmentConnections connections;
+          ModelObject target;
+        };
+        std::vector<ExhaustMatch> exhaustMatches;
+        for (const auto& connections : terminal.model().getConcreteModelObjects<ZoneHVACEquipmentConnections>()) {
+          const auto exhaustField = existingNodeCollectionField(connections.cast<ModelObject>(),
+                                                                openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneAirExhaustNodeorNodeListName);
+          if (!exhaustField.valid || !exhaustField.target) {
+            continue;
+          }
+          if (std::ranges::count(exhaustField.nodes, *secondary.node) == 1) {
+            exhaustMatches.push_back(ExhaustMatch{connections, *exhaustField.target});
+          }
+        }
+        if (exhaustMatches.size() != 1u) {
+          return nullptr;
+        }
+
+        const auto zoneRelationship =
+          existingObjectField(exhaustMatches.front().connections.cast<ModelObject>(), openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneName);
+        const auto servedZone = zoneRelationship.object ? zoneRelationship.object->optionalCast<ThermalZone>() : boost::none;
+        const auto inletField = existingNodeCollectionField(exhaustMatches.front().connections.cast<ModelObject>(),
+                                                            openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneAirInletNodeorNodeListName);
+        if (!servedZone || !inletField.valid || std::ranges::count(inletField.nodes, authoritativeOutlet) != 1) {
+          return nullptr;
+        }
+
+        std::vector<ThermalZone> registeredZones;
+        for (const auto& zone : terminal.model().getConcreteModelObjects<ThermalZone>()) {
+          const auto equipment = zone.equipment();
+          const auto count = std::ranges::count(equipment, terminal);
+          if (count > 1) {
+            return nullptr;
+          }
+          if (count == 1) {
+            registeredZones.push_back(zone);
+          }
+        }
+        if (registeredZones.size() > 1u || (!registeredZones.empty() && registeredZones.front() != *servedZone)) {
+          return nullptr;
+        }
+
+        const auto exhaustTarget = exhaustMatches.front().target;
+        const auto exhaustSourceHandle =
+          exhaustTarget.optionalCast<NodeList>() ? exhaustTarget.handle() : exhaustMatches.front().connections.handle();
+        std::vector<Handle> expectedSecondarySources{terminal.handle(), mixer->handle(), exhaustSourceHandle};
+        if (!hasExactSources(secondary.node->cast<ModelObject>(), expectedSecondarySources)) {
+          return nullptr;
+        }
+        if (auto exhaustList = exhaustTarget.optionalCast<NodeList>()) {
+          if (!hasExactSources(exhaustList->cast<ModelObject>(), {exhaustMatches.front().connections.handle()})) {
+            return nullptr;
+          }
+        }
+
+        std::vector<ZoneHVACAirDistributionUnit> airDistributionUnits;
+        for (const auto& source : terminal.getSources(openstudio::IddObjectType::ZoneHVAC_AirDistributionUnit)) {
+          if (auto airDistributionUnit = source.optionalCast<ZoneHVACAirDistributionUnit>()) {
+            airDistributionUnits.push_back(*airDistributionUnit);
+          }
+        }
+        if (airDistributionUnits.size() > 1u) {
+          return nullptr;
+        }
+        if (!airDistributionUnits.empty()) {
+          const auto aduObject = airDistributionUnits.front().cast<ModelObject>();
+          const auto linkedTerminal = existingObjectField(aduObject, openstudio::ZoneHVAC_AirDistributionUnitFields::AirTerminalName);
+          const auto aduOutlet = existingNodeField(aduObject, openstudio::ZoneHVAC_AirDistributionUnitFields::AirDistributionUnitOutletNodeName);
+          const auto terminalType = aduObject.getString(openstudio::ZoneHVAC_AirDistributionUnitFields::AirTerminalObjectType, false, true);
+          if (!linkedTerminal.object || linkedTerminal.object->handle() != terminal.handle() || !aduOutlet.node
+              || aduOutlet.node->handle() != authoritativeOutlet.handle() || !terminalType
+              || !openstudio::istringEqual(*terminalType, terminal.iddObject().name())) {
+            return nullptr;
+          }
+        }
+
+        auto result = std::unique_ptr<SeriesPIUContainedAirPathRemovalPlan>(
+          new SeriesPIUContainedAirPathRemovalPlan(terminal, fan->cast<ModelObject>(), *fanFields, coil->cast<ModelObject>(), *coilFields));
+        result->m_mixer = mixer->cast<ModelObject>();
+        result->m_mixerOutlet = mixerOutlet.node->cast<ModelObject>();
+        result->m_fanOutlet = fanOutlet.node->cast<ModelObject>();
+        result->m_secondary = secondary.node->cast<ModelObject>();
+        result->m_zoneConnections = exhaustMatches.front().connections.cast<ModelObject>();
+        result->m_exhaustTarget = exhaustTarget;
+        result->m_authoritativeOutlet = authoritativeOutlet;
+        result->m_allowMissingZoneRegistration = registeredZones.empty();
+        return result;
+      }
+
+      bool terminalOnly() const {
+        return m_terminalOnly;
+      }
+
+      bool hasContainedAirPath() const {
+        return static_cast<bool>(m_mixer);
+      }
+
+      boost::optional<Node> authoritativeOutlet() const {
+        return m_authoritativeOutlet;
+      }
+
+      bool allowMissingZoneRegistration() const {
+        return m_allowMissingZoneRegistration;
+      }
+
+      void commit() {
+        if (!m_mixer) {
+          return;
+        }
+
+        auto fanImpl = m_fan.getImpl<detail::ModelObject_Impl>();
+        auto coilImpl = m_coil.getImpl<detail::ModelObject_Impl>();
+        auto terminalImpl = m_terminal.getImpl<detail::ModelObject_Impl>();
+        OS_ASSERT(fanImpl && coilImpl && terminalImpl);
+        assertSuccessfulMutation(coilImpl->setPointer(m_coilFields.inlet, Handle(), false));
+        assertSuccessfulMutation(coilImpl->setPointer(m_coilFields.outlet, Handle(), false));
+        assertSuccessfulMutation(fanImpl->setPointer(m_fanFields.inlet, Handle(), false));
+        assertSuccessfulMutation(fanImpl->setPointer(m_fanFields.outlet, Handle(), false));
+        assertSuccessfulMutation(terminalImpl->setPointer(openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::ZoneMixerName, Handle(), false));
+
+        const auto mixerHandle = m_mixer->handle();
+        auto mixer = m_mixer->optionalCast<AirLoopHVACZoneMixer>();
+        OS_ASSERT(mixer);
+        mixer->remove();
+        OS_ASSERT(!m_terminal.model().getObject(mixerHandle));
+
+        for (const auto& internalNodeObject : {m_mixerOutlet, m_fanOutlet}) {
+          OS_ASSERT(internalNodeObject);
+          auto internalNode = internalNodeObject->optionalCast<Node>();
+          OS_ASSERT(internalNode && internalNode->sources().empty());
+          const auto nodeHandle = internalNode->handle();
+          internalNode->remove();
+          OS_ASSERT(!m_terminal.model().getObject(nodeHandle));
+        }
+
+        assertSuccessfulMutation(
+          terminalImpl->setPointer(openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::SecondaryAirInletNodeName, Handle(), false));
+        OS_ASSERT(m_zoneConnections && m_exhaustTarget && m_secondary);
+        auto zoneConnections = m_zoneConnections->optionalCast<ZoneHVACEquipmentConnections>();
+        auto secondary = m_secondary->optionalCast<Node>();
+        OS_ASSERT(zoneConnections && secondary);
+        if (auto exhaustList = m_exhaustTarget->optionalCast<NodeList>()) {
+          const bool removeList = exhaustList->nodes().size() == 1u;
+          assertSuccessfulMutation(exhaustList->getImpl<detail::NodeList_Impl>()->removeNode(*secondary));
+          if (removeList) {
+            assertSuccessfulMutation(zoneConnections->getImpl<detail::ModelObject_Impl>()->setPointer(
+              openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneAirExhaustNodeorNodeListName, Handle(), false));
+            const auto listHandle = exhaustList->handle();
+            exhaustList->remove();
+            OS_ASSERT(!m_terminal.model().getObject(listHandle));
+          }
+        } else {
+          OS_ASSERT(m_exhaustTarget->optionalCast<Node>());
+          assertSuccessfulMutation(zoneConnections->getImpl<detail::ModelObject_Impl>()->setPointer(
+            openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneAirExhaustNodeorNodeListName, Handle(), false));
+        }
+
+        OS_ASSERT(secondary->sources().empty());
+        const auto secondaryHandle = secondary->handle();
+        secondary->remove();
+        OS_ASSERT(!m_terminal.model().getObject(secondaryHandle));
+      }
+
+     private:
+      SeriesPIUContainedAirPathRemovalPlan(ModelObject terminal, ModelObject fan, AirFields fanFields, ModelObject coil, AirFields coilFields)
+        : m_terminal(std::move(terminal)), m_fan(std::move(fan)), m_fanFields(fanFields), m_coil(std::move(coil)), m_coilFields(coilFields) {}
+
+      ModelObject m_terminal;
+      ModelObject m_fan;
+      AirFields m_fanFields;
+      ModelObject m_coil;
+      AirFields m_coilFields;
+      bool m_terminalOnly = false;
+      bool m_allowMissingZoneRegistration = false;
+      boost::optional<ModelObject> m_mixer;
+      boost::optional<ModelObject> m_mixerOutlet;
+      boost::optional<ModelObject> m_fanOutlet;
+      boost::optional<ModelObject> m_secondary;
+      boost::optional<ModelObject> m_zoneConnections;
+      boost::optional<ModelObject> m_exhaustTarget;
+      boost::optional<Node> m_authoritativeOutlet;
+    };
+
+    struct SeriesPIUTopologyRemovalPlans
+    {
+      std::unique_ptr<SeriesPIUContainedAirPathRemovalPlan> containedAirPath;
+      std::unique_ptr<detail::AirLoopHVAC_Impl::SingleDuctTerminalRemovalPlan> externalTopology;
+    };
+
+    std::unique_ptr<SeriesPIUTopologyRemovalPlans> prepareSeriesPIUTopologyRemoval(const ModelObject& terminalObject) {
+      auto result = std::make_unique<SeriesPIUTopologyRemovalPlans>();
+      result->containedAirPath = SeriesPIUContainedAirPathRemovalPlan::prepare(terminalObject);
+      if (!result->containedAirPath) {
+        return nullptr;
+      }
+
+      auto terminal = terminalObject.cast<StraightComponent>();
+      if (detail::AirLoopHVAC_Impl::SingleDuctTerminalRemovalPlan::hasTopology(terminal)) {
+        std::vector<ModelObject> containedInletSources;
+        if (result->containedAirPath->hasContainedAirPath()) {
+          const auto mixerRelationship =
+            existingObjectField(terminalObject, openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::ZoneMixerName);
+          OS_ASSERT(mixerRelationship.object);
+          containedInletSources.push_back(*mixerRelationship.object);
+        }
+        result->externalTopology = detail::AirLoopHVAC_Impl::SingleDuctTerminalRemovalPlan::prepare(
+          terminal, containedInletSources, result->containedAirPath->authoritativeOutlet(), result->containedAirPath->allowMissingZoneRegistration());
+        if (!result->externalTopology) {
+          return nullptr;
+        }
+      }
+      return result;
+    }
+
+    // Load repair may encounter a persisted missing child name even though
+    // the old contained graph still identifies one unique fan/coil pair. Use
+    // that pair only to prepare the normal teardown transaction, restore the
+    // unresolved relationship text, and leave any water-side plant branch in
+    // place for the surviving coil.
+    bool detachIncompleteSeriesPIUAirTopologyForRepair(ModelObject terminal, const boost::optional<HVACComponent>& knownFan,
+                                                       const boost::optional<HVACComponent>& knownCoil) {
+      const auto mixerRelationship = existingObjectField(terminal, openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::ZoneMixerName);
+      const auto mixer = mixerRelationship.object ? mixerRelationship.object->optionalCast<AirLoopHVACZoneMixer>() : boost::none;
+      const auto terminalOutlet = existingNodeField(terminal, openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::OutletNodeName);
+      const auto mixerOutlet =
+        mixer ? existingNodeField(mixer->cast<ModelObject>(), openstudio::AirLoopHVAC_ZoneMixerFields::OutletNodeName) : ExistingNodeField{};
+      if (!mixer || !terminalOutlet.node || !mixerOutlet.node) {
+        return false;
+      }
+
+      std::vector<HVACComponent> fanCandidates;
+      std::vector<HVACComponent> coilCandidates;
+      for (const auto& component : terminal.model().getModelObjects<HVACComponent>()) {
+        if (knownFan && component.handle() != knownFan->handle()) {
+          // A known child fixes this side of the pair.
+        } else if (const auto fields = seriesPIUFanAirFields(component)) {
+          const auto inlet = existingNodeField(component.cast<ModelObject>(), fields->inlet);
+          if (inlet.node && inlet.node->handle() == mixerOutlet.node->handle()) {
+            fanCandidates.push_back(component);
+          }
+        }
+
+        if (knownCoil && component.handle() != knownCoil->handle()) {
+          continue;
+        }
+        if (const auto fields = seriesPIUCoilAirFields(component)) {
+          const auto outlet = existingNodeField(component.cast<ModelObject>(), fields->outlet);
+          if (outlet.node && outlet.node->handle() == terminalOutlet.node->handle()) {
+            coilCandidates.push_back(component);
+          }
+        }
+      }
+      if (knownFan) {
+        fanCandidates = {*knownFan};
+      }
+      if (knownCoil) {
+        coilCandidates = {*knownCoil};
+      }
+
+      std::vector<std::pair<HVACComponent, HVACComponent>> matchingPairs;
+      for (const auto& fan : fanCandidates) {
+        const auto fanFields = seriesPIUFanAirFields(fan);
+        OS_ASSERT(fanFields);
+        const auto fanOutlet = existingNodeField(fan.cast<ModelObject>(), fanFields->outlet);
+        if (!fanOutlet.node) {
+          continue;
+        }
+        for (const auto& coil : coilCandidates) {
+          const auto coilFields = seriesPIUCoilAirFields(coil);
+          OS_ASSERT(coilFields);
+          const auto coilInlet = existingNodeField(coil.cast<ModelObject>(), coilFields->inlet);
+          if (coilInlet.node && coilInlet.node->handle() == fanOutlet.node->handle()) {
+            matchingPairs.emplace_back(fan, coil);
+          }
+        }
+      }
+      if (matchingPairs.size() != 1u) {
+        return false;
+      }
+
+      struct TemporarilyRepairedField
+      {
+        unsigned field;
+        std::string rawValue;
+      };
+      std::vector<TemporarilyRepairedField> repairedFields;
+      auto terminalWorkspaceImpl = terminal.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+      OS_ASSERT(terminalWorkspaceImpl);
+      const auto temporarilySetRelationship = [&](unsigned field, const HVACComponent& component) {
+        const auto rawValue = terminalWorkspaceImpl->openstudio::detail::IdfObject_Impl::getString(field, false, true).value_or("");
+        if (!terminalWorkspaceImpl->setPointer(field, component.handle(), false)) {
+          return false;
+        }
+        repairedFields.push_back(TemporarilyRepairedField{field, rawValue});
+        return true;
+      };
+
+      bool relationshipsSet = true;
+      if (!knownFan) {
+        relationshipsSet =
+          temporarilySetRelationship(openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::FanName, matchingPairs.front().first);
+      }
+      if (relationshipsSet && !knownCoil) {
+        relationshipsSet =
+          temporarilySetRelationship(openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::ReheatCoilName, matchingPairs.front().second);
+      }
+
+      auto plans = relationshipsSet ? prepareSeriesPIUTopologyRemoval(terminal) : nullptr;
+      for (auto repaired = repairedFields.rbegin(); repaired != repairedFields.rend(); ++repaired) {
+        assertSuccessfulMutation(terminalWorkspaceImpl->setPointer(repaired->field, Handle(), false));
+        assertSuccessfulMutation(terminalWorkspaceImpl->openstudio::detail::IdfObject_Impl::setString(repaired->field, repaired->rawValue, false));
+      }
+      if (!plans || !plans->externalTopology) {
+        return false;
+      }
+
+      plans->containedAirPath->commit();
+      plans->externalTopology->commit();
+      return true;
+    }
+
+    boost::optional<unsigned> fanAvailabilityScheduleField(const HVACComponent& fan) {
+      const auto type = fan.iddObject().type();
+      if (type == IddObjectType::Fan_ConstantVolume || type == IddObjectType::OS_Fan_ConstantVolume) {
+        return openstudio::Fan_ConstantVolumeFields::AvailabilityScheduleName;
+      }
+      if (type == IddObjectType::Fan_SystemModel || type == IddObjectType::OS_Fan_SystemModel) {
+        return openstudio::Fan_SystemModelFields::AvailabilityScheduleName;
+      }
+      if (type == IddObjectType::Fan_OnOff || type == IddObjectType::OS_Fan_OnOff) {
+        return openstudio::Fan_OnOffFields::AvailabilityScheduleName;
+      }
+      if (type == IddObjectType::Fan_VariableVolume || type == IddObjectType::OS_Fan_VariableVolume) {
+        return openstudio::Fan_VariableVolumeFields::AvailabilityScheduleName;
+      }
+      return boost::none;
+    }
+
+    bool syncFanAvailabilityWithLoop(HVACComponent& fan, Schedule& schedule) {
+      const auto field = fanAvailabilityScheduleField(fan);
+      return field && fan.setPointer(*field, schedule.handle());
+    }
+
+    void applyConstructorDefaults(AirTerminalSingleDuctSeriesPIUReheat& terminal) {
+      terminal.autosizeMaximumAirFlowRate();
+      terminal.autosizeMaximumPrimaryAirFlowRate();
+      terminal.autosizeMinimumPrimaryAirFlowFraction();
+      terminal.autosizeMaximumHotWaterorSteamFlowRate();
+      const bool minimumFlowSet = terminal.setMinimumHotWaterorSteamFlowRate(0.0);
+      const bool convergenceSet = terminal.setConvergenceTolerance(0.001);
+      const bool fanControlSet = terminal.setFanControlType("ConstantSpeed");
+      const bool fanTurnDownSet = terminal.setMinimumFanTurnDownRatio(0.3);
+      const bool heatingControlSet = terminal.setHeatingControlType("Staged");
+      const bool designTemperatureSet = terminal.setDesignHeatingDischargeAirTemperature(32.1);
+      const bool highLimitTemperatureSet = terminal.setHighLimitHeatingDischargeAirTemperature(37.7);
+      OS_ASSERT(minimumFlowSet && convergenceSet && fanControlSet && fanTurnDownSet && heatingControlSet && designTemperatureSet
+                && highLimitTemperatureSet);
     }
 
   }  // namespace
 
   AirTerminalSingleDuctSeriesPIUReheat::AirTerminalSingleDuctSeriesPIUReheat(const Model& model)
     : StraightComponent(AirTerminalSingleDuctSeriesPIUReheat::iddObjectType(), model) {
-    autosizeMaximumAirFlowRate();
-    autosizeMaximumPrimaryAirFlowRate();
-    autosizeMinimumPrimaryAirFlowFraction();
-    autosizeMaximumHotWaterorSteamFlowRate();
-    OS_ASSERT(setMinimumHotWaterorSteamFlowRate(0.0));
-    OS_ASSERT(setConvergenceTolerance(0.001));
-    OS_ASSERT(setFanControlType("ConstantSpeed"));
-    OS_ASSERT(setMinimumFanTurnDownRatio(0.3));
-    OS_ASSERT(setHeatingControlType("Staged"));
-    OS_ASSERT(setDesignHeatingDischargeAirTemperature(32.1));
-    OS_ASSERT(setHighLimitHeatingDischargeAirTemperature(37.7));
+    applyConstructorDefaults(*this);
+  }
+
+  AirTerminalSingleDuctSeriesPIUReheat::AirTerminalSingleDuctSeriesPIUReheat(const Model& model, HVACComponent& fan, HVACComponent& reheatCoil)
+    : StraightComponent(AirTerminalSingleDuctSeriesPIUReheat::iddObjectType(), model) {
+    // Validate both child relationships before assigning either one. This
+    // keeps a failed constructor from temporarily taking ownership of, and
+    // then deleting, a valid child supplied by the caller.
+    if ((fan.model() != model) || !isSupportedSeriesPIUFan(fan)) {
+      remove();
+      LOG_FREE_AND_THROW("openstudio.epmodel.AirTerminalSingleDuctSeriesPIUReheat",
+                         "Could not construct " << briefDescription() << ", because the fan type was invalid or from another model.");
+    }
+    if ((reheatCoil.model() != model) || !isSupportedSeriesPIUReheatCoil(reheatCoil)) {
+      remove();
+      LOG_FREE_AND_THROW("openstudio.epmodel.AirTerminalSingleDuctSeriesPIUReheat",
+                         "Could not construct " << briefDescription() << ", because the reheat coil type was invalid or from another model.");
+    }
+    if (!setFan(fan)) {
+      remove();
+      LOG_FREE_AND_THROW("openstudio.epmodel.AirTerminalSingleDuctSeriesPIUReheat",
+                         "Could not construct " << briefDescription() << ", because the fan type was invalid or from another model.");
+    }
+    if (!setReheatCoil(reheatCoil)) {
+      remove();
+      LOG_FREE_AND_THROW("openstudio.epmodel.AirTerminalSingleDuctSeriesPIUReheat",
+                         "Could not construct " << briefDescription() << ", because the reheat coil type was invalid or from another model.");
+    }
+    applyConstructorDefaults(*this);
   }
 
   AirTerminalSingleDuctSeriesPIUReheat::AirTerminalSingleDuctSeriesPIUReheat(std::shared_ptr<detail::AirTerminalSingleDuctSeriesPIUReheat_Impl> impl)
@@ -357,6 +872,301 @@ namespace openstudio {
 namespace epmodel {
   namespace detail {
 
+    // Owns the complete provisional insertion of a series PIU. Primary air
+    // topology exists for terminal-only branches; secondary-air, exhaust,
+    // equipment, and ADU projections are enrolled only for a served zone.
+    class AirTerminalSingleDuctSeriesPIUReheat_Impl::InsertionPlan
+    {
+     public:
+      static std::unique_ptr<InsertionPlan> prepare(AirTerminalSingleDuctSeriesPIUReheat_Impl& terminalImpl, AirLoopHVAC airLoop,
+                                                    AirLoopHVACZoneSplitter splitter, unsigned branchIndex, Node outletNode,
+                                                    boost::optional<ThermalZone> thermalZone, bool terminalNameAssigned) {
+        auto terminal = terminalImpl.getObject<ModelObject>();
+        const std::string inletNodeName = outletNode.nameString() + " - " + terminal.nameString() + " Inlet Node";
+        const bool inletNodeExisted = static_cast<bool>(terminalImpl.model().getConcreteModelObjectByName<Node>(inletNodeName));
+        auto inletNode = terminalImpl.model().getOrCreateTransientByName<Node>(inletNodeName);
+
+        boost::optional<Node> secondaryNode;
+        bool secondaryNodeExisted = false;
+        if (thermalZone) {
+          const std::string secondaryNodeName = outletNode.nameString() + " - " + terminal.nameString() + " Secondary Air Inlet Node";
+          secondaryNodeExisted = static_cast<bool>(terminalImpl.model().getConcreteModelObjectByName<Node>(secondaryNodeName));
+          secondaryNode = terminalImpl.model().getOrCreateTransientByName<Node>(secondaryNodeName);
+        }
+
+        auto plan = std::unique_ptr<InsertionPlan>(
+          new InsertionPlan(terminalImpl, std::move(airLoop), std::move(splitter), branchIndex, std::move(outletNode), std::move(inletNode),
+                            !inletNodeExisted, std::move(thermalZone), std::move(secondaryNode), !secondaryNodeExisted, terminalNameAssigned));
+        if (!plan->prepareTopology()) {
+          return nullptr;
+        }
+        return plan;
+      }
+
+      InsertionPlan(const InsertionPlan&) = delete;
+      InsertionPlan& operator=(const InsertionPlan&) = delete;
+      InsertionPlan(InsertionPlan&& other) noexcept
+        : m_state(other.m_state),
+          m_terminalImpl(other.m_terminalImpl),
+          m_airLoop(std::move(other.m_airLoop)),
+          m_splitter(std::move(other.m_splitter)),
+          m_branchIndex(other.m_branchIndex),
+          m_outletNode(std::move(other.m_outletNode)),
+          m_inletNode(std::move(other.m_inletNode)),
+          m_inletNodeCreated(other.m_inletNodeCreated),
+          m_thermalZone(std::move(other.m_thermalZone)),
+          m_secondaryNode(std::move(other.m_secondaryNode)),
+          m_secondaryNodeCreated(other.m_secondaryNodeCreated),
+          m_zoneConnections(std::move(other.m_zoneConnections)),
+          m_airDistributionUnit(std::move(other.m_airDistributionUnit)),
+          m_previousADUOutletTarget(std::move(other.m_previousADUOutletTarget)),
+          m_previousADUOutletNodeName(std::move(other.m_previousADUOutletNodeName)),
+          m_previousFanAvailabilityTarget(std::move(other.m_previousFanAvailabilityTarget)),
+          m_previousFanAvailabilityRaw(std::move(other.m_previousFanAvailabilityRaw)),
+          m_fanAvailabilityField(other.m_fanAvailabilityField),
+          m_terminalNameAssigned(other.m_terminalNameAssigned),
+          m_fanAvailabilityUpdateAttempted(other.m_fanAvailabilityUpdateAttempted),
+          m_splitterRewired(other.m_splitterRewired),
+          m_inletAssigned(other.m_inletAssigned),
+          m_outletAssigned(other.m_outletAssigned),
+          m_secondaryAssigned(other.m_secondaryAssigned),
+          m_exhaustRegistered(other.m_exhaustRegistered),
+          m_aduUpdated(other.m_aduUpdated),
+          m_zoneRegistered(other.m_zoneRegistered) {
+        other.m_state = State::MovedFrom;
+      }
+      InsertionPlan& operator=(InsertionPlan&&) = delete;
+
+      ~InsertionPlan() {
+        if (m_state == State::Prepared) {
+          cleanupPreparedState();
+        }
+      }
+
+      void commit() {
+        OS_ASSERT(m_state == State::Prepared);
+        m_state = State::Committed;
+      }
+
+     private:
+      enum class State
+      {
+        Prepared,
+        Committed,
+        MovedFrom,
+      };
+
+      InsertionPlan(AirTerminalSingleDuctSeriesPIUReheat_Impl& terminalImpl, AirLoopHVAC airLoop, AirLoopHVACZoneSplitter splitter,
+                    unsigned branchIndex, Node outletNode, Node inletNode, bool inletNodeCreated, boost::optional<ThermalZone> thermalZone,
+                    boost::optional<Node> secondaryNode, bool secondaryNodeCreated, bool terminalNameAssigned)
+        : m_terminalImpl(&terminalImpl),
+          m_airLoop(std::move(airLoop)),
+          m_splitter(std::move(splitter)),
+          m_branchIndex(branchIndex),
+          m_outletNode(std::move(outletNode)),
+          m_inletNode(std::move(inletNode)),
+          m_inletNodeCreated(inletNodeCreated),
+          m_thermalZone(std::move(thermalZone)),
+          m_secondaryNode(std::move(secondaryNode)),
+          m_secondaryNodeCreated(secondaryNodeCreated),
+          m_terminalNameAssigned(terminalNameAssigned) {}
+
+      bool prepareTopology() {
+        auto terminal = m_terminalImpl->getObject<ModelObject>();
+        if (m_thermalZone) {
+          auto zoneImpl = m_thermalZone->getImpl<detail::ThermalZone_Impl>();
+          OS_ASSERT(zoneImpl);
+          m_zoneConnections = zoneImpl->getZoneHVACEquipmentConnections();
+          m_airDistributionUnit = m_terminalImpl->zoneHVACAirDistributionUnit();
+          if (m_airDistributionUnit) {
+            m_previousADUOutletNodeName =
+              m_airDistributionUnit->getString(openstudio::ZoneHVAC_AirDistributionUnitFields::AirDistributionUnitOutletNodeName, false, true);
+            if (auto target = m_airDistributionUnit->getTarget(openstudio::ZoneHVAC_AirDistributionUnitFields::AirDistributionUnitOutletNodeName)) {
+              m_previousADUOutletTarget = target->optionalCast<ModelObject>();
+            }
+          }
+        }
+
+        m_splitterRewired = true;
+        if (!m_splitter.setOutletModelObject(m_branchIndex, m_inletNode.cast<ModelObject>())) {
+          return false;
+        }
+        m_inletAssigned = true;
+        if (!m_terminalImpl->setPointer(m_terminalImpl->inletPort(), m_inletNode.handle(), false)) {
+          return false;
+        }
+        m_outletAssigned = true;
+        if (!m_terminalImpl->setPointer(m_terminalImpl->outletPort(), m_outletNode.handle(), false)) {
+          return false;
+        }
+
+        auto fanObject = m_terminalImpl->fan();
+        m_fanAvailabilityField = fanAvailabilityScheduleField(fanObject);
+        if (!m_fanAvailabilityField) {
+          return false;
+        }
+        if (const auto originalField = fanObject.getField(*m_fanAvailabilityField, false)) {
+          const auto targetHandle = toUUID(*originalField);
+          if (!targetHandle.isNull()) {
+            if (auto target = fanObject.model().getObject(targetHandle)) {
+              m_previousFanAvailabilityTarget = target->optionalCast<ModelObject>();
+            }
+          }
+        }
+        if (!m_previousFanAvailabilityTarget) {
+          auto workspaceImpl = fanObject.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+          OS_ASSERT(workspaceImpl);
+          m_previousFanAvailabilityRaw = workspaceImpl->openstudio::detail::IdfObject_Impl::getString(*m_fanAvailabilityField, false, true);
+        }
+        m_fanAvailabilityUpdateAttempted = true;
+        auto loopAvailability = m_airLoop.availabilitySchedule();
+        if (!syncFanAvailabilityWithLoop(fanObject, loopAvailability)) {
+          return false;
+        }
+
+        if (!m_thermalZone) {
+          return true;
+        }
+
+        OS_ASSERT(m_secondaryNode && m_zoneConnections);
+        m_secondaryAssigned = true;
+        if (!m_terminalImpl->setPointer(openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::SecondaryAirInletNodeName,
+                                        m_secondaryNode->handle(), false)) {
+          return false;
+        }
+
+        const auto originalExhaustNodes = m_zoneConnections->zoneAirExhaustNodes();
+        const bool wasExhaustRegistered = std::ranges::find(originalExhaustNodes, *m_secondaryNode) != originalExhaustNodes.end();
+        const bool exhaustResult = m_zoneConnections->getImpl<detail::ZoneHVACEquipmentConnections_Impl>()->addZoneAirExhaustNode(*m_secondaryNode);
+        const auto currentExhaustNodes = m_zoneConnections->zoneAirExhaustNodes();
+        m_exhaustRegistered = !wasExhaustRegistered && (std::ranges::find(currentExhaustNodes, *m_secondaryNode) != currentExhaustNodes.end());
+        if (!exhaustResult) {
+          return false;
+        }
+
+        if (m_airDistributionUnit) {
+          m_aduUpdated = true;
+          if (!m_airDistributionUnit->getImpl<detail::ZoneHVACAirDistributionUnit_Impl>()->setOutletNode(m_outletNode)) {
+            return false;
+          }
+        }
+
+        const auto originalEquipment = m_thermalZone->equipment();
+        const bool wasZoneRegistered = std::ranges::find(originalEquipment, terminal) != originalEquipment.end();
+        const bool zoneResult = registerTerminalWithZone(*m_thermalZone, terminal);
+        const auto currentEquipment = m_thermalZone->equipment();
+        m_zoneRegistered = !wasZoneRegistered && (std::ranges::find(currentEquipment, terminal) != currentEquipment.end());
+        return zoneResult;
+      }
+
+      void cleanupPreparedState() {
+        auto terminal = m_terminalImpl->getObject<ModelObject>();
+        if (m_zoneRegistered && m_thermalZone) {
+          const bool removed = unregisterTerminalFromZone(*m_thermalZone, terminal);
+          OS_ASSERT(removed);
+          (void)removed;
+        }
+        if (m_aduUpdated && m_airDistributionUnit) {
+          auto aduImpl = m_airDistributionUnit->getImpl<detail::ZoneHVACAirDistributionUnit_Impl>();
+          OS_ASSERT(aduImpl);
+          const bool restored =
+            m_previousADUOutletTarget ? aduImpl->setPointer(openstudio::ZoneHVAC_AirDistributionUnitFields::AirDistributionUnitOutletNodeName,
+                                                            m_previousADUOutletTarget->handle(), false)
+            : m_previousADUOutletNodeName
+              ? aduImpl->setString(openstudio::ZoneHVAC_AirDistributionUnitFields::AirDistributionUnitOutletNodeName, *m_previousADUOutletNodeName,
+                                   false)
+              : aduImpl->setPointer(openstudio::ZoneHVAC_AirDistributionUnitFields::AirDistributionUnitOutletNodeName, Handle(), false);
+          OS_ASSERT(restored);
+          (void)restored;
+        }
+        if (m_exhaustRegistered && m_zoneConnections && m_secondaryNode) {
+          const bool removed = m_zoneConnections->getImpl<detail::ZoneHVACEquipmentConnections_Impl>()->removeZoneAirExhaustNode(*m_secondaryNode);
+          OS_ASSERT(removed);
+          (void)removed;
+        }
+        if (m_secondaryAssigned) {
+          const bool cleared = m_terminalImpl->setPointer(openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::SecondaryAirInletNodeName,
+                                                          openstudio::Handle(), false);
+          OS_ASSERT(cleared);
+          (void)cleared;
+        }
+        if (m_outletAssigned) {
+          const bool cleared = m_terminalImpl->setPointer(m_terminalImpl->outletPort(), openstudio::Handle(), false);
+          OS_ASSERT(cleared);
+          (void)cleared;
+        }
+        if (m_inletAssigned) {
+          const bool cleared = m_terminalImpl->setPointer(m_terminalImpl->inletPort(), openstudio::Handle(), false);
+          OS_ASSERT(cleared);
+          (void)cleared;
+        }
+        if (m_splitterRewired) {
+          const bool restored = m_splitter.setOutletModelObject(m_branchIndex, m_outletNode.cast<ModelObject>());
+          OS_ASSERT(restored);
+          (void)restored;
+        }
+        if (m_secondaryNodeCreated && m_secondaryNode && m_terminalImpl->model().getObject(m_secondaryNode->handle())) {
+          m_secondaryNode->remove();
+        }
+        if (m_inletNodeCreated && m_terminalImpl->model().getObject(m_inletNode.handle())) {
+          m_inletNode.remove();
+        }
+        if (m_fanAvailabilityUpdateAttempted && m_fanAvailabilityField) {
+          auto fanObject = m_terminalImpl->fan();
+          auto fanImpl = fanObject.getImpl<detail::ModelObject_Impl>();
+          OS_ASSERT(fanImpl);
+          bool restored = false;
+          if (m_previousFanAvailabilityTarget) {
+            restored = fanImpl->setPointer(*m_fanAvailabilityField, m_previousFanAvailabilityTarget->handle(), false);
+          } else if (m_previousFanAvailabilityRaw) {
+            const bool cleared = fanImpl->setPointer(*m_fanAvailabilityField, Handle(), false);
+            const bool rawRestored =
+              fanImpl->openstudio::detail::IdfObject_Impl::setString(*m_fanAvailabilityField, *m_previousFanAvailabilityRaw, false);
+            restored = cleared && rawRestored;
+          } else {
+            restored = fanImpl->setPointer(*m_fanAvailabilityField, Handle(), false);
+          }
+          OS_ASSERT(restored);
+          (void)restored;
+        }
+        if (m_terminalNameAssigned) {
+          auto workspaceImpl = terminal.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+          OS_ASSERT(workspaceImpl);
+          const bool restored = static_cast<bool>(workspaceImpl->setName("", false));
+          OS_ASSERT(restored);
+          (void)restored;
+        }
+      }
+
+      State m_state = State::Prepared;
+      AirTerminalSingleDuctSeriesPIUReheat_Impl* m_terminalImpl;
+      AirLoopHVAC m_airLoop;
+      AirLoopHVACZoneSplitter m_splitter;
+      unsigned m_branchIndex;
+      Node m_outletNode;
+      Node m_inletNode;
+      bool m_inletNodeCreated;
+      boost::optional<ThermalZone> m_thermalZone;
+      boost::optional<Node> m_secondaryNode;
+      bool m_secondaryNodeCreated;
+      boost::optional<ZoneHVACEquipmentConnections> m_zoneConnections;
+      boost::optional<ZoneHVACAirDistributionUnit> m_airDistributionUnit;
+      boost::optional<ModelObject> m_previousADUOutletTarget;
+      boost::optional<std::string> m_previousADUOutletNodeName;
+      boost::optional<ModelObject> m_previousFanAvailabilityTarget;
+      boost::optional<std::string> m_previousFanAvailabilityRaw;
+      boost::optional<unsigned> m_fanAvailabilityField;
+      bool m_terminalNameAssigned = false;
+      bool m_fanAvailabilityUpdateAttempted = false;
+      bool m_splitterRewired = false;
+      bool m_inletAssigned = false;
+      bool m_outletAssigned = false;
+      bool m_secondaryAssigned = false;
+      bool m_exhaustRegistered = false;
+      bool m_aduUpdated = false;
+      bool m_zoneRegistered = false;
+    };
+
     boost::optional<Schedule> AirTerminalSingleDuctSeriesPIUReheat_Impl::availabilitySchedule() const {
       return getObject<ModelObject>().getModelObjectTarget<Schedule>(
         openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::AvailabilityScheduleName);
@@ -381,15 +1191,82 @@ namespace epmodel {
       if ((fanComponent.model() != model()) || !isSupportedSeriesPIUFan(fanComponent)) {
         return false;
       }
+      auto mutableFan = fanComponent;
+      auto terminal = getObject<ModelObject>();
+      auto previousFan = terminal.getModelObjectTarget<HVACComponent>(openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::FanName);
+      if (previousFan && previousFan->handle() == fanComponent.handle()) {
+        return maintainContainedAirPath();
+      }
+      if (auto owner = fanComponent.containingHVACComponent(); owner && owner->handle() != terminal.handle()) {
+        return false;
+      }
+      const auto type = fanComponent.iddObject().type();
+      const auto previousFanControlType = getString(openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::FanControlType, false, true);
+      auto rollbackFanAssignment = [&]() {
+        if (type == IddObjectType::Fan_ConstantVolume) {
+          OS_ASSERT(mutableFan.setPointer(openstudio::Fan_ConstantVolumeFields::AirInletNodeName, Handle()));
+          OS_ASSERT(mutableFan.setPointer(openstudio::Fan_ConstantVolumeFields::AirOutletNodeName, Handle()));
+        } else if (type == IddObjectType::Fan_SystemModel) {
+          OS_ASSERT(mutableFan.setPointer(openstudio::Fan_SystemModelFields::AirInletNodeName, Handle()));
+          OS_ASSERT(mutableFan.setPointer(openstudio::Fan_SystemModelFields::AirOutletNodeName, Handle()));
+        } else if (type == IddObjectType::Fan_OnOff) {
+          OS_ASSERT(mutableFan.setPointer(openstudio::Fan_OnOffFields::AirInletNodeName, Handle()));
+          OS_ASSERT(mutableFan.setPointer(openstudio::Fan_OnOffFields::AirOutletNodeName, Handle()));
+        } else if (type == IddObjectType::Fan_VariableVolume) {
+          OS_ASSERT(mutableFan.setPointer(openstudio::Fan_VariableVolumeFields::AirInletNodeName, Handle()));
+          OS_ASSERT(mutableFan.setPointer(openstudio::Fan_VariableVolumeFields::AirOutletNodeName, Handle()));
+        }
+        OS_ASSERT(
+          setPointer(openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::FanName, previousFan ? previousFan->handle() : Handle(), false));
+        OS_ASSERT(setString(openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::FanControlType, previousFanControlType.value_or("")));
+        OS_ASSERT(maintainContainedAirPath());
+      };
+      const bool hasAirPath = (type == IddObjectType::Fan_ConstantVolume
+                               && (fanComponent.getTarget(openstudio::Fan_ConstantVolumeFields::AirInletNodeName)
+                                   || fanComponent.getTarget(openstudio::Fan_ConstantVolumeFields::AirOutletNodeName)))
+                              || (type == IddObjectType::Fan_SystemModel
+                                  && (fanComponent.getTarget(openstudio::Fan_SystemModelFields::AirInletNodeName)
+                                      || fanComponent.getTarget(openstudio::Fan_SystemModelFields::AirOutletNodeName)))
+                              || (type == IddObjectType::Fan_OnOff
+                                  && (fanComponent.getTarget(openstudio::Fan_OnOffFields::AirInletNodeName)
+                                      || fanComponent.getTarget(openstudio::Fan_OnOffFields::AirOutletNodeName)))
+                              || (type == IddObjectType::Fan_VariableVolume
+                                  && (fanComponent.getTarget(openstudio::Fan_VariableVolumeFields::AirInletNodeName)
+                                      || fanComponent.getTarget(openstudio::Fan_VariableVolumeFields::AirOutletNodeName)));
+      if (hasAirPath) {
+        return false;
+      }
+      if (previousFan) {
+        const auto previousType = previousFan->iddObject().type();
+        if (previousType == IddObjectType::Fan_ConstantVolume) {
+          OS_ASSERT(previousFan->setPointer(openstudio::Fan_ConstantVolumeFields::AirInletNodeName, Handle()));
+          OS_ASSERT(previousFan->setPointer(openstudio::Fan_ConstantVolumeFields::AirOutletNodeName, Handle()));
+        } else if (previousType == IddObjectType::Fan_SystemModel) {
+          OS_ASSERT(previousFan->setPointer(openstudio::Fan_SystemModelFields::AirInletNodeName, Handle()));
+          OS_ASSERT(previousFan->setPointer(openstudio::Fan_SystemModelFields::AirOutletNodeName, Handle()));
+        } else if (previousType == IddObjectType::Fan_OnOff) {
+          OS_ASSERT(previousFan->setPointer(openstudio::Fan_OnOffFields::AirInletNodeName, Handle()));
+          OS_ASSERT(previousFan->setPointer(openstudio::Fan_OnOffFields::AirOutletNodeName, Handle()));
+        } else if (previousType == IddObjectType::Fan_VariableVolume) {
+          OS_ASSERT(previousFan->setPointer(openstudio::Fan_VariableVolumeFields::AirInletNodeName, Handle()));
+          OS_ASSERT(previousFan->setPointer(openstudio::Fan_VariableVolumeFields::AirOutletNodeName, Handle()));
+        }
+      }
       if (!setPointer(openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::FanName, fanComponent.handle(), false)) {
+        rollbackFanAssignment();
         return false;
       }
 
-      const auto type = fanComponent.iddObject().type();
       if (type == IddObjectType::Fan_ConstantVolume || type == IddObjectType::OS_Fan_ConstantVolume) {
-        return setFanControlType("ConstantSpeed");
+        if (!setFanControlType("ConstantSpeed")) {
+          rollbackFanAssignment();
+          return false;
+        }
       }
-
+      if (!maintainContainedAirPath()) {
+        rollbackFanAssignment();
+        return false;
+      }
       return true;
     }
 
@@ -404,7 +1281,491 @@ namespace epmodel {
       if ((coil.model() != model()) || !isSupportedSeriesPIUReheatCoil(coil)) {
         return false;
       }
-      return setPointer(openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::ReheatCoilName, coil.handle(), false);
+      auto mutableCoil = coil;
+      auto terminal = getObject<ModelObject>();
+      auto previousCoil = terminal.getModelObjectTarget<HVACComponent>(openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::ReheatCoilName);
+      if (previousCoil && previousCoil->handle() == coil.handle()) {
+        return maintainContainedAirPath();
+      }
+      if (auto owner = coil.containingHVACComponent(); owner && owner->handle() != terminal.handle()) {
+        return false;
+      }
+      const auto coilType = coil.iddObject().type();
+      const bool hasAirPath = (coilType == IddObjectType::Coil_Heating_Electric
+                               && (coil.getTarget(openstudio::Coil_Heating_ElectricFields::AirInletNodeName)
+                                   || coil.getTarget(openstudio::Coil_Heating_ElectricFields::AirOutletNodeName)))
+                              || (coilType == IddObjectType::Coil_Heating_Fuel
+                                  && (coil.getTarget(openstudio::Coil_Heating_FuelFields::AirInletNodeName)
+                                      || coil.getTarget(openstudio::Coil_Heating_FuelFields::AirOutletNodeName)))
+                              || (coilType == IddObjectType::Coil_Heating_Water
+                                  && (coil.getTarget(openstudio::Coil_Heating_WaterFields::AirInletNodeName)
+                                      || coil.getTarget(openstudio::Coil_Heating_WaterFields::AirOutletNodeName)));
+      if (hasAirPath) {
+        return false;
+      }
+      if (previousCoil) {
+        const auto previousType = previousCoil->iddObject().type();
+        if (previousType == IddObjectType::Coil_Heating_Electric) {
+          OS_ASSERT(previousCoil->setPointer(openstudio::Coil_Heating_ElectricFields::AirInletNodeName, Handle()));
+          OS_ASSERT(previousCoil->setPointer(openstudio::Coil_Heating_ElectricFields::AirOutletNodeName, Handle()));
+        } else if (previousType == IddObjectType::Coil_Heating_Fuel) {
+          OS_ASSERT(previousCoil->setPointer(openstudio::Coil_Heating_FuelFields::AirInletNodeName, Handle()));
+          OS_ASSERT(previousCoil->setPointer(openstudio::Coil_Heating_FuelFields::AirOutletNodeName, Handle()));
+        } else if (previousType == IddObjectType::Coil_Heating_Water) {
+          OS_ASSERT(previousCoil->setPointer(openstudio::Coil_Heating_WaterFields::AirInletNodeName, Handle()));
+          OS_ASSERT(previousCoil->setPointer(openstudio::Coil_Heating_WaterFields::AirOutletNodeName, Handle()));
+        }
+      }
+      if (!setPointer(openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::ReheatCoilName, coil.handle(), false)) {
+        OS_ASSERT(setPointer(openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::ReheatCoilName,
+                             previousCoil ? previousCoil->handle() : Handle(), false));
+        if (previousCoil) {
+          OS_ASSERT(maintainContainedAirPath());
+        }
+        return false;
+      }
+      if (!maintainContainedAirPath()) {
+        if (coilType == IddObjectType::Coil_Heating_Electric) {
+          OS_ASSERT(mutableCoil.setPointer(openstudio::Coil_Heating_ElectricFields::AirInletNodeName, Handle()));
+          OS_ASSERT(mutableCoil.setPointer(openstudio::Coil_Heating_ElectricFields::AirOutletNodeName, Handle()));
+        } else if (coilType == IddObjectType::Coil_Heating_Fuel) {
+          OS_ASSERT(mutableCoil.setPointer(openstudio::Coil_Heating_FuelFields::AirInletNodeName, Handle()));
+          OS_ASSERT(mutableCoil.setPointer(openstudio::Coil_Heating_FuelFields::AirOutletNodeName, Handle()));
+        } else if (coilType == IddObjectType::Coil_Heating_Water) {
+          OS_ASSERT(mutableCoil.setPointer(openstudio::Coil_Heating_WaterFields::AirInletNodeName, Handle()));
+          OS_ASSERT(mutableCoil.setPointer(openstudio::Coil_Heating_WaterFields::AirOutletNodeName, Handle()));
+        }
+        OS_ASSERT(setPointer(openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::ReheatCoilName,
+                             previousCoil ? previousCoil->handle() : Handle(), false));
+        OS_ASSERT(maintainContainedAirPath());
+        return false;
+      }
+      return true;
+    }
+
+    bool AirTerminalSingleDuctSeriesPIUReheat_Impl::maintainContainedAirPath() {
+      return reconcileContainedAirPath(false, nullptr);
+    }
+
+    void AirTerminalSingleDuctSeriesPIUReheat_Impl::doCanonicalize(LoadContext& context) {
+      if (!repairContainedAirPath(context)) {
+        detail::addLoadError(context, "Failed to repair contained air path for AirTerminal:SingleDuct:SeriesPIU:Reheat '"
+                                        + getObject<ModelObject>().nameString() + "'.");
+      }
+    }
+
+    bool AirTerminalSingleDuctSeriesPIUReheat_Impl::repairContainedAirPath(LoadContext& context) {
+      return reconcileContainedAirPath(true, &context);
+    }
+
+    bool AirTerminalSingleDuctSeriesPIUReheat_Impl::reconcileContainedAirPath(bool allowChildNodeRecovery, LoadContext* context) {
+      auto terminal = getObject<ModelObject>();
+      auto fanComponent = terminal.getModelObjectTarget<HVACComponent>(openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::FanName);
+      auto reheatComponent = terminal.getModelObjectTarget<HVACComponent>(openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::ReheatCoilName);
+      if (fanComponent && context) {
+        const bool supported = isSupportedSeriesPIUFan(*fanComponent);
+        const auto owner = fanComponent->containingHVACComponent();
+        if (!supported || (owner && owner->handle() != terminal.handle())) {
+          detail::addLoadWarning(*context, "Dropped " + std::string(supported ? "shared" : "unsupported")
+                                             + " fan reference from AirTerminal:SingleDuct:SeriesPIU:Reheat '" + terminal.nameString() + "'.");
+          OS_ASSERT(setPointer(openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::FanName, Handle(), false));
+          fanComponent = boost::none;
+        }
+      }
+      if (reheatComponent && context) {
+        const bool supported = isSupportedSeriesPIUReheatCoil(*reheatComponent);
+        const auto owner = reheatComponent->containingHVACComponent();
+        if (!supported || (owner && owner->handle() != terminal.handle())) {
+          detail::addLoadWarning(*context, "Dropped " + std::string(supported ? "shared" : "unsupported")
+                                             + " reheat-coil reference from AirTerminal:SingleDuct:SeriesPIU:Reheat '" + terminal.nameString()
+                                             + "'.");
+          OS_ASSERT(setPointer(openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::ReheatCoilName, Handle(), false));
+          reheatComponent = boost::none;
+        }
+      }
+      if (!fanComponent || !reheatComponent) {
+        if ((fanComponent && !isSupportedSeriesPIUFan(*fanComponent)) || (reheatComponent && !isSupportedSeriesPIUReheatCoil(*reheatComponent))) {
+          return false;
+        }
+        const bool hadExternalTopology =
+          static_cast<bool>(inletModelObject()) || static_cast<bool>(outletModelObject())
+          || static_cast<bool>(resolvedNodeTarget(openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::SecondaryAirInletNodeName))
+          || static_cast<bool>(thermalZoneContainingTerminal(model(), terminal)) || static_cast<bool>(zoneHVACAirDistributionUnit());
+        if (context && hadExternalTopology) {
+          // An incomplete terminal may still own a valid plant-connected
+          // reheat coil. Remove only its air/zone projection here.
+          const bool detached = detachIncompleteSeriesPIUAirTopologyForRepair(terminal, fanComponent, reheatComponent);
+          if (!detached) {
+            detail::addLoadError(*context, "Could not detach incomplete AirTerminal:SingleDuct:SeriesPIU:Reheat '" + terminal.nameString()
+                                             + "' from its external topology.");
+            return false;
+          }
+        }
+        bool changed = false;
+        std::vector<Node> orphanCandidates;
+        const auto clearAirPath = [&](HVACComponent& component) {
+          boost::optional<ModelObject> inlet;
+          boost::optional<ModelObject> outlet;
+          unsigned inletPort = 0u;
+          unsigned outletPort = 0u;
+          if (auto straight = component.optionalCast<StraightComponent>()) {
+            inlet = straight->inletModelObject();
+            outlet = straight->outletModelObject();
+            inletPort = straight->inletPort();
+            outletPort = straight->outletPort();
+          } else if (auto waterToAir = component.optionalCast<WaterToAirComponent>()) {
+            inlet = waterToAir->airInletModelObject();
+            outlet = waterToAir->airOutletModelObject();
+            inletPort = waterToAir->airInletPort();
+            outletPort = waterToAir->airOutletPort();
+          } else {
+            return false;
+          }
+          changed = changed || static_cast<bool>(inlet) || static_cast<bool>(outlet);
+          for (const auto& object : {inlet, outlet}) {
+            if (object) {
+              if (auto node = object->optionalCast<Node>()) {
+                orphanCandidates.push_back(*node);
+              }
+            }
+          }
+          return component.setPointer(inletPort, Handle()) && component.setPointer(outletPort, Handle());
+        };
+        if ((fanComponent && !clearAirPath(*fanComponent)) || (reheatComponent && !clearAirPath(*reheatComponent))) {
+          return false;
+        }
+        const auto previousCoilType =
+          getString(openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::ReheatCoilObjectType, false, true).value_or("");
+        const auto expectedCoilType = reheatComponent ? reheatComponent->iddObject().name() : "";
+        changed = changed || !openstudio::istringEqual(previousCoilType, expectedCoilType);
+        OS_ASSERT(setString(openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::ReheatCoilObjectType, expectedCoilType));
+        if (!fanComponent) {
+          const auto previousFanName = getString(openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::FanName, false, true).value_or("");
+          changed = changed || !previousFanName.empty();
+          OS_ASSERT(setString(openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::FanName, ""));
+        }
+        if (!reheatComponent) {
+          const auto previousCoilName =
+            getString(openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::ReheatCoilName, false, true).value_or("");
+          changed = changed || !previousCoilName.empty();
+          OS_ASSERT(setString(openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::ReheatCoilName, ""));
+        }
+        if (auto target = terminal.getTarget(openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::ZoneMixerName)) {
+          changed = true;
+          auto oldMixer = target->optionalCast<AirLoopHVACZoneMixer>();
+          OS_ASSERT(setPointer(openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::ZoneMixerName, Handle(), false));
+          if (oldMixer) {
+            const bool exclusivelyOwned =
+              std::ranges::all_of(oldMixer->sources(), [&terminal](const auto& source) { return source.handle() == terminal.handle(); });
+            if (exclusivelyOwned) {
+              oldMixer->remove();
+            }
+          }
+        }
+        for (auto& node : orphanCandidates) {
+          if (node.sources().empty() && model().getObject(node.handle())) {
+            node.remove();
+          }
+        }
+        OS_ASSERT(setPointer(inletPort(), Handle(), false));
+        OS_ASSERT(setPointer(openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::SecondaryAirInletNodeName, Handle(), false));
+        OS_ASSERT(setPointer(outletPort(), Handle(), false));
+        if ((changed || hadExternalTopology) && context) {
+          detail::addLoadWarning(*context, "Detached incomplete AirTerminal:SingleDuct:SeriesPIU:Reheat '" + terminal.nameString()
+                                             + "' and cleared its unresolved child references.");
+        }
+        return true;
+      }
+      const auto fanType = fanComponent->iddObject().type();
+      const auto coilType = reheatComponent->iddObject().type();
+      if (((fanType != IddObjectType::Fan_ConstantVolume) && (fanType != IddObjectType::Fan_SystemModel) && (fanType != IddObjectType::Fan_OnOff)
+           && (fanType != IddObjectType::Fan_VariableVolume))
+          || ((coilType != IddObjectType::Coil_Heating_Electric) && (coilType != IddObjectType::Coil_Heating_Fuel)
+              && (coilType != IddObjectType::Coil_Heating_Water))) {
+        return false;
+      }
+      bool changed = false;
+      const auto storedCoilType = terminal.getString(openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::ReheatCoilObjectType);
+      changed = !storedCoilType || !openstudio::istringEqual(*storedCoilType, reheatComponent->iddObject().name());
+      if (!setString(openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::ReheatCoilObjectType, reheatComponent->iddObject().name())) {
+        return false;
+      }
+
+      auto supplyNode = resolvedNodeTarget(openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::SupplyAirInletNodeName);
+      auto secondaryNode = resolvedNodeTarget(openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::SecondaryAirInletNodeName);
+      auto outletNode = resolvedNodeTarget(openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::OutletNodeName);
+      if (!supplyNode || !secondaryNode || !outletNode) {
+        boost::optional<Node> mixerOutletNode;
+        boost::optional<Node> fanOutletNode;
+        if (fanType == IddObjectType::Fan_ConstantVolume) {
+          mixerOutletNode = fanComponent->getModelObjectTarget<Node>(openstudio::Fan_ConstantVolumeFields::AirInletNodeName);
+          fanOutletNode = fanComponent->getModelObjectTarget<Node>(openstudio::Fan_ConstantVolumeFields::AirOutletNodeName);
+          OS_ASSERT(fanComponent->setPointer(openstudio::Fan_ConstantVolumeFields::AirInletNodeName, Handle()));
+          OS_ASSERT(fanComponent->setPointer(openstudio::Fan_ConstantVolumeFields::AirOutletNodeName, Handle()));
+        } else if (fanType == IddObjectType::Fan_SystemModel) {
+          mixerOutletNode = fanComponent->getModelObjectTarget<Node>(openstudio::Fan_SystemModelFields::AirInletNodeName);
+          fanOutletNode = fanComponent->getModelObjectTarget<Node>(openstudio::Fan_SystemModelFields::AirOutletNodeName);
+          OS_ASSERT(fanComponent->setPointer(openstudio::Fan_SystemModelFields::AirInletNodeName, Handle()));
+          OS_ASSERT(fanComponent->setPointer(openstudio::Fan_SystemModelFields::AirOutletNodeName, Handle()));
+        } else if (fanType == IddObjectType::Fan_OnOff) {
+          mixerOutletNode = fanComponent->getModelObjectTarget<Node>(openstudio::Fan_OnOffFields::AirInletNodeName);
+          fanOutletNode = fanComponent->getModelObjectTarget<Node>(openstudio::Fan_OnOffFields::AirOutletNodeName);
+          OS_ASSERT(fanComponent->setPointer(openstudio::Fan_OnOffFields::AirInletNodeName, Handle()));
+          OS_ASSERT(fanComponent->setPointer(openstudio::Fan_OnOffFields::AirOutletNodeName, Handle()));
+        } else {
+          mixerOutletNode = fanComponent->getModelObjectTarget<Node>(openstudio::Fan_VariableVolumeFields::AirInletNodeName);
+          fanOutletNode = fanComponent->getModelObjectTarget<Node>(openstudio::Fan_VariableVolumeFields::AirOutletNodeName);
+          OS_ASSERT(fanComponent->setPointer(openstudio::Fan_VariableVolumeFields::AirInletNodeName, Handle()));
+          OS_ASSERT(fanComponent->setPointer(openstudio::Fan_VariableVolumeFields::AirOutletNodeName, Handle()));
+        }
+        changed = changed || static_cast<bool>(mixerOutletNode) || static_cast<bool>(fanOutletNode);
+        if (coilType == IddObjectType::Coil_Heating_Electric) {
+          changed = changed || static_cast<bool>(reheatComponent->getTarget(openstudio::Coil_Heating_ElectricFields::AirInletNodeName))
+                    || static_cast<bool>(reheatComponent->getTarget(openstudio::Coil_Heating_ElectricFields::AirOutletNodeName));
+          OS_ASSERT(reheatComponent->setPointer(openstudio::Coil_Heating_ElectricFields::AirInletNodeName, Handle()));
+          OS_ASSERT(reheatComponent->setPointer(openstudio::Coil_Heating_ElectricFields::AirOutletNodeName, Handle()));
+        } else if (coilType == IddObjectType::Coil_Heating_Fuel) {
+          changed = changed || static_cast<bool>(reheatComponent->getTarget(openstudio::Coil_Heating_FuelFields::AirInletNodeName))
+                    || static_cast<bool>(reheatComponent->getTarget(openstudio::Coil_Heating_FuelFields::AirOutletNodeName));
+          OS_ASSERT(reheatComponent->setPointer(openstudio::Coil_Heating_FuelFields::AirInletNodeName, Handle()));
+          OS_ASSERT(reheatComponent->setPointer(openstudio::Coil_Heating_FuelFields::AirOutletNodeName, Handle()));
+        } else {
+          changed = changed || static_cast<bool>(reheatComponent->getTarget(openstudio::Coil_Heating_WaterFields::AirInletNodeName))
+                    || static_cast<bool>(reheatComponent->getTarget(openstudio::Coil_Heating_WaterFields::AirOutletNodeName));
+          OS_ASSERT(reheatComponent->setPointer(openstudio::Coil_Heating_WaterFields::AirInletNodeName, Handle()));
+          OS_ASSERT(reheatComponent->setPointer(openstudio::Coil_Heating_WaterFields::AirOutletNodeName, Handle()));
+        }
+        if (auto target = terminal.getTarget(openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::ZoneMixerName)) {
+          changed = true;
+          if (auto oldMixer = target->optionalCast<AirLoopHVACZoneMixer>()) {
+            bool exclusivelyOwned = true;
+            for (const auto& source : oldMixer->sources()) {
+              if (source.handle() != terminal.handle()) {
+                exclusivelyOwned = false;
+                break;
+              }
+            }
+            OS_ASSERT(setPointer(openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::ZoneMixerName, Handle(), false));
+            if (exclusivelyOwned) {
+              oldMixer->remove();
+            }
+          } else {
+            OS_ASSERT(setPointer(openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::ZoneMixerName, Handle(), false));
+          }
+        }
+        if (mixerOutletNode && mixerOutletNode->sources().empty()) {
+          mixerOutletNode->remove();
+        }
+        if (fanOutletNode && fanOutletNode->sources().empty()) {
+          fanOutletNode->remove();
+        }
+        if (changed && context) {
+          detail::addLoadInfo(*context, "Reconciled contained air path for AirTerminal:SingleDuct:SeriesPIU:Reheat '" + terminal.nameString() + "'.");
+        }
+        return true;
+      }
+      if (!terminal.name() && !terminal.createName()) {
+        return false;
+      }
+      const auto baseName = terminal.nameString();
+
+      boost::optional<AirLoopHVACZoneMixer> mixer;
+      if (auto target = terminal.getTarget(openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::ZoneMixerName)) {
+        mixer = target->optionalCast<AirLoopHVACZoneMixer>();
+      }
+      if (mixer) {
+        for (const auto& source : mixer->sources()) {
+          if (source.handle() != terminal.handle()) {
+            mixer = boost::none;
+            changed = true;
+            break;
+          }
+        }
+      }
+
+      std::vector<Node> displacedNodeCandidates;
+      if (fanType == IddObjectType::Fan_ConstantVolume) {
+        if (auto node = fanComponent->getModelObjectTarget<Node>(openstudio::Fan_ConstantVolumeFields::AirInletNodeName)) {
+          displacedNodeCandidates.push_back(*node);
+        }
+        if (auto node = fanComponent->getModelObjectTarget<Node>(openstudio::Fan_ConstantVolumeFields::AirOutletNodeName)) {
+          displacedNodeCandidates.push_back(*node);
+        }
+      } else if (fanType == IddObjectType::Fan_SystemModel) {
+        if (auto node = fanComponent->getModelObjectTarget<Node>(openstudio::Fan_SystemModelFields::AirInletNodeName)) {
+          displacedNodeCandidates.push_back(*node);
+        }
+        if (auto node = fanComponent->getModelObjectTarget<Node>(openstudio::Fan_SystemModelFields::AirOutletNodeName)) {
+          displacedNodeCandidates.push_back(*node);
+        }
+      } else if (fanType == IddObjectType::Fan_OnOff) {
+        if (auto node = fanComponent->getModelObjectTarget<Node>(openstudio::Fan_OnOffFields::AirInletNodeName)) {
+          displacedNodeCandidates.push_back(*node);
+        }
+        if (auto node = fanComponent->getModelObjectTarget<Node>(openstudio::Fan_OnOffFields::AirOutletNodeName)) {
+          displacedNodeCandidates.push_back(*node);
+        }
+      } else {
+        if (auto node = fanComponent->getModelObjectTarget<Node>(openstudio::Fan_VariableVolumeFields::AirInletNodeName)) {
+          displacedNodeCandidates.push_back(*node);
+        }
+        if (auto node = fanComponent->getModelObjectTarget<Node>(openstudio::Fan_VariableVolumeFields::AirOutletNodeName)) {
+          displacedNodeCandidates.push_back(*node);
+        }
+      }
+      if (coilType == IddObjectType::Coil_Heating_Electric) {
+        if (auto node = reheatComponent->getModelObjectTarget<Node>(openstudio::Coil_Heating_ElectricFields::AirInletNodeName)) {
+          displacedNodeCandidates.push_back(*node);
+        }
+        if (auto node = reheatComponent->getModelObjectTarget<Node>(openstudio::Coil_Heating_ElectricFields::AirOutletNodeName)) {
+          displacedNodeCandidates.push_back(*node);
+        }
+      } else if (coilType == IddObjectType::Coil_Heating_Fuel) {
+        if (auto node = reheatComponent->getModelObjectTarget<Node>(openstudio::Coil_Heating_FuelFields::AirInletNodeName)) {
+          displacedNodeCandidates.push_back(*node);
+        }
+        if (auto node = reheatComponent->getModelObjectTarget<Node>(openstudio::Coil_Heating_FuelFields::AirOutletNodeName)) {
+          displacedNodeCandidates.push_back(*node);
+        }
+      } else {
+        if (auto node = reheatComponent->getModelObjectTarget<Node>(openstudio::Coil_Heating_WaterFields::AirInletNodeName)) {
+          displacedNodeCandidates.push_back(*node);
+        }
+        if (auto node = reheatComponent->getModelObjectTarget<Node>(openstudio::Coil_Heating_WaterFields::AirOutletNodeName)) {
+          displacedNodeCandidates.push_back(*node);
+        }
+      }
+      if (mixer) {
+        if (auto node = mixer->getModelObjectTarget<Node>(mixer->outletPort())) {
+          displacedNodeCandidates.push_back(*node);
+        }
+        for (const auto& inlet : mixer->inletModelObjects()) {
+          if (auto node = inlet.optionalCast<Node>()) {
+            displacedNodeCandidates.push_back(*node);
+          }
+        }
+      }
+
+      boost::optional<Node> mixerOutletNode;
+      boost::optional<Node> fanOutletNode;
+      if (allowChildNodeRecovery && mixer) {
+        const auto currentMixerOutlet = mixer->getModelObjectTarget<Node>(mixer->outletPort());
+        const auto currentFanInlet =
+          fanType == IddObjectType::Fan_ConstantVolume
+            ? fanComponent->getModelObjectTarget<Node>(openstudio::Fan_ConstantVolumeFields::AirInletNodeName)
+          : fanType == IddObjectType::Fan_SystemModel ? fanComponent->getModelObjectTarget<Node>(openstudio::Fan_SystemModelFields::AirInletNodeName)
+          : fanType == IddObjectType::Fan_OnOff       ? fanComponent->getModelObjectTarget<Node>(openstudio::Fan_OnOffFields::AirInletNodeName)
+                                                : fanComponent->getModelObjectTarget<Node>(openstudio::Fan_VariableVolumeFields::AirInletNodeName);
+        if (currentMixerOutlet && currentFanInlet && *currentMixerOutlet == *currentFanInlet && *currentMixerOutlet != *supplyNode
+            && *currentMixerOutlet != *secondaryNode && *currentMixerOutlet != *outletNode) {
+          mixerOutletNode = currentMixerOutlet;
+        }
+        const auto currentFanOutlet =
+          fanType == IddObjectType::Fan_ConstantVolume
+            ? fanComponent->getModelObjectTarget<Node>(openstudio::Fan_ConstantVolumeFields::AirOutletNodeName)
+          : fanType == IddObjectType::Fan_SystemModel ? fanComponent->getModelObjectTarget<Node>(openstudio::Fan_SystemModelFields::AirOutletNodeName)
+          : fanType == IddObjectType::Fan_OnOff       ? fanComponent->getModelObjectTarget<Node>(openstudio::Fan_OnOffFields::AirOutletNodeName)
+                                                : fanComponent->getModelObjectTarget<Node>(openstudio::Fan_VariableVolumeFields::AirOutletNodeName);
+        const auto currentCoilInlet = coilType == IddObjectType::Coil_Heating_Electric
+                                        ? reheatComponent->getModelObjectTarget<Node>(openstudio::Coil_Heating_ElectricFields::AirInletNodeName)
+                                      : coilType == IddObjectType::Coil_Heating_Fuel
+                                        ? reheatComponent->getModelObjectTarget<Node>(openstudio::Coil_Heating_FuelFields::AirInletNodeName)
+                                        : reheatComponent->getModelObjectTarget<Node>(openstudio::Coil_Heating_WaterFields::AirInletNodeName);
+        if (currentFanOutlet && currentCoilInlet && *currentFanOutlet == *currentCoilInlet && *currentFanOutlet != *supplyNode
+            && *currentFanOutlet != *secondaryNode && *currentFanOutlet != *outletNode) {
+          fanOutletNode = currentFanOutlet;
+        }
+      }
+      if (!mixerOutletNode) {
+        mixerOutletNode = model().getOrCreateTransientByName<Node>(baseName + " Mixer Outlet");
+      }
+      if (!fanOutletNode) {
+        fanOutletNode = model().getOrCreateTransientByName<Node>(baseName + " Fan Outlet");
+      }
+      if (!mixer) {
+        mixer = AirLoopHVACZoneMixer(model());
+        changed = true;
+        if (!mixer->setName(baseName + " Mixer")
+            || !setPointer(openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::ZoneMixerName, mixer->handle(), false)) {
+          return false;
+        }
+      }
+      auto mixerImpl = mixer->getImpl<detail::AirLoopHVACZoneMixer_Impl>();
+      OS_ASSERT(mixerImpl);
+      const auto previousMixerInlets = mixer->inletModelObjects();
+      const auto previousMixerOutlet = mixer->getModelObjectTarget<Node>(mixer->outletPort());
+      changed = changed || !previousMixerOutlet || *previousMixerOutlet != *mixerOutletNode || previousMixerInlets.size() != 2u
+                || previousMixerInlets[0] != secondaryNode->cast<ModelObject>() || previousMixerInlets[1] != supplyNode->cast<ModelObject>();
+      if (!mixerImpl->setOutletNode(*mixerOutletNode) || !mixer->setInletModelObject(0u, secondaryNode->cast<ModelObject>())
+          || !mixer->setInletModelObject(1u, supplyNode->cast<ModelObject>())) {
+        return false;
+      }
+      while (mixer->inletModelObjects().size() > 2u) {
+        auto displacedNode = mixer->inletModelObjects().back().optionalCast<Node>();
+        mixer->removePortForBranch(static_cast<unsigned>(mixer->inletModelObjects().size() - 1u));
+        if (displacedNode && displacedNode->sources().empty() && model().getObject(displacedNode->handle())) {
+          displacedNode->remove();
+        }
+      }
+
+      bool fanResult = false;
+      if (fanType == IddObjectType::Fan_ConstantVolume) {
+        changed = changed || fanComponent->getModelObjectTarget<Node>(openstudio::Fan_ConstantVolumeFields::AirInletNodeName) != mixerOutletNode
+                  || fanComponent->getModelObjectTarget<Node>(openstudio::Fan_ConstantVolumeFields::AirOutletNodeName) != fanOutletNode;
+        fanResult = fanComponent->setPointer(openstudio::Fan_ConstantVolumeFields::AirInletNodeName, mixerOutletNode->handle())
+                    && fanComponent->setPointer(openstudio::Fan_ConstantVolumeFields::AirOutletNodeName, fanOutletNode->handle());
+      } else if (fanType == IddObjectType::Fan_SystemModel) {
+        changed = changed || fanComponent->getModelObjectTarget<Node>(openstudio::Fan_SystemModelFields::AirInletNodeName) != mixerOutletNode
+                  || fanComponent->getModelObjectTarget<Node>(openstudio::Fan_SystemModelFields::AirOutletNodeName) != fanOutletNode;
+        fanResult = fanComponent->setPointer(openstudio::Fan_SystemModelFields::AirInletNodeName, mixerOutletNode->handle())
+                    && fanComponent->setPointer(openstudio::Fan_SystemModelFields::AirOutletNodeName, fanOutletNode->handle());
+      } else if (fanType == IddObjectType::Fan_OnOff) {
+        changed = changed || fanComponent->getModelObjectTarget<Node>(openstudio::Fan_OnOffFields::AirInletNodeName) != mixerOutletNode
+                  || fanComponent->getModelObjectTarget<Node>(openstudio::Fan_OnOffFields::AirOutletNodeName) != fanOutletNode;
+        fanResult = fanComponent->setPointer(openstudio::Fan_OnOffFields::AirInletNodeName, mixerOutletNode->handle())
+                    && fanComponent->setPointer(openstudio::Fan_OnOffFields::AirOutletNodeName, fanOutletNode->handle());
+      } else {
+        changed = changed || fanComponent->getModelObjectTarget<Node>(openstudio::Fan_VariableVolumeFields::AirInletNodeName) != mixerOutletNode
+                  || fanComponent->getModelObjectTarget<Node>(openstudio::Fan_VariableVolumeFields::AirOutletNodeName) != fanOutletNode;
+        fanResult = fanComponent->setPointer(openstudio::Fan_VariableVolumeFields::AirInletNodeName, mixerOutletNode->handle())
+                    && fanComponent->setPointer(openstudio::Fan_VariableVolumeFields::AirOutletNodeName, fanOutletNode->handle());
+      }
+      if (!fanResult) {
+        return false;
+      }
+
+      bool result = false;
+      if (coilType == IddObjectType::Coil_Heating_Electric) {
+        changed = changed || reheatComponent->getModelObjectTarget<Node>(openstudio::Coil_Heating_ElectricFields::AirInletNodeName) != fanOutletNode
+                  || reheatComponent->getModelObjectTarget<Node>(openstudio::Coil_Heating_ElectricFields::AirOutletNodeName) != outletNode;
+        result = reheatComponent->setPointer(openstudio::Coil_Heating_ElectricFields::AirInletNodeName, fanOutletNode->handle())
+                 && reheatComponent->setPointer(openstudio::Coil_Heating_ElectricFields::AirOutletNodeName, outletNode->handle());
+      } else if (coilType == IddObjectType::Coil_Heating_Fuel) {
+        changed = changed || reheatComponent->getModelObjectTarget<Node>(openstudio::Coil_Heating_FuelFields::AirInletNodeName) != fanOutletNode
+                  || reheatComponent->getModelObjectTarget<Node>(openstudio::Coil_Heating_FuelFields::AirOutletNodeName) != outletNode;
+        result = reheatComponent->setPointer(openstudio::Coil_Heating_FuelFields::AirInletNodeName, fanOutletNode->handle())
+                 && reheatComponent->setPointer(openstudio::Coil_Heating_FuelFields::AirOutletNodeName, outletNode->handle());
+      } else {
+        changed = changed || reheatComponent->getModelObjectTarget<Node>(openstudio::Coil_Heating_WaterFields::AirInletNodeName) != fanOutletNode
+                  || reheatComponent->getModelObjectTarget<Node>(openstudio::Coil_Heating_WaterFields::AirOutletNodeName) != outletNode;
+        result = reheatComponent->setPointer(openstudio::Coil_Heating_WaterFields::AirInletNodeName, fanOutletNode->handle())
+                 && reheatComponent->setPointer(openstudio::Coil_Heating_WaterFields::AirOutletNodeName, outletNode->handle());
+      }
+      if (result) {
+        for (auto& displacedNode : displacedNodeCandidates) {
+          if (displacedNode == *supplyNode || displacedNode == *secondaryNode || displacedNode == *outletNode || displacedNode == *mixerOutletNode
+              || displacedNode == *fanOutletNode) {
+            continue;
+          }
+          if (model().getObject(displacedNode.handle()) && displacedNode.sources().empty()) {
+            displacedNode.remove();
+          }
+        }
+      }
+      if (result && changed && context) {
+        detail::addLoadInfo(*context, "Reconciled contained air path for AirTerminal:SingleDuct:SeriesPIU:Reheat '" + terminal.nameString() + "'.");
+      }
+      return result;
     }
 
     boost::optional<Node> AirTerminalSingleDuctSeriesPIUReheat_Impl::secondaryAirInletNode() const {
@@ -617,6 +1978,38 @@ namespace epmodel {
       return result;
     }
 
+    bool AirTerminalSingleDuctSeriesPIUReheat_Impl::isRemovable() const {
+      if (!HVACComponent_Impl::isRemovable()) {
+        return false;
+      }
+
+      auto terminalObject = getObject<ModelObject>();
+      auto terminal = terminalObject.cast<StraightComponent>();
+      const auto reheat =
+        terminalObject.getModelObjectTarget<HVACComponent>(openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::ReheatCoilName);
+      const bool hasAirTopology = AirLoopHVAC_Impl::SingleDuctTerminalRemovalPlan::hasTopology(terminal) || seriesPIUHasContainedTopology(terminalObject);
+      const bool hasPlantTopology = reheat && reheat->plantLoop();
+      if (!hasAirTopology && !hasPlantTopology) {
+        return true;
+      }
+
+      if (!prepareSeriesPIUTopologyRemoval(terminalObject)) {
+        return false;
+      }
+      if (reheat) {
+        if (auto waterCoil = reheat->optionalCast<CoilHeatingWater>()) {
+          if (auto plantLoop = waterCoil->plantLoop()) {
+            auto plantLoopImpl = plantLoop->getImpl<PlantLoop_Impl>();
+            OS_ASSERT(plantLoopImpl);
+            return static_cast<bool>(plantLoopImpl->prepareCoilHeatingWaterDemandBranchRemoval(*waterCoil));
+          }
+        } else if (reheat->plantLoop()) {
+          return false;
+        }
+      }
+      return true;
+    }
+
     boost::optional<ZoneHVACAirDistributionUnit> AirTerminalSingleDuctSeriesPIUReheat_Impl::zoneHVACAirDistributionUnit() const {
       auto terminal = getObject<ModelObject>();
       for (const auto& source : terminal.getSources(openstudio::IddObjectType::ZoneHVAC_AirDistributionUnit)) {
@@ -629,123 +2022,87 @@ namespace epmodel {
 
     std::vector<openstudio::IdfObject> AirTerminalSingleDuctSeriesPIUReheat_Impl::remove() {
       auto thisObject = getObject<openstudio::epmodel::ModelObject>();
-      auto reheat = thisObject.getModelObjectTarget<openstudio::epmodel::HVACComponent>(
-        openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::ReheatCoilName);
+      auto thisModel = model();
+      const auto thisHandle = thisObject.handle();
+      const auto ownedChildren = children();
 
       if (!removeFromLoop()) {
+        // A clean disconnected object (including an object being cleaned up by
+        // a failed constructor) has no loop work to report. Only reject full
+        // removal when topology or ownership references still remain.
+        const auto reheat = thisObject.getModelObjectTarget<openstudio::epmodel::HVACComponent>(
+          openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::ReheatCoilName);
+        if (inletModelObject() || outletModelObject() || secondaryAirInletNode() || thermalZoneContainingTerminal(thisModel, thisObject)
+            || zoneHVACAirDistributionUnit() || (reheat && reheat->plantLoop())) {
+          return {};
+        }
+      }
+      if (!maintainContainedAirPath()) {
         return {};
       }
 
-      if (reheat) {
-        if (auto plantLoop = reheat->plantLoop()) {
-          plantLoop->removeDemandBranchWithComponent(*reheat);
-        }
+      auto result = HVACComponent_Impl::remove();
+      if (result.empty() || thisModel.getObject(thisHandle)) {
+        return {};
       }
 
-      return HVACComponent_Impl::remove();
+      // epmodel's generic ParentObject removal does not yet cascade children.
+      // Match model ownership here, but only after topology teardown and the
+      // parent removal have both succeeded.
+      for (auto child : ownedChildren) {
+        if (thisModel.getObject(child.handle())) {
+          auto removedChildObjects = child.remove();
+          result.insert(result.end(), removedChildObjects.begin(), removedChildObjects.end());
+        }
+      }
+      return result;
     }
 
     bool AirTerminalSingleDuctSeriesPIUReheat_Impl::removeFromLoop() {
       auto thisObject = getObject<openstudio::epmodel::ModelObject>();
-      auto inletNode = inletModelObject();
-      auto outletNode = outletModelObject();
-      auto thermalZone = thermalZoneContainingTerminal(model(), thisObject);
-      if (!thermalZone && outletNode) {
-        if (auto outletZoneNode = outletNode->optionalCast<Node>()) {
-          thermalZone = owningThermalZoneForZoneNode(model(), *outletZoneNode);
-        }
-      }
+      auto terminal = thisObject.cast<StraightComponent>();
       auto reheat = thisObject.getModelObjectTarget<openstudio::epmodel::HVACComponent>(
         openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::ReheatCoilName);
-      auto plantLoop = reheat ? reheat->plantLoop() : boost::optional<openstudio::epmodel::PlantLoop>{};
-      auto secondaryNode = secondaryAirInletNode();
-      if (!thermalZone && secondaryNode) {
-        thermalZone = thermalZoneContainingExhaustNode(model(), *secondaryNode);
-      }
-
-      bool shouldRemoveTerminalInletNode = false;
-      if (auto terminal = thisObject.optionalCast<openstudio::epmodel::HVACComponent>()) {
-        if (auto airLoop = terminal->airLoopHVAC()) {
-          if (inletNode && outletNode) {
-            const auto splitter = airLoop->zoneSplitter();
-            const auto mixer = airLoop->zoneMixer();
-            const auto splitterBranchIndex = splitter.branchIndexForOutletModelObject(*inletNode);
-            shouldRemoveTerminalInletNode =
-              (splitter.outletModelObject(splitterBranchIndex) == *inletNode) && (mixer.inletModelObject(splitterBranchIndex) == *outletNode);
-          }
-        }
-      }
-
-      bool removedFromAirLoop = false;
-      if (inletNode && outletNode) {
-        if (!StraightComponent_Impl::removeFromLoop()) {
-          return false;
-        }
-        removedFromAirLoop = true;
-      }
-
-      if (thermalZone) {
-        if (!unregisterTerminalFromZone(*thermalZone, thisObject)) {
-          return false;
-        }
-      }
-
-      bool removedSecondaryNode = false;
-      if (secondaryNode) {
-        auto zoneImpl = thermalZone ? thermalZone->getImpl<detail::ThermalZone_Impl>() : nullptr;
-        if (zoneImpl) {
-          auto zoneConnections = zoneImpl->getZoneHVACEquipmentConnections();
-          if (!zoneConnections.getImpl<detail::ZoneHVACEquipmentConnections_Impl>()->removeZoneAirExhaustNode(*secondaryNode)) {
-            return false;
-          }
-        }
-
-        if (!setPointer(openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::SecondaryAirInletNodeName, openstudio::Handle(), false)) {
-          return false;
-        }
-
-        if (secondaryNode->sources().empty()) {
-          secondaryNode->remove();
-          removedSecondaryNode = true;
-        }
-      }
-
-      bool cleanedADU = false;
-      if (auto adu = zoneHVACAirDistributionUnit()) {
-        if (!adu->setPointer(openstudio::ZoneHVAC_AirDistributionUnitFields::AirDistributionUnitOutletNodeName, openstudio::Handle())) {
-          return false;
-        }
-        if (!adu->setString(openstudio::ZoneHVAC_AirDistributionUnitFields::AirTerminalObjectType, "")) {
-          return false;
-        }
-        if (!adu->setPointer(openstudio::ZoneHVAC_AirDistributionUnitFields::AirTerminalName, openstudio::Handle())) {
-          return false;
-        }
-        cleanedADU = true;
-      }
-
-      if (!setPointer(inletPort(), openstudio::Handle(), false)) {
-        return false;
-      }
-      if (!setPointer(outletPort(), openstudio::Handle(), false)) {
+      const bool hasAirTopology = AirLoopHVAC_Impl::SingleDuctTerminalRemovalPlan::hasTopology(terminal) || seriesPIUHasContainedTopology(thisObject);
+      const bool hasPlantTopology = reheat && reheat->plantLoop();
+      if (!hasAirTopology && !hasPlantTopology) {
         return false;
       }
 
-      if (shouldRemoveTerminalInletNode) {
-        if (auto node = inletNode->optionalCast<openstudio::epmodel::Node>()) {
-          node->remove();
-        }
+      auto topologyRemovalPlans = prepareSeriesPIUTopologyRemoval(thisObject);
+      if (!topologyRemovalPlans) {
+        LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctSeriesPIUReheat",
+                 "Refusing to remove a Series PIU whose contained or external topology is not exact.");
+        return false;
       }
 
-      bool removedFromPlantLoop = false;
-      if (plantLoop && reheat) {
-        if (!plantLoop->removeDemandBranchWithComponent(*reheat)) {
+      std::unique_ptr<PlantLoop_Impl::CoilHeatingWaterDemandBranchRemovalPlan> plantRemovalPlan;
+      if (reheat) {
+        if (auto waterCoil = reheat->optionalCast<CoilHeatingWater>()) {
+          if (auto plantLoop = waterCoil->plantLoop()) {
+            auto plantLoopImpl = plantLoop->getImpl<PlantLoop_Impl>();
+            OS_ASSERT(plantLoopImpl);
+            plantRemovalPlan = plantLoopImpl->prepareCoilHeatingWaterDemandBranchRemoval(*waterCoil);
+            if (!plantRemovalPlan) {
+              return false;
+            }
+          }
+        } else if (reheat->plantLoop()) {
           return false;
         }
-        removedFromPlantLoop = true;
       }
 
-      return removedFromAirLoop || static_cast<bool>(thermalZone) || removedSecondaryNode || cleanedADU || removedFromPlantLoop;
+      // Water-coil controller cleanup still needs the coil air outlet. The
+      // contained graph must then release the terminal inlet before the shared
+      // external plan deletes that node.
+      if (plantRemovalPlan) {
+        plantRemovalPlan->commit();
+      }
+      topologyRemovalPlans->containedAirPath->commit();
+      if (topologyRemovalPlans->externalTopology) {
+        topologyRemovalPlans->externalTopology->commit();
+      }
+      return true;
     }
 
     bool AirTerminalSingleDuctSeriesPIUReheat_Impl::addToNode(Node& node) {
@@ -755,22 +2112,25 @@ namespace epmodel {
         return false;
       }
 
-      if (getObject<openstudio::epmodel::HVACComponent>().loop()) {
+      if (getObject<openstudio::epmodel::HVACComponent>().loop() || inletModelObject() || outletModelObject() || secondaryAirInletNode()) {
         LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctSeriesPIUReheat",
                  "Refusing to add an already-connected series PIU terminal to node '" << node.nameString() << "'.");
         return false;
       }
 
-      auto airLoop = node.airLoopHVAC();
-      if (!airLoop) {
+      auto resolvedOutletNode = AirLoopHVAC_Impl::resolveSingleDuctTerminalAttachmentNode(node);
+      if (!resolvedOutletNode) {
         LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctSeriesPIUReheat",
-                 "addToNode requires a node that resolves to an AirLoopHVAC context.");
+                 "addToNode requires a unique terminal-free single-duct branch for the requested outlet node.");
         return false;
       }
+      auto& insertionOutletNode = *resolvedOutletNode;
+
+      auto airLoop = insertionOutletNode.airLoopHVAC();
+      OS_ASSERT(airLoop);
 
       auto zoneSplitter = airLoop->zoneSplitter();
-      auto zoneMixer = airLoop->zoneMixer();
-      const auto thisNode = node.cast<ModelObject>();
+      const auto thisNode = insertionOutletNode.cast<ModelObject>();
       const auto splitterOutlets = zoneSplitter.outletModelObjects();
       const auto splitterIt = std::find(splitterOutlets.begin(), splitterOutlets.end(), thisNode);
       if (splitterIt == splitterOutlets.end()) {
@@ -780,138 +2140,53 @@ namespace epmodel {
       }
       const auto splitterBranchIndex = static_cast<unsigned>(std::distance(splitterOutlets.begin(), splitterIt));
 
-      auto mixerInlet = zoneMixer.inletModelObject(splitterBranchIndex);
+      auto airLoopImpl = airLoop->getImpl<detail::AirLoopHVAC_Impl>();
+      OS_ASSERT(airLoopImpl);
+      auto mixerInlet = airLoopImpl->effectiveDemandReturnNodeForBranchStart(insertionOutletNode);
       if (!mixerInlet) {
         LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctSeriesPIUReheat",
-                 "addToNode requires a corresponding ZoneMixer inlet for ZoneSplitter branch index " << splitterBranchIndex << ".");
+                 "addToNode requires one effective ZoneMixer return for the selected ZoneSplitter branch.");
         return false;
       }
-      auto thermalZone = owningThermalZoneForZoneNode(model(), node);
+      auto thermalZone = owningThermalZoneForZoneNode(model(), insertionOutletNode);
       if ((*mixerInlet != thisNode) && !isServedZoneReturnNode(thermalZone, *mixerInlet)) {
         LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctSeriesPIUReheat",
                  "addToNode requires the drop node to either feed the ZoneMixer directly or be the served zone inlet node.");
         return false;
       }
 
-      if (!thermalZone) {
+      auto thisObject = getObject<ModelObject>();
+      const auto fanComponent = thisObject.getModelObjectTarget<HVACComponent>(openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::FanName);
+      const auto reheatComponent =
+        thisObject.getModelObjectTarget<HVACComponent>(openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::ReheatCoilName);
+      if (!fanComponent || !reheatComponent) {
         LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctSeriesPIUReheat",
-                 "addToNode requires the drop node to be the current zone-branch node for an attached thermal zone.");
+                 "addToNode requires both the fan and reheat coil relationships to be established before insertion.");
         return false;
       }
-
-      auto thisObject = getObject<ModelObject>();
-      if (!thisObject.name()) {
+      const auto originalName = thisObject.name();
+      const bool terminalNameAssigned = !originalName || originalName->empty();
+      if (terminalNameAssigned) {
         thisObject.createName();
         if (!thisObject.name()) {
           return false;
         }
       }
 
-      auto zoneImpl = thermalZone->getImpl<detail::ThermalZone_Impl>();
-      OS_ASSERT(zoneImpl);
-      auto zoneConnections = zoneImpl->getZoneHVACEquipmentConnections();
-      auto adu = zoneHVACAirDistributionUnit();
-      const auto previousADUOutletNode = adu ? adu->outletNode() : boost::optional<Node>{};
-
-      const std::string inletNodeName = node.nameString() + " - " + thisObject.nameString() + " Inlet Node";
-      auto inletNode = model().getOrCreateTransientByName<Node>(inletNodeName);
-      const std::string secondaryNodeName = node.nameString() + " - " + thisObject.nameString() + " Secondary Air Inlet Node";
-      auto secondaryNode = model().getOrCreateTransientByName<Node>(secondaryNodeName);
-
-      bool splitterRewired = false;
-      bool inletAssigned = false;
-      bool outletAssigned = false;
-      bool secondaryAssigned = false;
-      bool exhaustRegistered = false;
-      bool aduUpdated = false;
-      bool zoneRegistered = false;
-
-      const auto rollback = [&]() {
-        if (zoneRegistered) {
-          unregisterTerminalFromZone(*thermalZone, thisObject);
-        }
-        if (exhaustRegistered) {
-          (void)zoneConnections.getImpl<detail::ZoneHVACEquipmentConnections_Impl>()->removeZoneAirExhaustNode(secondaryNode);
-        }
-        if (secondaryAssigned) {
-          (void)setPointer(openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::SecondaryAirInletNodeName, openstudio::Handle(), false);
-        }
-        if (adu && aduUpdated) {
-          if (previousADUOutletNode) {
-            (void)adu->getImpl<openstudio::epmodel::detail::ZoneHVACAirDistributionUnit_Impl>()->setOutletNode(*previousADUOutletNode);
-          } else {
-            (void)adu->setPointer(openstudio::ZoneHVAC_AirDistributionUnitFields::AirDistributionUnitOutletNodeName, openstudio::Handle());
-          }
-        }
-        if (outletAssigned) {
-          (void)setPointer(outletPort(), openstudio::Handle(), false);
-        }
-        if (inletAssigned) {
-          (void)setPointer(inletPort(), openstudio::Handle(), false);
-        }
-        if (splitterRewired) {
-          (void)zoneSplitter.setOutletModelObject(splitterBranchIndex, thisNode);
-        }
-        if (secondaryNode.sources().empty()) {
-          secondaryNode.remove();
-        }
-        if (inletNode.sources().empty()) {
-          inletNode.remove();
-        }
-      };
-
-      if (!zoneSplitter.setOutletModelObject(splitterBranchIndex, inletNode.cast<ModelObject>())) {
+      auto insertion =
+        InsertionPlan::prepare(*this, *airLoop, zoneSplitter, splitterBranchIndex, insertionOutletNode, thermalZone, terminalNameAssigned);
+      if (!insertion) {
         return false;
       }
-      splitterRewired = true;
-
-      if (!setPointer(inletPort(), inletNode.handle(), false)) {
-        rollback();
+      if (testFailurePointReached(model(), TestFailurePoint::SeriesPIUAfterTopologyPrepared)) {
         return false;
       }
-      inletAssigned = true;
-
-      if (!setPointer(outletPort(), node.handle(), false)) {
-        rollback();
+      if (!maintainContainedAirPath()) {
+        insertion.reset();
+        OS_ASSERT(maintainContainedAirPath());
         return false;
       }
-      outletAssigned = true;
-
-      if (!setPointer(openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::SecondaryAirInletNodeName, secondaryNode.handle(), false)) {
-        rollback();
-        return false;
-      }
-      secondaryAssigned = true;
-
-      if (!zoneConnections.getImpl<detail::ZoneHVACEquipmentConnections_Impl>()->addZoneAirExhaustNode(secondaryNode)) {
-        rollback();
-        return false;
-      }
-      exhaustRegistered = true;
-
-      if (adu) {
-        if (!adu->getImpl<openstudio::epmodel::detail::ZoneHVACAirDistributionUnit_Impl>()->setOutletNode(node)) {
-          rollback();
-          return false;
-        }
-        aduUpdated = true;
-      }
-
-      if (!registerTerminalWithZone(*thermalZone, thisObject)) {
-        rollback();
-        return false;
-      }
-      zoneRegistered = true;
-
-      auto fanComponent = fan();
-      auto loopSchedule = airLoop->availabilitySchedule();
-      if (!syncFanAvailabilityWithLoop(fanComponent, loopSchedule)) {
-        LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctSeriesPIUReheat",
-                 "Unable to synchronize PIU fan availability schedule for " << briefDescription() << ".");
-        rollback();
-        return false;
-      }
-
+      insertion->commit();
       return true;
     }
 

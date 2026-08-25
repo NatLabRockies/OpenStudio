@@ -87,6 +87,6 @@ void OSWorkflow::runPreProcess() {
 
   // Perform pre-processing on in.idf to capture logic in RunManager
 
-  saveIDFToRootDirIfDebug();
+  saveIDFToOutputDirIfDebug();
 }
 }  // namespace openstudio

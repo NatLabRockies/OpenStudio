@@ -7,7 +7,7 @@
 #define EPMODEL_AIRLOOPHVACSUPPLYPLENUM_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "Splitter.hpp"
 
 #include <utilities/idd/IddEnums.hxx>
 
@@ -17,12 +17,29 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class Node;
+  class ThermalZone;
 
   namespace detail {
     class AirLoopHVACSupplyPlenum_Impl;
   }
 
-  class EPMODEL_API AirLoopHVACSupplyPlenum : public ModelObject
+  /** \brief Represents an air-loop supply plenum serving a thermal zone.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-air-path.html#airloophvacsupplyplenum,AirLoopHVAC:SupplyPlenum}.
+   *
+   * \par Important behavior
+   * Relationships are projected from EnergyPlus branch and node topology and mutators maintain that topology.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::AirLoopHVACSupplyPlenum</code>.
+   * <b>Not yet available: <code>addBranchForZone()</code> and AirflowNetwork distribution-node conveniences. Added: explicit outlet branch enumeration, assignment, and removal methods.</b>
+   *
+   * \par Known limitations
+   * A new zone branch cannot currently be created through an installed plenum.
+   */
+  class EPMODEL_API AirLoopHVACSupplyPlenum : public Splitter
   {
    public:
     explicit AirLoopHVACSupplyPlenum(const Model& model);
@@ -35,14 +52,19 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. The supply-plenum topology surface is present, but the canonical wrapper exposes additional zone-attachment convenience and airflow-network behavior.
-    // - Canonical Counterpart: openstudio::model::AirLoopHVACSupplyPlenum.
-    // - Implemented Parity: `thermalZone`, `setThermalZone`, `resetThermalZone`, port access, and branch insertion preserve the main canonical supply-plenum contract.
-    // - Documented Delta: epmodel keeps this object as topology-focused storage and does not yet expose the full AirflowNetwork convenience surface present in the canonical wrapper.
-    // - Field/Storage Mapping: The plenum zone relationship is maintained through EnergyPlus-backed node and branch topology rather than through a separate scalar field.
-    // - Evidence: `src/model/AirLoopHVACSupplyPlenum.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirLoopHVACSupplyPlenum.cpp`, and `src/epmodel/test/AirLoopHVACSupplyPlenum_GTest.cpp` cover the same zone-plenum behavior.
-    // - Remaining Parity Work: Add any remaining model-side convenience APIs only if the epmodel topology layer needs them explicitly.
+    boost::optional<ThermalZone> thermalZone() const;
+    bool setThermalZone(const ThermalZone& thermalZone);
+    void resetThermalZone();
+    bool addToNode(Node& node);
+
+    unsigned inletPort() const override;
+    unsigned outletPort(unsigned branchIndex) const override;
+    unsigned nextOutletPort() const override;
+    std::vector<ModelObject> outletModelObjects() const override;
+    unsigned nextBranchIndex() const override;
+    void removePortForBranch(unsigned branchIndex) override;
+    bool setInletModelObject(const ModelObject& modelObject);
+    bool setOutletModelObject(unsigned branchIndex, const ModelObject& modelObject) override;
 
    protected:
     using ImplType = detail::AirLoopHVACSupplyPlenum_Impl;

@@ -6,8 +6,11 @@
 #include "Model.hpp"
 #include "Model_Impl.hpp"
 
+#include <src/epmodel/embedded_files.hxx>
+
 #include <utilities/core/Compare.hpp>
 #include <utilities/math/FloatCompare.hpp>
+#include <utilities/idd/GlobalGeometryRules_FieldEnums.hxx>
 #include <utilities/idd/Refrigeration_Subcooler_FieldEnums.hxx>
 #include <utilities/sql/SqlFile.hpp>
 
@@ -39,6 +42,7 @@
 #include "scaffolds/ThermalStoragePCM_Impl.hpp"
 #include "scaffolds/ThermalStorageSizing_Impl.hpp"
 #include "ModelObject/Version_Impl.hpp"
+#include "ParentObject/Building.hpp"
 #include "ModelObject/RunPeriodControlDaylightSavingTime_Impl.hpp"
 #include "ModelObject/RunPeriodControlSpecialDays_Impl.hpp"
 #include "HVACComponent/AirLoopHVACOutdoorAirSystem_Impl.hpp"
@@ -255,6 +259,8 @@
 #include "PlanarSurface/SubSurface_Impl.hpp"
 #include "PlanarSurface/InteriorPartitionSurface_Impl.hpp"
 #include "BranchList_Impl.hpp"
+#include "ModelObject/BuildingStory_Impl.hpp"
+#include "ModelObject/SpaceList_Impl.hpp"
 #include "StraightComponent/CoilCoolingDXMultiSpeed_Impl.hpp"
 #include "StraightComponent/CoilCoolingDXSingleSpeed_Impl.hpp"
 #include "StraightComponent/CoilCoolingDXSingleSpeedThermalStorage_Impl.hpp"
@@ -510,6 +516,7 @@
 #include "ResourceObject/SurfacePropertyOtherSideCoefficients_Impl.hpp"
 #include "ResourceObject/SurfacePropertyOtherSideConditionsModel_Impl.hpp"
 #include "scaffolds/GlobalGeometryRules_Impl.hpp"
+#include "scaffolds/GlobalGeometryRules.hpp"
 #include "scaffolds/GeometryTransform_Impl.hpp"
 #include "ModelObject/DaylightingDeviceLightWell_Impl.hpp"
 #include "ModelObject/DaylightingDeviceShelf_Impl.hpp"
@@ -685,7 +692,7 @@
 #include "scaffolds/HeatExchangerAirToAirFlatPlate_Impl.hpp"
 #include "scaffolds/DesignSpecificationAirTerminalSizing_Impl.hpp"
 #include "scaffolds/DesignSpecificationZoneHVACSizing_Impl.hpp"
-#include "scaffolds/AirLoopHVACExhaustSystem_Impl.hpp"
+#include "ModelObject/AirLoopHVACExhaustSystem_Impl.hpp"
 #include "ModelObject/AirLoopHVACMixer_Impl.hpp"
 #include "scaffolds/PumpVariableSpeedCondensate_Impl.hpp"
 #include "ModelObject/AirLoopHVACSplitter_Impl.hpp"
@@ -745,7 +752,7 @@
 #include "scaffolds/AirLoopHVACUnitaryFurnaceHeatCool_Impl.hpp"
 #include "scaffolds/AirLoopHVACUnitaryFurnaceHeatOnly_Impl.hpp"
 #include "scaffolds/AirLoopHVACUnitaryHeatOnly_Impl.hpp"
-#include "scaffolds/AirLoopHVACUnitaryHeatCool_Impl.hpp"
+#include "StraightComponent/AirLoopHVACUnitaryHeatCool_Impl.hpp"
 #include "StraightComponent/AirLoopHVACUnitaryHeatPumpAirToAir_Impl.hpp"
 #include "scaffolds/AirLoopHVACUnitaryHeatPumpWaterToAir_Impl.hpp"
 #include "StraightComponent/AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl.hpp"
@@ -779,7 +786,7 @@
 #include "ZoneHVACComponent/RefrigerationAirChiller_Impl.hpp"
 #include "scaffolds/ZoneHVACBaseboardRadiantConvectiveSteam_Impl.hpp"
 #include "scaffolds/ZoneHVACBaseboardRadiantConvectiveSteamDesign_Impl.hpp"
-#include "scaffolds/ZoneHVACExhaustControl_Impl.hpp"
+#include "ModelObject/ZoneHVACExhaustControl_Impl.hpp"
 #include "scaffolds/ZoneHVACHybridUnitaryHVAC_Impl.hpp"
 #include "scaffolds/ZoneHVACForcedAirUserDefined_Impl.hpp"
 #include "scaffolds/ZoneHVACOutdoorAirUnit_Impl.hpp"
@@ -874,7 +881,28 @@
 #include "../utilities/idf/IdfFile.hpp"
 #include "../utilities/idf/IdfObject.hpp"
 
+#include <algorithm>
+#include <array>
 #include <sstream>
+#include <utility>
+
+namespace {
+
+constexpr std::array<std::pair<const char*, const char*>, 11> refrigerantPropertyResources = {{
+  {"R11", ":/Resources/R11_FluidPropertiesDataSet.idf"},
+  {"R12", ":/Resources/R12_FluidPropertiesDataSet.idf"},
+  {"R22", ":/Resources/R22_FluidPropertiesDataSet.idf"},
+  {"R123", ":/Resources/R123_FluidPropertiesDataSet.idf"},
+  {"R134a", ":/Resources/R134a_FluidPropertiesDataSet.idf"},
+  {"R404a", ":/Resources/R404a_FluidPropertiesDataSet.idf"},
+  {"R407a", ":/Resources/R407a_FluidPropertiesDataSet.idf"},
+  {"R410a", ":/Resources/R410a_FluidPropertiesDataSet.idf"},
+  {"NH3", ":/Resources/NH3_FluidPropertiesDataSet.idf"},
+  {"R507a", ":/Resources/R507a_FluidPropertiesDataSet.idf"},
+  {"R744", ":/Resources/R744_FluidPropertiesDataSet.idf"},
+}};
+
+}  // namespace
 
 namespace openstudio {
 namespace epmodel {
@@ -917,23 +945,39 @@ namespace epmodel {
     canonicalize(SanitizationPolicy::Repair);
   }
 
-  // Converts/clones an existing Workspace into an epmodel::Model.
-  // This path calls Model_Impl::createObject(const shared_ptr<WorkspaceObject_Impl>&, ...),
-  // which preserves concrete runtime type when the source Workspace already contains epmodel
-  // impl objects. If the source is a generic Workspace, concrete casts fail and the fallback
-  // is ModelObject_Impl, so concrete epmodel queries may return fewer objects.
-  // After cloning, canonicalization runs with Repair policy.
+  // Converts/clones an existing EnergyPlus Workspace into an epmodel::Model.
+  // Existing epmodel objects retain their concrete runtime types and managed relationships.
+  // Generic Workspace objects are materialized through the registered epmodel constructors;
+  // canonicalization can repair model state, but it cannot repair a generic C++ runtime type.
+  // After ingestion, canonicalization runs with Repair policy.
   Model::Model(const openstudio::Workspace& workspace)
     : Workspace(std::shared_ptr<detail::Model_Impl>(new detail::Model_Impl(*(workspace.getImpl<openstudio::detail::Workspace_Impl>()), true))) {
-    openstudio::detail::WorkspaceObject_ImplPtrVector newObjectImplPtrs;
-    HandleMap oldNewHandleMap;
-    if (auto vo = workspace.versionObject()) {
-      newObjectImplPtrs.push_back(getImpl<detail::Model_Impl>()->createObject(vo->getImpl<openstudio::detail::WorkspaceObject_Impl>(), true));
+    const auto workspaceImpl = workspace.getImpl<openstudio::detail::Workspace_Impl>();
+    auto modelImpl = getImpl<detail::Model_Impl>();
+    openstudio::detail::WorkspaceObject_ImplPtrVector objectImplPtrs;
+
+    if (std::dynamic_pointer_cast<detail::Model_Impl>(workspaceImpl)) {
+      if (auto vo = workspace.versionObject()) {
+        objectImplPtrs.push_back(modelImpl->createObject(vo->getImpl<openstudio::detail::WorkspaceObject_Impl>(), true));
+      }
+      for (const WorkspaceObject& object : workspaceImpl->objects()) {
+        objectImplPtrs.push_back(modelImpl->createObject(object.getImpl<openstudio::detail::WorkspaceObject_Impl>(), true));
+      }
+      HandleMap oldNewHandleMap;
+      modelImpl->addClones(objectImplPtrs, oldNewHandleMap, true);
+    } else {
+      const auto materialize = [&modelImpl, &objectImplPtrs](const WorkspaceObject& object) {
+        const auto sourceImpl = object.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+        objectImplPtrs.push_back(modelImpl->createObject(std::as_const(*sourceImpl).idfObject(), true, sourceImpl->isTransient()));
+      };
+      if (auto vo = workspace.versionObject()) {
+        materialize(*vo);
+      }
+      for (const WorkspaceObject& object : workspaceImpl->objects()) {
+        materialize(object);
+      }
+      modelImpl->addObjects(objectImplPtrs);
     }
-    for (const WorkspaceObject& object : workspace.getImpl<openstudio::detail::Workspace_Impl>()->objects()) {
-      newObjectImplPtrs.push_back(getImpl<detail::Model_Impl>()->createObject(object.getImpl<openstudio::detail::WorkspaceObject_Impl>(), true));
-    }
-    getImpl<detail::Model_Impl>()->addClones(newObjectImplPtrs, oldNewHandleMap, true);
     canonicalize(SanitizationPolicy::Repair);
   }
 
@@ -957,6 +1001,37 @@ namespace epmodel {
     }
 
     return Model(*idfFile);
+  }
+
+  bool Model::ensureRefrigerantProperties(const std::string& refrigerantType) const {
+    const auto resource =
+      std::find_if(refrigerantPropertyResources.cbegin(), refrigerantPropertyResources.cend(),
+                   [&refrigerantType](const auto& candidate) { return openstudio::istringEqual(refrigerantType, candidate.first); });
+    if (resource == refrigerantPropertyResources.cend()) {
+      LOG_FREE(Warn, "openstudio.epmodel.Model", "Unsupported refrigerant type '" << refrigerantType << "'.");
+      return false;
+    }
+
+    if (getObjectByTypeAndName(openstudio::IddObjectType::FluidProperties_Name, resource->first)) {
+      return true;
+    }
+
+    std::stringstream stream;
+    stream << ::epmodel::embedded_files::getFileAsString(resource->second);
+    auto idfFile = openstudio::IdfFile::load(stream, openstudio::IddFileType::EnergyPlus);
+    if (!idfFile) {
+      LOG_FREE(Error, "openstudio.epmodel.Model", "Could not load the built-in " << resource->first << " property dataset.");
+      return false;
+    }
+
+    const auto sourceObjects = idfFile->objects();
+    Model owningModel = *this;
+    const auto importedObjects = owningModel.addObjects(sourceObjects);
+    if (importedObjects.size() != sourceObjects.size()) {
+      LOG_FREE(Error, "openstudio.epmodel.Model", "Could not import the complete built-in " << resource->first << " property dataset.");
+      return false;
+    }
+    return true;
   }
 
   Schedule Model::alwaysOnDiscreteSchedule() const {
@@ -1054,6 +1129,74 @@ namespace epmodel {
       return context.report;
     }
 
+    const auto buildings = this->getObjectsByType(Building::iddObjectType());
+    if (buildings.empty()) {
+      if (context.repairEnabled()) {
+        Building building(*this);
+        if (this->getObjectsByType(Building::iddObjectType()).size() == 1u) {
+          detail::addLoadInfo(context, "Created the required Building object.");
+        } else {
+          building.remove();
+          detail::addLoadError(context, "Failed to create the required Building object.");
+        }
+      } else {
+        detail::addLoadWarning(context, "Model is missing the required Building object.");
+      }
+    } else if (buildings.size() > 1u) {
+      detail::addLoadWarning(context, "Preserved multiple Building objects; exactly one is required.");
+    }
+
+    const auto geometryRules = this->getObjectsByType(GlobalGeometryRules::iddObjectType());
+    if (geometryRules.empty()) {
+      if (context.repairEnabled()) {
+        GlobalGeometryRules globalGeometryRules(*this);
+        const bool initialized =
+          globalGeometryRules.setStartingVertexPosition("UpperLeftCorner") && globalGeometryRules.setVertexEntryDirection("Counterclockwise")
+          && globalGeometryRules.setCoordinateSystem("Relative") && globalGeometryRules.setDaylightingReferencePointCoordinateSystem("Relative")
+          && globalGeometryRules.setRectangularSurfaceCoordinateSystem("Relative");
+        if (initialized) {
+          detail::addLoadInfo(context, "Created the required GlobalGeometryRules object.");
+        } else {
+          globalGeometryRules.remove();
+          detail::addLoadError(context, "Failed to initialize the required GlobalGeometryRules object.");
+        }
+      } else {
+        detail::addLoadWarning(context, "Model is missing the required GlobalGeometryRules object.");
+      }
+    } else if (geometryRules.size() == 1u) {
+      auto globalGeometryRules = geometryRules.front();
+      constexpr auto startingVertexField = openstudio::GlobalGeometryRulesFields::StartingVertexPosition;
+      constexpr auto entryDirectionField = openstudio::GlobalGeometryRulesFields::VertexEntryDirection;
+      constexpr auto coordinateSystemField = openstudio::GlobalGeometryRulesFields::CoordinateSystem;
+      const bool missingStartingVertex = globalGeometryRules.getString(startingVertexField, false, true).value_or("").empty();
+      const bool missingEntryDirection = globalGeometryRules.getString(entryDirectionField, false, true).value_or("").empty();
+      const bool missingCoordinateSystem = globalGeometryRules.getString(coordinateSystemField, false, true).value_or("").empty();
+      const bool missingRequiredField = missingStartingVertex || missingEntryDirection || missingCoordinateSystem;
+      if (missingRequiredField) {
+        if (context.repairEnabled()) {
+          bool repaired = true;
+          if (missingStartingVertex) {
+            repaired = globalGeometryRules.setString(startingVertexField, "UpperLeftCorner") && repaired;
+          }
+          if (missingEntryDirection) {
+            repaired = globalGeometryRules.setString(entryDirectionField, "Counterclockwise") && repaired;
+          }
+          if (missingCoordinateSystem) {
+            repaired = globalGeometryRules.setString(coordinateSystemField, "Relative") && repaired;
+          }
+          if (repaired) {
+            detail::addLoadInfo(context, "Filled blank required GlobalGeometryRules fields.");
+          } else {
+            detail::addLoadError(context, "Failed to fill blank required GlobalGeometryRules fields.");
+          }
+        } else {
+          detail::addLoadWarning(context, "GlobalGeometryRules has blank required fields.");
+        }
+      }
+    } else {
+      detail::addLoadWarning(context, "Preserved multiple GlobalGeometryRules objects; exactly one is required.");
+    }
+
     // Fixed-point pass over all objects:
     // 1. One-time execution per object handle is enforced via context.visited.
     // 2. Order is intentionally not relied upon.
@@ -1083,6 +1226,12 @@ namespace epmodel {
 namespace openstudio {
 namespace epmodel {
   namespace detail {
+
+    bool testFailurePointReached(const Model& model, TestFailurePoint point) {
+      auto modelImpl = model.getImpl<Model_Impl>();
+      OS_ASSERT(modelImpl);
+      return modelImpl->m_testFailurePoint == point;
+    }
 
     void addLoadInfo(LoadContext& ctx, const std::string& message) {
       ++ctx.report.infoCount;
@@ -1939,7 +2088,8 @@ namespace epmodel {
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::SpaceHVAC_ZoneEquipmentMixer, SpaceHVACZoneEquipmentMixer_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::SpaceHVAC_ZoneEquipmentSplitter, SpaceHVACZoneEquipmentSplitter_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::SpaceHVAC_ZoneReturnMixer, SpaceHVACZoneReturnMixer_Impl);
-      REGISTER_NEW_CONSTRUCTOR(IddObjectType::SpaceList, SpaceType_Impl);
+      REGISTER_NEW_CONSTRUCTOR(IddObjectType::SpaceList, SpaceList_Impl);
+      REGISTER_NEW_CONSTRUCTOR(IddObjectType::OS_BuildingStory, BuildingStory_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::SteamEquipment, SteamEquipment_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::SurfaceContaminantSourceAndSink_Generic_BoundaryLayerDiffusion,
                                SurfaceContaminantSourceAndSinkGenericBoundaryLayerDiffusion_Impl);
@@ -2887,7 +3037,8 @@ namespace epmodel {
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::SpaceHVAC_ZoneEquipmentMixer, SpaceHVACZoneEquipmentMixer_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::SpaceHVAC_ZoneEquipmentSplitter, SpaceHVACZoneEquipmentSplitter_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::SpaceHVAC_ZoneReturnMixer, SpaceHVACZoneReturnMixer_Impl);
-      REGISTER_COPY_CONSTRUCTOR(IddObjectType::SpaceList, SpaceType_Impl);
+      REGISTER_COPY_CONSTRUCTOR(IddObjectType::SpaceList, SpaceList_Impl);
+      REGISTER_COPY_CONSTRUCTOR(IddObjectType::OS_BuildingStory, BuildingStory_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::SteamEquipment, SteamEquipment_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::SurfaceContaminantSourceAndSink_Generic_BoundaryLayerDiffusion,
                                 SurfaceContaminantSourceAndSinkGenericBoundaryLayerDiffusion_Impl);

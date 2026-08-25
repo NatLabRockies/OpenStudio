@@ -22,6 +22,32 @@ namespace epmodel {
     class ExternalInterfaceFunctionalMockupUnitImportToSchedule_Impl;
   }
 
+  /** \brief Provides a schedule value received from an FMU.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-externalinterface.html#externalinterfacefunctionalmockupunitimporttoschedule,ExternalInterface:FunctionalMockupUnitImport:To:Schedule}
+   *
+   * \par Important behavior
+   * The initial value is used by EnergyPlus on its first call before an FMU
+   * value is available.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::ExternalInterfaceFunctionalMockupUnitImportToSchedule</code>.
+   *
+   * - <b>Not yet available:</b> The constructor that accepts an
+   *   <code>ExternalInterfaceFunctionalMockupUnitImport</code>, FMU instance
+   *   name, FMU variable name, and initial value.
+   * - <b>Not yet available:</b> <code>fMUFile()</code> and
+   *   <code>setFMUFile(...)</code>. The EPModel wrapper cannot configure the
+   *   EnergyPlus <code>FMU File Name</code> object-list relationship through a
+   *   typed method.
+   *
+   * \par Known limitations
+   * A complete FMU import-to-schedule relationship cannot be created or
+   * changed using only this wrapper's public typed API because the FMU file
+   * relationship is not exposed.
+   */
   class EPMODEL_API ExternalInterfaceFunctionalMockupUnitImportToSchedule : public Schedule
   {
    public:
@@ -34,16 +60,6 @@ namespace epmodel {
     ExternalInterfaceFunctionalMockupUnitImportToSchedule& operator=(ExternalInterfaceFunctionalMockupUnitImportToSchedule&&) = default;
 
     static IddObjectType iddObjectType();
-
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::ExternalInterfaceFunctionalMockupUnitImportToSchedule scalar accessor names/signatures.
-    // - Field Mapping: fMUInstanceName -> ExternalInterface:FunctionalMockupUnitImport:To:Schedule, FMU Instance Name.
-    // - Field Mapping: fMUVariableName -> ExternalInterface:FunctionalMockupUnitImport:To:Schedule, FMU Variable Name.
-    // - Field Mapping: initialValue -> ExternalInterface:FunctionalMockupUnitImport:To:Schedule, Initial Value.
-    // - Field Mapping: fMUFile / scheduleTypeLimits are relationship APIs and excluded from scalar scaffold.
-    // - ForwardTranslator evidence: ForwardTranslateExternalInterfaceFunctionalMockupUnitImportToSchedule.cpp writes
-    //   FMU File Name from modelObject.fMUFile().fMUFileName(), and writes scalar fields from these APIs.
-    // - TODO(parity): Add relationship APIs incrementally without changing preserved scalar signatures.
 
     // FMU Instance Name accessors
     std::string fMUInstanceName() const;

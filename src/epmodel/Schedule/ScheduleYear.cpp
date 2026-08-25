@@ -9,6 +9,7 @@
 #include "Model.hpp"
 
 #include <utilities/idd/IddEnums.hxx>
+#include <utilities/idd/Schedule_Year_FieldEnums.hxx>
 
 namespace openstudio {
 namespace epmodel {
@@ -21,5 +22,17 @@ namespace epmodel {
     return IddObjectType::Schedule_Year;
   }
 
+}  // namespace epmodel
+}  // namespace openstudio
+
+namespace openstudio {
+namespace epmodel {
+  namespace detail {
+
+    unsigned ScheduleYear_Impl::scheduleTypeLimitsFieldIndex() const {
+      return openstudio::Schedule_YearFields::ScheduleTypeLimitsName;
+    }
+
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio

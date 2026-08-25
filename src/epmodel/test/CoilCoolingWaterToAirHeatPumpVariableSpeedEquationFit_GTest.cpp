@@ -23,7 +23,9 @@
 #include "../Schedule/ScheduleConstant.hpp"
 #include "../StraightComponent/Node.hpp"
 #include "../WaterToAirComponent/CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit.hpp"
+#include "../WaterToAirComponent/CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit_Impl.hpp"
 
+#include <utilities/core/Filesystem.hpp>
 #include <utilities/idd/Coil_Cooling_WaterToAirHeatPump_VariableSpeedEquationFit_FieldEnums.hxx>
 #include <utilities/idf/Handle.hpp>
 
@@ -183,6 +185,65 @@ TEST_F(EPModelFixture, CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit_Spe
   const auto finalChildren = coil.children();
   ASSERT_EQ(1u, finalChildren.size());
   EXPECT_EQ(coil.energyPartLoadFractionCurve().handle(), finalChildren.front().handle());
+}
+
+TEST_F(EPModelFixture, CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit_LoadedSpeedRetainsDataAfterRemoval) {
+  const auto idfPath = openstudio::tempDir() / openstudio::toPath("epmodel-cooling-wtahp-variable-speed-removal.idf");
+
+  Model model;
+  CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit coil(model);
+  CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFitSpeedData speed1(model);
+  CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFitSpeedData speed2(model);
+  ASSERT_TRUE(coil.setName("Loaded Cooling Variable Speed Coil"));
+  ASSERT_TRUE(speed1.setReferenceUnitGrossRatedCoolingCOP(4.7));
+  ASSERT_TRUE(speed2.setReferenceUnitGrossRatedCoolingCOP(5.2));
+  ASSERT_TRUE(coil.addSpeed(speed1));
+  ASSERT_TRUE(coil.addSpeed(speed2));
+  ASSERT_TRUE(model.save(idfPath, true));
+
+  auto loadedModel = Model::load(idfPath);
+  ASSERT_TRUE(loadedModel);
+  auto loadedCoil =
+    loadedModel->getConcreteModelObjectByName<CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit>("Loaded Cooling Variable Speed Coil");
+  ASSERT_TRUE(loadedCoil);
+  const auto loadedSpeeds = loadedCoil->speeds();
+  ASSERT_EQ(2u, loadedSpeeds.size());
+  auto removedSpeed = loadedSpeeds[0];
+  const auto remainingSpeed = loadedSpeeds[1];
+  const auto removedCurve = removedSpeed.totalCoolingCapacityFunctionofTemperatureCurve();
+
+  loadedCoil->removeSpeed(removedSpeed);
+
+  const auto remainingSpeeds = loadedCoil->speeds();
+  ASSERT_EQ(1u, remainingSpeeds.size());
+  EXPECT_EQ(remainingSpeed.handle(), remainingSpeeds.front().handle());
+  EXPECT_DOUBLE_EQ(5.2, remainingSpeeds.front().referenceUnitGrossRatedCoolingCOP());
+  EXPECT_DOUBLE_EQ(4.7, removedSpeed.referenceUnitGrossRatedCoolingCOP());
+  EXPECT_EQ(removedCurve.handle(), removedSpeed.totalCoolingCapacityFunctionofTemperatureCurve().handle());
+
+  auto removeAllModel = Model::load(idfPath);
+  ASSERT_TRUE(removeAllModel);
+  auto removeAllCoil =
+    removeAllModel->getConcreteModelObjectByName<CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit>("Loaded Cooling Variable Speed Coil");
+  ASSERT_TRUE(removeAllCoil);
+  const auto removedAllSpeeds = removeAllCoil->speeds();
+  ASSERT_EQ(2u, removedAllSpeeds.size());
+  const auto firstCurve = removedAllSpeeds[0].totalCoolingCapacityFunctionofTemperatureCurve();
+  const auto secondCurve = removedAllSpeeds[1].totalCoolingCapacityFunctionofTemperatureCurve();
+
+  removeAllCoil->removeAllSpeeds();
+
+  EXPECT_TRUE(removeAllCoil->speeds().empty());
+  EXPECT_DOUBLE_EQ(4.7, removedAllSpeeds[0].referenceUnitGrossRatedCoolingCOP());
+  EXPECT_DOUBLE_EQ(5.2, removedAllSpeeds[1].referenceUnitGrossRatedCoolingCOP());
+  EXPECT_EQ(firstCurve.handle(), removedAllSpeeds[0].totalCoolingCapacityFunctionofTemperatureCurve().handle());
+  EXPECT_EQ(secondCurve.handle(), removedAllSpeeds[1].totalCoolingCapacityFunctionofTemperatureCurve().handle());
+  CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFitSpeedData replacementSpeed(*removeAllModel);
+  ASSERT_TRUE(removeAllCoil->addSpeed(replacementSpeed));
+  ASSERT_EQ(1u, removeAllCoil->speeds().size());
+  EXPECT_EQ(replacementSpeed.handle(), removeAllCoil->speeds().front().handle());
+
+  openstudio::filesystem::remove(idfPath);
 }
 
 TEST_F(EPModelFixture, CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit_AirflowNetworkEquivalentDuctRoundTrip) {

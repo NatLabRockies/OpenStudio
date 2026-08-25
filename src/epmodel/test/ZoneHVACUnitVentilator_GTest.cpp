@@ -7,20 +7,101 @@
 
 #include "EPModelFixture.hpp"
 #include "../HVACComponent/ThermalZone.hpp"
+#include "../HVACComponent/ThermalZone_Impl.hpp"
 #include "../Loop/AirLoopHVAC.hpp"
 #include "../Loop/PlantLoop.hpp"
+#include "../Loop/PlantLoop_Impl.hpp"
 #include "../Schedule/ScheduleCompact.hpp"
 #include "../Schedule/ScheduleConstant.hpp"
 #include "../Schedule/ScheduleConstant_Impl.hpp"
 #include "../StraightComponent/CoilHeatingElectric.hpp"
+#include "../StraightComponent/CoilHeatingElectric_Impl.hpp"
 #include "../StraightComponent/FanConstantVolume.hpp"
+#include "../StraightComponent/FanSystemModel.hpp"
+#include "../StraightComponent/FanSystemModel_Impl.hpp"
 #include "../StraightComponent/Node.hpp"
 #include "../WaterToAirComponent/CoilCoolingWater.hpp"
+#include "../WaterToAirComponent/CoilCoolingWater_Impl.hpp"
 #include "../ZoneHVACComponent/ZoneHVACUnitVentilator.hpp"
+#include "../ZoneHVACComponent/ZoneHVACUnitVentilator_Impl.hpp"
 
+#include <utilities/core/Filesystem.hpp>
+#include <utilities/core/UUID.hpp>
 #include <utilities/idd/ZoneHVAC_UnitVentilator_FieldEnums.hxx>
 
+#include <algorithm>
+#include <utility>
+
 using namespace openstudio::epmodel;
+
+namespace {
+
+class ScopedFileRemoval
+{
+ public:
+  explicit ScopedFileRemoval(openstudio::path path) : m_path(std::move(path)) {}
+
+  ~ScopedFileRemoval() {
+    boost::system::error_code error;
+    boost::filesystem::remove(m_path, error);
+  }
+
+ private:
+  openstudio::path m_path;
+};
+
+void expectUnitVentilatorAirPath(const ZoneHVACUnitVentilator& ventilator, const FanSystemModel& fan, const CoilCoolingWater& coolingCoil,
+                                 const CoilHeatingElectric& heatingCoil) {
+  const auto ventilatorInlet = ventilator.inletNode();
+  const auto ventilatorOutlet = ventilator.outletNode();
+  const auto mixedAir = ventilator.mixedAirNode();
+  const auto outdoorAir = ventilator.outdoorAirNode();
+  const auto exhaustAir = ventilator.exhaustAirNode();
+  const auto fanOutlet = ventilator.fanOutletNode();
+  const auto coolingOutlet = ventilator.coolingCoilOutletNode();
+  const auto fanInlet = fan.inletModelObject();
+  const auto fanOutletObject = fan.outletModelObject();
+  const auto coolingInlet = coolingCoil.airInletModelObject();
+  const auto coolingOutletObject = coolingCoil.airOutletModelObject();
+  const auto heatingInlet = heatingCoil.inletModelObject();
+  const auto heatingOutlet = heatingCoil.outletModelObject();
+
+  ASSERT_TRUE(ventilatorInlet);
+  ASSERT_TRUE(ventilatorOutlet);
+  ASSERT_TRUE(mixedAir);
+  ASSERT_TRUE(outdoorAir);
+  ASSERT_TRUE(exhaustAir);
+  ASSERT_TRUE(fanOutlet);
+  ASSERT_TRUE(coolingOutlet);
+  ASSERT_TRUE(fanInlet);
+  ASSERT_TRUE(fanOutletObject);
+  ASSERT_TRUE(coolingInlet);
+  ASSERT_TRUE(coolingOutletObject);
+  ASSERT_TRUE(heatingInlet);
+  ASSERT_TRUE(heatingOutlet);
+
+  EXPECT_EQ(mixedAir->handle(), fanInlet->handle());
+  EXPECT_EQ(fanOutlet->handle(), fanOutletObject->handle());
+  EXPECT_EQ(fanOutlet->handle(), coolingInlet->handle());
+  EXPECT_EQ(coolingOutlet->handle(), coolingOutletObject->handle());
+  EXPECT_EQ(coolingOutlet->handle(), heatingInlet->handle());
+  EXPECT_EQ(ventilatorOutlet->handle(), heatingOutlet->handle());
+  EXPECT_NE(ventilatorInlet->handle(), mixedAir->handle());
+  EXPECT_NE(mixedAir->handle(), fanOutlet->handle());
+  EXPECT_NE(fanOutlet->handle(), coolingOutlet->handle());
+  EXPECT_NE(coolingOutlet->handle(), ventilatorOutlet->handle());
+  EXPECT_NE(outdoorAir->handle(), mixedAir->handle());
+  EXPECT_NE(exhaustAir->handle(), mixedAir->handle());
+
+  ASSERT_TRUE(fan.containingHVACComponent());
+  ASSERT_TRUE(coolingCoil.containingHVACComponent());
+  ASSERT_TRUE(heatingCoil.containingHVACComponent());
+  EXPECT_EQ(ventilator.handle(), fan.containingHVACComponent()->handle());
+  EXPECT_EQ(ventilator.handle(), coolingCoil.containingHVACComponent()->handle());
+  EXPECT_EQ(ventilator.handle(), heatingCoil.containingHVACComponent()->handle());
+}
+
+}  // namespace
 
 TEST_F(EPModelFixture, ZoneHVACUnitVentilator_DefaultConstructor) {
   Model model;
@@ -509,4 +590,126 @@ TEST_F(EPModelFixture, ZoneHVACUnitVentilator_CanonicalizeRepairsContainedNodePa
   EXPECT_EQ(*repairedFanOutletNode, *coolingCoil.airInletModelObject()->optionalCast<Node>());
   EXPECT_EQ(*repairedCoolingCoilOutletNode, *heatingCoil.inletModelObject()->optionalCast<Node>());
   EXPECT_EQ(*expectedVentilatorOutlet, *repairedHeatingOutletNode);
+}
+
+TEST_F(EPModelFixture, ZoneHVACUnitVentilator_BridgeTopologySurvivesReloadAndFurtherChanges) {
+  const auto idfPath =
+    openstudio::tempDir() / openstudio::toPath("epmodel-unit-ventilator-" + openstudio::removeBraces(openstudio::createUUID()) + ".idf");
+  const ScopedFileRemoval removeIdf(idfPath);
+
+  Model model;
+  ThermalZone zone(model);
+  PlantLoop chilledWaterLoop(model);
+  ZoneHVACUnitVentilator ventilator(model);
+  FanSystemModel fan(model);
+  CoilCoolingWater coolingCoil(model);
+  CoilHeatingElectric heatingCoil(model);
+
+  ASSERT_TRUE(zone.setName("Unit Ventilator Bridge Zone"));
+  ASSERT_TRUE(chilledWaterLoop.setName("Unit Ventilator Bridge Chilled Water Loop"));
+  ASSERT_TRUE(ventilator.setName("Unit Ventilator Bridge"));
+  ASSERT_TRUE(fan.setName("Unit Ventilator Bridge Fan"));
+  ASSERT_TRUE(coolingCoil.setName("Unit Ventilator Bridge Cooling Coil"));
+  ASSERT_TRUE(heatingCoil.setName("Unit Ventilator Bridge Electric Heating Coil"));
+  ASSERT_TRUE(ventilator.setMaximumSupplyAirFlowRate(0.81));
+  ASSERT_TRUE(ventilator.setMinimumOutdoorAirFlowRate(0.12));
+  ASSERT_TRUE(ventilator.setMaximumOutdoorAirFlowRate(0.34));
+  ASSERT_TRUE(fan.setDesignPressureRise(615.0));
+  ASSERT_TRUE(ventilator.setSupplyAirFan(fan));
+  ASSERT_TRUE(ventilator.setCoolingCoil(coolingCoil));
+  ASSERT_TRUE(ventilator.setHeatingCoil(heatingCoil));
+  ASSERT_TRUE(ventilator.addToThermalZone(zone));
+  ASSERT_TRUE(chilledWaterLoop.addDemandBranchForComponent(coolingCoil));
+
+  ASSERT_TRUE(ventilator.outdoorAirNode());
+  ASSERT_TRUE(ventilator.exhaustAirNode());
+  ASSERT_TRUE(ventilator.outdoorAirNode()->setName("Unit Ventilator Bridge Outdoor Air Node"));
+  ASSERT_TRUE(ventilator.exhaustAirNode()->setName("Unit Ventilator Bridge Exhaust Air Node"));
+  expectUnitVentilatorAirPath(ventilator, fan, coolingCoil, heatingCoil);
+  ASSERT_TRUE(ventilator.thermalZone());
+  EXPECT_EQ(zone.handle(), ventilator.thermalZone()->handle());
+  ASSERT_TRUE(coolingCoil.plantLoop());
+  EXPECT_EQ(chilledWaterLoop.handle(), coolingCoil.plantLoop()->handle());
+  ASSERT_EQ(3u, ventilator.children().size());
+  EXPECT_EQ(fan.handle(), ventilator.children()[0].handle());
+  EXPECT_EQ(heatingCoil.handle(), ventilator.children()[1].handle());
+  EXPECT_EQ(coolingCoil.handle(), ventilator.children()[2].handle());
+  ASSERT_TRUE(model.save(idfPath, true));
+
+  auto loadedModel = Model::load(idfPath);
+  ASSERT_TRUE(loadedModel);
+  auto loadedZone = loadedModel->getConcreteModelObjectByName<ThermalZone>("Unit Ventilator Bridge Zone");
+  auto loadedLoop = loadedModel->getConcreteModelObjectByName<PlantLoop>("Unit Ventilator Bridge Chilled Water Loop");
+  auto loadedVentilator = loadedModel->getConcreteModelObjectByName<ZoneHVACUnitVentilator>("Unit Ventilator Bridge");
+  auto loadedFan = loadedModel->getConcreteModelObjectByName<FanSystemModel>("Unit Ventilator Bridge Fan");
+  auto loadedCoolingCoil = loadedModel->getConcreteModelObjectByName<CoilCoolingWater>("Unit Ventilator Bridge Cooling Coil");
+  auto loadedHeatingCoil = loadedModel->getConcreteModelObjectByName<CoilHeatingElectric>("Unit Ventilator Bridge Electric Heating Coil");
+  ASSERT_TRUE(loadedZone);
+  ASSERT_TRUE(loadedLoop);
+  ASSERT_TRUE(loadedVentilator);
+  ASSERT_TRUE(loadedFan);
+  ASSERT_TRUE(loadedCoolingCoil);
+  ASSERT_TRUE(loadedHeatingCoil);
+
+  expectUnitVentilatorAirPath(*loadedVentilator, *loadedFan, *loadedCoolingCoil, *loadedHeatingCoil);
+  EXPECT_DOUBLE_EQ(0.81, loadedVentilator->maximumSupplyAirFlowRate().value());
+  EXPECT_DOUBLE_EQ(0.12, loadedVentilator->minimumOutdoorAirFlowRate().value());
+  EXPECT_DOUBLE_EQ(0.34, loadedVentilator->maximumOutdoorAirFlowRate().value());
+  EXPECT_DOUBLE_EQ(615.0, loadedFan->designPressureRise());
+  ASSERT_TRUE(loadedVentilator->outdoorAirNode());
+  ASSERT_TRUE(loadedVentilator->exhaustAirNode());
+  EXPECT_EQ("Unit Ventilator Bridge Outdoor Air Node", loadedVentilator->outdoorAirNode()->nameString());
+  EXPECT_EQ("Unit Ventilator Bridge Exhaust Air Node", loadedVentilator->exhaustAirNode()->nameString());
+  ASSERT_TRUE(loadedVentilator->thermalZone());
+  EXPECT_EQ(loadedZone->handle(), loadedVentilator->thermalZone()->handle());
+  ASSERT_TRUE(loadedCoolingCoil->plantLoop());
+  EXPECT_EQ(loadedLoop->handle(), loadedCoolingCoil->plantLoop()->handle());
+
+  const auto coolingAirInlet = loadedCoolingCoil->airInletModelObject();
+  const auto coolingAirOutlet = loadedCoolingCoil->airOutletModelObject();
+  ASSERT_TRUE(coolingAirInlet);
+  ASSERT_TRUE(coolingAirOutlet);
+  ASSERT_TRUE(loadedLoop->removeDemandBranchWithComponent(*loadedCoolingCoil));
+  EXPECT_FALSE(loadedCoolingCoil->plantLoop());
+  EXPECT_EQ(coolingAirInlet->handle(), loadedCoolingCoil->airInletModelObject()->handle());
+  EXPECT_EQ(coolingAirOutlet->handle(), loadedCoolingCoil->airOutletModelObject()->handle());
+  ASSERT_TRUE(loadedLoop->addDemandBranchForComponent(*loadedCoolingCoil));
+  ASSERT_TRUE(loadedCoolingCoil->plantLoop());
+  EXPECT_EQ(loadedLoop->handle(), loadedCoolingCoil->plantLoop()->handle());
+
+  loadedVentilator->removeFromThermalZone();
+  EXPECT_FALSE(loadedVentilator->thermalZone());
+  ASSERT_TRUE(loadedVentilator->addToThermalZone(*loadedZone));
+  ASSERT_TRUE(loadedVentilator->thermalZone());
+  EXPECT_EQ(loadedZone->handle(), loadedVentilator->thermalZone()->handle());
+
+  CoilHeatingElectric replacementHeatingCoil(*loadedModel);
+  ASSERT_TRUE(replacementHeatingCoil.setName("Unit Ventilator Bridge Replacement Electric Heating Coil"));
+  ASSERT_TRUE(loadedVentilator->setHeatingCoil(replacementHeatingCoil));
+  EXPECT_FALSE(loadedHeatingCoil->containingHVACComponent());
+  EXPECT_FALSE(loadedHeatingCoil->remove().empty());
+  expectUnitVentilatorAirPath(*loadedVentilator, *loadedFan, *loadedCoolingCoil, replacementHeatingCoil);
+  ASSERT_TRUE(loadedVentilator->outdoorAirNode()->setName("Unit Ventilator Bridge Renamed Outdoor Air Node"));
+  ASSERT_TRUE(loadedFan->setDesignPressureRise(625.0));
+  ASSERT_TRUE(loadedModel->save(idfPath, true));
+
+  auto reloadedModel = Model::load(idfPath);
+  ASSERT_TRUE(reloadedModel);
+  auto reloadedVentilator = reloadedModel->getConcreteModelObjectByName<ZoneHVACUnitVentilator>("Unit Ventilator Bridge");
+  auto reloadedFan = reloadedModel->getConcreteModelObjectByName<FanSystemModel>("Unit Ventilator Bridge Fan");
+  auto reloadedCoolingCoil = reloadedModel->getConcreteModelObjectByName<CoilCoolingWater>("Unit Ventilator Bridge Cooling Coil");
+  auto reloadedHeatingCoil =
+    reloadedModel->getConcreteModelObjectByName<CoilHeatingElectric>("Unit Ventilator Bridge Replacement Electric Heating Coil");
+  ASSERT_TRUE(reloadedVentilator);
+  ASSERT_TRUE(reloadedFan);
+  ASSERT_TRUE(reloadedCoolingCoil);
+  ASSERT_TRUE(reloadedHeatingCoil);
+  EXPECT_FALSE(reloadedModel->getConcreteModelObjectByName<CoilHeatingElectric>("Unit Ventilator Bridge Electric Heating Coil"));
+  expectUnitVentilatorAirPath(*reloadedVentilator, *reloadedFan, *reloadedCoolingCoil, *reloadedHeatingCoil);
+  ASSERT_TRUE(reloadedCoolingCoil->plantLoop());
+  EXPECT_EQ("Unit Ventilator Bridge Chilled Water Loop", reloadedCoolingCoil->plantLoop()->nameString());
+  ASSERT_TRUE(reloadedVentilator->thermalZone());
+  EXPECT_EQ("Unit Ventilator Bridge Zone", reloadedVentilator->thermalZone()->nameString());
+  EXPECT_EQ("Unit Ventilator Bridge Renamed Outdoor Air Node", reloadedVentilator->outdoorAirNode()->nameString());
+  EXPECT_DOUBLE_EQ(625.0, reloadedFan->designPressureRise());
 }

@@ -68,6 +68,9 @@ namespace epmodel {
 
       std::vector<std::string> columnSeparatorValues() const;
       std::vector<std::string> minutesperItemValues() const;
+
+     protected:
+      unsigned scheduleTypeLimitsFieldIndex() const override;
     };
 
   }  // namespace detail

@@ -20,11 +20,28 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class Curve;
+  class Schedule;
 
   namespace detail {
     class ZoneHVACEnergyRecoveryVentilatorController_Impl;
   }
 
+/** \brief Controls economizer and humidity limits for a zone energy-recovery ventilator.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-controllers.html#zonehvacenergyrecoveryventilatorcontroller,ZoneHVAC:EnergyRecoveryVentilator:Controller}
+ *
+ * \par Important behavior
+ * Enthalpy-curve, time-of-day schedule, temperature/enthalpy/dewpoint limits, exhaust-air limits, and humidity-control fields map directly to the controller object.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model class is <code>openstudio::model::ZoneHVACEnergyRecoveryVentilatorController</code>.
+ * <b>Renamed:</b> EPModel uses <code>controlHighIndoorHumidityBasedOnOutdoorHumidityRatio()</code> and its setter; Model spells <code>On</code> as <code>controlHighIndoorHumidityBasedonOutdoorHumidityRatio()</code>.
+ *
+ * \par Known limitations
+ * The controller does not own the parent energy-recovery ventilator; parent equipment relationships are managed by the ventilator object.
+ */
   class EPMODEL_API ZoneHVACEnergyRecoveryVentilatorController : public ParentObject
   {
    public:
@@ -41,11 +58,15 @@ namespace epmodel {
     static std::vector<std::string> exhaustAirTemperatureLimitValues();
     static std::vector<std::string> exhaustAirEnthalpyLimitValues();
 
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::ZoneHVACEnergyRecoveryVentilatorController scalar accessor names/signatures.
-    // - Field Mapping: Scalar APIs map directly to EnergyPlus ZoneHVAC:EnergyRecoveryVentilator:Controller fields (temperature limits, exhaust limit choices, and humidity control flags).
-    // - Field Mapping: Relationship-like fields (Electronic Enthalpy Limit Curve Name, Time of Day Economizer Flow Control Schedule Name, Humidistat Control Zone Name) remain excluded from this scalar API surface.
-    // - ForwardTranslator evidence: ForwardTranslateZoneHVACEnergyRecoveryVentilatorController.cpp writes these scalar fields for the model counterpart.
+
+    boost::optional<Curve> electronicEnthalpyLimitCurve() const;
+    bool setElectronicEnthalpyLimitCurve(const Curve& curve);
+    void resetElectronicEnthalpyLimitCurve();
+
+    boost::optional<Schedule> timeofDayEconomizerFlowControlSchedule() const;
+    bool setTimeofDayEconomizerFlowControlSchedule(Schedule& schedule);
+    void resetTimeofDayEconomizerFlowControlSchedule();
+
     boost::optional<double> temperatureHighLimit() const;
     bool setTemperatureHighLimit(double temperatureHighLimit);
     void resetTemperatureHighLimit();

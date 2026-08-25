@@ -22,8 +22,23 @@ namespace epmodel {
     class MaterialPropertyGlazingSpectralData_Impl;
   }
 
-  /** MaterialPropertyGlazingSpectralData is a ModelObject that wraps the EnergyPlus IDD object
- * 'MaterialProperty:GlazingSpectralData'. */
+  /** \brief Names a set of glazing spectral data.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-surface-construction-elements.html#materialpropertyglazingspectraldata,MaterialProperty:GlazingSpectralData}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::MaterialPropertyGlazingSpectralData</code>.
+   * EPModel currently exposes only inherited name access; the Model spectral
+   * row methods (<code>spectralDataFields()</code>,
+   * <code>setSpectralDataFields()</code>, <code>addSpectralDataField()</code>,
+   * and <code>resetSpectralDataFields()</code>) are not available.
+   *
+   * \par Known limitations
+   * Spectral wavelength, transmittance, and reflectance rows cannot yet be
+   * created or edited through this wrapper.
+   */
   class EPMODEL_API MaterialPropertyGlazingSpectralData : public ModelObject
   {
    public:
@@ -37,11 +52,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model class naming for this counterpart type.
-    // - Field Mapping: In scalar-only scaffold mode, only inherited ModelObject name accessors are exposed.
-    // - ForwardTranslator evidence: ForwardTranslateMaterialPropertyGlazingSpectralData maps Name plus extensible spectral groups.
-    // - TODO(parity): Add non-scalar extensible spectralDataFields API in a dedicated parity pass.
 
    protected:
     using ImplType = detail::MaterialPropertyGlazingSpectralData_Impl;

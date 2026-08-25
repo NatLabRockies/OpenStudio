@@ -14,12 +14,35 @@
 namespace openstudio {
 namespace epmodel {
 
+  class Curve;
   class Model;
 
   namespace detail {
     class CoilCoolingDXCurveFitSpeed_Impl;
   }
 
+  /** \brief Defines one speed row for a curve-fit DX cooling operating mode.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-coil-cooling-dx.html#coilcoolingdxcurvefitspeed,Coil:Cooling:DX:CurveFit:Speed}.
+   *
+   * \par Important behavior
+   * The object is an extensible speed row when attached to an operating mode.
+   * Its autosized sensible-heat-ratio query returns no value until EPModel can
+   * read EnergyPlus SQL sizing results; <code>applySizingValues()</code> can
+   * therefore only apply a value when one is available.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::CoilCoolingDXCurveFitSpeed</code>. The deprecated
+   * <code>ratedEvaporatorFanPowerPerVolumeFlowRate()</code> accessor remains
+   * available in both APIs. The <code>2017</code> and <code>2023</code>
+   * accessors select the EnergyPlus rating-standard editions and are also
+   * available in both APIs.
+   *
+   * \par Known limitations
+   * Reverse navigation to containing operating modes is not available.
+   */
   class EPMODEL_API CoilCoolingDXCurveFitSpeed : public ModelObject
   {
    public:
@@ -33,12 +56,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model scalar accessor names/signatures for this model-counterpart class.
-    // - Field Mapping: Preserved scalar APIs map directly to matching E+ Coil:Cooling:DX:CurveFit:Speed fields.
-    // - Field Mapping: Relationship object-link fields (all curve references and operating-mode back-links) are intentionally excluded.
-    // - ForwardTranslator evidence: ForwardTranslateCoilCoolingDXCurveFitSpeed writes these scalar fields one-to-one.
-    // - TODO(parity): Add relationship/object-link APIs in a dedicated non-scalar parity pass.
 
     /** @name Field Accessors */
     //@{
@@ -79,8 +96,40 @@ namespace epmodel {
     double evaporativeCondenserEffectiveness() const;
     bool setEvaporativeCondenserEffectiveness(double evaporativeCondenserEffectiveness);
 
+    boost::optional<Curve> totalCoolingCapacityModifierFunctionofTemperatureCurve() const;
+    bool setTotalCoolingCapacityModifierFunctionofTemperatureCurve(const Curve& curve);
+    void resetTotalCoolingCapacityModifierFunctionofTemperatureCurve();
+
+    boost::optional<Curve> totalCoolingCapacityModifierFunctionofAirFlowFractionCurve() const;
+    bool setTotalCoolingCapacityModifierFunctionofAirFlowFractionCurve(const Curve& curve);
+    void resetTotalCoolingCapacityModifierFunctionofAirFlowFractionCurve();
+
+    boost::optional<Curve> energyInputRatioModifierFunctionofTemperatureCurve() const;
+    bool setEnergyInputRatioModifierFunctionofTemperatureCurve(const Curve& curve);
+    void resetEnergyInputRatioModifierFunctionofTemperatureCurve();
+
+    boost::optional<Curve> energyInputRatioModifierFunctionofAirFlowFractionCurve() const;
+    bool setEnergyInputRatioModifierFunctionofAirFlowFractionCurve(const Curve& curve);
+    void resetEnergyInputRatioModifierFunctionofAirFlowFractionCurve();
+
+    boost::optional<Curve> partLoadFractionCorrelationCurve() const;
+    bool setPartLoadFractionCorrelationCurve(const Curve& curve);
+    void resetPartLoadFractionCorrelationCurve();
+
+    boost::optional<Curve> wasteHeatModifierFunctionofTemperatureCurve() const;
+    bool setWasteHeatModifierFunctionofTemperatureCurve(const Curve& curve);
+    void resetWasteHeatModifierFunctionofTemperatureCurve();
+
     double ratedWasteHeatFractionofPowerInput() const;
     bool setRatedWasteHeatFractionofPowerInput(double ratedWasteHeatFractionofPowerInput);
+
+    boost::optional<Curve> sensibleHeatRatioModifierFunctionofTemperatureCurve() const;
+    bool setSensibleHeatRatioModifierFunctionofTemperatureCurve(const Curve& curve);
+    void resetSensibleHeatRatioModifierFunctionofTemperatureCurve();
+
+    boost::optional<Curve> sensibleHeatRatioModifierFunctionofFlowFractionCurve() const;
+    bool setSensibleHeatRatioModifierFunctionofFlowFractionCurve(const Curve& curve);
+    void resetSensibleHeatRatioModifierFunctionofFlowFractionCurve();
 
     //@}
 

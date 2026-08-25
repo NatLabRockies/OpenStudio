@@ -8,10 +8,13 @@
 
 #include "ModelObject_Impl.hpp"
 
+#include <boost/optional.hpp>
+
 namespace openstudio {
 namespace epmodel {
 
   class PlantLoop;
+  class SizingPlant;
 
   namespace detail {
 
@@ -20,6 +23,8 @@ namespace epmodel {
      public:
       using ModelObject_Impl::ModelObject_Impl;
       virtual ~SizingPlant_Impl() override = default;
+
+      openstudio::epmodel::PlantLoop plantLoop() const;
 
       std::string loopType() const;
       bool setLoopType(const std::string& loopType);
@@ -39,6 +44,13 @@ namespace epmodel {
       std::string coincidentSizingFactorMode() const;
       bool setCoincidentSizingFactorMode(const std::string& coincidentSizingFactorMode);
       bool setPlantLoop(const openstudio::epmodel::PlantLoop& plantLoop);
+
+     private:
+      friend class ::openstudio::epmodel::SizingPlant;
+
+      boost::optional<openstudio::epmodel::PlantLoop> optionalPlantLoop() const;
+      bool setPlantLoopPointer(const openstudio::epmodel::PlantLoop& plantLoop);
+      void doCanonicalize(LoadContext& context) override;
     };
 
   }  // namespace detail

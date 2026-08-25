@@ -9,6 +9,12 @@
 %import <epmodel/EPModel.i>
 %import <epmodel/HVACComponent/EPModelHVACComponent.i>
 
+// The standard VRF outdoor unit exposes its terminal collection from this
+// module while the concrete terminal wrapper is emitted by the zone-HVAC
+// module. Instantiate the collection here so scripting languages receive a
+// real vector instead of an opaque SWIG pointer.
+EPMODELOBJECT_TEMPLATES(ZoneHVACTerminalUnitVariableRefrigerantFlow, 0)
+
 EPMODELOBJECT_WRAP(StraightComponent, <epmodel/StraightComponent/StraightComponent.hpp>, 0, 0)
 EPMODELOBJECT_WRAP(AirConditionerVariableRefrigerantFlow, <epmodel/StraightComponent/AirConditionerVariableRefrigerantFlow.hpp>, 0, 1)
 EPMODELOBJECT_WRAP(SolarCollectorFlatPlatePhotovoltaicThermal, <epmodel/StraightComponent/SolarCollectorFlatPlatePhotovoltaicThermal.hpp>, 0, 1)
@@ -38,6 +44,7 @@ EPMODELOBJECT_WRAP(CoilCoolingWaterPanelRadiant, <epmodel/StraightComponent/Coil
 EPMODELOBJECT_WRAP(CoilWaterHeatingAirToWaterHeatPumpWrapped, <epmodel/StraightComponent/CoilWaterHeatingAirToWaterHeatPumpWrapped.hpp>, 0, 1)
 EPMODELOBJECT_WRAP(AirLoopHVACUnitaryHeatPumpAirToAir, <epmodel/StraightComponent/AirLoopHVACUnitaryHeatPumpAirToAir.hpp>, 0, 1)
 EPMODELOBJECT_WRAP(AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed, <epmodel/StraightComponent/AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed.hpp>, 0, 1)
+EPMODELOBJECT_WRAP(AirLoopHVACUnitaryHeatCool, <epmodel/StraightComponent/AirLoopHVACUnitaryHeatCool.hpp>, 0, 1)
 EPMODELOBJECT_WRAP(AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass, <epmodel/StraightComponent/AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass.hpp>, 0, 1)
 EPMODELOBJECT_WRAP(AirTerminalSingleDuctConstantVolumeCooledBeam, <epmodel/StraightComponent/AirTerminalSingleDuctConstantVolumeCooledBeam.hpp>, 0, 1)
 EPMODELOBJECT_WRAP(AirTerminalSingleDuctConstantVolumeFourPipeBeam, <epmodel/StraightComponent/AirTerminalSingleDuctConstantVolumeFourPipeBeam.hpp>, 0, 1)
@@ -104,6 +111,7 @@ EPMODELOBJECT_WRAP(CoilHeatingElectric, <epmodel/StraightComponent/CoilHeatingEl
 EPMODELOBJECT_WRAP(CoilHeatingElectricMultiStage, <epmodel/StraightComponent/CoilHeatingElectricMultiStage.hpp>, 0, 1)
 EPMODELOBJECT_WRAP(CoilHeatingGasMultiStage, <epmodel/StraightComponent/CoilHeatingGasMultiStage.hpp>, 0, 1)
 EPMODELOBJECT_WRAP(CoilHeatingGas, <epmodel/StraightComponent/CoilHeatingGas.hpp>, 0, 1)
+EPMODELOBJECT_WRAP(CoilSystemCoolingDX, <epmodel/ModelObject/CoilSystemCoolingDX.hpp>, 0, 1)
 EPMODELOBJECT_WRAP(CoilSystemCoolingDXHeatExchangerAssisted, <epmodel/StraightComponent/CoilSystemCoolingDXHeatExchangerAssisted.hpp>, 0, 1)
 EPMODELOBJECT_WRAP(CoilSystemIntegratedHeatPumpAirSource, <epmodel/StraightComponent/CoilSystemIntegratedHeatPumpAirSource.hpp>, 0, 1)
 EPMODELOBJECT_WRAP(CoilSystemCoolingWater, <epmodel/StraightComponent/CoilSystemCoolingWater.hpp>, 0, 1)

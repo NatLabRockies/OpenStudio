@@ -23,6 +23,7 @@
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
+#include <utilities/core/UUID.hpp>
 #include <utilities/idd/AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeed_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/IddFactory.hxx>
@@ -63,6 +64,58 @@ namespace epmodel {
         return boost::none;
       }
       return component.getImpl<detail::ModelObject_Impl>()->resolvedNodeTarget(outletPort);
+    }
+
+    bool isAllowedMultiSpeedChild(unsigned nameField, const HVACComponent& component) {
+      const auto type = component.iddObject().type();
+      switch (nameField) {
+        case openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::SupplyAirFanName:
+          return (type == IddObjectType::Fan_OnOff) || (type == IddObjectType::Fan_ConstantVolume);
+        case openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::HeatingCoilName:
+          return (type == IddObjectType::Coil_Heating_DX_MultiSpeed) || (type == IddObjectType::Coil_Heating_Electric_MultiStage)
+                 || (type == IddObjectType::Coil_Heating_Gas_MultiStage);
+        case openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::CoolingCoilName:
+          return type == IddObjectType::Coil_Cooling_DX_MultiSpeed;
+        case openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::SupplementalHeatingCoilName:
+          return (type == IddObjectType::Coil_Heating_Fuel) || (type == IddObjectType::Coil_Heating_Electric)
+                 || (type == IddObjectType::Coil_Heating_Water) || (type == IddObjectType::Coil_Heating_Steam);
+        default:
+          return false;
+      }
+    }
+
+    bool setMultiSpeedTypedRelationship(detail::ModelObject_Impl& impl, unsigned objectTypeField, unsigned nameField, const HVACComponent& component,
+                                        const char* relationshipName) {
+      if (component.model() != impl.model()) {
+        LOG_FREE(Warn, "openstudio.epmodel.AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed",
+                 "Cannot set the " << relationshipName << " because it belongs to a different model.");
+        return false;
+      }
+      if (!isAllowedMultiSpeedChild(nameField, component) || !impl.model().canBeTarget(component.handle(), impl.iddObject().objectLists(nameField))) {
+        LOG_FREE(Warn, "openstudio.epmodel.AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed",
+                 "Cannot set the " << relationshipName << " because type '" << component.iddObject().name()
+                                   << "' is not accepted by this multi-speed unitary field.");
+        return false;
+      }
+      const auto matchingNames = std::ranges::count_if(impl.model().getModelObjects<HVACComponent>(), [&](const auto& candidate) {
+        return isAllowedMultiSpeedChild(nameField, candidate) && openstudio::istringEqual(candidate.nameString(), component.nameString());
+      });
+      if (matchingNames != 1) {
+        LOG_FREE(Warn, "openstudio.epmodel.AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed",
+                 "Cannot set the " << relationshipName << " because its name does not identify one accepted component.");
+        return false;
+      }
+
+      const auto oldObjectType = impl.openstudio::detail::IdfObject_Impl::getString(objectTypeField, false, true);
+      if (!impl.openstudio::detail::IdfObject_Impl::setString(objectTypeField, component.iddObject().name(), false)) {
+        return false;
+      }
+      if (!impl.setPointer(nameField, component.handle(), false)) {
+        const bool restored = impl.openstudio::detail::IdfObject_Impl::setString(objectTypeField, oldObjectType.value_or(""), false);
+        OS_ASSERT(restored);
+        return false;
+      }
+      return true;
     }
 
   }  // namespace
@@ -551,7 +604,9 @@ namespace epmodel {
     }
 
     bool AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl::setSupplyAirFan(const HVACComponent& fan) {
-      const bool result = setPointer(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::SupplyAirFanName, fan.handle());
+      const bool result =
+        setMultiSpeedTypedRelationship(*this, openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::SupplyAirFanObjectType,
+                                       openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::SupplyAirFanName, fan, "supply air fan");
       if (result) {
         maintainContainedAirPath();
       }
@@ -592,7 +647,9 @@ namespace epmodel {
     }
 
     bool AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl::setHeatingCoil(const HVACComponent& coil) {
-      const bool result = setPointer(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::HeatingCoilName, coil.handle());
+      const bool result =
+        setMultiSpeedTypedRelationship(*this, openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::HeatingCoilObjectType,
+                                       openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::HeatingCoilName, coil, "heating coil");
       if (result) {
         maintainContainedAirPath();
       }
@@ -617,7 +674,9 @@ namespace epmodel {
     }
 
     bool AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl::setCoolingCoil(const HVACComponent& coil) {
-      const bool result = setPointer(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::CoolingCoilName, coil.handle());
+      const bool result =
+        setMultiSpeedTypedRelationship(*this, openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::CoolingCoilObjectType,
+                                       openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::CoolingCoilName, coil, "cooling coil");
       if (result) {
         maintainContainedAirPath();
       }
@@ -632,7 +691,9 @@ namespace epmodel {
     }
 
     bool AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl::setSupplementalHeatingCoil(const HVACComponent& coil) {
-      const bool result = setPointer(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::SupplementalHeatingCoilName, coil.handle());
+      const bool result = setMultiSpeedTypedRelationship(
+        *this, openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::SupplementalHeatingCoilObjectType,
+        openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::SupplementalHeatingCoilName, coil, "supplemental heating coil");
       if (result) {
         maintainContainedAirPath();
       }
@@ -979,14 +1040,74 @@ namespace epmodel {
         thisObject.createName();
       }
 
-      auto fanObject =
-        thisObject.getModelObjectTarget<HVACComponent>(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::SupplyAirFanName);
-      auto heatingObject =
-        thisObject.getModelObjectTarget<HVACComponent>(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::HeatingCoilName);
-      auto coolingObject =
-        thisObject.getModelObjectTarget<HVACComponent>(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::CoolingCoilName);
-      auto supplementalObject = thisObject.getModelObjectTarget<HVACComponent>(
-        openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::SupplementalHeatingCoilName);
+      bool relationshipFieldsChanged = false;
+      const auto observeChild = [&](unsigned objectTypeField, unsigned nameField, const char* relationshipName) -> boost::optional<HVACComponent> {
+        const auto managedName = thisObject.getField(nameField, false);
+        const auto rawName = openstudio::detail::IdfObject_Impl::getString(nameField, false, true);
+        const bool blank = (!managedName || managedName->empty()) && (!rawName || rawName->empty());
+        if (blank) {
+          const auto rawType = openstudio::detail::IdfObject_Impl::getString(objectTypeField, false, true);
+          if (rawType && !rawType->empty()) {
+            OS_ASSERT(openstudio::detail::IdfObject_Impl::setString(objectTypeField, "", false));
+            relationshipFieldsChanged = true;
+          }
+          return boost::none;
+        }
+
+        boost::optional<HVACComponent> child;
+        if (managedName && !managedName->empty()) {
+          const auto handle = toUUID(*managedName);
+          if (!handle.isNull()) {
+            if (auto object = model().getObject(handle)) {
+              child = object->optionalCast<HVACComponent>();
+            }
+          }
+        }
+
+        bool rawAgrees = child.has_value();
+        if (child && rawName && !rawName->empty()) {
+          rawAgrees =
+            openstudio::istringEqual(*rawName, openstudio::toString(child->handle())) || openstudio::istringEqual(*rawName, child->nameString());
+        }
+
+        const auto matchingNames = child ? std::ranges::count_if(model().getModelObjects<HVACComponent>(),
+                                                                 [&](const auto& candidate) {
+                                                                   return isAllowedMultiSpeedChild(nameField, candidate)
+                                                                          && openstudio::istringEqual(candidate.nameString(), child->nameString());
+                                                                 })
+                                         : 0;
+
+        if (!child || !rawAgrees || (matchingNames != 1) || !isAllowedMultiSpeedChild(nameField, *child)
+            || !model().canBeTarget(child->handle(), iddObject().objectLists(nameField))) {
+          if (context) {
+            detail::addLoadWarning(*context, "Preserved unresolved or invalid " + std::string(relationshipName)
+                                               + " relationship on AirLoopHVAC:UnitaryHeatPump:AirToAir:MultiSpeed '" + thisObject.nameString()
+                                               + "'.");
+          }
+          return boost::none;
+        }
+
+        const auto rawType = openstudio::detail::IdfObject_Impl::getString(objectTypeField, false, true);
+        if (!rawType || !openstudio::istringEqual(*rawType, child->iddObject().name())) {
+          OS_ASSERT(openstudio::detail::IdfObject_Impl::setString(objectTypeField, child->iddObject().name(), false));
+          relationshipFieldsChanged = true;
+          if (context) {
+            detail::addLoadInfo(*context, "Aligned the " + std::string(relationshipName)
+                                            + " object type on AirLoopHVAC:UnitaryHeatPump:AirToAir:MultiSpeed '" + thisObject.nameString() + "'.");
+          }
+        }
+        return child;
+      };
+
+      auto fanObject = observeChild(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::SupplyAirFanObjectType,
+                                    openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::SupplyAirFanName, "supply air fan");
+      auto heatingObject = observeChild(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::HeatingCoilObjectType,
+                                        openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::HeatingCoilName, "heating coil");
+      auto coolingObject = observeChild(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::CoolingCoilObjectType,
+                                        openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::CoolingCoilName, "cooling coil");
+      auto supplementalObject =
+        observeChild(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::SupplementalHeatingCoilObjectType,
+                     openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::SupplementalHeatingCoilName, "supplemental heating coil");
 
       auto fan = fanObject ? fanObject->optionalCast<StraightComponent>() : boost::none;
       auto heating =
@@ -997,7 +1118,7 @@ namespace epmodel {
                             ? boost::optional<HVACComponent>(*supplementalObject)
                             : boost::none;
 
-      bool changed = false;
+      bool changed = relationshipFieldsChanged;
       bool nodeWiringChanged = false;
       auto trackNodeChange = [&](bool value) {
         nodeWiringChanged = nodeWiringChanged || value;

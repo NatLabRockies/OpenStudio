@@ -23,6 +23,17 @@ namespace epmodel {
     class RunPeriodControlSpecialDays_Impl;
   }
 
+  /** \brief RunPeriodControlSpecialDays.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-location-climate-weather-file-access.html#runperiodcontrolspecialdays,RunPeriodControl:SpecialDays}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::RunPeriodControlSpecialDays</code>. EPModel accepts the start date as a string and does not provide Model's date/nth-weekday overloads or <code>ensureNoLeapDays()</code>. EnergyPlus uses <code>Last</code> for a fifth-weekday date; translation of Model input performs that text conversion.
+   *
+   * \par Known limitations
+   * Only the fields and relationships listed in this wrapper are available; broader Model-only helpers are not exposed.
+   */
   class EPMODEL_API RunPeriodControlSpecialDays : public ModelObject
   {
    public:
@@ -38,13 +49,6 @@ namespace epmodel {
 
     static std::vector<std::string> specialDayTypeValues();
     static std::vector<std::string> validSpecialDayTypeValues();
-
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::RunPeriodControlSpecialDays scalar accessor names where they map directly.
-    // - Field Mapping: startDate/duration/specialDayType map directly to EnergyPlus RunPeriodControl:SpecialDays fields.
-    // - ForwardTranslator evidence: ForwardTranslateRunPeriodControlSpecialDays.cpp forwards Start Date/Duration/Special Day Type directly
-    //   (with only a "5th" -> "Last" text transform for Start Date).
-    // - TODO(parity): Add model-style date conversion overloads/parsing behavior after scalar saturation.
     std::string startDate() const;
     bool setStartDate(const std::string& startDate);
 

@@ -23,9 +23,25 @@ namespace epmodel {
     class CoilHeatingGas_Impl;
   }
 
+  /** \brief Represents a fuel-fired heating coil.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-heating-and-cooling-coils.html#coilheatinggas-000,Coil:Heating:Fuel}.
+   *
+   * \par Important behavior
+   * The one-argument constructor uses an always-on availability schedule; fuel-coil fields remain directly editable.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::CoilHeatingGas</code>; this is the Model
+   * name for EnergyPlus's <code>Coil:Heating:Fuel</code> object. <b>Added:</b> EPModel exposes <code>addToNode()</code>
+   * and parasitic electric/gas load fields. <b>Not yet available:</b> AirflowNetwork helpers.
+   * \par Known limitations
+   * No known EPModel-specific limitations beyond the listed API differences.
+   */
   class EPMODEL_API CoilHeatingGas : public StraightComponent
   {
    public:
+    explicit CoilHeatingGas(const Model& model, Schedule& schedule);
     explicit CoilHeatingGas(const Model& model);
 
     virtual ~CoilHeatingGas() override = default;
@@ -38,18 +54,15 @@ namespace epmodel {
 
     bool addToNode(Node& node);
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. The canonical gas-coil scalar surface plus the required availability-schedule and optional part-load-fraction-curve
-    //   relationships are present, while broader AFN helpers remain out of scope.
-    // - Canonical Counterpart: openstudio::model::CoilHeatingGas.
-    // - Implemented Parity: `fuelType`, burner efficiency, parasitic loads, and nominal-capacity helpers preserve the canonical naming and autosize
-    //   behavior; `availabilitySchedule`, the optional `partLoadFractionCorrelationCurve`, and child traversal preserve the bounded relationship slice.
-    // - Documented Delta: Other curve, node-link, and AFN helpers from canonical `openstudio::model::CoilHeatingGas` are not exposed yet.
-    // - Field/Storage Mapping: Preserved scalars and relationships map directly to EnergyPlus `Coil:Heating:Fuel` fields.
-    // - Evidence: `src/model/CoilHeatingGas.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateCoilHeatingGas.cpp`, and `src/epmodel/test/CoilHeatingGas_GTest.cpp`.
-    // - Remaining Parity Work: Add the remaining relationship and AFN helpers without changing the preserved scalar signatures.
     Schedule availabilitySchedule() const;
+
+    /** \deprecated */
+    Schedule availableSchedule() const;
+
     bool setAvailabilitySchedule(Schedule& schedule);
+
+    /** \deprecated */
+    bool setAvailableSchedule(Schedule& schedule);
 
     boost::optional<Curve> partLoadFractionCorrelationCurve() const;
     bool setPartLoadFractionCorrelationCurve(const Curve& curve);

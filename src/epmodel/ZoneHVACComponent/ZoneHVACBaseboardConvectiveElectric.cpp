@@ -7,6 +7,8 @@
 #include "ZoneHVACComponent/ZoneHVACBaseboardConvectiveElectric_Impl.hpp"
 
 #include "Model.hpp"
+#include "Schedule/Schedule.hpp"
+#include "Schedule/Schedule_Impl.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
@@ -20,6 +22,8 @@ namespace epmodel {
     : ZoneHVACComponent(ZoneHVACBaseboardConvectiveElectric::iddObjectType(), model) {
     OS_ASSERT(getImpl<detail::ZoneHVACBaseboardConvectiveElectric_Impl>());
 
+    auto alwaysOn = model.alwaysOnDiscreteSchedule();
+    OS_ASSERT(setAvailabilitySchedule(alwaysOn));
     autosizeNominalCapacity();
     OS_ASSERT(setEfficiency(1.0));
   }
@@ -29,6 +33,14 @@ namespace epmodel {
 
   IddObjectType ZoneHVACBaseboardConvectiveElectric::iddObjectType() {
     return IddObjectType::ZoneHVAC_Baseboard_Convective_Electric;
+  }
+
+  Schedule ZoneHVACBaseboardConvectiveElectric::availabilitySchedule() const {
+    return getImpl<detail::ZoneHVACBaseboardConvectiveElectric_Impl>()->availabilitySchedule();
+  }
+
+  bool ZoneHVACBaseboardConvectiveElectric::setAvailabilitySchedule(Schedule& schedule) {
+    return getImpl<detail::ZoneHVACBaseboardConvectiveElectric_Impl>()->setAvailabilitySchedule(schedule);
   }
 
   boost::optional<double> ZoneHVACBaseboardConvectiveElectric::nominalCapacity() const {
@@ -64,6 +76,34 @@ namespace epmodel {
   }
 
   namespace detail {
+
+    void ZoneHVACBaseboardConvectiveElectric_Impl::doCanonicalize(LoadContext& context) {
+      auto owner = getObject<ModelObject>();
+      constexpr auto field = openstudio::ZoneHVAC_Baseboard_Convective_ElectricFields::AvailabilityScheduleName;
+      const auto rawAvailability = openstudio::detail::IdfObject_Impl::getString(field, false, true);
+      if ((!rawAvailability || rawAvailability->empty()) && !owner.getModelObjectTarget<Schedule>(field)) {
+        auto alwaysOn = model().alwaysOnDiscreteSchedule();
+        if (setAvailabilitySchedule(alwaysOn)) {
+          detail::addLoadInfo(context,
+                              "Attached the always-on availability schedule to ZoneHVAC:Baseboard:Convective:Electric '" + owner.nameString() + "'.");
+        } else {
+          detail::addLoadError(context, "Failed to attach the always-on availability schedule to ZoneHVAC:Baseboard:Convective:Electric '"
+                                          + owner.nameString() + "'.");
+        }
+      }
+    }
+
+    Schedule ZoneHVACBaseboardConvectiveElectric_Impl::availabilitySchedule() const {
+      auto target =
+        getObject<ModelObject>().getModelObjectTarget<Schedule>(openstudio::ZoneHVAC_Baseboard_Convective_ElectricFields::AvailabilityScheduleName);
+      OS_ASSERT(target);
+      return *target;
+    }
+
+    bool ZoneHVACBaseboardConvectiveElectric_Impl::setAvailabilitySchedule(Schedule& schedule) {
+      return ModelObject_Impl::setSchedule(openstudio::ZoneHVAC_Baseboard_Convective_ElectricFields::AvailabilityScheduleName,
+                                           "ZoneHVACBaseboardConvectiveElectric", "Availability", schedule);
+    }
 
     boost::optional<double> ZoneHVACBaseboardConvectiveElectric_Impl::nominalCapacity() const {
       return getDouble(ZoneHVAC_Baseboard_Convective_ElectricFields::HeatingDesignCapacity, true);

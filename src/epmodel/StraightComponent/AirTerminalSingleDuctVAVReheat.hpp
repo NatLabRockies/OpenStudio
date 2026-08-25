@@ -26,10 +26,28 @@ namespace epmodel {
     class AirTerminalSingleDuctVAVReheat_Impl;
   }
 
+  /**
+   * \brief Variable-air-volume terminal with a typed reheat coil.
+   *
+   * \par EnergyPlus object
+   * Encapsulates \epobject{group-air-distribution-equipment.html#airterminalsingleductvavreheat,AirTerminal:SingleDuct:VAV:Reheat}.
+   *
+   * \par Important behavior
+   * The reheat coil shares a node with the terminal damper outlet/coil inlet. Supported add/remove operations keep
+   * the air-loop demand branch, AirDistributionUnit, zone equipment, and reheat-coil plant branch consistent.
+   *
+   * \par OpenStudio Model API
+   * Counterpart: `openstudio::model::AirTerminalSingleDuctVAVReheat`. Schedule, typed reheat coil, airflow/scalar,
+   * branch lifecycle, and node relationships are represented. The legacy epmodel constructor permits late coil assignment.
+   *
+   * \par Known limitations
+   * Canonical outdoor-air export and broader demand insertion paths are not implemented in this wrapper.
+   */
   class EPMODEL_API AirTerminalSingleDuctVAVReheat : public StraightComponent
   {
    public:
     explicit AirTerminalSingleDuctVAVReheat(const Model& model);
+    explicit AirTerminalSingleDuctVAVReheat(const Model& model, Schedule& availabilitySchedule, HVACComponent& coil);
 
     virtual ~AirTerminalSingleDuctVAVReheat() override = default;
     AirTerminalSingleDuctVAVReheat(const AirTerminalSingleDuctVAVReheat& other) = default;
@@ -44,14 +62,6 @@ namespace epmodel {
 
     bool addToNode(Node& node);
 
-    // Schema Alignment Notes:
-    // - Status: Connectivity Parity for the current epmodel zone-branch topology.
-    // - Canonical Counterpart: openstudio::model::AirTerminalSingleDuctVAVReheat.
-    // - Implemented Parity: `addToNode`, `remove`, and `removeFromLoop` preserve terminal node wiring, AirLoopHVAC demand continuity, ZoneHVAC equipment registration, existing ADU references, temporary inlet-node cleanup, and reheat-coil plant branch cleanup.
-    // - Documented Delta: Canonical OS-only outdoor-air export behavior is not implemented in this epmodel wrapper.
-    // - Field/Storage Mapping: Scalars and links map directly to EnergyPlus `AirTerminal:SingleDuct:VAV:Reheat` and `ZoneHVAC:AirDistributionUnit` fields; node links are resolved through epmodel transient Node targets.
-    // - Evidence: `src/model/AirTerminalSingleDuctVAVReheat.hpp`, `src/model/AirTerminalSingleDuctVAVReheat.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirTerminalSingleDuctVAVReheat.cpp`, and `src/epmodel/test/AirTerminalSingleDuctVAVReheat_GTest.cpp`.
-    // - Remaining Campaign Verification: Translator-specific regression coverage is out of scope unless EnergyPlus forward-translation assertions are authorized.
     HVACComponent reheatCoil() const;
     bool setReheatCoil(HVACComponent& coil);
 

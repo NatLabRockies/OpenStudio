@@ -22,6 +22,34 @@ namespace epmodel {
     class GeneratorFuelCell_Impl;
   }
 
+  /** \brief Represents a fuel-cell generator assembly.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-electric-load-center-generator.html#generatorfuelcell,Generator:FuelCell}. Its object-list fields refer to companion
+   * <code>Generator:FuelCell:*</code> objects.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::GeneratorFuelCell</code>.
+   *
+   * - <b>Changed:</b> The Model constructor can accept the eight companion
+   *   fuel-cell objects; the EPModel constructor accepts only the model.
+   * - <b>Not yet available:</b> The typed companion-object accessors and
+   *   mutators, including <code>powerModule()</code>, <code>airSupply()</code>,
+   *   <code>fuelSupply()</code>, <code>waterSupply()</code>,
+   *   <code>auxiliaryHeater()</code>, <code>heatExchanger()</code>,
+   *   <code>electricalStorage()</code>, <code>inverter()</code>,
+   *   <code>stackCooler()</code>, and their setters/resetter.
+   * - <b>Not yet available:</b> The Model Generator metadata methods
+   *   <code>generatorObjectType()</code>, <code>ratedElectricPowerOutput()</code>,
+   *   <code>availabilitySchedule()</code>,
+   *   <code>ratedThermaltoElectricalPowerRatio()</code>, and
+   *   <code>electricLoadCenterDistribution()</code>.
+   *
+   * \par Known limitations
+   * A complete fuel-cell assembly must be assembled through companion wrappers
+   * or lower-level object references before simulation.
+   */
   class EPMODEL_API GeneratorFuelCell : public ModelObject
   {
    public:
@@ -34,14 +62,6 @@ namespace epmodel {
     GeneratorFuelCell& operator=(GeneratorFuelCell&&) = default;
 
     static IddObjectType iddObjectType();
-
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model class naming for counterpart parity.
-    // - Field Mapping: Generator:FuelCell fields beyond Name are relationship-like object-list links and are intentionally
-    //   excluded from scalar accessors in this scaffold pass.
-    // - ForwardTranslator evidence: ForwardTranslateGeneratorFuelCell maps Power/Air/Fuel/Water/AuxHeater/
-    //   HeatExchanger/ElectricalStorage/Inverter/StackCooler relationships directly to E+ object references.
-    // - TODO(parity): Add preserved relationship APIs incrementally without changing scalar scaffolding conventions.
 
    protected:
     using ImplType = detail::GeneratorFuelCell_Impl;

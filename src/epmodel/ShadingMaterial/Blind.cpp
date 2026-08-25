@@ -16,9 +16,9 @@
 namespace openstudio {
 namespace epmodel {
 
-  Blind::Blind(const Model& model) : ModelObject(Blind::iddObjectType(), model) {}
+  Blind::Blind(const Model& model) : ShadingMaterial(Blind::iddObjectType(), model) {}
 
-  Blind::Blind(std::shared_ptr<detail::Blind_Impl> impl) : ModelObject(std::move(impl)) {}
+  Blind::Blind(std::shared_ptr<detail::Blind_Impl> impl) : ShadingMaterial(std::move(impl)) {}
 
   IddObjectType Blind::iddObjectType() {
     return IddObjectType::WindowMaterial_Blind;

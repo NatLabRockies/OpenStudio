@@ -8,6 +8,8 @@
 
 #include "Loop/PlantLoop.hpp"
 #include "Model.hpp"
+#include "Schedule/Schedule.hpp"
+#include "Schedule/Schedule_Impl.hpp"
 #include "StraightComponent/Node.hpp"
 
 #include <utilities/core/Assert.hpp>
@@ -422,6 +424,18 @@ namespace epmodel {
     return getImpl<detail::EvaporativeFluidCoolerTwoSpeed_Impl>()->setBlowdownCalculationMode(blowdownCalculationMode);
   }
 
+  boost::optional<Schedule> EvaporativeFluidCoolerTwoSpeed::blowdownMakeupWaterUsageSchedule() const {
+    return getImpl<detail::EvaporativeFluidCoolerTwoSpeed_Impl>()->blowdownMakeupWaterUsageSchedule();
+  }
+
+  bool EvaporativeFluidCoolerTwoSpeed::setBlowdownMakeupWaterUsageSchedule(Schedule& schedule) {
+    return getImpl<detail::EvaporativeFluidCoolerTwoSpeed_Impl>()->setBlowdownMakeupWaterUsageSchedule(schedule);
+  }
+
+  void EvaporativeFluidCoolerTwoSpeed::resetBlowdownMakeupWaterUsageSchedule() {
+    getImpl<detail::EvaporativeFluidCoolerTwoSpeed_Impl>()->resetBlowdownMakeupWaterUsageSchedule();
+  }
+
   bool EvaporativeFluidCoolerTwoSpeed::setBlowdownConcentrationRatio(double blowdownConcentrationRatio) {
     return getImpl<detail::EvaporativeFluidCoolerTwoSpeed_Impl>()->setBlowdownConcentrationRatio(blowdownConcentrationRatio);
   }
@@ -712,6 +726,11 @@ namespace epmodel {
       const auto value = getString(openstudio::EvaporativeFluidCooler_TwoSpeedFields::BlowdownCalculationMode, true);
       OS_ASSERT(value);
       return *value;
+    }
+
+    boost::optional<Schedule> EvaporativeFluidCoolerTwoSpeed_Impl::blowdownMakeupWaterUsageSchedule() const {
+      return getObject<ModelObject>().getModelObjectTarget<Schedule>(
+        openstudio::EvaporativeFluidCooler_TwoSpeedFields::BlowdownMakeupWaterUsageScheduleName);
     }
 
     double EvaporativeFluidCoolerTwoSpeed_Impl::blowdownConcentrationRatio() const {
@@ -1008,6 +1027,17 @@ namespace epmodel {
 
     bool EvaporativeFluidCoolerTwoSpeed_Impl::setBlowdownCalculationMode(const std::string& blowdownCalculationMode) {
       return setString(openstudio::EvaporativeFluidCooler_TwoSpeedFields::BlowdownCalculationMode, blowdownCalculationMode);
+    }
+
+    bool EvaporativeFluidCoolerTwoSpeed_Impl::setBlowdownMakeupWaterUsageSchedule(Schedule& schedule) {
+      return setSchedule(openstudio::EvaporativeFluidCooler_TwoSpeedFields::BlowdownMakeupWaterUsageScheduleName, "EvaporativeFluidCoolerTwoSpeed",
+                         "Blowdown Makeup Water Usage", schedule);
+    }
+
+    void EvaporativeFluidCoolerTwoSpeed_Impl::resetBlowdownMakeupWaterUsageSchedule() {
+      constexpr auto field = openstudio::EvaporativeFluidCooler_TwoSpeedFields::BlowdownMakeupWaterUsageScheduleName;
+      OS_ASSERT(setPointer(field, Handle(), false));
+      OS_ASSERT(openstudio::detail::IdfObject_Impl::setString(field, "", false));
     }
 
     bool EvaporativeFluidCoolerTwoSpeed_Impl::setBlowdownConcentrationRatio(double blowdownConcentrationRatio) {

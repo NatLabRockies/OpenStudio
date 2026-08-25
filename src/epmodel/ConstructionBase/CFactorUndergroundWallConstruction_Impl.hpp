@@ -6,16 +6,16 @@
 #ifndef EPMODEL_CFACTORUNDERGROUNDWALLCONSTRUCTION_IMPL_HPP
 #define EPMODEL_CFACTORUNDERGROUNDWALLCONSTRUCTION_IMPL_HPP
 
-#include "ModelObject_Impl.hpp"
+#include "ConstructionBase/ConstructionBase_Impl.hpp"
 
 namespace openstudio {
 namespace epmodel {
   namespace detail {
 
-    class EPMODEL_API CFactorUndergroundWallConstruction_Impl : public ModelObject_Impl
+    class EPMODEL_API CFactorUndergroundWallConstruction_Impl : public ConstructionBase_Impl
     {
      public:
-      using ModelObject_Impl::ModelObject_Impl;
+      using ConstructionBase_Impl::ConstructionBase_Impl;
       virtual ~CFactorUndergroundWallConstruction_Impl() override = default;
 
       double cFactor() const;
@@ -23,6 +23,19 @@ namespace epmodel {
 
       double height() const;
       bool setHeight(double height);
+
+      bool isOpaque() const override {
+        return true;
+      }
+      bool isFenestration() const override {
+        return false;
+      }
+      bool isSolarDiffusing() const override {
+        return false;
+      }
+      bool isModelPartition() const override {
+        return false;
+      }
     };
 
   }  // namespace detail

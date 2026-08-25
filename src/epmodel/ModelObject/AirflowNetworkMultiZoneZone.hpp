@@ -23,6 +23,17 @@ namespace epmodel {
     class AirflowNetworkMultiZoneZone_Impl;
   }
 
+  /** \brief Represents the EnergyPlus AirflowNetwork:MultiZone:Zone object.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-airflow-network.html#airflownetworkmultizonezone,AirflowNetwork:MultiZone:Zone}
+   *
+   * \par OpenStudio Model API
+   * OpenStudio Model has no public wrapper for this EnergyPlus object. This wrapper is new to the EPModel API.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations beyond the public fields and relationships exposed by this wrapper.
+   */
   class EPMODEL_API AirflowNetworkMultiZoneZone : public ModelObject
   {
    public:
@@ -39,21 +50,6 @@ namespace epmodel {
     static std::vector<std::string> ventilationControlModeValues();
     static std::vector<std::string> singleSidedWindPressureCoefficientAlgorithmValues();
 
-    // Schema Alignment Notes:
-    // - API: This no-counterpart epmodel type uses IDD-derived class/accessor naming.
-    // - Field Mapping: ventilationControlMode, minimumVentingOpenFactor,
-    //   indoorandOutdoorTemperatureDifferenceLowerLimitForMaximumVentingOpenFactor,
-    //   indoorandOutdoorTemperatureDifferenceUpperLimitforMinimumVentingOpenFactor,
-    //   indoorandOutdoorEnthalpyDifferenceLowerLimitForMaximumVentingOpenFactor,
-    //   indoorandOutdoorEnthalpyDifferenceUpperLimitforMinimumVentingOpenFactor,
-    //   singleSidedWindPressureCoefficientAlgorithm, and facadeWidth map directly to
-    //   EnergyPlus AirflowNetwork:MultiZone:Zone scalar fields.
-    // - Field Mapping: Zone Name, Ventilation Control Zone Temperature Setpoint Schedule Name,
-    //   Venting Availability Schedule Name, and Occupant Ventilation Control Name are
-    //   relationship-like object-list fields and are intentionally excluded from scalar accessors.
-    // - ForwardTranslator evidence: ForwardTranslateAirflowNetwork.cpp writes these same scalar
-    //   fields directly on AirflowNetwork:MultiZone:Zone.
-    // - TODO(parity): Add typed relationship APIs after scalar scaffold saturation.
     std::string ventilationControlMode() const;
     bool isVentilationControlModeDefaulted() const;
     bool setVentilationControlMode(const std::string& ventilationControlMode);

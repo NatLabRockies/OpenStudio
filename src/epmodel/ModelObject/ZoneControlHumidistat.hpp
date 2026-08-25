@@ -9,17 +9,32 @@
 #include "EPModelAPI.hpp"
 #include "ModelObject.hpp"
 
+#include <boost/optional.hpp>
+
 #include <memory>
 
 namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class Schedule;
+  class ThermalZone;
 
   namespace detail {
     class ZoneControlHumidistat_Impl;
   }
 
+  /** \brief ZoneControlHumidistat.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-zone-controls-thermostats.html#zonecontrolhumidistat,ZoneControl:Humidistat}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::ZoneControlHumidistat</code>. The controlled-zone and humidifying/dehumidifying schedule relationships are exposed; schedule setters enforce their supported humidity limits.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API ZoneControlHumidistat : public ModelObject
   {
    public:
@@ -32,11 +47,16 @@ namespace epmodel {
     ZoneControlHumidistat& operator=(ZoneControlHumidistat&&) = default;
 
     static IddObjectType iddObjectType();
+    boost::optional<ThermalZone> controlledZone() const;
 
-    // Schema Alignment Notes:
-    // - API: Preserve the existing openstudio::model class name for this counterpart while keeping simple scalar coverage anchored to ModelObject's base name/setName API.
-    // - Field Mapping: OS:ZoneControl:Humidistat humidifying/dehumidifying relative humidity setpoint schedule names remain E+ schedule references (object-list fields) and are intentionally excluded from scalar accessor generation.
-    // - TODO(parity): Add richer schedule relationship helpers once relationship APIs are required beyond scalar saturation.
+    boost::optional<Schedule> humidifyingRelativeHumiditySetpointSchedule() const;
+    boost::optional<Schedule> dehumidifyingRelativeHumiditySetpointSchedule() const;
+
+    bool setHumidifyingRelativeHumiditySetpointSchedule(Schedule& schedule);
+    bool setDehumidifyingRelativeHumiditySetpointSchedule(Schedule& schedule);
+
+    void resetHumidifyingRelativeHumiditySetpointSchedule();
+    void resetDehumidifyingRelativeHumiditySetpointSchedule();
 
    protected:
     using ImplType = detail::ZoneControlHumidistat_Impl;

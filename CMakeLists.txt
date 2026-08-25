@@ -195,18 +195,18 @@ if(hasParent)
 endif()
 
 # EnergyPlus Idd version
-set(ENERGYPLUS_VERSION_MAJOR 25)
-set(ENERGYPLUS_VERSION_MINOR 2)
+set(ENERGYPLUS_VERSION_MAJOR 26)
+set(ENERGYPLUS_VERSION_MINOR 1)
 set(ENERGYPLUS_VERSION_PATCH 0)
 set(ENERGYPLUS_VERSION "${ENERGYPLUS_VERSION_MAJOR}.${ENERGYPLUS_VERSION_MINOR}.${ENERGYPLUS_VERSION_PATCH}")
 # Build SHA is not required to have a value, but if it does OpenStudio will require this build.
-set(ENERGYPLUS_BUILD_SHA "cf7368216c")
+set(ENERGYPLUS_BUILD_SHA "6f2e40d102")
 
 # ENERGYPLUS_RELEASE_NAME is used to locate the E+ download
 # from the github releases
-set(ENERGYPLUS_RELEASE_NAME "v25.2.0")
+set(ENERGYPLUS_RELEASE_NAME "v26.1.0")
 
-set(ENERGYPLUS_REPO "NREL")
+set(ENERGYPLUS_REPO "NatLabRockies")
 
 # Radiance
 set(RADIANCE_VERSION "5.0.a.12")
@@ -278,6 +278,19 @@ endif()
 
 ###############################################################################
 # Build options
+
+# Keep memory-intensive links from running at the same time while allowing Ninja
+# to use the full requested parallelism for compilation. Set to 0 to leave link
+# scheduling entirely to the build tool.
+set(OPENSTUDIO_MAX_PARALLEL_LINKS "1" CACHE STRING "Maximum concurrent link jobs when using Ninja (0 disables the limit)")
+if(NOT OPENSTUDIO_MAX_PARALLEL_LINKS MATCHES "^[0-9]+$")
+  message(FATAL_ERROR "OPENSTUDIO_MAX_PARALLEL_LINKS must be a non-negative integer")
+endif()
+if(CMAKE_GENERATOR MATCHES "^Ninja" AND OPENSTUDIO_MAX_PARALLEL_LINKS GREATER 0)
+  set_property(GLOBAL APPEND PROPERTY JOB_POOLS openstudio_link_pool=${OPENSTUDIO_MAX_PARALLEL_LINKS})
+  set(CMAKE_JOB_POOL_LINK openstudio_link_pool)
+  message(STATUS "Ninja will run at most ${OPENSTUDIO_MAX_PARALLEL_LINKS} link job(s) at a time")
+endif()
 
 # TODO: should this be only in OpenStudioApplication?
 option(BUILD_PAT "Build PAT" OFF)
@@ -672,10 +685,10 @@ endif()
 if(UNIX)
   if(APPLE)
     if (ARCH MATCHES "arm64")
-      set(ENERGYPLUS_EXPECTED_HASH 4a6bece818e89eb88b50249c823b97d9)
+      set(ENERGYPLUS_EXPECTED_HASH 00046c474efe5fbf69ffcae504175d18)
       set(ENERGYPLUS_PLATFORM "Darwin-macOS13-arm64")
     else()
-      set(ENERGYPLUS_EXPECTED_HASH 6b10baada08857a9284c2583e01e735a)
+      set(ENERGYPLUS_EXPECTED_HASH 6f0dfef6c4a6529dbe5998c9c9505bf5)
       set(ENERGYPLUS_PLATFORM "Darwin-macOS12.1-x86_64")
     endif()
   elseif(LSB_RELEASE_ID_SHORT MATCHES "CentOS")
@@ -687,9 +700,9 @@ if(UNIX)
   else()
     if(LSB_RELEASE_VERSION_SHORT MATCHES "24.04")
       if (ARCH MATCHES "arm64")
-        set(ENERGYPLUS_EXPECTED_HASH 304fddba0082d833263a0128ee96a0ff)
+        set(ENERGYPLUS_EXPECTED_HASH 1f3d39f84a45eefdacca66f905bc4fba)
       else()
-        set(ENERGYPLUS_EXPECTED_HASH 3c03a2eaac845ac2e9d8b5601e7abbde)
+        set(ENERGYPLUS_EXPECTED_HASH 8b8cd4e21c1bcec778c4c7b17f84908d)
       endif()
     elseif(LSB_RELEASE_VERSION_SHORT MATCHES "22.04")
       if (ARCH MATCHES "arm64")
@@ -732,7 +745,7 @@ elseif(WIN32)
   if(CMAKE_SIZEOF_VOID_P EQUAL 8) # 64 bit
     set(ENERGYPLUS_PATH "EnergyPlus-${ENERGYPLUS_VERSION}-${ENERGYPLUS_BUILD_SHA}-Windows-x86_64")
     set(ENERGYPLUS_ARCH 64)
-    set(ENERGYPLUS_EXPECTED_HASH 22a1d7e594fe8fb0f8e4d2cc0604f05d)
+    set(ENERGYPLUS_EXPECTED_HASH f5c3822fd27700757827c85403c44f20)
   else()
     set(ENERGYPLUS_PATH "EnergyPlus-${ENERGYPLUS_VERSION}-${ENERGYPLUS_BUILD_SHA}-Windows-i386")
     set(ENERGYPLUS_ARCH 32)
@@ -1245,6 +1258,7 @@ if(BUILD_DOCUMENTATION)
   if (DOXYGEN_VERSION VERSION_GREATER_EQUAL 1.8.9)
     set(DOXYGEN_HTML_HEADER "${PROJECT_SOURCE_DIR}/doc/html/header-1.8.9.html") # Adds searchdata.js
   endif()
+  set(DOXYGEN_DEFAULT_HTML_HEADER "${DOXYGEN_HTML_HEADER}")
 
   configure_file(${PROJECT_SOURCE_DIR}/doc/index.html ${PROJECT_BINARY_DIR}/doc/index.html COPYONLY)
 
@@ -1269,6 +1283,8 @@ if(BUILD_DOCUMENTATION)
     set(DOXY_ADDITIONAL_DIR "")
     set(DOXY_EXCLUDE_DIR "")
     set(DOXY_TAGFILES "")
+    set(DOXYGEN_HTML_HEADER "${DOXYGEN_DEFAULT_HTML_HEADER}")
+    set(DOXY_PREPARE_COMMAND)
 
 
     # Specific settings
@@ -1281,10 +1297,25 @@ if(BUILD_DOCUMENTATION)
       set(DOXY_TAGFILES "utilities_idd/utilities_idd.tag=../../utilities_idd/html")
     elseif(${D} STREQUAL "model")
       set(DOXY_TAGFILES "utilities_idd/utilities_idd.tag=../../utilities_idd/html utilities/utilities.tag=../../utilities/html")
+    elseif(${D} STREQUAL "epmodel")
+      set(DOXY_TAGFILES "utilities_idd/utilities_idd.tag=../../utilities_idd/html utilities/utilities.tag=../../utilities/html model/model.tag=../../model/html")
+      set(DOXYGEN_HTML_HEADER "${PROJECT_SOURCE_DIR}/doc/html/epmodel-header.html")
+      set(EPMODEL_CLASS_FAMILIES "${PROJECT_BINARY_DIR}/doc/epmodel_class_families.hpp")
+      set(DOXY_ADDITIONAL_DIR "\"${EPMODEL_CLASS_FAMILIES}\"")
+      # Derive this browsing page from the existing source-tree families. The
+      # generation complexity avoids introducing yet another hierarchy for the
+      # model classes through Doxygen groups or additional class metadata.
+      set(DOXY_PREPARE_COMMAND
+        COMMAND "${CMAKE_COMMAND}"
+          "-DOPENSTUDIO_SOURCE_DIR=${PROJECT_SOURCE_DIR}"
+          "-DOUTPUT=${EPMODEL_CLASS_FAMILIES}"
+          -P "${PROJECT_SOURCE_DIR}/CMake/GenerateEPModelClassFamilies.cmake"
+      )
     endif()
     configure_file(${PROJECT_SOURCE_DIR}/Doxyfile.in ${PROJECT_BINARY_DIR}/doc/${DOC_NAME}.cfg)
 
     add_custom_target(openstudio_${DOC_NAME}_doc
+      ${DOXY_PREPARE_COMMAND}
       COMMAND ${CMAKE_COMMAND} -E remove_directory "${DOC_NAME}"
       COMMAND ${CMAKE_COMMAND} -E make_directory "${DOC_NAME}"
       COMMAND ${DOXYGEN_EXECUTABLE} ${DOC_NAME}.cfg
@@ -1308,12 +1339,17 @@ if(BUILD_DOCUMENTATION)
     openstudio_utilities_doc
     openstudio_utilities_idd_doc
   )
+  add_dependencies(openstudio_epmodel_doc
+    openstudio_model_doc
+  )
 
   add_custom_target(ALL_DOXYGEN)
   add_dependencies(ALL_DOXYGEN ${ALL_CPP_DOC_TARGETS})
 
   add_custom_target(ALL_RDOC)
-  add_dependencies(ALL_RDOC ${ALL_RDOC_TARGETS})
+  if(ALL_RDOC_TARGETS)
+    add_dependencies(ALL_RDOC ${ALL_RDOC_TARGETS})
+  endif()
 
   # Zip documentation
   if(WIN32)

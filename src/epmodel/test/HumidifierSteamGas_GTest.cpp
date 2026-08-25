@@ -6,20 +6,48 @@
 #include <gtest/gtest.h>
 
 #include <utilities/idd/Humidifier_Steam_Gas_FieldEnums.hxx>
+#include <utilities/core/Filesystem.hpp>
+#include <utilities/core/UUID.hpp>
+#include <utilities/idf/WorkspaceObject_Impl.hpp>
 
 #include "EPModelFixture.hpp"
+#include "../Curve/CurveBiquadratic.hpp"
+#include "../Curve/CurveLinear.hpp"
+#include "../Curve/CurveLinear_Impl.hpp"
 #include "../HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
 #include "../Loop/AirLoopHVAC.hpp"
 #include "../Loop/PlantLoop.hpp"
 #include "../ResourceObject/ScheduleTypeLimits.hpp"
 #include "../Schedule/ScheduleCompact.hpp"
+#include "../Schedule/ScheduleCompact_Impl.hpp"
 #include "../Schedule/ScheduleConstant.hpp"
 #include "../Splitter/AirLoopHVACZoneSplitter.hpp"
 #include "../StraightComponent/HumidifierSteamGas.hpp"
 #include "../StraightComponent/HumidifierSteamGas_Impl.hpp"
 #include "../StraightComponent/Node.hpp"
 
+#include <utility>
+
 using namespace openstudio::epmodel;
+
+namespace {
+class ScopedHumidifierFileRemoval
+{
+ public:
+  explicit ScopedHumidifierFileRemoval(openstudio::path path) : m_path(std::move(path)) {}
+  ~ScopedHumidifierFileRemoval() {
+    boost::system::error_code error;
+    boost::filesystem::remove(m_path, error);
+  }
+
+ private:
+  openstudio::path m_path;
+};
+
+openstudio::path uniqueHumidifierPath(const std::string& stem) {
+  return openstudio::tempDir() / openstudio::toPath(stem + "-" + openstudio::removeBraces(openstudio::createUUID()) + ".idf");
+}
+}  // namespace
 
 TEST_F(EPModelFixture, HumidifierSteamGas_DefaultConstructor) {
   Model model;
@@ -41,6 +69,7 @@ TEST_F(EPModelFixture, HumidifierSteamGas_DefaultConstructor) {
 
   EXPECT_DOUBLE_EQ(0.8, humidifier.thermalEfficiency());
   EXPECT_TRUE(humidifier.isThermalEfficiencyDefaulted());
+  EXPECT_FALSE(humidifier.thermalEfficiencyModifierCurve());
 
   EXPECT_FALSE(humidifier.ratedFanPower());
 
@@ -53,6 +82,123 @@ TEST_F(EPModelFixture, HumidifierSteamGas_DefaultConstructor) {
   const auto waterStorageTankName = humidifier.getString(openstudio::Humidifier_Steam_GasFields::WaterStorageTankName, true);
   ASSERT_TRUE(waterStorageTankName);
   EXPECT_TRUE(waterStorageTankName->empty());
+}
+
+TEST_F(EPModelFixture, HumidifierSteamGas_ThermalEfficiencyModifierCurveValidationAndReset) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  HumidifierSteamGas humidifier(model);
+  auto supplyOutlet = airLoop.supplyOutletNode();
+  ASSERT_TRUE(humidifier.addToNode(supplyOutlet));
+  ASSERT_TRUE(humidifier.airLoopHVAC());
+  ASSERT_TRUE(humidifier.inletModelObject());
+  ASSERT_TRUE(humidifier.outletModelObject());
+  const auto airLoopHandle = humidifier.airLoopHVAC()->handle();
+  const auto inletHandle = humidifier.inletModelObject()->handle();
+  const auto outletHandle = humidifier.outletModelObject()->handle();
+
+  CurveLinear allowed(model);
+  CurveBiquadratic disallowed(model);
+  ASSERT_TRUE(humidifier.setThermalEfficiencyModifierCurve(allowed));
+  ASSERT_TRUE(humidifier.thermalEfficiencyModifierCurve());
+  EXPECT_EQ(allowed.handle(), humidifier.thermalEfficiencyModifierCurve()->handle());
+
+  Model foreignModel;
+  CurveLinear foreign(foreignModel);
+  EXPECT_FALSE(humidifier.setThermalEfficiencyModifierCurve(disallowed));
+  EXPECT_FALSE(humidifier.setThermalEfficiencyModifierCurve(foreign));
+  ASSERT_TRUE(humidifier.thermalEfficiencyModifierCurve());
+  EXPECT_EQ(allowed.handle(), humidifier.thermalEfficiencyModifierCurve()->handle());
+  EXPECT_EQ(airLoopHandle, humidifier.airLoopHVAC()->handle());
+  EXPECT_EQ(inletHandle, humidifier.inletModelObject()->handle());
+  EXPECT_EQ(outletHandle, humidifier.outletModelObject()->handle());
+
+  constexpr auto field = openstudio::Humidifier_Steam_GasFields::ThermalEfficiencyModifierCurveName;
+  auto workspaceImpl = humidifier.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  ASSERT_TRUE(workspaceImpl);
+  ASSERT_TRUE(workspaceImpl->setPointer(field, openstudio::Handle(), false));
+  ASSERT_TRUE(workspaceImpl->openstudio::detail::IdfObject_Impl::setString(field, "Unresolved Humidifier Efficiency Curve", false));
+  EXPECT_FALSE(humidifier.setThermalEfficiencyModifierCurve(disallowed));
+  EXPECT_EQ("Unresolved Humidifier Efficiency Curve", workspaceImpl->openstudio::detail::IdfObject_Impl::getString(field, false, true).value_or(""));
+
+  humidifier.resetThermalEfficiencyModifierCurve();
+  EXPECT_FALSE(humidifier.thermalEfficiencyModifierCurve());
+  EXPECT_TRUE(workspaceImpl->openstudio::detail::IdfObject_Impl::getString(field, false, true).value_or("").empty());
+}
+
+TEST_F(EPModelFixture, HumidifierSteamGas_ThermalEfficiencyModifierCurveSurvivesReloadReplacementAndRemoval) {
+  const auto firstPath = uniqueHumidifierPath("epmodel-humidifier-steam-gas-curve-first");
+  const auto secondPath = uniqueHumidifierPath("epmodel-humidifier-steam-gas-curve-second");
+  const ScopedHumidifierFileRemoval removeFirst(firstPath);
+  const ScopedHumidifierFileRemoval removeSecond(secondPath);
+
+  Model model;
+  AirLoopHVAC airLoop(model);
+  HumidifierSteamGas humidifier(model);
+  ScheduleCompact availability(model);
+  CurveLinear original(model);
+  ASSERT_TRUE(humidifier.setName("Reloadable Gas Steam Humidifier"));
+  ASSERT_TRUE(availability.setName("Gas Steam Humidifier Availability"));
+  ASSERT_TRUE(availability.setToConstantValue(1.0));
+  ASSERT_TRUE(original.setName("Original Gas Steam Humidifier Efficiency Curve"));
+  ASSERT_TRUE(humidifier.setAvailabilitySchedule(availability));
+  ASSERT_TRUE(humidifier.setThermalEfficiencyModifierCurve(original));
+  auto supplyOutlet = airLoop.supplyOutletNode();
+  ASSERT_TRUE(humidifier.addToNode(supplyOutlet));
+  ASSERT_TRUE(model.save(firstPath, true));
+
+  auto loadedModel = Model::load(firstPath);
+  ASSERT_TRUE(loadedModel);
+  auto loadedHumidifier = loadedModel->getConcreteModelObjectByName<HumidifierSteamGas>("Reloadable Gas Steam Humidifier");
+  auto loadedOriginal = loadedModel->getConcreteModelObjectByName<CurveLinear>("Original Gas Steam Humidifier Efficiency Curve");
+  auto loadedAvailability = loadedModel->getConcreteModelObjectByName<ScheduleCompact>("Gas Steam Humidifier Availability");
+  ASSERT_TRUE(loadedHumidifier);
+  ASSERT_TRUE(loadedOriginal);
+  ASSERT_TRUE(loadedAvailability);
+  ASSERT_TRUE(loadedHumidifier->thermalEfficiencyModifierCurve());
+  EXPECT_EQ(loadedOriginal->handle(), loadedHumidifier->thermalEfficiencyModifierCurve()->handle());
+  ASSERT_TRUE(loadedHumidifier->availabilitySchedule());
+  EXPECT_EQ(loadedAvailability->handle(), loadedHumidifier->availabilitySchedule()->handle());
+  EXPECT_TRUE(loadedHumidifier->airLoopHVAC());
+  EXPECT_TRUE(loadedHumidifier->inletModelObject());
+  EXPECT_TRUE(loadedHumidifier->outletModelObject());
+
+  CurveLinear replacement(*loadedModel);
+  ASSERT_TRUE(replacement.setName("Replacement Gas Steam Humidifier Efficiency Curve"));
+  ASSERT_TRUE(loadedHumidifier->setThermalEfficiencyModifierCurve(replacement));
+  ASSERT_TRUE(loadedModel->save(secondPath, true));
+
+  auto reloadedModel = Model::load(secondPath);
+  ASSERT_TRUE(reloadedModel);
+  auto reloadedHumidifier = reloadedModel->getConcreteModelObjectByName<HumidifierSteamGas>("Reloadable Gas Steam Humidifier");
+  auto reloadedOriginal = reloadedModel->getConcreteModelObjectByName<CurveLinear>("Original Gas Steam Humidifier Efficiency Curve");
+  auto reloadedReplacement = reloadedModel->getConcreteModelObjectByName<CurveLinear>("Replacement Gas Steam Humidifier Efficiency Curve");
+  auto reloadedAvailability = reloadedModel->getConcreteModelObjectByName<ScheduleCompact>("Gas Steam Humidifier Availability");
+  ASSERT_TRUE(reloadedHumidifier);
+  ASSERT_TRUE(reloadedOriginal);
+  ASSERT_TRUE(reloadedReplacement);
+  ASSERT_TRUE(reloadedAvailability);
+  ASSERT_TRUE(reloadedHumidifier->thermalEfficiencyModifierCurve());
+  EXPECT_EQ(reloadedReplacement->handle(), reloadedHumidifier->thermalEfficiencyModifierCurve()->handle());
+  reloadedHumidifier->resetThermalEfficiencyModifierCurve();
+  ASSERT_TRUE(reloadedModel->save(secondPath, true));
+
+  auto resetModel = Model::load(secondPath);
+  ASSERT_TRUE(resetModel);
+  auto resetHumidifier = resetModel->getConcreteModelObjectByName<HumidifierSteamGas>("Reloadable Gas Steam Humidifier");
+  auto resetOriginal = resetModel->getConcreteModelObjectByName<CurveLinear>("Original Gas Steam Humidifier Efficiency Curve");
+  auto resetReplacement = resetModel->getConcreteModelObjectByName<CurveLinear>("Replacement Gas Steam Humidifier Efficiency Curve");
+  auto resetAvailability = resetModel->getConcreteModelObjectByName<ScheduleCompact>("Gas Steam Humidifier Availability");
+  ASSERT_TRUE(resetHumidifier);
+  ASSERT_TRUE(resetOriginal);
+  ASSERT_TRUE(resetReplacement);
+  ASSERT_TRUE(resetAvailability);
+  EXPECT_FALSE(resetHumidifier->thermalEfficiencyModifierCurve());
+  EXPECT_TRUE(resetHumidifier->airLoopHVAC());
+  EXPECT_FALSE(resetHumidifier->remove().empty());
+  EXPECT_TRUE(resetModel->getObject(resetOriginal->handle()));
+  EXPECT_TRUE(resetModel->getObject(resetReplacement->handle()));
+  EXPECT_TRUE(resetModel->getObject(resetAvailability->handle()));
 }
 
 TEST_F(EPModelFixture, HumidifierSteamGas_ScalarAccessors_RoundTrip) {

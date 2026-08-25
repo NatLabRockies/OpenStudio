@@ -22,6 +22,26 @@ namespace epmodel {
     class ElectricLoadCenterInverterLookUpTable_Impl;
   }
 
+  /** \brief Represents an inverter whose efficiency is specified at several operating points.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-electric-load-center-generator.html#electricloadcenterinverterlookuptable,ElectricLoadCenter:Inverter:LookUpTable}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::ElectricLoadCenterInverterLookUpTable</code>.
+   *
+   * - <b>Not yet available:</b> <code>availabilitySchedule()</code>,
+   *   <code>setAvailabilitySchedule(...)</code>, and
+   *   <code>resetAvailabilitySchedule()</code>.
+   * - <b>Not yet available:</b> The Model Inverter relationship methods
+   *   <code>electricLoadCenterDistribution()</code>, <code>thermalZone()</code>,
+   *   <code>setThermalZone(...)</code>, and <code>resetThermalZone()</code>.
+   *
+   * \par Known limitations
+   * Assign schedule, zone, and electric-load-center relationships through
+   * lower-level object references when needed.
+   */
   class EPMODEL_API ElectricLoadCenterInverterLookUpTable : public ModelObject
   {
    public:
@@ -35,13 +55,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - API: Preserves existing openstudio::model scalar accessor names/signatures for counterpart parity.
-    // - Field Mapping: scalar APIs map directly to ElectricLoadCenter:Inverter:LookUpTable scalar numeric fields.
-    // - Field Mapping: Availability Schedule Name and Zone Name are relationship-like link fields and are excluded.
-    // - ForwardTranslator evidence: translateElectricLoadCenterInverterLookUpTable maps these same scalar methods to
-    //   matching EnergyPlus fields.
-    // - TODO(parity): add relationship APIs incrementally without changing preserved scalar signatures.
     boost::optional<double> radiativeFraction() const;
     bool setRadiativeFraction(double radiativeFraction);
     void resetRadiativeFraction();

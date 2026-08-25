@@ -15,12 +15,38 @@
 namespace openstudio {
 namespace epmodel {
 
+  class CoilCoolingDXCurveFitSpeed;
   class Model;
 
   namespace detail {
     class CoilCoolingDXCurveFitOperatingMode_Impl;
   }
 
+  /** \brief Describes one operating mode for a curve-fit DX cooling system.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-coil-cooling-dx.html#coilcoolingdxcurvefitoperatingmode,Coil:Cooling:DX:CurveFit:OperatingMode}.
+   *
+   * \par Important behavior
+   * Speed entries are stored as extensible rows on this object. Adding, moving,
+   * replacing, or removing a speed changes those persisted rows; a speed from
+   * another model is rejected without changing the list.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::CoilCoolingDXCurveFitOperatingMode</code>.
+   * The Model API also provides performance reverse navigation and sizing
+   * helpers (<code>coilCoolingDXCurveFitPerformances()</code>,
+   * <code>autosizedRatedGrossTotalCoolingCapacity()</code>,
+   * <code>autosizedRatedEvaporatorAirFlowRate()</code>,
+   * <code>autosizedRatedCondenserAirFlowRate()</code>,
+   * <code>autosizedNominalEvaporativeCondenserPumpPower()</code>,
+   * <code>autosize()</code>, and <code>applySizingValues()</code>); EPModel
+   * does not.
+   *
+   * \par Known limitations
+   * EPModel does not resolve autosized values from EnergyPlus SQL results.
+   */
   class EPMODEL_API CoilCoolingDXCurveFitOperatingMode : public ModelObject
   {
    public:
@@ -36,11 +62,6 @@ namespace epmodel {
 
     static std::vector<std::string> condenserTypeValues();
 
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model scalar accessor names/signatures for this model-counterpart class.
-    // - Field Mapping: Preserved scalar APIs map directly to matching E+ Coil:Cooling:DX:CurveFit:OperatingMode fields.
-    // - Field Mapping: Relationship/extensible Speed Name links are intentionally excluded in this scalar scaffold phase.
-    // - TODO(parity): Add non-scalar speed/performance relationship API parity incrementally after scalar saturation.
     boost::optional<double> ratedGrossTotalCoolingCapacity() const;
     bool isRatedGrossTotalCoolingCapacityAutosized() const;
     bool setRatedGrossTotalCoolingCapacity(double ratedGrossTotalCoolingCapacity);
@@ -84,6 +105,17 @@ namespace epmodel {
     bool isNominalSpeedNumberDefaulted() const;
     bool setNominalSpeedNumber(unsigned nominalSpeedNumber);
     void resetNominalSpeedNumber();
+
+    std::vector<CoilCoolingDXCurveFitSpeed> speeds() const;
+    unsigned numberOfSpeeds() const;
+    boost::optional<unsigned> speedIndex(const CoilCoolingDXCurveFitSpeed& speed) const;
+    bool addSpeed(const CoilCoolingDXCurveFitSpeed& speed);
+    bool addSpeed(const CoilCoolingDXCurveFitSpeed& speed, unsigned index);
+    bool setSpeedIndex(const CoilCoolingDXCurveFitSpeed& speed, unsigned index);
+    bool setSpeeds(const std::vector<CoilCoolingDXCurveFitSpeed>& speeds);
+    void removeAllSpeeds();
+    bool removeSpeed(const CoilCoolingDXCurveFitSpeed& speed);
+    bool removeSpeed(unsigned index);
 
    protected:
     using ImplType = detail::CoilCoolingDXCurveFitOperatingMode_Impl;

@@ -22,6 +22,17 @@ namespace epmodel {
     class OutputTableSummaryReports_Impl;
   }
 
+  /** \brief OutputTableSummaryReports.
+   *
+   * \par EnergyPlus object
+   * \epobject{output-table-summaryreports.html#outputtablesummaryreports,Output:Table:SummaryReports}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::OutputTableSummaryReports</code>. This object contains extensible report-name rows. EPModel exposes no public summary-report list mutation or query methods.
+   *
+   * \par Known limitations
+   * Only the fields and relationships listed in this wrapper are available; broader Model-only helpers are not exposed.
+   */
   class EPMODEL_API OutputTableSummaryReports : public ModelObject
   {
    public:
@@ -34,13 +45,6 @@ namespace epmodel {
     OutputTableSummaryReports& operator=(OutputTableSummaryReports&&) = default;
 
     static IddObjectType iddObjectType();
-
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model::OutputTableSummaryReports class naming for counterpart parity.
-    // - Field Mapping: Output:Table:SummaryReports currently exposes only extensible Report Name fields (no simple scalar non-extensible fields).
-    // - Field Mapping: Extensible summary-report list APIs are non-scalar and intentionally excluded in this scalar-only scaffold pass.
-    // - ForwardTranslator evidence: ForwardTranslateOutputTableSummaryReports.cpp writes each summary report via extensible ReportName groups.
-    // - TODO(parity): Add non-scalar extensible-group APIs incrementally without breaking class identity and base scalar behavior.
 
    protected:
     explicit OutputTableSummaryReports(const Model& model);

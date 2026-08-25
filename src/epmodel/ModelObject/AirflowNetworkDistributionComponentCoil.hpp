@@ -23,6 +23,17 @@ namespace epmodel {
     class AirflowNetworkDistributionComponentCoil_Impl;
   }
 
+  /** \brief Represents the EnergyPlus AirflowNetwork:Distribution:Component:Coil object.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-airflow-network.html#airflownetworkdistributioncomponentcoil,AirflowNetwork:Distribution:Component:Coil}
+   *
+   * \par OpenStudio Model API
+   * OpenStudio Model has no public wrapper for this EnergyPlus object. This wrapper is new to the EPModel API.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations beyond the public fields and relationships exposed by this wrapper.
+   */
   class EPMODEL_API AirflowNetworkDistributionComponentCoil : public ModelObject
   {
    public:
@@ -36,17 +47,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - API: This no-counterpart type uses IDD-derived class/accessor naming.
-    // - Field Mapping: coilObjectType, airPathLength, and airPathHydraulicDiameter map directly to
-    //   EnergyPlus AirflowNetwork:Distribution:Component:Coil scalar fields.
-    // - Field Mapping: Coil Name remains a relationship-like target-link field and is intentionally
-    //   excluded from scalar accessors.
-    // - ForwardTranslator evidence: translateAirflowNetworkEquivalentDuct writes Coil Name/
-    //   Coil Object Type from linked model objects, and writes these scalar fields directly.
-    // - Allowed Values: `coilObjectTypeValues()` returns the EnergyPlus-facing `Coil Object Type`
-    //   keys declared on `AirflowNetwork:Distribution:Component:Coil`, including the water-to-air
-    //   heat pump equation-fit and variable-speed equation-fit coil strings.
     static std::vector<std::string> coilObjectTypeValues();
 
     std::string coilObjectType() const;

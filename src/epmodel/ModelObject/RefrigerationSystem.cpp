@@ -5,14 +5,18 @@
 
 #include "ModelObject/RefrigerationSystem.hpp"
 #include "ModelObject/RefrigerationSystem_Impl.hpp"
+#include "HVACComponent/ThermalZone.hpp"
+#include "HVACComponent/ThermalZone_Impl.hpp"
 
 #include "Model.hpp"
 
 #include <utility>
 #include <utilities/core/Assert.hpp>
+#include <utilities/core/Logger.hpp>
 #include <utilities/idd/IddFactory.hxx>
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/Refrigeration_System_FieldEnums.hxx>
+#include <utilities/idf/IdfObject_Impl.hpp>
 
 namespace openstudio {
 namespace epmodel {
@@ -91,6 +95,18 @@ namespace epmodel {
 
   void RefrigerationSystem::resetSumUASuctionPiping() {
     getImpl<detail::RefrigerationSystem_Impl>()->resetSumUASuctionPiping();
+  }
+
+  boost::optional<ThermalZone> RefrigerationSystem::suctionPipingZone() const {
+    return getImpl<detail::RefrigerationSystem_Impl>()->suctionPipingZone();
+  }
+
+  bool RefrigerationSystem::setSuctionPipingZone(const ThermalZone& thermalZone) {
+    return getImpl<detail::RefrigerationSystem_Impl>()->setSuctionPipingZone(thermalZone);
+  }
+
+  void RefrigerationSystem::resetSuctionPipingZone() {
+    getImpl<detail::RefrigerationSystem_Impl>()->resetSuctionPipingZone();
   }
 
   std::string RefrigerationSystem::endUseSubcategory() const {
@@ -210,6 +226,30 @@ namespace epmodel {
     void RefrigerationSystem_Impl::resetSumUASuctionPiping() {
       bool result = setString(openstudio::Refrigeration_SystemFields::SumUASuctionPiping, "");
       OS_ASSERT(result);
+    }
+
+    boost::optional<ThermalZone> RefrigerationSystem_Impl::suctionPipingZone() const {
+      return getObject<ModelObject>().getModelObjectTarget<ThermalZone>(openstudio::Refrigeration_SystemFields::SuctionPipingZoneName);
+    }
+
+    bool RefrigerationSystem_Impl::setSuctionPipingZone(const ThermalZone& thermalZone) {
+      constexpr auto field = openstudio::Refrigeration_SystemFields::SuctionPipingZoneName;
+      if (thermalZone.model() != model()) {
+        LOG_FREE(Warn, "openstudio.epmodel.RefrigerationSystem", "Cannot set the suction-piping zone because it belongs to a different model.");
+        return false;
+      }
+      if (!model().canBeTarget(thermalZone.handle(), iddObject().objectLists(field))) {
+        LOG_FREE(Warn, "openstudio.epmodel.RefrigerationSystem",
+                 "Cannot set the suction-piping zone because ThermalZone is not accepted by the field.");
+        return false;
+      }
+      return setPointer(field, thermalZone.handle(), false);
+    }
+
+    void RefrigerationSystem_Impl::resetSuctionPipingZone() {
+      constexpr auto field = openstudio::Refrigeration_SystemFields::SuctionPipingZoneName;
+      OS_ASSERT(setPointer(field, Handle(), false));
+      OS_ASSERT(openstudio::detail::IdfObject_Impl::setString(field, "", false));
     }
 
     std::string RefrigerationSystem_Impl::endUseSubcategory() const {

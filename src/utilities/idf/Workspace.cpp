@@ -2105,7 +2105,15 @@ namespace detail {
 
     // unlink from other objects
     // handle -> others
-    UnsignedVector ptrFields = objectImplPtr->objectListFields();
+    UnsignedVector ptrFields;
+    if (objectImplPtr->m_sourceData) {
+      ptrFields.reserve(objectImplPtr->m_sourceData->pointers.size());
+      for (const ForwardPointer& ptr : objectImplPtr->m_sourceData->pointers) {
+        if (!ptr.targetHandle.isNull()) {
+          ptrFields.push_back(ptr.fieldIndex);
+        }
+      }
+    }
     for (unsigned index : ptrFields) {
       objectImplPtr->setPointer(index, Handle(), false);
     }

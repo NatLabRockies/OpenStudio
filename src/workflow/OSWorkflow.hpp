@@ -9,6 +9,7 @@
 #include "Timer.hpp"
 
 #include "../measure/OSRunner.hpp"
+#include "../model/Model.hpp"
 #include "../scriptengine/ScriptEngine.hpp"
 #include "../utilities/core/Logger.hpp"
 #include "../utilities/core/Filesystem.hpp"
@@ -56,6 +57,10 @@ class OSWorkflow
 #endif
   WorkflowJSON workflowJSON;
   measure::OSRunner runner{workflowJSON};
+  // CLI-only output context. The input OSW is not modified on disk.
+  boost::optional<openstudio::path> m_outputDirectory;
+  boost::optional<openstudio::path> m_outputWorkflowPath;
+  boost::optional<openstudio::path> m_inputRootDirectory;
   model::Model model;
   std::unique_ptr<epmodel::Model> epModel_;
   boost::optional<Workspace> workspace_;
@@ -81,6 +86,10 @@ class OSWorkflow
   bool m_add_timings = false;
   bool m_detailed_timings = true;
   bool m_style_stdout = false;
+
+  void setOutputDirectory(const openstudio::path& outputDirectory);
+  openstudio::path absoluteOutputDirectory() const;
+  openstudio::path absoluteOutputWorkflowPath() const;
 
   /** @name Jobs */
   //@{
@@ -151,8 +160,8 @@ class OSWorkflow
   void saveModelicaFileSnapshot(const openstudio::path& directory);
   void applyMeasures(MeasureType measureType, ApplyMeasureType = ApplyMeasureType::Regular);
   static void applyArguments(measure::OSArgumentMap& argumentMap, const std::string& argumentName, const openstudio::Variant& argumentValue);
-  void saveOSMToRootDirIfDebug();
-  void saveIDFToRootDirIfDebug();
+  void saveOSMToOutputDirIfDebug();
+  void saveIDFToOutputDirIfDebug();
 
   // write output_attributes to the measure_attributes.json
   void communicateMeasureAttributes() const;

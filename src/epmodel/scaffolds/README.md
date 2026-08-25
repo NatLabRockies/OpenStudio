@@ -1,8 +1,20 @@
-E+ Scaffold ModelObjects
-========================
+# EPModel scaffold directory
 
-This directory contains epmodel `ModelObject` types that are present as EnergyPlus IDD objects but are not produced by any `openstudio::model` object in the OpenStudio -> EnergyPlus mapping inventory and are not required by production epmodel topology or canonicalization code.
+This directory originally held generated EnergyPlus wrappers. Some are still
+minimal generated classes; others now have factory registration, tests, and
+working HVAC behavior. The directory name no longer tells you whether a class
+is ready to use.
 
-The classification is derived from `doc/idd-schema-alignment/idd_mapping.generated.md` by reversing the `EP IddObjectType(s) produced` column, not by comparing class names. Some OpenStudio model classes translate to differently named EnergyPlus objects, and those generated EnergyPlus outputs should stay with the main `ModelObject` sources.
+Check the class header, implementation, factory registration, bindings, and
+tests before depending on one of these wrappers.
 
-These scaffold objects are candidates for expanding epmodel scope and EnergyPlus coverage as their relationships, canonicalization rules, and API surface become explicit.
+When finishing a generated wrapper:
+
+- identify the corresponding Model class, if there is one;
+- decide which EnergyPlus object owns each reference;
+- implement loading, repair, removal, and child ownership as needed;
+- document important differences in the public header;
+- add focused tests; and
+- add Ruby/Python bindings only when the public API is ready.
+
+The old generated Model-to-EnergyPlus mapping report is no longer maintained.

@@ -19,6 +19,7 @@ namespace openstudio {
 namespace epmodel {
 
   class Node;
+  class AirLoopHVACDedicatedOutdoorAirSystem;
   class AirLoopHVACOutdoorAirSystem;
   class AvailabilityManager;
   class AvailabilityManagerScheduledOn;
@@ -35,6 +36,21 @@ namespace epmodel {
 
   class Model;
 
+  /** \brief Represents an air-side HVAC loop and its supply and demand branches.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-air-distribution.html#airloophvac,AirLoopHVAC}.
+   *
+   * \par Important behavior
+   * A loop may be constructed as single-duct or dual-duct. Dual-duct operations maintain the common return and both supply paths as one topology.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::AirLoopHVAC</code>.
+   * <b>Not yet available: several SQL autosized-result helpers, <code>clone()</code>, <code>multiAddBranchForZone()</code>, <code>removeSupplySplitter()</code>, and broad multi-splitter conveniences.</b>
+   *
+   * \par Known limitations
+   * Inlet-side mixers and user-defined terminal shapes without unambiguous branch ownership are rejected by supported topology mutators.
+   */
   class EPMODEL_API AirLoopHVAC : public Loop
   {
    public:
@@ -48,14 +64,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. Core scalar accessors, node/traversal APIs, branch mutation, outdoor-air-system lookup, air-side convenience APIs, sizing ownership, availability-schedule wiring, and night-cycle wiring are present, but the canonical AirLoopHVAC surface is still incomplete.
-    // - Canonical Counterpart: openstudio::model::AirLoopHVAC.
-    // - Implemented Parity: `designSupplyAirFlowRate`, `designReturnAirFlowFractionofSupplyAirFlow`, supply/demand node accessors, `zoneSplitter`, `zoneMixer`, `supplyComponents`, `demandComponents`, `airLoopHVACOutdoorAirSystem`, `thermalZones`, and availability-manager APIs preserve the main single-duct loop-topology contract used by canonical model code.
-    // - Documented Delta: Public dual-duct helpers (`isDualDuct`, supply splitter helpers, multi-splitter surfaces) are still not exposed.
-    // - Field/Storage Mapping: Connector-list and splitter/mixer linkage remain relationship-driven through EnergyPlus branch topology helpers instead of scalar string accessors for `ConnectorListName` and related node names.
-    // - Evidence: `src/model/AirLoopHVAC.hpp`, the air-loop forward/reverse translator files, and `src/epmodel/test/IDF_SmallOffice_GTest.cpp` define the canonical loop traversal and topology expectations this wrapper is partially matching.
-    // - Remaining Parity Work: Add the remaining dual-duct, outdoor-air-node, and higher-level convenience APIs after the topology anchor types and zone-side branching helpers are fully normalized.
     boost::optional<double> designSupplyAirFlowRate() const;
     bool setDesignSupplyAirFlowRate(double designSupplyAirFlowRate);
     void resetDesignSupplyAirFlowRate();
@@ -91,6 +99,7 @@ namespace epmodel {
     boost::optional<Node> mixedAirNode() const;
     boost::optional<Node> returnAirNode() const;
     boost::optional<AirLoopHVACOutdoorAirSystem> airLoopHVACOutdoorAirSystem() const;
+    boost::optional<AirLoopHVACDedicatedOutdoorAirSystem> airLoopHVACDedicatedOutdoorAirSystem() const;
     boost::optional<HVACComponent> supplyFan() const;
     boost::optional<HVACComponent> returnFan() const;
     boost::optional<HVACComponent> reliefFan() const;

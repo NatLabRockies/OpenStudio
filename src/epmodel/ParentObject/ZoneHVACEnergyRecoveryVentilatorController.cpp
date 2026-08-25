@@ -6,7 +6,12 @@
 #include "ParentObject/ZoneHVACEnergyRecoveryVentilatorController.hpp"
 #include "ParentObject/ZoneHVACEnergyRecoveryVentilatorController_Impl.hpp"
 
+#include "Curve/Curve.hpp"
+#include "Curve/Curve_Impl.hpp"
 #include "Model.hpp"
+#include "ModelObject.hpp"
+#include "Schedule/Schedule.hpp"
+#include "Schedule/Schedule_Impl.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
@@ -41,6 +46,30 @@ namespace epmodel {
   std::vector<std::string> ZoneHVACEnergyRecoveryVentilatorController::exhaustAirEnthalpyLimitValues() {
     return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
                           openstudio::ZoneHVAC_EnergyRecoveryVentilator_ControllerFields::ExhaustAirEnthalpyLimit);
+  }
+
+  boost::optional<Curve> ZoneHVACEnergyRecoveryVentilatorController::electronicEnthalpyLimitCurve() const {
+    return getImpl<detail::ZoneHVACEnergyRecoveryVentilatorController_Impl>()->electronicEnthalpyLimitCurve();
+  }
+
+  bool ZoneHVACEnergyRecoveryVentilatorController::setElectronicEnthalpyLimitCurve(const Curve& curve) {
+    return getImpl<detail::ZoneHVACEnergyRecoveryVentilatorController_Impl>()->setElectronicEnthalpyLimitCurve(curve);
+  }
+
+  void ZoneHVACEnergyRecoveryVentilatorController::resetElectronicEnthalpyLimitCurve() {
+    getImpl<detail::ZoneHVACEnergyRecoveryVentilatorController_Impl>()->resetElectronicEnthalpyLimitCurve();
+  }
+
+  boost::optional<Schedule> ZoneHVACEnergyRecoveryVentilatorController::timeofDayEconomizerFlowControlSchedule() const {
+    return getImpl<detail::ZoneHVACEnergyRecoveryVentilatorController_Impl>()->timeofDayEconomizerFlowControlSchedule();
+  }
+
+  bool ZoneHVACEnergyRecoveryVentilatorController::setTimeofDayEconomizerFlowControlSchedule(Schedule& schedule) {
+    return getImpl<detail::ZoneHVACEnergyRecoveryVentilatorController_Impl>()->setTimeofDayEconomizerFlowControlSchedule(schedule);
+  }
+
+  void ZoneHVACEnergyRecoveryVentilatorController::resetTimeofDayEconomizerFlowControlSchedule() {
+    getImpl<detail::ZoneHVACEnergyRecoveryVentilatorController_Impl>()->resetTimeofDayEconomizerFlowControlSchedule();
   }
 
   boost::optional<double> ZoneHVACEnergyRecoveryVentilatorController::temperatureHighLimit() const {
@@ -146,6 +175,67 @@ namespace epmodel {
       }
 
     }  // namespace
+
+    boost::optional<Curve> ZoneHVACEnergyRecoveryVentilatorController_Impl::electronicEnthalpyLimitCurve() const {
+      return getObject<ModelObject>().getModelObjectTarget<Curve>(
+        openstudio::ZoneHVAC_EnergyRecoveryVentilator_ControllerFields::ElectronicEnthalpyLimitCurveName);
+    }
+
+    bool ZoneHVACEnergyRecoveryVentilatorController_Impl::setElectronicEnthalpyLimitCurve(const Curve& curve) {
+      if (curve.model() != model()) {
+        LOG_FREE(Warn, "openstudio.epmodel.ZoneHVACEnergyRecoveryVentilatorController",
+                 "Cannot set the electronic enthalpy limit curve because it belongs to a different model.");
+        return false;
+      }
+
+      constexpr auto field = openstudio::ZoneHVAC_EnergyRecoveryVentilator_ControllerFields::ElectronicEnthalpyLimitCurveName;
+      if (!model().canBeTarget(curve.handle(), iddObject().objectLists(field))) {
+        LOG_FREE(Warn, "openstudio.epmodel.ZoneHVACEnergyRecoveryVentilatorController",
+                 "Cannot set the electronic enthalpy limit curve because curve type '"
+                   << curve.iddObject().type().valueName() << "' is not accepted by the ZoneHVAC:EnergyRecoveryVentilator:Controller field.");
+        return false;
+      }
+
+      if (!setPointer(field, curve.handle(), false)) {
+        LOG_FREE(Warn, "openstudio.epmodel.ZoneHVACEnergyRecoveryVentilatorController",
+                 "Failed to set the electronic enthalpy limit curve relationship.");
+        return false;
+      }
+      return true;
+    }
+
+    void ZoneHVACEnergyRecoveryVentilatorController_Impl::resetElectronicEnthalpyLimitCurve() {
+      constexpr auto field = openstudio::ZoneHVAC_EnergyRecoveryVentilator_ControllerFields::ElectronicEnthalpyLimitCurveName;
+      OS_ASSERT(setPointer(field, Handle(), false));
+      OS_ASSERT(openstudio::detail::IdfObject_Impl::setString(field, "", false));
+    }
+
+    boost::optional<Schedule> ZoneHVACEnergyRecoveryVentilatorController_Impl::timeofDayEconomizerFlowControlSchedule() const {
+      return getObject<ModelObject>().getModelObjectTarget<Schedule>(
+        openstudio::ZoneHVAC_EnergyRecoveryVentilator_ControllerFields::TimeofDayEconomizerFlowControlScheduleName);
+    }
+
+    bool ZoneHVACEnergyRecoveryVentilatorController_Impl::setTimeofDayEconomizerFlowControlSchedule(Schedule& schedule) {
+      if (schedule.model() != model()) {
+        LOG_FREE(Warn, "openstudio.epmodel.ZoneHVACEnergyRecoveryVentilatorController",
+                 "Cannot set the time-of-day economizer flow control schedule because it belongs to a different model.");
+        return false;
+      }
+
+      if (!setSchedule(openstudio::ZoneHVAC_EnergyRecoveryVentilator_ControllerFields::TimeofDayEconomizerFlowControlScheduleName,
+                       "ZoneHVACEnergyRecoveryVentilatorController", "Time of Day Economizer Flow Control", schedule)) {
+        LOG_FREE(Warn, "openstudio.epmodel.ZoneHVACEnergyRecoveryVentilatorController",
+                 "Cannot set the time-of-day economizer flow control schedule because its schedule type limits are incompatible.");
+        return false;
+      }
+      return true;
+    }
+
+    void ZoneHVACEnergyRecoveryVentilatorController_Impl::resetTimeofDayEconomizerFlowControlSchedule() {
+      constexpr auto field = openstudio::ZoneHVAC_EnergyRecoveryVentilator_ControllerFields::TimeofDayEconomizerFlowControlScheduleName;
+      OS_ASSERT(setPointer(field, Handle(), false));
+      OS_ASSERT(openstudio::detail::IdfObject_Impl::setString(field, "", false));
+    }
 
     boost::optional<double> ZoneHVACEnergyRecoveryVentilatorController_Impl::temperatureHighLimit() const {
       return getDouble(openstudio::ZoneHVAC_EnergyRecoveryVentilator_ControllerFields::TemperatureHighLimit, true);

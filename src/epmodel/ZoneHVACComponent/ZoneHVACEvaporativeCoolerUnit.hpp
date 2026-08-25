@@ -34,6 +34,23 @@ namespace epmodel {
     class ZoneHVACEvaporativeCoolerUnit_Impl;
   }  // namespace detail
 
+/** \brief An evaporative-cooler unit serving a thermal zone.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-zone-forced-air-units.html#zonehvacevaporativecoolerunit,ZoneHVAC:EvaporativeCoolerUnit}
+ *
+ * \par Important behavior
+ * The fan and one or two evaporative coolers share a parent-owned air path; EPModel exposes outdoor-air, fan-outlet, and cooler-outlet node roles.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model class is <code>openstudio::model::ZoneHVACEvaporativeCoolerUnit</code>.
+ * EPModel adds explicit cooler outlet node roles and a <code>children()</code>
+ * view over its contained fan/coolers; Model exposes an autosized design-flow
+ * query that EPModel cannot resolve from SQL.
+ *
+ * \par Known limitations
+ * Other relationship helpers and SQL-backed autosized design-flow results are not exposed.
+ */
   class EPMODEL_API ZoneHVACEvaporativeCoolerUnit : public ZoneHVACComponent
   {
    public:
@@ -47,21 +64,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. The scalar fan/control fields are aligned, and the contained fan/cooler air path is now kept consistent
-    //   through parent-owned epmodel nodes, but broader evaporative-cooler-unit parity remains incomplete.
-    // - Canonical Counterpart: openstudio::model::ZoneHVACEvaporativeCoolerUnit.
-    // - Implemented Parity: `availabilitySchedule`, `supplyAirFan`, `firstEvaporativeCooler`, optional `secondEvaporativeCooler`,
-    //   `designSupplyAirFlowRate`, `fanPlacement`, `coolerUnitControlMethod`, throttling-range, cooling-load threshold, and shutoff humidity
-    //   map directly to the EnergyPlus object. The contained fan and evaporative coolers now share a parent-owned air path with direct access
-    //   to the meaningful outdoor-air, fan-outlet, and first-cooler-outlet roles on the compound.
-    // - Documented Delta: `outdoorAirNode()`, `fanOutletNode()`, `firstEvaporativeCoolerOutletNode()`, and
-    //   `secondEvaporativeCoolerOutletNode()` are exposed as additive conveniences so callers can inspect and rename the owned node roles even
-    //   when those roles alias each other or the parent outlet in a valid configuration.
-    // - Field/Storage Mapping: Scalar fields live directly on the EnergyPlus object while schedules and contained equipment are modeled
-    //   explicitly through child-object state and transient epmodel nodes.
-    // - Evidence: `src/model/ZoneHVACEvaporativeCoolerUnit.hpp`, `src/model/ZoneHVACEvaporativeCoolerUnit.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateZoneHVACEvaporativeCoolerUnit.cpp`, and `src/epmodel/test/ZoneHVACEvaporativeCoolerUnit_GTest.cpp`.
-    // - Remaining Parity Work: Add any remaining public relationship helpers only if the canonical wrapper still exposes them directly.
     static std::vector<std::string> fanPlacementValues();
     static std::vector<std::string> coolerUnitControlMethodValues();
 

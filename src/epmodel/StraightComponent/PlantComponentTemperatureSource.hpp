@@ -22,6 +22,20 @@ namespace epmodel {
     class PlantComponentTemperatureSource_Impl;
   }
 
+/** \brief A plant component that supplies a specified temperature.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-plant-equipment.html#plantcomponenttemperaturesource,PlantComponent:TemperatureSource}
+ *
+ * \par Important behavior
+ * Design-flow, source-temperature, and source-temperature schedule fields map directly to PlantComponent:TemperatureSource.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model type is <code>openstudio::model::PlantComponentTemperatureSource</code>.
+ *
+ * \par Known limitations
+ * Broader shared HVACComponent conveniences are not exposed.
+ */
   class EPMODEL_API PlantComponentTemperatureSource : public StraightComponent
   {
    public:
@@ -37,20 +51,6 @@ namespace epmodel {
 
     static std::vector<std::string> temperatureSpecificationTypeValues();
 
-    // Schema Alignment Notes:
-    // - Status: Near Parity. The canonical temperature-source scalar surface, source-temperature schedule relationship, and inherited straight-component
-    //   topology behavior are present.
-    // - Canonical Counterpart: openstudio::model::PlantComponentTemperatureSource.
-    // - Implemented Parity: The design-flow, temperature-specification, source-temperature, and source-temperature-schedule accessors now match the
-    //   canonical wrapper alongside the inherited straight-component add/remove topology behavior.
-    // - Documented Delta: epmodel still inherits the shared HVACComponent/StraightComponent base-surface gaps around broader canonical convenience such as
-    //   `airLoopHVAC()` re-exposure and component/fuel-type reporting; this wrapper does not add type-local divergence.
-    // - Field/Storage Mapping: These accessors map directly to the EnergyPlus `PlantComponent:TemperatureSource` scalar and schedule fields used by the
-    //   forward translator.
-    // - Evidence: `src/model/PlantComponentTemperatureSource.hpp`, `src/model/PlantComponentTemperatureSource.cpp`, and
-    //   `src/energyplus/ForwardTranslator/ForwardTranslatePlantComponentTemperatureSource.cpp`.
-    // - Remaining Parity Work: Close the remaining shared HVACComponent/StraightComponent base-surface gaps so this wrapper can inherit the missing
-    //   canonical conveniences without local divergence.
 
     boost::optional<double> designVolumeFlowRate() const;
     bool isDesignVolumeFlowRateAutosized() const;

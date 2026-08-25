@@ -5,6 +5,8 @@ extern "C"
   void Init_openstudioepmodel(void);
   void Init_openstudioepmodelmodelobject(void);
   void Init_openstudioepmodelresourceobject(void);
+  void Init_openstudioepmodelmaterial(void);
+  void Init_openstudioepmodelfenestrationmaterial(void);
   void Init_openstudioepmodelplantequipmentoperationscheme(void);
   void Init_openstudioepmodelparentobject(void);
   void Init_openstudioepmodelgaslayer(void);
@@ -21,8 +23,8 @@ extern "C"
   void Init_openstudioepmodelmodelpartitionmaterial(void);
   void Init_openstudioepmodelthermostat(void);
   void Init_openstudioepmodelsizingperiod(void);
-  void Init_openstudioepmodellayeredconstruction(void);
   void Init_openstudioepmodelconstructionbase(void);
+  void Init_openstudioepmodellayeredconstruction(void);
   void Init_openstudioepmodelinverter(void);
   void Init_openstudioepmodelelectricalstorage(void);
   void Init_openstudioepmodelplanarsurface(void);
@@ -57,6 +59,12 @@ namespace ruby {
     Init_openstudioepmodelresourceobject();
     rb_provide("openstudioepmodelresourceobject");
     rb_provide("openstudioepmodelresourceobject.so");
+    Init_openstudioepmodelmaterial();
+    rb_provide("openstudioepmodelmaterial");
+    rb_provide("openstudioepmodelmaterial.so");
+    Init_openstudioepmodelfenestrationmaterial();
+    rb_provide("openstudioepmodelfenestrationmaterial");
+    rb_provide("openstudioepmodelfenestrationmaterial.so");
     Init_openstudioepmodelplantequipmentoperationscheme();
     rb_provide("openstudioepmodelplantequipmentoperationscheme");
     rb_provide("openstudioepmodelplantequipmentoperationscheme.so");
@@ -105,12 +113,12 @@ namespace ruby {
     Init_openstudioepmodelsizingperiod();
     rb_provide("openstudioepmodelsizingperiod");
     rb_provide("openstudioepmodelsizingperiod.so");
-    Init_openstudioepmodellayeredconstruction();
-    rb_provide("openstudioepmodellayeredconstruction");
-    rb_provide("openstudioepmodellayeredconstruction.so");
     Init_openstudioepmodelconstructionbase();
     rb_provide("openstudioepmodelconstructionbase");
     rb_provide("openstudioepmodelconstructionbase.so");
+    Init_openstudioepmodellayeredconstruction();
+    rb_provide("openstudioepmodellayeredconstruction");
+    rb_provide("openstudioepmodellayeredconstruction.so");
     Init_openstudioepmodelinverter();
     rb_provide("openstudioepmodelinverter");
     rb_provide("openstudioepmodelinverter.so");

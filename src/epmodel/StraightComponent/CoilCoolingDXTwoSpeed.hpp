@@ -24,6 +24,19 @@ namespace epmodel {
     class CoilCoolingDXTwoSpeed_Impl;
   }
 
+  /** \brief Represents a two-speed direct-expansion cooling coil.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-heating-and-cooling-coils.html#coilcoolingdxtwospeed,Coil:Cooling:DX:TwoSpeed}.
+   *
+   * \par Important behavior
+   * The persisted scalar and currently supported schedule, curve, and node relationships map directly to the EnergyPlus object.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::CoilCoolingDXTwoSpeed</code>. <b>Added:</b> EPModel exposes <code>addToNode()</code> and autosize/default-state helpers for supported two-speed fields. <b>Not yet available:</b> the full Model evaporative-condenser, condenser-node, and related tank/topology convenience surface.
+   * \par Known limitations
+   * No known EPModel-specific limitations beyond the listed API differences.
+   */
   class EPMODEL_API CoilCoolingDXTwoSpeed : public StraightComponent
   {
    public:
@@ -43,21 +56,6 @@ namespace epmodel {
 
     static std::vector<std::string> condenserTypeValues();
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. The core two-speed DX scalar surface, required schedule / curve relationships, and the current epmodel
-    //   supply-side air-loop insertion path are present, while AFN, condenser-air-node, tank-link, and broader OA / DOAS topology helpers
-    //   remain out of scope.
-    // - Canonical Counterpart: openstudio::model::CoilCoolingDXTwoSpeed.
-    // - Implemented Parity: `availabilitySchedule`, the high/low-speed performance curves, and `basinHeaterOperatingSchedule` preserve the
-    //   canonical naming and child-ownership slice; the relationship constructor and the current supply-side air-loop `addToNode` path are
-    //   preserved for the bounded epmodel topology slice; and the high- and low-speed capacity, COP, airflow, fan-power, and condenser controls
-    //   preserve the canonical scalar naming and autosize behavior.
-    // - Documented Delta: AFN equivalent-duct parity, condenser-air-node helpers, and tank-link helpers from canonical
-    //   `openstudio::model::CoilCoolingDXTwoSpeed` remain deferred.
-    // - Field/Storage Mapping: Preserved scalars map directly to EnergyPlus `Coil:Cooling:DX:TwoSpeed` fields.
-    // - Evidence: `src/model/CoilCoolingDXTwoSpeed.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateCoilCoolingDXTwoSpeed.cpp`, and `src/epmodel/test/CoilCoolingDXTwoSpeed_GTest.cpp`.
-    // - Remaining Parity Work: Add the deferred AFN, condenser-air-node, tank-link, and broader OA / DOAS topology helpers without changing the
-    //   preserved scalar signatures.
     Schedule availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);
 
@@ -133,6 +131,9 @@ namespace epmodel {
     boost::optional<Schedule> basinHeaterOperatingSchedule() const;
     bool setBasinHeaterOperatingSchedule(Schedule& schedule);
     void resetBasinHeaterOperatingSchedule();
+
+    boost::optional<std::string> condenserAirInletNodeName() const;
+    bool setCondenserAirInletNodeName(const std::string& condenserAirInletNodeName);
 
     std::string condenserType() const;
     bool setCondenserType(const std::string& condenserType);

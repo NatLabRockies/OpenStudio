@@ -25,10 +25,30 @@ namespace epmodel {
     class AirTerminalSingleDuctVAVHeatAndCoolReheat_Impl;
   }
 
+  /**
+   * \brief Variable-air-volume terminal that supports heating and cooling with a typed reheat coil.
+   *
+   * \par EnergyPlus object
+   * Encapsulates \epobject{group-air-distribution-equipment.html#airterminalsingleductvavheatandcoolreheat,AirTerminal:SingleDuct:VAV:HeatAndCool:Reheat}.
+   *
+   * \par Important behavior
+   * Branch insertion is guarded and transactional: it rewires the splitter/mixer path, updates AirDistributionUnit
+   * and zone-equipment references, and rolls back terminal-local changes on late failure. Removal also cleans the
+   * reheat-coil plant branch.
+   *
+   * \par OpenStudio Model API
+   * Counterpart: `openstudio::model::AirTerminalSingleDuctVAVHeatAndCoolReheat`. The schedule, reheat-coil,
+   * scalar, supported insertion, and removal APIs are represented. The epmodel legacy constructor permits incremental
+   * coil assignment.
+   *
+   * \par Known limitations
+   * Broader autosizing, cloning, outdoor-air export, and demand insertion conveniences are not exposed.
+   */
   class EPMODEL_API AirTerminalSingleDuctVAVHeatAndCoolReheat : public StraightComponent
   {
    public:
     explicit AirTerminalSingleDuctVAVHeatAndCoolReheat(const Model& model);
+    explicit AirTerminalSingleDuctVAVHeatAndCoolReheat(const Model& model, const HVACComponent& reheatCoil);
 
     virtual ~AirTerminalSingleDuctVAVHeatAndCoolReheat() override = default;
     AirTerminalSingleDuctVAVHeatAndCoolReheat(const AirTerminalSingleDuctVAVHeatAndCoolReheat& other) = default;
@@ -40,19 +60,6 @@ namespace epmodel {
 
     bool addToNode(Node& node);
 
-    // Schema Alignment Notes:
-    // - Status: Connectivity-focused parity for the campaign scope.
-    // - Canonical Counterpart: openstudio::model::AirTerminalSingleDuctVAVHeatAndCoolReheat.
-    // - Implemented Parity: `addToNode`, zone equipment registration/cleanup, splitter/mixer branch rewiring, ADU outlet synchronization,
-    //   reheat-coil child ownership, and terminal removal implement canonical-style zone-branch connectivity behavior, including rollback of
-    //   entity-local `addToNode()` mutations on late failure, with epmodel-specific guards for already-connected terminals and mismatched
-    //   splitter/mixer branches plus explicit `removeFromLoop()` cleanup after supported detach or stale-reference recovery paths.
-    // - Documented Delta: This wrapper still omits the canonical constructor that requires a reheat coil, allows late coil assignment through
-    //   `setReheatCoil`, and does not claim broader autosizing or clone-helper parity.
-    // - Evidence: `src/model/AirTerminalSingleDuctVAVHeatAndCoolReheat.cpp`,
-    //   `src/epmodel/StraightComponent/AirTerminalSingleDuctVAVHeatAndCoolReheat.cpp`,
-    //   `src/energyplus/ForwardTranslator/ForwardTranslateAirTerminalSingleDuctVAVHeatAndCoolReheat.cpp`, and
-    //   `src/epmodel/test/AirTerminalSingleDuctVAVHeatAndCoolReheat_GTest.cpp`.
     boost::optional<Schedule> availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);
     void resetAvailabilitySchedule();

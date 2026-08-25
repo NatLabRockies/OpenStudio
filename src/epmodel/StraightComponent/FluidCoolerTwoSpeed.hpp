@@ -19,11 +19,26 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class Node;
 
   namespace detail {
     class FluidCoolerTwoSpeed_Impl;
   }
 
+/** \brief A two-speed fluid cooler.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-condenser-equipment.html#fluidcoolertwospeed,FluidCooler:TwoSpeed}
+ *
+ * \par Important behavior
+ * The outdoor-air inlet node relationship maintains the EnergyPlus OutdoorAir node declaration and plant placement is supply-side only.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model type is <code>openstudio::model::FluidCoolerTwoSpeed</code>.
+ *
+ * \par Known limitations
+ * Autosized-value getters cannot resolve SQL sizing results.
+ */
   class EPMODEL_API FluidCoolerTwoSpeed : public StraightComponent
   {
    public:
@@ -39,18 +54,10 @@ namespace epmodel {
 
     static std::vector<std::string> performanceInputMethodValues();
 
-    // Schema Alignment Notes:
-    // - Status: Parity with documented deltas. The canonical two-speed fluid-cooler scalar surface and plant-supply placement rule are present, while
-    //   the outdoor-air inlet relationship helper and resolved autosized-value lookup remain out of scope.
-    // - Canonical Counterpart: openstudio::model::FluidCoolerTwoSpeed.
-    // - Implemented Parity: The preserved API matches the canonical high/low speed performance, capacity, temperature, and autosize-token accessors
-    //   with matching default behavior, and inherited `addToNode(...)` follows the canonical plant-supply-only insertion contract.
-    // - Documented Delta: The public wrapper still omits `outdoorAirInletNode()` and its mutators, and the `autosized*()` getters remain intentionally
-    //   unresolved because epmodel does not yet expose SQL-backed sizing results.
-    // - Field/Storage Mapping: These accessors map directly to EnergyPlus `FluidCooler:TwoSpeed` scalar fields used by the forward translator.
-    // - Evidence: `src/model/FluidCoolerTwoSpeed.hpp`, `src/model/FluidCoolerTwoSpeed.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateFluidCoolerTwoSpeed.cpp`.
-    // - Remaining Parity Work: Add the omitted outdoor-air relationship helper and wire `autosized*()` to resolved sizing results without changing the
-    //   preserved scalar signatures.
+    boost::optional<Node> outdoorAirInletNode() const;
+    bool setOutdoorAirInletNode(const Node& node);
+    void resetOutdoorAirInletNode();
+
     std::string performanceInputMethod() const;
     bool setPerformanceInputMethod(const std::string& performanceInputMethod);
 

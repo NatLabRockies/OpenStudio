@@ -22,6 +22,21 @@ namespace epmodel {
     class CurveFunctionalPressureDrop_Impl;
   }
 
+  /** \brief Represents a functional pressure-drop curve.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-performance-curves.html#curvefunctionalpressuredrop,Curve:Functional:PressureDrop}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::CurveFunctionalPressureDrop</code>.
+   * No known public API differences.
+   *
+   * \par Known limitations
+   * <code>numVariables()</code> and <code>evaluate()</code> throw for this
+   * curve. EnergyPlus must evaluate it in the context of a plant pressure
+   * simulation.
+   */
   class EPMODEL_API CurveFunctionalPressureDrop : public Curve
   {
    public:
@@ -35,12 +50,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model CurveFunctionalPressureDrop scalar accessor names/signatures.
-    // - Field Mapping: diameter/minorLossCoefficient/length/roughness/fixedFrictionFactor map directly to
-    //   E+ Curve:Functional:PressureDrop fields.
-    // - ForwardTranslator evidence: ForwardTranslateCurveFunctionalPressureDrop.cpp writes these scalar fields directly.
-    // - TODO(parity): Keep this pass scalar-only; relationship APIs remain out of scope.
     double diameter() const;
     bool setDiameter(double diameter);
 

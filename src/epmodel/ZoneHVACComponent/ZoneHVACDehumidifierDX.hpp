@@ -24,6 +24,20 @@ namespace epmodel {
     class ZoneHVACDehumidifierDX_Impl;
   }
 
+/** \brief A direct-expansion dehumidifier serving a thermal zone.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-zone-forced-air-units.html#zonehvacdehumidifierdx,ZoneHVAC:Dehumidifier:DX}
+ *
+ * \par Important behavior
+ * Availability, the three performance-curve relationships, scalar fields, and thermal-zone attachment methods are available.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model class is <code>openstudio::model::ZoneHVACDehumidifierDX</code>.
+ *
+ * \par Known limitations
+ * No active condensate-storage-tank API is exposed; the corresponding Model declarations are not active public methods either.
+ */
   class EPMODEL_API ZoneHVACDehumidifierDX : public ZoneHVACComponent
   {
    public:
@@ -39,17 +53,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - Status: Parity with documented deltas. The canonical availability-schedule and curve relationships are exposed directly, while
-    //   the commented-out condensate tank placeholder remains omitted here just as it is in canonical `openstudio::model`.
-    // - Canonical Counterpart: openstudio::model::ZoneHVACDehumidifierDX.
-    // - Implemented Parity: `availabilitySchedule`, `waterRemovalCurve`, `energyFactorCurve`, `partLoadFractionCorrelationCurve`, the
-    //   canonical constructor that takes the three curves, and the scalar fields all map directly to the EnergyPlus object.
-    // - Documented Delta: The commented-out condensate storage tank placeholder remains omitted because the canonical model wrapper also
-    //   does not currently expose it as an active public API.
-    // - Field/Storage Mapping: Availability schedule, node links, and curve references are stored directly on the EnergyPlus object.
-    // - Evidence: `src/model/ZoneHVACDehumidifierDX.hpp`, `src/model/ZoneHVACDehumidifierDX.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateZoneHVACDehumidifierDX.cpp`, and `src/epmodel/test/ZoneHVACDehumidifierDX_GTest.cpp`.
-    // - Remaining Parity Work: None on the implemented canonical surface.
     Schedule availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);
 

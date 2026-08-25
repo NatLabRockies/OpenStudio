@@ -31,6 +31,7 @@ namespace epmodel {
     OS_ASSERT(schedule.setValue(1.0));
     OS_ASSERT(setAvailabilitySchedule(schedule));
     autosizeMaximumFlowRate();
+    OS_ASSERT(setPressureRise(250.0));
     OS_ASSERT(setEndUseSubcategory(""));
   }
 
@@ -41,6 +42,7 @@ namespace epmodel {
     impl->canonicalize(context);
     OS_ASSERT(setAvailabilitySchedule(schedule));
     autosizeMaximumFlowRate();
+    OS_ASSERT(setPressureRise(250.0));
     OS_ASSERT(setEndUseSubcategory(""));
   }
 

@@ -7,7 +7,7 @@
 #define EPMODEL_CONSTRUCTIONWITHINTERNALSOURCE_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "LayeredConstruction/LayeredConstruction.hpp"
 
 #include <utilities/idd/IddEnums.hxx>
 
@@ -16,13 +16,29 @@
 namespace openstudio {
 namespace epmodel {
 
-  class Model;
-
   namespace detail {
     class ConstructionWithInternalSource_Impl;
   }
 
-  class EPMODEL_API ConstructionWithInternalSource : public ModelObject
+  /** \brief Represents a layered construction with an internal heat source.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-surface-construction-elements.html#constructioninternalsource,ConstructionProperty:InternalHeatSource}. Its construction
+   * name field references a layered construction and the remaining fields hold
+   * source and temperature-calculation inputs.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::ConstructionWithInternalSource</code>. The scalar
+   * source and temperature-calculation methods have the same public meaning.
+   * Model's <code>reverseConstructionWithInternalSource()</code> helper and
+   * direct construction relationship methods are not available.
+   *
+   * \par Known limitations
+   * The referenced construction cannot be assigned through this wrapper's
+   * public API.
+   */
+  class EPMODEL_API ConstructionWithInternalSource : public LayeredConstruction
   {
    public:
     explicit ConstructionWithInternalSource(const Model& model);
@@ -35,17 +51,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::ConstructionWithInternalSource scalar accessor names/signatures.
-    // - Field Mapping: Preserved ConstructionWithInternalSource scalar APIs map to
-    //   ConstructionProperty:InternalHeatSource scalar fields in EnergyPlus.
-    // - Field Mapping: Construction Name is an object-list relationship field and is intentionally excluded.
-    // - ForwardTranslator evidence: ForwardTranslateConstructionWithInternalSource.cpp maps
-    //   sourcePresentAfterLayerNumber / temperatureCalculationRequestedAfterLayerNumber /
-    //   dimensionsForTheCTFCalculation / tubeSpacing /
-    //   twoDimensionalTemperatureCalculationPosition directly to
-    //   ConstructionProperty:InternalHeatSource fields.
-    // - TODO(parity): Add layered material relationship APIs in a follow-up LayeredConstruction parity pass.
     int sourcePresentAfterLayerNumber() const;
     bool setSourcePresentAfterLayerNumber(int sourcePresentAfterLayerNumber);
 

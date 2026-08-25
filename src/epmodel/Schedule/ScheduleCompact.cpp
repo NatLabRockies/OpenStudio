@@ -10,6 +10,7 @@
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/idd/IddEnums.hxx>
+#include <utilities/idd/Schedule_Compact_FieldEnums.hxx>
 #include <utilities/idf/IdfExtensibleGroup.hpp>
 
 #include <string>
@@ -52,6 +53,10 @@ namespace epmodel {
 namespace openstudio {
 namespace epmodel {
   namespace detail {
+
+    unsigned ScheduleCompact_Impl::scheduleTypeLimitsFieldIndex() const {
+      return openstudio::Schedule_CompactFields::ScheduleTypeLimitsName;
+    }
 
     bool ScheduleCompact_Impl::setToConstantValue(double value) {
       auto scheduleCompact = getObject<openstudio::epmodel::ScheduleCompact>();

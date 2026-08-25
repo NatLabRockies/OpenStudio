@@ -7,24 +7,37 @@
 #include "ZoneHVACComponent/AirLoopHVACUnitarySystem_Impl.hpp"
 
 #include "HVACComponent.hpp"
+#include "HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
+#include "HVACComponent/AirLoopHVACOutdoorAirSystem_Impl.hpp"
 #include "HVACComponent/ThermalZone.hpp"
 #include "HVACComponent/ThermalZone_Impl.hpp"
+#include "Loop/AirLoopHVAC.hpp"
+#include "Loop/AirLoopHVAC_Impl.hpp"
 #include "Model.hpp"
+#include "ModelObject/Branch.hpp"
+#include "ModelObject/Branch_Impl.hpp"
 #include "ModelObject/ModelObject.hpp"
 #include "ModelObject/ModelObject_Impl.hpp"
+#include "ModelObject/OutdoorAirMixer.hpp"
 #include "Node.hpp"
+#include "ParentObject/ControllerOutdoorAir.hpp"
 #include "Schedule/Schedule.hpp"
 #include "Schedule/Schedule_Impl.hpp"
 #include "StraightComponent/StraightComponent.hpp"
+#include "StraightComponent/CoilSystemCoolingDXHeatExchangerAssisted.hpp"
+#include "StraightComponent/CoilSystemCoolingDXHeatExchangerAssisted_Impl.hpp"
 #include "WaterToAirComponent/WaterToAirComponent.hpp"
 #include "WaterToAirComponent/WaterToAirComponent_Impl.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
 #include <utilities/idd/AirLoopHVAC_UnitarySystem_FieldEnums.hxx>
+#include <utilities/idd/Controller_OutdoorAir_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/IddFactory.hxx>
 #include <utilities/idd/IddObject.hpp>
+
+#include <algorithm>
 
 namespace openstudio {
 namespace epmodel {
@@ -55,7 +68,23 @@ namespace epmodel {
       return 0u;
     }
 
+    boost::optional<Node> unitarySystemAirInletNode(const HVACComponent& component) {
+      if (auto coilSystem = component.optionalCast<CoilSystemCoolingDXHeatExchangerAssisted>()) {
+        auto inlet = coilSystem->inletModelObject();
+        return inlet ? inlet->optionalCast<Node>() : boost::none;
+      }
+      const auto inletPort = unitarySystemAirInletPort(component);
+      if (inletPort == 0u) {
+        return boost::none;
+      }
+      return component.getImpl<detail::ModelObject_Impl>()->resolvedNodeTarget(inletPort);
+    }
+
     boost::optional<Node> unitarySystemAirOutletNode(const HVACComponent& component) {
+      if (auto coilSystem = component.optionalCast<CoilSystemCoolingDXHeatExchangerAssisted>()) {
+        auto outlet = coilSystem->outletModelObject();
+        return outlet ? outlet->optionalCast<Node>() : boost::none;
+      }
       const auto outletPort = unitarySystemAirOutletPort(component);
       if (outletPort == 0u) {
         return boost::none;
@@ -63,9 +92,77 @@ namespace epmodel {
       return component.getImpl<detail::ModelObject_Impl>()->resolvedNodeTarget(outletPort);
     }
 
+    bool setUnitarySystemAirInletNode(const HVACComponent& component, const Node& node) {
+      if (auto coilSystem = component.optionalCast<CoilSystemCoolingDXHeatExchangerAssisted>()) {
+        return coilSystem->getImpl<detail::CoilSystemCoolingDXHeatExchangerAssisted_Impl>()->setAirInletNode(node);
+      }
+      const auto inletPort = unitarySystemAirInletPort(component);
+      return (inletPort != 0u) && component.getImpl<detail::ModelObject_Impl>()->setPointer(inletPort, node.handle(), false);
+    }
+
+    bool setUnitarySystemAirOutletNode(const HVACComponent& component, const Node& node) {
+      if (auto coilSystem = component.optionalCast<CoilSystemCoolingDXHeatExchangerAssisted>()) {
+        return coilSystem->getImpl<detail::CoilSystemCoolingDXHeatExchangerAssisted_Impl>()->setAirOutletNode(node);
+      }
+      const auto outletPort = unitarySystemAirOutletPort(component);
+      return (outletPort != 0u) && component.getImpl<detail::ModelObject_Impl>()->setPointer(outletPort, node.handle(), false);
+    }
+
+    bool setComponentAirInletNode(const ModelObject& component, const Node& node) {
+      if (auto oaSystem = component.optionalCast<AirLoopHVACOutdoorAirSystem>()) {
+        auto mixer = oaSystem->getImpl<detail::AirLoopHVACOutdoorAirSystem_Impl>()->outdoorAirMixer();
+        auto controller = oaSystem->getControllerOutdoorAir();
+        return mixer.setPointer(oaSystem->returnAirPort(), node.handle())
+               && controller.setPointer(openstudio::Controller_OutdoorAirFields::ReturnAirNodeName, node.handle());
+      }
+      if (auto straightComponent = component.optionalCast<StraightComponent>()) {
+        return straightComponent->setPointer(straightComponent->inletPort(), node.handle());
+      }
+      if (auto waterToAirComponent = component.optionalCast<WaterToAirComponent>()) {
+        return waterToAirComponent->setPointer(waterToAirComponent->airInletPort(), node.handle());
+      }
+      if (auto zoneComponent = component.optionalCast<ZoneHVACComponent>()) {
+        return zoneComponent->setPointer(zoneComponent->inletPort(), node.handle());
+      }
+      return true;
+    }
+
+    bool setComponentAirOutletNode(const ModelObject& component, const Node& node) {
+      if (auto oaSystem = component.optionalCast<AirLoopHVACOutdoorAirSystem>()) {
+        auto mixer = oaSystem->getImpl<detail::AirLoopHVACOutdoorAirSystem_Impl>()->outdoorAirMixer();
+        auto controller = oaSystem->getControllerOutdoorAir();
+        return mixer.setPointer(oaSystem->mixedAirPort(), node.handle())
+               && controller.setPointer(openstudio::Controller_OutdoorAirFields::MixedAirNodeName, node.handle());
+      }
+      if (auto straightComponent = component.optionalCast<StraightComponent>()) {
+        return straightComponent->setPointer(straightComponent->outletPort(), node.handle());
+      }
+      if (auto waterToAirComponent = component.optionalCast<WaterToAirComponent>()) {
+        return waterToAirComponent->setPointer(waterToAirComponent->airOutletPort(), node.handle());
+      }
+      if (auto zoneComponent = component.optionalCast<ZoneHVACComponent>()) {
+        return zoneComponent->setPointer(zoneComponent->outletPort(), node.handle());
+      }
+      return true;
+    }
+
+    void reserveUniqueUnitarySystemName(AirLoopHVACUnitarySystem& unitary, const Model& model) {
+      const auto internalNodeNameIsTaken = [&model](const std::string& unitaryName) {
+        return static_cast<bool>(model.getConcreteModelObjectByName<Node>(unitaryName + " Air Inlet Node"))
+               || static_cast<bool>(model.getConcreteModelObjectByName<Node>(unitaryName + " Air Outlet Node"))
+               || static_cast<bool>(model.getConcreteModelObjectByName<Node>(unitaryName + " Fan Outlet Node"))
+               || static_cast<bool>(model.getConcreteModelObjectByName<Node>(unitaryName + " Cooling Coil Outlet Node"))
+               || static_cast<bool>(model.getConcreteModelObjectByName<Node>(unitaryName + " Heating Coil Outlet Node"));
+      };
+      while (internalNodeNameIsTaken(unitary.nameString())) {
+        OS_ASSERT(unitary.setName(model.nextName(unitary.iddObjectType(), false)));
+      }
+    }
+
   }  // namespace
 
   AirLoopHVACUnitarySystem::AirLoopHVACUnitarySystem(const Model& model) : ZoneHVACComponent(AirLoopHVACUnitarySystem::iddObjectType(), model) {
+    reserveUniqueUnitarySystemName(*this, model);
     // Mirror model constructor defaults for scalar fields with strict/non-optional getters.
     OS_ASSERT(setControlType("Load"));
     OS_ASSERT(setDehumidificationControlType("None"));
@@ -698,7 +795,206 @@ namespace epmodel {
       return openstudio::AirLoopHVAC_UnitarySystemFields::AirOutletNodeName;
     }
 
+    bool AirLoopHVACUnitarySystem_Impl::addToNode(Node& node) {
+      if (node.model() != model() || containingHVACComponent()) {
+        return false;
+      }
+
+      auto airLoop = node.airLoopHVAC();
+      if (!airLoop || airLoop->demandComponent(node.handle())) {
+        return false;
+      }
+
+      auto airLoopImpl = airLoop->getImpl<detail::AirLoopHVAC_Impl>();
+      auto branch = airLoopImpl->branchForSupplyNode(node);
+      if (!branch) {
+        return false;
+      }
+
+      const auto nodeName = node.name();
+      if (!nodeName) {
+        return false;
+      }
+
+      auto thisObject = getObject<ModelObject>();
+      if (!thisObject.name()) {
+        thisObject.createName();
+        if (!thisObject.name()) {
+          return false;
+        }
+      }
+
+      // A generic unitary has one public air-side owner. Clear an ordinary
+      // zone-equipment attachment only after the target supply branch has been
+      // validated, so a rejected move leaves the source topology untouched.
+      if (thermalZone()) {
+        removeFromThermalZone();
+        airLoop = node.airLoopHVAC();
+        if (!airLoop) {
+          return false;
+        }
+        airLoopImpl = airLoop->getImpl<detail::AirLoopHVAC_Impl>();
+        branch = airLoopImpl->branchForSupplyNode(node);
+        if (!branch) {
+          return false;
+        }
+      }
+
+      if (auto currentLoop = airLoopHVAC()) {
+        const auto inlet = inletNode();
+        const auto outlet = outletNode();
+        if ((inlet && (*inlet == node)) || (outlet && (*outlet == node))) {
+          return false;
+        }
+        if (!removeFromAirLoopHVAC()) {
+          return false;
+        }
+        airLoop = node.airLoopHVAC();
+        if (!airLoop) {
+          return false;
+        }
+        airLoopImpl = airLoop->getImpl<detail::AirLoopHVAC_Impl>();
+        branch = airLoopImpl->branchForSupplyNode(node);
+        if (!branch) {
+          return false;
+        }
+      }
+
+      const auto thisName = thisObject.nameString();
+      const auto components = branch->components();
+      std::string inletNodeName;
+      std::string outletNodeName;
+
+      if (components.empty()) {
+        const auto supplyInlet = airLoop->supplyInletNode();
+        const auto supplyOutletNodes = airLoop->supplyOutletNodes();
+        const bool isSupplyOutlet = std::find(supplyOutletNodes.begin(), supplyOutletNodes.end(), node) != supplyOutletNodes.end();
+        if (!(node == supplyInlet || isSupplyOutlet)) {
+          return false;
+        }
+
+        if (isSupplyOutlet && airLoop->isDualDuct()) {
+          inletNodeName = *nodeName + " - " + thisName + " Inlet";
+          outletNodeName = *nodeName;
+        } else {
+          inletNodeName = supplyInlet.nameString();
+          outletNodeName = airLoop->supplyOutletNode().nameString();
+        }
+
+        if (!branch->getImpl<detail::Branch_Impl>()->appendComponent(thisObject, inletNodeName, outletNodeName)) {
+          return false;
+        }
+      } else {
+        bool inserted = false;
+        for (std::size_t i = 0; i < components.size(); ++i) {
+          const auto componentInlet = branch->componentInletNode(static_cast<unsigned>(i));
+          const auto componentOutlet = branch->componentOutletNode(static_cast<unsigned>(i));
+          const bool matchesInlet = componentInlet && openstudio::istringEqual(componentInlet->nameString(), *nodeName);
+          const bool matchesOutlet = componentOutlet && openstudio::istringEqual(componentOutlet->nameString(), *nodeName);
+          if (!matchesInlet && !matchesOutlet) {
+            continue;
+          }
+
+          const std::string intermediateNodeName = matchesInlet ? thisName + " Outlet - " + components[i].nameString() + " Inlet"
+                                                                : components[i].nameString() + " Outlet - " + thisName + " Inlet";
+          const unsigned insertIndex = matchesInlet ? static_cast<unsigned>(i) : static_cast<unsigned>(i + 1u);
+          if (matchesOutlet && (i + 1u == components.size())) {
+            inletNodeName = intermediateNodeName;
+            outletNodeName = *nodeName;
+          } else {
+            inletNodeName = *nodeName;
+            outletNodeName = intermediateNodeName;
+          }
+
+          auto branchImpl = branch->getImpl<detail::Branch_Impl>();
+          if (!branchImpl->insertComponent(insertIndex, thisObject, inletNodeName, outletNodeName)) {
+            return false;
+          }
+
+          auto intermediateNode = model().getOrCreateTransientByName<Node>(intermediateNodeName);
+          if (matchesInlet) {
+            if (!branchImpl->setComponentInletNode(insertIndex + 1u, intermediateNode)
+                || !setComponentAirInletNode(components[i], intermediateNode)) {
+              return false;
+            }
+          } else if (!branchImpl->setComponentOutletNode(insertIndex - 1u, intermediateNode)
+                     || !setComponentAirOutletNode(components[i], intermediateNode)) {
+            return false;
+          }
+          inserted = true;
+          break;
+        }
+        if (!inserted) {
+          return false;
+        }
+      }
+
+      auto newInletNode = model().getOrCreateTransientByName<Node>(inletNodeName);
+      auto newOutletNode = model().getOrCreateTransientByName<Node>(outletNodeName);
+      if (!setPointer(inletPort(), newInletNode.handle(), false) || !setPointer(outletPort(), newOutletNode.handle(), false)) {
+        return false;
+      }
+
+      maintainContainedAirPath();
+      airLoopImpl->syncSetpointManagerMixedAirFanNodes();
+      return true;
+    }
+
+    bool AirLoopHVACUnitarySystem_Impl::removeFromAirLoopHVAC() {
+      auto airLoop = this->airLoopHVAC();
+      auto inlet = inletNode();
+      auto outlet = outletNode();
+      if (!airLoop || !inlet || !outlet) {
+        return false;
+      }
+
+      auto airLoopImpl = airLoop->getImpl<detail::AirLoopHVAC_Impl>();
+      auto branch = airLoopImpl->branchForSupplyNode(*inlet);
+      if (!branch) {
+        branch = airLoopImpl->branchForSupplyNode(*outlet);
+      }
+      if (!branch) {
+        return false;
+      }
+
+      const auto thisObject = getObject<ModelObject>();
+      const auto components = branch->components();
+      auto branchImpl = branch->getImpl<detail::Branch_Impl>();
+      for (std::size_t i = 0; i < components.size(); ++i) {
+        if (components[i] != thisObject) {
+          continue;
+        }
+
+        if (i + 1u < components.size()) {
+          if (!branchImpl->setComponentInletNode(static_cast<unsigned>(i + 1u), *inlet) || !setComponentAirInletNode(components[i + 1u], *inlet)) {
+            return false;
+          }
+        } else if (i > 0u) {
+          if (!branchImpl->setComponentOutletNode(static_cast<unsigned>(i - 1u), *outlet)
+              || !setComponentAirOutletNode(components[i - 1u], *outlet)) {
+            return false;
+          }
+        }
+
+        if (!branchImpl->removeComponent(static_cast<unsigned>(i))) {
+          return false;
+        }
+        OS_ASSERT(setPointer(inletPort(), Handle(), false));
+        OS_ASSERT(setPointer(outletPort(), Handle(), false));
+        airLoopImpl->syncSetpointManagerMixedAirFanNodes();
+        return true;
+      }
+
+      return false;
+    }
+
     bool AirLoopHVACUnitarySystem_Impl::addToThermalZone(ThermalZone& thermalZone) {
+      if (thermalZone.model() != model()) {
+        return false;
+      }
+      if (airLoopHVAC() && !removeFromAirLoopHVAC()) {
+        return false;
+      }
       if (!ZoneHVACComponent_Impl::addToThermalZone(thermalZone)) {
         return false;
       }
@@ -713,6 +1009,50 @@ namespace epmodel {
 
     void AirLoopHVACUnitarySystem_Impl::doCanonicalize(LoadContext& context) {
       repairContainedAirPath(context);
+    }
+
+    std::vector<ModelObject> AirLoopHVACUnitarySystem_Impl::children() const {
+      std::vector<ModelObject> result;
+
+      if (auto fan = supplyFan()) {
+        result.push_back(*fan);
+      }
+      if (auto coil = coolingCoil()) {
+        result.push_back(*coil);
+      }
+      if (auto coil = heatingCoil()) {
+        result.push_back(*coil);
+      }
+      if (auto coil = supplementalHeatingCoil()) {
+        result.push_back(*coil);
+      }
+
+      return result;
+    }
+
+    std::vector<IdfObject> AirLoopHVACUnitarySystem_Impl::remove() {
+      if (airLoopHVAC() && !removeFromAirLoopHVAC()) {
+        return {};
+      }
+
+      const auto ownedChildren = children();
+      auto removedParent = ZoneHVACComponent_Impl::remove();
+      if (removedParent.empty()) {
+        return {};
+      }
+
+      // Remove the parent first so the captured children are no longer protected by
+      // containingHVACComponent(). Preserve the Model API's children-before-parent
+      // ordering in the returned collection.
+      std::vector<IdfObject> result;
+      for (const auto& child : ownedChildren) {
+        if (auto component = child.optionalCast<HVACComponent>()) {
+          auto removed = component->remove();
+          result.insert(result.end(), removed.begin(), removed.end());
+        }
+      }
+      result.insert(result.end(), removedParent.begin(), removedParent.end());
+      return result;
     }
 
     std::string AirLoopHVACUnitarySystem_Impl::controlType() const {
@@ -783,6 +1123,7 @@ namespace epmodel {
     bool AirLoopHVACUnitarySystem_Impl::setSupplyFan(const HVACComponent& supplyFan) {
       const bool result = setPointer(openstudio::AirLoopHVAC_UnitarySystemFields::SupplyFanName, supplyFan.handle());
       if (result) {
+        OS_ASSERT(setString(openstudio::AirLoopHVAC_UnitarySystemFields::SupplyFanObjectType, supplyFan.iddObject().name()));
         maintainContainedAirPath();
       }
       return result;
@@ -790,6 +1131,7 @@ namespace epmodel {
 
     void AirLoopHVACUnitarySystem_Impl::resetSupplyFan() {
       OS_ASSERT(setString(openstudio::AirLoopHVAC_UnitarySystemFields::SupplyFanName, ""));
+      OS_ASSERT(setString(openstudio::AirLoopHVAC_UnitarySystemFields::SupplyFanObjectType, ""));
       maintainContainedAirPath();
     }
 
@@ -834,6 +1176,9 @@ namespace epmodel {
 
     bool AirLoopHVACUnitarySystem_Impl::setHeatingCoil(const HVACComponent& heatingCoil) {
       const bool result = setPointer(openstudio::AirLoopHVAC_UnitarySystemFields::HeatingCoilName, heatingCoil.handle());
+      if (result) {
+        OS_ASSERT(setString(openstudio::AirLoopHVAC_UnitarySystemFields::HeatingCoilObjectType, heatingCoil.iddObject().name()));
+      }
       if (openstudio::istringEqual("None", supplyAirFlowRateMethodDuringHeatingOperation())) {
         autosizeSupplyAirFlowRateDuringHeatingOperation();
         OS_ASSERT(setSupplyAirFlowRateMethodDuringHeatingOperation("SupplyAirFlowRate"));
@@ -846,6 +1191,7 @@ namespace epmodel {
 
     void AirLoopHVACUnitarySystem_Impl::resetHeatingCoil() {
       OS_ASSERT(setString(openstudio::AirLoopHVAC_UnitarySystemFields::HeatingCoilName, ""));
+      OS_ASSERT(setString(openstudio::AirLoopHVAC_UnitarySystemFields::HeatingCoilObjectType, ""));
       OS_ASSERT(setSupplyAirFlowRateMethodDuringHeatingOperation("None"));
       resetSupplyAirFlowRateDuringHeatingOperation();
       resetSupplyAirFlowRatePerFloorAreaduringHeatingOperation();
@@ -890,19 +1236,46 @@ namespace epmodel {
     }
 
     bool AirLoopHVACUnitarySystem_Impl::setCoolingCoil(const HVACComponent& coolingCoil) {
-      const bool result = setPointer(openstudio::AirLoopHVAC_UnitarySystemFields::CoolingCoilName, coolingCoil.handle());
+      if (coolingCoil.model() != model()) {
+        return false;
+      }
+      if (auto owner = coolingCoil.containingHVACComponent(); owner && owner->handle() != handle()) {
+        return false;
+      }
+      if (coolingCoil.loop() || coolingCoil.airLoopHVACOutdoorAirSystem()) {
+        return false;
+      }
+
+      const auto oldCoolingCoil = this->coolingCoil();
+      const auto typeField = openstudio::AirLoopHVAC_UnitarySystemFields::CoolingCoilObjectType;
+      const auto nameField = openstudio::AirLoopHVAC_UnitarySystemFields::CoolingCoilName;
+      const auto oldType = getString(typeField).value_or("");
+      const bool result = setString(typeField, coolingCoil.iddObject().name()) && setPointer(nameField, coolingCoil.handle(), false);
+      if (!result) {
+        OS_ASSERT(setString(typeField, oldType));
+        OS_ASSERT(setPointer(nameField, oldCoolingCoil ? oldCoolingCoil->handle() : Handle(), false));
+        return false;
+      }
       if (openstudio::istringEqual("None", supplyAirFlowRateMethodDuringCoolingOperation())) {
         autosizeSupplyAirFlowRateDuringCoolingOperation();
         OS_ASSERT(setSupplyAirFlowRateMethodDuringCoolingOperation("SupplyAirFlowRate"));
       }
-      if (result) {
-        maintainContainedAirPath();
+      if (oldCoolingCoil && oldCoolingCoil->handle() != coolingCoil.handle()) {
+        if (auto oldCoilSystem = oldCoolingCoil->optionalCast<CoilSystemCoolingDXHeatExchangerAssisted>()) {
+          oldCoilSystem->disconnect();
+        }
       }
-      return result;
+      maintainContainedAirPath();
+      return true;
     }
 
     void AirLoopHVACUnitarySystem_Impl::resetCoolingCoil() {
-      OS_ASSERT(setString(openstudio::AirLoopHVAC_UnitarySystemFields::CoolingCoilName, ""));
+      const auto oldCoolingCoil = coolingCoil();
+      OS_ASSERT(setPointer(openstudio::AirLoopHVAC_UnitarySystemFields::CoolingCoilName, Handle(), false));
+      OS_ASSERT(setString(openstudio::AirLoopHVAC_UnitarySystemFields::CoolingCoilObjectType, ""));
+      if (auto oldCoilSystem = oldCoolingCoil ? oldCoolingCoil->optionalCast<CoilSystemCoolingDXHeatExchangerAssisted>() : boost::none) {
+        oldCoilSystem->disconnect();
+      }
       OS_ASSERT(setSupplyAirFlowRateMethodDuringCoolingOperation("None"));
       resetSupplyAirFlowRateDuringCoolingOperation();
       resetSupplyAirFlowRatePerFloorAreaDuringCoolingOperation();
@@ -995,6 +1368,8 @@ namespace epmodel {
     bool AirLoopHVACUnitarySystem_Impl::setSupplementalHeatingCoil(const HVACComponent& supplementalHeatingCoil) {
       const bool result = setPointer(openstudio::AirLoopHVAC_UnitarySystemFields::SupplementalHeatingCoilName, supplementalHeatingCoil.handle());
       if (result) {
+        OS_ASSERT(
+          setString(openstudio::AirLoopHVAC_UnitarySystemFields::SupplementalHeatingCoilObjectType, supplementalHeatingCoil.iddObject().name()));
         maintainContainedAirPath();
       }
       return result;
@@ -1002,6 +1377,7 @@ namespace epmodel {
 
     void AirLoopHVACUnitarySystem_Impl::resetSupplementalHeatingCoil() {
       OS_ASSERT(setString(openstudio::AirLoopHVAC_UnitarySystemFields::SupplementalHeatingCoilName, ""));
+      OS_ASSERT(setString(openstudio::AirLoopHVAC_UnitarySystemFields::SupplementalHeatingCoilObjectType, ""));
       maintainContainedAirPath();
     }
 
@@ -1442,6 +1818,24 @@ namespace epmodel {
         return value;
       };
 
+      const auto synchronizeObjectType = [&](unsigned objectTypeField, const boost::optional<HVACComponent>& component) {
+        const auto currentType = thisObject.getString(objectTypeField, true);
+        const auto expectedType = component ? boost::optional<std::string>(component->iddObject().name()) : boost::optional<std::string>();
+        if (expectedType) {
+          if (!currentType || !openstudio::istringEqual(*currentType, *expectedType)) {
+            OS_ASSERT(thisObject.setString(objectTypeField, *expectedType));
+            changed = true;
+          }
+        } else if (currentType && !currentType->empty()) {
+          OS_ASSERT(thisObject.setString(objectTypeField, ""));
+          changed = true;
+        }
+      };
+      synchronizeObjectType(openstudio::AirLoopHVAC_UnitarySystemFields::SupplyFanObjectType, fanObject);
+      synchronizeObjectType(openstudio::AirLoopHVAC_UnitarySystemFields::HeatingCoilObjectType, heatingObject);
+      synchronizeObjectType(openstudio::AirLoopHVAC_UnitarySystemFields::CoolingCoilObjectType, coolingObject);
+      synchronizeObjectType(openstudio::AirLoopHVAC_UnitarySystemFields::SupplementalHeatingCoilObjectType, supplementalObject);
+
       if (!fan && !cooling && !heating && !supplemental) {
         return changed;
       }
@@ -1500,13 +1894,11 @@ namespace epmodel {
       Node upstreamNode = inletNode;
       for (std::size_t i = 0; i < orderedComponents.size(); ++i) {
         auto component = orderedComponents[i];
-        const auto inletPort = unitarySystemAirInletPort(component);
-        const auto outletPort = unitarySystemAirOutletPort(component);
-        if ((inletPort == 0u) || (outletPort == 0u)) {
+        if (!component.optionalCast<CoilSystemCoolingDXHeatExchangerAssisted>()
+            && ((unitarySystemAirInletPort(component) == 0u) || (unitarySystemAirOutletPort(component) == 0u))) {
           continue;
         }
-
-        trackNodeChange(component.getImpl<detail::ModelObject_Impl>()->setPointer(inletPort, upstreamNode.handle(), false));
+        trackNodeChange(setUnitarySystemAirInletNode(component, upstreamNode));
 
         Node downstreamNode = outletNode;
         if ((i + 1u) < orderedComponents.size()) {
@@ -1514,9 +1906,8 @@ namespace epmodel {
           boost::optional<Node> connectorNode;
 
           if (allowChildNodeRecovery) {
-            if (auto currentOutlet = component.getImpl<detail::ModelObject_Impl>()->resolvedNodeTarget(outletPort)) {
-              const auto downstreamInletPort = unitarySystemAirInletPort(downstream);
-              if (auto downstreamInlet = downstream.getImpl<detail::ModelObject_Impl>()->resolvedNodeTarget(downstreamInletPort)) {
+            if (auto currentOutlet = unitarySystemAirOutletNode(component)) {
+              if (auto downstreamInlet = unitarySystemAirInletNode(downstream)) {
                 if ((*currentOutlet == *downstreamInlet) && (*currentOutlet != inletNode) && (*currentOutlet != outletNode)) {
                   connectorNode = currentOutlet;
                 }
@@ -1529,11 +1920,10 @@ namespace epmodel {
           }
 
           downstreamNode = *connectorNode;
-          const auto downstreamInletPort = unitarySystemAirInletPort(downstream);
-          trackNodeChange(downstream.getImpl<detail::ModelObject_Impl>()->setPointer(downstreamInletPort, connectorNode->handle(), false));
+          trackNodeChange(setUnitarySystemAirInletNode(downstream, *connectorNode));
         }
 
-        trackNodeChange(component.getImpl<detail::ModelObject_Impl>()->setPointer(outletPort, downstreamNode.handle(), false));
+        trackNodeChange(setUnitarySystemAirOutletNode(component, downstreamNode));
         upstreamNode = downstreamNode;
       }
 

@@ -15,6 +15,11 @@
 
 namespace openstudio {
 namespace epmodel {
+
+  class Curve;
+  class Schedule;
+  class ThermalZone;
+
   namespace detail {
 
     class EPMODEL_API PumpVariableSpeed_Impl : public StraightComponent_Impl
@@ -90,6 +95,14 @@ namespace epmodel {
       bool setPumpControlType(const std::string& pumpControlType);
       void resetPumpControlType();
 
+      boost::optional<Schedule> pumpFlowRateSchedule() const;
+      bool setPumpFlowRateSchedule(Schedule& schedule);
+      void resetPumpFlowRateSchedule();
+
+      boost::optional<Curve> pumpCurve() const;
+      bool setPumpCurve(const Curve& curve);
+      void resetPumpCurve();
+
       boost::optional<double> impellerDiameter() const;
       bool setImpellerDiameter(double impellerDiameter);
       void resetImpellerDiameter();
@@ -97,6 +110,30 @@ namespace epmodel {
       boost::optional<std::string> vFDControlType() const;
       bool setVFDControlType(const std::string& vFDControlType);
       void resetVFDControlType();
+
+      boost::optional<Schedule> pumpRPMSchedule() const;
+      bool setPumpRPMSchedule(Schedule& schedule);
+      void resetPumpRPMSchedule();
+
+      boost::optional<Schedule> minimumRPMSchedule() const;
+      bool setMinimumRPMSchedule(Schedule& schedule);
+      void resetMinimumRPMSchedule();
+
+      boost::optional<Schedule> maximumRPMSchedule() const;
+      bool setMaximumRPMSchedule(Schedule& schedule);
+      void resetMaximumRPMSchedule();
+
+      boost::optional<ThermalZone> zone() const;
+      bool setZone(const ThermalZone& thermalZone);
+      void resetZone();
+
+      boost::optional<Schedule> minimumPressureSchedule() const;
+      bool setMinimumPressureSchedule(Schedule& schedule);
+      void resetMinimumPressureSchedule();
+
+      boost::optional<Schedule> maximumPressureSchedule() const;
+      bool setMaximumPressureSchedule(Schedule& schedule);
+      void resetMaximumPressureSchedule();
 
       double skinLossRadiativeFraction() const;
       bool setSkinLossRadiativeFraction(double skinLossRadiativeFraction);

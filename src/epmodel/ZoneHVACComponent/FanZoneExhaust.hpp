@@ -19,11 +19,26 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class Schedule;
 
   namespace detail {
     class FanZoneExhaust_Impl;
   }
 
+/** \brief An exhaust fan serving a thermal zone.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-fans.html#fanzoneexhaust,Fan:ZoneExhaust}
+ *
+ * \par Important behavior
+ * Zone attachment is represented through the EnergyPlus zone equipment list and exhaust-node fields; orphaned transient inlet and outlet nodes are removed on detachment.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model class is <code>openstudio::model::FanZoneExhaust</code>.
+ *
+ * \par Known limitations
+ * AirflowNetwork helpers and separate air-loop exhaust-system ownership are not exposed.
+ */
   class EPMODEL_API FanZoneExhaust : public ZoneHVACComponent
   {
    public:
@@ -39,14 +54,10 @@ namespace epmodel {
 
     static std::vector<std::string> systemAvailabilityManagerCouplingModeValues();
 
-    // Schema Alignment Notes:
-    // - Status: Scalar Parity. The exhaust-fan scalar fields are aligned, and the relationship-bearing schedule/node links stay outside the public surface.
-    // - Canonical Counterpart: openstudio::model::FanZoneExhaust.
-    // - Implemented Parity: `fanTotalEfficiency`, `fanEfficiency`, `pressureRise`, `maximumFlowRate`, `endUseSubcategory`, and `systemAvailabilityManagerCouplingMode` map directly to the EnergyPlus object.
-    // - Documented Delta: Schedule and node references remain relationship-only and are intentionally excluded from this wrapper.
-    // - Field/Storage Mapping: Scalar values are stored directly on the EnergyPlus object, with no additional child topology to synchronize.
-    // - Evidence: `src/model/FanZoneExhaust.hpp`, `src/model/FanZoneExhaust.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateFanZoneExhaust.cpp`, and `src/epmodel/test/FanZoneExhaust_GTest.cpp`.
-    // - Remaining Parity Work: Keep the scalar API aligned; add relationship helpers only if the canonical wrapper later exposes them directly.
+    boost::optional<Schedule> availabilitySchedule() const;
+    bool setAvailabilitySchedule(Schedule& schedule);
+    void resetAvailabilitySchedule();
+
     double fanTotalEfficiency() const;
     bool setFanTotalEfficiency(double fanTotalEfficiency);
 
@@ -63,8 +74,20 @@ namespace epmodel {
     std::string endUseSubcategory() const;
     bool setEndUseSubcategory(const std::string& endUseSubcategory);
 
+    boost::optional<Schedule> flowFractionSchedule() const;
+    bool setFlowFractionSchedule(Schedule& schedule);
+    void resetFlowFractionSchedule();
+
     std::string systemAvailabilityManagerCouplingMode() const;
     bool setSystemAvailabilityManagerCouplingMode(const std::string& systemAvailabilityManagerCouplingMode);
+
+    boost::optional<Schedule> minimumZoneTemperatureLimitSchedule() const;
+    bool setMinimumZoneTemperatureLimitSchedule(Schedule& schedule);
+    void resetMinimumZoneTemperatureLimitSchedule();
+
+    boost::optional<Schedule> balancedExhaustFractionSchedule() const;
+    bool setBalancedExhaustFractionSchedule(Schedule& schedule);
+    void resetBalancedExhaustFractionSchedule();
 
    protected:
     using ImplType = detail::FanZoneExhaust_Impl;

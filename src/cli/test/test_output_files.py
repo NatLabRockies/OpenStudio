@@ -1,4 +1,5 @@
 import json
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -6,40 +7,31 @@ import pytest
 from workflow_helpers import run_workflow
 
 
-@pytest.fixture(scope="module", params=[True, False], ids=["labs", "classic"])
-def runWorkflow(osclipath, request):
-    is_labs = request.param
-    suffix = "labs" if is_labs else "classic"
+@pytest.fixture(scope="module")
+def runWorkflow(osclipath):
     runDir, r = run_workflow(
         osclipath=osclipath,
         base_osw_name="in.osw",
-        suffix=suffix,
-        is_labs=is_labs,
+        suffix="labs",
         verbose=False,
         debug=False,
         post_process_only=True,
     )
     r.check_returncode()
-    return runDir, is_labs
+    return runDir
 
 
-@pytest.mark.parametrize(
-    "is_labs",
-    [pytest.param(True, id="labs"), pytest.param(False, id="classic")],
-)
-def test_(osclipath, is_labs: bool):
-    suffix = "labs" if is_labs else "classic"
+def test_(osclipath):
     runDir, r = run_workflow(
         osclipath=osclipath,
         base_osw_name="in.osw",
-        suffix=suffix,
-        is_labs=is_labs,
+        suffix="labs_debug",
         verbose=False,
         debug=True,
         post_process_only=True,
     )
     r.check_returncode()
-    out_osw_path = Path(f"out_in_{suffix}.osw")
+    out_osw_path = Path("out_in_labs_debug.osw")
     assert out_osw_path.is_file()
     out = json.loads(out_osw_path.read_text())
 
@@ -59,8 +51,7 @@ def test_(osclipath, is_labs: bool):
         "steps",
         "updated_at",
     }
-    if is_labs:
-        EXPECTED_TOPLEVEL_KEYS.add("run_options")
+    EXPECTED_TOPLEVEL_KEYS.add("run_options")
     assert out.keys() == EXPECTED_TOPLEVEL_KEYS
 
     assert len(out["steps"]) == 1
@@ -105,3 +96,114 @@ def test_(osclipath, is_labs: bool):
         "net_site_energy",
         "something_with_invalid_chars",
     }
+
+
+@pytest.mark.parametrize("absolute_osw_paths", [False, True])
+def test_output_directory_uses_contained_osw_output_paths(osclipath, tmp_path, absolute_osw_paths):
+    source_osw_path = Path("in.osw").resolve()
+    source_root = source_osw_path.parent
+
+    input_directory = tmp_path / "input"
+    input_directory.mkdir()
+    input_osw_path = input_directory / "custom.osw"
+
+    osw = json.loads(source_osw_path.read_text())
+    osw["root"] = str(source_root)
+    output_directory = tmp_path / "results"
+    run_directory = output_directory / "simulation"
+    output_osw_path = output_directory / "finished.osw"
+    if absolute_osw_paths:
+        osw["run_directory"] = str(run_directory)
+        osw["out_name"] = str(output_osw_path)
+    else:
+        osw["run_directory"] = "simulation"
+        osw["out_name"] = "finished.osw"
+    input_osw_path.write_text(json.dumps(osw, indent=2))
+
+    run_directory.mkdir(parents=True)
+    (run_directory / "in.idf").write_text("Building,;")
+
+    result = subprocess.run(
+        [
+            str(osclipath),
+            "run",
+            "--postprocess_only",
+            "--output-directory",
+            "results",
+            "-w",
+            str(input_osw_path),
+        ],
+        cwd=tmp_path,
+        capture_output=True,
+        encoding="utf-8",
+    )
+    result.check_returncode()
+
+    assert output_osw_path.is_file()
+    assert (run_directory / "run.log").is_file()
+    assert (output_directory / "generated_files").is_dir()
+    assert (output_directory / "reports").is_dir()
+    assert not (input_directory / "simulation").exists()
+    assert not (input_directory / "finished.osw").exists()
+
+    input_osw = json.loads(input_osw_path.read_text())
+    assert input_osw["run_directory"] == osw["run_directory"]
+    assert input_osw["out_name"] == osw["out_name"]
+
+    output_osw = json.loads(output_osw_path.read_text())
+    assert Path(output_osw["root"]) == source_root
+    assert Path(output_osw["run_directory"]) == run_directory
+
+
+@pytest.mark.parametrize("setting_name", ["run_directory", "out_name"])
+@pytest.mark.parametrize("path_kind", ["absolute", "parent"])
+def test_output_directory_rejects_osw_paths_outside_it(osclipath, tmp_path, setting_name, path_kind):
+    input_osw_path = tmp_path / "conflicting.osw"
+    osw = {"steps": []}
+    outside_name = "run" if setting_name == "run_directory" else "out.osw"
+    if path_kind == "absolute":
+        osw[setting_name] = str(tmp_path / "elsewhere" / outside_name)
+    else:
+        osw[setting_name] = f"../elsewhere/{outside_name}"
+    input_osw_path.write_text(json.dumps(osw, indent=2))
+
+    output_directory = tmp_path / "results"
+    result = subprocess.run(
+        [
+            str(osclipath),
+            "run",
+            "--output-directory",
+            str(output_directory),
+            "-w",
+            str(input_osw_path),
+        ],
+        capture_output=True,
+        encoding="utf-8",
+    )
+
+    assert result.returncode != 0
+    assert "outside --output-directory" in result.stdout + result.stderr
+    assert not output_directory.exists()
+
+
+@pytest.mark.parametrize("run_directory", [".", "reports", "generated_files/nested"])
+def test_output_directory_rejects_conflicting_run_directories(osclipath, tmp_path, run_directory):
+    input_osw_path = tmp_path / "conflicting.osw"
+    input_osw_path.write_text(json.dumps({"run_directory": run_directory, "steps": []}, indent=2))
+
+    output_directory = tmp_path / "results"
+    result = subprocess.run(
+        [
+            str(osclipath),
+            "run",
+            "--output-directory",
+            str(output_directory),
+            "-w",
+            str(input_osw_path),
+        ],
+        capture_output=True,
+        encoding="utf-8",
+    )
+
+    assert result.returncode != 0
+    assert not output_directory.exists()

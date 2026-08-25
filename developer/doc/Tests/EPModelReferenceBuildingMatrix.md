@@ -1,0 +1,82 @@
+# EPModel reference building test results
+
+## Scope
+
+This test pass used the 16 DOE `New2004_Chicago` reference buildings bundled with EnergyPlus 26.1.0. Each workflow loaded the reference IDF, removed its HVAC, added one of the packaged EPModel example systems, configured a July 21–27 weather run, and ran EnergyPlus.
+
+The repeatable runner is `developer/python/epmodel_reference_building_matrix.py`. Results are classified as failures when the workflow fails, times out, or EnergyPlus reports any severe errors.
+
+## HVAC removal performance
+
+The OutPatient building exposed a removal performance problem before EnergyPlus was started. Its first large air loop originally took more than four minutes to remove, and the complete workflow exceeded a ten-minute timeout.
+
+Profiling showed that removal repeatedly scanned the whole model to rediscover component owners and prove that demand-side branches did not belong to other loops. After replacing those scans with reverse-reference and cached-topology lookups, the same workflow measured:
+
+| Operation | Time |
+| --- | ---: |
+| Load the reference IDF | 4.7 s |
+| Remove the 41-zone air loop | 50.4 s |
+| Remove the 45-zone air loop | 14.4 s |
+| Remove remaining zone and plant HVAC | less than 0.2 s |
+| Complete ideal-load workflow | 132.6 s |
+
+Removal is therefore still material for this large building, but it no longer prevents the example from running. The committed profiler can time load, owner discovery, zone discovery, and removal independently.
+
+## Ideal-load results
+
+The initial full matrix completed 11 of 16 buildings without severe errors. Typed ownership repairs for refrigeration cases and air-cooled chillers bring the current result to 14 of 16.
+
+| Result | Reference buildings |
+| --- | --- |
+| Pass | FullServiceRestaurant, LargeHotel, MediumOffice, MidriseApartment, OutPatient, PrimarySchool, QuickServiceRestaurant, SecondarySchool, SmallHotel, SmallOffice, Stand-aloneRetail, StripMall, SuperMarket, Warehouse |
+| Removal rejected | Hospital, LargeOffice |
+
+LargeHotel and SecondarySchool use air-cooled chillers that are owned only by their chilled-water loop. EPModel now removes one or more of these chillers with that loop, matching canonical Model ownership. Hospital and LargeOffice use water-cooled chillers tied to legacy condenser-loop objects that are not yet represented as typed EPModel loops. Removal correctly remains atomic instead of deleting only part of this ownership graph. Supporting these two files needs a deliberate condenser-loop ownership implementation; the example measure should not bypass that boundary with raw object deletion.
+
+## Other system results
+
+The first pass ran packaged unitary, multizone VAV, packaged terminal heat pump, and four-pipe fan coil workflows against the 12 buildings that passed the plant-removal boundary. This was 48 additional simulations.
+
+After the ownership, sizing, and outdoor-air corrections, LargeHotel and SecondarySchool also cross the removal boundary. The current result for the 14 supported buildings is:
+
+| Replacement system | Pass | Remaining result |
+| --- | ---: | --- |
+| Ideal loads | 14/14 | None |
+| Four-pipe fan coils | 14/14 | None |
+| Multizone VAV | 14/14 | None |
+| Packaged terminal heat pumps | 13/14 | OutPatient: one warmup-convergence severe error |
+| Packaged single-zone unitary | 10/14 | PrimarySchool: four warmup-convergence severe errors; SecondarySchool: seven; SmallHotel: nine; OutPatient: ten-minute timeout |
+
+That pass found two general ownership defects:
+
+- Unit heaters left their owned fans and coils behind. This caused six severe errors in MidriseApartment and two each in Stand-aloneRetail and Warehouse for every replacement family. EPModel now matches canonical Model ownership, and focused reruns of the fan-coil workflow pass all three buildings with zero severe errors.
+- PTACs and PTHPs also left their owned fans and coils behind. SmallHotel consequently produced 102 severe errors with fan coils and VAV. EPModel now removes those children with their parent. The SmallHotel fan-coil and VAV reruns both pass with zero severe errors.
+
+Additional current findings:
+
+- SmallHotel initially could not autosize a PTHP or single-zone packaged unitary system in its zero-cooling-load storage zones. Both measures now select `DesignDayWithLimit` through the typed `SizingZone` API, retaining design-day sizing while providing EnergyPlus's standard floor-area minimum airflow. The PTHP workflow now passes with zero severe errors. The packaged-unitary workflow proceeds through sizing and simulation but reports ten warmup-convergence severe errors.
+- The reference buildings cap warmup at 25 days. EPModel now exposes canonical Model's `SimulationControl.maximumNumberofWarmupDays` API while persisting the value on EnergyPlus `Building`; the shared short-run measure raises the cap to 50. This removes OutPatient's VAV convergence error and makes LargeHotel packaged unitary pass. OutPatient PTHP retains one convergence error, and the three completed packaged-unitary failures improve but do not fully converge.
+- The packaged-unitary measure initially autosized the outdoor-air controller minimum flow instead of using canonical Model's zero minimum. That fixed minimum fought the mechanical-ventilation request and produced tens of thousands of recurring warnings. Restoring the canonical value reduced FullServiceRestaurant from 51,503 warnings to 11, MediumOffice from 325,596 warnings and two severe errors to 35 warnings and zero severe errors, and PrimarySchool from 411,942 warnings to 54.
+- The current packaged-unitary matrix passes 10 of the 14 buildings that cross the HVAC-removal boundary. Its three completed failures are warmup-convergence errors; OutPatient still exceeds ten minutes because EnergyPlus spends several minutes sizing and warming up its many single-zone systems rather than printing the former warning storm.
+
+## Other defects found and fixed
+
+- Removing HVAC from FullServiceRestaurant left refrigerated cases configured to return under-case air to a removed HVAC node. The removal measure now uses typed refrigeration APIs to set that return fraction to zero.
+- Pump power was omitted from the VAV and four-pipe fan-coil examples. Their variable-speed pumps now autosize rated power consumption.
+- Imported duplicate `PlantEquipmentList` rows are canonicalized on load. Resolved rows have their type and name repaired before duplicates are removed, so the first malformed row cannot displace a later coherent row.
+- The matrix runner now labels a completed workflow with EnergyPlus severe errors as `Severe` instead of printing the misleading `Success` status from the OSW alone.
+
+## Reproduction
+
+Run all ideal-load cases from the repository root:
+
+```sh
+python3 developer/python/epmodel_reference_building_matrix.py \
+  --energyplus-dir build/EnergyPlus-26.1.0-6f2e40d102-Linux-Ubuntu24.04-x86_64 \
+  --measures-dir build/resources/Examples/epmodel/measures \
+  --systems ideal_loads \
+  --output-dir build/epmodel-reference-matrix-ideal \
+  --jobs 4 --timeout 600
+```
+
+Use `--buildings SmallHotel,OutPatient` or a narrower `--systems` list for focused reruns. Each output directory retains the OSW, console log, EnergyPlus files, elapsed time, warning count, and severe-error count. Generated matrix artifacts remain under `build/` and are not committed.

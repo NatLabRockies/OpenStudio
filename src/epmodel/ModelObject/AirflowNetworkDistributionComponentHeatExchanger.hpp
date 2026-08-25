@@ -22,6 +22,17 @@ namespace epmodel {
     class AirflowNetworkDistributionComponentHeatExchanger_Impl;
   }
 
+  /** \brief Represents the EnergyPlus AirflowNetwork:Distribution:Component:HeatExchanger object.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-airflow-network.html#airflownetworkdistributioncomponentheatexchanger,AirflowNetwork:Distribution:Component:HeatExchanger}
+   *
+   * \par OpenStudio Model API
+   * OpenStudio Model has no public wrapper for this EnergyPlus object. This wrapper is new to the EPModel API.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations beyond the public fields and relationships exposed by this wrapper.
+   */
   class EPMODEL_API AirflowNetworkDistributionComponentHeatExchanger : public ModelObject
   {
    public:
@@ -35,15 +46,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - API: This no-counterpart epmodel type uses IDD-derived class/accessor naming.
-    // - Field Mapping: airPathLength and airPathHydraulicDiameter map directly to EnergyPlus
-    //   AirflowNetwork:Distribution:Component:HeatExchanger scalar fields.
-    // - Field Mapping: HeatExchanger Name and HeatExchanger Object Type are relationship-like
-    //   target-link fields and are intentionally excluded from scalar accessors.
-    // - ForwardTranslator evidence: translateAirflowNetworkEquivalentDuct writes HeatExchanger Name/
-    //   HeatExchanger Object Type from linked model objects and writes these two scalar fields directly.
-    // - TODO(parity): Add relationship APIs after scalar scaffold saturation.
 
     /** @name Air Path Length */
     //@{

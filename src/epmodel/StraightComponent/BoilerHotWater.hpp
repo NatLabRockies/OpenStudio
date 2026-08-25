@@ -16,11 +16,30 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class Curve;
 
   namespace detail {
     class BoilerHotWater_Impl;
   }
 
+  /**
+   * \brief Hot-water boiler with fuel, efficiency, flow, sizing, and normalized-efficiency-curve controls.
+   *
+   * \par EnergyPlus object
+   * Encapsulates \epobject{group-plant-equipment.html#boilerhotwater,Boiler:HotWater}.
+   *
+   * \par Important behavior
+   * The normalized boiler-efficiency curve is a typed optional relationship to a configured EnergyPlus univariate
+   * or bivariate curve. The legacy `VariableFlow` input is normalized to EnergyPlus's `LeavingSetpointModulated`
+   * flow mode.
+   *
+   * \par OpenStudio Model API
+   * Counterpart: `openstudio::model::BoilerHotWater`. Fuel, capacity, efficiency, flow, part-load, sizing, and
+   * curve APIs are represented, including autosize/default behavior.
+   *
+   * \par Known limitations
+   * Model result helpers <code>autosizedDesignWaterFlowRate()</code> and <code>autosizedNominalCapacity()</code> are not exposed.
+   */
   class EPMODEL_API BoilerHotWater : public StraightComponent
   {
    public:
@@ -42,14 +61,6 @@ namespace epmodel {
     static std::vector<std::string> efficiencyCurveTemperatureEvaluationVariableValues();
     static std::vector<std::string> boilerFlowModeValues();
 
-    // Schema Alignment Notes:
-    // - Status: Scalar Parity. The canonical boiler-hot-water scalar surface is present, with one legacy flow-mode alias preserved for compatibility.
-    // - Canonical Counterpart: openstudio::model::BoilerHotWater.
-    // - Implemented Parity: The preserved scalar API matches the canonical fuel, capacity, efficiency, flow, and part-load accessors with matching autosize/default behavior.
-    // - Documented Delta: `setBoilerFlowMode("VariableFlow")` still normalizes to `LeavingSetpointModulated` to preserve legacy compatibility; node and curve helpers remain intentionally excluded.
-    // - Field/Storage Mapping: These accessors map directly to EnergyPlus `Boiler:HotWater` scalar fields used by the forward translator.
-    // - Evidence: `src/model/BoilerHotWater.hpp`, `src/model/BoilerHotWater.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateBoilerHotWater.cpp`.
-    // - Remaining Parity Work: Add the omitted relationship helpers without changing the preserved scalar signatures.
     std::string fuelType() const;
     bool setFuelType(const std::string& fuelType);
 
@@ -65,6 +76,10 @@ namespace epmodel {
     boost::optional<std::string> efficiencyCurveTemperatureEvaluationVariable() const;
     bool setEfficiencyCurveTemperatureEvaluationVariable(const std::string& efficiencyCurveTemperatureEvaluationVariable);
     void resetEfficiencyCurveTemperatureEvaluationVariable();
+
+    boost::optional<Curve> normalizedBoilerEfficiencyCurve() const;
+    bool setNormalizedBoilerEfficiencyCurve(const Curve& normalizedBoilerEfficiencyCurve);
+    void resetNormalizedBoilerEfficiencyCurve();
 
     boost::optional<double> designWaterFlowRate() const;
     bool isDesignWaterFlowRateAutosized() const;

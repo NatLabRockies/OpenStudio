@@ -7,8 +7,9 @@
 #define EPMODEL_INTERIORPARTITIONSURFACE_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "PlanarSurface.hpp"
 
+#include <utilities/geometry/Point3d.hpp>
 #include <utilities/idd/IddEnums.hxx>
 
 #include <memory>
@@ -22,10 +23,23 @@ namespace epmodel {
     class InteriorPartitionSurface_Impl;
   }
 
-  class EPMODEL_API InteriorPartitionSurface : public ModelObject
+  /** \brief Represents the EnergyPlus InternalMass object.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-thermal-zone-description-geometry.html#internalmass,InternalMass}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::InteriorPartitionSurface</code>. <b>Changed:</b>
+   * vertices and explicit surface area collapse onto the required <code>InternalMass</code> Surface Area field; geometry
+   * and orientation cannot round-trip.
+   *
+   * \par Known limitations
+   * <code>setVertices()</code> validates and projects a positive area, while <code>resetSurfaceArea()</code> cannot clear the required EnergyPlus field. <code>converttoInternalMass()</code> and vertex-count methods are compatibility shims.
+   */
+  class EPMODEL_API InteriorPartitionSurface : public PlanarSurface
   {
    public:
-    explicit InteriorPartitionSurface(const Model& model);
+    explicit InteriorPartitionSurface(const std::vector<Point3d>& vertices, const Model& model);
 
     virtual ~InteriorPartitionSurface() override = default;
     InteriorPartitionSurface(const InteriorPartitionSurface& other) = default;
@@ -35,13 +49,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::InteriorPartitionSurface scalar accessor names/signatures.
-    // - Field Mapping: surfaceArea -> InternalMass, Surface Area.
-    // - Field Mapping: Construction Name, Zone or ZoneList Name, and Space or SpaceList Name are relationship fields and are excluded.
-    // - API: converttoInternalMass and numberofVertices are retained compatibility shims; InternalMass has no direct scalar fields for these.
-    // - ForwardTranslator evidence: ForwardTranslateInteriorPartitionSurface.cpp writes only InternalMass scalar SurfaceArea (and relationship targets).
-    // - TODO(parity): Revisit drifted compatibility shims if epmodel introduces OS-schema-level geometry conversion state.
     bool converttoInternalMass() const;
     bool isConverttoInternalMassDefaulted() const;
     bool setConverttoInternalMass(bool converttoInternalMass);
@@ -68,6 +75,9 @@ namespace epmodel {
     friend class openstudio::detail::IdfObject_Impl;
 
     explicit InteriorPartitionSurface(std::shared_ptr<detail::InteriorPartitionSurface_Impl> impl);
+
+   private:
+    REGISTER_LOGGER("openstudio.epmodel.InteriorPartitionSurface");
   };
 
 }  // namespace epmodel

@@ -23,6 +23,17 @@ namespace epmodel {
     class AirflowNetworkMultiZoneComponentDetailedOpening_Impl;
   }
 
+  /** \brief Represents the EnergyPlus AirflowNetwork:MultiZone:Component:DetailedOpening object.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-airflow-network.html#airflownetworkmultizonecomponentdetailedopening,AirflowNetwork:MultiZone:Component:DetailedOpening}
+   *
+   * \par OpenStudio Model API
+   * OpenStudio Model has no public wrapper for this EnergyPlus object. This wrapper is new to the EPModel API.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations beyond the public fields and relationships exposed by this wrapper.
+   */
   class EPMODEL_API AirflowNetworkMultiZoneComponentDetailedOpening : public ModelObject
   {
    public:
@@ -38,15 +49,6 @@ namespace epmodel {
 
     static std::vector<std::string> typeofRectangularLargeVerticalOpeningLVOValues();
 
-    // Schema Alignment Notes:
-    // - API: This no-counterpart epmodel type uses IDD-derived class/accessor naming.
-    // - Field Mapping: Scalar APIs map directly to EnergyPlus
-    //   AirflowNetwork:MultiZone:Component:DetailedOpening fields N1/N2/A2/N3.
-    // - ForwardTranslator evidence: translateAirflowNetworkDetailedOpening writes these scalar fields directly,
-    //   including enum token TypeofRectangularLargeVerticalOpening_LVO_.
-    // - Field Mapping: Number of Sets of Opening Factor Data plus extensible opening-factor tuples are intentionally
-    //   excluded from simple scalar accessor scaffolding.
-    // - TODO(parity): Add dedicated extensible-group APIs after scalar saturation.
     double airMassFlowCoefficientWhenOpeningisClosed() const;
     bool setAirMassFlowCoefficientWhenOpeningisClosed(double airMassFlowCoefficientWhenOpeningisClosed);
 

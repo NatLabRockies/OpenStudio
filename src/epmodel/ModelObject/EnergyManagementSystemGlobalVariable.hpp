@@ -22,6 +22,18 @@ namespace epmodel {
     class EnergyManagementSystemGlobalVariable_Impl;
   }
 
+  /** \brief Represents <code>EnergyManagementSystem:GlobalVariable</code>.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-energy-management-system-ems.html#energymanagementsystemglobalvariable,EnergyManagementSystem:GlobalVariable}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::EnergyManagementSystemGlobalVariable</code>.
+   * **Not yet available:** Model typed object-target, program-body, and EMS relationship conveniences are not exposed unless declared by this wrapper.
+   *
+   * \par Known limitations
+   * Typed relationship and extensible-list conveniences not represented by the public declarations are unavailable.
+   */
   class EPMODEL_API EnergyManagementSystemGlobalVariable : public ModelObject
   {
    public:
@@ -34,14 +46,6 @@ namespace epmodel {
     EnergyManagementSystemGlobalVariable& operator=(EnergyManagementSystemGlobalVariable&&) = default;
 
     static IddObjectType iddObjectType();
-
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model::EnergyManagementSystemGlobalVariable class name and constructor signature.
-    // - Field Mapping: constructor variableName maps to EnergyPlus EnergyManagementSystem:GlobalVariable extensible field Erl Variable Name.
-    // - ForwardTranslator evidence: ForwardTranslateEnergyManagementSystemGlobalVariable.cpp writes modelObject.name() into ErlVariableName extensible entries.
-    // - API Drift: openstudio::model::exportToBCVTB APIs are OS-schema-only and have no scalar field on EnergyPlus EnergyManagementSystem:GlobalVariable.
-    // - TODO(parity): If/when Output:EnergyManagementSystem parity is added, evaluate cross-object mapping for export controls.
-
    protected:
     using ImplType = detail::EnergyManagementSystemGlobalVariable_Impl;
 

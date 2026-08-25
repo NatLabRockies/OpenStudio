@@ -244,6 +244,10 @@ namespace openstudio {
 namespace epmodel {
   namespace detail {
 
+    unsigned ScheduleFile_Impl::scheduleTypeLimitsFieldIndex() const {
+      return openstudio::Schedule_FileFields::ScheduleTypeLimitsName;
+    }
+
     bool ScheduleFile_Impl::setTimeSeries(const openstudio::TimeSeries& timeSeries) {
       boost::optional<openstudio::Time> intervalTime = timeSeries.intervalLength();
       if (!intervalTime) {

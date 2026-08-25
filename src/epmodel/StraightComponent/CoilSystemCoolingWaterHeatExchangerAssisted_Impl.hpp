@@ -8,6 +8,7 @@
 
 #include "StraightComponent/StraightComponent_Impl.hpp"
 
+#include <utility>
 #include <vector>
 
 namespace openstudio {
@@ -28,7 +29,18 @@ namespace epmodel {
 
       unsigned inletPort() const override;
       unsigned outletPort() const override;
+      boost::optional<ModelObject> inletModelObject() const override;
+      boost::optional<ModelObject> outletModelObject() const override;
       std::vector<ModelObject> children() const override;
+      std::vector<IdfObject> remove() override;
+      void disconnect() override;
+      void doCanonicalize(LoadContext& context) override;
+
+      // EnergyPlus stores branch boundary nodes on the enclosed heat exchanger,
+      // not on the zero-port coil-system wrapper.
+      bool setAirInletNode(const Node& node);
+      bool setAirOutletNode(const Node& node);
+      void syncStorageSetpointManager();
 
       AirToAirComponent heatExchanger() const;
       bool setHeatExchanger(const AirToAirComponent& heatExchanger);
@@ -51,6 +63,11 @@ namespace epmodel {
       std::string coolingCoilObjectType() const;
       bool setCoolingCoilObjectType(const std::string& coolingCoilObjectType);
       //@}
+
+     private:
+      bool reconcileContainedAirPath(const boost::optional<Node>& inletNode, const boost::optional<Node>& outletNode);
+      boost::optional<std::pair<Node, Node>> branchBoundaryNodes() const;
+      void removeStorageSetpointManager();
     };
 
   }  // namespace detail

@@ -19,6 +19,20 @@ namespace epmodel {
     class SetpointManager_Impl;
   }
 
+  /** \brief Base interface for EnergyPlus setpoint managers.
+   *
+   * \par EnergyPlus object
+   * No single EnergyPlus object. This is the common interface for concrete
+   * <code>SetpointManager:*</code> objects.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::SetpointManager</code>.
+   * No known public API differences.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API SetpointManager : public HVACComponent
   {
    public:

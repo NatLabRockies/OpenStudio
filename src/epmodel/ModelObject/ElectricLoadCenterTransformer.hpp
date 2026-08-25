@@ -23,6 +23,18 @@ namespace epmodel {
     class ElectricLoadCenterTransformer_Impl;
   }
 
+  /** \brief Represents <code>ElectricLoadCenter:Transformer</code>.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-electric-load-center-generator.html#electricloadcentertransformer,ElectricLoadCenter:Transformer}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::ElectricLoadCenterTransformer</code>.
+   * **Not yet available:** Model relationship and extensible-list conveniences are not exposed unless declared here.
+   *
+   * \par Known limitations
+   * Relationship and extensible data not represented by the public declarations must be maintained by the owning object.
+   */
   class EPMODEL_API ElectricLoadCenterTransformer : public ModelObject
   {
    public:
@@ -40,13 +52,6 @@ namespace epmodel {
     static std::vector<std::string> phaseValues();
     static std::vector<std::string> conductorMaterialValues();
     static std::vector<std::string> performanceInputMethodValues();
-
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model::ElectricLoadCenterTransformer scalar accessor names/signatures.
-    // - Field Mapping: Scalar fields map directly to EnergyPlus ElectricLoadCenter:Transformer fields.
-    // - Field Mapping: availabilitySchedule/zone and extensible meter fields are relationship-like and intentionally excluded.
-    // - ForwardTranslator evidence: ForwardTranslateElectricLoadCenterTransformer.cpp writes these scalar fields directly.
-    // - TODO(parity): Add relationship/extensible APIs incrementally without changing scalar signatures.
     std::string transformerUsage() const;
     bool isTransformerUsageDefaulted() const;
     bool setTransformerUsage(const std::string& transformerUsage);

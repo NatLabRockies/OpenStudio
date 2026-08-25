@@ -26,6 +26,17 @@ namespace epmodel {
     class OtherEquipment_Impl;
   }
 
+  /** \brief Represents the EnergyPlus OtherEquipment object.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-internal-gains-people-lights-other.html#otherequipment,OtherEquipment}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::OtherEquipment</code>. <b>Not yet available:</b> the Model definition, schedule, and zone/space relationship methods. EPModel exposes direct design-level, fraction, fuel-type, and end-use scalars plus compatibility multiplier methods.
+   *
+   * \par Known limitations
+   * The string fuel-type setter preserves the Model special case <code>None</code>; the compatibility multiplier scales stored design-level fields.
+   */
   class EPMODEL_API OtherEquipment : public ModelObject
   {
    public:
@@ -43,15 +54,6 @@ namespace epmodel {
     static std::vector<std::string> fuelTypeValues();
     static std::vector<std::string> validFuelTypeValues();
 
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::OtherEquipment scalar API names/signatures where present.
-    // - Field Mapping: design-level scalars map to E+ OtherEquipment fields Design Level/Power per Floor Area/Power per Person.
-    // - Field Mapping: schedule and zone/space target references are relationship fields and intentionally excluded.
-    // - Field Mapping: setMultiplier/resetMultiplier are preserved compatibility methods; no dedicated E+ multiplier field exists.
-    // - Field Mapping: fuelType/setFuelType map to E+ Fuel Type; string overload preserves model special-case acceptance of "None".
-    // - ForwardTranslator evidence: ForwardTranslateOtherEquipment.cpp writes definition design-level scalars times multiplier and
-    //   writes fuel type/end use subcategory directly to OtherEquipment.
-    // - TODO(parity): Add relationship and definition-backed APIs without changing preserved scalar signatures.
     std::string designLevelCalculationMethod() const;
     bool isDesignLevelCalculationMethodDefaulted() const;
     bool setDesignLevelCalculationMethod(const std::string& designLevelCalculationMethod);

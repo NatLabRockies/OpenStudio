@@ -21,6 +21,21 @@ namespace epmodel {
     class SetpointManagerSingleZoneHumidityMinimum_Impl;
   }
 
+  /** \brief Sets the minimum-humidity setpoint for one control zone.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-setpoint-managers.html#setpointmanagersinglezonehumidityminimum,SetpointManager:SingleZone:Humidity:Minimum}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::SetpointManagerSingleZoneHumidityMinimum</code>.
+   *
+   * - <b>Not yet available:</b> <code>controlZone()</code>,
+   *   <code>setControlZone(...)</code>, and <code>resetControlZone()</code>.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API SetpointManagerSingleZoneHumidityMinimum : public SetpointManager
   {
    public:
@@ -38,16 +53,6 @@ namespace epmodel {
 
     /** @name Getters */
     //@{
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model scalar accessor names/signatures for model-counterpart compatibility.
-    // - Field Mapping: controlVariable is preserved as a fixed-value API ("MinimumHumidityRatio")
-    //   even though current E+ SetpointManager:SingleZone:Humidity:Minimum has no explicit control-variable field.
-    // - API: setControlVariable accepts only "MinimumHumidityRatio" and does not persist to any E+ field.
-    // - ForwardTranslator Evidence: ForwardTranslateSetpointManagerSingleZoneHumidityMinimum writes only
-    //   Control Zone Air Node Name and Setpoint Node or NodeList Name; legacy Control Variable is deprecated.
-    // - Field Mapping: Relationship fields Control Zone Air Node Name and Setpoint Node or NodeList Name are
-    //   intentionally excluded from scalar-only scaffolding.
-    // - TODO(parity): Add non-scalar relationship parity for control-zone linkage in a follow-up pass.
     std::string controlVariable() const;
     //@}
 

@@ -22,6 +22,17 @@ namespace epmodel {
     class OutputTableMonthly_Impl;
   }
 
+  /** \brief OutputTableMonthly.
+   *
+   * \par EnergyPlus object
+   * \epobject{output-table-monthly.html#outputtablemonthly,Output:Table:Monthly}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::OutputTableMonthly</code>. The digits-after-decimal setting is exposed. Model's extensible monthly-table row APIs are not available.
+   *
+   * \par Known limitations
+   * Only the fields and relationships listed in this wrapper are available; broader Model-only helpers are not exposed.
+   */
   class EPMODEL_API OutputTableMonthly : public ModelObject
   {
    public:
@@ -37,12 +48,6 @@ namespace epmodel {
 
     /** @name Digits After Decimal */
     //@{
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model::OutputTableMonthly scalar accessor names/signatures.
-    // - Field Mapping: digitsAfterDecimal maps directly to E+ Output:Table:Monthly Digits After Decimal.
-    // - Field Mapping: monthlyVariableGroups and related extensible-group APIs are non-scalar scope and intentionally excluded in this pass.
-    // - ForwardTranslator evidence: ForwardTranslateOutputTableMonthly.cpp writes modelObject.digitsAfterDecimal() directly to Output:Table:Monthly.
-    // - TODO(parity): Add extensible monthly-variable-group APIs in a non-scalar pass while preserving this scalar API.
     int digitsAfterDecimal() const;
 
     bool setDigitsAfterDecimal(int digitsAfterDecimal);

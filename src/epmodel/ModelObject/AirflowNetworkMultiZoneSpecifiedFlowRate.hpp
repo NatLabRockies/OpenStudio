@@ -21,6 +21,17 @@ namespace epmodel {
     class AirflowNetworkMultiZoneSpecifiedFlowRate_Impl;
   }
 
+  /** \brief Represents the EnergyPlus AirflowNetwork:MultiZone:SpecifiedFlowRate object.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-airflow-network.html#airflownetworkmultizonespecifiedflow,AirflowNetwork:MultiZone:SpecifiedFlowRate}
+   *
+   * \par OpenStudio Model API
+   * OpenStudio Model has no public wrapper for this EnergyPlus object. This wrapper is new to the EPModel API.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations beyond the public fields and relationships exposed by this wrapper.
+   */
   class EPMODEL_API AirflowNetworkMultiZoneSpecifiedFlowRate : public ModelObject
   {
    public:
@@ -36,14 +47,6 @@ namespace epmodel {
 
     static std::vector<std::string> airFlowUnitsValues();
 
-    // Schema Alignment Notes:
-    // - API: This no-counterpart epmodel type uses IDD-derived class/accessor naming.
-    // - Field Mapping: airFlowValue and airFlowUnits map directly to EnergyPlus
-    //   AirflowNetwork:MultiZone:SpecifiedFlowRate scalar fields.
-    // - Field Mapping: Name remains provided by base ModelObject naming APIs.
-    // - ForwardTranslator evidence: translateAirflowNetworkSpecifiedFlowRate writes Name,
-    //   Air Flow Value, and Air Flow Units directly.
-    // - TODO(parity): Add relationship APIs only if future schema evolution introduces linked fields.
     double airFlowValue() const;
     bool setAirFlowValue(double airFlowValue);
 

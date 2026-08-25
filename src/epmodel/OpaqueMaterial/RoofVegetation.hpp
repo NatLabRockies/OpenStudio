@@ -7,7 +7,7 @@
 #define EPMODEL_ROOFVEGETATION_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "OpaqueMaterial/OpaqueMaterial.hpp"
 
 #include <utilities/idd/IddEnums.hxx>
 
@@ -24,7 +24,27 @@ namespace epmodel {
     class RoofVegetation_Impl;
   }
 
-  class EPMODEL_API RoofVegetation : public ModelObject
+  /** \brief Represents a vegetated roof material layer.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-surface-construction-elements.html#materialroofvegetation,Material:RoofVegetation}.
+   *
+   * \par Important behavior
+   * The generic thermal-conductivity, density, and specific-heat methods are
+   * aliases for the corresponding dry-soil fields. Moisture-content and
+   * diffusion settings remain separate fields on the same EnergyPlus object.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::RoofVegetation</code>. EPModel adds direct
+   * thermal/optical derived helpers and reflectance setters. Model's
+   * <code>soilLayerName()</code> relationship is not available.
+   *
+   * \par Known limitations
+   * The referenced soil-layer relationship cannot be assigned through this
+   * wrapper.
+   */
+  class EPMODEL_API RoofVegetation : public OpaqueMaterial
   {
    public:
     explicit RoofVegetation(const Model& model, const std::string& roughness = "Smooth");
@@ -40,13 +60,6 @@ namespace epmodel {
     static std::vector<std::string> roughnessValues();
     static std::vector<std::string> moistureDiffusionCalculationMethodValues();
 
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model::RoofVegetation scalar accessor names/signatures.
-    // - Field Mapping: APIs map directly to E+ Material:RoofVegetation scalar fields.
-    // - Field Mapping: thermalConductivity aliases ConductivityofDrySoil, and density/specificHeat aliases dry-soil fields.
-    // - ForwardTranslator evidence: ForwardTranslateRoofVegetation.cpp writes these scalar APIs directly to Material:RoofVegetation fields.
-    // - Exclusion: relationship-like SoilLayerName field accessors are intentionally excluded in this scalar-only scaffold pass.
-    // - TODO(parity): add relationship field APIs in a dedicated parity pass.
     double heightofPlants() const;
     bool isHeightofPlantsDefaulted() const;
     bool setHeightofPlants(double heightofPlants);
@@ -85,11 +98,9 @@ namespace epmodel {
     double thermalConductivity() const;
     double thermalConductance() const;
     double thermalResistivity() const;
-    double thermalResistance() const;
     bool setThermalConductivity(double value);
     bool setThermalConductance(double value);
     bool setThermalResistivity(double value);
-    bool setThermalResistance(double value);
 
     double conductivityofDrySoil() const;
     bool isConductivityofDrySoilDefaulted() const;
@@ -110,7 +121,7 @@ namespace epmodel {
     bool setSpecificHeatofDrySoil(double specificHeatofDrySoil);
     void resetSpecificHeatofDrySoil();
 
-    boost::optional<double> thermalAbsorptance() const;
+    double thermalAbsorptance() const;
     bool isThermalAbsorptanceDefaulted() const;
     boost::optional<double> thermalReflectance() const;
     bool setThermalAbsorptance(double thermalAbsorptance);
@@ -118,7 +129,7 @@ namespace epmodel {
     void resetThermalAbsorptance();
     bool setThermalReflectance(boost::optional<double> value);
 
-    boost::optional<double> solarAbsorptance() const;
+    double solarAbsorptance() const;
     bool isSolarAbsorptanceDefaulted() const;
     boost::optional<double> solarReflectance() const;
     bool setSolarAbsorptance(double solarAbsorptance);
@@ -126,7 +137,7 @@ namespace epmodel {
     void resetSolarAbsorptance();
     bool setSolarReflectance(boost::optional<double> value);
 
-    boost::optional<double> visibleAbsorptance() const;
+    double visibleAbsorptance() const;
     bool isVisibleAbsorptanceDefaulted() const;
     boost::optional<double> visibleReflectance() const;
     bool setVisibleAbsorptance(double visibleAbsorptance);

@@ -11,6 +11,8 @@
 namespace openstudio {
 namespace epmodel {
 
+  class Curve;
+
   namespace detail {
 
     class EPMODEL_API CoilCoolingDXCurveFitSpeed_Impl : public ModelObject_Impl
@@ -52,8 +54,40 @@ namespace epmodel {
       double evaporativeCondenserEffectiveness() const;
       bool setEvaporativeCondenserEffectiveness(double evaporativeCondenserEffectiveness);
 
+      boost::optional<Curve> totalCoolingCapacityModifierFunctionofTemperatureCurve() const;
+      bool setTotalCoolingCapacityModifierFunctionofTemperatureCurve(const Curve& curve);
+      void resetTotalCoolingCapacityModifierFunctionofTemperatureCurve();
+
+      boost::optional<Curve> totalCoolingCapacityModifierFunctionofAirFlowFractionCurve() const;
+      bool setTotalCoolingCapacityModifierFunctionofAirFlowFractionCurve(const Curve& curve);
+      void resetTotalCoolingCapacityModifierFunctionofAirFlowFractionCurve();
+
+      boost::optional<Curve> energyInputRatioModifierFunctionofTemperatureCurve() const;
+      bool setEnergyInputRatioModifierFunctionofTemperatureCurve(const Curve& curve);
+      void resetEnergyInputRatioModifierFunctionofTemperatureCurve();
+
+      boost::optional<Curve> energyInputRatioModifierFunctionofAirFlowFractionCurve() const;
+      bool setEnergyInputRatioModifierFunctionofAirFlowFractionCurve(const Curve& curve);
+      void resetEnergyInputRatioModifierFunctionofAirFlowFractionCurve();
+
+      boost::optional<Curve> partLoadFractionCorrelationCurve() const;
+      bool setPartLoadFractionCorrelationCurve(const Curve& curve);
+      void resetPartLoadFractionCorrelationCurve();
+
+      boost::optional<Curve> wasteHeatModifierFunctionofTemperatureCurve() const;
+      bool setWasteHeatModifierFunctionofTemperatureCurve(const Curve& curve);
+      void resetWasteHeatModifierFunctionofTemperatureCurve();
+
       double ratedWasteHeatFractionofPowerInput() const;
       bool setRatedWasteHeatFractionofPowerInput(double ratedWasteHeatFractionofPowerInput);
+
+      boost::optional<Curve> sensibleHeatRatioModifierFunctionofTemperatureCurve() const;
+      bool setSensibleHeatRatioModifierFunctionofTemperatureCurve(const Curve& curve);
+      void resetSensibleHeatRatioModifierFunctionofTemperatureCurve();
+
+      boost::optional<Curve> sensibleHeatRatioModifierFunctionofFlowFractionCurve() const;
+      bool setSensibleHeatRatioModifierFunctionofFlowFractionCurve(const Curve& curve);
+      void resetSensibleHeatRatioModifierFunctionofFlowFractionCurve();
 
       void autosize();
 

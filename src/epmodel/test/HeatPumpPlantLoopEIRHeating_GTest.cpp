@@ -11,6 +11,8 @@
 #include "../Curve/CurveQuadratic.hpp"
 #include "../Curve/CurveQuadratic_Impl.hpp"
 #include "../Loop/PlantLoop.hpp"
+#include "../Loop/PlantLoop_Impl.hpp"
+#include "../ModelObject/SizingPlant.hpp"
 #include "../StraightComponent/Node.hpp"
 #include "../WaterToWaterComponent/HeatPumpPlantLoopEIRCooling.hpp"
 #include "../WaterToWaterComponent/HeatPumpPlantLoopEIRHeating.hpp"
@@ -19,6 +21,445 @@
 #include <limits>
 
 using namespace openstudio::epmodel;
+
+TEST_F(EPModelFixture, HeatPumpPlantLoopEIRHeating_LoadOwnerLoopRemovalLifecycle) {
+  const auto idfPath = openstudio::tempDir() / openstudio::toPath("epmodel-heating-heat-pump-load-owner-removal.idf");
+
+  Model model;
+  PlantLoop loadLoop(model);
+  PlantLoop sourceLoop(model);
+  PlantLoop heatRecoveryLoop(model);
+  HeatPumpPlantLoopEIRHeating heatPump(model);
+  ASSERT_TRUE(loadLoop.setName("Removed Heating Heat Pump Load Loop"));
+  ASSERT_TRUE(sourceLoop.setName("Heating Heat Pump Source Loop"));
+  ASSERT_TRUE(heatRecoveryLoop.setName("Heating Heat Pump Heat Recovery Loop"));
+  ASSERT_TRUE(heatPump.setName("Surviving Heating Heat Pump"));
+  ASSERT_TRUE(loadLoop.addSupplyBranchForComponent(heatPump));
+  ASSERT_TRUE(sourceLoop.addDemandBranchForComponent(heatPump));
+  ASSERT_TRUE(heatRecoveryLoop.addDemandBranchForComponent(heatPump));
+  EXPECT_EQ("WaterSource", heatPump.condenserType());
+  ASSERT_TRUE(model.save(idfPath, true));
+
+  auto loadedModel = Model::load(idfPath);
+  ASSERT_TRUE(loadedModel);
+  auto loadedLoadLoop = loadedModel->getConcreteModelObjectByName<PlantLoop>("Removed Heating Heat Pump Load Loop");
+  auto loadedSourceLoop = loadedModel->getConcreteModelObjectByName<PlantLoop>("Heating Heat Pump Source Loop");
+  auto loadedHeatRecoveryLoop = loadedModel->getConcreteModelObjectByName<PlantLoop>("Heating Heat Pump Heat Recovery Loop");
+  auto loadedHeatPump = loadedModel->getConcreteModelObjectByName<HeatPumpPlantLoopEIRHeating>("Surviving Heating Heat Pump");
+  ASSERT_TRUE(loadedLoadLoop);
+  ASSERT_TRUE(loadedSourceLoop);
+  ASSERT_TRUE(loadedHeatRecoveryLoop);
+  ASSERT_TRUE(loadedHeatPump);
+  ASSERT_TRUE(loadedHeatPump->loadSideWaterLoop());
+  ASSERT_TRUE(loadedHeatPump->sourceSideWaterLoop());
+  ASSERT_TRUE(loadedHeatPump->heatRecoveryLoop());
+  EXPECT_EQ(*loadedLoadLoop, *loadedHeatPump->loadSideWaterLoop());
+  EXPECT_EQ(*loadedSourceLoop, *loadedHeatPump->sourceSideWaterLoop());
+  EXPECT_EQ(*loadedHeatRecoveryLoop, *loadedHeatPump->heatRecoveryLoop());
+  EXPECT_EQ(1u, loadedLoadLoop->supplyComponents(HeatPumpPlantLoopEIRHeating::iddObjectType()).size());
+  EXPECT_EQ(1u, loadedSourceLoop->demandComponents(HeatPumpPlantLoopEIRHeating::iddObjectType()).size());
+  EXPECT_EQ(1u, loadedHeatRecoveryLoop->demandComponents(HeatPumpPlantLoopEIRHeating::iddObjectType()).size());
+  EXPECT_TRUE(loadedHeatPump->loadSideWaterInletNode());
+  EXPECT_TRUE(loadedHeatPump->loadSideWaterOutletNode());
+  EXPECT_TRUE(loadedHeatPump->sourceSideWaterInletNode());
+  EXPECT_TRUE(loadedHeatPump->sourceSideWaterOutletNode());
+  EXPECT_TRUE(loadedHeatPump->heatRecoveryInletNode());
+  EXPECT_TRUE(loadedHeatPump->heatRecoveryOutletNode());
+  EXPECT_EQ("WaterSource", loadedHeatPump->condenserType());
+
+  std::vector<openstudio::Handle> loadTopologyHandles;
+  for (const auto& component : loadedLoadLoop->supplyComponents()) {
+    if (component.handle() != loadedHeatPump->handle()) {
+      loadTopologyHandles.push_back(component.handle());
+    }
+  }
+  for (const auto& component : loadedLoadLoop->demandComponents()) {
+    loadTopologyHandles.push_back(component.handle());
+  }
+  const auto loadLoopHandle = loadedLoadLoop->handle();
+  const auto loadSizingPlantHandle = loadedLoadLoop->sizingPlant().handle();
+  const auto heatPumpHandle = loadedHeatPump->handle();
+  EXPECT_FALSE(loadedLoadLoop->remove().empty());
+  EXPECT_FALSE(loadedModel->getObject(loadLoopHandle));
+  EXPECT_FALSE(loadedModel->getObject(loadSizingPlantHandle));
+  for (const auto& handle : loadTopologyHandles) {
+    EXPECT_FALSE(loadedModel->getObject(handle));
+  }
+  ASSERT_TRUE(loadedModel->getObject(heatPumpHandle));
+  EXPECT_FALSE(loadedHeatPump->loadSideWaterLoop());
+  EXPECT_FALSE(loadedHeatPump->loadSideWaterInletNode());
+  EXPECT_FALSE(loadedHeatPump->loadSideWaterOutletNode());
+  ASSERT_TRUE(loadedHeatPump->sourceSideWaterLoop());
+  ASSERT_TRUE(loadedHeatPump->heatRecoveryLoop());
+  EXPECT_EQ(*loadedSourceLoop, *loadedHeatPump->sourceSideWaterLoop());
+  EXPECT_EQ(*loadedHeatRecoveryLoop, *loadedHeatPump->heatRecoveryLoop());
+  EXPECT_EQ(1u, loadedSourceLoop->demandComponents(HeatPumpPlantLoopEIRHeating::iddObjectType()).size());
+  EXPECT_EQ(1u, loadedHeatRecoveryLoop->demandComponents(HeatPumpPlantLoopEIRHeating::iddObjectType()).size());
+  EXPECT_TRUE(loadedHeatPump->sourceSideWaterInletNode());
+  EXPECT_TRUE(loadedHeatPump->sourceSideWaterOutletNode());
+  EXPECT_TRUE(loadedHeatPump->heatRecoveryInletNode());
+  EXPECT_TRUE(loadedHeatPump->heatRecoveryOutletNode());
+  EXPECT_EQ("WaterSource", loadedHeatPump->condenserType());
+
+  PlantLoop replacementLoadLoop(*loadedModel);
+  ASSERT_TRUE(replacementLoadLoop.setName("Replacement Heating Heat Pump Load Loop"));
+  ASSERT_TRUE(replacementLoadLoop.addSupplyBranchForComponent(*loadedHeatPump));
+  EXPECT_EQ("WaterSource", loadedHeatPump->condenserType());
+  ASSERT_TRUE(loadedModel->save(idfPath, true));
+
+  auto reloadedModel = Model::load(idfPath);
+  ASSERT_TRUE(reloadedModel);
+  auto reloadedLoadLoop = reloadedModel->getConcreteModelObjectByName<PlantLoop>("Replacement Heating Heat Pump Load Loop");
+  auto reloadedSourceLoop = reloadedModel->getConcreteModelObjectByName<PlantLoop>("Heating Heat Pump Source Loop");
+  auto reloadedHeatRecoveryLoop = reloadedModel->getConcreteModelObjectByName<PlantLoop>("Heating Heat Pump Heat Recovery Loop");
+  auto reloadedHeatPump = reloadedModel->getConcreteModelObjectByName<HeatPumpPlantLoopEIRHeating>("Surviving Heating Heat Pump");
+  ASSERT_TRUE(reloadedLoadLoop);
+  ASSERT_TRUE(reloadedSourceLoop);
+  ASSERT_TRUE(reloadedHeatRecoveryLoop);
+  ASSERT_TRUE(reloadedHeatPump);
+  EXPECT_FALSE(reloadedModel->getConcreteModelObjectByName<PlantLoop>("Removed Heating Heat Pump Load Loop"));
+  ASSERT_TRUE(reloadedHeatPump->loadSideWaterLoop());
+  ASSERT_TRUE(reloadedHeatPump->sourceSideWaterLoop());
+  ASSERT_TRUE(reloadedHeatPump->heatRecoveryLoop());
+  EXPECT_EQ(*reloadedLoadLoop, *reloadedHeatPump->loadSideWaterLoop());
+  EXPECT_EQ(*reloadedSourceLoop, *reloadedHeatPump->sourceSideWaterLoop());
+  EXPECT_EQ(*reloadedHeatRecoveryLoop, *reloadedHeatPump->heatRecoveryLoop());
+  EXPECT_EQ(1u, reloadedLoadLoop->supplyComponents(HeatPumpPlantLoopEIRHeating::iddObjectType()).size());
+  EXPECT_EQ(1u, reloadedSourceLoop->demandComponents(HeatPumpPlantLoopEIRHeating::iddObjectType()).size());
+  EXPECT_EQ(1u, reloadedHeatRecoveryLoop->demandComponents(HeatPumpPlantLoopEIRHeating::iddObjectType()).size());
+  EXPECT_TRUE(reloadedHeatPump->loadSideWaterInletNode());
+  EXPECT_TRUE(reloadedHeatPump->loadSideWaterOutletNode());
+  EXPECT_TRUE(reloadedHeatPump->sourceSideWaterInletNode());
+  EXPECT_TRUE(reloadedHeatPump->sourceSideWaterOutletNode());
+  EXPECT_TRUE(reloadedHeatPump->heatRecoveryInletNode());
+  EXPECT_TRUE(reloadedHeatPump->heatRecoveryOutletNode());
+  EXPECT_EQ("WaterSource", reloadedHeatPump->condenserType());
+
+  openstudio::filesystem::remove(idfPath);
+}
+
+TEST_F(EPModelFixture, HeatPumpPlantLoopEIRHeating_SourceOwnerLoopRemovalLifecycle) {
+  const auto idfPath = openstudio::tempDir() / openstudio::toPath("epmodel-heating-heat-pump-source-owner-removal.idf");
+
+  Model model;
+  PlantLoop loadLoop(model);
+  PlantLoop sourceLoop(model);
+  PlantLoop heatRecoveryLoop(model);
+  HeatPumpPlantLoopEIRHeating heatPump(model);
+  ASSERT_TRUE(loadLoop.setName("Heating Heat Pump Load Loop"));
+  ASSERT_TRUE(sourceLoop.setName("Removed Heating Heat Pump Source Loop"));
+  ASSERT_TRUE(heatRecoveryLoop.setName("Heating Heat Pump Heat Recovery Loop"));
+  ASSERT_TRUE(heatPump.setName("Surviving Heating Heat Pump"));
+  ASSERT_TRUE(loadLoop.addSupplyBranchForComponent(heatPump));
+  ASSERT_TRUE(sourceLoop.addDemandBranchForComponent(heatPump));
+  ASSERT_TRUE(heatRecoveryLoop.addDemandBranchForComponent(heatPump));
+  EXPECT_EQ("WaterSource", heatPump.condenserType());
+  ASSERT_TRUE(model.save(idfPath, true));
+
+  auto loadedModel = Model::load(idfPath);
+  ASSERT_TRUE(loadedModel);
+  auto loadedLoadLoop = loadedModel->getConcreteModelObjectByName<PlantLoop>("Heating Heat Pump Load Loop");
+  auto loadedSourceLoop = loadedModel->getConcreteModelObjectByName<PlantLoop>("Removed Heating Heat Pump Source Loop");
+  auto loadedHeatRecoveryLoop = loadedModel->getConcreteModelObjectByName<PlantLoop>("Heating Heat Pump Heat Recovery Loop");
+  auto loadedHeatPump = loadedModel->getConcreteModelObjectByName<HeatPumpPlantLoopEIRHeating>("Surviving Heating Heat Pump");
+  ASSERT_TRUE(loadedLoadLoop);
+  ASSERT_TRUE(loadedSourceLoop);
+  ASSERT_TRUE(loadedHeatRecoveryLoop);
+  ASSERT_TRUE(loadedHeatPump);
+  ASSERT_TRUE(loadedHeatPump->loadSideWaterLoop());
+  ASSERT_TRUE(loadedHeatPump->sourceSideWaterLoop());
+  ASSERT_TRUE(loadedHeatPump->heatRecoveryLoop());
+  EXPECT_EQ(*loadedLoadLoop, *loadedHeatPump->loadSideWaterLoop());
+  EXPECT_EQ(*loadedSourceLoop, *loadedHeatPump->sourceSideWaterLoop());
+  EXPECT_EQ(*loadedHeatRecoveryLoop, *loadedHeatPump->heatRecoveryLoop());
+  EXPECT_EQ(1u, loadedLoadLoop->supplyComponents(HeatPumpPlantLoopEIRHeating::iddObjectType()).size());
+  EXPECT_EQ(1u, loadedSourceLoop->demandComponents(HeatPumpPlantLoopEIRHeating::iddObjectType()).size());
+  EXPECT_EQ(1u, loadedHeatRecoveryLoop->demandComponents(HeatPumpPlantLoopEIRHeating::iddObjectType()).size());
+  EXPECT_TRUE(loadedHeatPump->loadSideWaterInletNode());
+  EXPECT_TRUE(loadedHeatPump->loadSideWaterOutletNode());
+  EXPECT_TRUE(loadedHeatPump->sourceSideWaterInletNode());
+  EXPECT_TRUE(loadedHeatPump->sourceSideWaterOutletNode());
+  EXPECT_TRUE(loadedHeatPump->heatRecoveryInletNode());
+  EXPECT_TRUE(loadedHeatPump->heatRecoveryOutletNode());
+  EXPECT_EQ("WaterSource", loadedHeatPump->condenserType());
+
+  std::vector<openstudio::Handle> sourceTopologyHandles;
+  for (const auto& component : loadedSourceLoop->supplyComponents()) {
+    sourceTopologyHandles.push_back(component.handle());
+  }
+  for (const auto& component : loadedSourceLoop->demandComponents()) {
+    if (component.handle() != loadedHeatPump->handle()) {
+      sourceTopologyHandles.push_back(component.handle());
+    }
+  }
+  const auto sourceLoopHandle = loadedSourceLoop->handle();
+  const auto sourceSizingPlantHandle = loadedSourceLoop->sizingPlant().handle();
+  const auto heatPumpHandle = loadedHeatPump->handle();
+  EXPECT_FALSE(loadedSourceLoop->remove().empty());
+  EXPECT_FALSE(loadedModel->getObject(sourceLoopHandle));
+  EXPECT_FALSE(loadedModel->getObject(sourceSizingPlantHandle));
+  for (const auto& handle : sourceTopologyHandles) {
+    EXPECT_FALSE(loadedModel->getObject(handle));
+  }
+  EXPECT_TRUE(loadedModel->getObject(heatPumpHandle));
+  EXPECT_FALSE(loadedHeatPump->sourceSideWaterLoop());
+  EXPECT_FALSE(loadedHeatPump->sourceSideWaterInletNode());
+  EXPECT_FALSE(loadedHeatPump->sourceSideWaterOutletNode());
+  EXPECT_EQ("AirSource", loadedHeatPump->condenserType());
+  ASSERT_TRUE(loadedHeatPump->loadSideWaterLoop());
+  ASSERT_TRUE(loadedHeatPump->heatRecoveryLoop());
+  EXPECT_EQ(*loadedLoadLoop, *loadedHeatPump->loadSideWaterLoop());
+  EXPECT_EQ(*loadedHeatRecoveryLoop, *loadedHeatPump->heatRecoveryLoop());
+  EXPECT_EQ(1u, loadedLoadLoop->supplyComponents(HeatPumpPlantLoopEIRHeating::iddObjectType()).size());
+  EXPECT_EQ(1u, loadedHeatRecoveryLoop->demandComponents(HeatPumpPlantLoopEIRHeating::iddObjectType()).size());
+  EXPECT_TRUE(loadedHeatPump->loadSideWaterInletNode());
+  EXPECT_TRUE(loadedHeatPump->loadSideWaterOutletNode());
+  EXPECT_TRUE(loadedHeatPump->heatRecoveryInletNode());
+  EXPECT_TRUE(loadedHeatPump->heatRecoveryOutletNode());
+
+  PlantLoop replacementSourceLoop(*loadedModel);
+  ASSERT_TRUE(replacementSourceLoop.setName("Replacement Heating Heat Pump Source Loop"));
+  ASSERT_TRUE(replacementSourceLoop.addDemandBranchForComponent(*loadedHeatPump));
+  EXPECT_EQ("WaterSource", loadedHeatPump->condenserType());
+  ASSERT_TRUE(loadedModel->save(idfPath, true));
+
+  auto reloadedModel = Model::load(idfPath);
+  ASSERT_TRUE(reloadedModel);
+  auto reloadedLoadLoop = reloadedModel->getConcreteModelObjectByName<PlantLoop>("Heating Heat Pump Load Loop");
+  auto reloadedSourceLoop = reloadedModel->getConcreteModelObjectByName<PlantLoop>("Replacement Heating Heat Pump Source Loop");
+  auto reloadedHeatRecoveryLoop = reloadedModel->getConcreteModelObjectByName<PlantLoop>("Heating Heat Pump Heat Recovery Loop");
+  auto reloadedHeatPump = reloadedModel->getConcreteModelObjectByName<HeatPumpPlantLoopEIRHeating>("Surviving Heating Heat Pump");
+  ASSERT_TRUE(reloadedLoadLoop);
+  ASSERT_TRUE(reloadedSourceLoop);
+  ASSERT_TRUE(reloadedHeatRecoveryLoop);
+  ASSERT_TRUE(reloadedHeatPump);
+  EXPECT_FALSE(reloadedModel->getConcreteModelObjectByName<PlantLoop>("Removed Heating Heat Pump Source Loop"));
+  ASSERT_TRUE(reloadedHeatPump->loadSideWaterLoop());
+  ASSERT_TRUE(reloadedHeatPump->sourceSideWaterLoop());
+  ASSERT_TRUE(reloadedHeatPump->heatRecoveryLoop());
+  EXPECT_EQ(*reloadedLoadLoop, *reloadedHeatPump->loadSideWaterLoop());
+  EXPECT_EQ(*reloadedSourceLoop, *reloadedHeatPump->sourceSideWaterLoop());
+  EXPECT_EQ(*reloadedHeatRecoveryLoop, *reloadedHeatPump->heatRecoveryLoop());
+  EXPECT_TRUE(reloadedHeatPump->loadSideWaterInletNode());
+  EXPECT_TRUE(reloadedHeatPump->loadSideWaterOutletNode());
+  EXPECT_TRUE(reloadedHeatPump->sourceSideWaterInletNode());
+  EXPECT_TRUE(reloadedHeatPump->sourceSideWaterOutletNode());
+  EXPECT_TRUE(reloadedHeatPump->heatRecoveryInletNode());
+  EXPECT_TRUE(reloadedHeatPump->heatRecoveryOutletNode());
+  EXPECT_EQ("WaterSource", reloadedHeatPump->condenserType());
+
+  openstudio::filesystem::remove(idfPath);
+}
+
+TEST_F(EPModelFixture, HeatPumpPlantLoopEIRHeating_HeatRecoveryOwnerLoopRemovalLifecycle) {
+  const auto idfPath = openstudio::tempDir() / openstudio::toPath("epmodel-heating-heat-pump-recovery-owner-removal.idf");
+
+  Model model;
+  PlantLoop loadLoop(model);
+  PlantLoop sourceLoop(model);
+  PlantLoop heatRecoveryLoop(model);
+  HeatPumpPlantLoopEIRHeating heatPump(model);
+  ASSERT_TRUE(loadLoop.setName("Heating Heat Pump Load Loop"));
+  ASSERT_TRUE(sourceLoop.setName("Heating Heat Pump Source Loop"));
+  ASSERT_TRUE(heatRecoveryLoop.setName("Removed Heating Heat Pump Heat Recovery Loop"));
+  ASSERT_TRUE(heatPump.setName("Surviving Heating Heat Pump"));
+  ASSERT_TRUE(loadLoop.addSupplyBranchForComponent(heatPump));
+  ASSERT_TRUE(sourceLoop.addDemandBranchForComponent(heatPump));
+  ASSERT_TRUE(heatRecoveryLoop.addDemandBranchForComponent(heatPump));
+  EXPECT_EQ("WaterSource", heatPump.condenserType());
+  ASSERT_TRUE(model.save(idfPath, true));
+
+  auto loadedModel = Model::load(idfPath);
+  ASSERT_TRUE(loadedModel);
+  auto loadedLoadLoop = loadedModel->getConcreteModelObjectByName<PlantLoop>("Heating Heat Pump Load Loop");
+  auto loadedSourceLoop = loadedModel->getConcreteModelObjectByName<PlantLoop>("Heating Heat Pump Source Loop");
+  auto loadedHeatRecoveryLoop = loadedModel->getConcreteModelObjectByName<PlantLoop>("Removed Heating Heat Pump Heat Recovery Loop");
+  auto loadedHeatPump = loadedModel->getConcreteModelObjectByName<HeatPumpPlantLoopEIRHeating>("Surviving Heating Heat Pump");
+  ASSERT_TRUE(loadedLoadLoop);
+  ASSERT_TRUE(loadedSourceLoop);
+  ASSERT_TRUE(loadedHeatRecoveryLoop);
+  ASSERT_TRUE(loadedHeatPump);
+  ASSERT_TRUE(loadedHeatPump->loadSideWaterLoop());
+  ASSERT_TRUE(loadedHeatPump->sourceSideWaterLoop());
+  ASSERT_TRUE(loadedHeatPump->heatRecoveryLoop());
+  EXPECT_EQ(*loadedLoadLoop, *loadedHeatPump->loadSideWaterLoop());
+  EXPECT_EQ(*loadedSourceLoop, *loadedHeatPump->sourceSideWaterLoop());
+  EXPECT_EQ(*loadedHeatRecoveryLoop, *loadedHeatPump->heatRecoveryLoop());
+  EXPECT_EQ(1u, loadedLoadLoop->supplyComponents(HeatPumpPlantLoopEIRHeating::iddObjectType()).size());
+  EXPECT_EQ(1u, loadedSourceLoop->demandComponents(HeatPumpPlantLoopEIRHeating::iddObjectType()).size());
+  EXPECT_EQ(1u, loadedHeatRecoveryLoop->demandComponents(HeatPumpPlantLoopEIRHeating::iddObjectType()).size());
+  EXPECT_TRUE(loadedHeatPump->loadSideWaterInletNode());
+  EXPECT_TRUE(loadedHeatPump->loadSideWaterOutletNode());
+  EXPECT_TRUE(loadedHeatPump->sourceSideWaterInletNode());
+  EXPECT_TRUE(loadedHeatPump->sourceSideWaterOutletNode());
+  EXPECT_TRUE(loadedHeatPump->heatRecoveryInletNode());
+  EXPECT_TRUE(loadedHeatPump->heatRecoveryOutletNode());
+  EXPECT_EQ("WaterSource", loadedHeatPump->condenserType());
+
+  std::vector<openstudio::Handle> recoveryTopologyHandles;
+  for (const auto& component : loadedHeatRecoveryLoop->supplyComponents()) {
+    recoveryTopologyHandles.push_back(component.handle());
+  }
+  for (const auto& component : loadedHeatRecoveryLoop->demandComponents()) {
+    if (component.handle() != loadedHeatPump->handle()) {
+      recoveryTopologyHandles.push_back(component.handle());
+    }
+  }
+  const auto recoveryLoopHandle = loadedHeatRecoveryLoop->handle();
+  const auto recoverySizingPlantHandle = loadedHeatRecoveryLoop->sizingPlant().handle();
+  const auto heatPumpHandle = loadedHeatPump->handle();
+  EXPECT_FALSE(loadedHeatRecoveryLoop->remove().empty());
+  EXPECT_FALSE(loadedModel->getObject(recoveryLoopHandle));
+  EXPECT_FALSE(loadedModel->getObject(recoverySizingPlantHandle));
+  for (const auto& handle : recoveryTopologyHandles) {
+    EXPECT_FALSE(loadedModel->getObject(handle));
+  }
+  ASSERT_TRUE(loadedModel->getObject(heatPumpHandle));
+  EXPECT_FALSE(loadedHeatPump->heatRecoveryLoop());
+  EXPECT_FALSE(loadedHeatPump->heatRecoveryInletNode());
+  EXPECT_FALSE(loadedHeatPump->heatRecoveryOutletNode());
+  ASSERT_TRUE(loadedHeatPump->loadSideWaterLoop());
+  ASSERT_TRUE(loadedHeatPump->sourceSideWaterLoop());
+  EXPECT_EQ(*loadedLoadLoop, *loadedHeatPump->loadSideWaterLoop());
+  EXPECT_EQ(*loadedSourceLoop, *loadedHeatPump->sourceSideWaterLoop());
+  EXPECT_EQ(1u, loadedLoadLoop->supplyComponents(HeatPumpPlantLoopEIRHeating::iddObjectType()).size());
+  EXPECT_EQ(1u, loadedSourceLoop->demandComponents(HeatPumpPlantLoopEIRHeating::iddObjectType()).size());
+  EXPECT_TRUE(loadedHeatPump->loadSideWaterInletNode());
+  EXPECT_TRUE(loadedHeatPump->loadSideWaterOutletNode());
+  EXPECT_TRUE(loadedHeatPump->sourceSideWaterInletNode());
+  EXPECT_TRUE(loadedHeatPump->sourceSideWaterOutletNode());
+  EXPECT_EQ("WaterSource", loadedHeatPump->condenserType());
+
+  PlantLoop replacementHeatRecoveryLoop(*loadedModel);
+  ASSERT_TRUE(replacementHeatRecoveryLoop.setName("Replacement Heating Heat Pump Heat Recovery Loop"));
+  ASSERT_TRUE(replacementHeatRecoveryLoop.addDemandBranchForComponent(*loadedHeatPump));
+  EXPECT_EQ("WaterSource", loadedHeatPump->condenserType());
+  ASSERT_TRUE(loadedModel->save(idfPath, true));
+
+  auto reloadedModel = Model::load(idfPath);
+  ASSERT_TRUE(reloadedModel);
+  auto reloadedLoadLoop = reloadedModel->getConcreteModelObjectByName<PlantLoop>("Heating Heat Pump Load Loop");
+  auto reloadedSourceLoop = reloadedModel->getConcreteModelObjectByName<PlantLoop>("Heating Heat Pump Source Loop");
+  auto reloadedHeatRecoveryLoop = reloadedModel->getConcreteModelObjectByName<PlantLoop>("Replacement Heating Heat Pump Heat Recovery Loop");
+  auto reloadedHeatPump = reloadedModel->getConcreteModelObjectByName<HeatPumpPlantLoopEIRHeating>("Surviving Heating Heat Pump");
+  ASSERT_TRUE(reloadedLoadLoop);
+  ASSERT_TRUE(reloadedSourceLoop);
+  ASSERT_TRUE(reloadedHeatRecoveryLoop);
+  ASSERT_TRUE(reloadedHeatPump);
+  EXPECT_FALSE(reloadedModel->getConcreteModelObjectByName<PlantLoop>("Removed Heating Heat Pump Heat Recovery Loop"));
+  ASSERT_TRUE(reloadedHeatPump->loadSideWaterLoop());
+  ASSERT_TRUE(reloadedHeatPump->sourceSideWaterLoop());
+  ASSERT_TRUE(reloadedHeatPump->heatRecoveryLoop());
+  EXPECT_EQ(*reloadedLoadLoop, *reloadedHeatPump->loadSideWaterLoop());
+  EXPECT_EQ(*reloadedSourceLoop, *reloadedHeatPump->sourceSideWaterLoop());
+  EXPECT_EQ(*reloadedHeatRecoveryLoop, *reloadedHeatPump->heatRecoveryLoop());
+  EXPECT_TRUE(reloadedHeatPump->loadSideWaterInletNode());
+  EXPECT_TRUE(reloadedHeatPump->loadSideWaterOutletNode());
+  EXPECT_TRUE(reloadedHeatPump->sourceSideWaterInletNode());
+  EXPECT_TRUE(reloadedHeatPump->sourceSideWaterOutletNode());
+  EXPECT_TRUE(reloadedHeatPump->heatRecoveryInletNode());
+  EXPECT_TRUE(reloadedHeatPump->heatRecoveryOutletNode());
+  EXPECT_EQ("WaterSource", reloadedHeatPump->condenserType());
+
+  openstudio::filesystem::remove(idfPath);
+}
+
+TEST_F(EPModelFixture, HeatPumpPlantLoopEIRHeating_SequentialLastOwnerLoopRemovalLifecycle) {
+  const auto idfPath = openstudio::tempDir() / openstudio::toPath("epmodel-heating-heat-pump-sequential-last-owner-removal.idf");
+
+  Model model;
+  PlantLoop loadLoop(model);
+  PlantLoop sourceLoop(model);
+  PlantLoop heatRecoveryLoop(model);
+  HeatPumpPlantLoopEIRHeating heatPump(model);
+  ASSERT_TRUE(loadLoop.setName("Final Heating Heat Pump Load Loop"));
+  ASSERT_TRUE(sourceLoop.setName("Second Heating Heat Pump Source Loop"));
+  ASSERT_TRUE(heatRecoveryLoop.setName("First Heating Heat Pump Heat Recovery Loop"));
+  ASSERT_TRUE(heatPump.setName("Sequential Deleted Heating Heat Pump"));
+  ASSERT_TRUE(loadLoop.addSupplyBranchForComponent(heatPump));
+  ASSERT_TRUE(sourceLoop.addDemandBranchForComponent(heatPump));
+  ASSERT_TRUE(heatRecoveryLoop.addDemandBranchForComponent(heatPump));
+  EXPECT_EQ("WaterSource", heatPump.condenserType());
+  ASSERT_TRUE(model.save(idfPath, true));
+
+  auto loadedModel = Model::load(idfPath);
+  ASSERT_TRUE(loadedModel);
+  auto loadedLoadLoop = loadedModel->getConcreteModelObjectByName<PlantLoop>("Final Heating Heat Pump Load Loop");
+  auto loadedSourceLoop = loadedModel->getConcreteModelObjectByName<PlantLoop>("Second Heating Heat Pump Source Loop");
+  auto loadedHeatRecoveryLoop = loadedModel->getConcreteModelObjectByName<PlantLoop>("First Heating Heat Pump Heat Recovery Loop");
+  auto loadedHeatPump = loadedModel->getConcreteModelObjectByName<HeatPumpPlantLoopEIRHeating>("Sequential Deleted Heating Heat Pump");
+  ASSERT_TRUE(loadedLoadLoop);
+  ASSERT_TRUE(loadedSourceLoop);
+  ASSERT_TRUE(loadedHeatRecoveryLoop);
+  ASSERT_TRUE(loadedHeatPump);
+  ASSERT_TRUE(loadedHeatPump->loadSideWaterLoop());
+  ASSERT_TRUE(loadedHeatPump->sourceSideWaterLoop());
+  ASSERT_TRUE(loadedHeatPump->heatRecoveryLoop());
+  EXPECT_EQ("WaterSource", loadedHeatPump->condenserType());
+
+  const auto heatPumpHandle = loadedHeatPump->handle();
+  const auto removeOwnerLoop = [&](PlantLoop& loop) {
+    std::vector<openstudio::Handle> topologyHandles;
+    for (const auto& component : loop.supplyComponents()) {
+      if (component.handle() != heatPumpHandle) {
+        topologyHandles.push_back(component.handle());
+      }
+    }
+    for (const auto& component : loop.demandComponents()) {
+      if (component.handle() != heatPumpHandle) {
+        topologyHandles.push_back(component.handle());
+      }
+    }
+    const auto loopHandle = loop.handle();
+    const auto sizingPlantHandle = loop.sizingPlant().handle();
+    EXPECT_FALSE(loop.remove().empty());
+    EXPECT_FALSE(loadedModel->getObject(loopHandle));
+    EXPECT_FALSE(loadedModel->getObject(sizingPlantHandle));
+    for (const auto& handle : topologyHandles) {
+      EXPECT_FALSE(loadedModel->getObject(handle));
+    }
+  };
+
+  removeOwnerLoop(*loadedHeatRecoveryLoop);
+  ASSERT_TRUE(loadedModel->getObject(heatPumpHandle));
+  EXPECT_FALSE(loadedHeatPump->heatRecoveryLoop());
+  EXPECT_FALSE(loadedHeatPump->tertiaryInletModelObject());
+  EXPECT_FALSE(loadedHeatPump->tertiaryOutletModelObject());
+  ASSERT_TRUE(loadedHeatPump->loadSideWaterLoop());
+  ASSERT_TRUE(loadedHeatPump->sourceSideWaterLoop());
+  EXPECT_EQ(*loadedLoadLoop, *loadedHeatPump->loadSideWaterLoop());
+  EXPECT_EQ(*loadedSourceLoop, *loadedHeatPump->sourceSideWaterLoop());
+  EXPECT_TRUE(loadedHeatPump->supplyInletModelObject());
+  EXPECT_TRUE(loadedHeatPump->supplyOutletModelObject());
+  EXPECT_TRUE(loadedHeatPump->demandInletModelObject());
+  EXPECT_TRUE(loadedHeatPump->demandOutletModelObject());
+  EXPECT_EQ("WaterSource", loadedHeatPump->condenserType());
+
+  removeOwnerLoop(*loadedSourceLoop);
+  ASSERT_TRUE(loadedModel->getObject(heatPumpHandle));
+  EXPECT_FALSE(loadedHeatPump->sourceSideWaterLoop());
+  EXPECT_FALSE(loadedHeatPump->demandInletModelObject());
+  EXPECT_FALSE(loadedHeatPump->demandOutletModelObject());
+  EXPECT_FALSE(loadedHeatPump->heatRecoveryLoop());
+  ASSERT_TRUE(loadedHeatPump->loadSideWaterLoop());
+  EXPECT_EQ(*loadedLoadLoop, *loadedHeatPump->loadSideWaterLoop());
+  EXPECT_TRUE(loadedHeatPump->supplyInletModelObject());
+  EXPECT_TRUE(loadedHeatPump->supplyOutletModelObject());
+  EXPECT_EQ("AirSource", loadedHeatPump->condenserType());
+
+  removeOwnerLoop(*loadedLoadLoop);
+  EXPECT_FALSE(loadedModel->getObject(heatPumpHandle));
+
+  ASSERT_TRUE(loadedModel->save(idfPath, true));
+  auto reloadedModel = Model::load(idfPath);
+  ASSERT_TRUE(reloadedModel);
+  EXPECT_FALSE(reloadedModel->getConcreteModelObjectByName<PlantLoop>("First Heating Heat Pump Heat Recovery Loop"));
+  EXPECT_FALSE(reloadedModel->getConcreteModelObjectByName<PlantLoop>("Second Heating Heat Pump Source Loop"));
+  EXPECT_FALSE(reloadedModel->getConcreteModelObjectByName<PlantLoop>("Final Heating Heat Pump Load Loop"));
+  EXPECT_FALSE(reloadedModel->getConcreteModelObjectByName<HeatPumpPlantLoopEIRHeating>("Sequential Deleted Heating Heat Pump"));
+
+  openstudio::filesystem::remove(idfPath);
+}
 
 TEST_F(EPModelFixture, HeatPumpPlantLoopEIRHeating_DefaultConstructor) {
   Model model;

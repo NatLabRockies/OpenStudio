@@ -25,6 +25,29 @@ namespace epmodel {
     class CoilHeatingWaterToAirHeatPumpEquationFit_Impl;
   }
 
+  /** \brief Represents a water-to-air heating heat-pump coil using equation-fit curves.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-heating-and-cooling-coils.html#coilheatingwatertoairheatpumpequationfit,Coil:Heating:WaterToAirHeatPump:EquationFit}
+   *
+   * \par Important behavior
+   * The availability schedule and required performance curves are stored as
+   * EnergyPlus object-list relationships. Autosized-value queries are exposed
+   * for API compatibility but currently return no value because EPModel does
+   * not read SQL sizing results.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::CoilHeatingWaterToAirHeatPumpEquationFit</code>.
+   *
+   * - <b>Changed:</b> The airflow-network equivalent-duct methods use
+   *   <code>AirflowNetworkDistributionComponentCoil</code> instead of
+   *   Model's <code>AirflowNetworkEquivalentDuct</code>.
+   *
+   * \par Known limitations
+   * Autosized values remain unavailable until EPModel gains SQL-backed sizing
+   * result lookup.
+   */
   class EPMODEL_API CoilHeatingWaterToAirHeatPumpEquationFit : public WaterToAirComponent
   {
    public:
@@ -39,29 +62,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - Status: Parity with documented deltas. The canonical schedule, curve, constructor, autosized-query, and
-    //   deprecated coefficient alias surface is preserved here.
-    // - Canonical Counterpart: openstudio::model::CoilHeatingWaterToAirHeatPumpEquationFit.
-    // - Implemented Parity: `availabilitySchedule`, the two required curve relationships,
-    //   `partLoadFractionCorrelationCurve`, the canonical constructors, the deprecated coefficient aliases that delegate
-    //   through the stored curves, the scalar fit fields, and the autosized-value query helpers preserve the canonical
-    //   public contract.
-    // - Implemented Parity: the canonical equivalent-duct helper surface lands on epmodel's
-    //   `AirflowNetworkDistributionComponentCoil`, which is the EnergyPlus object written by the
-    //   model-side `AirflowNetworkEquivalentDuct` translator path for coils.
-    // - Documented Delta: Autosized-value query helpers currently return `none`, which is the same documented
-    //   limitation already used by the nearby equation-fit cooling coil until epmodel grows canonical SQL-backed
-    //   autosized results.
-    // - Field/Storage Mapping: Availability schedule and curve relationships are stored directly on the EnergyPlus
-    //   `Coil:Heating:WaterToAirHeatPump:EquationFit` object, and scalar fit fields map directly to the corresponding
-    //   EnergyPlus fields.
-    // - Evidence: `src/model/CoilHeatingWaterToAirHeatPumpEquationFit.hpp`,
-    //   `src/model/CoilHeatingWaterToAirHeatPumpEquationFit.cpp`,
-    //   `src/energyplus/ForwardTranslator/ForwardTranslateCoilHeatingWaterToAirHeatPumpEquationFit.cpp`, and
-    //   `src/epmodel/test/CoilHeatingWaterToAirHeatPumpEquationFit_GTest.cpp`.
-    // - Remaining Parity Work: Extend the same AFN mapping surface to the remaining water-to-air heat pump coil family
-    //   wrappers when that campaign reaches them.
     Schedule availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);
 

@@ -23,6 +23,18 @@ namespace epmodel {
     class HeatBalanceAlgorithm_Impl;
   }
 
+  /** \brief Represents <code>HeatBalanceAlgorithm</code>.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-simulation-parameters.html#heatbalancealgorithm,HeatBalanceAlgorithm}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::HeatBalanceAlgorithm</code>.
+   * The EPModel declaration exposes the EnergyPlus-backed fields shown here; Model conveniences for typed relationships, extensible groups, or OpenStudio-only fields are not available unless declared here.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API HeatBalanceAlgorithm : public ModelObject
   {
    public:
@@ -37,13 +49,6 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     static std::vector<std::string> algorithmValues();
-
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model HeatBalanceAlgorithm scalar accessor names/signatures.
-    // - Field Mapping: algorithm and convection/temperature scalar APIs map directly to E+ HeatBalanceAlgorithm fields.
-    // - Field Mapping: ForwardTranslateHeatBalanceAlgorithm confirms direct pass-through for algorithm and numeric scalar fields.
-    // - Field Mapping: constructor defaults for algorithm and surfaceTemperatureUpperLimit mirror existing model behavior.
-    // - TODO(parity): Keep non-scalar relationship behavior out of scope for this scaffold pass.
     std::string algorithm() const;
     bool isAlgorithmDefaulted() const;
     bool setAlgorithm(const std::string& algorithm);

@@ -34,6 +34,21 @@ namespace epmodel {
     class PlantLoop_Impl;
   }
 
+  /** \brief Represents a plant-side HVAC loop and its equipment branches.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-plant-condenser-loops.html#plantloop,PlantLoop}.
+   *
+   * \par Important behavior
+   * Relationships are projected from EnergyPlus branch and node topology and mutators maintain that topology.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::PlantLoop</code>.
+   * <b>Not yet available: <code>clone()</code>, SQL autosized-result helpers, and Model value-list methods such as <code>validFluidTypeValues()</code>, <code>validLoadDistributionSchemeValues()</code>, and <code>validCommonPipeSimulationValues()</code>.</b>
+   *
+   * \par Known limitations
+   * Plant operation-scheme ownership is represented by the loop's operation-scheme lists; individual scheme wrappers do not provide a loop back-link.
+   */
   class EPMODEL_API PlantLoop : public Loop
   {
    public:
@@ -46,20 +61,6 @@ namespace epmodel {
     PlantLoop& operator=(PlantLoop&&) = default;
 
     static IddObjectType iddObjectType();
-
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. Core loop operating scalars, supply/demand topology accessors, branch add/remove APIs, setpoint-node helpers,
-    //   sizing ownership, availability-manager ownership, and plant operation-scheme/schedule APIs are present, but the canonical PlantLoop
-    //   surface is still incomplete.
-    // - Canonical Counterpart: openstudio::model::PlantLoop.
-    // - Implemented Parity: `loadDistributionScheme`, `fluidType`, glycol concentration, loop temperature/flow/volume scalars,
-    //   `commonPipeSimulation`, setpoint-node helpers, plant operation-scheme/schedule APIs, sizing ownership, supply/demand node accessors,
-    //   supply/demand mixers and splitters, supply/demand traversal, availability-manager ownership, and branch add/remove APIs preserve the
-    //   main canonical plant-loop topology contract.
-    // - Documented Delta: clone/remove specializations and autosized-result helpers remain omitted.
-    // - Field/Storage Mapping: Branch-name and connector linkage remain expressed through topology APIs over EnergyPlus-backed loop structure instead of exposing new scalar string accessors for mixer/splitter branch fields.
-    // - Evidence: `src/model/PlantLoop.hpp` and `src/energyplus/ForwardTranslator/ForwardTranslatePlantLoop.cpp` define the canonical public surface and direct scalar mappings that this epmodel wrapper currently preserves in part.
-    // - Remaining Parity Work: Add clone/remove specializations and autosized-result helpers.
 
     std::string loadDistributionScheme() const;
     bool setLoadDistributionScheme(const std::string& scheme);

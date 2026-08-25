@@ -28,8 +28,8 @@ TEST_F(EPModelFixture, ZoneHVACLowTemperatureRadiantSurfaceGroup_DefaultConstruc
 TEST_F(EPModelFixture, ZoneHVACLowTemperatureRadiantSurfaceGroup_SurfaceRows_RoundTrip) {
   Model model;
   ZoneHVACLowTemperatureRadiantSurfaceGroup group(model);
-  Surface floor(model);
-  Surface ceiling(model);
+  Surface floor({{0, 0, 0}, {1, 0, 0}, {1, 1, 0}, {0, 1, 0}}, model);
+  Surface ceiling({{0, 0, 3}, {1, 0, 3}, {1, 1, 3}, {0, 1, 3}}, model);
 
   ASSERT_TRUE(floor.setName("Radiant Floor"));
   ASSERT_TRUE(ceiling.setName("Radiant Ceiling"));

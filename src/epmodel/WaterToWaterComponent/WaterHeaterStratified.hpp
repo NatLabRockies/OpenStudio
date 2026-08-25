@@ -34,6 +34,29 @@ namespace epmodel {
 
   }
 
+  /** \brief Represents a stratified water heater with use-side and source-side plant connections.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-water-heaters.html#waterheaterstratified,WaterHeater:Stratified}
+   *
+   * \par Important behavior
+   * Construction creates and links a <code>WaterHeater:Sizing</code> companion.
+   * The ambient-indicator setter accepts <code>ThermalZone</code> as an alias
+   * for the EnergyPlus <code>Zone</code> value and stores the normalized value.
+   * The EPModel-only heater schedule reset methods clear the corresponding
+   * heater schedule fields.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::WaterHeaterStratified</code>.
+   *
+   * - <b>Added:</b> <code>resetHeater1SetpointTemperatureSchedule()</code> and
+   *   <code>resetHeater2SetpointTemperatureSchedule()</code>.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations beyond the shared
+   * <code>WaterToWaterComponent</code> API differences.
+   */
   class EPMODEL_API WaterHeaterStratified : public WaterToWaterComponent
   {
    public:
@@ -56,16 +79,6 @@ namespace epmodel {
     static std::vector<std::string> inletModeValues();
     static std::vector<std::string> sourceSideFlowControlModeValues();
 
-    // Schema Alignment Notes:
-    // - Status: Near Parity with documented deltas. The stratified water-heater scalar, source/use-side topology surface, clone(Model)
-    //   sizing reattachment, and SQL-backed autosize helpers now align with the canonical wrapper; one epmodel-only ambient-indicator
-    //   alias remains outside current epmodel scope.
-    // - Canonical Counterpart: openstudio::model::WaterHeaterStratified.
-    // - Implemented Parity: Scalar accessors, heater/ambient/use-flow/cold-water/indirect-alternate schedule links, ambient zone/object links, source/use-side plant-loop aliases, component classification and fuel reporting, clone(Model) sizing reattachment, SQL-backed autosized helpers, and WaterHeaterSizing ownership preserve the canonical model API shape.
-    // - Documented Delta: epmodel preserves a `ThermalZone` ambient-indicator alias where the canonical wrapper surfaces the raw `Zone` token.
-    // - Field/Storage Mapping: Scalar wrappers target EnergyPlus `WaterHeater:Stratified` fields directly; epmodel normalizes `ambientTemperatureIndicator` between `ThermalZone` and stored `Zone`; the forward translator also synthesizes an `OutdoorAir:NodeList` when outdoors ambient mode has no explicit node name.
-    // - Evidence: `src/model/WaterHeaterStratified.hpp`, `src/model/WaterHeaterStratified.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateWaterHeaterStratified.cpp`.
-    // - Remaining Parity Work: Expand only if later work needs additional model-side clone parity beyond the aligned WaterHeaterSizing reattachment behavior.
     std::string endUseSubcategory() const;
     bool setEndUseSubcategory(const std::string& endUseSubcategory);
 

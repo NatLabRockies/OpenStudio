@@ -23,6 +23,23 @@ namespace epmodel {
     class HeatExchangerFluidToFluid_Impl;
   }
 
+  /** \brief Represents a fluid-to-fluid heat exchanger between two plant loops.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-condenser-equipment.html#heatexchangerfluidtofluid,HeatExchanger:FluidToFluid}
+   *
+   * \par Important behavior
+   * Component classification and reported loop fuel types follow the selected
+   * <code>controlType()</code> and the attached secondary plant loop.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::HeatExchangerFluidToFluid</code>. No known public
+   * API differences.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API HeatExchangerFluidToFluid : public WaterToWaterComponent
   {
    public:
@@ -41,19 +58,6 @@ namespace epmodel {
     static std::vector<std::string> heatTransferMeteringEndUseTypeValues();
     static std::vector<std::string> componentOverrideCoolingControlTemperatureModeValues();
 
-    // Schema Alignment Notes:
-    // - Status: Parity with documented deltas. The canonical scalar, relationship, and control-type classification surface is aligned locally.
-    // - Canonical Counterpart: openstudio::model::HeatExchangerFluidToFluid.
-    // - Implemented Parity: Scalar accessors, availability schedule, the two component-override inlet-node reference links, and the
-    //   control-type-driven `componentType` and loop-fuel delegation overrides preserve the canonical model API shape.
-    // - Documented Delta: Broader loop-coupling behavior remains delegated to the shared water-to-water topology layer rather than adding extra
-    //   wrapper-local policy here.
-    // - Field/Storage Mapping: Scalar wrappers target EnergyPlus `HeatExchanger:FluidToFluid` fields directly, and the schedule/node relationships
-    //   are stored as direct object references on the same object. Classification and fuel reporting are derived from `ControlType` plus the
-    //   attached secondary plant loop, matching the canonical model implementation.
-    // - Evidence: `src/model/HeatExchangerFluidToFluid.hpp`, `src/model/HeatExchangerFluidToFluid.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateHeatExchangerFluidToFluid.cpp`.
-    // - Remaining Parity Work: Wrapper-local parity is closed for this iteration; any future gaps should come from shared plant-loop fuel/type
-    //   reporting infrastructure rather than this wrapper.
     boost::optional<Schedule> availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);
     void resetAvailabilitySchedule();

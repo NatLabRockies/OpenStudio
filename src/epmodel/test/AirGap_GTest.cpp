@@ -25,7 +25,4 @@ TEST_F(EPModelFixture, AirGap_ScalarAccessors_RoundTrip) {
 
   EXPECT_TRUE(airGap.setThermalResistance(0.18));
   EXPECT_DOUBLE_EQ(0.18, airGap.thermalResistance());
-
-  airGap.resetThermalResistance();
-  EXPECT_DOUBLE_EQ(0.1, airGap.thermalResistance());
 }

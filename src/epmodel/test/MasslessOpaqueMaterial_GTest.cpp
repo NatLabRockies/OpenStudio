@@ -35,22 +35,19 @@ TEST_F(EPModelFixture, MasslessOpaqueMaterial_ScalarAccessors_RoundTrip) {
   EXPECT_DOUBLE_EQ(0.25, masslessOpaqueMaterial.thermalResistance());
 
   EXPECT_TRUE(masslessOpaqueMaterial.setThermalAbsorptance(0.88));
-  ASSERT_TRUE(masslessOpaqueMaterial.thermalAbsorptance());
-  EXPECT_DOUBLE_EQ(0.88, masslessOpaqueMaterial.thermalAbsorptance().get());
+  EXPECT_DOUBLE_EQ(0.88, masslessOpaqueMaterial.thermalAbsorptance());
   EXPECT_FALSE(masslessOpaqueMaterial.isThermalAbsorptanceDefaulted());
   masslessOpaqueMaterial.resetThermalAbsorptance();
   EXPECT_TRUE(masslessOpaqueMaterial.isThermalAbsorptanceDefaulted());
 
   EXPECT_TRUE(masslessOpaqueMaterial.setSolarAbsorptance(0.65));
-  ASSERT_TRUE(masslessOpaqueMaterial.solarAbsorptance());
-  EXPECT_DOUBLE_EQ(0.65, masslessOpaqueMaterial.solarAbsorptance().get());
+  EXPECT_DOUBLE_EQ(0.65, masslessOpaqueMaterial.solarAbsorptance());
   EXPECT_FALSE(masslessOpaqueMaterial.isSolarAbsorptanceDefaulted());
   masslessOpaqueMaterial.resetSolarAbsorptance();
   EXPECT_TRUE(masslessOpaqueMaterial.isSolarAbsorptanceDefaulted());
 
   EXPECT_TRUE(masslessOpaqueMaterial.setVisibleAbsorptance(0.61));
-  ASSERT_TRUE(masslessOpaqueMaterial.visibleAbsorptance());
-  EXPECT_DOUBLE_EQ(0.61, masslessOpaqueMaterial.visibleAbsorptance().get());
+  EXPECT_DOUBLE_EQ(0.61, masslessOpaqueMaterial.visibleAbsorptance());
   EXPECT_FALSE(masslessOpaqueMaterial.isVisibleAbsorptanceDefaulted());
   masslessOpaqueMaterial.resetVisibleAbsorptance();
   EXPECT_TRUE(masslessOpaqueMaterial.isVisibleAbsorptanceDefaulted());

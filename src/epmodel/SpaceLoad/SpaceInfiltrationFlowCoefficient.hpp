@@ -20,6 +20,17 @@ namespace epmodel {
     class SpaceInfiltrationFlowCoefficient_Impl;
   }
 
+  /** \brief Represents the EnergyPlus ZoneInfiltration:FlowCoefficient object.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-airflow.html#zoneinfiltrationflowcoefficient,ZoneInfiltration:FlowCoefficient}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::SpaceInfiltrationFlowCoefficient</code>. <b>Not yet available:</b> the Model <code>schedule()</code>, <code>setSchedule()</code>, and <code>resetSchedule()</code> methods and space/zone relationship APIs. EPModel exposes flow, pressure, wind, and shelter scalars.
+   *
+   * \par Known limitations
+   * The pressure exponent has EnergyPlus default/reset behavior; relationship assignment remains outside this scalar wrapper.
+   */
   class EPMODEL_API SpaceInfiltrationFlowCoefficient : public ModelObject
   {
    public:
@@ -33,13 +44,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model scalar accessor names for the SpaceInfiltrationFlowCoefficient counterpart.
-    // - Field Mapping: flowCoefficient, stackCoefficient, pressureExponent, windCoefficient, and shelterFactor map
-    //   directly to ZoneInfiltration:FlowCoefficient.
-    // - Field Mapping: Zone/Space relationships plus ScheduleName are intentionally excluded from this scalar-only API.
-    // - ForwardTranslator evidence: translateSpaceInfiltrationFlowCoefficient writes these scalar values directly to
-    //   the EnergyPlus object.
     double flowCoefficient() const;
     bool setFlowCoefficient(double flowCoefficient);
 

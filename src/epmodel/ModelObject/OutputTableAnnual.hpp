@@ -22,6 +22,17 @@ namespace epmodel {
     class OutputTableAnnual_Impl;
   }
 
+  /** \brief OutputTableAnnual.
+   *
+   * \par EnergyPlus object
+   * \epobject{output-table-annual.html#outputtableannual,Output:Table:Annual}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::OutputTableAnnual</code>. The filter field is exposed; extensible annual-table rows are not managed by EPModel.
+   *
+   * \par Known limitations
+   * Only the fields and relationships listed in this wrapper are available; broader Model-only helpers are not exposed.
+   */
   class EPMODEL_API OutputTableAnnual : public ModelObject
   {
    public:
@@ -34,13 +45,6 @@ namespace epmodel {
     OutputTableAnnual& operator=(OutputTableAnnual&&) = default;
 
     static IddObjectType iddObjectType();
-
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model::OutputTableAnnual scalar accessor names/signatures for counterpart parity.
-    // - Field Mapping: filter maps directly to E+ Output:Table:Annual Filter.
-    // - Field Mapping: schedule and extensible annual-variable-group fields are relationship/extensible scope and intentionally excluded in this scalar-only pass.
-    // - ForwardTranslator evidence: ForwardTranslateOutputTableAnnual.cpp maps modelObject.filter() directly to Output:Table:Annual Filter.
-    // - TODO(parity): Add schedule/extensible-group APIs in a later non-scalar pass without breaking this preserved scalar API.
     boost::optional<std::string> filter() const;
 
     bool setFilter(const std::string& filter);

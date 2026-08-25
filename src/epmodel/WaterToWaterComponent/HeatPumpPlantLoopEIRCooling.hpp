@@ -25,6 +25,20 @@ namespace epmodel {
     class HeatPumpPlantLoopEIRCooling_Impl;
   }
 
+  /** \brief Represents a cooling heat pump connected to plant loops with an energy-input-ratio model.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-plant-equipment.html#plhp_eir_cooling,HeatPump:PlantLoop:EIR:Cooling}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::HeatPumpPlantLoopEIRCooling</code>. No known
+   * public API differences.
+   *
+   * \par Known limitations
+   * The autosized-value query methods return no value because EPModel does not
+   * yet surface the corresponding autosized results for this family.
+   */
   class EPMODEL_API HeatPumpPlantLoopEIRCooling : public WaterToWaterComponent
   {
    public:
@@ -44,16 +58,6 @@ namespace epmodel {
     static std::vector<std::string> validCondenserTypeValues();
     static std::vector<std::string> condenserTypeValues();
 
-    // Schema Alignment Notes:
-    // - Status: Parity with documented deltas. The canonical curve, companion, and loop/node convenience surface is preserved here.
-    // - Canonical Counterpart: openstudio::model::HeatPumpPlantLoopEIRCooling.
-    // - Implemented Parity: Canonical constructors, condenser/source-loop coupling, companion heat-pump linkage, required and optional curve
-    //   relationships, load/source/heat-recovery loop conveniences, node conveniences, and scalar accessors preserve the model-side API shape.
-    // - Documented Delta: Autosized-value query helpers still return `none` until epmodel grows canonical SQL-backed autosized result support.
-    // - Field/Storage Mapping: Scalar wrappers target EnergyPlus `HeatPump:PlantLoop:EIR:Cooling` fields directly, including persisted autosize sentinels for
-    //   the flow/capacity fields.
-    // - Evidence: `src/model/HeatPumpPlantLoopEIRCooling.hpp`, `src/model/HeatPumpPlantLoopEIRCooling.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateHeatPumpPlantLoopEIRCooling.cpp`.
-    // - Remaining Parity Work: Any further work should focus on shared water-to-water base behavior only if multiple wrappers need the same fix.
     std::string condenserType() const;
     bool setCondenserType(const std::string& condenserType);
 

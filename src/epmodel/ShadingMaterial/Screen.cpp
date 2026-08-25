@@ -15,9 +15,9 @@
 namespace openstudio {
 namespace epmodel {
 
-  Screen::Screen(const Model& model) : ModelObject(iddObjectType(), model) {}
+  Screen::Screen(const Model& model) : ShadingMaterial(iddObjectType(), model) {}
 
-  Screen::Screen(std::shared_ptr<detail::Screen_Impl> impl) : ModelObject(std::move(impl)) {}
+  Screen::Screen(std::shared_ptr<detail::Screen_Impl> impl) : ShadingMaterial(std::move(impl)) {}
 
   IddObjectType Screen::iddObjectType() {
     return IddObjectType::WindowMaterial_Screen;

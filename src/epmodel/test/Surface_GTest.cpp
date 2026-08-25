@@ -12,14 +12,14 @@ using namespace openstudio::epmodel;
 
 TEST_F(EPModelFixture, Surface_DefaultConstructor) {
   Model model;
-  Surface surface(model);
+  Surface surface({{0, 0, 1}, {0, 0, 0}, {1, 0, 0}, {1, 0, 1}}, model);
   EXPECT_EQ(Surface::iddObjectType(), surface.iddObject().type());
   EXPECT_FALSE(surface.nameString().empty());
 }
 
 TEST_F(EPModelFixture, Surface_ScalarAccessors_RoundTrip) {
   Model model;
-  Surface surface(model);
+  Surface surface({{0, 0, 1}, {0, 0, 0}, {1, 0, 0}, {1, 0, 1}}, model);
 
   EXPECT_TRUE(surface.setSurfaceType("Wall"));
   EXPECT_EQ("Wall", surface.surfaceType());
@@ -45,15 +45,14 @@ TEST_F(EPModelFixture, Surface_ScalarAccessors_RoundTrip) {
   EXPECT_FALSE(surface.isViewFactortoGroundAutocalculated());
   surface.autocalculateViewFactortoGround();
   EXPECT_TRUE(surface.isViewFactortoGroundAutocalculated());
-  EXPECT_TRUE(surface.setViewFactortoGround(boost::optional<double>{}));
+  surface.resetViewFactortoGround();
   EXPECT_TRUE(surface.isViewFactortoGroundDefaulted());
 
-  EXPECT_TRUE(surface.setNumberofVertices(4.0));
-  ASSERT_TRUE(surface.numberofVertices());
-  EXPECT_DOUBLE_EQ(4.0, *surface.numberofVertices());
+  EXPECT_TRUE(surface.setNumberofVertices(4));
+  EXPECT_EQ(4u, surface.numberofVertices());
   EXPECT_FALSE(surface.isNumberofVerticesAutocalculated());
   surface.autocalculateNumberofVertices();
   EXPECT_TRUE(surface.isNumberofVerticesAutocalculated());
-  EXPECT_TRUE(surface.setNumberofVertices(boost::optional<double>{}));
+  surface.resetNumberofVertices();
   EXPECT_TRUE(surface.isNumberofVerticesDefaulted());
 }

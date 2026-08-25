@@ -9,9 +9,15 @@
 #include "HVACComponent/HVACComponent.hpp"
 #include "Loop/AirLoopHVAC.hpp"
 #include "Loop/AirLoopHVAC_Impl.hpp"
+#include "Mixer/AirLoopHVACReturnPlenum.hpp"
+#include "Mixer/AirLoopHVACReturnPlenum_Impl.hpp"
 #include "Mixer/AirLoopHVACZoneMixer.hpp"
+#include "Mixer/AirLoopHVACZoneMixer_Impl.hpp"
+#include "Mixer/Mixer.hpp"
 #include "Splitter/AirLoopHVACZoneSplitter.hpp"
 #include "Splitter/AirLoopHVACZoneSplitter_Impl.hpp"
+#include "Splitter/AirLoopHVACSupplyPlenum.hpp"
+#include "Splitter/AirLoopHVACSupplyPlenum_Impl.hpp"
 #include "ResourceObject/DesignSpecificationOutdoorAir.hpp"
 #include "ResourceObject/DesignSpecificationOutdoorAir_Impl.hpp"
 #include "Model.hpp"
@@ -22,12 +28,23 @@
 #include "PlanarSurfaceGroup/Space_Impl.hpp"
 #include "ModelObject/ZoneHVACEquipmentConnections.hpp"
 #include "ModelObject/ZoneHVACEquipmentConnections_Impl.hpp"
+#include "ModelObject/AirLoopHVACReturnPath.hpp"
+#include "ModelObject/AirLoopHVACReturnPath_Impl.hpp"
+#include "ModelObject/AirLoopHVACSupplyPath.hpp"
+#include "ModelObject/AirLoopHVACSupplyPath_Impl.hpp"
+#include "ModelObject/NodeList.hpp"
+#include "ModelObject/NodeList_Impl.hpp"
 #include "ModelObject/ZoneHVACEquipmentList.hpp"
 #include "ModelObject/ZoneHVACEquipmentList_Impl.hpp"
 #include "ModelObject/ZoneControlContaminantController.hpp"
 #include "ModelObject/ZoneControlContaminantController_Impl.hpp"
 #include "ModelObject/ZoneControlHumidistat.hpp"
 #include "ModelObject/ZoneControlHumidistat_Impl.hpp"
+#include "ResourceObject/ScheduleTypeLimits.hpp"
+#include "Schedule/Schedule.hpp"
+#include "Schedule/Schedule_Impl.hpp"
+#include "Schedule/ScheduleConstant.hpp"
+#include "Schedule/ScheduleConstant_Impl.hpp"
 #include "Thermostat/Thermostat.hpp"
 #include "Thermostat/ThermostatSetpointDualSetpoint_Impl.hpp"
 #include "Thermostat/ThermostatSetpointDualSetpoint.hpp"
@@ -35,10 +52,14 @@
 #include "ZoneHVACComponent/ZoneHVACComponent_Impl.hpp"
 #include "ZoneHVACComponent/ZoneHVACIdealLoadsAirSystem.hpp"
 #include "ZoneHVACComponent/ZoneHVACIdealLoadsAirSystem_Impl.hpp"
+#include "StraightComponent/AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass.hpp"
+#include "StraightComponent/AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_Impl.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/Compare.hpp>
 #include <utilities/core/Logger.hpp>
+#include <utilities/idd/AirLoopHVAC_ReturnPlenum_FieldEnums.hxx>
+#include <utilities/idd/AirLoopHVAC_SupplyPlenum_FieldEnums.hxx>
 #include <utilities/idd/AirLoopHVAC_ZoneMixer_FieldEnums.hxx>
 #include <utilities/idd/AirLoopHVAC_ZoneSplitter_FieldEnums.hxx>
 #include <utilities/idd/Daylighting_Controls_FieldEnums.hxx>
@@ -50,6 +71,7 @@
 #include <utilities/idd/ZoneControl_ContaminantController_FieldEnums.hxx>
 #include <utilities/idd/ZoneControl_Humidistat_FieldEnums.hxx>
 #include <utilities/idd/ZoneControl_Thermostat_FieldEnums.hxx>
+#include <utilities/idd/ZoneHVAC_EquipmentConnections_FieldEnums.hxx>
 #include <utilities/idd/ZoneList_FieldEnums.hxx>
 #include <utilities/idd/OS_ZoneVentilation_DesignFlowRate_FieldEnums.hxx>
 #include <utilities/idd/ZoneVentilation_DesignFlowRate_FieldEnums.hxx>
@@ -57,8 +79,10 @@
 #include <utilities/idf/IdfExtensibleGroup.hpp>
 #include <utilities/idf/WorkspaceExtensibleGroup.hpp>
 #include <utilities/idf/WorkspaceObject.hpp>
+#include <utilities/idf/WorkspaceObject_Impl.hpp>
 
 #include <algorithm>
+#include <set>
 
 namespace openstudio {
 namespace epmodel {
@@ -254,6 +278,46 @@ namespace epmodel {
 
   Node ThermalZone::zoneAirNode() const {
     return getImpl<detail::ThermalZone_Impl>()->zoneAirNode();
+  }
+
+  bool ThermalZone::setSupplyPlenum(const ThermalZone& plenumZone) {
+    return getImpl<detail::ThermalZone_Impl>()->setSupplyPlenum(plenumZone);
+  }
+
+  bool ThermalZone::setSupplyPlenum(const ThermalZone& plenumZone, unsigned branchIndex) {
+    return getImpl<detail::ThermalZone_Impl>()->setSupplyPlenum(plenumZone, branchIndex);
+  }
+
+  void ThermalZone::removeSupplyPlenum() {
+    getImpl<detail::ThermalZone_Impl>()->removeSupplyPlenum();
+  }
+
+  void ThermalZone::removeSupplyPlenum(const AirLoopHVAC& airLoop) {
+    getImpl<detail::ThermalZone_Impl>()->removeSupplyPlenum(airLoop);
+  }
+
+  void ThermalZone::removeSupplyPlenum(unsigned branchIndex) {
+    getImpl<detail::ThermalZone_Impl>()->removeSupplyPlenum(branchIndex);
+  }
+
+  void ThermalZone::removeSupplyPlenum(const AirLoopHVAC& airLoop, unsigned branchIndex) {
+    getImpl<detail::ThermalZone_Impl>()->removeSupplyPlenum(airLoop, branchIndex);
+  }
+
+  bool ThermalZone::setReturnPlenum(const ThermalZone& plenumZone) {
+    return getImpl<detail::ThermalZone_Impl>()->setReturnPlenum(plenumZone);
+  }
+
+  bool ThermalZone::setReturnPlenum(const ThermalZone& plenumZone, AirLoopHVAC& airLoop) {
+    return getImpl<detail::ThermalZone_Impl>()->setReturnPlenum(plenumZone, airLoop);
+  }
+
+  void ThermalZone::removeReturnPlenum() {
+    getImpl<detail::ThermalZone_Impl>()->removeReturnPlenum();
+  }
+
+  void ThermalZone::removeReturnPlenum(AirLoopHVAC& airLoop) {
+    getImpl<detail::ThermalZone_Impl>()->removeReturnPlenum(airLoop);
   }
 
   bool ThermalZone::addEquipment(const ModelObject& equipment) {
@@ -736,6 +800,97 @@ namespace epmodel {
         return false;
       }
 
+      boost::optional<double> thermostatControlValue(const Thermostat& thermostat) {
+        switch (thermostat.iddObject().type().value()) {
+          case openstudio::IddObjectType::ThermostatSetpoint_SingleHeating:
+            return 1.0;
+          case openstudio::IddObjectType::ThermostatSetpoint_SingleCooling:
+            return 2.0;
+          case openstudio::IddObjectType::ThermostatSetpoint_DualSetpoint:
+            return 4.0;
+          default:
+            return boost::none;
+        }
+      }
+
+      struct ThermostatControlScheduleEvidence
+      {
+        boost::optional<Schedule> managed;
+        std::string raw;
+        std::vector<Schedule> candidates;
+        bool exact = false;
+      };
+
+      ThermostatControlScheduleEvidence thermostatControlScheduleEvidence(const openstudio::WorkspaceObject& zoneControl, const ThermalZone& zone) {
+        constexpr auto field = openstudio::ZoneControl_ThermostatFields::ControlTypeScheduleName;
+        ThermostatControlScheduleEvidence result;
+        const auto managedValue = zoneControl.getField(field, false);
+        if (managedValue) {
+          const auto managedHandle = openstudio::toUUID(*managedValue);
+          if (!managedHandle.isNull()) {
+            result.managed = zone.model().getModelObject<Schedule>(managedHandle);
+          }
+        }
+
+        const auto workspaceImpl = zoneControl.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+        OS_ASSERT(workspaceImpl);
+        const auto raw = workspaceImpl->openstudio::detail::IdfObject_Impl::getString(
+          openstudio::ZoneControl_ThermostatFields::ControlTypeScheduleName, false, true);
+        result.raw = raw.value_or("");
+
+        const auto candidateName = !result.raw.empty() ? result.raw : (result.managed ? result.managed->nameString() : std::string{});
+        if (!candidateName.empty()) {
+          const auto candidateHandle = openstudio::toUUID(candidateName);
+          if (!candidateHandle.isNull()) {
+            if (auto candidate = zone.model().getModelObject<Schedule>(candidateHandle)) {
+              result.candidates.push_back(*candidate);
+            }
+          } else {
+            for (const auto& schedule : zone.model().getModelObjects<Schedule>()) {
+              if (openstudio::istringEqual(schedule.nameString(), candidateName)) {
+                result.candidates.push_back(schedule);
+              }
+            }
+          }
+        }
+
+        const bool rawAgrees =
+          result.raw.empty()
+          || (result.managed
+              && (openstudio::toUUID(result.raw) == result.managed->handle() || openstudio::istringEqual(result.raw, result.managed->nameString())));
+        result.exact =
+          result.managed && rawAgrees && result.candidates.size() == 1u && result.candidates.front().handle() == result.managed->handle();
+        return result;
+      }
+
+      bool ensureThermostatControlSchedule(openstudio::WorkspaceObject& zoneControl, const ThermalZone& zone, double controlValue) {
+        const auto evidence = thermostatControlScheduleEvidence(zoneControl, zone);
+        if (evidence.exact) {
+          return true;
+        }
+        if (evidence.managed || !evidence.raw.empty()) {
+          return false;
+        }
+
+        ScheduleConstant schedule(zone.model());
+        OS_ASSERT(schedule.setName(zone.nameString() + " Thermostat Control Type Schedule"));
+        OS_ASSERT(schedule.setValue(controlValue));
+        ScheduleTypeLimits limits(zone.model());
+        OS_ASSERT(limits.setName(zone.nameString() + " Thermostat Control Type Schedule Limits"));
+        OS_ASSERT(limits.setLowerLimitValue(0.0));
+        OS_ASSERT(limits.setUpperLimitValue(4.0));
+        OS_ASSERT(limits.setNumericType("Discrete"));
+        OS_ASSERT(schedule.setScheduleTypeLimits(limits));
+        if (!zoneControl.setPointer(openstudio::ZoneControl_ThermostatFields::ControlTypeScheduleName, schedule.handle())) {
+          schedule.remove();
+          if (limits.sources().empty()) {
+            limits.remove();
+          }
+          return false;
+        }
+        return true;
+      }
+
       bool zoneVentilationTargetsZone(const ThermalZone& zone, const openstudio::WorkspaceObject& zoneVentilation) {
         const auto zoneName = zone.nameString();
         if (zoneName.empty()) {
@@ -1163,6 +1318,11 @@ namespace epmodel {
         return false;
       }
 
+      const auto controlValue = thermostatControlValue(thermostat);
+      if (!controlValue) {
+        return false;
+      }
+
       auto zone = getObject<openstudio::epmodel::ThermalZone>();
       if (auto currentThermostat = thermostatSetpointDualSetpoint()) {
         currentThermostat->getImpl<openstudio::epmodel::detail::ThermostatSetpointDualSetpoint_Impl>()
@@ -1183,12 +1343,22 @@ namespace epmodel {
       }
 
       if (auto current = this->thermostat()) {
+        const auto currentControlValue = thermostatControlValue(*current);
+        if (!currentControlValue || *currentControlValue != *controlValue) {
+          return false;
+        }
         if (*current == thermostat) {
           return true;
         }
       }
 
+      const auto existingZoneControl = zoneControlThermostatObject();
+      if (existingZoneControl && !thermostatControlScheduleEvidence(*existingZoneControl, zone).exact) {
+        return false;
+      }
+
       auto assigned = thermostat;
+      boost::optional<openstudio::epmodel::Thermostat> stagedClone;
       for (const auto& zoneControl : model().getObjectsByType(openstudio::IddObjectType::ZoneControl_Thermostat)) {
         if (auto target = zoneControl.getTarget(openstudio::ZoneControl_ThermostatFields::Control1Name)) {
           if ((*target == thermostat) && !zoneControlThermostatTargetsZone(zone, zoneControl)) {
@@ -1197,16 +1367,59 @@ namespace epmodel {
               return false;
             }
             assigned = clonedObject->cast<openstudio::epmodel::Thermostat>();
+            stagedClone = assigned;
             break;
           }
         }
       }
 
-      auto object = getOrCreateZoneControlThermostatObject();
-      if (!object.setString(openstudio::ZoneControl_ThermostatFields::Control1ObjectType, thermostat.iddObject().name())) {
+      const bool createdZoneControl = !existingZoneControl;
+      auto object = existingZoneControl ? *existingZoneControl : getOrCreateZoneControlThermostatObject();
+      const auto discardCreatedZoneControl = [&]() {
+        if (!createdZoneControl) {
+          return;
+        }
+        boost::optional<ScheduleConstant> generatedSchedule;
+        boost::optional<ScheduleTypeLimits> generatedLimits;
+        if (auto target = object.getTarget(openstudio::ZoneControl_ThermostatFields::ControlTypeScheduleName)) {
+          generatedSchedule = target->optionalCast<ScheduleConstant>();
+          if (generatedSchedule) {
+            generatedLimits = generatedSchedule->scheduleTypeLimits();
+          }
+        }
+        object.remove();
+        if (generatedSchedule) {
+          generatedSchedule->remove();
+        }
+        if (generatedLimits && generatedLimits->sources().empty()) {
+          generatedLimits->remove();
+        }
+      };
+      if (createdZoneControl && !ensureThermostatControlSchedule(object, zone, *controlValue)) {
+        discardCreatedZoneControl();
+        if (stagedClone) {
+          stagedClone->remove();
+        }
+        return false;
+      }
+
+      const auto previousType = object.getString(openstudio::ZoneControl_ThermostatFields::Control1ObjectType, false, true).value_or("");
+      if (!object.setString(openstudio::ZoneControl_ThermostatFields::Control1ObjectType, assigned.iddObject().name())) {
+        discardCreatedZoneControl();
+        if (stagedClone) {
+          stagedClone->remove();
+        }
         return false;
       }
       if (!object.setPointer(openstudio::ZoneControl_ThermostatFields::Control1Name, assigned.handle())) {
+        if (createdZoneControl) {
+          discardCreatedZoneControl();
+        } else {
+          OS_ASSERT(object.setString(openstudio::ZoneControl_ThermostatFields::Control1ObjectType, previousType));
+        }
+        if (stagedClone) {
+          stagedClone->remove();
+        }
         return false;
       }
 
@@ -1237,6 +1450,15 @@ namespace epmodel {
       if (auto object = zoneControlThermostatObject()) {
         OS_ASSERT(object->setString(openstudio::ZoneControl_ThermostatFields::Control1ObjectType, ""));
         OS_ASSERT(object->setString(openstudio::ZoneControl_ThermostatFields::Control1Name, ""));
+
+        const auto hasControl = [&object](const unsigned field) {
+          const auto value = object->getString(field, false, true);
+          return value && !value->empty();
+        };
+        if (!hasControl(openstudio::ZoneControl_ThermostatFields::Control2Name) && !hasControl(openstudio::ZoneControl_ThermostatFields::Control3Name)
+            && !hasControl(openstudio::ZoneControl_ThermostatFields::Control4Name)) {
+          object->remove();
+        }
       }
     }
 
@@ -1276,13 +1498,13 @@ namespace epmodel {
         return false;
       }
 
-      if (auto current = zoneControlHumidistat()) {
-        if (*current == humidistat) {
-          return true;
-        }
+      auto current = zoneControlHumidistat();
+      if (current && (*current == humidistat)) {
+        return true;
       }
 
       auto assigned = humidistat;
+      boost::optional<openstudio::epmodel::ZoneControlHumidistat> stagedClone;
       const auto zone = getObject<openstudio::epmodel::ThermalZone>();
       if (auto zoneName = humidistat.getString(openstudio::ZoneControl_HumidistatFields::ZoneName, true)) {
         if (!zoneName->empty() && !openstudio::istringEqual(*zoneName, zone.nameString())) {
@@ -1291,17 +1513,42 @@ namespace epmodel {
             return false;
           }
           assigned = clonedObject->cast<openstudio::epmodel::ZoneControlHumidistat>();
+          stagedClone = assigned;
+          if (auto humidifying = humidistat.humidifyingRelativeHumiditySetpointSchedule();
+              humidifying && !assigned.setHumidifyingRelativeHumiditySetpointSchedule(*humidifying)) {
+            stagedClone->remove();
+            return false;
+          }
+          if (auto dehumidifying = humidistat.dehumidifyingRelativeHumiditySetpointSchedule();
+              dehumidifying && !assigned.setDehumidifyingRelativeHumiditySetpointSchedule(*dehumidifying)) {
+            stagedClone->remove();
+            return false;
+          }
         }
       }
 
-      resetZoneControlHumidistat();
-      return assigned.setPointer(openstudio::ZoneControl_HumidistatFields::ZoneName, zone.handle());
+      if (!assigned.setPointer(openstudio::ZoneControl_HumidistatFields::ZoneName, zone.handle())) {
+        if (stagedClone) {
+          stagedClone->remove();
+        }
+        return false;
+      }
+
+      if (current) {
+        current->remove();
+      }
+      return true;
     }
 
     void ThermalZone_Impl::resetZoneControlHumidistat() {
       if (auto humidistat = zoneControlHumidistat()) {
-        OS_ASSERT(humidistat->setString(openstudio::ZoneControl_HumidistatFields::ZoneName, ""));
+        humidistat->remove();
       }
+    }
+
+    std::vector<openstudio::IdfObject> ThermalZone_Impl::remove() {
+      resetZoneControlHumidistat();
+      return ModelObject_Impl::remove();
     }
 
     boost::optional<openstudio::epmodel::ZoneControlContaminantController> ThermalZone_Impl::zoneControlContaminantController() const {
@@ -1374,6 +1621,887 @@ namespace epmodel {
     openstudio::epmodel::Node ThermalZone_Impl::zoneAirNode() const {
       auto connections = const_cast<ThermalZone_Impl*>(this)->getZoneHVACEquipmentConnections();
       return connections.zoneAirNode();
+    }
+
+    boost::optional<openstudio::epmodel::Node> ThermalZone_Impl::plenumZoneNode() {
+      const auto zone = getObject<openstudio::epmodel::ThermalZone>();
+      if (!equipment().empty() || airLoopHVAC()) {
+        return boost::none;
+      }
+
+      if (auto connections = zoneHVACEquipmentConnections()) {
+        if (!connections->zoneAirInletNodes().empty() || !connections->zoneAirExhaustNodes().empty() || !connections->zoneReturnAirNodes().empty()
+            || !connections->zoneHVACEquipmentList().equipment().empty()) {
+          return boost::none;
+        }
+        return connections->zoneAirNode();
+      }
+
+      return model().getOrCreateTransientByName<openstudio::epmodel::Node>(zone.nameString() + " Air Node");
+    }
+
+    void ThermalZone_Impl::clearConditioningForPlenum() {
+      auto connections = zoneHVACEquipmentConnections();
+      boost::optional<openstudio::epmodel::ZoneHVACEquipmentList> equipmentList;
+      std::vector<openstudio::epmodel::NodeList> ownedNodeLists;
+      if (connections) {
+        equipmentList = connections->zoneHVACEquipmentList();
+        for (const unsigned field : {openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneAirInletNodeorNodeListName,
+                                     openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneAirExhaustNodeorNodeListName,
+                                     openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneReturnAirNodeorNodeListName}) {
+          if (auto target = connections->getTarget(field)) {
+            if (auto nodeList = target->optionalCast<openstudio::epmodel::NodeList>()) {
+              ownedNodeLists.push_back(*nodeList);
+            }
+          }
+        }
+      }
+
+      resetThermostat();
+      if (auto sizingZone = optionalSizingZone()) {
+        sizingZone->remove();
+      }
+      if (connections) {
+        connections->remove();
+      }
+      if (equipmentList && equipmentList->sources().empty()) {
+        equipmentList->remove();
+      }
+      for (auto& nodeList : ownedNodeLists) {
+        if (nodeList.sources().empty()) {
+          nodeList.remove();
+        }
+      }
+    }
+
+    bool ThermalZone_Impl::setSupplyPlenum(const openstudio::epmodel::ThermalZone& plenumZone) {
+      return setSupplyPlenum(plenumZone, 0u);
+    }
+
+    bool ThermalZone_Impl::setSupplyPlenum(const openstudio::epmodel::ThermalZone& plenumZone, unsigned branchIndex) {
+      const auto zone = getObject<openstudio::epmodel::ThermalZone>();
+      if ((plenumZone.model() != model()) || (plenumZone == zone)) {
+        return false;
+      }
+
+      const auto airLoop = airLoopHVAC();
+      const auto connections = zoneHVACEquipmentConnections();
+      if (!airLoop || !connections) {
+        return false;
+      }
+      const auto airLoopImpl = airLoop->getImpl<openstudio::epmodel::detail::AirLoopHVAC_Impl>();
+      OS_ASSERT(airLoopImpl);
+
+      const auto demandInletNodes = airLoop->demandInletNodes();
+      if (branchIndex >= demandInletNodes.size()) {
+        return false;
+      }
+      auto zoneSplitter = airLoopImpl->zoneSplitterForDemandInletNode(demandInletNodes[branchIndex]);
+      if (!zoneSplitter) {
+        return false;
+      }
+
+      boost::optional<openstudio::epmodel::AirLoopHVACSupplyPath> selectedSupplyPath;
+      for (const auto& supplyPath : model().getConcreteModelObjects<openstudio::epmodel::AirLoopHVACSupplyPath>()) {
+        const auto components = supplyPath.components();
+        if (std::ranges::find(components, zoneSplitter->cast<openstudio::epmodel::ModelObject>()) == components.end()) {
+          continue;
+        }
+        const auto pathLoop = supplyPath.airLoopHVAC();
+        if (!pathLoop || (*pathLoop != *airLoop) || selectedSupplyPath) {
+          return false;
+        }
+        selectedSupplyPath = supplyPath;
+      }
+      if (!selectedSupplyPath) {
+        return false;
+      }
+
+      boost::optional<openstudio::epmodel::ModelObject> effectiveBranchStart;
+      if (airLoop->isDualDuct()) {
+        const auto terminal = airLoopHVACTerminal();
+        const auto dualDuctTerminal = terminal ? terminal->optionalCast<openstudio::epmodel::Mixer>() : boost::none;
+        const auto terminalLoop = terminal ? terminal->airLoopHVAC() : boost::none;
+        if (!dualDuctTerminal || !terminalLoop || (*terminalLoop != *airLoop)) {
+          return false;
+        }
+        effectiveBranchStart = dualDuctTerminal->inletModelObject(branchIndex);
+      } else {
+        if (branchIndex != 0u) {
+          return false;
+        }
+        effectiveBranchStart = airLoopImpl->effectiveDemandBranchStartForZone(zone);
+      }
+      if (!effectiveBranchStart) {
+        return false;
+      }
+
+      boost::optional<openstudio::epmodel::AirLoopHVACSupplyPlenum> currentPlenum;
+      boost::optional<openstudio::epmodel::AirLoopHVACSupplyPlenum> targetPlenum;
+      for (const auto& candidate : model().getConcreteModelObjects<openstudio::epmodel::AirLoopHVACSupplyPlenum>()) {
+        const auto candidateZone = candidate.thermalZone();
+        if (candidateZone && (*candidateZone == plenumZone)) {
+          if (targetPlenum) {
+            return false;
+          }
+          targetPlenum = candidate;
+        }
+        const auto candidateOutlets = candidate.outletModelObjects();
+        if (std::ranges::find(candidateOutlets, *effectiveBranchStart) != candidateOutlets.end()) {
+          if (currentPlenum) {
+            return false;
+          }
+          currentPlenum = candidate;
+        }
+      }
+
+      const auto selectedSplitterOutlets = zoneSplitter->outletModelObjects();
+      const auto selectedPathComponents = selectedSupplyPath->components();
+      unsigned currentPathMembershipCount = 0u;
+      unsigned targetPathMembershipCount = 0u;
+      for (const auto& supplyPath : model().getConcreteModelObjects<openstudio::epmodel::AirLoopHVACSupplyPath>()) {
+        const auto components = supplyPath.components();
+        if (currentPlenum) {
+          currentPathMembershipCount +=
+            static_cast<unsigned>(std::ranges::count(components, currentPlenum->cast<openstudio::epmodel::ModelObject>()));
+        }
+        if (targetPlenum) {
+          targetPathMembershipCount += static_cast<unsigned>(std::ranges::count(components, targetPlenum->cast<openstudio::epmodel::ModelObject>()));
+        }
+      }
+      if (currentPlenum) {
+        const auto currentInlet = currentPlenum->inletModelObject();
+        if (!currentInlet || (std::ranges::count(selectedSplitterOutlets, *currentInlet) != 1)
+            || (std::ranges::count(selectedPathComponents, currentPlenum->cast<openstudio::epmodel::ModelObject>()) != 1)
+            || (currentPathMembershipCount != 1u)) {
+          return false;
+        }
+      }
+      if (targetPlenum) {
+        const auto targetLoop = targetPlenum->airLoopHVAC();
+        if ((targetLoop && (*targetLoop != *airLoop))
+            || (!targetLoop && (targetPlenum->inletModelObject() || !targetPlenum->outletModelObjects().empty()))) {
+          return false;
+        }
+        if (const auto targetInlet = targetPlenum->inletModelObject()) {
+          if ((std::ranges::count(selectedSplitterOutlets, *targetInlet) != 1)
+              || (std::ranges::count(selectedPathComponents, targetPlenum->cast<openstudio::epmodel::ModelObject>()) != 1)
+              || (targetPathMembershipCount != 1u)) {
+            // One supply plenum has one inlet and therefore belongs to one
+            // selected deck. A second plenum zone may serve the other deck.
+            return false;
+          }
+        } else if (targetPathMembershipCount != 0u) {
+          return false;
+        }
+      }
+
+      if (currentPlenum && targetPlenum && (*currentPlenum == *targetPlenum)) {
+        return true;
+      }
+
+      auto directBranchNode = effectiveBranchStart->optionalCast<openstudio::epmodel::Node>();
+      if (!directBranchNode) {
+        return false;
+      }
+
+      bool createdPlenum = false;
+      bool targetZoneNodeExisted = false;
+      boost::optional<openstudio::epmodel::Node> targetZoneNode;
+      if (!targetPlenum) {
+        const auto plenumZoneImpl = plenumZone.getImpl<openstudio::epmodel::detail::ThermalZone_Impl>();
+        OS_ASSERT(plenumZoneImpl);
+        targetZoneNodeExisted =
+          static_cast<bool>(plenumZoneImpl->zoneHVACEquipmentConnections())
+          || static_cast<bool>(model().getConcreteModelObjectByName<openstudio::epmodel::Node>(plenumZone.nameString() + " Air Node"));
+
+        targetPlenum = openstudio::epmodel::AirLoopHVACSupplyPlenum(model());
+        auto targetImpl = targetPlenum->getImpl<openstudio::epmodel::detail::AirLoopHVACSupplyPlenum_Impl>();
+        OS_ASSERT(targetImpl);
+        if (!targetImpl->bindThermalZone(plenumZone)) {
+          targetPlenum->remove();
+          if (!targetZoneNodeExisted) {
+            if (auto node = model().getConcreteModelObjectByName<openstudio::epmodel::Node>(plenumZone.nameString() + " Air Node")) {
+              if (node->sources().empty()) {
+                node->remove();
+              }
+            }
+          }
+          return false;
+        }
+        createdPlenum = true;
+        targetZoneNode = targetPlenum->getModelObjectTarget<openstudio::epmodel::Node>(openstudio::AirLoopHVAC_SupplyPlenumFields::ZoneNodeName);
+        OS_ASSERT(targetZoneNode);
+      }
+
+      const auto discardCreatedPlenum = [&]() {
+        if (!createdPlenum) {
+          return;
+        }
+        targetPlenum->resetThermalZone();
+        targetPlenum->remove();
+        if (!targetZoneNodeExisted && targetZoneNode && model().getObject(targetZoneNode->handle()) && targetZoneNode->sources().empty()) {
+          targetZoneNode->remove();
+        }
+      };
+
+      if (!currentPlenum) {
+        if (!targetPlenum->addToNode(*directBranchNode)) {
+          discardCreatedPlenum();
+          return false;
+        }
+        if (createdPlenum) {
+          auto targetImpl = targetPlenum->getImpl<openstudio::epmodel::detail::AirLoopHVACSupplyPlenum_Impl>();
+          OS_ASSERT(targetImpl);
+          targetImpl->clearThermalZoneConditioning();
+        }
+        return true;
+      }
+
+      // Attach the replacement before releasing the current plenum. This
+      // preserves a live source for the terminal inlet throughout the move.
+      auto targetImpl = targetPlenum->getImpl<openstudio::epmodel::detail::AirLoopHVACSupplyPlenum_Impl>();
+      OS_ASSERT(targetImpl);
+      const bool targetWasAttached = static_cast<bool>(targetPlenum->inletModelObject());
+      const auto targetOutletIndex = targetPlenum->nextBranchIndex();
+      boost::optional<openstudio::epmodel::Node> stagedTargetInlet;
+      boost::optional<unsigned> stagedTargetSplitterIndex;
+      bool targetAddedToSupplyPath = false;
+
+      if (!targetWasAttached) {
+        stagedTargetInlet = openstudio::epmodel::Node(model());
+        stagedTargetInlet->setName(targetPlenum->nameString() + " Inlet Node");
+        if (!targetImpl->setInletModelObject(*stagedTargetInlet)) {
+          stagedTargetInlet->remove();
+          discardCreatedPlenum();
+          return false;
+        }
+      }
+      if (!targetPlenum->setOutletModelObject(targetOutletIndex, *directBranchNode)) {
+        if (stagedTargetInlet) {
+          targetImpl->resetInletModelObject();
+          stagedTargetInlet->remove();
+        }
+        discardCreatedPlenum();
+        return false;
+      }
+      if (stagedTargetInlet) {
+        stagedTargetSplitterIndex = zoneSplitter->nextBranchIndex();
+        if (!zoneSplitter->setOutletModelObject(*stagedTargetSplitterIndex, *stagedTargetInlet)) {
+          targetPlenum->removePortForBranch(targetOutletIndex);
+          targetImpl->resetInletModelObject();
+          stagedTargetInlet->remove();
+          discardCreatedPlenum();
+          return false;
+        }
+        auto supplyPathImpl = selectedSupplyPath->getImpl<openstudio::epmodel::detail::AirLoopHVACSupplyPath_Impl>();
+        OS_ASSERT(supplyPathImpl);
+        if (!supplyPathImpl->addComponent(*targetPlenum)) {
+          zoneSplitter->removePortForBranch(*stagedTargetSplitterIndex);
+          targetPlenum->removePortForBranch(targetOutletIndex);
+          targetImpl->resetInletModelObject();
+          stagedTargetInlet->remove();
+          discardCreatedPlenum();
+          return false;
+        }
+        targetAddedToSupplyPath = true;
+      }
+
+      const auto rollbackTargetAttachment = [&]() {
+        if (targetAddedToSupplyPath) {
+          selectedSupplyPath->removeComponent(*targetPlenum);
+        }
+        if (stagedTargetSplitterIndex) {
+          zoneSplitter->removePortForBranch(*stagedTargetSplitterIndex);
+        }
+        targetPlenum->removePortForBranch(targetOutletIndex);
+        if (stagedTargetInlet) {
+          targetImpl->resetInletModelObject();
+          if (model().getObject(stagedTargetInlet->handle()) && stagedTargetInlet->sources().empty()) {
+            stagedTargetInlet->remove();
+          }
+        }
+        discardCreatedPlenum();
+      };
+
+      const auto currentOutlets = currentPlenum->outletModelObjects();
+      const auto currentOutlet = std::ranges::find(currentOutlets, *effectiveBranchStart);
+      const auto currentInlet = currentPlenum->inletModelObject();
+      OS_ASSERT(currentOutlet != currentOutlets.end());
+      OS_ASSERT(currentInlet);
+      if ((currentOutlet == currentOutlets.end()) || !currentInlet) {
+        rollbackTargetAttachment();
+        return false;
+      }
+      const auto currentOutletIndex = static_cast<unsigned>(std::distance(currentOutlets.begin(), currentOutlet));
+      if (currentOutlets.size() > 1u) {
+        currentPlenum->removePortForBranch(currentOutletIndex);
+      } else {
+        if (!selectedSupplyPath->removeComponent(*currentPlenum)) {
+          rollbackTargetAttachment();
+          return false;
+        }
+        const auto splitterOutlets = zoneSplitter->outletModelObjects();
+        const auto currentSplitterOutlet = std::ranges::find(splitterOutlets, *currentInlet);
+        OS_ASSERT(currentSplitterOutlet != splitterOutlets.end());
+        if (currentSplitterOutlet == splitterOutlets.end()) {
+          auto supplyPathImpl = selectedSupplyPath->getImpl<openstudio::epmodel::detail::AirLoopHVACSupplyPath_Impl>();
+          OS_ASSERT(supplyPathImpl);
+          const bool currentRestored = supplyPathImpl->addComponent(*currentPlenum);
+          OS_ASSERT(currentRestored);
+          (void)currentRestored;
+          rollbackTargetAttachment();
+          return false;
+        }
+        zoneSplitter->removePortForBranch(static_cast<unsigned>(std::distance(splitterOutlets.begin(), currentSplitterOutlet)));
+        auto currentInletNode = currentInlet->optionalCast<openstudio::epmodel::Node>();
+        currentPlenum->remove();
+        if (currentInletNode && model().getObject(currentInletNode->handle()) && currentInletNode->sources().empty()) {
+          currentInletNode->remove();
+        }
+      }
+
+      if (createdPlenum) {
+        targetImpl->clearThermalZoneConditioning();
+      }
+      return true;
+    }
+
+    void ThermalZone_Impl::removeSupplyPlenum() {
+      removeSupplyPlenum(0u);
+    }
+
+    void ThermalZone_Impl::removeSupplyPlenum(const openstudio::epmodel::AirLoopHVAC& airLoop) {
+      removeSupplyPlenum(airLoop, 0u);
+    }
+
+    void ThermalZone_Impl::removeSupplyPlenum(unsigned branchIndex) {
+      const auto airLoop = airLoopHVAC();
+      if (!airLoop) {
+        return;
+      }
+      removeSupplyPlenum(*airLoop, branchIndex);
+    }
+
+    void ThermalZone_Impl::removeSupplyPlenum(const openstudio::epmodel::AirLoopHVAC& airLoop, unsigned branchIndex) {
+      if (airLoop.model() != model()) {
+        return;
+      }
+      const auto zone = getObject<openstudio::epmodel::ThermalZone>();
+      const auto currentAirLoop = airLoopHVAC();
+      if (!currentAirLoop || (*currentAirLoop != airLoop)) {
+        return;
+      }
+
+      const auto airLoopImpl = airLoop.getImpl<openstudio::epmodel::detail::AirLoopHVAC_Impl>();
+      OS_ASSERT(airLoopImpl);
+      const auto demandInletNodes = airLoop.demandInletNodes();
+      if (branchIndex >= demandInletNodes.size()) {
+        return;
+      }
+      auto zoneSplitter = airLoopImpl->zoneSplitterForDemandInletNode(demandInletNodes[branchIndex]);
+      if (!zoneSplitter) {
+        return;
+      }
+
+      boost::optional<openstudio::epmodel::ModelObject> effectiveBranchStart;
+      if (airLoop.isDualDuct()) {
+        const auto terminal = airLoopHVACTerminal();
+        const auto dualDuctTerminal = terminal ? terminal->optionalCast<openstudio::epmodel::Mixer>() : boost::none;
+        const auto terminalLoop = terminal ? terminal->airLoopHVAC() : boost::none;
+        if (!dualDuctTerminal || !terminalLoop || (*terminalLoop != airLoop)) {
+          return;
+        }
+        effectiveBranchStart = dualDuctTerminal->inletModelObject(branchIndex);
+      } else {
+        if (branchIndex != 0u) {
+          return;
+        }
+        effectiveBranchStart = airLoopImpl->effectiveDemandBranchStartForZone(zone);
+      }
+      if (!effectiveBranchStart) {
+        return;
+      }
+
+      boost::optional<openstudio::epmodel::AirLoopHVACSupplyPlenum> supplyPlenum;
+      unsigned plenumBranchIndex = 0u;
+      openstudio::epmodel::ModelObject branchStart = *effectiveBranchStart;
+      for (const auto& candidate : model().getConcreteModelObjects<openstudio::epmodel::AirLoopHVACSupplyPlenum>()) {
+        const auto candidateLoop = candidate.airLoopHVAC();
+        if (!candidateLoop || (*candidateLoop != airLoop)) {
+          continue;
+        }
+        const auto outlets = candidate.outletModelObjects();
+        const auto outlet = std::ranges::find(outlets, *effectiveBranchStart);
+        if (outlet != outlets.end()) {
+          supplyPlenum = candidate;
+          plenumBranchIndex = static_cast<unsigned>(std::distance(outlets.begin(), outlet));
+          branchStart = *outlet;
+          break;
+        }
+      }
+      if (!supplyPlenum) {
+        return;
+      }
+
+      const auto plenumOutlets = supplyPlenum->outletModelObjects();
+      if (plenumOutlets.size() > 1u) {
+        if (zoneSplitter->setOutletModelObject(zoneSplitter->nextBranchIndex(), branchStart)) {
+          supplyPlenum->removePortForBranch(plenumBranchIndex);
+        }
+        return;
+      }
+
+      const auto plenumInlet = supplyPlenum->inletModelObject();
+      auto inletNode = plenumInlet ? plenumInlet->optionalCast<openstudio::epmodel::Node>() : boost::none;
+      if (!plenumInlet || !inletNode) {
+        return;
+      }
+      const auto splitterOutlets = zoneSplitter->outletModelObjects();
+      const auto splitterOutlet = std::ranges::find(splitterOutlets, *plenumInlet);
+      if (splitterOutlet == splitterOutlets.end()) {
+        return;
+      }
+      const auto splitterBranchIndex = static_cast<unsigned>(std::distance(splitterOutlets.begin(), splitterOutlet));
+
+      boost::optional<openstudio::epmodel::AirLoopHVACSupplyPath> owningSupplyPath;
+      for (const auto& supplyPath : model().getConcreteModelObjects<openstudio::epmodel::AirLoopHVACSupplyPath>()) {
+        const auto components = supplyPath.components();
+        if (std::ranges::find(components, supplyPlenum->cast<openstudio::epmodel::ModelObject>()) == components.end()) {
+          continue;
+        }
+        const auto pathLoop = supplyPath.airLoopHVAC();
+        if (!pathLoop || (*pathLoop != airLoop) || owningSupplyPath) {
+          return;
+        }
+        owningSupplyPath = supplyPath;
+      }
+      if (!owningSupplyPath) {
+        return;
+      }
+
+      if (!zoneSplitter->setOutletModelObject(splitterBranchIndex, branchStart)) {
+        return;
+      }
+
+      if (!owningSupplyPath->removeComponent(*supplyPlenum)) {
+        zoneSplitter->setOutletModelObject(splitterBranchIndex, *plenumInlet);
+        return;
+      }
+      supplyPlenum->remove();
+      if (model().getObject(inletNode->handle()) && inletNode->sources().empty()) {
+        inletNode->remove();
+      }
+    }
+
+    bool ThermalZone_Impl::setReturnPlenum(const openstudio::epmodel::ThermalZone& plenumZone) {
+      auto loop = airLoopHVAC();
+      if (!loop) {
+        return false;
+      }
+      return setReturnPlenum(plenumZone, *loop);
+    }
+
+    bool ThermalZone_Impl::setReturnPlenum(const openstudio::epmodel::ThermalZone& plenumZone, openstudio::epmodel::AirLoopHVAC& airLoop) {
+      auto zone = getObject<openstudio::epmodel::ThermalZone>();
+      if ((plenumZone.model() != model()) || (airLoop.model() != model()) || (plenumZone == zone)) {
+        return false;
+      }
+
+      const auto airLoopImpl = airLoop.getImpl<openstudio::epmodel::detail::AirLoopHVAC_Impl>();
+      OS_ASSERT(airLoopImpl);
+      auto returnNode = airLoopImpl->effectiveDemandReturnNodeForZone(zone);
+      if (!returnNode) {
+        return false;
+      }
+
+      auto zoneMixer = airLoop.zoneMixer();
+      const auto returnNodeObject = returnNode->cast<openstudio::epmodel::ModelObject>();
+      const auto mixerInlets = zoneMixer.inletModelObjects();
+      const auto directReturnCount = static_cast<unsigned>(std::ranges::count(mixerInlets, returnNodeObject));
+
+      // Resolve and validate the complete source and target graph before
+      // writing any connector row. The return node identifies the zone branch;
+      // raw splitter, mixer, and plenum ordinals are deliberately unrelated.
+      const auto mixerMembershipCount = [&](const openstudio::epmodel::ModelObject& object) {
+        unsigned count = 0u;
+        for (const auto& candidateMixer : model().getConcreteModelObjects<openstudio::epmodel::AirLoopHVACZoneMixer>()) {
+          count += static_cast<unsigned>(std::ranges::count(candidateMixer.inletModelObjects(), object));
+        }
+        return count;
+      };
+      const auto globalDirectReturnCount = mixerMembershipCount(returnNodeObject);
+
+      boost::optional<openstudio::epmodel::AirLoopHVACReturnPlenum> currentPlenum;
+      boost::optional<openstudio::epmodel::AirLoopHVACReturnPlenum> targetPlenum;
+      unsigned currentReturnCount = 0u;
+      for (const auto& candidate : model().getConcreteModelObjects<openstudio::epmodel::AirLoopHVACReturnPlenum>()) {
+        const auto candidateZone = candidate.thermalZone();
+        if (candidateZone && (*candidateZone == plenumZone)) {
+          if (targetPlenum) {
+            return false;
+          }
+          targetPlenum = candidate;
+        }
+
+        const auto candidateInlets = candidate.inletModelObjects();
+        const auto candidateReturnCount = static_cast<unsigned>(std::ranges::count(candidateInlets, returnNodeObject));
+        if (candidateReturnCount > 0u) {
+          currentReturnCount += candidateReturnCount;
+          if (currentPlenum && (*currentPlenum != candidate)) {
+            return false;
+          }
+          currentPlenum = candidate;
+        }
+      }
+
+      if (currentPlenum) {
+        if ((currentReturnCount != 1u) || (globalDirectReturnCount != 0u)) {
+          return false;
+        }
+      } else if ((directReturnCount != 1u) || (globalDirectReturnCount != 1u)) {
+        return false;
+      }
+
+      boost::optional<openstudio::epmodel::AirLoopHVACReturnPath> returnPath;
+      for (const auto& candidate : model().getConcreteModelObjects<openstudio::epmodel::AirLoopHVACReturnPath>()) {
+        const auto candidateLoop = candidate.airLoopHVAC();
+        if (candidateLoop && (*candidateLoop == airLoop)) {
+          if (returnPath) {
+            return false;
+          }
+          returnPath = candidate;
+        }
+      }
+      if (!returnPath) {
+        return false;
+      }
+      const auto returnPathComponents = returnPath->components();
+
+      std::set<openstudio::Handle> servedZoneHandles;
+      std::vector<openstudio::epmodel::Node> currentBypassNodes;
+      if (currentPlenum) {
+        const auto currentOutlet = currentPlenum->outletModelObject();
+        if (!currentOutlet || (std::ranges::count(mixerInlets, *currentOutlet) != 1) || (mixerMembershipCount(*currentOutlet) != 1u)
+            || (std::ranges::count(returnPathComponents, currentPlenum->cast<openstudio::epmodel::ModelObject>()) != 1)) {
+          return false;
+        }
+
+        std::set<openstudio::Handle> currentInletHandles;
+        for (const auto& inlet : currentPlenum->inletModelObjects()) {
+          const auto inletNode = inlet.optionalCast<openstudio::epmodel::Node>();
+          if (!inletNode || !currentInletHandles.insert(inlet.handle()).second) {
+            return false;
+          }
+          for (const auto& candidateMixer : model().getConcreteModelObjects<openstudio::epmodel::AirLoopHVACZoneMixer>()) {
+            const auto candidateInlets = candidateMixer.inletModelObjects();
+            if (std::ranges::find(candidateInlets, inlet) != candidateInlets.end()) {
+              return false;
+            }
+          }
+
+          unsigned zoneReturnMatches = 0u;
+          boost::optional<openstudio::Handle> servedZoneHandle;
+          for (const auto& connections : model().getConcreteModelObjects<openstudio::epmodel::ZoneHVACEquipmentConnections>()) {
+            const auto connectionReturns = connections.zoneReturnAirNodes();
+            const auto matchCount = static_cast<unsigned>(std::ranges::count(connectionReturns, *inletNode));
+            if (matchCount > 0u) {
+              zoneReturnMatches += matchCount;
+              servedZoneHandle = connections.thermalZone().handle();
+            }
+          }
+
+          unsigned bypassMatches = 0u;
+          for (const auto& unitary : model().getConcreteModelObjects<openstudio::epmodel::AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass>()) {
+            const auto unitaryLoop = unitary.airLoopHVAC();
+            const auto unitaryMixer = unitary.plenumorMixer();
+            if ((unitary.plenumorMixerNode() == *inletNode) && unitaryLoop && (*unitaryLoop == airLoop) && unitaryMixer
+                && (unitaryMixer->handle() == currentPlenum->handle())) {
+              ++bypassMatches;
+            }
+          }
+
+          if ((zoneReturnMatches == 1u) && (bypassMatches == 0u) && servedZoneHandle) {
+            servedZoneHandles.insert(*servedZoneHandle);
+          } else if ((zoneReturnMatches == 0u) && (bypassMatches == 1u)) {
+            currentBypassNodes.push_back(*inletNode);
+          } else {
+            // Reassignment only owns zone-return and changeover-bypass leaves.
+            // Unknown or multiply classified rows must remain untouched.
+            return false;
+          }
+        }
+
+        if (servedZoneHandles.empty()) {
+          return false;
+        }
+      }
+
+      const auto componentMembershipCount = [&](const openstudio::epmodel::ModelObject& object) {
+        unsigned count = 0u;
+        for (const auto& candidatePath : model().getConcreteModelObjects<openstudio::epmodel::AirLoopHVACReturnPath>()) {
+          count += static_cast<unsigned>(std::ranges::count(candidatePath.components(), object));
+        }
+        return count;
+      };
+
+      if (targetPlenum) {
+        const auto targetInlets = targetPlenum->inletModelObjects();
+        const auto targetOutlet = targetPlenum->outletModelObject();
+        const auto targetObject = targetPlenum->cast<openstudio::epmodel::ModelObject>();
+        if (targetOutlet) {
+          const auto targetLoop = targetPlenum->airLoopHVAC();
+          if (targetInlets.empty() || !targetLoop || (*targetLoop != airLoop) || (std::ranges::count(mixerInlets, *targetOutlet) != 1)
+              || (mixerMembershipCount(*targetOutlet) != 1u) || (componentMembershipCount(targetObject) != 1u)) {
+            return false;
+          }
+        } else if (!targetInlets.empty() || (componentMembershipCount(targetObject) != 0u)) {
+          return false;
+        }
+
+        if (currentPlenum && (*currentPlenum == *targetPlenum)) {
+          return true;
+        }
+      } else {
+        auto plenumZoneImpl = plenumZone.getImpl<openstudio::epmodel::detail::ThermalZone_Impl>();
+        OS_ASSERT(plenumZoneImpl);
+        const auto connections = plenumZoneImpl->zoneHVACEquipmentConnections();
+        if (!plenumZone.equipment().empty() || plenumZone.airLoopHVAC()
+            || (connections
+                && (!connections->zoneAirInletNodes().empty() || !connections->zoneAirExhaustNodes().empty()
+                    || !connections->zoneReturnAirNodes().empty() || !connections->zoneHVACEquipmentList().equipment().empty()))) {
+          return false;
+        }
+        for (const auto& supplyPlenum : model().getConcreteModelObjects<openstudio::epmodel::AirLoopHVACSupplyPlenum>()) {
+          const auto candidateZone = supplyPlenum.thermalZone();
+          if (candidateZone && (*candidateZone == plenumZone)) {
+            return false;
+          }
+        }
+      }
+
+      bool createdPlenum = false;
+      bool targetZoneNodeExisted = false;
+      boost::optional<openstudio::epmodel::Node> targetZoneNode;
+      if (!targetPlenum) {
+        const auto plenumZoneImpl = plenumZone.getImpl<openstudio::epmodel::detail::ThermalZone_Impl>();
+        OS_ASSERT(plenumZoneImpl);
+        targetZoneNodeExisted =
+          static_cast<bool>(plenumZoneImpl->zoneHVACEquipmentConnections())
+          || static_cast<bool>(model().getConcreteModelObjectByName<openstudio::epmodel::Node>(plenumZone.nameString() + " Air Node"));
+
+        targetPlenum = openstudio::epmodel::AirLoopHVACReturnPlenum(model());
+        createdPlenum = true;
+        const auto targetImpl = targetPlenum->getImpl<openstudio::epmodel::detail::AirLoopHVACReturnPlenum_Impl>();
+        OS_ASSERT(targetImpl);
+        // Bind the target zone provisionally. Conditioning objects are only
+        // cleared after the topology transaction commits.
+        if (!targetImpl->bindThermalZone(plenumZone)) {
+          targetPlenum->remove();
+          if (!targetZoneNodeExisted) {
+            if (auto node = model().getConcreteModelObjectByName<openstudio::epmodel::Node>(plenumZone.nameString() + " Air Node")) {
+              if (node->sources().empty()) {
+                node->remove();
+              }
+            }
+          }
+          return false;
+        }
+        targetZoneNode = targetPlenum->getModelObjectTarget<openstudio::epmodel::Node>(openstudio::AirLoopHVAC_ReturnPlenumFields::ZoneNodeName);
+        OS_ASSERT(targetZoneNode);
+      }
+
+      const auto discardCreatedPlenum = [&]() {
+        if (!createdPlenum) {
+          return;
+        }
+        targetPlenum->resetThermalZone();
+        targetPlenum->remove();
+        if (!targetZoneNodeExisted && targetZoneNode && model().getObject(targetZoneNode->handle()) && targetZoneNode->sources().empty()) {
+          targetZoneNode->remove();
+        }
+      };
+
+      std::vector<openstudio::epmodel::ModelObject> stagedMixerInlets;
+      const auto removeStagedMixerInlets = [&]() {
+        for (auto staged = stagedMixerInlets.rbegin(); staged != stagedMixerInlets.rend(); ++staged) {
+          const auto currentMixerInlets = zoneMixer.inletModelObjects();
+          const auto row = std::ranges::find(currentMixerInlets, *staged);
+          if (row != currentMixerInlets.end()) {
+            zoneMixer.removePortForBranch(static_cast<unsigned>(std::distance(currentMixerInlets.begin(), row)));
+          }
+        }
+      };
+
+      if (currentPlenum) {
+        // Leave the old plenum intact as the rollback point. The target's
+        // normal addToNode path consumes the staged direct return row. Bypass
+        // rows are staged only when the old plenum will disappear.
+        std::vector<openstudio::epmodel::ModelObject> mixerInletsToStage{returnNodeObject};
+        if (servedZoneHandles.size() == 1u) {
+          for (const auto& bypassNode : currentBypassNodes) {
+            mixerInletsToStage.push_back(bypassNode.cast<openstudio::epmodel::ModelObject>());
+          }
+        }
+        for (const auto& stagedInlet : mixerInletsToStage) {
+          if (!zoneMixer.setInletModelObject(zoneMixer.nextBranchIndex(), stagedInlet)) {
+            removeStagedMixerInlets();
+            discardCreatedPlenum();
+            return false;
+          }
+          stagedMixerInlets.push_back(stagedInlet);
+        }
+      }
+
+      OS_ASSERT(targetPlenum);
+      if (!targetPlenum->addToNode(*returnNode)) {
+        removeStagedMixerInlets();
+        discardCreatedPlenum();
+        return false;
+      }
+
+      if (currentPlenum) {
+        // The target now owns the return node, so committing the source side
+        // cannot strand the zone. Resolve every row again by object identity.
+        if (servedZoneHandles.size() > 1u) {
+          const auto currentInlets = currentPlenum->inletModelObjects();
+          const auto currentRow = std::ranges::find(currentInlets, returnNodeObject);
+          OS_ASSERT(currentRow != currentInlets.end());
+          currentPlenum->removePortForBranch(static_cast<unsigned>(std::distance(currentInlets.begin(), currentRow)));
+        } else {
+          const auto currentOutlet = currentPlenum->outletModelObject();
+          OS_ASSERT(currentOutlet);
+          const auto currentMixerInlets = zoneMixer.inletModelObjects();
+          const auto currentRow = std::ranges::find(currentMixerInlets, *currentOutlet);
+          OS_ASSERT(currentRow != currentMixerInlets.end());
+          zoneMixer.removePortForBranch(static_cast<unsigned>(std::distance(currentMixerInlets.begin(), currentRow)));
+          OS_ASSERT(returnPath->removeComponent(*currentPlenum));
+
+          auto outletNode = currentOutlet->optionalCast<openstudio::epmodel::Node>();
+          currentPlenum->remove();
+          if (outletNode && model().getObject(outletNode->handle()) && outletNode->sources().empty()) {
+            outletNode->remove();
+          }
+        }
+      }
+
+      if (createdPlenum) {
+        const auto targetImpl = targetPlenum->getImpl<openstudio::epmodel::detail::AirLoopHVACReturnPlenum_Impl>();
+        OS_ASSERT(targetImpl);
+        targetImpl->clearThermalZoneConditioning();
+      }
+      return true;
+    }
+
+    void ThermalZone_Impl::removeReturnPlenum() {
+      auto loop = airLoopHVAC();
+      if (loop) {
+        removeReturnPlenum(*loop);
+      }
+    }
+
+    void ThermalZone_Impl::removeReturnPlenum(openstudio::epmodel::AirLoopHVAC& airLoop) {
+      if (airLoop.model() != model()) {
+        return;
+      }
+
+      const auto airLoopImpl = airLoop.getImpl<openstudio::epmodel::detail::AirLoopHVAC_Impl>();
+      OS_ASSERT(airLoopImpl);
+      const auto returnNode = airLoopImpl->effectiveDemandReturnNodeForZone(getObject<openstudio::epmodel::ThermalZone>());
+      if (!returnNode) {
+        return;
+      }
+
+      auto zoneMixer = airLoop.zoneMixer();
+      boost::optional<openstudio::epmodel::AirLoopHVACReturnPlenum> returnPlenum;
+      unsigned zoneBranchIndex = 0u;
+      for (const auto& candidate : model().getConcreteModelObjects<openstudio::epmodel::AirLoopHVACReturnPlenum>()) {
+        const auto candidateLoop = candidate.airLoopHVAC();
+        if (!candidateLoop || (*candidateLoop != airLoop)) {
+          continue;
+        }
+        const auto inlets = candidate.inletModelObjects();
+        const auto inlet = std::ranges::find(inlets, returnNode->cast<openstudio::epmodel::ModelObject>());
+        if (inlet != inlets.end()) {
+          returnPlenum = candidate;
+          zoneBranchIndex = static_cast<unsigned>(std::distance(inlets.begin(), inlet));
+          break;
+        }
+      }
+      if (!returnPlenum) {
+        return;
+      }
+
+      const auto isZoneReturnNode = [&](const openstudio::epmodel::ModelObject& inlet) {
+        const auto node = inlet.optionalCast<openstudio::epmodel::Node>();
+        if (!node) {
+          return false;
+        }
+        for (const auto& connections : model().getConcreteModelObjects<openstudio::epmodel::ZoneHVACEquipmentConnections>()) {
+          const auto zoneReturns = connections.zoneReturnAirNodes();
+          if (std::ranges::find(zoneReturns, *node) != zoneReturns.end()) {
+            return true;
+          }
+        }
+        return false;
+      };
+
+      const auto plenumInlets = returnPlenum->inletModelObjects();
+      const auto servedZoneCount = static_cast<unsigned>(std::ranges::count_if(plenumInlets, isZoneReturnNode));
+      if (servedZoneCount > 1u) {
+        const auto directBranchIndex = zoneMixer.nextBranchIndex();
+        if (zoneMixer.setInletModelObject(directBranchIndex, *returnNode)) {
+          returnPlenum->removePortForBranch(zoneBranchIndex);
+        }
+        return;
+      }
+
+      const auto plenumOutlet = returnPlenum->outletModelObject();
+      if (!plenumOutlet) {
+        return;
+      }
+      auto mixerInlets = zoneMixer.inletModelObjects();
+      auto plenumOutletIt = std::ranges::find(mixerInlets, *plenumOutlet);
+      if (plenumOutletIt == mixerInlets.end()) {
+        return;
+      }
+
+      std::vector<openstudio::epmodel::AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass> bypassUnitaries;
+      for (const auto& unitary : model().getConcreteModelObjects<openstudio::epmodel::AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass>()) {
+        const auto bypassReturn = unitary.plenumorMixer();
+        if (bypassReturn && (bypassReturn->handle() == returnPlenum->handle())) {
+          bypassUnitaries.push_back(unitary);
+        }
+      }
+      for (auto& unitary : bypassUnitaries) {
+        if (!unitary.setPlenumorMixer(zoneMixer)) {
+          return;
+        }
+      }
+
+      mixerInlets = zoneMixer.inletModelObjects();
+      plenumOutletIt = std::ranges::find(mixerInlets, *plenumOutlet);
+      if (plenumOutletIt == mixerInlets.end()) {
+        return;
+      }
+      const auto plenumOutletBranchIndex = static_cast<unsigned>(std::distance(mixerInlets.begin(), plenumOutletIt));
+      if (!zoneMixer.setInletModelObject(plenumOutletBranchIndex, *returnNode)) {
+        return;
+      }
+
+      for (auto& returnPath : model().getConcreteModelObjects<openstudio::epmodel::AirLoopHVACReturnPath>()) {
+        const auto pathLoop = returnPath.airLoopHVAC();
+        if (pathLoop && (*pathLoop == airLoop)) {
+          returnPath.removeComponent(*returnPlenum);
+          break;
+        }
+      }
+
+      auto outletNode = plenumOutlet->optionalCast<openstudio::epmodel::Node>();
+      returnPlenum->remove();
+      if (outletNode && model().getObject(outletNode->handle()) && outletNode->sources().empty()) {
+        outletNode->remove();
+      }
     }
 
     // Canonical model::ThermalZone::addEquipment is list-only: air-terminal and zone-branch node wiring is done by
@@ -2479,6 +3607,62 @@ namespace epmodel {
     }
 
     void ThermalZone_Impl::doCanonicalize(LoadContext& context) {
+      const auto zone = getObject<openstudio::epmodel::ThermalZone>();
+      for (const auto& plenum : model().getConcreteModelObjects<openstudio::epmodel::AirLoopHVACReturnPlenum>()) {
+        const auto plenumZone = plenum.thermalZone();
+        if (plenumZone && (*plenumZone == zone)) {
+          if (auto sz = optionalSizingZone()) {
+            sz->remove();
+          }
+          return;
+        }
+      }
+      for (const auto& plenum : model().getConcreteModelObjects<openstudio::epmodel::AirLoopHVACSupplyPlenum>()) {
+        const auto plenumZone = plenum.thermalZone();
+        if (plenumZone && (*plenumZone == zone)) {
+          if (auto sz = optionalSizingZone()) {
+            sz->remove();
+          }
+          return;
+        }
+      }
+
+      if (auto currentThermostat = thermostat()) {
+        if (auto controlValue = thermostatControlValue(*currentThermostat)) {
+          std::vector<openstudio::WorkspaceObject> zoneControls;
+          for (const auto& candidate : model().getObjectsByType(openstudio::IddObjectType::ZoneControl_Thermostat)) {
+            if (zoneControlThermostatTargetsZone(zone, candidate)) {
+              zoneControls.push_back(candidate);
+            }
+          }
+          if (zoneControls.size() != 1u) {
+            detail::addLoadWarning(context, "Preserved ambiguous ZoneControl:Thermostat ownership for ThermalZone '" + zone.nameString() + "'.");
+          } else {
+            auto& zoneControl = zoneControls.front();
+            const auto evidence = thermostatControlScheduleEvidence(zoneControl, zone);
+            if (!evidence.exact) {
+              if (!evidence.managed && !evidence.raw.empty() && evidence.candidates.size() == 1u) {
+                if (context.repairEnabled()) {
+                  OS_ASSERT(
+                    zoneControl.setPointer(openstudio::ZoneControl_ThermostatFields::ControlTypeScheduleName, evidence.candidates.front().handle()));
+                  detail::addLoadInfo(context, "Reattached the thermostat control-type schedule for ThermalZone '" + zone.nameString() + "'.");
+                } else {
+                  detail::addLoadWarning(context, "ThermalZone '" + zone.nameString() + "' has a detached thermostat control-type schedule.");
+                }
+              } else if (evidence.managed || !evidence.raw.empty()) {
+                detail::addLoadWarning(context, "Preserved malformed or ambiguous thermostat control-type schedule evidence for ThermalZone '"
+                                                  + zone.nameString() + "'.");
+              } else if (context.repairEnabled()) {
+                OS_ASSERT(ensureThermostatControlSchedule(zoneControl, zone, *controlValue));
+                detail::addLoadInfo(context, "Created the thermostat control-type schedule for ThermalZone '" + zone.nameString() + "'.");
+              } else {
+                detail::addLoadWarning(context, "ThermalZone '" + zone.nameString() + "' is missing its thermostat control-type schedule.");
+              }
+            }
+          }
+        }
+      }
+
       auto sz = sizingZone();
       sz.getImpl<openstudio::epmodel::detail::SizingZone_Impl>()->canonicalize(context);
     }

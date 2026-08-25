@@ -17,6 +17,9 @@ class optional;
 
 namespace openstudio {
 namespace epmodel {
+
+  class Schedule;
+
   namespace detail {
 
     class EPMODEL_API RefrigerationCondenserEvaporativeCooled_Impl : public ParentObject_Impl
@@ -99,6 +102,10 @@ namespace epmodel {
       bool setRatedWaterPumpPower(double ratedWaterPumpPower);
       void resetRatedWaterPumpPower();
       void autocalculateRatedWaterPumpPower();
+
+      boost::optional<Schedule> evaporativeCondenserAvailabilitySchedule() const;
+      bool setEvaporativeCondenserAvailabilitySchedule(Schedule& schedule);
+      void resetEvaporativeCondenserAvailabilitySchedule();
 
       std::string endUseSubcategory() const;
       bool isEndUseSubcategoryDefaulted() const;

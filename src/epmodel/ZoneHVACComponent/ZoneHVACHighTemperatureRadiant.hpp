@@ -24,6 +24,20 @@ namespace epmodel {
     class ZoneHVACHighTemperatureRadiant_Impl;
   }
 
+/** \brief A high-temperature radiant heater serving a thermal zone.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-radiative-convective-units.html#zonehvachightemperatureradiant,ZoneHVAC:HighTemperatureRadiant}
+ *
+ * \par Important behavior
+ * Availability, fuel, efficiency, radiant/latent/lost fractions, temperature control, throttling, setpoint schedule, and thermal-zone methods are available.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model class is <code>openstudio::model::ZoneHVACHighTemperatureRadiant</code>.
+ *
+ * \par Known limitations
+ * Emitted per-surface weighting rows are not exposed as a separate public collection.
+ */
   class EPMODEL_API ZoneHVACHighTemperatureRadiant : public ZoneHVACComponent
   {
    public:
@@ -39,16 +53,6 @@ namespace epmodel {
     static std::vector<std::string> fuelTypeValues();
     static std::vector<std::string> temperatureControlTypeValues();
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. The scalar radiant fields are aligned, and epmodel now preserves the canonical public
-    //   schedule API on top of the EnergyPlus-backed parent object.
-    // - Canonical Counterpart: openstudio::model::ZoneHVACHighTemperatureRadiant.
-    // - Implemented Parity: `availabilitySchedule`, `maximumPowerInput`, `fuelType`, `combustionEfficiency`, the
-    //   radiant/latent/lost fractions, `temperatureControlType`, `heatingThrottlingRange`,
-    //   `heatingSetpointTemperatureSchedule`, and `fractionofRadiantEnergyIncidentonPeople`.
-    // - Field/Storage Mapping: Scalar values and schedules are stored directly on the EnergyPlus object.
-    // - Evidence: `src/model/ZoneHVACHighTemperatureRadiant.hpp`, `src/model/ZoneHVACHighTemperatureRadiant.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateZoneHVACHighTemperatureRadiant.cpp`, and `src/epmodel/test/ZoneHVACHighTemperatureRadiant_GTest.cpp`.
-    // - Remaining Parity Work: Revisit only if we later decide to surface the emitted EnergyPlus per-surface weighting rows directly.
 
     boost::optional<Schedule> availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);

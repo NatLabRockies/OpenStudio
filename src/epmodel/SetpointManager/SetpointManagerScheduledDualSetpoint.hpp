@@ -16,11 +16,27 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class Schedule;
 
   namespace detail {
     class SetpointManagerScheduledDualSetpoint_Impl;
   }
 
+  /** \brief Applies separate scheduled heating and cooling setpoints.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-setpoint-managers.html#setpointmanagerscheduleddualsetpoint,SetpointManager:Scheduled:DualSetpoint}
+   *
+   * \par Important behavior
+   * The high and low schedule setters require schedules with the appropriate continuous temperature schedule type.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::SetpointManagerScheduledDualSetpoint</code>.
+   * No known public API differences.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API SetpointManagerScheduledDualSetpoint : public SetpointManager
   {
    public:
@@ -36,14 +52,14 @@ namespace epmodel {
 
     static std::vector<std::string> controlVariableValues();
 
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model naming for controlVariableValues and inherited
-    //   controlVariable()/setControlVariable() from SetpointManager.
-    // - Field Mapping: controlVariable delegates to E+ SetpointManager:Scheduled:DualSetpoint Control Variable.
-    // - Field Mapping: Relationship fields High Setpoint Schedule Name, Low Setpoint Schedule Name,
-    //   and Setpoint Node or NodeList Name are intentionally excluded from scalar-only scaffolding.
-    // - Field Mapping: isAllowedOnPlantLoop behavior is preserved via impl override for model parity.
-    // - TODO(parity): Add schedule-object parity accessors for high/low setpoint schedules in a follow-up pass.
+
+    boost::optional<Schedule> highSetpointSchedule() const;
+    bool setHighSetpointSchedule(Schedule& schedule);
+    void resetHighSetpointSchedule();
+
+    boost::optional<Schedule> lowSetpointSchedule() const;
+    bool setLowSetpointSchedule(Schedule& schedule);
+    void resetLowSetpointSchedule();
 
    protected:
     using ImplType = detail::SetpointManagerScheduledDualSetpoint_Impl;

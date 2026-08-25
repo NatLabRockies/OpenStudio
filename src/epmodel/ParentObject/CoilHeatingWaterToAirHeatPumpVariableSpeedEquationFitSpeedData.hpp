@@ -21,16 +21,37 @@ namespace epmodel {
     class CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFitSpeedData_Impl;
   }
 
+  /** \brief Represents one performance-data speed for a variable-speed water-to-air heating heat pump.
+   *
+   * \par EnergyPlus object
+   * No standalone EnergyPlus object. This class exposes one extensible speed-data
+   * row on \epobject{group-heating-and-cooling-coils.html#coilheatingwatertoairheatpumpvariablespeedequationfit,Coil:Heating:WaterToAirHeatPump:VariableSpeedEquationFit}.
+   * The row contains the rated values, performance-curve references, and waste
+   * heat data represented by this class.
+   *
+   * \par Important behavior
+   * The wrapper is transient. A detached instance keeps its values and curve
+   * references in the EPModel runtime object. When passed to the owning coil's
+   * <code>addSpeed(...)</code>, those values are copied into one extensible row
+   * and the wrapper becomes a live view of that row; setters then update the
+   * parent row. When the owning coil removes the row, the wrapper is detached
+   * and retains its values and curve references.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFitSpeedData</code>.
+   * No known public API differences.
+   *
+   * \par Known limitations
+   * This class cannot be persisted as an independent EnergyPlus object; use the
+   * owning <code>Coil:Heating:WaterToAirHeatPump:VariableSpeedEquationFit</code>
+   * object to add or remove speed rows.
+   */
   class EPMODEL_API CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFitSpeedData : public ParentObject
   {
    public:
     static constexpr bool is_transient = true;  // This is a Transient ModelObject
 
-    // This wrapper preserves the canonical OpenStudio speed-data child object for
-    // a family that EnergyPlus stores as extensible rows on the parent coil. A
-    // detached transient speed-data object keeps its own OS-style fields until it
-    // is added to a parent coil. An attached transient speed-data object is a
-    // live view over one specific parent extensible row.
     explicit CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFitSpeedData(const Model& model);
 
     CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFitSpeedData(const Model& model, const Curve& heatingCapacityFunctionofTemperature,
@@ -52,14 +73,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - Status: Parity with documented deltas.
-    // - Canonical Counterpart: openstudio::model::CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFitSpeedData.
-    // - Implemented Parity: The canonical scalar and curve relationships are exposed here. Detached instances behave like the canonical
-    //   OpenStudio speed-data object. Attached instances are transient views over one parent EnergyPlus extensible row.
-    // - Documented Delta: This child is transient in epmodel because EnergyPlus does not persist a standalone speed-data object.
-    // - Field/Storage Mapping: Detached instances store their own OS-style fields. Attached instances route through the parent's
-    //   `Coil:Heating:WaterToAirHeatPump:VariableSpeedEquationFit` extensible row using `WorkspaceExtensibleGroup`.
     double referenceUnitGrossRatedHeatingCapacity() const;
     bool setReferenceUnitGrossRatedHeatingCapacity(double referenceUnitGrossRatedHeatingCapacity);
 

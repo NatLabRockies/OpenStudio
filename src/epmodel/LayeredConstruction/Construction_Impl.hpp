@@ -6,17 +6,17 @@
 #ifndef EPMODEL_CONSTRUCTION_IMPL_HPP
 #define EPMODEL_CONSTRUCTION_IMPL_HPP
 
-#include "ModelObject_Impl.hpp"
+#include "LayeredConstruction/LayeredConstruction_Impl.hpp"
 
 namespace openstudio {
 namespace epmodel {
 
   namespace detail {
 
-    class EPMODEL_API Construction_Impl : public ModelObject_Impl
+    class EPMODEL_API Construction_Impl : public LayeredConstruction_Impl
     {
      public:
-      using ModelObject_Impl::ModelObject_Impl;
+      using LayeredConstruction_Impl::LayeredConstruction_Impl;
       virtual ~Construction_Impl() override = default;
     };
 

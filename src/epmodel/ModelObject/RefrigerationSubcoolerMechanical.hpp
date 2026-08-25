@@ -20,6 +20,17 @@ namespace epmodel {
     class RefrigerationSubcoolerMechanical_Impl;
   }
 
+  /** \brief RefrigerationSubcoolerMechanical.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-refrigeration.html#refrigerationsubcooler,Refrigeration:Subcooler}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::RefrigerationSubcoolerMechanical</code>. This typed wrapper uses <code>Refrigeration:Subcooler</code> with <code>Subcooler Type</code> fixed to <code>Mechanical</code>. The Model capacity-providing-system relationship is not available.
+   *
+   * \par Known limitations
+   * Only the fields and relationships listed in this wrapper are available; broader Model-only helpers are not exposed.
+   */
   class EPMODEL_API RefrigerationSubcoolerMechanical : public RefrigerationSubcooler
   {
    public:

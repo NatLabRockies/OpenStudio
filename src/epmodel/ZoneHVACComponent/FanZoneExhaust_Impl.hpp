@@ -15,6 +15,7 @@ namespace openstudio {
 namespace epmodel {
 
   class ThermalZone;
+  class Schedule;
 
   namespace detail {
 
@@ -31,6 +32,10 @@ namespace epmodel {
 
       std::vector<std::string> systemAvailabilityManagerCouplingModeValues() const;
 
+      boost::optional<Schedule> availabilitySchedule() const;
+      bool setAvailabilitySchedule(Schedule& schedule);
+      void resetAvailabilitySchedule();
+
       double fanTotalEfficiency() const;
       bool setFanTotalEfficiency(double fanTotalEfficiency);
 
@@ -44,8 +49,20 @@ namespace epmodel {
       std::string endUseSubcategory() const;
       bool setEndUseSubcategory(const std::string& endUseSubcategory);
 
+      boost::optional<Schedule> flowFractionSchedule() const;
+      bool setFlowFractionSchedule(Schedule& schedule);
+      void resetFlowFractionSchedule();
+
       std::string systemAvailabilityManagerCouplingMode() const;
       bool setSystemAvailabilityManagerCouplingMode(const std::string& systemAvailabilityManagerCouplingMode);
+
+      boost::optional<Schedule> minimumZoneTemperatureLimitSchedule() const;
+      bool setMinimumZoneTemperatureLimitSchedule(Schedule& schedule);
+      void resetMinimumZoneTemperatureLimitSchedule();
+
+      boost::optional<Schedule> balancedExhaustFractionSchedule() const;
+      bool setBalancedExhaustFractionSchedule(Schedule& schedule);
+      void resetBalancedExhaustFractionSchedule();
     };
 
   }  // namespace detail

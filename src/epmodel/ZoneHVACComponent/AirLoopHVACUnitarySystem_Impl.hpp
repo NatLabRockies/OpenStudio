@@ -14,6 +14,7 @@ namespace openstudio {
 namespace epmodel {
 
   class HVACComponent;
+  class ModelObject;
   class Node;
   class Schedule;
   class ThermalZone;
@@ -29,9 +30,13 @@ namespace epmodel {
 
       unsigned inletPort() const override;
       unsigned outletPort() const override;
+      bool addToNode(Node& node) override;
+      bool removeFromAirLoopHVAC() override;
       bool addToThermalZone(ThermalZone& thermalZone) override;
       void removeFromThermalZone() override;
       void doCanonicalize(LoadContext& context) override;
+      std::vector<ModelObject> children() const override;
+      std::vector<IdfObject> remove() override;
 
       std::string controlType() const;
       bool isControlTypeDefaulted() const;

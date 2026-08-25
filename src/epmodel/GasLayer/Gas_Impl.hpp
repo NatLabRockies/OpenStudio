@@ -6,7 +6,7 @@
 #ifndef EPMODEL_GAS_IMPL_HPP
 #define EPMODEL_GAS_IMPL_HPP
 
-#include "ModelObject_Impl.hpp"
+#include "GasLayer/GasLayer_Impl.hpp"
 
 #include <string>
 
@@ -15,17 +15,17 @@ namespace epmodel {
 
   namespace detail {
 
-    class EPMODEL_API Gas_Impl : public ModelObject_Impl
+    class EPMODEL_API Gas_Impl : public GasLayer_Impl
     {
      public:
-      using ModelObject_Impl::ModelObject_Impl;
+      using GasLayer_Impl::GasLayer_Impl;
       virtual ~Gas_Impl() override = default;
 
       std::string gasType() const;
       bool setGasType(const std::string& gasType);
 
-      double thickness() const;
-      bool setThickness(double thickness);
+      double thickness() const override;
+      bool setThickness(double thickness) override;
 
       boost::optional<double> customConductivityCoefficientA() const;
       boost::optional<double> customConductivityCoefficientB() const;

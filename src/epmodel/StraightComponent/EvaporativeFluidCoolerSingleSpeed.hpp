@@ -19,11 +19,26 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class Schedule;
 
   namespace detail {
     class EvaporativeFluidCoolerSingleSpeed_Impl;
   }
 
+/** \brief A single-speed evaporative fluid cooler.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-condenser-equipment.html#evaporativefluidcoolersinglespeed,EvaporativeFluidCooler:SingleSpeed}
+ *
+ * \par Important behavior
+ * The blowdown makeup-water schedule is validated as a volumetric-flow schedule, and plant placement is supply-side only.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model type is <code>openstudio::model::EvaporativeFluidCoolerSingleSpeed</code>.
+ *
+ * \par Known limitations
+ * The legacy storage-tank helper is not available.
+ */
   class EPMODEL_API EvaporativeFluidCoolerSingleSpeed : public StraightComponent
   {
    public:
@@ -42,19 +57,6 @@ namespace epmodel {
     static std::vector<std::string> evaporationLossModeValues();
     static std::vector<std::string> blowdownCalculationModeValues();
 
-    // Schema Alignment Notes:
-    // - Status: Parity with documented deltas. The canonical scalar surface and plant-supply placement rule are present, while the blowdown schedule
-    //   relationship helper and legacy storage-tank placeholder remain out of scope.
-    // - Canonical Counterpart: openstudio::model::EvaporativeFluidCoolerSingleSpeed.
-    // - Implemented Parity: The preserved API matches the canonical design-flow, fan-power, spray-water, performance, and capacity accessors with
-    //   matching autosize/default behavior, and inherited `addToNode(...)` now follows the canonical plant-supply-only insertion contract.
-    // - Documented Delta: The public wrapper still omits `blowdownMakeupWaterUsageSchedule()` and its mutators, and the legacy storage-tank helper
-    //   remains intentionally absent.
-    // - Field/Storage Mapping: These accessors map directly to EnergyPlus `EvaporativeFluidCooler:SingleSpeed` scalar fields used by the forward translator.
-    // - Evidence: `src/model/EvaporativeFluidCoolerSingleSpeed.hpp`, `src/model/EvaporativeFluidCoolerSingleSpeed.cpp`, and
-    //   `src/energyplus/ForwardTranslator/ForwardTranslateEvaporativeFluidCoolerSingleSpeed.cpp`.
-    // - Remaining Parity Work: Add the omitted blowdown schedule relationship helper and decide whether the legacy storage-tank placeholder should
-    //   remain intentionally unsupported.
 
     boost::optional<double> designAirFlowRate() const;
     bool isDesignAirFlowRateAutosized() const;
@@ -139,6 +141,10 @@ namespace epmodel {
     bool isBlowdownCalculationModeDefaulted() const;
     bool setBlowdownCalculationMode(const std::string& blowdownCalculationMode);
     void resetBlowdownCalculationMode();
+
+    boost::optional<Schedule> blowdownMakeupWaterUsageSchedule() const;
+    bool setBlowdownMakeupWaterUsageSchedule(Schedule& schedule);
+    void resetBlowdownMakeupWaterUsageSchedule();
 
     double blowdownConcentrationRatio() const;
     bool isBlowdownConcentrationRatioDefaulted() const;

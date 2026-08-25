@@ -23,6 +23,18 @@ namespace epmodel {
     class GeneratorFuelCellAirSupply_Impl;
   }
 
+  /** \brief Represents <code>Generator:FuelCell:AirSupply</code>.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-electric-load-center-generator.html#generatorfuelcellairsupply,Generator:FuelCell:AirSupply}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::GeneratorFuelCellAirSupply</code>.
+   * **Not yet available:** Model parent, node, curve, schedule, and extensible constituent conveniences are not exposed unless declared here.
+   *
+   * \par Known limitations
+   * Relationship and extensible data not represented by the public declarations must be maintained by the owning object.
+   */
   class EPMODEL_API GeneratorFuelCellAirSupply : public ModelObject
   {
    public:
@@ -39,17 +51,6 @@ namespace epmodel {
     static std::vector<std::string> airSupplyRateCalculationModeValues();
     static std::vector<std::string> airIntakeHeatRecoveryModeValues();
     static std::vector<std::string> airSupplyConstituentModeValues();
-
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model scalar accessor naming/signatures for counterpart parity.
-    // - Field Mapping: Scalar APIs map directly to Generator:FuelCell:AirSupply fields Blower Heat Loss Factor,
-    //   Air Supply Rate Calculation Mode, Stoichiometric Ratio, Air Rate Air Temperature Coefficient,
-    //   Air Intake Heat Recovery Mode, and Air Supply Constituent Mode.
-    // - Field Mapping: numberofUserDefinedConstituents follows existing model behavior and reflects extensible group count.
-    // - ForwardTranslator evidence: ForwardTranslateGeneratorFuelCellAirSupply writes these scalar fields and handles
-    //   air-node/curve/extensible relationships separately.
-    // - TODO(parity): Add preserved relationship APIs incrementally for air inlet node, curve references, and constituents.
-    // Blower Heat Loss Factor accessors
     double blowerHeatLossFactor() const;
     bool setBlowerHeatLossFactor(double blowerHeatLossFactor);
     void resetBlowerHeatLossFactor();

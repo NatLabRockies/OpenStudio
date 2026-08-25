@@ -20,6 +20,17 @@ namespace epmodel {
     class ZoneCapacitanceMultiplierResearchSpecial_Impl;
   }
 
+  /** \brief ZoneCapacitanceMultiplierResearchSpecial.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-simulation-parameters.html#zonecapacitancemultiplierresearchspecial,ZoneCapacitanceMultiplier:ResearchSpecial}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::ZoneCapacitanceMultiplierResearchSpecial</code>. The temperature, humidity, and carbon-dioxide capacity multipliers map directly to EnergyPlus.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API ZoneCapacitanceMultiplierResearchSpecial : public ModelObject
   {
    public:
@@ -32,13 +43,6 @@ namespace epmodel {
     ZoneCapacitanceMultiplierResearchSpecial& operator=(ZoneCapacitanceMultiplierResearchSpecial&&) = default;
 
     static IddObjectType iddObjectType();
-
-    // Schema Alignment Notes:
-    // - API: Preserve the openstudio::model ZoneCapacitanceMultiplierResearchSpecial scalar accessor names/signatures for parity.
-    // - Field Mapping: temperatureCapacityMultiplier(), humidityCapacityMultiplier(), and carbonDioxideCapacityMultiplier()
-    //   wrap the EnergyPlus ZoneCapacitanceMultiplier:ResearchSpecial fields via ZoneCapacitanceMultiplier_ResearchSpecialFields.
-    // - Field Mapping: ForwardTranslator::translateZoneCapacitanceMultiplierResearchSpecial still drives how these scalars land in the
-    //   IDF and should remain aligned with this API.
     double temperatureCapacityMultiplier() const;
     bool isTemperatureCapacityMultiplierDefaulted() const;
     bool setTemperatureCapacityMultiplier(double temperatureCapacityMultiplier);

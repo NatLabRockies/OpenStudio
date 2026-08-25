@@ -17,12 +17,28 @@
 namespace openstudio {
 namespace epmodel {
 
+  class DesignSpecificationOutdoorAir;
   class Model;
+  class Schedule;
 
   namespace detail {
     class ZoneHVACIdealLoadsAirSystem_Impl;
   }
 
+/** \brief An ideal-loads air system serving a thermal zone.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-zone-forced-air-units.html#zonehvacidealloadsairsystem,ZoneHVAC:IdealLoadsAirSystem}
+ *
+ * \par Important behavior
+ * Heating, cooling, humidification/dehumidification, flow-limit, schedule, outdoor-air-specification, and thermal-zone methods are available.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model class is <code>openstudio::model::ZoneHVACIdealLoadsAirSystem</code>.
+ *
+ * \par Known limitations
+ * Zone and node relationships are maintained through shared zone-equipment topology; additional non-schedule Model relationship conveniences are not exposed.
+ */
   class EPMODEL_API ZoneHVACIdealLoadsAirSystem : public ZoneHVACComponent
   {
    public:
@@ -36,14 +52,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. The ideal-loads scalar fields are aligned, but the zone attachment and scheduling topology remain relationship-driven.
-    // - Canonical Counterpart: openstudio::model::ZoneHVACIdealLoadsAirSystem.
-    // - Implemented Parity: The cooling/heating/dehumidification scalar groups and flow limits map directly to the EnergyPlus object.
-    // - Documented Delta: Zone/schedule/node references are relationship-only links and are intentionally not exposed as scalar fields.
-    // - Field/Storage Mapping: Scalar values live on the EnergyPlus object while zone membership is maintained through thermal-zone topology.
-    // - Evidence: `src/model/ZoneHVACIdealLoadsAirSystem.hpp`, `src/model/ZoneHVACIdealLoadsAirSystem.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateZoneHVACIdealLoadsAirSystem.cpp`, `src/energyplus/ReverseTranslator/ReverseTranslateZoneHVACIdealLoadsAirSystem.cpp`, and `src/epmodel/test/ZoneHVACIdealLoadsAirSystem_GTest.cpp`.
-    // - Remaining Parity Work: Add explicit relationship helpers only if the canonical model surface needs richer zone/schedule access.
     static std::vector<std::string> heatingLimitValues();
     static std::vector<std::string> coolingLimitValues();
     static std::vector<std::string> dehumidificationControlTypeValues();
@@ -53,6 +61,10 @@ namespace epmodel {
     static std::vector<std::string> heatRecoveryTypeValues();
     static std::vector<std::string> heatingFuelTypeValues();
     static std::vector<std::string> coolingFuelTypeValues();
+
+    boost::optional<Schedule> availabilitySchedule() const;
+    bool setAvailabilitySchedule(Schedule& availabilitySchedule);
+    void resetAvailabilitySchedule();
 
     double maximumHeatingSupplyAirTemperature() const;
     bool isMaximumHeatingSupplyAirTemperatureDefaulted() const;
@@ -112,6 +124,14 @@ namespace epmodel {
     void autosizeMaximumTotalCoolingCapacity();
     boost::optional<double> autosizedMaximumTotalCoolingCapacity() const;
 
+    boost::optional<Schedule> heatingAvailabilitySchedule() const;
+    bool setHeatingAvailabilitySchedule(Schedule& heatingAvailabilitySchedule);
+    void resetHeatingAvailabilitySchedule();
+
+    boost::optional<Schedule> coolingAvailabilitySchedule() const;
+    bool setCoolingAvailabilitySchedule(Schedule& coolingAvailabilitySchedule);
+    void resetCoolingAvailabilitySchedule();
+
     std::string dehumidificationControlType() const;
     bool isDehumidificationControlTypeDefaulted() const;
     bool setDehumidificationControlType(const std::string& dehumidificationControlType);
@@ -126,6 +146,10 @@ namespace epmodel {
     bool isHumidificationControlTypeDefaulted() const;
     bool setHumidificationControlType(const std::string& humidificationControlType);
     void resetHumidificationControlType();
+
+    boost::optional<DesignSpecificationOutdoorAir> designSpecificationOutdoorAirObject() const;
+    bool setDesignSpecificationOutdoorAirObject(const DesignSpecificationOutdoorAir& designSpecificationOutdoorAir);
+    void resetDesignSpecificationOutdoorAirObject();
 
     std::string demandControlledVentilationType() const;
     bool isDemandControlledVentilationTypeDefaulted() const;
@@ -152,8 +176,16 @@ namespace epmodel {
     bool setLatentHeatRecoveryEffectiveness(double latentHeatRecoveryEffectiveness);
     void resetLatentHeatRecoveryEffectiveness();
 
+    boost::optional<Schedule> heatingFuelEfficiencySchedule() const;
+    bool setHeatingFuelEfficiencySchedule(Schedule& heatingFuelEfficiencySchedule);
+    void resetHeatingFuelEfficiencySchedule();
+
     std::string heatingFuelType() const;
     bool setHeatingFuelType(const std::string& heatingFuelType);
+
+    boost::optional<Schedule> coolingFuelEfficiencySchedule() const;
+    bool setCoolingFuelEfficiencySchedule(Schedule& coolingFuelEfficiencySchedule);
+    void resetCoolingFuelEfficiencySchedule();
 
     std::string coolingFuelType() const;
     bool setCoolingFuelType(const std::string& coolingFuelType);

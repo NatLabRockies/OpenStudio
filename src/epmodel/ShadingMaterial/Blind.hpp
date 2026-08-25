@@ -7,7 +7,7 @@
 #define EPMODEL_BLIND_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "ShadingMaterial/ShadingMaterial.hpp"
 
 #include <utilities/idd/IddEnums.hxx>
 
@@ -24,7 +24,22 @@ namespace epmodel {
     class Blind_Impl;
   }
 
-  class EPMODEL_API Blind : public ModelObject
+  /** \brief Represents a slatted blind shading material.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-surface-construction-elements.html#windowmaterialblind,WindowMaterial:Blind}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::Blind</code>. EPModel exposes the same slat,
+   * optical, and opening-factor fields and additionally exposes the
+   * <code>slatCurve()</code> getter/setter/resetter for the EnergyPlus slat
+   * curve field.
+   *
+   * \par Known limitations
+   * No separate blind-control relationship is managed by this material wrapper.
+   */
+  class EPMODEL_API Blind : public ShadingMaterial
   {
    public:
     explicit Blind(const Model& model);
@@ -37,12 +52,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
     static std::vector<std::string> slatOrientationValues();
-
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model Blind scalar names/signatures even though defaults exist so the epmodel facade remains stable.
-    // - Field Mapping: Slat geometry and optical scalars map directly to their EnergyPlus WindowMaterial:Blind field counterparts.
-    // - Field Mapping: Optional visible/infrared reflectance getters mirror the openstudio::model boost::optional<double> APIs while still delegating to the same IDD strings.
-    // - Field Mapping: Debuggable forward translation is provided by ForwardTranslateBlind.cpp, which republishes these fields to EnergyPlus.
 
     std::string slatOrientation() const;
     bool isSlatOrientationDefaulted() const;

@@ -6,18 +6,24 @@
 #ifndef EPMODEL_AVAILABILITYMANAGERLOWTEMPERATURETURNON_IMPL_HPP
 #define EPMODEL_AVAILABILITYMANAGERLOWTEMPERATURETURNON_IMPL_HPP
 
-#include "ModelObject_Impl.hpp"
+#include "AvailabilityManager_Impl.hpp"
 
 namespace openstudio {
 namespace epmodel {
 
+  class Node;
+
   namespace detail {
 
-    class EPMODEL_API AvailabilityManagerLowTemperatureTurnOn_Impl : public ModelObject_Impl
+    class EPMODEL_API AvailabilityManagerLowTemperatureTurnOn_Impl : public AvailabilityManager_Impl
     {
      public:
-      using ModelObject_Impl::ModelObject_Impl;
+      using AvailabilityManager_Impl::AvailabilityManager_Impl;
       virtual ~AvailabilityManagerLowTemperatureTurnOn_Impl() override = default;
+
+      boost::optional<openstudio::epmodel::Node> sensorNode() const;
+      bool setSensorNode(const openstudio::epmodel::Node& node);
+      void resetSensorNode();
 
       /** @name Temperature Accessors */
       //@{

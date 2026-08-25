@@ -38,6 +38,11 @@ TEST_F(EPModelFixture, CoilCoolingWaterToAirHeatPumpEquationFit_DefaultConstruct
   EXPECT_FALSE(coil.airOutletModelObject());
   EXPECT_FALSE(coil.waterInletModelObject());
   EXPECT_FALSE(coil.waterOutletModelObject());
+  EXPECT_TRUE(coil.isRatedAirFlowRateAutosized());
+  EXPECT_TRUE(coil.isRatedWaterFlowRateAutosized());
+  EXPECT_TRUE(coil.isRatedTotalCoolingCapacityAutosized());
+  EXPECT_TRUE(coil.isRatedSensibleCoolingCapacityAutosized());
+  EXPECT_DOUBLE_EQ(3.0, coil.ratedCoolingCoefficientofPerformance());
 
   EXPECT_EQ(model.alwaysOnDiscreteSchedule(), coil.availabilitySchedule());
   EXPECT_TRUE(coil.totalCoolingCapacityCurve().optionalCast<CurveQuadLinear>());
@@ -184,7 +189,7 @@ TEST_F(EPModelFixture, CoilCoolingWaterToAirHeatPumpEquationFit_ScalarAccessors_
   EXPECT_TRUE(coil.isRatedSensibleCoolingCapacityDefaulted());
   EXPECT_FALSE(coil.autosizedRatedSensibleCoolingCapacity());
 
-  EXPECT_TRUE(coil.isRatedCoolingCoefficientofPerformanceDefaulted());
+  EXPECT_FALSE(coil.isRatedCoolingCoefficientofPerformanceDefaulted());
   EXPECT_TRUE(coil.setRatedCoolingCoefficientofPerformance(4.3));
   EXPECT_DOUBLE_EQ(4.3, coil.ratedCoolingCoefficientofPerformance());
   EXPECT_FALSE(coil.isRatedCoolingCoefficientofPerformanceDefaulted());

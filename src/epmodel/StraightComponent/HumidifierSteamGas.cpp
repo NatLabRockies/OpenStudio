@@ -6,6 +6,8 @@
 #include "StraightComponent/HumidifierSteamGas.hpp"
 #include "StraightComponent/HumidifierSteamGas_Impl.hpp"
 
+#include "Curve/Curve.hpp"
+#include "Curve/Curve_Impl.hpp"
 #include "HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
 #include "Loop/AirLoopHVAC.hpp"
 #include "Model.hpp"
@@ -114,6 +116,18 @@ namespace epmodel {
 
   void HumidifierSteamGas::resetThermalEfficiency() {
     getImpl<detail::HumidifierSteamGas_Impl>()->resetThermalEfficiency();
+  }
+
+  boost::optional<Curve> HumidifierSteamGas::thermalEfficiencyModifierCurve() const {
+    return getImpl<detail::HumidifierSteamGas_Impl>()->thermalEfficiencyModifierCurve();
+  }
+
+  bool HumidifierSteamGas::setThermalEfficiencyModifierCurve(const Curve& curve) {
+    return getImpl<detail::HumidifierSteamGas_Impl>()->setThermalEfficiencyModifierCurve(curve);
+  }
+
+  void HumidifierSteamGas::resetThermalEfficiencyModifierCurve() {
+    getImpl<detail::HumidifierSteamGas_Impl>()->resetThermalEfficiencyModifierCurve();
   }
 
   boost::optional<double> HumidifierSteamGas::ratedFanPower() const {
@@ -319,6 +333,35 @@ namespace epmodel {
 
     void HumidifierSteamGas_Impl::resetInletWaterTemperatureOption() {
       OS_ASSERT(setString(openstudio::Humidifier_Steam_GasFields::InletWaterTemperatureOption, ""));
+    }
+
+    boost::optional<Curve> HumidifierSteamGas_Impl::thermalEfficiencyModifierCurve() const {
+      return getObject<ModelObject>().getModelObjectTarget<Curve>(openstudio::Humidifier_Steam_GasFields::ThermalEfficiencyModifierCurveName);
+    }
+
+    bool HumidifierSteamGas_Impl::setThermalEfficiencyModifierCurve(const Curve& curve) {
+      if (curve.model() != model()) {
+        LOG_FREE(Warn, "openstudio.epmodel.HumidifierSteamGas",
+                 "Cannot set the thermal efficiency modifier curve because the curve belongs to a different model.");
+        return false;
+      }
+
+      const auto field = openstudio::Humidifier_Steam_GasFields::ThermalEfficiencyModifierCurveName;
+      if (!model().canBeTarget(curve.handle(), iddObject().objectLists(field))) {
+        LOG_FREE(Warn, "openstudio.epmodel.HumidifierSteamGas",
+                 "Cannot set the thermal efficiency modifier curve because curve type '"
+                   << curve.iddObject().type().valueName()
+                   << "' is not accepted by the Humidifier:Steam:Gas thermal efficiency modifier curve field.");
+        return false;
+      }
+
+      return setPointer(field, curve.handle(), false);
+    }
+
+    void HumidifierSteamGas_Impl::resetThermalEfficiencyModifierCurve() {
+      constexpr auto field = openstudio::Humidifier_Steam_GasFields::ThermalEfficiencyModifierCurveName;
+      OS_ASSERT(setPointer(field, Handle(), false));
+      OS_ASSERT(openstudio::detail::IdfObject_Impl::setString(field, "", false));
     }
 
     std::vector<std::string> HumidifierSteamGas_Impl::inletWaterTemperatureOptionValues() const {

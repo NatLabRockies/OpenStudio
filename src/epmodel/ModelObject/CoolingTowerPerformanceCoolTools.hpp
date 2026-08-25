@@ -22,6 +22,18 @@ namespace epmodel {
     class CoolingTowerPerformanceCoolTools_Impl;
   }
 
+  /** \brief Represents <code>CoolingTowerPerformance:CoolTools</code>.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-condenser-equipment.html#coolingtowerperformancecooltools,CoolingTowerPerformance:CoolTools}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::CoolingTowerPerformanceCoolTools</code>.
+   * The EPModel declaration exposes the EnergyPlus-backed fields shown here; Model conveniences for typed relationships, extensible groups, or OpenStudio-only fields are not available unless declared here.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API CoolingTowerPerformanceCoolTools : public ModelObject
   {
    public:
@@ -34,12 +46,6 @@ namespace epmodel {
     CoolingTowerPerformanceCoolTools& operator=(CoolingTowerPerformanceCoolTools&&) = default;
 
     static IddObjectType iddObjectType();
-
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model CoolingTowerPerformanceCoolTools scalar names/signatures.
-    // - Field Mapping: APIs delegate directly to CoolingTowerPerformance:CoolTools scalar fields in E+.
-    // - Field Mapping: No relationship fields exist on this object; scalar-only scaffold is complete for this type.
-    // - TODO(parity): Keep mappings aligned if EnergyPlus renames CoolingTowerPerformance:CoolTools fields.
     double minimumInletAirWetBulbTemperature() const;
     bool setMinimumInletAirWetBulbTemperature(double minimumInletAirWetBulbTemperature);
 

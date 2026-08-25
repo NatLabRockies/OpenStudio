@@ -46,6 +46,10 @@ namespace openstudio {
 namespace epmodel {
   namespace detail {
 
+    unsigned ExternalInterfaceSchedule_Impl::scheduleTypeLimitsFieldIndex() const {
+      return openstudio::ExternalInterface_ScheduleFields::ScheduleTypeLimitsName;
+    }
+
     double ExternalInterfaceSchedule_Impl::initialValue() const {
       const auto value = getDouble(openstudio::ExternalInterface_ScheduleFields::InitialValue, true);
       OS_ASSERT(value);

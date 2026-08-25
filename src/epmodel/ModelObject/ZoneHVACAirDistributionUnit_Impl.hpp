@@ -22,6 +22,7 @@ namespace epmodel {
 
       bool setAirTerminal(const openstudio::epmodel::ModelObject& airTerminal);
       bool setOutletNode(const openstudio::epmodel::Node& node);
+      std::vector<IdfObject> remove() override;
       void doCanonicalize(LoadContext& context) override;
     };
 

@@ -27,6 +27,8 @@
 #include "../StraightComponent/Node.hpp"
 #include "../WaterToAirComponent/CoilCoolingWater.hpp"
 
+#include <algorithm>
+
 using namespace openstudio::epmodel;
 
 TEST_F(EPModelFixture, CoilCoolingWater_DefaultConstructor) {
@@ -145,6 +147,24 @@ TEST_F(EPModelFixture, CoilCoolingWater_AddToNodeSupportsOutboardOANode) {
   EXPECT_EQ(coil.handle(), oaComponents[1].handle());
 }
 
+TEST_F(EPModelFixture, CoilCoolingWater_AddToNodeSupportsMixedAirEndpoint) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  AirLoopHVACOutdoorAirSystem oaSystem(model);
+  CoilCoolingWater coil(model);
+
+  auto supplyOutletNode = airLoop.supplyOutletNode();
+  ASSERT_TRUE(oaSystem.addToNode(supplyOutletNode));
+  ASSERT_TRUE(coil.addToNode(supplyOutletNode));
+
+  const auto coilInlet = coil.airInletModelObject();
+  const auto mixedAirObject = oaSystem.mixedAirModelObject();
+  ASSERT_TRUE(coilInlet);
+  ASSERT_TRUE(mixedAirObject);
+  EXPECT_EQ(coilInlet->handle(), mixedAirObject->handle());
+  EXPECT_NE(supplyOutletNode.handle(), mixedAirObject->handle());
+}
+
 TEST_F(EPModelFixture, CoilCoolingWater_RemoveDetachesFromOutdoorAirSystem) {
   Model model;
   AirLoopHVAC airLoop(model);
@@ -195,7 +215,7 @@ TEST_F(EPModelFixture, CoilCoolingWater_AirflowNetworkEquivalentDuctRoundTrip) {
   EXPECT_DOUBLE_EQ(0.82, updated.airPathHydraulicDiameter());
 }
 
-TEST_F(EPModelFixture, CoilCoolingWater_AirflowNetworkEquivalentDuctReturnsFirstAttachedComponentWhenMalformedDuplicatesExist) {
+TEST_F(EPModelFixture, CoilCoolingWater_AirflowNetworkEquivalentDuctReturnsFirstResolvedComponentWhenMalformedDuplicatesExist) {
   Model model;
   CoilCoolingWater coil(model);
 
@@ -208,12 +228,12 @@ TEST_F(EPModelFixture, CoilCoolingWater_AirflowNetworkEquivalentDuctReturnsFirst
 
   auto attached = coil.airflowNetworkEquivalentDuct();
   ASSERT_TRUE(attached);
-  EXPECT_EQ(first.handle(), attached->handle());
 
   const auto children = coil.children();
   ASSERT_EQ(2u, children.size());
-  EXPECT_EQ(first.handle(), children[0].handle());
-  EXPECT_EQ(duplicate.handle(), children[1].handle());
+  EXPECT_EQ(children.front(), attached->cast<ModelObject>());
+  EXPECT_NE(children.end(), std::ranges::find(children, first.cast<ModelObject>()));
+  EXPECT_NE(children.end(), std::ranges::find(children, duplicate.cast<ModelObject>()));
 }
 
 TEST_F(EPModelFixture, CoilCoolingWater_RemoveCleansUpAttachedAirflowNetworkComponent) {
@@ -262,6 +282,7 @@ TEST_F(EPModelFixture, CoilCoolingWater_ControllerWaterCoil_IsInferredFromLoopNo
 
   auto actuatorNode = controller->actuatorNode();
   auto sensorNode = controller->sensorNode();
+  const auto controllerHandle = controller->handle();
   ASSERT_TRUE(actuatorNode);
   ASSERT_TRUE(sensorNode);
   ASSERT_TRUE(coil.waterInletModelObject());
@@ -271,6 +292,13 @@ TEST_F(EPModelFixture, CoilCoolingWater_ControllerWaterCoil_IsInferredFromLoopNo
 
   ASSERT_TRUE(plantLoop.removeDemandBranchWithComponent(coil));
   EXPECT_FALSE(coil.controllerWaterCoil());
+  EXPECT_FALSE(model.getObject(controllerHandle));
+  const auto hasRemovedControllerSource = [&](const Node& node) {
+    const auto sources = node.sources();
+    return std::ranges::find_if(sources, [&](const auto& source) { return source.handle() == controllerHandle; }) != sources.end();
+  };
+  EXPECT_FALSE(hasRemovedControllerSource(*actuatorNode));
+  EXPECT_FALSE(hasRemovedControllerSource(*sensorNode));
 }
 
 TEST_F(EPModelFixture, CoilCoolingWater_AddToNodeRejectsAirLoopInsertionWhenReferencedByCoilSystemCoolingWater) {

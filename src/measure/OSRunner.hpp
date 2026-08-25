@@ -8,7 +8,7 @@
 
 #include "MeasureAPI.hpp"
 
-#include "../model/Model.hpp"
+#include "../epmodel/Model.hpp"
 
 #include "../utilities/filetypes/WorkflowStepResult.hpp"
 #include "../utilities/idf/Workspace.hpp"
@@ -76,8 +76,8 @@ namespace measure {
     /** Returns true if the simulation has been halted. */
     bool halted() const;
 
-    /** Returns a copy of the last Model generated in the workflow if available. */
-    boost::optional<openstudio::model::Model> lastOpenStudioModel() const;
+    /** Returns a copy of the last EPModel generated in the workflow if available. */
+    boost::optional<openstudio::epmodel::Model> lastOpenStudioModel() const;
 
     /** Returns a copy of the last EnergyPlus Workspace generated in the workflow if available. */
     boost::optional<openstudio::Workspace> lastEnergyPlusWorkspace() const;
@@ -265,7 +265,7 @@ namespace measure {
     bool incrementStep();
 
     // supports in-memory job chaining
-    void setLastOpenStudioModel(const openstudio::model::Model& lastOpenStudioModel);
+    void setLastOpenStudioModel(const openstudio::epmodel::Model& lastOpenStudioModel);
     void resetLastOpenStudioModel();
 
     // clears m_lastOpenStudioModel
@@ -334,7 +334,7 @@ namespace measure {
     // current data
     WorkflowStepResult m_result;
 
-    mutable boost::optional<openstudio::model::Model> m_lastOpenStudioModel;
+    mutable boost::optional<openstudio::epmodel::Model> m_lastOpenStudioModel;
     boost::optional<openstudio::path> m_lastOpenStudioModelPath;
     mutable boost::optional<openstudio::Workspace> m_lastEnergyPlusWorkspace;
     boost::optional<openstudio::path> m_lastEnergyPlusWorkspacePath;

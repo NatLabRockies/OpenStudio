@@ -7,7 +7,7 @@
 #define EPMODEL_CFACTORUNDERGROUNDWALLCONSTRUCTION_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "ConstructionBase/ConstructionBase.hpp"
 
 #include <utilities/idd/IddEnums.hxx>
 
@@ -22,7 +22,22 @@ namespace epmodel {
     class CFactorUndergroundWallConstruction_Impl;
   }
 
-  class EPMODEL_API CFactorUndergroundWallConstruction : public ModelObject
+  /** \brief Defines a C-factor underground wall construction.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-surface-construction-elements.html#constructioncfactorundergroundwall,Construction:CfactorUndergroundWall}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::CFactorUndergroundWallConstruction</code>. The
+   * <code>cFactor()</code> and <code>height()</code> fields have the same public
+   * meaning.
+   *
+   * \par Known limitations
+   * The object exposes only the two EnergyPlus scalar fields; no additional
+   * relationship API is provided.
+   */
+  class EPMODEL_API CFactorUndergroundWallConstruction : public ConstructionBase
   {
    public:
     explicit CFactorUndergroundWallConstruction(const Model& model, double cFactor = 0.1, double height = 0.1);
@@ -35,13 +50,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::CFactorUndergroundWallConstruction scalar accessor names/signatures.
-    // - Field Mapping: cFactor -> Construction:CfactorUndergroundWall, field C-Factor.
-    // - Field Mapping: height -> Construction:CfactorUndergroundWall, field Height.
-    // - ForwardTranslator evidence: ForwardTranslateCFactorUndergroundWallConstruction.cpp maps OS cFactor/height
-    //   directly to EnergyPlus Construction:CfactorUndergroundWall C-Factor/Height.
-    // - TODO(parity): Add non-scalar/relationship APIs if needed in later parity passes.
     double cFactor() const;
     bool setCFactor(double cFactor);
 

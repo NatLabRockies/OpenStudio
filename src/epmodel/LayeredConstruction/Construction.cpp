@@ -13,9 +13,9 @@
 namespace openstudio {
 namespace epmodel {
 
-  Construction::Construction(const Model& model) : ModelObject(Construction::iddObjectType(), model) {}
+  Construction::Construction(const Model& model) : LayeredConstruction(Construction::iddObjectType(), model) {}
 
-  Construction::Construction(std::shared_ptr<detail::Construction_Impl> impl) : ModelObject(std::move(impl)) {}
+  Construction::Construction(std::shared_ptr<detail::Construction_Impl> impl) : LayeredConstruction(std::move(impl)) {}
 
   IddObjectType Construction::iddObjectType() {
     return IddObjectType::Construction;

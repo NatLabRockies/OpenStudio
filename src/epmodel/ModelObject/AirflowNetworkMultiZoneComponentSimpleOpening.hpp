@@ -22,6 +22,17 @@ namespace epmodel {
     class AirflowNetworkMultiZoneComponentSimpleOpening_Impl;
   }
 
+  /** \brief Represents the EnergyPlus AirflowNetwork:MultiZone:Component:SimpleOpening object.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-airflow-network.html#airflownetworkmultizonecomponentsimpleopening,AirflowNetwork:MultiZone:Component:SimpleOpening}
+   *
+   * \par OpenStudio Model API
+   * OpenStudio Model has no public wrapper for this EnergyPlus object. This wrapper is new to the EPModel API.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations beyond the public fields and relationships exposed by this wrapper.
+   */
   class EPMODEL_API AirflowNetworkMultiZoneComponentSimpleOpening : public ModelObject
   {
    public:
@@ -35,12 +46,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - API: This no-counterpart epmodel type uses IDD-derived class/accessor naming.
-    // - Field Mapping: Scalar APIs map directly to EnergyPlus
-    //   AirflowNetwork:MultiZone:Component:SimpleOpening fields N1/N2/N3/N4.
-    // - ForwardTranslator evidence: translateAirflowNetworkSimpleOpening writes these scalar fields directly.
-    // - TODO(parity): Align with model-level semantics once deeper airflow-network parity work is scheduled.
     double airMassFlowCoefficientWhenOpeningisClosed() const;
     bool setAirMassFlowCoefficientWhenOpeningisClosed(double airMassFlowCoefficientWhenOpeningisClosed);
 

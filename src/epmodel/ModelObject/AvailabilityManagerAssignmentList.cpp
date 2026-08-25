@@ -8,6 +8,8 @@
 
 #include "Loop/AirLoopHVAC.hpp"
 #include "Loop/AirLoopHVAC_Impl.hpp"
+#include "Loop/PlantLoop.hpp"
+#include "Loop/PlantLoop_Impl.hpp"
 #include "AvailabilityManager/AvailabilityManager.hpp"
 #include "AvailabilityManager/AvailabilityManager_Impl.hpp"
 #include "Loop/Loop.hpp"
@@ -18,6 +20,7 @@
 #include <utilities/idd/AirLoopHVAC_FieldEnums.hxx>
 #include <utilities/idd/AvailabilityManagerAssignmentList_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
+#include <utilities/idd/PlantLoop_FieldEnums.hxx>
 #include <utilities/idf/WorkspaceExtensibleGroup.hpp>
 
 #include <algorithm>
@@ -82,6 +85,10 @@ namespace epmodel {
 
   boost::optional<AirLoopHVAC> AvailabilityManagerAssignmentList::airLoopHVAC() const {
     return getImpl<detail::AvailabilityManagerAssignmentList_Impl>()->airLoopHVAC();
+  }
+
+  boost::optional<PlantLoop> AvailabilityManagerAssignmentList::plantLoop() const {
+    return getImpl<detail::AvailabilityManagerAssignmentList_Impl>()->plantLoop();
   }
 
 }  // namespace epmodel
@@ -227,6 +234,11 @@ namespace epmodel {
         OS_ASSERT(loop);
         return *loop;
       }
+      if (auto result = plantLoop()) {
+        auto loop = result->optionalCast<openstudio::epmodel::Loop>();
+        OS_ASSERT(loop);
+        return *loop;
+      }
       return boost::none;
     }
 
@@ -243,6 +255,25 @@ namespace epmodel {
         if (*target == assignmentList) {
           OS_ASSERT(!result);
           result = airLoop;
+        }
+      }
+
+      return result;
+    }
+
+    boost::optional<openstudio::epmodel::PlantLoop> AvailabilityManagerAssignmentList_Impl::plantLoop() const {
+      auto assignmentList = getObject<openstudio::epmodel::AvailabilityManagerAssignmentList>();
+      boost::optional<openstudio::epmodel::PlantLoop> result;
+
+      for (const auto& plantLoop : model().getConcreteModelObjects<openstudio::epmodel::PlantLoop>()) {
+        auto target = plantLoop.getModelObjectTarget<openstudio::epmodel::AvailabilityManagerAssignmentList>(
+          openstudio::PlantLoopFields::AvailabilityManagerListName);
+        if (!target) {
+          continue;
+        }
+        if (*target == assignmentList) {
+          OS_ASSERT(!result);
+          result = plantLoop;
         }
       }
 

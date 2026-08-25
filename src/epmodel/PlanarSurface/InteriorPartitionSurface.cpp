@@ -5,19 +5,33 @@
 
 #include "PlanarSurface/InteriorPartitionSurface.hpp"
 #include "PlanarSurface/InteriorPartitionSurface_Impl.hpp"
+#include "ConstructionBase/ConstructionBase.hpp"
+#include "ConstructionBase/ConstructionBase_Impl.hpp"
 
 #include "Model.hpp"
+#include "PlanarSurfaceGroup/Space.hpp"
+#include "PlanarSurfaceGroup/Space_Impl.hpp"
 
 #include <utilities/core/Assert.hpp>
+#include <utilities/core/Logger.hpp>
+#include <utilities/geometry/Geometry.hpp>
+#include <utilities/geometry/Plane.hpp>
+#include <utilities/geometry/Point3d.hpp>
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/InternalMass_FieldEnums.hxx>
 
 namespace openstudio {
 namespace epmodel {
 
-  InteriorPartitionSurface::InteriorPartitionSurface(const Model& model) : ModelObject(InteriorPartitionSurface::iddObjectType(), model) {}
+  InteriorPartitionSurface::InteriorPartitionSurface(const std::vector<Point3d>& vertices, const Model& model)
+    : PlanarSurface(InteriorPartitionSurface::iddObjectType(), model) {
+    if (!getImpl<detail::InteriorPartitionSurface_Impl>()->setVertices(vertices)) {
+      remove();
+      LOG_AND_THROW("Cannot create an InteriorPartitionSurface from the supplied vertices.");
+    }
+  }
 
-  InteriorPartitionSurface::InteriorPartitionSurface(std::shared_ptr<detail::InteriorPartitionSurface_Impl> impl) : ModelObject(std::move(impl)) {}
+  InteriorPartitionSurface::InteriorPartitionSurface(std::shared_ptr<detail::InteriorPartitionSurface_Impl> impl) : PlanarSurface(std::move(impl)) {}
 
   IddObjectType InteriorPartitionSurface::iddObjectType() {
     return IddObjectType::InternalMass;
@@ -90,6 +104,52 @@ namespace openstudio {
 namespace epmodel {
   namespace detail {
 
+    boost::optional<Space> InteriorPartitionSurface_Impl::space() const {
+      return getObject<InteriorPartitionSurface>().getModelObjectTarget<Space>(openstudio::InternalMassFields::SpaceorSpaceListName);
+    }
+
+    bool InteriorPartitionSurface_Impl::subtractFromGrossArea() const {
+      return false;
+    }
+
+    bool InteriorPartitionSurface_Impl::setVertices(const std::vector<Point3d>& vertices) {
+      if (vertices.size() < 3u) {
+        LOG(Error, "Cannot set vertices because size of vertices is " << vertices.size() << ", which is less than 3.");
+        return false;
+      }
+
+      try {
+        Plane{vertices};
+      } catch (const std::exception&) {
+        LOG(Error, "Could not compute plane for vertices for '" << nameString() << "'.");
+        return false;
+      }
+
+      const auto area = getArea(vertices);
+      if (!area || (*area <= 0.0)) {
+        LOG(Error, "Could not compute a positive surface area from vertices for '" << nameString() << "'.");
+        return false;
+      }
+
+      return setSurfaceArea(*area);
+    }
+
+    double InteriorPartitionSurface_Impl::grossArea() const {
+      return surfaceArea().value_or(0.0);
+    }
+
+    boost::optional<ConstructionBase> InteriorPartitionSurface_Impl::construction() const {
+      return getObject<InteriorPartitionSurface>().getModelObjectTarget<ConstructionBase>(openstudio::InternalMassFields::ConstructionName);
+    }
+
+    bool InteriorPartitionSurface_Impl::setConstruction(const ConstructionBase& construction) {
+      return setPointer(openstudio::InternalMassFields::ConstructionName, construction.handle());
+    }
+
+    void InteriorPartitionSurface_Impl::resetConstruction() {
+      setString(openstudio::InternalMassFields::ConstructionName, "");
+    }
+
     bool InteriorPartitionSurface_Impl::converttoInternalMass() const {
       // InternalMass is already the translated EP object for this class.
       return true;
@@ -112,22 +172,17 @@ namespace epmodel {
     }
 
     bool InteriorPartitionSurface_Impl::setSurfaceArea(boost::optional<double> surfaceArea) {
-      bool result = false;
-      if (surfaceArea) {
-        result = setDouble(openstudio::InternalMassFields::SurfaceArea, surfaceArea.get());
-      } else {
-        result = setString(openstudio::InternalMassFields::SurfaceArea, "");
+      if (!surfaceArea) {
+        return false;
       }
-      return result;
+      return setSurfaceArea(*surfaceArea);
     }
 
     bool InteriorPartitionSurface_Impl::setSurfaceArea(double surfaceArea) {
       return setDouble(openstudio::InternalMassFields::SurfaceArea, surfaceArea);
     }
 
-    void InteriorPartitionSurface_Impl::resetSurfaceArea() {
-      OS_ASSERT(setString(openstudio::InternalMassFields::SurfaceArea, ""));
-    }
+    void InteriorPartitionSurface_Impl::resetSurfaceArea() {}
 
     boost::optional<double> InteriorPartitionSurface_Impl::numberofVertices() const {
       // Compatibility shim: InternalMass has no vertex-count scalar.

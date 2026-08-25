@@ -24,6 +24,19 @@ namespace epmodel {
     class CoilHeatingDXSingleSpeed_Impl;
   }
 
+  /** \brief Represents a single-speed direct-expansion heating coil.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-heating-and-cooling-coils.html#coilheatingdxsinglespeed,Coil:Heating:DX:SingleSpeed}.
+   *
+   * \par Important behavior
+   * The persisted scalar and currently supported schedule, curve, and node relationships map directly to the EnergyPlus object.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::CoilHeatingDXSingleSpeed</code>. <b>Added:</b> EPModel exposes <code>addToNode()</code> and rated supply-fan power per volume flow. <b>Not yet available:</b> broader AirflowNetwork, tank-link, and higher-level topology conveniences.
+   * \par Known limitations
+   * No known EPModel-specific limitations beyond the listed API differences.
+   */
   class EPMODEL_API CoilHeatingDXSingleSpeed : public StraightComponent
   {
    public:
@@ -45,17 +58,6 @@ namespace epmodel {
 
     bool addToNode(Node& node);
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. The canonical scalar heating DX surface plus the required schedule / curve relationships and the current epmodel
-    //   supply-side air-loop insertion path are present, while broader OA / DOAS topology and AFN helpers remain out of scope.
-    // - Canonical Counterpart: openstudio::model::CoilHeatingDXSingleSpeed.
-    // - Implemented Parity: The heating-capacity, COP, fan-power, defrost, and crankcase-heater helpers preserve the canonical naming, including the
-    //   2017/2023 fan-power split; `availabilitySchedule`, the five required performance curves, optional defrost and crankcase curves, child traversal,
-    //   and the relationship constructor preserve the bounded canonical slice.
-    // - Documented Delta: Broader OA / DOAS topology and AFN helpers from canonical `openstudio::model::CoilHeatingDXSingleSpeed` are not exposed yet.
-    // - Field/Storage Mapping: Preserved scalars and relationships map directly to EnergyPlus `Coil:Heating:DX:SingleSpeed` fields.
-    // - Evidence: `src/model/CoilHeatingDXSingleSpeed.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateCoilHeatingDXSingleSpeed.cpp`, and `src/epmodel/test/CoilHeatingDXSingleSpeed_GTest.cpp`.
-    // - Remaining Parity Work: Add broader OA / DOAS topology and AFN helpers without changing the preserved scalar signatures.
     Schedule availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);
 

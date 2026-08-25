@@ -22,6 +22,17 @@ namespace epmodel {
     class AirflowNetworkMultiZoneSurfaceEffectiveLeakageArea_Impl;
   }
 
+  /** \brief Represents the EnergyPlus AirflowNetwork:MultiZone:Surface:EffectiveLeakageArea object.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-airflow-network.html#airflownetworkmultizonesurfaceeffectiveleakagearea,AirflowNetwork:MultiZone:Surface:EffectiveLeakageArea}
+   *
+   * \par OpenStudio Model API
+   * OpenStudio Model has no public wrapper for this EnergyPlus object. This wrapper is new to the EPModel API.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations beyond the public fields and relationships exposed by this wrapper.
+   */
   class EPMODEL_API AirflowNetworkMultiZoneSurfaceEffectiveLeakageArea : public ModelObject
   {
    public:
@@ -35,16 +46,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model AirflowNetworkEffectiveLeakageArea accessor naming for
-    //   parity, while this epmodel type wraps the EnergyPlus object directly.
-    // - Field Mapping: effectiveLeakageArea, dischargeCoefficient,
-    //   referencePressureDifference, and airMassFlowExponent map directly to
-    //   AirflowNetwork:MultiZone:Surface:EffectiveLeakageArea scalar fields.
-    // - Field Mapping: Name remains provided by base ModelObject naming APIs.
-    // - ForwardTranslator evidence: translateAirflowNetworkEffectiveLeakageArea writes the same
-    //   four scalar values directly onto AirflowNetwork:MultiZone:Surface:EffectiveLeakageArea.
-    // - TODO(parity): Add relationship APIs only if future schema evolution introduces linked fields.
     double effectiveLeakageArea() const;
     bool setEffectiveLeakageArea(double effectiveLeakageArea);
 

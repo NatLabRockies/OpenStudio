@@ -28,6 +28,9 @@ namespace epmodel {
       std::vector<ModelObject> children() const override;
 
       bool addToNode(Node& node) override;
+      bool removeFromLoop() override;
+
+      void syncTemperatureSetpointNode();
 
       Schedule availabilitySchedule() const;
       bool setAvailabilitySchedule(Schedule& schedule);
@@ -62,6 +65,11 @@ namespace epmodel {
       void autosizeNominalCapacity();
 
       boost::optional<double> autosizedNominalCapacity() const;
+
+      void doCanonicalize(LoadContext& context) override;
+
+     private:
+      void clearTemperatureSetpointNode();
     };
 
   }  // namespace detail

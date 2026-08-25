@@ -7,6 +7,8 @@
 #include "SetpointManager/SetpointManagerOutdoorAirPretreat_Impl.hpp"
 
 #include "Model.hpp"
+#include "StraightComponent/Node.hpp"
+#include "StraightComponent/Node_Impl.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/idd/IddEnums.hxx>
@@ -109,6 +111,54 @@ namespace epmodel {
     getImpl<detail::SetpointManagerOutdoorAirPretreat_Impl>()->resetMaximumSetpointHumidityRatio();
   }
 
+  boost::optional<Node> SetpointManagerOutdoorAirPretreat::referenceSetpointNode() const {
+    return getImpl<detail::SetpointManagerOutdoorAirPretreat_Impl>()->referenceSetpointNode();
+  }
+
+  bool SetpointManagerOutdoorAirPretreat::setReferenceSetpointNode(const Node& node) {
+    return getImpl<detail::SetpointManagerOutdoorAirPretreat_Impl>()->setReferenceSetpointNode(node);
+  }
+
+  void SetpointManagerOutdoorAirPretreat::resetReferenceSetpointNode() {
+    getImpl<detail::SetpointManagerOutdoorAirPretreat_Impl>()->resetReferenceSetpointNode();
+  }
+
+  boost::optional<Node> SetpointManagerOutdoorAirPretreat::mixedAirStreamNode() const {
+    return getImpl<detail::SetpointManagerOutdoorAirPretreat_Impl>()->mixedAirStreamNode();
+  }
+
+  bool SetpointManagerOutdoorAirPretreat::setMixedAirStreamNode(const Node& node) {
+    return getImpl<detail::SetpointManagerOutdoorAirPretreat_Impl>()->setMixedAirStreamNode(node);
+  }
+
+  void SetpointManagerOutdoorAirPretreat::resetMixedAirStreamNode() {
+    getImpl<detail::SetpointManagerOutdoorAirPretreat_Impl>()->resetMixedAirStreamNode();
+  }
+
+  boost::optional<Node> SetpointManagerOutdoorAirPretreat::outdoorAirStreamNode() const {
+    return getImpl<detail::SetpointManagerOutdoorAirPretreat_Impl>()->outdoorAirStreamNode();
+  }
+
+  bool SetpointManagerOutdoorAirPretreat::setOutdoorAirStreamNode(const Node& node) {
+    return getImpl<detail::SetpointManagerOutdoorAirPretreat_Impl>()->setOutdoorAirStreamNode(node);
+  }
+
+  void SetpointManagerOutdoorAirPretreat::resetOutdoorAirStreamNode() {
+    getImpl<detail::SetpointManagerOutdoorAirPretreat_Impl>()->resetOutdoorAirStreamNode();
+  }
+
+  boost::optional<Node> SetpointManagerOutdoorAirPretreat::returnAirStreamNode() const {
+    return getImpl<detail::SetpointManagerOutdoorAirPretreat_Impl>()->returnAirStreamNode();
+  }
+
+  bool SetpointManagerOutdoorAirPretreat::setReturnAirStreamNode(const Node& node) {
+    return getImpl<detail::SetpointManagerOutdoorAirPretreat_Impl>()->setReturnAirStreamNode(node);
+  }
+
+  void SetpointManagerOutdoorAirPretreat::resetReturnAirStreamNode() {
+    getImpl<detail::SetpointManagerOutdoorAirPretreat_Impl>()->resetReturnAirStreamNode();
+  }
+
   void SetpointManagerOutdoorAirPretreat::resetControlVariable() {
     getImpl<detail::SetpointManagerOutdoorAirPretreat_Impl>()->resetControlVariable();
   }
@@ -200,6 +250,54 @@ namespace epmodel {
       OS_ASSERT(setString(openstudio::SetpointManager_OutdoorAirPretreatFields::MaximumSetpointHumidityRatio, ""));
     }
 
+    boost::optional<openstudio::epmodel::Node> SetpointManagerOutdoorAirPretreat_Impl::referenceSetpointNode() const {
+      return resolvedNodeTarget(openstudio::SetpointManager_OutdoorAirPretreatFields::ReferenceSetpointNodeName);
+    }
+
+    bool SetpointManagerOutdoorAirPretreat_Impl::setReferenceSetpointNode(const openstudio::epmodel::Node& node) {
+      return setPointer(openstudio::SetpointManager_OutdoorAirPretreatFields::ReferenceSetpointNodeName, node.handle(), false);
+    }
+
+    void SetpointManagerOutdoorAirPretreat_Impl::resetReferenceSetpointNode() {
+      OS_ASSERT(setPointer(openstudio::SetpointManager_OutdoorAirPretreatFields::ReferenceSetpointNodeName, Handle(), false));
+    }
+
+    boost::optional<openstudio::epmodel::Node> SetpointManagerOutdoorAirPretreat_Impl::mixedAirStreamNode() const {
+      return resolvedNodeTarget(openstudio::SetpointManager_OutdoorAirPretreatFields::MixedAirStreamNodeName);
+    }
+
+    bool SetpointManagerOutdoorAirPretreat_Impl::setMixedAirStreamNode(const openstudio::epmodel::Node& node) {
+      return setPointer(openstudio::SetpointManager_OutdoorAirPretreatFields::MixedAirStreamNodeName, node.handle(), false);
+    }
+
+    void SetpointManagerOutdoorAirPretreat_Impl::resetMixedAirStreamNode() {
+      OS_ASSERT(setPointer(openstudio::SetpointManager_OutdoorAirPretreatFields::MixedAirStreamNodeName, Handle(), false));
+    }
+
+    boost::optional<openstudio::epmodel::Node> SetpointManagerOutdoorAirPretreat_Impl::outdoorAirStreamNode() const {
+      return resolvedNodeTarget(openstudio::SetpointManager_OutdoorAirPretreatFields::OutdoorAirStreamNodeName);
+    }
+
+    bool SetpointManagerOutdoorAirPretreat_Impl::setOutdoorAirStreamNode(const openstudio::epmodel::Node& node) {
+      return setPointer(openstudio::SetpointManager_OutdoorAirPretreatFields::OutdoorAirStreamNodeName, node.handle(), false);
+    }
+
+    void SetpointManagerOutdoorAirPretreat_Impl::resetOutdoorAirStreamNode() {
+      OS_ASSERT(setPointer(openstudio::SetpointManager_OutdoorAirPretreatFields::OutdoorAirStreamNodeName, Handle(), false));
+    }
+
+    boost::optional<openstudio::epmodel::Node> SetpointManagerOutdoorAirPretreat_Impl::returnAirStreamNode() const {
+      return resolvedNodeTarget(openstudio::SetpointManager_OutdoorAirPretreatFields::ReturnAirStreamNodeName);
+    }
+
+    bool SetpointManagerOutdoorAirPretreat_Impl::setReturnAirStreamNode(const openstudio::epmodel::Node& node) {
+      return setPointer(openstudio::SetpointManager_OutdoorAirPretreatFields::ReturnAirStreamNodeName, node.handle(), false);
+    }
+
+    void SetpointManagerOutdoorAirPretreat_Impl::resetReturnAirStreamNode() {
+      OS_ASSERT(setPointer(openstudio::SetpointManager_OutdoorAirPretreatFields::ReturnAirStreamNodeName, Handle(), false));
+    }
+
     void SetpointManagerOutdoorAirPretreat_Impl::resetControlVariable() {
       OS_ASSERT(setString(openstudio::SetpointManager_OutdoorAirPretreatFields::ControlVariable, "Temperature"));
     }
@@ -226,6 +324,10 @@ namespace epmodel {
 
     void SetpointManagerOutdoorAirPretreat_Impl::doCanonicalize(LoadContext& context) {
       SetpointManager_Impl::doCanonicalize(context);
+      canonicalizeSetpointNodeField(context, openstudio::SetpointManager_OutdoorAirPretreatFields::ReferenceSetpointNodeName);
+      canonicalizeSetpointNodeField(context, openstudio::SetpointManager_OutdoorAirPretreatFields::MixedAirStreamNodeName);
+      canonicalizeSetpointNodeField(context, openstudio::SetpointManager_OutdoorAirPretreatFields::OutdoorAirStreamNodeName);
+      canonicalizeSetpointNodeField(context, openstudio::SetpointManager_OutdoorAirPretreatFields::ReturnAirStreamNodeName);
       canonicalizeSetpointNodeField(context, openstudio::SetpointManager_OutdoorAirPretreatFields::SetpointNodeorNodeListName);
 
       if (auto value = getString(openstudio::SetpointManager_OutdoorAirPretreatFields::ControlVariable, true)) {

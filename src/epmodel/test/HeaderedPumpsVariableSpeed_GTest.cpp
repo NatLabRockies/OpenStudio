@@ -6,13 +6,44 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
+#include "../HVACComponent/ThermalZone.hpp"
+#include "../HVACComponent/ThermalZone_Impl.hpp"
 #include "../Loop/AirLoopHVAC.hpp"
 #include "../Loop/PlantLoop.hpp"
+#include "../ResourceObject/ScheduleTypeLimits.hpp"
+#include "../Schedule/ScheduleConstant.hpp"
+#include "../Schedule/ScheduleConstant_Impl.hpp"
 #include "../Splitter/AirLoopHVACZoneSplitter.hpp"
 #include "../StraightComponent/Node.hpp"
 #include "../StraightComponent/HeaderedPumpsVariableSpeed.hpp"
+#include "../StraightComponent/HeaderedPumpsVariableSpeed_Impl.hpp"
+
+#include <utilities/core/Filesystem.hpp>
+#include <utilities/core/UUID.hpp>
+#include <utilities/idd/HeaderedPumps_VariableSpeed_FieldEnums.hxx>
+#include <utilities/idf/WorkspaceObject_Impl.hpp>
+
+#include <utility>
 
 using namespace openstudio::epmodel;
+
+namespace {
+
+class ScopedFileRemoval
+{
+ public:
+  explicit ScopedFileRemoval(openstudio::path path) : m_path(std::move(path)) {}
+
+  ~ScopedFileRemoval() {
+    boost::system::error_code error;
+    boost::filesystem::remove(m_path, error);
+  }
+
+ private:
+  openstudio::path m_path;
+};
+
+}  // namespace
 
 TEST_F(EPModelFixture, HeaderedPumpsVariableSpeed_DefaultConstructor) {
   Model model;
@@ -134,6 +165,111 @@ TEST_F(EPModelFixture, HeaderedPumpsVariableSpeed_ScalarAccessors_RoundTrip) {
 
   EXPECT_FALSE(pump.autosizedTotalRatedFlowRate());
   EXPECT_FALSE(pump.autosizedRatedPowerConsumption());
+}
+
+TEST_F(EPModelFixture, HeaderedPumpsVariableSpeed_RelationshipAccessors_RoundTripAndReset) {
+  Model model;
+  HeaderedPumpsVariableSpeed pump(model);
+  ScheduleConstant flowSchedule(model);
+  ThermalZone thermalZone(model);
+
+  EXPECT_FALSE(pump.pumpFlowRateSchedule());
+  EXPECT_FALSE(pump.thermalZone());
+
+  EXPECT_TRUE(pump.setPumpFlowRateSchedule(flowSchedule));
+  EXPECT_TRUE(pump.setThermalZone(thermalZone));
+
+  ASSERT_TRUE(pump.pumpFlowRateSchedule());
+  ASSERT_TRUE(pump.thermalZone());
+  EXPECT_EQ(flowSchedule.handle(), pump.pumpFlowRateSchedule()->handle());
+  EXPECT_EQ(thermalZone.handle(), pump.thermalZone()->handle());
+
+  pump.resetPumpFlowRateSchedule();
+  pump.resetThermalZone();
+  EXPECT_FALSE(pump.pumpFlowRateSchedule());
+  EXPECT_FALSE(pump.thermalZone());
+}
+
+TEST_F(EPModelFixture, HeaderedPumpsVariableSpeed_RelationshipSetters_RejectInvalidTargetsWithoutChangingOldTargetOrRawText) {
+  Model model;
+  HeaderedPumpsVariableSpeed pump(model);
+  ScheduleConstant flowSchedule(model);
+  ThermalZone thermalZone(model);
+  ASSERT_TRUE(pump.setPumpFlowRateSchedule(flowSchedule));
+  ASSERT_TRUE(pump.setThermalZone(thermalZone));
+
+  Model foreignModel;
+  ScheduleConstant foreignSchedule(foreignModel);
+  ThermalZone foreignThermalZone(foreignModel);
+  EXPECT_FALSE(pump.setPumpFlowRateSchedule(foreignSchedule));
+  EXPECT_FALSE(pump.setThermalZone(foreignThermalZone));
+  ASSERT_TRUE(pump.pumpFlowRateSchedule());
+  ASSERT_TRUE(pump.thermalZone());
+  EXPECT_EQ(flowSchedule.handle(), pump.pumpFlowRateSchedule()->handle());
+  EXPECT_EQ(thermalZone.handle(), pump.thermalZone()->handle());
+
+  ScheduleConstant incompatibleFlowSchedule(model);
+  ScheduleTypeLimits incompatibleFlowLimits(model);
+  ASSERT_TRUE(incompatibleFlowLimits.setNumericType("Continuous"));
+  ASSERT_TRUE(incompatibleFlowLimits.setUnitType("Dimensionless"));
+  ASSERT_TRUE(incompatibleFlowLimits.setLowerLimitValue(-0.1));
+  ASSERT_TRUE(incompatibleFlowLimits.setUpperLimitValue(1.0));
+  ASSERT_TRUE(incompatibleFlowSchedule.setScheduleTypeLimits(incompatibleFlowLimits));
+  EXPECT_FALSE(pump.setPumpFlowRateSchedule(incompatibleFlowSchedule));
+  ASSERT_TRUE(pump.pumpFlowRateSchedule());
+  EXPECT_EQ(flowSchedule.handle(), pump.pumpFlowRateSchedule()->handle());
+
+  constexpr unsigned thermalZoneField = openstudio::HeaderedPumps_VariableSpeedFields::ZoneName;
+  EXPECT_TRUE(model.canBeTarget(thermalZone.handle(), pump.iddObject().objectLists(thermalZoneField)));
+  EXPECT_FALSE(model.canBeTarget(flowSchedule.handle(), pump.iddObject().objectLists(thermalZoneField)));
+
+  auto pumpWorkspaceImpl = pump.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  ASSERT_TRUE(pumpWorkspaceImpl);
+  constexpr unsigned flowScheduleField = openstudio::HeaderedPumps_VariableSpeedFields::PumpFlowRateScheduleName;
+  ASSERT_TRUE(pumpWorkspaceImpl->setPointer(flowScheduleField, openstudio::Handle(), false));
+  ASSERT_TRUE(pumpWorkspaceImpl->setPointer(thermalZoneField, openstudio::Handle(), false));
+  ASSERT_TRUE(pumpWorkspaceImpl->openstudio::detail::IdfObject_Impl::setString(flowScheduleField, "Unresolved Headered Flow Schedule", false));
+  ASSERT_TRUE(pumpWorkspaceImpl->openstudio::detail::IdfObject_Impl::setString(thermalZoneField, "Unresolved Headered Thermal Zone", false));
+
+  EXPECT_FALSE(pump.setPumpFlowRateSchedule(incompatibleFlowSchedule));
+  EXPECT_FALSE(pump.setThermalZone(foreignThermalZone));
+  EXPECT_FALSE(pump.pumpFlowRateSchedule());
+  EXPECT_FALSE(pump.thermalZone());
+  EXPECT_EQ("Unresolved Headered Flow Schedule",
+            pumpWorkspaceImpl->openstudio::detail::IdfObject_Impl::getString(flowScheduleField, false, true).value_or(""));
+  EXPECT_EQ("Unresolved Headered Thermal Zone",
+            pumpWorkspaceImpl->openstudio::detail::IdfObject_Impl::getString(thermalZoneField, false, true).value_or(""));
+}
+
+TEST_F(EPModelFixture, HeaderedPumpsVariableSpeed_Relationships_SaveLoadIdentityByName) {
+  const auto idfPath =
+    openstudio::tempDir()
+    / openstudio::toPath("epmodel-headered-pumps-variable-speed-relationships-" + openstudio::removeBraces(openstudio::createUUID()) + ".idf");
+  const ScopedFileRemoval removeIdf(idfPath);
+
+  Model model;
+  HeaderedPumpsVariableSpeed pump(model);
+  ScheduleConstant flowSchedule(model);
+  ThermalZone thermalZone(model);
+  ASSERT_TRUE(pump.setName("Relationship Headered Pump"));
+  ASSERT_TRUE(flowSchedule.setName("Headered Pump Flow Schedule"));
+  ASSERT_TRUE(thermalZone.setName("Headered Pump Thermal Zone"));
+  ASSERT_TRUE(pump.setPumpFlowRateSchedule(flowSchedule));
+  ASSERT_TRUE(pump.setThermalZone(thermalZone));
+  ASSERT_TRUE(model.save(idfPath, true));
+
+  auto loadedModel = Model::load(idfPath);
+  ASSERT_TRUE(loadedModel);
+  auto loadedPump = loadedModel->getConcreteModelObjectByName<HeaderedPumpsVariableSpeed>("Relationship Headered Pump");
+  auto loadedFlowSchedule = loadedModel->getConcreteModelObjectByName<ScheduleConstant>("Headered Pump Flow Schedule");
+  auto loadedThermalZone = loadedModel->getConcreteModelObjectByName<ThermalZone>("Headered Pump Thermal Zone");
+  ASSERT_TRUE(loadedPump);
+  ASSERT_TRUE(loadedFlowSchedule);
+  ASSERT_TRUE(loadedThermalZone);
+  ASSERT_TRUE(loadedPump->pumpFlowRateSchedule());
+  ASSERT_TRUE(loadedPump->thermalZone());
+  EXPECT_EQ(loadedFlowSchedule->handle(), loadedPump->pumpFlowRateSchedule()->handle());
+  EXPECT_EQ(loadedThermalZone->handle(), loadedPump->thermalZone()->handle());
 }
 
 TEST_F(EPModelFixture, HeaderedPumpsVariableSpeed_AddToNode_PlantOnly) {

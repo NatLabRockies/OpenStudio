@@ -29,6 +29,23 @@ namespace epmodel {
     class ZoneHVACPackagedTerminalHeatPump_Impl;
   }
 
+/** \brief A packaged terminal heat pump serving a thermal zone.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-zone-forced-air-units.html#zonehvacpackagedterminalheatpump,ZoneHVAC:PackagedTerminalHeatPump}
+ *
+ * \par Important behavior
+ * The fan, cooling coil, heating coil, and supplemental heating coil share a parent-owned serial path; a locally owned outdoor-air path maintains its OutdoorAir:Mixer companion. EPModel adds fanOutletNode(), coolingCoilOutletNode(), and heatingCoilOutletNode().
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model class is <code>openstudio::model::ZoneHVACPackagedTerminalHeatPump</code>.
+ * EPModel adds explicit fan/coil outlet node accessors and a
+ * <code>children()</code> view; Model instead provides outdoor-air mixer-name,
+ * mixer-type, supplemental-heater-temperature, and autosized-flow helpers.
+ *
+ * \par Known limitations
+ * Outdoor-air mixer references, mixer-only node roles, and SQL-backed autosized flow/temperature results are maintained internally but not exposed.
+ */
   class EPMODEL_API ZoneHVACPackagedTerminalHeatPump : public ZoneHVACComponent
   {
    public:
@@ -44,24 +61,6 @@ namespace epmodel {
     static std::vector<std::string> fanPlacementValues();
     static std::vector<std::string> validFanPlacementValues();
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. The flow and control scalars are aligned, and the contained fan/coil air path is now kept consistent through
-    //   parent-owned epmodel nodes, but broader heat-pump parity remains incomplete.
-    // - Canonical Counterpart: openstudio::model::ZoneHVACPackagedTerminalHeatPump.
-    // - Implemented Parity: Supply-air and outdoor-air flow scalars, convergence tolerances, supplemental-heater limits, `fanPlacement`, and
-    //   the contained fan/coil child accessors preserve the canonical wrapper behavior. The contained supply fan, cooling coil, heating coil,
-    //   and supplemental heating coil now share a parent-owned air path, with direct access to the meaningful fan-outlet,
-    //   cooling-coil-outlet, and heating-coil-outlet roles on the compound.
-    // - Documented Delta: `fanOutletNode()`, `coolingCoilOutletNode()`, and `heatingCoilOutletNode()` are exposed as additive conveniences so
-    //   callers can inspect and rename the meaningful node roles owned by the compound, even when those roles alias each other or the parent
-    //   outlet in a valid configuration. Outdoor-air mixer references and OA-mixer-only node roles remain outside the public wrapper.
-    // - Field/Storage Mapping: Scalar values live directly on the EnergyPlus object while schedules and contained equipment are modeled
-    //   explicitly through child-object state and transient epmodel nodes.
-    // - Evidence: `src/model/ZoneHVACPackagedTerminalHeatPump.hpp`, `src/model/ZoneHVACPackagedTerminalHeatPump.cpp`,
-    //   `src/energyplus/ForwardTranslator/ForwardTranslateZoneHVACPackagedTerminalHeatPump.cpp`, and
-    //   `src/epmodel/test/ZoneHVACPackagedTerminalHeatPump_GTest.cpp`.
-    // - Remaining Parity Work: Add any remaining canonical heat-pump relationship conveniences only if the model wrapper still exposes them as
-    //   public API.
 
     unsigned inletPort() const;
     unsigned outletPort() const;

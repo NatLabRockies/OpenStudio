@@ -7,6 +7,7 @@ set(${target_name}_src
   Model.hpp
   Model_Impl.hpp
   Model.cpp
+  TestFailurePoint.hpp
 
   AirflowNetworkLinkage/AirflowNetworkDistributionLinkage.hpp
   AirflowNetworkLinkage/AirflowNetworkDistributionLinkage_Impl.hpp
@@ -66,6 +67,9 @@ set(${target_name}_src
   ConstructionBase/CFactorUndergroundWallConstruction.hpp
   ConstructionBase/CFactorUndergroundWallConstruction_Impl.hpp
   ConstructionBase/CFactorUndergroundWallConstruction.cpp
+  ConstructionBase/ConstructionBase.hpp
+  ConstructionBase/ConstructionBase_Impl.hpp
+  ConstructionBase/ConstructionBase.cpp
   ConstructionBase/ConstructionAirBoundary.hpp
   ConstructionBase/ConstructionAirBoundary_Impl.hpp
   ConstructionBase/ConstructionAirBoundary.cpp
@@ -161,6 +165,13 @@ set(${target_name}_src
   ExteriorLoadInstance/ExteriorWaterEquipment_Impl.hpp
   ExteriorLoadInstance/ExteriorWaterEquipment.cpp
 
+  FenestrationMaterial/FenestrationMaterial.hpp
+  FenestrationMaterial/FenestrationMaterial_Impl.hpp
+  FenestrationMaterial/FenestrationMaterial.cpp
+
+  GasLayer/GasLayer.hpp
+  GasLayer/GasLayer_Impl.hpp
+  GasLayer/GasLayer.cpp
   GasLayer/Gas.hpp
   GasLayer/Gas_Impl.hpp
   GasLayer/Gas.cpp
@@ -184,6 +195,9 @@ set(${target_name}_src
   Generator/GeneratorWindTurbine_Impl.hpp
   Generator/GeneratorWindTurbine.cpp
 
+  Glazing/Glazing.hpp
+  Glazing/Glazing_Impl.hpp
+  Glazing/Glazing.cpp
   Glazing/RefractionExtinctionGlazing.hpp
   Glazing/RefractionExtinctionGlazing_Impl.hpp
   Glazing/RefractionExtinctionGlazing.cpp
@@ -226,6 +240,9 @@ set(${target_name}_src
   Inverter/ElectricLoadCenterInverterSimple_Impl.hpp
   Inverter/ElectricLoadCenterInverterSimple.cpp
 
+  LayeredConstruction/LayeredConstruction.hpp
+  LayeredConstruction/LayeredConstruction_Impl.hpp
+  LayeredConstruction/LayeredConstruction.cpp
   LayeredConstruction/Construction.hpp
   LayeredConstruction/Construction_Impl.hpp
   LayeredConstruction/Construction.cpp
@@ -358,6 +375,9 @@ set(${target_name}_src
   ModelObject/BranchList.hpp
   ModelObject/BranchList_Impl.hpp
   ModelObject/BranchList.cpp
+  ModelObject/BuildingStory.hpp
+  ModelObject/BuildingStory_Impl.hpp
+  ModelObject/BuildingStory.cpp
   ModelObject/CoilSystemCoolingDX.hpp
   ModelObject/CoilSystemCoolingDX_Impl.hpp
   ModelObject/CoilSystemCoolingDX.cpp
@@ -682,6 +702,9 @@ set(${target_name}_src
   ModelObject/SolarCollectorPerformancePhotovoltaicThermalSimple.hpp
   ModelObject/SolarCollectorPerformancePhotovoltaicThermalSimple_Impl.hpp
   ModelObject/SolarCollectorPerformancePhotovoltaicThermalSimple.cpp
+  ModelObject/SpaceList.hpp
+  ModelObject/SpaceList_Impl.hpp
+  ModelObject/SpaceList.cpp
   ModelObject/SurfaceControlMovableInsulation.hpp
   ModelObject/SurfaceControlMovableInsulation_Impl.hpp
   ModelObject/SurfaceControlMovableInsulation.cpp
@@ -758,6 +781,10 @@ set(${target_name}_src
   ModelObject/ZonePropertyUserViewFactorsBySurfaceName_Impl.hpp
   ModelObject/ZonePropertyUserViewFactorsBySurfaceName.cpp
 
+  Material/Material.hpp
+  Material/Material_Impl.hpp
+  Material/Material.cpp
+
   ModelPartitionMaterial/InfraredTransparentMaterial.hpp
   ModelPartitionMaterial/InfraredTransparentMaterial_Impl.hpp
   ModelPartitionMaterial/InfraredTransparentMaterial.cpp
@@ -768,6 +795,9 @@ set(${target_name}_src
   OpaqueMaterial/MasslessOpaqueMaterial.hpp
   OpaqueMaterial/MasslessOpaqueMaterial_Impl.hpp
   OpaqueMaterial/MasslessOpaqueMaterial.cpp
+  OpaqueMaterial/OpaqueMaterial.hpp
+  OpaqueMaterial/OpaqueMaterial_Impl.hpp
+  OpaqueMaterial/OpaqueMaterial.cpp
   OpaqueMaterial/RoofVegetation.hpp
   OpaqueMaterial/RoofVegetation_Impl.hpp
   OpaqueMaterial/RoofVegetation.cpp
@@ -859,6 +889,9 @@ set(${target_name}_src
   PhotovoltaicPerformance/PhotovoltaicPerformanceSimple_Impl.hpp
   PhotovoltaicPerformance/PhotovoltaicPerformanceSimple.cpp
 
+  PlanarSurface/PlanarSurface.hpp
+  PlanarSurface/PlanarSurface_Impl.hpp
+  PlanarSurface/PlanarSurface.cpp
   PlanarSurface/InteriorPartitionSurface.hpp
   PlanarSurface/InteriorPartitionSurface_Impl.hpp
   PlanarSurface/InteriorPartitionSurface.cpp
@@ -869,6 +902,9 @@ set(${target_name}_src
   PlanarSurface/Surface_Impl.hpp
   PlanarSurface/Surface.cpp
 
+  PlanarSurfaceGroup/PlanarSurfaceGroup.hpp
+  PlanarSurfaceGroup/PlanarSurfaceGroup_Impl.hpp
+  PlanarSurfaceGroup/PlanarSurfaceGroup.cpp
   PlanarSurfaceGroup/Space.hpp
   PlanarSurfaceGroup/Space_Impl.hpp
   PlanarSurfaceGroup/Space.cpp
@@ -1002,18 +1038,15 @@ set(${target_name}_src
   scaffolds/AirflowNetworkZoneControlPressureController.hpp
   scaffolds/AirflowNetworkZoneControlPressureController_Impl.hpp
   scaffolds/AirflowNetworkZoneControlPressureController.cpp
-  scaffolds/AirLoopHVACExhaustSystem.hpp
-  scaffolds/AirLoopHVACExhaustSystem_Impl.hpp
-  scaffolds/AirLoopHVACExhaustSystem.cpp
+  ModelObject/AirLoopHVACExhaustSystem.hpp
+  ModelObject/AirLoopHVACExhaustSystem_Impl.hpp
+  ModelObject/AirLoopHVACExhaustSystem.cpp
   scaffolds/AirLoopHVACUnitaryFurnaceHeatCool.hpp
   scaffolds/AirLoopHVACUnitaryFurnaceHeatCool_Impl.hpp
   scaffolds/AirLoopHVACUnitaryFurnaceHeatCool.cpp
   scaffolds/AirLoopHVACUnitaryFurnaceHeatOnly.hpp
   scaffolds/AirLoopHVACUnitaryFurnaceHeatOnly_Impl.hpp
   scaffolds/AirLoopHVACUnitaryFurnaceHeatOnly.cpp
-  scaffolds/AirLoopHVACUnitaryHeatCool.hpp
-  scaffolds/AirLoopHVACUnitaryHeatCool_Impl.hpp
-  scaffolds/AirLoopHVACUnitaryHeatCool.cpp
   scaffolds/AirLoopHVACUnitaryHeatOnly.hpp
   scaffolds/AirLoopHVACUnitaryHeatOnly_Impl.hpp
   scaffolds/AirLoopHVACUnitaryHeatOnly.cpp
@@ -1962,9 +1995,9 @@ set(${target_name}_src
   scaffolds/ZoneHVACBaseboardRadiantConvectiveSteamDesign.hpp
   scaffolds/ZoneHVACBaseboardRadiantConvectiveSteamDesign_Impl.hpp
   scaffolds/ZoneHVACBaseboardRadiantConvectiveSteamDesign.cpp
-  scaffolds/ZoneHVACExhaustControl.hpp
-  scaffolds/ZoneHVACExhaustControl_Impl.hpp
-  scaffolds/ZoneHVACExhaustControl.cpp
+  ModelObject/ZoneHVACExhaustControl.hpp
+  ModelObject/ZoneHVACExhaustControl_Impl.hpp
+  ModelObject/ZoneHVACExhaustControl.cpp
   scaffolds/ZoneHVACForcedAirUserDefined.hpp
   scaffolds/ZoneHVACForcedAirUserDefined_Impl.hpp
   scaffolds/ZoneHVACForcedAirUserDefined.cpp
@@ -2018,6 +2051,9 @@ set(${target_name}_src
   Schedule/ScheduleYear_Impl.hpp
   Schedule/ScheduleYear.cpp
 
+  ScheduleBase/ScheduleBase.hpp
+  ScheduleBase/ScheduleBase_Impl.hpp
+  ScheduleBase/ScheduleBase.cpp
   ScheduleBase/ScheduleDay.hpp
   ScheduleBase/ScheduleDay_Impl.hpp
   ScheduleBase/ScheduleDay.cpp
@@ -2108,6 +2144,9 @@ set(${target_name}_src
   SetpointManager/SetpointManagerWarmestTemperatureFlow_Impl.hpp
   SetpointManager/SetpointManagerWarmestTemperatureFlow.cpp
 
+  ShadingMaterial/ShadingMaterial.hpp
+  ShadingMaterial/ShadingMaterial_Impl.hpp
+  ShadingMaterial/ShadingMaterial.cpp
   ShadingMaterial/Blind.hpp
   ShadingMaterial/Blind_Impl.hpp
   ShadingMaterial/Blind.cpp
@@ -2175,6 +2214,9 @@ set(${target_name}_src
   StraightComponent/AirConditionerVariableRefrigerantFlow.hpp
   StraightComponent/AirConditionerVariableRefrigerantFlow_Impl.hpp
   StraightComponent/AirConditionerVariableRefrigerantFlow.cpp
+  StraightComponent/AirLoopHVACUnitaryHeatCool.hpp
+  StraightComponent/AirLoopHVACUnitaryHeatCool_Impl.hpp
+  StraightComponent/AirLoopHVACUnitaryHeatCool.cpp
   StraightComponent/AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass.hpp
   StraightComponent/AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_Impl.hpp
   StraightComponent/AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass.cpp
@@ -2451,6 +2493,7 @@ set(${target_name}_src
   StraightComponent/RefrigerationCondenserWaterCooled.hpp
   StraightComponent/RefrigerationCondenserWaterCooled_Impl.hpp
   StraightComponent/RefrigerationCondenserWaterCooled.cpp
+  StraightComponent/CompoundTerminalTopologyInspection.hpp
   StraightComponent/SolarCollectorFlatPlatePhotovoltaicThermal.hpp
   StraightComponent/SolarCollectorFlatPlatePhotovoltaicThermal_Impl.hpp
   StraightComponent/SolarCollectorFlatPlatePhotovoltaicThermal.cpp
@@ -2695,6 +2738,8 @@ set(${target_name}_sub_swig_src
 
   ExteriorLoadInstance/EPModelExteriorLoadInstance.i
 
+  FenestrationMaterial/EPModelFenestrationMaterial.i
+
   GasLayer/EPModelGasLayer.i
 
   Generator/EPModelGenerator.i
@@ -2702,6 +2747,8 @@ set(${target_name}_sub_swig_src
   Glazing/EPModelGlazing.i
 
   Inverter/EPModelInverter.i
+
+  Material/EPModelMaterial.i
 
   LayeredConstruction/EPModelLayeredConstruction.i
 
@@ -2740,9 +2787,41 @@ set(${target_name}_sub_swig_src
 
 list(APPEND ${target_name}_swig_src ${${target_name}_sub_swig_src})
 
+set(epmodel_refrigerant_files
+  "${PROJECT_SOURCE_DIR}/src/energyplus/Resources/R11_FluidPropertiesDataSet.idf"
+  "${PROJECT_SOURCE_DIR}/src/energyplus/Resources/R12_FluidPropertiesDataSet.idf"
+  "${PROJECT_SOURCE_DIR}/src/energyplus/Resources/R22_FluidPropertiesDataSet.idf"
+  "${PROJECT_SOURCE_DIR}/src/energyplus/Resources/R123_FluidPropertiesDataSet.idf"
+  "${PROJECT_SOURCE_DIR}/src/energyplus/Resources/R134a_FluidPropertiesDataSet.idf"
+  "${PROJECT_SOURCE_DIR}/src/energyplus/Resources/R404a_FluidPropertiesDataSet.idf"
+  "${PROJECT_SOURCE_DIR}/src/energyplus/Resources/R407a_FluidPropertiesDataSet.idf"
+  "${PROJECT_SOURCE_DIR}/src/energyplus/Resources/R410a_FluidPropertiesDataSet.idf"
+  "${PROJECT_SOURCE_DIR}/src/energyplus/Resources/NH3_FluidPropertiesDataSet.idf"
+  "${PROJECT_SOURCE_DIR}/src/energyplus/Resources/R507a_FluidPropertiesDataSet.idf"
+  "${PROJECT_SOURCE_DIR}/src/energyplus/Resources/R744_FluidPropertiesDataSet.idf"
+)
+
+set(epmodel_refrigerant_embedded_paths
+  Resources/R11_FluidPropertiesDataSet.idf
+  Resources/R12_FluidPropertiesDataSet.idf
+  Resources/R22_FluidPropertiesDataSet.idf
+  Resources/R123_FluidPropertiesDataSet.idf
+  Resources/R134a_FluidPropertiesDataSet.idf
+  Resources/R404a_FluidPropertiesDataSet.idf
+  Resources/R407a_FluidPropertiesDataSet.idf
+  Resources/R410a_FluidPropertiesDataSet.idf
+  Resources/NH3_FluidPropertiesDataSet.idf
+  Resources/R507a_FluidPropertiesDataSet.idf
+  Resources/R744_FluidPropertiesDataSet.idf
+)
+
+include("${PROJECT_SOURCE_DIR}/embedded/EmbedFiles.cmake")
+embed_files("${epmodel_refrigerant_files}" "${epmodel_refrigerant_embedded_paths}" EPMODEL_EMBEDDED_OUTPUT epmodel)
+
 add_library(${target_name}
   OBJECT
   ${${target_name}_src}
+  ${EPMODEL_EMBEDDED_OUTPUT}
   )
 
 set(${target_name}_depends
@@ -2762,13 +2841,15 @@ target_compile_definitions(${target_name} PRIVATE openstudio_epmodel_EXPORTS SHA
 # instead of openstudio_epmodel.
 add_library(openstudio_epmodel_headers INTERFACE)
 target_include_directories(openstudio_epmodel_headers INTERFACE
-  ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/HVACComponent
+  ${PROJECT_BINARY_DIR}
+  ${CMAKE_CURRENT_SOURCE_DIR}
+  ${CMAKE_CURRENT_SOURCE_DIR}/HVACComponent
   ${CMAKE_CURRENT_SOURCE_DIR}/ModelObject
   ${CMAKE_CURRENT_SOURCE_DIR}/scaffolds
   ${CMAKE_CURRENT_SOURCE_DIR}/StraightComponent
   ${CMAKE_CURRENT_SOURCE_DIR}/ShadingMaterial)
 
-target_include_directories(${target_name} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/HVACComponent
+target_include_directories(${target_name} PUBLIC ${PROJECT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/HVACComponent
   ${CMAKE_CURRENT_SOURCE_DIR}/ModelObject
   ${CMAKE_CURRENT_SOURCE_DIR}/scaffolds
   ${CMAKE_CURRENT_SOURCE_DIR}/StraightComponent
@@ -2790,6 +2871,10 @@ foreach(epmodel_swig_i IN LISTS ${target_name}_sub_swig_src)
   set(epmodel_parent_swig_targets OpenStudioEPModel)
 
   if(epmodel_swig_suffix STREQUAL "HVACComponent" OR epmodel_swig_suffix STREQUAL "Loop")
+    list(APPEND epmodel_parent_swig_targets OpenStudioEPModelParentObject)
+  endif()
+
+  if(epmodel_swig_suffix STREQUAL "PlanarSurface")
     list(APPEND epmodel_parent_swig_targets OpenStudioEPModelParentObject)
   endif()
 
@@ -3074,6 +3159,7 @@ set(${target_name}_test_src
   test/EnvironmentalImpactFactors_GTest.cpp
   test/EPModelFixture.hpp
   test/EPModelFixture.cpp
+  test/ScopedTestFailure.hpp
   test/EvaporativeCoolerDirectCelDekPad_GTest.cpp
   test/EvaporativeCoolerDirectResearchSpecial_GTest.cpp
   test/EvaporativeCoolerIndirectCelDekPad_GTest.cpp
@@ -3344,6 +3430,7 @@ set(${target_name}_test_src
   test/PlantEquipmentOperationUncontrolled_GTest.cpp
   test/PlantEquipmentOperationUserDefined_GTest.cpp
   test/PlantLoop_GTest.cpp
+  test/PlantSystemTopology_GTest.cpp
   test/PumpConstantSpeed_GTest.cpp
   test/PumpVariableSpeed_GTest.cpp
   test/PumpVariableSpeedCondensate_GTest.cpp

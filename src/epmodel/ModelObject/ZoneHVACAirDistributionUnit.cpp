@@ -74,6 +74,16 @@ namespace epmodel {
       return adu.setPointer(openstudio::ZoneHVAC_AirDistributionUnitFields::AirDistributionUnitOutletNodeName, node.handle());
     }
 
+    std::vector<IdfObject> ZoneHVACAirDistributionUnit_Impl::remove() {
+      // Both relationships are required by the IDD, so public pointer resets
+      // reject an intermediate blank value. Clear them without validity
+      // checking before removal to keep the target objects' reverse-pointer
+      // bookkeeping free of references to the deleted ADU.
+      setPointer(openstudio::ZoneHVAC_AirDistributionUnitFields::AirDistributionUnitOutletNodeName, Handle(), false);
+      setPointer(openstudio::ZoneHVAC_AirDistributionUnitFields::AirTerminalName, Handle(), false);
+      return ModelObject_Impl::remove();
+    }
+
     void ZoneHVACAirDistributionUnit_Impl::doCanonicalize(LoadContext& context) {
       auto adu = getObject<openstudio::epmodel::ZoneHVACAirDistributionUnit>();
 

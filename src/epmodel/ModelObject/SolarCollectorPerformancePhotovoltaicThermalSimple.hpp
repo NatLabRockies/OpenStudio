@@ -23,6 +23,17 @@ namespace epmodel {
     class SolarCollectorPerformancePhotovoltaicThermalSimple_Impl;
   }
 
+  /** \brief SolarCollectorPerformancePhotovoltaicThermalSimple.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-solar-collectors.html#solarcollectorperformancephotovoltaicthermalsimple,SolarCollectorPerformance:PhotovoltaicThermal:Simple}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::SolarCollectorPerformancePhotovoltaicThermalSimple</code>. The scalar photovoltaic-thermal performance fields map directly to EnergyPlus. Model's <code>thermalConversionEfficiencySchedule()</code>, <code>setThermalConversionEfficiencySchedule()</code>, and <code>resetThermalConversionEfficiencySchedule()</code> are not available.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API SolarCollectorPerformancePhotovoltaicThermalSimple : public ModelObject
   {
    public:
@@ -37,15 +48,6 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     static std::vector<std::string> thermalConversionEfficiencyInputModeTypeValues();
-
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::SolarCollectorPerformancePhotovoltaicThermalSimple scalar accessor names/signatures.
-    // - Field Mapping: Scalar APIs map directly to E+ SolarCollectorPerformance:PhotovoltaicThermal:Simple fields.
-    // - ForwardTranslator evidence: ForwardTranslateSolarCollectorPerformancePhotovoltaicThermalSimple.cpp writes these scalar getters
-    //   to Name, FractionofSurfaceAreawithActiveThermalCollector, ThermalConversionEfficiencyInputModeType,
-    //   ValueforThermalConversionEfficiencyifFixed, and FrontSurfaceEmittance.
-    // - Field Mapping: ThermalConversionEfficiencyScheduleName remains excluded from epmodel scalar API as a relationship field.
-    // - TODO(parity): Add schedule relationship APIs incrementally without changing these scalar signatures.
 
     double fractionOfSurfaceAreaWithActiveThermalCollector() const;
     bool setFractionOfSurfaceAreaWithActiveThermalCollector(double fractionofSurfaceAreawithActiveThermalCollector);

@@ -13,6 +13,10 @@
 namespace openstudio {
 namespace epmodel {
 
+  class CoilCoolingDXCurveFitOperatingMode;
+  class Curve;
+  class Schedule;
+
   namespace detail {
 
     class EPMODEL_API CoilCoolingDXCurveFitPerformance_Impl : public ModelObject_Impl
@@ -23,6 +27,10 @@ namespace epmodel {
 
       double crankcaseHeaterCapacity() const;
       bool setCrankcaseHeaterCapacity(double crankcaseHeaterCapacity);
+
+      boost::optional<Curve> crankcaseHeaterCapacityFunctionofTemperatureCurve() const;
+      bool setCrankcaseHeaterCapacityFunctionofTemperatureCurve(const Curve& curve);
+      void resetCrankcaseHeaterCapacityFunctionofTemperatureCurve();
 
       double minimumOutdoorDryBulbTemperatureforCompressorOperation() const;
       bool setMinimumOutdoorDryBulbTemperatureforCompressorOperation(double minimumOutdoorDryBulbTemperatureforCompressorOperation);
@@ -43,9 +51,26 @@ namespace epmodel {
       double evaporativeCondenserBasinHeaterSetpointTemperature() const;
       bool setEvaporativeCondenserBasinHeaterSetpointTemperature(double evaporativeCondenserBasinHeaterSetpointTemperature);
 
+      Schedule evaporativeCondenserBasinHeaterOperatingSchedule() const;
+      bool setEvaporativeCondenserBasinHeaterOperatingSchedule(Schedule& schedule);
+
       std::string compressorFuelType() const;
       bool setCompressorFuelType(const std::string& compressorFuelType);
       std::vector<std::string> compressorFuelTypeValues() const;
+
+      CoilCoolingDXCurveFitOperatingMode baseOperatingMode() const;
+      bool setBaseOperatingMode(const CoilCoolingDXCurveFitOperatingMode& baseOperatingMode);
+
+      boost::optional<CoilCoolingDXCurveFitOperatingMode> alternativeOperatingMode1() const;
+      bool setAlternativeOperatingMode1(const CoilCoolingDXCurveFitOperatingMode& alternativeOperatingMode1);
+      void resetAlternativeOperatingMode1();
+
+      boost::optional<CoilCoolingDXCurveFitOperatingMode> alternativeOperatingMode2() const;
+      bool setAlternativeOperatingMode2(const CoilCoolingDXCurveFitOperatingMode& alternativeOperatingMode2);
+      void resetAlternativeOperatingMode2();
+
+     protected:
+      void doCanonicalize(LoadContext& context) override;
     };
 
   }  // namespace detail

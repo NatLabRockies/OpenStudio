@@ -22,6 +22,22 @@ namespace epmodel {
     class CoilHeatingWaterBaseboardRadiant_Impl;
   }
 
+  /** \brief Represents a heating-coil view of a radiant-convective water baseboard.
+   *
+   * \par EnergyPlus object
+   * No standalone EnergyPlus object. EPModel projects <code>OS:Coil:Heating:Water:Baseboard:Radiant</code> onto \epobject{group-radiative-convective-units.html#zonehvacbaseboardradiantconvectivewater,ZoneHVAC:Baseboard:RadiantConvective:Water} parent storage.
+   *
+   * \par Important behavior
+   * This transient child writes its scalar and schedule fields through to parent-owned storage and maps its plant
+   * ports to the parent's <code>Inlet Node Name</code> and <code>Outlet Node Name</code> fields.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::CoilHeatingWaterBaseboardRadiant</code>.
+   * <b>Changed:</b> the child is transient and cannot be persisted or placed independently as a plant component.
+   *
+   * \par Known limitations
+   * Use the owning parent object for persistence and complete topology.
+   */
   class EPMODEL_API CoilHeatingWaterBaseboardRadiant : public StraightComponent
   {
    public:
@@ -45,17 +61,6 @@ namespace epmodel {
     // design object. epmodel preserves the canonical child shape by exposing a
     // transient child that reads and writes that parent-owned storage.
     //
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. epmodel now exposes the canonical heating-coil companion as a transient straight-component view over the
-    //   parent baseboard object.
-    // - Canonical Counterpart: openstudio::model::CoilHeatingWaterBaseboardRadiant.
-    // - Implemented Parity: The water-side ports and the main coil sizing fields are available through the canonical child wrapper shape.
-    // - Documented Delta: This child is transient in epmodel because EnergyPlus does not persist a standalone coil object for this family.
-    //   The child writes through to the parent `ZoneHVAC:Baseboard:RadiantConvective:Water` object and its linked design object.
-    // - Field/Storage Mapping: Water inlet/outlet nodes and the main rated and autosized fields map to the parent EnergyPlus baseboard
-    //   object. Design-capacity method, per-floor-area sizing, autosized fraction, and convergence tolerance map to the linked design object.
-    // - Remaining Parity Work: Autosized query access still returns `none` on the transient child because epmodel does not yet project
-    //   SQL-backed autosized results back through this transient wrapper.
     double ratedAverageWaterTemperature() const;
     bool setRatedAverageWaterTemperature(double ratedAverageWaterTemperature);
 

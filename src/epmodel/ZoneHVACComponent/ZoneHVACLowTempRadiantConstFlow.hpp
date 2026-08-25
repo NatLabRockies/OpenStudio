@@ -30,6 +30,25 @@ namespace epmodel {
     class ZoneHVACLowTempRadiantConstFlow_Impl;
   }
 
+/** \brief A constant-flow low-temperature radiant system serving a thermal zone.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-radiative-convective-units.html#zonehvaclowtemperatureradiantconstantflow,ZoneHVAC:LowTemperatureRadiant:ConstantFlow},
+ * \epobject{group-radiative-convective-units.html#ConstFlowDesign,ZoneHVAC:LowTemperatureRadiant:ConstantFlow:Design}, and
+ * \epobject{group-radiative-convective-units.html#zonehvaclowtemperatureradiantsurfacegroup,ZoneHVAC:LowTemperatureRadiant:SurfaceGroup}
+ *
+ * \par Important behavior
+ * Heating and cooling coil children are transient views over parent and design fields; setRadiantSurfaceType() snapshots matching zone surfaces into the persisted surface group.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model class is <code>openstudio::model::ZoneHVACLowTempRadiantConstFlow</code>.
+ * EPModel exposes the design companion and surface-group views, plus
+ * EnergyPlus default/reset helpers; Model instead provides its thermal-zone
+ * convenience methods and deprecated compatibility surface.
+ *
+ * \par Known limitations
+ * Later zone or surface edits do not automatically resynchronize the persisted surface group; autosized results remain unavailable without SQL sizing data.
+ */
   class EPMODEL_API ZoneHVACLowTempRadiantConstFlow : public ZoneHVACComponent
   {
    public:
@@ -50,27 +69,6 @@ namespace epmodel {
     static std::vector<std::string> fluidtoRadiantSurfaceHeatTransferModelValues();
     static std::vector<std::string> temperatureControlTypeValues();
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. The hydronic/control scalars are aligned, epmodel exposes the canonical heating/cooling companion coils
-    //   as transient child views over the parent radiant object, and the canonical radiant-surface APIs now route through the persisted
-    //   EnergyPlus surface-group object.
-    // - Canonical Counterpart: openstudio::model::ZoneHVACLowTempRadiantConstFlow.
-    // - Why This Type Is Slightly Different: canonical OpenStudio splits this family into one parent object plus companion heating/cooling
-    //   coil wrappers and a higher-level `RadiantSurfaceType` selector. EnergyPlus does not store that selector directly. It stores the
-    //   flattened result as a referenced `ZoneHVAC:LowTemperatureRadiant:SurfaceGroup`, plus a persisted `...:Design` companion object.
-    //   Epmodel therefore preserves the canonical API additively while staying anchored to the EnergyPlus storage shape.
-    // - Implemented Parity: The constant-flow radiant scalar groups map directly to the EnergyPlus object and its companion design object.
-    //   The canonical heating and cooling coil wrappers are exposed additively as transient children that write through to that parent storage.
-    // - Documented Delta: `setRadiantSurfaceType(...)` currently snapshots the matching zone surfaces into the EnergyPlus surface group.
-    //   Later zone/surface edits do not yet automatically re-expand that group until a future synchronization pass is added.
-    // - Field/Storage Mapping: Main hydronic fields live on the EnergyPlus object, design-side controls live on the EnergyPlus design object,
-    //   the surface selection lives as a referenced EnergyPlus surface group, and the transient child coils are views over those persisted
-    //   parent fields rather than standalone EnergyPlus objects.
-    // - Evidence: `src/model/ZoneHVACLowTempRadiantConstFlow.hpp`, `src/model/ZoneHVACLowTempRadiantConstFlow.cpp`,
-    //   `src/energyplus/ForwardTranslator/ForwardTranslateZoneHVACLowTempRadiantConstFlow.cpp`,
-    //   and `src/epmodel/test/ZoneHVACLowTempRadiantConstFlow_GTest.cpp`.
-    // - Remaining Parity Work: Add automatic surface-group resynchronization after later zone/surface edits and close any remaining
-    //   relationship gaps.
 
     boost::optional<Schedule> availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);

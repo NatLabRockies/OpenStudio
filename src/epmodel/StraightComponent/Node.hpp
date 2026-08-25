@@ -25,6 +25,29 @@ namespace epmodel {
     class Node_Impl;
   }
 
+/** \brief A transient node wrapper for HVAC topology.
+ *
+ * \par EnergyPlus object
+ * No standalone EnergyPlus object. EnergyPlus stores node names in the inlet,
+ * outlet, sensor, and setpoint fields of HVAC and control objects; this wrapper
+ * exposes a named point assembled from those references.
+ *
+ * \par Important behavior
+ * EnergyPlus has no persisted Node object; this wrapper resolves node names and branch relationships while exposing setpoint-manager and outdoor-air-system traversal.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model type is <code>openstudio::model::Node</code>.
+ *
+ * - <b>Not yet available:</b>
+ *   <code>getAirflowNetworkDistributionNode()</code> and
+ *   <code>airflowNetworkDistributionNode()</code>.
+ * - <b>Added:</b> <code>airLoopHVACOutdoorAirSystem()</code> traverses from the
+ *   node to its outdoor-air system when one exists.
+ *
+ * \par Known limitations
+ * A node exists only while the surrounding EnergyPlus-backed HVAC topology
+ * refers to its name; it is not persisted as an independent object.
+ */
   class EPMODEL_API Node : public StraightComponent
   {
    public:
@@ -42,14 +65,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. The canonical node-facing topology API is present for setpoint-manager attachment, but node-adjacent convenience APIs remain incomplete.
-    // - Canonical Counterpart: openstudio::model::Node.
-    // - Implemented Parity: `setpointManagers` preserves the main canonical node control-surface behavior, and `Node` remains a topology object rather than a scalar wrapper.
-    // - Documented Delta: epmodel exposes `airLoopHVACOutdoorAirSystem` as a direct topology convenience while omitting the canonical AirflowNetwork distribution-node helpers because epmodel does not yet carry the corresponding OpenStudio-side abstractions.
-    // - Field/Storage Mapping: EnergyPlus has no persisted `Node` object, so epmodel keeps `Node` as transient topology connective tissue layered over EnergyPlus-backed branch/node-name relationships.
-    // - Evidence: `src/model/Node.hpp` defines the canonical wrapper surface, while `src/epmodel/test/IDF_SmallOffice_GTest.cpp` exercises node-adjacent topology traversal in the current epmodel implementation.
-    // - Remaining Parity Work: Add the missing airflow-network and richer node-link convenience APIs once the corresponding epmodel relationship abstractions exist.
 
    protected:
     friend class Model;

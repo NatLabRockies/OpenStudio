@@ -23,6 +23,14 @@ namespace epmodel {
       bool setControlVariable(const std::string& value) override;
       bool isAllowedOnPlantLoop() const override;
 
+      boost::optional<Schedule> highSetpointSchedule() const;
+      bool setHighSetpointSchedule(Schedule& schedule);
+      void resetHighSetpointSchedule();
+
+      boost::optional<Schedule> lowSetpointSchedule() const;
+      bool setLowSetpointSchedule(Schedule& schedule);
+      void resetLowSetpointSchedule();
+
      protected:
       void doCanonicalize(LoadContext& context) override;
 

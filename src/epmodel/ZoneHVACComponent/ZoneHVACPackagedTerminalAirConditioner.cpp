@@ -10,6 +10,8 @@
 #include "HVACComponent.hpp"
 #include "ModelObject/ModelObject_Impl.hpp"
 #include "ModelObject/ModelObject.hpp"
+#include "ModelObject/OutdoorAirMixer.hpp"
+#include "ModelObject/OutdoorAirMixer_Impl.hpp"
 #include "Model.hpp"
 #include "Schedule/Schedule.hpp"
 #include "Schedule/Schedule_Impl.hpp"
@@ -447,12 +449,14 @@ namespace epmodel {
           ? setDouble(ZoneHVAC_PackagedTerminalAirConditionerFields::CoolingOutdoorAirFlowRate, outdoorAirFlowRateDuringCoolingOperation.get(), false)
           : setString(ZoneHVAC_PackagedTerminalAirConditionerFields::CoolingOutdoorAirFlowRate, "", false);
       OS_ASSERT(result);
+      maintainContainedAirPath();
       return result;
     }
 
     void ZoneHVACPackagedTerminalAirConditioner_Impl::autosizeOutdoorAirFlowRateDuringCoolingOperation() {
       bool result = setString(ZoneHVAC_PackagedTerminalAirConditionerFields::CoolingOutdoorAirFlowRate, "Autosize", false);
       OS_ASSERT(result);
+      maintainContainedAirPath();
     }
 
     boost::optional<double> ZoneHVACPackagedTerminalAirConditioner_Impl::autosizedOutdoorAirFlowRateDuringCoolingOperation() const {
@@ -480,12 +484,14 @@ namespace epmodel {
           ? setDouble(ZoneHVAC_PackagedTerminalAirConditionerFields::HeatingOutdoorAirFlowRate, outdoorAirFlowRateDuringHeatingOperation.get(), false)
           : setString(ZoneHVAC_PackagedTerminalAirConditionerFields::HeatingOutdoorAirFlowRate, "", false);
       OS_ASSERT(result);
+      maintainContainedAirPath();
       return result;
     }
 
     void ZoneHVACPackagedTerminalAirConditioner_Impl::autosizeOutdoorAirFlowRateDuringHeatingOperation() {
       bool result = setString(ZoneHVAC_PackagedTerminalAirConditionerFields::HeatingOutdoorAirFlowRate, "Autosize", false);
       OS_ASSERT(result);
+      maintainContainedAirPath();
     }
 
     boost::optional<double> ZoneHVACPackagedTerminalAirConditioner_Impl::autosizedOutdoorAirFlowRateDuringHeatingOperation() const {
@@ -513,17 +519,20 @@ namespace epmodel {
                                         outdoorAirFlowRateWhenNoCoolingorHeatingisNeeded.get(), false)
                             : setString(ZoneHVAC_PackagedTerminalAirConditionerFields::NoLoadOutdoorAirFlowRate, "", false);
       OS_ASSERT(result);
+      maintainContainedAirPath();
       return result;
     }
 
     void ZoneHVACPackagedTerminalAirConditioner_Impl::resetOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded() {
       bool result = setString(ZoneHVAC_PackagedTerminalAirConditionerFields::NoLoadOutdoorAirFlowRate, "", false);
       OS_ASSERT(result);
+      maintainContainedAirPath();
     }
 
     void ZoneHVACPackagedTerminalAirConditioner_Impl::autosizeOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded() {
       bool result = setString(ZoneHVAC_PackagedTerminalAirConditionerFields::NoLoadOutdoorAirFlowRate, "Autosize", false);
       OS_ASSERT(result);
+      maintainContainedAirPath();
     }
 
     boost::optional<double> ZoneHVACPackagedTerminalAirConditioner_Impl::autosizedOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded() const {
@@ -570,6 +579,10 @@ namespace epmodel {
             getObject<ModelObject>().getModelObjectTarget<ModelObject>(ZoneHVAC_PackagedTerminalAirConditionerFields::CoolingCoilName)) {
         result.push_back(*coolingCoil);
       }
+      if (auto outdoorAirMixer =
+            getObject<ModelObject>().getModelObjectTarget<OutdoorAirMixer>(ZoneHVAC_PackagedTerminalAirConditionerFields::OutdoorAirMixerName)) {
+        result.push_back(*outdoorAirMixer);
+      }
       return result;
     }
 
@@ -595,8 +608,76 @@ namespace epmodel {
       maintainContainedAirPath();
     }
 
+    std::vector<IdfObject> ZoneHVACPackagedTerminalAirConditioner_Impl::remove() {
+      auto parentModel = model();
+      const auto ownedChildren = children();
+      ZoneHVACComponent_Impl::removeFromThermalZone();
+      const auto baseName = getObject<ModelObject>().nameString();
+      reconcileOwnedOutdoorAirMixer(ZoneHVAC_PackagedTerminalAirConditionerFields::OutdoorAirMixerObjectType,
+                                    ZoneHVAC_PackagedTerminalAirConditionerFields::OutdoorAirMixerName, boost::none, boost::none, baseName);
+      auto removedParent = HVACComponent_Impl::remove();
+      if (removedParent.empty()) {
+        return {};
+      }
+
+      std::vector<IdfObject> result;
+      for (const auto& child : ownedChildren) {
+        if (!parentModel.getObject(child.handle())) {
+          continue;
+        }
+        if (auto component = child.optionalCast<HVACComponent>()) {
+          auto removed = component->remove();
+          result.insert(result.end(), removed.begin(), removed.end());
+        }
+      }
+      result.insert(result.end(), removedParent.begin(), removedParent.end());
+      return result;
+    }
+
     void ZoneHVACPackagedTerminalAirConditioner_Impl::doCanonicalize(LoadContext& context) {
       repairContainedAirPath(context);
+
+      auto owner = getObject<ModelObject>();
+      constexpr auto availabilityField = ZoneHVAC_PackagedTerminalAirConditionerFields::AvailabilityScheduleName;
+      const auto rawAvailability = openstudio::detail::IdfObject_Impl::getString(availabilityField, false, true);
+      if ((!rawAvailability || rawAvailability->empty()) && !owner.getModelObjectTarget<Schedule>(availabilityField)) {
+        auto alwaysOn = model().alwaysOnDiscreteSchedule();
+        if (setAvailabilitySchedule(alwaysOn)) {
+          detail::addLoadInfo(context, "Attached the always-on availability schedule to ZoneHVAC:PackagedTerminalAirConditioner '"
+                                         + owner.nameString() + "'.");
+        } else {
+          detail::addLoadError(context, "Failed to attach the always-on availability schedule to ZoneHVAC:PackagedTerminalAirConditioner '"
+                                          + owner.nameString() + "'.");
+        }
+      }
+
+      constexpr auto fanModeField = ZoneHVAC_PackagedTerminalAirConditionerFields::SupplyAirFanOperatingModeScheduleName;
+      const auto rawFanMode = openstudio::detail::IdfObject_Impl::getString(fanModeField, false, true);
+      if ((!rawFanMode || rawFanMode->empty()) && !owner.getModelObjectTarget<Schedule>(fanModeField)) {
+        const auto fan = owner.getModelObjectTarget<HVACComponent>(ZoneHVAC_PackagedTerminalAirConditionerFields::SupplyAirFanName);
+        if (!fan) {
+          detail::addLoadWarning(context, "Could not repair the blank fan operating-mode schedule for ZoneHVAC:PackagedTerminalAirConditioner '"
+                                            + owner.nameString() + "' because its supply fan is unresolved.");
+        } else {
+          const auto fanType = fan->iddObject().type();
+          const bool constantVolume = (fanType == IddObjectType::OS_Fan_ConstantVolume) || (fanType == IddObjectType::Fan_ConstantVolume);
+          bool repaired = false;
+          if (constantVolume) {
+            auto alwaysOn = model().alwaysOnDiscreteSchedule();
+            repaired = setSupplyAirFanOperatingModeSchedule(alwaysOn);
+          } else {
+            ScheduleConstant alwaysOff(model());
+            repaired = alwaysOff.setValue(0.0) && setSupplyAirFanOperatingModeSchedule(alwaysOff);
+          }
+          if (repaired) {
+            detail::addLoadInfo(context, "Attached the canonical fan operating-mode schedule to ZoneHVAC:PackagedTerminalAirConditioner '"
+                                           + owner.nameString() + "'.");
+          } else {
+            detail::addLoadError(context, "Failed to attach the canonical fan operating-mode schedule to ZoneHVAC:PackagedTerminalAirConditioner '"
+                                            + owner.nameString() + "'.");
+          }
+        }
+      }
     }
 
     HVACComponent ZoneHVACPackagedTerminalAirConditioner_Impl::supplyAirFan() const {
@@ -806,6 +887,10 @@ namespace epmodel {
       }
 
       if (!fan && !heating && !cooling) {
+        changed = reconcileOwnedOutdoorAirMixer(ZoneHVAC_PackagedTerminalAirConditionerFields::OutdoorAirMixerObjectType,
+                                                ZoneHVAC_PackagedTerminalAirConditionerFields::OutdoorAirMixerName, boost::none, boost::none,
+                                                thisObject.nameString())
+                  || changed;
         return changed;
       }
 
@@ -826,7 +911,8 @@ namespace epmodel {
       if (auto value = outdoorAirFlowRateWhenNoCoolingorHeatingisNeeded()) {
         zeroOutdoorAir = zeroOutdoorAir && (*value == 0.0);
       }
-      const bool usesHiddenMixedAir = !airLoopHVAC() && !zeroOutdoorAir;
+      const bool isAirLoopAttached = allowChildNodeRecovery ? hasManagedAirLoopPathReference() : static_cast<bool>(airLoopHVAC());
+      const bool usesHiddenMixedAir = !isAirLoopAttached && !zeroOutdoorAir;
 
       boost::optional<Node> sourceNode;
       if (usesHiddenMixedAir) {
@@ -855,6 +941,11 @@ namespace epmodel {
           sourceNode = model().getOrCreateTransientByName<Node>(baseName + " Mixed Air Node");
         }
       }
+
+      changed = reconcileOwnedOutdoorAirMixer(ZoneHVAC_PackagedTerminalAirConditionerFields::OutdoorAirMixerObjectType,
+                                              ZoneHVAC_PackagedTerminalAirConditionerFields::OutdoorAirMixerName, sourceNode,
+                                              usesHiddenMixedAir ? boost::optional<Node>(inletNode) : boost::none, baseName)
+                || changed;
 
       std::vector<HVACComponent> orderedComponents;
       if (blowThrough) {

@@ -18,11 +18,27 @@ namespace epmodel {
 
   class Model;
   class Node;
+  class Schedule;
 
   namespace detail {
     class AirTerminalDualDuctConstantVolume_Impl;
   }
 
+  /** \brief Represents a constant-volume dual-duct air terminal.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-air-distribution-equipment.html#airterminaldualductconstantvolume,AirTerminal:DualDuct:ConstantVolume}.
+   *
+   * \par Important behavior
+   * Separate terminal inlet and outlet node relationships follow the supported dual-duct air-loop insertion and removal topology.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::AirTerminalDualDuctConstantVolume</code>.
+   * <b>Not yet available: the SQL-backed <code>autosizedMaximumAirFlowRate()</code> result helper.</b>
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API AirTerminalDualDuctConstantVolume : public Mixer
   {
    public:
@@ -36,14 +52,9 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. epmodel preserves the scalar surface plus tested dual-duct node connectivity, but it does not expose the canonical availability-schedule convenience accessors.
-    // - Canonical Counterpart: openstudio::model::AirTerminalDualDuctConstantVolume.
-    // - Implemented Parity: `maximumAirFlowRate`, autosize support, constructor defaults, `hotAirInletNode`, `coldAirInletNode`, and the tested dual-duct `addToNode`/`remove` connectivity path are implemented here.
-    // - Documented Delta: epmodel does not expose canonical `availabilitySchedule()` / `setAvailabilitySchedule()` wrappers even though the underlying schedule relationship is still stored.
-    // - Field/Storage Mapping: `AvailabilityScheduleName` remains an underlying IDD relationship field used by the constructor and translator; Air Outlet/Hot Air Inlet/Cold Air Inlet node fields are surfaced through the preserved node accessors and shared AirLoopHVAC topology helpers.
-    // - Evidence: `src/model/AirTerminalDualDuctConstantVolume.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirTerminalDualDuctConstantVolume.cpp`, and `src/epmodel/test/AirTerminalDualDuctConstantVolume_GTest.cpp` cover the same scalar mapping plus supported connectivity.
-    // - Remaining Parity Work: Reintroduce the availability-schedule wrappers if full model-side API parity is needed.
+    Schedule availabilitySchedule() const;
+    bool setAvailabilitySchedule(Schedule& schedule);
+
     boost::optional<double> maximumAirFlowRate() const;
     bool setMaximumAirFlowRate(double maximumAirFlowRate);
     bool isMaximumAirFlowRateAutosized() const;

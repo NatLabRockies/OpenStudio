@@ -28,6 +28,7 @@ namespace epmodel {
 
       std::vector<openstudio::epmodel::ModelObject> components() const;
       bool addComponent(const openstudio::epmodel::ModelObject& component);
+      bool removeComponent(const openstudio::epmodel::ModelObject& component);
 
       void doCanonicalize(LoadContext& context) override;
     };

@@ -22,6 +22,17 @@ namespace epmodel {
     class RunPeriodControlDaylightSavingTime_Impl;
   }
 
+  /** \brief RunPeriodControlDaylightSavingTime.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-location-climate-weather-file-access.html#runperiodcontroldaylightsavingtime,RunPeriodControl:DaylightSavingTime}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::RunPeriodControlDaylightSavingTime</code>. EPModel accepts the start and end dates as strings. Model additionally provides date and nth-weekday overloads and <code>ensureNoLeapDays()</code>.
+   *
+   * \par Known limitations
+   * Only the fields and relationships listed in this wrapper are available; broader Model-only helpers are not exposed.
+   */
   class EPMODEL_API RunPeriodControlDaylightSavingTime : public ModelObject
   {
    public:
@@ -34,14 +45,6 @@ namespace epmodel {
     RunPeriodControlDaylightSavingTime& operator=(RunPeriodControlDaylightSavingTime&&) = default;
 
     static IddObjectType iddObjectType();
-
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::RunPeriodControlDaylightSavingTime scalar accessor names where they map directly.
-    // - Field Mapping: startDate()/setStartDate(string) map directly to RunPeriodControl:DaylightSavingTime Start Date.
-    // - Field Mapping: endDate()/setEndDate(string) map directly to RunPeriodControl:DaylightSavingTime End Date.
-    // - ForwardTranslator evidence: ForwardTranslateRunPeriodControlDaylightSavingTime.cpp reads raw OS StartDate/EndDate strings and
-    //   forwards directly to EnergyPlus fields.
-    // - TODO(parity): Add non-scalar date-conversion overloads/parsing APIs from model counterpart after scalar saturation.
     std::string startDate() const;
     bool setStartDate(const std::string& startDate);
 

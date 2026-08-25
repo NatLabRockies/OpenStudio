@@ -23,6 +23,17 @@ namespace epmodel {
     class SolarCollectorPerformanceIntegralCollectorStorage_Impl;
   }
 
+  /** \brief SolarCollectorPerformanceIntegralCollectorStorage.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-solar-collectors.html#solarcollectorperformanceintegralcollectorstorage,SolarCollectorPerformance:IntegralCollectorStorage}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::SolarCollectorPerformanceIntegralCollectorStorage</code>. <b>Changed:</b> EPModel exposes direct construction from <code>Model</code>; the Model constructor is not public. The collector type, area, volume, and performance fields map directly to EnergyPlus.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API SolarCollectorPerformanceIntegralCollectorStorage : public ModelObject
   {
    public:
@@ -37,12 +48,6 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     static std::vector<std::string> iCSCollectorTypeValues();
-
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::SolarCollectorPerformanceIntegralCollectorStorage scalar accessor names/signatures, including iCS/ICS naming.
-    // - Field Mapping: All scalar APIs map directly to E+ SolarCollectorPerformance:IntegralCollectorStorage fields.
-    // - ForwardTranslator evidence: ForwardTranslateSolarCollectorPerformanceIntegralCollectorStorage.cpp writes these exact getters to matching IDF fields.
-    // - TODO(parity): Keep scalar parity stable while relationship/extensible behavior is added separately.
     std::string iCSCollectorType() const;
     bool isICSCollectorTypeDefaulted() const;
     bool setICSCollectorType(const std::string& iCSCollectorType);

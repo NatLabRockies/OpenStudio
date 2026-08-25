@@ -7,7 +7,7 @@
 #define EPMODEL_SIMPLEGLAZING_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "Glazing/Glazing.hpp"
 
 #include <boost/optional.hpp>
 
@@ -20,7 +20,22 @@ namespace epmodel {
     class SimpleGlazing_Impl;
   }
 
-  class EPMODEL_API SimpleGlazing : public ModelObject
+  /** \brief Represents glazing with simplified U-factor and solar-gain inputs.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-surface-construction-elements.html#windowmaterialsimpleglazingsystem,WindowMaterial:SimpleGlazingSystem}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::SimpleGlazing</code>. The U-factor, solar heat
+   * gain coefficient, and visible-transmittance methods have the same public
+   * meaning.
+   *
+   * \par Known limitations
+   * This simplified object does not expose detailed layer optical or thermal
+   * properties.
+   */
+  class EPMODEL_API SimpleGlazing : public Glazing
   {
    public:
     explicit SimpleGlazing(const Model& model, double uFactor = 0.1, double solarHeatGainCoefficient = 0.1);
@@ -32,14 +47,6 @@ namespace epmodel {
     SimpleGlazing& operator=(SimpleGlazing&&) = default;
 
     static IddObjectType iddObjectType();
-
-    // Schema Alignment Notes:
-    // - API: Mirrors openstudio::model::SimpleGlazing scalar accessor names/signatures so the forward/back translators
-    //   can share the same preserved API surface while this scaffold keeps the scalar-only focus.
-    // - Field Mapping: uFactor, solarHeatGainCoefficient, and visibleTransmittance map directly to the
-    //   WindowMaterial_SimpleGlazingSystemFields (U Factor, Solar Heat Gain Coefficient, Visible Transmittance).
-    // - ForwardTranslator evidence: ForwardTranslateSimpleGlazing.cpp uses these fields when translating SimpleGlazing to IDF.
-    // - Excluded fields: The Name field is handled by ModelObject base behavior and no relationship-like targets exist.
 
     double uFactor() const;
 

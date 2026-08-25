@@ -29,7 +29,8 @@ void OSVersionFixture::SetUpTestSuite() {
   Logger::instance().standardOutLogger().disable();
 
   // create and popluate resource folder
-  openstudio::path thisVersionPath = versionResourcesPath(openstudio::VersionString(openStudioVersion()));
+  const VersionString thisVersion(IddFactory::instance().getVersion(IddFileType::OpenStudio));
+  openstudio::path thisVersionPath = versionResourcesPath(thisVersion);
   if (!openstudio::filesystem::exists(thisVersionPath)) {
     openstudio::filesystem::create_directories(thisVersionPath);
   }

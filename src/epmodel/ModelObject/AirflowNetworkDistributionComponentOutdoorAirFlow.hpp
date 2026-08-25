@@ -22,6 +22,17 @@ namespace epmodel {
     class AirflowNetworkDistributionComponentOutdoorAirFlow_Impl;
   }
 
+  /** \brief Represents the EnergyPlus AirflowNetwork:Distribution:Component:OutdoorAirFlow object.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-airflow-network.html#airflowNetworkdistributioncomponentoutdoorairflow,AirflowNetwork:Distribution:Component:OutdoorAirFlow}
+   *
+   * \par OpenStudio Model API
+   * OpenStudio Model has no public wrapper for this EnergyPlus object. This wrapper is new to the EPModel API.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations beyond the public fields and relationships exposed by this wrapper.
+   */
   class EPMODEL_API AirflowNetworkDistributionComponentOutdoorAirFlow : public ModelObject
   {
    public:
@@ -35,16 +46,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - API: This no-counterpart type uses IDD-derived class/accessor naming.
-    // - Field Mapping: airMassFlowCoefficientWhenNoOutdoorAirFlowatReferenceConditions and
-    //   airMassFlowExponentWhenNoOutdoorAirFlow map directly to EnergyPlus
-    //   AirflowNetwork:Distribution:Component:OutdoorAirFlow scalar fields.
-    // - Field Mapping: Outdoor Air Mixer Name and Reference Crack Conditions are relationship-like
-    //   object-list fields and are intentionally excluded from scalar accessors.
-    // - ForwardTranslator evidence: translateAirflowNetworkOutdoorAirflow creates
-    //   AirflowNetwork:Distribution:Component:OutdoorAirFlow and writes mass-flow crack terms.
-    // - TODO(parity): Add relationship APIs after scalar scaffold saturation.
     double airMassFlowCoefficientWhenNoOutdoorAirFlowatReferenceConditions() const;
     bool setAirMassFlowCoefficientWhenNoOutdoorAirFlowatReferenceConditions(double airMassFlowCoefficientWhenNoOutdoorAirFlowatReferenceConditions);
 

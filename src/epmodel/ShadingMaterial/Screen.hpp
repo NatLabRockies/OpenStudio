@@ -7,7 +7,7 @@
 #define EPMODEL_SCREEN_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "ShadingMaterial/ShadingMaterial.hpp"
 
 #include <utilities/idd/IddEnums.hxx>
 
@@ -24,7 +24,21 @@ namespace epmodel {
     class Screen_Impl;
   }
 
-  class EPMODEL_API Screen : public ModelObject
+  /** \brief Represents a window screen shading material.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-surface-construction-elements.html#windowmaterialscreen,WindowMaterial:Screen}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::Screen</code>. Thermal, optical, spacing, opening,
+   * and output-resolution methods have the same public meaning.
+   *
+   * \par Known limitations
+   * This wrapper represents screen material properties only; placement and
+   * shading-control relationships belong to other objects.
+   */
+  class EPMODEL_API Screen : public ShadingMaterial
   {
    public:
     explicit Screen(const Model& model);
@@ -39,14 +53,6 @@ namespace epmodel {
 
     static std::vector<std::string> reflectedBeamTransmittanceAccountingMethodValues();
     static std::vector<std::string> angleofResolutionforScreenTransmittanceOutputMapValues();
-
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::Screen scalar accessor names/signatures (thermal metrics plus optical scalars) so the epmodel
-    //         facade mirrors the existing public API.
-    // - Field Mapping: Every accessor delegates to the EnergyPlus WindowMaterial:Screen fields consumed by
-    //         energyplus::ForwardTranslator::translateScreen (ForwardTranslator/ForwardTranslateScreen.cpp).
-    // - TODO(parity): Keep the derived thermal conductance/resistance helpers aligned with the model counterpart as the field
-    //         semantics evolve.
 
     double thermalConductivity() const;
     bool setThermalConductivity(double value);

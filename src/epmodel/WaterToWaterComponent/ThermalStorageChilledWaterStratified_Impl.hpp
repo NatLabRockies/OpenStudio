@@ -28,6 +28,7 @@ namespace epmodel {
 
       void doCanonicalize(LoadContext& context) override;
       std::vector<ModelObject> children() const override;
+      std::vector<IdfObject> remove() override;
       unsigned supplyInletPort() const override;
       unsigned supplyOutletPort() const override;
       unsigned demandInletPort() const override;
@@ -180,6 +181,7 @@ namespace epmodel {
       bool setNode10AdditionalLossCoefficient(double node10AdditionalLossCoefficient);
 
       WaterHeaterSizing waterHeaterSizing() const;
+      boost::optional<WaterHeaterSizing> exactWaterHeaterSizing() const;
       boost::optional<double> autosizedNominalCoolingCapacity() const;
       boost::optional<double> autosizedUseSideDesignFlowRate() const;
       boost::optional<double> autosizedSourceSideDesignFlowRate() const;

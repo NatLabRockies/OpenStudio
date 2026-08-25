@@ -12,6 +12,7 @@
 
 namespace openstudio {
 namespace epmodel {
+  class CoilSystemCoolingDX;
   class Node;
   class Schedule;
   class Curve;
@@ -139,6 +140,9 @@ namespace epmodel {
       bool setBasinHeaterOperatingSchedule(Schedule& schedule);
       void resetBasinHeaterOperatingSchedule();
 
+      boost::optional<std::string> condenserAirInletNodeName() const;
+      bool setCondenserAirInletNodeName(const std::string& condenserAirInletNodeName);
+
       double minimumOutdoorDryBulbTemperatureforCompressorOperation() const;
       bool setMinimumOutdoorDryBulbTemperatureforCompressorOperation(double minimumOutdoorDryBulbTemperatureforCompressorOperation);
 
@@ -146,6 +150,18 @@ namespace epmodel {
       bool setUnitInternalStaticAirPressure(double unitInternalStaticAirPressure);
 
       bool addToNode(Node& node) override;
+      bool removeFromLoop() override;
+      void disconnect() override;
+      std::vector<IdfObject> remove() override;
+      boost::optional<CoilSystemCoolingDX> coilSystemCoolingDX() const;
+
+     protected:
+      void doCanonicalize(LoadContext& context) override;
+
+     private:
+      bool maintainCondenserOutdoorAirNode(const std::string& previousNodeName = {});
+      unsigned removeCondenserOutdoorAirNodeListEntries(const std::string& nodeName);
+      void removeUnusedCondenserOutdoorAirNode(const std::string& nodeName);
     };
 
   }  // namespace detail

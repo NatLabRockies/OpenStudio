@@ -7,31 +7,54 @@
 #include "HVACComponent/AirConditionerVariableRefrigerantFlowFluidTemperatureControl_Impl.hpp"
 
 #include "Model.hpp"
+#include "ModelObject.hpp"
+#include "Curve/Curve.hpp"
+#include "Curve/Curve_Impl.hpp"
+#include "Curve/CurveBiquadratic.hpp"
+#include "Curve/CurveQuadratic.hpp"
+#include "Schedule/Schedule.hpp"
+#include "Schedule/Schedule_Impl.hpp"
+#include "ZoneHVACComponent/ZoneHVACTerminalUnitVariableRefrigerantFlow.hpp"
+#include "ZoneHVACComponent/ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl.hpp"
 
 #include <utilities/core/Assert.hpp>
+#include <utilities/core/Logger.hpp>
 #include <utilities/core/StringHelpers.hpp>
 #include <utilities/idd/AirConditioner_VariableRefrigerantFlow_FluidTemperatureControl_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/IddFactory.hxx>
 #include <utilities/idd/IddObject.hpp>
+#include <utilities/idd/ZoneTerminalUnitList_FieldEnums.hxx>
+#include <utilities/idf/IdfObject.hpp>
+#include <utilities/idf/WorkspaceExtensibleGroup.hpp>
+
+#include <algorithm>
+#include <array>
+#include <set>
 
 namespace openstudio {
 namespace epmodel {
 
   AirConditionerVariableRefrigerantFlowFluidTemperatureControl::AirConditionerVariableRefrigerantFlowFluidTemperatureControl(const Model& model)
-    : ModelObject(AirConditionerVariableRefrigerantFlowFluidTemperatureControl::iddObjectType(), model) {}
+    : HVACComponent(AirConditionerVariableRefrigerantFlowFluidTemperatureControl::iddObjectType(), model) {
+    OS_ASSERT(setRefrigerantType("R410a"));
+    auto alwaysOn = model.alwaysOnDiscreteSchedule();
+    OS_ASSERT(setAvailabilitySchedule(alwaysOn));
+    auto impl = getImpl<detail::AirConditionerVariableRefrigerantFlowFluidTemperatureControl_Impl>();
+    OS_ASSERT(impl->ensureTerminalUnitList());
+    impl->createDefaultPerformance();
+  }
 
   AirConditionerVariableRefrigerantFlowFluidTemperatureControl::AirConditionerVariableRefrigerantFlowFluidTemperatureControl(
     std::shared_ptr<detail::AirConditionerVariableRefrigerantFlowFluidTemperatureControl_Impl> impl)
-    : ModelObject(std::move(impl)) {}
+    : HVACComponent(std::move(impl)) {}
 
   IddObjectType AirConditionerVariableRefrigerantFlowFluidTemperatureControl::iddObjectType() {
     return IddObjectType::AirConditioner_VariableRefrigerantFlow_FluidTemperatureControl;
   }
 
   std::vector<std::string> AirConditionerVariableRefrigerantFlowFluidTemperatureControl::refrigerantTypeValues() {
-    return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
-                          openstudio::AirConditioner_VariableRefrigerantFlow_FluidTemperatureControlFields::RefrigerantType);
+    return {"R11", "R12", "R22", "R123", "R134a", "R404a", "R407a", "R410a", "NH3", "R507a", "R744"};
   }
 
   std::vector<std::string> AirConditionerVariableRefrigerantFlowFluidTemperatureControl::refrigerantTemperatureControlAlgorithmforIndoorUnitValues() {
@@ -48,6 +71,30 @@ namespace epmodel {
   std::vector<std::string> AirConditionerVariableRefrigerantFlowFluidTemperatureControl::defrostControlValues() {
     return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
                           openstudio::AirConditioner_VariableRefrigerantFlow_FluidTemperatureControlFields::DefrostControl);
+  }
+
+  Schedule AirConditionerVariableRefrigerantFlowFluidTemperatureControl::availabilitySchedule() const {
+    return getImpl<detail::AirConditionerVariableRefrigerantFlowFluidTemperatureControl_Impl>()->availabilitySchedule();
+  }
+
+  bool AirConditionerVariableRefrigerantFlowFluidTemperatureControl::setAvailabilitySchedule(Schedule& schedule) {
+    return getImpl<detail::AirConditionerVariableRefrigerantFlowFluidTemperatureControl_Impl>()->setAvailabilitySchedule(schedule);
+  }
+
+  bool AirConditionerVariableRefrigerantFlowFluidTemperatureControl::addTerminal(ZoneHVACTerminalUnitVariableRefrigerantFlow& terminal) {
+    return getImpl<detail::AirConditionerVariableRefrigerantFlowFluidTemperatureControl_Impl>()->addTerminal(terminal);
+  }
+
+  void AirConditionerVariableRefrigerantFlowFluidTemperatureControl::removeTerminal(ZoneHVACTerminalUnitVariableRefrigerantFlow& terminal) {
+    getImpl<detail::AirConditionerVariableRefrigerantFlowFluidTemperatureControl_Impl>()->removeTerminal(terminal);
+  }
+
+  void AirConditionerVariableRefrigerantFlowFluidTemperatureControl::removeAllTerminals() {
+    getImpl<detail::AirConditionerVariableRefrigerantFlowFluidTemperatureControl_Impl>()->removeAllTerminals();
+  }
+
+  std::vector<ZoneHVACTerminalUnitVariableRefrigerantFlow> AirConditionerVariableRefrigerantFlowFluidTemperatureControl::terminals() const {
+    return getImpl<detail::AirConditionerVariableRefrigerantFlowFluidTemperatureControl_Impl>()->terminals();
   }
 
   std::string AirConditionerVariableRefrigerantFlowFluidTemperatureControl::refrigerantType() const {
@@ -237,6 +284,28 @@ namespace epmodel {
       ->setOutdoorUnitFanFlowRatePerUnitofRatedEvaporativeCapacity(outdoorUnitFanFlowRatePerUnitofRatedEvaporativeCapacity);
   }
 
+  Curve AirConditionerVariableRefrigerantFlowFluidTemperatureControl::outdoorUnitEvaporatingTemperatureFunctionofSuperheatingCurve() const {
+    return getImpl<detail::AirConditionerVariableRefrigerantFlowFluidTemperatureControl_Impl>()
+      ->outdoorUnitEvaporatingTemperatureFunctionofSuperheatingCurve();
+  }
+
+  bool AirConditionerVariableRefrigerantFlowFluidTemperatureControl::setOutdoorUnitEvaporatingTemperatureFunctionofSuperheatingCurve(
+    const Curve& curve) {
+    return getImpl<detail::AirConditionerVariableRefrigerantFlowFluidTemperatureControl_Impl>()
+      ->setOutdoorUnitEvaporatingTemperatureFunctionofSuperheatingCurve(curve);
+  }
+
+  Curve AirConditionerVariableRefrigerantFlowFluidTemperatureControl::outdoorUnitCondensingTemperatureFunctionofSubcoolingCurve() const {
+    return getImpl<detail::AirConditionerVariableRefrigerantFlowFluidTemperatureControl_Impl>()
+      ->outdoorUnitCondensingTemperatureFunctionofSubcoolingCurve();
+  }
+
+  bool
+    AirConditionerVariableRefrigerantFlowFluidTemperatureControl::setOutdoorUnitCondensingTemperatureFunctionofSubcoolingCurve(const Curve& curve) {
+    return getImpl<detail::AirConditionerVariableRefrigerantFlowFluidTemperatureControl_Impl>()
+      ->setOutdoorUnitCondensingTemperatureFunctionofSubcoolingCurve(curve);
+  }
+
   double AirConditionerVariableRefrigerantFlowFluidTemperatureControl::diameterofMainPipeConnectingOutdoorUnittotheFirstBranchJoint() const {
     return getImpl<detail::AirConditionerVariableRefrigerantFlowFluidTemperatureControl_Impl>()
       ->diameterofMainPipeConnectingOutdoorUnittotheFirstBranchJoint();
@@ -352,6 +421,23 @@ namespace epmodel {
     return getImpl<detail::AirConditionerVariableRefrigerantFlowFluidTemperatureControl_Impl>()->setDefrostControl(defrostControl);
   }
 
+  boost::optional<Curve>
+    AirConditionerVariableRefrigerantFlowFluidTemperatureControl::defrostEnergyInputRatioModifierFunctionofTemperatureCurve() const {
+    return getImpl<detail::AirConditionerVariableRefrigerantFlowFluidTemperatureControl_Impl>()
+      ->defrostEnergyInputRatioModifierFunctionofTemperatureCurve();
+  }
+
+  bool
+    AirConditionerVariableRefrigerantFlowFluidTemperatureControl::setDefrostEnergyInputRatioModifierFunctionofTemperatureCurve(const Curve& curve) {
+    return getImpl<detail::AirConditionerVariableRefrigerantFlowFluidTemperatureControl_Impl>()
+      ->setDefrostEnergyInputRatioModifierFunctionofTemperatureCurve(curve);
+  }
+
+  void AirConditionerVariableRefrigerantFlowFluidTemperatureControl::resetDefrostEnergyInputRatioModifierFunctionofTemperatureCurve() {
+    getImpl<detail::AirConditionerVariableRefrigerantFlowFluidTemperatureControl_Impl>()
+      ->resetDefrostEnergyInputRatioModifierFunctionofTemperatureCurve();
+  }
+
   double AirConditionerVariableRefrigerantFlowFluidTemperatureControl::defrostTimePeriodFraction() const {
     return getImpl<detail::AirConditionerVariableRefrigerantFlowFluidTemperatureControl_Impl>()->defrostTimePeriodFraction();
   }
@@ -405,6 +491,274 @@ namespace openstudio {
 namespace epmodel {
   namespace detail {
 
+    void AirConditionerVariableRefrigerantFlowFluidTemperatureControl_Impl::createDefaultPerformance() {
+      const auto systemName = nameString();
+
+      CurveQuadratic evaporatingTemperatureCurve(model());
+      OS_ASSERT(evaporatingTemperatureCurve.setName(systemName + " OUEvapTempCurve"));
+      OS_ASSERT(evaporatingTemperatureCurve.setCoefficient1Constant(0.0));
+      OS_ASSERT(evaporatingTemperatureCurve.setCoefficient2x(0.605));
+      OS_ASSERT(evaporatingTemperatureCurve.setCoefficient3xPOW2(0.025));
+      OS_ASSERT(evaporatingTemperatureCurve.setMinimumValueofx(0.0));
+      OS_ASSERT(evaporatingTemperatureCurve.setMaximumValueofx(15.0));
+      OS_ASSERT(setOutdoorUnitEvaporatingTemperatureFunctionofSuperheatingCurve(evaporatingTemperatureCurve));
+
+      CurveQuadratic condensingTemperatureCurve(model());
+      OS_ASSERT(condensingTemperatureCurve.setName(systemName + " OUCondTempCurve"));
+      OS_ASSERT(condensingTemperatureCurve.setCoefficient1Constant(0.0));
+      OS_ASSERT(condensingTemperatureCurve.setCoefficient2x(-2.91));
+      OS_ASSERT(condensingTemperatureCurve.setCoefficient3xPOW2(1.180));
+      OS_ASSERT(condensingTemperatureCurve.setMinimumValueofx(0.0));
+      OS_ASSERT(condensingTemperatureCurve.setMaximumValueofx(5.0));
+      OS_ASSERT(setOutdoorUnitCondensingTemperatureFunctionofSubcoolingCurve(condensingTemperatureCurve));
+
+      struct LoadingCurveDefinition
+      {
+        const char* nameSuffix;
+        std::array<double, 6> coefficients;
+      };
+
+      const std::array<LoadingCurveDefinition, 6> definitions = {{
+        {" MinSpdCooling", {0.319, -0.00126, -0.0000215, 0.012, 0.000105, -0.0000866}},
+        {" MinSpdPower", {0.0879, -0.000172, 0.0000693, -0.0000338, -0.00000810, -0.0000104}},
+        {" Spd1Cooling", {0.812, -0.00423, -0.0000411, 0.0297, 0.000267, -0.000223}},
+        {" Spd1Power", {0.326, -0.00220, 0.000142, 0.00282, 0.0000286, -0.0000350}},
+        {" Spd2Cooling", {1.32, -0.00620, -0.0000710, 0.0489, 0.000459, -0.000367}},
+        {" Spd2Power", {0.656, -0.00371, 0.000207, 0.0105, 0.0000736, -0.000157}},
+      }};
+
+      std::vector<CurveBiquadratic> loadingCurves;
+      loadingCurves.reserve(definitions.size());
+      for (const auto& definition : definitions) {
+        CurveBiquadratic curve(model());
+        OS_ASSERT(curve.setName(systemName + definition.nameSuffix));
+        OS_ASSERT(curve.setCoefficient1Constant(definition.coefficients[0]));
+        OS_ASSERT(curve.setCoefficient2x(definition.coefficients[1]));
+        OS_ASSERT(curve.setCoefficient3xPOW2(definition.coefficients[2]));
+        OS_ASSERT(curve.setCoefficient4y(definition.coefficients[3]));
+        OS_ASSERT(curve.setCoefficient5yPOW2(definition.coefficients[4]));
+        OS_ASSERT(curve.setCoefficient6xTIMESY(definition.coefficients[5]));
+        OS_ASSERT(curve.setMinimumValueofx(15.0));
+        OS_ASSERT(curve.setMaximumValueofx(65.0));
+        OS_ASSERT(curve.setMinimumValueofy(-30.0));
+        OS_ASSERT(curve.setMaximumValueofy(15.0));
+        loadingCurves.push_back(curve);
+      }
+
+      const std::array<double, 3> compressorSpeeds = {1500.0, 3600.0, 6000.0};
+      OS_ASSERT(setInt(openstudio::AirConditioner_VariableRefrigerantFlow_FluidTemperatureControlFields::NumberofCompressorLoadingIndexEntries,
+                       static_cast<int>(compressorSpeeds.size())));
+
+      auto system = getObject<ModelObject>();
+      for (size_t i = 0; i < compressorSpeeds.size(); ++i) {
+        auto group = system.pushExtensibleGroup().cast<openstudio::WorkspaceExtensibleGroup>();
+        OS_ASSERT(
+          group.setDouble(openstudio::AirConditioner_VariableRefrigerantFlow_FluidTemperatureControlExtensibleFields::CompressorSpeedatLoadingIndex,
+                          compressorSpeeds[i]));
+        OS_ASSERT(group.setPointer(openstudio::AirConditioner_VariableRefrigerantFlow_FluidTemperatureControlExtensibleFields::
+                                     LoadingIndexEvaporativeCapacityMultiplierFunctionofTemperatureCurveName,
+                                   loadingCurves[2 * i].handle(), false));
+        OS_ASSERT(group.setPointer(openstudio::AirConditioner_VariableRefrigerantFlow_FluidTemperatureControlExtensibleFields::
+                                     LoadingIndexCompressorPowerMultiplierFunctionofTemperatureCurveName,
+                                   loadingCurves[2 * i + 1].handle(), false));
+      }
+    }
+
+    boost::optional<ModelObject> AirConditionerVariableRefrigerantFlowFluidTemperatureControl_Impl::terminalUnitList() const {
+      auto list = getObject<ModelObject>().getModelObjectTarget<ModelObject>(
+        openstudio::AirConditioner_VariableRefrigerantFlow_FluidTemperatureControlFields::ZoneTerminalUnitListName);
+      if (list && list->iddObject().type() == openstudio::IddObjectType::ZoneTerminalUnitList) {
+        return list;
+      }
+      return boost::none;
+    }
+
+    boost::optional<ModelObject> AirConditionerVariableRefrigerantFlowFluidTemperatureControl_Impl::ensureTerminalUnitList() {
+      if (auto list = terminalUnitList()) {
+        return list;
+      }
+
+      IdfObject listIdfObject(openstudio::IddObjectType::ZoneTerminalUnitList);
+      if (!listIdfObject.setName(model().nextName(openstudio::IddObjectType::ZoneTerminalUnitList, true))) {
+        return boost::none;
+      }
+      auto addedObject = model().addObject(listIdfObject);
+      if (!addedObject) {
+        return boost::none;
+      }
+      auto list = addedObject->optionalCast<ModelObject>();
+      if (!list) {
+        addedObject->remove();
+        return boost::none;
+      }
+      if (!setPointer(openstudio::AirConditioner_VariableRefrigerantFlow_FluidTemperatureControlFields::ZoneTerminalUnitListName, list->handle(),
+                      false)) {
+        list->remove();
+        return boost::none;
+      }
+      return list;
+    }
+
+    Schedule AirConditionerVariableRefrigerantFlowFluidTemperatureControl_Impl::availabilitySchedule() const {
+      auto schedule = getObject<ModelObject>().getModelObjectTarget<Schedule>(
+        openstudio::AirConditioner_VariableRefrigerantFlow_FluidTemperatureControlFields::AvailabilityScheduleName);
+      OS_ASSERT(schedule);
+      return *schedule;
+    }
+
+    bool AirConditionerVariableRefrigerantFlowFluidTemperatureControl_Impl::setAvailabilitySchedule(Schedule& schedule) {
+      return setPointer(openstudio::AirConditioner_VariableRefrigerantFlow_FluidTemperatureControlFields::AvailabilityScheduleName, schedule.handle(),
+                        false);
+    }
+
+    std::vector<ZoneHVACTerminalUnitVariableRefrigerantFlow> AirConditionerVariableRefrigerantFlowFluidTemperatureControl_Impl::terminals() const {
+      std::vector<ZoneHVACTerminalUnitVariableRefrigerantFlow> result;
+      auto list = terminalUnitList();
+      if (!list) {
+        return result;
+      }
+
+      std::set<Handle> seen;
+      for (const auto& group : list->extensibleGroups()) {
+        auto workspaceGroup = group.optionalCast<openstudio::WorkspaceExtensibleGroup>();
+        if (!workspaceGroup) {
+          continue;
+        }
+        auto target = workspaceGroup->getTarget(openstudio::ZoneTerminalUnitListExtensibleFields::ZoneTerminalUnitName);
+        if (!target) {
+          continue;
+        }
+        auto terminal = target->optionalCast<ZoneHVACTerminalUnitVariableRefrigerantFlow>();
+        if (terminal && seen.insert(terminal->handle()).second) {
+          result.push_back(*terminal);
+        }
+      }
+      return result;
+    }
+
+    bool AirConditionerVariableRefrigerantFlowFluidTemperatureControl_Impl::addTerminal(ZoneHVACTerminalUnitVariableRefrigerantFlow& terminal) {
+      if (terminal.model() != model()) {
+        return false;
+      }
+      auto terminalImpl = terminal.getImpl<ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl>();
+      OS_ASSERT(terminalImpl);
+      if (!terminalImpl->isFluidTemperatureControl()) {
+        return false;
+      }
+
+      if (auto currentSystem = terminal.vrfSystem()) {
+        if (currentSystem->handle() != handle()) {
+          return false;
+        }
+        return true;
+      }
+
+      auto list = ensureTerminalUnitList();
+      if (!list) {
+        return false;
+      }
+      auto group = list->pushExtensibleGroup().optionalCast<openstudio::WorkspaceExtensibleGroup>();
+      if (!group) {
+        return false;
+      }
+      if (!group->setPointer(openstudio::ZoneTerminalUnitListExtensibleFields::ZoneTerminalUnitName, terminal.handle())) {
+        list->eraseExtensibleGroup(static_cast<unsigned>(list->extensibleGroups().size() - 1u));
+        return false;
+      }
+      return true;
+    }
+
+    void AirConditionerVariableRefrigerantFlowFluidTemperatureControl_Impl::removeTerminal(ZoneHVACTerminalUnitVariableRefrigerantFlow& terminal) {
+      auto list = terminalUnitList();
+      if (!list) {
+        return;
+      }
+      auto groups = list->extensibleGroups();
+      for (unsigned i = static_cast<unsigned>(groups.size()); i > 0u; --i) {
+        const auto index = i - 1u;
+        auto workspaceGroup = groups[index].optionalCast<openstudio::WorkspaceExtensibleGroup>();
+        if (!workspaceGroup) {
+          continue;
+        }
+        auto target = workspaceGroup->getTarget(openstudio::ZoneTerminalUnitListExtensibleFields::ZoneTerminalUnitName);
+        if (target && target->handle() == terminal.handle()) {
+          list->eraseExtensibleGroup(index);
+        }
+      }
+    }
+
+    void AirConditionerVariableRefrigerantFlowFluidTemperatureControl_Impl::removeAllTerminals() {
+      auto list = terminalUnitList();
+      if (!list) {
+        return;
+      }
+      while (!list->extensibleGroups().empty()) {
+        list->eraseExtensibleGroup(static_cast<unsigned>(list->extensibleGroups().size() - 1u));
+      }
+    }
+
+    std::vector<IdfObject> AirConditionerVariableRefrigerantFlowFluidTemperatureControl_Impl::remove() {
+      Model owningModel = model();
+      auto list = terminalUnitList();
+      std::vector<ModelObject> performanceCurves;
+      std::set<Handle> seenCurves;
+
+      const auto system = getObject<ModelObject>();
+      for (const auto field : {
+             openstudio::AirConditioner_VariableRefrigerantFlow_FluidTemperatureControlFields::
+               OutdoorUnitEvaporatingTemperatureFunctionofSuperheatingCurveName,
+             openstudio::AirConditioner_VariableRefrigerantFlow_FluidTemperatureControlFields::
+               OutdoorUnitCondensingTemperatureFunctionofSubcoolingCurveName,
+             openstudio::AirConditioner_VariableRefrigerantFlow_FluidTemperatureControlFields::
+               DefrostEnergyInputRatioModifierFunctionofTemperatureCurveName,
+           }) {
+        if (auto curve = system.getModelObjectTarget<ModelObject>(field)) {
+          if (seenCurves.insert(curve->handle()).second) {
+            performanceCurves.push_back(*curve);
+          }
+        }
+      }
+      for (const auto& extensibleGroup : system.extensibleGroups()) {
+        auto group = extensibleGroup.optionalCast<openstudio::WorkspaceExtensibleGroup>();
+        if (!group) {
+          continue;
+        }
+        for (const auto field : {
+               openstudio::AirConditioner_VariableRefrigerantFlow_FluidTemperatureControlExtensibleFields::
+                 LoadingIndexEvaporativeCapacityMultiplierFunctionofTemperatureCurveName,
+               openstudio::AirConditioner_VariableRefrigerantFlow_FluidTemperatureControlExtensibleFields::
+                 LoadingIndexCompressorPowerMultiplierFunctionofTemperatureCurveName,
+             }) {
+          if (auto target = group->getTarget(field)) {
+            if (auto curve = target->optionalCast<ModelObject>()) {
+              if (seenCurves.insert(curve->handle()).second) {
+                performanceCurves.push_back(*curve);
+              }
+            }
+          }
+        }
+      }
+
+      auto removedParent = HVACComponent_Impl::remove();
+      if (removedParent.empty()) {
+        return {};
+      }
+
+      std::vector<IdfObject> result;
+      if (list) {
+        auto removedList = list->remove();
+        result.insert(result.end(), removedList.begin(), removedList.end());
+      }
+      for (auto& curve : performanceCurves) {
+        if (owningModel.getObject(curve.handle()) && curve.sources().empty()) {
+          auto removedCurve = curve.remove();
+          result.insert(result.end(), removedCurve.begin(), removedCurve.end());
+        }
+      }
+      result.insert(result.end(), removedParent.begin(), removedParent.end());
+      return result;
+    }
+
     std::string AirConditionerVariableRefrigerantFlowFluidTemperatureControl_Impl::refrigerantType() const {
       const auto value = getString(openstudio::AirConditioner_VariableRefrigerantFlow_FluidTemperatureControlFields::RefrigerantType, true);
       OS_ASSERT(value);
@@ -412,7 +766,15 @@ namespace epmodel {
     }
 
     bool AirConditionerVariableRefrigerantFlowFluidTemperatureControl_Impl::setRefrigerantType(const std::string& refrigerantType) {
-      return setString(openstudio::AirConditioner_VariableRefrigerantFlow_FluidTemperatureControlFields::RefrigerantType, refrigerantType);
+      const auto values = openstudio::epmodel::AirConditionerVariableRefrigerantFlowFluidTemperatureControl::refrigerantTypeValues();
+      const auto canonical = std::find_if(values.cbegin(), values.cend(),
+                                          [&refrigerantType](const auto& candidate) { return openstudio::istringEqual(refrigerantType, candidate); });
+      if (canonical == values.cend()) {
+        return false;
+      }
+      auto owningModel = model();
+      return owningModel.ensureRefrigerantProperties(*canonical)
+             && setString(openstudio::AirConditioner_VariableRefrigerantFlow_FluidTemperatureControlFields::RefrigerantType, *canonical);
     }
 
     boost::optional<double> AirConditionerVariableRefrigerantFlowFluidTemperatureControl_Impl::ratedEvaporativeCapacity() const {
@@ -652,6 +1014,36 @@ namespace epmodel {
         outdoorUnitFanFlowRatePerUnitofRatedEvaporativeCapacity);
     }
 
+    Curve AirConditionerVariableRefrigerantFlowFluidTemperatureControl_Impl::outdoorUnitEvaporatingTemperatureFunctionofSuperheatingCurve() const {
+      auto curve =
+        getObject<ModelObject>().getModelObjectTarget<Curve>(openstudio::AirConditioner_VariableRefrigerantFlow_FluidTemperatureControlFields::
+                                                               OutdoorUnitEvaporatingTemperatureFunctionofSuperheatingCurveName);
+      OS_ASSERT(curve);
+      return *curve;
+    }
+
+    bool AirConditionerVariableRefrigerantFlowFluidTemperatureControl_Impl::setOutdoorUnitEvaporatingTemperatureFunctionofSuperheatingCurve(
+      const Curve& curve) {
+      return setPointer(openstudio::AirConditioner_VariableRefrigerantFlow_FluidTemperatureControlFields::
+                          OutdoorUnitEvaporatingTemperatureFunctionofSuperheatingCurveName,
+                        curve.handle(), false);
+    }
+
+    Curve AirConditionerVariableRefrigerantFlowFluidTemperatureControl_Impl::outdoorUnitCondensingTemperatureFunctionofSubcoolingCurve() const {
+      auto curve =
+        getObject<ModelObject>().getModelObjectTarget<Curve>(openstudio::AirConditioner_VariableRefrigerantFlow_FluidTemperatureControlFields::
+                                                               OutdoorUnitCondensingTemperatureFunctionofSubcoolingCurveName);
+      OS_ASSERT(curve);
+      return *curve;
+    }
+
+    bool AirConditionerVariableRefrigerantFlowFluidTemperatureControl_Impl::setOutdoorUnitCondensingTemperatureFunctionofSubcoolingCurve(
+      const Curve& curve) {
+      return setPointer(openstudio::AirConditioner_VariableRefrigerantFlow_FluidTemperatureControlFields::
+                          OutdoorUnitCondensingTemperatureFunctionofSubcoolingCurveName,
+                        curve.handle(), false);
+    }
+
     double AirConditionerVariableRefrigerantFlowFluidTemperatureControl_Impl::diameterofMainPipeConnectingOutdoorUnittotheFirstBranchJoint() const {
       const auto value = getDouble(openstudio::AirConditioner_VariableRefrigerantFlow_FluidTemperatureControlFields::
                                      DiameterofMainPipeConnectingOutdoorUnittotheFirstBranchJoint,
@@ -806,6 +1198,37 @@ namespace epmodel {
 
     bool AirConditionerVariableRefrigerantFlowFluidTemperatureControl_Impl::setDefrostControl(const std::string& defrostControl) {
       return setString(openstudio::AirConditioner_VariableRefrigerantFlow_FluidTemperatureControlFields::DefrostControl, defrostControl);
+    }
+
+    boost::optional<Curve>
+      AirConditionerVariableRefrigerantFlowFluidTemperatureControl_Impl::defrostEnergyInputRatioModifierFunctionofTemperatureCurve() const {
+      return getObject<ModelObject>().getModelObjectTarget<Curve>(openstudio::AirConditioner_VariableRefrigerantFlow_FluidTemperatureControlFields::
+                                                                    DefrostEnergyInputRatioModifierFunctionofTemperatureCurveName);
+    }
+
+    bool AirConditionerVariableRefrigerantFlowFluidTemperatureControl_Impl::setDefrostEnergyInputRatioModifierFunctionofTemperatureCurve(
+      const Curve& curve) {
+      if (curve.model() != model()) {
+        LOG_FREE(Warn, "openstudio.epmodel.AirConditionerVariableRefrigerantFlowFluidTemperatureControl",
+                 "Cannot set the defrost energy input ratio modifier curve because it belongs to a different model.");
+        return false;
+      }
+      const auto field = openstudio::AirConditioner_VariableRefrigerantFlow_FluidTemperatureControlFields::
+        DefrostEnergyInputRatioModifierFunctionofTemperatureCurveName;
+      if (!model().canBeTarget(curve.handle(), iddObject().objectLists(field))) {
+        LOG_FREE(Warn, "openstudio.epmodel.AirConditionerVariableRefrigerantFlowFluidTemperatureControl",
+                 "Cannot set the defrost energy input ratio modifier curve because curve type '" << curve.iddObject().type().valueName()
+                                                                                                 << "' is not accepted by the VRF field.");
+        return false;
+      }
+      return setPointer(field, curve.handle(), false);
+    }
+
+    void AirConditionerVariableRefrigerantFlowFluidTemperatureControl_Impl::resetDefrostEnergyInputRatioModifierFunctionofTemperatureCurve() {
+      constexpr auto field = openstudio::AirConditioner_VariableRefrigerantFlow_FluidTemperatureControlFields::
+        DefrostEnergyInputRatioModifierFunctionofTemperatureCurveName;
+      OS_ASSERT(setPointer(field, Handle(), false));
+      OS_ASSERT(openstudio::detail::IdfObject_Impl::setString(field, "", false));
     }
 
     double AirConditionerVariableRefrigerantFlowFluidTemperatureControl_Impl::defrostTimePeriodFraction() const {

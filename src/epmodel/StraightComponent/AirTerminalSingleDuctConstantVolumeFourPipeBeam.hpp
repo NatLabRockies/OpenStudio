@@ -15,19 +15,40 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
-  class ModelObject;
+  class HVACComponent;
   class Node;
+  class PlantLoop;
   class Schedule;
 
   namespace detail {
     class AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl;
   }
 
+  /**
+   * \brief Constant-volume four-pipe beam terminal with separate hot- and chilled-water coil relationships.
+   *
+   * \par EnergyPlus object
+   * Encapsulates \epobject{group-air-distribution-equipment.html#airterminalsingleductconstantvolumefourpipebeam,AirTerminal:SingleDuct:ConstantVolume:FourPipeBeam}.
+   *
+   * \par Important behavior
+   * The terminal maintains primary-air, zone, and two plant branches. `addToNode` registers the terminal on the
+   * resolved zone equipment list; removal prepares both coil branches and deletes owned coils only after teardown
+   * succeeds.
+   *
+   * \par OpenStudio Model API
+   * Counterpart: `openstudio::model::AirTerminalSingleDuctConstantVolumeFourPipeBeam`. Availability schedules, typed
+   * coils, primary-air nodes, loop/node conveniences, and beam sizing fields are represented. The epmodel coil wrappers
+   * are narrow plant-compatible handles for connectivity cleanup.
+   *
+   * \par Known limitations
+   * OS-prefixed child persistence, ambiguous projected Branch identity, two-coil same-PlantLoop batch removal, deep
+   * cloning, and family-specific autosized-result queries are not fully supported.
+   */
   class EPMODEL_API AirTerminalSingleDuctConstantVolumeFourPipeBeam : public StraightComponent
   {
    public:
-    explicit AirTerminalSingleDuctConstantVolumeFourPipeBeam(const Model& model);
-    AirTerminalSingleDuctConstantVolumeFourPipeBeam(const Model& model, ModelObject& coolingCoil, ModelObject& heatingCoil);
+    AirTerminalSingleDuctConstantVolumeFourPipeBeam(const Model& model);
+    AirTerminalSingleDuctConstantVolumeFourPipeBeam(const Model& model, HVACComponent& coolingCoil, HVACComponent& heatingCoil);
 
     virtual ~AirTerminalSingleDuctConstantVolumeFourPipeBeam() override = default;
     AirTerminalSingleDuctConstantVolumeFourPipeBeam(const AirTerminalSingleDuctConstantVolumeFourPipeBeam& other) = default;
@@ -38,22 +59,6 @@ namespace epmodel {
     static IddObjectType iddObjectType();
     bool addToNode(Node& node);
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. The scalar surface is aligned, and the availability-schedule, coil, and current zone-branch insertion path are exposed,
-    //   while the family-specific autosized-result helpers and broader canonical local-topology helpers remain intentionally narrower.
-    // - Canonical Counterpart: openstudio::model::AirTerminalSingleDuctConstantVolumeFourPipeBeam.
-    // - Implemented Parity: `primaryAirAvailabilitySchedule`, `coolingAvailabilitySchedule`, `heatingAvailabilitySchedule`, `setCoolingCoil`,
-    //   `setHeatingCoil`, `addToNode`, `designPrimaryAirVolumeFlowRate`, `designChilledWaterVolumeFlowRate`, `designHotWaterVolumeFlowRate`,
-    //   `zoneTotalBeamLength`, and `ratedPrimaryAirFlowRateperBeamLength` preserve the canonical field contract that is practical here.
-    // - Documented Delta: Dedicated `CoilCoolingFourPipeBeam` and `CoilHeatingFourPipeBeam` wrappers are intentionally narrow plant-compatible
-    //   child-coil handles for connectivity cleanup; broader child coil scalar helpers remain outside this campaign pass.
-    // - Field/Storage Mapping: The availability schedules, preserved scalars, child coil relationships, and inherited straight-component inlet/outlet
-    //   node fields retain the local epmodel field contract. `addToNode` uses the current epmodel zone-branch path and registers the terminal
-    //   on the owning thermal-zone equipment list when one is resolved.
-    // - Evidence: `src/model/AirTerminalSingleDuctConstantVolumeFourPipeBeam.hpp`, `src/model/AirTerminalSingleDuctConstantVolumeFourPipeBeam.cpp`,
-    //   `src/energyplus/ForwardTranslator/ForwardTranslateAirTerminalSingleDuctConstantVolumeFourPipeBeam.cpp`, and the focused epmodel tests.
-    // - Remaining Parity Work: Expose the family-specific autosized-result query helpers and the broader canonical local-topology helpers if shared
-    //   infrastructure or dedicated wrappers later make them practical.
     Schedule primaryAirAvailabilitySchedule() const;
     bool setPrimaryAirAvailabilitySchedule(Schedule& schedule);
 
@@ -62,6 +67,15 @@ namespace epmodel {
 
     Schedule heatingAvailabilitySchedule() const;
     bool setHeatingAvailabilitySchedule(Schedule& schedule);
+
+    boost::optional<Node> primaryAirInletNode() const;
+    boost::optional<Node> primaryAirOutletNode() const;
+
+    boost::optional<HVACComponent> coolingCoil() const;
+    bool setCoolingCoil(const HVACComponent& coolingCoil);
+
+    boost::optional<HVACComponent> heatingCoil() const;
+    bool setHeatingCoil(const HVACComponent& heatingCoil);
 
     boost::optional<double> designPrimaryAirVolumeFlowRate() const;
     bool isDesignPrimaryAirVolumeFlowRateAutosized() const;
@@ -88,11 +102,13 @@ namespace epmodel {
     bool setRatedPrimaryAirFlowRateperBeamLength(double ratedPrimaryAirFlowRateperBeamLength);
     void resetRatedPrimaryAirFlowRateperBeamLength();
 
-    boost::optional<ModelObject> coolingCoil() const;
-    bool setCoolingCoil(ModelObject& coolingCoil);
+    boost::optional<PlantLoop> chilledWaterPlantLoop() const;
+    boost::optional<Node> chilledWaterInletNode() const;
+    boost::optional<Node> chilledWaterOutletNode() const;
 
-    boost::optional<ModelObject> heatingCoil() const;
-    bool setHeatingCoil(ModelObject& heatingCoil);
+    boost::optional<PlantLoop> hotWaterPlantLoop() const;
+    boost::optional<Node> hotWaterInletNode() const;
+    boost::optional<Node> hotWaterOutletNode() const;
 
    protected:
     using ImplType = detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl;

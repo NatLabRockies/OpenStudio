@@ -26,7 +26,11 @@ namespace epmodel {
       EvaporativeCoolerIndirectResearchSpecial_Impl(const EvaporativeCoolerIndirectResearchSpecial_Impl& other, Model_Impl* model, bool keepHandle);
       virtual ~EvaporativeCoolerIndirectResearchSpecial_Impl() override = default;
 
+      boost::optional<std::string> setName(const std::string& newName, bool checkValidity) override;
       bool addToNode(Node& node) override;
+      std::vector<IdfObject> remove() override;
+
+      bool initializeSecondaryAirNodes();
 
       unsigned inletPort() const override;
       unsigned outletPort() const override;
@@ -110,8 +114,16 @@ namespace epmodel {
       void autosizePrimaryDesignAirFlowRate();
       boost::optional<double> autosizedPrimaryDesignAirFlowRate() const;
 
+     protected:
+      void doCanonicalize(LoadContext& context) override;
+
      private:
       bool syncSecondaryAirFanSizingSpecificPower();
+      bool setSecondaryAirInletNodeName(const std::string& nodeName);
+      bool setSecondaryAirOutletNodeName(const std::string& nodeName);
+      bool maintainSecondaryInletOutdoorAirNode(const std::string& previousNodeName = {});
+      unsigned removeSecondaryInletOutdoorAirNodeListEntries(const std::string& nodeName);
+      void removeUnusedSecondaryInletOutdoorAirNode(const std::string& nodeName);
 
       double m_secondaryFanTotalEfficiency = 1.0;
       double m_secondaryFanDeltaPressure = 0.0;

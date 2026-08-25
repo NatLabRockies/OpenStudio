@@ -26,10 +26,29 @@ namespace epmodel {
     class AirTerminalSingleDuctSeriesPIUReheat_Impl;
   }
 
+  /**
+   * \brief Series powered induction unit with a fan, reheat coil, and secondary-air exhaust path.
+   *
+   * \par EnergyPlus object
+   * Encapsulates \epobject{group-air-distribution-equipment.html#airterminalsingleductseriespiureheat,AirTerminal:SingleDuct:SeriesPIU:Reheat}.
+   *
+   * \par Important behavior
+   * `addToNode` supports terminal-only and served-zone branches. A served zone receives secondary-air exhaust,
+   * equipment, and AirDistributionUnit projections; removal reverses those links and cleans child and plant paths.
+   *
+   * \par OpenStudio Model API
+   * Counterpart: `openstudio::model::AirTerminalSingleDuctSeriesPIUReheat`. The fan/reheat-coil relationships,
+   * schedule, PIU scalar controls, and supported branch lifecycle are represented.
+   *
+   * \par Known limitations
+   * The legacy Model-only assembly constructor remains available, but epmodel does not expose `secondaryAirInletPort`,
+   * `clone`, or autosized-result helpers. Broader AirLoop-level zone attachment is separate work.
+   */
   class EPMODEL_API AirTerminalSingleDuctSeriesPIUReheat : public StraightComponent
   {
    public:
     explicit AirTerminalSingleDuctSeriesPIUReheat(const Model& model);
+    explicit AirTerminalSingleDuctSeriesPIUReheat(const Model& model, HVACComponent& fan, HVACComponent& reheatCoil);
 
     virtual ~AirTerminalSingleDuctSeriesPIUReheat() override = default;
     AirTerminalSingleDuctSeriesPIUReheat(const AirTerminalSingleDuctSeriesPIUReheat& other) = default;
@@ -42,14 +61,6 @@ namespace epmodel {
     static std::vector<std::string> fanControlTypeValues();
     static std::vector<std::string> heatingControlTypeValues();
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. The direct zone-branch insertion and removal lifecycle is aligned, while the broader canonical plenum/clone/autosized-result surface remains narrower.
-    // - Canonical Counterpart: openstudio::model::AirTerminalSingleDuctSeriesPIUReheat.
-    // - Implemented Parity: `availabilitySchedule`, validated `fan` and `reheatCoil` relationships, `secondaryAirInletNode`, direct zone-branch `addToNode`, child ownership, and the custom `remove()` / `removeFromLoop()` cleanup path preserve the supported branch behavior alongside the PIU control scalars.
-    // - Documented Delta: epmodel still omits the canonical constructor that requires child components, `secondaryAirInletPort`, `setInducedAirPlenumZone(ThermalZone&)`, `clone(...)`, autosized-result convenience helpers, and the canonical ATU-first flow where `addBranchForHVACComponent(...)` is followed later by `addBranchForZone(zone)`.
-    // - Field/Storage Mapping: The preserved scalars map directly to EnergyPlus `AirTerminal:SingleDuct:SeriesPIU:Reheat` fields; epmodel rewires the zone branch through a terminal-owned inlet node, persists a distinct secondary inlet node on the same object, records that node on the owning zone exhaust-node list, on `addToNode` synchronizes the PIU fan availability to the serving air loop, and cleans zone, ADU, secondary-air, and plant references in the supported teardown paths.
-    // - Evidence: `src/model/AirTerminalSingleDuctSeriesPIUReheat.hpp`, `src/model/AirTerminalSingleDuctSeriesPIUReheat.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirTerminalSingleDuctSeriesPIUReheat.cpp`, and `src/epmodel/test/AirTerminalSingleDuctSeriesPIUReheat_GTest.cpp`.
-    // - Remaining Parity Work: Add the omitted plenum, clone, secondary-port, and autosized-result helpers if a later campaign needs the broader canonical surface.
     boost::optional<Schedule> availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);
     void resetAvailabilitySchedule();

@@ -102,12 +102,6 @@ if(BUILD_TESTING)
     COMMAND $<TARGET_FILE:openstudio> --help
   )
 
-  add_test(NAME OpenStudioCLI.Classic.run_compact_ruby_only_osw
-    COMMAND $<TARGET_FILE:openstudio> classic run -w compact_ruby_only.osw
-    WORKING_DIRECTORY "${PROJECT_BINARY_DIR}/resources/Examples/compact_osw/"
-  )
-  set_tests_properties(OpenStudioCLI.Classic.run_compact_ruby_only_osw PROPERTIES RESOURCE_LOCK "compact_osw")
-
   add_test(NAME OpenStudioCLI.openstudio_version
     COMMAND $<TARGET_FILE:openstudio> openstudio_version
   )
@@ -212,24 +206,12 @@ if(BUILD_TESTING)
     COMMAND $<TARGET_FILE:openstudio> ${CMAKE_CURRENT_SOURCE_DIR}/test/ensure_uuid_can_be_loaded.rb
   )
 
-  add_test(NAME OpenStudioCLI.Classic.Run_RubyOnly
-    COMMAND $<TARGET_FILE:openstudio> classic run -w compact_ruby_only.osw
-    WORKING_DIRECTORY "${PROJECT_BINARY_DIR}/resources/Examples/compact_osw/"
-  )
-  set_tests_properties(OpenStudioCLI.Classic.Run_RubyOnly PROPERTIES RESOURCE_LOCK "compact_osw")
-
   add_test(NAME OpenStudioCLI.Run_RubyOnly
     COMMAND $<TARGET_FILE:openstudio> run -w compact_ruby_only.osw
     WORKING_DIRECTORY "${PROJECT_BINARY_DIR}/resources/Examples/compact_osw/"
   )
   set_tests_properties(OpenStudioCLI.Run_RubyOnly PROPERTIES RESOURCE_LOCK "compact_osw")
 
-
-  add_test(NAME OpenStudioCLI.Classic.Run_RubyOnly.absolute_path
-    COMMAND $<TARGET_FILE:openstudio> classic run -w "'${PROJECT_BINARY_DIR}/resources/Examples/compact_osw/compact_ruby_only.osw'"
-    WORKING_DIRECTORY "${PROJECT_BINARY_DIR}/resources/Examples/compact_osw/"
-  )
-  set_tests_properties(OpenStudioCLI.Classic.Run_RubyOnly.absolute_path PROPERTIES RESOURCE_LOCK "compact_osw")
 
   add_test(NAME OpenStudioCLI.Run_RubyOnly.absolute_path
     COMMAND $<TARGET_FILE:openstudio> run -w "'${PROJECT_BINARY_DIR}/resources/Examples/compact_osw/compact_ruby_only.osw'"
@@ -249,6 +231,62 @@ if(BUILD_TESTING)
     WORKING_DIRECTORY "${PROJECT_BINARY_DIR}/resources/Examples/compact_osw/"
   )
   set_tests_properties(OpenStudioCLI.Run_PythonOnly_TwoMeasure PROPERTIES RESOURCE_LOCK "compact_osw")
+
+  function(add_epmodel_example_test TEST_NAME WORKFLOW TIMEOUT_SECONDS)
+    add_test(NAME ${TEST_NAME}
+      COMMAND $<TARGET_FILE:openstudio> run -w ${WORKFLOW}
+      WORKING_DIRECTORY "${PROJECT_BINARY_DIR}/resources/Examples/epmodel/"
+    )
+    set_tests_properties(${TEST_NAME} PROPERTIES
+      RESOURCE_LOCK "epmodel_examples"
+      TIMEOUT ${TIMEOUT_SECONDS}
+    )
+  endfunction()
+
+  add_epmodel_example_test(OpenStudioCLI.Run_EPModelExistingOSMAsIs
+    epmodel_existing_osm_as_is.osw 120)
+  add_epmodel_example_test(OpenStudioCLI.Run_EPModelExistingOSMReplaceHVAC
+    epmodel_existing_osm_replace_hvac.osw 120)
+
+  add_epmodel_example_test(OpenStudioCLI.Run_EPModelCoreAndPerimeterIdealLoads
+    epmodel_core_perimeter_ideal_loads.osw 120)
+  add_epmodel_example_test(OpenStudioCLI.Run_EPModelCoreAndPerimeterPackagedUnitary
+    epmodel_core_perimeter_packaged_unitary.osw 120)
+  add_epmodel_example_test(OpenStudioCLI.Run_EPModelCoreAndPerimeterMultizoneVAV
+    epmodel_core_perimeter_multizone_vav.osw 120)
+  add_epmodel_example_test(OpenStudioCLI.Run_EPModelCoreAndPerimeterPackagedTerminalHeatPumps
+    epmodel_core_perimeter_packaged_terminal_heat_pumps.osw 120)
+  add_epmodel_example_test(OpenStudioCLI.Run_EPModelCoreAndPerimeterFourPipeFanCoils
+    epmodel_core_perimeter_four_pipe_fan_coils.osw 120)
+
+  add_epmodel_example_test(OpenStudioCLI.Run_EPModelReferenceFullServiceRestaurant
+    epmodel_reference_full_service_restaurant.osw 300)
+  add_epmodel_example_test(OpenStudioCLI.Run_EPModelReferenceLargeHotel
+    epmodel_reference_large_hotel.osw 300)
+  add_epmodel_example_test(OpenStudioCLI.Run_EPModelReferenceMediumOffice
+    epmodel_reference_medium_office.osw 300)
+  add_epmodel_example_test(OpenStudioCLI.Run_EPModelReferenceMidriseApartment
+    epmodel_reference_midrise_apartment.osw 300)
+  add_epmodel_example_test(OpenStudioCLI.Run_EPModelReferenceOutpatient
+    epmodel_reference_outpatient.osw 300)
+  add_epmodel_example_test(OpenStudioCLI.Run_EPModelReferencePrimarySchool
+    epmodel_reference_primary_school.osw 300)
+  add_epmodel_example_test(OpenStudioCLI.Run_EPModelReferenceQuickServiceRestaurant
+    epmodel_reference_quick_service_restaurant.osw 300)
+  add_epmodel_example_test(OpenStudioCLI.Run_EPModelReferenceSecondarySchool
+    epmodel_reference_secondary_school.osw 300)
+  add_epmodel_example_test(OpenStudioCLI.Run_EPModelReferenceSmallHotel
+    epmodel_reference_small_hotel.osw 300)
+  add_epmodel_example_test(OpenStudioCLI.Run_EPModelReferenceSmallOffice
+    epmodel_reference_small_office.osw 300)
+  add_epmodel_example_test(OpenStudioCLI.Run_EPModelReferenceStandAloneRetail
+    epmodel_reference_stand_alone_retail.osw 300)
+  add_epmodel_example_test(OpenStudioCLI.Run_EPModelReferenceStripMall
+    epmodel_reference_strip_mall.osw 300)
+  add_epmodel_example_test(OpenStudioCLI.Run_EPModelReferenceSupermarket
+    epmodel_reference_supermarket.osw 300)
+  add_epmodel_example_test(OpenStudioCLI.Run_EPModelReferenceWarehouse
+    epmodel_reference_warehouse.osw 300)
 
   add_test(NAME OpenStudioCLI.Run_RubyPython
     COMMAND $<TARGET_FILE:openstudio> run -w compact_ruby_then_python.osw
@@ -279,6 +317,19 @@ if(BUILD_TESTING)
     PASS_REGULAR_EXPRESSION "HI FROM ERB PYTHON PLUGIN[\r\n\t ]*HI FROM JINJA PYTHON PLUGIN"
   )
 
+  # These legacy workflow examples use openstudio::model::Model measures and are
+  # not compatible with the EPModel workflow model. Re-enable them when a
+  # workflow can select the appropriate model type or the examples are replaced.
+  set_tests_properties(
+    OpenStudioCLI.Run_RubyOnly
+    OpenStudioCLI.Run_RubyOnly.absolute_path
+    OpenStudioCLI.Run_RubyPython
+    OpenStudioCLI.Run_PythonRuby
+    OpenStudioCLI.Run_AlfalfaWorkflow
+    OpenStudioCLI.Run_RubyPythonPlugin
+    PROPERTIES DISABLED TRUE
+  )
+
   # ======================== Workflows should fail ========================
   add_test(NAME OpenStudioCLI.Run_Validate.MissingAMeasure
     COMMAND $<TARGET_FILE:openstudio> run --show-stdout -w missing_a_measure.osw
@@ -307,33 +358,6 @@ if(BUILD_TESTING)
     RESOURCE_LOCK "invalid_measures"
   )
 
-  # Classic
-  add_test(NAME OpenStudioCLI.Classic.Run_Validate.MissingAMeasure
-    COMMAND $<TARGET_FILE:openstudio> classic run --show-stdout -w missing_a_measure.osw
-    WORKING_DIRECTORY "${PROJECT_BINARY_DIR}/resources/workflow/invalid_measures/"
-  )
-  set_tests_properties(OpenStudioCLI.Classic.Run_Validate.MissingAMeasure PROPERTIES
-    WILL_FAIL TRUE
-    RESOURCE_LOCK "invalid_measures"
-  )
-
-  add_test(NAME OpenStudioCLI.Classic.Run_Validate.UnloadableMeasure
-    COMMAND $<TARGET_FILE:openstudio> classic run --show-stdout -w unloadable_measure.osw
-    WORKING_DIRECTORY "${PROJECT_BINARY_DIR}/resources/workflow/invalid_measures/"
-  )
-  set_tests_properties(OpenStudioCLI.Classic.Run_Validate.UnloadableMeasure PROPERTIES
-    WILL_FAIL TRUE
-    RESOURCE_LOCK "invalid_measures"
-  )
-
-  add_test(NAME OpenStudioCLI.Classic.Run_Validate.WrongMeasureTypeOrder
-    COMMAND $<TARGET_FILE:openstudio> classic run --show-stdout -w wrong_measure_type_order.osw
-    WORKING_DIRECTORY "${PROJECT_BINARY_DIR}/resources/workflow/invalid_measures/"
-  )
-  set_tests_properties(OpenStudioCLI.Classic.Run_Validate.WrongMeasureTypeOrder PROPERTIES
-    WILL_FAIL TRUE
-    RESOURCE_LOCK "invalid_measures"
-  )
   # ====================== End Workflows should fail ======================
 
   if (Pytest_AVAILABLE)
@@ -350,11 +374,6 @@ if(BUILD_TESTING)
     add_test(NAME OpenStudioCLI.test_runner_errors
       COMMAND ${Python_EXECUTABLE} -m pytest --verbose --os-cli-path $<TARGET_FILE:openstudio> "${CMAKE_CURRENT_SOURCE_DIR}/test/test_runner_registers_error.py"
       WORKING_DIRECTORY "${PROJECT_BINARY_DIR}/resources/workflow/runner_errors/"
-    )
-
-    add_test(NAME OpenStudioCLI.test_outdated_measure
-      COMMAND ${Python_EXECUTABLE} -m pytest --verbose --os-cli-path $<TARGET_FILE:openstudio> "${CMAKE_CURRENT_SOURCE_DIR}/test/test_outdated_measure.py"
-      WORKING_DIRECTORY "${PROJECT_BINARY_DIR}/resources/workflow/outdated_measures/"
     )
 
     add_test(NAME OpenStudioCLI.test_output_files

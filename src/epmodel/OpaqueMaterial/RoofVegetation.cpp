@@ -17,7 +17,7 @@
 namespace openstudio {
 namespace epmodel {
 
-  RoofVegetation::RoofVegetation(const Model& model, const std::string& roughness) : ModelObject(RoofVegetation::iddObjectType(), model) {
+  RoofVegetation::RoofVegetation(const Model& model, const std::string& roughness) : OpaqueMaterial(RoofVegetation::iddObjectType(), model) {
     OS_ASSERT(getImpl<detail::RoofVegetation_Impl>());
 
     bool ok = true;
@@ -25,7 +25,7 @@ namespace epmodel {
     OS_ASSERT(ok);
   }
 
-  RoofVegetation::RoofVegetation(std::shared_ptr<detail::RoofVegetation_Impl> impl) : ModelObject(std::move(impl)) {}
+  RoofVegetation::RoofVegetation(std::shared_ptr<detail::RoofVegetation_Impl> impl) : OpaqueMaterial(std::move(impl)) {}
 
   IddObjectType RoofVegetation::iddObjectType() {
     return IddObjectType::Material_RoofVegetation;
@@ -164,10 +164,6 @@ namespace epmodel {
     return getImpl<detail::RoofVegetation_Impl>()->thermalResistivity();
   }
 
-  double RoofVegetation::thermalResistance() const {
-    return getImpl<detail::RoofVegetation_Impl>()->thermalResistance();
-  }
-
   bool RoofVegetation::setThermalConductivity(double value) {
     return getImpl<detail::RoofVegetation_Impl>()->setThermalConductivity(value);
   }
@@ -178,10 +174,6 @@ namespace epmodel {
 
   bool RoofVegetation::setThermalResistivity(double value) {
     return getImpl<detail::RoofVegetation_Impl>()->setThermalResistivity(value);
-  }
-
-  bool RoofVegetation::setThermalResistance(double value) {
-    return getImpl<detail::RoofVegetation_Impl>()->setThermalResistance(value);
   }
 
   double RoofVegetation::conductivityofDrySoil() const {
@@ -252,7 +244,7 @@ namespace epmodel {
     return getImpl<detail::RoofVegetation_Impl>()->heatCapacity();
   }
 
-  boost::optional<double> RoofVegetation::thermalAbsorptance() const {
+  double RoofVegetation::thermalAbsorptance() const {
     return getImpl<detail::RoofVegetation_Impl>()->thermalAbsorptance();
   }
 
@@ -280,7 +272,7 @@ namespace epmodel {
     return getImpl<detail::RoofVegetation_Impl>()->setThermalReflectance(value);
   }
 
-  boost::optional<double> RoofVegetation::solarAbsorptance() const {
+  double RoofVegetation::solarAbsorptance() const {
     return getImpl<detail::RoofVegetation_Impl>()->solarAbsorptance();
   }
 
@@ -308,7 +300,7 @@ namespace epmodel {
     return getImpl<detail::RoofVegetation_Impl>()->setSolarReflectance(value);
   }
 
-  boost::optional<double> RoofVegetation::visibleAbsorptance() const {
+  double RoofVegetation::visibleAbsorptance() const {
     return getImpl<detail::RoofVegetation_Impl>()->visibleAbsorptance();
   }
 
@@ -561,8 +553,10 @@ namespace epmodel {
       return isEmpty(openstudio::Material_RoofVegetationFields::SpecificHeatofDrySoil);
     }
 
-    boost::optional<double> RoofVegetation_Impl::thermalAbsorptance() const {
-      return getDouble(openstudio::Material_RoofVegetationFields::ThermalAbsorptance, true);
+    double RoofVegetation_Impl::thermalAbsorptance() const {
+      const auto value = getDouble(openstudio::Material_RoofVegetationFields::ThermalAbsorptance, true);
+      OS_ASSERT(value);
+      return *value;
     }
 
     bool RoofVegetation_Impl::isThermalAbsorptanceDefaulted() const {
@@ -570,14 +564,13 @@ namespace epmodel {
     }
 
     boost::optional<double> RoofVegetation_Impl::thermalReflectance() const {
-      if (auto value = thermalAbsorptance()) {
-        return 1.0 - *value;
-      }
-      return boost::none;
+      return 1.0 - thermalAbsorptance();
     }
 
-    boost::optional<double> RoofVegetation_Impl::solarAbsorptance() const {
-      return getDouble(openstudio::Material_RoofVegetationFields::SolarAbsorptance, true);
+    double RoofVegetation_Impl::solarAbsorptance() const {
+      const auto value = getDouble(openstudio::Material_RoofVegetationFields::SolarAbsorptance, true);
+      OS_ASSERT(value);
+      return *value;
     }
 
     bool RoofVegetation_Impl::isSolarAbsorptanceDefaulted() const {
@@ -585,14 +578,13 @@ namespace epmodel {
     }
 
     boost::optional<double> RoofVegetation_Impl::solarReflectance() const {
-      if (auto value = solarAbsorptance()) {
-        return 1.0 - *value;
-      }
-      return boost::none;
+      return 1.0 - solarAbsorptance();
     }
 
-    boost::optional<double> RoofVegetation_Impl::visibleAbsorptance() const {
-      return getDouble(openstudio::Material_RoofVegetationFields::VisibleAbsorptance, true);
+    double RoofVegetation_Impl::visibleAbsorptance() const {
+      const auto value = getDouble(openstudio::Material_RoofVegetationFields::VisibleAbsorptance, true);
+      OS_ASSERT(value);
+      return *value;
     }
 
     bool RoofVegetation_Impl::isVisibleAbsorptanceDefaulted() const {
@@ -600,10 +592,7 @@ namespace epmodel {
     }
 
     boost::optional<double> RoofVegetation_Impl::visibleReflectance() const {
-      if (auto value = visibleAbsorptance()) {
-        return 1.0 - *value;
-      }
-      return boost::none;
+      return 1.0 - visibleAbsorptance();
     }
 
     double RoofVegetation_Impl::saturationVolumetricMoistureContent() const {

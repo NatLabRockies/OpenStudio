@@ -9,6 +9,7 @@
 %import <epmodel/EPModel.i>
 %import <epmodel/ParentObject/EPModelParentObject.i>
 %import <epmodel/HVACComponent/EPModelHVACComponent.i>
+%import <epmodel/StraightComponent/EPModelStraightComponent.i>
 
 %{
   #include <epmodel/Loop/AirLoopHVAC_Impl.hpp>

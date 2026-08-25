@@ -12,6 +12,8 @@
 #include "../OSArgument.hpp"
 
 #include "../../epmodel/Model.hpp"
+#include "../../epmodel/PlanarSurfaceGroup/Space.hpp"
+#include "../../epmodel/PlanarSurfaceGroup/Space_Impl.hpp"
 #include "../../model/Model.hpp"
 #include "../../model/BoilerHotWater.hpp"
 
@@ -69,6 +71,37 @@ TEST_F(MeasureFixture, OSRunner_StdOut) {
   EXPECT_EQ("Standard Output\n", step.result()->stdOut().get());
   ASSERT_TRUE(step.result()->stdErr());
   EXPECT_EQ("Standard Error\n", step.result()->stdErr().get());
+}
+
+TEST_F(MeasureFixture, OSRunner_LastOpenStudioModelIsEPModel) {
+  WorkflowJSON workflow;
+  OSRunner runner(workflow);
+
+  EXPECT_FALSE(runner.lastOpenStudioModel());
+
+  epmodel::Model model;
+  epmodel::Space space(model);
+  ASSERT_TRUE(space.setName("Runner EPModel Space"));
+
+  runner.setLastOpenStudioModel(model);
+  auto lastModel = runner.lastOpenStudioModel();
+  ASSERT_TRUE(lastModel);
+  auto spaces = lastModel->getConcreteModelObjects<epmodel::Space>();
+  ASSERT_EQ(1u, spaces.size());
+  EXPECT_EQ("Runner EPModel Space", spaces.front().nameString());
+
+  runner.resetLastOpenStudioModel();
+  EXPECT_FALSE(runner.lastOpenStudioModel());
+
+  const auto idfPath = scratchDir / "OSRunner_LastOpenStudioModelIsEPModel.idf";
+  ASSERT_TRUE(model.save(idfPath, true));
+  runner.setLastOpenStudioModelPath(idfPath);
+
+  lastModel = runner.lastOpenStudioModel();
+  ASSERT_TRUE(lastModel);
+  spaces = lastModel->getConcreteModelObjects<epmodel::Space>();
+  ASSERT_EQ(1u, spaces.size());
+  EXPECT_EQ("Runner EPModel Space", spaces.front().nameString());
 }
 
 TEST_F(MeasureFixture, OSRunner_getOptionalBoolArgumentValue) {

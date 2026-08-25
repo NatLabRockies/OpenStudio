@@ -22,6 +22,18 @@ namespace epmodel {
     class EnergyManagementSystemConstructionIndexVariable_Impl;
   }
 
+  /** \brief Represents <code>EnergyManagementSystem:ConstructionIndexVariable</code>.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-energy-management-system-ems.html#energymanagementsystemconstructionindexvariable,EnergyManagementSystem:ConstructionIndexVariable}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::EnergyManagementSystemConstructionIndexVariable</code>.
+   * **Not yet available:** Model typed object-target, program-body, and EMS relationship conveniences are not exposed unless declared by this wrapper.
+   *
+   * \par Known limitations
+   * Typed relationship and extensible-list conveniences not represented by the public declarations are unavailable.
+   */
   class EPMODEL_API EnergyManagementSystemConstructionIndexVariable : public ModelObject
   {
    public:
@@ -34,13 +46,6 @@ namespace epmodel {
     EnergyManagementSystemConstructionIndexVariable& operator=(EnergyManagementSystemConstructionIndexVariable&&) = default;
 
     static IddObjectType iddObjectType();
-
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model::EnergyManagementSystemConstructionIndexVariable class naming.
-    // - Field Mapping: EnergyPlus field Construction Object Name is relationship-like and intentionally excluded from scalar accessor scaffold.
-    // - ForwardTranslator evidence: ForwardTranslateEnergyManagementSystemConstructionIndexVariable.cpp writes ConstructionObjectName from modelObject.constructionObject().
-    // - TODO(parity): Add relationship APIs incrementally (constructionObject/setConstructionObject) without changing scalar scaffolding conventions.
-
    protected:
     using ImplType = detail::EnergyManagementSystemConstructionIndexVariable_Impl;
 

@@ -17,15 +17,30 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class Schedule;
+  class HeatExchangerDesiccantBalancedFlowPerformanceDataType1;
 
   namespace detail {
     class HeatExchangerDesiccantBalancedFlow_Impl;
   }
 
+  /** \brief Represents the EnergyPlus HeatExchanger:Desiccant:BalancedFlow object.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-heat-recovery.html#heatexchangerdesiccantbalancedflow,HeatExchanger:Desiccant:BalancedFlow}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::HeatExchangerDesiccantBalancedFlow</code>. <b>Not yet available:</b> the Model airflow-network equivalent-duct helpers.
+   *
+   * \par Known limitations
+   * The four air-stream nodes and performance object relationship must remain consistent for outdoor-air or relief placement.
+   */
   class EPMODEL_API HeatExchangerDesiccantBalancedFlow : public AirToAirComponent
   {
    public:
     explicit HeatExchangerDesiccantBalancedFlow(const Model& model);
+    explicit HeatExchangerDesiccantBalancedFlow(const Model& model,
+                                                const HeatExchangerDesiccantBalancedFlowPerformanceDataType1& heatExchangerPerformance);
 
     virtual ~HeatExchangerDesiccantBalancedFlow() override = default;
     HeatExchangerDesiccantBalancedFlow(const HeatExchangerDesiccantBalancedFlow& other) = default;
@@ -35,14 +50,13 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. The core economizer-lockout scalar is aligned, but the canonical performance-object and topology surface is still missing.
-    // - Canonical Counterpart: openstudio::model::HeatExchangerDesiccantBalancedFlow.
-    // - Implemented Parity: `economizerLockout` preserves the canonical scalar control behavior for the desiccant heat exchanger wrapper.
-    // - Documented Delta: Epmodel does not yet expose the canonical availability schedule, performance-object linkage, or airflow-network equivalent-duct helpers present in `openstudio::model`.
-    // - Field/Storage Mapping: The implemented scalar maps directly to `HeatExchanger:Desiccant:BalancedFlow` storage.
-    // - Evidence: `src/model/HeatExchangerDesiccantBalancedFlow.hpp`, `src/model/HeatExchangerDesiccantBalancedFlow.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateHeatExchangerDesiccantBalancedFlow.cpp` anchor the canonical API and translator behavior.
-    // - Remaining Parity Work: Add the performance-object, schedule, and airflow-network relationship APIs when the epmodel relationship layer can represent them canonically.
+
+    Schedule availabilitySchedule() const;
+    bool setAvailabilitySchedule(Schedule& schedule);
+
+    HeatExchangerDesiccantBalancedFlowPerformanceDataType1 heatExchangerPerformance() const;
+    bool setHeatExchangerPerformance(const HeatExchangerDesiccantBalancedFlowPerformanceDataType1& heatExchangerPerformance);
+
     /** @name Economizer Lockout */
     //@{
     bool economizerLockout() const;

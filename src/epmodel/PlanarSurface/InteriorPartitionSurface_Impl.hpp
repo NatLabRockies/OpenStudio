@@ -6,18 +6,30 @@
 #ifndef EPMODEL_INTERIORPARTITIONSURFACE_IMPL_HPP
 #define EPMODEL_INTERIORPARTITIONSURFACE_IMPL_HPP
 
-#include "ModelObject_Impl.hpp"
+#include "PlanarSurface_Impl.hpp"
 
 namespace openstudio {
 namespace epmodel {
 
+  class ConstructionBase;
+  class Space;
+
   namespace detail {
 
-    class EPMODEL_API InteriorPartitionSurface_Impl : public ModelObject_Impl
+    class EPMODEL_API InteriorPartitionSurface_Impl : public PlanarSurface_Impl
     {
      public:
-      using ModelObject_Impl::ModelObject_Impl;
+      using PlanarSurface_Impl::PlanarSurface_Impl;
       virtual ~InteriorPartitionSurface_Impl() override = default;
+
+      virtual boost::optional<Space> space() const override;
+      virtual bool subtractFromGrossArea() const override;
+      bool setVertices(const std::vector<Point3d>& vertices) override;
+      double grossArea() const override;
+
+      boost::optional<ConstructionBase> construction() const override;
+      bool setConstruction(const ConstructionBase& construction) override;
+      void resetConstruction() override;
 
       bool converttoInternalMass() const;
       bool isConverttoInternalMassDefaulted() const;
@@ -36,6 +48,9 @@ namespace epmodel {
       bool setNumberofVertices(double numberofVertices);
       void resetNumberofVertices();
       void autocalculateNumberofVertices();
+
+     private:
+      REGISTER_LOGGER("openstudio.epmodel.InteriorPartitionSurface");
     };
 
   }  // namespace detail

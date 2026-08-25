@@ -23,6 +23,17 @@ namespace epmodel {
     class AirLoopHVACSupplyPath_Impl;
   }
 
+  /** \brief Represents the EnergyPlus AirLoopHVAC:SupplyPath object.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-air-path.html#airloophvacsupplypath,AirLoopHVAC:SupplyPath}
+   *
+   * \par OpenStudio Model API
+   * OpenStudio Model has no public wrapper for this EnergyPlus object. This wrapper is new to the EPModel API.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations beyond the public fields and relationships exposed by this wrapper.
+   */
   class EPMODEL_API AirLoopHVACSupplyPath : public ModelObject
   {
    public:
@@ -36,14 +47,9 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - API: This no-counterpart type keeps IDD-derived naming and existing path-link behavior.
-    // - Field Mapping: Supply Air Path Inlet Node Name is a node relationship field, excluded from scalar accessors.
-    // - Field Mapping: Extensible Component Object Type / Component Name are relationship-like target links, excluded from scalar accessors.
-    // - Field Mapping: Name remains available through base ModelObject scalar API.
-    // - TODO(parity): Add typed relationship APIs incrementally if needed beyond current behavior.
     boost::optional<openstudio::epmodel::AirLoopHVAC> airLoopHVAC() const;
     std::vector<openstudio::epmodel::ModelObject> components() const;
+    bool removeComponent(const openstudio::epmodel::ModelObject& component);
 
    protected:
     using ImplType = detail::AirLoopHVACSupplyPath_Impl;

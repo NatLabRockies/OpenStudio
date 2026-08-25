@@ -20,6 +20,29 @@ namespace epmodel {
     class AvailabilityManagerDifferentialThermostat_Impl;
   }
 
+  /** \brief Controls availability from the temperature difference between hot and cold sensor nodes.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-system-availability-managers.html#availabilitymanagerdifferentialthermostat,AvailabilityManager:DifferentialThermostat}
+   *
+   * \par Important behavior
+   * A newly constructed manager initializes the on and off temperature
+   * difference limits to 10.0 and 2.0, respectively.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::AvailabilityManagerDifferentialThermostat</code>.
+   *
+   * - <b>Not yet available:</b> <code>loop()</code>,
+   *   <code>hotNode()</code>, <code>setHotNode(...)</code>,
+   *   <code>resetHotNode()</code>, <code>coldNode()</code>,
+   *   <code>setColdNode(...)</code>, and <code>resetColdNode()</code>.
+   *
+   * \par Known limitations
+   * The EPModel wrapper currently exposes only the scalar temperature limits.
+   * It cannot be passed to typed loop-assignment APIs until its sensor-node
+   * relationships and availability-manager base interface are exposed.
+   */
   class EPMODEL_API AvailabilityManagerDifferentialThermostat : public ModelObject
   {
    public:
@@ -33,11 +56,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model scalar accessor names/signatures for this model-counterpart class.
-    // - Field Mapping: temperatureDifferenceOnLimit maps to E+ Temperature Difference On Limit.
-    // - Field Mapping: temperatureDifferenceOffLimit maps to E+ Temperature Difference Off Limit.
-    // - TODO(parity): Keep relationship fields (hotNode/coldNode) out of this scalar-only scaffold pass.
     // Temperature difference on limit
     double temperatureDifferenceOnLimit() const;
     bool setTemperatureDifferenceOnLimit(double temperatureDifferenceOnLimit);

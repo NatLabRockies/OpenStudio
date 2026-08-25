@@ -22,6 +22,18 @@ namespace epmodel {
     class ExternalInterfaceFunctionalMockupUnitImport_Impl;
   }
 
+  /** \brief Represents <code>ExternalInterface:FunctionalMockupUnitImport</code>.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-externalinterface.html#externalinterfacefunctionalmockupunitimport,ExternalInterface:FunctionalMockupUnitImport}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::ExternalInterfaceFunctionalMockupUnitImport</code>.
+   * **Not yet available:** Model typed FMU/component relationships and OpenStudio-only export controls are not exposed unless represented by an EnergyPlus field here.
+   *
+   * \par Known limitations
+   * Typed relationship and extensible-list conveniences not represented by the public declarations are unavailable.
+   */
   class EPMODEL_API ExternalInterfaceFunctionalMockupUnitImport : public ModelObject
   {
    public:
@@ -34,14 +46,6 @@ namespace epmodel {
     ExternalInterfaceFunctionalMockupUnitImport& operator=(ExternalInterfaceFunctionalMockupUnitImport&&) = default;
 
     static IddObjectType iddObjectType();
-
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::ExternalInterfaceFunctionalMockupUnitImport scalar accessor names/signatures.
-    // - Field Mapping: fMUFileName -> ExternalInterface:FunctionalMockupUnitImport, FMU File Name.
-    // - Field Mapping: fMUTimeout -> ExternalInterface:FunctionalMockupUnitImport, FMU Timeout.
-    // - Field Mapping: fMULoggingOn -> ExternalInterface:FunctionalMockupUnitImport, FMU LoggingOn.
-    // - ForwardTranslator evidence: ForwardTranslateExternalInterfaceFunctionalMockupUnitImport.cpp writes these fields directly.
-    // - TODO(parity): Keep preserved scalar API stable while relationship-based FMU wiring is added in follow-up types.
     double fMUTimeout() const;
     bool isFMUTimeoutDefaulted() const;
     bool setFMUTimeout(double fMUTimeout);

@@ -6,7 +6,7 @@
 #ifndef EPMODEL_BLIND_IMPL_HPP
 #define EPMODEL_BLIND_IMPL_HPP
 
-#include "ModelObject_Impl.hpp"
+#include "ShadingMaterial/ShadingMaterial_Impl.hpp"
 
 #include <string>
 
@@ -15,10 +15,10 @@ namespace epmodel {
 
   namespace detail {
 
-    class EPMODEL_API Blind_Impl : public ModelObject_Impl
+    class EPMODEL_API Blind_Impl : public ShadingMaterial_Impl
     {
      public:
-      using ModelObject_Impl::ModelObject_Impl;
+      using ShadingMaterial_Impl::ShadingMaterial_Impl;
       virtual ~Blind_Impl() override = default;
 
       std::string slatOrientation() const;

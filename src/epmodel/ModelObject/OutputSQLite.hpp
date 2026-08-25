@@ -23,6 +23,17 @@ namespace epmodel {
     class OutputSQLite_Impl;
   }
 
+  /** \brief OutputSQLite.
+   *
+   * \par EnergyPlus object
+   * \epobject{input-for-output.html#outputsqlite,Output:SQLite}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::OutputSQLite</code>. The option type and tabular-unit-conversion settings map directly to EnergyPlus.
+   *
+   * \par Known limitations
+   * Only the fields and relationships listed in this wrapper are available; broader Model-only helpers are not exposed.
+   */
   class EPMODEL_API OutputSQLite : public ModelObject
   {
    public:
@@ -38,12 +49,6 @@ namespace epmodel {
 
     static std::vector<std::string> optionTypeValues();
     static std::vector<std::string> unitConversionforTabularDataValues();
-
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model::OutputSQLite scalar accessor names/signatures.
-    // - Field Mapping: optionType/unitConversionforTabularData map directly to E+ Output:SQLite Option Type/Unit Conversion for Tabular Data.
-    // - ForwardTranslator evidence: ForwardTranslateOutputSQLite.cpp writes these preserved APIs directly to Output:SQLite fields.
-    // - TODO(parity): Keep scalar API stable while extending any non-scalar parity behavior in future passes.
     std::string optionType() const;
     bool setOptionType(const std::string& optionType);
 

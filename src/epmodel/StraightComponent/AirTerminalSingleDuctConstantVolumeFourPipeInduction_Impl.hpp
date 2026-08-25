@@ -27,6 +27,7 @@ namespace epmodel {
       unsigned outletPort() const override;
       bool addToNode(Node& node) override;
       std::vector<ModelObject> children() const override;
+      bool isRemovable() const override;
       std::vector<openstudio::IdfObject> remove() override;
       bool removeFromLoop() override;
       boost::optional<ZoneHVACAirDistributionUnit> zoneHVACAirDistributionUnit() const;
@@ -86,6 +87,12 @@ namespace epmodel {
 
       boost::optional<Node> inducedAirInletNode() const;
       unsigned inducedAirInletPort() const;
+
+     private:
+      void doCanonicalize(LoadContext& context) override;
+      bool maintainContainedAirPath();
+      bool repairContainedAirPath(LoadContext& context);
+      bool reconcileContainedAirPath(bool allowChildNodeRecovery, LoadContext* context);
     };
 
   }  // namespace detail

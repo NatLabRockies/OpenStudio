@@ -382,7 +382,7 @@ TEST_F(SmallOfficeIDFFixture, AirLoopHVAC_IDF_AvailabilityManagersRoundTrip) {
   }
 }
 
-TEST_F(SmallOfficeIDFFixture, AirLoopHVAC_IDF_CoilSystemCoolingDX_ImplOnlyNavigationRoundTrip) {
+TEST_F(SmallOfficeIDFFixture, AirLoopHVAC_IDF_CoilSystemCoolingDX_PublicNavigationRoundTrip) {
   auto model = loadSmallOfficeModel();
   ASSERT_TRUE(model);
 
@@ -392,17 +392,17 @@ TEST_F(SmallOfficeIDFFixture, AirLoopHVAC_IDF_CoilSystemCoolingDX_ImplOnlyNaviga
   ASSERT_FALSE(dxCoils.empty());
 
   unsigned validated = 0u;
-  for (const auto& coilSystem : coilSystems) {
-    auto systemImpl = coilSystem.getImpl<openstudio::epmodel::detail::CoilSystemCoolingDX_Impl>();
-    ASSERT_TRUE(systemImpl);
-
-    auto coolingCoilObject = systemImpl->coolingCoil();
+  boost::optional<AirLoopHVAC> loopToRemove;
+  boost::optional<openstudio::Handle> removedCoilHandle;
+  boost::optional<openstudio::Handle> removedSystemHandle;
+  for (auto coilSystem : coilSystems) {
+    auto coolingCoilObject = coilSystem.coolingCoil();
     ASSERT_TRUE(coolingCoilObject);
 
     const auto coilIt = std::find_if(dxCoils.begin(), dxCoils.end(),
                                      [&](const CoilCoolingDXSingleSpeed& coil) { return coil.cast<ModelObject>() == *coolingCoilObject; });
     ASSERT_NE(coilIt, dxCoils.end());
-    const auto& coolingCoil = *coilIt;
+    auto coolingCoil = *coilIt;
 
     auto coolingCoilImpl = coolingCoil.getImpl<openstudio::epmodel::detail::CoilCoolingDXSingleSpeed_Impl>();
     ASSERT_TRUE(coolingCoilImpl);
@@ -410,10 +410,36 @@ TEST_F(SmallOfficeIDFFixture, AirLoopHVAC_IDF_CoilSystemCoolingDX_ImplOnlyNaviga
     ASSERT_TRUE(coilSystemFromCoil);
     EXPECT_EQ(coilSystem, *coilSystemFromCoil);
 
+    // This slice does not project imported single-speed adapters until their
+    // lifecycle can follow the same public identity as direct two-speed coils.
+    auto airLoop = coilSystem.airLoopHVAC();
+    ASSERT_TRUE(airLoop);
+    EXPECT_TRUE(airLoop->supplyComponent(coilSystem.handle()));
+    EXPECT_FALSE(airLoop->supplyComponent(coolingCoil.handle()));
+    EXPECT_FALSE(coolingCoil.airLoopHVAC());
+    EXPECT_FALSE(coolingCoil.removeFromLoop());
+    EXPECT_FALSE(coilSystem.removeFromLoop());
+    EXPECT_TRUE(coilSystem.remove().empty());
+    EXPECT_TRUE(model->getObject(coilSystem.handle()));
+
+    if (!loopToRemove) {
+      loopToRemove = *airLoop;
+      removedCoilHandle = coolingCoil.handle();
+      removedSystemHandle = coilSystem.handle();
+    }
+
     ++validated;
   }
 
   EXPECT_GT(validated, 0u);
+  ASSERT_TRUE(loopToRemove);
+  ASSERT_TRUE(removedCoilHandle);
+  ASSERT_TRUE(removedSystemHandle);
+  EXPECT_FALSE(loopToRemove->remove().empty());
+  // Direct mutation remains unsupported for imported single-speed systems, but
+  // whole-loop teardown removes both persisted records to avoid an orphan coil.
+  EXPECT_FALSE(model->getObject(*removedCoilHandle));
+  EXPECT_FALSE(model->getObject(*removedSystemHandle));
 }
 
 TEST_F(SmallOfficeIDFFixture, AirLoopHVAC_IDF_NodeSetpointManagersRoundTrip) {

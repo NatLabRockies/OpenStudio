@@ -20,6 +20,17 @@ namespace epmodel {
     class ElectricEquipmentITEAirCooled_Impl;
   }
 
+  /** \brief Represents the EnergyPlus ElectricEquipment:ITE:AirCooled object.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-internal-gains-people-lights-other.html#electricequipmentiteaircooled,ElectricEquipment:ITE:AirCooled}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::ElectricEquipmentITEAirCooled</code>. <b>Not yet available:</b> the Model definition, schedule, and object relationship methods. EPModel exposes the EnergyPlus ITE scalar fields and compatibility multiplier.
+   *
+   * \par Known limitations
+   * The compatibility multiplier scales the stored design-power fields because EnergyPlus has no dedicated multiplier field.
+   */
   class EPMODEL_API ElectricEquipmentITEAirCooled : public ModelObject
   {
    public:
@@ -33,15 +44,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::ElectricEquipmentITEAirCooled scalar accessor names/signatures.
-    // - Field Mapping: cPUEndUseSubcategory/fanEndUseSubcategory/electricPowerSupplyEndUseSubcategory
-    //   map directly to E+ ElectricEquipment:ITE:AirCooled A17/A18/A19 fields.
-    // - Field Mapping: setMultiplier/resetMultiplier are preserved compatibility methods; E+ has no dedicated
-    //   multiplier field, so multiplier is applied to existing design-power scalar fields (Watts per Unit,
-    //   Watts per Floor Area), matching ForwardTranslateElectricEquipmentITEAirCooled multiplier behavior.
-    // - Field Mapping: schedule and object-reference fields are relationship fields and intentionally excluded.
-    // - TODO(parity): Add relationship and definition-backed behavior without changing preserved scalar signatures.
     std::string cPUEndUseSubcategory() const;
     bool isCPUEndUseSubcategoryDefaulted() const;
     bool setCPUEndUseSubcategory(const std::string& cPUEndUseSubcategory);

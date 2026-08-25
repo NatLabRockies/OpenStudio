@@ -6,7 +6,27 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
+#include "../HVACComponent/AirConditionerVariableRefrigerantFlowFluidTemperatureControl.hpp"
 #include "../HVACComponent/AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR.hpp"
+#include "../HVACComponent/AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR_Impl.hpp"
+#include "../Curve/CurveBicubic.hpp"
+#include "../Curve/CurveBiquadratic.hpp"
+#include "../Curve/CurveBiquadratic_Impl.hpp"
+#include "../Curve/CurveQuadratic.hpp"
+#include "../Curve/CurveQuadratic_Impl.hpp"
+#include "../ModelObject/ModelObject.hpp"
+#include "../Schedule/Schedule.hpp"
+#include "../ZoneHVACComponent/ZoneHVACTerminalUnitVariableRefrigerantFlow.hpp"
+#include "../ZoneHVACComponent/ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl.hpp"
+
+#include <utilities/idd/AirConditioner_VariableRefrigerantFlow_FluidTemperatureControl_HR_FieldEnums.hxx>
+#include <utilities/idd/IddEnums.hxx>
+#include <utilities/idd/ZoneTerminalUnitList_FieldEnums.hxx>
+#include <utilities/idf/WorkspaceExtensibleGroup.hpp>
+#include <utilities/idf/IdfObject_Impl.hpp>
+#include <utilities/idf/WorkspaceObject_Impl.hpp>
+
+#include <array>
 
 using namespace openstudio::epmodel;
 
@@ -15,6 +35,219 @@ TEST_F(EPModelFixture, AirConditionerVariableRefrigerantFlowFluidTemperatureCont
   AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR vrf(model);
   EXPECT_EQ(AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR::iddObjectType(), vrf.iddObject().type());
   EXPECT_FALSE(vrf.nameString().empty());
+  EXPECT_EQ(model.alwaysOnDiscreteSchedule(), vrf.availabilitySchedule());
+  EXPECT_TRUE(vrf.terminals().empty());
+  EXPECT_EQ("R410a", vrf.refrigerantType());
+  EXPECT_EQ((std::vector<std::string>{"R11", "R12", "R22", "R123", "R134a", "R404a", "R407a", "R410a", "NH3", "R507a", "R744"}),
+            AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR::refrigerantTypeValues());
+  EXPECT_EQ(1u, model.getObjectsByType(openstudio::IddObjectType::FluidProperties_Name).size());
+  EXPECT_EQ(1u, model.getObjectsByType(openstudio::IddObjectType::ZoneTerminalUnitList).size());
+  EXPECT_EQ(2u, model.getConcreteModelObjects<CurveQuadratic>().size());
+  EXPECT_EQ(6u, model.getConcreteModelObjects<CurveBiquadratic>().size());
+  EXPECT_TRUE(vrf.outdoorUnitEvaporatingTemperatureFunctionofSuperheatingCurve().optionalCast<CurveQuadratic>());
+  EXPECT_TRUE(vrf.outdoorUnitCondensingTemperatureFunctionofSubcoolingCurve().optionalCast<CurveQuadratic>());
+  EXPECT_EQ(
+    3, vrf.getInt(openstudio::AirConditioner_VariableRefrigerantFlow_FluidTemperatureControl_HRFields::NumberofCompressorLoadingIndexEntries).get());
+  ASSERT_EQ(3u, vrf.extensibleGroups().size());
+  const std::array<double, 3> expectedSpeeds = {1500.0, 3600.0, 6000.0};
+  for (size_t i = 0; i < expectedSpeeds.size(); ++i) {
+    auto group = vrf.extensibleGroups()[i].cast<openstudio::WorkspaceExtensibleGroup>();
+    EXPECT_DOUBLE_EQ(
+      expectedSpeeds[i],
+      group.getDouble(openstudio::AirConditioner_VariableRefrigerantFlow_FluidTemperatureControl_HRExtensibleFields::CompressorSpeedatLoadingIndex)
+        .get());
+    auto capacityCurve = group.getTarget(openstudio::AirConditioner_VariableRefrigerantFlow_FluidTemperatureControl_HRExtensibleFields::
+                                           LoadingIndexEvaporativeCapacityMultiplierFunctionofTemperatureCurveName);
+    auto powerCurve = group.getTarget(openstudio::AirConditioner_VariableRefrigerantFlow_FluidTemperatureControl_HRExtensibleFields::
+                                        LoadingIndexCompressorPowerMultiplierFunctionofTemperatureCurveName);
+    ASSERT_TRUE(capacityCurve);
+    ASSERT_TRUE(powerCurve);
+    EXPECT_TRUE(capacityCurve->optionalCast<CurveBiquadratic>());
+    EXPECT_TRUE(powerCurve->optionalCast<CurveBiquadratic>());
+  }
+}
+
+TEST_F(EPModelFixture, AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR_DefrostEIRModifierCurve) {
+  const auto idfPath = openstudio::tempDir() / openstudio::toPath("epmodel-fluid-vrf-hr-defrost-eir-curve.idf");
+  Model model;
+  Model foreignModel;
+  AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR vrf(model);
+  CurveBiquadratic initialCurve(model);
+  CurveBiquadratic replacementCurve(model);
+  CurveBicubic alternateAllowedCurve(model);
+  CurveQuadratic disallowedCurve(model);
+  CurveBiquadratic foreignCurve(foreignModel);
+  ASSERT_TRUE(vrf.setName("Fluid VRF HR Defrost EIR"));
+  ASSERT_TRUE(initialCurve.setName("Fluid VRF HR Initial Defrost EIR"));
+  ASSERT_TRUE(replacementCurve.setName("Fluid VRF HR Replacement Defrost EIR"));
+  ASSERT_TRUE(alternateAllowedCurve.setName("Fluid VRF HR Alternate Defrost EIR"));
+
+  constexpr unsigned field = openstudio::AirConditioner_VariableRefrigerantFlow_FluidTemperatureControl_HRFields::
+    DefrostEnergyInputRatioModifierFunctionofTemperatureCurveName;
+  EXPECT_FALSE(vrf.defrostEnergyInputRatioModifierFunctionofTemperatureCurve());
+  EXPECT_TRUE(vrf.setDefrostEnergyInputRatioModifierFunctionofTemperatureCurve(initialCurve));
+  ASSERT_TRUE(vrf.defrostEnergyInputRatioModifierFunctionofTemperatureCurve());
+  EXPECT_EQ(initialCurve, *vrf.defrostEnergyInputRatioModifierFunctionofTemperatureCurve());
+  EXPECT_TRUE(vrf.setDefrostEnergyInputRatioModifierFunctionofTemperatureCurve(alternateAllowedCurve));
+  ASSERT_TRUE(vrf.defrostEnergyInputRatioModifierFunctionofTemperatureCurve());
+  EXPECT_EQ(alternateAllowedCurve, *vrf.defrostEnergyInputRatioModifierFunctionofTemperatureCurve());
+  EXPECT_FALSE(vrf.setDefrostEnergyInputRatioModifierFunctionofTemperatureCurve(disallowedCurve));
+  EXPECT_FALSE(vrf.setDefrostEnergyInputRatioModifierFunctionofTemperatureCurve(foreignCurve));
+  ASSERT_TRUE(vrf.defrostEnergyInputRatioModifierFunctionofTemperatureCurve());
+  EXPECT_EQ(alternateAllowedCurve, *vrf.defrostEnergyInputRatioModifierFunctionofTemperatureCurve());
+
+  auto workspaceImpl = vrf.getImpl<openstudio::detail::WorkspaceObject_Impl>();
+  ASSERT_TRUE(workspaceImpl);
+  ASSERT_TRUE(workspaceImpl->setPointer(field, openstudio::Handle(), false));
+  ASSERT_TRUE(workspaceImpl->openstudio::detail::IdfObject_Impl::setString(field, "Unresolved Fluid VRF HR Defrost EIR", false));
+  EXPECT_FALSE(vrf.defrostEnergyInputRatioModifierFunctionofTemperatureCurve());
+  vrf.resetDefrostEnergyInputRatioModifierFunctionofTemperatureCurve();
+  EXPECT_FALSE(vrf.defrostEnergyInputRatioModifierFunctionofTemperatureCurve());
+  EXPECT_EQ("", workspaceImpl->openstudio::detail::IdfObject_Impl::getString(field, false, true).value_or(""));
+
+  ASSERT_TRUE(vrf.setDefrostEnergyInputRatioModifierFunctionofTemperatureCurve(initialCurve));
+  ASSERT_TRUE(model.save(idfPath, true));
+  auto loadedModel = Model::load(idfPath);
+  ASSERT_TRUE(loadedModel);
+  auto loadedVRF =
+    loadedModel->getConcreteModelObjectByName<AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR>("Fluid VRF HR Defrost EIR");
+  auto loadedInitialCurve = loadedModel->getConcreteModelObjectByName<CurveBiquadratic>("Fluid VRF HR Initial Defrost EIR");
+  auto loadedReplacementCurve = loadedModel->getConcreteModelObjectByName<CurveBiquadratic>("Fluid VRF HR Replacement Defrost EIR");
+  ASSERT_TRUE(loadedVRF);
+  ASSERT_TRUE(loadedInitialCurve);
+  ASSERT_TRUE(loadedReplacementCurve);
+  ASSERT_TRUE(loadedVRF->defrostEnergyInputRatioModifierFunctionofTemperatureCurve());
+  EXPECT_EQ(*loadedInitialCurve, *loadedVRF->defrostEnergyInputRatioModifierFunctionofTemperatureCurve());
+  ASSERT_TRUE(loadedVRF->setDefrostEnergyInputRatioModifierFunctionofTemperatureCurve(*loadedReplacementCurve));
+  ASSERT_TRUE(loadedModel->save(idfPath, true));
+
+  auto replacedModel = Model::load(idfPath);
+  ASSERT_TRUE(replacedModel);
+  auto replacedVRF =
+    replacedModel->getConcreteModelObjectByName<AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR>("Fluid VRF HR Defrost EIR");
+  auto replacedCurve = replacedModel->getConcreteModelObjectByName<CurveBiquadratic>("Fluid VRF HR Replacement Defrost EIR");
+  ASSERT_TRUE(replacedVRF);
+  ASSERT_TRUE(replacedCurve);
+  ASSERT_TRUE(replacedVRF->defrostEnergyInputRatioModifierFunctionofTemperatureCurve());
+  EXPECT_EQ(*replacedCurve, *replacedVRF->defrostEnergyInputRatioModifierFunctionofTemperatureCurve());
+  replacedVRF->resetDefrostEnergyInputRatioModifierFunctionofTemperatureCurve();
+  ASSERT_TRUE(replacedModel->save(idfPath, true));
+
+  auto resetModel = Model::load(idfPath);
+  ASSERT_TRUE(resetModel);
+  auto resetVRF =
+    resetModel->getConcreteModelObjectByName<AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR>("Fluid VRF HR Defrost EIR");
+  ASSERT_TRUE(resetVRF);
+  EXPECT_FALSE(resetVRF->defrostEnergyInputRatioModifierFunctionofTemperatureCurve());
+  openstudio::filesystem::remove(idfPath);
+}
+
+TEST_F(EPModelFixture, AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR_TerminalLifecycleSurvivesReload) {
+  const auto idfPath = openstudio::tempDir() / openstudio::toPath("epmodel-fluid-vrf-hr-terminal-lifecycle.idf");
+  Model model;
+  Model foreignModel;
+  AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR firstSystem(model);
+  AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR secondSystem(model);
+  AirConditionerVariableRefrigerantFlowFluidTemperatureControl nonHeatRecoverySystem(model);
+  ZoneHVACTerminalUnitVariableRefrigerantFlow terminal(model, true);
+  ZoneHVACTerminalUnitVariableRefrigerantFlow secondTerminal(model, true);
+  ZoneHVACTerminalUnitVariableRefrigerantFlow standardTerminal(model);
+  ZoneHVACTerminalUnitVariableRefrigerantFlow foreignTerminal(foreignModel, true);
+  ASSERT_TRUE(firstSystem.setName("First Heat Recovery FTC System"));
+  ASSERT_TRUE(secondSystem.setName("Second Heat Recovery FTC System"));
+  ASSERT_TRUE(terminal.setName("Heat Recovery FTC Terminal"));
+  ASSERT_TRUE(secondTerminal.setName("Second Heat Recovery FTC Terminal"));
+
+  EXPECT_FALSE(firstSystem.addTerminal(standardTerminal));
+  EXPECT_FALSE(firstSystem.addTerminal(foreignTerminal));
+  EXPECT_TRUE(firstSystem.addTerminal(terminal));
+  EXPECT_TRUE(firstSystem.addTerminal(terminal));
+  EXPECT_TRUE(firstSystem.addTerminal(secondTerminal));
+  ASSERT_EQ(2u, firstSystem.terminals().size());
+  EXPECT_EQ(terminal, firstSystem.terminals()[0]);
+  EXPECT_EQ(secondTerminal, firstSystem.terminals()[1]);
+  EXPECT_FALSE(secondSystem.addTerminal(terminal));
+  EXPECT_FALSE(nonHeatRecoverySystem.addTerminal(terminal));
+  ASSERT_TRUE(terminal.vrfSystem());
+  EXPECT_EQ(firstSystem, *terminal.vrfSystem());
+
+  auto list = firstSystem.getModelObjectTarget<ModelObject>(
+    openstudio::AirConditioner_VariableRefrigerantFlow_FluidTemperatureControl_HRFields::ZoneTerminalUnitListName);
+  ASSERT_TRUE(list);
+  ASSERT_EQ(2u, list->extensibleGroups().size());
+  auto group = list->extensibleGroups().front().optionalCast<openstudio::WorkspaceExtensibleGroup>();
+  ASSERT_TRUE(group);
+  auto target = group->getTarget(openstudio::ZoneTerminalUnitListExtensibleFields::ZoneTerminalUnitName);
+  ASSERT_TRUE(target);
+  EXPECT_EQ(terminal.handle(), target->handle());
+
+  ASSERT_TRUE(model.save(idfPath, true));
+  auto loadedModel = Model::load(idfPath);
+  ASSERT_TRUE(loadedModel);
+  auto loadedFirstSystem =
+    loadedModel->getConcreteModelObjectByName<AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR>("First Heat Recovery FTC System");
+  auto loadedSecondSystem =
+    loadedModel->getConcreteModelObjectByName<AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR>("Second Heat Recovery FTC System");
+  auto loadedTerminal = loadedModel->getConcreteModelObjectByName<ZoneHVACTerminalUnitVariableRefrigerantFlow>("Heat Recovery FTC Terminal");
+  auto loadedSecondTerminal =
+    loadedModel->getConcreteModelObjectByName<ZoneHVACTerminalUnitVariableRefrigerantFlow>("Second Heat Recovery FTC Terminal");
+  ASSERT_TRUE(loadedFirstSystem);
+  ASSERT_TRUE(loadedSecondSystem);
+  ASSERT_TRUE(loadedTerminal);
+  ASSERT_TRUE(loadedSecondTerminal);
+  ASSERT_EQ(2u, loadedFirstSystem->terminals().size());
+  EXPECT_EQ(*loadedTerminal, loadedFirstSystem->terminals()[0]);
+  EXPECT_EQ(*loadedSecondTerminal, loadedFirstSystem->terminals()[1]);
+  EXPECT_TRUE(loadedFirstSystem->outdoorUnitEvaporatingTemperatureFunctionofSuperheatingCurve().optionalCast<CurveQuadratic>());
+  EXPECT_TRUE(loadedFirstSystem->outdoorUnitCondensingTemperatureFunctionofSubcoolingCurve().optionalCast<CurveQuadratic>());
+  ASSERT_EQ(3u, loadedFirstSystem->extensibleGroups().size());
+  for (const auto& extensibleGroup : loadedFirstSystem->extensibleGroups()) {
+    auto group = extensibleGroup.cast<openstudio::WorkspaceExtensibleGroup>();
+    EXPECT_TRUE(group.getTarget(openstudio::AirConditioner_VariableRefrigerantFlow_FluidTemperatureControl_HRExtensibleFields::
+                                  LoadingIndexEvaporativeCapacityMultiplierFunctionofTemperatureCurveName));
+    EXPECT_TRUE(group.getTarget(openstudio::AirConditioner_VariableRefrigerantFlow_FluidTemperatureControl_HRExtensibleFields::
+                                  LoadingIndexCompressorPowerMultiplierFunctionofTemperatureCurveName));
+  }
+  ASSERT_TRUE(loadedTerminal->vrfSystem());
+  EXPECT_EQ(*loadedFirstSystem, *loadedTerminal->vrfSystem());
+
+  loadedFirstSystem->removeTerminal(*loadedTerminal);
+  ASSERT_EQ(1u, loadedFirstSystem->terminals().size());
+  EXPECT_EQ(*loadedSecondTerminal, loadedFirstSystem->terminals().front());
+  EXPECT_FALSE(loadedTerminal->vrfSystem());
+  ASSERT_TRUE(loadedSecondSystem->addTerminal(*loadedTerminal));
+  ASSERT_TRUE(loadedTerminal->vrfSystem());
+  EXPECT_EQ(*loadedSecondSystem, *loadedTerminal->vrfSystem());
+  EXPECT_FALSE(loadedTerminal->remove().empty());
+  EXPECT_TRUE(loadedSecondSystem->terminals().empty());
+  EXPECT_FALSE(loadedSecondTerminal->remove().empty());
+  EXPECT_TRUE(loadedFirstSystem->terminals().empty());
+
+  openstudio::filesystem::remove(idfPath);
+}
+
+TEST_F(EPModelFixture, AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR_RemovalKeepsTerminals) {
+  Model model;
+  AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR system(model);
+  ZoneHVACTerminalUnitVariableRefrigerantFlow terminal(model, true);
+  ASSERT_TRUE(system.addTerminal(terminal));
+  const auto list = system.getModelObjectTarget<ModelObject>(
+    openstudio::AirConditioner_VariableRefrigerantFlow_FluidTemperatureControl_HRFields::ZoneTerminalUnitListName);
+  ASSERT_TRUE(list);
+  const auto evaporatingCurve = system.outdoorUnitEvaporatingTemperatureFunctionofSuperheatingCurve();
+  const auto condensingCurve = system.outdoorUnitCondensingTemperatureFunctionofSubcoolingCurve();
+  EXPECT_EQ(4u, model.getConcreteModelObjects<CurveQuadratic>().size());  // two outdoor-unit curves and two terminal-coil curves
+  EXPECT_EQ(6u, model.getConcreteModelObjects<CurveBiquadratic>().size());
+
+  EXPECT_FALSE(system.remove().empty());
+  EXPECT_FALSE(model.getObject(system.handle()));
+  EXPECT_FALSE(model.getObject(list->handle()));
+  EXPECT_FALSE(model.getObject(evaporatingCurve.handle()));
+  EXPECT_FALSE(model.getObject(condensingCurve.handle()));
+  EXPECT_EQ(2u, model.getConcreteModelObjects<CurveQuadratic>().size());
+  EXPECT_TRUE(model.getConcreteModelObjects<CurveBiquadratic>().empty());
+  EXPECT_TRUE(model.getObject(terminal.handle()));
+  EXPECT_FALSE(terminal.vrfSystem());
 }
 
 TEST_F(EPModelFixture, AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR_ScalarAccessors_RoundTrip) {

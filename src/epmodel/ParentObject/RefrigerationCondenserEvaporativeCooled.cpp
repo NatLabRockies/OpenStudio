@@ -7,6 +7,9 @@
 #include "ParentObject/RefrigerationCondenserEvaporativeCooled_Impl.hpp"
 
 #include "Model.hpp"
+#include "ModelObject.hpp"
+#include "Schedule/Schedule.hpp"
+#include "Schedule/Schedule_Impl.hpp"
 
 #include <boost/optional.hpp>
 #include <utilities/core/Assert.hpp>
@@ -14,6 +17,7 @@
 #include <utilities/idd/IddFactory.hxx>
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/Refrigeration_Condenser_EvaporativeCooled_FieldEnums.hxx>
+#include <utilities/idf/IdfObject_Impl.hpp>
 
 #include <utility>
 
@@ -301,6 +305,22 @@ namespace epmodel {
     void RefrigerationCondenserEvaporativeCooled_Impl::autocalculateRatedWaterPumpPower() {
       const bool result = setString(Refrigeration_Condenser_EvaporativeCooledFields::RatedWaterPumpPower, "autocalculate");
       OS_ASSERT(result);
+    }
+
+    boost::optional<Schedule> RefrigerationCondenserEvaporativeCooled_Impl::evaporativeCondenserAvailabilitySchedule() const {
+      return getObject<ModelObject>().getModelObjectTarget<Schedule>(
+        Refrigeration_Condenser_EvaporativeCooledFields::EvaporativeCondenserAvailabilityScheduleName);
+    }
+
+    bool RefrigerationCondenserEvaporativeCooled_Impl::setEvaporativeCondenserAvailabilitySchedule(Schedule& schedule) {
+      return ModelObject_Impl::setSchedule(Refrigeration_Condenser_EvaporativeCooledFields::EvaporativeCondenserAvailabilityScheduleName,
+                                           "RefrigerationCondenserEvaporativeCooled", "Evaporative Condenser Availability", schedule);
+    }
+
+    void RefrigerationCondenserEvaporativeCooled_Impl::resetEvaporativeCondenserAvailabilitySchedule() {
+      constexpr auto field = Refrigeration_Condenser_EvaporativeCooledFields::EvaporativeCondenserAvailabilityScheduleName;
+      OS_ASSERT(setPointer(field, Handle(), false));
+      OS_ASSERT(openstudio::detail::IdfObject_Impl::setString(field, "", false));
     }
 
     std::string RefrigerationCondenserEvaporativeCooled_Impl::endUseSubcategory() const {
@@ -636,6 +656,18 @@ namespace epmodel {
 
   void RefrigerationCondenserEvaporativeCooled::autocalculateRatedWaterPumpPower() {
     getImpl<detail::RefrigerationCondenserEvaporativeCooled_Impl>()->autocalculateRatedWaterPumpPower();
+  }
+
+  boost::optional<Schedule> RefrigerationCondenserEvaporativeCooled::evaporativeCondenserAvailabilitySchedule() const {
+    return getImpl<detail::RefrigerationCondenserEvaporativeCooled_Impl>()->evaporativeCondenserAvailabilitySchedule();
+  }
+
+  bool RefrigerationCondenserEvaporativeCooled::setEvaporativeCondenserAvailabilitySchedule(Schedule& schedule) {
+    return getImpl<detail::RefrigerationCondenserEvaporativeCooled_Impl>()->setEvaporativeCondenserAvailabilitySchedule(schedule);
+  }
+
+  void RefrigerationCondenserEvaporativeCooled::resetEvaporativeCondenserAvailabilitySchedule() {
+    getImpl<detail::RefrigerationCondenserEvaporativeCooled_Impl>()->resetEvaporativeCondenserAvailabilitySchedule();
   }
 
   std::string RefrigerationCondenserEvaporativeCooled::endUseSubcategory() const {

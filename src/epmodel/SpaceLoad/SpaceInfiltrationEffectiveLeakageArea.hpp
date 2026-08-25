@@ -20,6 +20,17 @@ namespace epmodel {
     class SpaceInfiltrationEffectiveLeakageArea_Impl;
   }
 
+  /** \brief Represents the EnergyPlus ZoneInfiltration:EffectiveLeakageArea object.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-airflow.html#zoneinfiltrationeffectiveleakagearea,ZoneInfiltration:EffectiveLeakageArea}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::SpaceInfiltrationEffectiveLeakageArea</code>. <b>Not yet available:</b> the Model <code>schedule()</code>, <code>setSchedule()</code>, and <code>resetSchedule()</code> methods and space/zone relationship APIs. EPModel exposes effective leakage and coefficient scalars.
+   *
+   * \par Known limitations
+   * Only the EnergyPlus scalar fields are directly managed by this wrapper.
+   */
   class EPMODEL_API SpaceInfiltrationEffectiveLeakageArea : public ModelObject
   {
    public:
@@ -33,13 +44,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model scalar accessor names for the SpaceInfiltrationEffectiveLeakageArea counterpart.
-    // - Field Mapping: effectiveAirLeakageArea, stackCoefficient, and windCoefficient map directly to
-    //   ZoneInfiltration:EffectiveLeakageArea.
-    // - Field Mapping: Schedule/Zone/Space object relationships are intentionally excluded from this scalar-only API.
-    // - ForwardTranslator evidence: translateSpaceInfiltrationEffectiveLeakageArea writes these scalar values directly onto
-    //   ZoneInfiltration:EffectiveLeakageArea.
     double effectiveAirLeakageArea() const;
     bool setEffectiveAirLeakageArea(double effectiveAirLeakageArea);
 

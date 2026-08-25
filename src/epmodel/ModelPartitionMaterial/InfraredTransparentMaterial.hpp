@@ -7,7 +7,7 @@
 #define EPMODEL_INFRAREDTRANSPARENTMATERIAL_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "Material/Material.hpp"
 
 #include <utilities/idd/IddEnums.hxx>
 
@@ -22,7 +22,22 @@ namespace epmodel {
     class InfraredTransparentMaterial_Impl;
   }
 
-  class EPMODEL_API InfraredTransparentMaterial : public ModelObject
+  /** \brief Represents a material transparent to infrared radiation.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-surface-construction-elements.html#materialinfraredtransparent,Material:InfraredTransparent}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::InfraredTransparentMaterial</code>. The public
+   * object surface is limited to inherited name/material behavior in both
+   * APIs.
+   *
+   * \par Known limitations
+   * The EnergyPlus object has no additional scalar fields exposed by this
+   * wrapper.
+   */
+  class EPMODEL_API InfraredTransparentMaterial : public Material
   {
    public:
     explicit InfraredTransparentMaterial(const Model& model);
@@ -34,12 +49,6 @@ namespace epmodel {
     InfraredTransparentMaterial& operator=(InfraredTransparentMaterial&&) = default;
 
     static IddObjectType iddObjectType();
-
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model::InfraredTransparentMaterial class/API naming.
-    // - Field Mapping: This object has no dedicated scalar fields in current E+ schema; base ModelObject name APIs apply.
-    // - ForwardTranslator evidence: ForwardTranslateInfraredTransparentMaterial.cpp writes only Name.
-    // - TODO(parity): Introduce an epmodel ModelPartitionMaterial base hierarchy and migrate inheritance when that parity work lands.
 
    protected:
     using ImplType = detail::InfraredTransparentMaterial_Impl;

@@ -7,7 +7,7 @@
 #define EPMODEL_AVAILABILITYMANAGERLOWTEMPERATURETURNON_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "AvailabilityManager.hpp"
 
 #include <memory>
 
@@ -15,12 +15,31 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class Node;
 
   namespace detail {
     class AvailabilityManagerLowTemperatureTurnOn_Impl;
   }
 
-  class EPMODEL_API AvailabilityManagerLowTemperatureTurnOn : public ModelObject
+  /** \brief Turns availability on when a sensor temperature falls below a limit.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-system-availability-managers.html#availabilitymanagerlowtemperatureturnon,AvailabilityManager:LowTemperatureTurnOn}
+   *
+   * \par Important behavior
+   * A newly constructed manager initializes its temperature limit to 30.0.
+   * Its sensor node is a live relationship and can be reset without removing
+   * the availability manager from its assigned loop.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::AvailabilityManagerLowTemperatureTurnOn</code>.
+   * No known public API differences.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
+  class EPMODEL_API AvailabilityManagerLowTemperatureTurnOn : public AvailabilityManager
   {
    public:
     explicit AvailabilityManagerLowTemperatureTurnOn(const Model& model);
@@ -33,10 +52,10 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model scalar accessor name/signature for this model-counterpart class.
-    // - Field Mapping: temperature maps to E+ AvailabilityManager:LowTemperatureTurnOn Temperature.
-    // - TODO(parity): Keep relationship field sensorNode out of this scalar-only scaffold pass.
+    boost::optional<Node> sensorNode() const;
+    bool setSensorNode(const Node& node);
+    void resetSensorNode();
+
     /** @name Temperature field */
     //@{
     double temperature() const;

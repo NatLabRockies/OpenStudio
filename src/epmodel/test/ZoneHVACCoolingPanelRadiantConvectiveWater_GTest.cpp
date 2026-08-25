@@ -19,6 +19,7 @@
 #include <utilities/idd/BuildingSurface_Detailed_FieldEnums.hxx>
 #include <utilities/idd/ZoneHVAC_CoolingPanel_RadiantConvective_Water_FieldEnums.hxx>
 #include <utilities/idf/WorkspaceExtensibleGroup.hpp>
+#include <utilities/geometry/Point3d.hpp>
 
 using namespace openstudio;
 using namespace openstudio::epmodel;
@@ -112,95 +113,23 @@ TEST_F(EPModelFixture, ZoneHVACCoolingPanelRadiantConvectiveWater_ZoneAttachment
   // the parent/space/surface relationships directly at the field level for
   // now. Once richer surface wrappers mature, this should move up to those
   // higher-level APIs.
-  Surface floor(model);
+  std::vector<Point3d> floor_vertices{{0.0, 0.0, 0.0}, {2.0, 0.0, 0.0}, {2.0, 2.0, 0.0}, {0.0, 2.0, 0.0}};
+  Surface floor(floor_vertices, model);
   floor.setPointer(openstudio::BuildingSurface_DetailedFields::SpaceName, space.handle());
   floor.setString(openstudio::BuildingSurface_DetailedFields::SurfaceType, "Floor");
   floor.setName("Cooling Panel Floor");
-  floor.clearExtensibleGroups();
-  {
-    auto g = floor.pushExtensibleGroup();
-    g.setDouble(openstudio::BuildingSurface_DetailedExtensibleFields::VertexXcoordinate, 0.0);
-    g.setDouble(openstudio::BuildingSurface_DetailedExtensibleFields::VertexYcoordinate, 0.0);
-    g.setDouble(openstudio::BuildingSurface_DetailedExtensibleFields::VertexZcoordinate, 0.0);
-  }
-  {
-    auto g = floor.pushExtensibleGroup();
-    g.setDouble(openstudio::BuildingSurface_DetailedExtensibleFields::VertexXcoordinate, 2.0);
-    g.setDouble(openstudio::BuildingSurface_DetailedExtensibleFields::VertexYcoordinate, 0.0);
-    g.setDouble(openstudio::BuildingSurface_DetailedExtensibleFields::VertexZcoordinate, 0.0);
-  }
-  {
-    auto g = floor.pushExtensibleGroup();
-    g.setDouble(openstudio::BuildingSurface_DetailedExtensibleFields::VertexXcoordinate, 2.0);
-    g.setDouble(openstudio::BuildingSurface_DetailedExtensibleFields::VertexYcoordinate, 2.0);
-    g.setDouble(openstudio::BuildingSurface_DetailedExtensibleFields::VertexZcoordinate, 0.0);
-  }
-  {
-    auto g = floor.pushExtensibleGroup();
-    g.setDouble(openstudio::BuildingSurface_DetailedExtensibleFields::VertexXcoordinate, 0.0);
-    g.setDouble(openstudio::BuildingSurface_DetailedExtensibleFields::VertexYcoordinate, 2.0);
-    g.setDouble(openstudio::BuildingSurface_DetailedExtensibleFields::VertexZcoordinate, 0.0);
-  }
 
-  Surface wall(model);
+  std::vector<Point3d> wall_vertices{{0.0, 0.0, 0.0}, {2.0, 0.0, 0.0}, {2.0, 0.0, 2.0}, {0.0, 0.0, 2.0}};
+  Surface wall(wall_vertices, model);
   wall.setPointer(openstudio::BuildingSurface_DetailedFields::SpaceName, space.handle());
   wall.setString(openstudio::BuildingSurface_DetailedFields::SurfaceType, "Wall");
   wall.setName("Cooling Panel Wall");
-  wall.clearExtensibleGroups();
-  {
-    auto g = wall.pushExtensibleGroup();
-    g.setDouble(openstudio::BuildingSurface_DetailedExtensibleFields::VertexXcoordinate, 0.0);
-    g.setDouble(openstudio::BuildingSurface_DetailedExtensibleFields::VertexYcoordinate, 0.0);
-    g.setDouble(openstudio::BuildingSurface_DetailedExtensibleFields::VertexZcoordinate, 0.0);
-  }
-  {
-    auto g = wall.pushExtensibleGroup();
-    g.setDouble(openstudio::BuildingSurface_DetailedExtensibleFields::VertexXcoordinate, 2.0);
-    g.setDouble(openstudio::BuildingSurface_DetailedExtensibleFields::VertexYcoordinate, 0.0);
-    g.setDouble(openstudio::BuildingSurface_DetailedExtensibleFields::VertexZcoordinate, 0.0);
-  }
-  {
-    auto g = wall.pushExtensibleGroup();
-    g.setDouble(openstudio::BuildingSurface_DetailedExtensibleFields::VertexXcoordinate, 2.0);
-    g.setDouble(openstudio::BuildingSurface_DetailedExtensibleFields::VertexYcoordinate, 0.0);
-    g.setDouble(openstudio::BuildingSurface_DetailedExtensibleFields::VertexZcoordinate, 2.0);
-  }
-  {
-    auto g = wall.pushExtensibleGroup();
-    g.setDouble(openstudio::BuildingSurface_DetailedExtensibleFields::VertexXcoordinate, 0.0);
-    g.setDouble(openstudio::BuildingSurface_DetailedExtensibleFields::VertexYcoordinate, 0.0);
-    g.setDouble(openstudio::BuildingSurface_DetailedExtensibleFields::VertexZcoordinate, 2.0);
-  }
 
-  Surface ceiling(model);
+  std::vector<Point3d> ceiling_vertices{{0.0, 0.0, 2.0}, {2.0, 0.0, 2.0}, {2.0, 2.0, 2.0}, {0.0, 2.0, 2.0}};
+  Surface ceiling(ceiling_vertices, model);
   ceiling.setPointer(openstudio::BuildingSurface_DetailedFields::SpaceName, space.handle());
   ceiling.setString(openstudio::BuildingSurface_DetailedFields::SurfaceType, "Ceiling");
   ceiling.setName("Cooling Panel Ceiling");
-  ceiling.clearExtensibleGroups();
-  {
-    auto g = ceiling.pushExtensibleGroup();
-    g.setDouble(openstudio::BuildingSurface_DetailedExtensibleFields::VertexXcoordinate, 0.0);
-    g.setDouble(openstudio::BuildingSurface_DetailedExtensibleFields::VertexYcoordinate, 0.0);
-    g.setDouble(openstudio::BuildingSurface_DetailedExtensibleFields::VertexZcoordinate, 2.0);
-  }
-  {
-    auto g = ceiling.pushExtensibleGroup();
-    g.setDouble(openstudio::BuildingSurface_DetailedExtensibleFields::VertexXcoordinate, 2.0);
-    g.setDouble(openstudio::BuildingSurface_DetailedExtensibleFields::VertexYcoordinate, 0.0);
-    g.setDouble(openstudio::BuildingSurface_DetailedExtensibleFields::VertexZcoordinate, 2.0);
-  }
-  {
-    auto g = ceiling.pushExtensibleGroup();
-    g.setDouble(openstudio::BuildingSurface_DetailedExtensibleFields::VertexXcoordinate, 2.0);
-    g.setDouble(openstudio::BuildingSurface_DetailedExtensibleFields::VertexYcoordinate, 2.0);
-    g.setDouble(openstudio::BuildingSurface_DetailedExtensibleFields::VertexZcoordinate, 2.0);
-  }
-  {
-    auto g = ceiling.pushExtensibleGroup();
-    g.setDouble(openstudio::BuildingSurface_DetailedExtensibleFields::VertexXcoordinate, 0.0);
-    g.setDouble(openstudio::BuildingSurface_DetailedExtensibleFields::VertexYcoordinate, 2.0);
-    g.setDouble(openstudio::BuildingSurface_DetailedExtensibleFields::VertexZcoordinate, 2.0);
-  }
 
   ZoneHVACCoolingPanelRadiantConvectiveWater panel(model);
   ASSERT_TRUE(panel.setFractionofRadiantEnergyIncidentonPeople(0.25));

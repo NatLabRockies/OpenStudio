@@ -20,6 +20,7 @@
 #include "../utilities/bcl/BCLMeasure.hpp"
 #include "../utilities/core/Assert.hpp"
 #include "../utilities/core/Filesystem.hpp"
+#include "../utilities/core/PathHelpers.hpp"
 #include "../utilities/core/FileLogSink.hpp"
 #include "../utilities/core/Json.hpp"
 #include "../utilities/core/Logger.hpp"
@@ -54,6 +55,28 @@ struct fmt::formatter<openstudio::path> : fmt::ostream_formatter
 
 namespace openstudio {
 
+namespace {
+
+openstudio::path normalizedAbsolutePath(const openstudio::path& path, const openstudio::path& base = boost::filesystem::current_path()) {
+  if (path.empty()) {
+    return boost::filesystem::weakly_canonical(base).remove_trailing_separator();
+  }
+  const auto absolutePath = path.is_absolute() ? path : boost::filesystem::absolute(path, base);
+  return boost::filesystem::weakly_canonical(absolutePath).remove_trailing_separator();
+}
+
+openstudio::path resolveContainedOutputPath(const openstudio::path& outputDirectory, const openstudio::path& configuredPath,
+                                           const std::string& settingName) {
+  const auto result = normalizedAbsolutePath(configuredPath, outputDirectory);
+  if (!pathBeginsWith(outputDirectory, result)) {
+    throw std::runtime_error(fmt::format("OSW {} '{}' resolves to '{}', which is outside --output-directory '{}'.", settingName,
+                                         configuredPath.generic_string(), result.generic_string(), outputDirectory.generic_string()));
+  }
+  return result;
+}
+
+}  // namespace
+
 OSWorkflow::OSWorkflow(const filesystem::path& oswPath, ScriptEngineInstance& ruby, ScriptEngineInstance& python)
   :
 #if USE_RUBY_ENGINE
@@ -84,6 +107,10 @@ OSWorkflow::OSWorkflow(const WorkflowRunOptions& t_workflowRunOptions, ScriptEng
 
   runner.setRegisterMsgAlsoLogs(true);
 
+  if (!t_workflowRunOptions.output_directory.empty()) {
+    setOutputDirectory(t_workflowRunOptions.output_directory);
+  }
+
   if (m_add_timings) {
     m_timers = std::make_unique<workflow::util::TimerCollection>();
   }
@@ -106,6 +133,58 @@ OSWorkflow::OSWorkflow(const WorkflowRunOptions& t_workflowRunOptions, ScriptEng
 }
 
 OSWorkflow::~OSWorkflow() = default;
+
+void OSWorkflow::setOutputDirectory(const openstudio::path& outputDirectory) {
+  const auto resolvedOutputDirectory = normalizedAbsolutePath(outputDirectory);
+  if (openstudio::filesystem::exists(resolvedOutputDirectory) && !openstudio::filesystem::is_directory(resolvedOutputDirectory)) {
+    throw std::runtime_error(
+      fmt::format("--output-directory '{}' is not a directory.", resolvedOutputDirectory.generic_string()));
+  }
+
+  const auto resolvedRunDirectory = resolveContainedOutputPath(resolvedOutputDirectory, workflowJSON.runDir(), "run_directory");
+  const auto resolvedOutputWorkflowPath = resolveContainedOutputPath(resolvedOutputDirectory, workflowJSON.outPath(), "out_name");
+
+  if (resolvedRunDirectory == resolvedOutputDirectory) {
+    throw std::runtime_error(fmt::format("OSW run_directory '{}' resolves to --output-directory itself. Choose a child directory instead.",
+                                         workflowJSON.runDir().generic_string()));
+  }
+
+  for (const auto& reservedDirectory : {resolvedOutputDirectory / "generated_files", resolvedOutputDirectory / "reports"}) {
+    if (pathBeginsWith(reservedDirectory, resolvedRunDirectory)) {
+      throw std::runtime_error(fmt::format("OSW run_directory '{}' conflicts with workflow output directory '{}'.",
+                                           workflowJSON.runDir().generic_string(), reservedDirectory.generic_string()));
+    }
+  }
+
+  if ((resolvedOutputWorkflowPath == resolvedOutputDirectory) || (resolvedOutputWorkflowPath == resolvedRunDirectory)
+      || (resolvedOutputWorkflowPath == resolvedOutputDirectory / "generated_files")
+      || (resolvedOutputWorkflowPath == resolvedOutputDirectory / "reports")) {
+    throw std::runtime_error(fmt::format("OSW out_name '{}' resolves to a directory used by the workflow.",
+                                         workflowJSON.outPath().generic_string()));
+  }
+
+  m_inputRootDirectory = workflowJSON.absoluteRootDir();
+  m_outputDirectory = resolvedOutputDirectory;
+  m_outputWorkflowPath = resolvedOutputWorkflowPath;
+
+  // Keep the OSW root and directory anchored to the input workflow. Only the
+  // effective run directory moves for this invocation.
+  workflowJSON.setRunDir(resolvedRunDirectory);
+}
+
+openstudio::path OSWorkflow::absoluteOutputDirectory() const {
+  if (m_outputDirectory) {
+    return *m_outputDirectory;
+  }
+  return workflowJSON.absoluteRootDir();
+}
+
+openstudio::path OSWorkflow::absoluteOutputWorkflowPath() const {
+  if (m_outputWorkflowPath) {
+    return *m_outputWorkflowPath;
+  }
+  return workflowJSON.absoluteOutPath();
+}
 
 void OSWorkflow::initializeWeatherFileFromOSW() {
   LOG(Debug, "Initialize the weather file from osw");
@@ -226,13 +305,13 @@ void OSWorkflow::applyArguments(measure::OSArgumentMap& argumentMap, const std::
   }
 }
 
-void OSWorkflow::saveOSMToRootDirIfDebug() {
+void OSWorkflow::saveOSMToOutputDirIfDebug() {
   if (!workflowJSON.runOptions() || !workflowJSON.runOptions()->debug()) {
     return;
   }
 
-  LOG(Info, "Saving OSM to Root Directory");
-  auto savePath = workflowJSON.absoluteRootDir() / "in.osm";
+  LOG(Info, "Saving OSM to Output Directory");
+  auto savePath = absoluteOutputDirectory() / "in.osm";
   detailedTimeBlock("Saving OSM", [this, &savePath]() {
     // TODO: workflow gem was actually serializating via model.to_s for speed...
     model.save(savePath, true);
@@ -240,13 +319,13 @@ void OSWorkflow::saveOSMToRootDirIfDebug() {
   LOG(Info, "Saved OSM as " << savePath);
 }
 
-void OSWorkflow::saveIDFToRootDirIfDebug() {
+void OSWorkflow::saveIDFToOutputDirIfDebug() {
   if (!workflowJSON.runOptions() || !workflowJSON.runOptions()->debug()) {
     return;
   }
-  LOG(Info, "Saving IDF to Root Directory");
-  auto savePath = workflowJSON.absoluteRootDir() / "in.idf";
-  detailedTimeBlock("Saving IDF To Root Directory (debug)", [this, &savePath]() {
+  LOG(Info, "Saving IDF to Output Directory");
+  auto savePath = absoluteOutputDirectory() / "in.idf";
+  detailedTimeBlock("Saving IDF To Output Directory (debug)", [this, &savePath]() {
     // TODO: workflow gem was actually serializating via model.to_s for speed...
     workspace_->save(savePath, true);
   });
@@ -520,7 +599,13 @@ bool OSWorkflow::run() {
     if (m_add_timings) {
       m_timers->newTimer("Save WorkflowJSON out.osw");
     }
-    workflowJSON.saveAs(workflowJSON.absoluteOutPath());
+    if (m_inputRootDirectory) {
+      // The result OSW is being written away from its input OSW. Preserve the
+      // original input root so its relative seed, weather, and measure paths
+      // continue to resolve when the result is inspected or rerun.
+      workflowJSON.setRootDir(*m_inputRootDirectory);
+    }
+    workflowJSON.saveAs(absoluteOutputWorkflowPath());
     if (workflowJSON.runOptions()->debug()) {
       fmt::print("workflowJSON={}\n", workflowJSON.string());
     }

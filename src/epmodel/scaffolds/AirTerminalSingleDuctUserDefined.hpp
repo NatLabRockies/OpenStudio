@@ -47,7 +47,9 @@ namespace epmodel {
     //   conditional transient inlet-node cleanup, and ADU outlet/terminal cleanup for the supported zone-branch
     //   insertion paths, with best-effort rollback of observed intermediate `addToNode` mutations on the tested
     //   failure path.
-    // - Documented Delta: Public parity here stays intentionally narrow. Secondary-air nodes, plant-connection
+    // - Documented Delta: Public parity here stays intentionally narrow. It is explicitly unsupported as an implicit
+    //   AirLoopHVAC clone-last source because no canonical model wrapper defines ownership and reconnection semantics
+    //   for its optional plant, program, tank, and secondary-air relationships. Secondary-air nodes, plant-connection
     //   node relationships, program-calling-manager relationships, tank relationships, and ambient-zone
     //   convenience are not exposed yet beyond the stored scalar count.
     // - Field Mapping: `numberofPlantLoopConnections` maps directly to E+ AirTerminal:SingleDuct:UserDefined

@@ -20,11 +20,27 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class Schedule;
 
   namespace detail {
     class RefrigerationCondenserEvaporativeCooled_Impl;
   }
 
+/** \brief Defines an evaporatively cooled refrigeration condenser.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-refrigeration.html#refrigerationcondenserevaporativecooled,Refrigeration:Condenser:EvaporativeCooled}
+ *
+ * \par Important behavior
+ * Heat-rejection, subcooling, fan, approach-temperature, capacity-factor, airflow, pump, water, refrigerant-inventory, and end-use fields are stored directly.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model class is <code>openstudio::model::RefrigerationCondenserEvaporativeCooled</code>.
+ * <b>Not yet available:</b> Refrigeration-system attachment and removal methods are not exposed.
+ *
+ * \par Known limitations
+ * System membership and associated compressor relationships are managed by the referencing refrigeration system.
+ */
   class EPMODEL_API RefrigerationCondenserEvaporativeCooled : public ParentObject
   {
    public:
@@ -40,12 +56,6 @@ namespace epmodel {
 
     static std::vector<std::string> fanSpeedControlTypeValues();
 
-    // Schema Alignment Notes:
-    // - API: preserves the openstudio::model RefrigerationCondenserEvaporativeCooled scalar accessors and maps them
-    //   to the EnergyPlus Refrigeration:Condenser:EvaporativeCooled fields listed below.
-    // - Field Mapping: ForwardTranslateRefrigerationCondenserEvaporativeCooled.cpp writes these scalars via
-    //   Refrigeration_Condenser_EvaporativeCooledFields enums while omitting the relationship-like air inlet node,
-    //   schedule, and tank references that remain outside the scalar-only scaffold.
 
     /** @name Field accessors */
     //@{
@@ -123,6 +133,10 @@ namespace epmodel {
     bool setRatedWaterPumpPower(double ratedWaterPumpPower);
     void resetRatedWaterPumpPower();
     void autocalculateRatedWaterPumpPower();
+
+    boost::optional<Schedule> evaporativeCondenserAvailabilitySchedule() const;
+    bool setEvaporativeCondenserAvailabilitySchedule(Schedule& schedule);
+    void resetEvaporativeCondenserAvailabilitySchedule();
 
     std::string endUseSubcategory() const;
     bool isEndUseSubcategoryDefaulted() const;

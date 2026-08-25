@@ -24,6 +24,19 @@ namespace epmodel {
     class CoilCoolingDX_Impl;
   }
 
+  /** \brief Represents a single-speed direct-expansion cooling coil.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-coil-cooling-dx.html#coilcoolingdx,Coil:Cooling:DX}.
+   *
+   * \par Important behavior
+   * Condenser node fields and the persisted DX adapter are maintained when the coil is inserted into or moved within a supply branch.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::CoilCoolingDX</code>. <b>Added:</b> EPModel exposes <code>addToNode()</code> and explicit condenser inlet/outlet node methods. <b>Not yet available:</b> AirflowNetwork equivalent-duct, condensate/evaporative tank-link, and dedicated-outdoor-air insertion helpers.
+   * \par Known limitations
+   * Broader outdoor-air and AirflowNetwork topologies are not exposed.
+   */
   class EPMODEL_API CoilCoolingDX : public StraightComponent
   {
    public:
@@ -40,21 +53,6 @@ namespace epmodel {
 
     bool addToNode(Node& node);
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. The canonical schedule/performance/condenser-zone surface plus the current epmodel supply-side air-loop
-    //   insertion path are now exposed, while the existing condenser-node scalar shim remains and the broader AFN/tank-link and DOAS
-    //   insertion surfaces are still intentionally deferred.
-    // - Canonical Counterpart: openstudio::model::CoilCoolingDX.
-    // - Implemented Parity: `availabilitySchedule`, `setAvailabilitySchedule`, `performanceObject`, `setPerformanceObject`, `condenserZone`,
-    //   `setCondenserZone`, `resetCondenserZone`, `addToNode` for the current supply-side air-loop path, the inherited straight-component ports,
-    //   and the existing condenser inlet/outlet node-name scalar accessors preserve the bounded canonical contract.
-    // - Documented Delta: AirflowNetworkEquivalentDuct, condensate/evaporative tank-link parity, and the canonical dedicated-outdoor-air
-    //   insertion path remain explicitly deferred for this slice.
-    // - Field/Storage Mapping: The preserved API maps directly to EnergyPlus `Coil:Cooling:DX` schedule, performance-object, condenser-zone,
-    //   condenser node-name fields, plus the inherited inlet/outlet node wiring used for the current air-loop insertion path.
-    // - Evidence: `src/model/CoilCoolingDX.hpp` and `src/energyplus/ForwardTranslator/ForwardTranslateCoilCoolingDX.cpp`.
-    // - Remaining Parity Work: Add the deferred AFN, tank-link, and dedicated-outdoor-air insertion helpers when the relationship surface is
-    //   expanded further.
     Schedule availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);
 

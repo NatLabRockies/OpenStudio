@@ -22,6 +22,17 @@ namespace epmodel {
     class OutputDiagnostics_Impl;
   }
 
+  /** \brief OutputDiagnostics.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-simulation-parameters.html#outputdiagnostics,Output:Diagnostics}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::OutputDiagnostics</code>. This object contains extensible diagnostic keys. EPModel currently exposes no public key-list mutation or query methods.
+   *
+   * \par Known limitations
+   * Only the fields and relationships listed in this wrapper are available; broader Model-only helpers are not exposed.
+   */
   class EPMODEL_API OutputDiagnostics : public ModelObject
   {
    public:
@@ -34,12 +45,6 @@ namespace epmodel {
     OutputDiagnostics& operator=(OutputDiagnostics&&) = default;
 
     static IddObjectType iddObjectType();
-
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model::OutputDiagnostics class naming for counterpart parity.
-    // - Field Mapping: Output:Diagnostics has extensible Key entries only; scalar field APIs are intentionally not added in this scalar-only scaffold pass.
-    // - ForwardTranslator evidence: ForwardTranslateOutputDiagnostics.cpp emits one extensible Key per model key and skips translation when no keys exist.
-    // - TODO(parity): Add non-scalar key list APIs (keys/addKey/setKeys/clearKeys) in a later parity pass without breaking this class identity.
 
    protected:
     explicit OutputDiagnostics(const Model& model);

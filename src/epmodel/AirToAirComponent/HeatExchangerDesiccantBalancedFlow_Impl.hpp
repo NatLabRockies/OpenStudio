@@ -11,6 +11,9 @@
 namespace openstudio {
 namespace epmodel {
 
+  class Schedule;
+  class HeatExchangerDesiccantBalancedFlowPerformanceDataType1;
+
   namespace detail {
 
     class EPMODEL_API HeatExchangerDesiccantBalancedFlow_Impl : public AirToAirComponent_Impl
@@ -20,6 +23,15 @@ namespace epmodel {
       HeatExchangerDesiccantBalancedFlow_Impl(const openstudio::detail::WorkspaceObject_Impl& other, Model_Impl* model, bool keepHandle);
       HeatExchangerDesiccantBalancedFlow_Impl(const HeatExchangerDesiccantBalancedFlow_Impl& other, Model_Impl* model, bool keepHandle);
       virtual ~HeatExchangerDesiccantBalancedFlow_Impl() override = default;
+
+      std::vector<ModelObject> children() const override;
+      std::vector<IdfObject> remove() override;
+
+      Schedule availabilitySchedule() const;
+      bool setAvailabilitySchedule(Schedule& schedule);
+
+      HeatExchangerDesiccantBalancedFlowPerformanceDataType1 heatExchangerPerformance() const;
+      bool setHeatExchangerPerformance(const HeatExchangerDesiccantBalancedFlowPerformanceDataType1& heatExchangerPerformance);
 
       /** @name Economizer Lockout */
       //@{
@@ -32,6 +44,9 @@ namespace epmodel {
       unsigned primaryAirOutletPort() const override;
       unsigned secondaryAirInletPort() const override;
       unsigned secondaryAirOutletPort() const override;
+
+     protected:
+      void doCanonicalize(LoadContext& context) override;
     };
 
   }  // namespace detail

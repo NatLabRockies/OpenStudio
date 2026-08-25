@@ -5,13 +5,17 @@
 
 #include "StraightComponent/AirTerminalSingleDuctConstantVolumeCooledBeam.hpp"
 #include "StraightComponent/AirTerminalSingleDuctConstantVolumeCooledBeam_Impl.hpp"
+#include "StraightComponent/CoilCoolingCooledBeam.hpp"
+#include "StraightComponent/CoilCoolingCooledBeam_Impl.hpp"
+#include "StraightComponent/CompoundTerminalTopologyInspection.hpp"
+#include "Loop/AirLoopHVAC_Impl.hpp"
 
 #include "HVACComponent/ThermalZone.hpp"
 #include "HVACComponent.hpp"
 #include "HVACComponent/ThermalZone_Impl.hpp"
 #include "Loop/AirLoopHVAC.hpp"
-#include "Loop/AirLoopHVAC_Impl.hpp"
 #include "Loop/PlantLoop.hpp"
+#include "Loop/PlantLoop_Impl.hpp"
 #include "Model.hpp"
 #include "Model_Impl.hpp"
 #include "ModelObject.hpp"
@@ -46,57 +50,44 @@ namespace epmodel {
 
   namespace {
 
+    using detail::existingNodeField;
+    using detail::existingObjectField;
+    using detail::isSoleOwnedChild;
+
     void applyConstructorDefaults(AirTerminalSingleDuctConstantVolumeCooledBeam& terminal) {
       OS_ASSERT(terminal.setCooledBeamType("Passive"));
     }
 
-    boost::optional<ThermalZone> owningThermalZoneForBranchNode(const Model& model, const Node& node) {
-      for (const auto& connections : model.getConcreteModelObjects<ZoneHVACEquipmentConnections>()) {
-        const auto inletNodes = connections.zoneAirInletNodes();
-        if (std::ranges::find(inletNodes, node) != inletNodes.end()) {
-          return connections.thermalZone();
+    struct CooledBeamTopologyRemovalPlans
+    {
+      CoilCoolingCooledBeam coil;
+      std::unique_ptr<detail::AirLoopHVAC_Impl::SingleDuctTerminalRemovalPlan> externalTopology;
+    };
+
+    std::unique_ptr<CooledBeamTopologyRemovalPlans> prepareCooledBeamTopologyRemoval(const ModelObject& terminalObject) {
+      const auto coilRelationship =
+        existingObjectField(terminalObject, openstudio::OS_AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::CoolingCoilName);
+      const auto coil = coilRelationship.object ? coilRelationship.object->optionalCast<CoilCoolingCooledBeam>() : boost::none;
+      if (!coilRelationship.set || !coil || !isSoleOwnedChild(terminalObject, *coil)) {
+        return nullptr;
+      }
+
+      auto result = std::make_unique<CooledBeamTopologyRemovalPlans>(CooledBeamTopologyRemovalPlans{*coil});
+      auto terminal = terminalObject.cast<StraightComponent>();
+      if (detail::AirLoopHVAC_Impl::SingleDuctTerminalRemovalPlan::hasTopology(terminal)) {
+        result->externalTopology = detail::AirLoopHVAC_Impl::SingleDuctTerminalRemovalPlan::prepare(terminal);
+        if (!result->externalTopology) {
+          return nullptr;
         }
       }
-      return boost::none;
-    }
 
-    bool isServedZoneReturnNode(const boost::optional<ThermalZone>& thermalZone, const ModelObject& nodeObject) {
-      auto node = nodeObject.optionalCast<Node>();
-      if (!thermalZone || !node) {
-        return false;
+      const auto inlet = existingNodeField(*coil, coil->inletPort());
+      const auto outlet = existingNodeField(*coil, coil->outletPort());
+      if ((inlet.set || outlet.set) && (!inlet.node || !outlet.node)) {
+        return nullptr;
       }
 
-      auto zoneImpl = thermalZone->getImpl<detail::ThermalZone_Impl>();
-      OS_ASSERT(zoneImpl);
-      auto connections = zoneImpl->zoneHVACEquipmentConnections();
-      if (!connections) {
-        return false;
-      }
-
-      const auto returnNodes = connections->zoneReturnAirNodes();
-      return std::ranges::find(returnNodes, *node) != returnNodes.end();
-    }
-
-    boost::optional<ThermalZone> thermalZoneContainingTerminal(const Model& model, const ModelObject& terminal) {
-      for (const auto& zone : model.getConcreteModelObjects<ThermalZone>()) {
-        const auto equipment = zone.equipment();
-        if (std::ranges::find(equipment, terminal) != equipment.end()) {
-          return zone;
-        }
-      }
-      return boost::none;
-    }
-
-    bool registerTerminalWithThermalZone(const ModelObject& terminal, ThermalZone& thermalZone) {
-      auto zoneImpl = thermalZone.getImpl<detail::ThermalZone_Impl>();
-      OS_ASSERT(zoneImpl);
-      return zoneImpl->getZoneHVACEquipmentList().addEquipment(terminal);
-    }
-
-    bool unregisterTerminalFromThermalZone(const ModelObject& terminal, ThermalZone& thermalZone) {
-      auto zoneImpl = thermalZone.getImpl<detail::ThermalZone_Impl>();
-      OS_ASSERT(zoneImpl);
-      return zoneImpl->getZoneHVACEquipmentList().removeEquipment(terminal);
+      return result;
     }
 
   }  // namespace
@@ -118,7 +109,7 @@ namespace epmodel {
   }
 
   AirTerminalSingleDuctConstantVolumeCooledBeam::AirTerminalSingleDuctConstantVolumeCooledBeam(const Model& model, Schedule& availabilitySchedule,
-                                                                                               ModelObject& coilCoolingCooledBeam)
+                                                                                               HVACComponent& coilCoolingCooledBeam)
     : StraightComponent(AirTerminalSingleDuctConstantVolumeCooledBeam::iddObjectType(), model) {
     auto impl = getImpl<detail::AirTerminalSingleDuctConstantVolumeCooledBeam_Impl>();
     OS_ASSERT(impl);
@@ -159,11 +150,11 @@ namespace epmodel {
     return getImpl<detail::AirTerminalSingleDuctConstantVolumeCooledBeam_Impl>()->setAvailabilitySchedule(schedule);
   }
 
-  ModelObject AirTerminalSingleDuctConstantVolumeCooledBeam::coilCoolingCooledBeam() const {
+  HVACComponent AirTerminalSingleDuctConstantVolumeCooledBeam::coilCoolingCooledBeam() const {
     return getImpl<detail::AirTerminalSingleDuctConstantVolumeCooledBeam_Impl>()->coilCoolingCooledBeam();
   }
 
-  bool AirTerminalSingleDuctConstantVolumeCooledBeam::setCoolingCoil(ModelObject& coilCoolingCooledBeam) {
+  bool AirTerminalSingleDuctConstantVolumeCooledBeam::setCoolingCoil(HVACComponent& coilCoolingCooledBeam) {
     return getImpl<detail::AirTerminalSingleDuctConstantVolumeCooledBeam_Impl>()->setCoolingCoil(coilCoolingCooledBeam);
   }
 
@@ -363,18 +354,27 @@ namespace epmodel {
                                            "AirTerminalSingleDuctConstantVolumeCooledBeam", "Availability", schedule);
     }
 
-    ModelObject AirTerminalSingleDuctConstantVolumeCooledBeam_Impl::coilCoolingCooledBeam() const {
-      auto coil = getObject<ModelObject>().getModelObjectTarget<ModelObject>(
+    HVACComponent AirTerminalSingleDuctConstantVolumeCooledBeam_Impl::coilCoolingCooledBeam() const {
+      auto coil = getObject<ModelObject>().getModelObjectTarget<HVACComponent>(
         openstudio::OS_AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::CoolingCoilName);
       OS_ASSERT(coil);
       return *coil;
     }
 
-    bool AirTerminalSingleDuctConstantVolumeCooledBeam_Impl::setCoolingCoil(ModelObject& coolingCoilCooledBeam) {
+    bool AirTerminalSingleDuctConstantVolumeCooledBeam_Impl::setCoolingCoil(HVACComponent& coolingCoilCooledBeam) {
       if (coolingCoilCooledBeam.model() != model()) {
         return false;
       }
       if (coolingCoilCooledBeam.iddObject().type() != IddObjectType::OS_Coil_Cooling_CooledBeam) {
+        return false;
+      }
+      auto terminal = getObject<ModelObject>();
+      const auto previousCoil =
+        terminal.getModelObjectTarget<HVACComponent>(openstudio::OS_AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::CoolingCoilName);
+      if (previousCoil && previousCoil->handle() == coolingCoilCooledBeam.handle()) {
+        return true;
+      }
+      if (const auto owner = coolingCoilCooledBeam.containingHVACComponent(); owner && owner->handle() != terminal.handle()) {
         return false;
       }
       return setPointer(openstudio::OS_AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::CoolingCoilName, coolingCoilCooledBeam.handle(),
@@ -583,84 +583,100 @@ namespace epmodel {
       return result;
     }
 
-    std::vector<openstudio::IdfObject> AirTerminalSingleDuctConstantVolumeCooledBeam_Impl::remove() {
-      auto thisObject = getObject<openstudio::epmodel::ModelObject>();
-      auto coilObject = thisObject.getModelObjectTarget<openstudio::epmodel::ModelObject>(
-        openstudio::OS_AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::CoolingCoilName);
-      auto coil = coilObject ? coilObject->optionalCast<openstudio::epmodel::HVACComponent>() : boost::optional<openstudio::epmodel::HVACComponent>{};
-
-      removeFromLoop();
-
-      if (coil) {
-        if (auto plantLoop = coil->plantLoop()) {
-          plantLoop->removeDemandBranchWithComponent(*coil);
-        }
+    bool AirTerminalSingleDuctConstantVolumeCooledBeam_Impl::isRemovable() const {
+      if (!HVACComponent_Impl::isRemovable()) {
+        return false;
+      }
+      const auto terminal = getObject<ModelObject>();
+      const auto topologyPlans = prepareCooledBeamTopologyRemoval(terminal);
+      if (!topologyPlans) {
+        return false;
       }
 
-      return HVACComponent_Impl::remove();
+      const auto inlet = existingNodeField(topologyPlans->coil, topologyPlans->coil.inletPort());
+      const auto outlet = existingNodeField(topologyPlans->coil, topologyPlans->coil.outletPort());
+      if (!inlet.set && !outlet.set) {
+        return true;
+      }
+
+      unsigned plantPlanCount = 0u;
+      for (const auto& plantLoop : model().getConcreteModelObjects<PlantLoop>()) {
+        auto plantLoopImpl = plantLoop.getImpl<PlantLoop_Impl>();
+        OS_ASSERT(plantLoopImpl);
+        if (plantLoopImpl->prepareBeamCoilDemandBranchRemoval(topologyPlans->coil)) {
+          ++plantPlanCount;
+        }
+      }
+      return plantPlanCount == 1u;
+    }
+
+    std::vector<openstudio::IdfObject> AirTerminalSingleDuctConstantVolumeCooledBeam_Impl::remove() {
+      if (!HVACComponent_Impl::isRemovable()) {
+        return {};
+      }
+      auto terminal = getObject<ModelObject>();
+      auto thisModel = model();
+      const auto terminalHandle = terminal.handle();
+      const auto topologyPlans = prepareCooledBeamTopologyRemoval(terminal);
+      if (!topologyPlans) {
+        return {};
+      }
+      auto coil = topologyPlans->coil;
+      const bool hasPlantTopology = existingNodeField(coil, coil.inletPort()).set || existingNodeField(coil, coil.outletPort()).set;
+      if ((topologyPlans->externalTopology || hasPlantTopology) && !removeFromLoop()) {
+        return {};
+      }
+
+      auto result = HVACComponent_Impl::remove();
+      if (result.empty() || thisModel.getObject(terminalHandle)) {
+        return {};
+      }
+      if (thisModel.getObject(coil.handle())) {
+        const auto removedCoil = coil.remove();
+        result.insert(result.end(), removedCoil.begin(), removedCoil.end());
+      }
+      return result;
     }
 
     bool AirTerminalSingleDuctConstantVolumeCooledBeam_Impl::removeFromLoop() {
-      auto thisObject = getObject<openstudio::epmodel::ModelObject>();
-      auto thermalZone = thermalZoneContainingTerminal(model(), thisObject);
-      auto inletNode = inletModelObject();
-      auto outletNode = outletModelObject();
-      auto coilObject = thisObject.getModelObjectTarget<openstudio::epmodel::ModelObject>(
-        openstudio::OS_AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::CoolingCoilName);
-      auto coil = coilObject ? coilObject->optionalCast<openstudio::epmodel::HVACComponent>() : boost::optional<openstudio::epmodel::HVACComponent>{};
-      auto plantLoop = coil ? coil->plantLoop() : boost::optional<openstudio::epmodel::PlantLoop>{};
+      auto terminal = getObject<ModelObject>();
+      auto topologyPlans = prepareCooledBeamTopologyRemoval(terminal);
+      if (!topologyPlans) {
+        LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctConstantVolumeCooledBeam",
+                 "Refusing to remove a cooled beam whose child, air, zone, ADU, plenum, or plant topology is not exact.");
+        return false;
+      }
 
-      bool shouldRemoveTerminalInletNode = false;
-      if (auto terminal = thisObject.optionalCast<openstudio::epmodel::HVACComponent>()) {
-        if (auto airLoop = terminal->airLoopHVAC()) {
-          if (inletNode && outletNode) {
-            const auto splitter = airLoop->zoneSplitter();
-            const auto mixer = airLoop->zoneMixer();
-            const auto splitterBranchIndex = splitter.branchIndexForOutletModelObject(*inletNode);
-            shouldRemoveTerminalInletNode =
-              (splitter.outletModelObject(splitterBranchIndex) == *inletNode) && (mixer.inletModelObject(splitterBranchIndex) == *outletNode);
+      const auto inlet = existingNodeField(topologyPlans->coil, topologyPlans->coil.inletPort());
+      const auto outlet = existingNodeField(topologyPlans->coil, topologyPlans->coil.outletPort());
+      std::unique_ptr<PlantLoop_Impl::BeamCoilDemandBranchRemovalPlan> plantPlan;
+      if (inlet.set || outlet.set) {
+        for (const auto& plantLoop : model().getConcreteModelObjects<PlantLoop>()) {
+          auto plantLoopImpl = plantLoop.getImpl<PlantLoop_Impl>();
+          OS_ASSERT(plantLoopImpl);
+          if (auto candidate = plantLoopImpl->prepareBeamCoilDemandBranchRemoval(topologyPlans->coil)) {
+            if (plantPlan) {
+              return false;
+            }
+            plantPlan = std::move(candidate);
           }
         }
-      }
-
-      bool removedFromAirLoop = false;
-      if (inletNode && outletNode) {
-        if (!StraightComponent_Impl::removeFromLoop()) {
+        if (!plantPlan) {
           return false;
         }
-        removedFromAirLoop = true;
       }
 
-      if (thermalZone && !unregisterTerminalFromThermalZone(thisObject, *thermalZone)) {
+      if (!topologyPlans->externalTopology && !plantPlan) {
         return false;
       }
 
-      if (auto adu = zoneHVACAirDistributionUnit()) {
-        if (!adu->setPointer(openstudio::ZoneHVAC_AirDistributionUnitFields::AirDistributionUnitOutletNodeName, openstudio::Handle())) {
-          return false;
-        }
-        if (!adu->setString(openstudio::ZoneHVAC_AirDistributionUnitFields::AirTerminalObjectType, "")) {
-          return false;
-        }
-        if (!adu->setPointer(openstudio::ZoneHVAC_AirDistributionUnitFields::AirTerminalName, openstudio::Handle())) {
-          return false;
-        }
+      if (plantPlan) {
+        plantPlan->commit();
       }
-
-      setPointer(inletPort(), openstudio::Handle(), false);
-      setPointer(outletPort(), openstudio::Handle(), false);
-
-      if (shouldRemoveTerminalInletNode) {
-        if (auto node = inletNode->optionalCast<openstudio::epmodel::Node>()) {
-          node->remove();
-        }
+      if (topologyPlans->externalTopology) {
+        topologyPlans->externalTopology->commit();
       }
-
-      if (plantLoop && coil && !plantLoop->removeDemandBranchWithComponent(*coil)) {
-        return false;
-      }
-
-      return removedFromAirLoop || static_cast<bool>(thermalZone) || static_cast<bool>(plantLoop);
+      return true;
     }
 
     bool AirTerminalSingleDuctConstantVolumeCooledBeam_Impl::addToNode(Node& node) {
@@ -670,79 +686,25 @@ namespace epmodel {
         return false;
       }
 
-      if (getObject<openstudio::epmodel::HVACComponent>().loop()) {
+      if (!getObject<ModelObject>().getModelObjectTarget<HVACComponent>(
+            openstudio::OS_AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::CoolingCoilName)) {
         LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctConstantVolumeCooledBeam",
-                 "Refusing to add an already-connected cooled beam terminal.");
-        return false;
-      }
-
-      const auto thisNode = node.cast<ModelObject>();
-      auto airLoop = node.airLoopHVAC();
-      if (!airLoop) {
-        LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctConstantVolumeCooledBeam",
-                 "addToNode requires a node that resolves to an AirLoopHVAC context.");
-        return false;
-      }
-
-      auto zoneSplitter = airLoop->zoneSplitter();
-      auto zoneMixer = airLoop->zoneMixer();
-      const auto splitterOutlets = zoneSplitter.outletModelObjects();
-      const auto splitterIt = std::ranges::find(splitterOutlets, thisNode);
-      if (splitterIt == splitterOutlets.end()) {
-        LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctConstantVolumeCooledBeam",
-                 "addToNode requires the drop node to be a ZoneSplitter outlet node for the target AirLoopHVAC.");
-        return false;
-      }
-      const auto splitterBranchIndex = static_cast<unsigned>(std::distance(splitterOutlets.begin(), splitterIt));
-
-      auto mixerInlet = zoneMixer.inletModelObject(splitterBranchIndex);
-      if (!mixerInlet) {
-        LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctConstantVolumeCooledBeam",
-                 "addToNode requires a corresponding ZoneMixer inlet for ZoneSplitter branch index " << splitterBranchIndex << ".");
-        return false;
-      }
-      auto thermalZone = owningThermalZoneForBranchNode(model(), node);
-      if ((*mixerInlet != thisNode) && !isServedZoneReturnNode(thermalZone, *mixerInlet)) {
-        LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctConstantVolumeCooledBeam",
-                 "addToNode requires the drop node to either feed the ZoneMixer directly or be the served zone inlet node.");
+                 "addToNode requires the canonical cooled-beam coil child before topology is changed.");
         return false;
       }
 
       auto thisObject = getObject<openstudio::epmodel::ModelObject>();
-      if (!thisObject.name()) {
-        thisObject.createName();
-        if (!thisObject.name()) {
-          return false;
-        }
-      }
-
-      const std::string inletNodeName = node.nameString() + " - " + thisObject.nameString() + " Inlet Node";
-      auto inletNode = model().getOrCreateTransientByName<openstudio::epmodel::Node>(inletNodeName);
-
-      if (!zoneSplitter.setOutletModelObject(splitterBranchIndex, inletNode.cast<ModelObject>())) {
+      auto terminal = thisObject.cast<StraightComponent>();
+      auto plan = AirLoopHVAC_Impl::SingleDuctTerminalInsertionPlan::prepare(terminal, node);
+      if (!plan) {
+        LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctConstantVolumeCooledBeam",
+                 "addToNode requires a terminal-free effective demand branch on the target AirLoopHVAC.");
         return false;
       }
-
-      if (!setPointer(inletPort(), inletNode.handle(), false)) {
+      if (!plan->apply()) {
         return false;
       }
-
-      if (!setPointer(outletPort(), node.handle(), false)) {
-        return false;
-      }
-
-      if (auto adu = zoneHVACAirDistributionUnit()) {
-        adu->getImpl<openstudio::epmodel::detail::ZoneHVACAirDistributionUnit_Impl>()->setOutletNode(node);
-      }
-
-      if (thermalZone) {
-        if (!registerTerminalWithThermalZone(thisObject, *thermalZone)) {
-          LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctConstantVolumeCooledBeam",
-                   "addToNode failed to register the cooled beam with the owning thermal zone.");
-          return false;
-        }
-      }
-
+      plan->commit();
       return true;
     }
 

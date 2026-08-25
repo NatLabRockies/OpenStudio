@@ -60,6 +60,12 @@ int main(int argc, char* argv[]) {
   const bool is_classic = !args.empty() && (args[0] == "classic");
 
   if (is_classic) {
+    if (std::find(std::next(args.begin()), args.end(), "run") != args.end()) {
+      fmt::print(stderr, "The classic workflow runner is not available in OpenStudio 4.0 because ModelMeasures now use EPModel. "
+                         "Use `openstudio run ...` instead.\n");
+      return 1;
+    }
+
     // The "classic" cli implementation will not be expecting the first arg
     // to be the word classic so we need to remove the first arg
     args.erase(args.begin());
@@ -330,7 +336,7 @@ int main(int argc, char* argv[]) {
 
     // ========================== C L A S S I C ==========================
     // This exists to document access to the classic implementation
-    app.add_subcommand("classic", "For backwards compatibility, invoke an older version of the OpenStudio CLI that does not support Python");
+    app.add_subcommand("classic", "Access the remaining legacy Ruby CLI commands; workflow execution is unavailable in OpenStudio 4.0");
     // ====================================================================
 
     // CLI11_PARSE(app, argc, argv);

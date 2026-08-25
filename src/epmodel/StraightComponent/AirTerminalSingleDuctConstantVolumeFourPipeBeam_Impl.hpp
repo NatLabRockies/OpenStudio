@@ -12,7 +12,10 @@
 namespace openstudio {
 namespace epmodel {
 
+  class HVACComponent;
   class ModelObject;
+  class Node;
+  class PlantLoop;
   class Schedule;
 
   namespace detail {
@@ -26,6 +29,7 @@ namespace epmodel {
       unsigned inletPort() const override;
       unsigned outletPort() const override;
       std::vector<ModelObject> children() const override;
+      bool isRemovable() const override;
       std::vector<openstudio::IdfObject> remove() override;
       bool removeFromLoop() override;
       boost::optional<ZoneHVACAirDistributionUnit> zoneHVACAirDistributionUnit() const;
@@ -40,11 +44,14 @@ namespace epmodel {
       Schedule heatingAvailabilitySchedule() const;
       bool setHeatingAvailabilitySchedule(Schedule& schedule);
 
-      boost::optional<ModelObject> coolingCoil() const;
-      bool setCoolingCoil(ModelObject& coolingCoil);
+      boost::optional<Node> primaryAirInletNode() const;
+      boost::optional<Node> primaryAirOutletNode() const;
 
-      boost::optional<ModelObject> heatingCoil() const;
-      bool setHeatingCoil(ModelObject& heatingCoil);
+      boost::optional<HVACComponent> coolingCoil() const;
+      bool setCoolingCoil(const HVACComponent& coolingCoil);
+
+      boost::optional<HVACComponent> heatingCoil() const;
+      bool setHeatingCoil(const HVACComponent& heatingCoil);
 
       boost::optional<double> designPrimaryAirVolumeFlowRate() const;
       bool isDesignPrimaryAirVolumeFlowRateAutosized() const;
@@ -70,6 +77,14 @@ namespace epmodel {
       bool isRatedPrimaryAirFlowRateperBeamLengthDefaulted() const;
       bool setRatedPrimaryAirFlowRateperBeamLength(double ratedPrimaryAirFlowRateperBeamLength);
       void resetRatedPrimaryAirFlowRateperBeamLength();
+
+      boost::optional<PlantLoop> chilledWaterPlantLoop() const;
+      boost::optional<Node> chilledWaterInletNode() const;
+      boost::optional<Node> chilledWaterOutletNode() const;
+
+      boost::optional<PlantLoop> hotWaterPlantLoop() const;
+      boost::optional<Node> hotWaterInletNode() const;
+      boost::optional<Node> hotWaterOutletNode() const;
     };
 
   }  // namespace detail

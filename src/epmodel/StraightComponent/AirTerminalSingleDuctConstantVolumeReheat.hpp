@@ -25,6 +25,26 @@ namespace epmodel {
     class AirTerminalSingleDuctConstantVolumeReheat_Impl;
   }
 
+  /**
+   * \brief Constant-volume single-duct terminal with a typed reheat coil.
+   *
+   * \par EnergyPlus object
+   * Encapsulates \epobject{group-air-distribution-equipment.html#airterminalsingleductconstantvolumereheat,AirTerminal:SingleDuct:ConstantVolume:Reheat}.
+   *
+   * \par Important behavior
+   * `addToNode` connects the terminal to the supported AirLoopHVAC zone branch, projects the terminal path through
+   * the reheat coil, updates a linked AirDistributionUnit, and registers zone equipment. `removeFromLoop` reverses
+   * those references and removes a plant-connected reheat branch.
+   *
+   * \par OpenStudio Model API
+   * Counterpart: `openstudio::model::AirTerminalSingleDuctConstantVolumeReheat`. The schedule, typed reheat-coil,
+   * scalar, and supported branch insertion/removal APIs are represented. The epmodel default constructor is retained
+   * for incremental assembly.
+   *
+   * \par Known limitations
+   * The supported insertion path is narrower than the Model API, and family-specific autosized-result queries are
+   * not exposed. Child replacement requires a supported same-model, unconnected EnergyPlus coil.
+   */
   class EPMODEL_API AirTerminalSingleDuctConstantVolumeReheat : public StraightComponent
   {
    public:
@@ -41,26 +61,6 @@ namespace epmodel {
 
     bool addToNode(Node& node);
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. Constructor, availability-schedule, reheat-coil, scalar field behavior, and loop-context insertion are aligned,
-    //   while autosized-result query helpers are not yet exposed in the public epmodel API.
-    // - Canonical Counterpart: openstudio::model::AirTerminalSingleDuctConstantVolumeReheat.
-    // - Implemented Parity: The schedule-and-coil constructor, `availabilitySchedule`, validated `setReheatCoil`, the scalar accessors for
-    //   `maximumAirFlowRate`, `maximumHotWaterorSteamFlowRate`, `minimumHotWaterorSteamFlowRate`, `convergenceTolerance`, and
-    //   `maximumReheatAirTemperature`, the wrapper-specific `addToNode`, and `removeFromLoop` cover the current epmodel zone-branch
-    //   insertion/removal path and zone-equipment registration cleanup through the shared helper.
-    // - Documented Delta: The `epmodel`-only default constructor is preserved, and the family-specific autosized-result query helpers are not
-    //   yet surfaced in the public API until shared sizing-result infrastructure exists.
-    // - Field/Storage Mapping: The availability-schedule pointer, reheat-coil pointer, preserved scalar fields, and the inherited
-    //   straight-component inlet/outlet node fields all store directly on the same EnergyPlus `AirTerminal:SingleDuct:ConstantVolume:Reheat`
-    //   object. If persisted availability-schedule storage is cleared, `availabilitySchedule()` repairs that stored pointer by rebinding the
-    //   model always-on discrete schedule onto the same object before returning it. `addToNode` wires the same object onto the current
-    //   epmodel zone-branch path, updates any linked `ZoneHVAC:AirDistributionUnit` outlet node to match the branch node, and registers the
-    //   terminal on the owning thermal-zone equipment list via the shared helper. `removeFromLoop` reverses those references, removes the
-    //   temporary terminal inlet node, and removes a plant-connected reheat coil from its demand branch. Canonical model still accepts a
-    //   broader local-topology insertion surface than this wrapper-specific path.
-    // - Evidence: `src/model/AirTerminalSingleDuctConstantVolumeReheat.hpp`, `src/model/AirTerminalSingleDuctConstantVolumeReheat.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirTerminalSingleDuctConstantVolumeReheat.cpp`, and `src/epmodel/test/AirTerminalSingleDuctConstantVolumeReheat_GTest.cpp`.
-    // - Remaining Parity Work: Expose the autosized-result query helpers once shared sizing-result plumbing exists.
     Schedule availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);
 

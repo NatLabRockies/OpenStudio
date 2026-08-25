@@ -68,13 +68,13 @@ namespace measure {
     return m_halted;
   }
 
-  boost::optional<openstudio::model::Model> OSRunner::lastOpenStudioModel() const {
+  boost::optional<openstudio::epmodel::Model> OSRunner::lastOpenStudioModel() const {
     if (m_lastOpenStudioModel) {
       return m_lastOpenStudioModel;
     }
 
     if (m_lastOpenStudioModelPath) {
-      m_lastOpenStudioModel = model::Model::load(*m_lastOpenStudioModelPath);
+      m_lastOpenStudioModel = epmodel::Model::load(*m_lastOpenStudioModelPath);
     }
 
     return m_lastOpenStudioModel;
@@ -893,7 +893,7 @@ namespace measure {
     return step_values;
   }
 
-  void OSRunner::setLastOpenStudioModel(const openstudio::model::Model& lastOpenStudioModel) {
+  void OSRunner::setLastOpenStudioModel(const openstudio::epmodel::Model& lastOpenStudioModel) {
     m_lastOpenStudioModel = lastOpenStudioModel;
     m_lastOpenStudioModelPath.reset();
   }

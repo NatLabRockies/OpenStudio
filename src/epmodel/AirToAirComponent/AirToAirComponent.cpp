@@ -11,6 +11,10 @@
 #include "Model.hpp"
 #include "ModelObject/AirLoopHVACOutdoorAirSystemEquipmentList.hpp"
 #include "ModelObject/AirLoopHVACOutdoorAirSystemEquipmentList_Impl.hpp"
+#include "ModelObject/AirLoopHVACDedicatedOutdoorAirSystem.hpp"
+#include "ModelObject/AirLoopHVACDedicatedOutdoorAirSystem_Impl.hpp"
+#include "ModelObject/AirLoopHVACMixer.hpp"
+#include "ModelObject/AirLoopHVACSplitter.hpp"
 #include "Node.hpp"
 
 #include <utilities/core/Assert.hpp>
@@ -161,8 +165,11 @@ namespace epmodel {
       auto equipmentListImpl =
         oaSystemImpl->airLoopHVACOutdoorAirSystemEquipmentList().getImpl<detail::AirLoopHVACOutdoorAirSystemEquipmentList_Impl>();
       OS_ASSERT(equipmentListImpl);
-      if (!equipmentListImpl->containsEquipment(thisObject) && !equipmentListImpl->addEquipment(thisObject)) {
-        return false;
+      if (auto doas = oaSystem.airLoopHVACDedicatedOutdoorAirSystem()) {
+        auto doasImpl = doas->getImpl<openstudio::epmodel::detail::AirLoopHVACDedicatedOutdoorAirSystem_Impl>();
+        if (!doasImpl || !doasImpl->airLoopHVACMixer() || !doasImpl->airLoopHVACSplitter()) {
+          return false;
+        }
       }
 
       const auto oaComponents = oaSystem.oaComponents();
@@ -297,6 +304,13 @@ namespace epmodel {
         return false;
       }
 
+      // A two-stream component is listed only after both drop points have been
+      // resolved. This keeps a rejected placement from leaving an equipment
+      // row that neither stream can traverse.
+      if (!equipmentListImpl->containsEquipment(thisObject) && !equipmentListImpl->addEquipment(thisObject)) {
+        return false;
+      }
+
       const auto spliceSingleStream = [&](Node& dropNode, bool outdoorAirStream, unsigned inletPort, unsigned outletPort) -> bool {
         auto path = outdoorAirStream ? oaSystem.oaComponents() : oaSystem.reliefComponents();
         const auto nodeIt = std::find_if(path.begin(), path.end(), [&](const auto& object) { return object.handle() == dropNode.handle(); });
@@ -383,19 +397,24 @@ namespace epmodel {
       auto oaSystemImpl = oaSystem.getImpl<openstudio::epmodel::detail::AirLoopHVACOutdoorAirSystem_Impl>();
       OS_ASSERT(oaSystemImpl);
       const auto thisObject = getObject<ModelObject>();
-      const auto reconnectStream = [&](bool outdoorAirStream) -> bool {
-        auto path = outdoorAirStream ? oaSystem.oaComponents() : oaSystem.reliefComponents();
+      if (auto doas = oaSystem.airLoopHVACDedicatedOutdoorAirSystem()) {
+        auto doasImpl = doas->getImpl<openstudio::epmodel::detail::AirLoopHVACDedicatedOutdoorAirSystem_Impl>();
+        if (!doasImpl || !doasImpl->airLoopHVACMixer() || !doasImpl->airLoopHVACSplitter()) {
+          return false;
+        }
+      }
+
+      const auto outdoorPath = oaSystem.oaComponents();
+      const auto reliefPath = oaSystem.reliefComponents();
+      const auto streamIsReconnectable = [&](const std::vector<ModelObject>& path) {
         auto it = std::find_if(path.begin(), path.end(), [&](const auto& object) { return object.handle() == thisObject.handle(); });
         if (it == path.end()) {
           return false;
         }
 
         const auto index = static_cast<std::size_t>(std::distance(path.begin(), it));
-        auto inletNode = outdoorAirStream ? *primaryInletNode : *secondaryInletNode;
-        auto outletNode = outdoorAirStream ? *primaryOutletNode : *secondaryOutletNode;
-
         if (path.size() == 3u) {
-          return outdoorAirStream ? oaSystemImpl->setOutdoorAirStreamNode(inletNode) : oaSystemImpl->setReliefAirStreamNode(outletNode);
+          return true;
         }
 
         if (index < 1u || (index + 1u) >= path.size()) {
@@ -408,27 +427,51 @@ namespace epmodel {
           return false;
         }
 
+        return true;
+      };
+
+      // Both stream repairs are prepared before either stream changes. A
+      // malformed half-connection is rejected in place instead of stranding
+      // the other side of the component.
+      if (!streamIsReconnectable(outdoorPath) || !streamIsReconnectable(reliefPath)) {
+        return false;
+      }
+
+      const auto reconnectStream = [&](const std::vector<ModelObject>& path, bool outdoorAirStream) -> bool {
+        auto it = std::find_if(path.begin(), path.end(), [&](const auto& object) { return object.handle() == thisObject.handle(); });
+        OS_ASSERT(it != path.end());
+
+        const auto index = static_cast<std::size_t>(std::distance(path.begin(), it));
+        auto inletNode = outdoorAirStream ? *primaryInletNode : *secondaryInletNode;
+        auto outletNode = outdoorAirStream ? *primaryOutletNode : *secondaryOutletNode;
+
+        if (path.size() == 3u) {
+          return outdoorAirStream ? oaSystemImpl->setOutdoorAirStreamNode(inletNode) : oaSystemImpl->setReliefAirStreamNode(outletNode);
+        }
+
+        auto previousNode = path[index - 1u].cast<Node>();
+
         if (index >= 2u) {
           if (outdoorAirStream) {
-            if (!oaSystemImpl->updateOutdoorAirStreamOutletNode(path[index - 2u], *previousNode)) {
+            if (!oaSystemImpl->updateOutdoorAirStreamOutletNode(path[index - 2u], previousNode)) {
               return false;
             }
-          } else if (!oaSystemImpl->updateReliefAirStreamOutletNode(path[index - 2u], *previousNode)) {
+          } else if (!oaSystemImpl->updateReliefAirStreamOutletNode(path[index - 2u], previousNode)) {
             return false;
           }
         }
 
         if ((index + 2u) < path.size()) {
           if (outdoorAirStream) {
-            return oaSystemImpl->updateOutdoorAirStreamInletNode(path[index + 2u], *previousNode);
+            return oaSystemImpl->updateOutdoorAirStreamInletNode(path[index + 2u], previousNode);
           }
-          return oaSystemImpl->updateReliefAirStreamInletNode(path[index + 2u], *previousNode);
+          return oaSystemImpl->updateReliefAirStreamInletNode(path[index + 2u], previousNode);
         }
 
-        return outdoorAirStream ? oaSystemImpl->setOutdoorAirStreamNode(*previousNode) : oaSystemImpl->setReliefAirStreamNode(*previousNode);
+        return outdoorAirStream ? oaSystemImpl->setOutdoorAirStreamNode(previousNode) : oaSystemImpl->setReliefAirStreamNode(previousNode);
       };
 
-      if (!reconnectStream(true) || !reconnectStream(false)) {
+      if (!reconnectStream(outdoorPath, true) || !reconnectStream(reliefPath, false)) {
         return false;
       }
 
@@ -450,6 +493,7 @@ namespace epmodel {
           if (removeFromOutdoorAirSystem(oaSystem)) {
             return HVACComponent_Impl::remove();
           }
+          return {};
         }
       }
 

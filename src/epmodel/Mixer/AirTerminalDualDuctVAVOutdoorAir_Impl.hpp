@@ -25,6 +25,8 @@ namespace epmodel {
       std::vector<openstudio::IdfObject> remove() override;
       boost::optional<openstudio::epmodel::Node> outdoorAirInletNode() const;
       boost::optional<openstudio::epmodel::Node> recirculatedAirInletNode() const;
+      Schedule availabilitySchedule() const;
+      bool setAvailabilitySchedule(Schedule& schedule);
       boost::optional<double> maximumTerminalAirFlowRate() const;
       bool setMaximumTerminalAirFlowRate(double maximumTerminalAirFlowRate);
       void autosizeMaximumTerminalAirFlowRate();

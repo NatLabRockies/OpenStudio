@@ -7,17 +7,21 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
+#include "ScopedTestFailure.hpp"
+#include "../TestFailurePoint.hpp"
 #include "../HVACComponent/ThermalZone.hpp"
 #include "../HVACComponent/ThermalZone_Impl.hpp"
 #include "../ModelObject/ZoneHVACAirDistributionUnit.hpp"
+#include "../ModelObject/ZoneHVACAirDistributionUnit_Impl.hpp"
 #include "../ModelObject/ZoneHVACEquipmentConnections.hpp"
 #include "../ModelObject/ZoneHVACEquipmentList.hpp"
-#include "../ModelObject/ZoneHVACEquipmentList_Impl.hpp"
 #include "../Schedule/Schedule.hpp"
 #include "../Schedule/Schedule_Impl.hpp"
 #include "../Schedule/ScheduleConstant.hpp"
 #include "../StraightComponent/AirTerminalSingleDuctConstantVolumeReheat.hpp"
+#include "../StraightComponent/Node.hpp"
 
+#include <utilities/idd/ZoneHVAC_AirDistributionUnit_FieldEnums.hxx>
 #include <utilities/idd/ZoneHVAC_EquipmentList_FieldEnums.hxx>
 #include <utilities/idf/WorkspaceExtensibleGroup.hpp>
 
@@ -69,6 +73,112 @@ TEST_F(EPModelFixture, API_ZoneHVACEquipmentList_AddEquipment_RoundTripAndDedupe
 
   EXPECT_TRUE(equipmentList.removeEquipment(terminal.cast<ModelObject>()));
   EXPECT_TRUE(equipmentList.equipment().empty());
+}
+
+TEST_F(EPModelFixture, ZoneHVACEquipmentList_AddEquipmentTransaction_RemovesCreatedADUAndPartialRowThenRetries) {
+  Model model;
+  ZoneHVACEquipmentList equipmentList(model);
+  AirTerminalSingleDuctConstantVolumeReheat terminal(model);
+  Node outletNode(model);
+  ASSERT_TRUE(terminal.setPointer(terminal.outletPort(), outletNode.handle()));
+
+  for (const auto failurePoint : {detail::TestFailurePoint::ZoneEquipmentAfterTargetPrepared, detail::TestFailurePoint::ZoneEquipmentAfterRowAdded}) {
+    test::ScopedTestFailure failure(model, failurePoint);
+    EXPECT_FALSE(equipmentList.addEquipment(terminal.cast<ModelObject>()));
+    EXPECT_TRUE(equipmentList.extensibleGroups().empty());
+    EXPECT_TRUE(equipmentList.equipment().empty());
+    EXPECT_TRUE(terminal.getSources(openstudio::IddObjectType::ZoneHVAC_AirDistributionUnit).empty());
+  }
+
+  ASSERT_TRUE(equipmentList.addEquipment(terminal.cast<ModelObject>()));
+  ASSERT_EQ(1u, equipmentList.equipment().size());
+  const auto aduSources = terminal.getSources(openstudio::IddObjectType::ZoneHVAC_AirDistributionUnit);
+  ASSERT_EQ(1u, aduSources.size());
+  auto adu = aduSources.front().optionalCast<ZoneHVACAirDistributionUnit>();
+  ASSERT_TRUE(adu);
+  ASSERT_TRUE(adu->outletNode());
+  EXPECT_EQ(outletNode, *adu->outletNode());
+}
+
+TEST_F(EPModelFixture, ZoneHVACEquipmentList_AddEquipmentTransaction_RestoresStaleExistingADUOutletAndSynchronizesOnRetry) {
+  Model model;
+  ZoneHVACEquipmentList equipmentList(model);
+  AirTerminalSingleDuctConstantVolumeReheat terminal(model);
+  Node staleOutletNode(model);
+  Node actualOutletNode(model);
+  ASSERT_TRUE(terminal.setPointer(terminal.outletPort(), actualOutletNode.handle()));
+
+  ZoneHVACAirDistributionUnit adu(model);
+  auto aduImpl = adu.getImpl<detail::ZoneHVACAirDistributionUnit_Impl>();
+  ASSERT_TRUE(aduImpl);
+  ASSERT_TRUE(aduImpl->setAirTerminal(terminal.cast<ModelObject>()));
+  ASSERT_TRUE(aduImpl->setOutletNode(staleOutletNode));
+
+  {
+    test::ScopedTestFailure failure(model, detail::TestFailurePoint::ZoneEquipmentAfterRowAdded);
+    EXPECT_FALSE(equipmentList.addEquipment(terminal.cast<ModelObject>()));
+  }
+  EXPECT_TRUE(equipmentList.extensibleGroups().empty());
+  EXPECT_TRUE(equipmentList.equipment().empty());
+  ASSERT_TRUE(adu.outletNode());
+  EXPECT_EQ(staleOutletNode, *adu.outletNode());
+
+  ASSERT_TRUE(equipmentList.addEquipment(terminal.cast<ModelObject>()));
+  ASSERT_TRUE(adu.outletNode());
+  EXPECT_EQ(actualOutletNode, *adu.outletNode());
+  ASSERT_EQ(1u, equipmentList.equipment().size());
+  EXPECT_EQ(terminal.cast<ModelObject>(), equipmentList.equipment().front());
+}
+
+TEST_F(EPModelFixture, ZoneHVACEquipmentList_AddEquipment_SynchronizesUnsetExistingADUOutlet) {
+  Model model;
+  ZoneHVACEquipmentList equipmentList(model);
+  AirTerminalSingleDuctConstantVolumeReheat terminal(model);
+  Node actualOutletNode(model);
+  ASSERT_TRUE(terminal.setPointer(terminal.outletPort(), actualOutletNode.handle()));
+
+  ZoneHVACAirDistributionUnit adu(model);
+  auto aduImpl = adu.getImpl<detail::ZoneHVACAirDistributionUnit_Impl>();
+  ASSERT_TRUE(aduImpl);
+  ASSERT_TRUE(aduImpl->setAirTerminal(terminal.cast<ModelObject>()));
+  ASSERT_FALSE(adu.outletNode());
+
+  ASSERT_TRUE(equipmentList.addEquipment(terminal.cast<ModelObject>()));
+  ASSERT_TRUE(adu.outletNode());
+  EXPECT_EQ(actualOutletNode, *adu.outletNode());
+}
+
+TEST_F(EPModelFixture, ZoneHVACEquipmentList_AddEquipmentRejectsAmbiguousDuplicateADUsBeforeMutation) {
+  Model model;
+  ZoneHVACEquipmentList equipmentList(model);
+  AirTerminalSingleDuctConstantVolumeReheat terminal(model);
+  Node actualOutletNode(model);
+  Node firstStaleOutlet(model);
+  Node secondStaleOutlet(model);
+  ASSERT_TRUE(terminal.setPointer(terminal.outletPort(), actualOutletNode.handle()));
+
+  ZoneHVACAirDistributionUnit firstADU(model);
+  ZoneHVACAirDistributionUnit secondADU(model);
+  auto firstImpl = firstADU.getImpl<detail::ZoneHVACAirDistributionUnit_Impl>();
+  auto secondImpl = secondADU.getImpl<detail::ZoneHVACAirDistributionUnit_Impl>();
+  ASSERT_TRUE(firstImpl);
+  ASSERT_TRUE(secondImpl);
+  ASSERT_TRUE(firstImpl->setAirTerminal(terminal.cast<ModelObject>()));
+  ASSERT_TRUE(secondImpl->setAirTerminal(terminal.cast<ModelObject>()));
+  ASSERT_TRUE(firstImpl->setOutletNode(firstStaleOutlet));
+  ASSERT_TRUE(secondImpl->setOutletNode(secondStaleOutlet));
+  const auto baselineObjectCount = model.objects().size();
+
+  EXPECT_FALSE(equipmentList.addEquipment(terminal.cast<ModelObject>()));
+
+  EXPECT_EQ(baselineObjectCount, model.objects().size());
+  EXPECT_TRUE(equipmentList.extensibleGroups().empty());
+  EXPECT_TRUE(equipmentList.equipment().empty());
+  ASSERT_TRUE(firstADU.outletNode());
+  ASSERT_TRUE(secondADU.outletNode());
+  EXPECT_EQ(firstStaleOutlet, *firstADU.outletNode());
+  EXPECT_EQ(secondStaleOutlet, *secondADU.outletNode());
+  EXPECT_EQ(2u, terminal.getSources(openstudio::IddObjectType::ZoneHVAC_AirDistributionUnit).size());
 }
 
 TEST_F(EPModelFixture, API_ZoneHVACEquipmentList_ThermalZoneConstructor_LinksConnections) {

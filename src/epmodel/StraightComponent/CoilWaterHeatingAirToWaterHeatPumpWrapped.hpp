@@ -18,12 +18,26 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class Curve;
   class Schedule;
 
   namespace detail {
     class CoilWaterHeatingAirToWaterHeatPumpWrapped_Impl;
   }
 
+  /** \brief Represents a wrapped evaporator coil of an air-to-water heat-pump water heater.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-heating-and-cooling-coils.html#coilwaterheatingairtowaterheatpumpwrapped,Coil:WaterHeating:AirToWaterHeatPump:Wrapped}.
+   *
+   * \par Important behavior
+   * The persisted scalar and currently supported schedule, curve, and node relationships map directly to the EnergyPlus object.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::CoilWaterHeatingAirToWaterHeatPumpWrapped</code>. EPModel exposes additional explicit default-state queries for EnergyPlus fields. <b>Not yet available:</b> broader AirflowNetwork, tank-link, and higher-level topology conveniences.
+   * \par Known limitations
+   * No known EPModel-specific limitations beyond the listed API differences.
+   */
   class EPMODEL_API CoilWaterHeatingAirToWaterHeatPumpWrapped : public StraightComponent
   {
    public:
@@ -39,15 +53,6 @@ namespace epmodel {
 
     static std::vector<std::string> evaporatorAirTemperatureTypeforCurveObjectsValues();
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. The scalar rating/control surface plus the required availability-schedule relationship are aligned, while curve APIs are still omitted.
-    // - Canonical Counterpart: openstudio::model::CoilWaterHeatingAirToWaterHeatPumpWrapped.
-    // - Implemented Parity: The wrapped-coil scalar getters/setters plus the required availability-schedule relationship preserve the canonical bounded contract.
-    // - Documented Delta: epmodel promotes this wrapper to `StraightComponent` so the real evaporator-air ports are explicit. This is an additive hierarchy change compared to canonical model.
-    // - Documented Delta: Despite the base-class promotion, generic loop-placement APIs remain intentionally rejected because this coil is normally owned by a compound wrapped-condenser parent.
-    // - Field/Storage Mapping: The availability schedule and scalar APIs map directly to EnergyPlus `Coil:WaterHeating:AirToWaterHeatPump:Wrapped` storage, including the real evaporator-air node fields.
-    // - Evidence: `src/model/CoilWaterHeatingAirToWaterHeatPumpWrapped.hpp`, `src/model/CoilWaterHeatingAirToWaterHeatPumpWrapped.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateCoilWaterHeatingAirToWaterHeatPumpWrapped.cpp`, and `src/epmodel/test/CoilWaterHeatingAirToWaterHeatPumpWrapped_GTest.cpp`.
-    // - Remaining Parity Work: Add the omitted curve and other relationship APIs after the relationship layer is available.
     Schedule availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);
 
@@ -95,6 +100,10 @@ namespace epmodel {
     bool setCrankcaseHeaterCapacity(double crankcaseHeaterCapacity);
     void resetCrankcaseHeaterCapacity();
 
+    boost::optional<Curve> crankcaseHeaterCapacityFunctionofTemperatureCurve() const;
+    bool setCrankcaseHeaterCapacityFunctionofTemperatureCurve(const Curve& curve);
+    void resetCrankcaseHeaterCapacityFunctionofTemperatureCurve();
+
     double maximumAmbientTemperatureforCrankcaseHeaterOperation() const;
     bool isMaximumAmbientTemperatureforCrankcaseHeaterOperationDefaulted() const;
     bool setMaximumAmbientTemperatureforCrankcaseHeaterOperation(double maximumAmbientTemperatureforCrankcaseHeaterOperation);
@@ -104,6 +113,21 @@ namespace epmodel {
     bool isEvaporatorAirTemperatureTypeforCurveObjectsDefaulted() const;
     bool setEvaporatorAirTemperatureTypeforCurveObjects(const std::string& evaporatorAirTemperatureTypeforCurveObjects);
     void resetEvaporatorAirTemperatureTypeforCurveObjects();
+
+    Curve heatingCapacityFunctionofTemperatureCurve() const;
+    bool setHeatingCapacityFunctionofTemperatureCurve(const Curve& curve);
+
+    Curve heatingCapacityFunctionofAirFlowFractionCurve() const;
+    bool setHeatingCapacityFunctionofAirFlowFractionCurve(const Curve& curve);
+
+    Curve heatingCOPFunctionofTemperatureCurve() const;
+    bool setHeatingCOPFunctionofTemperatureCurve(const Curve& curve);
+
+    Curve heatingCOPFunctionofAirFlowFractionCurve() const;
+    bool setHeatingCOPFunctionofAirFlowFractionCurve(const Curve& curve);
+
+    Curve partLoadFractionCorrelationCurve() const;
+    bool setPartLoadFractionCorrelationCurve(const Curve& curve);
 
    protected:
     using ImplType = detail::CoilWaterHeatingAirToWaterHeatPumpWrapped_Impl;

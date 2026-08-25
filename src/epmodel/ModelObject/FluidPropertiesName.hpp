@@ -23,6 +23,17 @@ namespace epmodel {
     class FluidPropertiesName_Impl;
   }
 
+  /** \brief Represents <code>FluidProperties:Name</code>.
+   *
+   * \par EnergyPlus object
+   * Represents \epobject{group-fluid-properties.html#fluidpropertiesname,FluidProperties:Name}.
+   *
+   * \par OpenStudio Model API
+   * OpenStudio Model has no public wrapper for <code>FluidProperties:Name</code>; this wrapper is new to the EPModel API.
+   *
+   * \par Known limitations
+   * Relationship-row mutation and higher-level topology conveniences remain owner-managed or unavailable through this wrapper.
+   */
   class EPMODEL_API FluidPropertiesName : public ModelObject
   {
    public:
@@ -37,13 +48,6 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     static std::vector<std::string> fluidTypeValues();
-
-    // Schema Alignment Notes:
-    // - API: This no-counterpart epmodel type uses IDD-derived class/accessor naming.
-    // - Field Mapping: fluidName and fluidType map directly to EnergyPlus FluidProperties:Name scalar fields.
-    // - ForwardTranslator evidence: ForwardTranslator::createFluidProperties writes FluidProperties_NameFields::FluidName and
-    //   FluidProperties_NameFields::FluidType directly, including "Glycol" for glycol-backed generated fluids.
-    // - TODO(parity): Add helper APIs for translator-managed fluid datasets if needed after scalar saturation.
     std::string fluidName() const;
     bool setFluidName(const std::string& fluidName);
 

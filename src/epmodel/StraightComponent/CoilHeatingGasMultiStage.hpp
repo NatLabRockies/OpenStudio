@@ -23,6 +23,19 @@ namespace epmodel {
     class CoilHeatingGasMultiStage_Impl;
   }
 
+  /** \brief Represents a multistage gas heating coil.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-heating-and-cooling-coils.html#coilheatinggasmultistage,Coil:Heating:Gas:MultiStage}.
+   *
+   * \par Important behavior
+   * The persisted scalar, schedule, and currently supported stage-control relationships use the EnergyPlus coil topology.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::CoilHeatingGasMultiStage</code>. <b>Added:</b> EPModel exposes <code>addToNode()</code> and parasitic gas-load controls. <b>Not yet available:</b> Model stage-data ownership and extensible stage-list methods.
+   * \par Known limitations
+   * No known EPModel-specific limitations beyond the listed API differences.
+   */
   class EPMODEL_API CoilHeatingGasMultiStage : public StraightComponent
   {
    public:
@@ -38,17 +51,6 @@ namespace epmodel {
 
     bool addToNode(Node& node);
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. The bounded availability-schedule and optional part-load-fraction-curve relationships are present, but the canonical
-    //   stage-data family remains model-owned.
-    // - Canonical Counterpart: openstudio::model::CoilHeatingGasMultiStage.
-    // - Implemented Parity: `availabilitySchedule` and the optional `partLoadFractionCorrelationCurve` preserve the bounded canonical relationship slice
-    //   for this campaign; `parasiticGasLoad`, `offCycleParasiticGasLoad`, and `numberOfStages` preserve the current scalar field mirror.
-    // - Documented Delta: Stage-data ownership and extensible stage-list APIs from canonical `openstudio::model::CoilHeatingGasMultiStage` are not
-    //   exposed yet, and standalone `addToNode(...)` remains intentionally rejected to match the canonical wrapper.
-    // - Field/Storage Mapping: The preserved relationship and scalar APIs map directly to EnergyPlus `Coil:Heating:Gas:MultiStage` storage.
-    // - Evidence: `src/model/CoilHeatingGasMultiStage.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateCoilHeatingGasMultiStage.cpp`, and `src/epmodel/test/CoilHeatingGasMultiStage_GTest.cpp`.
-    // - Remaining Parity Work: Add the canonical stage-data family and owning extensible-list behavior without changing the preserved scalar signatures.
     Schedule availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);
 

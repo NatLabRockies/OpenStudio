@@ -21,6 +21,22 @@ namespace epmodel {
     class CoilHeatingLowTempRadiantConstFlow_Impl;
   }
 
+  /** \brief Represents a heating-coil view of a constant-flow low-temperature radiant system.
+   *
+   * \par EnergyPlus object
+   * No standalone EnergyPlus object. EPModel projects <code>OS:Coil:Heating:LowTemperatureRadiant:ConstantFlow</code> onto \epobject{group-radiative-convective-units.html#zonehvaclowtemperatureradiantconstantflow,ZoneHVAC:LowTemperatureRadiant:ConstantFlow} parent storage.
+   *
+   * \par Important behavior
+   * This transient child writes its scalar and schedule fields through to the parent design/coil storage and maps
+   * its water ports to the parent's <code>Heating Water Inlet Node Name</code> and <code>Heating Water Outlet Node Name</code> fields.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::CoilHeatingLowTempRadiantConstFlow</code>.
+   * <b>Changed:</b> the child is transient and cannot be persisted or placed independently as a plant component.
+   *
+   * \par Known limitations
+   * Use the owning parent object for persistence and complete topology.
+   */
   class EPMODEL_API CoilHeatingLowTempRadiantConstFlow : public StraightComponent
   {
    public:
@@ -43,15 +59,6 @@ namespace epmodel {
     // epmodel we preserve that canonical child shape by exposing a transient
     // child that reads and writes the parent-owned fields.
     //
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. epmodel now exposes the canonical heating-coil companion as a transient straight-component view over the
-    //   parent radiant object, while the fuller surface-group behavior still lives on the parent.
-    // - Canonical Counterpart: openstudio::model::CoilHeatingLowTempRadiantConstFlow.
-    // - Implemented Parity: The four schedule relationships and water inlet/outlet ports are available through the canonical child wrapper shape.
-    // - Documented Delta: Unlike canonical model, this child is transient in epmodel because EnergyPlus does not persist a standalone coil object here.
-    //   The child writes through to the parent `ZoneHVAC:LowTemperatureRadiant:ConstantFlow` object instead of owning separate storage.
-    // - Field/Storage Mapping: Child schedule and node APIs map directly to the parent EnergyPlus radiant fields.
-    // - Remaining Parity Work: Add richer canonical convenience APIs only if they are still useful after the parent relationship layer settles.
     boost::optional<Schedule> heatingHighWaterTemperatureSchedule() const;
     bool setHeatingHighWaterTemperatureSchedule(Schedule& schedule);
     void resetHeatingHighWaterTemperatureSchedule();

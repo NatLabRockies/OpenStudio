@@ -25,6 +25,20 @@ namespace epmodel {
     class EvaporativeCoolerIndirectResearchSpecial_Impl;
   }
 
+/** \brief An indirect evaporative cooler using the ResearchSpecial performance model.
+ *
+ * \par EnergyPlus object
+ * \epobject{group-evaporative-coolers.html#evaporativecoolerindirectresearchspecial,EvaporativeCooler:Indirect:ResearchSpecial}
+ *
+ * \par Important behavior
+ * EnergyPlus-only secondary-air inlet/outlet nodes and the outdoor-air declaration are maintained with the cooler.
+ *
+ * \par OpenStudio Model API
+ * The corresponding OpenStudio Model type is <code>openstudio::model::EvaporativeCoolerIndirectResearchSpecial</code>.
+ *
+ * \par Known limitations
+ * Secondary-fan efficiency and pressure are reconstructed from EnergyPlus specific power on reload; SQL-backed autosized result queries are unavailable.
+ */
   class EPMODEL_API EvaporativeCoolerIndirectResearchSpecial : public StraightComponent
   {
    public:
@@ -38,20 +52,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - Status: Near Parity. The canonical indirect-research-special wrapper surface and placement behavior are present, with only the EnergyPlus-only
-    //   secondary-fan pair storage gap and autosized-value lookup still documented.
-    // - Canonical Counterpart: openstudio::model::EvaporativeCoolerIndirectResearchSpecial.
-    // - Implemented Parity: Availability schedule, curve relationships, scalar field accessors, and `addToNode(...)` now follow the canonical
-    //   indirect-research evaporative-cooler behavior, including outlet-sensor propagation on supply-side and OA-system placement.
-    // - Documented Delta: EnergyPlus persists only `Secondary Air Fan Sizing Specific Power`, so wrappers rebuilt only from bare persisted storage must
-    //   reconstruct the legacy `secondaryFanTotalEfficiency()` / `secondaryFanDeltaPressure()` pair from that single value; and
-    //   `autosizedRecirculatingWaterPumpPowerConsumption()` / `autosizedSecondaryFanFlowRate()` / `autosizedSecondaryAirFanDesignPower()` /
-    //   `autosizedPrimaryDesignAirFlowRate()` still return none because epmodel does not yet resolve autosized sizing results from SQL output.
-    // - Field/Storage Mapping: These accessors map directly to EnergyPlus `EvaporativeCooler:Indirect:ResearchSpecial` fields and object-list targets.
-    // - Evidence: `src/model/EvaporativeCoolerIndirectResearchSpecial.hpp`, `src/model/EvaporativeCoolerIndirectResearchSpecial.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateEvaporativeCoolerIndirectResearchSpecial.cpp`.
-    // - Remaining Parity Work: Replace the current reconstructed secondary-fan pair fallback with shared infrastructure that can preserve the canonical
-    //   total-efficiency and delta-pressure values across all EnergyPlus-backed rematerialization paths.
 
     boost::optional<Schedule> availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);

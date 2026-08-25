@@ -20,6 +20,17 @@ namespace epmodel {
     class SiteGroundReflectance_Impl;
   }
 
+  /** \brief SiteGroundReflectance.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-location-climate-weather-file-access.html#sitegroundreflectance,Site:GroundReflectance}.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::SiteGroundReflectance</code>. The twelve monthly reflectance values map directly to EnergyPlus.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API SiteGroundReflectance : public ModelObject
   {
    public:
@@ -32,10 +43,6 @@ namespace epmodel {
     SiteGroundReflectance& operator=(SiteGroundReflectance&&) = default;
 
     static IddObjectType iddObjectType();
-
-    // Schema Alignment Notes:
-    // - API: Mirrors the openstudio::model SiteGroundReflectance scalar accessor names/signatures for each month.
-    // - Field Mapping: Monthly ground reflectance values delegate directly to Site:GroundReflectance month enums with 0.2 defaults.
     double januaryGroundReflectance() const;
     bool isJanuaryGroundReflectanceDefaulted() const;
     bool setJanuaryGroundReflectance(double januaryGroundReflectance);

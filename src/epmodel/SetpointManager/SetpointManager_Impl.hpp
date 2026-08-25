@@ -28,6 +28,11 @@ namespace epmodel {
       virtual bool isAllowedOnPlantLoop() const;
       bool addToNode(openstudio::epmodel::Node& node) override;
 
+      boost::optional<Loop> loop() const override;
+      boost::optional<AirLoopHVAC> airLoopHVAC() const override;
+      boost::optional<PlantLoop> plantLoop() const override;
+      boost::optional<AirLoopHVACOutdoorAirSystem> airLoopHVACOutdoorAirSystem() const override;
+
       void doCanonicalize(LoadContext& context) override;
 
      protected:

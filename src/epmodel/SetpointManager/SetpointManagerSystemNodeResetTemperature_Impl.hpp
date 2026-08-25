@@ -30,6 +30,10 @@ namespace epmodel {
       double highReferenceTemperature() const;
       bool setHighReferenceTemperature(double highReferenceTemperature);
 
+      boost::optional<openstudio::epmodel::Node> referenceNode() const;
+      bool setReferenceNode(const openstudio::epmodel::Node& node);
+      void resetReferenceNode();
+
       boost::optional<openstudio::epmodel::Node> setpointNode() const override;
       std::string controlVariable() const override;
       bool setControlVariable(const std::string& value) override;

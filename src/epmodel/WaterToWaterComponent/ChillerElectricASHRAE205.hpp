@@ -25,6 +25,30 @@ namespace epmodel {
     class ChillerElectricASHRAE205_Impl;
   }
 
+  /** \brief Represents an electric chiller described by an ASHRAE 205 representation.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-plant-equipment.html#chillerelectricashrae205,Chiller:Electric:ASHRAE205}
+   *
+   * \par Important behavior
+   * EnergyPlus does not support heat recovery for this object. The heat-recovery
+   * accessors remain available for topology inspection, but adding a tertiary
+   * heat-recovery connection is rejected.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::ChillerElectricASHRAE205</code>.
+   *
+   * - <b>Changed:</b> The constructor takes only <code>Model</code>; the Model
+   *   constructor requires an <code>ExternalFile</code> representation file.
+   * - <b>Not yet available:</b> <code>representationFile()</code> and
+   *   <code>setRepresentationFile(...)</code>.
+   *
+   * \par Known limitations
+   * Representation-file persistence is unavailable because EPModel has no
+   * <code>ExternalFile</code> wrapper, and EnergyPlus currently rejects heat
+   * recovery connections for this object.
+   */
   class EPMODEL_API ChillerElectricASHRAE205 : public WaterToWaterComponent
   {
    public:
@@ -44,19 +68,6 @@ namespace epmodel {
     static std::vector<std::string> ambientTemperatureIndicatorValues();
     static std::vector<std::string> chillerFlowModeValues();
 
-    // Schema Alignment Notes:
-    // - Status: Parity with documented deltas. Canonical scalar, ambient, autosized-helper, HVAC-classification, and loop convenience behavior is aligned
-    //   inside epmodel's supported wrapper surface.
-    // - Canonical Counterpart: openstudio::model::ChillerElectricASHRAE205.
-    // - Implemented Parity: Scalar accessors, ambient schedule/zone relationships, SQL-backed autosized helpers, HVAC classification and fuel reporting,
-    //   and chilled/condenser/oil-cooler/auxiliary loop conveniences preserve the canonical model API shape wherever epmodel has the necessary wrapper types;
-    //   heat-recovery attachment remains disabled in line with current unsupported EnergyPlus behavior.
-    // - Documented Delta: Representation-file linkage still remains excluded because epmodel does not yet wrap `ExternalFile`.
-    // - Field/Storage Mapping: Public behavior targets EnergyPlus `Chiller:Electric:ASHRAE205` fields and plant topology; external-file linkage remains blocked
-    //   on missing epmodel storage wrappers, while autosized helper queries resolve against the shared epmodel SQL-backed component-sizing lookup.
-    // - Evidence: `src/model/ChillerElectricASHRAE205.hpp`, `src/model/ChillerElectricASHRAE205.cpp`, and
-    //   `src/energyplus/ForwardTranslator/ForwardTranslateChillerElectricASHRAE205.cpp`.
-    // - Remaining Parity Work: Add canonical representation-file support once epmodel gains an `ExternalFile` wrapper.
     std::string performanceInterpolationMethod() const;
     bool setPerformanceInterpolationMethod(const std::string& performanceInterpolationMethod);
 

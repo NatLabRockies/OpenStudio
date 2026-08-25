@@ -21,6 +21,20 @@ namespace epmodel {
     class SetpointManagerMultiZoneMaximumHumidityAverage_Impl;
   }
 
+  /** \brief Sets a humidity-ratio setpoint from the average of the zone maximum humidity conditions.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-setpoint-managers.html#setpointmanagermultizonemaximumhumidityaverage,SetpointManager:MultiZone:MaximumHumidity:Average}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::SetpointManagerMultiZoneMaximumHumidityAverage</code>.
+   * No known public API differences.
+   *
+   * \par Known limitations
+   * <code>controlVariable()</code> always returns <code>MaximumHumidityRatio</code>,
+   * and <code>setControlVariable</code> accepts only that value; the EnergyPlus
+   * object has no control-variable field.
+   */
   class EPMODEL_API SetpointManagerMultiZoneMaximumHumidityAverage : public SetpointManager
   {
    public:
@@ -36,17 +50,6 @@ namespace epmodel {
 
     static std::vector<std::string> controlVariableValues();
 
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model scalar accessor names/signatures for model-counterpart compatibility.
-    // - Field Mapping: controlVariable is preserved as a fixed-value API ("MaximumHumidityRatio")
-    //   even though the E+ object has no explicit control-variable field.
-    // - Field Mapping: minimumSetpointHumidityRatio maps directly to
-    //   E+ SetpointManager:MultiZone:MaximumHumidity:Average Minimum Setpoint Humidity Ratio.
-    // - Field Mapping: maximumSetpointHumidityRatio maps directly to
-    //   E+ SetpointManager:MultiZone:MaximumHumidity:Average Maximum Setpoint Humidity Ratio.
-    // - Field Mapping: Relationship fields HVAC Air Loop Name and Setpoint Node or NodeList Name are
-    //   intentionally excluded from scalar-only scaffolding.
-    // - TODO(parity): Add non-scalar relationship parity for explicit loop/node linkage in a follow-up pass.
 
     // Control Variable (MaximumHumidityRatio)
     std::string controlVariable() const;

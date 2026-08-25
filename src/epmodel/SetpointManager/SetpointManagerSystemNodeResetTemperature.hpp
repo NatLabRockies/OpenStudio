@@ -16,11 +16,24 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class Node;
 
   namespace detail {
     class SetpointManagerSystemNodeResetTemperature_Impl;
   }
 
+  /** \brief Resets a temperature setpoint from a reference system node.
+   *
+   * \par EnergyPlus object
+   * <code>SetpointManager:SystemNodeReset:Temperature</code>
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::SetpointManagerSystemNodeResetTemperature</code>.
+   * No known public API differences.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API SetpointManagerSystemNodeResetTemperature : public SetpointManager
   {
    public:
@@ -36,16 +49,6 @@ namespace epmodel {
 
     static std::vector<std::string> controlVariableValues();
 
-    // Schema Alignment Notes:
-    // - API: Preserves openstudio::model scalar accessor names/signatures for model-counterpart compatibility.
-    // - Field Mapping: setpointatLowReferenceTemperature, setpointatHighReferenceTemperature,
-    //   lowReferenceTemperature, and highReferenceTemperature map directly to
-    //   E+ SetpointManager:SystemNodeReset:Temperature scalar fields.
-    // - ForwardTranslator Evidence: ForwardTranslateSetpointManagerSystemNodeResetTemperature writes these exact
-    //   scalar fields plus control variable using preserved model API names.
-    // - Field Mapping: Relationship fields Reference Node Name and Setpoint Node or NodeList Name are intentionally
-    //   excluded from scalar-only scaffolding.
-    // - TODO(parity): Add non-scalar relationship parity for explicit reference-node linkage in a follow-up pass.
     double setpointatLowReferenceTemperature() const;
     bool setSetpointatLowReferenceTemperature(double setpointatLowReferenceTemperature);
 
@@ -57,6 +60,10 @@ namespace epmodel {
 
     double highReferenceTemperature() const;
     bool setHighReferenceTemperature(double highReferenceTemperature);
+
+    boost::optional<Node> referenceNode() const;
+    bool setReferenceNode(const Node& node);
+    void resetReferenceNode();
 
    protected:
     using ImplType = detail::SetpointManagerSystemNodeResetTemperature_Impl;

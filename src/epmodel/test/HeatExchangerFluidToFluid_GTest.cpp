@@ -165,9 +165,9 @@ TEST_F(EPModelFixture, HeatExchangerFluidToFluid_PlantLoopAttachmentParity) {
   EXPECT_EQ(loadLoop, hx.plantLoop().get());
   EXPECT_FALSE(hx.secondaryPlantLoop());
   ASSERT_TRUE(hx.supplyInletModelObject());
-  EXPECT_EQ(loadLoop.supplyOutletNode(), hx.supplyInletModelObject()->cast<Node>());
+  EXPECT_EQ(loadLoop, hx.supplyInletModelObject()->cast<Node>().plantLoop().get());
   ASSERT_TRUE(hx.supplyOutletModelObject());
-  EXPECT_EQ(loadLoop, hx.supplyOutletModelObject()->cast<Node>().plantLoop().get());
+  EXPECT_EQ(loadLoop.supplyOutletNode(), hx.supplyOutletModelObject()->cast<Node>());
   EXPECT_FALSE(hx.demandInletModelObject());
   EXPECT_FALSE(hx.demandOutletModelObject());
 

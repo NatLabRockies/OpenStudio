@@ -23,6 +23,19 @@ namespace epmodel {
     class CoilCoolingDXSingleSpeedThermalStorage_Impl;
   }
 
+  /** \brief Represents a single-speed DX cooling coil with thermal storage.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-heating-and-cooling-coils.html#coilcoolingdxsinglespeedthermalstorage,Coil:Cooling:DX:SingleSpeed:ThermalStorage}.
+   *
+   * \par Important behavior
+   * The persisted scalar and currently supported schedule, curve, and node relationships map directly to the EnergyPlus object.
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is <code>openstudio::model::CoilCoolingDXSingleSpeedThermalStorage</code>. <b>Not yet available:</b> the thermal-storage charge/discharge performance-curve families and related storage-mode helpers, plus broader AirflowNetwork and tank-link conveniences. EPModel adds <code>addToNode()</code>.
+   * \par Known limitations
+   * No known EPModel-specific limitations beyond the listed API differences.
+   */
   class EPMODEL_API CoilCoolingDXSingleSpeedThermalStorage : public StraightComponent
   {
    public:
@@ -40,19 +53,6 @@ namespace epmodel {
     static std::vector<std::string> storageTypeValues();
     static std::vector<std::string> condenserTypeValues();
 
-    // Schema Alignment Notes:
-    // - Status: Partial Parity. The scalar thermal-storage surface, bounded schedule relationships, and the current epmodel supply-side air-loop
-    //   insertion path are present, but the wider storage relationship and topology surface is still missing.
-    // - Canonical Counterpart: openstudio::model::CoilCoolingDXSingleSpeedThermalStorage.
-    // - Implemented Parity: The scalar operating-mode, storage, glycol, and capacity helpers preserve the canonical naming and autosize behavior;
-    //   `availabilitySchedule`, `operationModeControlSchedule`, and `basinHeaterAvailabilitySchedule` are exposed, and the current supply-side
-    //   air-loop `addToNode` path preserves the bounded canonical slice used by current epmodel loop insertion.
-    // - Documented Delta: The broader curve, tank-link, and storage-topology helpers from canonical
-    //   `openstudio::model::CoilCoolingDXSingleSpeedThermalStorage` are not exposed yet.
-    // - Field/Storage Mapping: `glycolConcentration` is preserved through the user-defined fluid type encoding because EnergyPlus has no direct concentration field.
-    // - Evidence: `src/model/CoilCoolingDXSingleSpeedThermalStorage.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateCoilCoolingDXSingleSpeedThermalStorage.cpp`, and `src/epmodel/test/CoilCoolingDXSingleSpeedThermalStorage_GTest.cpp`.
-    // - Remaining Parity Work: Add the omitted curve, tank-link, and broader storage relationship helpers without changing the preserved scalar
-    //   signatures.
     Schedule availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);
 

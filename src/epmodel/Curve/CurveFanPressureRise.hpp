@@ -22,6 +22,19 @@ namespace epmodel {
     class CurveFanPressureRise_Impl;
   }
 
+  /** \brief Represents a fan pressure-rise curve.
+   *
+   * \par EnergyPlus object
+   * \epobject{group-performance-curves.html#curvefanpressurerise,Curve:FanPressureRise}
+   *
+   * \par OpenStudio Model API
+   * The corresponding OpenStudio Model class is
+   * <code>openstudio::model::CurveFanPressureRise</code>.
+   * No known public API differences.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
   class EPMODEL_API CurveFanPressureRise : public Curve
   {
    public:
@@ -35,11 +48,6 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - API: Preserve openstudio::model CurveFanPressureRise scalar accessor names/signatures.
-    // - Field Mapping: coefficient/min/max and output-limit APIs map directly to E+ Curve:FanPressureRise fields.
-    // - ForwardTranslator evidence: ForwardTranslateCurveFanPressureRise.cpp writes these scalar fields directly.
-    // - TODO(parity): Keep this pass scalar-only; relationship APIs remain out of scope.
     double coefficient1C1() const;
     bool setCoefficient1C1(double coefficient1C1);
 
