@@ -1376,8 +1376,6 @@ namespace energyplus {
 
     boost::optional<IdfObject> translateScheduleFile(model::ScheduleFile& modelObject);
 
-    boost::optional<IdfObject> translateScheduleRuleset(model::ScheduleRuleset& modelObject);
-
     boost::optional<IdfObject> translateScheduleTypeLimits(model::ScheduleTypeLimits& modelObject);
 
     boost::optional<IdfObject> translateScheduleVariableInterval(model::ScheduleVariableInterval& modelObject);
@@ -1385,6 +1383,8 @@ namespace energyplus {
     boost::optional<IdfObject> translateScheduleWeek(model::ScheduleWeek& modelObject);
 
     boost::optional<IdfObject> translateScheduleYear(model::ScheduleYear& modelObject);
+
+    boost::optional<IdfObject> translateScheduleYearRules(model::ScheduleRuleset& modelObject);
 
     boost::optional<IdfObject> translateScreen(model::Screen& modelObject);
 

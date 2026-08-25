@@ -2659,7 +2659,7 @@ namespace energyplus {
       }
       case openstudio::IddObjectType::OS_Schedule_Ruleset: {
         auto mo = modelObject.cast<ScheduleRuleset>();
-        retVal = translateScheduleRuleset(mo);
+        retVal = translateScheduleYearRules(mo);
         break;
       }
       case openstudio::IddObjectType::OS_ScheduleTypeLimits: {
