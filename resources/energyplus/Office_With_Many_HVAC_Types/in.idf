@@ -1,4 +1,4 @@
-  Version,25.2;
+  Version,26.1;
 
   Building,
     Building 1,              !- Name
@@ -2692,7 +2692,6 @@
     Node 94,                 !- Supply Air Inlet Node Name
     Node 96,                 !- Secondary Air Inlet Node Name
     Node 88,                 !- Outlet Node Name
-    Air Terminal Single Duct Parallel PIU Reheat 1 Mixer Outlet,  !- Reheat Coil Air Inlet Node Name
     Air Terminal Single Duct Parallel PIU Reheat 1 Mixer,  !- Zone Mixer Name
     Fan Constant Volume 4,   !- Fan Name
     Coil:Heating:Electric,   !- Reheat Coil Object Type
@@ -2978,7 +2977,6 @@
     Node 99,                 !- Supply Air Inlet Node Name
     Node 100,                !- Secondary Air Inlet Node Name
     Node 97,                 !- Outlet Node Name
-    Air Terminal Single Duct Parallel PIU Reheat 2 Mixer Outlet,  !- Reheat Coil Air Inlet Node Name
     Air Terminal Single Duct Parallel PIU Reheat 2 Mixer,  !- Zone Mixer Name
     Fan Constant Volume 5,   !- Fan Name
     Coil:Heating:Electric,   !- Reheat Coil Object Type
@@ -4049,7 +4047,6 @@
     Node 195,                !- Supply Air Inlet Node Name
     Node 197,                !- Secondary Air Inlet Node Name
     Node 177,                !- Outlet Node Name
-    Air Terminal Single Duct Parallel PIU Reheat 3 Mixer Outlet,  !- Reheat Coil Air Inlet Node Name
     Air Terminal Single Duct Parallel PIU Reheat 3 Mixer,  !- Zone Mixer Name
     Fan Constant Volume 6,   !- Fan Name
     Coil:Heating:Electric,   !- Reheat Coil Object Type
@@ -4335,7 +4332,6 @@
     Node 200,                !- Supply Air Inlet Node Name
     Node 201,                !- Secondary Air Inlet Node Name
     Node 198,                !- Outlet Node Name
-    Air Terminal Single Duct Parallel PIU Reheat 4 Mixer Outlet,  !- Reheat Coil Air Inlet Node Name
     Air Terminal Single Duct Parallel PIU Reheat 4 Mixer,  !- Zone Mixer Name
     Fan Constant Volume 7,   !- Fan Name
     Coil:Heating:Electric,   !- Reheat Coil Object Type

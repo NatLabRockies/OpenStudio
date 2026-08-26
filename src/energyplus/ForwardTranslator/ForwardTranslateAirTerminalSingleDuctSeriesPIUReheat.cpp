@@ -142,8 +142,6 @@ namespace energyplus {
       // Reheat Coil Type
       idfObject.setString(AirTerminal_SingleDuct_SeriesPIU_ReheatFields::ReheatCoilObjectType, _reheatCoil->iddObject().name());
 
-      idfObject.setString(AirTerminal_SingleDuct_SeriesPIU_ReheatFields::ReheatCoilAirInletNodeName, fanOutletNodeName);
-
       if (outletNodeName) {
         if (_reheatCoil->iddObject().type() == IddObjectType::Coil_Heating_Fuel) {
           _reheatCoil->setString(Coil_Heating_FuelFields::AirInletNodeName, fanOutletNodeName);
