@@ -452,13 +452,10 @@ TEST_F(EnergyPlusFixture, ForwardTranslatorZoneHVACTerminalUnitVariableRefrigera
 
       ASSERT_EQ(3u, idf_oa_eq_list_->extensibleGroups().size());
 
+      // Components must be listed in actual air flow order: outdoor air side first, then the
+      // OutdoorAir:Mixer (which sits between the OA and relief branches), then relief side
       {
         auto w_comp_eg = idf_oa_eq_list_->extensibleGroups()[0].cast<WorkspaceExtensibleGroup>();
-        EXPECT_EQ("OutdoorAir:Mixer", w_comp_eg.getString(AirLoopHVAC_OutdoorAirSystem_EquipmentListExtensibleFields::ComponentObjectType).get());
-      }
-
-      {
-        auto w_comp_eg = idf_oa_eq_list_->extensibleGroups()[1].cast<WorkspaceExtensibleGroup>();
         EXPECT_EQ("ZoneHVAC:TerminalUnit:VariableRefrigerantFlow",
                   w_comp_eg.getString(AirLoopHVAC_OutdoorAirSystem_EquipmentListExtensibleFields::ComponentObjectType).get());
         auto idf_vrf_ = w_comp_eg.getTarget(AirLoopHVAC_OutdoorAirSystem_EquipmentListExtensibleFields::ComponentName);
@@ -471,6 +468,11 @@ TEST_F(EnergyPlusFixture, ForwardTranslatorZoneHVACTerminalUnitVariableRefrigera
         // > Leave blank if terminal unit is used in AirLoopHVAC:OutdoorAirSystem:EquipmentList
         // Fan is NOT translated
         EXPECT_FALSE(idf_vrf_->getTarget(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::SupplyAirFanObjectName));
+      }
+
+      {
+        auto w_comp_eg = idf_oa_eq_list_->extensibleGroups()[1].cast<WorkspaceExtensibleGroup>();
+        EXPECT_EQ("OutdoorAir:Mixer", w_comp_eg.getString(AirLoopHVAC_OutdoorAirSystem_EquipmentListExtensibleFields::ComponentObjectType).get());
       }
 
       {
@@ -589,13 +591,10 @@ TEST_F(EnergyPlusFixture, ForwardTranslatorZoneHVACTerminalUnitVariableRefrigera
 
       ASSERT_EQ(3u, idf_oa_eq_list_->extensibleGroups().size());
 
+      // Components must be listed in actual air flow order: outdoor air side first, then the
+      // OutdoorAir:Mixer (which sits between the OA and relief branches), then relief side
       {
         auto w_comp_eg = idf_oa_eq_list_->extensibleGroups()[0].cast<WorkspaceExtensibleGroup>();
-        EXPECT_EQ("OutdoorAir:Mixer", w_comp_eg.getString(AirLoopHVAC_OutdoorAirSystem_EquipmentListExtensibleFields::ComponentObjectType).get());
-      }
-
-      {
-        auto w_comp_eg = idf_oa_eq_list_->extensibleGroups()[1].cast<WorkspaceExtensibleGroup>();
         EXPECT_EQ("ZoneHVAC:TerminalUnit:VariableRefrigerantFlow",
                   w_comp_eg.getString(AirLoopHVAC_OutdoorAirSystem_EquipmentListExtensibleFields::ComponentObjectType).get());
         auto idf_vrf_ = w_comp_eg.getTarget(AirLoopHVAC_OutdoorAirSystem_EquipmentListExtensibleFields::ComponentName);
@@ -606,6 +605,11 @@ TEST_F(EnergyPlusFixture, ForwardTranslatorZoneHVACTerminalUnitVariableRefrigera
 
         // Fan is not translated (AirLoopHVACOutdoorAirSystem)
         EXPECT_FALSE(idf_vrf_->getTarget(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::SupplyAirFanObjectName));
+      }
+
+      {
+        auto w_comp_eg = idf_oa_eq_list_->extensibleGroups()[1].cast<WorkspaceExtensibleGroup>();
+        EXPECT_EQ("OutdoorAir:Mixer", w_comp_eg.getString(AirLoopHVAC_OutdoorAirSystem_EquipmentListExtensibleFields::ComponentObjectType).get());
       }
 
       {
