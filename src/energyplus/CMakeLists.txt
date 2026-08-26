@@ -334,11 +334,11 @@ set(${target_name}_src
   ForwardTranslator/ForwardTranslateScheduleDay.cpp
   ForwardTranslator/ForwardTranslateScheduleFile.cpp
   ForwardTranslator/ForwardTranslateScheduleFixedInterval.cpp
+  ForwardTranslator/ForwardTranslateScheduleRuleset.cpp
   ForwardTranslator/ForwardTranslateScheduleTypeLimits.cpp
   ForwardTranslator/ForwardTranslateScheduleVariableInterval.cpp
   ForwardTranslator/ForwardTranslateScheduleWeek.cpp
   ForwardTranslator/ForwardTranslateScheduleYear.cpp
-  ForwardTranslator/ForwardTranslateScheduleYearRules.cpp
   ForwardTranslator/ForwardTranslateSetpointManagerColdest.cpp
   ForwardTranslator/ForwardTranslateSetpointManagerFollowGroundTemperature.cpp
   ForwardTranslator/ForwardTranslateSetpointManagerFollowOutdoorAirTemperature.cpp
