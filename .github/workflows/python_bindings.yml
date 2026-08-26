@@ -32,11 +32,11 @@ jobs:
         name: [Ubuntu, Ubuntu_arm64, macOS, macOS_arm64, Windows_py37, Windows_py38, Windows_py39, Windows_py310, Windows_py311, Windows_py312, Windows_py313]
         include:
         - name: Ubuntu
-          os: ubuntu-22.04
+          os: ubuntu-24.04
           python-version: 3.8
           allow_failure: false
         - name: Ubuntu_arm64
-          os: ubuntu-22.04-arm
+          os: ubuntu-24.04-arm
           python-version: 3.8
           allow_failure: true
         - name: macOS
@@ -351,7 +351,7 @@ jobs:
   upload_python_bindings_to_testpypi:
     needs: python_bindings
     name: Upload to TestPyPi
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
 
     - name: Set up Python
@@ -408,11 +408,11 @@ jobs:
         name: [Ubuntu, Ubuntu_arm64, macOS, macOS_arm64, Windows_py37, Windows_py38, Windows_py39, Windows_py310, Windows_py311, Windows_py312, Windows_py313]
         include:
         - name: Ubuntu
-          os: ubuntu-22.04
+          os: ubuntu-24.04
           python-version: 3.11  # Voluntarily using a newer version than built with for Unix
           allow_failure: false
         - name: Ubuntu_arm64
-          os: ubuntu-22.04-arm
+          os: ubuntu-24.04-arm
           python-version: 3.12
           allow_failure: true
         - name: macOS
@@ -487,7 +487,7 @@ jobs:
     if: contains(github.ref, 'refs/tags')
     needs: test_python_bindings
     name: Upload to PyPi
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
 
     - name: Set up Python
