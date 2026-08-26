@@ -1503,21 +1503,21 @@ jobs:
 
       # CODE SIGNING SETUP
       - name: Setup Node.js
-        if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true'
+        if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || github.ref == 'refs/heads/os-4.0-dev1' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: "18"
 
 
       - name: Create .env file for Signing
-        if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true'
+        if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || github.ref == 'refs/heads/os-4.0-dev1' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true'
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         run: |
           echo "ACCESS_KEY=${{ secrets.AWS_SIGNING_ACCESS_KEY }}" >> .env
           echo "SECRET_KEY=${{ secrets.AWS_SIGNING_SECRET_KEY }}" >> .env
 
       - name: Code sign binaries
-        if: success() && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true')
+        if: ${{ !cancelled() && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || github.ref == 'refs/heads/os-4.0-dev1' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true') }}
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         run: |
           # Check if signing client exists
@@ -1584,7 +1584,7 @@ jobs:
           & $env:ComSpec /c "call conanbuild.bat && cpack -C ${{ env.BUILD_TYPE }}"
 
       - name: Code sign installer
-        if: ${{ !cancelled() && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true') }}
+        if: ${{ !cancelled() && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || github.ref == 'refs/heads/os-4.0-dev1' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true') }}
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         run: |
           # Check if signing client exists
@@ -1672,12 +1672,28 @@ jobs:
           path: ${{ env.OPENSTUDIO_BUILD }}/signed/OpenStudio*.exe
           if-no-files-found: ignore
 
+      - name: Upload Unsigned EXE installer
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: OS-Installers-${{ matrix.platform }}-EXE-UNSIGNED-${{ github.sha }}
+          path: ${{ env.OPENSTUDIO_BUILD }}/OpenStudio-*.exe
+          if-no-files-found: ignore
+
       - name: Upload Signed TGZ installer
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
           name: OS-Installers-${{ matrix.platform }}-TGZ-${{ github.sha }}
           path: ${{ env.OPENSTUDIO_BUILD }}/_CPack_Packages/win64/TGZ/*.tar.gz
+          if-no-files-found: ignore
+
+      - name: Upload Unsigned TGZ installer
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: OS-Installers-${{ matrix.platform }}-TGZ-UNSIGNED-${{ github.sha }}
+          path: ${{ env.OPENSTUDIO_BUILD }}/OpenStudio-*.tar.gz
           if-no-files-found: ignore
 
       - name: Fail job on test failures
@@ -1714,8 +1730,8 @@ jobs:
           echo "Uploading artifacts to s3://${AWS_S3_BUCKET}/${S3_PREFIX}"
 
           # Find installers in artifact subdirectories
-          SIGNED_EXE=$(find . -name "*.exe" | grep "SIGNED" | head -n 1 || true)
-          UNSIGNED_EXE=$(find . -name "*.exe" | grep -v "SIGNED" | head -n 1 || true)
+          SIGNED_EXE=$(find . -name "*.exe" | grep -v "UNSIGNED" | head -n 1 || true)
+          UNSIGNED_EXE=$(find . -name "*.exe" | grep "UNSIGNED" | head -n 1 || true)
 
           if [ -n "$SIGNED_EXE" ]; then
             echo "Uploading signed installer: $SIGNED_EXE"
@@ -1728,7 +1744,7 @@ jobs:
           fi
 
           # Upload tarballs
-          for file in $(find . -name "*.tar.gz"); do
+          for file in $(find . -name "*.tar.gz" | grep -v "UNSIGNED"); do
             filename=$(basename "$file")
             aws s3 cp "$file" "s3://${AWS_S3_BUCKET}/${S3_PREFIX}/${filename}" --acl public-read
           done
