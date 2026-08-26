@@ -137,7 +137,7 @@ namespace energyplus {
           group.setInt(Schedule_Week_RuleExtensibleFields::EndDay, _endDate->dayOfMonth());
         }
       } else { // SpecificDates
-        for (const openstudio::Date specificDate : scheduleRule.specificDates()) {
+        for (const openstudio::Date& specificDate : scheduleRule.specificDates()) {
           IdfExtensibleGroup group = scheduleWeekRule.pushExtensibleGroup();
           group.setInt(Schedule_Week_RuleExtensibleFields::StartMonth, specificDate.monthOfYear().value());
           group.setInt(Schedule_Week_RuleExtensibleFields::StartDay, specificDate.dayOfMonth());
