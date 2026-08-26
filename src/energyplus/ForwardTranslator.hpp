@@ -518,7 +518,7 @@ namespace energyplus {
     boost::optional<IdfObject> translateDesignSpecificationOutdoorAir(model::DesignSpecificationOutdoorAir& modelObject);
   };  // namespace detail
 
-#define ENERGYPLUS_VERSION "25.2"
+#define ENERGYPLUS_VERSION "26.2"
 
   class ENERGYPLUS_API ForwardTranslator
   {
