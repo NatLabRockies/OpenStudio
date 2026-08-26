@@ -5053,15 +5053,19 @@ TEST_F(OSVersionFixture, update_3_11_0_to_3_11_1_CentralHeatPumpSystem) {
   EXPECT_EQ("Central Heat Pump System 1", chps.getString(1).get());  // Name
 
   // Control Method field (old index 2) has been removed: everything after it shifts down by one
-  auto coolingInletConnection = chps.getTarget(2);  // Cooling Loop Inlet Node Name: real Connection, preserved
+  // Cooling Loop Inlet Node Name: the CHP is the Connection's Target Object (it's an inlet),
+  // so the Node itself is the Connection's Source Object
+  auto coolingInletConnection = chps.getTarget(2);
   ASSERT_TRUE(coolingInletConnection);
-  auto coolingInletNode = coolingInletConnection->getTarget(3);  // OS:Connection's Target Object
+  auto coolingInletNode = coolingInletConnection->getTarget(1);  // OS:Connection's Source Object
   ASSERT_TRUE(coolingInletNode);
   EXPECT_EQ("Central Heat Pump System Cooling Inlet Node", coolingInletNode->getString(1).get());
 
-  auto coolingOutletConnection = chps.getTarget(3);  // Cooling Loop Outlet Node Name: real Connection, preserved
+  // Cooling Loop Outlet Node Name: the CHP is the Connection's Source Object (it's an outlet),
+  // so the Node itself is the Connection's Target Object
+  auto coolingOutletConnection = chps.getTarget(3);
   ASSERT_TRUE(coolingOutletConnection);
-  auto coolingOutletNode = coolingOutletConnection->getTarget(1);  // OS:Connection's Source Object
+  auto coolingOutletNode = coolingOutletConnection->getTarget(3);  // OS:Connection's Target Object
   ASSERT_TRUE(coolingOutletNode);
   EXPECT_EQ("Central Heat Pump System Cooling Outlet Node", coolingOutletNode->getString(1).get());
 
