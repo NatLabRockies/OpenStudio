@@ -5036,3 +5036,46 @@ TEST_F(OSVersionFixture, update_3_10_0_to_3_11_0_OutputControlFiles) {
   EXPECT_EQ("Yes", ocf.getString(31).get());  // Output Tarcog
   EXPECT_EQ("Yes", ocf.getString(32).get());  // Output Plant Component Sizing
 }
+
+TEST_F(OSVersionFixture, update_3_11_0_to_3_11_1_CentralHeatPumpSystem) {
+  openstudio::path path = resourcesPath() / toPath("osversion/3_11_1/test_vt_CentralHeatPumpSystem.osm");
+  osversion::VersionTranslator vt;
+  boost::optional<model::Model> model = vt.loadModel(path);
+  ASSERT_TRUE(model) << "Failed to load " << path;
+
+  openstudio::path outPath = resourcesPath() / toPath("osversion/3_11_1/test_vt_CentralHeatPumpSystem_updated.osm");
+  model->save(outPath, true);
+
+  std::vector<WorkspaceObject> chpss = model->getObjectsByType("OS:CentralHeatPumpSystem");
+  ASSERT_EQ(1u, chpss.size());
+  const auto& chps = chpss.front();
+
+  EXPECT_EQ("Central Heat Pump System 1", chps.getString(1).get());  // Name
+
+  // Control Method field (old index 2) has been removed: everything after it shifts down by one
+  auto coolingInletConnection = chps.getTarget(2);  // Cooling Loop Inlet Node Name: real Connection, preserved
+  ASSERT_TRUE(coolingInletConnection);
+  auto coolingInletNode = coolingInletConnection->getTarget(3);  // OS:Connection's Target Object
+  ASSERT_TRUE(coolingInletNode);
+  EXPECT_EQ("Central Heat Pump System Cooling Inlet Node", coolingInletNode->getString(1).get());
+
+  auto coolingOutletConnection = chps.getTarget(3);  // Cooling Loop Outlet Node Name: real Connection, preserved
+  ASSERT_TRUE(coolingOutletConnection);
+  auto coolingOutletNode = coolingOutletConnection->getTarget(1);  // OS:Connection's Source Object
+  ASSERT_TRUE(coolingOutletNode);
+  EXPECT_EQ("Central Heat Pump System Cooling Outlet Node", coolingOutletNode->getString(1).get());
+
+  EXPECT_FALSE(chps.isEmpty(10));               // Chiller Heater Module List Name (last field): preserved
+  EXPECT_TRUE(chps.getTarget(10));
+
+  std::vector<WorkspaceObject> chperfs = model->getObjectsByType("OS:ChillerHeaterPerformance:Electric:EIR");
+  ASSERT_EQ(1u, chperfs.size());
+  const auto& chperf = chperfs.front();
+
+  EXPECT_EQ("Chiller Heater Performance Electric EIR 1", chperf.getString(1).get());  // Name
+
+  // Condenser Type field (old index 18) has been removed: everything after it shifts down by one
+  EXPECT_EQ(1.0, chperf.getDouble(17).get());               // Compressor Motor Efficiency: unaffected, before the removed field
+  EXPECT_EQ("EnteringCondenser", chperf.getString(18).get());  // Cooling Mode Temperature Curve Condenser Water Independent Variable
+  EXPECT_EQ(1.0, chperf.getDouble(28).get());               // Sizing Factor (last field): preserved
+}

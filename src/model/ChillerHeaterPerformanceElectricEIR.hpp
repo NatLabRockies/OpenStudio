@@ -9,6 +9,8 @@
 #include "ModelAPI.hpp"
 #include "ParentObject.hpp"
 
+#include "../utilities/core/Deprecated.hpp"
+
 namespace openstudio {
 
 namespace model {
@@ -49,7 +51,7 @@ namespace model {
 
     static std::vector<std::string> chilledWaterFlowModeTypeValues();
 
-    static std::vector<std::string> condenserTypeValues();
+    OS_DEPRECATED(3, 11, 1) static std::vector<std::string> condenserTypeValues();
 
     static std::vector<std::string> coolingModeTemperatureCurveCondenserWaterIndependentVariableValues();
 
@@ -96,7 +98,7 @@ namespace model {
 
     double compressorMotorEfficiency() const;
 
-    std::string condenserType() const;
+    OS_DEPRECATED(3, 11, 1) std::string condenserType() const;
 
     std::string coolingModeTemperatureCurveCondenserWaterIndependentVariable() const;
 
@@ -166,7 +168,7 @@ namespace model {
 
     bool setCompressorMotorEfficiency(double compressorMotorEfficiency);
 
-    bool setCondenserType(const std::string& condenserType);
+    OS_DEPRECATED(3, 11, 1) bool setCondenserType(const std::string& condenserType);
 
     bool setCoolingModeTemperatureCurveCondenserWaterIndependentVariable(
       const std::string& coolingModeTemperatureCurveCondenserWaterIndependentVariable);

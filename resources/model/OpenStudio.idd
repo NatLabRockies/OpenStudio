@@ -15948,31 +15948,27 @@ OS:CentralHeatPumpSystem,
        \type alpha
        \reference ConnectionObject
        \required-field
-  A3,  \field Control Method
-       \required-field
-       \type choice
-       \key SmartMixing
-  A4,  \field Cooling Loop Inlet Node Name
+  A3,  \field Cooling Loop Inlet Node Name
        \type object-list
        \required-field
        \object-list ConnectionNames
-  A5,  \field Cooling Loop Outlet Node Name
+  A4,  \field Cooling Loop Outlet Node Name
        \type object-list
        \required-field
        \object-list ConnectionNames
-  A6,  \field Source Loop Inlet Node Name
+  A5,  \field Source Loop Inlet Node Name
        \type object-list
        \required-field
        \object-list ConnectionNames
-  A7,  \field Source Loop Outlet Node Name
+  A6,  \field Source Loop Outlet Node Name
        \type object-list
        \required-field
        \object-list ConnectionNames
-  A8,  \field Heating Loop Inlet Node Name
+  A7,  \field Heating Loop Inlet Node Name
        \type object-list
        \required-field
        \object-list ConnectionNames
-  A9,  \field Heating Loop Outlet Node Name
+  A8,  \field Heating Loop Outlet Node Name
        \type object-list
        \required-field
        \object-list ConnectionNames
@@ -15981,11 +15977,11 @@ OS:CentralHeatPumpSystem,
        \type real
        \units W
        \minimum 0.0
-  A10, \field Ancillary Operation Schedule Name
+  A9,  \field Ancillary Operation Schedule Name
        \type object-list
        \object-list ScheduleNames
        \note This value from this schedule is multiplied times the Ancillary Power
-  A11; \field Chiller Heater Module List Name
+  A10; \field Chiller Heater Module List Name
        \required-field
        \type object-list
        \object-list ModelObjectLists
@@ -16094,25 +16090,20 @@ OS:ChillerHeaterPerformance:Electric:EIR,
        \type real
        \minimum 0.0
        \maximum 1.0
-  A4 , \field Condenser Type
-       \required-field
-       \type choice
-       \key AirCooled
-       \key WaterCooled
-  A5 , \field Cooling Mode Temperature Curve Condenser Water Independent Variable
+  A4 , \field Cooling Mode Temperature Curve Condenser Water Independent Variable
        \required-field
        \type choice
        \key EnteringCondenser
        \key LeavingCondenser
-  A6 , \field Cooling Mode Cooling Capacity Function of Temperature Curve Name
+  A5 , \field Cooling Mode Cooling Capacity Function of Temperature Curve Name
        \required-field
        \type object-list
        \object-list BivariateFunctions
-  A7 , \field Cooling Mode Electric Input to Cooling Output Ratio Function of Temperature Curve Name
+  A6 , \field Cooling Mode Electric Input to Cooling Output Ratio Function of Temperature Curve Name
        \required-field
        \type object-list
        \object-list BivariateFunctions
-  A8 , \field Cooling Mode Electric Input to Cooling Output Ratio Function of Part Load Ratio Curve Name
+  A7 , \field Cooling Mode Electric Input to Cooling Output Ratio Function of Part Load Ratio Curve Name
        \required-field
        \type object-list
        \object-list UnivariateFunctions
@@ -16121,20 +16112,20 @@ OS:ChillerHeaterPerformance:Electric:EIR,
        \required-field
        \type real
        \minimum> 0.0
-  A9 , \field Heating Mode Temperature Curve Condenser Water Independent Variable
+  A8 , \field Heating Mode Temperature Curve Condenser Water Independent Variable
        \required-field
        \type choice
        \key EnteringCondenser
        \key LeavingCondenser
-  A10, \field Heating Mode Cooling Capacity Function of Temperature Curve Name
+  A9 , \field Heating Mode Cooling Capacity Function of Temperature Curve Name
        \required-field
        \type object-list
        \object-list BivariateFunctions
-  A11, \field Heating Mode Electric Input to Cooling Output Ratio Function of Temperature Curve Name
+  A10, \field Heating Mode Electric Input to Cooling Output Ratio Function of Temperature Curve Name
        \required-field
        \type object-list
        \object-list BivariateFunctions
-  A12, \field Heating Mode Electric Input to Cooling Output Ratio Function of Part Load Ratio Curve Name
+  A11, \field Heating Mode Electric Input to Cooling Output Ratio Function of Part Load Ratio Curve Name
        \required-field
        \type object-list
        \object-list UnivariateFunctions

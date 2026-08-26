@@ -9,6 +9,8 @@
 #include "ModelAPI.hpp"
 #include "WaterToWaterComponent.hpp"
 
+#include "../utilities/core/Deprecated.hpp"
+
 namespace openstudio {
 
 namespace model {
@@ -46,12 +48,12 @@ namespace model {
 
     static IddObjectType iddObjectType();
 
-    static std::vector<std::string> controlMethodValues();
+    OS_DEPRECATED(3, 11, 1) static std::vector<std::string> controlMethodValues();
 
     /** @name Getters */
     //@{
 
-    std::string controlMethod() const;
+    OS_DEPRECATED(3, 11, 1) std::string controlMethod() const;
 
     double ancillaryPower() const;
 
@@ -61,7 +63,7 @@ namespace model {
     /** @name Setters */
     //@{
 
-    bool setControlMethod(const std::string& controlMethod);
+    OS_DEPRECATED(3, 11, 1) bool setControlMethod(const std::string& controlMethod);
 
     bool setAncillaryPower(double ancillaryPower);
 

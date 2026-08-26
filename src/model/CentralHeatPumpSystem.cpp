@@ -24,9 +24,9 @@
 #include "Model_Impl.hpp"
 
 #include "../utilities/core/Assert.hpp"
+#include "../utilities/core/DeprecatedHelpers.hpp"
 #include "../utilities/data/DataEnums.hpp"
 
-#include <utilities/idd/IddFactory.hxx>
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/OS_CentralHeatPumpSystem_FieldEnums.hxx>
 
@@ -267,12 +267,6 @@ namespace model {
       OS_ASSERT(result);
     }
 
-    std::string CentralHeatPumpSystem_Impl::controlMethod() const {
-      boost::optional<std::string> value = getString(OS_CentralHeatPumpSystemFields::ControlMethod, true);
-      OS_ASSERT(value);
-      return value.get();
-    }
-
     double CentralHeatPumpSystem_Impl::ancillaryPower() const {
       boost::optional<double> value = getDouble(OS_CentralHeatPumpSystemFields::AncillaryPower, true);
       OS_ASSERT(value);
@@ -281,11 +275,6 @@ namespace model {
 
     boost::optional<Schedule> CentralHeatPumpSystem_Impl::ancillaryOperationSchedule() const {
       return getObject<ModelObject>().getModelObjectTarget<Schedule>(OS_CentralHeatPumpSystemFields::AncillaryOperationScheduleName);
-    }
-
-    bool CentralHeatPumpSystem_Impl::setControlMethod(const std::string& controlMethod) {
-      bool result = setString(OS_CentralHeatPumpSystemFields::ControlMethod, controlMethod);
-      return result;
     }
 
     bool CentralHeatPumpSystem_Impl::setAncillaryPower(double ancillaryPower) {
@@ -355,8 +344,6 @@ namespace model {
     OS_ASSERT(getImpl<detail::CentralHeatPumpSystem_Impl>());
 
     bool ok = true;
-    ok = setControlMethod("SmartMixing");
-    OS_ASSERT(ok);
     ok = setAncillaryPower(0.0);
     OS_ASSERT(ok);
 
@@ -373,24 +360,12 @@ namespace model {
     return {IddObjectType::OS_CentralHeatPumpSystem};
   }
 
-  std::vector<std::string> CentralHeatPumpSystem::controlMethodValues() {
-    return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), OS_CentralHeatPumpSystemFields::ControlMethod);
-  }
-
-  std::string CentralHeatPumpSystem::controlMethod() const {
-    return getImpl<detail::CentralHeatPumpSystem_Impl>()->controlMethod();
-  }
-
   double CentralHeatPumpSystem::ancillaryPower() const {
     return getImpl<detail::CentralHeatPumpSystem_Impl>()->ancillaryPower();
   }
 
   boost::optional<Schedule> CentralHeatPumpSystem::ancillaryOperationSchedule() const {
     return getImpl<detail::CentralHeatPumpSystem_Impl>()->ancillaryOperationSchedule();
-  }
-
-  bool CentralHeatPumpSystem::setControlMethod(const std::string& controlMethod) {
-    return getImpl<detail::CentralHeatPumpSystem_Impl>()->setControlMethod(controlMethod);
   }
 
   bool CentralHeatPumpSystem::setAncillaryPower(double ancillaryPower) {
@@ -436,6 +411,26 @@ namespace model {
 
   /// @cond
   CentralHeatPumpSystem::CentralHeatPumpSystem(std::shared_ptr<detail::CentralHeatPumpSystem_Impl> impl) : WaterToWaterComponent(std::move(impl)) {}
+
+  // DEPRECATED
+  std::vector<std::string> CentralHeatPumpSystem::controlMethodValues() {
+    DEPRECATED_AT_MSG(3, 11, 1, "The Control Method field was removed from the CentralHeatPumpSystem object in EnergyPlus. "
+                                 "\"SmartMixing\" was the only valid value.");
+    return {"SmartMixing"};
+  }
+
+  std::string CentralHeatPumpSystem::controlMethod() const {
+    DEPRECATED_AT_MSG(3, 11, 1, "The Control Method field was removed from the CentralHeatPumpSystem object in EnergyPlus. "
+                                 "This now always returns \"SmartMixing\".");
+    return "SmartMixing";
+  }
+
+  bool CentralHeatPumpSystem::setControlMethod(const std::string& controlMethod) {
+    DEPRECATED_AT_MSG(3, 11, 1, "The Control Method field was removed from the CentralHeatPumpSystem object in EnergyPlus. "
+                                 "This is now a no-op that only accepts \"SmartMixing\".");
+    return istringEqual(controlMethod, "SmartMixing");
+  }
+
   /// @endcond
 
 }  // namespace model

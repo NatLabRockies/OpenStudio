@@ -147,7 +147,7 @@ namespace osversion {
     m_updateMethods[VersionString("3.9.0")] = &VersionTranslator::update_3_8_0_to_3_9_0;
     m_updateMethods[VersionString("3.10.0")] = &VersionTranslator::update_3_9_0_to_3_10_0;
     m_updateMethods[VersionString("3.11.0")] = &VersionTranslator::update_3_10_0_to_3_11_0;
-    m_updateMethods[VersionString("3.11.1")] = &VersionTranslator::defaultUpdate;
+    m_updateMethods[VersionString("3.11.1")] = &VersionTranslator::update_3_11_0_to_3_11_1;
 
     // List of previous versions that may be updated to this one.
     //   - To increment the translator, add an entry for the version just released (branched for
@@ -10225,5 +10225,74 @@ namespace osversion {
     return ss.str();
 
   }  // end update_3_10_0_to_3_11_0
+
+  std::string VersionTranslator::update_3_11_0_to_3_11_1(const IdfFile& idf_3_11_0, const IddFileAndFactoryWrapper& idd_3_11_1) {
+    std::stringstream ss;
+    boost::optional<std::string> value;
+
+    ss << idf_3_11_0.header() << '\n' << '\n';
+    IdfFile targetIdf(idd_3_11_1.iddFile());
+    ss << targetIdf.versionObject().get();
+
+    for (const IdfObject& object : idf_3_11_0.objects()) {
+      auto iddname = object.iddObject().name();
+
+      if (iddname == "OS:CentralHeatPumpSystem") {
+
+        // 1 Field has been removed from 3.11.0 to 3.11.1:
+        // ------------------------------------------------
+        // * Control Method * 2
+
+        auto iddObject = idd_3_11_1.getObject(iddname);
+        IdfObject newObject(iddObject.get());
+
+        for (size_t i = 0; i < object.numFields(); ++i) {
+          if ((value = object.getString(i))) {
+            if (i < 2) {
+              newObject.setString(i, value.get());
+            } else if (i == 2) {
+              // no-op: Control Method field removed
+            } else {
+              newObject.setString(i - 1, value.get());
+            }
+          }
+        }
+
+        ss << newObject;
+        m_refactored.emplace_back(std::move(object), std::move(newObject));
+
+      } else if (iddname == "OS:ChillerHeaterPerformance:Electric:EIR") {
+
+        // 1 Field has been removed from 3.11.0 to 3.11.1:
+        // ------------------------------------------------
+        // * Condenser Type * 18
+
+        auto iddObject = idd_3_11_1.getObject(iddname);
+        IdfObject newObject(iddObject.get());
+
+        for (size_t i = 0; i < object.numFields(); ++i) {
+          if ((value = object.getString(i))) {
+            if (i < 18) {
+              newObject.setString(i, value.get());
+            } else if (i == 18) {
+              // no-op: Condenser Type field removed
+            } else {
+              newObject.setString(i - 1, value.get());
+            }
+          }
+        }
+
+        ss << newObject;
+        m_refactored.emplace_back(std::move(object), std::move(newObject));
+
+        // No-op
+      } else {
+        ss << object;
+      }
+    }
+
+    return ss.str();
+
+  }  // end update_3_11_0_to_3_11_1
 }  // namespace osversion
 }  // namespace openstudio

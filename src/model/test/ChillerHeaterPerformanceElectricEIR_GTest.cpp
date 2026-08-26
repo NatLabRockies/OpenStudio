@@ -149,11 +149,6 @@ TEST_F(ModelFixture, ChillerHeaterPerformanceElectricEIR_SettersGetters) {
   ASSERT_EQ(0.98, ch_heater.compressorMotorEfficiency());
 
   // Return type: bool
-  // WaterCooled is the only valid type
-  ASSERT_TRUE(ch_heater.setCondenserType("WaterCooled"));
-  ASSERT_EQ("WaterCooled", ch_heater.condenserType());
-
-  // Return type: bool
   // "LeavingCondenser" or "EnteringCondenser"
   ASSERT_TRUE(ch_heater.setCoolingModeTemperatureCurveCondenserWaterIndependentVariable("LeavingCondenser"));
   ASSERT_EQ("LeavingCondenser", ch_heater.coolingModeTemperatureCurveCondenserWaterIndependentVariable());
