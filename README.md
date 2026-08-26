@@ -45,4 +45,5 @@ If you encounter these issues, please follow these steps to bypass the security 
 4.  **Security Settings**: Open **System Settings** (or System Preferences) and navigate to **Privacy & Security**.
 5.  **Allow the App**: Scroll down to the "Security" section. Look for a note about the OpenStudio application being blocked. Click the **Open Anyway** button.
 6.  **Confirm Open**: A final confirmation dialog will appear. Click **Open**.
+
 7.  **Authenticate**: Enter your system password when prompted to authorize the installation.
