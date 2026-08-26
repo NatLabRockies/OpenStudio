@@ -51,7 +51,7 @@ namespace model {
 
     static std::vector<std::string> chilledWaterFlowModeTypeValues();
 
-    OS_DEPRECATED(3, 11, 1) static std::vector<std::string> condenserTypeValues();
+    OS_DEPRECATED(3, 12, 0) static std::vector<std::string> condenserTypeValues();
 
     static std::vector<std::string> coolingModeTemperatureCurveCondenserWaterIndependentVariableValues();
 
@@ -98,7 +98,7 @@ namespace model {
 
     double compressorMotorEfficiency() const;
 
-    OS_DEPRECATED(3, 11, 1) std::string condenserType() const;
+    OS_DEPRECATED(3, 12, 0) std::string condenserType() const;
 
     std::string coolingModeTemperatureCurveCondenserWaterIndependentVariable() const;
 
@@ -168,7 +168,7 @@ namespace model {
 
     bool setCompressorMotorEfficiency(double compressorMotorEfficiency);
 
-    OS_DEPRECATED(3, 11, 1) bool setCondenserType(const std::string& condenserType);
+    OS_DEPRECATED(3, 12, 0) bool setCondenserType(const std::string& condenserType);
 
     bool setCoolingModeTemperatureCurveCondenserWaterIndependentVariable(
       const std::string& coolingModeTemperatureCurveCondenserWaterIndependentVariable);

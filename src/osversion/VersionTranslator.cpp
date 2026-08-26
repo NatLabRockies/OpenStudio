@@ -147,7 +147,7 @@ namespace osversion {
     m_updateMethods[VersionString("3.9.0")] = &VersionTranslator::update_3_8_0_to_3_9_0;
     m_updateMethods[VersionString("3.10.0")] = &VersionTranslator::update_3_9_0_to_3_10_0;
     m_updateMethods[VersionString("3.11.0")] = &VersionTranslator::update_3_10_0_to_3_11_0;
-    m_updateMethods[VersionString("3.11.1")] = &VersionTranslator::update_3_11_0_to_3_11_1;
+    m_updateMethods[VersionString("3.12.0")] = &VersionTranslator::update_3_11_0_to_3_12_0;
 
     // List of previous versions that may be updated to this one.
     //   - To increment the translator, add an entry for the version just released (branched for
@@ -187,7 +187,7 @@ namespace osversion {
       VersionString("3.6.0"),  VersionString("3.6.1"),  VersionString("3.7.0"),  VersionString("3.8.0"),  VersionString("3.9.0"),
       VersionString("3.10.0"), VersionString("3.11.0")
       // Note: do **not** include the **current** version in m_startVersions, stop at the previous release
-      //VersionString("3.11.1"),
+      //VersionString("3.12.0"),
     };
   }
 
@@ -10226,12 +10226,12 @@ namespace osversion {
 
   }  // end update_3_10_0_to_3_11_0
 
-  std::string VersionTranslator::update_3_11_0_to_3_11_1(const IdfFile& idf_3_11_0, const IddFileAndFactoryWrapper& idd_3_11_1) {
+  std::string VersionTranslator::update_3_11_0_to_3_12_0(const IdfFile& idf_3_11_0, const IddFileAndFactoryWrapper& idd_3_12_0) {
     std::stringstream ss;
     boost::optional<std::string> value;
 
     ss << idf_3_11_0.header() << '\n' << '\n';
-    IdfFile targetIdf(idd_3_11_1.iddFile());
+    IdfFile targetIdf(idd_3_12_0.iddFile());
     ss << targetIdf.versionObject().get();
 
     for (const IdfObject& object : idf_3_11_0.objects()) {
@@ -10239,11 +10239,11 @@ namespace osversion {
 
       if (iddname == "OS:CentralHeatPumpSystem") {
 
-        // 1 Field has been removed from 3.11.0 to 3.11.1:
+        // 1 Field has been removed from 3.11.0 to 3.12.0:
         // ------------------------------------------------
         // * Control Method * 2
 
-        auto iddObject = idd_3_11_1.getObject(iddname);
+        auto iddObject = idd_3_12_0.getObject(iddname);
         IdfObject newObject(iddObject.get());
 
         for (size_t i = 0; i < object.numFields(); ++i) {
@@ -10263,11 +10263,11 @@ namespace osversion {
 
       } else if (iddname == "OS:ChillerHeaterPerformance:Electric:EIR") {
 
-        // 1 Field has been removed from 3.11.0 to 3.11.1:
+        // 1 Field has been removed from 3.11.0 to 3.12.0:
         // ------------------------------------------------
         // * Condenser Type * 18
 
-        auto iddObject = idd_3_11_1.getObject(iddname);
+        auto iddObject = idd_3_12_0.getObject(iddname);
         IdfObject newObject(iddObject.get());
 
         for (size_t i = 0; i < object.numFields(); ++i) {
@@ -10293,6 +10293,6 @@ namespace osversion {
 
     return ss.str();
 
-  }  // end update_3_11_0_to_3_11_1
+  }  // end update_3_11_0_to_3_12_0
 }  // namespace osversion
 }  // namespace openstudio

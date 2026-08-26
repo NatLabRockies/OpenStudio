@@ -48,12 +48,12 @@ namespace model {
 
     static IddObjectType iddObjectType();
 
-    OS_DEPRECATED(3, 11, 1) static std::vector<std::string> controlMethodValues();
+    OS_DEPRECATED(3, 12, 0) static std::vector<std::string> controlMethodValues();
 
     /** @name Getters */
     //@{
 
-    OS_DEPRECATED(3, 11, 1) std::string controlMethod() const;
+    OS_DEPRECATED(3, 12, 0) std::string controlMethod() const;
 
     double ancillaryPower() const;
 
@@ -63,7 +63,7 @@ namespace model {
     /** @name Setters */
     //@{
 
-    OS_DEPRECATED(3, 11, 1) bool setControlMethod(const std::string& controlMethod);
+    OS_DEPRECATED(3, 12, 0) bool setControlMethod(const std::string& controlMethod);
 
     bool setAncillaryPower(double ancillaryPower);
 

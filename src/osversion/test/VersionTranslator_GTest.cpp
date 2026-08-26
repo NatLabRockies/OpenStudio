@@ -5037,13 +5037,13 @@ TEST_F(OSVersionFixture, update_3_10_0_to_3_11_0_OutputControlFiles) {
   EXPECT_EQ("Yes", ocf.getString(32).get());  // Output Plant Component Sizing
 }
 
-TEST_F(OSVersionFixture, update_3_11_0_to_3_11_1_CentralHeatPumpSystem) {
-  openstudio::path path = resourcesPath() / toPath("osversion/3_11_1/test_vt_CentralHeatPumpSystem.osm");
+TEST_F(OSVersionFixture, update_3_11_0_to_3_12_0_CentralHeatPumpSystem) {
+  openstudio::path path = resourcesPath() / toPath("osversion/3_12_0/test_vt_CentralHeatPumpSystem.osm");
   osversion::VersionTranslator vt;
   boost::optional<model::Model> model = vt.loadModel(path);
   ASSERT_TRUE(model) << "Failed to load " << path;
 
-  openstudio::path outPath = resourcesPath() / toPath("osversion/3_11_1/test_vt_CentralHeatPumpSystem_updated.osm");
+  openstudio::path outPath = resourcesPath() / toPath("osversion/3_12_0/test_vt_CentralHeatPumpSystem_updated.osm");
   model->save(outPath, true);
 
   std::vector<WorkspaceObject> chpss = model->getObjectsByType("OS:CentralHeatPumpSystem");
