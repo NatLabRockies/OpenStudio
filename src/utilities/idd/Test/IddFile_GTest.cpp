@@ -195,13 +195,13 @@ void IddFile_Version(const IddFile& iddFile) {
   EXPECT_TRUE(field->keys().empty());
 }
 
-// test single object, 7 fields, 5 keys on field 3
+// test single object, 9 fields, 5 keys on field 3
 void IddFile_Building(const IddFile& iddFile) {
   string objectName("Building");
   OptionalIddObject object = iddFile.getObject(objectName);
   ASSERT_TRUE(object);
   EXPECT_EQ(object->name(), objectName);
-  EXPECT_EQ(static_cast<unsigned int>(8), object->nonextensibleFields().size());
+  EXPECT_EQ(static_cast<unsigned int>(9), object->nonextensibleFields().size());
   EXPECT_TRUE(object->properties().unique);
   EXPECT_TRUE(object->properties().required);
 
@@ -226,7 +226,7 @@ void IddFile_bUiLdInG(const IddFile& iddFile) {
   OptionalIddObject object = iddFile.getObject(objectName);
   ASSERT_TRUE(object);
   EXPECT_TRUE(iequals(object->name(), objectName));
-  EXPECT_EQ(static_cast<unsigned int>(8), object->nonextensibleFields().size());
+  EXPECT_EQ(static_cast<unsigned int>(9), object->nonextensibleFields().size());
   EXPECT_TRUE(object->properties().unique);
   EXPECT_TRUE(object->properties().required);
 
