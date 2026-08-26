@@ -61,6 +61,9 @@ TEST_F(ModelFixture, ZoneHVACCoolingPanelRadiantConvectiveWater_SetGetFields) {
   EXPECT_EQ((*scheduleConstant).value(), 1.0);
   EXPECT_EQ(0.65, zonehvac.fractionRadiant());
   EXPECT_EQ(0.2, zonehvac.fractionofRadiantEnergyIncidentonPeople());
+  EXPECT_EQ(0.05, zonehvac.fractionofRadiantEnergytoFloorSurfaces());
+  EXPECT_EQ(0.55, zonehvac.fractionofRadiantEnergytoWallSurfaces());
+  EXPECT_EQ(0.40, zonehvac.fractionofRadiantEnergytoCeilingSurfaces());
   HVACComponent coil = zonehvac.coolingCoil();
   boost::optional<CoilCoolingWaterPanelRadiant> coilCooling = coil.optionalCast<CoilCoolingWaterPanelRadiant>();
   ASSERT_TRUE(coilCooling);
@@ -70,6 +73,9 @@ TEST_F(ModelFixture, ZoneHVACCoolingPanelRadiantConvectiveWater_SetGetFields) {
   EXPECT_TRUE(zonehvac.setAvailabilitySchedule(sched));
   EXPECT_TRUE(zonehvac.setFractionRadiant(0.75));
   EXPECT_TRUE(zonehvac.setFractionofRadiantEnergyIncidentonPeople(0.3));
+  EXPECT_TRUE(zonehvac.setFractionofRadiantEnergytoFloorSurfaces(0.4));
+  EXPECT_TRUE(zonehvac.setFractionofRadiantEnergytoWallSurfaces(0.5));
+  EXPECT_TRUE(zonehvac.setFractionofRadiantEnergytoCeilingSurfaces(0.6));
   CoilCoolingWaterPanelRadiant coilCooling2(m);
   EXPECT_TRUE(zonehvac.setCoolingCoil(coilCooling2));
 
@@ -79,6 +85,9 @@ TEST_F(ModelFixture, ZoneHVACCoolingPanelRadiantConvectiveWater_SetGetFields) {
   EXPECT_EQ((*scheduleConstant2).value(), 0.5);
   EXPECT_EQ(0.75, zonehvac.fractionRadiant());
   EXPECT_EQ(0.3, zonehvac.fractionofRadiantEnergyIncidentonPeople());
+  EXPECT_EQ(0.4, zonehvac.fractionofRadiantEnergytoFloorSurfaces());
+  EXPECT_EQ(0.5, zonehvac.fractionofRadiantEnergytoWallSurfaces());
+  EXPECT_EQ(0.6, zonehvac.fractionofRadiantEnergytoCeilingSurfaces());
   HVACComponent coil3 = zonehvac.coolingCoil();
   boost::optional<CoilCoolingWaterPanelRadiant> coilCooling3 = coil3.optionalCast<CoilCoolingWaterPanelRadiant>();
   ASSERT_TRUE(coilCooling3);

@@ -862,7 +862,9 @@ set(${target_name}_test_src
   Test/WaterHeaterStratified_GTest.cpp
   Test/WaterUseConnections_GTest.cpp
   Test/ZoneAirHeatBalanceAlgorithm_GTest.cpp
+  Test/ZoneHVACBaseboardRadiantConvectiveElectric_GTest.cpp
   Test/ZoneHVACBaseboardRadiantConvectiveWater_GTest.cpp
+  Test/ZoneHVACCoolingPanelRadiantConvectiveWater_GTest.cpp
   Test/ZoneHVACEvaporativeCoolerUnit_GTest.cpp
   Test/ZoneHVACIdealLoadsAirSystem_GTest.cpp
   Test/ZoneHVACLowTemperatureRadiantElectric_GTest.cpp

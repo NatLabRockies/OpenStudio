@@ -153,12 +153,15 @@ namespace energyplus {
       }
     }
 
-    // Assume that 5% of what is not on people is on the floor
-    double fractionOnFloor = (1.0 - fractionofRadiantEnergyIncidentonPeople) * 0.05;
-    // Assume that 55% of what is not on people is on the walls
-    double fractionOnWall = (1.0 - fractionofRadiantEnergyIncidentonPeople) * 0.55;
-    // Assume that 40% of what is not on people is on the ceiling
-    double fractionOnCeiling = (1.0 - fractionofRadiantEnergyIncidentonPeople) * 0.40;
+    // SurfaceName
+    // FractionofRadiantEnergytoSurface
+    double fractionofRadiantEnergytoFloorSurfaces = modelObject.fractionofRadiantEnergytoFloorSurfaces();
+    double fractionofRadiantEnergytoWallSurfaces = modelObject.fractionofRadiantEnergytoWallSurfaces();
+    double fractionofRadiantEnergytoCeilingSurfaces = modelObject.fractionofRadiantEnergytoCeilingSurfaces();
+
+    double fractionOnFloor = (1.0 - fractionofRadiantEnergyIncidentonPeople) * fractionofRadiantEnergytoFloorSurfaces;
+    double fractionOnWall = (1.0 - fractionofRadiantEnergyIncidentonPeople) * fractionofRadiantEnergytoWallSurfaces;
+    double fractionOnCeiling = (1.0 - fractionofRadiantEnergyIncidentonPeople) * fractionofRadiantEnergytoCeilingSurfaces;
     //loop through all the surfaces, adding them and their flow fractions (weighted per-area)
     for (auto const& surface : surfaces) {
       IdfExtensibleGroup group = idfObject.pushExtensibleGroup();

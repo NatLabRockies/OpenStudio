@@ -31809,7 +31809,22 @@ OS:ZoneHVAC:Baseboard:RadiantConvective:Water,
        \type real
        \minimum 0
        \maximum 1
-  N2;  \field Fraction of Radiant Energy Incident on People
+  N2,  \field Fraction of Radiant Energy Incident on People
+       \required-field
+       \type real
+       \minimum 0
+       \maximum 1
+  N3,  \field Fraction of Radiant Energy to Floor Surfaces
+       \required-field
+       \type real
+       \minimum 0
+       \maximum 1
+  N4,  \field Fraction of Radiant Energy to Wall Surfaces
+       \required-field
+       \type real
+       \minimum 0
+       \maximum 1
+  N5;  \field Fraction of Radiant Energy to Ceiling Surfaces
        \required-field
        \type real
        \minimum 0
@@ -31857,34 +31872,64 @@ OS:ZoneHVAC:Baseboard:RadiantConvective:Electric,
        \type real
        \minimum 0
        \maximum 1
-  N6;  \field Fraction of Radiant Energy Incident on People
+  N6,  \field Fraction of Radiant Energy Incident on People
+       \required-field
+       \type real
+       \minimum 0
+       \maximum 1
+  N7,  \field Fraction of Radiant Energy to Floor Surfaces
+       \required-field
+       \type real
+       \minimum 0
+       \maximum 1
+  N8,  \field Fraction of Radiant Energy to Wall Surfaces
+       \required-field
+       \type real
+       \minimum 0
+       \maximum 1
+  N9;  \field Fraction of Radiant Energy to Ceiling Surfaces
        \required-field
        \type real
        \minimum 0
        \maximum 1
 
 OS:ZoneHVAC:CoolingPanel:RadiantConvective:Water,
-  A1 , \field Handle
+  A1,  \field Handle
        \type handle
        \required-field
-  A2 , \field Name
+  A2,  \field Name
        \required-field
        \type alpha
        \reference ConnectionObject
-  A3 , \field Availability Schedule Name
+  A3,  \field Availability Schedule Name
        \required-field
        \type object-list
        \object-list ScheduleNames
-  A4 , \field Cooling Coil Name
+  A4,  \field Cooling Coil Name
        \type object-list
        \required-field
        \object-list RadiantPanelCoolingCoil
-  N1 , \field Fraction Radiant
+  N1,  \field Fraction Radiant
        \required-field
        \type real
        \minimum 0
        \maximum 1
-  N2 ; \field Fraction of Radiant Energy Incident on People
+  N2,  \field Fraction of Radiant Energy Incident on People
+       \required-field
+       \type real
+       \minimum 0
+       \maximum 1
+  N3,  \field Fraction of Radiant Energy to Floor Surfaces
+       \required-field
+       \type real
+       \minimum 0
+       \maximum 1
+  N4,  \field Fraction of Radiant Energy to Wall Surfaces
+       \required-field
+       \type real
+       \minimum 0
+       \maximum 1
+  N5;  \field Fraction of Radiant Energy to Ceiling Surfaces
        \required-field
        \type real
        \minimum 0
