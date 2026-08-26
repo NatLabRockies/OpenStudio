@@ -10,20 +10,6 @@
 #include "../core/Path.hpp"
 #include "../core/Deprecated.hpp"
 
-#if (defined(__GNUC__))
-#  pragma GCC diagnostic push
-#  pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
-#endif
-#if __APPLE__
-#  include <cpprestsdk_char_traits_workaround.hpp>  // OpenStudio/dependencies/cpprestsdk_char_traits_workaround.hpp
-#endif
-// Macro U from cpprestsdk is clashing with (cf boost https://github.com/microsoft/cpprestsdk/issues/1214)
-#define _TURN_OFF_PLATFORM_STRING
-#include <cpprest/http_client.h>
-#if (defined(__GNUC__))
-#  pragma GCC diagnostic pop
-#endif
-
 #include <nano/nano_signal_slot.hpp>
 #include <pugixml.hpp>
 
@@ -41,6 +27,17 @@ class UTILITIES_API RemoteQueryResponse
 
  private:
   std::shared_ptr<pugi::xml_document> m_domDocument;
+};
+
+struct TaxonomyItem {
+  std::string full_name;
+  int tid;
+  std::string name;
+
+  // index into the static vectors
+  size_t parent;
+  std::vector<size_t> children;
+
 };
 
 /// Class for accessing the remote BCL.
@@ -70,12 +67,13 @@ class UTILITIES_API RemoteBCL : public BCL
   /// Get the measure by uid
   virtual boost::optional<BCLMeasure> getMeasure(const std::string& uid, const std::string& versionId = "") const override;
 
+
   /// Perform a meta search on the library to identify number and types of results available.
   /// The total number of search results available can be used in the search method which requires a page number.
   boost::optional<BCLMetaSearchResult> metaSearchComponentLibrary(const std::string& searchTerm, const std::string& componentType,
-                                                                  const std::string& filterType = "nrel_component") const;
+                                                                  const std::string& filterType = "component") const;
   boost::optional<BCLMetaSearchResult> metaSearchComponentLibrary(const std::string& searchTerm, const unsigned componentTypeTID,
-                                                                  const std::string& filterType = "nrel_component") const;
+                                                                  const std::string& filterType = "component") const;
 
   /// Perform a component search of the library, results are returned in 'pages',
   /// the number of results per page is configurable and a metasearch should be performed
@@ -212,6 +210,9 @@ class UTILITIES_API RemoteBCL : public BCL
   /// Emitted when a measure download completes
   Nano::Signal<void(const std::string& uid, const boost::optional<BCLMeasure>& measure)> measureDownloaded;
 
+  static const std::vector<TaxonomyItem>& measureTaxonomy();
+  static const std::vector<TaxonomyItem>& componentTaxonomy();
+
  private:
   REGISTER_LOGGER("openstudio.RemoteBCL");
 
@@ -238,10 +239,7 @@ class UTILITIES_API RemoteBCL : public BCL
 
   // members
 
-  // A helper function to prepare a client, allowing us to change the http_client_config in one place only
-  static web::http::client::http_client getClient(const std::string& url, unsigned timeOutSeconds = 60);
-
-  boost::optional<pplx::task<void>> m_httpResponse;
+  bool m_lastRequestSuccess = false;
 
   struct DownloadFile
   {
@@ -250,7 +248,7 @@ class UTILITIES_API RemoteBCL : public BCL
     void flush();
     void close();
     const openstudio::path& fileName() const noexcept;
-    void write(const std::vector<unsigned char>& data);
+    void write(const std::string& data);
     bool open();
 
    private:
@@ -283,8 +281,6 @@ class UTILITIES_API RemoteBCL : public BCL
   int m_numResultsPerQuery;
 
   int m_lastTotalResults;
-
-  std::string m_apiVersion;
 
   bool validProdAuthKey;
 

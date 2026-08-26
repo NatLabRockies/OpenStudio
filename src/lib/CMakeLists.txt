@@ -28,7 +28,6 @@ target_link_libraries(
  INTERFACE
  boost::boost
  JsonCpp::JsonCpp
- cpprestsdk::cpprestsdk
  openssl::openssl
  pugixml::pugixml
  LibXml2::LibXml2

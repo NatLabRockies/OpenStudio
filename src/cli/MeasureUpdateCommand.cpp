@@ -284,7 +284,7 @@ $ openstudio measure new --list-for-first-taxonomy-tag HVAC
 
     if (opt.server_port > 0) {
       MeasureManagerServer server(opt.server_port, rubyEngine, pythonEngine);
-      server.open();              // This starts the cpprestsdk http listener, which processes tasks in subthreads
+      server.open();              // This starts the cpp-httplib http server in a background thread
       server.do_tasks_forever();  // This starts the event loop on the **main** thread to process the requests there and NOT in a subthread
 
       return;
