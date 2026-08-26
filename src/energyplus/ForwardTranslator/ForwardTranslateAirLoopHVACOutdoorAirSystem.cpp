@@ -123,6 +123,20 @@ namespace energyplus {
     m_idfObjects.push_back(equipmentListIdf);
 
     unsigned i = 1;
+
+    // Components are simulated in the order they are listed, and that order must match the
+    // actual air flow direction: outside air side first, OutdoorAir:Mixer last (it sits between
+    // the OA/relief branches), then any relief-side equipment downstream of the mixer.
+    ModelObjectVector oaModelObjects = modelObject.oaComponents();
+    for (auto oaIt = oaModelObjects.begin(); oaIt != oaModelObjects.end(); ++oaIt) {
+      if (boost::optional<IdfObject> idfObject = translateAndMapModelObject(*oaIt)) {
+        equipmentListIdf.setString(i, idfObject->iddObject().name());
+        i++;
+        equipmentListIdf.setString(i, idfObject->name().get());
+        i++;
+      }
+    }
+
     if (!modelObject.airLoopHVACDedicatedOutdoorAirSystem()) {
       IdfObject outdoorAirMixerIdf(IddObjectType::OutdoorAir_Mixer);
       outdoorAirMixerIdf.setName(name + " Outdoor Air Mixer");
@@ -153,16 +167,6 @@ namespace energyplus {
       s = outdoorAirMixerIdf.name();
       equipmentListIdf.setString(i, *s);
       ++i;
-    }
-
-    ModelObjectVector oaModelObjects = modelObject.oaComponents();
-    for (auto oaIt = oaModelObjects.begin(); oaIt != oaModelObjects.end(); ++oaIt) {
-      if (boost::optional<IdfObject> idfObject = translateAndMapModelObject(*oaIt)) {
-        equipmentListIdf.setString(i, idfObject->iddObject().name());
-        i++;
-        equipmentListIdf.setString(i, idfObject->name().get());
-        i++;
-      }
     }
 
     ModelObjectVector reliefModelObjects = modelObject.reliefComponents();

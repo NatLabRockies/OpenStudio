@@ -26,6 +26,7 @@
 #include "../utilities/units/Unit.hpp"
 
 #include "../utilities/core/Assert.hpp"
+#include "../utilities/core/DeprecatedHelpers.hpp"
 
 namespace openstudio {
 namespace model {
@@ -179,12 +180,6 @@ namespace model {
 
     double ChillerHeaterPerformanceElectricEIR_Impl::compressorMotorEfficiency() const {
       boost::optional<double> value = getDouble(OS_ChillerHeaterPerformance_Electric_EIRFields::CompressorMotorEfficiency, true);
-      OS_ASSERT(value);
-      return value.get();
-    }
-
-    std::string ChillerHeaterPerformanceElectricEIR_Impl::condenserType() const {
-      boost::optional<std::string> value = getString(OS_ChillerHeaterPerformance_Electric_EIRFields::CondenserType, true);
       OS_ASSERT(value);
       return value.get();
     }
@@ -416,11 +411,6 @@ namespace model {
 
     bool ChillerHeaterPerformanceElectricEIR_Impl::setCompressorMotorEfficiency(double compressorMotorEfficiency) {
       bool result = setDouble(OS_ChillerHeaterPerformance_Electric_EIRFields::CompressorMotorEfficiency, compressorMotorEfficiency);
-      return result;
-    }
-
-    bool ChillerHeaterPerformanceElectricEIR_Impl::setCondenserType(const std::string& condenserType) {
-      bool result = setString(OS_ChillerHeaterPerformance_Electric_EIRFields::CondenserType, condenserType);
       return result;
     }
 
@@ -774,8 +764,6 @@ namespace model {
     OS_ASSERT(ok);
     ok = setCompressorMotorEfficiency(1);
     OS_ASSERT(ok);
-    ok = setCondenserType("WaterCooled");
-    OS_ASSERT(ok);
     ok = setCoolingModeTemperatureCurveCondenserWaterIndependentVariable("EnteringCondenser");
     OS_ASSERT(ok);
     ok = setCoolingModeCoolingCapacityFunctionOfTemperatureCurve(chillerHeaterClgCapFT);
@@ -829,8 +817,6 @@ namespace model {
     OS_ASSERT(ok);
     ok = setCompressorMotorEfficiency(1);
     OS_ASSERT(ok);
-    ok = setCondenserType("WaterCooled");
-    OS_ASSERT(ok);
     ok = setCoolingModeTemperatureCurveCondenserWaterIndependentVariable("EnteringCondenser");
     OS_ASSERT(ok);
     ok = setCoolingModeCoolingCapacityFunctionOfTemperatureCurve(chillerHeaterClgCapFT);
@@ -862,10 +848,6 @@ namespace model {
   std::vector<std::string> ChillerHeaterPerformanceElectricEIR::chilledWaterFlowModeTypeValues() {
     return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
                           OS_ChillerHeaterPerformance_Electric_EIRFields::ChilledWaterFlowModeType);
-  }
-
-  std::vector<std::string> ChillerHeaterPerformanceElectricEIR::condenserTypeValues() {
-    return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), OS_ChillerHeaterPerformance_Electric_EIRFields::CondenserType);
   }
 
   std::vector<std::string> ChillerHeaterPerformanceElectricEIR::coolingModeTemperatureCurveCondenserWaterIndependentVariableValues() {
@@ -952,10 +934,6 @@ namespace model {
 
   double ChillerHeaterPerformanceElectricEIR::compressorMotorEfficiency() const {
     return getImpl<detail::ChillerHeaterPerformanceElectricEIR_Impl>()->compressorMotorEfficiency();
-  }
-
-  std::string ChillerHeaterPerformanceElectricEIR::condenserType() const {
-    return getImpl<detail::ChillerHeaterPerformanceElectricEIR_Impl>()->condenserType();
   }
 
   std::string ChillerHeaterPerformanceElectricEIR::coolingModeTemperatureCurveCondenserWaterIndependentVariable() const {
@@ -1103,10 +1081,6 @@ namespace model {
     return getImpl<detail::ChillerHeaterPerformanceElectricEIR_Impl>()->setCompressorMotorEfficiency(compressorMotorEfficiency);
   }
 
-  bool ChillerHeaterPerformanceElectricEIR::setCondenserType(const std::string& condenserType) {
-    return getImpl<detail::ChillerHeaterPerformanceElectricEIR_Impl>()->setCondenserType(condenserType);
-  }
-
   bool ChillerHeaterPerformanceElectricEIR::setCoolingModeTemperatureCurveCondenserWaterIndependentVariable(
     const std::string& coolingModeTemperatureCurveCondenserWaterIndependentVariable) {
     return getImpl<detail::ChillerHeaterPerformanceElectricEIR_Impl>()->setCoolingModeTemperatureCurveCondenserWaterIndependentVariable(
@@ -1173,6 +1147,24 @@ namespace model {
   /// @cond
   ChillerHeaterPerformanceElectricEIR::ChillerHeaterPerformanceElectricEIR(std::shared_ptr<detail::ChillerHeaterPerformanceElectricEIR_Impl> impl)
     : ParentObject(std::move(impl)) {}
+
+  // DEPRECATED
+  std::vector<std::string> ChillerHeaterPerformanceElectricEIR::condenserTypeValues() {
+    DEPRECATED_AT_MSG(3, 12, 0, "The Condenser Type field was removed from the ChillerHeaterPerformance:Electric:EIR object in EnergyPlus.");
+    return {"AirCooled", "WaterCooled"};
+  }
+
+  std::string ChillerHeaterPerformanceElectricEIR::condenserType() const {
+    DEPRECATED_AT_MSG(3, 12, 0, "The Condenser Type field was removed from the ChillerHeaterPerformance:Electric:EIR object in EnergyPlus. "
+                                 "This now always returns \"WaterCooled\".");
+    return "WaterCooled";
+  }
+
+  bool ChillerHeaterPerformanceElectricEIR::setCondenserType(const std::string& condenserType) {
+    DEPRECATED_AT_MSG(3, 12, 0, "The Condenser Type field was removed from the ChillerHeaterPerformance:Electric:EIR object in EnergyPlus. "
+                                 "This is now a no-op that only accepts \"AirCooled\" or \"WaterCooled\".");
+    return istringEqual(condenserType, "AirCooled") || istringEqual(condenserType, "WaterCooled");
+  }
   /// @endcond
 
   boost::optional<double> ChillerHeaterPerformanceElectricEIR::autosizedReferenceCoolingModeEvaporatorCapacity() const {
