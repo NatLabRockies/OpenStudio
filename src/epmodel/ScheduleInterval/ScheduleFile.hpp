@@ -72,6 +72,9 @@ namespace epmodel {
     static std::vector<std::string> columnSeparatorValues();
     static std::vector<std::string> minutesperItemValues();
 
+    std::string fileName() const;
+    bool setFileName(std::string fileName);
+
     int columnNumber() const;
     bool setColumnNumber(int columnNumber);
 
@@ -92,7 +95,7 @@ namespace epmodel {
     bool setInterpolatetoTimestep(bool interpolatetoTimestep);
     void resetInterpolatetoTimestep();
 
-    boost::optional<std::string> minutesperItem() const;
+    int minutesperItem() const;
     bool isMinutesperItemDefaulted() const;
     bool setMinutesperItem(const std::string& minutesperItem);
     bool setMinutesperItem(int minutesperItem);
@@ -103,6 +106,7 @@ namespace epmodel {
     bool setAdjustScheduleforDaylightSavings(bool adjustScheduleforDaylightSavings);
     void resetAdjustScheduleforDaylightSavings();
 
+    openstudio::TimeSeries timeSeries() const;
     static boost::optional<ScheduleFile> fromTimeSeries(const openstudio::TimeSeries& timeSeries, Model& model);
 
     // Extra setters/getters

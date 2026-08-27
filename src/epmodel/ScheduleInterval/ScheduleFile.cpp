@@ -48,7 +48,7 @@ namespace epmodel {
     }
 
     bool ok = true;
-    ok &= getImpl<detail::ScheduleFile_Impl>()->setFileName(toString(p));
+    ok &= setFileName(toString(p));
     ok &= setColumnNumber(column);
     ok &= setRowstoSkipatTop(rowsToSkip);
     OS_ASSERT(ok);
@@ -68,13 +68,13 @@ namespace epmodel {
     return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), openstudio::Schedule_FileFields::MinutesperItem);
   }
 
-  // std::string ScheduleFile::fileName() const {
-  //   return getImpl<detail::ScheduleFile_Impl>()->fileName();
-  // }
+  std::string ScheduleFile::fileName() const {
+    return getImpl<detail::ScheduleFile_Impl>()->fileName();
+  }
 
-  // bool ScheduleFile::setFileName(std::string fileName) {
-  //   return getImpl<detail::ScheduleFile_Impl>()->setFileName(fileName);
-  // }
+  bool ScheduleFile::setFileName(std::string fileName) {
+    return getImpl<detail::ScheduleFile_Impl>()->setFileName(fileName);
+  }
 
   int ScheduleFile::columnNumber() const {
     return getImpl<detail::ScheduleFile_Impl>()->columnNumber();
@@ -136,7 +136,7 @@ namespace epmodel {
     getImpl<detail::ScheduleFile_Impl>()->resetInterpolatetoTimestep();
   }
 
-  boost::optional<std::string> ScheduleFile::minutesperItem() const {
+  int ScheduleFile::minutesperItem() const {
     return getImpl<detail::ScheduleFile_Impl>()->minutesperItem();
   }
 
@@ -203,12 +203,16 @@ namespace epmodel {
     return getImpl<epmodel::detail::ScheduleFile_Impl>()->translatedFilePath();
   }
 
+  openstudio::TimeSeries ScheduleFile::timeSeries() const {
+    return getImpl<detail::ScheduleFile_Impl>()->timeSeries();
+  }
+
   boost::optional<ScheduleFile> ScheduleFile::fromTimeSeries(const openstudio::TimeSeries& timeSeries, Model& model) {
     boost::optional<ScheduleFile> result;
 
     boost::optional<openstudio::Time> intervalTime = timeSeries.intervalLength();
     if (intervalTime) {
-      result = ScheduleFile(model, 2); // FT ScheduleFixedInterval wrote the dateTimes to file
+      result = ScheduleFile(model, 2); // FIXME: FT ScheduleFixedInterval wrote the dateTimes to file
       const std::string name = result->nameString();
       openstudio::path filePath = toPath(name + ".csv");
 
@@ -227,7 +231,7 @@ namespace epmodel {
       }
 
       bool ok = true;
-      ok &= result->getImpl<detail::ScheduleFile_Impl>()->setFileName(toString(p));
+      ok &= result->setFileName(toString(p));
       ok &= result->getImpl<detail::ScheduleFile_Impl>()->setTimeSeries(timeSeries);
       OS_ASSERT(ok);
     } else {
@@ -246,6 +250,30 @@ namespace epmodel {
 
     unsigned ScheduleFile_Impl::scheduleTypeLimitsFieldIndex() const {
       return openstudio::Schedule_FileFields::ScheduleTypeLimitsName;
+    }
+
+    openstudio::TimeSeries ScheduleFile_Impl::timeSeries() const {
+      boost::optional<CSVFile> csvFile = this->csvFile(); // FIXME: there is a ctor where csvFile isn't set yet
+      if (!csvFile) {
+        LOG_FREE_AND_THROW("openstudio.epmodel.ScheduleFile", "Did not set File Name for " << briefDescription());
+      }
+
+      int columnIndex = this->columnNumber() - 1;
+      std::vector<std::string> values = csvFile->getColumnAsStringVector(columnIndex);
+      const int rowsToSkip = this->rowstoSkipatTop();
+      Vector vectorValues(values.size() - rowsToSkip);
+      for (size_t i = rowsToSkip; i < values.size(); ++i) {
+        double value = std::stod(values[i]);
+        vectorValues[i - rowsToSkip] = value;
+      }
+
+      int minutesperItem = this->minutesperItem();
+      openstudio::Time intervalLength(0, 0, minutesperItem);
+
+      Date startDate(MonthOfYear::Jan, 1);
+      openstudio::TimeSeries result(startDate, intervalLength, vectorValues, "");
+
+      return result;
     }
 
     bool ScheduleFile_Impl::setTimeSeries(const openstudio::TimeSeries& timeSeries) {
@@ -362,10 +390,10 @@ namespace epmodel {
       OS_ASSERT(setString(openstudio::Schedule_FileFields::InterpolatetoTimestep, ""));
     }
 
-    boost::optional<std::string> ScheduleFile_Impl::minutesperItem() const {
+    int ScheduleFile_Impl::minutesperItem() const {
       const auto value = getInt(openstudio::Schedule_FileFields::MinutesperItem, true);
       OS_ASSERT(value);
-      return std::to_string(*value);
+      return *value;
     }
 
     bool ScheduleFile_Impl::isMinutesperItemDefaulted() const {
@@ -403,7 +431,8 @@ namespace epmodel {
 
     boost::optional<CSVFile> ScheduleFile_Impl::csvFile() const {
       boost::optional<CSVFile> csvFile;
-      csvFile = CSVFile::load(this->fileName());
+      openstudio::path filePath = this->fileName();
+      csvFile = CSVFile::load(filePath);
       return csvFile;
     }
 

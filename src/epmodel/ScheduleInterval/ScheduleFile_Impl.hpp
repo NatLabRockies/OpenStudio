@@ -44,7 +44,7 @@ namespace epmodel {
       bool setInterpolatetoTimestep(bool interpolatetoTimestep);
       void resetInterpolatetoTimestep();
 
-      boost::optional<std::string> minutesperItem() const;
+      int minutesperItem() const;
       bool isMinutesperItemDefaulted() const;
       bool setMinutesperItem(int minutesperItem);
       void resetMinutesperItem();
@@ -54,7 +54,7 @@ namespace epmodel {
       bool setAdjustScheduleforDaylightSavings(bool adjustScheduleforDaylightSavings);
       void resetAdjustScheduleforDaylightSavings();
 
-      // openstudio::TimeSeries timeSeries() const;
+      openstudio::TimeSeries timeSeries() const;
       bool setTimeSeries(const openstudio::TimeSeries& timeSeries);
 
       // Extra setters/getters
