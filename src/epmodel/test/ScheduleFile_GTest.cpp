@@ -261,6 +261,9 @@ TEST_F(EPModelFixture, ScheduleFile_fromTimeSeries_intervalLengthYes) {
 TEST_F(EPModelFixture, ScheduleFile_fromTimeSeries_intervalLengthNo) {
   Model model;
 
+  StringStreamLogSink sink;
+  sink.setLogLevel(Warn);
+
   Date startDate(MonthOfYear::Jan, 1);
   Time intervalLength(0, 0, 60);
   std::vector<DateTime> dateTimes;
@@ -274,6 +277,9 @@ TEST_F(EPModelFixture, ScheduleFile_fromTimeSeries_intervalLengthNo) {
 
   boost::optional<ScheduleFile> schedule = ScheduleFile::fromTimeSeries(timeSeries, model);
   ASSERT_FALSE(schedule);
+  EXPECT_EQ(1, sink.logMessages().size());
+  EXPECT_EQ("openstudio.epmodel.ScheduleFile", sink.logMessages().front().logChannel());
+  EXPECT_EQ("Timeseries does not have an interval length defined, but ScheduleVariableInterval is deprecated", sink.logMessages().front().logMessage());
 }
 
 TEST_F(EPModelFixture, ScheduleFile_timeSeries) {
@@ -283,14 +289,17 @@ TEST_F(EPModelFixture, ScheduleFile_timeSeries) {
   sink.setLogLevel(Warn);
 
   ScheduleFile schedule(model);
+  EXPECT_EQ(0, sink.logMessages().size());
 
   EXPECT_EQ("", schedule.fileName());
+  EXPECT_EQ(0, sink.logMessages().size());
   boost::optional<CSVFile> csvFile = schedule.csvFile();
   EXPECT_FALSE(csvFile);
-  EXPECT_THROW(schedule.timeSeries(), openstudio::Exception);
-  EXPECT_EQ(3, sink.logMessages().size());
+  EXPECT_EQ(1, sink.logMessages().size());
   EXPECT_EQ("openstudio.CSVFile", sink.logMessages()[0].logChannel());
   EXPECT_EQ("Path '' is not a CSVFile file", sink.logMessages()[0].logMessage());
+  EXPECT_THROW(schedule.timeSeries(), openstudio::Exception);
+  EXPECT_EQ(3, sink.logMessages().size());
   EXPECT_EQ("openstudio.CSVFile", sink.logMessages()[1].logChannel());
   EXPECT_EQ("Path '' is not a CSVFile file", sink.logMessages()[1].logMessage());
   EXPECT_EQ("openstudio.epmodel.ScheduleFile", sink.logMessages()[2].logChannel());
@@ -302,47 +311,84 @@ TEST_F(EPModelFixture, ScheduleFile_timeSeries) {
   int columnNumber = 1;
   const int rowsToSkip = 1;
   ScheduleFile schedule2(model, openstudio::toString(p), columnNumber, rowsToSkip);
+  openstudio::TimeSeries timeSeries;
+  boost::optional<openstudio::Time> intervalTime;
+  double intervalLengthDouble;
+  DateTimeVector dateTimes;
+  DateTime firstReportDateTime;
+  DateTime firstDateTime;
+  DateTime secondDateTime;
+  DateTime lastDateTime;
 
-  openstudio::TimeSeries timeSeries2 = schedule2.timeSeries();
-
-  boost::optional<openstudio::Time> intervalTime = timeSeries2.intervalLength();
+  timeSeries = schedule2.timeSeries();
+  intervalTime = timeSeries.intervalLength();
   ASSERT_TRUE(intervalTime);
-  double intervalLengthDouble = intervalTime->totalMinutes();
+  intervalLengthDouble = intervalTime->totalMinutes();
   EXPECT_EQ(intervalLengthDouble, schedule2.minutesperItem());
-  DateTimeVector dateTimes = timeSeries2.dateTimes();
+  dateTimes = timeSeries.dateTimes();
   EXPECT_EQ(8760, dateTimes.size());
-  EXPECT_EQ(8760, timeSeries2.values().size());
-  DateTime firstReportDateTime = DateTime(Date(MonthOfYear::Jan, 1), openstudio::Time(0, 1));
-  EXPECT_EQ(firstReportDateTime, timeSeries2.firstReportDateTime());
-  DateTime firstDateTime = DateTime(Date(MonthOfYear::Jan, 1), openstudio::Time(0, 1));
+  EXPECT_EQ(8760, timeSeries.values().size());
+  firstReportDateTime = DateTime(Date(MonthOfYear::Jan, 1), openstudio::Time(0, 0, schedule2.minutesperItem()));
+  EXPECT_EQ(firstReportDateTime, timeSeries.firstReportDateTime());
+  firstDateTime = DateTime(Date(MonthOfYear::Jan, 1), openstudio::Time(0, 0, schedule2.minutesperItem()));
   EXPECT_EQ(firstDateTime, dateTimes[0]);
-  DateTime secondDateTime = firstDateTime + openstudio::Time(0, 1, 0);
+  secondDateTime = firstDateTime + openstudio::Time(0, 0, schedule2.minutesperItem());
   EXPECT_EQ(secondDateTime, dateTimes[1]);
-  DateTime lastDateTime = DateTime(Date(MonthOfYear::Dec, 31), openstudio::Time(0, 24));
+  lastDateTime = DateTime(Date(MonthOfYear::Dec, 31), openstudio::Time(0, 24));
   EXPECT_EQ(lastDateTime, dateTimes.back());
-  EXPECT_EQ(1, timeSeries2.values(0));
-  EXPECT_EQ(8760, timeSeries2.values(8759));
+  EXPECT_EQ(1, timeSeries.values(0));
+  EXPECT_EQ(8760, timeSeries.values(8759));
+
+  columnNumber = 2;
+  schedule2.setColumnNumber(columnNumber);
+  timeSeries = schedule2.timeSeries();
+  intervalTime = timeSeries.intervalLength();
+  ASSERT_TRUE(intervalTime);
+  intervalLengthDouble = intervalTime->totalMinutes();
+  EXPECT_EQ(intervalLengthDouble, schedule2.minutesperItem());
+  dateTimes = timeSeries.dateTimes();
+  EXPECT_EQ(8760, dateTimes.size());
+  EXPECT_EQ(8760, timeSeries.values().size());
+  firstReportDateTime = DateTime(Date(MonthOfYear::Jan, 1), openstudio::Time(0, 0, schedule2.minutesperItem()));
+  EXPECT_EQ(firstReportDateTime, timeSeries.firstReportDateTime());
+  firstDateTime = DateTime(Date(MonthOfYear::Jan, 1), openstudio::Time(0, 0, schedule2.minutesperItem()));
+  EXPECT_EQ(firstDateTime, dateTimes[0]);
+  secondDateTime = firstDateTime + openstudio::Time(0, 0, schedule2.minutesperItem());
+  EXPECT_EQ(secondDateTime, dateTimes[1]);
+  lastDateTime = DateTime(Date(MonthOfYear::Dec, 31), openstudio::Time(0, 24));
+  EXPECT_EQ(lastDateTime, dateTimes.back());
+  EXPECT_EQ(8759, timeSeries.values(0));
+  EXPECT_EQ(0, timeSeries.values(8759));
+
+  StringStreamLogSink sink2;
+  sink2.setLogLevel(Warn);
 
   columnNumber = 3;
   schedule2.setColumnNumber(columnNumber);
-  schedule2.setMinutesperItem(15);
-  openstudio::TimeSeries timeSeries3 = schedule2.timeSeries();
-  boost::optional<openstudio::Time> intervalTime2 = timeSeries3.intervalLength();
-  ASSERT_TRUE(intervalTime2);
-  intervalLengthDouble = intervalTime2->totalMinutes();
+  schedule2.setMinutesperItem(15); // this trips the error checking
+  timeSeries = schedule2.timeSeries();
+  intervalTime = timeSeries.intervalLength();
+  ASSERT_TRUE(intervalTime);
+  intervalLengthDouble = intervalTime->totalMinutes();
   EXPECT_EQ(intervalLengthDouble, schedule2.minutesperItem());
-  DateTimeVector dateTimes2 = timeSeries3.dateTimes();
-  EXPECT_EQ(8760, dateTimes2.size());
-  EXPECT_EQ(8760, timeSeries3.values().size());
-  DateTime firstReportDateTime2 = DateTime(Date(MonthOfYear::Jan, 1), openstudio::Time(0, 0, 15));
-  EXPECT_EQ(firstReportDateTime2, timeSeries3.firstReportDateTime());
-  DateTime firstDateTime2 = DateTime(Date(MonthOfYear::Jan, 1), openstudio::Time(0, 0, 15));
-  EXPECT_EQ(firstDateTime2, dateTimes2[0]);
-  DateTime secondDateTime2 = firstDateTime2 + openstudio::Time(0, 0, 15);
-  EXPECT_EQ(secondDateTime2, dateTimes2[1]);
-  // FIXME: need to throw if minutesperItem and rows in csvFile don't cover 8760 or 8784 hours?
-  DateTime lastDateTime2 = DateTime(Date(MonthOfYear::Apr, 2), openstudio::Time(0, 6));
-  EXPECT_EQ(lastDateTime2, dateTimes2.back());
-  EXPECT_EQ(0.207618, timeSeries3.values(0));
-  EXPECT_EQ(0.62146, timeSeries3.values(8759));
+  dateTimes = timeSeries.dateTimes();
+  EXPECT_EQ(8760, dateTimes.size());
+  EXPECT_EQ(8760, timeSeries.values().size());
+  firstReportDateTime = DateTime(Date(MonthOfYear::Jan, 1), openstudio::Time(0, 0, schedule2.minutesperItem()));
+  EXPECT_EQ(firstReportDateTime, timeSeries.firstReportDateTime());
+  firstDateTime = DateTime(Date(MonthOfYear::Jan, 1), openstudio::Time(0, 0, schedule2.minutesperItem()));
+  EXPECT_EQ(firstDateTime, dateTimes[0]);
+  secondDateTime = firstDateTime + openstudio::Time(0, 0, schedule2.minutesperItem());
+  EXPECT_EQ(secondDateTime, dateTimes[1]);
+  lastDateTime = DateTime(Date(MonthOfYear::Apr, 2), openstudio::Time(0, 6));
+  EXPECT_EQ(lastDateTime, dateTimes.back());
+  EXPECT_EQ(0.207618, timeSeries.values(0));
+  EXPECT_EQ(0.62146, timeSeries.values(8759));
+
+  EXPECT_EQ(1, sink2.logMessages().size());
+  EXPECT_EQ("openstudio.epmodel.ScheduleFile", sink2.logMessages().front().logChannel());
+  EXPECT_TRUE(sink2.logMessages().front().logMessage().find("With 15 minutes per item, last date time is 2009-Apr-02 06:00:00") != std::string::npos);
+  EXPECT_TRUE(sink2.logMessages().front().logMessage().find("resources/model/schedulefile.csv referenced by Object of type 'Schedule:File' and named 'Schedule File 2'") != std::string::npos);
+
+  // TODO: try setting a leap year
 }
