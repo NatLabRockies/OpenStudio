@@ -1389,7 +1389,7 @@ else()
 endif()
 
 # Install additional Documents, such as release notes
-install(FILES "${PROJECT_SOURCE_DIR}/developer/doc/ReleaseNotes/OpenStudio_Release_Notes_3_10_0_20250618.pdf" DESTINATION .)
+install(FILES "${PROJECT_SOURCE_DIR}/developer/doc/ReleaseNotes/OpenStudio_Release_Notes_4_0_0_alpha_20260818.pdf" DESTINATION .)
 install(FILES "${PROJECT_SOURCE_DIR}/LICENSE.md" DESTINATION .)
 install(FILES "${PROJECT_SOURCE_DIR}/copyright.txt" DESTINATION .)
 
