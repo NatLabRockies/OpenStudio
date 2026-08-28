@@ -171,18 +171,6 @@ TBD before release:
 - Adds an output-directory option for OpenStudio workflows.
 - Adds end-to-end EPModel workflow tests and installed examples.
 
-## New features, major fixes, and API-breaking changes
-
-TBD: Add selected pull requests and migration notes.
-
-## Minor changes and bug fixes
-
-TBD: Link the 4.0.0-alpha GitHub release changelog.
-
-**Full changelog**: TBD (`v3.11.0...v4.0.0-alpha`)
-
-**New contributors**: TBD
-
 ---
 # This YAML header controls the pandoc (via TeX) to PDF settings
 # To convert the Markdown to PDF, run:
