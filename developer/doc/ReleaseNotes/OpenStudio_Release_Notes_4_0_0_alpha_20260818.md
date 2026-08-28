@@ -122,7 +122,7 @@ The following may change during the alpha and beta cycle:
 - C++ API documentation is available at
   [OpenStudio SDK Documentation](https://openstudio-sdk-documentation.s3.amazonaws.com/index.html).
 - Measure development documentation is available in the
-  [OpenStudio Measure Writer's Reference Guide](http://nrel.github.io/OpenStudio-user-documentation/reference/measure_writing_guide/).
+  [OpenStudio Measure Writer's Reference Guide](http://natlabrockies.github.io/OpenStudio-user-documentation/reference/measure_writing_guide/).
 
 # Installation notes
 

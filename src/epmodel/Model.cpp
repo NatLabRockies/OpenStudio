@@ -1197,13 +1197,50 @@ namespace epmodel {
       detail::addLoadWarning(context, "Preserved multiple GlobalGeometryRules objects; exactly one is required.");
     }
 
-    // Fixed-point pass over all objects:
-    // 1. One-time execution per object handle is enforced via context.visited.
-    // 2. Order is intentionally not relied upon.
-    // 3. Newly created objects from canonicalizers are picked up in later passes.
+    // Canonicalization examines the raw Workspace object graph and, when the
+    // sanitization policy permits, converts it into the form required by the
+    // EPModel domain API. Loaded objects may initially have missing required
+    // children, incomplete relationships, or topology that cannot safely be
+    // accessed through higher-level EPModel methods. Canonicalizers repair those
+    // conditions by creating required objects and completing the relationships
+    // owned by each domain object.
+    //
+    // Canonicalization is a guarded graph traversal, not an ordered or
+    // fixed-point pass. Object discovery order is arbitrary. Each object is
+    // canonicalized at most once through the shared LoadContext. Because a
+    // canonicalizer may create additional objects, the top-level scan repeats
+    // only to discover objects that have not yet been visited; previously visited
+    // objects are not canonicalized again.
+    //
+    // Before an object has been canonicalized, code may inspect or modify its raw
+    // Workspace representation using operations such as getString() and
+    // setString(), but must not call domain methods that assume required children,
+    // relationships, or topology are complete. Before consuming such state from a
+    // related object, canonicalize that object through the shared context.
+    // The visited guard also breaks recursive cycles, so a canonicalizer must not
+    // consume domain state from an object that leads back to the object currently
+    // being canonicalized; the common relationship owner must complete that cycle.
+    //
+    // For example, AirLoopHVAC must canonicalize a
+    // CoilSystemCoolingWaterHeatExchangerAssisted before calling coolingCoil(),
+    // because that canonicalizer may need to create the required cooling coil.
+    // Conversely, AirLoopHVAC owns the relationships between its zone connectors
+    // and supply/return paths, so its canonicalizer must complete those
+    // relationships directly rather than relying on a path being canonicalized
+    // again later.
+    //
+    // A newly created object may be left for a later discovery scan when its
+    // canonical state is not needed immediately. Every canonicalizer must complete
+    // the relationships it owns before returning and must not depend on a later
+    // revisit to finish its work. A canonicalizer may also remove a duplicate that
+    // is still present in the current discovery snapshot, so disconnected snapshot
+    // entries must be skipped.
     while (true) {
       const auto visitedBefore = context.visited.size();
       for (const auto& object : this->objects()) {
+        if (!object.initialized()) {
+          continue;
+        }
         if (auto impl = object.getImpl<detail::ModelObject_Impl>()) {
           impl->canonicalize(context);
         }

@@ -111,6 +111,9 @@ namespace epmodel {
      *  supported refrigerant is present. An existing FluidProperties:Name is
      *  treated as caller-owned and is not replaced or supplemented. */
     bool ensureRefrigerantProperties(const std::string& refrigerantType) const;
+    /** Examines a raw EPModel object graph and, when the sanitization policy
+     *  permits, repairs its required children, relationships, and topology so
+     *  they can be safely accessed through the domain API. */
     SanitizationReport canonicalize(SanitizationPolicy policy = SanitizationPolicy::Repair);
     boost::optional<SqlFile> sqlFile() const;
     bool setSqlFile(const SqlFile& sqlFile);
