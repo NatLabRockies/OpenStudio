@@ -10285,6 +10285,30 @@ namespace osversion {
         ss << newObject;
         m_refactored.emplace_back(std::move(object), std::move(newObject));
 
+      } else if (iddname == "OS:Coil:Cooling:DX:CurveFit:OperatingMode") {
+
+        // 1 Field has been added from 3.11.0 to 3.12.0:
+        // ------------------------------------------------
+        // * Apply Part Load Fraction to Speeds Greater than 1 * 9
+
+        auto iddObject = idd_3_12_0.getObject(iddname);
+        IdfObject newObject(iddObject.get());
+
+        for (size_t i = 0; i < object.numFields(); ++i) {
+          if ((value = object.getString(i))) {
+            if (i < 9) {
+              newObject.setString(i, value.get());
+            } else {
+              newObject.setString(i + 1, value.get());
+            }
+          }
+        }
+
+        newObject.setString(9, "No");
+
+        ss << newObject;
+        m_refactored.emplace_back(std::move(object), std::move(newObject));
+
         // No-op
       } else {
         ss << object;
