@@ -17,6 +17,8 @@
 #include <utilities/core/Logger.hpp>
 
 #include "../utilities/data/TimeSeries.hpp"
+#include "../model/YearDescription.hpp"
+#include "../model/YearDescription_Impl.hpp"
 
 namespace openstudio {
 namespace epmodel {
@@ -46,6 +48,7 @@ namespace epmodel {
         p = system_complete(filePath);
       }
     }
+    OS_ASSERT(exists(filePath));
 
     bool ok = true;
     ok &= setFileName(toString(p));
@@ -224,11 +227,12 @@ namespace epmodel {
       openstudio::path p;
       if (!exists(filePath)) {
         result->remove();
-        // LOG_AND_THROW("Cannot find file \"" << toString(filePath) << "\" for " << briefDescription());
+        LOG_FREE_AND_THROW("openstudio.epmodel.ScheduleFile", "Cannot find file \"" << toString(filePath) << "\" for " << result->briefDescription());
       } else {
         // make the path correct for this system
         p = system_complete(filePath);
       }
+      OS_ASSERT(exists(filePath));
 
       bool ok = true;
       ok &= result->setFileName(toString(p));
@@ -253,10 +257,11 @@ namespace epmodel {
     }
 
     openstudio::TimeSeries ScheduleFile_Impl::timeSeries() const {
-      boost::optional<CSVFile> csvFile = this->csvFile(); // FIXME: there is a ctor where csvFile isn't set yet
+      boost::optional<CSVFile> csvFile = this->csvFile();
       if (!csvFile) {
         LOG_FREE_AND_THROW("openstudio.epmodel.ScheduleFile", "Did not set File Name for " << briefDescription());
       }
+      OS_ASSERT(csvFile);
 
       int columnIndex = this->columnNumber() - 1;
       std::vector<std::string> values = csvFile->getColumnAsStringVector(columnIndex);
@@ -270,8 +275,21 @@ namespace epmodel {
       int minutesperItem = this->minutesperItem();
       openstudio::Time intervalLength(0, 0, minutesperItem);
 
-      Date startDate(MonthOfYear::Jan, 1);
+      int year = 2009;
+      // FIXME
+      // if (boost::optional<YearDescription> yd = this->model().getOptionalUniqueModelObject<YearDescription>()) {
+      //   year = yd->assumedYear();
+      // }
+      Date startDate(MonthOfYear::Jan, 1, year);
+
       openstudio::TimeSeries result(startDate, intervalLength, vectorValues, "");
+
+      // error checking
+      DateTimeVector dateTimes = result.dateTimes();
+      DateTime lastDateTime = DateTime(Date(MonthOfYear::Dec, 31, year), openstudio::Time(0, 24));
+      if (dateTimes.back() != lastDateTime) {
+        LOG_FREE(Warn, "openstudio.epmodel.ScheduleFile", "With " << minutesperItem << " minutes per item, last date time is " << dateTimes.back() << " for " << this->fileName() << " referenced by " << briefDescription());
+      }
 
       return result;
     }
@@ -296,6 +314,33 @@ namespace epmodel {
       const int intervalLength = intervalLengthAsInteger(intervalLengthDouble);
       if (intervalLength < 0) {
         return false;
+      }
+
+      // check that first report is whole number of intervals from start date
+      const DateTime firstReportDateTime = timeSeries.firstReportDateTime();
+      const DateTime startDateTime = timeSeries.startDateTime();
+      const Date startDate = startDateTime.date();
+
+      const Time firstReportTime = firstReportDateTime.time();
+
+      const double numIntervalsToFirstReportDouble = std::max(1.0, firstReportTime.totalMinutes() / intervalLengthDouble);
+      const int numIntervalsToFirstReport = intervalLengthAsInteger(numIntervalsToFirstReportDouble);
+      if (numIntervalsToFirstReport < 0) {
+        return false;
+      }
+
+      // check the values
+      const openstudio::Vector values = timeSeries.values();
+      for (size_t pos = 0; const auto& value : values) {
+        // Check validity, cannot be NaN, Inf, etc
+        if (std::isinf(value)) {
+          LOG_FREE(Warn, "openstudio.epmodel.ScheduleFile", "There is Infinity on position " << pos << " in the timeSeries provided for " << briefDescription());
+          return false;
+        } else if (std::isnan(value)) {
+          LOG_FREE(Warn, "openstudio.epmodel.ScheduleFile", "There is a NaN on position " << pos << " in the timeSeries provided for " << briefDescription());
+          return false;
+        }
+        ++pos;
       }
 
       bool ok = true;
