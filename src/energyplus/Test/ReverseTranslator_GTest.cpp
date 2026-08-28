@@ -1334,6 +1334,7 @@ TEST_F(EnergyPlusFixture, ReverseTranslator_CoilCoolingDX) {
   idfObject2.setString(Coil_Cooling_DX_CurveFit_OperatingModeFields::RatioofInitialMoistureEvaporationRateandSteadyStateLatentCapacity, "0.0");
   idfObject2.setString(Coil_Cooling_DX_CurveFit_OperatingModeFields::LatentCapacityTimeConstant, "0.0");
   idfObject2.setString(Coil_Cooling_DX_CurveFit_OperatingModeFields::NominalTimeforCondensateRemovaltoBegin, "0.0");
+  idfObject2.setString(Coil_Cooling_DX_CurveFit_OperatingModeFields::ApplyPartLoadFractiontoSpeedsGreaterthan1, "No");
   idfObject2.setString(Coil_Cooling_DX_CurveFit_OperatingModeFields::ApplyLatentDegradationtoSpeedsGreaterthan1, "No");
   idfObject2.setString(Coil_Cooling_DX_CurveFit_OperatingModeFields::CondenserType, "AirCooled");
   idfObject2.setString(Coil_Cooling_DX_CurveFit_OperatingModeFields::NominalEvaporativeCondenserPumpPower, "Autosize");
