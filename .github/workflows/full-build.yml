@@ -968,7 +968,7 @@ jobs:
         echo "exit_code=${overall_exit_code}" >> $GITHUB_OUTPUT
 
     - name: Setup Keychain
-      if: success() && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true' )
+      if: success() && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/os-4.0-dev1' || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true' )
       env:
         APPLE_CERT_DATA: ${{ secrets.APPLE_CERT_DATA }}
         APPLE_CERT_PASSWORD: ${{ secrets.APPLE_CERT_PASSWORD }}
@@ -1029,7 +1029,7 @@ jobs:
         done
 
     - name: Sign DMG and Notarize
-      if: ${{ !cancelled() && steps.create_packages.outcome == 'success' && (github.ref == 'refs/heads/develop' || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true') }}
+      if: ${{ !cancelled() && steps.create_packages.outcome == 'success' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/os-4.0-dev1' || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true') }}
       working-directory: ${{ env.OPENSTUDIO_BUILD }}
       env:
         APPLE_CERT_DATA: ${{ secrets.APPLE_CERT_DATA }}
