@@ -13,15 +13,47 @@
 #include <utilities/idd/IddFactory.hxx>
 #include <utilities/idd/IddObject.hpp>
 #include <utilities/idd/Schedule_File_FieldEnums.hxx>
+#include <utilities/core/DeprecatedHelpers.hpp>
+#include <utilities/core/Logger.hpp>
+
+#include "../utilities/data/TimeSeries.hpp"
+#include "../model/YearDescription.hpp"
+#include "../model/YearDescription_Impl.hpp"
 
 namespace openstudio {
 namespace epmodel {
 
-  ScheduleFile::ScheduleFile(const Model& model) : Schedule(ScheduleFile::iddObjectType(), model) {
+  // ScheduleFile(const ExternalFile& externalfile, int column = 1, int rowsToSkip = 0) : Schedule(ScheduleFile::iddObjectType(), model) {}
+
+  ScheduleFile::ScheduleFile(const Model& model, int column, int rowsToSkip) : Schedule(ScheduleFile::iddObjectType(), model) {
     // Mirror preserved counterpart constructor behavior for required scalar fields.
     bool ok = true;
-    ok &= setColumnNumber(1);
-    ok &= setRowstoSkipatTop(0);
+    ok &= setColumnNumber(column);
+    ok &= setRowstoSkipatTop(rowsToSkip);
+    OS_ASSERT(ok);
+  }
+
+  ScheduleFile::ScheduleFile(const Model& model, const openstudio::path& filePath, int column, int rowsToSkip, bool translateFileWithRelativePath)
+    : Schedule(ScheduleFile::iddObjectType(), model) {
+
+    openstudio::path p;
+    if (!exists(filePath)) {
+      this->remove();
+      LOG_FREE_AND_THROW("openstudio.epmodel.ScheduleFile", "Cannot find file \"" << toString(filePath) << "\" for " << briefDescription());
+    } else {
+      if (translateFileWithRelativePath) {
+        p = filePath;
+      } else {
+        // make the path correct for this system
+        p = system_complete(filePath);
+      }
+    }
+    OS_ASSERT(exists(filePath));
+
+    bool ok = true;
+    ok &= setFileName(toString(p));
+    ok &= setColumnNumber(column);
+    ok &= setRowstoSkipatTop(rowsToSkip);
     OS_ASSERT(ok);
   }
 
@@ -37,6 +69,14 @@ namespace epmodel {
 
   std::vector<std::string> ScheduleFile::minutesperItemValues() {
     return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), openstudio::Schedule_FileFields::MinutesperItem);
+  }
+
+  std::string ScheduleFile::fileName() const {
+    return getImpl<detail::ScheduleFile_Impl>()->fileName();
+  }
+
+  bool ScheduleFile::setFileName(std::string fileName) {
+    return getImpl<detail::ScheduleFile_Impl>()->setFileName(fileName);
   }
 
   int ScheduleFile::columnNumber() const {
@@ -99,7 +139,7 @@ namespace epmodel {
     getImpl<detail::ScheduleFile_Impl>()->resetInterpolatetoTimestep();
   }
 
-  boost::optional<std::string> ScheduleFile::minutesperItem() const {
+  int ScheduleFile::minutesperItem() const {
     return getImpl<detail::ScheduleFile_Impl>()->minutesperItem();
   }
 
@@ -139,6 +179,72 @@ namespace epmodel {
     getImpl<detail::ScheduleFile_Impl>()->resetAdjustScheduleforDaylightSavings();
   }
 
+  boost::optional<CSVFile> ScheduleFile::csvFile() const {
+    return getImpl<detail::ScheduleFile_Impl>()->csvFile();
+  }
+
+  bool ScheduleFile::translateFileWithRelativePath() const {
+    DEPRECATED_AT_MSG(4, 0, 0, "Schedule:File is no longer 'translated'.");
+    return false;
+  }
+  
+  bool ScheduleFile::isTranslateFileWithRelativePathDefaulted() const {
+    DEPRECATED_AT_MSG(4, 0, 0, "Schedule:File is no longer 'translated'.");
+    return false;
+  }
+  
+  bool ScheduleFile::setTranslateFileWithRelativePath(bool translateFileWithRelativePath) {
+    DEPRECATED_AT_MSG(4, 0, 0, "Schedule:File is no longer 'translated'.");
+    return false;
+  }
+  
+  void ScheduleFile::resetTranslateFileWithRelativePath() {
+    DEPRECATED_AT_MSG(4, 0, 0, "Schedule:File is no longer 'translated'.");
+  }
+  
+  openstudio::path ScheduleFile::translatedFilePath() const {
+    return getImpl<epmodel::detail::ScheduleFile_Impl>()->translatedFilePath();
+  }
+
+  openstudio::TimeSeries ScheduleFile::timeSeries() const {
+    return getImpl<detail::ScheduleFile_Impl>()->timeSeries();
+  }
+
+  boost::optional<ScheduleFile> ScheduleFile::fromTimeSeries(const openstudio::TimeSeries& timeSeries, Model& model) {
+    boost::optional<ScheduleFile> result;
+
+    boost::optional<openstudio::Time> intervalTime = timeSeries.intervalLength();
+    if (intervalTime) {
+      result = ScheduleFile(model, 2); // FIXME: FT ScheduleFixedInterval wrote the dateTimes to file
+      const std::string name = result->nameString();
+      openstudio::path filePath = toPath(name + ".csv");
+
+      CSVFile csvFile;
+      csvFile.addColumn(timeSeries.dateTimes());
+      csvFile.addColumn(timeSeries.values());
+      csvFile.saveAs(filePath);
+
+      openstudio::path p;
+      if (!exists(filePath)) {
+        result->remove();
+        LOG_FREE_AND_THROW("openstudio.epmodel.ScheduleFile", "Cannot find file \"" << toString(filePath) << "\" for " << result->briefDescription());
+      } else {
+        // make the path correct for this system
+        p = system_complete(filePath);
+      }
+      OS_ASSERT(exists(filePath));
+
+      bool ok = true;
+      ok &= result->setFileName(toString(p));
+      ok &= result->getImpl<detail::ScheduleFile_Impl>()->setTimeSeries(timeSeries);
+      OS_ASSERT(ok);
+    } else {
+      LOG_FREE(Warn, "openstudio.epmodel.ScheduleFile", "Timeseries does not have an interval length defined, but ScheduleVariableInterval is deprecated");
+    }
+
+    return result;
+  }
+
 }  // namespace epmodel
 }  // namespace openstudio
 
@@ -148,6 +254,115 @@ namespace epmodel {
 
     unsigned ScheduleFile_Impl::scheduleTypeLimitsFieldIndex() const {
       return openstudio::Schedule_FileFields::ScheduleTypeLimitsName;
+    }
+
+    openstudio::TimeSeries ScheduleFile_Impl::timeSeries() const {
+      boost::optional<CSVFile> csvFile = this->csvFile();
+      if (!csvFile) {
+        LOG_FREE_AND_THROW("openstudio.epmodel.ScheduleFile", "Did not set File Name for " << briefDescription());
+      }
+      OS_ASSERT(csvFile);
+
+      int columnIndex = this->columnNumber() - 1;
+      std::vector<std::string> values = csvFile->getColumnAsStringVector(columnIndex);
+      const int rowsToSkip = this->rowstoSkipatTop();
+      Vector vectorValues(values.size() - rowsToSkip);
+      for (size_t i = rowsToSkip; i < values.size(); ++i) {
+        double value = std::stod(values[i]);
+        vectorValues[i - rowsToSkip] = value;
+      }
+
+      int minutesperItem = this->minutesperItem();
+      openstudio::Time intervalLength(0, 0, minutesperItem);
+
+      int year = 2009;
+      // FIXME
+      // if (boost::optional<YearDescription> yd = this->model().getOptionalUniqueModelObject<YearDescription>()) {
+      //   year = yd->assumedYear();
+      // }
+      Date startDate(MonthOfYear::Jan, 1, year);
+
+      openstudio::TimeSeries result(startDate, intervalLength, vectorValues, "");
+
+      // error checking
+      DateTimeVector dateTimes = result.dateTimes();
+      DateTime lastDateTime = DateTime(Date(MonthOfYear::Dec, 31, year), openstudio::Time(0, 24));
+      if (dateTimes.back() != lastDateTime) {
+        LOG_FREE(Warn, "openstudio.epmodel.ScheduleFile", "With " << minutesperItem << " minutes per item, last date time is " << dateTimes.back() << " for " << this->fileName() << " referenced by " << briefDescription());
+      }
+
+      return result;
+    }
+
+    bool ScheduleFile_Impl::setTimeSeries(const openstudio::TimeSeries& timeSeries) {
+      boost::optional<openstudio::Time> intervalTime = timeSeries.intervalLength();
+      if (!intervalTime) {
+        return false;
+      }
+
+      auto intervalLengthAsInteger = [](const double value) -> int {
+        double integralPart = 0.0;
+        if (std::modf(value, &integralPart) == 0.0) {
+          // The intervalLength is actually an int, not a double
+          return static_cast<int>(integralPart);
+        }
+        return -1;
+      };
+
+      // check the interval
+      const double intervalLengthDouble = intervalTime->totalMinutes();
+      const int intervalLength = intervalLengthAsInteger(intervalLengthDouble);
+      if (intervalLength < 0) {
+        return false;
+      }
+
+      // check that first report is whole number of intervals from start date
+      const DateTime firstReportDateTime = timeSeries.firstReportDateTime();
+      const DateTime startDateTime = timeSeries.startDateTime();
+      const Date startDate = startDateTime.date();
+
+      const Time firstReportTime = firstReportDateTime.time();
+
+      const double numIntervalsToFirstReportDouble = std::max(1.0, firstReportTime.totalMinutes() / intervalLengthDouble);
+      const int numIntervalsToFirstReport = intervalLengthAsInteger(numIntervalsToFirstReportDouble);
+      if (numIntervalsToFirstReport < 0) {
+        return false;
+      }
+
+      // check the values
+      const openstudio::Vector values = timeSeries.values();
+      for (size_t pos = 0; const auto& value : values) {
+        // Check validity, cannot be NaN, Inf, etc
+        if (std::isinf(value)) {
+          LOG_FREE(Warn, "openstudio.epmodel.ScheduleFile", "There is Infinity on position " << pos << " in the timeSeries provided for " << briefDescription());
+          return false;
+        } else if (std::isnan(value)) {
+          LOG_FREE(Warn, "openstudio.epmodel.ScheduleFile", "There is a NaN on position " << pos << " in the timeSeries provided for " << briefDescription());
+          return false;
+        }
+        ++pos;
+      }
+
+      bool ok = true;
+      ok &= this->setMinutesperItem(intervalLength);
+      // Do we actually need the following? They aren't required in the IDD.
+      //ok &= this->setNumberofHoursofData(8760);
+      //ok &= this->setColumnSeparator("Comma");
+      //ok &= this->setInterpolatetoTimestep(true);
+      //ok &= this->setAdjustScheduleforDaylightSavings(true);
+      return true;
+    }
+
+    std::string ScheduleFile_Impl::fileName() const {
+      const auto value = getString(openstudio::Schedule_FileFields::FileName, true);
+      OS_ASSERT(value);
+      return *value;
+    }
+
+    bool ScheduleFile_Impl::setFileName(std::string fileName) {
+      const bool result = setString(openstudio::Schedule_FileFields::FileName, fileName);
+      OS_ASSERT(result);
+      return result;
     }
 
     int ScheduleFile_Impl::columnNumber() const {
@@ -220,10 +435,10 @@ namespace epmodel {
       OS_ASSERT(setString(openstudio::Schedule_FileFields::InterpolatetoTimestep, ""));
     }
 
-    boost::optional<std::string> ScheduleFile_Impl::minutesperItem() const {
+    int ScheduleFile_Impl::minutesperItem() const {
       const auto value = getInt(openstudio::Schedule_FileFields::MinutesperItem, true);
       OS_ASSERT(value);
-      return std::to_string(*value);
+      return *value;
     }
 
     bool ScheduleFile_Impl::isMinutesperItemDefaulted() const {
@@ -257,6 +472,21 @@ namespace epmodel {
 
     void ScheduleFile_Impl::resetAdjustScheduleforDaylightSavings() {
       OS_ASSERT(setString(openstudio::Schedule_FileFields::AdjustScheduleforDaylightSavings, ""));
+    }
+
+    boost::optional<CSVFile> ScheduleFile_Impl::csvFile() const {
+      boost::optional<CSVFile> csvFile;
+      openstudio::path filePath = this->fileName();
+      csvFile = CSVFile::load(filePath);
+      return csvFile;
+    }
+
+    openstudio::path ScheduleFile_Impl::translatedFilePath() const {
+      openstudio::path filePath = this->fileName();
+      if (!exists(filePath)) {
+        LOG_FREE(Warn, "openstudio.epmodel.ScheduleFile", "Cannot find file \"" << filePath << "\"");
+      }
+      return filePath;
     }
 
     std::vector<std::string> ScheduleFile_Impl::columnSeparatorValues() const {
