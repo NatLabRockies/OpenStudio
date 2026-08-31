@@ -18122,8 +18122,8 @@ OS:Coil:Cooling:DX:CurveFit:Performance,
 OS:Coil:Cooling:DX:CurveFit:OperatingMode,
        \memo DX cooling coil performance for a single operating mode which may have one or more speeds.
        \extensible: 1
-       \min-fields 14
-       \max-fields 23
+       \min-fields 15
+       \max-fields 24
   A1, \field Handle
        \type handle
        \required-field
@@ -18193,12 +18193,17 @@ OS:Coil:Cooling:DX:CurveFit:OperatingMode,
        \minimum 0.0
        \maximum 3000.0
        \required-field
-  A3, \field Apply Latent Degradation to Speeds Greater than 1
+  A3, \field Apply Part Load Fraction to Speeds Greater than 1
        \type choice
        \key Yes
        \key No
        \required-field
-  A4, \field Condenser Type
+  A4, \field Apply Latent Degradation to Speeds Greater than 1
+       \type choice
+       \key Yes
+       \key No
+       \required-field
+  A5, \field Condenser Type
        \type choice
        \key AirCooled
        \key EvaporativelyCooled
@@ -18215,7 +18220,7 @@ OS:Coil:Cooling:DX:CurveFit:OperatingMode,
        \note Must be lower than or equal to the highest speed number.
        \note If blank, defaults to the highest speed number used.
        \type integer
-  A5; \field Speed 1
+  A6; \field Speed 1
        \type object-list
        \object-list DXCoolingSpeedNames
        \begin-extensible

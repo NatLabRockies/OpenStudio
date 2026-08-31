@@ -5083,3 +5083,22 @@ TEST_F(OSVersionFixture, update_3_11_0_to_3_12_0_CentralHeatPumpSystem) {
   EXPECT_EQ("EnteringCondenser", chperf.getString(18).get());  // Cooling Mode Temperature Curve Condenser Water Independent Variable
   EXPECT_EQ(1.0, chperf.getDouble(28).get());               // Sizing Factor (last field): preserved
 }
+
+TEST_F(OSVersionFixture, update_3_11_0_to_3_12_0_CoilCoolingDXCurveFitOperatingMode) {
+  openstudio::path path = resourcesPath() / toPath("osversion/3_12_0/test_vt_CoilCoolingDXCurveFitOperatingMode.osm");
+  osversion::VersionTranslator vt;
+  boost::optional<model::Model> model = vt.loadModel(path);
+  ASSERT_TRUE(model) << "Failed to load " << path;
+
+  openstudio::path outPath = resourcesPath() / toPath("osversion/3_12_0/test_vt_CoilCoolingDXCurveFitOperatingMode_updated.osm");
+  model->save(outPath, true);
+
+  std::vector<WorkspaceObject> opModes = model->getObjectsByType("OS:Coil:Cooling:DX:CurveFit:OperatingMode");
+  ASSERT_EQ(1u, opModes.size());
+  const auto& opMode = opModes.front();
+
+  EXPECT_EQ("Coil Cooling DX Curve Fit Operating Mode 1", opMode.getString(1).get());  // Name
+  EXPECT_EQ(0, opMode.getDouble(8).get());    // Nominal Time for Condensate Removal to Begin
+  EXPECT_EQ("No", opMode.getString(9).get());  // Apply Part Load Fraction to Speeds Greater than 1
+  EXPECT_EQ("Yes", opMode.getString(10).get());  // Apply Latent Degradation to Speeds Greater than 1
+}
