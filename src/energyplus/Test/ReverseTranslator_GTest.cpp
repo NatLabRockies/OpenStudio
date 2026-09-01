@@ -392,9 +392,9 @@ TEST_F(EnergyPlusFixture, ReverseTranslatorTest_TranslateOpaqueMaterialBlankInsi
   Workspace masslessWorkspace(StrictnessLevel::Minimal, IddFileType::EnergyPlus);
   IdfObject masslessIdfObject(IddObjectType::Material_NoMass);
   masslessIdfObject.setString(0, "Massless Material");
-  masslessIdfObject.setString(2, "Smooth");
-  masslessIdfObject.setDouble(3, 3.05);
-  masslessIdfObject.setDouble(4, 0.8);
+  masslessIdfObject.setString(1, "Smooth");
+  masslessIdfObject.setDouble(2, 3.05);
+  masslessIdfObject.setDouble(3, 0.8);
   masslessIdfObject.setDouble(4, 0.6);
   masslessIdfObject.setDouble(5, 0.4);
   masslessWorkspace.addObject(masslessIdfObject);
