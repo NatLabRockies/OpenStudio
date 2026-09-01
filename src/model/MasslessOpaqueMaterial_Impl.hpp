@@ -78,6 +78,18 @@ namespace model {
 
       bool isVisibleAbsorptanceDefaulted() const;
 
+      double thermalAbsorptanceInsideFace() const;
+
+      bool isThermalAbsorptanceInsideFaceDefaulted() const;
+
+      double solarAbsorptanceInsideFace() const;
+
+      bool isSolarAbsorptanceInsideFaceDefaulted() const;
+
+      double visibleAbsorptanceInsideFace() const;
+
+      bool isVisibleAbsorptanceInsideFaceDefaulted() const;
+
       //@}
       /** @name Setters */
       //@{
@@ -122,6 +134,18 @@ namespace model {
       bool setVisibleAbsorptance(double visibleAbsorptance);
 
       void resetVisibleAbsorptance();
+
+      bool setThermalAbsorptanceInsideFace(double thermalAbsorptanceInsideFace);
+
+      void resetThermalAbsorptanceInsideFace();
+
+      bool setSolarAbsorptanceInsideFace(double solarAbsorptanceInsideFace);
+
+      void resetSolarAbsorptanceInsideFace();
+
+      bool setVisibleAbsorptanceInsideFace(double visibleAbsorptanceInsideFace);
+
+      void resetVisibleAbsorptanceInsideFace();
 
       // if material property moisture penetration depth settings already exists, do nothing and return nil; creates the material property moisture penetration depth settings if it does not already exist and return it;
       boost::optional<MaterialPropertyMoisturePenetrationDepthSettings>
