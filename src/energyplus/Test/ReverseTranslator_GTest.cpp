@@ -364,6 +364,53 @@ TEST_F(EnergyPlusFixture, ReverseTranslatorTest_TranslateStandardOpaqueMaterial)
   EXPECT_EQ(0.4, mat.visibleAbsorptanceInsideFace());
 }
 
+TEST_F(EnergyPlusFixture, ReverseTranslatorTest_TranslateOpaqueMaterialBlankInsideFaceAbsorptance) {
+  Workspace standardWorkspace(StrictnessLevel::Minimal, IddFileType::EnergyPlus);
+  IdfObject standardIdfObject(IddObjectType::Material);
+  standardIdfObject.setString(MaterialFields::Name, "Standard Material");
+  standardIdfObject.setString(MaterialFields::Roughness, "Smooth");
+  standardIdfObject.setDouble(MaterialFields::Thickness, 0.012);
+  standardIdfObject.setDouble(MaterialFields::Conductivity, 3.2);
+  standardIdfObject.setDouble(MaterialFields::Density, 2.5);
+  standardIdfObject.setDouble(MaterialFields::SpecificHeat, 1400.0);
+  standardIdfObject.setDouble(MaterialFields::ThermalAbsorptance, 0.8);
+  standardIdfObject.setDouble(MaterialFields::SolarAbsorptance, 0.6);
+  standardIdfObject.setDouble(MaterialFields::VisibleAbsorptance, 0.4);
+  standardWorkspace.addObject(standardIdfObject);
+
+  ReverseTranslator standardTrans;
+  Model standardModel = standardTrans.translateWorkspace(standardWorkspace);
+  auto standardMaterial = standardModel.getConcreteModelObjects<StandardOpaqueMaterial>()[0];
+
+  EXPECT_TRUE(standardMaterial.isThermalAbsorptanceInsideFaceDefaulted());
+  EXPECT_EQ(0.8, standardMaterial.thermalAbsorptanceInsideFace());
+  EXPECT_TRUE(standardMaterial.isSolarAbsorptanceInsideFaceDefaulted());
+  EXPECT_EQ(0.6, standardMaterial.solarAbsorptanceInsideFace());
+  EXPECT_TRUE(standardMaterial.isVisibleAbsorptanceInsideFaceDefaulted());
+  EXPECT_EQ(0.4, standardMaterial.visibleAbsorptanceInsideFace());
+
+  Workspace masslessWorkspace(StrictnessLevel::Minimal, IddFileType::EnergyPlus);
+  IdfObject masslessIdfObject(IddObjectType::Material_NoMass);
+  masslessIdfObject.setString(Material_NoMassFields::Name, "Massless Material");
+  masslessIdfObject.setString(Material_NoMassFields::Roughness, "Smooth");
+  masslessIdfObject.setDouble(Material_NoMassFields::ThermalResistance, 3.05);
+  masslessIdfObject.setDouble(Material_NoMassFields::ThermalAbsorptance, 0.8);
+  masslessIdfObject.setDouble(Material_NoMassFields::SolarAbsorptance, 0.6);
+  masslessIdfObject.setDouble(Material_NoMassFields::VisibleAbsorptance, 0.4);
+  masslessWorkspace.addObject(masslessIdfObject);
+
+  ReverseTranslator masslessTrans;
+  Model masslessModel = masslessTrans.translateWorkspace(masslessWorkspace);
+  auto masslessMaterial = masslessModel.getConcreteModelObjects<MasslessOpaqueMaterial>()[0];
+
+  EXPECT_TRUE(masslessMaterial.isThermalAbsorptanceInsideFaceDefaulted());
+  EXPECT_EQ(0.8, masslessMaterial.thermalAbsorptanceInsideFace().get());
+  EXPECT_TRUE(masslessMaterial.isSolarAbsorptanceInsideFaceDefaulted());
+  EXPECT_EQ(0.6, masslessMaterial.solarAbsorptanceInsideFace().get());
+  EXPECT_TRUE(masslessMaterial.isVisibleAbsorptanceInsideFaceDefaulted());
+  EXPECT_EQ(0.4, masslessMaterial.visibleAbsorptanceInsideFace().get());
+}
+
 TEST_F(EnergyPlusFixture, ReverseTranslatorTest_TranslateConstruction) {
   // Initialize the workspace from a file containing a Construction and two Materials
   openstudio::path idfPath = resourcesPath() / openstudio::toPath("energyplus/TranslatorV2_Tests/Simple_Construction.idf");

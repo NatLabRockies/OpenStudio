@@ -293,6 +293,16 @@ TEST_F(EnergyPlusFixture, ForwardTranslatorTest_TranslateScheduleCompact) {
 
 TEST_F(EnergyPlusFixture, ForwardTranslatorTest_TranslateStandardOpaqueMaterial) {
   openstudio::model::Model model;
+  openstudio::model::StandardOpaqueMaterial defaultedMaterial(model);
+
+  ForwardTranslator defaultedTrans;
+  Workspace defaultedWorkspace = defaultedTrans.translateModelObject(defaultedMaterial);
+  openstudio::IdfObject defaultedMaterialIdf = defaultedWorkspace.getObjectsByType(IddObjectType::Material)[0];
+
+  EXPECT_FALSE(defaultedMaterialIdf.getDouble(MaterialFields::ThermalAbsorptanceInsideFace));
+  EXPECT_FALSE(defaultedMaterialIdf.getDouble(MaterialFields::SolarAbsorptanceInsideFace));
+  EXPECT_FALSE(defaultedMaterialIdf.getDouble(MaterialFields::VisibleAbsorptanceInsideFace));
+
   openstudio::model::StandardOpaqueMaterial mat(model);
 
   mat.setName("Test Material");
