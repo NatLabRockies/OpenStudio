@@ -367,15 +367,15 @@ TEST_F(EnergyPlusFixture, ReverseTranslatorTest_TranslateStandardOpaqueMaterial)
 TEST_F(EnergyPlusFixture, ReverseTranslatorTest_TranslateOpaqueMaterialBlankInsideFaceAbsorptance) {
   Workspace standardWorkspace(StrictnessLevel::Minimal, IddFileType::EnergyPlus);
   IdfObject standardIdfObject(IddObjectType::Material);
-  standardIdfObject.setString(MaterialFields::Name, "Standard Material");
-  standardIdfObject.setString(MaterialFields::Roughness, "Smooth");
-  standardIdfObject.setDouble(MaterialFields::Thickness, 0.012);
-  standardIdfObject.setDouble(MaterialFields::Conductivity, 3.2);
-  standardIdfObject.setDouble(MaterialFields::Density, 2.5);
-  standardIdfObject.setDouble(MaterialFields::SpecificHeat, 1400.0);
-  standardIdfObject.setDouble(MaterialFields::ThermalAbsorptance, 0.8);
-  standardIdfObject.setDouble(MaterialFields::SolarAbsorptance, 0.6);
-  standardIdfObject.setDouble(MaterialFields::VisibleAbsorptance, 0.4);
+  standardIdfObject.setString(0, "Standard Material");
+  standardIdfObject.setString(1, "Smooth");
+  standardIdfObject.setDouble(2, 0.012);
+  standardIdfObject.setDouble(3, 3.2);
+  standardIdfObject.setDouble(4, 2.5);
+  standardIdfObject.setDouble(5, 1400.0);
+  standardIdfObject.setDouble(6, 0.8);
+  standardIdfObject.setDouble(7, 0.6);
+  standardIdfObject.setDouble(8, 0.4);
   standardWorkspace.addObject(standardIdfObject);
 
   ReverseTranslator standardTrans;
@@ -391,12 +391,12 @@ TEST_F(EnergyPlusFixture, ReverseTranslatorTest_TranslateOpaqueMaterialBlankInsi
 
   Workspace masslessWorkspace(StrictnessLevel::Minimal, IddFileType::EnergyPlus);
   IdfObject masslessIdfObject(IddObjectType::Material_NoMass);
-  masslessIdfObject.setString(Material_NoMassFields::Name, "Massless Material");
-  masslessIdfObject.setString(Material_NoMassFields::Roughness, "Smooth");
-  masslessIdfObject.setDouble(Material_NoMassFields::ThermalResistance, 3.05);
-  masslessIdfObject.setDouble(Material_NoMassFields::ThermalAbsorptance, 0.8);
-  masslessIdfObject.setDouble(Material_NoMassFields::SolarAbsorptance, 0.6);
-  masslessIdfObject.setDouble(Material_NoMassFields::VisibleAbsorptance, 0.4);
+  masslessIdfObject.setString(0, "Massless Material");
+  masslessIdfObject.setString(2, "Smooth");
+  masslessIdfObject.setDouble(3, 3.05);
+  masslessIdfObject.setDouble(4, 0.8);
+  masslessIdfObject.setDouble(4, 0.6);
+  masslessIdfObject.setDouble(5, 0.4);
   masslessWorkspace.addObject(masslessIdfObject);
 
   ReverseTranslator masslessTrans;
