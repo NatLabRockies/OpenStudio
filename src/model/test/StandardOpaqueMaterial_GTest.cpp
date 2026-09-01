@@ -250,6 +250,33 @@ TEST_F(ModelFixture, StandardOpaqueMaterial_SetGetFields) {
 
   material.resetVisibleAbsorptance();
   EXPECT_TRUE(material.isVisibleAbsorptanceDefaulted());
+
+  EXPECT_TRUE(material.isThermalAbsorptanceInsideFaceDefaulted());
+  EXPECT_EQ(material.thermalAbsorptance(), material.thermalAbsorptanceInsideFace());
+  EXPECT_TRUE(material.setThermalAbsorptanceInsideFace(0.3));
+  EXPECT_FALSE(material.isThermalAbsorptanceInsideFaceDefaulted());
+  EXPECT_EQ(0.3, material.thermalAbsorptanceInsideFace());
+  material.resetThermalAbsorptanceInsideFace();
+  EXPECT_TRUE(material.isThermalAbsorptanceInsideFaceDefaulted());
+  EXPECT_EQ(material.thermalAbsorptance(), material.thermalAbsorptanceInsideFace());
+
+  EXPECT_TRUE(material.isSolarAbsorptanceInsideFaceDefaulted());
+  EXPECT_EQ(material.solarAbsorptance(), material.solarAbsorptanceInsideFace());
+  EXPECT_TRUE(material.setSolarAbsorptanceInsideFace(0.4));
+  EXPECT_FALSE(material.isSolarAbsorptanceInsideFaceDefaulted());
+  EXPECT_EQ(0.4, material.solarAbsorptanceInsideFace());
+  material.resetSolarAbsorptanceInsideFace();
+  EXPECT_TRUE(material.isSolarAbsorptanceInsideFaceDefaulted());
+  EXPECT_EQ(material.solarAbsorptance(), material.solarAbsorptanceInsideFace());
+
+  EXPECT_TRUE(material.isVisibleAbsorptanceInsideFaceDefaulted());
+  EXPECT_EQ(material.visibleAbsorptance(), material.visibleAbsorptanceInsideFace());
+  EXPECT_TRUE(material.setVisibleAbsorptanceInsideFace(0.5));
+  EXPECT_FALSE(material.isVisibleAbsorptanceInsideFaceDefaulted());
+  EXPECT_EQ(0.5, material.visibleAbsorptanceInsideFace());
+  material.resetVisibleAbsorptanceInsideFace();
+  EXPECT_TRUE(material.isVisibleAbsorptanceInsideFaceDefaulted());
+  EXPECT_EQ(material.visibleAbsorptance(), material.visibleAbsorptanceInsideFace());
 }
 
 TEST_F(ModelFixture, StandardOpaqueMaterial_Clone) {

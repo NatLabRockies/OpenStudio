@@ -38,6 +38,7 @@
 #include "../../model/CurveQuadratic_Impl.hpp"
 #include "../../model/CoilCoolingDXSingleSpeed.hpp"
 #include "../../model/CoilCoolingDXSingleSpeed_Impl.hpp"
+#include "../../model/MasslessOpaqueMaterial.hpp"
 #include "../../model/StandardOpaqueMaterial.hpp"
 #include "../../model/Construction.hpp"
 #include "../../model/OutputVariable.hpp"
@@ -61,6 +62,8 @@
 #include <utilities/idd/Schedule_Compact_FieldEnums.hxx>
 #include <utilities/idd/ZoneCapacitanceMultiplier_ResearchSpecial_FieldEnums.hxx>
 #include <utilities/idd/Output_Variable_FieldEnums.hxx>
+#include <utilities/idd/Material_FieldEnums.hxx>
+#include <utilities/idd/Material_NoMass_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/IddFactory.hxx>
 
@@ -301,6 +304,9 @@ TEST_F(EnergyPlusFixture, ForwardTranslatorTest_TranslateStandardOpaqueMaterial)
   mat.setThermalAbsorptance(0.9);
   mat.setSolarAbsorptance(0.7);
   mat.setVisibleAbsorptance(0.7);
+  mat.setThermalAbsorptanceInsideFace(0.8);
+  mat.setSolarAbsorptanceInsideFace(0.6);
+  mat.setVisibleAbsorptanceInsideFace(0.5);
 
   ForwardTranslator trans;
   Workspace workspace = trans.translateModelObject(mat);
@@ -309,7 +315,7 @@ TEST_F(EnergyPlusFixture, ForwardTranslatorTest_TranslateStandardOpaqueMaterial)
 
   openstudio::IdfObject matIdf = workspace.getObjectsByType(IddObjectType::Material)[0];
 
-  EXPECT_EQ(unsigned(9), matIdf.numFields());
+  EXPECT_EQ(unsigned(12), matIdf.numFields());
 
   EXPECT_EQ("Test Material", *(matIdf.name()));
   EXPECT_EQ("Rough", *(matIdf.getString(1)));
@@ -320,6 +326,35 @@ TEST_F(EnergyPlusFixture, ForwardTranslatorTest_TranslateStandardOpaqueMaterial)
   EXPECT_EQ(0.9, *(matIdf.getDouble(6)));
   EXPECT_EQ(0.7, *(matIdf.getDouble(7)));
   EXPECT_EQ(0.7, *(matIdf.getDouble(8)));
+  EXPECT_EQ(0.8, *(matIdf.getDouble(MaterialFields::ThermalAbsorptanceInsideFace)));
+  EXPECT_EQ(0.6, *(matIdf.getDouble(MaterialFields::SolarAbsorptanceInsideFace)));
+  EXPECT_EQ(0.5, *(matIdf.getDouble(MaterialFields::VisibleAbsorptanceInsideFace)));
+}
+
+TEST_F(EnergyPlusFixture, ForwardTranslatorTest_TranslateMasslessOpaqueMaterialInsideFaceAbsorptance) {
+  openstudio::model::Model model;
+  openstudio::model::MasslessOpaqueMaterial defaultedMaterial(model);
+
+  ForwardTranslator trans;
+  Workspace workspace = trans.translateModelObject(defaultedMaterial);
+  openstudio::IdfObject defaultedMaterialIdf = workspace.getObjectsByType(IddObjectType::Material_NoMass)[0];
+
+  EXPECT_FALSE(defaultedMaterialIdf.getDouble(Material_NoMassFields::ThermalAbsorptanceInsideFace));
+  EXPECT_FALSE(defaultedMaterialIdf.getDouble(Material_NoMassFields::SolarAbsorptanceInsideFace));
+  EXPECT_FALSE(defaultedMaterialIdf.getDouble(Material_NoMassFields::VisibleAbsorptanceInsideFace));
+
+  openstudio::model::MasslessOpaqueMaterial overriddenMaterial(model);
+  overriddenMaterial.setThermalAbsorptanceInsideFace(0.8);
+  overriddenMaterial.setSolarAbsorptanceInsideFace(0.6);
+  overriddenMaterial.setVisibleAbsorptanceInsideFace(0.5);
+
+  ForwardTranslator overriddenTrans;
+  Workspace overriddenWorkspace = overriddenTrans.translateModelObject(overriddenMaterial);
+  openstudio::IdfObject overriddenMaterialIdf = overriddenWorkspace.getObjectsByType(IddObjectType::Material_NoMass)[0];
+
+  EXPECT_EQ(0.8, overriddenMaterialIdf.getDouble(Material_NoMassFields::ThermalAbsorptanceInsideFace).get());
+  EXPECT_EQ(0.6, overriddenMaterialIdf.getDouble(Material_NoMassFields::SolarAbsorptanceInsideFace).get());
+  EXPECT_EQ(0.5, overriddenMaterialIdf.getDouble(Material_NoMassFields::VisibleAbsorptanceInsideFace).get());
 }
 
 TEST_F(EnergyPlusFixture, ForwardTranslatorTest_TranslateConstruction) {
