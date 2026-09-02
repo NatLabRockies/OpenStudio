@@ -6827,7 +6827,6 @@ OS:ZoneMRTCalculation,
        \type handle
        \required-field
   A2,  \field Thermal Zone Name
-       \type alpha
        \type object-list
        \object-list ThermalZoneNames
        \required-field
