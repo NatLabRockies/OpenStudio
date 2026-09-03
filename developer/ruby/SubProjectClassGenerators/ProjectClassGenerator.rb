@@ -39,7 +39,7 @@ class ProjectClassGenerator < SubProjectClassGenerator
     # determine if joinRecord/objectRecord, pull out join information
     re = Regexp.new('(\w*)_(\w*)_JoinRecord')
     m = @className.match(re)
-    if not (m == nil)
+    if !m.nil?
       @joinRecord = true
       @objectRecord = false
       @leftJoinClass = m[1]

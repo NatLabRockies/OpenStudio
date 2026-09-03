@@ -996,7 +996,7 @@ class Run
 
     # Parse the options
     argv = parse_options(opts, sub_argv)
-    return 0 if argv == nil
+    return 0 if argv.nil?
 
     $logger.debug("Run command: #{argv.inspect} #{options.inspect}")
 
@@ -1219,7 +1219,7 @@ class ApplyMeasure
 
     # Parse the options
     argv = parse_options(opts, sub_argv)
-    return 0 if argv == nil
+    return 0 if argv.nil?
 
     $logger.debug("ApplyMeasure command: #{argv.inspect} #{options.inspect}")
 
@@ -1255,7 +1255,7 @@ class GemList
       o.banner = 'Usage: openstudio gem_list'
     end
     argv = parse_options(opts, sub_argv)
-    return 0 if argv == nil
+    return 0 if argv.nil?
 
     $logger.debug("GemList command: #{argv.inspect} #{options.inspect}")
 
@@ -1323,7 +1323,7 @@ class InstallGem
 
     # Parse the options
     argv = parse_options(opts, sub_argv)
-    return 0 if argv == nil
+    return 0 if argv.nil?
 
     $logger.debug("InstallGem command: #{argv.inspect} #{options.inspect}")
 
@@ -1433,7 +1433,7 @@ class Measure
 
     # Parse the options
     argv = parse_options(opts, sub_argv)
-    return 0 if argv == nil
+    return 0 if argv.nil?
 
     $logger.debug("Measure command: #{argv.inspect} #{options.inspect}")
 
@@ -1630,7 +1630,7 @@ class Update
 
     # Parse the options
     argv = parse_options(opts, sub_argv)
-    return 0 if argv == nil
+    return 0 if argv.nil?
 
     $logger.debug("Measure command: #{argv.inspect} #{options.inspect}")
 
@@ -1706,7 +1706,7 @@ class ExecuteRubyScript
 
     # Parse the options
     # DLM: don't do argument parsing as in other commands since we want to pass the remaining arguments to the ruby script
-    return 0 if sub_argv == nil
+    return 0 if sub_argv.nil?
     return 1 unless sub_argv
     $logger.debug("ExecuteRubyScript command: #{sub_argv.inspect}")
     file_path = sub_argv.shift.to_s
@@ -1757,7 +1757,7 @@ class InteractiveRubyShell
 
     # Parse the options
     argv = parse_options(opts, sub_argv)
-    return 0 if argv == nil
+    return 0 if argv.nil?
 
     $logger.debug("InteractiveRubyShell command: #{argv.inspect} #{options.inspect}")
 
@@ -1797,7 +1797,7 @@ class OpenStudioVersion
 
     # Parse the options
     argv = parse_options(opts, sub_argv)
-    return 0 if argv == nil
+    return 0 if argv.nil?
 
     $logger.debug("OpenStudioVersion command: #{argv.inspect} #{options.inspect}")
 
@@ -1837,7 +1837,7 @@ class EnergyPlusVersion
 
     # Parse the options
     argv = parse_options(opts, sub_argv)
-    return 0 if argv == nil
+    return 0 if argv.nil?
 
     $logger.debug("EnergyPlusVersion command: #{argv.inspect} #{options.inspect}")
 
@@ -1877,7 +1877,7 @@ class RubyVersion
 
     # Parse the options
     argv = parse_options(opts, sub_argv)
-    return 0 if argv == nil
+    return 0 if argv.nil?
 
     $logger.debug("RubyVersion command: #{argv.inspect} #{options.inspect}")
 
@@ -1926,7 +1926,7 @@ class ListCommands
 
     # Parse the options
     argv = parse_options(opts, sub_argv)
-    return 0 if argv == nil
+    return 0 if argv.nil?
 
     $logger.debug("ListCommands command: #{argv.inspect} #{options.inspect}")
 
@@ -1963,7 +1963,7 @@ $logger.info "Executing argv: #{ARGV}"
 
 begin
   result = CLI.new(ARGV).execute
-rescue Exception => e
+rescue StandardError => e
   puts "Error executing argv: #{ARGV}"
   if e.backtrace.nil?
     puts "Error: #{e.message}"
