@@ -93,6 +93,18 @@ namespace model {
 
       virtual bool isVisibleAbsorptanceDefaulted() const;
 
+      virtual double thermalAbsorptanceInsideFace() const;
+
+      virtual bool isThermalAbsorptanceInsideFaceDefaulted() const;
+
+      virtual double solarAbsorptanceInsideFace() const;
+
+      virtual bool isSolarAbsorptanceInsideFaceDefaulted() const;
+
+      virtual double visibleAbsorptanceInsideFace() const;
+
+      virtual bool isVisibleAbsorptanceInsideFaceDefaulted() const;
+
       virtual std::vector<EMSActuatorNames> emsActuatorNames() const override;
 
       virtual std::vector<std::string> emsInternalVariableNames() const override;
@@ -146,6 +158,18 @@ namespace model {
       virtual bool setVisibleAbsorptance(double visibleAbsorptance);
 
       virtual void resetVisibleAbsorptance();
+
+      virtual bool setThermalAbsorptanceInsideFace(double thermalAbsorptanceInsideFace);
+
+      virtual void resetThermalAbsorptanceInsideFace();
+
+      virtual bool setSolarAbsorptanceInsideFace(double solarAbsorptanceInsideFace);
+
+      virtual void resetSolarAbsorptanceInsideFace();
+
+      virtual bool setVisibleAbsorptanceInsideFace(double visibleAbsorptanceInsideFace);
+
+      virtual void resetVisibleAbsorptanceInsideFace();
 
       // if material property moisture penetration depth settings already exists, do nothing and return nil; creates the material property moisture penetration depth settings if it does not already exist and return it;
       boost::optional<MaterialPropertyMoisturePenetrationDepthSettings>
