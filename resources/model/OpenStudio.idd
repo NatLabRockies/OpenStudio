@@ -2233,11 +2233,29 @@ OS:Material,
        \minimum 0
        \maximum 1
        \default .7
-  N7; \field Visible Absorptance
+  N7, \field Visible Absorptance
        \type real
        \minimum 0
        \maximum 1
        \default .7
+  N8,  \field Thermal Absorptance Inside Face
+       \note When blank, this value is equal to the Thermal Absorptance field above.
+       \note When entered, the Thermal Absorptance field applies to the outside face and this field applies to the inside face.
+       \type real
+       \minimum> 0
+       \maximum 0.99999
+  N9,  \field Solar Absorptance Inside Face
+       \note When blank, this value is equal to the Solar Absorptance field above.
+       \note When entered, the Solar Absorptance field applies to the outside face and this field applies to the inside face.
+       \type real
+       \minimum 0
+       \maximum 1
+  N10; \field Visible Absorptance Inside Face
+       \note When blank, this value is equal to the Visible Absorptance field above.
+       \note When entered, the Visible Absorptance field applies to the outside face and this field applies to the inside face.
+       \type real
+       \minimum 0
+       \maximum 1
 
 OS:Material:AirGap,
        \memo Air Space in Opaque Construction
@@ -2305,11 +2323,29 @@ OS:Material:NoMass,
        \minimum 0
        \maximum 1
        \default .7
-  N4; \field Visible Absorptance
+  N4, \field Visible Absorptance
        \type real
        \minimum 0
        \maximum 1
        \default .7
+  N5, \field Thermal Absorptance Inside Face
+       \note When blank, this value is equal to the Thermal Absorptance field above.
+       \note When entered, the Thermal Absorptance field applies to the outside face and this field applies to the inside face.
+       \type real
+       \minimum> 0
+       \maximum 0.99999
+  N6, \field Solar Absorptance Inside Face
+       \note When blank, this value is equal to the Solar Absorptance field above.
+       \note When entered, the Solar Absorptance field applies to the outside face and this field applies to the inside face.
+       \type real
+       \minimum 0
+       \maximum 1
+  N7; \field Visible Absorptance Inside Face
+       \note When blank, this value is equal to the Visible Absorptance field above.
+       \note When entered, the Visible Absorptance field applies to the outside face and this field applies to the inside face.
+       \type real
+       \minimum 0
+       \maximum 1
 
 OS:Material:RoofVegetation,
        \memo EcoRoof model, plant layer plus soil layer
