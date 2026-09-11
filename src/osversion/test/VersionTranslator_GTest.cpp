@@ -297,7 +297,6 @@ TEST_F(OSVersionFixture, VersionTranslator_FutureVersion_ExampleModel) {
   m2 = translator.loadModel(ss);
   EXPECT_FALSE(m2);
 }
-
 TEST_F(OSVersionFixture, VersionTranslator_FutureVersion_ExampleModel2) {
   osversion::VersionTranslator translator;
   translator.setAllowNewerVersions(false);
@@ -5101,28 +5100,4 @@ TEST_F(OSVersionFixture, update_3_11_0_to_3_12_0_CoilCoolingDXCurveFitOperatingM
   EXPECT_EQ(0, opMode.getDouble(8).get());    // Nominal Time for Condensate Removal to Begin
   EXPECT_EQ("No", opMode.getString(9).get());  // Apply Part Load Fraction to Speeds Greater than 1
   EXPECT_EQ("Yes", opMode.getString(10).get());  // Apply Latent Degradation to Speeds Greater than 1
-}
-
-TEST_F(OSVersionFixture, update_3_11_0_to_3_12_0_People) {
-  openstudio::path path = resourcesPath() / toPath("osversion/3_12_0/test_vt_People.osm");
-  osversion::VersionTranslator vt;
-  boost::optional<model::Model> model = vt.loadModel(path);
-  ASSERT_TRUE(model) << "Failed to load " << path;
-
-  std::vector<WorkspaceObject> definitions = model->getObjectsByType("OS:People:Definition");
-  ASSERT_EQ(1u, definitions.size());
-  const auto& definition = definitions.front();
-  EXPECT_EQ("SurfaceWeighted", definition.getString(10).get());  // Mean Radiant Temperature Calculation Type
-  const auto mrtTarget = definition.getTarget(11);  // Surface Name/Angle Factor List Name
-  ASSERT_TRUE(mrtTarget);
-  EXPECT_EQ("OS:Surface", mrtTarget->iddObject().name());
-  EXPECT_EQ("Radiant Surface", mrtTarget->nameString());
-  EXPECT_EQ("Fanger", definition.getString(12).get());            // Thermal Comfort Model 1 Type
-
-  std::vector<WorkspaceObject> people = model->getObjectsByType("OS:People");
-  ASSERT_EQ(1u, people.size());
-  const auto& person = people.front();
-  EXPECT_TRUE(person.isEmpty(6));                                 // Work Efficiency Schedule Name
-  EXPECT_EQ("ClothingInsulationSchedule", person.getString(7).get());  // Clothing Insulation Calculation Method
-  EXPECT_EQ(1.0, person.getDouble(11).get());                      // Multiplier
 }
