@@ -6,7 +6,7 @@
 #include "InternalMass.hpp"
 #include "InternalMass_Impl.hpp"
 #include "ComfortViewFactorAngles.hpp"
-
+#include "ComfortViewFactorAngles_Impl.hpp"
 #include "InternalMassDefinition.hpp"
 #include "InternalMassDefinition_Impl.hpp"
 #include "Space.hpp"
@@ -51,7 +51,7 @@ namespace model {
     }
 
     std::vector<IdfObject> InternalMass_Impl::remove() {
-      InternalMass internalMass = getObject<InternalMass>();
+      InternalMass internalMass = getObject<ModelObject>().cast<InternalMass>();
       for (ComfortViewFactorAngles& comfortViewFactorAngles : internalMass.getModelObjectSources<ComfortViewFactorAngles>()) {
         while (boost::optional<unsigned> index = comfortViewFactorAngles.angleFactorIndex(internalMass)) {
           comfortViewFactorAngles.removeAngleFactor(index.get());

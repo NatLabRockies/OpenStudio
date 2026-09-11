@@ -6,7 +6,7 @@
 #include "Surface.hpp"
 #include "Surface_Impl.hpp"
 #include "ComfortViewFactorAngles.hpp"
-
+#include "ComfortViewFactorAngles_Impl.hpp"
 #include "Model.hpp"
 #include "Model_Impl.hpp"
 #include "Space.hpp"
