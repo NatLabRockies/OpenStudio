@@ -40,13 +40,14 @@ namespace model {
       return boost::none;
     }
 
-    // Matches the model objects accepted by EnergyPlus AllHeatTranSurfNames.
-    bool isHeatTransferSurface(const ModelObject& surface) {
-      return surface.optionalCast<Surface>() || surface.optionalCast<SubSurface>() || surface.optionalCast<InternalMass>();
-    }
   }  // namespace
 
   AngleFactor::AngleFactor(const ModelObject& surface, double angleFactor) : m_surface(surface), m_angleFactor(angleFactor) {
+    const IddObjectType surfaceIddType = surface.iddObjectType();
+    if ((surfaceIddType != IddObjectType::OS_Surface) && (surfaceIddType != IddObjectType::OS_SubSurface)
+        && (surfaceIddType != IddObjectType::OS_InternalMass)) {
+      LOG_AND_THROW("surface can be only of type Surface, SubSurface or InternalMass, not " << surfaceIddType.value());
+    }
     if (!((m_angleFactor >= 0.0) && (m_angleFactor <= 1.0))) {
       LOG_AND_THROW("Angle Factor must be between 0 and 1.");
     }
@@ -107,51 +108,35 @@ namespace model {
 
     boost::optional<unsigned> ComfortViewFactorAngles_Impl::angleFactorIndex(const ModelObject& surface) const {
       for (unsigned i = 0; i < numberofAngleFactors(); ++i) {
-        if (auto existingSurface = getSurface(i); existingSurface && (existingSurface->handle() == surface.handle())) {
+        auto group = getExtensibleGroup(i).cast<ModelExtensibleGroup>();
+        auto existingSurface = group.getModelObjectTarget<ModelObject>(OS_ComfortViewFactorAnglesExtensibleFields::SurfaceName);
+        if (existingSurface && (existingSurface->handle() == surface.handle())) {
           return i;
         }
       }
       return boost::none;
     }
 
-    boost::optional<ModelObject> ComfortViewFactorAngles_Impl::getSurface(unsigned groupIndex) const {
-      boost::optional<ModelObject> result;
-
-      if (groupIndex >= numberofAngleFactors()) {
-        LOG(Error, "Asked to get Surface with index " << groupIndex << ", but " << briefDescription() << " has just " << numberofAngleFactors()
-                                                        << " angle factors.");
-        return result;
-      }
-      auto group = getExtensibleGroup(groupIndex).cast<ModelExtensibleGroup>();
-      result = group.getModelObjectTarget<ModelObject>(OS_ComfortViewFactorAnglesExtensibleFields::SurfaceName);
-
-      if (!result) {
-        LOG(Error, "Could not retrieve Surface Name for extensible group " << group.groupIndex() << ".");
-      }
-      return result;
-    }
-
-    boost::optional<double> ComfortViewFactorAngles_Impl::getAngleFactorValue(unsigned groupIndex) const {
+    boost::optional<AngleFactor> ComfortViewFactorAngles_Impl::getAngleFactor(unsigned groupIndex) const {
       if (groupIndex >= numberofAngleFactors()) {
         LOG(Error, "Asked to get Angle Factor with index " << groupIndex << ", but " << briefDescription() << " has just " << numberofAngleFactors()
                                                              << " angle factors.");
         return boost::none;
       }
+
       auto group = getExtensibleGroup(groupIndex).cast<ModelExtensibleGroup>();
-      auto result = group.getDouble(OS_ComfortViewFactorAnglesExtensibleFields::AngleFactor);
-      if (!result) {
+      auto surface = group.getModelObjectTarget<ModelObject>(OS_ComfortViewFactorAnglesExtensibleFields::SurfaceName);
+      auto angleFactor = group.getDouble(OS_ComfortViewFactorAnglesExtensibleFields::AngleFactor);
+      if (!surface) {
+        LOG(Error, "Could not retrieve Surface Name for extensible group " << group.groupIndex() << ".");
+      }
+      if (!angleFactor) {
         LOG(Error, "Could not retrieve Angle Factor for extensible group " << group.groupIndex() << ".");
       }
-      return result;
-    }
-
-    boost::optional<AngleFactor> ComfortViewFactorAngles_Impl::getAngleFactor(unsigned groupIndex) const {
-      auto surface = getSurface(groupIndex);
-      auto angleFactor = getAngleFactorValue(groupIndex);
-      if (surface && angleFactor) {
-        return AngleFactor(*surface, *angleFactor);
+      if (!surface || !angleFactor) {
+        return boost::none;
       }
-      return boost::none;
+      return AngleFactor(*surface, *angleFactor);
     }
 
     bool ComfortViewFactorAngles_Impl::addAngleFactor(const AngleFactor& angleFactor) {
@@ -160,12 +145,6 @@ namespace model {
       ModelObject surface = angleFactor.surface();
       if (surface.model() != model()) {
         LOG(Error, "Cannot add a Surface from another Model to " << briefDescription() << ".");
-        return result;
-      }
-
-      if (!isHeatTransferSurface(surface)) {
-        LOG(Error, "Cannot add " << surface.briefDescription() << " to " << briefDescription()
-                                  << " because it is not a Surface, SubSurface, or InternalMass object.");
         return result;
       }
 
@@ -207,12 +186,9 @@ namespace model {
         if (existingIndex && (i == *existingIndex)) {
           continue;
         }
-        auto existingValue = getAngleFactorValue(i);
-        if (!existingValue || (*existingValue < 0.0) || (*existingValue > 1.0)) {
-          LOG(Error, "Cannot add an AngleFactor to " << briefDescription() << " because an existing Angle Factor is invalid.");
-          return result;
-        }
-        sum += *existingValue;
+        auto group = getExtensibleGroup(i).cast<ModelExtensibleGroup>();
+        auto existingValue = group.getDouble(OS_ComfortViewFactorAnglesExtensibleFields::AngleFactor);
+        sum += existingValue.get();
       }
 
       constexpr double tolerance = 0.000001;
@@ -226,14 +202,10 @@ namespace model {
       ModelExtensibleGroup group = (existingIndex ? getExtensibleGroup(existingIndex.get()).cast<ModelExtensibleGroup>()
                                                   : pushExtensibleGroup(temp, false).cast<ModelExtensibleGroup>());
 
-      bool surfaceSet = group.setPointer(OS_ComfortViewFactorAnglesExtensibleFields::SurfaceName, surface.handle(), false);
-      if (!surfaceSet) {
-        LOG(Error, "Unable to add AngleFactor which has an incompatible Surface object to " << briefDescription());
-        OS_ASSERT(false);
-      }
+      OS_ASSERT(group.setPointer(OS_ComfortViewFactorAnglesExtensibleFields::SurfaceName, surface.handle(), false));
 
       bool angleFactorSet = group.setDouble(OS_ComfortViewFactorAnglesExtensibleFields::AngleFactor, angleFactor.angleFactor());
-      if (surfaceSet && angleFactorSet) {
+      if (angleFactorSet) {
         result = true;
       } else {
         if (!existingIndex) {

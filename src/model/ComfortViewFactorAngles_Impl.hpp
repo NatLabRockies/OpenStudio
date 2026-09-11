@@ -42,8 +42,6 @@ namespace model {
      private:
       REGISTER_LOGGER("openstudio.model.ComfortViewFactorAngles");
 
-      boost::optional<ModelObject> getSurface(unsigned groupIndex) const;
-      boost::optional<double> getAngleFactorValue(unsigned groupIndex) const;
     };
   }
 

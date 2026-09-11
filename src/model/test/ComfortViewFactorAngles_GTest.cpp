@@ -35,6 +35,8 @@ TEST_F(ModelFixture, ComfortViewFactorAngles) {
   ASSERT_TRUE(surface.setSpace(space));
   ComfortViewFactorAngles comfortViewFactorAngles(model);
 
+  EXPECT_THROW(AngleFactor(space, 0.5), openstudio::Exception);
+
   // Individual angle factors must remain within the IDD's inclusive range.
   EXPECT_THROW(AngleFactor(surface, -0.01), openstudio::Exception);
   EXPECT_THROW(AngleFactor(surface, 1.01), openstudio::Exception);
@@ -88,9 +90,10 @@ TEST_F(ModelFixture, ComfortViewFactorAngles) {
   EXPECT_EQ(2u, comfortViewFactorAngles.numberofAngleFactors());
 
   PeopleDefinition peopleDefinition(model);
-  EXPECT_FALSE(peopleDefinition.setSurfaceNameAngleFactorListName(otherSurface));
+  People people(peopleDefinition);
+  EXPECT_FALSE(people.setSurfaceNameAngleFactorListName(otherSurface));
   EXPECT_EQ("EnclosureAveraged", peopleDefinition.meanRadiantTemperatureCalculationType());
-  EXPECT_FALSE(peopleDefinition.surfaceNameAngleFactorListName());
+  EXPECT_FALSE(people.surfaceNameAngleFactorListName());
 
   // Indexed removal deletes one group.
   comfortViewFactorAngles.removeAngleFactor(0);
@@ -130,4 +133,22 @@ TEST_F(ModelFixture, ComfortViewFactorAngles_HeatTransferSurfaceTargets) {
   ASSERT_EQ(2u, angleFactors.size());
   EXPECT_EQ(subSurface.handle(), angleFactors[0].surface().handle());
   EXPECT_EQ(internalMass.handle(), angleFactors[1].surface().handle());
+}
+
+TEST_F(ModelFixture, ComfortViewFactorAngles_RemovesDeletedSurfaceTargets) {
+  Model model;
+  ThermalZone thermalZone(model);
+  Space space(model);
+  ASSERT_TRUE(space.setThermalZone(thermalZone));
+  Point3dVector points{{0, 0, 0}, {1, 0, 0}, {1, 1, 0}};
+  Surface surface(points, model);
+  ASSERT_TRUE(surface.setSpace(space));
+
+  ComfortViewFactorAngles comfortViewFactorAngles(model);
+  ASSERT_TRUE(comfortViewFactorAngles.addAngleFactor(surface, 1.0));
+  ASSERT_EQ(1u, comfortViewFactorAngles.numberofAngleFactors());
+
+  surface.remove();
+
+  EXPECT_EQ(0u, comfortViewFactorAngles.numberofAngleFactors());
 }
