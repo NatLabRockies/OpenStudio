@@ -7101,11 +7101,12 @@ OS:People,
        \type object-list
        \object-list ScheduleNames
   A7, \field Surface Name/Angle Factor List Name
+       \note optional (only required for runs of thermal comfort models: Fanger, Pierce, KSU, CoolingEffectASH55 and AnkleDraftASH55)
        \type object-list
        \object-list AllHeatTranAngFacNames
   A8, \field Work Efficiency Schedule Name
        \note units in schedule are 0.0 to 1.0
-       \note optional (only required for thermal comfort runs)
+       \note optional (only required for runs of thermal comfort models: Fanger, Pierce, KSU, CoolingEffectASH55 and AnkleDraftASH55)
        \type object-list
        \object-list ScheduleNames
   A9, \field Clothing Insulation Calculation Method
@@ -7120,12 +7121,12 @@ OS:People,
        \note a schedule value of 1 for the Scheduled method, and 2 for the DynamicClothingModelASHRAE55 method
   A11, \field Clothing Insulation Schedule Name
        \note use "Clo" from ASHRAE or Thermal Comfort guides
-       \note optional (only required for thermal comfort runs)
+       \note optional (only required for runs of thermal comfort models: Fanger, Pierce, KSU, CoolingEffectASH55 and AnkleDraftASH55)
        \type object-list
        \object-list ScheduleNames
   A12, \field Air Velocity Schedule Name
        \note units in the schedule are m/s
-       \note optional (only required for thermal comfort runs)
+       \note optional (only required for runs of thermal comfort models: Fanger, Pierce, KSU, CoolingEffectASH55 and AnkleDraftASH55)
        \type object-list
        \object-list ScheduleNames
   N1,  \field Multiplier
