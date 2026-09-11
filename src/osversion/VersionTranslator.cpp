@@ -10309,6 +10309,7 @@ namespace osversion {
         ss << newObject;
         m_refactored.emplace_back(std::move(object), std::move(newObject));
 
+        // No-op
       } else {
         ss << object;
       }
