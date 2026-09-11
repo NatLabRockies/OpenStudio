@@ -7,6 +7,7 @@
 
 #include "../../model/People.hpp"
 #include "../../model/People_Impl.hpp"
+#include "../../model/ComfortViewFactorAngles.hpp"
 #include "../../model/PeopleDefinition.hpp"
 #include "../../model/PeopleDefinition_Impl.hpp"
 #include "../../model/Space.hpp"
@@ -102,11 +103,6 @@ namespace energyplus {
       definition.setMeanRadiantTemperatureCalculationType(*s);
     }
 
-    OptionalWorkspaceObject target = workspaceObject.getTarget(openstudio::PeopleFields::SurfaceName_AngleFactorListName);
-    if (target) {
-      LOG(Error, "SurfaceName_AngleFactorListName not currently imported");
-    }
-
     // As of 22.2.0, this is no longer possible to make this an extensible field
     // because E+ added 3 regular fields at the end (eg: Ankle Level Velocity Schedule Name)
     for (unsigned i = PeopleFields::ThermalComfortModel1Type, k = 0; i <= PeopleFields::ThermalComfortModel7Type; ++i) {
@@ -118,6 +114,13 @@ namespace energyplus {
 
     // create the instance
     People people(definition);
+
+    OptionalWorkspaceObject target = workspaceObject.getTarget(openstudio::PeopleFields::SurfaceName_AngleFactorListName);
+    if (target) {
+      if (auto modelObject = translateAndMapWorkspaceObject(*target)) {
+        people.setSurfaceNameAngleFactorListName(*modelObject);
+      }
+    }
 
     s = workspaceObject.name();
     if (s) {
