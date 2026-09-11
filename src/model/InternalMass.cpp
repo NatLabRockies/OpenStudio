@@ -5,6 +5,7 @@
 
 #include "InternalMass.hpp"
 #include "InternalMass_Impl.hpp"
+#include "ComfortViewFactorAngles.hpp"
 
 #include "InternalMassDefinition.hpp"
 #include "InternalMassDefinition_Impl.hpp"
@@ -47,6 +48,17 @@ namespace model {
 
     IddObjectType InternalMass_Impl::iddObjectType() const {
       return InternalMass::iddObjectType();
+    }
+
+    std::vector<IdfObject> InternalMass_Impl::remove() {
+      InternalMass internalMass = getObject<InternalMass>();
+      for (ComfortViewFactorAngles& comfortViewFactorAngles : internalMass.getModelObjectSources<ComfortViewFactorAngles>()) {
+        while (boost::optional<unsigned> index = comfortViewFactorAngles.angleFactorIndex(internalMass)) {
+          comfortViewFactorAngles.removeAngleFactor(index.get());
+        }
+      }
+
+      return SpaceLoadInstance_Impl::remove();
     }
 
     bool InternalMass_Impl::hardSize() {

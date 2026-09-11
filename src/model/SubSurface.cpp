@@ -5,6 +5,7 @@
 
 #include "SubSurface.hpp"
 #include "SubSurface_Impl.hpp"
+#include "ComfortViewFactorAngles.hpp"
 
 #include "Model.hpp"
 #include "Model_Impl.hpp"
@@ -126,6 +127,13 @@ namespace model {
       boost::optional<SubSurface> adjacentSubSurface = this->adjacentSubSurface();
       if (adjacentSubSurface) {
         this->resetAdjacentSubSurface();
+      }
+
+      SubSurface subSurface = getObject<SubSurface>();
+      for (ComfortViewFactorAngles& comfortViewFactorAngles : subSurface.getModelObjectSources<ComfortViewFactorAngles>()) {
+        while (boost::optional<unsigned> index = comfortViewFactorAngles.angleFactorIndex(subSurface)) {
+          comfortViewFactorAngles.removeAngleFactor(index.get());
+        }
       }
 
       // Remove it from the extensible groups in ShadingControl(s)

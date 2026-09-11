@@ -5,6 +5,7 @@
 
 #include "Surface.hpp"
 #include "Surface_Impl.hpp"
+#include "ComfortViewFactorAngles.hpp"
 
 #include "Model.hpp"
 #include "Model_Impl.hpp"
@@ -123,6 +124,13 @@ namespace model {
       boost::optional<Surface> adjacentSurface = this->adjacentSurface();
       if (adjacentSurface) {
         this->resetAdjacentSurface();
+      }
+
+      Surface surface = getObject<Surface>();
+      for (ComfortViewFactorAngles& comfortViewFactorAngles : surface.getModelObjectSources<ComfortViewFactorAngles>()) {
+        while (boost::optional<unsigned> index = comfortViewFactorAngles.angleFactorIndex(surface)) {
+          comfortViewFactorAngles.removeAngleFactor(index.get());
+        }
       }
 
       return ParentObject_Impl::remove();
