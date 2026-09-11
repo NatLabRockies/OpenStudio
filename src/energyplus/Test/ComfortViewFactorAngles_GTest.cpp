@@ -46,8 +46,8 @@ TEST_F(EnergyPlusFixture, ForwardTranslator_ComfortViewFactorAngles) {
   EXPECT_TRUE(comfortViewFactorAngles.addAngleFactor(surface, 1.0));
 
   PeopleDefinition definition(model);
-  EXPECT_TRUE(definition.setSurfaceNameAngleFactorListName(comfortViewFactorAngles));
   People people(definition);
+  EXPECT_TRUE(people.setSurfaceNameAngleFactorListName(comfortViewFactorAngles));
   EXPECT_TRUE(people.setSpace(space));
 
   ForwardTranslator forwardTranslator;
@@ -80,8 +80,8 @@ TEST_F(EnergyPlusFixture, ForwardTranslator_ComfortViewFactorAngles_SubSurface) 
   ASSERT_TRUE(comfortViewFactorAngles.addAngleFactor(subSurface, 1.0));
 
   PeopleDefinition definition(model);
-  ASSERT_TRUE(definition.setSurfaceNameAngleFactorListName(comfortViewFactorAngles));
   People people(definition);
+  ASSERT_TRUE(people.setSurfaceNameAngleFactorListName(comfortViewFactorAngles));
   ASSERT_TRUE(people.setSpace(space));
 
   ForwardTranslator forwardTranslator;
@@ -117,8 +117,8 @@ TEST_F(EnergyPlusFixture, ForwardTranslator_ComfortViewFactorAngles_InvalidSum) 
   EXPECT_TRUE(comfortViewFactorAngles.addAngleFactor(surface, 0.5));
 
   PeopleDefinition definition(model);
-  EXPECT_TRUE(definition.setSurfaceNameAngleFactorListName(comfortViewFactorAngles));
   People people(definition);
+  EXPECT_TRUE(people.setSurfaceNameAngleFactorListName(comfortViewFactorAngles));
   EXPECT_TRUE(people.setSpace(space));
 
   ForwardTranslator forwardTranslator;
@@ -138,8 +138,8 @@ TEST_F(EnergyPlusFixture, ForwardTranslator_ComfortViewFactorAngles_Untranslated
   EXPECT_FALSE(comfortViewFactorAngles.addAngleFactor(surface, 1.0));
 
   PeopleDefinition definition(model);
-  EXPECT_TRUE(definition.setSurfaceNameAngleFactorListName(comfortViewFactorAngles));
   People people(definition);
+  EXPECT_TRUE(people.setSurfaceNameAngleFactorListName(comfortViewFactorAngles));
   EXPECT_TRUE(people.setSpace(space));
 
   ForwardTranslator forwardTranslator;
@@ -169,8 +169,8 @@ TEST_F(EnergyPlusFixture, ForwardTranslator_ComfortViewFactorAngles_RejectsSurfa
   EXPECT_TRUE(surfaceToMove.setSpace(otherSpace));
 
   PeopleDefinition definition(model);
-  EXPECT_TRUE(definition.setSurfaceNameAngleFactorListName(comfortViewFactorAngles));
   People people(definition);
+  EXPECT_TRUE(people.setSurfaceNameAngleFactorListName(comfortViewFactorAngles));
   EXPECT_TRUE(people.setSpace(space));
 
   ForwardTranslator forwardTranslator;

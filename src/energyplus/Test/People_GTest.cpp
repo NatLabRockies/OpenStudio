@@ -156,8 +156,8 @@ TEST_F(EnergyPlusFixture, ForwardTranslator_People_AngleFactor) {
   EXPECT_TRUE(comfortViewFactorAngles.addAngleFactor(surface, 1.0));
 
   PeopleDefinition definition(model);
-  EXPECT_TRUE(definition.setSurfaceNameAngleFactorListName(comfortViewFactorAngles));
   People people(definition);
+  EXPECT_TRUE(people.setSurfaceNameAngleFactorListName(comfortViewFactorAngles));
   EXPECT_TRUE(people.setSpace(space));
 
   ForwardTranslator forwardTranslator;
@@ -191,8 +191,8 @@ TEST_F(EnergyPlusFixture, ForwardTranslator_People_SurfaceWeighted) {
   EXPECT_TRUE(surface.setSpace(space));
 
   PeopleDefinition definition(model);
-  EXPECT_TRUE(definition.setSurfaceNameAngleFactorListName(surface));
   People people(definition);
+  EXPECT_TRUE(people.setSurfaceNameAngleFactorListName(surface));
   EXPECT_TRUE(people.setSpace(space));
 
   ForwardTranslator forwardTranslator;
@@ -293,7 +293,7 @@ TEST_F(EnergyPlusFixture, ReverseTranslator_People) {
   auto pd = p.definition().cast<PeopleDefinition>();
   EXPECT_EQ("Area/Person", pd.numberofPeopleCalculationMethod());
   EXPECT_EQ("AngleFactor", pd.meanRadiantTemperatureCalculationType());
-  auto mrtTarget = pd.surfaceNameAngleFactorListName();
+  auto mrtTarget = p.surfaceNameAngleFactorListName();
   ASSERT_TRUE(mrtTarget);
   EXPECT_EQ("Angle Factors", mrtTarget->nameString());
   EXPECT_FALSE(pd.numberofPeople());
