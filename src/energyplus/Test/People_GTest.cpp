@@ -205,6 +205,62 @@ TEST_F(EnergyPlusFixture, ForwardTranslator_People_SurfaceWeighted) {
   EXPECT_EQ("Radiant Surface", peopleObject.getString(PeopleFields::SurfaceName_AngleFactorListName).get());
 }
 
+TEST_F(EnergyPlusFixture, ForwardTranslator_People_MRTTypeFollowsSurfaceTarget) {
+  Model model;
+  ThermalZone zone(model);
+  Space space(model);
+  EXPECT_TRUE(space.setThermalZone(zone));
+
+  Point3dVector points{{0, 0, 0}, {1, 0, 0}, {1, 1, 0}};
+  Surface surface(points, model);
+  EXPECT_TRUE(surface.setSpace(space));
+
+  PeopleDefinition definition(model);
+  People people(definition);
+  EXPECT_TRUE(people.setSurfaceNameAngleFactorListName(surface));
+  EXPECT_TRUE(definition.setMeanRadiantTemperatureCalculationType("AngleFactor"));
+  EXPECT_TRUE(people.setSpace(space));
+
+  ForwardTranslator forwardTranslator;
+  Workspace workspace = forwardTranslator.translateModel(model);
+
+  const auto peopleObjects = workspace.getObjectsByType(IddObjectType::People);
+  ASSERT_EQ(1u, peopleObjects.size());
+  EXPECT_EQ("SurfaceWeighted", peopleObjects.front().getString(PeopleFields::MeanRadiantTemperatureCalculationType).get());
+  EXPECT_EQ(surface.nameString(), peopleObjects.front().getString(PeopleFields::SurfaceName_AngleFactorListName).get());
+}
+
+TEST_F(EnergyPlusFixture, ForwardTranslator_People_MRTTypeWithoutTargetDefaultsToEnclosureAveraged) {
+  Model model;
+  PeopleDefinition definition(model);
+  People people(definition);
+  EXPECT_TRUE(definition.setMeanRadiantTemperatureCalculationType("SurfaceWeighted"));
+
+  ForwardTranslator forwardTranslator;
+  Workspace workspace = forwardTranslator.translateModel(model);
+
+  const auto peopleObjects = workspace.getObjectsByType(IddObjectType::People);
+  ASSERT_EQ(1u, peopleObjects.size());
+  EXPECT_EQ("EnclosureAveraged", peopleObjects.front().getString(PeopleFields::MeanRadiantTemperatureCalculationType).get());
+  EXPECT_TRUE(peopleObjects.front().isEmpty(PeopleFields::SurfaceName_AngleFactorListName));
+}
+
+TEST_F(EnergyPlusFixture, ForwardTranslator_People_UntranslatedMRTTargetDefaultsToEnclosureAveraged) {
+  Model model;
+  ComfortViewFactorAngles comfortViewFactorAngles(model);
+  PeopleDefinition definition(model);
+  People people(definition);
+  EXPECT_TRUE(people.setSurfaceNameAngleFactorListName(comfortViewFactorAngles));
+
+  ForwardTranslator forwardTranslator;
+  Workspace workspace = forwardTranslator.translateModel(model);
+
+  const auto peopleObjects = workspace.getObjectsByType(IddObjectType::People);
+  ASSERT_EQ(1u, peopleObjects.size());
+  EXPECT_EQ("EnclosureAveraged", peopleObjects.front().getString(PeopleFields::MeanRadiantTemperatureCalculationType).get());
+  EXPECT_TRUE(peopleObjects.front().isEmpty(PeopleFields::SurfaceName_AngleFactorListName));
+}
+
 TEST_F(EnergyPlusFixture, ReverseTranslator_People) {
 
   ReverseTranslator rt;

@@ -14,6 +14,7 @@
 #include "../InternalMass.hpp"
 #include "../InternalMassDefinition.hpp"
 #include "../Model.hpp"
+#include "../People.hpp"
 #include "../PeopleDefinition.hpp"
 #include "../Space.hpp"
 #include "../Surface.hpp"
@@ -26,6 +27,7 @@ using namespace openstudio;
 using namespace openstudio::model;
 
 TEST_F(ModelFixture, ComfortViewFactorAngles) {
+  // Build a valid surface target in a thermal zone for the normal insertion path.
   Model model;
   ThermalZone thermalZone(model);
   Space space(model);
@@ -35,7 +37,10 @@ TEST_F(ModelFixture, ComfortViewFactorAngles) {
   ASSERT_TRUE(surface.setSpace(space));
   ComfortViewFactorAngles comfortViewFactorAngles(model);
 
+  // AngleFactor validates both the target type and the inclusive numeric range at construction.
   EXPECT_THROW(AngleFactor(space, 0.5), openstudio::Exception);
+  Surface unassignedSurface(points, model);
+  EXPECT_FALSE(comfortViewFactorAngles.addAngleFactor(unassignedSurface, 0.5));
 
   // Individual angle factors must remain within the IDD's inclusive range.
   EXPECT_THROW(AngleFactor(surface, -0.01), openstudio::Exception);
@@ -108,9 +113,15 @@ TEST_F(ModelFixture, ComfortViewFactorAngles) {
   EXPECT_DOUBLE_EQ(0.75, comfortViewFactorAngles.getAngleFactor(1)->angleFactor());
   comfortViewFactorAngles.removeAllAngleFactors();
   EXPECT_TRUE(comfortViewFactorAngles.angleFactors().empty());
+
+  // Bulk insertion reports failure but keeps groups that were added before an invalid item.
+  Surface unassignedBulkSurface(points, model);
+  EXPECT_FALSE(comfortViewFactorAngles.addAngleFactors({AngleFactor(surface, 0.5), AngleFactor(unassignedBulkSurface, 0.5)}));
+  EXPECT_EQ(1u, comfortViewFactorAngles.numberofAngleFactors());
 }
 
 TEST_F(ModelFixture, ComfortViewFactorAngles_HeatTransferSurfaceTargets) {
+  // All EnergyPlus heat-transfer surface types are valid angle-factor targets.
   Model model;
   ThermalZone thermalZone(model);
   Space space(model);
@@ -135,7 +146,8 @@ TEST_F(ModelFixture, ComfortViewFactorAngles_HeatTransferSurfaceTargets) {
   EXPECT_EQ(internalMass.handle(), angleFactors[1].surface().handle());
 }
 
-TEST_F(ModelFixture, ComfortViewFactorAngles_RemovesDeletedSurfaceTargets) {
+TEST_F(ModelFixture, ComfortViewFactorAngles_RemovesDeletedTargets) {
+  // Removing any referenced heat-transfer object removes the corresponding group.
   Model model;
   ThermalZone thermalZone(model);
   Space space(model);
@@ -143,12 +155,25 @@ TEST_F(ModelFixture, ComfortViewFactorAngles_RemovesDeletedSurfaceTargets) {
   Point3dVector points{{0, 0, 0}, {1, 0, 0}, {1, 1, 0}};
   Surface surface(points, model);
   ASSERT_TRUE(surface.setSpace(space));
+  Surface subSurfaceParent(points, model);
+  ASSERT_TRUE(subSurfaceParent.setSpace(space));
+  SubSurface subSurface(points, model);
+  ASSERT_TRUE(subSurface.setSurface(subSurfaceParent));
+  InternalMassDefinition internalMassDefinition(model);
+  InternalMass internalMass(internalMassDefinition);
+  ASSERT_TRUE(internalMass.setSpace(space));
 
   ComfortViewFactorAngles comfortViewFactorAngles(model);
-  ASSERT_TRUE(comfortViewFactorAngles.addAngleFactor(surface, 1.0));
-  ASSERT_EQ(1u, comfortViewFactorAngles.numberofAngleFactors());
+  ASSERT_TRUE(comfortViewFactorAngles.addAngleFactor(surface, 0.25));
+  ASSERT_TRUE(comfortViewFactorAngles.addAngleFactor(subSurface, 0.25));
+  ASSERT_TRUE(comfortViewFactorAngles.addAngleFactor(internalMass, 0.25));
+  ASSERT_TRUE(comfortViewFactorAngles.addAngleFactor(subSurfaceParent, 0.25));
+  ASSERT_EQ(4u, comfortViewFactorAngles.numberofAngleFactors());
 
   surface.remove();
-
-  EXPECT_EQ(0u, comfortViewFactorAngles.numberofAngleFactors());
+  EXPECT_EQ(3u, comfortViewFactorAngles.numberofAngleFactors());
+  subSurface.remove();
+  EXPECT_EQ(2u, comfortViewFactorAngles.numberofAngleFactors());
+  internalMass.remove();
+  EXPECT_EQ(1u, comfortViewFactorAngles.numberofAngleFactors());
 }
