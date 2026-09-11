@@ -9,6 +9,8 @@
 #include "Model.hpp"
 #include "PeopleDefinition.hpp"
 #include "PeopleDefinition_Impl.hpp"
+#include "ComfortViewFactorAngles.hpp"
+#include "Surface.hpp"
 #include "Schedule.hpp"
 #include "Schedule_Impl.hpp"
 #include "ScheduleTypeLimits.hpp"
@@ -390,6 +392,37 @@ namespace model {
     void People_Impl::resetAirVelocitySchedule() {
       bool result = setString(OS_PeopleFields::AirVelocityScheduleName, "");
       OS_ASSERT(result);
+    }
+
+    boost::optional<ModelObject> People_Impl::surfaceNameAngleFactorListName() const {
+      return getObject<ModelObject>().getModelObjectTarget<ModelObject>(OS_PeopleFields::SurfaceName_AngleFactorListName);
+    }
+
+    bool People_Impl::setSurfaceNameAngleFactorListName(const ModelObject& modelObject) {
+      if (modelObject.model() != model()) {
+        LOG(Error, "Surface Name/Angle Factor List Name must reference an object in the same Model.");
+        return false;
+      }
+
+      std::string mrtType;
+      if (modelObject.optionalCast<Surface>()) {
+        mrtType = "SurfaceWeighted";
+      } else if (modelObject.optionalCast<ComfortViewFactorAngles>()) {
+        mrtType = "AngleFactor";
+      } else {
+        LOG(Error, "Surface Name/Angle Factor List Name must reference a Surface or ComfortViewFactorAngles object.");
+        return false;
+      }
+      if (!peopleDefinition().setMeanRadiantTemperatureCalculationType(mrtType)) {
+        return false;
+      }
+      return setPointer(OS_PeopleFields::SurfaceName_AngleFactorListName, modelObject.handle());
+    }
+
+    void People_Impl::resetSurfaceNameAngleFactorListName() {
+      bool result = setString(OS_PeopleFields::SurfaceName_AngleFactorListName, "");
+      OS_ASSERT(result);
+      peopleDefinition().resetMeanRadiantTemperatureCalculationType();
     }
 
     boost::optional<double> People_Impl::numberOfPeople() const {
@@ -775,6 +808,18 @@ namespace model {
 
   void People::resetAirVelocitySchedule() {
     getImpl<detail::People_Impl>()->resetAirVelocitySchedule();
+  }
+
+  boost::optional<ModelObject> People::surfaceNameAngleFactorListName() const {
+    return getImpl<detail::People_Impl>()->surfaceNameAngleFactorListName();
+  }
+
+  bool People::setSurfaceNameAngleFactorListName(const ModelObject& modelObject) {
+    return getImpl<detail::People_Impl>()->setSurfaceNameAngleFactorListName(modelObject);
+  }
+
+  void People::resetSurfaceNameAngleFactorListName() {
+    getImpl<detail::People_Impl>()->resetSurfaceNameAngleFactorListName();
   }
 
   boost::optional<double> People::numberOfPeople() const {

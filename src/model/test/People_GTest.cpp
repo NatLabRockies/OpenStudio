@@ -68,22 +68,22 @@ TEST_F(ModelFixture, People_DefaultConstructor) {
   EXPECT_EQ(surface.handle(), angleFactors.front().surface().handle());
   EXPECT_DOUBLE_EQ(1.0, angleFactors.front().angleFactor());
 
-  EXPECT_TRUE(definition.setSurfaceNameAngleFactorListName(comfortViewFactorAngles));
+  EXPECT_TRUE(person.setSurfaceNameAngleFactorListName(comfortViewFactorAngles));
   EXPECT_EQ("AngleFactor", definition.meanRadiantTemperatureCalculationType());
-  EXPECT_TRUE(definition.surfaceNameAngleFactorListName());
+  EXPECT_TRUE(person.surfaceNameAngleFactorListName());
 
-  EXPECT_TRUE(definition.setSurfaceNameAngleFactorListName(surface));
+  EXPECT_TRUE(person.setSurfaceNameAngleFactorListName(surface));
   EXPECT_EQ("SurfaceWeighted", definition.meanRadiantTemperatureCalculationType());
-  EXPECT_TRUE(definition.surfaceNameAngleFactorListName());
+  EXPECT_TRUE(person.surfaceNameAngleFactorListName());
 
-  definition.resetMeanRadiantTemperatureCalculationType();
+  person.resetSurfaceNameAngleFactorListName();
   EXPECT_EQ("EnclosureAveraged", definition.meanRadiantTemperatureCalculationType());
-  EXPECT_FALSE(definition.surfaceNameAngleFactorListName());
+  EXPECT_FALSE(person.surfaceNameAngleFactorListName());
 
   // Backward compat
   EXPECT_TRUE(definition.setMeanRadiantTemperatureCalculationType("ZoneAveraged"));
   EXPECT_EQ("EnclosureAveraged", definition.meanRadiantTemperatureCalculationType());
-  EXPECT_FALSE(definition.surfaceNameAngleFactorListName());
+  EXPECT_FALSE(person.surfaceNameAngleFactorListName());
 
   EXPECT_FALSE(definition.isMeanRadiantTemperatureCalculationTypeDefaulted());
   EXPECT_TRUE(definition.setMeanRadiantTemperatureCalculationType("SurfaceWeighted"));
