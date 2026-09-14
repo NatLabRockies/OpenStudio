@@ -33,6 +33,10 @@ on:
         description: "Comma-separated list of jobs to run (e.g. 'linux-build,windows-build'). Leave empty to run all."
         required: false
         default: ""
+      platforms:
+        description: "Comma-separated list of matrix platforms to run (e.g. 'centos-9-x64'). Leave empty to run all."
+        required: false
+        default: ""
       conan_build_all:
         description: "Force build all conan dependencies from source (to fix GLIBC ABI mistmatches with conancenter binaries, on centos for eg)"
         type: boolean
@@ -49,6 +53,10 @@ on:
         required: false
         default: "false"
       jobs:
+        type: string
+        required: false
+        default: ""
+      platforms:
         type: string
         required: false
         default: ""
@@ -93,7 +101,7 @@ env:
 jobs:
   linux-build:
     name: Build ${{ matrix.pretty }}
-    if: (!inputs.jobs || contains(inputs.jobs, 'linux-build'))
+    if: (!inputs.jobs || contains(inputs.jobs, 'linux-build')) && (!inputs.platforms || contains(inputs.platforms, matrix.platform))
     runs-on: ${{ matrix.os }}
     container:
       image: ${{ matrix.container_image }}
@@ -616,7 +624,7 @@ jobs:
 
   macos-build:
     name: Build Packages for ${{ matrix.pretty }}
-    if: (!inputs.jobs || contains(inputs.jobs, 'macos-build'))
+    if: (!inputs.jobs || contains(inputs.jobs, 'macos-build')) && (!inputs.platforms || contains(inputs.platforms, matrix.platform))
     runs-on: ${{ matrix.os }}
     timeout-minutes: 720
     continue-on-error: ${{ matrix.allow_failure }}
@@ -1186,7 +1194,7 @@ jobs:
 
   windows-build:
     name: Build ${{ matrix.pretty }}
-    if: (!inputs.jobs || contains(inputs.jobs, 'windows-build'))
+    if: (!inputs.jobs || contains(inputs.jobs, 'windows-build')) && (!inputs.platforms || contains(inputs.platforms, matrix.platform))
     runs-on: ${{ matrix.os }}
     timeout-minutes: 720
     strategy:
