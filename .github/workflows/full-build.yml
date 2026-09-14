@@ -284,7 +284,7 @@ jobs:
 
       - name: Conan install
         env:
-          CONAN_BUILD_POLICY: ${{ contains(inputs.conan_build_all, matrix.platform) && 'all' || 'missing' }}
+          CONAN_BUILD_POLICY: ${{ contains(inputs.conan_build_all, matrix.platform) && '*' || 'missing' }}
         run: |
           conan install . \
             --output-folder="${{ env.OPENSTUDIO_BUILD }}" \
@@ -785,7 +785,7 @@ jobs:
     - name: Conan install
       working-directory: ${{ env.OPENSTUDIO_SOURCE }}
       env:
-        CONAN_BUILD_POLICY: ${{ contains(inputs.conan_build_all, matrix.platform) && 'all' || 'missing' }}
+        CONAN_BUILD_POLICY: ${{ contains(inputs.conan_build_all, matrix.platform) && '*' || 'missing' }}
       run: |
         CMAKE_POLICY_VERSION_MINIMUM=3.5 conan install . \
           --output-folder=../${{ env.OPENSTUDIO_BUILD }} \
@@ -1312,7 +1312,7 @@ jobs:
       - name: Conan install
         working-directory: ${{ env.OPENSTUDIO_SOURCE }}
         env:
-          CONAN_BUILD_POLICY: ${{ contains(inputs.conan_build_all, matrix.platform) && 'all' || 'missing' }}
+          CONAN_BUILD_POLICY: ${{ contains(inputs.conan_build_all, matrix.platform) && '*' || 'missing' }}
         run: |
           $env:CMAKE_POLICY_VERSION_MINIMUM="3.5"
           conan install . `
