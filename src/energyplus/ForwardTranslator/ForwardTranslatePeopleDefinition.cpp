@@ -66,7 +66,7 @@ namespace energyplus {
       if (s) {
         ++numComfortModelTypes;
         if (numComfortModelTypes > 7) {
-          LOG(Warn, "For " << modelObject.briefDescription() << ", only 7 Thermal Confort Model Types are supported by EnergyPlus, number "
+          LOG(Warn, "For " << modelObject.briefDescription() << ", only 7 Thermal Comfort Model Types are supported by EnergyPlus, number "
                             << numComfortModelTypes << " [=" << *s << "] will be ignored.");
         } else {
           idfObject.setString(People_DefinitionFields::ThermalComfortModel1Type + i, *s);
