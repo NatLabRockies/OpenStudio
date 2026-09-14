@@ -55,8 +55,7 @@ namespace energyplus {
 
     // Inside-face absorptance fields have no IDD default and inherit the exterior value when blank.
     if (!modelObject.isThermalAbsorptanceInsideFaceDefaulted()) {
-      idfObject.setDouble(openstudio::Material_NoMassFields::ThermalAbsorptanceInsideFace,
-                          modelObject.thermalAbsorptanceInsideFace().get());
+      idfObject.setDouble(openstudio::Material_NoMassFields::ThermalAbsorptanceInsideFace, modelObject.thermalAbsorptanceInsideFace().get());
     }
 
     if (!modelObject.isSolarAbsorptanceInsideFaceDefaulted()) {
@@ -64,8 +63,7 @@ namespace energyplus {
     }
 
     if (!modelObject.isVisibleAbsorptanceInsideFaceDefaulted()) {
-      idfObject.setDouble(openstudio::Material_NoMassFields::VisibleAbsorptanceInsideFace,
-                          modelObject.visibleAbsorptanceInsideFace().get());
+      idfObject.setDouble(openstudio::Material_NoMassFields::VisibleAbsorptanceInsideFace, modelObject.visibleAbsorptanceInsideFace().get());
     }
 
     // Call the translation of these objects, which has two advantages:

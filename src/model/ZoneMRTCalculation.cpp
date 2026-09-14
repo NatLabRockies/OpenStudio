@@ -52,8 +52,7 @@ namespace model {
   }
 
   std::ostream& operator<<(std::ostream& out, const openstudio::model::MRTWeightingFactor& mRTWeightingFactor) {
-    out << "(people='" << mRTWeightingFactor.people().nameString()
-        << "', MRT weighting factor=" << mRTWeightingFactor.mRTWeightingFactor() << ")";
+    out << "(people='" << mRTWeightingFactor.people().nameString() << "', MRT weighting factor=" << mRTWeightingFactor.mRTWeightingFactor() << ")";
     return out;
   }
 
@@ -203,7 +202,8 @@ namespace model {
       if (!thermalZone) {
         LOG(Error, "Cannot add " << people.briefDescription() << " to " << briefDescription() << " because it is not assigned to any ThermalZone.");
       } else if (thermalZone->handle() != this->thermalZone().handle()) {
-        LOG(Error, "Cannot add " << people.briefDescription() << " to " << briefDescription() << " because it is assigned to ThermalZone '" << thermalZone->nameString() << "' instead of '" << this->thermalZone().nameString() << "'.");
+        LOG(Error, "Cannot add " << people.briefDescription() << " to " << briefDescription() << " because it is assigned to ThermalZone '"
+                                 << thermalZone->nameString() << "' instead of '" << this->thermalZone().nameString() << "'.");
         return result;
       }
 

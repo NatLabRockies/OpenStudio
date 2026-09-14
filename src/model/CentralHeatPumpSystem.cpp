@@ -414,20 +414,23 @@ namespace model {
 
   // DEPRECATED
   std::vector<std::string> CentralHeatPumpSystem::controlMethodValues() {
-    DEPRECATED_AT_MSG(3, 12, 0, "The Control Method field was removed from the CentralHeatPumpSystem object in EnergyPlus. "
-                                 "\"SmartMixing\" was the only valid value.");
+    DEPRECATED_AT_MSG(3, 12, 0,
+                      "The Control Method field was removed from the CentralHeatPumpSystem object in EnergyPlus. "
+                      "\"SmartMixing\" was the only valid value.");
     return {"SmartMixing"};
   }
 
   std::string CentralHeatPumpSystem::controlMethod() const {
-    DEPRECATED_AT_MSG(3, 12, 0, "The Control Method field was removed from the CentralHeatPumpSystem object in EnergyPlus. "
-                                 "This now always returns \"SmartMixing\".");
+    DEPRECATED_AT_MSG(3, 12, 0,
+                      "The Control Method field was removed from the CentralHeatPumpSystem object in EnergyPlus. "
+                      "This now always returns \"SmartMixing\".");
     return "SmartMixing";
   }
 
   bool CentralHeatPumpSystem::setControlMethod(const std::string& controlMethod) {
-    DEPRECATED_AT_MSG(3, 12, 0, "The Control Method field was removed from the CentralHeatPumpSystem object in EnergyPlus. "
-                                 "This is now a no-op that only accepts \"SmartMixing\".");
+    DEPRECATED_AT_MSG(3, 12, 0,
+                      "The Control Method field was removed from the CentralHeatPumpSystem object in EnergyPlus. "
+                      "This is now a no-op that only accepts \"SmartMixing\".");
     return istringEqual(controlMethod, "SmartMixing");
   }
 

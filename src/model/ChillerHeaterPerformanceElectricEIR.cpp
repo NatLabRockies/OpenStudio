@@ -1155,14 +1155,16 @@ namespace model {
   }
 
   std::string ChillerHeaterPerformanceElectricEIR::condenserType() const {
-    DEPRECATED_AT_MSG(3, 12, 0, "The Condenser Type field was removed from the ChillerHeaterPerformance:Electric:EIR object in EnergyPlus. "
-                                 "This now always returns \"WaterCooled\".");
+    DEPRECATED_AT_MSG(3, 12, 0,
+                      "The Condenser Type field was removed from the ChillerHeaterPerformance:Electric:EIR object in EnergyPlus. "
+                      "This now always returns \"WaterCooled\".");
     return "WaterCooled";
   }
 
   bool ChillerHeaterPerformanceElectricEIR::setCondenserType(const std::string& condenserType) {
-    DEPRECATED_AT_MSG(3, 12, 0, "The Condenser Type field was removed from the ChillerHeaterPerformance:Electric:EIR object in EnergyPlus. "
-                                 "This is now a no-op that only accepts \"AirCooled\" or \"WaterCooled\".");
+    DEPRECATED_AT_MSG(3, 12, 0,
+                      "The Condenser Type field was removed from the ChillerHeaterPerformance:Electric:EIR object in EnergyPlus. "
+                      "This is now a no-op that only accepts \"AirCooled\" or \"WaterCooled\".");
     return istringEqual(condenserType, "AirCooled") || istringEqual(condenserType, "WaterCooled");
   }
   /// @endcond

@@ -49,8 +49,7 @@ namespace energyplus {
 
       if (!space) {
         LOG(Error, "Could not translate an MRTWeightingFactor group for " << modelObject.briefDescription() << " because "
-                                                                          << people.briefDescription()
-                                                                          << " is not assigned to a Space.");
+                                                                          << people.briefDescription() << " is not assigned to a Space.");
         continue;
       }
 
