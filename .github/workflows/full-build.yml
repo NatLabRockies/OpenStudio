@@ -146,6 +146,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        platform: [centos-9-x64, ubuntu-2404-x64, ubuntu-2404-arm64]
         include:
           - platform: centos-9-x64
             pretty: CentOS 9 (AlmaLinux) x64
@@ -670,7 +671,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        macos_dev_target: ["12.1", "13.0"]
+        platform: [macos-x64, macos-arm64]
         include:
           - macos_dev_target: "12.1"
             platform: macos-x64
@@ -1241,6 +1242,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        platform: [windows-2022-x64]
         include:
           - platform: windows-2022-x64
             pretty: Windows 2022 x64
