@@ -35,15 +35,11 @@ on:
         description: "Comma-separated list of jobs to run (e.g. 'linux-build,windows-build'). Leave empty to run all."
         required: false
         default: ""
-      platforms:
-        description: "Comma-separated list of matrix platforms to run (e.g. 'centos-9-x64'). Leave empty to run all."
+      conan_build_all:
+        description: "Comma-separated list of platforms to force building all conan dependencies from source for (to fix GLIBC ABI mismatches with conancenter binaries, on centos for eg). Leave empty to disable."
+        type: string
         required: false
         default: ""
-      conan_build_all:
-        description: "Force build all conan dependencies from source (to fix GLIBC ABI mistmatches with conancenter binaries, on centos for eg)"
-        type: boolean
-        required: false
-        default: false
   workflow_call:
     inputs:
       publish_to_s3:
@@ -58,14 +54,10 @@ on:
         type: string
         required: false
         default: ""
-      platforms:
+      conan_build_all:
         type: string
         required: false
         default: ""
-      conan_build_all:
-        type: boolean
-        required: false
-        default: false
 
 concurrency:
   group: full-build-${{ github.ref }}
@@ -101,43 +93,8 @@ env:
   ENABLE_PCH: ON
 
 jobs:
-  compute-matrix:
-    name: Compute platform exclusions
-    runs-on: ubuntu-latest
-    outputs:
-      linux_exclude: ${{ steps.compute.outputs.linux_exclude }}
-      macos_exclude: ${{ steps.compute.outputs.macos_exclude }}
-      windows_exclude: ${{ steps.compute.outputs.windows_exclude }}
-    steps:
-      - name: Compute platform exclusions
-        id: compute
-        env:
-          REQUESTED_PLATFORMS: ${{ inputs.platforms }}
-        run: |
-          python3 - <<'PYEOF'
-          import json
-          import os
-
-          requested = [p.strip() for p in os.environ.get("REQUESTED_PLATFORMS", "").split(",") if p.strip()]
-
-          def exclusions(all_platforms):
-              if not requested:
-                  return []
-              return [{"platform": p} for p in all_platforms if p not in requested]
-
-          linux = ["centos-9-x64", "ubuntu-2404-x64", "ubuntu-2404-arm64"]
-          macos = ["macos-x64", "macos-arm64"]
-          windows = ["windows-2022-x64"]
-
-          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
-              f.write(f"linux_exclude={json.dumps(exclusions(linux))}\n")
-              f.write(f"macos_exclude={json.dumps(exclusions(macos))}\n")
-              f.write(f"windows_exclude={json.dumps(exclusions(windows))}\n")
-          PYEOF
-
   linux-build:
     name: Build ${{ matrix.pretty }}
-    needs: compute-matrix
     if: (!inputs.jobs || contains(inputs.jobs, 'linux-build'))
     runs-on: ${{ matrix.os }}
     container:
@@ -191,7 +148,6 @@ jobs:
             max_jobs: 4
             # SqlFileFixture.AnnualTotalCosts needed until E+ itself disables ffp-contract on arm64 GCC
             exclude_regex: "SqlFileFixture.AnnualTotalCosts|OpenStudioCLI.*test_measure_manager"
-        exclude: ${{ fromJSON(needs.compute-matrix.outputs.linux_exclude) }}
     defaults:
       run:
         shell: bash
@@ -328,7 +284,7 @@ jobs:
 
       - name: Conan install
         env:
-          CONAN_BUILD_POLICY: ${{ inputs.conan_build_all && 'all' || 'missing' }}
+          CONAN_BUILD_POLICY: ${{ contains(inputs.conan_build_all, matrix.platform) && 'all' || 'missing' }}
         run: |
           conan install . \
             --output-folder="${{ env.OPENSTUDIO_BUILD }}" \
@@ -663,7 +619,6 @@ jobs:
 
   macos-build:
     name: Build Packages for ${{ matrix.pretty }}
-    needs: compute-matrix
     if: (!inputs.jobs || contains(inputs.jobs, 'macos-build'))
     runs-on: ${{ matrix.os }}
     timeout-minutes: 720
@@ -697,7 +652,6 @@ jobs:
             tar_glob: "*OpenStudio*arm64.tar.gz"
             exclude_regex: ""
             max_jobs: 3
-        exclude: ${{ fromJSON(needs.compute-matrix.outputs.macos_exclude) }}
     env:
       MAX_BUILD_THREADS: ${{ matrix.max_jobs }}
 
@@ -830,10 +784,12 @@ jobs:
 
     - name: Conan install
       working-directory: ${{ env.OPENSTUDIO_SOURCE }}
+      env:
+        CONAN_BUILD_POLICY: ${{ contains(inputs.conan_build_all, matrix.platform) && 'all' || 'missing' }}
       run: |
         CMAKE_POLICY_VERSION_MINIMUM=3.5 conan install . \
           --output-folder=../${{ env.OPENSTUDIO_BUILD }} \
-          --build=missing \
+          --build="$CONAN_BUILD_POLICY" \
           -c tools.cmake.cmaketoolchain:generator=Ninja \
           -s compiler.cppstd=20 \
           -s build_type=${{ env.BUILD_TYPE }} \
@@ -1235,7 +1191,6 @@ jobs:
 
   windows-build:
     name: Build ${{ matrix.pretty }}
-    needs: compute-matrix
     if: (!inputs.jobs || contains(inputs.jobs, 'windows-build'))
     runs-on: ${{ matrix.os }}
     timeout-minutes: 720
@@ -1254,7 +1209,6 @@ jobs:
             allow_failure: false
             max_jobs: 4
             exclude_regex: ""
-        exclude: ${{ fromJSON(needs.compute-matrix.outputs.windows_exclude) }}
     defaults:
       run:
         shell: pwsh
@@ -1357,11 +1311,13 @@ jobs:
 
       - name: Conan install
         working-directory: ${{ env.OPENSTUDIO_SOURCE }}
+        env:
+          CONAN_BUILD_POLICY: ${{ contains(inputs.conan_build_all, matrix.platform) && 'all' || 'missing' }}
         run: |
           $env:CMAKE_POLICY_VERSION_MINIMUM="3.5"
           conan install . `
             --output-folder="../${{ env.OPENSTUDIO_BUILD }}" `
-            --build=missing `
+            --build="$env:CONAN_BUILD_POLICY" `
             -c tools.cmake.cmaketoolchain:generator=Ninja `
             -s compiler.cppstd=20 `
             -s build_type=${{ env.BUILD_TYPE }} `
