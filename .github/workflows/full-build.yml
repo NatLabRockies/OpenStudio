@@ -33,6 +33,11 @@ on:
         description: "Comma-separated list of jobs to run (e.g. 'linux-build,windows-build'). Leave empty to run all."
         required: false
         default: ""
+      conan_build_all:
+        description: "Force build all conan dependencies from source (to fix GLIBC ABI mistmatches with conancenter binaries, on centos for eg)"
+        type: boolean
+        required: false
+        default: false
   workflow_call:
     inputs:
       publish_to_s3:
@@ -47,6 +52,10 @@ on:
         type: string
         required: false
         default: ""
+      conan_build_all:
+        type: boolean
+        required: false
+        default: false
 
 concurrency:
   group: full-build-${{ github.ref }}
@@ -274,10 +283,12 @@ jobs:
           apt-get update
 
       - name: Conan install
+        env:
+          CONAN_BUILD_POLICY: ${{ inputs.conan_build_all && 'all' || 'missing' }}
         run: |
           conan install . \
             --output-folder="${{ env.OPENSTUDIO_BUILD }}" \
-            --build=missing \
+            --build="$CONAN_BUILD_POLICY" \
             -c tools.cmake.cmaketoolchain:generator=Ninja \
             -s compiler.cppstd=20 \
             -s build_type=${{ env.BUILD_TYPE }}
