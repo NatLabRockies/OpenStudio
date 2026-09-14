@@ -232,9 +232,14 @@ TEST_F(EnergyPlusFixture, ForwardTranslator_People_MRTTypeFollowsSurfaceTarget) 
 
 TEST_F(EnergyPlusFixture, ForwardTranslator_People_MRTTypeWithoutTargetDefaultsToEnclosureAveraged) {
   Model model;
+  ThermalZone zone(model);
+  Space space(model);
+  EXPECT_TRUE(space.setThermalZone(zone));
+
   PeopleDefinition definition(model);
   People people(definition);
   EXPECT_TRUE(definition.setMeanRadiantTemperatureCalculationType("SurfaceWeighted"));
+  EXPECT_TRUE(people.setSpace(space));
 
   ForwardTranslator forwardTranslator;
   Workspace workspace = forwardTranslator.translateModel(model);
@@ -247,10 +252,15 @@ TEST_F(EnergyPlusFixture, ForwardTranslator_People_MRTTypeWithoutTargetDefaultsT
 
 TEST_F(EnergyPlusFixture, ForwardTranslator_People_UntranslatedMRTTargetDefaultsToEnclosureAveraged) {
   Model model;
+  ThermalZone zone(model);
+  Space space(model);
+  EXPECT_TRUE(space.setThermalZone(zone));
+
   ComfortViewFactorAngles comfortViewFactorAngles(model);
   PeopleDefinition definition(model);
   People people(definition);
   EXPECT_TRUE(people.setSurfaceNameAngleFactorListName(comfortViewFactorAngles));
+  EXPECT_TRUE(people.setSpace(space));
 
   ForwardTranslator forwardTranslator;
   Workspace workspace = forwardTranslator.translateModel(model);
