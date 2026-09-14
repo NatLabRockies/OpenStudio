@@ -5069,7 +5069,7 @@ TEST_F(OSVersionFixture, update_3_11_0_to_3_12_0_CentralHeatPumpSystem) {
   ASSERT_TRUE(coolingOutletNode);
   EXPECT_EQ("Central Heat Pump System Cooling Outlet Node", coolingOutletNode->getString(1).get());
 
-  EXPECT_FALSE(chps.isEmpty(10));               // Chiller Heater Module List Name (last field): preserved
+  EXPECT_FALSE(chps.isEmpty(10));  // Chiller Heater Module List Name (last field): preserved
   EXPECT_TRUE(chps.getTarget(10));
 
   std::vector<WorkspaceObject> chperfs = model->getObjectsByType("OS:ChillerHeaterPerformance:Electric:EIR");
@@ -5079,9 +5079,9 @@ TEST_F(OSVersionFixture, update_3_11_0_to_3_12_0_CentralHeatPumpSystem) {
   EXPECT_EQ("Chiller Heater Performance Electric EIR 1", chperf.getString(1).get());  // Name
 
   // Condenser Type field (old index 18) has been removed: everything after it shifts down by one
-  EXPECT_EQ(1.0, chperf.getDouble(17).get());               // Compressor Motor Efficiency: unaffected, before the removed field
+  EXPECT_EQ(1.0, chperf.getDouble(17).get());                  // Compressor Motor Efficiency: unaffected, before the removed field
   EXPECT_EQ("EnteringCondenser", chperf.getString(18).get());  // Cooling Mode Temperature Curve Condenser Water Independent Variable
-  EXPECT_EQ(1.0, chperf.getDouble(28).get());               // Sizing Factor (last field): preserved
+  EXPECT_EQ(1.0, chperf.getDouble(28).get());                  // Sizing Factor (last field): preserved
 }
 
 TEST_F(OSVersionFixture, update_3_11_0_to_3_12_0_CoilCoolingDXCurveFitOperatingMode) {
@@ -5098,7 +5098,7 @@ TEST_F(OSVersionFixture, update_3_11_0_to_3_12_0_CoilCoolingDXCurveFitOperatingM
   const auto& opMode = opModes.front();
 
   EXPECT_EQ("Coil Cooling DX Curve Fit Operating Mode 1", opMode.getString(1).get());  // Name
-  EXPECT_EQ(0, opMode.getDouble(8).get());    // Nominal Time for Condensate Removal to Begin
-  EXPECT_EQ("No", opMode.getString(9).get());  // Apply Part Load Fraction to Speeds Greater than 1
-  EXPECT_EQ("Yes", opMode.getString(10).get());  // Apply Latent Degradation to Speeds Greater than 1
+  EXPECT_EQ(0, opMode.getDouble(8).get());                                             // Nominal Time for Condensate Removal to Begin
+  EXPECT_EQ("No", opMode.getString(9).get());                                          // Apply Part Load Fraction to Speeds Greater than 1
+  EXPECT_EQ("Yes", opMode.getString(10).get());                                        // Apply Latent Degradation to Speeds Greater than 1
 }

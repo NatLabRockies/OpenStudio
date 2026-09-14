@@ -190,8 +190,8 @@ namespace model {
         // Temperatures and RH
         "Zone Mean Air Temperature",  // Zone level
         "Zone Air Temperature",       // HVAC level
-        "Zone Mean Air Dewpoint Temperature", "Zone Mean Radiant Temperature", "Zone Standard Mean Radiant Temperature", "Zone Operative Temperature", "Zone Air Humidity Ratio",
-        "Zone Air Relative Humidity",
+        "Zone Mean Air Dewpoint Temperature", "Zone Mean Radiant Temperature", "Zone Standard Mean Radiant Temperature", "Zone Operative Temperature",
+        "Zone Air Humidity Ratio", "Zone Air Relative Humidity",
 
         // Heat Balance
         "Zone Air Heat Balance Internal Convective Heat Gain Rate", "Zone Air Heat Balance Surface Convection Rate",

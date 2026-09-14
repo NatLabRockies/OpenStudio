@@ -377,8 +377,8 @@ TEST_F(SqlFileFixture, AnnualTotalCosts) {
   // So it's fine to keep it as is
   // Costs by total building area by fuel type
   EXPECT_NEAR(11.61, *(sqlFile2.annualTotalCostPerBldgArea(FuelType::Electricity)),
-              0.1);  // (E+ 9.2.0 = 11.498308333333332, 22.1.0 = 11.62, 26.1.0 = 11.72)
-  EXPECT_NEAR(0.18, *(sqlFile2.annualTotalCostPerBldgArea(FuelType::Gas)), 0.1);           // (E+ 9.2.0 = 0.1778125)
+              0.1);                                                               // (E+ 9.2.0 = 11.498308333333332, 22.1.0 = 11.62, 26.1.0 = 11.72)
+  EXPECT_NEAR(0.18, *(sqlFile2.annualTotalCostPerBldgArea(FuelType::Gas)), 0.1);  // (E+ 9.2.0 = 0.1778125)
 
   // Costs by conditioned building area by fuel type
   EXPECT_NEAR(11.61, *(sqlFile2.annualTotalCostPerNetConditionedBldgArea(FuelType::Electricity)), 0.1);
