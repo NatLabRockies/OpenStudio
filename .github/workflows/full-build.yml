@@ -23,12 +23,14 @@ on:
     inputs:
       publish_to_s3:
         description: "Force S3 publishing even when not on develop"
+        type: boolean
         required: false
-        default: "false"
+        default: false
       skip_docker_trigger:
         description: "Skip downstream docker workflow trigger"
+        type: boolean
         required: false
-        default: "false"
+        default: false
       jobs:
         description: "Comma-separated list of jobs to run (e.g. 'linux-build,windows-build'). Leave empty to run all."
         required: false
@@ -45,13 +47,13 @@ on:
   workflow_call:
     inputs:
       publish_to_s3:
-        type: string
+        type: boolean
         required: false
-        default: "false"
+        default: false
       skip_docker_trigger:
-        type: string
+        type: boolean
         required: false
-        default: "false"
+        default: false
       jobs:
         type: string
         required: false
@@ -554,7 +556,7 @@ jobs:
     name: Publish Linux Artifacts
     needs: [linux-build]
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true'
+    if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == true || github.event.inputs.publish_to_s3 == 'true'
     steps:
       - name: Download all installers
         uses: actions/download-artifact@v4
@@ -586,7 +588,7 @@ jobs:
           done
 
       - name: Trigger Docker Build
-        if: inputs.skip_docker_trigger != 'true' && github.event.inputs.skip_docker_trigger != 'true'
+        if: inputs.skip_docker_trigger != true && github.event.inputs.skip_docker_trigger != 'true'
         working-directory: installers
         env:
           GH_TOKEN: ${{ secrets.DOCKER_OPENSTUDIO_PAT }}
@@ -991,7 +993,7 @@ jobs:
         echo "exit_code=${overall_exit_code}" >> $GITHUB_OUTPUT
 
     - name: Setup Keychain
-      if: success() && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true' )
+      if: success() && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || inputs.publish_to_s3 == true || github.event.inputs.publish_to_s3 == 'true' )
       env:
         APPLE_CERT_DATA: ${{ secrets.APPLE_CERT_DATA }}
         APPLE_CERT_PASSWORD: ${{ secrets.APPLE_CERT_PASSWORD }}
@@ -1051,7 +1053,7 @@ jobs:
         done
 
     - name: Sign DMG and Notarize
-      if: ${{ steps.create_packages.outcome == 'success' && (github.ref == 'refs/heads/develop' || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true' || matrix.os == 'macOS') }}
+      if: ${{ steps.create_packages.outcome == 'success' && (github.ref == 'refs/heads/develop' || inputs.publish_to_s3 == true || github.event.inputs.publish_to_s3 == 'true' || matrix.os == 'macOS') }}
       working-directory: ${{ env.OPENSTUDIO_BUILD }}
       env:
         APPLE_CERT_DATA: ${{ secrets.APPLE_CERT_DATA }}
@@ -1198,7 +1200,7 @@ jobs:
     name: Publish MacOS Artifacts
     needs: [macos-build]
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true'
+    if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == true || github.event.inputs.publish_to_s3 == 'true'
     steps:
       - name: Download all installers
         uses: actions/download-artifact@v4
@@ -1524,21 +1526,21 @@ jobs:
 
       # CODE SIGNING SETUP
       - name: Setup Node.js
-        if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true'
+        if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == true || github.event.inputs.publish_to_s3 == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: "18"
 
 
       - name: Create .env file for Signing
-        if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true'
+        if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == true || github.event.inputs.publish_to_s3 == 'true'
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         run: |
           echo "ACCESS_KEY=${{ secrets.AWS_SIGNING_ACCESS_KEY }}" >> .env
           echo "SECRET_KEY=${{ secrets.AWS_SIGNING_SECRET_KEY }}" >> .env
 
       - name: Code sign binaries
-        if: success() && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true')
+        if: success() && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == true || github.event.inputs.publish_to_s3 == 'true')
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         run: |
           # Check if signing client exists
@@ -1605,7 +1607,7 @@ jobs:
           & $env:ComSpec /c "call conanbuild.bat && cpack -C ${{ env.BUILD_TYPE }}"
 
       - name: Code sign installer
-        if: success() && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true')
+        if: success() && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == true || github.event.inputs.publish_to_s3 == 'true')
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         run: |
           # Check if signing client exists
@@ -1709,7 +1711,7 @@ jobs:
     name: Publish Windows Artifacts
     needs: [windows-build]
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true'
+    if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == true || github.event.inputs.publish_to_s3 == 'true'
     steps:
       - name: Download all installers
         uses: actions/download-artifact@v4
