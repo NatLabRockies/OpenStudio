@@ -287,6 +287,7 @@ TEST_F(EnergyPlusFixture, ForwardTranslator_People_AngleFactor) {
   EXPECT_TRUE(people.setSpace(space));
 
   ForwardTranslator forwardTranslator;
+  forwardTranslator.setExcludeSpaceLoadInstances(true);
   Workspace workspace = forwardTranslator.translateModel(model);
 
   const auto peopleObjects = workspace.getObjectsByType(IddObjectType::People);
@@ -322,6 +323,7 @@ TEST_F(EnergyPlusFixture, ForwardTranslator_People_SurfaceWeighted) {
   EXPECT_TRUE(people.setSpace(space));
 
   ForwardTranslator forwardTranslator;
+  forwardTranslator.setExcludeSpaceLoadInstances(true);
   Workspace workspace = forwardTranslator.translateModel(model);
 
   const auto peopleObjects = workspace.getObjectsByType(IddObjectType::People);
@@ -348,6 +350,7 @@ TEST_F(EnergyPlusFixture, ForwardTranslator_People_MRTTypeFollowsSurfaceTarget) 
   EXPECT_TRUE(people.setSpace(space));
 
   ForwardTranslator forwardTranslator;
+  forwardTranslator.setExcludeSpaceLoadInstances(true);
   Workspace workspace = forwardTranslator.translateModel(model);
 
   const auto peopleObjects = workspace.getObjectsByType(IddObjectType::People);
@@ -368,6 +371,7 @@ TEST_F(EnergyPlusFixture, ForwardTranslator_People_MRTTypeWithoutTargetDefaultsT
   EXPECT_TRUE(people.setSpace(space));
 
   ForwardTranslator forwardTranslator;
+  forwardTranslator.setExcludeSpaceLoadInstances(true);
   Workspace workspace = forwardTranslator.translateModel(model);
 
   const auto peopleObjects = workspace.getObjectsByType(IddObjectType::People);
@@ -389,6 +393,7 @@ TEST_F(EnergyPlusFixture, ForwardTranslator_People_UntranslatedMRTTargetDefaults
   EXPECT_TRUE(people.setSpace(space));
 
   ForwardTranslator forwardTranslator;
+  forwardTranslator.setExcludeSpaceLoadInstances(true);
   Workspace workspace = forwardTranslator.translateModel(model);
 
   const auto peopleObjects = workspace.getObjectsByType(IddObjectType::People);

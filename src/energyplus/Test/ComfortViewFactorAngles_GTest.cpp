@@ -62,6 +62,7 @@ TEST_F(EnergyPlusFixture, ForwardTranslator_ComfortViewFactorAngles) {
   EXPECT_TRUE(people.setSpace(space));
 
   ForwardTranslator forwardTranslator;
+  forwardTranslator.setExcludeSpaceLoadInstances(true);
   Workspace workspace = forwardTranslator.translateModel(model);
 
   const auto angleFactorObjects = workspace.getObjectsByType(IddObjectType::ComfortViewFactorAngles);
