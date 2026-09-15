@@ -79,6 +79,7 @@ env:
   PYTHON_REQUIRED_VERSION: "3.12.2"
   SDKROOT: /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk
   AWS_S3_BUCKET: openstudio-ci-builds
+  CMAKE_POLICY_VERSION_MINIMUM: "3.5"
   TEST_DASHBOARD_RELATIVE: Testing/dashboard/test-dashboard.md
   CCACHE_SLOPPINESS: pch_defines,time_macros,include_file_mtime,include_file_ctime
   CCACHE_BASEDIR: ${{ github.workspace }}
@@ -787,7 +788,7 @@ jobs:
       env:
         CONAN_BUILD_POLICY: ${{ contains(inputs.conan_build_all, matrix.platform) && '*' || 'missing' }}
       run: |
-        CMAKE_POLICY_VERSION_MINIMUM=3.5 conan install . \
+        conan install . \
           --output-folder=../${{ env.OPENSTUDIO_BUILD }} \
           --build="$CONAN_BUILD_POLICY" \
           -c tools.cmake.cmaketoolchain:generator=Ninja \
@@ -1314,7 +1315,6 @@ jobs:
         env:
           CONAN_BUILD_POLICY: ${{ contains(inputs.conan_build_all, matrix.platform) && '*' || 'missing' }}
         run: |
-          $env:CMAKE_POLICY_VERSION_MINIMUM="3.5"
           conan install . `
             --output-folder="../${{ env.OPENSTUDIO_BUILD }}" `
             --build="$env:CONAN_BUILD_POLICY" `

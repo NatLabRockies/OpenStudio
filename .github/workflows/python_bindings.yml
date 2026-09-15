@@ -16,6 +16,7 @@ env:
   BUILD_CLI: OFF
   BUILD_RUBY_BINDINGS: OFF
   MAKE_SPACE: false
+  CMAKE_POLICY_VERSION_MINIMUM: "3.5"
 
 jobs:
   python_bindings:

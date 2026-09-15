@@ -12,6 +12,7 @@ env:
   OPENSTUDIO_SOURCE: OpenStudio
   PYTHON_REQUIRED_VERSION: "3.12.2"
   SDKROOT: /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk
+  CMAKE_POLICY_VERSION_MINIMUM: "3.5"
   CCACHE_SLOPPINESS: pch_defines,time_macros,include_file_mtime,include_file_ctime
   CCACHE_BASEDIR: ${{ github.workspace }}
   CCACHE_COMPRESS: "true"
@@ -389,7 +390,7 @@ jobs:
       - name: Conan install
         working-directory: ${{ env.OPENSTUDIO_SOURCE }}
         run: |
-          CMAKE_POLICY_VERSION_MINIMUM=3.5 conan install . \
+          conan install . \
             --output-folder=../${{ env.OPENSTUDIO_BUILD }} \
             --build=missing \
             -c tools.cmake.cmaketoolchain:generator=Ninja \
@@ -578,7 +579,6 @@ jobs:
       - name: Conan install
         working-directory: ${{ env.OPENSTUDIO_SOURCE }}
         run: |
-          $env:CMAKE_POLICY_VERSION_MINIMUM="3.5"
           conan install . `
             --output-folder="../${{ env.OPENSTUDIO_BUILD }}" `
             --build=missing `
