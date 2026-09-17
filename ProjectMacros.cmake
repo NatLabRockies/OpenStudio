@@ -464,6 +464,7 @@ macro(MAKE_SWIG_TARGET NAME SIMPLENAME KEY_I_FILE I_FILES PARENT_TARGET PARENT_S
         ${Python_INCLUDE_DIRS}
       )
 
+      target_compile_definitions(${swig_target} PRIVATE SHARED_OS_LIBS)
       target_compile_definitions(${swig_target} PRIVATE SWIG_PYTHON_SILENT_MEMLEAK) # Shush it, cf #5421
 
       set_target_properties(${swig_target} PROPERTIES OUTPUT_NAME _${LOWER_NAME})
