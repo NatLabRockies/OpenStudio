@@ -152,6 +152,7 @@ TEST_F(EnergyPlusFixture, ForwardTranslator_ScheduleRuleset_Bug804) {
     std::vector<IdfExtensibleGroup> extensibleGroups = scheduleWeekRule.extensibleGroups();
     ASSERT_EQ(1u, extensibleGroups.size());
     if (rulePriorityOrder == 0 || rulePriorityOrder == 1) {
+      // Special Weekday/Weekend rules
       ASSERT_TRUE(extensibleGroups[0].getInt(Schedule_Week_RuleExtensibleFields::StartMonth));
       EXPECT_EQ(5, extensibleGroups[0].getInt(Schedule_Week_RuleExtensibleFields::StartMonth).get());
       ASSERT_TRUE(extensibleGroups[0].getInt(Schedule_Week_RuleExtensibleFields::StartDay));
@@ -161,6 +162,7 @@ TEST_F(EnergyPlusFixture, ForwardTranslator_ScheduleRuleset_Bug804) {
       ASSERT_TRUE(extensibleGroups[0].getInt(Schedule_Week_RuleExtensibleFields::EndDay));
       EXPECT_EQ(13, extensibleGroups[0].getInt(Schedule_Week_RuleExtensibleFields::EndDay).get());
     } else {
+      // Annual Weekday/Weekend rules
       ASSERT_TRUE(extensibleGroups[0].getInt(Schedule_Week_RuleExtensibleFields::StartMonth));
       EXPECT_EQ(1, extensibleGroups[0].getInt(Schedule_Week_RuleExtensibleFields::StartMonth).get());
       ASSERT_TRUE(extensibleGroups[0].getInt(Schedule_Week_RuleExtensibleFields::StartDay));
@@ -252,7 +254,6 @@ TEST_F(EnergyPlusFixture, ForwardTranslator_ScheduleWeek_Bug243) {
   ASSERT_EQ(1u, scheduleWeekRules.size());
 
   for (const WorkspaceObject& scheduleWeekRule : scheduleWeekRules) {
-    const int rulePriorityOrder = scheduleWeekRule.getInt(Schedule_Week_RuleFields::RulePriorityOrder).get();
     std::vector<IdfExtensibleGroup> extensibleGroups = scheduleWeekRule.extensibleGroups();
     ASSERT_EQ(1u, extensibleGroups.size());
 
@@ -318,7 +319,6 @@ TEST_F(EnergyPlusFixture, ForwardTranslator_ScheduleWeek_Bug243_2) {
   ASSERT_EQ(1u, scheduleWeekRules.size());
 
   for (const WorkspaceObject& scheduleWeekRule : scheduleWeekRules) {
-    const int rulePriorityOrder = scheduleWeekRule.getInt(Schedule_Week_RuleFields::RulePriorityOrder).get();
     std::vector<IdfExtensibleGroup> extensibleGroups = scheduleWeekRule.extensibleGroups();
     ASSERT_EQ(1u, extensibleGroups.size());
 
@@ -386,7 +386,6 @@ TEST_F(EnergyPlusFixture, ForwardTranslator_ScheduleWeek_Bug243_3) {
   ASSERT_EQ(1u, scheduleWeekRules.size());
 
   for (const WorkspaceObject& scheduleWeekRule : scheduleWeekRules) {
-    const int rulePriorityOrder = scheduleWeekRule.getInt(Schedule_Week_RuleFields::RulePriorityOrder).get();
     std::vector<IdfExtensibleGroup> extensibleGroups = scheduleWeekRule.extensibleGroups();
     ASSERT_EQ(1u, extensibleGroups.size());
 
