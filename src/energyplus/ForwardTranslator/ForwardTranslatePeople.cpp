@@ -10,6 +10,7 @@
 #include "../../model/People_Impl.hpp"
 #include "../../model/PeopleDefinition.hpp"
 #include "../../model/PeopleDefinition_Impl.hpp"
+#include "../../model/ComfortViewFactorAngles.hpp"
 #include "../../model/Space.hpp"
 #include "../../model/Space_Impl.hpp"
 #include "../../model/SpaceType.hpp"
@@ -18,11 +19,16 @@
 #include "../../model/ThermalZone_Impl.hpp"
 #include "../../model/Schedule.hpp"
 #include "../../model/Schedule_Impl.hpp"
+#include "../../model/Surface.hpp"
+#include "../../model/Surface_Impl.hpp"
+#include "../../model/ComfortViewFactorAngles.hpp"
+#include "../../model/ComfortViewFactorAngles_Impl.hpp"
 #include "../../model/LifeCycleCost.hpp"
 
 #include "../../utilities/idf/IdfExtensibleGroup.hpp"
 
 #include <utilities/idd/People_FieldEnums.hxx>
+#include <utilities/idd/People_Definition_FieldEnums.hxx>
 #include <utilities/idd/People_Instance_FieldEnums.hxx>
 #include "../../utilities/idd/IddEnums.hpp"
 #include <utilities/idd/IddEnums.hxx>
@@ -110,11 +116,50 @@ namespace energyplus {
       }
     }
 
-    if (!definition.isMeanRadiantTemperatureCalculationTypeDefaulted()) {
-      idfObject.setString(PeopleFields::MeanRadiantTemperatureCalculationType, definition.meanRadiantTemperatureCalculationType());
+    std::string mrtType = definition.meanRadiantTemperatureCalculationType();
+    if (auto target = modelObject.surfaceNameAngleFactorListName()) {
+      if (target->optionalCast<Surface>()) {
+        if (!istringEqual(mrtType, "SurfaceWeighted")) {
+          LOG(Warn, modelObject.briefDescription() << " references " << target->briefDescription()
+                                                    << ", but its PeopleDefinition has Mean Radiant Temperature Calculation Type '" << mrtType
+                                                    << "'. Using 'SurfaceWeighted'.");
+        }
+        if (auto idfTarget = translateAndMapModelObject(*target)) {
+          mrtType = "SurfaceWeighted";
+          idfObject.setString(PeopleFields::SurfaceName_AngleFactorListName, idfTarget->nameString());
+        } else {
+          LOG(Warn, "Could not translate " << target->briefDescription() << " referenced by " << modelObject.briefDescription()
+                                            << "; using 'EnclosureAveraged' for Mean Radiant Temperature Calculation Type.");
+          mrtType = "EnclosureAveraged";
+        }
+      } else if (target->optionalCast<ComfortViewFactorAngles>()) {
+        if (!istringEqual(mrtType, "AngleFactor")) {
+          LOG(Warn, modelObject.briefDescription() << " references " << target->briefDescription()
+                                                    << ", but its PeopleDefinition has Mean Radiant Temperature Calculation Type '" << mrtType
+                                                    << "'. Using 'AngleFactor'.");
+        }
+        if (auto idfTarget = translateAndMapModelObject(*target)) {
+          mrtType = "AngleFactor";
+          idfObject.setString(PeopleFields::SurfaceName_AngleFactorListName, idfTarget->nameString());
+        } else {
+          LOG(Warn, "Could not translate " << target->briefDescription() << " referenced by " << modelObject.briefDescription()
+                                            << "; using 'EnclosureAveraged' for Mean Radiant Temperature Calculation Type.");
+          mrtType = "EnclosureAveraged";
+        }
+      } else {
+        LOG(Warn, modelObject.briefDescription() << " references unsupported Surface Name/Angle Factor List Name object "
+                                                  << target->briefDescription() << "; using 'EnclosureAveraged' for Mean Radiant Temperature Calculation Type.");
+        mrtType = "EnclosureAveraged";
+      }
+    } else if (!istringEqual(mrtType, "EnclosureAveraged")) {
+      LOG(Warn, modelObject.briefDescription() << " has Mean Radiant Temperature Calculation Type '" << mrtType
+                                                << "' but no Surface Name/Angle Factor List Name; using 'EnclosureAveraged'.");
+      mrtType = "EnclosureAveraged";
     }
 
-    // TODO: Surface Name/Angle Factor List Name
+    if (!definition.isMeanRadiantTemperatureCalculationTypeDefaulted() || !istringEqual(mrtType, "EnclosureAveraged")) {
+      idfObject.setString(PeopleFields::MeanRadiantTemperatureCalculationType, mrtType);
+    }
 
     if (boost::optional<Schedule> schedule_ = modelObject.workEfficiencySchedule()) {
       if (auto idf_schedule_ = translateAndMapModelObject(schedule_.get())) {
@@ -198,8 +243,53 @@ namespace energyplus {
     }
 
     PeopleDefinition definition = modelObject.peopleDefinition();
+    std::string mrtType = definition.meanRadiantTemperatureCalculationType();
+    if (boost::optional<ModelObject> target = modelObject.surfaceNameAngleFactorListName()) {
+      if (target->optionalCast<Surface>()) {
+        if (!istringEqual(mrtType, "SurfaceWeighted")) {
+          LOG(Warn, modelObject.briefDescription() << " references " << target->briefDescription()
+                                                    << ", but its PeopleDefinition has Mean Radiant Temperature Calculation Type '" << mrtType
+                                                    << "'. Using 'SurfaceWeighted'.");
+        }
+        if (auto idfTarget = translateAndMapModelObject(*target)) {
+          mrtType = "SurfaceWeighted";
+          idfObject.setString(People_InstanceFields::SurfaceName_AngleFactorListName, idfTarget->nameString());
+        } else {
+          LOG(Warn, "Could not translate " << target->briefDescription() << " referenced by " << modelObject.briefDescription()
+                                            << "; using 'EnclosureAveraged' for Mean Radiant Temperature Calculation Type.");
+          mrtType = "EnclosureAveraged";
+        }
+      } else if (target->optionalCast<ComfortViewFactorAngles>()) {
+        if (!istringEqual(mrtType, "AngleFactor")) {
+          LOG(Warn, modelObject.briefDescription() << " references " << target->briefDescription()
+                                                    << ", but its PeopleDefinition has Mean Radiant Temperature Calculation Type '" << mrtType
+                                                    << "'. Using 'AngleFactor'.");
+        }
+        if (auto idfTarget = translateAndMapModelObject(*target)) {
+          mrtType = "AngleFactor";
+          idfObject.setString(People_InstanceFields::SurfaceName_AngleFactorListName, idfTarget->nameString());
+        } else {
+          LOG(Warn, "Could not translate " << target->briefDescription() << " referenced by " << modelObject.briefDescription()
+                                            << "; using 'EnclosureAveraged' for Mean Radiant Temperature Calculation Type.");
+          mrtType = "EnclosureAveraged";
+        }
+      } else {
+        LOG(Warn, modelObject.briefDescription() << " references unsupported Surface Name/Angle Factor List Name object "
+                                                  << target->briefDescription() << "; using 'EnclosureAveraged' for Mean Radiant Temperature Calculation Type.");
+        mrtType = "EnclosureAveraged";
+      }
+    } else if (!istringEqual(mrtType, "EnclosureAveraged")) {
+      LOG(Warn, modelObject.briefDescription() << " has Mean Radiant Temperature Calculation Type '" << mrtType
+                                                << "' but no Surface Name/Angle Factor List Name; using 'EnclosureAveraged'.");
+      mrtType = "EnclosureAveraged";
+    }
+
     auto definitionIdfObject_ = translateAndMapModelObject(definition);
     OS_ASSERT(definitionIdfObject_);
+    if (!definition.isMeanRadiantTemperatureCalculationTypeDefaulted() || !istringEqual(mrtType, "EnclosureAveraged")) {
+      // The instance target determines the effective MRT type, so override the definition's original value in the translated IDF.
+      definitionIdfObject_->setString(People_DefinitionFields::MeanRadiantTemperatureCalculationType, mrtType);
+    }
     idfObject.setString(People_InstanceFields::PeopleDefinitionName, definitionIdfObject_->nameString());
 
     IdfObject parentIdfObject = getSpaceLoadParent(modelObject);
@@ -216,8 +306,6 @@ namespace energyplus {
         idfObject.setString(People_InstanceFields::ActivityLevelScheduleName, idf_schedule_->nameString());
       }
     }
-
-    // TODO: Surface Name/Angle Factor List Name
 
     if (boost::optional<Schedule> schedule_ = modelObject.workEfficiencySchedule()) {
       if (auto idf_schedule_ = translateAndMapModelObject(schedule_.get())) {
