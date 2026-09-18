@@ -50,31 +50,31 @@ jobs:
           MACOSX_DEPLOYMENT_TARGET: "13.0"
           SDKROOT: /Applications/Xcode.app/Contents/Developer
         - name: Windows_py37
-          os: windows-2019
+          os: windows-2022
           python-version: 3.7
           allow_failure: false
         - name: Windows_py38
-          os: windows-2019
+          os: windows-2022
           python-version: 3.8
           allow_failure: false
         - name: Windows_py39
-          os: windows-2019
+          os: windows-2022
           python-version: 3.9
           allow_failure: false
         - name: Windows_py310
-          os: windows-2019
+          os: windows-2022
           python-version: '3.10'
           allow_failure: false
         - name: Windows_py311
-          os: windows-2019
+          os: windows-2022
           python-version: '3.11'
           allow_failure: false
         - name: Windows_py312
-          os: windows-2019
+          os: windows-2022
           python-version: '3.12'
           allow_failure: false
         - name: Windows_py313
-          os: windows-2019
+          os: windows-2022
           python-version: '3.13.5'
           allow_failure: true  # Possible this fails, don't care yet
 
@@ -422,31 +422,31 @@ jobs:
           python-version: 3.11
           allow_failure: false
         - name: Windows_py37
-          os: windows-2019
+          os: windows-2022
           python-version: 3.7
           allow_failure: false
         - name: Windows_py38
-          os: windows-2019
+          os: windows-2022
           python-version: 3.8
           allow_failure: false
         - name: Windows_py39
-          os: windows-2019
+          os: windows-2022
           python-version: 3.9
           allow_failure: false
         - name: Windows_py310
-          os: windows-2019
+          os: windows-2022
           python-version: '3.10'
           allow_failure: false
         - name: Windows_py311
-          os: windows-2019
+          os: windows-2022
           python-version: '3.11'
           allow_failure: false
         - name: Windows_py312
-          os: windows-2019
+          os: windows-2022
           python-version: '3.12'
           allow_failure: false
         - name: Windows_py313
-          os: windows-2019
+          os: windows-2022
           python-version: '3.13'
           allow_failure: true  # Possible this fails, don't care yet
     steps:
