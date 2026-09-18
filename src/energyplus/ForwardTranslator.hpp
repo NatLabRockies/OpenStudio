@@ -130,6 +130,7 @@ namespace model {
   class CoilHeatingGas;
   class CoilHeatingGasMultiStage;
   class CoilHeatingWater;
+  class CoilHeatingSteam;
   class CoilHeatingWaterToAirHeatPumpEquationFit;
   class CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit;
   class CoilPerformanceDXCooling;
@@ -347,6 +348,7 @@ namespace model {
   class PortList;
   class PumpConstantSpeed;
   class PumpVariableSpeed;
+  class PumpVariableSpeedCondensate;
   class PythonPluginInstance;
   class PythonPluginVariable;
   class PythonPluginTrendVariable;
@@ -492,6 +494,7 @@ namespace model {
   class ZoneHVACBaseboardConvectiveWater;
   class ZoneHVACBaseboardRadiantConvectiveElectric;
   class ZoneHVACBaseboardRadiantConvectiveWater;
+  class ZoneHVACBaseboardRadiantConvectiveSteam;
   class ZoneHVACCoolingPanelRadiantConvectiveWater;
   class ZoneHVACDehumidifierDX;
   class ZoneHVACEnergyRecoveryVentilator;
@@ -857,6 +860,8 @@ namespace energyplus {
     boost::optional<IdfObject> translateCoilHeatingGasMultiStage(model::CoilHeatingGasMultiStage& modelObject);
 
     boost::optional<IdfObject> translateCoilHeatingWater(model::CoilHeatingWater& modelObject);
+
+    boost::optional<IdfObject> translateCoilHeatingSteam(model::CoilHeatingSteam& modelObject);
 
     boost::optional<IdfObject> translateCoilHeatingWaterToAirHeatPumpEquationFit(model::CoilHeatingWaterToAirHeatPumpEquationFit& modelObject);
 
@@ -1316,6 +1321,8 @@ namespace energyplus {
 
     boost::optional<IdfObject> translatePumpVariableSpeed(model::PumpVariableSpeed& modelObject);
 
+    boost::optional<IdfObject> translatePumpVariableSpeedCondensate(model::PumpVariableSpeedCondensate& modelObject);
+
     boost::optional<IdfObject> translatePythonPluginInstance(model::PythonPluginInstance& modelObject);
 
     boost::optional<IdfObject> translatePythonPluginVariable(model::PythonPluginVariable& modelObject);
@@ -1616,6 +1623,8 @@ namespace energyplus {
 
     boost::optional<IdfObject> translateZoneHVACBaseboardRadiantConvectiveWater(model::ZoneHVACBaseboardRadiantConvectiveWater& modelObject);
 
+    boost::optional<IdfObject> translateZoneHVACBaseboardRadiantConvectiveSteam(model::ZoneHVACBaseboardRadiantConvectiveSteam& modelObject);
+
     boost::optional<IdfObject> translateZoneHVACCoolingPanelRadiantConvectiveWater(model::ZoneHVACCoolingPanelRadiantConvectiveWater& modelObject);
 
     boost::optional<IdfObject> translateZoneHVACDehumidifierDX(model::ZoneHVACDehumidifierDX& modelObject);
@@ -1673,6 +1682,12 @@ namespace energyplus {
 
     // helper method used by ForwardTranslatePlantLoop
     IdfObject populateBranch(IdfObject& branchIdfObject, std::vector<model::ModelObject>& modelObjects, model::Loop& loop, bool isSupplyBranch);
+
+    // helper method used by ForwardTranslatePlantLoop
+    std::pair<bool, bool> hasWaterAndSteam(model::Loop& loop);
+
+    // helper method used by ForwardTranslatePipeAdiabatic
+    boost::optional<IdfObject> createPipeAdiabatic(bool hasSteam);
 
     // translate all constructions
     void translateConstructions(const model::Model& model);
