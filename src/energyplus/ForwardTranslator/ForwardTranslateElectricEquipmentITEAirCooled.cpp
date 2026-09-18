@@ -141,6 +141,7 @@ namespace energyplus {
     std::string thisMethod = definition.airFlowCalculationMethod();
     if ((methods.size() > 1) && !openstudio::istringEqual(thisMethod, "FlowControlWithApproachTemperatures")) {
       definition.setAirFlowCalculationMethod("FlowControlWithApproachTemperatures");
+      thisMethod = "FlowControlWithApproachTemperatures";
       LOG(Warn, parentIdfObject.briefDescription() << " has multiple IT equipment with different air flow calculation methods, "
                                                    << modelObject.briefDescription() << " is re-assigned to 'FlowControlWithApproachTemperatures'");
     }
@@ -347,6 +348,7 @@ namespace energyplus {
     std::string thisMethod = definition.airFlowCalculationMethod();
     if ((methods.size() > 1) && !openstudio::istringEqual(thisMethod, "FlowControlWithApproachTemperatures")) {
       definition.setAirFlowCalculationMethod("FlowControlWithApproachTemperatures");
+      thisMethod = "FlowControlWithApproachTemperatures";
       LOG(Warn, parentIdfObject.briefDescription() << " has multiple IT equipment with different air flow calculation methods, "
                                                    << modelObject.briefDescription() << " is re-assigned to 'FlowControlWithApproachTemperatures'");
     }
