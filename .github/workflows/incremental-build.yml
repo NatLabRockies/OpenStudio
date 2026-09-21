@@ -58,7 +58,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 1
 
@@ -96,7 +96,7 @@ jobs:
           fi
 
       - name: Cache ccache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ${{ env.DOCKER_ROOT }}/.ccache
           key: ${{ runner.os }}-ccache-${{ github.sha }}
@@ -223,7 +223,7 @@ jobs:
         if: always()
 
       - name: Upload test summary
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: test-summary
           path: ${{ env.OPENSTUDIO_DOCKER_VOLUME }}/${{ env.OPENSTUDIO_SOURCE_NAME }}/${{ env.OPENSTUDIO_BUILD_NAME }}/Testing/test-summary.md
@@ -373,13 +373,13 @@ jobs:
 
       - name: Publish test results to PR
         if: always() && github.event_name == 'pull_request'
-        uses: marocchino/sticky-pull-request-comment@v2
+        uses: marocchino/sticky-pull-request-comment@v3
         with:
           header: test-results
           path: ${{ env.OPENSTUDIO_DOCKER_VOLUME }}/${{ env.OPENSTUDIO_SOURCE_NAME }}/${{ env.OPENSTUDIO_BUILD_NAME }}/Testing/dashboard/test-dashboard.md
 
       - name: Upload comprehensive test results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: test-results-dashboard
           path: |
@@ -388,7 +388,7 @@ jobs:
         if: always()
 
       - name: Upload build artifacts with metadata
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ubuntu-2404-${{ github.head_ref || github.ref_name }}-${{ github.sha }}
           path: |
