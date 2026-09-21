@@ -24,7 +24,8 @@ namespace openstudio {
 
 namespace energyplus {
 
-  boost::optional<IdfObject> ForwardTranslator::translateElectricEquipmentITEAirCooledDefinition(ElectricEquipmentITEAirCooledDefinition& modelObject) {
+  boost::optional<IdfObject>
+    ForwardTranslator::translateElectricEquipmentITEAirCooledDefinition(ElectricEquipmentITEAirCooledDefinition& modelObject) {
 
     IdfObject idfObject = createRegisterAndNameIdfObject(openstudio::IddObjectType::ElectricEquipment_ITE_AirCooled_Definition, modelObject);
 
@@ -47,46 +48,43 @@ namespace energyplus {
     }
 
     idfObject.setString(ElectricEquipment_ITE_AirCooled_DefinitionFields::CPUPowerInputFunctionofLoadingandAirTemperatureCurveName,
-                         modelObject.cPUPowerInputFunctionofLoadingandAirTemperatureCurve().name().get());
+                        modelObject.cPUPowerInputFunctionofLoadingandAirTemperatureCurve().name().get());
 
-    idfObject.setDouble(ElectricEquipment_ITE_AirCooled_DefinitionFields::DesignFanPowerInputFraction,
-                         modelObject.designFanPowerInputFraction());
+    idfObject.setDouble(ElectricEquipment_ITE_AirCooled_DefinitionFields::DesignFanPowerInputFraction, modelObject.designFanPowerInputFraction());
 
     if (boost::optional<double> d = modelObject.designFanAirFlowRateperPowerInput()) {
       idfObject.setDouble(ElectricEquipment_ITE_AirCooled_DefinitionFields::DesignFanAirFlowRateperPowerInput, *d);
     }
 
     idfObject.setString(ElectricEquipment_ITE_AirCooled_DefinitionFields::AirFlowFunctionofLoadingandAirTemperatureCurveName,
-                         modelObject.airFlowFunctionofLoadingandAirTemperatureCurve().name().get());
+                        modelObject.airFlowFunctionofLoadingandAirTemperatureCurve().name().get());
 
     idfObject.setString(ElectricEquipment_ITE_AirCooled_DefinitionFields::FanPowerInputFunctionofFlowCurveName,
-                         modelObject.fanPowerInputFunctionofFlowCurve().name().get());
+                        modelObject.fanPowerInputFunctionofFlowCurve().name().get());
 
-    idfObject.setDouble(ElectricEquipment_ITE_AirCooled_DefinitionFields::DesignEnteringAirTemperature,
-                         modelObject.designEnteringAirTemperature());
+    idfObject.setDouble(ElectricEquipment_ITE_AirCooled_DefinitionFields::DesignEnteringAirTemperature, modelObject.designEnteringAirTemperature());
 
     idfObject.setString(ElectricEquipment_ITE_AirCooled_DefinitionFields::EnvironmentalClass, modelObject.environmentalClass());
 
     idfObject.setString(ElectricEquipment_ITE_AirCooled_DefinitionFields::AirInletConnectionType, modelObject.airInletConnectionType());
 
-    idfObject.setDouble(ElectricEquipment_ITE_AirCooled_DefinitionFields::DesignRecirculationFraction,
-                         modelObject.designRecirculationFraction());
+    idfObject.setDouble(ElectricEquipment_ITE_AirCooled_DefinitionFields::DesignRecirculationFraction, modelObject.designRecirculationFraction());
 
     if (boost::optional<Curve> curve = modelObject.recirculationFunctionofLoadingandSupplyTemperatureCurve()) {
       idfObject.setString(ElectricEquipment_ITE_AirCooled_DefinitionFields::RecirculationFunctionofLoadingandSupplyTemperatureCurveName,
-                           curve->name().get());
+                          curve->name().get());
     }
 
     idfObject.setDouble(ElectricEquipment_ITE_AirCooled_DefinitionFields::DesignElectricPowerSupplyEfficiency,
-                         modelObject.designElectricPowerSupplyEfficiency());
+                        modelObject.designElectricPowerSupplyEfficiency());
 
     if (boost::optional<Curve> curve = modelObject.electricPowerSupplyEfficiencyFunctionofPartLoadRatioCurve()) {
       idfObject.setString(ElectricEquipment_ITE_AirCooled_DefinitionFields::ElectricPowerSupplyEfficiencyFunctionofPartLoadRatioCurveName,
-                           curve->name().get());
+                          curve->name().get());
     }
 
     idfObject.setDouble(ElectricEquipment_ITE_AirCooled_DefinitionFields::FractionofElectricPowerSupplyLossestoZone,
-                         modelObject.fractionofElectricPowerSupplyLossestoZone());
+                        modelObject.fractionofElectricPowerSupplyLossestoZone());
 
     idfObject.setDouble(ElectricEquipment_ITE_AirCooled_DefinitionFields::SupplyTemperatureDifference, modelObject.supplyTemperatureDifference());
 
