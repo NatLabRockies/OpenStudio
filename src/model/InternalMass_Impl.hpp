@@ -52,6 +52,8 @@ namespace model {
 
       virtual bool isAbsolute() const override;
 
+      virtual std::vector<IdfObject> remove() override;
+
       //@}
       /** @name Getters */
       //@{

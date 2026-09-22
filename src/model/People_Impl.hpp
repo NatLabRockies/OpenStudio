@@ -78,8 +78,6 @@ namespace model {
       /** Returns true if this object does not specify an activity directly. */
       bool isActivityLevelScheduleDefaulted() const;
 
-      // TODO: Handle Non-Extensible IddField Surface Name/Angle Factor List Name.
-
       /** Returns the work efficiency schedule. */
       boost::optional<Schedule> workEfficiencySchedule() const;
 
@@ -96,6 +94,8 @@ namespace model {
       boost::optional<Schedule> airVelocitySchedule() const;
 
       boost::optional<Schedule> ankleLevelAirVelocitySchedule() const;
+
+      boost::optional<ModelObject> surfaceNameAngleFactorListName() const;
 
       double coldStressTemperatureThreshold() const;
       bool isColdStressTemperatureThresholdDefaulted() const;
@@ -160,6 +160,9 @@ namespace model {
 
       bool setAnkleLevelAirVelocitySchedule(Schedule& schedule);
       void resetAnkleLevelAirVelocitySchedule();
+
+      bool setSurfaceNameAngleFactorListName(const ModelObject& modelObject);
+      void resetSurfaceNameAngleFactorListName();
 
       bool setColdStressTemperatureThreshold(double coldStressTemperatureThreshold);
       void resetColdStressTemperatureThreshold();
