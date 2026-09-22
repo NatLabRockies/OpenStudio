@@ -58,12 +58,12 @@ namespace energyplus {
 
     if (!modelObject.isReturnAirFractionFunctionofPlenumTemperatureCoefficient1Defaulted()) {
       idfObject.setDouble(Lights_DefinitionFields::ReturnAirFractionFunctionofPlenumTemperatureCoefficient1,
-                           modelObject.returnAirFractionFunctionofPlenumTemperatureCoefficient1());
+                          modelObject.returnAirFractionFunctionofPlenumTemperatureCoefficient1());
     }
 
     if (!modelObject.isReturnAirFractionFunctionofPlenumTemperatureCoefficient2Defaulted()) {
       idfObject.setDouble(Lights_DefinitionFields::ReturnAirFractionFunctionofPlenumTemperatureCoefficient2,
-                           modelObject.returnAirFractionFunctionofPlenumTemperatureCoefficient2());
+                          modelObject.returnAirFractionFunctionofPlenumTemperatureCoefficient2());
     }
 
     return idfObject;

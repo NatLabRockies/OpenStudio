@@ -11,7 +11,7 @@ jobs:
       contents: write  # Needed to push a commit
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
 
     - name: Run clang-format against C++ files touched by the PR
       if: ${{ github.event_name == 'pull_request' }}
@@ -44,7 +44,7 @@ jobs:
 
     - name: Upload clang-format patch as artifact
       if: ${{ failure() }}
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
           name: OpenStudio-${{ github.sha }}-clang_format.patch
           path: clang_format.patch

@@ -19,9 +19,6 @@ jobs:
   build-csharp:
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
-    if: |
-      github.event_name == 'push' ||
-      (github.event_name == 'pull_request' && (github.base_ref == 'master' || github.base_ref == 'CSharp'))
     strategy:
       # fail-fast: Default is true, switch to false to allow one platform to fail and still run others
       fail-fast: false
@@ -40,7 +37,7 @@ jobs:
           os: windows-latest
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
 #      # If you need to rebuild for a specific branch or tag **after** you fixed the workflow and you have no other changes or only a few you can download from github
 #      with:
 #        ref: v3.8.0
@@ -58,7 +55,7 @@ jobs:
 #        git fetch --all
 #        git reset --soft v3.8.0
 
-    - uses: actions/setup-python@v5
+    - uses: actions/setup-python@v7
       with:
         python-version: 3.12  # only for conan, version doesn't matter much
 
@@ -239,20 +236,20 @@ jobs:
         7z a CSharp_${{ matrix.name }}_Src.zip ./build/csharp_wrapper/generated_sources ./build/csharp_wrapper/OpenStudio.csproj
 
     - name: Upload artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: CSharp_${{ matrix.name }}
         path: CSharp_${{ matrix.name }}.zip
 
     - name: Upload artifact generated_sources
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: CSharp_${{ matrix.name }}_Src
         path: CSharp_${{ matrix.name }}_Src.zip
 
     - name: Upload artifact (if failed)
       if: failure()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: ${{ matrix.name }}_Failed
         path: |
@@ -267,15 +264,15 @@ jobs:
     needs: build-csharp
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
 
     - name: Download CSharp_Windows32
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v8
       with:
         name: CSharp_Windows32
 
     - name: Download CSharp_Windows64
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v8
       with:
         name: CSharp_Windows64
 
@@ -319,7 +316,7 @@ jobs:
         ls
 
     - name: Upload artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: CSharp_Windows_x64x86
         path: x64x86\OpenStudio.nupkg
@@ -372,10 +369,10 @@ jobs:
     needs: build-csharp
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
 
     - name: Download nuget
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v8
       with:
         name: CSharp_${{ matrix.name }}
 

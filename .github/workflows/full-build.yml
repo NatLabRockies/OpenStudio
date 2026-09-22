@@ -185,12 +185,12 @@ jobs:
           echo
 
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 1
 
       - name: Restore ccache cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.ccache
           key: ccache-${{ matrix.os }}-${{ matrix.platform }}-${{ hashFiles('conan.lock') }}
@@ -198,7 +198,7 @@ jobs:
             ccache-${{ matrix.os }}-${{ matrix.platform }}-
 
       - name: Restore Conan cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.conan2
           key: conan-${{ matrix.os }}-${{ matrix.platform }}-${{ hashFiles('conan.lock') }}
@@ -243,7 +243,7 @@ jobs:
           fi
 
       - name: Cache External Dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: |
             ${{ env.OPENSTUDIO_BUILD }}/EnergyPlus*.tar.gz
@@ -256,7 +256,7 @@ jobs:
             external-deps-${{ matrix.os }}-
 
       - name: Restore Generated Embedded Files
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: |
             ${{ env.OPENSTUDIO_BUILD }}/src/*/embedded_files
@@ -409,7 +409,7 @@ jobs:
 
       - name: Upload build diagnostics
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: build-diag-${{ matrix.platform }}-${{ github.sha }}
           path: |
@@ -452,7 +452,7 @@ jobs:
 
       - name: Upload Testing artifact
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: Testing-${{ matrix.platform }}-${{ github.sha }}
           path: |
@@ -481,7 +481,7 @@ jobs:
 
       - name: Upload DEB installer
         if: contains(matrix.cpack_generators, 'DEB')
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: OS-Installers-${{ matrix.platform }}-DEB-${{ github.sha }}
           path: ${{ env.OPENSTUDIO_BUILD }}/*.deb
@@ -489,14 +489,14 @@ jobs:
 
       - name: Upload RPM installer
         if: contains(matrix.cpack_generators, 'RPM')
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: OS-Installers-${{ matrix.platform }}-RPM-${{ github.sha }}
           path: ${{ env.OPENSTUDIO_BUILD }}/*.rpm
           if-no-files-found: ignore
 
       - name: Upload TGZ installer
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: OS-Installers-${{ matrix.platform }}-TGZ-${{ github.sha }}
           path: ${{ env.OPENSTUDIO_BUILD }}/OpenStudio-*.tar.gz
@@ -504,7 +504,7 @@ jobs:
 
       - name: Upload WHEEL installer
         if: matrix.pip_package
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: OS-Installers-${{ matrix.platform }}-WHEEL-${{ github.sha }}
           path: ${{ env.OPENSTUDIO_BUILD }}/*.whl
@@ -517,14 +517,14 @@ jobs:
     if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == true || github.event.inputs.publish_to_s3 == 'true'
     steps:
       - name: Download all installers
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           pattern: OS-Installers-*
           merge-multiple: true
           path: installers
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v6
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -662,7 +662,7 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v6
+      uses: actions/checkout@v7
       with:
         path: ${{ env.OPENSTUDIO_SOURCE }}
         fetch-depth: 1
@@ -692,7 +692,7 @@ jobs:
         max-size: ${{ env.CCACHE_MAXSIZE }}
 
     - name: Restore Conan cache
-      uses: actions/cache@v4
+      uses: actions/cache@v6
       with:
         path: ~/.conan2
         key: conan-${{ matrix.os }}-${{ matrix.platform }}-${{ hashFiles('conan.lock') }}
@@ -750,7 +750,7 @@ jobs:
       run: cmake -E make_directory ${{ env.OPENSTUDIO_BUILD }}
 
     - name: Cache External Dependencies
-      uses: actions/cache@v4
+      uses: actions/cache@v6
       with:
         path: |
           ${{ env.OPENSTUDIO_BUILD }}/EnergyPlus*.tar.gz
@@ -763,7 +763,7 @@ jobs:
           external-deps-${{ matrix.os }}-
 
     - name: Restore Generated Embedded Files
-      uses: actions/cache@v4
+      uses: actions/cache@v6
       with:
         path: |
           ${{ env.OPENSTUDIO_BUILD }}/src/*/embedded_files
@@ -882,7 +882,7 @@ jobs:
 
     - name: Upload build diagnostics
       if: always()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: build-diag-${{ matrix.platform }}-${{ github.sha }}
         path: |
@@ -1114,7 +1114,7 @@ jobs:
 
     - name: Upload Testing artifact
       if: always()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: Testing-${{ matrix.platform }}-${{ github.sha }}
         path: |
@@ -1135,7 +1135,7 @@ jobs:
 
     - name: Upload IFW installer
       if: always()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: OS-IFW-${{ matrix.platform }}-${{ github.sha }}
         path: ${{ steps.installer_path.outputs.path }}
@@ -1143,7 +1143,7 @@ jobs:
 
     - name: Upload TGZ package
       if: always()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: OS-TGZ-${{ matrix.platform }}-${{ github.sha }}
         path: ${{ env.OPENSTUDIO_BUILD }}/OpenStudio-*.tar.gz
@@ -1161,14 +1161,14 @@ jobs:
     if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == true || github.event.inputs.publish_to_s3 == 'true'
     steps:
       - name: Download all installers
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           pattern: OS-*-macos*
           merge-multiple: true
           path: installers
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v6
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -1222,7 +1222,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           path: ${{ env.OPENSTUDIO_SOURCE }}
           fetch-depth: 1
@@ -1237,7 +1237,7 @@ jobs:
         run: git config --global --add safe.directory '*'
 
       - name: Restore sccache cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ${{ github.workspace }}\.sccache
           key: sccache-${{ matrix.os }}-${{ matrix.platform }}-${{ hashFiles('conan.lock') }}
@@ -1253,7 +1253,7 @@ jobs:
         uses: Mozilla-Actions/sccache-action@v0.0.5
 
       - name: Restore Conan cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.conan2
           key: conan-${{ matrix.os }}-windows-${{ hashFiles('conan.lock') }}
@@ -1261,7 +1261,7 @@ jobs:
             conan-${{ matrix.os }}-windows-
 
       - name: Set up Python 3.12.2
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version: '3.12.2'
           cache: 'pip'
@@ -1361,7 +1361,7 @@ jobs:
 
       - name: Upload build diagnostics
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: build-diag-${{ matrix.platform }}-${{ github.sha }}
           path: |
@@ -1475,7 +1475,7 @@ jobs:
 
       - name: Upload Testing artifact
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: Testing-${{ matrix.platform }}-${{ github.sha }}
           path: |
@@ -1485,7 +1485,7 @@ jobs:
       # CODE SIGNING SETUP
       - name: Setup Node.js
         if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == true || github.event.inputs.publish_to_s3 == 'true'
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: "18"
 
@@ -1652,14 +1652,14 @@ jobs:
           exit 1
 
       - name: Upload Signed EXE installer
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: OS-Installers-${{ matrix.platform }}-EXE-${{ github.sha }}
           path: ${{ env.OPENSTUDIO_BUILD }}/signed/OpenStudio*.exe
           if-no-files-found: ignore
 
       - name: Upload Signed TGZ installer
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: OS-Installers-${{ matrix.platform }}-TGZ-${{ github.sha }}
           path: ${{ env.OPENSTUDIO_BUILD }}/_CPack_Packages/win64/TGZ/*.tar.gz
@@ -1672,13 +1672,13 @@ jobs:
     if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == true || github.event.inputs.publish_to_s3 == 'true'
     steps:
       - name: Download all installers
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           pattern: OS-Installers-windows-2022-x64-*
           path: installers
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v6
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
