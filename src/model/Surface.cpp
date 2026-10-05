@@ -128,7 +128,7 @@ namespace model {
 
       Surface surface = getObject<Surface>();
       for (ComfortViewFactorAngles& comfortViewFactorAngles : surface.getModelObjectSources<ComfortViewFactorAngles>()) {
-        while (boost::optional<unsigned> index = comfortViewFactorAngles.angleFactorIndex(surface)) {
+        if (boost::optional<unsigned> index = comfortViewFactorAngles.angleFactorIndex(surface)) {
           comfortViewFactorAngles.removeAngleFactor(index.get());
         }
       }

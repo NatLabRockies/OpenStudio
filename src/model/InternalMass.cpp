@@ -53,7 +53,7 @@ namespace model {
     std::vector<IdfObject> InternalMass_Impl::remove() {
       InternalMass internalMass = getObject<ModelObject>().cast<InternalMass>();
       for (ComfortViewFactorAngles& comfortViewFactorAngles : internalMass.getModelObjectSources<ComfortViewFactorAngles>()) {
-        while (boost::optional<unsigned> index = comfortViewFactorAngles.angleFactorIndex(internalMass)) {
+        if (boost::optional<unsigned> index = comfortViewFactorAngles.angleFactorIndex(internalMass)) {
           comfortViewFactorAngles.removeAngleFactor(index.get());
         }
       }

@@ -131,7 +131,7 @@ namespace model {
 
       SubSurface subSurface = getObject<SubSurface>();
       for (ComfortViewFactorAngles& comfortViewFactorAngles : subSurface.getModelObjectSources<ComfortViewFactorAngles>()) {
-        while (boost::optional<unsigned> index = comfortViewFactorAngles.angleFactorIndex(subSurface)) {
+        if (boost::optional<unsigned> index = comfortViewFactorAngles.angleFactorIndex(subSurface)) {
           comfortViewFactorAngles.removeAngleFactor(index.get());
         }
       }
