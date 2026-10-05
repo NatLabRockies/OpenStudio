@@ -13,6 +13,10 @@
 #include "ComfortViewFactorAngles_Impl.hpp"
 #include "Surface.hpp"
 #include "Surface_Impl.hpp"
+#include "SubSurface.hpp"
+#include "SubSurface_Impl.hpp"
+#include "InternalMass.hpp"
+#include "InternalMass_Impl.hpp"
 #include "Schedule.hpp"
 #include "Schedule_Impl.hpp"
 #include "ScheduleTypeLimits.hpp"
@@ -407,12 +411,12 @@ namespace model {
       }
 
       std::string mrtType;
-      if (modelObject.optionalCast<Surface>()) {
+      if (modelObject.optionalCast<Surface>() || modelObject.optionalCast<SubSurface>() || modelObject.optionalCast<InternalMass>()) {
         mrtType = "SurfaceWeighted";
       } else if (modelObject.optionalCast<ComfortViewFactorAngles>()) {
         mrtType = "AngleFactor";
       } else {
-        LOG(Error, "Surface Name/Angle Factor List Name must reference a Surface or ComfortViewFactorAngles object.");
+        LOG(Error, "Surface Name/Angle Factor List Name must reference a Surface, SubSurface, InternalMass, or ComfortViewFactorAngles object.");
         return false;
       }
       if (!peopleDefinition().setMeanRadiantTemperatureCalculationType(mrtType)) {

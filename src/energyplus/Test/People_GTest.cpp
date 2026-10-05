@@ -19,6 +19,9 @@
 #include "../../model/ComfortViewFactorAngles.hpp"
 #include "../../model/ScheduleConstant.hpp"
 #include "../../model/Surface.hpp"
+#include "../../model/SubSurface.hpp"
+#include "../../model/InternalMass.hpp"
+#include "../../model/InternalMassDefinition.hpp"
 
 #include "../../utilities/geometry/Point3d.hpp"
 #include "../../utilities/idf/IdfExtensibleGroup.hpp"
@@ -338,6 +341,45 @@ TEST_F(EnergyPlusFixture, ForwardTranslator_People_SurfaceWeighted) {
   const auto& peopleObject = peopleObjects.front();
   EXPECT_EQ("SurfaceWeighted", peopleObject.getString(PeopleFields::MeanRadiantTemperatureCalculationType).get());
   EXPECT_EQ("Radiant Surface", peopleObject.getString(PeopleFields::SurfaceName_AngleFactorListName).get());
+}
+
+TEST_F(EnergyPlusFixture, ForwardTranslator_People_SurfaceWeightedHeatTransferTargets) {
+  Model model;
+  ThermalZone zone(model);
+  Space space(model);
+  ASSERT_TRUE(space.setThermalZone(zone));
+
+  Point3dVector points{{0, 0, 0}, {1, 0, 0}, {1, 1, 0}};
+  Surface surface(points, model);
+  surface.setName("Radiant Surface");
+  ASSERT_TRUE(surface.setSpace(space));
+
+  SubSurface subSurface(points, model);
+  subSurface.setName("Radiant SubSurface");
+  ASSERT_TRUE(subSurface.setSurface(surface));
+
+  InternalMassDefinition internalMassDefinition(model);
+  InternalMass internalMass(internalMassDefinition);
+  internalMass.setName("Radiant Internal Mass");
+  ASSERT_TRUE(internalMass.setSpace(space));
+
+  for (const ModelObject& target : {ModelObject(surface), ModelObject(subSurface), ModelObject(internalMass)}) {
+    PeopleDefinition definition(model);
+    People people(definition);
+    ASSERT_TRUE(people.setSurfaceNameAngleFactorListName(target));
+    ASSERT_TRUE(people.setSpace(space));
+  }
+
+  ForwardTranslator forwardTranslator;
+  forwardTranslator.setExcludeSpaceLoadInstances(true);
+  Workspace workspace = forwardTranslator.translateModel(model);
+
+  const auto peopleObjects = workspace.getObjectsByType(IddObjectType::People);
+  ASSERT_EQ(3u, peopleObjects.size());
+  for (const auto& peopleObject : peopleObjects) {
+    EXPECT_EQ("SurfaceWeighted", peopleObject.getString(PeopleFields::MeanRadiantTemperatureCalculationType).get());
+    EXPECT_FALSE(peopleObject.isEmpty(PeopleFields::SurfaceName_AngleFactorListName));
+  }
 }
 
 TEST_F(EnergyPlusFixture, ForwardTranslator_People_MRTTypeFollowsSurfaceTarget) {

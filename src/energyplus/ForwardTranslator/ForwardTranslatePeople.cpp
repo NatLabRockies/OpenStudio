@@ -21,6 +21,10 @@
 #include "../../model/Schedule_Impl.hpp"
 #include "../../model/Surface.hpp"
 #include "../../model/Surface_Impl.hpp"
+#include "../../model/SubSurface.hpp"
+#include "../../model/SubSurface_Impl.hpp"
+#include "../../model/InternalMass.hpp"
+#include "../../model/InternalMass_Impl.hpp"
 #include "../../model/ComfortViewFactorAngles.hpp"
 #include "../../model/ComfortViewFactorAngles_Impl.hpp"
 #include "../../model/LifeCycleCost.hpp"
@@ -118,7 +122,7 @@ namespace energyplus {
 
     std::string mrtType = definition.meanRadiantTemperatureCalculationType();
     if (auto target = modelObject.surfaceNameAngleFactorListName()) {
-      if (target->optionalCast<Surface>()) {
+      if (target->optionalCast<Surface>() || target->optionalCast<SubSurface>() || target->optionalCast<InternalMass>()) {
         if (!istringEqual(mrtType, "SurfaceWeighted")) {
           LOG(Warn, modelObject.briefDescription() << " references " << target->briefDescription()
                                                     << ", but its PeopleDefinition has Mean Radiant Temperature Calculation Type '" << mrtType

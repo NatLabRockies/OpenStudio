@@ -14,6 +14,9 @@
 #include "../PeopleDefinition_Impl.hpp"
 #include "../ComfortViewFactorAngles.hpp"
 #include "../Surface.hpp"
+#include "../SubSurface.hpp"
+#include "../InternalMass.hpp"
+#include "../InternalMassDefinition.hpp"
 #include "../ThermalZone.hpp"
 
 #include "../ScheduleRuleset.hpp"
@@ -75,6 +78,17 @@ TEST_F(ModelFixture, People_DefaultConstructor) {
   EXPECT_TRUE(person.setSurfaceNameAngleFactorListName(surface));
   EXPECT_EQ("SurfaceWeighted", definition.meanRadiantTemperatureCalculationType());
   EXPECT_TRUE(person.surfaceNameAngleFactorListName());
+
+  SubSurface subSurface(points, model);
+  ASSERT_TRUE(subSurface.setSurface(surface));
+  EXPECT_TRUE(person.setSurfaceNameAngleFactorListName(subSurface));
+  EXPECT_EQ("SurfaceWeighted", definition.meanRadiantTemperatureCalculationType());
+
+  InternalMassDefinition internalMassDefinition(model);
+  InternalMass internalMass(internalMassDefinition);
+  ASSERT_TRUE(internalMass.setSpace(space));
+  EXPECT_TRUE(person.setSurfaceNameAngleFactorListName(internalMass));
+  EXPECT_EQ("SurfaceWeighted", definition.meanRadiantTemperatureCalculationType());
 
   person.resetSurfaceNameAngleFactorListName();
   EXPECT_EQ("EnclosureAveraged", definition.meanRadiantTemperatureCalculationType());
