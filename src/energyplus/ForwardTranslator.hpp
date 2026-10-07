@@ -512,6 +512,7 @@ namespace model {
   class ZoneHVACWaterToAirHeatPump;
   class ZoneMixing;
   class ZoneMRTCalculation;
+  class ComfortViewFactorAngles;
   class ZonePropertyUserViewFactorsBySurfaceName;
   class ZoneVentilationDesignFlowRate;
   class ZoneVentilationWindandStackOpenArea;
@@ -1655,6 +1656,8 @@ namespace energyplus {
     boost::optional<IdfObject> translateZoneMixing(model::ZoneMixing& modelObject);
 
     boost::optional<IdfObject> translateZoneMRTCalculation(model::ZoneMRTCalculation& modelObject);
+
+    boost::optional<IdfObject> translateComfortViewFactorAngles(model::ComfortViewFactorAngles& modelObject);
 
     boost::optional<IdfObject> translateZonePropertyUserViewFactorsBySurfaceName(model::ZonePropertyUserViewFactorsBySurfaceName& modelObject);
 
