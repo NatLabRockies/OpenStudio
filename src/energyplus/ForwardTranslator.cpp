@@ -180,6 +180,10 @@ namespace energyplus {
     m_forwardTranslatorOptions.setExcludeSpaceLoadInstances(excludeSpaceLoadInstances);
   }
 
+  void ForwardTranslator::setExcludeConstructionAssignmentSets(bool excludeConstructionAssignmentSets) {
+    m_forwardTranslatorOptions.setExcludeConstructionAssignmentSets(excludeConstructionAssignmentSets);
+  }
+
   // #5510 - Sort by name first, then by reporting frequency
   // This is a weird case where the "Name" field is actually not unique
   bool OutputMeterSorterPredicate(const WorkspaceObject& a, const WorkspaceObject& b) {
