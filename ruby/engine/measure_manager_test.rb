@@ -28,7 +28,7 @@ def reset()
     request = RestClient::Resource.new("#{@host}/reset", user: @user, password: @pass)
     response = request.post(json_request, content_type: :json, accept: :json)
     result = JSON.parse(response.body, :symbolize_names => true)
-  rescue Exception => e
+  rescue StandardError => e
     puts "reset failed"
     puts e.message
   end
@@ -45,7 +45,7 @@ def set(payload)
     request = RestClient::Resource.new("#{@host}/set", user: @user, password: @pass)
     response = request.post(json_request, content_type: :json, accept: :json)
     result = JSON.parse(response.body, :symbolize_names => true)
-  rescue Exception => e
+  rescue StandardError => e
     puts "set #{payload} failed"
     puts e.message
   end
@@ -61,7 +61,7 @@ def download_bcl_measure(uid)
     request = RestClient::Resource.new("#{@host}/download_bcl_measure", user: @user, password: @pass)
     response = request.post(json_request, content_type: :json, accept: :json)
     result = JSON.parse(response.body, :symbolize_names => true)
-  rescue Exception => e
+  rescue StandardError => e
     puts "download_bcl_measure #{uid} failed"
     puts e.message
   end
@@ -78,7 +78,7 @@ def bcl_measures
     request = RestClient::Resource.new("#{@host}/bcl_measures", user: @user, password: @pass)
     response = request.post(json_request, content_type: :json, accept: :json)
     result = JSON.parse(response.body, :symbolize_names => true)
-  rescue Exception => e
+  rescue StandardError => e
     puts "bcl_measures failed"
     puts e.message
   end
@@ -101,7 +101,7 @@ def update_measures(measures_dir = nil)
     request = RestClient::Resource.new("#{@host}/update_measures", user: @user, password: @pass)
     response = request.post(json_request, content_type: :json, accept: :json)
     result = JSON.parse(response.body, :symbolize_names => true)
-  rescue Exception => e
+  rescue StandardError => e
     puts "update_measures(#{measures_dir}) failed"
     puts e.message
   end
@@ -121,7 +121,7 @@ def compute_arguments(measure_dir, osm_path = nil)
     request = RestClient::Resource.new("#{@host}/compute_arguments", user: @user, password: @pass)
     response = request.post(json_request, content_type: :json, accept: :json)
     result = JSON.parse(response.body, :symbolize_names => true)
-  rescue Exception => e
+  rescue StandardError => e
     puts "compute_arguments(#{measure_dir}, #{osm_path}) failed"
     puts e.message
   end
@@ -139,7 +139,7 @@ def create_measure(measure_dir, display_name, class_name, taxonomy_tag, measure_
     request = RestClient::Resource.new("#{@host}/create_measure", user: @user, password: @pass)
     response = request.post(json_request, content_type: :json, accept: :json)
     result = JSON.parse(response.body, :symbolize_names => true)
-  rescue Exception => e
+  rescue StandardError => e
     puts "create_measure(#{measure_dir}) failed"
     puts e.message
   end
@@ -158,7 +158,7 @@ def duplicate_measure(old_measure_dir, measure_dir, name, class_name, taxonomy_t
     request = RestClient::Resource.new("#{@host}/duplicate_measure", user: @user, password: @pass)
     response = request.post(json_request, content_type: :json, accept: :json)
     result = JSON.parse(response.body, :symbolize_names => true)
-  rescue Exception => e
+  rescue StandardError => e
     puts "duplicate_measure(#{old_measure_dir}, #{measure_dir}) failed"
     puts e.message
   end

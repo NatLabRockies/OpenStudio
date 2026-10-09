@@ -51,7 +51,7 @@ class Polygon3d_Join_Test < Minitest::Test
     result = OpenStudio::join(polygonA, polygonB)
 
     # We should have a result
-    assert(result != nil)
+    assert(!result.nil?)
     res = result.get
     # The outer should have 4 points
     assert(res.getOuterPath.size == 4)
