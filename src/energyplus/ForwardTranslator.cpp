@@ -365,6 +365,11 @@ namespace energyplus {
       }
     }
 
+    if (!m_forwardTranslatorOptions.excludeConstructionAssignmentSets()) {
+      resolveDefaultConstructionSetInheritance(model);
+    }
+
+
     //Fix for Bug 717 - Take any OtherEquipment objects that still point to a spacetype and make
     //a new instance of them for every space that that spacetype points to then delete the one
     //that pointed to a spacetype

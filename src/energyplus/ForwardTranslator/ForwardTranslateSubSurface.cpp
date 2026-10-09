@@ -76,17 +76,9 @@ namespace energyplus {
     m_map.insert(std::make_pair(modelObject.handle(), idfObject));
 
     std::string subSurfaceType = modelObject.subSurfaceType();
-    if (istringEqual("FixedWindow", subSurfaceType) || istringEqual("OperableWindow", subSurfaceType)) {
-      subSurfaceType = "Window";
-    } else if (istringEqual("OverheadDoor", subSurfaceType)) {
-      subSurfaceType = "Door";
-    } else if (istringEqual("Skylight", subSurfaceType)) {
-      subSurfaceType = "Window";
-    }
 
     boost::optional<ConstructionBase> construction = modelObject.construction();
     if (construction) {
-      idfObject.setString(FenestrationSurface_DetailedFields::ConstructionName, construction->name().get());
 
       if (subSurfaceType == "Door" && construction->isFenestration()) {
         LOG(Warn, "SubSurface '" << modelObject.name().get() << "' uses fenestration construction, changing SubSurfaceType to GlassDoor");
@@ -94,6 +86,13 @@ namespace energyplus {
       } else if (subSurfaceType == "GlassDoor" && !construction->isFenestration()) {
         LOG(Warn, "SubSurface '" << modelObject.name().get() << "' uses non-fenestration construction, changing SubSurfaceType to Door");
         subSurfaceType = "Door";
+      }
+
+      // Write the construction:
+      // - When it is hard-assigned
+      // - When the construction assignment sets are excluded
+      if (!modelObject.isConstructionDefaulted() || m_forwardTranslatorOptions.excludeConstructionAssignmentSets()) {
+        idfObject.setString(FenestrationSurface_DetailedFields::ConstructionName, construction->name().get());
       }
     }
 

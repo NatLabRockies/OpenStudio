@@ -10,6 +10,7 @@
 #include "../../model/Building.hpp"
 #include "../../model/Building_Impl.hpp"
 #include "../../model/DefaultConstructionSet.hpp"
+#include "../../model/SpaceType.hpp"
 #include "../../model/Site.hpp"
 #include "../../model/Site_Impl.hpp"
 #include "../../model/SimulationControl.hpp"
@@ -94,6 +95,19 @@ namespace energyplus {
 
     if (!m_forwardTranslatorOptions.excludeConstructionAssignmentSets()) {
       if (auto defaultConstructionSet_ = modelObject.defaultConstructionSet()) {
+        // E+ allows only setting the ConstructionAssignmentSet on Space or Building
+        // OS has the following inheritance order:
+        // Space -> SpaceType -> BuildingStory -|-> Building -> Building SpaceType
+        // So we merge Building and Building SpaceType DefaultConstructionSets so we don't loose any information when translating to E+.
+        if (boost::optional<SpaceType> buildingSpaceType_ = modelObject.spaceType()) {
+          if (auto buildingSpaceTypeDefaultConstructionSet = buildingSpaceType_->defaultConstructionSet()) {
+            LOG(Info, "Merging Building DefaultConstructionSet '"
+                        << modelObject.nameString() << "' with its Building SpaceType DefaultConstructionSet '" << buildingSpaceType_->nameString()
+                        << "'");
+            defaultConstructionSet_->merge(*buildingSpaceTypeDefaultConstructionSet);
+          }
+        }
+
         if (auto wo_ = translateAndMapModelObject(*defaultConstructionSet_)) {
           idfObject.setString(BuildingFields::ConstructionAssignmentSetName, wo_->nameString());
         }

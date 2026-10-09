@@ -973,6 +973,10 @@ namespace energyplus {
     boost::optional<IdfObject> translateDefaultConstructionSet(model::DefaultConstructionSet& modelObject);
     boost::optional<IdfObject> translateDefaultSurfaceConstructions(model::DefaultSurfaceConstructions& modelObject);
     boost::optional<IdfObject> translateDefaultSubSurfaceConstructions(model::DefaultSubSurfaceConstructions& modelObject);
+    // Preparation function
+    void resolveDefaultConstructionSetInheritance(model::Model& model);
+    void mergeBuildingGroup(model::Model& model);
+    void resolveSpaceDefaultConstructionSetInheritance(model::Model& model);
 
     boost::optional<IdfObject> translateDesignDay(model::DesignDay& modelObject);
 
