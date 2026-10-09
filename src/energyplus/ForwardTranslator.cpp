@@ -1534,20 +1534,23 @@ namespace energyplus {
         break;
       }
       case openstudio::IddObjectType::OS_DefaultConstructionSet: {
-        // no-op
-        return retVal;
+        auto defaultConstructionSet = modelObject.cast<DefaultConstructionSet>();
+        retVal = translateDefaultConstructionSet(defaultConstructionSet);
+        break;
       }
       case openstudio::IddObjectType::OS_DefaultScheduleSet: {
         // no-op
         return retVal;
       }
       case openstudio::IddObjectType::OS_DefaultSurfaceConstructions: {
-        // no-op
-        return retVal;
+        auto defaultSurfaceConstructions = modelObject.cast<DefaultSurfaceConstructions>();
+        retVal = translateDefaultSurfaceConstructions(defaultSurfaceConstructions);
+        break;
       }
       case openstudio::IddObjectType::OS_DefaultSubSurfaceConstructions: {
-        // no-op
-        return retVal;
+        auto defaultSubSurfaceConstructions = modelObject.cast<DefaultSubSurfaceConstructions>();
+        retVal = translateDefaultSubSurfaceConstructions(defaultSubSurfaceConstructions);
+        break;
       }
       case openstudio::IddObjectType::OS_DesignSpecification_OutdoorAir: {
         LOG_AND_THROW("Shouldn't get there");

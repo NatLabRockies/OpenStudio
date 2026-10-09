@@ -179,6 +179,9 @@ namespace model {
   class DaylightingDeviceTubular;
   class DaylightingDeviceLightWell;
   class DaylightRedirectionDevice;
+  class DefaultConstructionSet;
+  class DefaultSurfaceConstructions;
+  class DefaultSubSurfaceConstructions;
   class DesignDay;
   class DesignSpecificationOutdoorAir;
   class DistrictCooling;
@@ -966,6 +969,10 @@ namespace energyplus {
     boost::optional<IdfObject> translateDaylightingDeviceLightWell(model::DaylightingDeviceLightWell& modelObject);
 
     boost::optional<IdfObject> translateDaylightRedirectionDevice(model::DaylightRedirectionDevice& modelObject);
+
+    boost::optional<IdfObject> translateDefaultConstructionSet(model::DefaultConstructionSet& modelObject);
+    boost::optional<IdfObject> translateDefaultSurfaceConstructions(model::DefaultSurfaceConstructions& modelObject);
+    boost::optional<IdfObject> translateDefaultSubSurfaceConstructions(model::DefaultSubSurfaceConstructions& modelObject);
 
     boost::optional<IdfObject> translateDesignDay(model::DesignDay& modelObject);
 
