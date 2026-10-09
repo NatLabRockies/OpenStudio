@@ -595,6 +595,14 @@ namespace energyplus {
     *  Use this at your own risks */
     void setExcludeSpaceLoadInstances(bool excludeSpaceLoadInstances);
 
+    /** If excludeConstructionAssignmentSets is false, translate DefaultConstructionSet/DefaultSurfaceConstructions/
+    * DefaultSubSurfaceConstructions to the EnergyPlus ConstructionAssignmentSet / SurfaceConstructionAssignments /
+    * SubSurfaceConstructionAssignments objects referenced by Space, instead of resolving and inlining the Construction
+    * Name directly on each Surface/SubSurface/InternalMass. Only takes effect when excludeSpaceTranslation is false
+    * (E+ Space objects are required to reference a ConstructionAssignmentSet).
+    *  Use this at your own risks */
+    void setExcludeConstructionAssignmentSets(bool excludeConstructionAssignmentSets);
+
     //@}
 
    private:
