@@ -49,7 +49,7 @@ jobs:
       image: nrel/openstudio-cmake-tools:noble-main
       options: --privileged -u root -e "LANG=en_US.UTF-8" # These options are passed to the 'docker run' command internally
       volumes: # envs don't work in volume definition for containers
-        - "/srv/data/jenkins/docker-volumes/conan-data/.conan2:/github/home/.conan2" # Conan cache
+        - "/srv/data/jenkins/docker-volumes/conan-data-gha/.conan2:/github/home/.conan2" # Conan cache, separate from the Jenkins builds on this host (the conan cache is not safe for concurrent use)
         - "/srv/data/jenkins/docker-volumes/ubuntu-2404:/github/home/Ubuntu"
 
     defaults:
