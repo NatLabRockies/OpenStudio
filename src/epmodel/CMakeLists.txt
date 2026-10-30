@@ -2050,6 +2050,12 @@ set(${target_name}_src
   Schedule/ScheduleYear.hpp
   Schedule/ScheduleYear_Impl.hpp
   Schedule/ScheduleYear.cpp
+  Schedule/ScheduleRuleset.hpp
+  Schedule/ScheduleRuleset_Impl.hpp
+  Schedule/ScheduleRuleset.cpp
+  Schedule/ScheduleRule.hpp
+  Schedule/ScheduleRule_Impl.hpp
+  Schedule/ScheduleRule.cpp
 
   ScheduleBase/ScheduleBase.hpp
   ScheduleBase/ScheduleBase_Impl.hpp
@@ -2874,6 +2880,10 @@ foreach(epmodel_swig_i IN LISTS ${target_name}_sub_swig_src)
     list(APPEND epmodel_parent_swig_targets OpenStudioEPModelParentObject)
   endif()
 
+  if(epmodel_swig_suffix STREQUAL "Schedule")
+    list(APPEND epmodel_parent_swig_targets OpenStudioEPModelParentObject)
+  endif()
+
   if(epmodel_swig_suffix STREQUAL "PlanarSurface")
     list(APPEND epmodel_parent_swig_targets OpenStudioEPModelParentObject)
   endif()
@@ -3487,6 +3497,8 @@ set(${target_name}_test_src
   test/ScheduleWeek_GTest.cpp
   test/ScheduleWeekCompact_GTest.cpp
   test/ScheduleYear_GTest.cpp
+  test/ScheduleRuleset_GTest.cpp
+  test/ScheduleRule_GTest.cpp
   test/Screen_GTest.cpp
   test/SetpointManager_GTest.cpp
   test/SetpointManagerCondenserEnteringReset_GTest.cpp
