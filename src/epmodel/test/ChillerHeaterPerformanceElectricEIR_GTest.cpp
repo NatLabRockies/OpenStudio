@@ -48,10 +48,18 @@ TEST_F(EPModelFixture, ChillerHeaterPerformanceElectricEIR_ScalarAccessors_Round
   chiller.autosizeDesignCondenserWaterFlowRate();
   EXPECT_TRUE(chiller.isDesignCondenserWaterFlowRateAutosized());
 
-  const auto condenserTypeValues = ChillerHeaterPerformanceElectricEIR::condenserTypeValues();
-  ASSERT_FALSE(condenserTypeValues.empty());
-  EXPECT_TRUE(chiller.setCondenserType(condenserTypeValues.front()));
-  EXPECT_EQ(condenserTypeValues.front(), chiller.condenserType());
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable : 4996)
+#endif
+  EXPECT_EQ((std::vector<std::string>{"AirCooled", "WaterCooled"}), ChillerHeaterPerformanceElectricEIR::condenserTypeValues());
+  EXPECT_EQ("WaterCooled", chiller.condenserType());
+  EXPECT_TRUE(chiller.setCondenserType("AirCooled"));
+  EXPECT_EQ("WaterCooled", chiller.condenserType());
+  EXPECT_FALSE(chiller.setCondenserType("EvaporativelyCooled"));
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif
 
   const auto coolingModeTempCurveValues = ChillerHeaterPerformanceElectricEIR::coolingModeTemperatureCurveCondenserWaterIndependentVariableValues();
   ASSERT_FALSE(coolingModeTempCurveValues.empty());

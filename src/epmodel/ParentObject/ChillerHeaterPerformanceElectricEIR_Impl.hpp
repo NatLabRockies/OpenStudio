@@ -77,9 +77,6 @@ namespace epmodel {
       double compressorMotorEfficiency() const;
       bool setCompressorMotorEfficiency(double compressorMotorEfficiency);
 
-      std::string condenserType() const;
-      bool setCondenserType(const std::string& condenserType);
-
       std::string coolingModeTemperatureCurveCondenserWaterIndependentVariable() const;
       bool setCoolingModeTemperatureCurveCondenserWaterIndependentVariable(
         const std::string& coolingModeTemperatureCurveCondenserWaterIndependentVariable);
@@ -98,7 +95,6 @@ namespace epmodel {
       bool setSizingFactor(double sizingFactor);
 
       std::vector<std::string> chilledWaterFlowModeTypeValues() const;
-      std::vector<std::string> condenserTypeValues() const;
       std::vector<std::string> coolingModeTemperatureCurveCondenserWaterIndependentVariableValues() const;
       std::vector<std::string> heatingModeTemperatureCurveCondenserWaterIndependentVariableValues() const;
     };

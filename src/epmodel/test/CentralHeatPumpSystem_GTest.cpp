@@ -583,7 +583,14 @@ TEST_F(EPModelFixture, CentralHeatPumpSystem_DefaultConstructor) {
   Model model;
   CentralHeatPumpSystem centralHeatPumpSystem(model);
   EXPECT_EQ(CentralHeatPumpSystem::iddObjectType(), centralHeatPumpSystem.iddObject().type());
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable : 4996)
+#endif
   EXPECT_EQ("SmartMixing", centralHeatPumpSystem.controlMethod());
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif
   EXPECT_DOUBLE_EQ(0.0, centralHeatPumpSystem.ancillaryPower());
   EXPECT_EQ(openstudio::CentralHeatPumpSystemFields::CoolingLoopInletNodeName, centralHeatPumpSystem.supplyInletPort());
   EXPECT_EQ(openstudio::CentralHeatPumpSystemFields::CoolingLoopOutletNodeName, centralHeatPumpSystem.supplyOutletPort());
@@ -601,10 +608,17 @@ TEST_F(EPModelFixture, CentralHeatPumpSystem_ScalarAccessors_RoundTrip) {
   Model model;
   CentralHeatPumpSystem centralHeatPumpSystem(model);
 
-  const auto values = CentralHeatPumpSystem::controlMethodValues();
-  ASSERT_FALSE(values.empty());
-  EXPECT_TRUE(centralHeatPumpSystem.setControlMethod(values.front()));
-  EXPECT_EQ(values.front(), centralHeatPumpSystem.controlMethod());
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable : 4996)
+#endif
+  EXPECT_EQ((std::vector<std::string>{"SmartMixing"}), CentralHeatPumpSystem::controlMethodValues());
+  EXPECT_TRUE(centralHeatPumpSystem.setControlMethod("SmartMixing"));
+  EXPECT_FALSE(centralHeatPumpSystem.setControlMethod("Invalid"));
+  EXPECT_EQ("SmartMixing", centralHeatPumpSystem.controlMethod());
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif
 
   EXPECT_TRUE(centralHeatPumpSystem.setAncillaryPower(17.25));
   EXPECT_DOUBLE_EQ(17.25, centralHeatPumpSystem.ancillaryPower());

@@ -9,6 +9,7 @@
 #include "Model.hpp"
 
 #include <utilities/core/Assert.hpp>
+#include <utilities/core/DeprecatedHelpers.hpp>
 #include <utilities/core/StringHelpers.hpp>
 #include <utilities/idd/ChillerHeaterPerformance_Electric_EIR_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
@@ -33,8 +34,8 @@ namespace epmodel {
   }
 
   std::vector<std::string> ChillerHeaterPerformanceElectricEIR::condenserTypeValues() {
-    return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
-                          openstudio::ChillerHeaterPerformance_Electric_EIRFields::CondenserType);
+    DEPRECATED_AT_MSG(3, 12, 0, "The Condenser Type field was removed from ChillerHeaterPerformance:Electric:EIR in EnergyPlus.");
+    return {"AirCooled", "WaterCooled"};
   }
 
   std::vector<std::string> ChillerHeaterPerformanceElectricEIR::coolingModeTemperatureCurveCondenserWaterIndependentVariableValues() {
@@ -225,11 +226,15 @@ namespace epmodel {
   }
 
   std::string ChillerHeaterPerformanceElectricEIR::condenserType() const {
-    return getImpl<detail::ChillerHeaterPerformanceElectricEIR_Impl>()->condenserType();
+    DEPRECATED_AT_MSG(3, 12, 0,
+                      "The Condenser Type field was removed from ChillerHeaterPerformance:Electric:EIR in EnergyPlus; this always returns WaterCooled.");
+    return "WaterCooled";
   }
 
   bool ChillerHeaterPerformanceElectricEIR::setCondenserType(const std::string& condenserType) {
-    return getImpl<detail::ChillerHeaterPerformanceElectricEIR_Impl>()->setCondenserType(condenserType);
+    DEPRECATED_AT_MSG(3, 12, 0,
+                      "The Condenser Type field was removed from ChillerHeaterPerformance:Electric:EIR in EnergyPlus; this accepts only AirCooled or WaterCooled.");
+    return istringEqual(condenserType, "AirCooled") || istringEqual(condenserType, "WaterCooled");
   }
 
   std::string ChillerHeaterPerformanceElectricEIR::coolingModeTemperatureCurveCondenserWaterIndependentVariable() const {
@@ -517,16 +522,6 @@ namespace epmodel {
       return setDouble(openstudio::ChillerHeaterPerformance_Electric_EIRFields::CompressorMotorEfficiency, compressorMotorEfficiency);
     }
 
-    std::string ChillerHeaterPerformanceElectricEIR_Impl::condenserType() const {
-      const auto value = getString(openstudio::ChillerHeaterPerformance_Electric_EIRFields::CondenserType, true);
-      OS_ASSERT(value);
-      return *value;
-    }
-
-    bool ChillerHeaterPerformanceElectricEIR_Impl::setCondenserType(const std::string& condenserType) {
-      return setString(openstudio::ChillerHeaterPerformance_Electric_EIRFields::CondenserType, condenserType);
-    }
-
     std::string ChillerHeaterPerformanceElectricEIR_Impl::coolingModeTemperatureCurveCondenserWaterIndependentVariable() const {
       const auto value =
         getString(openstudio::ChillerHeaterPerformance_Electric_EIRFields::CoolingModeTemperatureCurveCondenserWaterIndependentVariable, true);
@@ -589,10 +584,6 @@ namespace epmodel {
 
     std::vector<std::string> ChillerHeaterPerformanceElectricEIR_Impl::chilledWaterFlowModeTypeValues() const {
       return openstudio::epmodel::ChillerHeaterPerformanceElectricEIR::chilledWaterFlowModeTypeValues();
-    }
-
-    std::vector<std::string> ChillerHeaterPerformanceElectricEIR_Impl::condenserTypeValues() const {
-      return openstudio::epmodel::ChillerHeaterPerformanceElectricEIR::condenserTypeValues();
     }
 
     std::vector<std::string> ChillerHeaterPerformanceElectricEIR_Impl::coolingModeTemperatureCurveCondenserWaterIndependentVariableValues() const {
