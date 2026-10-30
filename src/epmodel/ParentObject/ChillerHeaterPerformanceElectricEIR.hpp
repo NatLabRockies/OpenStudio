@@ -9,6 +9,7 @@
 #include "EPModelAPI.hpp"
 #include "ParentObject/ParentObject.hpp"
 
+#include <utilities/core/Deprecated.hpp>
 #include <utilities/idd/IddEnums.hxx>
 
 #include <memory>
@@ -52,7 +53,7 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     static std::vector<std::string> chilledWaterFlowModeTypeValues();
-    static std::vector<std::string> condenserTypeValues();
+    OS_DEPRECATED(3, 12, 0) static std::vector<std::string> condenserTypeValues();
     static std::vector<std::string> coolingModeTemperatureCurveCondenserWaterIndependentVariableValues();
     static std::vector<std::string> heatingModeTemperatureCurveCondenserWaterIndependentVariableValues();
 
@@ -112,8 +113,8 @@ namespace epmodel {
     double compressorMotorEfficiency() const;
     bool setCompressorMotorEfficiency(double compressorMotorEfficiency);
 
-    std::string condenserType() const;
-    bool setCondenserType(const std::string& condenserType);
+    OS_DEPRECATED(3, 12, 0) std::string condenserType() const;
+    OS_DEPRECATED(3, 12, 0) bool setCondenserType(const std::string& condenserType);
 
     std::string coolingModeTemperatureCurveCondenserWaterIndependentVariable() const;
     bool setCoolingModeTemperatureCurveCondenserWaterIndependentVariable(
@@ -140,6 +141,9 @@ namespace epmodel {
     friend class openstudio::detail::IdfObject_Impl;
 
     explicit ChillerHeaterPerformanceElectricEIR(std::shared_ptr<detail::ChillerHeaterPerformanceElectricEIR_Impl> impl);
+
+   private:
+    REGISTER_LOGGER("openstudio.epmodel.ChillerHeaterPerformanceElectricEIR");
   };
 
 }  // namespace epmodel

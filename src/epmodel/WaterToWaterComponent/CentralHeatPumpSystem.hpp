@@ -9,6 +9,8 @@
 #include "EPModelAPI.hpp"
 #include "WaterToWaterComponent/WaterToWaterComponent.hpp"
 
+#include <utilities/core/Deprecated.hpp>
+
 #include <memory>
 #include <vector>
 
@@ -52,13 +54,9 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    static std::vector<std::string> controlMethodValues();
-
-    /** @name ControlMethod */
-    //@{
-    std::string controlMethod() const;
-    bool setControlMethod(const std::string& controlMethod);
-    //@}
+    OS_DEPRECATED(3, 12, 0) static std::vector<std::string> controlMethodValues();
+    OS_DEPRECATED(3, 12, 0) std::string controlMethod() const;
+    OS_DEPRECATED(3, 12, 0) bool setControlMethod(const std::string& controlMethod);
 
     /** @name AncillaryPower */
     //@{
@@ -82,6 +80,9 @@ namespace epmodel {
     friend class openstudio::detail::IdfObject_Impl;
 
     explicit CentralHeatPumpSystem(std::shared_ptr<detail::CentralHeatPumpSystem_Impl> impl);
+
+   private:
+    REGISTER_LOGGER("openstudio.epmodel.CentralHeatPumpSystem");
   };
 
 }  // namespace epmodel
