@@ -55,13 +55,13 @@ namespace model {
     }
 
     // Check the IDD types to ensure they are ok
-    IddObjectType fromIddType = fromSurface.iddObjectType();
+    const IddObjectType fromIddType = fromSurface.iddObjectType();
     if ((fromIddType != IddObjectType::OS_Surface) && (fromIddType != IddObjectType::OS_SubSurface)
         && (fromIddType != IddObjectType::OS_InternalMass)) {
       LOG_AND_THROW("fromSurface can be only of type Surface, SubSurface or InternalMass, not " << fromIddType.value());
     }
 
-    IddObjectType toIddType = toSurface.iddObjectType();
+    const IddObjectType toIddType = toSurface.iddObjectType();
     if ((toIddType != IddObjectType::OS_Surface) && (toIddType != IddObjectType::OS_SubSurface) && (toIddType != IddObjectType::OS_InternalMass)) {
       LOG_AND_THROW("toSurface can be only of type Surface, SubSurface or InternalMass, not " << toIddType.value());
     }
@@ -119,7 +119,7 @@ namespace model {
 
     ModelObject ZonePropertyUserViewFactorsBySurfaceName_Impl::clone(Model /*model*/) const {
       LOG_AND_THROW("Cloning isn't allowed for ZonePropertyUserViewFactorsBySurfaceName in order to guarantee that every "
-                    "ZonePropertyUserViewFactorsBySurfaceName has a thermal zone, and"
+                    "ZonePropertyUserViewFactorsBySurfaceName has a thermal zone, and "
                     "that a thermal zone must have only one ZonePropertyUserViewFactorsBySurfaceName.");
     }
 

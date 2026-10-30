@@ -1,0 +1,403 @@
+
+OS:Version,
+  {daf7c240-465e-4843-8fa4-6a4b6f4143fc}, !- Handle
+  3.11.0;                                 !- Version Identifier
+
+OS:CentralHeatPumpSystem,
+  {2c213cc2-53e3-401e-a69a-a50d0452c9af}, !- Handle
+  Central Heat Pump System 1,             !- Name
+  SmartMixing,                            !- Control Method
+  {ea0ad0e9-8e85-42a5-a7d1-94aa424bca58}, !- Cooling Loop Inlet Node Name
+  {8f2af266-2c8d-484b-a8d6-23e163803b56}, !- Cooling Loop Outlet Node Name
+  ,                                       !- Source Loop Inlet Node Name
+  ,                                       !- Source Loop Outlet Node Name
+  ,                                       !- Heating Loop Inlet Node Name
+  ,                                       !- Heating Loop Outlet Node Name
+  500,                                    !- Ancillary Power {W}
+  ,                                       !- Ancillary Operation Schedule Name
+  {bcf0f00a-5233-49f4-8a31-fcc044e2b027}; !- Chiller Heater Module List Name
+
+OS:ModelObjectList,
+  {bcf0f00a-5233-49f4-8a31-fcc044e2b027}, !- Handle
+  Central Heat Pump System 1 Chiller Heater Module List, !- Name
+  {d6f7cdee-182d-4dbc-b38a-67149eb94341}; !- Model Object 1
+
+OS:CentralHeatPumpSystem:Module,
+  {d6f7cdee-182d-4dbc-b38a-67149eb94341}, !- Handle
+  Central Heat Pump System Module 1,      !- Name
+  {ff1f12b6-90d2-4d17-8576-2b0a0d06de74}, !- Chiller Heater Modules Performance Component Name
+  {a78d2f3c-e728-4115-ba4e-0605d20e6689}, !- Chiller Heater Modules Control Schedule Name
+  1;                                      !- Number of Chiller Heater Modules
+
+OS:Schedule:Constant,
+  {a78d2f3c-e728-4115-ba4e-0605d20e6689}, !- Handle
+  Always On Discrete,                     !- Name
+  {d79aafb8-2258-4ced-9dda-edb6a564340a}, !- Schedule Type Limits Name
+  1;                                      !- Value
+
+OS:ScheduleTypeLimits,
+  {d79aafb8-2258-4ced-9dda-edb6a564340a}, !- Handle
+  OnOff,                                  !- Name
+  0,                                      !- Lower Limit Value
+  1,                                      !- Upper Limit Value
+  Discrete,                               !- Numeric Type
+  Availability;                           !- Unit Type
+
+OS:ChillerHeaterPerformance:Electric:EIR,
+  {ff1f12b6-90d2-4d17-8576-2b0a0d06de74}, !- Handle
+  Chiller Heater Performance Electric EIR 1, !- Name
+  autosize,                               !- Reference Cooling Mode Evaporator Capacity {W}
+  1.5,                                    !- Reference Cooling Mode COP {W/W}
+  6.67,                                   !- Reference Cooling Mode Leaving Chilled Water Temperature {C}
+  29.4,                                   !- Reference Cooling Mode Entering Condenser Fluid Temperature {C}
+  35,                                     !- Reference Cooling Mode Leaving Condenser Water Temperature {C}
+  0.74,                                   !- Reference Heating Mode Cooling Capacity Ratio
+  1.38,                                   !- Reference Heating Mode Cooling Power Input Ratio
+  6.67,                                   !- Reference Heating Mode Leaving Chilled Water Temperature {C}
+  60,                                     !- Reference Heating Mode Leaving Condenser Water Temperature {C}
+  29.44,                                  !- Reference Heating Mode Entering Condenser Fluid Temperature {C}
+  5,                                      !- Heating Mode Entering Chilled Water Temperature Low Limit {C}
+  VariableFlow,                           !- Chilled Water Flow Mode Type
+  autosize,                               !- Design Chilled Water Flow Rate {m3/s}
+  autosize,                               !- Design Condenser Water Flow Rate {m3/s}
+  0.0003525,                              !- Design Hot Water Flow Rate {m3/s}
+  1,                                      !- Compressor Motor Efficiency
+  WaterCooled,                            !- Condenser Type
+  EnteringCondenser,                      !- Cooling Mode Temperature Curve Condenser Water Independent Variable
+  {f2a00cc9-eaef-404a-a3e7-8f5ba2a99f5f}, !- Cooling Mode Cooling Capacity Function of Temperature Curve Name
+  {f578443a-5783-46ee-8842-180db79cdf82}, !- Cooling Mode Electric Input to Cooling Output Ratio Function of Temperature Curve Name
+  {0a432ba0-f0f5-47ca-b047-49103b6adb25}, !- Cooling Mode Electric Input to Cooling Output Ratio Function of Part Load Ratio Curve Name
+  1,                                      !- Cooling Mode Cooling Capacity Optimum Part Load Ratio
+  LeavingCondenser,                       !- Heating Mode Temperature Curve Condenser Water Independent Variable
+  {8cd3c2cd-728a-418d-ae81-5aef587ea0be}, !- Heating Mode Cooling Capacity Function of Temperature Curve Name
+  {57d627e3-7bca-45ee-8e29-f73e837a3a4f}, !- Heating Mode Electric Input to Cooling Output Ratio Function of Temperature Curve Name
+  {7c07f5d0-e5e0-438a-bff4-e4de9f180e2a}, !- Heating Mode Electric Input to Cooling Output Ratio Function of Part Load Ratio Curve Name
+  1,                                      !- Heating Mode Cooling Capacity Optimum Part Load Ratio
+  1;                                      !- Sizing Factor
+
+OS:Curve:Biquadratic,
+  {f2a00cc9-eaef-404a-a3e7-8f5ba2a99f5f}, !- Handle
+  Curve Biquadratic 1,                    !- Name
+  0.950829,                               !- Coefficient1 Constant
+  0.03419327,                             !- Coefficient2 x
+  0.000266642,                            !- Coefficient3 x**2
+  -0.001733397,                           !- Coefficient4 y
+  -0.0001762417,                          !- Coefficient5 y**2
+  -3.69198e-05,                           !- Coefficient6 x*y
+  4.44,                                   !- Minimum Value of x
+  12.78,                                  !- Maximum Value of x
+  12.78,                                  !- Minimum Value of y
+  29.44,                                  !- Maximum Value of y
+  ,                                       !- Minimum Curve Output
+  ,                                       !- Maximum Curve Output
+  Temperature,                            !- Input Unit Type for X
+  Temperature,                            !- Input Unit Type for Y
+  Dimensionless;                          !- Output Unit Type
+
+OS:Curve:Biquadratic,
+  {f578443a-5783-46ee-8842-180db79cdf82}, !- Handle
+  Curve Biquadratic 2,                    !- Name
+  0.7362431,                              !- Coefficient1 Constant
+  0.02136491,                             !- Coefficient2 x
+  0.0003638909,                           !- Coefficient3 x**2
+  -0.004284947,                           !- Coefficient4 y
+  0.0003389817,                           !- Coefficient5 y**2
+  -0.0003632396,                          !- Coefficient6 x*y
+  4.44,                                   !- Minimum Value of x
+  12.78,                                  !- Maximum Value of x
+  12.78,                                  !- Minimum Value of y
+  29.44,                                  !- Maximum Value of y
+  ,                                       !- Minimum Curve Output
+  ,                                       !- Maximum Curve Output
+  Temperature,                            !- Input Unit Type for X
+  Temperature,                            !- Input Unit Type for Y
+  Dimensionless;                          !- Output Unit Type
+
+OS:Curve:Biquadratic,
+  {8cd3c2cd-728a-418d-ae81-5aef587ea0be}, !- Handle
+  Curve Biquadratic 3,                    !- Name
+  0.9415266,                              !- Coefficient1 Constant
+  0.05527431,                             !- Coefficient2 x
+  0.0003573558,                           !- Coefficient3 x**2
+  0.001258391,                            !- Coefficient4 y
+  -6.420546e-05,                          !- Coefficient5 y**2
+  -0.0005350989,                          !- Coefficient6 x*y
+  4.44,                                   !- Minimum Value of x
+  15.56,                                  !- Maximum Value of x
+  25,                                     !- Minimum Value of y
+  57.22,                                  !- Maximum Value of y
+  ,                                       !- Minimum Curve Output
+  ,                                       !- Maximum Curve Output
+  Temperature,                            !- Input Unit Type for X
+  Temperature,                            !- Input Unit Type for Y
+  Dimensionless;                          !- Output Unit Type
+
+OS:Curve:Biquadratic,
+  {57d627e3-7bca-45ee-8e29-f73e837a3a4f}, !- Handle
+  Curve Biquadratic 4,                    !- Name
+  0.2286246,                              !- Coefficient1 Constant
+  0.02498714,                             !- Coefficient2 x
+  -1.267106e-05,                          !- Coefficient3 x**2
+  0.009327184,                            !- Coefficient4 y
+  5.892037e-05,                           !- Coefficient5 y**2
+  -0.0003268512,                          !- Coefficient6 x*y
+  4.44,                                   !- Minimum Value of x
+  15.56,                                  !- Maximum Value of x
+  25,                                     !- Minimum Value of y
+  57.22,                                  !- Maximum Value of y
+  ,                                       !- Minimum Curve Output
+  ,                                       !- Maximum Curve Output
+  Temperature,                            !- Input Unit Type for X
+  Temperature,                            !- Input Unit Type for Y
+  Dimensionless;                          !- Output Unit Type
+
+OS:Curve:Bicubic,
+  {0a432ba0-f0f5-47ca-b047-49103b6adb25}, !- Handle
+  Curve Bicubic 1,                        !- Name
+  0,                                      !- Coefficient1 Constant
+  1.22895,                                !- Coefficient2 x
+  -0.751383,                              !- Coefficient3 x**2
+  0,                                      !- Coefficient4 y
+  0,                                      !- Coefficient5 y**2
+  0,                                      !- Coefficient6 x*y
+  0.517396,                               !- Coefficient7 x**3
+  0,                                      !- Coefficient8 y**3
+  0,                                      !- Coefficient9 x**2*y
+  0,                                      !- Coefficient10 x*y**2
+  0.2,                                    !- Minimum Value of x
+  1,                                      !- Maximum Value of x
+  0,                                      !- Minimum Value of y
+  1;                                      !- Maximum Value of y
+
+OS:Curve:Bicubic,
+  {7c07f5d0-e5e0-438a-bff4-e4de9f180e2a}, !- Handle
+  Curve Bicubic 2,                        !- Name
+  0,                                      !- Coefficient1 Constant
+  1.12853,                                !- Coefficient2 x
+  -0.0264962,                             !- Coefficient3 x**2
+  0,                                      !- Coefficient4 y
+  0,                                      !- Coefficient5 y**2
+  0,                                      !- Coefficient6 x*y
+  -0.103811,                              !- Coefficient7 x**3
+  0,                                      !- Coefficient8 y**3
+  0,                                      !- Coefficient9 x**2*y
+  0,                                      !- Coefficient10 x*y**2
+  0.3,                                    !- Minimum Value of x
+  1,                                      !- Maximum Value of x
+  0,                                      !- Minimum Value of y
+  1;                                      !- Maximum Value of y
+
+OS:PlantLoop,
+  {cca4447e-2977-43cb-bd9e-dc387de04b36}, !- Handle
+  Plant Loop 1,                           !- Name
+  ,                                       !- Fluid Type
+  0,                                      !- Glycol Concentration
+  ,                                       !- User Defined Fluid Type
+  ,                                       !- Plant Equipment Operation Heating Load
+  ,                                       !- Plant Equipment Operation Cooling Load
+  ,                                       !- Primary Plant Equipment Operation Scheme
+  {005967b8-02fa-46c9-925e-e3e63ac5b990}, !- Loop Temperature Setpoint Node Name
+  ,                                       !- Maximum Loop Temperature {C}
+  ,                                       !- Minimum Loop Temperature {C}
+  ,                                       !- Maximum Loop Flow Rate {m3/s}
+  ,                                       !- Minimum Loop Flow Rate {m3/s}
+  Autocalculate,                          !- Plant Loop Volume {m3}
+  {8a39477d-7415-42a3-8e85-c8717239f594}, !- Plant Side Inlet Node Name
+  {7ea08389-3581-41b2-a1f5-0897725dbf43}, !- Plant Side Outlet Node Name
+  ,                                       !- Plant Side Branch List Name
+  {19ad8d99-d3f0-4aeb-b98e-bdb2f394713d}, !- Demand Side Inlet Node Name
+  {9223c363-07d9-457d-9cfc-a6c5a18ff92b}, !- Demand Side Outlet Node Name
+  ,                                       !- Demand Side Branch List Name
+  ,                                       !- Demand Side Connector List Name
+  Optimal,                                !- Load Distribution Scheme
+  {d308c759-e07e-4348-83c3-419e7be4f0ab}, !- Availability Manager List Name
+  ,                                       !- Plant Loop Demand Calculation Scheme
+  ,                                       !- Common Pipe Simulation
+  ,                                       !- Pressure Simulation Type
+  ,                                       !- Plant Equipment Operation Heating Load Schedule
+  ,                                       !- Plant Equipment Operation Cooling Load Schedule
+  ,                                       !- Primary Plant Equipment Operation Scheme Schedule
+  ,                                       !- Component Setpoint Operation Scheme Schedule
+  {c4df516b-1140-42f9-a4b1-32ef8cc35cb2}, !- Demand Mixer Name
+  {cab996f0-a2a5-4b45-b6f3-f0c4e2bd39f4}, !- Demand Splitter Name
+  {e3b8810b-b9f5-4479-b66a-6666d5733ee6}, !- Supply Mixer Name
+  {c7a6abf1-f5fb-4d02-9c0a-c9dd396ed104}; !- Supply Splitter Name
+
+OS:Node,
+  {bbb2d89a-52a0-4f2c-a617-333123685da1}, !- Handle
+  Node 1,                                 !- Name
+  {8a39477d-7415-42a3-8e85-c8717239f594}, !- Inlet Port
+  {81c2091f-de91-4277-aa04-48dd228de3a7}; !- Outlet Port
+
+OS:Node,
+  {005967b8-02fa-46c9-925e-e3e63ac5b990}, !- Handle
+  Node 2,                                 !- Name
+  {b8132adb-5d21-4748-805e-bdba636c7382}, !- Inlet Port
+  {7ea08389-3581-41b2-a1f5-0897725dbf43}; !- Outlet Port
+
+OS:Node,
+  {989403a1-0eeb-4cad-9fa0-cf834fa23d58}, !- Handle
+  Central Heat Pump System Cooling Inlet Node, !- Name
+  {970bd511-1338-4e28-b2a7-b30182abb654}, !- Inlet Port
+  {ea0ad0e9-8e85-42a5-a7d1-94aa424bca58}; !- Outlet Port
+
+OS:Connector:Mixer,
+  {e3b8810b-b9f5-4479-b66a-6666d5733ee6}, !- Handle
+  Connector Mixer 1,                      !- Name
+  {b8132adb-5d21-4748-805e-bdba636c7382}, !- Outlet Branch Name
+  {a7c1fadf-c1b5-4dc7-846b-b90dd76a6af1}; !- Inlet Branch Name 1
+
+OS:Connector:Splitter,
+  {c7a6abf1-f5fb-4d02-9c0a-c9dd396ed104}, !- Handle
+  Connector Splitter 1,                   !- Name
+  {81c2091f-de91-4277-aa04-48dd228de3a7}, !- Inlet Branch Name
+  {970bd511-1338-4e28-b2a7-b30182abb654}; !- Outlet Branch Name 1
+
+OS:Connection,
+  {8a39477d-7415-42a3-8e85-c8717239f594}, !- Handle
+  {cca4447e-2977-43cb-bd9e-dc387de04b36}, !- Source Object
+  14,                                     !- Outlet Port
+  {bbb2d89a-52a0-4f2c-a617-333123685da1}, !- Target Object
+  2;                                      !- Inlet Port
+
+OS:Connection,
+  {81c2091f-de91-4277-aa04-48dd228de3a7}, !- Handle
+  {bbb2d89a-52a0-4f2c-a617-333123685da1}, !- Source Object
+  3,                                      !- Outlet Port
+  {c7a6abf1-f5fb-4d02-9c0a-c9dd396ed104}, !- Target Object
+  2;                                      !- Inlet Port
+
+OS:Connection,
+  {970bd511-1338-4e28-b2a7-b30182abb654}, !- Handle
+  {c7a6abf1-f5fb-4d02-9c0a-c9dd396ed104}, !- Source Object
+  3,                                      !- Outlet Port
+  {989403a1-0eeb-4cad-9fa0-cf834fa23d58}, !- Target Object
+  2;                                      !- Inlet Port
+
+OS:Connection,
+  {b8132adb-5d21-4748-805e-bdba636c7382}, !- Handle
+  {e3b8810b-b9f5-4479-b66a-6666d5733ee6}, !- Source Object
+  2,                                      !- Outlet Port
+  {005967b8-02fa-46c9-925e-e3e63ac5b990}, !- Target Object
+  2;                                      !- Inlet Port
+
+OS:Connection,
+  {7ea08389-3581-41b2-a1f5-0897725dbf43}, !- Handle
+  {005967b8-02fa-46c9-925e-e3e63ac5b990}, !- Source Object
+  3,                                      !- Outlet Port
+  {cca4447e-2977-43cb-bd9e-dc387de04b36}, !- Target Object
+  15;                                     !- Inlet Port
+
+OS:Node,
+  {d95090fb-f104-4235-85de-90e399ed7ea6}, !- Handle
+  Node 4,                                 !- Name
+  {19ad8d99-d3f0-4aeb-b98e-bdb2f394713d}, !- Inlet Port
+  {2b440f30-e59f-4614-a1e6-6400598c9442}; !- Outlet Port
+
+OS:Node,
+  {76d57bbf-22b0-4e85-9fa1-d6b343f316cf}, !- Handle
+  Node 5,                                 !- Name
+  {e272355d-790c-4717-8769-7d5dacf59a4d}, !- Inlet Port
+  {9223c363-07d9-457d-9cfc-a6c5a18ff92b}; !- Outlet Port
+
+OS:Node,
+  {12387549-f51f-4852-b754-8496b45279f7}, !- Handle
+  Node 6,                                 !- Name
+  {edc468d9-8c96-4436-9b26-ab4f326cf0d8}, !- Inlet Port
+  {c64cd646-73c2-408f-b60c-2bab787dc0b6}; !- Outlet Port
+
+OS:Connector:Mixer,
+  {c4df516b-1140-42f9-a4b1-32ef8cc35cb2}, !- Handle
+  Connector Mixer 2,                      !- Name
+  {e272355d-790c-4717-8769-7d5dacf59a4d}, !- Outlet Branch Name
+  {c64cd646-73c2-408f-b60c-2bab787dc0b6}; !- Inlet Branch Name 1
+
+OS:Connector:Splitter,
+  {cab996f0-a2a5-4b45-b6f3-f0c4e2bd39f4}, !- Handle
+  Connector Splitter 2,                   !- Name
+  {2b440f30-e59f-4614-a1e6-6400598c9442}, !- Inlet Branch Name
+  {edc468d9-8c96-4436-9b26-ab4f326cf0d8}; !- Outlet Branch Name 1
+
+OS:Connection,
+  {19ad8d99-d3f0-4aeb-b98e-bdb2f394713d}, !- Handle
+  {cca4447e-2977-43cb-bd9e-dc387de04b36}, !- Source Object
+  17,                                     !- Outlet Port
+  {d95090fb-f104-4235-85de-90e399ed7ea6}, !- Target Object
+  2;                                      !- Inlet Port
+
+OS:Connection,
+  {2b440f30-e59f-4614-a1e6-6400598c9442}, !- Handle
+  {d95090fb-f104-4235-85de-90e399ed7ea6}, !- Source Object
+  3,                                      !- Outlet Port
+  {cab996f0-a2a5-4b45-b6f3-f0c4e2bd39f4}, !- Target Object
+  2;                                      !- Inlet Port
+
+OS:Connection,
+  {edc468d9-8c96-4436-9b26-ab4f326cf0d8}, !- Handle
+  {cab996f0-a2a5-4b45-b6f3-f0c4e2bd39f4}, !- Source Object
+  3,                                      !- Outlet Port
+  {12387549-f51f-4852-b754-8496b45279f7}, !- Target Object
+  2;                                      !- Inlet Port
+
+OS:Connection,
+  {c64cd646-73c2-408f-b60c-2bab787dc0b6}, !- Handle
+  {12387549-f51f-4852-b754-8496b45279f7}, !- Source Object
+  3,                                      !- Outlet Port
+  {c4df516b-1140-42f9-a4b1-32ef8cc35cb2}, !- Target Object
+  3;                                      !- Inlet Port
+
+OS:Connection,
+  {e272355d-790c-4717-8769-7d5dacf59a4d}, !- Handle
+  {c4df516b-1140-42f9-a4b1-32ef8cc35cb2}, !- Source Object
+  2,                                      !- Outlet Port
+  {76d57bbf-22b0-4e85-9fa1-d6b343f316cf}, !- Target Object
+  2;                                      !- Inlet Port
+
+OS:Connection,
+  {9223c363-07d9-457d-9cfc-a6c5a18ff92b}, !- Handle
+  {76d57bbf-22b0-4e85-9fa1-d6b343f316cf}, !- Source Object
+  3,                                      !- Outlet Port
+  {cca4447e-2977-43cb-bd9e-dc387de04b36}, !- Target Object
+  18;                                     !- Inlet Port
+
+OS:Sizing:Plant,
+  {6ef66f19-4f9f-4a67-be18-d097ad0c1578}, !- Handle
+  {cca4447e-2977-43cb-bd9e-dc387de04b36}, !- Plant or Condenser Loop Name
+  Heating,                                !- Loop Type
+  82,                                     !- Design Loop Exit Temperature {C}
+  11,                                     !- Loop Design Temperature Difference {deltaC}
+  NonCoincident,                          !- Sizing Option
+  1,                                      !- Zone Timesteps in Averaging Window
+  None;                                   !- Coincident Sizing Factor Mode
+
+OS:AvailabilityManagerAssignmentList,
+  {d308c759-e07e-4348-83c3-419e7be4f0ab}, !- Handle
+  Plant Loop 1 AvailabilityManagerAssignmentList; !- Name
+
+OS:Node,
+  {0f08c23f-fc92-4ea7-940e-da2a4e1c6e1a}, !- Handle
+  Central Heat Pump System Cooling Outlet Node, !- Name
+  {8f2af266-2c8d-484b-a8d6-23e163803b56}, !- Inlet Port
+  {a7c1fadf-c1b5-4dc7-846b-b90dd76a6af1}; !- Outlet Port
+
+OS:Connection,
+  {ea0ad0e9-8e85-42a5-a7d1-94aa424bca58}, !- Handle
+  {989403a1-0eeb-4cad-9fa0-cf834fa23d58}, !- Source Object
+  3,                                      !- Outlet Port
+  {2c213cc2-53e3-401e-a69a-a50d0452c9af}, !- Target Object
+  3;                                      !- Inlet Port
+
+OS:Connection,
+  {8f2af266-2c8d-484b-a8d6-23e163803b56}, !- Handle
+  {2c213cc2-53e3-401e-a69a-a50d0452c9af}, !- Source Object
+  4,                                      !- Outlet Port
+  {0f08c23f-fc92-4ea7-940e-da2a4e1c6e1a}, !- Target Object
+  2;                                      !- Inlet Port
+
+OS:Connection,
+  {a7c1fadf-c1b5-4dc7-846b-b90dd76a6af1}, !- Handle
+  {0f08c23f-fc92-4ea7-940e-da2a4e1c6e1a}, !- Source Object
+  3,                                      !- Outlet Port
+  {e3b8810b-b9f5-4479-b66a-6666d5733ee6}, !- Target Object
+  3;                                      !- Inlet Port
+

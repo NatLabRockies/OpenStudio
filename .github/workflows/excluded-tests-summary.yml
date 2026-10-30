@@ -12,6 +12,7 @@ env:
   OPENSTUDIO_SOURCE: OpenStudio
   PYTHON_REQUIRED_VERSION: "3.12.2"
   SDKROOT: /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk
+  CMAKE_POLICY_VERSION_MINIMUM: "3.5"
   CCACHE_SLOPPINESS: pch_defines,time_macros,include_file_mtime,include_file_ctime
   CCACHE_BASEDIR: ${{ github.workspace }}
   CCACHE_COMPRESS: "true"
@@ -36,7 +37,7 @@ jobs:
       has_windows: ${{ steps.matrix.outputs.has_windows }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Install PyYAML
         run: pip install pyyaml
@@ -128,12 +129,12 @@ jobs:
           df -h || true
 
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 1
 
       - name: Restore ccache cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.ccache
           key: ccache-${{ matrix.os }}-${{ matrix.platform }}-${{ hashFiles('conan.lock') }}
@@ -141,7 +142,7 @@ jobs:
             ccache-${{ matrix.os }}-${{ matrix.platform }}-
 
       - name: Restore Conan cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.conan2
           key: conan-${{ matrix.os }}-${{ matrix.platform }}-${{ hashFiles('conan.lock') }}
@@ -170,7 +171,7 @@ jobs:
           if [ -d /usr/local/cmake/bin ]; then echo "/usr/local/cmake/bin" >> $GITHUB_PATH; fi
 
       - name: Cache External Dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: |
             ${{ env.OPENSTUDIO_BUILD }}/EnergyPlus*.tar.gz
@@ -183,7 +184,7 @@ jobs:
             external-deps-${{ matrix.os }}-
 
       - name: Restore Generated Embedded Files
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: |
             ${{ env.OPENSTUDIO_BUILD }}/src/*/embedded_files
@@ -277,7 +278,7 @@ jobs:
 
       - name: Upload Test Summary
         if: always() && steps.ctest.outputs.has_tests == 'true'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ExcludedTests-${{ matrix.platform }}-${{ github.sha }}
           path: |
@@ -298,7 +299,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           path: ${{ env.OPENSTUDIO_SOURCE }}
           fetch-depth: 1
@@ -314,7 +315,7 @@ jobs:
           max-size: ${{ env.CCACHE_MAXSIZE }}
 
       - name: Restore Conan cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.conan2
           key: conan-${{ matrix.os }}-${{ matrix.platform }}-${{ hashFiles('conan.lock') }}
@@ -355,7 +356,7 @@ jobs:
         run: cmake -E make_directory ${{ env.OPENSTUDIO_BUILD }}
 
       - name: Cache External Dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: |
             ${{ env.OPENSTUDIO_BUILD }}/EnergyPlus*.tar.gz
@@ -368,7 +369,7 @@ jobs:
             external-deps-${{ matrix.os }}-
 
       - name: Restore Generated Embedded Files
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: |
             ${{ env.OPENSTUDIO_BUILD }}/src/*/embedded_files
@@ -389,7 +390,7 @@ jobs:
       - name: Conan install
         working-directory: ${{ env.OPENSTUDIO_SOURCE }}
         run: |
-          CMAKE_POLICY_VERSION_MINIMUM=3.5 conan install . \
+          conan install . \
             --output-folder=../${{ env.OPENSTUDIO_BUILD }} \
             --build=missing \
             -c tools.cmake.cmaketoolchain:generator=Ninja \
@@ -463,7 +464,7 @@ jobs:
 
       - name: Upload Test Summary
         if: always() && steps.ctest.outputs.has_tests == 'true'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ExcludedTests-${{ matrix.platform }}-${{ github.sha }}
           path: |
@@ -489,7 +490,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           path: ${{ env.OPENSTUDIO_SOURCE }}
           fetch-depth: 1
@@ -499,7 +500,7 @@ jobs:
         run: git config --global --add safe.directory '*'
 
       - name: Restore sccache cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ${{ github.workspace }}\.sccache
           key: sccache-${{ matrix.os }}-${{ matrix.platform }}-${{ hashFiles('conan.lock') }}
@@ -533,7 +534,7 @@ jobs:
         uses: Mozilla-Actions/sccache-action@v0.0.5
 
       - name: Restore Conan cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.conan2
           key: conan-${{ matrix.os }}-windows-${{ hashFiles('conan.lock') }}
@@ -541,7 +542,7 @@ jobs:
             conan-${{ matrix.os }}-windows-
 
       - name: Set up Python 3.12.2
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version: '3.12.2'
           cache: 'pip'
@@ -578,7 +579,6 @@ jobs:
       - name: Conan install
         working-directory: ${{ env.OPENSTUDIO_SOURCE }}
         run: |
-          $env:CMAKE_POLICY_VERSION_MINIMUM="3.5"
           conan install . `
             --output-folder="../${{ env.OPENSTUDIO_BUILD }}" `
             --build=missing `
@@ -646,7 +646,7 @@ jobs:
 
       - name: Upload Test Summary
         if: always() && steps.ctest.outputs.has_tests == 'true'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ExcludedTests-${{ matrix.platform }}-${{ github.sha }}
           path: |

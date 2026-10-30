@@ -77,8 +77,6 @@ namespace model {
       /** @name Getters */
       //@{
 
-      std::string controlMethod() const;
-
       double ancillaryPower() const;
 
       boost::optional<Schedule> ancillaryOperationSchedule() const;
@@ -88,8 +86,6 @@ namespace model {
       //@}
       /** @name Setters */
       //@{
-
-      bool setControlMethod(const std::string& controlMethod);
 
       bool setAncillaryPower(double ancillaryPower);
 

@@ -56,6 +56,22 @@ namespace energyplus {
       MOMat.setVisibleAbsorptance(*d);
     }
 
+    // Inside-face absorptance fields have no IDD default and inherit the exterior value when blank.
+    d = workspaceObject.getDouble(Material_NoMassFields::ThermalAbsorptanceInsideFace);
+    if (d) {
+      MOMat.setThermalAbsorptanceInsideFace(*d);
+    }
+
+    d = workspaceObject.getDouble(Material_NoMassFields::SolarAbsorptanceInsideFace);
+    if (d) {
+      MOMat.setSolarAbsorptanceInsideFace(*d);
+    }
+
+    d = workspaceObject.getDouble(Material_NoMassFields::VisibleAbsorptanceInsideFace);
+    if (d) {
+      MOMat.setVisibleAbsorptanceInsideFace(*d);
+    }
+
     result = MOMat;
     return result;
   }

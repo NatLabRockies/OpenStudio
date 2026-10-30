@@ -196,15 +196,15 @@ endif()
 
 # EnergyPlus Idd version
 set(ENERGYPLUS_VERSION_MAJOR 26)
-set(ENERGYPLUS_VERSION_MINOR 1)
+set(ENERGYPLUS_VERSION_MINOR 2)
 set(ENERGYPLUS_VERSION_PATCH 0)
 set(ENERGYPLUS_VERSION "${ENERGYPLUS_VERSION_MAJOR}.${ENERGYPLUS_VERSION_MINOR}.${ENERGYPLUS_VERSION_PATCH}")
 # Build SHA is not required to have a value, but if it does OpenStudio will require this build.
-set(ENERGYPLUS_BUILD_SHA "6f2e40d102")
+set(ENERGYPLUS_BUILD_SHA "4bd7a1f26f")
 
 # ENERGYPLUS_RELEASE_NAME is used to locate the E+ download
 # from the github releases
-set(ENERGYPLUS_RELEASE_NAME "v26.1.0")
+set(ENERGYPLUS_RELEASE_NAME "v26.2.0")
 
 set(ENERGYPLUS_REPO "NatLabRockies")
 
@@ -435,12 +435,18 @@ if (USE_LTO)
 endif()
 
 if(WIN32)
+
+  if( CMAKE_SYSTEM_NAME MATCHES "Windows" AND ${CMAKE_SYSTEM_VERSION} VERSION_LESS "10.0.0")
+    message(SEND_ERROR "Windows ${CMAKE_SYSTEM_VERSION} or lower is not supported. Please use Windows 10 or later.")
+  endif()
+
   add_definitions(-DNOMINMAX)
-  # Set the BOOST_USE_WINAPI_VERSION to >= Windows8 to avoid the wrong namespace being used for boost log and leading unresolved externals such as 
+  # Set the BOOST_USE_WINAPI_VERSION to >= Windows10 to avoid the wrong namespace being used for boost log and leading unresolved externals such as
   # UnitFactory.cpp.obj : error LNK2001: unresolved external symbol "public: __cdecl boost::log::v2s_mt_nt6::attribute_set::~attribute_set(void)"
   # The boost binaries we have on artifactory have the v2s_mt_nt62 namespace
+  # Windows8 would be enough, but cpp-httplib requires Windows10 or later, so we set it to that
   # https://github.com/boostorg/log/blob/9a906e2f540680ff35a20207f9a1a9a3b889f52b/include/boost/log/detail/config.hpp#L337-L343
-  add_compile_definitions(BOOST_USE_WINAPI_VERSION=BOOST_WINAPI_VERSION_WIN8)
+  add_compile_definitions(BOOST_USE_WINAPI_VERSION=BOOST_WINAPI_VERSION_WIN10)
   # This will also align _WIN32_WINNT and WINVER
   # add_compile_definitions(BOOST_USE_WINDOWS_H) # Getting a confict with `typedef GUID UUID` from windows.h
   add_compile_definitions(BOOST_WINAPI_DEFINE_VERSION_MACROS)
@@ -468,9 +474,7 @@ find_package(libxml2)
 find_package(jsoncpp)
 find_package(fmt)
 find_package(SQLite3)
-find_package(cpprestsdk)
-# TODO: this is a workaround for #5398, it should not be there for ever
-configure_file("${PROJECT_SOURCE_DIR}/dependencies/cpprestsdk_char_traits_workaround.hpp" "${PROJECT_BINARY_DIR}/src/cpprestsdk_char_traits_workaround.hpp" COPYONLY)
+find_package(httplib)
 
 find_package(websocketpp)
 find_package(Boost)
@@ -685,33 +689,26 @@ endif()
 if(UNIX)
   if(APPLE)
     if (ARCH MATCHES "arm64")
-      set(ENERGYPLUS_EXPECTED_HASH 00046c474efe5fbf69ffcae504175d18)
-      set(ENERGYPLUS_PLATFORM "Darwin-macOS13-arm64")
+      set(ENERGYPLUS_EXPECTED_HASH 424570ff258b92cd09b30c76406539b9)
+      set(ENERGYPLUS_PLATFORM "Darwin-macOS14.0-arm64")
     else()
-      set(ENERGYPLUS_EXPECTED_HASH 6f0dfef6c4a6529dbe5998c9c9505bf5)
-      set(ENERGYPLUS_PLATFORM "Darwin-macOS12.1-x86_64")
+      set(ENERGYPLUS_EXPECTED_HASH 9997e506ad56bbcd74fb268b4023fa93)
+      set(ENERGYPLUS_PLATFORM "Darwin-macOS13.3-x86_64")
     endif()
   elseif(LSB_RELEASE_ID_SHORT MATCHES "CentOS")
-    set(ENERGYPLUS_EXPECTED_HASH 578be7722a67294cdc901ee35650d083)
-    set(ENERGYPLUS_PLATFORM "Linux-CentOS7.9.2009-x86_64")
+    message(FATAL_ERROR "EnergyPlus ${ENERGYPLUS_VERSION} does not provide a CentOS package")
   elseif(LSB_RELEASE_ID_SHORT MATCHES "AlmaLinux")
-    set(ENERGYPLUS_EXPECTED_HASH 48894cf599022b4333c6e42a73d9d845)
+    set(ENERGYPLUS_EXPECTED_HASH 9899b2e7a1e83ed0eab72efe1a436abb)
     set(ENERGYPLUS_PLATFORM "Linux-AlmaLinux9.6-x86_64")
   else()
     if(LSB_RELEASE_VERSION_SHORT MATCHES "24.04")
       if (ARCH MATCHES "arm64")
-        set(ENERGYPLUS_EXPECTED_HASH 1f3d39f84a45eefdacca66f905bc4fba)
+        set(ENERGYPLUS_EXPECTED_HASH 6df499081c64497bb7d2d22f88c805c8)
       else()
-        set(ENERGYPLUS_EXPECTED_HASH 8b8cd4e21c1bcec778c4c7b17f84908d)
+        set(ENERGYPLUS_EXPECTED_HASH b3a8b2ae760208e05919e866e1348a41)
       endif()
-    elseif(LSB_RELEASE_VERSION_SHORT MATCHES "22.04")
-      if (ARCH MATCHES "arm64")
-        set(ENERGYPLUS_EXPECTED_HASH a17981b177b0fc25540cb0ac1bad4617)
-      else()
-        set(ENERGYPLUS_EXPECTED_HASH 195ad0c2455d09224e04b375e442a395)
-      endif()
-    else() # e.g., 18.04, 20.04
-      message(FATAL_ERROR "EnergyPlus no longer provides packages for Ubuntu < 22.04")
+    else() # e.g., 18.04, 20.04, 22.04
+      message(FATAL_ERROR "EnergyPlus no longer provides packages for Ubuntu < 24.04")
     endif()
     set(ENERGYPLUS_PLATFORM "Linux${ENERGYPLUS_SYSTEM_VERSION}-${ARCH}")
   endif()
@@ -745,11 +742,11 @@ elseif(WIN32)
   if(CMAKE_SIZEOF_VOID_P EQUAL 8) # 64 bit
     set(ENERGYPLUS_PATH "EnergyPlus-${ENERGYPLUS_VERSION}-${ENERGYPLUS_BUILD_SHA}-Windows-x86_64")
     set(ENERGYPLUS_ARCH 64)
-    set(ENERGYPLUS_EXPECTED_HASH f5c3822fd27700757827c85403c44f20)
+    set(ENERGYPLUS_EXPECTED_HASH 9396a6b342497d70fff6c52517102da9)
   else()
     set(ENERGYPLUS_PATH "EnergyPlus-${ENERGYPLUS_VERSION}-${ENERGYPLUS_BUILD_SHA}-Windows-i386")
     set(ENERGYPLUS_ARCH 32)
-    set(ENERGYPLUS_EXPECTED_HASH 37be5b38954af66460402b5569f57812)
+    set(ENERGYPLUS_EXPECTED_HASH 177dad6454bc46be7e950579b6edfd41)
   endif()
   if(EXISTS "${PROJECT_BINARY_DIR}/${ENERGYPLUS_PATH}.zip")
     file(MD5 "${PROJECT_BINARY_DIR}/${ENERGYPLUS_PATH}.zip" ENERGYPLUS_HASH)
@@ -1427,7 +1424,7 @@ set(CPACK_RPM_PACKAGE_URL "https://www.openstudio.net")
 
 # The actual .deb file name on disk
 set(CPACK_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}-${OPENSTUDIO_LONG_VERSION}-${CMAKE_SYSTEM_NAME}")
-set(CPACK_PACKAGE_CONTACT "openstudio@nrel.gov")
+set(CPACK_PACKAGE_CONTACT "openstudio@nlr.gov")
 
 if(APPLE)
   set(CPACK_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}-${OPENSTUDIO_LONG_VERSION}-${CMAKE_SYSTEM_NAME}-${ARCH}")

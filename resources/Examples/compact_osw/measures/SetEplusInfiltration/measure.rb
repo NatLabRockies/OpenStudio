@@ -1,14 +1,14 @@
 #see the URL below for information on how to write OpenStudio measures
-# http://openstudio.nrel.gov/openstudio-measure-writing-guide
+# http://openstudio.nlr.gov/openstudio-measure-writing-guide
 
 #see your EnergyPlus installation or the URL below for information on EnergyPlus objects
 # http://apps1.eere.energy.gov/buildings/energyplus/pdfs/inputoutputreference.pdf
 
 #see the URL below for information on using life cycle cost objects in OpenStudio
-# http://openstudio.nrel.gov/openstudio-life-cycle-examples
+# http://openstudio.nlr.gov/openstudio-life-cycle-examples
 
 #see the URL below for access to C++ documentation on workspace objects (click on "workspace" in the main window to view workspace objects)
-# http://openstudio.nrel.gov/sites/openstudio.nrel.gov/files/nv_data/cpp_documentation_it/utilities/html/idf_page.html
+# http://openstudio.nlr.gov/sites/openstudio.nlr.gov/files/nv_data/cpp_documentation_it/utilities/html/idf_page.html
 
 #start the measure
 class SetEnergyPlusInfiltrationFlowRatePerFloorArea < OpenStudio::Measure::EnergyPlusMeasure

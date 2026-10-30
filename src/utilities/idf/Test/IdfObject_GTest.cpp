@@ -656,7 +656,7 @@ TEST_F(IdfFixture, IdfObject_ScheduleFileWithUrl) {
   std::string text = "Schedule:File, \n\
                       Web Schedule, !- Name \n\
                       , !- Schedule Type Limits Name \n\
-                      http://bcl.development.nrel.gov/api?search='terms'@xxx.yyy, !- File Name \n\
+                      http://bcl.development.nlr.gov/api?search='terms'@xxx.yyy, !- File Name \n\
                       1, !- Column Number \n\
                       0, !- Rows to Skip at Top \n\
                       8760, !- Number of Hours of Data \n\
@@ -674,7 +674,7 @@ TEST_F(IdfFixture, IdfObject_ScheduleFileWithUrl) {
   EXPECT_EQ("Web Schedule", object->getString(0).get());
 
   ASSERT_TRUE(object->getString(2));
-  EXPECT_EQ("http://bcl.development.nrel.gov/api?search='terms'@xxx.yyy", object->getString(2).get());
+  EXPECT_EQ("http://bcl.development.nlr.gov/api?search='terms'@xxx.yyy", object->getString(2).get());
 
   ASSERT_TRUE(object->getString(3));
   EXPECT_EQ("1", object->getString(3).get());

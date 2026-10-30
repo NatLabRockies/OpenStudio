@@ -213,6 +213,39 @@ namespace model {
       return isEmpty(OS_Material_NoMassFields::VisibleAbsorptance);
     }
 
+    double MasslessOpaqueMaterial_Impl::thermalAbsorptanceInsideFace() const {
+      if (boost::optional<double> value = getDouble(OS_Material_NoMassFields::ThermalAbsorptanceInsideFace)) {
+        return value.get();
+      }
+      return thermalAbsorptance();
+    }
+
+    bool MasslessOpaqueMaterial_Impl::isThermalAbsorptanceInsideFaceDefaulted() const {
+      return isEmpty(OS_Material_NoMassFields::ThermalAbsorptanceInsideFace);
+    }
+
+    double MasslessOpaqueMaterial_Impl::solarAbsorptanceInsideFace() const {
+      if (boost::optional<double> value = getDouble(OS_Material_NoMassFields::SolarAbsorptanceInsideFace)) {
+        return value.get();
+      }
+      return solarAbsorptance();
+    }
+
+    bool MasslessOpaqueMaterial_Impl::isSolarAbsorptanceInsideFaceDefaulted() const {
+      return isEmpty(OS_Material_NoMassFields::SolarAbsorptanceInsideFace);
+    }
+
+    double MasslessOpaqueMaterial_Impl::visibleAbsorptanceInsideFace() const {
+      if (boost::optional<double> value = getDouble(OS_Material_NoMassFields::VisibleAbsorptanceInsideFace)) {
+        return value.get();
+      }
+      return visibleAbsorptance();
+    }
+
+    bool MasslessOpaqueMaterial_Impl::isVisibleAbsorptanceInsideFaceDefaulted() const {
+      return isEmpty(OS_Material_NoMassFields::VisibleAbsorptanceInsideFace);
+    }
+
     bool MasslessOpaqueMaterial_Impl::setRoughness(const std::string& roughness) {
       bool result = setString(OS_Material_NoMassFields::Roughness, roughness);
       return result;
@@ -250,6 +283,33 @@ namespace model {
 
     void MasslessOpaqueMaterial_Impl::resetVisibleAbsorptance() {
       bool result = setString(OS_Material_NoMassFields::VisibleAbsorptance, "");
+      OS_ASSERT(result);
+    }
+
+    bool MasslessOpaqueMaterial_Impl::setThermalAbsorptanceInsideFace(double thermalAbsorptanceInsideFace) {
+      return setDouble(OS_Material_NoMassFields::ThermalAbsorptanceInsideFace, thermalAbsorptanceInsideFace);
+    }
+
+    void MasslessOpaqueMaterial_Impl::resetThermalAbsorptanceInsideFace() {
+      bool result = setString(OS_Material_NoMassFields::ThermalAbsorptanceInsideFace, "");
+      OS_ASSERT(result);
+    }
+
+    bool MasslessOpaqueMaterial_Impl::setSolarAbsorptanceInsideFace(double solarAbsorptanceInsideFace) {
+      return setDouble(OS_Material_NoMassFields::SolarAbsorptanceInsideFace, solarAbsorptanceInsideFace);
+    }
+
+    void MasslessOpaqueMaterial_Impl::resetSolarAbsorptanceInsideFace() {
+      bool result = setString(OS_Material_NoMassFields::SolarAbsorptanceInsideFace, "");
+      OS_ASSERT(result);
+    }
+
+    bool MasslessOpaqueMaterial_Impl::setVisibleAbsorptanceInsideFace(double visibleAbsorptanceInsideFace) {
+      return setDouble(OS_Material_NoMassFields::VisibleAbsorptanceInsideFace, visibleAbsorptanceInsideFace);
+    }
+
+    void MasslessOpaqueMaterial_Impl::resetVisibleAbsorptanceInsideFace() {
+      bool result = setString(OS_Material_NoMassFields::VisibleAbsorptanceInsideFace, "");
       OS_ASSERT(result);
     }
 
@@ -421,6 +481,30 @@ namespace model {
     return result;
   }
 
+  boost::optional<double> MasslessOpaqueMaterial::thermalAbsorptanceInsideFace() const {
+    return getImpl<detail::MasslessOpaqueMaterial_Impl>()->thermalAbsorptanceInsideFace();
+  }
+
+  bool MasslessOpaqueMaterial::isThermalAbsorptanceInsideFaceDefaulted() const {
+    return getImpl<detail::MasslessOpaqueMaterial_Impl>()->isThermalAbsorptanceInsideFaceDefaulted();
+  }
+
+  boost::optional<double> MasslessOpaqueMaterial::solarAbsorptanceInsideFace() const {
+    return getImpl<detail::MasslessOpaqueMaterial_Impl>()->solarAbsorptanceInsideFace();
+  }
+
+  bool MasslessOpaqueMaterial::isSolarAbsorptanceInsideFaceDefaulted() const {
+    return getImpl<detail::MasslessOpaqueMaterial_Impl>()->isSolarAbsorptanceInsideFaceDefaulted();
+  }
+
+  boost::optional<double> MasslessOpaqueMaterial::visibleAbsorptanceInsideFace() const {
+    return getImpl<detail::MasslessOpaqueMaterial_Impl>()->visibleAbsorptanceInsideFace();
+  }
+
+  bool MasslessOpaqueMaterial::isVisibleAbsorptanceInsideFaceDefaulted() const {
+    return getImpl<detail::MasslessOpaqueMaterial_Impl>()->isVisibleAbsorptanceInsideFaceDefaulted();
+  }
+
   // cppcheck-suppress [duplInheritedMember] for documentation purposes
   double MasslessOpaqueMaterial::thermalResistance() const {
     return getImpl<detail::MasslessOpaqueMaterial_Impl>()->thermalResistance();
@@ -470,6 +554,30 @@ namespace model {
 
   void MasslessOpaqueMaterial::resetVisibleAbsorptance() {
     getImpl<detail::MasslessOpaqueMaterial_Impl>()->resetVisibleAbsorptance();
+  }
+
+  bool MasslessOpaqueMaterial::setThermalAbsorptanceInsideFace(double thermalAbsorptanceInsideFace) {
+    return getImpl<detail::MasslessOpaqueMaterial_Impl>()->setThermalAbsorptanceInsideFace(thermalAbsorptanceInsideFace);
+  }
+
+  void MasslessOpaqueMaterial::resetThermalAbsorptanceInsideFace() {
+    getImpl<detail::MasslessOpaqueMaterial_Impl>()->resetThermalAbsorptanceInsideFace();
+  }
+
+  bool MasslessOpaqueMaterial::setSolarAbsorptanceInsideFace(double solarAbsorptanceInsideFace) {
+    return getImpl<detail::MasslessOpaqueMaterial_Impl>()->setSolarAbsorptanceInsideFace(solarAbsorptanceInsideFace);
+  }
+
+  void MasslessOpaqueMaterial::resetSolarAbsorptanceInsideFace() {
+    getImpl<detail::MasslessOpaqueMaterial_Impl>()->resetSolarAbsorptanceInsideFace();
+  }
+
+  bool MasslessOpaqueMaterial::setVisibleAbsorptanceInsideFace(double visibleAbsorptanceInsideFace) {
+    return getImpl<detail::MasslessOpaqueMaterial_Impl>()->setVisibleAbsorptanceInsideFace(visibleAbsorptanceInsideFace);
+  }
+
+  void MasslessOpaqueMaterial::resetVisibleAbsorptanceInsideFace() {
+    getImpl<detail::MasslessOpaqueMaterial_Impl>()->resetVisibleAbsorptanceInsideFace();
   }
 
   boost::optional<MaterialPropertyMoisturePenetrationDepthSettings> MasslessOpaqueMaterial::createMaterialPropertyMoisturePenetrationDepthSettings(

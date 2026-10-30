@@ -28,21 +28,21 @@ namespace energyplus {
       // Zone Name
       // set by ThermalZone
 
-      // Humidifying Relative Humidity Setpoint Schedule Name
+      // Humidifying Setpoint Schedule Name
       if (humidifyingSchedule) {
         boost::optional<IdfObject> _humidifyingSchedule = translateAndMapModelObject(humidifyingSchedule.get());
 
         if (_humidifyingSchedule && _humidifyingSchedule->name()) {
-          result->setString(ZoneControl_HumidistatFields::HumidifyingRelativeHumiditySetpointScheduleName, _humidifyingSchedule->name().get());
+          result->setString(ZoneControl_HumidistatFields::HumidifyingSetpointScheduleName, _humidifyingSchedule->name().get());
         }
       }
 
-      // Dehumidifying Relative Humidity Setpoint Schedule Name
+      // Dehumidifying Setpoint Schedule Name
       if (dehumidifyingSchedule) {
         boost::optional<IdfObject> _dehumidifyingSchedule = translateAndMapModelObject(dehumidifyingSchedule.get());
 
         if (_dehumidifyingSchedule && _dehumidifyingSchedule->name()) {
-          result->setString(ZoneControl_HumidistatFields::DehumidifyingRelativeHumiditySetpointScheduleName, _dehumidifyingSchedule->name().get());
+          result->setString(ZoneControl_HumidistatFields::DehumidifyingSetpointScheduleName, _dehumidifyingSchedule->name().get());
         }
       }
     }

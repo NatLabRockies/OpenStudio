@@ -24,7 +24,6 @@ namespace openstudio {
 namespace energyplus {
 
   boost::optional<IdfObject> ForwardTranslator::translateCentralHeatPumpSystem(CentralHeatPumpSystem& modelObject) {
-    OptionalString s;
     OptionalDouble d;
     OptionalModelObject temp;
 
@@ -38,11 +37,6 @@ namespace energyplus {
 
     // Name
     IdfObject idfObject = createRegisterAndNameIdfObject(openstudio::IddObjectType::CentralHeatPumpSystem, modelObject);
-
-    // ControlMethod
-    if ((s = modelObject.controlMethod())) {
-      idfObject.setString(CentralHeatPumpSystemFields::ControlMethod, s.get());
-    }
 
     // AncillaryPower
     if ((d = modelObject.ancillaryPower())) {

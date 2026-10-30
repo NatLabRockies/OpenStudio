@@ -1,0 +1,20 @@
+
+OS:Version,
+  {b3d95565-1790-4500-aab1-06a7e08376b0}, !- Handle
+  3.11.0;                                 !- Version Identifier
+
+OS:Coil:Cooling:DX:CurveFit:OperatingMode,
+  {c6f037e9-7461-43f3-8432-9c743c730607}, !- Handle
+  Coil Cooling DX Curve Fit Operating Mode 1, !- Name
+  autosize,                               !- Rated Gross Total Cooling Capacity {W}
+  autosize,                               !- Rated Evaporator Air Flow Rate {m3/s}
+  autosize,                               !- Rated Condenser Air Flow Rate {m3/s}
+  0,                                      !- Maximum Cycling Rate {cycles/hr}
+  0,                                      !- Ratio of Initial Moisture Evaporation Rate and Steady State Latent Capacity {dimensionless}
+  0,                                      !- Latent Capacity Time Constant {s}
+  0,                                      !- Nominal Time for Condensate Removal to Begin {s}
+  Yes,                                    !- Apply Latent Degradation to Speeds Greater than 1
+  AirCooled,                              !- Condenser Type
+  autosize,                               !- Nominal Evaporative Condenser Pump Power {W}
+  ;                                       !- Nominal Speed Number
+

@@ -433,6 +433,10 @@ SWIG_MODELOBJECT(LoadingIndex, 1);
           return zoneProp.thermalZone();
         }
 
+        openstudio::model::ThermalZone getThermalZone(const openstudio::model::ZoneMRTCalculation& zoneMRTCalculation){
+          return zoneMRTCalculation.thermalZone();
+        }
+
         // EMS Actuator getter/setter for ThermalZone (reimplemented from ModelCore.i)
         boost::optional<ThermalZone> getThermalZoneForEMSActuator(const openstudio::model::EnergyManagementSystemActuator& actuator) {
           return actuator.thermalZone();
@@ -482,6 +486,43 @@ SWIG_MODELOBJECT(LoadingIndex, 1);
   } // %inline
 #endif
 
+#if defined(SWIGPYTHON) || defined(SWIGRUBY)
+  // See ModelSimulation.i: SWIG >= 4.4.0 cannot resolve std::vector<ThermalZone> as a parameter or
+  // return type there since ThermalZone is only forward-declared in that module. Reimplement both
+  // here where ThermalZone is fully known, then rebind them onto ShadowCalculation below.
+  %inline {
+    namespace openstudio {
+      namespace model {
+        std::vector<openstudio::model::ThermalZone> getShadingZoneGroup(const openstudio::model::ShadowCalculation& sc, unsigned groupIndex) {
+          return sc.getShadingZoneGroup(groupIndex);
+        }
+        bool addShadingZoneGroup(openstudio::model::ShadowCalculation sc, const std::vector<openstudio::model::ThermalZone>& thermalZones) {
+          return sc.addShadingZoneGroup(thermalZones);
+        }
+      }
+    }
+  }
+#endif
+
+#if defined SWIGPYTHON
+  %pythoncode %{
+    def _getShadingZoneGroup(self, groupIndex):
+        return getShadingZoneGroup(self, groupIndex)
+    openstudiomodelsimulation.ShadowCalculation.getShadingZoneGroup = _getShadingZoneGroup
+
+    def _addShadingZoneGroup(self, thermalZones):
+        return addShadingZoneGroup(self, thermalZones)
+    openstudiomodelsimulation.ShadowCalculation.addShadingZoneGroup = _addShadingZoneGroup
+  %}
+#endif
+
+#if defined SWIGRUBY
+  %init %{
+    rb_eval_string("OpenStudio::Model::ShadowCalculation.class_eval { define_method(:getShadingZoneGroup) { |groupIndex| OpenStudio::Model.getShadingZoneGroup(self, groupIndex); } }");
+    rb_eval_string("OpenStudio::Model::ShadowCalculation.class_eval { define_method(:addShadingZoneGroup) { |thermalZones| OpenStudio::Model.addShadingZoneGroup(self, thermalZones); } }");
+  %}
+#endif
+
 #if defined(SWIGCSHARP)
   //%pragma(csharp) imclassimports=%{
   %pragma(csharp) moduleimports=%{
@@ -524,6 +565,13 @@ SWIG_MODELOBJECT(LoadingIndex, 1);
     }
 
     public partial class ZonePropertyUserViewFactorsBySurfaceName : ModelObject {
+      public ThermalZone thermalZone()
+      {
+        return OpenStudio.OpenStudioModelHVAC.getThermalZone(this);
+      }
+    }
+
+    public partial class ZoneMRTCalculation : ModelObject {
       public ThermalZone thermalZone()
       {
         return OpenStudio.OpenStudioModelHVAC.getThermalZone(this);

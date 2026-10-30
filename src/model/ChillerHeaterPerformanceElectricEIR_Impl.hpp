@@ -83,8 +83,6 @@ namespace model {
 
       double compressorMotorEfficiency() const;
 
-      std::string condenserType() const;
-
       std::string coolingModeTemperatureCurveCondenserWaterIndependentVariable() const;
 
       Curve coolingModeCoolingCapacityFunctionOfTemperatureCurve() const;
@@ -162,8 +160,6 @@ namespace model {
       bool setDesignHotWaterFlowRate(double designHotWaterFlowRate);
 
       bool setCompressorMotorEfficiency(double compressorMotorEfficiency);
-
-      bool setCondenserType(const std::string& condenserType);
 
       bool setCoolingModeTemperatureCurveCondenserWaterIndependentVariable(
         const std::string& coolingModeTemperatureCurveCondenserWaterIndependentVariable);

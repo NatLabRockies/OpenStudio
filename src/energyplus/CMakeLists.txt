@@ -150,7 +150,9 @@ set(${target_name}_src
   ForwardTranslator/ForwardTranslateDistrictHeatingSteam.cpp
   ForwardTranslator/ForwardTranslateDuct.cpp
   ForwardTranslator/ForwardTranslateElectricEquipment.cpp
+  ForwardTranslator/ForwardTranslateElectricEquipmentDefinition.cpp
   ForwardTranslator/ForwardTranslateElectricEquipmentITEAirCooled.cpp
+  ForwardTranslator/ForwardTranslateElectricEquipmentITEAirCooledDefinition.cpp
   ForwardTranslator/ForwardTranslateElectricLoadCenterDistribution.cpp
   ForwardTranslator/ForwardTranslateElectricLoadCenterInverterLookUpTable.cpp
   ForwardTranslator/ForwardTranslateElectricLoadCenterInverterSimple.cpp
@@ -204,6 +206,7 @@ set(${target_name}_src
   ForwardTranslator/ForwardTranslateFoundationKivaSettings.cpp
   ForwardTranslator/ForwardTranslateGas.cpp
   ForwardTranslator/ForwardTranslateGasEquipment.cpp
+  ForwardTranslator/ForwardTranslateGasEquipmentDefinition.cpp
   ForwardTranslator/ForwardTranslateGasMixture.cpp
   ForwardTranslator/ForwardTranslateGeneratorPhotovoltaic.cpp
   ForwardTranslator/ForwardTranslateGeneratorPVWatts.cpp
@@ -236,6 +239,7 @@ set(${target_name}_src
   ForwardTranslator/ForwardTranslateHeatPumpPlantLoopEIRCooling.cpp
   ForwardTranslator/ForwardTranslateHeatPumpPlantLoopEIRHeating.cpp
   ForwardTranslator/ForwardTranslateHotWaterEquipment.cpp
+  ForwardTranslator/ForwardTranslateHotWaterEquipmentDefinition.cpp
   ForwardTranslator/ForwardTranslateHumidifierSteamElectric.cpp
   ForwardTranslator/ForwardTranslateHumidifierSteamGas.cpp
   ForwardTranslator/ForwardTranslateIlluminanceMap.cpp
@@ -248,6 +252,7 @@ set(${target_name}_src
   ForwardTranslator/ForwardTranslateLifeCycleCost.cpp
   ForwardTranslator/ForwardTranslateLifeCycleCostParameters.cpp
   ForwardTranslator/ForwardTranslateLights.cpp
+  ForwardTranslator/ForwardTranslateLightsDefinition.cpp
   ForwardTranslator/ForwardTranslateLuminaire.cpp
   ForwardTranslator/ForwardTranslateMaterialPropertyGlazingSpectralData.cpp
   ForwardTranslator/ForwardTranslateMaterialPropertyMoisturePenetrationDepthSettings.cpp
@@ -258,6 +263,7 @@ set(${target_name}_src
   ForwardTranslator/ForwardTranslateMeterCustomDecrement.cpp
   ForwardTranslator/ForwardTranslateNode.cpp
   ForwardTranslator/ForwardTranslateOtherEquipment.cpp
+  ForwardTranslator/ForwardTranslateOtherEquipmentDefinition.cpp
   ForwardTranslator/ForwardTranslateOutsideSurfaceConvectionAlgorithm.cpp
   ForwardTranslator/ForwardTranslateOutputControlFiles.cpp
   ForwardTranslator/ForwardTranslateOutputControlReportingTolerances.cpp
@@ -280,6 +286,7 @@ set(${target_name}_src
   ForwardTranslator/ForwardTranslateOutputTableMonthly.cpp
   ForwardTranslator/ForwardTranslateOutputTableSummaryReports.cpp
   ForwardTranslator/ForwardTranslatePeople.cpp
+  ForwardTranslator/ForwardTranslatePeopleDefinition.cpp
   ForwardTranslator/ForwardTranslatePerformancePrecisionTradeoffs.cpp
   ForwardTranslator/ForwardTranslatePhotovoltaicPerformanceEquivalentOneDiode.cpp
   ForwardTranslator/ForwardTranslatePhotovoltaicPerformanceSandia.cpp
@@ -401,6 +408,7 @@ set(${target_name}_src
   ForwardTranslator/ForwardTranslateStandardGlazing.cpp
   ForwardTranslator/ForwardTranslateStandardOpaqueMaterial.cpp
   ForwardTranslator/ForwardTranslateSteamEquipment.cpp
+  ForwardTranslator/ForwardTranslateSteamEquipmentDefinition.cpp
   ForwardTranslator/ForwardTranslateSubSurface.cpp
   ForwardTranslator/ForwardTranslateSurface.cpp
   ForwardTranslator/ForwardTranslateSurfaceControlMovableInsulation.cpp
@@ -464,6 +472,8 @@ set(${target_name}_src
   ForwardTranslator/ForwardTranslateZoneHVACUnitVentilator.cpp
   ForwardTranslator/ForwardTranslateZoneHVACWaterToAirHeatPump.cpp
   ForwardTranslator/ForwardTranslateZoneMixing.cpp
+  ForwardTranslator/ForwardTranslateComfortViewFactorAngles.cpp
+  ForwardTranslator/ForwardTranslateZoneMRTCalculation.cpp
   ForwardTranslator/ForwardTranslateZonePropertyUserViewFactorsBySurfaceName.cpp
   ForwardTranslator/ForwardTranslateZoneVentilationDesignFlowRate.cpp
   ForwardTranslator/ForwardTranslateZoneVentilationWindandStackOpenArea.cpp
@@ -650,6 +660,8 @@ set(${target_name}_src
   ReverseTranslator/ReverseTranslateZoneInfiltrationFlowCoefficient.cpp
   ReverseTranslator/ReverseTranslateZoneList.cpp
   ReverseTranslator/ReverseTranslateZoneMixing.cpp
+  ReverseTranslator/ReverseTranslateComfortViewFactorAngles.cpp
+  ReverseTranslator/ReverseTranslateZoneMRTCalculation.cpp
   ReverseTranslator/ReverseTranslateZonePropertyUserViewFactorsBySurfaceName.cpp
   ReverseTranslator/ReverseTranslateZoneVentilationDesignFlowRate.cpp
   ReverseTranslator/ReverseTranslateZoneVentilationWindandStackOpenArea.cpp
@@ -688,6 +700,7 @@ set(${target_name}_test_src
 
   Test/AirLoopHVAC_GTest.cpp
   Test/AirLoopHVACDedicatedOutdoorAirSystem_GTest.cpp
+  Test/AirLoopHVACOutdoorAirSystem_GTest.cpp
   Test/PlantLoop_GTest.cpp
 
   # Test/AvailabilityManagerAssignmentList_GTest.cpp
@@ -736,6 +749,7 @@ set(${target_name}_test_src
   Test/CoilWaterHeatingAirToWaterHeatPumpWrapped_GTest.cpp
   Test/CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_GTest.cpp
   Test/CoilWaterHeatingDesuperheater_GTest.cpp
+  Test/ComfortViewFactorAngles_GTest.cpp
   Test/Construction_GTest.cpp
   Test/ConstructionWithInternalSource_GTest.cpp
   Test/ControllerOutdoorAir_GTest.cpp
@@ -791,6 +805,7 @@ set(${target_name}_test_src
   Test/MaterialPropertyMoisturePenetrationDepthSettings_GTest.cpp
   Test/MaterialPropertyPhaseChange_GTest.cpp
   Test/MaterialPropertyPhaseChangeHysteresis_GTest.cpp
+  Test/OtherEquipment_GTest.cpp
   Test/OutputControlFiles_GTest.cpp
   Test/OutputControlReportingTolerances_GTest.cpp
   Test/OutputControlResilienceSummaries_GTest.cpp
@@ -840,6 +855,7 @@ set(${target_name}_test_src
   Test/SpaceInfiltrationEffectiveLeakageArea_GTest.cpp
   Test/SpaceInfiltrationFlowCoefficient_GTest.cpp
   Test/StandardGlazing_GTest.cpp
+  Test/SteamEquipment_GTest.cpp
   Test/SubSurface_GTest.cpp
   Test/Surface_GTest.cpp
   Test/SurfaceControlMovableInsulation_GTest.cpp
@@ -876,6 +892,7 @@ set(${target_name}_test_src
   Test/ZoneHVACUnitHeater_GTest.cpp
   Test/ZoneHVACWaterToAirHeatPump_GTest.cpp
   Test/ZoneMixing_GTest.cpp
+  Test/ZoneMRTCalculation_GTest.cpp
   Test/ZonePropertyUserViewFactorsBySurfaceName_GTest.cpp
   Test/ZoneVentilationDesignFlowRate_GTest.cpp
   Test/ZoneVentilationWindandStackOpenArea_GTest.cpp

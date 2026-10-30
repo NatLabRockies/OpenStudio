@@ -50,6 +50,7 @@ TEST_F(ModelFixture, CoilCoolingDXCurveFitOperatingMode_CoilCoolingDXCurveFitOpe
   EXPECT_EQ(0.0, operatingMode.ratioofInitialMoistureEvaporationRateandSteadyStateLatentCapacity());
   EXPECT_EQ(0.0, operatingMode.latentCapacityTimeConstant());
   EXPECT_EQ(0.0, operatingMode.nominalTimeforCondensateRemovaltoBegin());
+  EXPECT_FALSE(operatingMode.applyPartLoadFractiontoSpeedsGreaterthan1());
   EXPECT_FALSE(operatingMode.applyLatentDegradationtoSpeedsGreaterthan1());
   EXPECT_EQ("AirCooled", operatingMode.condenserType());
   EXPECT_EQ(0, operatingMode.coilCoolingDXCurveFitPerformances().size());
@@ -73,6 +74,7 @@ TEST_F(ModelFixture, CoilCoolingDXCurveFitOperatingMode_GettersSetters) {
   EXPECT_EQ(operatingMode.ratioofInitialMoistureEvaporationRateandSteadyStateLatentCapacity(), 0.0);
   EXPECT_EQ(operatingMode.latentCapacityTimeConstant(), 0.0);
   EXPECT_EQ(operatingMode.nominalTimeforCondensateRemovaltoBegin(), 0.0);
+  EXPECT_FALSE(operatingMode.applyPartLoadFractiontoSpeedsGreaterthan1());
   EXPECT_FALSE(operatingMode.applyLatentDegradationtoSpeedsGreaterthan1());
   EXPECT_EQ(operatingMode.condenserType(), "AirCooled");
   ASSERT_FALSE(operatingMode.nominalEvaporativeCondenserPumpPower());
@@ -90,6 +92,7 @@ TEST_F(ModelFixture, CoilCoolingDXCurveFitOperatingMode_GettersSetters) {
   operatingMode.setRatioofInitialMoistureEvaporationRateandSteadyStateLatentCapacity(2.0);
   operatingMode.setLatentCapacityTimeConstant(3.0);
   operatingMode.setNominalTimeforCondensateRemovaltoBegin(4.0);
+  operatingMode.setApplyPartLoadFractiontoSpeedsGreaterthan1(true);
   operatingMode.setApplyLatentDegradationtoSpeedsGreaterthan1(true);
   operatingMode.setCondenserType("EvaporativelyCooled");
   operatingMode.setNominalEvaporativeCondenserPumpPower(5.0);
@@ -108,6 +111,7 @@ TEST_F(ModelFixture, CoilCoolingDXCurveFitOperatingMode_GettersSetters) {
   EXPECT_EQ(operatingMode.ratioofInitialMoistureEvaporationRateandSteadyStateLatentCapacity(), 2.0);
   EXPECT_EQ(operatingMode.latentCapacityTimeConstant(), 3.0);
   EXPECT_EQ(operatingMode.nominalTimeforCondensateRemovaltoBegin(), 4.0);
+  EXPECT_TRUE(operatingMode.applyPartLoadFractiontoSpeedsGreaterthan1());
   EXPECT_TRUE(operatingMode.applyLatentDegradationtoSpeedsGreaterthan1());
   EXPECT_EQ(operatingMode.condenserType(), "EvaporativelyCooled");
   ASSERT_TRUE(operatingMode.nominalEvaporativeCondenserPumpPower());

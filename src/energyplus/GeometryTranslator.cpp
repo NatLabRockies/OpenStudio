@@ -750,10 +750,10 @@ namespace energyplus {
 
       // right vertices
       openstudio::Point3dVector rightVertices(4);
-      rightVertices[0] =
-        Point3d(*xMax + *rightOffset + *rightDepth * std::cos(degToRad(*rightTilt)), *yMax + *rightAbove, *rightDepth * std::sin(degToRad(*rightTilt)));
-      rightVertices[1] =
-        Point3d(*xMax + *rightOffset + *rightDepth * std::cos(degToRad(*rightTilt)), *yMin - *rightBelow, *rightDepth * std::sin(degToRad(*rightTilt)));
+      rightVertices[0] = Point3d(*xMax + *rightOffset + *rightDepth * std::cos(degToRad(*rightTilt)), *yMax + *rightAbove,
+                                 *rightDepth * std::sin(degToRad(*rightTilt)));
+      rightVertices[1] = Point3d(*xMax + *rightOffset + *rightDepth * std::cos(degToRad(*rightTilt)), *yMin - *rightBelow,
+                                 *rightDepth * std::sin(degToRad(*rightTilt)));
       rightVertices[2] = Point3d(*xMax + *rightOffset, *yMin - *rightBelow, 0.0);
       rightVertices[3] = Point3d(*xMax + *rightOffset, *yMax + *rightAbove, 0.0);
 
@@ -876,8 +876,10 @@ namespace energyplus {
 
       // left vertices
       openstudio::Point3dVector leftVertices(4);
-      leftVertices[0] = Point3d(*xMin - *leftOffset + leftDepth * std::cos(degToRad(*leftTilt)), *yMax + *leftAbove, leftDepth * std::sin(degToRad(*leftTilt)));
-      leftVertices[1] = Point3d(*xMin - *leftOffset + leftDepth * std::cos(degToRad(*leftTilt)), *yMin - *leftBelow, leftDepth * std::sin(degToRad(*leftTilt)));
+      leftVertices[0] =
+        Point3d(*xMin - *leftOffset + leftDepth * std::cos(degToRad(*leftTilt)), *yMax + *leftAbove, leftDepth * std::sin(degToRad(*leftTilt)));
+      leftVertices[1] =
+        Point3d(*xMin - *leftOffset + leftDepth * std::cos(degToRad(*leftTilt)), *yMin - *leftBelow, leftDepth * std::sin(degToRad(*leftTilt)));
       leftVertices[2] = Point3d(*xMin - *leftOffset, *yMin - *leftBelow, 0.0);
       leftVertices[3] = Point3d(*xMin - *leftOffset, *yMax + *leftAbove, 0.0);
 

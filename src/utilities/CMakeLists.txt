@@ -67,7 +67,6 @@ set(core_src
   core/StringStreamLogSink.cpp
   core/System.hpp
   core/System.cpp
-  core/ThreadSafeDeque.hpp
   core/UUID.hpp
   core/UUID.cpp
   core/UnzipFile.hpp
@@ -438,7 +437,7 @@ set(${target_name}_depends
   fmt::fmt
   pugixml::pugixml
   boost::boost
-  cpprestsdk::cpprestsdk
+  httplib::httplib
   openssl::openssl
   GeographicLib::GeographicLib
   LibXml2::LibXml2
@@ -449,8 +448,6 @@ if(WIN32)
   list(APPEND ${target_name}_depends mpr)
 elseif(APPLE)
   list(APPEND ${target_name}_depends ${SECURITY_FRAMEWORK})
-  # For cpprest
-  list(APPEND ${target_name}_depends ${COREFOUNDATION_LIBRARY})
 endif()
 
 add_library(${target_name}

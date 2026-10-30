@@ -6,6 +6,7 @@
 #include "GenerateIddFactory.hpp"
 #include "WriteEnums.hpp"
 
+#include <algorithm>
 #include <iostream>
 #include <iomanip>
 #include <cmath>

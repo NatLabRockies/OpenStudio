@@ -1843,6 +1843,12 @@ set(${target_name}_src
   ZoneMixing.hpp
   ZoneMixing_Impl.hpp
   ZoneMixing.cpp
+  ComfortViewFactorAngles.hpp
+  ComfortViewFactorAngles_Impl.hpp
+  ComfortViewFactorAngles.cpp
+  ZoneMRTCalculation.hpp
+  ZoneMRTCalculation_Impl.hpp
+  ZoneMRTCalculation.cpp
   ZonePropertyUserViewFactorsBySurfaceName.hpp
   ZonePropertyUserViewFactorsBySurfaceName_Impl.hpp
   ZonePropertyUserViewFactorsBySurfaceName.cpp
@@ -2041,6 +2047,7 @@ set(${target_name}_test_src
   test/CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData_GTest.cpp
   test/CoilWaterHeatingAirToWaterHeatPumpWrapped_GTest.cpp
   test/CoilWaterHeatingDesuperheater_GTest.cpp
+  test/ComfortViewFactorAngles_GTest.cpp
   test/Component_GTest.cpp
   test/Connection_GTest.cpp
   test/Construction_GTest.cpp
@@ -2419,6 +2426,7 @@ set(${target_name}_test_src
   test/ZoneHVACWaterToAirHeatPump_GTest.cpp
   test/ZoneHVACIdealLoadsAirSystem_GTest.cpp
   test/ZoneMixing_GTest.cpp
+  test/ZoneMRTCalculation_GTest.cpp
   test/ZonePropertyUserViewFactorsBySurfaceName_GTest.cpp
   test/ZoneVentilationDesignFlowRate_GTest.cpp
   test/ZoneVentilationWindandStackOpenArea_GTest.cpp

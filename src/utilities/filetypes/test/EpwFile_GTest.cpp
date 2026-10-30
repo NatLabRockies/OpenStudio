@@ -8,12 +8,18 @@
 #include "../../time/Time.hpp"
 #include "../../time/Date.hpp"
 #include "../../core/Checksum.hpp"
+#include "../../core/FilesystemHelpers.hpp"
 
 #include <resources.hxx>
 
 #include <array>
+#include <string_view>
 
 using namespace openstudio;
+
+namespace {
+constexpr std::string_view UTF8_BOM{"\xEF\xBB\xBF", 3};
+}
 
 TEST(Filetypes, EpwFile) {
   // LOCATION,Climate Zone 1,CA,USA,CTZRV2,725945,40.80,-124.20,-8.0,13.0
@@ -43,6 +49,16 @@ TEST(Filetypes, EpwFile) {
   EXPECT_EQ(Date(MonthOfYear::Jan, 1), epwFile.startDate());
   EXPECT_EQ(Date(MonthOfYear::Dec, 31), epwFile.endDate());
   EXPECT_FALSE(epwFile.isActual());
+}
+
+TEST(Filetypes, EpwFile_UTF8BOM) {
+  const path p = resourcesPath() / toPath("utilities/Filetypes/USA_CO_Golden-NREL.724666_TMY3.epw");
+  const std::string epwContent = std::string(UTF8_BOM) + openstudio::filesystem::read_as_string(p);
+
+  const boost::optional<EpwFile> epwFile = EpwFile::loadFromString(epwContent);
+
+  ASSERT_TRUE(epwFile);
+  EXPECT_EQ("Denver Centennial  Golden   Nr", epwFile->city());
 }
 
 TEST(Filetypes, EpwFile_Data) {

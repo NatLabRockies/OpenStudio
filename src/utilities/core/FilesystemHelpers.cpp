@@ -35,7 +35,7 @@ namespace filesystem {
   }
 
   std::string read_as_string(const openstudio::path& t_path) {
-    openstudio::filesystem::ifstream f(t_path);
+    openstudio::filesystem::ifstream f(t_path, std::ios_base::binary);
     return read_as_string(f);
   }
 

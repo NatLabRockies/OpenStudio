@@ -83,6 +83,13 @@ namespace energyplus {
       operatingMode.setNominalTimeforCondensateRemovaltoBegin(*d);
     }
 
+    s = workspaceObject.getString(Coil_Cooling_DX_CurveFit_OperatingModeFields::ApplyPartLoadFractiontoSpeedsGreaterthan1);
+    if (s && istringEqual(s.get(), "Yes")) {
+      operatingMode.setApplyPartLoadFractiontoSpeedsGreaterthan1(true);
+    } else {
+      operatingMode.setApplyPartLoadFractiontoSpeedsGreaterthan1(false);
+    }
+
     s = workspaceObject.getString(Coil_Cooling_DX_CurveFit_OperatingModeFields::ApplyLatentDegradationtoSpeedsGreaterthan1);
     if (s && istringEqual(s.get(), "Yes")) {
       operatingMode.setApplyLatentDegradationtoSpeedsGreaterthan1(true);
