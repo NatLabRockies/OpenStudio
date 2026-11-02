@@ -7,6 +7,7 @@
 
 %include <epmodel/EPModel_Common_Include.i>
 %import <epmodel/EPModel.i>
+%import <epmodel/ScheduleBase/EPModelScheduleBase.i>
 %import <epmodel/ParentObject/EPModelParentObject.i>
 
 #ifdef SWIGPYTHON
@@ -15,6 +16,7 @@
   // here before the generated helper annotations refer to them.
   %pythoncode %{
 from openstudioepmodel import OptionalSchedule, ScheduleVector
+from openstudioepmodelschedulebase import ScheduleDayVector
   %}
 #endif
 

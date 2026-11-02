@@ -61,6 +61,8 @@ namespace epmodel {
     bool setScheduleRuleIndex(ScheduleRule& scheduleRule, unsigned index);
     std::vector<int> getActiveRuleIndices(const openstudio::Date& startDate, const openstudio::Date& endDate) const;
     std::vector<ScheduleDay> getDaySchedules(const openstudio::Date& startDate, const openstudio::Date& endDate) const;
+    /// Returns the day schedule in effect on the specified date.
+    ScheduleDay getDaySchedule(const openstudio::Date& date) const;
 
     ScheduleDay defaultDaySchedule() const;
 

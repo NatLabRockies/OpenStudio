@@ -112,6 +112,8 @@ TEST_F(EPModelFixture, ScheduleRuleset_ActiveRuleIndicesAndDaySchedules) {
   EXPECT_EQ(0.9, daySchedules[1].values().front());
   EXPECT_EQ(0.9, daySchedules[2].values().front());
   EXPECT_EQ(0.1, daySchedules[3].values().front());
+  EXPECT_EQ(0.1, scheduleRuleset.getDaySchedule(startDate).values().front());
+  EXPECT_EQ(0.9, scheduleRuleset.getDaySchedule(openstudio::Date(openstudio::MonthOfYear::Mar, 1)).values().front());
 }
 
 TEST_F(EPModelFixture, ScheduleRule_LoadFromIdf) {

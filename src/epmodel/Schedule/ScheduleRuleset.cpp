@@ -56,6 +56,12 @@ namespace epmodel {
     return getImpl<detail::ScheduleRuleset_Impl>()->getDaySchedules(startDate, endDate);
   }
 
+  ScheduleDay ScheduleRuleset::getDaySchedule(const openstudio::Date& date) const {
+    const auto daySchedules = getDaySchedules(date, date);
+    OS_ASSERT(daySchedules.size() == 1);
+    return daySchedules.front();
+  }
+
   ScheduleDay ScheduleRuleset::defaultDaySchedule() const {
     return getImpl<detail::ScheduleRuleset_Impl>()->defaultDaySchedule();
   }
