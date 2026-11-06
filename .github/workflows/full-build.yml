@@ -1533,7 +1533,12 @@ jobs:
               Compress-Archive -Path $pathsToSign -DestinationPath $binZip -Force
 
               Write-Host "Sending binaries for signing..."
-              node "../${{ env.OPENSTUDIO_SOURCE }}/.github/signing-client/code-signing.js" $binZip -t 4800000
+              # The signing service occasionally drops the connection (write EPIPE); retry before failing the build
+              for ($attempt = 1; $attempt -le 3; $attempt++) {
+                node "../${{ env.OPENSTUDIO_SOURCE }}/.github/signing-client/code-signing.js" $binZip -t 4800000
+                if (Test-Path $signedBinZip) { break }
+                if ($attempt -lt 3) { Write-Host "::warning::Signing attempt $attempt failed, retrying in 60s"; Start-Sleep -Seconds 60 }
+              }
 
               if (Test-Path $signedBinZip) {
                 Write-Host "Extracting and overwriting signed binaries..."
@@ -1598,7 +1603,12 @@ jobs:
                Compress-Archive -Path $installers.FullName -DestinationPath $installerZip -Force
 
                Write-Host "Sending installer for signing..."
-               node "../${{ env.OPENSTUDIO_SOURCE }}/.github/signing-client/code-signing.js" $installerZip -t 4800000
+               # The signing service occasionally drops the connection (write EPIPE); retry before failing the build
+               for ($attempt = 1; $attempt -le 3; $attempt++) {
+                 node "../${{ env.OPENSTUDIO_SOURCE }}/.github/signing-client/code-signing.js" $installerZip -t 4800000
+                 if (Test-Path $signedInstallerZip) { break }
+                 if ($attempt -lt 3) { Write-Host "::warning::Signing attempt $attempt failed, retrying in 60s"; Start-Sleep -Seconds 60 }
+               }
 
                if (Test-Path $signedInstallerZip) {
                   Write-Host "Extracting signed installer..."
