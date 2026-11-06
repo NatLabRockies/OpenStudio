@@ -814,8 +814,6 @@ jobs:
 
     - name: Configure with CMake
       working-directory: ${{ env.OPENSTUDIO_BUILD }}
-      env:
-        APPLE_DEV_ID: ${{ secrets.APPLE_DEV_ID }}
       run: |
         set -e
         chmod +x ./conanbuild.sh
@@ -827,19 +825,9 @@ jobs:
           CCACHE_ARGS=("-DCMAKE_C_COMPILER_LAUNCHER=$CCACHE_EXE" "-DCMAKE_CXX_COMPILER_LAUNCHER=$CCACHE_EXE")
         fi
 
-        # Configure signing identity
-        SIGNING_ARGS=()
-        if [ -n "$APPLE_DEV_ID" ]; then
-          echo "Configuring for signed build"
-          SIGNING_ARGS=("-DCPACK_IFW_PACKAGE_SIGNING_IDENTITY=$APPLE_DEV_ID")
-        else
-          echo "Configuring for ad-hoc signed build (skipping CPack signing identity)"
-          SIGNING_ARGS=()
-        fi
-
+        # Signing identity is passed to cpack only when the keychain exists (see Create packages)
         cmake -G Ninja \
           "${CCACHE_ARGS[@]}" \
-          "${SIGNING_ARGS[@]}" \
           -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake \
           -DCMAKE_CXX_FLAGS="-D_LIBCPP_ENABLE_CXX17_REMOVED_UNARY_BINARY_FUNCTION -Wno-enum-constexpr-conversion" \
           -DENABLE_COVERAGE:BOOL=OFF \
@@ -951,12 +939,14 @@ jobs:
         echo "exit_code=${overall_exit_code}" >> $GITHUB_OUTPUT
 
     - name: Setup Keychain
-      if: success() && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || inputs.publish_to_s3 == true || github.event.inputs.publish_to_s3 == 'true' )
+      # Same refs as macos-publish, so everything published to S3 is signed
+      if: success() && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == true || github.event.inputs.publish_to_s3 == 'true')
       env:
         APPLE_CERT_DATA: ${{ secrets.APPLE_CERT_DATA }}
         APPLE_CERT_PASSWORD: ${{ secrets.APPLE_CERT_PASSWORD }}
+        APPLE_DEV_ID: ${{ secrets.APPLE_DEV_ID }}
       run: |
-        if [ -n "$APPLE_CERT_DATA" ] && [ -n "$APPLE_CERT_PASSWORD" ]; then
+        if [ -n "$APPLE_CERT_DATA" ] && [ -n "$APPLE_CERT_PASSWORD" ] && [ -n "$APPLE_DEV_ID" ]; then
           # Create temporary keychain
           KEYCHAIN_PATH="$RUNNER_TEMP/build.keychain"
           KEYCHAIN_PASSWORD=$(openssl rand -base64 32)
@@ -968,19 +958,37 @@ jobs:
           CERT_PATH="$RUNNER_TEMP/certificate.p12"
           echo "$APPLE_CERT_DATA" | base64 --decode > "$CERT_PATH"
           security import "$CERT_PATH" -k "$KEYCHAIN_PATH" -P "$APPLE_CERT_PASSWORD" -T /usr/bin/codesign
+          # Developer ID G2 intermediate: without it the identity is untrusted and codesign can't build the chain
+          curl -fsSL https://www.apple.com/certificateauthority/DeveloperIDG2CA.cer -o "$RUNNER_TEMP/DeveloperIDG2CA.cer"
+          security import "$RUNNER_TEMP/DeveloperIDG2CA.cer" -k "$KEYCHAIN_PATH"
           security set-key-partition-list -S apple-tool:,apple: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          rm -f "$CERT_PATH"
+          # codesign/binarycreator only find identities in keychains on the search list
+          security list-keychains -d user -s "$KEYCHAIN_PATH" $(security list-keychains -d user | tr -d '"')
+          security find-identity -v -p codesigning "$KEYCHAIN_PATH" | grep -F "$APPLE_DEV_ID" || {
+            echo "::error::Identity '$APPLE_DEV_ID' not found in imported certificate (APPLE_DEV_ID must be the full 'Developer ID Application: Name (TEAMID)' string)"
+            exit 1
+          }
 
           echo "KEYCHAIN_PATH=$KEYCHAIN_PATH" >> $GITHUB_ENV
+        else
+          echo "::warning::Apple signing secrets not set; packages will be ad-hoc signed and not notarized."
         fi
 
     - name: Create packages
+      id: create_packages
       if: ${{ success() && !cancelled() }}
       working-directory: ${{ env.OPENSTUDIO_BUILD }}
       env:
         COPYFILE_DISABLE: 1
+        APPLE_DEV_ID: ${{ secrets.APPLE_DEV_ID }}
       run: |
         . ./conanbuild.sh
-        cpack -C ${{ env.BUILD_TYPE }}
+        SIGNING_ARGS=()
+        if [ -n "$KEYCHAIN_PATH" ]; then
+          SIGNING_ARGS=(-D "CPACK_IFW_PACKAGE_SIGNING_IDENTITY=$APPLE_DEV_ID")
+        fi
+        cpack -C ${{ env.BUILD_TYPE }} "${SIGNING_ARGS[@]}"
 
     - name: Cleanup intermediate files
       if: always()
@@ -992,14 +1000,11 @@ jobs:
     - name: Ad-hoc Sign Inner Installer (Fix "Killed" Error)
       if: ${{ success() && !cancelled() }}
       working-directory: ${{ env.OPENSTUDIO_BUILD }}
-      env:
-        # Check if we have a real ID; if not, we must patch the installer
-        APPLE_DEV_ID: ${{ secrets.APPLE_DEV_ID }}
       run: |
 
-        # Only run this fix if we DO NOT have a valid Developer ID.
-        if [ -n "$APPLE_DEV_ID" ]; then
-          echo "Valid Developer ID detected. Skipping ad-hoc patch."
+        # Only needed when cpack did not sign with a Developer ID (no keychain set up).
+        if [ -n "$KEYCHAIN_PATH" ]; then
+          echo "Developer ID keychain present. Skipping ad-hoc patch."
           exit 0
         fi
 
@@ -1011,74 +1016,62 @@ jobs:
         done
 
     - name: Sign DMG and Notarize
-      if: ${{ steps.create_packages.outcome == 'success' && (github.ref == 'refs/heads/develop' || inputs.publish_to_s3 == true || github.event.inputs.publish_to_s3 == 'true' || matrix.os == 'macOS') }}
+      if: ${{ !cancelled() && steps.create_packages.outcome == 'success' }}
       working-directory: ${{ env.OPENSTUDIO_BUILD }}
       env:
-        APPLE_CERT_DATA: ${{ secrets.APPLE_CERT_DATA }}
         APPLE_DEV_ID: ${{ secrets.APPLE_DEV_ID }}
         APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         APPLE_ID_USERNAME: ${{ secrets.APPLE_ID_USERNAME }}
         APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
       run: |
-
-        # Check if signing credentials are configured
-        if [ -z "$APPLE_CERT_DATA" ] || [ -z "$APPLE_DEV_ID" ]; then
-          echo "::warning::Apple signing certificates not configured. Falling back to ad-hoc signing."
-          export AD_HOC_SIGNING=true
-        else
-          export AD_HOC_SIGNING=false
+        set -euo pipefail
+        NOTARIZE=false
+        if [ -n "${KEYCHAIN_PATH:-}" ]; then
+          if [ -n "$APPLE_ID_USERNAME" ] && [ -n "$APPLE_ID_PASSWORD" ] && [ -n "$APPLE_TEAM_ID" ]; then
+            NOTARIZE=true
+          else
+            echo "::warning::APPLE_ID_USERNAME/APPLE_ID_PASSWORD/APPLE_TEAM_ID not set; DMGs will be signed but not notarized."
+          fi
         fi
+        NOTARY_AUTH=(--apple-id "$APPLE_ID_USERNAME" --password "$APPLE_ID_PASSWORD" --team-id "$APPLE_TEAM_ID")
 
-        # Sign DMG files
         mkdir -p signed
         for dmg in ${{ matrix.dmg_glob }}; do
-          if [ -f "$dmg" ]; then
-            echo "Processing $dmg..."
-
-            # The inner app should already be signed by CPack if configured correctly
-            # We now sign the DMG itself (or ad-hoc sign if needed)
-
-            echo "Signing $dmg..."
-            if [ "$AD_HOC_SIGNING" = "false" ]; then
-              codesign --force --sign "$APPLE_DEV_ID" --timestamp --options runtime "$dmg" || {
-                echo "::warning::Failed to sign $dmg"
-                cp "$dmg" "signed/$(basename "$dmg")"
-                continue
-              }
-            else
-                echo "Applying simple ad-hoc signature to $dmg"
-                codesign --force --sign - "$dmg" || {
-                  echo "::warning::Failed to ad-hoc sign $dmg"
-                  cp "$dmg" "signed/$(basename "$dmg")"
-                  continue
-                }
-            fi
-
-            # Notarize if credentials available (Skip for ad-hoc)
-            if [ "$AD_HOC_SIGNING" = "false" ] && [ -n "$APPLE_ID_USERNAME" ] && [ -n "$APPLE_ID_PASSWORD" ]; then
-              echo "Notarizing $dmg..."
-              xcrun notarytool submit "$dmg" \
-                --apple-id "$APPLE_ID_USERNAME" \
-                --password "$APPLE_ID_PASSWORD" \
-                --team-id "$APPLE_TEAM_ID" \
-                --wait || echo "::warning::Notarization failed for $dmg"
-
-              # Staple the notarization ticket
-              xcrun stapler staple "$dmg" || echo "::warning::Stapling failed for $dmg"
-            elif [ "$AD_HOC_SIGNING" = "true" ]; then
-                echo "Skipping notarization due to ad-hoc signing."
-            fi
-
-            cp "$dmg" "signed/$(basename "$dmg")"
+          [ -f "$dmg" ] || continue
+          if [ -n "${KEYCHAIN_PATH:-}" ]; then
+            echo "Signing $dmg with Developer ID..."
+            codesign --force --sign "$APPLE_DEV_ID" --keychain "$KEYCHAIN_PATH" --timestamp "$dmg"
+          else
+            echo "Applying ad-hoc signature to $dmg"
+            codesign --force --sign - "$dmg"
           fi
-        done
 
-        # Cleanup
-        if [ -n "$KEYCHAIN_PATH" ]; then
+          if [ "$NOTARIZE" = true ]; then
+            echo "Notarizing $dmg..."
+            result=$(xcrun notarytool submit "$dmg" "${NOTARY_AUTH[@]}" --wait --output-format json)
+            echo "$result"
+            sub_id=$(echo "$result" | python3 -c 'import json,sys; print(json.load(sys.stdin)["id"])')
+            status=$(echo "$result" | python3 -c 'import json,sys; print(json.load(sys.stdin)["status"])')
+            # notarytool can exit 0 with status Invalid; check status and print Apple's per-file findings
+            if [ "$status" != "Accepted" ]; then
+              xcrun notarytool log "$sub_id" "${NOTARY_AUTH[@]}" || true
+              echo "::error::Notarization of $dmg returned '$status'"
+              exit 1
+            fi
+            xcrun stapler staple "$dmg"
+            spctl -a -t open --context context:primary-signature -v "$dmg"
+          fi
+
+          cp "$dmg" "signed/$(basename "$dmg")"
+        done
+        echo "Code signing completed"
+
+    - name: Delete signing keychain
+      if: always()
+      run: |
+        if [ -n "${KEYCHAIN_PATH:-}" ]; then
           security delete-keychain "$KEYCHAIN_PATH" || true
         fi
-
-        echo "Code signing completed"
 
     - name: Copy Testing tree with suffix
       if: always()
