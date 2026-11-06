@@ -621,6 +621,9 @@ jobs:
   macos-build:
     name: Build Packages for ${{ matrix.pretty }}
     if: (!inputs.jobs || contains(inputs.jobs, 'macos-build'))
+    # Apple signing secrets live in the apple-signing environment, which only these refs may use.
+    # Other refs (PRs, feature branches) get no environment and fall back to ad-hoc signing.
+    environment: ${{ (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v')) && 'apple-signing' || '' }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 720
     continue-on-error: ${{ matrix.allow_failure }}
