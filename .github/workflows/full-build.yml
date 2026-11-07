@@ -1499,6 +1499,8 @@ jobs:
 
       - name: Code sign binaries
         if: success() && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == true || github.event.inputs.publish_to_s3 == 'true')
+        # 3 attempts of up to 80 min each could outlast the runner's 6 h job limit; normal signing takes under 5 min
+        timeout-minutes: 60
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         run: |
           # Check if signing client exists
@@ -1574,6 +1576,8 @@ jobs:
 
       - name: Code sign installer
         if: success() && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == true || github.event.inputs.publish_to_s3 == 'true')
+        # 3 attempts of up to 80 min each could outlast the runner's 6 h job limit; normal signing takes under 5 min
+        timeout-minutes: 60
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         run: |
           # Check if signing client exists
