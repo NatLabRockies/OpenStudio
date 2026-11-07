@@ -1533,7 +1533,7 @@ jobs:
               Compress-Archive -Path $pathsToSign -DestinationPath $binZip -Force
 
               Write-Host "Sending binaries for signing..."
-              # The signing service occasionally drops the connection (write EPIPE); retry before failing the build
+              # The signing service occasionally reports a failed job (e.g. "write EPIPE"; root cause unconfirmed); retry before failing the build
               $signed = $false
               for ($attempt = 1; $attempt -le 3; $attempt++) {
                 # The client creates the signed zip before downloading and leaves it partial on failure
@@ -1606,7 +1606,7 @@ jobs:
                Compress-Archive -Path $installers.FullName -DestinationPath $installerZip -Force
 
                Write-Host "Sending installer for signing..."
-               # The signing service occasionally drops the connection (write EPIPE); retry before failing the build
+               # The signing service occasionally reports a failed job (e.g. "write EPIPE"; root cause unconfirmed); retry before failing the build
                $signed = $false
                for ($attempt = 1; $attempt -le 3; $attempt++) {
                  # The client creates the signed zip before downloading and leaves it partial on failure
