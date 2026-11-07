@@ -1236,6 +1236,10 @@ jobs:
         working-directory: ${{ env.OPENSTUDIO_SOURCE }}
         run: git config --global --add safe.directory '*'
 
+      - name: Test signing retry script
+        working-directory: ${{ env.OPENSTUDIO_SOURCE }}
+        run: ./.github/signing-client/Test-SigningWithRetry.ps1
+
       - name: Restore sccache cache
         uses: actions/cache@v6
         with:
@@ -1535,17 +1539,9 @@ jobs:
               Compress-Archive -Path $pathsToSign -DestinationPath $binZip -Force
 
               Write-Host "Sending binaries for signing..."
-              # The signing service occasionally reports a failed job (e.g. "write EPIPE"; root cause unconfirmed); retry before failing the build
-              $signed = $false
-              for ($attempt = 1; $attempt -le 3; $attempt++) {
-                # The client creates the signed zip before downloading and leaves it partial on failure
-                if (Test-Path $signedBinZip) { Remove-Item $signedBinZip -Force }
-                node "../${{ env.OPENSTUDIO_SOURCE }}/.github/signing-client/code-signing.js" $binZip -t 4800000
-                if ($LASTEXITCODE -eq 0 -and (Test-Path $signedBinZip)) { $signed = $true; break }
-                if ($attempt -lt 3) { Write-Host "::warning::Signing attempt $attempt failed, retrying in 60s"; Start-Sleep -Seconds 60 }
-              }
+              & "../${{ env.OPENSTUDIO_SOURCE }}/.github/signing-client/Invoke-SigningWithRetry.ps1" $binZip
 
-              if ($signed) {
+              if ($LASTEXITCODE -eq 0) {
                 Write-Host "Extracting and overwriting signed binaries..."
                 $tempDir = "temp_signed_binaries"
                 if (Test-Path $tempDir) { Remove-Item $tempDir -Recurse -Force }
@@ -1560,7 +1556,7 @@ jobs:
                 Remove-Item $signedBinZip -Force
                 Write-Host "Binaries signed successfully."
               } else {
-                 Write-Host "::error::Signed binaries zip not found!"
+                 Write-Host "::error::Signing binaries failed on every attempt!"
                  exit 1
               }
             } else {
@@ -1610,17 +1606,9 @@ jobs:
                Compress-Archive -Path $installers.FullName -DestinationPath $installerZip -Force
 
                Write-Host "Sending installer for signing..."
-               # The signing service occasionally reports a failed job (e.g. "write EPIPE"; root cause unconfirmed); retry before failing the build
-               $signed = $false
-               for ($attempt = 1; $attempt -le 3; $attempt++) {
-                 # The client creates the signed zip before downloading and leaves it partial on failure
-                 if (Test-Path $signedInstallerZip) { Remove-Item $signedInstallerZip -Force }
-                 node "../${{ env.OPENSTUDIO_SOURCE }}/.github/signing-client/code-signing.js" $installerZip -t 4800000
-                 if ($LASTEXITCODE -eq 0 -and (Test-Path $signedInstallerZip)) { $signed = $true; break }
-                 if ($attempt -lt 3) { Write-Host "::warning::Signing attempt $attempt failed, retrying in 60s"; Start-Sleep -Seconds 60 }
-               }
+               & "../${{ env.OPENSTUDIO_SOURCE }}/.github/signing-client/Invoke-SigningWithRetry.ps1" $installerZip
 
-               if ($signed) {
+               if ($LASTEXITCODE -eq 0) {
                   Write-Host "Extracting signed installer..."
                   if (-not (Test-Path signed)) { New-Item -ItemType Directory -Path signed | Out-Null }
                   Expand-Archive -Path $signedInstallerZip -DestinationPath signed -Force
@@ -1650,7 +1638,7 @@ jobs:
                   Remove-Item $signedInstallerZip -Force
                   Write-Host "Installer signed successfully."
                } else {
-                  Write-Host "::error::Signed installer zip not found!"
+                  Write-Host "::error::Signing installer failed on every attempt!"
                   exit 1
                }
             } else {
