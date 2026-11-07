@@ -61,7 +61,8 @@ on:
 
 concurrency:
   group: full-build-${{ github.ref }}
-  cancel-in-progress: false
+  # A new push to a PR supersedes its running build; develop, master, tags and nightlies still queue
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
