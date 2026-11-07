@@ -53,3 +53,5 @@ try {
 } finally {
   Remove-Item $work -Recurse -Force
 }
+# The all-fail case leaves $LASTEXITCODE at 1, and GitHub's pwsh wrapper exits with it
+exit 0
