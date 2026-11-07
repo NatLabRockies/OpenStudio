@@ -205,6 +205,14 @@ jobs:
         if: startsWith(matrix.platform, 'ubuntu')
         run: apt-get update && apt-get install -y ca-certificates
 
+      - name: Add libc setting to Conan (CentOS)
+        # Same as full-build.yml: keeps nrel-v2's glibc 2.39 binaries off AlmaLinux 9 (glibc 2.34)
+        if: matrix.platform == 'centos-9-x64'
+        run: |
+          conan config install developer/conan/config
+          conan profile show -pr:a glibc | grep "os.libc"
+          echo "CONAN_EXTRA_ARGS=-pr:a glibc" >> $GITHUB_ENV
+
       - name: Conan install
         run: |
           conan install . \
@@ -212,7 +220,8 @@ jobs:
             --build=missing \
             -c tools.cmake.cmaketoolchain:generator=Ninja \
             -s compiler.cppstd=20 \
-            -s build_type=${{ env.BUILD_TYPE }}
+            -s build_type=${{ env.BUILD_TYPE }} \
+            ${CONAN_EXTRA_ARGS:-}
 
       - name: Locate Ruby
         run: |
