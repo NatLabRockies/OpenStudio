@@ -9,14 +9,25 @@ param(
 )
 
 $ext = [IO.Path]::GetExtension($ZipPath)
-$signedZip = [IO.Path]::ChangeExtension($ZipPath, ".signed$ext")
+$stem = $ZipPath.Substring(0, $ZipPath.Length - $ext.Length)
+$signedZip = "$stem.signed$ext"
+if (Test-Path $signedZip) { Remove-Item $signedZip -Force }
 
-# The signing service occasionally reports a failed job (e.g. "write EPIPE"; root cause unconfirmed); retry before failing the build
+# The service keys jobs by file name and its output and status can land after the client has moved on,
+# so a reused name picks up an older job's result. Give every run and attempt a name no earlier job used.
+$runTag = if ($env:GITHUB_RUN_ID) { "$env:GITHUB_RUN_ID-$env:GITHUB_RUN_ATTEMPT" } else { 'local' }
+
 for ($attempt = 1; $attempt -le $MaxAttempts; $attempt++) {
+  $attemptZip = "$stem-$runTag-$attempt$ext"
+  $attemptSigned = "$stem-$runTag-$attempt.signed$ext"
+  Copy-Item $ZipPath $attemptZip -Force
   # The client creates the signed zip before downloading and leaves it partial on failure
-  if (Test-Path $signedZip) { Remove-Item $signedZip -Force }
-  node $Client $ZipPath -t $TimeoutMs
-  if ($LASTEXITCODE -eq 0 -and (Test-Path $signedZip)) { exit 0 }
+  if (Test-Path $attemptSigned) { Remove-Item $attemptSigned -Force }
+  node $Client $attemptZip -t $TimeoutMs
+  $ok = $LASTEXITCODE -eq 0 -and (Test-Path $attemptSigned)
+  Remove-Item $attemptZip -Force
+  if ($ok) { Move-Item $attemptSigned $signedZip -Force; exit 0 }
+  if (Test-Path $attemptSigned) { Remove-Item $attemptSigned -Force }
   if ($attempt -lt $MaxAttempts) {
     Write-Host "::warning::Signing attempt $attempt of $MaxAttempts failed, retrying in ${RetryDelaySeconds}s"
     Start-Sleep -Seconds $RetryDelaySeconds
