@@ -1534,13 +1534,16 @@ jobs:
 
               Write-Host "Sending binaries for signing..."
               # The signing service occasionally drops the connection (write EPIPE); retry before failing the build
+              $signed = $false
               for ($attempt = 1; $attempt -le 3; $attempt++) {
+                # The client creates the signed zip before downloading and leaves it partial on failure
+                if (Test-Path $signedBinZip) { Remove-Item $signedBinZip -Force }
                 node "../${{ env.OPENSTUDIO_SOURCE }}/.github/signing-client/code-signing.js" $binZip -t 4800000
-                if (Test-Path $signedBinZip) { break }
+                if ($LASTEXITCODE -eq 0 -and (Test-Path $signedBinZip)) { $signed = $true; break }
                 if ($attempt -lt 3) { Write-Host "::warning::Signing attempt $attempt failed, retrying in 60s"; Start-Sleep -Seconds 60 }
               }
 
-              if (Test-Path $signedBinZip) {
+              if ($signed) {
                 Write-Host "Extracting and overwriting signed binaries..."
                 $tempDir = "temp_signed_binaries"
                 if (Test-Path $tempDir) { Remove-Item $tempDir -Recurse -Force }
@@ -1604,13 +1607,16 @@ jobs:
 
                Write-Host "Sending installer for signing..."
                # The signing service occasionally drops the connection (write EPIPE); retry before failing the build
+               $signed = $false
                for ($attempt = 1; $attempt -le 3; $attempt++) {
+                 # The client creates the signed zip before downloading and leaves it partial on failure
+                 if (Test-Path $signedInstallerZip) { Remove-Item $signedInstallerZip -Force }
                  node "../${{ env.OPENSTUDIO_SOURCE }}/.github/signing-client/code-signing.js" $installerZip -t 4800000
-                 if (Test-Path $signedInstallerZip) { break }
+                 if ($LASTEXITCODE -eq 0 -and (Test-Path $signedInstallerZip)) { $signed = $true; break }
                  if ($attempt -lt 3) { Write-Host "::warning::Signing attempt $attempt failed, retrying in 60s"; Start-Sleep -Seconds 60 }
                }
 
-               if (Test-Path $signedInstallerZip) {
+               if ($signed) {
                   Write-Host "Extracting signed installer..."
                   if (-not (Test-Path signed)) { New-Item -ItemType Directory -Path signed | Out-Null }
                   Expand-Archive -Path $signedInstallerZip -DestinationPath signed -Force
