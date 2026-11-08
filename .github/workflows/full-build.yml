@@ -1072,7 +1072,16 @@ jobs:
               echo "::error::Notarization of $dmg returned '$status'"
               exit 1
             fi
-            xcrun stapler staple "$dmg"
+            # Stapling fetches the ticket from Apple's CloudKit, which can drop the connection or lag just after acceptance
+            for i in 1 2 3 4 5; do
+              xcrun stapler staple "$dmg" && break
+              if [ "$i" -eq 5 ]; then
+                echo "::error::Stapling $dmg failed 5 times"
+                exit 1
+              fi
+              echo "::warning::Stapling attempt $i failed, retrying in 30s"
+              sleep 30
+            done
             spctl -a -t open --context context:primary-signature -v "$dmg"
           fi
 
