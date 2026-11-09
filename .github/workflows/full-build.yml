@@ -1253,6 +1253,10 @@ jobs:
         working-directory: ${{ env.OPENSTUDIO_SOURCE }}
         run: git config --global --add safe.directory '*'
 
+      - name: Test signing retry script
+        working-directory: ${{ env.OPENSTUDIO_SOURCE }}
+        run: ./.github/signing-client/Test-SigningWithRetry.ps1
+
       - name: Restore sccache cache
         uses: actions/cache@v6
         with:
@@ -1516,6 +1520,8 @@ jobs:
 
       - name: Code sign binaries
         if: success() && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == true || github.event.inputs.publish_to_s3 == 'true')
+        # 3 attempts of up to 80 min each could outlast the runner's 6 h job limit; normal signing takes under 5 min
+        timeout-minutes: 60
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         run: |
           # Check if signing client exists
@@ -1550,9 +1556,9 @@ jobs:
               Compress-Archive -Path $pathsToSign -DestinationPath $binZip -Force
 
               Write-Host "Sending binaries for signing..."
-              node "../${{ env.OPENSTUDIO_SOURCE }}/.github/signing-client/code-signing.js" $binZip -t 4800000
+              & "../${{ env.OPENSTUDIO_SOURCE }}/.github/signing-client/Invoke-SigningWithRetry.ps1" $binZip
 
-              if (Test-Path $signedBinZip) {
+              if ($LASTEXITCODE -eq 0) {
                 Write-Host "Extracting and overwriting signed binaries..."
                 $tempDir = "temp_signed_binaries"
                 if (Test-Path $tempDir) { Remove-Item $tempDir -Recurse -Force }
@@ -1567,7 +1573,7 @@ jobs:
                 Remove-Item $signedBinZip -Force
                 Write-Host "Binaries signed successfully."
               } else {
-                 Write-Host "::error::Signed binaries zip not found!"
+                 Write-Host "::error::Signing binaries failed on every attempt!"
                  exit 1
               }
             } else {
@@ -1583,6 +1589,8 @@ jobs:
 
       - name: Code sign installer
         if: success() && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == true || github.event.inputs.publish_to_s3 == 'true')
+        # 3 attempts of up to 80 min each could outlast the runner's 6 h job limit; normal signing takes under 5 min
+        timeout-minutes: 60
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         run: |
           # Check if signing client exists
@@ -1615,9 +1623,9 @@ jobs:
                Compress-Archive -Path $installers.FullName -DestinationPath $installerZip -Force
 
                Write-Host "Sending installer for signing..."
-               node "../${{ env.OPENSTUDIO_SOURCE }}/.github/signing-client/code-signing.js" $installerZip -t 4800000
+               & "../${{ env.OPENSTUDIO_SOURCE }}/.github/signing-client/Invoke-SigningWithRetry.ps1" $installerZip
 
-               if (Test-Path $signedInstallerZip) {
+               if ($LASTEXITCODE -eq 0) {
                   Write-Host "Extracting signed installer..."
                   if (-not (Test-Path signed)) { New-Item -ItemType Directory -Path signed | Out-Null }
                   Expand-Archive -Path $signedInstallerZip -DestinationPath signed -Force
@@ -1647,7 +1655,7 @@ jobs:
                   Remove-Item $signedInstallerZip -Force
                   Write-Host "Installer signed successfully."
                } else {
-                  Write-Host "::error::Signed installer zip not found!"
+                  Write-Host "::error::Signing installer failed on every attempt!"
                   exit 1
                }
             } else {
