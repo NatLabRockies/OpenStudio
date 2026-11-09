@@ -5,7 +5,8 @@ param(
   [string]$Client = (Join-Path $PSScriptRoot 'code-signing.js'),
   [int]$MaxAttempts = 3,
   [int]$RetryDelaySeconds = 60,
-  [int]$TimeoutMs = 4800000
+  # Real signing takes under 5 min; 3 x 15 min + 2 x 60 s still fits the workflow's 60-min step timeout
+  [int]$TimeoutMs = 900000
 )
 
 $ext = [IO.Path]::GetExtension($ZipPath)
@@ -28,9 +29,9 @@ for ($attempt = 1; $attempt -le $MaxAttempts; $attempt++) {
   Remove-Item $attemptZip -Force
   if ($ok) { Move-Item $attemptSigned $signedZip -Force; exit 0 }
   if (Test-Path $attemptSigned) { Remove-Item $attemptSigned -Force }
-  if ($attempt -lt $MaxAttempts) {
-    Write-Host "::warning::Signing attempt $attempt of $MaxAttempts failed, retrying in ${RetryDelaySeconds}s"
-    Start-Sleep -Seconds $RetryDelaySeconds
-  }
+  Write-Host "::warning::Signing attempt $attempt of $MaxAttempts failed for input/$(Split-Path $attemptZip -Leaf)"
+  if ($attempt -lt $MaxAttempts) { Start-Sleep -Seconds $RetryDelaySeconds }
 }
+# A root-level <name>.lock still in the bucket means the service never picked the job up
+Write-Host "::error::No signed result from the signing service after $MaxAttempts attempts. Check that it is running and look for leftover .lock files in the ci-code-signing bucket."
 exit 1
