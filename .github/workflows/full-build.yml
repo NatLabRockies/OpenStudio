@@ -1001,7 +1001,15 @@ jobs:
         . ./conanbuild.sh
         SIGNING_ARGS=()
         if [ -n "$KEYCHAIN_PATH" ]; then
-          SIGNING_ARGS=(-D "CPACK_IFW_PACKAGE_SIGNING_IDENTITY=$APPLE_DEV_ID")
+          # cpack re-detects the QtIFW version with a 1 s timeout unless these three are set; on a slow runner
+          # detection fails, the version reads as < 3.0 and binarycreator runs without --sign (notarization: "not signed").
+          # Keep the version in sync with the QtIFW zip in "Set up Qt IFW".
+          binarycreator=$(command -v binarycreator)
+          repogen=$(command -v repogen)
+          SIGNING_ARGS=(-D "CPACK_IFW_PACKAGE_SIGNING_IDENTITY=$APPLE_DEV_ID"
+            -D "CPACK_IFW_FRAMEWORK_VERSION=5.0.0"
+            -D "CPACK_IFW_BINARYCREATOR_EXECUTABLE=$binarycreator"
+            -D "CPACK_IFW_REPOGEN_EXECUTABLE=$repogen")
         fi
         cpack -C ${{ env.BUILD_TYPE }} "${SIGNING_ARGS[@]}"
 
