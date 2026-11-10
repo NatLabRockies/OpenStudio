@@ -10,11 +10,115 @@
 #include "../Schedule/ScheduleRuleset.hpp"
 #include "../Schedule/ScheduleRuleset_Impl.hpp"
 #include "../ScheduleBase/ScheduleDay.hpp"
+#include "../ResourceObject/ScheduleTypeLimits.hpp"
 
 #include <utilities/time/Date.hpp>
 #include <utilities/time/Time.hpp>
 
 using namespace openstudio::epmodel;
+
+TEST_F(EPModelFixture, ScheduleRule_DefaultDayIsIndependent) {
+  Model model;
+  ScheduleRuleset ruleset(model);
+  auto defaultDay = ruleset.defaultDaySchedule();
+  ASSERT_TRUE(defaultDay.setName("Default Day"));
+  ASSERT_TRUE(defaultDay.addValue(openstudio::Time(1, 0), 0.8));
+  ScheduleTypeLimits limits(model);
+  ASSERT_TRUE(ruleset.setScheduleTypeLimits(limits));
+
+  ScheduleRule first(ruleset);
+  ScheduleRule second(ruleset);
+  auto firstDay = first.daySchedule();
+  auto secondDay = second.daySchedule();
+  EXPECT_NE(defaultDay, firstDay);
+  EXPECT_NE(defaultDay, secondDay);
+  EXPECT_NE(firstDay, secondDay);
+  EXPECT_EQ(std::vector<openstudio::Time>{openstudio::Time(1, 0)}, firstDay.times());
+  EXPECT_EQ(std::vector<double>{0.0}, firstDay.values());
+  ASSERT_TRUE(firstDay.scheduleTypeLimits());
+  EXPECT_EQ(limits, *firstDay.scheduleTypeLimits());
+
+  ASSERT_TRUE(firstDay.setName("First Rule Day"));
+  ASSERT_TRUE(firstDay.addValue(openstudio::Time(1, 0), 0.3));
+  EXPECT_EQ("Default Day", defaultDay.nameString());
+  EXPECT_EQ(std::vector<double>{0.8}, defaultDay.values());
+  EXPECT_EQ(std::vector<double>{0.0}, secondDay.values());
+  EXPECT_EQ(0, second.rulePriorityOrder());
+  EXPECT_EQ(1, first.rulePriorityOrder());
+}
+
+TEST_F(EPModelFixture, ScheduleRule_CopiesSuppliedDay) {
+  Model model;
+  ScheduleRuleset ruleset(model);
+  ScheduleDay source(model);
+  ASSERT_TRUE(source.setName("Source Day"));
+  ASSERT_TRUE(source.setInterpolatetoTimestep("Average"));
+  ASSERT_TRUE(source.addValue(openstudio::Time(0, 12), 0.2));
+  ASSERT_TRUE(source.addValue(openstudio::Time(1, 0), 0.7));
+  ScheduleTypeLimits sourceLimits(model);
+  ASSERT_TRUE(source.setScheduleTypeLimits(sourceLimits));
+
+  ScheduleRule first(ruleset, source);
+  ScheduleRule second(ruleset, source);
+  auto firstDay = first.daySchedule();
+  EXPECT_NE(source, firstDay);
+  EXPECT_NE(firstDay, second.daySchedule());
+  EXPECT_EQ(source.times(), firstDay.times());
+  EXPECT_EQ(source.values(), firstDay.values());
+  EXPECT_EQ(source.interpolatetoTimestep(), firstDay.interpolatetoTimestep());
+  ASSERT_TRUE(firstDay.scheduleTypeLimits());
+  EXPECT_EQ(sourceLimits, *firstDay.scheduleTypeLimits());
+
+  ASSERT_TRUE(firstDay.setName("First Rule Day"));
+  ASSERT_TRUE(firstDay.addValue(openstudio::Time(1, 0), 0.4));
+  EXPECT_EQ("Source Day", source.nameString());
+  EXPECT_EQ((std::vector<double>{0.2, 0.7}), source.values());
+  EXPECT_EQ(source.values(), second.daySchedule().values());
+
+  ScheduleTypeLimits parentLimits(model);
+  ASSERT_TRUE(ruleset.setScheduleTypeLimits(parentLimits));
+  ScheduleRule third(ruleset, source);
+  ASSERT_TRUE(third.daySchedule().scheduleTypeLimits());
+  EXPECT_EQ(parentLimits, *third.daySchedule().scheduleTypeLimits());
+  EXPECT_EQ(sourceLimits, *source.scheduleTypeLimits());
+}
+
+TEST_F(EPModelFixture, ScheduleRule_CopiesDayFromAnotherModel) {
+  Model sourceModel;
+  ScheduleDay source(sourceModel);
+  ASSERT_TRUE(source.setName("Source Day"));
+  ASSERT_TRUE(source.addValue(openstudio::Time(1, 0), 0.7));
+  ScheduleTypeLimits sourceLimits(sourceModel);
+  ASSERT_TRUE(sourceLimits.setName("Source Limits"));
+  ASSERT_TRUE(sourceLimits.setUpperLimitValue(1.0));
+  ASSERT_TRUE(source.setScheduleTypeLimits(sourceLimits));
+
+  Model targetModel;
+  ScheduleRuleset ruleset(targetModel);
+  ScheduleTypeLimits conflictingLimits(targetModel);
+  ASSERT_TRUE(conflictingLimits.setName("Source Limits"));
+  ASSERT_TRUE(conflictingLimits.setUpperLimitValue(10.0));
+  ScheduleRule rule(ruleset, source);
+  auto copiedDay = rule.daySchedule();
+  EXPECT_EQ(targetModel, copiedDay.model());
+  EXPECT_NE(source, copiedDay);
+  EXPECT_EQ(source.times(), copiedDay.times());
+  EXPECT_EQ(source.values(), copiedDay.values());
+  ASSERT_TRUE(copiedDay.scheduleTypeLimits());
+  EXPECT_EQ(targetModel, copiedDay.scheduleTypeLimits()->model());
+  EXPECT_NE(conflictingLimits, *copiedDay.scheduleTypeLimits());
+  const auto copiedUpperLimit = copiedDay.scheduleTypeLimits()->upperLimitValue();
+  ASSERT_TRUE(copiedUpperLimit);
+  EXPECT_DOUBLE_EQ(1.0, *copiedUpperLimit);
+  ASSERT_TRUE(copiedDay.addValue(openstudio::Time(1, 0), 0.4));
+  EXPECT_EQ(std::vector<double>{0.7}, source.values());
+
+  ASSERT_TRUE(ruleset.setScheduleTypeLimits(conflictingLimits));
+  ScheduleRule ruleWithParentLimits(ruleset, source);
+  ASSERT_TRUE(ruleWithParentLimits.daySchedule().scheduleTypeLimits());
+  EXPECT_EQ(conflictingLimits, *ruleWithParentLimits.daySchedule().scheduleTypeLimits());
+  EXPECT_EQ(sourceLimits, *source.scheduleTypeLimits());
+}
 
 TEST_F(EPModelFixture, ScheduleRule_PriorityOrderAndWeekdays) {
   Model model;
@@ -122,8 +226,12 @@ TEST_F(EPModelFixture, ScheduleRule_LoadFromIdf) {
   Model model;
   ScheduleRuleset scheduleRuleset(model);
   ASSERT_TRUE(scheduleRuleset.setName("Schedule Rule Ruleset"));
+  ASSERT_TRUE(scheduleRuleset.defaultDaySchedule().setName("Default Day"));
+  ASSERT_TRUE(scheduleRuleset.defaultDaySchedule().addValue(openstudio::Time(1, 0), 0.8));
   ScheduleRule rule(scheduleRuleset);
   ASSERT_TRUE(rule.setName("Schedule Rule"));
+  ASSERT_TRUE(rule.daySchedule().setName("Rule Day"));
+  ASSERT_TRUE(rule.daySchedule().addValue(openstudio::Time(1, 0), 0.3));
   ASSERT_TRUE(rule.setApplyWednesday(true));
   ASSERT_TRUE(rule.addDateRange(openstudio::Date(openstudio::MonthOfYear::Mar, 1), openstudio::Date(openstudio::MonthOfYear::Mar, 31)));
   ASSERT_TRUE(model.save(idfPath, true));
@@ -136,6 +244,11 @@ TEST_F(EPModelFixture, ScheduleRule_LoadFromIdf) {
 
   const auto loadedRule = loadedRuleset->scheduleRules().front();
   EXPECT_EQ("Schedule Rule", loadedRule.nameString());
+  EXPECT_EQ("Default Day", loadedRuleset->defaultDaySchedule().nameString());
+  EXPECT_EQ("Rule Day", loadedRule.daySchedule().nameString());
+  EXPECT_NE(loadedRuleset->defaultDaySchedule(), loadedRule.daySchedule());
+  EXPECT_EQ(std::vector<double>{0.8}, loadedRuleset->defaultDaySchedule().values());
+  EXPECT_EQ(std::vector<double>{0.3}, loadedRule.daySchedule().values());
   EXPECT_TRUE(loadedRule.applyWednesday());
   ASSERT_EQ(1u, loadedRule.dateRanges().size());
   EXPECT_EQ(openstudio::Date(openstudio::MonthOfYear::Mar, 1), loadedRule.dateRanges().front().first);
