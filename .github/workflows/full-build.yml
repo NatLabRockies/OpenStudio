@@ -1261,9 +1261,12 @@ jobs:
         working-directory: ${{ env.OPENSTUDIO_SOURCE }}
         run: git config --global --add safe.directory '*'
 
-      - name: Test signing retry script
+      - name: Test signing scripts
         working-directory: ${{ env.OPENSTUDIO_SOURCE }}
-        run: ./.github/signing-client/Test-SigningWithRetry.ps1
+        run: |
+          ./.github/signing-client/Test-SigningWithRetry.ps1
+          if ($LASTEXITCODE) { exit 1 }
+          ./.github/signing-client/Test-AssertAuthenticodeSigned.ps1
 
       - name: Restore sccache cache
         uses: actions/cache@v6
@@ -1528,66 +1531,62 @@ jobs:
 
       - name: Code sign binaries
         if: success() && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == true || github.event.inputs.publish_to_s3 == 'true')
-        # 3 attempts of up to 80 min each could outlast the runner's 6 h job limit; normal signing takes under 5 min
+        # Caps a hung signing service; Invoke-SigningWithRetry.ps1 sizes its 3 attempts to fit inside this
         timeout-minutes: 60
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         run: |
-          # Check if signing client exists
-          $canSign = $true
-          if (-not (Test-Path "../${{ env.OPENSTUDIO_SOURCE }}/.github/signing-client/code-signing.js")) {
-            Write-Host "::warning::Code signing client not found at .github/signing-client/code-signing.js"
-            Write-Host "::warning::Skipping code signing. Add signing client files to repository."
-            $canSign = $false
+          # This step only runs on refs that publish, so a missing client or secret must fail rather than ship unsigned
+          $signingDir = "../${{ env.OPENSTUDIO_SOURCE }}/.github/signing-client"
+          if (-not (Test-Path "$signingDir/code-signing.js")) {
+            Write-Host "::error::Code signing client not found at .github/signing-client/code-signing.js"
+            exit 1
           }
-
-          # Check if AWS signing credentials are configured
           if ([string]::IsNullOrEmpty("${{ secrets.AWS_SIGNING_ACCESS_KEY }}")) {
-            Write-Host "::warning::AWS_SIGNING_ACCESS_KEY secret not configured"
-            Write-Host "::warning::Skipping code signing. Configure AWS signing secrets."
-            $canSign = $false
+            Write-Host "::error::AWS_SIGNING_ACCESS_KEY secret not configured"
+            exit 1
           }
 
-          if ($canSign) {
-            Write-Host "------------------------------------------------------------"
-            Write-Host "Signing Binaries (Pre-CPack)"
-            Write-Host "------------------------------------------------------------"
+          Write-Host "------------------------------------------------------------"
+          Write-Host "Signing Binaries (Pre-CPack)"
+          Write-Host "------------------------------------------------------------"
 
-            $pathsToSign = @()
-            if (Test-Path "bin") { $pathsToSign += "bin" }
-            if (Test-Path "Products") { $pathsToSign += "Products" }
-
-            if ($pathsToSign.Count -gt 0) {
-              $binZip = "binaries_to_sign.zip"
-              $signedBinZip = "binaries_to_sign.signed.zip"
-
-              Write-Host "Archiving binaries from: $pathsToSign"
-              Compress-Archive -Path $pathsToSign -DestinationPath $binZip -Force
-
-              Write-Host "Sending binaries for signing..."
-              & "../${{ env.OPENSTUDIO_SOURCE }}/.github/signing-client/Invoke-SigningWithRetry.ps1" $binZip
-
-              if ($LASTEXITCODE -eq 0) {
-                Write-Host "Extracting and overwriting signed binaries..."
-                $tempDir = "temp_signed_binaries"
-                if (Test-Path $tempDir) { Remove-Item $tempDir -Recurse -Force }
-                Expand-Archive -Path $signedBinZip -DestinationPath $tempDir -Force
-
-                # Copy back to overwrite
-                Copy-Item -Path "$tempDir\*" -Destination . -Recurse -Force
-
-                # Cleanup
-                Remove-Item $tempDir -Recurse -Force
-                Remove-Item $binZip -Force
-                Remove-Item $signedBinZip -Force
-                Write-Host "Binaries signed successfully."
-              } else {
-                 Write-Host "::error::Signing binaries failed on every attempt!"
-                 exit 1
-              }
-            } else {
-               Write-Host "::warning::No bin/ or Products/ directories found to sign."
-            }
+          $pathsToSign = @()
+          if (Test-Path "bin") { $pathsToSign += "bin" }
+          if (Test-Path "Products") { $pathsToSign += "Products" }
+          if ($pathsToSign.Count -eq 0) {
+            Write-Host "::error::No bin/ or Products/ directories found to sign."
+            exit 1
           }
+
+          $binZip = "binaries_to_sign.zip"
+          $signedBinZip = "binaries_to_sign.signed.zip"
+
+          Write-Host "Archiving binaries from: $pathsToSign"
+          Compress-Archive -Path $pathsToSign -DestinationPath $binZip -Force
+
+          Write-Host "Sending binaries for signing..."
+          & "$signingDir/Invoke-SigningWithRetry.ps1" $binZip
+          if ($LASTEXITCODE -ne 0) {
+            Write-Host "::error::Signing binaries failed on every attempt!"
+            exit 1
+          }
+
+          Write-Host "Extracting and overwriting signed binaries..."
+          $tempDir = "temp_signed_binaries"
+          if (Test-Path $tempDir) { Remove-Item $tempDir -Recurse -Force }
+          Expand-Archive -Path $signedBinZip -DestinationPath $tempDir -Force
+
+          # Only top-level exe/dll files: these are what OpenStudio builds; nested files may be third-party
+          $toVerify = Get-ChildItem -Path ($pathsToSign | ForEach-Object { "$tempDir\$_\*" }) -Include *.exe, *.dll -File
+          & "$signingDir/Assert-AuthenticodeSigned.ps1" -Path @($toVerify | ForEach-Object FullName)
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+
+          Copy-Item -Path "$tempDir\*" -Destination . -Recurse -Force
+
+          Remove-Item $tempDir -Recurse -Force
+          Remove-Item $binZip -Force
+          Remove-Item $signedBinZip -Force
+          Write-Host "Binaries signed successfully."
 
       - name: Create packages
         if: ${{ success() && !cancelled() }}
@@ -1597,79 +1596,59 @@ jobs:
 
       - name: Code sign installer
         if: success() && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == true || github.event.inputs.publish_to_s3 == 'true')
-        # 3 attempts of up to 80 min each could outlast the runner's 6 h job limit; normal signing takes under 5 min
+        # Caps a hung signing service; Invoke-SigningWithRetry.ps1 sizes its 3 attempts to fit inside this
         timeout-minutes: 60
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         run: |
-          # Check if signing client exists
-          $canSign = $true
-          if (-not (Test-Path "../${{ env.OPENSTUDIO_SOURCE }}/.github/signing-client/code-signing.js")) {
-            $canSign = $false
+          # The binaries step already failed if the client or secret is missing
+          $signingDir = "../${{ env.OPENSTUDIO_SOURCE }}/.github/signing-client"
+
+          Write-Host "------------------------------------------------------------"
+          Write-Host "Signing Final Installer"
+          Write-Host "------------------------------------------------------------"
+
+          $installerZip = "installer_to_sign_${{ github.sha }}.zip"
+          $signedInstallerZip = "installer_to_sign_${{ github.sha }}.signed.zip"
+
+          $installers = @(Get-ChildItem -Filter "OpenStudio-*.exe")
+          if ($installers.Count -ne 1) {
+            Write-Host "::error::Expected one OpenStudio installer to sign, found $($installers.Count): $($installers.Name)"
+            exit 1
+          }
+          $installer = $installers[0]
+          Write-Host "Found installer: $($installer.Name)"
+
+          Compress-Archive -Path $installer.FullName -DestinationPath $installerZip -Force
+
+          Write-Host "Sending installer for signing..."
+          & "$signingDir/Invoke-SigningWithRetry.ps1" $installerZip
+          if ($LASTEXITCODE -ne 0) {
+            Write-Host "::error::Signing installer failed on every attempt!"
+            exit 1
           }
 
-          # Check if AWS signing credentials are configured
-          if ([string]::IsNullOrEmpty("${{ secrets.AWS_SIGNING_ACCESS_KEY }}")) {
-            $canSign = $false
+          Write-Host "Extracting signed installer..."
+          if (-not (Test-Path signed)) { New-Item -ItemType Directory -Path signed | Out-Null }
+          Expand-Archive -Path $signedInstallerZip -DestinationPath signed -Force
+
+          $extractedFiles = @(Get-ChildItem -Path signed -Filter "*.exe")
+          if ($extractedFiles.Count -ne 1) {
+            Write-Host "::error::Expected one EXE in the signed archive, found $($extractedFiles.Count)"
+            exit 1
+          }
+          $extractedFile = $extractedFiles[0]
+          if ($extractedFile.Name -ne $installer.Name) {
+            # Rename to match the original filename to prevent distributing a misnamed file
+            Write-Host "::warning::Signed file name mismatch: expected $($installer.Name), got $($extractedFile.Name); renaming"
+            $extractedFile = Rename-Item -Path $extractedFile.FullName -NewName $installer.Name -Force -PassThru
           }
 
-          if ($canSign) {
-            Write-Host "------------------------------------------------------------"
-            Write-Host "Signing Final Installer"
-            Write-Host "------------------------------------------------------------"
+          & "$signingDir/Assert-AuthenticodeSigned.ps1" -Path $extractedFile.FullName
+          if ($LASTEXITCODE -ne 0) { exit 1 }
 
-            $installerZip = "installer_to_sign_${{ github.sha }}.zip"
-            $signedInstallerZip = "installer_to_sign_${{ github.sha }}.signed.zip"
-
-            $installers = Get-ChildItem -Filter "OpenStudio-*.exe"
-            if ($installers.Count -gt 0) {
-               Write-Host "Found installer(s): $($installers.Name)"
-
-               # Calculate hash of original installer before compression
-               $originalHash = (Get-FileHash -Path $installers[0].FullName -Algorithm SHA256).Hash
-               Write-Host "Original installer hash (SHA256): $originalHash"
-
-               Compress-Archive -Path $installers.FullName -DestinationPath $installerZip -Force
-
-               Write-Host "Sending installer for signing..."
-               & "../${{ env.OPENSTUDIO_SOURCE }}/.github/signing-client/Invoke-SigningWithRetry.ps1" $installerZip
-
-               if ($LASTEXITCODE -eq 0) {
-                  Write-Host "Extracting signed installer..."
-                  if (-not (Test-Path signed)) { New-Item -ItemType Directory -Path signed | Out-Null }
-                  Expand-Archive -Path $signedInstallerZip -DestinationPath signed -Force
-
-                  # Verify the extracted file exists and matches expected name
-                  $extractedFiles = Get-ChildItem -Path signed -Filter "*.exe"
-                  if ($extractedFiles.Count -eq 0) {
-                     Write-Host "::error::No EXE file found in signed archive!"
-                     exit 1
-                  }
-
-                  $extractedFile = $extractedFiles[0]
-                  $expectedName = $installers[0].Name
-                  if ($extractedFile.Name -ne $expectedName) {
-                     Write-Host "::warning::Signed file name mismatch!"
-                     Write-Host "  Expected: $expectedName"
-                     Write-Host "  Got: $($extractedFile.Name)"
-
-                     # Rename to match the original filename to prevent distributing misnamed file
-                     $newPath = Join-Path -Path signed -ChildPath $expectedName
-                     Rename-Item -Path $extractedFile.FullName -NewName $newPath -Force
-                     Write-Host "  Renamed to match original: $expectedName"
-                  }
-
-                  # Cleanup
-                  Remove-Item $installerZip -Force
-                  Remove-Item $signedInstallerZip -Force
-                  Write-Host "Installer signed successfully."
-               } else {
-                  Write-Host "::error::Signing installer failed on every attempt!"
-                  exit 1
-               }
-            } else {
-               Write-Host "::warning::No OpenStudio installer found to sign."
-            }
-          }
+          Remove-Item $installerZip -Force
+          Remove-Item $signedInstallerZip -Force
+          Write-Host "Installer signed successfully."
 
       - name: Cleanup intermediate files
         if: always()
@@ -1725,19 +1704,11 @@ jobs:
         run: |
           echo "Uploading artifacts to s3://${AWS_S3_BUCKET}/${S3_PREFIX}"
 
-          # Find installers in artifact subdirectories
-          SIGNED_EXE=$(find . -name "*.exe" | grep "SIGNED" | head -n 1 || true)
-          UNSIGNED_EXE=$(find . -name "*.exe" | grep -v "SIGNED" | head -n 1 || true)
-
-          if [ -n "$SIGNED_EXE" ]; then
-            echo "Uploading signed installer: $SIGNED_EXE"
-            filename=$(basename "$SIGNED_EXE")
-            aws s3 cp "$SIGNED_EXE" "s3://${AWS_S3_BUCKET}/${S3_PREFIX}/${filename}" --acl public-read
-          elif [ -n "$UNSIGNED_EXE" ]; then
-            echo "Uploading unsigned installer: $UNSIGNED_EXE"
-            filename=$(basename "$UNSIGNED_EXE")
-            aws s3 cp "$UNSIGNED_EXE" "s3://${AWS_S3_BUCKET}/${S3_PREFIX}/${filename}" --acl public-read
-          fi
+          # windows-build only uploads the EXE after signing and verifying it
+          find . -name "*.exe" | while read -r file; do
+            echo "Uploading signed installer: $file"
+            aws s3 cp "$file" "s3://${AWS_S3_BUCKET}/${S3_PREFIX}/$(basename "$file")" --acl public-read
+          done
 
           # Upload tarballs
           for file in $(find . -name "*.tar.gz"); do
