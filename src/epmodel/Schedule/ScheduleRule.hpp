@@ -37,7 +37,9 @@ namespace epmodel {
   class EPMODEL_API ScheduleRule : public ParentObject
   {
    public:
+    /// Creates an independent day schedule initialized to zero through 24:00, inheriting ruleset type limits when present.
     explicit ScheduleRule(ScheduleRuleset& scheduleRuleset);
+    /// Copies the supplied day schedule; ruleset type limits, when present, override the copied day's limits.
     ScheduleRule(ScheduleRuleset& scheduleRuleset, const ScheduleDay& daySchedule);
 
     virtual ~ScheduleRule() override = default;

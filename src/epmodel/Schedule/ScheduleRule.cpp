@@ -11,12 +11,14 @@
 #include "Model.hpp"
 #include "ScheduleBase/ScheduleDay.hpp"
 #include "ScheduleBase/ScheduleDay_Impl.hpp"
+#include "ResourceObject/ScheduleTypeLimits.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/Logger.hpp>
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/Schedule_Week_Rule_FieldEnums.hxx>
 #include <utilities/idf/IdfExtensibleGroup.hpp>
+#include <utilities/time/Time.hpp>
 
 #include <algorithm>
 
@@ -32,13 +34,39 @@ namespace epmodel {
 
   }  // namespace
 
-  ScheduleRule::ScheduleRule(ScheduleRuleset& scheduleRuleset) : ScheduleRule(scheduleRuleset, scheduleRuleset.defaultDaySchedule()) {}
+  ScheduleRule::ScheduleRule(ScheduleRuleset& scheduleRuleset) : ParentObject(ScheduleRule::iddObjectType(), scheduleRuleset.model()) {
+    auto impl = getImpl<detail::ScheduleRule_Impl>();
+    const auto initialPriorityOrder = static_cast<unsigned>(scheduleRuleset.scheduleRules().size());
+    ScheduleDay daySchedule(scheduleRuleset.model());
+    OS_ASSERT(daySchedule.addValue(openstudio::Time(1, 0), 0.0));
+    if (auto limits = scheduleRuleset.scheduleTypeLimits()) {
+      OS_ASSERT(daySchedule.setScheduleTypeLimits(*limits));
+    }
+    OS_ASSERT(impl->setDaySchedule(daySchedule));
+    OS_ASSERT(impl->setRulePriorityOrderDirect(initialPriorityOrder));
+    OS_ASSERT(setPointer(Schedule_Week_RuleFields::ScheduleYearRulesName, scheduleRuleset.handle()));
+    OS_ASSERT(scheduleRuleset.setScheduleRulePriorityOrder(*this, 0));
+  }
 
   ScheduleRule::ScheduleRule(ScheduleRuleset& scheduleRuleset, const ScheduleDay& daySchedule)
     : ParentObject(ScheduleRule::iddObjectType(), scheduleRuleset.model()) {
     auto impl = getImpl<detail::ScheduleRule_Impl>();
     const auto initialPriorityOrder = static_cast<unsigned>(scheduleRuleset.scheduleRules().size());
-    OS_ASSERT(impl->setDaySchedule(daySchedule));
+    auto targetModel = scheduleRuleset.model();
+    const auto parentLimits = scheduleRuleset.scheduleTypeLimits();
+    std::vector<WorkspaceObject> objectsToCopy{daySchedule};
+    if (!parentLimits) {
+      if (auto sourceLimits = daySchedule.scheduleTypeLimits(); sourceLimits && sourceLimits->model() != targetModel) {
+        objectsToCopy.push_back(*sourceLimits);
+      }
+    }
+    auto copiedObjects = targetModel.addObjects(objectsToCopy);
+    OS_ASSERT(copiedObjects.size() == objectsToCopy.size());
+    auto copiedDay = copiedObjects.front().cast<ScheduleDay>();
+    if (parentLimits) {
+      OS_ASSERT(copiedDay.setScheduleTypeLimits(*parentLimits));
+    }
+    OS_ASSERT(impl->setDaySchedule(copiedDay));
     OS_ASSERT(impl->setRulePriorityOrderDirect(initialPriorityOrder));
     OS_ASSERT(setPointer(Schedule_Week_RuleFields::ScheduleYearRulesName, scheduleRuleset.handle()));
     OS_ASSERT(scheduleRuleset.setScheduleRulePriorityOrder(*this, 0));
