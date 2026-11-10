@@ -107,7 +107,7 @@ jobs:
             pretty: CentOS 9 (AlmaLinux) x64
             os: ubuntu-24.04
             container_image: nrel/openstudio-cmake-tools:almalinux9-main
-            container_options: "--privileged -u root -e LANG=en_US.UTF-8"
+            container_options: "--privileged -u root"
             test_suffix: CentOS-9
             pip_package: false
             docker_trigger: false
@@ -121,7 +121,7 @@ jobs:
             pretty: Ubuntu 24.04 x64
             os: ubuntu-24.04
             container_image: nrel/openstudio-cmake-tools:noble-main
-            container_options: "--privileged -u root -e LANG=en_US.UTF-8"
+            container_options: "--privileged -u root"
             test_suffix: Ubuntu-2404
             pip_package: true
             docker_trigger: true
@@ -135,7 +135,7 @@ jobs:
             pretty: Ubuntu 24.04 ARM64
             os: ubuntu-24.04-arm
             container_image: nrel/openstudio-cmake-tools:noble-main
-            container_options: "--privileged -u root -e LANG=en_US.UTF-8"
+            container_options: "--privileged -u root"
             test_suffix: Ubuntu-2404-ARM64
             pip_package: false
             docker_trigger: false
