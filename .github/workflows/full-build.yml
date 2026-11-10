@@ -13,11 +13,7 @@ on:
     # Using 1 AM UTC to cover EDT (daylight saving time)
     - cron: '0 1 * * *'
   pull_request:
-    branches:
-      - develop
-      - master
-      - os-4.0-dev
-
+    # Any base branch: this is the only macOS/Windows PR CI since Jenkins osx/windows were retired
     types: [ opened, reopened, synchronize ]
   workflow_dispatch:
     inputs:
@@ -1669,6 +1665,15 @@ jobs:
           name: OS-Installers-${{ matrix.platform }}-EXE-${{ github.sha }}
           path: ${{ env.OPENSTUDIO_BUILD }}/signed/OpenStudio*.exe
           if-no-files-found: ignore
+
+      # PRs skip signing, so ship the unsigned cpack EXE for testers; the name avoids windows-publish's download pattern
+      - name: Upload unsigned EXE installer
+        if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v7
+        with:
+          name: OS-Unsigned-EXE-${{ matrix.platform }}-${{ github.sha }}
+          path: ${{ env.OPENSTUDIO_BUILD }}/OpenStudio-*.exe
+          if-no-files-found: warn
 
       - name: Upload Signed TGZ installer
         uses: actions/upload-artifact@v7
