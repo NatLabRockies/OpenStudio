@@ -13,11 +13,7 @@ on:
     # Using 1 AM UTC to cover EDT (daylight saving time)
     - cron: '0 1 * * *'
   pull_request:
-    branches:
-      - develop
-      - master
-      - os-4.0-dev
-
+    # Any base branch: this is the only macOS/Windows PR CI since Jenkins osx/windows were retired
     types: [ opened, reopened, synchronize ]
   workflow_dispatch:
     inputs:
@@ -61,7 +57,8 @@ on:
 
 concurrency:
   group: full-build-${{ github.ref }}
-  cancel-in-progress: false
+  # A new push to a PR supersedes its running build; develop, master, tags and nightlies still queue
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
@@ -283,6 +280,16 @@ jobs:
           wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | tee /etc/apt/trusted.gpg.d/kitware.gpg >/dev/null
           apt-get update
 
+      - name: Add libc setting to Conan (CentOS)
+        # nrel-v2's gcc 14 binaries are built on ubuntu-24.04 with GLIBC 2.39 (AlmaLinux 9 has 2.34). Making the libc version part of the
+        # package_id means they never match, so we build from source (or pull the glibc 2.34 ones once uploaded to nrel-v2).
+        # See https://github.com/NatLabRockies/openstudio-cmake-tools/issues/6
+        if: matrix.platform == 'centos-9-x64'
+        run: |
+          conan config install developer/conan/config
+          conan profile show -pr:a glibc | grep "os.libc"
+          echo "CONAN_EXTRA_ARGS=-pr:a glibc" >> $GITHUB_ENV
+
       - name: Conan install
         env:
           CONAN_BUILD_POLICY: ${{ contains(inputs.conan_build_all, matrix.platform) && '*' || 'missing' }}
@@ -292,7 +299,8 @@ jobs:
             --build="$CONAN_BUILD_POLICY" \
             -c tools.cmake.cmaketoolchain:generator=Ninja \
             -s compiler.cppstd=20 \
-            -s build_type=${{ env.BUILD_TYPE }}
+            -s build_type=${{ env.BUILD_TYPE }} \
+            ${CONAN_EXTRA_ARGS:-}
 
       - name: Locate Ruby
         run: |
@@ -621,6 +629,9 @@ jobs:
   macos-build:
     name: Build Packages for ${{ matrix.pretty }}
     if: (!inputs.jobs || contains(inputs.jobs, 'macos-build'))
+    # Apple signing secrets live in the apple-signing environment, which only these refs may use.
+    # Other refs (PRs, feature branches) get no environment and fall back to ad-hoc signing.
+    environment: ${{ (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v')) && 'apple-signing' || '' }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 720
     continue-on-error: ${{ matrix.allow_failure }}
@@ -814,8 +825,6 @@ jobs:
 
     - name: Configure with CMake
       working-directory: ${{ env.OPENSTUDIO_BUILD }}
-      env:
-        APPLE_DEV_ID: ${{ secrets.APPLE_DEV_ID }}
       run: |
         set -e
         chmod +x ./conanbuild.sh
@@ -827,19 +836,9 @@ jobs:
           CCACHE_ARGS=("-DCMAKE_C_COMPILER_LAUNCHER=$CCACHE_EXE" "-DCMAKE_CXX_COMPILER_LAUNCHER=$CCACHE_EXE")
         fi
 
-        # Configure signing identity
-        SIGNING_ARGS=()
-        if [ -n "$APPLE_DEV_ID" ]; then
-          echo "Configuring for signed build"
-          SIGNING_ARGS=("-DCPACK_IFW_PACKAGE_SIGNING_IDENTITY=$APPLE_DEV_ID")
-        else
-          echo "Configuring for ad-hoc signed build (skipping CPack signing identity)"
-          SIGNING_ARGS=()
-        fi
-
+        # Signing identity is passed to cpack only when the keychain exists (see Create packages)
         cmake -G Ninja \
           "${CCACHE_ARGS[@]}" \
-          "${SIGNING_ARGS[@]}" \
           -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake \
           -DCMAKE_CXX_FLAGS="-D_LIBCPP_ENABLE_CXX17_REMOVED_UNARY_BINARY_FUNCTION -Wno-enum-constexpr-conversion" \
           -DENABLE_COVERAGE:BOOL=OFF \
@@ -951,12 +950,14 @@ jobs:
         echo "exit_code=${overall_exit_code}" >> $GITHUB_OUTPUT
 
     - name: Setup Keychain
-      if: success() && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || inputs.publish_to_s3 == true || github.event.inputs.publish_to_s3 == 'true' )
+      # Same refs as macos-publish, so everything published to S3 is signed
+      if: success() && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == true || github.event.inputs.publish_to_s3 == 'true')
       env:
         APPLE_CERT_DATA: ${{ secrets.APPLE_CERT_DATA }}
         APPLE_CERT_PASSWORD: ${{ secrets.APPLE_CERT_PASSWORD }}
+        APPLE_DEV_ID: ${{ secrets.APPLE_DEV_ID }}
       run: |
-        if [ -n "$APPLE_CERT_DATA" ] && [ -n "$APPLE_CERT_PASSWORD" ]; then
+        if [ -n "$APPLE_CERT_DATA" ] && [ -n "$APPLE_CERT_PASSWORD" ] && [ -n "$APPLE_DEV_ID" ]; then
           # Create temporary keychain
           KEYCHAIN_PATH="$RUNNER_TEMP/build.keychain"
           KEYCHAIN_PASSWORD=$(openssl rand -base64 32)
@@ -968,19 +969,45 @@ jobs:
           CERT_PATH="$RUNNER_TEMP/certificate.p12"
           echo "$APPLE_CERT_DATA" | base64 --decode > "$CERT_PATH"
           security import "$CERT_PATH" -k "$KEYCHAIN_PATH" -P "$APPLE_CERT_PASSWORD" -T /usr/bin/codesign
+          # Developer ID G2 intermediate: without it the identity is untrusted and codesign can't build the chain
+          curl -fsSL https://www.apple.com/certificateauthority/DeveloperIDG2CA.cer -o "$RUNNER_TEMP/DeveloperIDG2CA.cer"
+          security import "$RUNNER_TEMP/DeveloperIDG2CA.cer" -k "$KEYCHAIN_PATH"
           security set-key-partition-list -S apple-tool:,apple: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          rm -f "$CERT_PATH"
+          # codesign/binarycreator only find identities in keychains on the search list
+          security list-keychains -d user -s "$KEYCHAIN_PATH" $(security list-keychains -d user | tr -d '"')
+          security find-identity -v -p codesigning "$KEYCHAIN_PATH" | grep -F "$APPLE_DEV_ID" || {
+            echo "::error::Identity '$APPLE_DEV_ID' not found in imported certificate (APPLE_DEV_ID must be the full 'Developer ID Application: Name (TEAMID)' string)"
+            exit 1
+          }
 
           echo "KEYCHAIN_PATH=$KEYCHAIN_PATH" >> $GITHUB_ENV
+        else
+          echo "::warning::Apple signing secrets not set; packages will be ad-hoc signed and not notarized."
         fi
 
     - name: Create packages
+      id: create_packages
       if: ${{ success() && !cancelled() }}
       working-directory: ${{ env.OPENSTUDIO_BUILD }}
       env:
         COPYFILE_DISABLE: 1
+        APPLE_DEV_ID: ${{ secrets.APPLE_DEV_ID }}
       run: |
         . ./conanbuild.sh
-        cpack -C ${{ env.BUILD_TYPE }}
+        SIGNING_ARGS=()
+        if [ -n "$KEYCHAIN_PATH" ]; then
+          # cpack re-detects the QtIFW version with a 1 s timeout unless these three are set; on a slow runner
+          # detection fails, the version reads as < 3.0 and binarycreator runs without --sign (notarization: "not signed").
+          # Keep the version in sync with the QtIFW zip in "Set up Qt IFW".
+          binarycreator=$(command -v binarycreator)
+          repogen=$(command -v repogen)
+          SIGNING_ARGS=(-D "CPACK_IFW_PACKAGE_SIGNING_IDENTITY=$APPLE_DEV_ID"
+            -D "CPACK_IFW_FRAMEWORK_VERSION=5.0.0"
+            -D "CPACK_IFW_BINARYCREATOR_EXECUTABLE=$binarycreator"
+            -D "CPACK_IFW_REPOGEN_EXECUTABLE=$repogen")
+        fi
+        cpack -C ${{ env.BUILD_TYPE }} "${SIGNING_ARGS[@]}"
 
     - name: Cleanup intermediate files
       if: always()
@@ -992,14 +1019,11 @@ jobs:
     - name: Ad-hoc Sign Inner Installer (Fix "Killed" Error)
       if: ${{ success() && !cancelled() }}
       working-directory: ${{ env.OPENSTUDIO_BUILD }}
-      env:
-        # Check if we have a real ID; if not, we must patch the installer
-        APPLE_DEV_ID: ${{ secrets.APPLE_DEV_ID }}
       run: |
 
-        # Only run this fix if we DO NOT have a valid Developer ID.
-        if [ -n "$APPLE_DEV_ID" ]; then
-          echo "Valid Developer ID detected. Skipping ad-hoc patch."
+        # Only needed when cpack did not sign with a Developer ID (no keychain set up).
+        if [ -n "$KEYCHAIN_PATH" ]; then
+          echo "Developer ID keychain present. Skipping ad-hoc patch."
           exit 0
         fi
 
@@ -1011,74 +1035,71 @@ jobs:
         done
 
     - name: Sign DMG and Notarize
-      if: ${{ steps.create_packages.outcome == 'success' && (github.ref == 'refs/heads/develop' || inputs.publish_to_s3 == true || github.event.inputs.publish_to_s3 == 'true' || matrix.os == 'macOS') }}
+      if: ${{ !cancelled() && steps.create_packages.outcome == 'success' }}
       working-directory: ${{ env.OPENSTUDIO_BUILD }}
       env:
-        APPLE_CERT_DATA: ${{ secrets.APPLE_CERT_DATA }}
         APPLE_DEV_ID: ${{ secrets.APPLE_DEV_ID }}
         APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         APPLE_ID_USERNAME: ${{ secrets.APPLE_ID_USERNAME }}
         APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
       run: |
-
-        # Check if signing credentials are configured
-        if [ -z "$APPLE_CERT_DATA" ] || [ -z "$APPLE_DEV_ID" ]; then
-          echo "::warning::Apple signing certificates not configured. Falling back to ad-hoc signing."
-          export AD_HOC_SIGNING=true
-        else
-          export AD_HOC_SIGNING=false
+        set -euo pipefail
+        NOTARIZE=false
+        if [ -n "${KEYCHAIN_PATH:-}" ]; then
+          if [ -n "$APPLE_ID_USERNAME" ] && [ -n "$APPLE_ID_PASSWORD" ] && [ -n "$APPLE_TEAM_ID" ]; then
+            NOTARIZE=true
+          else
+            echo "::warning::APPLE_ID_USERNAME/APPLE_ID_PASSWORD/APPLE_TEAM_ID not set; DMGs will be signed but not notarized."
+          fi
         fi
+        NOTARY_AUTH=(--apple-id "$APPLE_ID_USERNAME" --password "$APPLE_ID_PASSWORD" --team-id "$APPLE_TEAM_ID")
 
-        # Sign DMG files
         mkdir -p signed
         for dmg in ${{ matrix.dmg_glob }}; do
-          if [ -f "$dmg" ]; then
-            echo "Processing $dmg..."
-
-            # The inner app should already be signed by CPack if configured correctly
-            # We now sign the DMG itself (or ad-hoc sign if needed)
-
-            echo "Signing $dmg..."
-            if [ "$AD_HOC_SIGNING" = "false" ]; then
-              codesign --force --sign "$APPLE_DEV_ID" --timestamp --options runtime "$dmg" || {
-                echo "::warning::Failed to sign $dmg"
-                cp "$dmg" "signed/$(basename "$dmg")"
-                continue
-              }
-            else
-                echo "Applying simple ad-hoc signature to $dmg"
-                codesign --force --sign - "$dmg" || {
-                  echo "::warning::Failed to ad-hoc sign $dmg"
-                  cp "$dmg" "signed/$(basename "$dmg")"
-                  continue
-                }
-            fi
-
-            # Notarize if credentials available (Skip for ad-hoc)
-            if [ "$AD_HOC_SIGNING" = "false" ] && [ -n "$APPLE_ID_USERNAME" ] && [ -n "$APPLE_ID_PASSWORD" ]; then
-              echo "Notarizing $dmg..."
-              xcrun notarytool submit "$dmg" \
-                --apple-id "$APPLE_ID_USERNAME" \
-                --password "$APPLE_ID_PASSWORD" \
-                --team-id "$APPLE_TEAM_ID" \
-                --wait || echo "::warning::Notarization failed for $dmg"
-
-              # Staple the notarization ticket
-              xcrun stapler staple "$dmg" || echo "::warning::Stapling failed for $dmg"
-            elif [ "$AD_HOC_SIGNING" = "true" ]; then
-                echo "Skipping notarization due to ad-hoc signing."
-            fi
-
-            cp "$dmg" "signed/$(basename "$dmg")"
+          [ -f "$dmg" ] || continue
+          if [ -n "${KEYCHAIN_PATH:-}" ]; then
+            echo "Signing $dmg with Developer ID..."
+            codesign --force --sign "$APPLE_DEV_ID" --keychain "$KEYCHAIN_PATH" --timestamp "$dmg"
+          else
+            echo "Applying ad-hoc signature to $dmg"
+            codesign --force --sign - "$dmg"
           fi
-        done
 
-        # Cleanup
-        if [ -n "$KEYCHAIN_PATH" ]; then
+          if [ "$NOTARIZE" = true ]; then
+            echo "Notarizing $dmg..."
+            result=$(xcrun notarytool submit "$dmg" "${NOTARY_AUTH[@]}" --wait --output-format json)
+            echo "$result"
+            sub_id=$(echo "$result" | python3 -c 'import json,sys; print(json.load(sys.stdin)["id"])')
+            status=$(echo "$result" | python3 -c 'import json,sys; print(json.load(sys.stdin)["status"])')
+            # notarytool can exit 0 with status Invalid; check status and print Apple's per-file findings
+            if [ "$status" != "Accepted" ]; then
+              xcrun notarytool log "$sub_id" "${NOTARY_AUTH[@]}" || true
+              echo "::error::Notarization of $dmg returned '$status'"
+              exit 1
+            fi
+            # Stapling fetches the ticket from Apple's CloudKit, which can drop the connection or lag just after acceptance
+            for i in 1 2 3 4 5; do
+              xcrun stapler staple "$dmg" && break
+              if [ "$i" -eq 5 ]; then
+                echo "::error::Stapling $dmg failed 5 times"
+                exit 1
+              fi
+              echo "::warning::Stapling attempt $i failed, retrying in 30s"
+              sleep 30
+            done
+            spctl -a -t open --context context:primary-signature -v "$dmg"
+          fi
+
+          cp "$dmg" "signed/$(basename "$dmg")"
+        done
+        echo "Code signing completed"
+
+    - name: Delete signing keychain
+      if: always()
+      run: |
+        if [ -n "${KEYCHAIN_PATH:-}" ]; then
           security delete-keychain "$KEYCHAIN_PATH" || true
         fi
-
-        echo "Code signing completed"
 
     - name: Copy Testing tree with suffix
       if: always()
@@ -1235,6 +1256,13 @@ jobs:
       - name: Git safe directory
         working-directory: ${{ env.OPENSTUDIO_SOURCE }}
         run: git config --global --add safe.directory '*'
+
+      - name: Test signing scripts
+        working-directory: ${{ env.OPENSTUDIO_SOURCE }}
+        run: |
+          ./.github/signing-client/Test-SigningWithRetry.ps1
+          if ($LASTEXITCODE) { exit 1 }
+          ./.github/signing-client/Test-AssertAuthenticodeSigned.ps1
 
       - name: Restore sccache cache
         uses: actions/cache@v6
@@ -1499,64 +1527,62 @@ jobs:
 
       - name: Code sign binaries
         if: success() && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == true || github.event.inputs.publish_to_s3 == 'true')
+        # Caps a hung signing service; Invoke-SigningWithRetry.ps1 sizes its 3 attempts to fit inside this
+        timeout-minutes: 60
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         run: |
-          # Check if signing client exists
-          $canSign = $true
-          if (-not (Test-Path "../${{ env.OPENSTUDIO_SOURCE }}/.github/signing-client/code-signing.js")) {
-            Write-Host "::warning::Code signing client not found at .github/signing-client/code-signing.js"
-            Write-Host "::warning::Skipping code signing. Add signing client files to repository."
-            $canSign = $false
+          # This step only runs on refs that publish, so a missing client or secret must fail rather than ship unsigned
+          $signingDir = "../${{ env.OPENSTUDIO_SOURCE }}/.github/signing-client"
+          if (-not (Test-Path "$signingDir/code-signing.js")) {
+            Write-Host "::error::Code signing client not found at .github/signing-client/code-signing.js"
+            exit 1
           }
-
-          # Check if AWS signing credentials are configured
           if ([string]::IsNullOrEmpty("${{ secrets.AWS_SIGNING_ACCESS_KEY }}")) {
-            Write-Host "::warning::AWS_SIGNING_ACCESS_KEY secret not configured"
-            Write-Host "::warning::Skipping code signing. Configure AWS signing secrets."
-            $canSign = $false
+            Write-Host "::error::AWS_SIGNING_ACCESS_KEY secret not configured"
+            exit 1
           }
 
-          if ($canSign) {
-            Write-Host "------------------------------------------------------------"
-            Write-Host "Signing Binaries (Pre-CPack)"
-            Write-Host "------------------------------------------------------------"
+          Write-Host "------------------------------------------------------------"
+          Write-Host "Signing Binaries (Pre-CPack)"
+          Write-Host "------------------------------------------------------------"
 
-            $pathsToSign = @()
-            if (Test-Path "bin") { $pathsToSign += "bin" }
-            if (Test-Path "Products") { $pathsToSign += "Products" }
-
-            if ($pathsToSign.Count -gt 0) {
-              $binZip = "binaries_to_sign.zip"
-              $signedBinZip = "binaries_to_sign.signed.zip"
-
-              Write-Host "Archiving binaries from: $pathsToSign"
-              Compress-Archive -Path $pathsToSign -DestinationPath $binZip -Force
-
-              Write-Host "Sending binaries for signing..."
-              node "../${{ env.OPENSTUDIO_SOURCE }}/.github/signing-client/code-signing.js" $binZip -t 4800000
-
-              if (Test-Path $signedBinZip) {
-                Write-Host "Extracting and overwriting signed binaries..."
-                $tempDir = "temp_signed_binaries"
-                if (Test-Path $tempDir) { Remove-Item $tempDir -Recurse -Force }
-                Expand-Archive -Path $signedBinZip -DestinationPath $tempDir -Force
-
-                # Copy back to overwrite
-                Copy-Item -Path "$tempDir\*" -Destination . -Recurse -Force
-
-                # Cleanup
-                Remove-Item $tempDir -Recurse -Force
-                Remove-Item $binZip -Force
-                Remove-Item $signedBinZip -Force
-                Write-Host "Binaries signed successfully."
-              } else {
-                 Write-Host "::error::Signed binaries zip not found!"
-                 exit 1
-              }
-            } else {
-               Write-Host "::warning::No bin/ or Products/ directories found to sign."
-            }
+          $pathsToSign = @()
+          if (Test-Path "bin") { $pathsToSign += "bin" }
+          if (Test-Path "Products") { $pathsToSign += "Products" }
+          if ($pathsToSign.Count -eq 0) {
+            Write-Host "::error::No bin/ or Products/ directories found to sign."
+            exit 1
           }
+
+          $binZip = "binaries_to_sign.zip"
+          $signedBinZip = "binaries_to_sign.signed.zip"
+
+          Write-Host "Archiving binaries from: $pathsToSign"
+          Compress-Archive -Path $pathsToSign -DestinationPath $binZip -Force
+
+          Write-Host "Sending binaries for signing..."
+          & "$signingDir/Invoke-SigningWithRetry.ps1" $binZip
+          if ($LASTEXITCODE -ne 0) {
+            Write-Host "::error::Signing binaries failed on every attempt!"
+            exit 1
+          }
+
+          Write-Host "Extracting and overwriting signed binaries..."
+          $tempDir = "temp_signed_binaries"
+          if (Test-Path $tempDir) { Remove-Item $tempDir -Recurse -Force }
+          Expand-Archive -Path $signedBinZip -DestinationPath $tempDir -Force
+
+          # Only top-level exe/dll files: these are what OpenStudio builds; nested files may be third-party
+          $toVerify = Get-ChildItem -Path ($pathsToSign | ForEach-Object { "$tempDir\$_\*" }) -Include *.exe, *.dll -File
+          & "$signingDir/Assert-AuthenticodeSigned.ps1" -Path @($toVerify | ForEach-Object FullName)
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+
+          Copy-Item -Path "$tempDir\*" -Destination . -Recurse -Force
+
+          Remove-Item $tempDir -Recurse -Force
+          Remove-Item $binZip -Force
+          Remove-Item $signedBinZip -Force
+          Write-Host "Binaries signed successfully."
 
       - name: Create packages
         if: ${{ success() && !cancelled() }}
@@ -1566,77 +1592,59 @@ jobs:
 
       - name: Code sign installer
         if: success() && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == true || github.event.inputs.publish_to_s3 == 'true')
+        # Caps a hung signing service; Invoke-SigningWithRetry.ps1 sizes its 3 attempts to fit inside this
+        timeout-minutes: 60
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         run: |
-          # Check if signing client exists
-          $canSign = $true
-          if (-not (Test-Path "../${{ env.OPENSTUDIO_SOURCE }}/.github/signing-client/code-signing.js")) {
-            $canSign = $false
+          # The binaries step already failed if the client or secret is missing
+          $signingDir = "../${{ env.OPENSTUDIO_SOURCE }}/.github/signing-client"
+
+          Write-Host "------------------------------------------------------------"
+          Write-Host "Signing Final Installer"
+          Write-Host "------------------------------------------------------------"
+
+          $installerZip = "installer_to_sign_${{ github.sha }}.zip"
+          $signedInstallerZip = "installer_to_sign_${{ github.sha }}.signed.zip"
+
+          $installers = @(Get-ChildItem -Filter "OpenStudio-*.exe")
+          if ($installers.Count -ne 1) {
+            Write-Host "::error::Expected one OpenStudio installer to sign, found $($installers.Count): $($installers.Name)"
+            exit 1
+          }
+          $installer = $installers[0]
+          Write-Host "Found installer: $($installer.Name)"
+
+          Compress-Archive -Path $installer.FullName -DestinationPath $installerZip -Force
+
+          Write-Host "Sending installer for signing..."
+          & "$signingDir/Invoke-SigningWithRetry.ps1" $installerZip
+          if ($LASTEXITCODE -ne 0) {
+            Write-Host "::error::Signing installer failed on every attempt!"
+            exit 1
           }
 
-          # Check if AWS signing credentials are configured
-          if ([string]::IsNullOrEmpty("${{ secrets.AWS_SIGNING_ACCESS_KEY }}")) {
-            $canSign = $false
+          Write-Host "Extracting signed installer..."
+          if (-not (Test-Path signed)) { New-Item -ItemType Directory -Path signed | Out-Null }
+          Expand-Archive -Path $signedInstallerZip -DestinationPath signed -Force
+
+          $extractedFiles = @(Get-ChildItem -Path signed -Filter "*.exe")
+          if ($extractedFiles.Count -ne 1) {
+            Write-Host "::error::Expected one EXE in the signed archive, found $($extractedFiles.Count)"
+            exit 1
+          }
+          $extractedFile = $extractedFiles[0]
+          if ($extractedFile.Name -ne $installer.Name) {
+            # Rename to match the original filename to prevent distributing a misnamed file
+            Write-Host "::warning::Signed file name mismatch: expected $($installer.Name), got $($extractedFile.Name); renaming"
+            $extractedFile = Rename-Item -Path $extractedFile.FullName -NewName $installer.Name -Force -PassThru
           }
 
-          if ($canSign) {
-            Write-Host "------------------------------------------------------------"
-            Write-Host "Signing Final Installer"
-            Write-Host "------------------------------------------------------------"
+          & "$signingDir/Assert-AuthenticodeSigned.ps1" -Path $extractedFile.FullName
+          if ($LASTEXITCODE -ne 0) { exit 1 }
 
-            $installerZip = "installer_to_sign_${{ github.sha }}.zip"
-            $signedInstallerZip = "installer_to_sign_${{ github.sha }}.signed.zip"
-
-            $installers = Get-ChildItem -Filter "OpenStudio-*.exe"
-            if ($installers.Count -gt 0) {
-               Write-Host "Found installer(s): $($installers.Name)"
-
-               # Calculate hash of original installer before compression
-               $originalHash = (Get-FileHash -Path $installers[0].FullName -Algorithm SHA256).Hash
-               Write-Host "Original installer hash (SHA256): $originalHash"
-
-               Compress-Archive -Path $installers.FullName -DestinationPath $installerZip -Force
-
-               Write-Host "Sending installer for signing..."
-               node "../${{ env.OPENSTUDIO_SOURCE }}/.github/signing-client/code-signing.js" $installerZip -t 4800000
-
-               if (Test-Path $signedInstallerZip) {
-                  Write-Host "Extracting signed installer..."
-                  if (-not (Test-Path signed)) { New-Item -ItemType Directory -Path signed | Out-Null }
-                  Expand-Archive -Path $signedInstallerZip -DestinationPath signed -Force
-
-                  # Verify the extracted file exists and matches expected name
-                  $extractedFiles = Get-ChildItem -Path signed -Filter "*.exe"
-                  if ($extractedFiles.Count -eq 0) {
-                     Write-Host "::error::No EXE file found in signed archive!"
-                     exit 1
-                  }
-
-                  $extractedFile = $extractedFiles[0]
-                  $expectedName = $installers[0].Name
-                  if ($extractedFile.Name -ne $expectedName) {
-                     Write-Host "::warning::Signed file name mismatch!"
-                     Write-Host "  Expected: $expectedName"
-                     Write-Host "  Got: $($extractedFile.Name)"
-
-                     # Rename to match the original filename to prevent distributing misnamed file
-                     $newPath = Join-Path -Path signed -ChildPath $expectedName
-                     Rename-Item -Path $extractedFile.FullName -NewName $newPath -Force
-                     Write-Host "  Renamed to match original: $expectedName"
-                  }
-
-                  # Cleanup
-                  Remove-Item $installerZip -Force
-                  Remove-Item $signedInstallerZip -Force
-                  Write-Host "Installer signed successfully."
-               } else {
-                  Write-Host "::error::Signed installer zip not found!"
-                  exit 1
-               }
-            } else {
-               Write-Host "::warning::No OpenStudio installer found to sign."
-            }
-          }
+          Remove-Item $installerZip -Force
+          Remove-Item $signedInstallerZip -Force
+          Write-Host "Installer signed successfully."
 
       - name: Cleanup intermediate files
         if: always()
@@ -1657,6 +1665,15 @@ jobs:
           name: OS-Installers-${{ matrix.platform }}-EXE-${{ github.sha }}
           path: ${{ env.OPENSTUDIO_BUILD }}/signed/OpenStudio*.exe
           if-no-files-found: ignore
+
+      # PRs skip signing, so ship the unsigned cpack EXE for testers; the name avoids windows-publish's download pattern
+      - name: Upload unsigned EXE installer
+        if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v7
+        with:
+          name: OS-Unsigned-EXE-${{ matrix.platform }}-${{ github.sha }}
+          path: ${{ env.OPENSTUDIO_BUILD }}/OpenStudio-*.exe
+          if-no-files-found: warn
 
       - name: Upload Signed TGZ installer
         uses: actions/upload-artifact@v7
@@ -1692,19 +1709,11 @@ jobs:
         run: |
           echo "Uploading artifacts to s3://${AWS_S3_BUCKET}/${S3_PREFIX}"
 
-          # Find installers in artifact subdirectories
-          SIGNED_EXE=$(find . -name "*.exe" | grep "SIGNED" | head -n 1 || true)
-          UNSIGNED_EXE=$(find . -name "*.exe" | grep -v "SIGNED" | head -n 1 || true)
-
-          if [ -n "$SIGNED_EXE" ]; then
-            echo "Uploading signed installer: $SIGNED_EXE"
-            filename=$(basename "$SIGNED_EXE")
-            aws s3 cp "$SIGNED_EXE" "s3://${AWS_S3_BUCKET}/${S3_PREFIX}/${filename}" --acl public-read
-          elif [ -n "$UNSIGNED_EXE" ]; then
-            echo "Uploading unsigned installer: $UNSIGNED_EXE"
-            filename=$(basename "$UNSIGNED_EXE")
-            aws s3 cp "$UNSIGNED_EXE" "s3://${AWS_S3_BUCKET}/${S3_PREFIX}/${filename}" --acl public-read
-          fi
+          # windows-build only uploads the EXE after signing and verifying it
+          find . -name "*.exe" | while read -r file; do
+            echo "Uploading signed installer: $file"
+            aws s3 cp "$file" "s3://${AWS_S3_BUCKET}/${S3_PREFIX}/$(basename "$file")" --acl public-read
+          done
 
           # Upload tarballs
           for file in $(find . -name "*.tar.gz"); do

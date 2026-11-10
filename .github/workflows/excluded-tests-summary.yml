@@ -120,8 +120,14 @@ jobs:
       CTEST_PARALLEL_LEVEL: ${{ matrix.max_jobs }}
 
     steps:
-      - name: Verify space
+      - name: Enable Swap and Verify space
         run: |
+          # Same as full-build.yml: 8GB swap file to prevent OOM kills (exit code 137)
+          dd if=/dev/zero of=/mnt/swapfile_extra bs=1M count=8192 status=progress
+          chmod 600 /mnt/swapfile_extra
+          mkswap /mnt/swapfile_extra
+          swapon /mnt/swapfile_extra
+          echo
           if command -v free >/dev/null 2>&1; then free -h; else echo "free command not available"; fi
           echo
           swapon --show || true
@@ -205,6 +211,14 @@ jobs:
         if: startsWith(matrix.platform, 'ubuntu')
         run: apt-get update && apt-get install -y ca-certificates
 
+      - name: Add libc setting to Conan (CentOS)
+        # Same as full-build.yml: keeps nrel-v2's glibc 2.39 binaries off AlmaLinux 9 (glibc 2.34)
+        if: matrix.platform == 'centos-9-x64'
+        run: |
+          conan config install developer/conan/config
+          conan profile show -pr:a glibc | grep "os.libc"
+          echo "CONAN_EXTRA_ARGS=-pr:a glibc" >> $GITHUB_ENV
+
       - name: Conan install
         run: |
           conan install . \
@@ -212,7 +226,8 @@ jobs:
             --build=missing \
             -c tools.cmake.cmaketoolchain:generator=Ninja \
             -s compiler.cppstd=20 \
-            -s build_type=${{ env.BUILD_TYPE }}
+            -s build_type=${{ env.BUILD_TYPE }} \
+            ${CONAN_EXTRA_ARGS:-}
 
       - name: Locate Ruby
         run: |
