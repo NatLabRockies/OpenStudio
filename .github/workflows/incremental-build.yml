@@ -125,7 +125,7 @@ jobs:
             git fetch origin "+refs/pull/$PR/head:refs/remotes/origin/pr/$PR" && \
             git checkout "origin/pr/$PR"
           else
-            git checkout ${{ github.ref_name }}
+            git checkout ${{ github.sha }} # exact pushed/dispatched commit; the local branch in this clone is never updated
           fi
 
       - name: Install conan dependencies
@@ -223,7 +223,7 @@ jobs:
       - name: Test Summary
         uses: test-summary/action@v2
         with:
-          paths: "${{ env.OPENSTUDIO_DOCKER_VOLUME }}/${{ env.OPENSTUDIO_SOURCE_NAME }}/${{ env.OPENSTUDIO_BUILD_NAME }}/Testing/run*/results.xml" # Path to your JUnit output file
+          paths: "${{ env.OPENSTUDIO_DOCKER_VOLUME }}/${{ env.OPENSTUDIO_SOURCE_NAME }}/${{ env.OPENSTUDIO_BUILD_NAME }}/Testing/run1/results.xml" # run1 only: run2/run3 are retries and would count tests twice
           output: "${{ env.OPENSTUDIO_DOCKER_VOLUME }}/${{ env.OPENSTUDIO_SOURCE_NAME }}/${{ env.OPENSTUDIO_BUILD_NAME }}/Testing/test-summary.md"
         if: always()
 
