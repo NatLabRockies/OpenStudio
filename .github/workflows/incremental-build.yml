@@ -220,10 +220,18 @@ jobs:
             exit 1
           fi
 
+      - name: Pick results for test summary
+        if: always()
+        run: |
+          # One file only, so retried tests are not counted twice: run2 (the retry) if it ran, else run1
+          T="${{ env.OPENSTUDIO_DOCKER_VOLUME }}/${{ env.OPENSTUDIO_SOURCE_NAME }}/${{ env.OPENSTUDIO_BUILD_NAME }}/Testing"
+          if [ -f "$T/run2/results.xml" ]; then f="$T/run2/results.xml"; else f="$T/run1/results.xml"; fi
+          echo "SUMMARY_XML=$f" >> "$GITHUB_ENV"
+
       - name: Test Summary
         uses: test-summary/action@v2
         with:
-          paths: "${{ env.OPENSTUDIO_DOCKER_VOLUME }}/${{ env.OPENSTUDIO_SOURCE_NAME }}/${{ env.OPENSTUDIO_BUILD_NAME }}/Testing/run1/results.xml" # run1 only: run2/run3 are retries and would count tests twice
+          paths: ${{ env.SUMMARY_XML }}
           output: "${{ env.OPENSTUDIO_DOCKER_VOLUME }}/${{ env.OPENSTUDIO_SOURCE_NAME }}/${{ env.OPENSTUDIO_BUILD_NAME }}/Testing/test-summary.md"
         if: always()
 
