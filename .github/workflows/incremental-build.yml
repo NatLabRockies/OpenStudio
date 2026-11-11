@@ -42,7 +42,7 @@ jobs:
     env:
       MAX_SAFE_THREADS: $(( ($(nproc) * 90 + 50) / 100 ))
       CMAKE_CXX_COMPILER_LAUNCHER: ccache
-      NODE_TLS_REJECT_UNAUTHORIZED: 0
+      NODE_EXTRA_CA_CERTS: /usr/local/share/ca-certificates/nrel-ca-bundle.crt # NREL proxy (fpgate) re-signs TLS for the Actions service; host file mounted below
       DOCKER_ROOT: /github/home
       OPENSTUDIO_DOCKER_VOLUME: /github/home/Ubuntu
       OPENSTUDIO_SOURCE_NAME: OpenStudio
@@ -55,6 +55,7 @@ jobs:
       volumes: # envs don't work in volume definition for containers
         - "/srv/data/jenkins/docker-volumes/conan-data-gha/.conan2:/github/home/.conan2" # Conan cache, separate from the Jenkins builds on this host (the conan cache is not safe for concurrent use)
         - "/srv/data/jenkins/docker-volumes/ubuntu-2404:/github/home/Ubuntu"
+        - "/usr/local/share/ca-certificates/nrel-ca-bundle.crt:/usr/local/share/ca-certificates/nrel-ca-bundle.crt:ro" # NREL Root + Issuing CA from the runner host
 
     defaults:
       run:
@@ -132,9 +133,9 @@ jobs:
         working-directory: ${{ env.OPENSTUDIO_DOCKER_VOLUME }}/${{ env.OPENSTUDIO_SOURCE_NAME }}
         run: |
           conan remote add conancenter --force https://center2.conan.io
-          conan remote update conancenter --insecure
+          conan remote update conancenter --secure
           conan remote add nrel-v2 --index 0 --force https://conan.openstudio.net/artifactory/api/conan/conan-v2
-          conan remote update nrel-v2 --insecure
+          conan remote update nrel-v2 --secure # verify_ssl persists in the shared cache, so set it back explicitly; NREL CA comes from ~/.conan2/cacert.pem (global.conf)
 
           CONAN_PROFILE_DEFAULT="${{ env.DOCKER_ROOT }}/.conan2/profiles/default"
           if [ ! -f "$CONAN_PROFILE_DEFAULT" ]; then
