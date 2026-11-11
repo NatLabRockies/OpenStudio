@@ -223,9 +223,9 @@ jobs:
       - name: Pick results for test summary
         if: always()
         run: |
-          # One file only, so retried tests are not counted twice: run2 (the retry) if it ran, else run1
+          # One file only, so retried tests are not counted twice: the latest run (run3, run2, then run1)
           T="${{ env.OPENSTUDIO_DOCKER_VOLUME }}/${{ env.OPENSTUDIO_SOURCE_NAME }}/${{ env.OPENSTUDIO_BUILD_NAME }}/Testing"
-          if [ -f "$T/run2/results.xml" ]; then f="$T/run2/results.xml"; else f="$T/run1/results.xml"; fi
+          for r in run3 run2 run1; do f="$T/$r/results.xml"; [ -f "$f" ] && break; done
           echo "SUMMARY_XML=$f" >> "$GITHUB_ENV"
 
       - name: Test Summary
