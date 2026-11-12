@@ -6,6 +6,7 @@ on:
 
   pull_request:
     branches: [ develop, os-4.0-dev ]
+    types: [ opened, reopened, synchronize, labeled ] # labeled: adding the CI label starts a build
 
   workflow_dispatch:
     inputs:
@@ -16,7 +17,8 @@ on:
         default: false
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  # Adding any other label gets its own group, so it does not cancel a running build
+  group: ${{ github.workflow }}-${{ (github.event.action == 'labeled' && github.event.label.name != 'Pull Request - Ready for CI') && github.run_id || github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 env:
@@ -24,7 +26,10 @@ env:
 
 jobs:
   build:
-    if: github.event_name == 'workflow_dispatch' || github.event_name == 'push' || contains(github.event.pull_request.labels.*.name, 'Pull Request - Ready for CI')
+    if: >-
+      github.event_name == 'workflow_dispatch' || github.event_name == 'push' ||
+      (contains(github.event.pull_request.labels.*.name, 'Pull Request - Ready for CI') &&
+       (github.event.action != 'labeled' || github.event.label.name == 'Pull Request - Ready for CI'))
     runs-on: linux-openstudio-2
 
     permissions:
@@ -37,7 +42,6 @@ jobs:
     env:
       MAX_SAFE_THREADS: $(( ($(nproc) * 90 + 50) / 100 ))
       CMAKE_CXX_COMPILER_LAUNCHER: ccache
-      MAKEFLAGS: "-j$(( ($(nproc) * 90 + 50) / 100 ))"
       NODE_TLS_REJECT_UNAUTHORIZED: 0
       DOCKER_ROOT: /github/home
       OPENSTUDIO_DOCKER_VOLUME: /github/home/Ubuntu
@@ -57,16 +61,14 @@ jobs:
         shell: bash
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v7
-        with:
-          fetch-depth: 1
-
+      # No actions/checkout: the build uses the persistent clone in OPENSTUDIO_DOCKER_VOLUME (see Git Setup)
       - name: Prepare workspace
         run: |
           cd ${{ env.OPENSTUDIO_DOCKER_VOLUME }}/${{ env.OPENSTUDIO_SOURCE_NAME }}
           # make safe repository
           git config --global --add safe.directory "*"
+          # env: values are not shell-expanded, so compute -j here for make runs inside conan --build=missing
+          echo "MAKEFLAGS=-j${{ env.MAX_SAFE_THREADS }}" >> "$GITHUB_ENV"
 
       - name: Aggressive clean
         if: inputs.aggressive_clean
@@ -118,11 +120,12 @@ jobs:
           git config user.email "cicommercialbuilding@gmail.com" && \
           git config user.name "ci-commercialbuildings" && \
           git fetch origin && \
-          git fetch origin +refs/pull/*/head:refs/remotes/origin/pr/* && \
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            git checkout origin/pr/${{ github.event.pull_request.number }}
+            PR=${{ github.event.pull_request.number }}
+            git fetch origin "+refs/pull/$PR/head:refs/remotes/origin/pr/$PR" && \
+            git checkout "origin/pr/$PR"
           else
-            git checkout ${{ github.ref_name }}
+            git checkout ${{ github.sha }} # exact pushed/dispatched commit; the local branch in this clone is never updated
           fi
 
       - name: Install conan dependencies
@@ -174,6 +177,8 @@ jobs:
         working-directory: ${{ env.OPENSTUDIO_DOCKER_VOLUME }}/${{ env.OPENSTUDIO_SOURCE_NAME }}/${{ env.OPENSTUDIO_BUILD_NAME }}
         run: |
           set +e
+          # The build dir persists between jobs; clear old results so a stale run2/run3 is not reported
+          rm -rf Testing/run{1,2,3}
           mkdir -p Testing/run{1,2,3}
 
           begin_group() { echo -e "::group::\033[93m$1\033[0m"; }
@@ -215,10 +220,18 @@ jobs:
             exit 1
           fi
 
+      - name: Pick results for test summary
+        if: always()
+        run: |
+          # One file only, so retried tests are not counted twice: the latest run (run3, run2, then run1)
+          T="${{ env.OPENSTUDIO_DOCKER_VOLUME }}/${{ env.OPENSTUDIO_SOURCE_NAME }}/${{ env.OPENSTUDIO_BUILD_NAME }}/Testing"
+          for r in run3 run2 run1; do f="$T/$r/results.xml"; [ -f "$f" ] && break; done
+          echo "SUMMARY_XML=$f" >> "$GITHUB_ENV"
+
       - name: Test Summary
         uses: test-summary/action@v2
         with:
-          paths: "${{ env.OPENSTUDIO_DOCKER_VOLUME }}/${{ env.OPENSTUDIO_SOURCE_NAME }}/${{ env.OPENSTUDIO_BUILD_NAME }}/Testing/run*/results.xml" # Path to your JUnit output file
+          paths: ${{ env.SUMMARY_XML }}
           output: "${{ env.OPENSTUDIO_DOCKER_VOLUME }}/${{ env.OPENSTUDIO_SOURCE_NAME }}/${{ env.OPENSTUDIO_BUILD_NAME }}/Testing/test-summary.md"
         if: always()
 
@@ -253,13 +266,12 @@ jobs:
           dashboard_file = f"{build_dir}/Testing/dashboard/test-dashboard.md"
 
           # Find all JUnit XML files
-          xml_files = glob.glob(f"{build_dir}/Testing/run*/results.xml")
+          # Sorted so run2/run3 (retries of failed tests only) override run1 results
+          xml_files = sorted(glob.glob(f"{build_dir}/Testing/run*/results.xml"))
 
           total_tests = 0
-          total_failures = 0
-          total_errors = 0
           total_skipped = 0
-          failed_tests = []
+          latest = {}  # (class, name) -> failure info from the test's last run, or None if it passed
 
           # Parse XML files
           for xml_file in xml_files:
@@ -276,15 +288,12 @@ jobs:
 
                       for testsuite in testsuites:
                           suite_name = testsuite.get('name', 'Unknown')
-                          tests = int(testsuite.get('tests', 0))
-                          failures = int(testsuite.get('failures', 0))
-                          errors = int(testsuite.get('errors', 0))
-                          skipped = int(testsuite.get('skipped', 0))
+                          run_name = os.path.basename(os.path.dirname(xml_file))
 
-                          total_tests += tests
-                          total_failures += failures
-                          total_errors += errors
-                          total_skipped += skipped
+                          # Only run1 has every test; retries would count tests twice
+                          if run_name == 'run1':
+                              total_tests += int(testsuite.get('tests', 0))
+                              total_skipped += int(testsuite.get('skipped', 0))
 
                           # Get failed test details
                           for testcase in testsuite.findall('testcase'):
@@ -294,21 +303,28 @@ jobs:
                               failure = testcase.find('failure')
                               error = testcase.find('error')
 
+                              latest[(classname, test_name)] = None
                               if failure is not None or error is not None:
                                   failure_info = failure if failure is not None else error
                                   message = failure_info.get('message', 'No message')
                                   details = failure_info.text or 'No details available'
 
-                                  failed_tests.append({
+                                  latest[(classname, test_name)] = {
                                       'suite': suite_name,
                                       'class': classname,
                                       'name': test_name,
                                       'message': message,
                                       'details': details,
-                                      'run': os.path.basename(os.path.dirname(xml_file))
-                                  })
+                                      'run': run_name,
+                                      'kind': 'failure' if failure is not None else 'error'
+                                  }
                   except Exception as e:
                       print(f"Error parsing {xml_file}: {e}")
+
+          # A test that passed on retry is not a failure
+          failed_tests = [t for t in latest.values() if t]
+          total_failures = sum(t['kind'] == 'failure' for t in failed_tests)
+          total_errors = sum(t['kind'] == 'error' for t in failed_tests)
 
           # Generate dashboard content
           with open(dashboard_file, 'a') as f:
