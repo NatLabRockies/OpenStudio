@@ -62,6 +62,9 @@ endif()
 if(POLICY CMP0177)
   cmake_policy(SET CMP0177 NEW) # ``install()`` ``DESTINATION`` paths are normalized.
 endif()
+if(POLICY CMP0206)
+  cmake_policy(SET CMP0206 NEW) # CPack archives (TGZ) record root:root, not the uid of whoever built them
+endif()
 
 ###############################################################################
 #                                  N I N J A                                  #

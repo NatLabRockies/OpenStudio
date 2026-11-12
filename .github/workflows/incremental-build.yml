@@ -51,7 +51,7 @@ jobs:
 
     container: # Define the Docker container for the job. All subsequent steps run inside it.
       image: nrel/openstudio-cmake-tools:noble-main
-      options: -u 123951:123951 # the runner host's jenkins user, which owns the build volumes and _work (#5698); not root, so a job can't write outside what it owns
+      options: -u 123951:123951 # the runner host's jenkins user, which owns the build volumes and _work (#5698); not root, so it can't change root-owned host files. It still owns the shared build state; the runner host gives PR jobs separate copies of it
       volumes: # envs don't work in volume definition for containers
         - "/srv/data/jenkins/docker-volumes/conan-data-gha/.conan2:/github/home/.conan2" # Conan cache, separate from the Jenkins builds on this host (the conan cache is not safe for concurrent use)
         - "/srv/data/jenkins/docker-volumes/ubuntu-2404:/github/home/Ubuntu"
@@ -66,8 +66,6 @@ jobs:
       - name: Prepare workspace
         run: |
           cd ${{ env.OPENSTUDIO_DOCKER_VOLUME }}/${{ env.OPENSTUDIO_SOURCE_NAME }}
-          # make safe repository
-          git config --global --add safe.directory "*"
           # env: values are not shell-expanded, so compute -j here for make runs inside conan --build=missing
           echo "MAKEFLAGS=-j${{ env.MAX_SAFE_THREADS }}" >> "$GITHUB_ENV"
 
@@ -117,7 +115,6 @@ jobs:
         run: |
           # Set up git and fetch PR head, then detect conan profile and install dependencies
           cd ${{ env.OPENSTUDIO_DOCKER_VOLUME }}/${{ env.OPENSTUDIO_SOURCE_NAME }}
-          git config --global --add safe.directory "*" && \
           git config user.email "cicommercialbuilding@gmail.com" && \
           git config user.name "ci-commercialbuildings" && \
           git fetch origin && \
