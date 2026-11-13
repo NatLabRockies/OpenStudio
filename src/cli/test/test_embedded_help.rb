@@ -127,7 +127,7 @@ class EmbeddedHelp_Test < Minitest::Test
       # make sure data is written to the disk one way or the other
       begin
         f.fsync
-      rescue
+      rescue StandardError
         f.flush
       end
     end
@@ -169,7 +169,7 @@ class EmbeddedHelp_Test < Minitest::Test
       # make sure data is written to the disk one way or the other
       begin
         f.fsync
-      rescue
+      rescue StandardError
         f.flush
       end
     end

@@ -200,7 +200,7 @@ module Kernel
         # including things in the --bundle
         result = original_require path
       end
-    rescue Exception => e
+    rescue StandardError => e
       # This picks up the embedded gems
       # Important to do this now, so that --bundle has first chance
       # using rescue in normal program flow, might have poor performance

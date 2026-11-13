@@ -100,8 +100,8 @@ elsif ARGV[0].downcase == "/break"
     end
 
     puts "processing: #{file}"
-    infile = File.open(file, "r")
-    infile.each_line do |line|
+    File.open(file, "r") do |infile|
+      infile.each_line do |line|
         #puts line
 
         user = line[9..17].strip
@@ -125,6 +125,7 @@ elsif ARGV[0].downcase == "/break"
           end
         end
       end
+    end
 
     #break if cnt == 4
 
