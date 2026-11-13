@@ -389,25 +389,25 @@ jobs:
             final_exclude="$resource_locked_pattern"
           fi
 
+          # Retry each group right after it fails: --rerun-failed only sees the latest ctest call's failures
+          seq_args=("${seq_exclude_args[@]}" -R "^($resource_locked_pattern)$" -j 1)
           begin_group "Running sequential tests..."
-          echo "Running: ${ctest_command[@]} ${seq_exclude_args[@]} -R '^($resource_locked_pattern)$' -j 1"
-          "${ctest_command[@]}" "${seq_exclude_args[@]}" -R "^($resource_locked_pattern)$" -j 1 || overall_exit_code=$?
+          echo "Running: ${ctest_command[@]} ${seq_args[@]}"
+          "${ctest_command[@]}" "${seq_args[@]}" || {
+            echo "Rerunning failing sequential tests..."
+            "${ctest_command[@]}" "${seq_args[@]}" --rerun-failed --output-on-failure || overall_exit_code=$?
+          }
           echo "::endgroup::"
-
 
           ctest_command+=(-E "^($final_exclude)$")
 
           begin_group "Running all other tests in parallel..."
           echo "Running: ${ctest_command[@]} -j ${{ matrix.max_jobs }}"
-          "${ctest_command[@]}" -j ${{ matrix.max_jobs }} || overall_exit_code=$?
+          "${ctest_command[@]}" -j ${{ matrix.max_jobs }} || {
+            echo "Rerunning failing parallel tests..."
+            "${ctest_command[@]}" --rerun-failed --output-on-failure || overall_exit_code=$?
+          }
           echo "::endgroup::"
-
-          if [ $overall_exit_code -ne 0 ]; then
-            begin_group "Rerunning failing tests..."
-            echo "Running: ${ctest_command[@]} --rerun-failed --output-on-failure"
-            "${ctest_command[@]}" --rerun-failed --output-on-failure && overall_exit_code=0 || overall_exit_code=$?
-            echo "::endgroup::"
-          fi
 
           echo "exit_code=${overall_exit_code}" >> $GITHUB_OUTPUT
 
@@ -928,24 +928,25 @@ jobs:
           final_exclude="$resource_locked_pattern"
         fi
 
+        # Retry each group right after it fails: --rerun-failed only sees the latest ctest call's failures
+        seq_args=("${seq_exclude_args[@]}" -R "^($resource_locked_pattern)$" -j 1)
         begin_group "Running sequential tests..."
-        echo "Running: ${ctest_command[@]} ${seq_exclude_args[@]} -R '^($resource_locked_pattern)$' -j 1"
-        "${ctest_command[@]}" "${seq_exclude_args[@]}" -R "^($resource_locked_pattern)$" -j 1 || overall_exit_code=$?
+        echo "Running: ${ctest_command[@]} ${seq_args[@]}"
+        "${ctest_command[@]}" "${seq_args[@]}" || {
+          echo "Rerunning failing sequential tests..."
+          "${ctest_command[@]}" "${seq_args[@]}" --rerun-failed --output-on-failure || overall_exit_code=$?
+        }
         echo "::endgroup::"
 
         ctest_command+=(-E "^($final_exclude)$")
 
         begin_group "Running all other tests in parallel..."
         echo "Running: ${ctest_command[@]} -j ${{ matrix.max_jobs }}"
-        "${ctest_command[@]}" -j ${{ matrix.max_jobs }} || overall_exit_code=$?
+        "${ctest_command[@]}" -j ${{ matrix.max_jobs }} || {
+          echo "Rerunning failing parallel tests..."
+          "${ctest_command[@]}" --rerun-failed --output-on-failure || overall_exit_code=$?
+        }
         echo "::endgroup::"
-
-        if [ $overall_exit_code -ne 0 ]; then
-          begin_group "Rerunning failing tests..."
-          echo "Running: ${ctest_command[@]} --rerun-failed --output-on-failure"
-          "${ctest_command[@]}" --rerun-failed --output-on-failure && overall_exit_code=0 || overall_exit_code=$?
-          echo "::endgroup::"
-        fi
 
         echo "exit_code=${overall_exit_code}" >> $GITHUB_OUTPUT
 
@@ -1446,10 +1447,16 @@ jobs:
             $final_exclude = $resource_locked_pattern
           }
 
+          # Retry each group right after it fails: --rerun-failed only sees the latest ctest call's failures
+          $seq_args = $seq_exclude_args + @("-R", "^($resource_locked_pattern)$", "-j", "1")
           begin_group "Running sequential tests..."
-          Write-Host "Running: $($ctest_command -join ' ') $($seq_exclude_args -join ' ') -R '^($resource_locked_pattern)$' -j 1"
-          & $ctest_command[0] $ctest_command[1..($ctest_command.Length-1)] @seq_exclude_args -R "^($resource_locked_pattern)$" -j 1
-          if ($LASTEXITCODE -ne 0) { $overall_exit_code = $LASTEXITCODE }
+          Write-Host "Running: $($ctest_command -join ' ') $($seq_args -join ' ')"
+          & $ctest_command[0] $ctest_command[1..($ctest_command.Length-1)] @seq_args
+          if ($LASTEXITCODE -ne 0) {
+            Write-Host "Rerunning failing sequential tests..."
+            & $ctest_command[0] $ctest_command[1..($ctest_command.Length-1)] @seq_args --rerun-failed --output-on-failure
+            if ($LASTEXITCODE -ne 0) { $overall_exit_code = $LASTEXITCODE }
+          }
           Write-Host "::endgroup::"
 
           $ctest_command += @("-E", "^($final_exclude)$")
@@ -1457,16 +1464,12 @@ jobs:
           begin_group "Running all other tests in parallel..."
           Write-Host "Running: $($ctest_command -join ' ') -j ${{ matrix.max_jobs }}"
           & $ctest_command[0] $ctest_command[1..($ctest_command.Length-1)] -j ${{ matrix.max_jobs }}
-          if ($LASTEXITCODE -ne 0) { $overall_exit_code = $LASTEXITCODE }
-          Write-Host "::endgroup::"
-
-          if ($overall_exit_code -ne 0) {
-            begin_group "Rerunning failing tests..."
-            Write-Host "Running: $($ctest_command -join ' ') --rerun-failed --output-on-failure"
+          if ($LASTEXITCODE -ne 0) {
+            Write-Host "Rerunning failing parallel tests..."
             & $ctest_command[0] $ctest_command[1..($ctest_command.Length-1)] --rerun-failed --output-on-failure
-            if ($LASTEXITCODE -eq 0) { $overall_exit_code = 0 } else { $overall_exit_code = $LASTEXITCODE }
-            Write-Host "::endgroup::"
+            if ($LASTEXITCODE -ne 0) { $overall_exit_code = $LASTEXITCODE }
           }
+          Write-Host "::endgroup::"
           "exit_code=$overall_exit_code" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
       - name: Copy Testing tree with suffix
