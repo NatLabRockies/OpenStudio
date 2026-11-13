@@ -672,15 +672,35 @@ void EpwDesignCondition::assignExtremesData(std::span<const std::string> stringV
   setExtremeN20YearsMaxDryBulb(stringValues[index(EpwDesignField::ExtremeN20YearsMaxDryBulb)]);
   setExtremeN50YearsMinDryBulb(stringValues[index(EpwDesignField::ExtremeN50YearsMinDryBulb)]);
   setExtremeN50YearsMaxDryBulb(stringValues[index(EpwDesignField::ExtremeN50YearsMaxDryBulb)]);
+
+  if (stringValues.size() >= 27) {
+    setExtremeMeanMinWetBulb(stringValues[index(EpwDesignField::ExtremeMeanMinWetBulb)]);
+    setExtremeMeanMaxWetBulb(stringValues[index(EpwDesignField::ExtremeMeanMaxWetBulb)]);
+    setExtremeStdDevMinWetBulb(stringValues[index(EpwDesignField::ExtremeStdDevMinWetBulb)]);
+    setExtremeStdDevMaxWetBulb(stringValues[index(EpwDesignField::ExtremeStdDevMaxWetBulb)]);
+    setExtremeN5YearsMinWetBulb(stringValues[index(EpwDesignField::ExtremeN5YearsMinWetBulb)]);
+    setExtremeN5YearsMaxWetBulb(stringValues[index(EpwDesignField::ExtremeN5YearsMaxWetBulb)]);
+    setExtremeN10YearsMinWetBulb(stringValues[index(EpwDesignField::ExtremeN10YearsMinWetBulb)]);
+    setExtremeN10YearsMaxWetBulb(stringValues[index(EpwDesignField::ExtremeN10YearsMaxWetBulb)]);
+    setExtremeN20YearsMinWetBulb(stringValues[index(EpwDesignField::ExtremeN20YearsMinWetBulb)]);
+    setExtremeN20YearsMaxWetBulb(stringValues[index(EpwDesignField::ExtremeN20YearsMaxWetBulb)]);
+    setExtremeN50YearsMinWetBulb(stringValues[index(EpwDesignField::ExtremeN50YearsMinWetBulb)]);
+    setExtremeN50YearsMaxWetBulb(stringValues[index(EpwDesignField::ExtremeN50YearsMaxWetBulb)]);
+  }
 }
 
-boost::optional<EpwDesignCondition> EpwDesignCondition::fromDesignConditionsStrings(const std::vector<std::string>& strings) {
+boost::optional<EpwDesignCondition> EpwDesignCondition::fromDesignConditionsStrings(const std::vector<std::string>& inputStrings) {
   EpwDesignCondition dc;
 
+  std::vector<std::string> strings = inputStrings;
+  const bool missingBlankBeforeHeating = strings.size() > 1 && openstudio::istringEqual(strings[1], "Heating");
+  if (missingBlankBeforeHeating) {
+    strings.insert(strings.begin() + 1, "");
+  }
+
   const size_t num_strings = strings.size();
-  // Expect 68 items in the strings
-  if (num_strings < 67 || num_strings > 68) {
-    LOG_FREE(Error, "openstudio.EpwFile", "Expected 68 fields in EPW design condition instead of the " << strings.size() << " received");
+  if (num_strings != 67 && num_strings != 68 && num_strings != 79 && num_strings != 80) {
+    LOG_FREE(Error, "openstudio.EpwFile", "Unexpected number of fields in EPW design condition: " << strings.size());
     return boost::none;
   }
 
@@ -764,8 +784,10 @@ boost::optional<EpwDesignCondition> EpwDesignCondition::fromDesignConditionsStri
       expectedNumExtremeFields = 15;
       expectedNumExtremeFields = 15;
     } else {
-      expectedNumExtremeFields = 16;
       expectedNumExtremeFields = 15;
+    }
+    if (*assumedVersion >= ASHRAEHoFVintage::ASHRAE_2017 && numExtremeFields == 27) {
+      expectedNumExtremeFields = 27;
     }
     // Check that the field counts match the assumed version, we'll fall back to heuristics if not
     if (numHeatingFields != expectedNumHeatingFields) {
@@ -799,10 +821,10 @@ boost::optional<EpwDesignCondition> EpwDesignCondition::fromDesignConditionsStri
         expectedNumExtremeFields = 16;
       }
     } else if (numHeatingFields == 16) {
-      // This has to be 2021 or 2025
-      assumedVersion = ASHRAEHoFVintage::ASHRAE_2021;
+      // The titleless 2025 TMYx layout omits the blank slot and includes the 12 wet-bulb fields.
+      assumedVersion = numExtremeFields == 27 && missingBlankBeforeHeating ? ASHRAEHoFVintage::ASHRAE_2025 : ASHRAEHoFVintage::ASHRAE_2021;
       expectedNumHeatingFields = 16;
-      expectedNumExtremeFields = 15;
+      expectedNumExtremeFields = numExtremeFields == 27 ? 27 : 15;
     } else {
       LOG_FREE(Error, "openstudio.EpwFile",
                "Unexpected number of heating design condition fields (" << numHeatingFields << ", expected 15 or 16) in EPW design condition string");
@@ -1171,51 +1193,35 @@ std::string EpwDesignCondition::getUnits(EpwDesignField field) {
       string = "C";
       break;
     case EpwDesignField::ExtremeWindSpeed1:
-      string = "m/s";
-      break;
     case EpwDesignField::ExtremeWindSpeed2pt5:
-      string = "m/s";
-      break;
     case EpwDesignField::ExtremeWindSpeed5:
       string = "m/s";
       break;
     case EpwDesignField::ExtremeMaxWetBulb:
-      string = "C";
-      break;
     case EpwDesignField::ExtremeMeanMinDryBulb:
-      string = "C";
-      break;
     case EpwDesignField::ExtremeMeanMaxDryBulb:
-      string = "C";
-      break;
     case EpwDesignField::ExtremeStdDevMinDryBulb:
-      string = "C";
-      break;
     case EpwDesignField::ExtremeStdDevMaxDryBulb:
-      string = "C";
-      break;
     case EpwDesignField::ExtremeN5YearsMinDryBulb:
-      string = "C";
-      break;
     case EpwDesignField::ExtremeN5YearsMaxDryBulb:
-      string = "C";
-      break;
     case EpwDesignField::ExtremeN10YearsMinDryBulb:
-      string = "C";
-      break;
     case EpwDesignField::ExtremeN10YearsMaxDryBulb:
-      string = "C";
-      break;
     case EpwDesignField::ExtremeN20YearsMinDryBulb:
-      string = "C";
-      break;
     case EpwDesignField::ExtremeN20YearsMaxDryBulb:
-      string = "C";
-      break;
     case EpwDesignField::ExtremeN50YearsMinDryBulb:
-      string = "C";
-      break;
     case EpwDesignField::ExtremeN50YearsMaxDryBulb:
+    case EpwDesignField::ExtremeMeanMinWetBulb:
+    case EpwDesignField::ExtremeMeanMaxWetBulb:
+    case EpwDesignField::ExtremeStdDevMinWetBulb:
+    case EpwDesignField::ExtremeStdDevMaxWetBulb:
+    case EpwDesignField::ExtremeN5YearsMinWetBulb:
+    case EpwDesignField::ExtremeN5YearsMaxWetBulb:
+    case EpwDesignField::ExtremeN10YearsMinWetBulb:
+    case EpwDesignField::ExtremeN10YearsMaxWetBulb:
+    case EpwDesignField::ExtremeN20YearsMinWetBulb:
+    case EpwDesignField::ExtremeN20YearsMaxWetBulb:
+    case EpwDesignField::ExtremeN50YearsMinWetBulb:
+    case EpwDesignField::ExtremeN50YearsMaxWetBulb:
       string = "C";
       break;
     default:
@@ -1580,6 +1586,42 @@ boost::optional<double> EpwDesignCondition::getField(EpwDesignField id) const {
       break;
     case EpwDesignField::ExtremeN50YearsMaxDryBulb:
       return extremeN50YearsMaxDryBulb();
+      break;
+    case EpwDesignField::ExtremeMeanMinWetBulb:
+      return extremeMeanMinWetBulb();
+      break;
+    case EpwDesignField::ExtremeMeanMaxWetBulb:
+      return extremeMeanMaxWetBulb();
+      break;
+    case EpwDesignField::ExtremeStdDevMinWetBulb:
+      return extremeStdDevMinWetBulb();
+      break;
+    case EpwDesignField::ExtremeStdDevMaxWetBulb:
+      return extremeStdDevMaxWetBulb();
+      break;
+    case EpwDesignField::ExtremeN5YearsMinWetBulb:
+      return extremeN5YearsMinWetBulb();
+      break;
+    case EpwDesignField::ExtremeN5YearsMaxWetBulb:
+      return extremeN5YearsMaxWetBulb();
+      break;
+    case EpwDesignField::ExtremeN10YearsMinWetBulb:
+      return extremeN10YearsMinWetBulb();
+      break;
+    case EpwDesignField::ExtremeN10YearsMaxWetBulb:
+      return extremeN10YearsMaxWetBulb();
+      break;
+    case EpwDesignField::ExtremeN20YearsMinWetBulb:
+      return extremeN20YearsMinWetBulb();
+      break;
+    case EpwDesignField::ExtremeN20YearsMaxWetBulb:
+      return extremeN20YearsMaxWetBulb();
+      break;
+    case EpwDesignField::ExtremeN50YearsMinWetBulb:
+      return extremeN50YearsMinWetBulb();
+      break;
+    case EpwDesignField::ExtremeN50YearsMaxWetBulb:
+      return extremeN50YearsMaxWetBulb();
       break;
     default:
       // Could do a warning message here
@@ -3025,6 +3067,54 @@ boost::optional<double> EpwDesignCondition::extremeN50YearsMaxDryBulb() const {
   return m_extremeN50YearsMaxDryBulb;
 }
 
+boost::optional<double> EpwDesignCondition::extremeMeanMinWetBulb() const {
+  return m_extremeMeanMinWetBulb;
+}
+
+boost::optional<double> EpwDesignCondition::extremeMeanMaxWetBulb() const {
+  return m_extremeMeanMaxWetBulb;
+}
+
+boost::optional<double> EpwDesignCondition::extremeStdDevMinWetBulb() const {
+  return m_extremeStdDevMinWetBulb;
+}
+
+boost::optional<double> EpwDesignCondition::extremeStdDevMaxWetBulb() const {
+  return m_extremeStdDevMaxWetBulb;
+}
+
+boost::optional<double> EpwDesignCondition::extremeN5YearsMinWetBulb() const {
+  return m_extremeN5YearsMinWetBulb;
+}
+
+boost::optional<double> EpwDesignCondition::extremeN5YearsMaxWetBulb() const {
+  return m_extremeN5YearsMaxWetBulb;
+}
+
+boost::optional<double> EpwDesignCondition::extremeN10YearsMinWetBulb() const {
+  return m_extremeN10YearsMinWetBulb;
+}
+
+boost::optional<double> EpwDesignCondition::extremeN10YearsMaxWetBulb() const {
+  return m_extremeN10YearsMaxWetBulb;
+}
+
+boost::optional<double> EpwDesignCondition::extremeN20YearsMinWetBulb() const {
+  return m_extremeN20YearsMinWetBulb;
+}
+
+boost::optional<double> EpwDesignCondition::extremeN20YearsMaxWetBulb() const {
+  return m_extremeN20YearsMaxWetBulb;
+}
+
+boost::optional<double> EpwDesignCondition::extremeN50YearsMinWetBulb() const {
+  return m_extremeN50YearsMinWetBulb;
+}
+
+boost::optional<double> EpwDesignCondition::extremeN50YearsMaxWetBulb() const {
+  return m_extremeN50YearsMaxWetBulb;
+}
+
 void EpwDesignCondition::setTitleOfDesignCondition(const std::string& titleOfDesignCondition) {
   m_titleOfDesignCondition = titleOfDesignCondition;
 }
@@ -3986,6 +4076,186 @@ bool EpwDesignCondition::setExtremeN50YearsMaxDryBulb(const std::string& extreme
 
 void EpwDesignCondition::setExtremeN50YearsMaxDryBulb(double extremeN50YearsMaxDryBulb) {
   m_extremeN50YearsMaxDryBulb = extremeN50YearsMaxDryBulb;
+}
+
+bool EpwDesignCondition::setExtremeMeanMinWetBulb(const std::string& extremeMeanMinWetBulb) {
+  bool ok;
+  double parsedValue = stringToDouble(extremeMeanMinWetBulb, &ok);
+  if (!ok) {
+    m_extremeMeanMinWetBulb = boost::none;
+  } else {
+    setExtremeMeanMinWetBulb(parsedValue);
+  }
+  return ok;
+}
+
+void EpwDesignCondition::setExtremeMeanMinWetBulb(double extremeMeanMinWetBulb) {
+  m_extremeMeanMinWetBulb = extremeMeanMinWetBulb;
+}
+
+bool EpwDesignCondition::setExtremeMeanMaxWetBulb(const std::string& extremeMeanMaxWetBulb) {
+  bool ok;
+  double parsedValue = stringToDouble(extremeMeanMaxWetBulb, &ok);
+  if (!ok) {
+    m_extremeMeanMaxWetBulb = boost::none;
+  } else {
+    setExtremeMeanMaxWetBulb(parsedValue);
+  }
+  return ok;
+}
+
+void EpwDesignCondition::setExtremeMeanMaxWetBulb(double extremeMeanMaxWetBulb) {
+  m_extremeMeanMaxWetBulb = extremeMeanMaxWetBulb;
+}
+
+bool EpwDesignCondition::setExtremeStdDevMinWetBulb(const std::string& extremeStdDevMinWetBulb) {
+  bool ok;
+  double parsedValue = stringToDouble(extremeStdDevMinWetBulb, &ok);
+  if (!ok) {
+    m_extremeStdDevMinWetBulb = boost::none;
+  } else {
+    setExtremeStdDevMinWetBulb(parsedValue);
+  }
+  return ok;
+}
+
+void EpwDesignCondition::setExtremeStdDevMinWetBulb(double extremeStdDevMinWetBulb) {
+  m_extremeStdDevMinWetBulb = extremeStdDevMinWetBulb;
+}
+
+bool EpwDesignCondition::setExtremeStdDevMaxWetBulb(const std::string& extremeStdDevMaxWetBulb) {
+  bool ok;
+  double parsedValue = stringToDouble(extremeStdDevMaxWetBulb, &ok);
+  if (!ok) {
+    m_extremeStdDevMaxWetBulb = boost::none;
+  } else {
+    setExtremeStdDevMaxWetBulb(parsedValue);
+  }
+  return ok;
+}
+
+void EpwDesignCondition::setExtremeStdDevMaxWetBulb(double extremeStdDevMaxWetBulb) {
+  m_extremeStdDevMaxWetBulb = extremeStdDevMaxWetBulb;
+}
+
+bool EpwDesignCondition::setExtremeN5YearsMinWetBulb(const std::string& extremeN5YearsMinWetBulb) {
+  bool ok;
+  double parsedValue = stringToDouble(extremeN5YearsMinWetBulb, &ok);
+  if (!ok) {
+    m_extremeN5YearsMinWetBulb = boost::none;
+  } else {
+    setExtremeN5YearsMinWetBulb(parsedValue);
+  }
+  return ok;
+}
+
+void EpwDesignCondition::setExtremeN5YearsMinWetBulb(double extremeN5YearsMinWetBulb) {
+  m_extremeN5YearsMinWetBulb = extremeN5YearsMinWetBulb;
+}
+
+bool EpwDesignCondition::setExtremeN5YearsMaxWetBulb(const std::string& extremeN5YearsMaxWetBulb) {
+  bool ok;
+  double parsedValue = stringToDouble(extremeN5YearsMaxWetBulb, &ok);
+  if (!ok) {
+    m_extremeN5YearsMaxWetBulb = boost::none;
+  } else {
+    setExtremeN5YearsMaxWetBulb(parsedValue);
+  }
+  return ok;
+}
+
+void EpwDesignCondition::setExtremeN5YearsMaxWetBulb(double extremeN5YearsMaxWetBulb) {
+  m_extremeN5YearsMaxWetBulb = extremeN5YearsMaxWetBulb;
+}
+
+bool EpwDesignCondition::setExtremeN10YearsMinWetBulb(const std::string& extremeN10YearsMinWetBulb) {
+  bool ok;
+  double parsedValue = stringToDouble(extremeN10YearsMinWetBulb, &ok);
+  if (!ok) {
+    m_extremeN10YearsMinWetBulb = boost::none;
+  } else {
+    setExtremeN10YearsMinWetBulb(parsedValue);
+  }
+  return ok;
+}
+
+void EpwDesignCondition::setExtremeN10YearsMinWetBulb(double extremeN10YearsMinWetBulb) {
+  m_extremeN10YearsMinWetBulb = extremeN10YearsMinWetBulb;
+}
+
+bool EpwDesignCondition::setExtremeN10YearsMaxWetBulb(const std::string& extremeN10YearsMaxWetBulb) {
+  bool ok;
+  double parsedValue = stringToDouble(extremeN10YearsMaxWetBulb, &ok);
+  if (!ok) {
+    m_extremeN10YearsMaxWetBulb = boost::none;
+  } else {
+    setExtremeN10YearsMaxWetBulb(parsedValue);
+  }
+  return ok;
+}
+
+void EpwDesignCondition::setExtremeN10YearsMaxWetBulb(double extremeN10YearsMaxWetBulb) {
+  m_extremeN10YearsMaxWetBulb = extremeN10YearsMaxWetBulb;
+}
+
+bool EpwDesignCondition::setExtremeN20YearsMinWetBulb(const std::string& extremeN20YearsMinWetBulb) {
+  bool ok;
+  double parsedValue = stringToDouble(extremeN20YearsMinWetBulb, &ok);
+  if (!ok) {
+    m_extremeN20YearsMinWetBulb = boost::none;
+  } else {
+    setExtremeN20YearsMinWetBulb(parsedValue);
+  }
+  return ok;
+}
+
+void EpwDesignCondition::setExtremeN20YearsMinWetBulb(double extremeN20YearsMinWetBulb) {
+  m_extremeN20YearsMinWetBulb = extremeN20YearsMinWetBulb;
+}
+
+bool EpwDesignCondition::setExtremeN20YearsMaxWetBulb(const std::string& extremeN20YearsMaxWetBulb) {
+  bool ok;
+  double parsedValue = stringToDouble(extremeN20YearsMaxWetBulb, &ok);
+  if (!ok) {
+    m_extremeN20YearsMaxWetBulb = boost::none;
+  } else {
+    setExtremeN20YearsMaxWetBulb(parsedValue);
+  }
+  return ok;
+}
+
+void EpwDesignCondition::setExtremeN20YearsMaxWetBulb(double extremeN20YearsMaxWetBulb) {
+  m_extremeN20YearsMaxWetBulb = extremeN20YearsMaxWetBulb;
+}
+
+bool EpwDesignCondition::setExtremeN50YearsMinWetBulb(const std::string& extremeN50YearsMinWetBulb) {
+  bool ok;
+  double parsedValue = stringToDouble(extremeN50YearsMinWetBulb, &ok);
+  if (!ok) {
+    m_extremeN50YearsMinWetBulb = boost::none;
+  } else {
+    setExtremeN50YearsMinWetBulb(parsedValue);
+  }
+  return ok;
+}
+
+void EpwDesignCondition::setExtremeN50YearsMinWetBulb(double extremeN50YearsMinWetBulb) {
+  m_extremeN50YearsMinWetBulb = extremeN50YearsMinWetBulb;
+}
+
+bool EpwDesignCondition::setExtremeN50YearsMaxWetBulb(const std::string& extremeN50YearsMaxWetBulb) {
+  bool ok;
+  double parsedValue = stringToDouble(extremeN50YearsMaxWetBulb, &ok);
+  if (!ok) {
+    m_extremeN50YearsMaxWetBulb = boost::none;
+  } else {
+    setExtremeN50YearsMaxWetBulb(parsedValue);
+  }
+  return ok;
+}
+
+void EpwDesignCondition::setExtremeN50YearsMaxWetBulb(double extremeN50YearsMaxWetBulb) {
+  m_extremeN50YearsMaxWetBulb = extremeN50YearsMaxWetBulb;
 }
 
 std::vector<EpwDesignCondition> EpwFile::designConditions() {
@@ -5173,17 +5443,19 @@ bool EpwFile::parseDesignConditions(const std::string& line) {
   int nDesignConditions = std::stoi(split[1]);
 
   size_t num_design_cond_fields = 68;
-  size_t expected_split_size = 2 + nDesignConditions * num_design_cond_fields;
-  if (split.size() != expected_split_size) {
+  if (split.size() == 2 + nDesignConditions * 80) {
+    num_design_cond_fields = 80;
+  } else if (split.size() == 2 + nDesignConditions * 79) {
+    num_design_cond_fields = 79;
+  } else if (split.size() == 2 + nDesignConditions * 67) {
     // Could technically happen if EPW was prepared with HoF 2017, but never seen a file like that
     num_design_cond_fields = 67;
-    expected_split_size = 2 + nDesignConditions * num_design_cond_fields;
-
-    if (split.size() != expected_split_size) {
-      LOG(Warn, "Expected " << expected_split_size << " design condition fields rather than the " << split.size() << " fields in the EPW file '"
-                            << m_path << "'. Design conditions will not be parsed.");
-      nDesignConditions = 0;
-    }
+  }
+  size_t expected_split_size = 2 + nDesignConditions * num_design_cond_fields;
+  if (split.size() != expected_split_size) {
+    LOG(Warn, "Expected " << expected_split_size << " design condition fields rather than the " << split.size() << " fields in the EPW file '"
+                          << m_path << "'. Design conditions will not be parsed.");
+    nDesignConditions = 0;
   }
 
   if (nDesignConditions > 1) {
