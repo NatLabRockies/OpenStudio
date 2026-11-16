@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Reflection;
 using System.Text;
 using OpenStudio;
 
@@ -12,6 +13,70 @@ internal static class Utf8Bindings
     {
         if (!condition) throw new Exception(message);
         ++assertions;
+    }
+
+    private sealed class UnicodeMeasure : EnergyPlusMeasure
+    {
+        internal string Text;
+        internal int NameCalls;
+
+        public override string name()
+        {
+            ++NameCalls;
+            return Text;
+        }
+    }
+
+    private sealed class UnicodeRunner : OSRunner
+    {
+        internal string LastError;
+        internal int ErrorCalls;
+
+        internal UnicodeRunner(WorkflowJSON workflow) : base(workflow) { }
+
+        public override void registerError(string message)
+        {
+            LastError = message;
+            ++ErrorCalls;
+        }
+    }
+
+    private static void CheckDirectors(string[] samples)
+    {
+        // Direct C# calls stay in the override; base.name() bypasses native
+        // virtual dispatch. Invoke the existing native entry point instead.
+        Type pinvoke = typeof(OSMeasure).Assembly.GetType("OpenStudio.OpenStudioMeasurePINVOKE", true);
+        MethodInfo nativeName = pinvoke.GetMethod("OSMeasure_name", BindingFlags.Public | BindingFlags.Static);
+        MethodInfo getPointer = typeof(OSMeasure).GetMethod("getCPtr", BindingFlags.NonPublic | BindingFlags.Static);
+        Check(nativeName != null && getPointer != null, "Cannot find the native measure name entry point.");
+
+        using (var measure = new UnicodeMeasure())
+        using (var workflow = new WorkflowJSON())
+        using (var runner = new UnicodeRunner(workflow))
+        using (var userArguments = new OSArgumentMap())
+        {
+            object pointer = getPointer.Invoke(null, new object[] { measure });
+            for (int i = 0; i < 1000; ++i)
+            {
+                // Verify wrapper fields keep callback delegates alive across
+                // collections before native calls use them.
+                if (i % 100 == 0) { GC.Collect(); GC.WaitForPendingFinalizers(); GC.Collect(); }
+                measure.Text = i % 10 == 0 ? "" : samples[i % samples.Length];
+                string actual = (string)nativeName.Invoke(null, new object[] { pointer });
+                Check(actual == measure.Text, "Director return text was corrupted.");
+                Check(measure.NameCalls == i + 1, "Native measure virtual dispatch did not reach the override.");
+
+                string argumentName = "required-" + samples[i % samples.Length];
+                using (var arguments = new OSArgumentVector())
+                using (var argument = OSArgument.makeStringArgument(argumentName, true))
+                {
+                    arguments.Add(argument);
+                    Check(!runner.validateUserArguments(arguments, userArguments), "Missing required argument was accepted.");
+                }
+                Check(runner.ErrorCalls == i + 1, "Native runner virtual dispatch did not reach the override.");
+                Check(runner.LastError.Contains(argumentName), "Director argument text was corrupted.");
+            }
+        }
     }
 
     private static int Main(string[] args)
@@ -65,14 +130,15 @@ internal static class Utf8Bindings
                 Check(caught, "Null string handling changed.");
                 using (var empty = OpenStudioUtilitiesCore.toPath("")) Check(OpenStudioUtilitiesCore.toString(empty) == "", "Empty path handling changed.");
 
-                // Repeated reverse callbacks exercise allocation and cleanup, including
-                // borrowed pointers into native strings, across managed collections.
+                // Exercise ordinary string-result callbacks across managed collections.
                 for (int i = 0; i < 100000; ++i)
                 {
                     Check(values[i % samples.Length] == samples[i % samples.Length], "Repeated callback failed.");
                     if (i % 10000 == 0) { GC.Collect(); GC.WaitForPendingFinalizers(); }
                 }
             }
+
+            CheckDirectors(samples);
 
             using (var model = new Model())
             using (var space = new Space(model))

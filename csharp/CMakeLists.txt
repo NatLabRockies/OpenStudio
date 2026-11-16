@@ -69,7 +69,7 @@ add_custom_command(
   OUTPUT ${OPENSTUDIO_CSHARP_DLL} ${OPENSTUDIO_CSHARP_NET45_DLL}
   COMMAND "${DOTNET}" "build" "-c" "$<CONFIG>" "/p:Platform=${CSHARP_PLATFORM}" "${PROJECT_BINARY_DIR}/csharp_wrapper/OpenStudio.csproj"
   DEPENDS ${ALL_CSHARP_WRAPPER_TARGETS} ${ALL_CSHARP_WRAPPER_FILES}
-          "${PROJECT_SOURCE_DIR}/csharp/Utf8Marshaler.cs"
+          "${PROJECT_SOURCE_DIR}/csharp/Utf8.cs"
           "${PROJECT_BINARY_DIR}/csharp_wrapper/OpenStudio.csproj"
 )
 
@@ -200,6 +200,12 @@ target_link_libraries(openstudio_translators_csharp
 )
 install(TARGETS openstudio_translators_csharp DESTINATION CSharp/openstudio/ CONFIGURATIONS DEBUG COMPONENT "CSharpAPI")
 install(TARGETS openstudio_translators_csharp DESTINATION CSharp/openstudio/ CONFIGURATIONS RELEASE COMPONENT "CSharpAPI")
+
+if(WIN32)
+  foreach(target IN ITEMS openstudio_csharp openstudio_model_csharp openstudio_translators_csharp)
+    target_link_libraries(${target} PRIVATE ole32)
+  endforeach()
+endif()
 
 # convenience target to build the SDK
 add_custom_target(csharp_sdk ALL

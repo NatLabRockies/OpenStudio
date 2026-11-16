@@ -33,7 +33,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="${CSHARP_SOURCE_DIR_NATIVE}/Utf8Marshaler.cs" />
+    <Compile Include="${CSHARP_SOURCE_DIR_NATIVE}/Utf8.cs" />
   </ItemGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
