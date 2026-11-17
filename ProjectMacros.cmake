@@ -633,7 +633,12 @@ macro(MAKE_SWIG_TARGET NAME SIMPLENAME KEY_I_FILE I_FILES PARENT_TARGET PARENT_S
               -o "${SWIG_WRAPPER_FULL_PATH}"
               -dllimport "${CSHARP_OUTPUT_NAME}"
               "${SWIG_DEFINES}" ${SWIG_COMMON} ${KEY_I_FILE}
+      COMMAND "${CMAKE_COMMAND}"
+              "-DGENERATED_SOURCES_DIR=${CSHARP_GENERATED_SRC_DIR}"
+              "-DMODULE=${MODULE}"
+              -P "${PROJECT_SOURCE_DIR}/csharp/ConfigureUtf8Callbacks.cmake"
       DEPENDS ${this_depends}
+              "${PROJECT_SOURCE_DIR}/csharp/ConfigureUtf8Callbacks.cmake"
 
       )
 
