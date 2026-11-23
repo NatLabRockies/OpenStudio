@@ -74,7 +74,7 @@ jobs:
     - name: Set up Python ${{ matrix.python-version }}
       if: runner.os == 'macOS'
       id: setup-python-macos
-      # 3.10 is the first one to have a prebuilt binary for macos-14 (arm64) on the actions/setup-python, so I forked it and actions/python-versions to add 3.8
+      # 3.10 is the first one to have a prebuilt binary for macos-15 (arm64) on the actions/setup-python, so I forked it and actions/python-versions to add 3.8
       uses: jmarrec/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
@@ -406,7 +406,7 @@ jobs:
           python-version: 3.11
           allow_failure: false
         - name: macOS_arm64
-          os: macos-14
+          os: macos-15
           python-version: 3.11
           allow_failure: false
         - name: Windows_py311
