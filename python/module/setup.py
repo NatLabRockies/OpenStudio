@@ -65,7 +65,9 @@ try:
                 plat = plat.lower().replace("linux", "manylinux1")
             plat = plat.lower().replace("darwin_x86_64", "macosx_10_6_intel")
             if plat[:3] == "mac":
-                if "arm64" in plat or "universal2" in plat:
+                # Python itself may be a universal2 build (it is with actions/setup-python), but our extensions are only
+                # built for the host architecture by CMake, so use that, not the interpreter's platform
+                if platform.machine() == "arm64":
                     plat = "macosx_11_0_arm64"
                 else:
                     # We don't use a fat binary ('intel' = both i386 and x86_64)
