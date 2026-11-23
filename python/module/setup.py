@@ -84,11 +84,12 @@ with open(os.path.join("@PROJECT_SOURCE_DIR@", "README.md"), encoding="utf-8") a
 
 dev_release = "a2"
 
-# #5668 - On Unix we ship a single py3-none wheel built against old CPython (3.8) headers
+# #5668 - On Unix we ship a single py3-none wheel built against CPython 3.11 headers
 # using the full (non-limited) C API, and that's NOT forward compatible: CPython 3.14 changed the PyTupleObject layout
 # Prevent pip from installing it on Python versions we know are broken.
+# It is also not backward compatible (missing symbols on older Pythons), hence the 3.11 floor.
 # Windows builds one wheel per Python version (cpXY tag), so it is not affected.
-python_requires = ">=3.7.1,<3.14"
+python_requires = ">=3.11,<3.14"
 if platform.system() == "Windows":
     python_requires = ">=3.11"
 
@@ -121,9 +122,9 @@ setup(
         "License :: OSI Approved :: BSD License",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.7",
-        "Programming Language :: Python :: 3.8",
-        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
+        "Programming Language :: Python :: 3.13",
     ],
     keywords="openstudio py3 setuptools development",
     packages=find_packages(include=["openstudio"]),

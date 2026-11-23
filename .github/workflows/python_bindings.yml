@@ -31,21 +31,21 @@ jobs:
         include:
         - name: Ubuntu
           os: ubuntu-24.04
-          python-version: 3.8
+          python-version: '3.11'
           allow_failure: false
         - name: Ubuntu_arm64
           os: ubuntu-24.04-arm
-          python-version: 3.8
+          python-version: '3.11'
           allow_failure: true
         - name: macOS
           os: macos-15-intel
-          python-version: 3.8
+          python-version: '3.11'
           allow_failure: false
           MACOSX_DEPLOYMENT_TARGET: "12.1"
           SDKROOT: /Applications/Xcode.app/Contents/Developer
         - name: macOS_arm64
           os: macos-15
-          python-version: 3.8
+          python-version: '3.11'
           allow_failure: false
           MACOSX_DEPLOYMENT_TARGET: "13.0"
           SDKROOT: /Applications/Xcode.app/Contents/Developer
@@ -76,15 +76,6 @@ jobs:
       #   ref: develop
 
     - name: Set up Python ${{ matrix.python-version }}
-      if: runner.os == 'macOS'
-      id: setup-python-macos
-      # 3.10 is the first one to have a prebuilt binary for macos-15 (arm64) on the actions/setup-python, so I forked it and actions/python-versions to add 3.8
-      uses: jmarrec/setup-python@v5
-      with:
-        python-version: ${{ matrix.python-version }}
-
-    - name: Set up Python ${{ matrix.python-version }}
-      if: runner.os != 'macOS'
       id: setup-python
       uses: actions/setup-python@v7
       with:
@@ -275,24 +266,12 @@ jobs:
         set -x
 
         begin_group "Conan install"
-        PYTHON_ARCH=x64
-        if [ "$RUNNER_OS" == "macOS" ]; then
-          PYTHON_VERSION=${{ steps.setup-python-macos.outputs.python-version }}
-          if [ "${{ matrix.name }}" == "macOS_arm64" ]; then
-            PYTHON_ARCH=arm64
-          fi
-          conan install . --output-folder=./build --build=missing \
-            -c tools.cmake.cmaketoolchain:generator=Ninja -s compiler.cppstd=20 -s build_type=Release \
-            -o with_testing=False -o with_benchmark=False -o with_ruby=False
-        else
-          if [ "${{ matrix.name }}" == "Ubuntu_arm64" ]; then
-            PYTHON_ARCH=arm64
-          fi
-          PYTHON_VERSION=${{ steps.setup-python.outputs.python-version }}
-          conan install . --output-folder=./build --build=missing \
-            -c tools.cmake.cmaketoolchain:generator=Ninja -s compiler.cppstd=20 -s build_type=Release \
-            -o with_testing=False -o with_benchmark=False -o with_ruby=False
-        fi
+        PYTHON_VERSION=${{ steps.setup-python.outputs.python-version }}
+        # RUNNER_ARCH is X64 or ARM64, the tool cache uses x64 / arm64
+        PYTHON_ARCH=$(echo "$RUNNER_ARCH" | tr '[:upper:]' '[:lower:]')
+        conan install . --output-folder=./build --build=missing \
+          -c tools.cmake.cmaketoolchain:generator=Ninja -s compiler.cppstd=20 -s build_type=Release \
+          -o with_testing=False -o with_benchmark=False -o with_ruby=False
         echo -e "::endgroup::"
 
         begin_group "CMake Configure"
@@ -399,19 +378,19 @@ jobs:
         include:
         - name: Ubuntu
           os: ubuntu-24.04
-          python-version: 3.11  # Voluntarily using a newer version than built with for Unix
+          python-version: '3.13'  # Voluntarily using a newer version than built with for Unix (3.11)
           allow_failure: false
         - name: Ubuntu_arm64
           os: ubuntu-24.04-arm
-          python-version: 3.12
+          python-version: '3.13'  # Voluntarily using a newer version than built with for Unix (3.11)
           allow_failure: true
         - name: macOS
           os: macos-15-intel
-          python-version: 3.11
+          python-version: '3.13'  # Voluntarily using a newer version than built with for Unix (3.11)
           allow_failure: false
         - name: macOS_arm64
           os: macos-15
-          python-version: 3.11
+          python-version: '3.13'  # Voluntarily using a newer version than built with for Unix (3.11)
           allow_failure: false
         - name: Windows_py311
           os: windows-2022
