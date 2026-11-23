@@ -62,6 +62,9 @@ endif()
 if(POLICY CMP0177)
   cmake_policy(SET CMP0177 NEW) # ``install()`` ``DESTINATION`` paths are normalized.
 endif()
+if(POLICY CMP0206)
+  cmake_policy(SET CMP0206 NEW) # CPack archives (TGZ) record root:root, not the uid of whoever built them
+endif()
 
 ###############################################################################
 #                                  N I N J A                                  #
@@ -561,6 +564,11 @@ if(UNIX)
       set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-maybe-uninitialized")
       if (CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-uninitialized")
+      endif()
+      # GCC 14 emits false positive -Warray-bounds and -Wstringop-overflow in libstdc++ on `const char* + std::string&&` (GCC bugs 105329, 107852)
+      # (GCC 12/13 are affected upstream but our code doesn't trigger it there, so keep the warnings on)
+      if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 14)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-array-bounds -Wno-stringop-overflow")
       endif()
     endif()
   endif()
