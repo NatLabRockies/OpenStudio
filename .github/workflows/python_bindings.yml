@@ -22,7 +22,8 @@ jobs:
   python_bindings:
     name: Build ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
-    continue-on-error: ${{ matrix.allow_failure }}
+    # Only set allow_failure on the entries that may fail, it defaults to false
+    continue-on-error: ${{ matrix.allow_failure || false }}
     strategy:
       # fail-fast: Default is true, switch to false to allow one platform to fail and still run others
       fail-fast: false
@@ -32,59 +33,47 @@ jobs:
         - name: Ubuntu_py311
           os: ubuntu-24.04
           python-version: '3.11'  # Covers 3.11 to 3.13, see setup.py
-          allow_failure: false
         - name: Ubuntu_py314
           os: ubuntu-24.04
           python-version: '3.14'  # Covers 3.14 and 3.15, see setup.py
-          allow_failure: false
         - name: Ubuntu_arm64_py311
           os: ubuntu-24.04-arm
           python-version: '3.11'  # Covers 3.11 to 3.13, see setup.py
-          allow_failure: false
         - name: Ubuntu_arm64_py314
           os: ubuntu-24.04-arm
           python-version: '3.14'  # Covers 3.14 and 3.15, see setup.py
-          allow_failure: false
         - name: macOS_py311
           os: macos-15-intel
           python-version: '3.11'  # Covers 3.11 to 3.13, see setup.py
-          allow_failure: false
           MACOSX_DEPLOYMENT_TARGET: "12.1"
           SDKROOT: /Applications/Xcode.app/Contents/Developer
         - name: macOS_py314
           os: macos-15-intel
           python-version: '3.14'  # Covers 3.14 and 3.15, see setup.py
-          allow_failure: false
           MACOSX_DEPLOYMENT_TARGET: "12.1"
           SDKROOT: /Applications/Xcode.app/Contents/Developer
         - name: macOS_arm64_py311
           os: macos-15
           python-version: '3.11'  # Covers 3.11 to 3.13, see setup.py
-          allow_failure: false
           MACOSX_DEPLOYMENT_TARGET: "13.0"
           SDKROOT: /Applications/Xcode.app/Contents/Developer
         - name: macOS_arm64_py314
           os: macos-15
           python-version: '3.14'  # Covers 3.14 and 3.15, see setup.py
-          allow_failure: false
           MACOSX_DEPLOYMENT_TARGET: "13.0"
           SDKROOT: /Applications/Xcode.app/Contents/Developer
         - name: Windows_py311
           os: windows-2022
           python-version: '3.11'
-          allow_failure: false
         - name: Windows_py312
           os: windows-2022
           python-version: '3.12'
-          allow_failure: false
         - name: Windows_py313
           os: windows-2022
           python-version: '3.13.5'
-          allow_failure: false
         - name: Windows_py314
           os: windows-2022
           python-version: '3.14'
-          allow_failure: false
         - name: Windows_py315
           os: windows-2022
           python-version: '3.15'
