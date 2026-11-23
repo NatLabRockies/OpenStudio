@@ -14,16 +14,20 @@ from setuptools.dist import Distribution
 # CPython minor versions (3.X) that changed struct layouts used by our extension modules via the full C API.
 # A Unix wheel built on 3.Y < 3.X is only valid for 3.Y <= python < 3.X
 # * 3.14: PyTupleObject gained ob_hash before ob_item, https://github.com/python/cpython/pull/131529 (#5668)
+# Note: fields appended at the END of PyTypeObject (tp_watched 3.12, tp_versions_used 3.13, _tp_iteritem 3.15) are not
+# listed: SWIG embeds a static PyTypeObject (swig_varlink_type) sized at build time, so that's technically unsupported,
+# but it has never broken in practice. The test_python_bindings CI job must pass on every version we tag for.
 _CPYTHON_ABI_BREAKS = [14]
+
+# Newest CPython minor version we tag Unix wheels for. Bump it only once CI tests that version.
+_NEWEST_TESTED_MINOR = 15
 
 
 def _unix_compatible_minors():
-    """Python 3 minor versions a Unix wheel built with the current interpreter is valid for, None if not capped."""
+    """Python 3 minor versions a Unix wheel built with the current interpreter is valid for."""
     build_minor = sys.version_info.minor
-    next_break = next((b for b in _CPYTHON_ABI_BREAKS if b > build_minor), None)
-    if next_break is None:
-        return None
-    return list(range(build_minor, next_break))
+    upper = next((b for b in _CPYTHON_ABI_BREAKS if b > build_minor), _NEWEST_TESTED_MINOR + 1)
+    return list(range(build_minor, max(upper, build_minor + 1)))
 
 
 try:
@@ -48,11 +52,8 @@ try:
                 # 'py3-none', so pip won't even consider the wheel on other versions.
                 # The ABI tag is spelled out too (not 'none') so free-threaded builds (eg cp313t), which have a
                 # different PyObject layout, reject it.
-                minors = _unix_compatible_minors()
-                if minors is not None:
-                    python = ".".join(f"cp3{m}" for m in minors)
-                    abi = python
-                # else: no known ABI break after the build version, keep the native tag (eg cp314-cp314)
+                python = ".".join(f"cp3{m}" for m in _unix_compatible_minors())
+                abi = python
 
             # Our bindings won't be compatible with all distributions,
             # BUT pypi will refuse the upload if we do not replace
@@ -102,8 +103,7 @@ dev_release = "a2"
 python_requires = ">=3.11"
 if platform.system() != "Windows":
     _minors = _unix_compatible_minors()
-    if _minors is not None:
-        python_requires = f">=3.{_minors[0]},<3.{_minors[-1] + 1}"
+    python_requires = f">=3.{_minors[0]},<3.{_minors[-1] + 1}"
 
 setup(
     name="openstudio",

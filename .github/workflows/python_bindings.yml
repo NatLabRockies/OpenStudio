@@ -27,25 +27,45 @@ jobs:
       # fail-fast: Default is true, switch to false to allow one platform to fail and still run others
       fail-fast: false
       matrix:
-        name: [Ubuntu, Ubuntu_arm64, macOS, macOS_arm64, Windows_py311, Windows_py312, Windows_py313, Windows_py314, Windows_py315]
+        name: [Ubuntu_py311, Ubuntu_py314, Ubuntu_arm64_py311, Ubuntu_arm64_py314, macOS_py311, macOS_py314, macOS_arm64_py311, macOS_arm64_py314, Windows_py311, Windows_py312, Windows_py313, Windows_py314, Windows_py315]
         include:
-        - name: Ubuntu
+        - name: Ubuntu_py311
           os: ubuntu-24.04
-          python-version: '3.11'
+          python-version: '3.11'  # Covers 3.11 to 3.13, see setup.py
           allow_failure: false
-        - name: Ubuntu_arm64
+        - name: Ubuntu_py314
+          os: ubuntu-24.04
+          python-version: '3.14'  # Covers 3.14 and 3.15, see setup.py
+          allow_failure: false
+        - name: Ubuntu_arm64_py311
           os: ubuntu-24.04-arm
-          python-version: '3.11'
-          allow_failure: true
-        - name: macOS
+          python-version: '3.11'  # Covers 3.11 to 3.13, see setup.py
+          allow_failure: false
+        - name: Ubuntu_arm64_py314
+          os: ubuntu-24.04-arm
+          python-version: '3.14'  # Covers 3.14 and 3.15, see setup.py
+          allow_failure: false
+        - name: macOS_py311
           os: macos-15-intel
-          python-version: '3.11'
+          python-version: '3.11'  # Covers 3.11 to 3.13, see setup.py
           allow_failure: false
           MACOSX_DEPLOYMENT_TARGET: "12.1"
           SDKROOT: /Applications/Xcode.app/Contents/Developer
-        - name: macOS_arm64
+        - name: macOS_py314
+          os: macos-15-intel
+          python-version: '3.14'  # Covers 3.14 and 3.15, see setup.py
+          allow_failure: false
+          MACOSX_DEPLOYMENT_TARGET: "12.1"
+          SDKROOT: /Applications/Xcode.app/Contents/Developer
+        - name: macOS_arm64_py311
           os: macos-15
-          python-version: '3.11'
+          python-version: '3.11'  # Covers 3.11 to 3.13, see setup.py
+          allow_failure: false
+          MACOSX_DEPLOYMENT_TARGET: "13.0"
+          SDKROOT: /Applications/Xcode.app/Contents/Developer
+        - name: macOS_arm64_py314
+          os: macos-15
+          python-version: '3.14'  # Covers 3.14 and 3.15, see setup.py
           allow_failure: false
           MACOSX_DEPLOYMENT_TARGET: "13.0"
           SDKROOT: /Applications/Xcode.app/Contents/Developer
@@ -283,7 +303,7 @@ jobs:
         echo -e "::endgroup::"
 
         begin_group "Build"
-        if [ "${{ matrix.name }}" == "Ubuntu" ] || [ "${{ matrix.name }}" == "Ubuntu_arm64" ]; then
+        if [ "$RUNNER_OS" == "Linux" ]; then
           echo "Ubuntu_arm64 is apparently running out of memory/CPU during the build as of 2025-06-18, so work around it"
           N=$(nproc)
           cmake --build --preset conan-release --target openstudiolib -j $N
@@ -313,7 +333,7 @@ jobs:
     - name: Upload .whl to artifact
       uses: actions/upload-artifact@v7
       with:
-        name: openstudio-${{ matrix.name }}  # something like openstudio-Windows_py37
+        name: openstudio-${{ matrix.name }}  # something like openstudio-Windows_py314
         path: ./build/Products/python_package/openstudio-${{ matrix.name }}.tar.gz
 
   # Only upload if all builds succeed
@@ -374,23 +394,55 @@ jobs:
       # fail-fast: Default is true, switch to false to allow one platform to fail and still run others
       fail-fast: false
       matrix:
-        name: [Ubuntu, Ubuntu_arm64, macOS, macOS_arm64, Windows_py311, Windows_py312, Windows_py313, Windows_py314, Windows_py315]
+        name: [Ubuntu_py313, Ubuntu_py314, Ubuntu_py315, Ubuntu_arm64_py313, Ubuntu_arm64_py314, Ubuntu_arm64_py315, macOS_py313, macOS_py314, macOS_py315, macOS_arm64_py313, macOS_arm64_py314, macOS_arm64_py315, Windows_py311, Windows_py312, Windows_py313, Windows_py314, Windows_py315]
         include:
-        - name: Ubuntu
+        - name: Ubuntu_py313
           os: ubuntu-24.04
-          python-version: '3.13'  # Voluntarily using a newer version than built with for Unix (3.11)
+          python-version: '3.13'  # Voluntarily using a newer version than built with (3.11)
           allow_failure: false
-        - name: Ubuntu_arm64
+        - name: Ubuntu_py314
+          os: ubuntu-24.04
+          python-version: '3.14'
+          allow_failure: false
+        - name: Ubuntu_py315
+          os: ubuntu-24.04
+          python-version: '3.15'
+          allow_failure: false  # The py314 wheel is tagged cp315 too, it must work
+        - name: Ubuntu_arm64_py313
           os: ubuntu-24.04-arm
-          python-version: '3.13'  # Voluntarily using a newer version than built with for Unix (3.11)
-          allow_failure: true
-        - name: macOS
-          os: macos-15-intel
-          python-version: '3.13'  # Voluntarily using a newer version than built with for Unix (3.11)
+          python-version: '3.13'  # Voluntarily using a newer version than built with (3.11)
           allow_failure: false
-        - name: macOS_arm64
+        - name: Ubuntu_arm64_py314
+          os: ubuntu-24.04-arm
+          python-version: '3.14'
+          allow_failure: false
+        - name: Ubuntu_arm64_py315
+          os: ubuntu-24.04-arm
+          python-version: '3.15'
+          allow_failure: false
+        - name: macOS_py313
+          os: macos-15-intel
+          python-version: '3.13'  # Voluntarily using a newer version than built with (3.11)
+          allow_failure: false
+        - name: macOS_py314
+          os: macos-15-intel
+          python-version: '3.14'
+          allow_failure: false
+        - name: macOS_py315
+          os: macos-15-intel
+          python-version: '3.15'
+          allow_failure: false
+        - name: macOS_arm64_py313
           os: macos-15
-          python-version: '3.13'  # Voluntarily using a newer version than built with for Unix (3.11)
+          python-version: '3.13'  # Voluntarily using a newer version than built with (3.11)
+          allow_failure: false
+        - name: macOS_arm64_py314
+          os: macos-15
+          python-version: '3.14'
+          allow_failure: false
+        - name: macOS_arm64_py315
+          os: macos-15
+          python-version: '3.15'
           allow_failure: false
         - name: Windows_py311
           os: windows-2022
