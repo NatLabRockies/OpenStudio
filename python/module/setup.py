@@ -84,6 +84,14 @@ with open(os.path.join("@PROJECT_SOURCE_DIR@", "README.md"), encoding="utf-8") a
 
 dev_release = "a2"
 
+# #5668 - On Unix we ship a single py3-none wheel built against old CPython (3.8) headers
+# using the full (non-limited) C API, and that's NOT forward compatible: CPython 3.14 changed the PyTupleObject layout
+# Prevent pip from installing it on Python versions we know are broken.
+# Windows builds one wheel per Python version (cpXY tag), so it is not affected.
+python_requires = ">=3.7.1"
+if platform.system() != "Windows":
+    python_requires += ",<3.14"
+
 setup(
     name="openstudio",
     # eg 3.1.0rc3
@@ -104,7 +112,7 @@ setup(
         "Source Code": "https://github.com/NREL/OpenStudio",
     },
     platforms="any",
-    python_requires=">=3.7.1",
+    python_requires=python_requires,
     classifiers=[
         "Development Status :: 4 - Beta",
         "Environment :: Console",
