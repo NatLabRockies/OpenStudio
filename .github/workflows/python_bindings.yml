@@ -27,7 +27,7 @@ jobs:
       # fail-fast: Default is true, switch to false to allow one platform to fail and still run others
       fail-fast: false
       matrix:
-        name: [Ubuntu, Ubuntu_arm64, macOS, macOS_arm64, Windows_py311, Windows_py312, Windows_py313, Windows_py314]
+        name: [Ubuntu, Ubuntu_arm64, macOS, macOS_arm64, Windows_py311, Windows_py312, Windows_py313, Windows_py314, Windows_py315]
         include:
         - name: Ubuntu
           os: ubuntu-24.04
@@ -64,6 +64,10 @@ jobs:
         - name: Windows_py314
           os: windows-2022
           python-version: '3.14'
+          allow_failure: false
+        - name: Windows_py315
+          os: windows-2022
+          python-version: '3.15'
           allow_failure: true  # Possible this fails, don't care yet
 
     steps:
@@ -391,7 +395,7 @@ jobs:
       # fail-fast: Default is true, switch to false to allow one platform to fail and still run others
       fail-fast: false
       matrix:
-        name: [Ubuntu, Ubuntu_arm64, macOS, macOS_arm64, Windows_py311, Windows_py312, Windows_py313, Windows_py314]
+        name: [Ubuntu, Ubuntu_arm64, macOS, macOS_arm64, Windows_py311, Windows_py312, Windows_py313, Windows_py314, Windows_py315]
         include:
         - name: Ubuntu
           os: ubuntu-24.04
@@ -424,6 +428,10 @@ jobs:
         - name: Windows_py314
           os: windows-2022
           python-version: '3.14'
+          allow_failure: false
+        - name: Windows_py315
+          os: windows-2022
+          python-version: '3.15'
           allow_failure: true  # Possible this fails, don't care yet
 
     steps:

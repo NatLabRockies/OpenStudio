@@ -88,9 +88,9 @@ dev_release = "a2"
 # using the full (non-limited) C API, and that's NOT forward compatible: CPython 3.14 changed the PyTupleObject layout
 # Prevent pip from installing it on Python versions we know are broken.
 # Windows builds one wheel per Python version (cpXY tag), so it is not affected.
-python_requires = ">=3.7.1"
-if platform.system() != "Windows":
-    python_requires += ",<3.14"
+python_requires = ">=3.7.1,<3.14"
+if platform.system() == "Windows":
+    python_requires = ">=3.11"
 
 setup(
     name="openstudio",
