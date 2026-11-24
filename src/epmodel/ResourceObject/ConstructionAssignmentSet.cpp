@@ -243,7 +243,7 @@ namespace epmodel {
           setExteriorSurfaceConstructionAssignments(*otherSurfaceConstructions);
         } else if (*thisSurfaceConstructions != *otherSurfaceConstructions) {
           if (thisSurfaceConstructions->numSources() > 1) {
-            auto clone = model().addObject(thisSurfaceConstructions->clone());
+            auto clone = model().addObject(thisSurfaceConstructions->idfObject());
             OS_ASSERT(clone);
             thisSurfaceConstructions = clone->cast<SurfaceConstructionAssignments>();
             OS_ASSERT(setExteriorSurfaceConstructionAssignments(*thisSurfaceConstructions));
@@ -259,7 +259,7 @@ namespace epmodel {
           setInteriorSurfaceConstructionAssignments(*otherSurfaceConstructions);
         } else if (*thisSurfaceConstructions != *otherSurfaceConstructions) {
           if (thisSurfaceConstructions->numSources() > 1) {
-            auto clone = model().addObject(thisSurfaceConstructions->clone());
+            auto clone = model().addObject(thisSurfaceConstructions->idfObject());
             OS_ASSERT(clone);
             thisSurfaceConstructions = clone->cast<SurfaceConstructionAssignments>();
             OS_ASSERT(setInteriorSurfaceConstructionAssignments(*thisSurfaceConstructions));
@@ -275,7 +275,7 @@ namespace epmodel {
           setGroundContactSurfaceConstructionAssignments(*otherSurfaceConstructions);
         } else if (*thisSurfaceConstructions != *otherSurfaceConstructions) {
           if (thisSurfaceConstructions->numSources() > 1) {
-            auto clone = model().addObject(thisSurfaceConstructions->clone());
+            auto clone = model().addObject(thisSurfaceConstructions->idfObject());
             OS_ASSERT(clone);
             thisSurfaceConstructions = clone->cast<SurfaceConstructionAssignments>();
             OS_ASSERT(setGroundContactSurfaceConstructionAssignments(*thisSurfaceConstructions));
@@ -291,7 +291,7 @@ namespace epmodel {
           setExteriorSubSurfaceConstructionAssignments(*otherSubSurfaceConstructions);
         } else if (*thisSubSurfaceConstructions != *otherSubSurfaceConstructions) {
           if (thisSubSurfaceConstructions->numSources() > 1) {
-            auto clone = model().addObject(thisSubSurfaceConstructions->clone());
+            auto clone = model().addObject(thisSubSurfaceConstructions->idfObject());
             OS_ASSERT(clone);
             thisSubSurfaceConstructions = clone->cast<SubSurfaceConstructionAssignments>();
             OS_ASSERT(setExteriorSubSurfaceConstructionAssignments(*thisSubSurfaceConstructions));
@@ -307,7 +307,7 @@ namespace epmodel {
           setInteriorSubSurfaceConstructionAssignments(*otherSubSurfaceConstructions);
         } else if (*thisSubSurfaceConstructions != *otherSubSurfaceConstructions) {
           if (thisSubSurfaceConstructions->numSources() > 1) {
-            auto clone = model().addObject(thisSubSurfaceConstructions->clone());
+            auto clone = model().addObject(thisSubSurfaceConstructions->idfObject());
             OS_ASSERT(clone);
             thisSubSurfaceConstructions = clone->cast<SubSurfaceConstructionAssignments>();
             OS_ASSERT(setInteriorSubSurfaceConstructionAssignments(*thisSubSurfaceConstructions));

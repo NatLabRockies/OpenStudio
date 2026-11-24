@@ -3089,6 +3089,7 @@ set(${target_name}_test_src
   test/CondenserLoop_GTest.cpp
   test/Construction_GTest.cpp
   test/ConstructionAirBoundary_GTest.cpp
+  test/ConstructionAssignmentSet_GTest.cpp
   test/ConstructionComplexFenestrationState_GTest.cpp
   test/ConstructionWindowDataFile_GTest.cpp
   test/ConstructionWindowEquivalentLayer_GTest.cpp
@@ -3590,7 +3591,9 @@ set(${target_name}_test_src
   test/StandardOpaqueMaterial_GTest.cpp
   test/SteamEquipment_GTest.cpp
   test/SubSurface_GTest.cpp
+  test/SubSurfaceConstructionAssignments_GTest.cpp
   test/Surface_GTest.cpp
+  test/SurfaceConstructionAssignments_GTest.cpp
   test/SurfaceContaminantSourceAndSinkGenericBoundaryLayerDiffusion_GTest.cpp
   test/SurfaceContaminantSourceAndSinkGenericDepositionVelocitySink_GTest.cpp
   test/SurfaceContaminantSourceAndSinkGenericPressureDriven_GTest.cpp
