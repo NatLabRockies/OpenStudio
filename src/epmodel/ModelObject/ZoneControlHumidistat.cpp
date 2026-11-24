@@ -69,30 +69,30 @@ namespace epmodel {
 
     boost::optional<openstudio::epmodel::Schedule> ZoneControlHumidistat_Impl::humidifyingRelativeHumiditySetpointSchedule() const {
       return getObject<ModelObject>().getModelObjectTarget<openstudio::epmodel::Schedule>(
-        openstudio::ZoneControl_HumidistatFields::HumidifyingRelativeHumiditySetpointScheduleName);
+        openstudio::ZoneControl_HumidistatFields::HumidifyingSetpointScheduleName);
     }
 
     boost::optional<openstudio::epmodel::Schedule> ZoneControlHumidistat_Impl::dehumidifyingRelativeHumiditySetpointSchedule() const {
       return getObject<ModelObject>().getModelObjectTarget<openstudio::epmodel::Schedule>(
-        openstudio::ZoneControl_HumidistatFields::DehumidifyingRelativeHumiditySetpointScheduleName);
+        openstudio::ZoneControl_HumidistatFields::DehumidifyingSetpointScheduleName);
     }
 
     bool ZoneControlHumidistat_Impl::setHumidifyingRelativeHumiditySetpointSchedule(openstudio::epmodel::Schedule& schedule) {
-      return setSchedule(openstudio::ZoneControl_HumidistatFields::HumidifyingRelativeHumiditySetpointScheduleName, "ZoneControlHumidistat",
+      return setSchedule(openstudio::ZoneControl_HumidistatFields::HumidifyingSetpointScheduleName, "ZoneControlHumidistat",
                          "Humidifying Relative Humidity Setpoint", schedule);
     }
 
     bool ZoneControlHumidistat_Impl::setDehumidifyingRelativeHumiditySetpointSchedule(openstudio::epmodel::Schedule& schedule) {
-      return setSchedule(openstudio::ZoneControl_HumidistatFields::DehumidifyingRelativeHumiditySetpointScheduleName, "ZoneControlHumidistat",
+      return setSchedule(openstudio::ZoneControl_HumidistatFields::DehumidifyingSetpointScheduleName, "ZoneControlHumidistat",
                          "Dehumidifying Relative Humidity Setpoint", schedule);
     }
 
     void ZoneControlHumidistat_Impl::resetHumidifyingRelativeHumiditySetpointSchedule() {
-      OS_ASSERT(setPointer(openstudio::ZoneControl_HumidistatFields::HumidifyingRelativeHumiditySetpointScheduleName, openstudio::Handle(), false));
+      OS_ASSERT(setPointer(openstudio::ZoneControl_HumidistatFields::HumidifyingSetpointScheduleName, openstudio::Handle(), false));
     }
 
     void ZoneControlHumidistat_Impl::resetDehumidifyingRelativeHumiditySetpointSchedule() {
-      OS_ASSERT(setPointer(openstudio::ZoneControl_HumidistatFields::DehumidifyingRelativeHumiditySetpointScheduleName, openstudio::Handle(), false));
+      OS_ASSERT(setPointer(openstudio::ZoneControl_HumidistatFields::DehumidifyingSetpointScheduleName, openstudio::Handle(), false));
     }
 
   }  // namespace detail

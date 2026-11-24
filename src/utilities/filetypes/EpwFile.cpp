@@ -15,8 +15,11 @@
 #include <fmt/format.h>
 #include <array>
 #include <cmath>
+#include <string_view>
 
 namespace openstudio {
+
+constexpr std::string_view UTF8_BOM{"\xEF\xBB\xBF", 3};
 
 static double psat(double T) {
   // Compute water vapor saturation pressure, eqns 5 and 6 from ASHRAE Fundamentals 2009 Ch. 1
@@ -4892,6 +4895,10 @@ bool EpwFile::parse(std::istream& ifs, bool storeData) {
     if (!std::getline(ifs, line)) {
       LOG(Error, "Could not read line " << i + 1 << " of EPW file '" << m_path << "'");
       return false;
+    }
+
+    if ((i == 0) && line.starts_with(UTF8_BOM)) {
+      line.erase(0, UTF8_BOM.size());
     }
 
     switch (i) {

@@ -9,14 +9,12 @@
 #include "Loop/AirLoopHVAC.hpp"
 #include "Loop/AirLoopHVAC_Impl.hpp"
 #include "Splitter/AirLoopHVACZoneSplitter.hpp"
-#include "Splitter/AirLoopHVACZoneSplitter_Impl.hpp"
 #include "Model.hpp"
 #include "ModelObject.hpp"
 #include "Node.hpp"
 
 #include <algorithm>
 #include <utilities/core/Assert.hpp>
-#include <utilities/core/Logger.hpp>
 #include <utilities/idd/AirLoopHVAC_SupplyPath_FieldEnums.hxx>
 #include <utilities/idd/AirLoopHVAC_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
@@ -127,19 +125,31 @@ namespace epmodel {
         }
       }
 
-      auto group = supplyPath.pushExtensibleGroup();
-      const auto groupIndex = supplyPath.numExtensibleGroups() - 1u;
+      return insertComponent(supplyPath.numExtensibleGroups(), component);
+    }
+
+    bool AirLoopHVACSupplyPath_Impl::insertComponent(unsigned index, const openstudio::epmodel::ModelObject& component) {
+      auto supplyPath = getObject<openstudio::epmodel::AirLoopHVACSupplyPath>();
+      if ((component.model() != supplyPath.model()) || !component.name() || component.name()->empty() || (index > supplyPath.numExtensibleGroups())) {
+        return false;
+      }
+      const auto existingComponents = components();
+      if (std::ranges::find(existingComponents, component) != existingComponents.end()) {
+        return false;
+      }
+
+      auto group = supplyPath.insertExtensibleGroup(index);
       auto workspaceGroup = group.optionalCast<openstudio::WorkspaceExtensibleGroup>();
       if (!workspaceGroup) {
-        supplyPath.eraseExtensibleGroup(groupIndex);
+        supplyPath.eraseExtensibleGroup(index);
         return false;
       }
       if (!workspaceGroup->setString(openstudio::AirLoopHVAC_SupplyPathExtensibleFields::ComponentObjectType, component.iddObject().name())) {
-        supplyPath.eraseExtensibleGroup(groupIndex);
+        supplyPath.eraseExtensibleGroup(index);
         return false;
       }
       if (!workspaceGroup->setPointer(openstudio::AirLoopHVAC_SupplyPathExtensibleFields::ComponentName, component.handle())) {
-        supplyPath.eraseExtensibleGroup(groupIndex);
+        supplyPath.eraseExtensibleGroup(index);
         return false;
       }
       return true;
@@ -206,51 +216,12 @@ namespace epmodel {
         }
 
         if (!valid) {
-          LOG_FREE(Warn, "openstudio.epmodel.AirLoopHVACSupplyPath",
-                   "Removing invalid SupplyPath component group on '" << supplyPath.nameString() << "'.");
+          detail::addLoadWarning(context, "Removed invalid SupplyPath component group from '" + supplyPath.nameString() + "'.");
           supplyPath.eraseExtensibleGroup(groupIndex);
           continue;
         }
 
         ++groupIndex;
-      }
-
-      // In E+ schema the SupplyPath does not directly own a splitter pointer;
-      // node-name linkage is the association contract. Recover that contract
-      // here so later topology calls can rely on a complete path record.
-      boost::optional<openstudio::epmodel::AirLoopHVACZoneSplitter> zoneSplitter;
-      for (const auto& splitter : model().getConcreteModelObjects<openstudio::epmodel::AirLoopHVACZoneSplitter>()) {
-        if (auto splitterInlet = splitter.getImpl<openstudio::epmodel::detail::AirLoopHVACZoneSplitter_Impl>()->inletNode()) {
-          if (*splitterInlet == *inletNode) {
-            zoneSplitter = splitter;
-            break;
-          }
-        }
-      }
-
-      if (!zoneSplitter) {
-        LOG_FREE(Warn, "openstudio.epmodel.AirLoopHVACSupplyPath",
-                 "No AirLoopHVAC:ZoneSplitter found for SupplyPath '" << getObject<openstudio::epmodel::AirLoopHVACSupplyPath>().nameString()
-                                                                      << "' via Supply Air Path Inlet Node association. This is likely problematic, "
-                                                                         "and no repair was applied.");
-      }
-
-      // Keep SupplyPath component membership self-contained: once we identify
-      // the linked splitter, it should also appear in this component list.
-      // This prevents topology code from having to merge two sources of truth.
-      if (zoneSplitter) {
-        const auto components = supplyPath.components();
-        const bool listed = std::ranges::any_of(components, [&](const auto& component) { return component == *zoneSplitter; });
-
-        if (!listed) {
-          if (addComponent(*zoneSplitter)) {
-            detail::addLoadInfo(context, "Added missing AirLoopHVAC:ZoneSplitter '" + zoneSplitter->nameString() + "' to SupplyPath '"
-                                           + supplyPath.nameString() + "'.");
-          } else {
-            detail::addLoadWarning(context, "Failed to add missing AirLoopHVAC:ZoneSplitter '" + zoneSplitter->nameString() + "' to SupplyPath '"
-                                              + supplyPath.nameString() + "'.");
-          }
-        }
       }
     }
 

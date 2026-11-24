@@ -11,14 +11,12 @@
 #include "Mixer/AirLoopHVACReturnPlenum.hpp"
 #include "Mixer/AirLoopHVACReturnPlenum_Impl.hpp"
 #include "Mixer/AirLoopHVACZoneMixer.hpp"
-#include "Mixer/AirLoopHVACZoneMixer_Impl.hpp"
 #include "Model.hpp"
 #include "ModelObject.hpp"
 #include "Node.hpp"
 
 #include <algorithm>
 #include <utilities/core/Assert.hpp>
-#include <utilities/core/Logger.hpp>
 #include <utilities/idd/AirLoopHVAC_FieldEnums.hxx>
 #include <utilities/idd/AirLoopHVAC_ReturnPath_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
@@ -227,50 +225,12 @@ namespace epmodel {
         }
 
         if (!valid) {
-          LOG_FREE(Warn, "openstudio.epmodel.AirLoopHVACReturnPath",
-                   "Removing invalid ReturnPath component group on '" << returnPath.nameString() << "'.");
+          detail::addLoadWarning(context, "Removed invalid ReturnPath component group from '" + returnPath.nameString() + "'.");
           returnPath.eraseExtensibleGroup(groupIndex);
           continue;
         }
 
         ++groupIndex;
-      }
-
-      // ReturnPath <-> ZoneMixer association is node-driven in E+ representation.
-      // Re-establish that association here so demand-side traversal has a stable
-      // anchor object.
-      boost::optional<openstudio::epmodel::AirLoopHVACZoneMixer> zoneMixer;
-      for (const auto& mixer : model().getConcreteModelObjects<openstudio::epmodel::AirLoopHVACZoneMixer>()) {
-        if (auto mixerOutlet = mixer.getImpl<openstudio::epmodel::detail::AirLoopHVACZoneMixer_Impl>()->outletNode()) {
-          if (*mixerOutlet == *outletNode) {
-            zoneMixer = mixer;
-            break;
-          }
-        }
-      }
-
-      if (!zoneMixer) {
-        LOG_FREE(Warn, "openstudio.epmodel.AirLoopHVACReturnPath",
-                 "No AirLoopHVAC:ZoneMixer found for ReturnPath '" << returnPath.nameString()
-                                                                   << "' via Return Air Path Outlet Node association. This is likely problematic, "
-                                                                      "and no repair was applied.");
-      }
-
-      // Once linked, keep the mixer explicitly listed on ReturnPath components so
-      // callers can reason from a single path source of truth.
-      if (zoneMixer) {
-        const auto components = returnPath.components();
-        const bool listed = std::ranges::any_of(components, [&](const auto& component) { return component == *zoneMixer; });
-
-        if (!listed) {
-          if (addComponent(*zoneMixer)) {
-            detail::addLoadInfo(context, "Added missing AirLoopHVAC:ZoneMixer '" + zoneMixer->nameString() + "' to ReturnPath '"
-                                           + returnPath.nameString() + "'.");
-          } else {
-            detail::addLoadWarning(context, "Failed to add missing AirLoopHVAC:ZoneMixer '" + zoneMixer->nameString() + "' to ReturnPath '"
-                                              + returnPath.nameString() + "'.");
-          }
-        }
       }
     }
 

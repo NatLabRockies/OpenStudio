@@ -71,6 +71,13 @@ namespace energyplus {
     idfObject.setDouble(Coil_Cooling_DX_CurveFit_OperatingModeFields::NominalTimeforCondensateRemovaltoBegin,
                         modelObject.nominalTimeforCondensateRemovaltoBegin());
 
+    // ApplyPartLoadFractiontoSpeedsGreaterthan1
+    if (modelObject.applyPartLoadFractiontoSpeedsGreaterthan1()) {
+      idfObject.setString(Coil_Cooling_DX_CurveFit_OperatingModeFields::ApplyPartLoadFractiontoSpeedsGreaterthan1, "Yes");
+    } else {
+      idfObject.setString(Coil_Cooling_DX_CurveFit_OperatingModeFields::ApplyPartLoadFractiontoSpeedsGreaterthan1, "No");
+    }
+
     // ApplyLatentDegradationtoSpeedsGreaterthan1
     if (modelObject.applyLatentDegradationtoSpeedsGreaterthan1()) {
       idfObject.setString(Coil_Cooling_DX_CurveFit_OperatingModeFields::ApplyLatentDegradationtoSpeedsGreaterthan1, "Yes");

@@ -44,6 +44,8 @@
   // Ignore this ctor, use of zone.getZonePropertyUserViewFactorsBySurfaceName is preferred anyways (so I won't even reimplement it using partial classes)
   %ignore openstudio::model::ZonePropertyUserViewFactorsBySurfaceName::ZonePropertyUserViewFactorsBySurfaceName(const ThermalZone& thermalZone);
   %ignore openstudio::model::ZonePropertyUserViewFactorsBySurfaceName::thermalZone;
+  // Constructor is already protected: %ignore openstudio::model::ZoneMRTCalculation::ZoneMRTCalculation(const ThermalZone& thermalZone);
+  %ignore openstudio::model::ZoneMRTCalculation::thermalZone;
 
   // ignore airflow objects for now, add back in with partial classes in ModelAirflow.i
   %ignore openstudio::model::Surface::getAirflowNetworkSurface;
@@ -188,6 +190,24 @@ class ExteriorLoadInstance;
   }
 };
 
+%extend openstudio::model::MRTWeightingFactor {
+  // Use the overloaded operator<< for string representation
+  std::string __str__() {
+    std::ostringstream os;
+    os << *$self;
+    return os.str();
+  }
+};
+
+%extend openstudio::model::AngleFactor {
+  // Use the overloaded operator<< for string representation
+  std::string __str__() {
+    std::ostringstream os;
+    os << *$self;
+    return os.str();
+  }
+};
+
 UNIQUEMODELOBJECT_TEMPLATES(Site);
 UNIQUEMODELOBJECT_TEMPLATES(Facility);
 UNIQUEMODELOBJECT_TEMPLATES(Building);
@@ -243,6 +263,10 @@ MODELOBJECT_TEMPLATES(FoundationKiva);
 MODELOBJECT_TEMPLATES(SurfacePropertyExposedFoundationPerimeter);
 MODELOBJECT_TEMPLATES(ViewFactor); // Helper class defined in ZonePropertyUserViewFactorsBySurfaceName
 MODELOBJECT_TEMPLATES(ZonePropertyUserViewFactorsBySurfaceName);
+MODELOBJECT_TEMPLATES(AngleFactor); // Helper class defined in ComfortViewFactorAngles
+MODELOBJECT_TEMPLATES(ComfortViewFactorAngles);
+MODELOBJECT_TEMPLATES(MRTWeightingFactor); // Helper class defined in ZoneMRTCalculation
+MODELOBJECT_TEMPLATES(ZoneMRTCalculation);
 MODELOBJECT_TEMPLATES(ExteriorLoadInstance);
 MODELOBJECT_TEMPLATES(ExteriorLights);
 MODELOBJECT_TEMPLATES(ExteriorFuelEquipment);
@@ -299,6 +323,8 @@ SWIG_MODELOBJECT(LightingSimulationZone, 1);
 SWIG_MODELOBJECT(FoundationKiva, 1);
 SWIG_MODELOBJECT(SurfacePropertyExposedFoundationPerimeter, 1);
 SWIG_MODELOBJECT(ZonePropertyUserViewFactorsBySurfaceName, 1);
+SWIG_MODELOBJECT(ZoneMRTCalculation, 1);
+SWIG_MODELOBJECT(ComfortViewFactorAngles, 1);
 SWIG_MODELOBJECT(ExteriorLoadInstance, 0);
 SWIG_MODELOBJECT(ExteriorLights, 1);
 SWIG_MODELOBJECT(ExteriorFuelEquipment, 1);
@@ -389,6 +415,51 @@ SWIG_MODELOBJECT(ExteriorWaterEquipment, 1);
     }
   }
 
+#endif
+
+#if defined(SWIGPYTHON) || defined(SWIGRUBY)
+  // See ModelResources.i: SWIG >= 4.4.0 cannot resolve std::vector<SubSurface> as a parameter or
+  // return type there since SubSurface is only forward-declared in that module. Reimplement these
+  // here where SubSurface is fully known, then rebind them onto ShadingControl below.
+  %inline {
+    namespace openstudio {
+      namespace model {
+        std::vector<openstudio::model::SubSurface> getSubSurfaces(const openstudio::model::ShadingControl& sc) {
+          return sc.subSurfaces();
+        }
+        bool addSubSurfacesForShadingControl(openstudio::model::ShadingControl sc, const std::vector<openstudio::model::SubSurface>& subSurfaces) {
+          return sc.addSubSurfaces(subSurfaces);
+        }
+        bool setSubSurfacesForShadingControl(openstudio::model::ShadingControl sc, const std::vector<openstudio::model::SubSurface>& subSurfaces) {
+          return sc.setSubSurfaces(subSurfaces);
+        }
+      }
+    }
+  }
+#endif
+
+#if defined SWIGPYTHON
+  %pythoncode %{
+    def _subSurfaces(self):
+        return getSubSurfaces(self)
+    openstudiomodelresources.ShadingControl.subSurfaces = _subSurfaces
+
+    def _addSubSurfaces(self, subSurfaces):
+        return addSubSurfacesForShadingControl(self, subSurfaces)
+    openstudiomodelresources.ShadingControl.addSubSurfaces = _addSubSurfaces
+
+    def _setSubSurfaces(self, subSurfaces):
+        return setSubSurfacesForShadingControl(self, subSurfaces)
+    openstudiomodelresources.ShadingControl.setSubSurfaces = _setSubSurfaces
+  %}
+#endif
+
+#if defined SWIGRUBY
+  %init %{
+    rb_eval_string("OpenStudio::Model::ShadingControl.class_eval { define_method(:subSurfaces) { OpenStudio::Model.getSubSurfaces(self); } }");
+    rb_eval_string("OpenStudio::Model::ShadingControl.class_eval { define_method(:addSubSurfaces) { |subSurfaces| OpenStudio::Model.addSubSurfacesForShadingControl(self, subSurfaces); } }");
+    rb_eval_string("OpenStudio::Model::ShadingControl.class_eval { define_method(:setSubSurfaces) { |subSurfaces| OpenStudio::Model.setSubSurfacesForShadingControl(self, subSurfaces); } }");
+  %}
 #endif
 
 #if defined(SWIGCSHARP)

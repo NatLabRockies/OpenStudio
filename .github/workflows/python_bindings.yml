@@ -16,87 +16,77 @@ env:
   BUILD_CLI: OFF
   BUILD_RUBY_BINDINGS: OFF
   MAKE_SPACE: false
+  CMAKE_POLICY_VERSION_MINIMUM: "3.5"
 
 jobs:
   python_bindings:
     name: Build ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
-    continue-on-error: ${{ matrix.allow_failure }}
-    if: |
-      github.event_name == 'push' ||
-      (github.event_name == 'pull_request' && github.base_ref == 'master' || github.base_ref == 'actions_pypi')
+    # Only set allow_failure on the entries that may fail, it defaults to false
+    continue-on-error: ${{ matrix.allow_failure || false }}
     strategy:
       # fail-fast: Default is true, switch to false to allow one platform to fail and still run others
       fail-fast: false
       matrix:
-        name: [Ubuntu, Ubuntu_arm64, macOS, macOS_arm64, Windows_py37, Windows_py38, Windows_py39, Windows_py310, Windows_py311, Windows_py312, Windows_py313]
+        name: [Ubuntu_py311, Ubuntu_py314, Ubuntu_arm64_py311, Ubuntu_arm64_py314, macOS_py311, macOS_py314, macOS_arm64_py311, macOS_arm64_py314, Windows_py311, Windows_py312, Windows_py313, Windows_py314, Windows_py315]
         include:
-        - name: Ubuntu
-          os: ubuntu-22.04
-          python-version: 3.8
-          allow_failure: false
-        - name: Ubuntu_arm64
-          os: ubuntu-22.04-arm
-          python-version: 3.8
-          allow_failure: true
-        - name: macOS
+        - name: Ubuntu_py311
+          os: ubuntu-24.04
+          python-version: '3.11'  # Covers 3.11 to 3.13, see setup.py
+        - name: Ubuntu_py314
+          os: ubuntu-24.04
+          python-version: '3.14'  # Covers 3.14 and 3.15, see setup.py
+        - name: Ubuntu_arm64_py311
+          os: ubuntu-24.04-arm
+          python-version: '3.11'  # Covers 3.11 to 3.13, see setup.py
+        - name: Ubuntu_arm64_py314
+          os: ubuntu-24.04-arm
+          python-version: '3.14'  # Covers 3.14 and 3.15, see setup.py
+        - name: macOS_py311
           os: macos-15-intel
-          python-version: 3.8
-          allow_failure: false
+          python-version: '3.11'  # Covers 3.11 to 3.13, see setup.py
           MACOSX_DEPLOYMENT_TARGET: "12.1"
           SDKROOT: /Applications/Xcode.app/Contents/Developer
-        - name: macOS_arm64
+        - name: macOS_py314
+          os: macos-15-intel
+          python-version: '3.14'  # Covers 3.14 and 3.15, see setup.py
+          MACOSX_DEPLOYMENT_TARGET: "12.1"
+          SDKROOT: /Applications/Xcode.app/Contents/Developer
+        - name: macOS_arm64_py311
           os: macos-15
-          python-version: 3.8
-          allow_failure: false
+          python-version: '3.11'  # Covers 3.11 to 3.13, see setup.py
           MACOSX_DEPLOYMENT_TARGET: "13.0"
           SDKROOT: /Applications/Xcode.app/Contents/Developer
-        - name: Windows_py37
-          os: windows-2019
-          python-version: 3.7
-          allow_failure: false
-        - name: Windows_py38
-          os: windows-2019
-          python-version: 3.8
-          allow_failure: false
-        - name: Windows_py39
-          os: windows-2019
-          python-version: 3.9
-          allow_failure: false
-        - name: Windows_py310
-          os: windows-2019
-          python-version: '3.10'
-          allow_failure: false
+        - name: macOS_arm64_py314
+          os: macos-15
+          python-version: '3.14'  # Covers 3.14 and 3.15, see setup.py
+          MACOSX_DEPLOYMENT_TARGET: "13.0"
+          SDKROOT: /Applications/Xcode.app/Contents/Developer
         - name: Windows_py311
-          os: windows-2019
+          os: windows-2022
           python-version: '3.11'
-          allow_failure: false
         - name: Windows_py312
-          os: windows-2019
+          os: windows-2022
           python-version: '3.12'
-          allow_failure: false
         - name: Windows_py313
-          os: windows-2019
+          os: windows-2022
           python-version: '3.13.5'
+        - name: Windows_py314
+          os: windows-2022
+          python-version: '3.14'
+        - name: Windows_py315
+          os: windows-2022
+          python-version: '3.15'
           allow_failure: true  # Possible this fails, don't care yet
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
       # with:
       #   ref: develop
 
     - name: Set up Python ${{ matrix.python-version }}
-      if: runner.os == 'macOS'
-      id: setup-python-macos
-      # 3.10 is the first one to have a prebuilt binary for macos-14 (arm64) on the actions/setup-python, so I forked it and actions/python-versions to add 3.8
-      uses: jmarrec/setup-python@v5
-      with:
-        python-version: ${{ matrix.python-version }}
-
-    - name: Set up Python ${{ matrix.python-version }}
-      if: runner.os != 'macOS'
       id: setup-python
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v7
       with:
         python-version: ${{ matrix.python-version }}
 
@@ -285,24 +275,12 @@ jobs:
         set -x
 
         begin_group "Conan install"
-        PYTHON_ARCH=x64
-        if [ "$RUNNER_OS" == "macOS" ]; then
-          PYTHON_VERSION=${{ steps.setup-python-macos.outputs.python-version }}
-          if [ "${{ matrix.name }}" == "macOS_arm64" ]; then
-            PYTHON_ARCH=arm64
-          fi
-          conan install . --output-folder=./build --build=missing \
-            -c tools.cmake.cmaketoolchain:generator=Ninja -s compiler.cppstd=20 -s build_type=Release \
-            -o with_testing=False -o with_benchmark=False -o with_ruby=False
-        else
-          if [ "${{ matrix.name }}" == "Ubuntu_arm64" ]; then
-            PYTHON_ARCH=arm64
-          fi
-          PYTHON_VERSION=${{ steps.setup-python.outputs.python-version }}
-          conan install . --output-folder=./build --build=missing \
-            -c tools.cmake.cmaketoolchain:generator=Ninja -s compiler.cppstd=20 -s build_type=Release \
-            -o with_testing=False -o with_benchmark=False -o with_ruby=False
-        fi
+        PYTHON_VERSION=${{ steps.setup-python.outputs.python-version }}
+        # RUNNER_ARCH is X64 or ARM64, the tool cache uses x64 / arm64
+        PYTHON_ARCH=$(echo "$RUNNER_ARCH" | tr '[:upper:]' '[:lower:]')
+        conan install . --output-folder=./build --build=missing \
+          -c tools.cmake.cmaketoolchain:generator=Ninja -s compiler.cppstd=20 -s build_type=Release \
+          -o with_testing=False -o with_benchmark=False -o with_ruby=False
         echo -e "::endgroup::"
 
         begin_group "CMake Configure"
@@ -314,7 +292,7 @@ jobs:
         echo -e "::endgroup::"
 
         begin_group "Build"
-        if [ "${{ matrix.name }}" == "Ubuntu" ] || [ "${{ matrix.name }}" == "Ubuntu_arm64" ]; then
+        if [ "$RUNNER_OS" == "Linux" ]; then
           echo "Ubuntu_arm64 is apparently running out of memory/CPU during the build as of 2025-06-18, so work around it"
           N=$(nproc)
           cmake --build --preset conan-release --target openstudiolib -j $N
@@ -342,20 +320,20 @@ jobs:
         tar -cvzf openstudio-${{ matrix.name }}.tar.gz dist/
 
     - name: Upload .whl to artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
-        name: openstudio-${{ matrix.name }}  # something like openstudio-Windows_py37
+        name: openstudio-${{ matrix.name }}  # something like openstudio-Windows_py314
         path: ./build/Products/python_package/openstudio-${{ matrix.name }}.tar.gz
 
   # Only upload if all builds succeed
   upload_python_bindings_to_testpypi:
     needs: python_bindings
     name: Upload to TestPyPi
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
 
     - name: Set up Python
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v7
 
     - name: Install Python dependencies
       run: |
@@ -366,7 +344,7 @@ jobs:
         mkdir wheels
 
     - name: Download ALL wheels
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v8
       with:
         path: ./wheels
 
@@ -398,64 +376,23 @@ jobs:
 
   test_python_bindings:
     needs: upload_python_bindings_to_testpypi
-    name: Test ${{ matrix.name }}
+    name: Test ${{ matrix.os }} py${{ matrix.python-version }}
     runs-on: ${{ matrix.os }}
-    continue-on-error: ${{ matrix.allow_failure }}
+    continue-on-error: ${{ matrix.os == 'windows-2022' && matrix.python-version == '3.15' }}
     strategy:
       # fail-fast: Default is true, switch to false to allow one platform to fail and still run others
       fail-fast: false
       matrix:
-        name: [Ubuntu, Ubuntu_arm64, macOS, macOS_arm64, Windows_py37, Windows_py38, Windows_py39, Windows_py310, Windows_py311, Windows_py312, Windows_py313]
-        include:
-        - name: Ubuntu
-          os: ubuntu-22.04
-          python-version: 3.11  # Voluntarily using a newer version than built with for Unix
-          allow_failure: false
-        - name: Ubuntu_arm64
-          os: ubuntu-22.04-arm
-          python-version: 3.12
-          allow_failure: true
-        - name: macOS
-          os: macos-15-intel
-          python-version: 3.11
-          allow_failure: false
-        - name: macOS_arm64
-          os: macos-14
-          python-version: 3.11
-          allow_failure: false
-        - name: Windows_py37
-          os: windows-2019
-          python-version: 3.7
-          allow_failure: false
-        - name: Windows_py38
-          os: windows-2019
-          python-version: 3.8
-          allow_failure: false
-        - name: Windows_py39
-          os: windows-2019
-          python-version: 3.9
-          allow_failure: false
-        - name: Windows_py310
-          os: windows-2019
-          python-version: '3.10'
-          allow_failure: false
-        - name: Windows_py311
-          os: windows-2019
-          python-version: '3.11'
-          allow_failure: false
-        - name: Windows_py312
-          os: windows-2019
-          python-version: '3.12'
-          allow_failure: false
-        - name: Windows_py313
-          os: windows-2019
-          python-version: '3.13'
-          allow_failure: true  # Possible this fails, don't care yet
+        # Test every Python version we publish wheels for, on every platform.
+        # On Unix, this also checks each multi-version wheel (eg cp311.cp312.cp313) on all the versions it is tagged for.
+        os: [ubuntu-24.04, ubuntu-24.04-arm, macos-15-intel, macos-15, windows-2022]
+        python-version: ['3.11', '3.12', '3.13', '3.14', '3.15']
+
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
 
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v7
       with:
         python-version: ${{ matrix.python-version }}
 
@@ -487,11 +424,11 @@ jobs:
     if: contains(github.ref, 'refs/tags')
     needs: test_python_bindings
     name: Upload to PyPi
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
 
     - name: Set up Python
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v7
 
     - name: Install Python dependencies
       run: |
@@ -500,7 +437,7 @@ jobs:
         mkdir wheels
 
     - name: Download ALL wheels
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v8
       with:
         path: ./wheels
 

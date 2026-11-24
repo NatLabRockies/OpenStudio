@@ -102,6 +102,7 @@
 #include "../ModelObject/ZoneHVACEquipmentList.hpp"
 #include "../ModelObject/ZoneHVACEquipmentList_Impl.hpp"
 #include <utilities/idd/AirLoopHVAC_FieldEnums.hxx>
+#include <utilities/idd/AirLoopHVAC_ReturnPath_FieldEnums.hxx>
 #include <utilities/idd/AirTerminal_SingleDuct_ConstantVolume_FourPipeInduction_FieldEnums.hxx>
 #include <utilities/idd/AirTerminal_SingleDuct_ParallelPIU_Reheat_FieldEnums.hxx>
 #include <utilities/idd/AirTerminal_SingleDuct_SeriesPIU_Reheat_FieldEnums.hxx>
@@ -113,6 +114,7 @@
 #include <utilities/idd/ZoneHVAC_AirDistributionUnit_FieldEnums.hxx>
 #include <utilities/idd/ZoneHVAC_EquipmentConnections_FieldEnums.hxx>
 #include <utilities/idf/WorkspaceObject_Impl.hpp>
+#include <utilities/idf/WorkspaceExtensibleGroup.hpp>
 #include <fmt/format.h>
 #include <fmt/ranges.h>
 #include <algorithm>
@@ -5546,7 +5548,141 @@ TEST_F(EPModelFixture, AirLoopHVAC_Canonicalize_DeduplicatesKeyedCompanions) {
   EXPECT_EQ(1u, matchingZoneSplitterCount(model, airLoop));
   EXPECT_EQ(1u, matchingZoneMixerCount(model, airLoop));
   EXPECT_EQ(1u, matchingSizingSystemCount(model, airLoop));
+  EXPECT_FALSE(duplicateSupplyPath.initialized());
+  EXPECT_FALSE(duplicateReturnPath.initialized());
+  EXPECT_FALSE(duplicateZoneSplitter.initialized());
+  EXPECT_FALSE(duplicateZoneMixer.initialized());
   EXPECT_GT(report.warningCount, 0u);
+}
+
+TEST_F(EPModelFixture, AirLoopHVAC_Canonicalize_OwnsPathConnectorRelationshipsAfterPathsVisited) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  auto airLoopImpl = airLoop.getImpl<detail::AirLoopHVAC_Impl>();
+  ASSERT_TRUE(airLoopImpl);
+
+  auto supplyPath = airLoopImpl->airLoopHVACSupplyPath();
+  auto returnPath = airLoopImpl->airLoopHVACReturnPath();
+  auto zoneSplitter = airLoop.zoneSplitter();
+  auto zoneMixer = airLoop.zoneMixer();
+
+  ASSERT_FALSE(zoneSplitter.remove().empty());
+  ASSERT_FALSE(zoneMixer.remove().empty());
+
+  // Force the arbitrary discovery order that exposed the Windows failure: the
+  // paths are visited before AirLoopHVAC recreates their connector objects.
+  detail::LoadContext context{model, SanitizationPolicy::Repair, SanitizationReport{}, {}};
+  supplyPath.getImpl<detail::AirLoopHVACSupplyPath_Impl>()->canonicalize(context);
+  returnPath.getImpl<detail::AirLoopHVACReturnPath_Impl>()->canonicalize(context);
+  ASSERT_TRUE(context.visited.contains(supplyPath.handle()));
+  ASSERT_TRUE(context.visited.contains(returnPath.handle()));
+
+  EXPECT_NO_THROW(airLoopImpl->canonicalize(context));
+  EXPECT_EQ(0u, context.report.errorCount);
+  ASSERT_EQ(1u, supplyPath.components().size());
+  ASSERT_EQ(1u, returnPath.components().size());
+  EXPECT_EQ(airLoop.zoneSplitter().cast<ModelObject>(), supplyPath.components().front());
+  EXPECT_EQ(airLoop.zoneMixer().cast<ModelObject>(), returnPath.components().front());
+}
+
+TEST_F(EPModelFixture, AirLoopHVAC_Canonicalize_ReplacesDuplicateConnectorsAfterPathsVisited) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  auto airLoopImpl = airLoop.getImpl<detail::AirLoopHVAC_Impl>();
+  ASSERT_TRUE(airLoopImpl);
+
+  auto supplyPath = airLoopImpl->airLoopHVACSupplyPath();
+  auto returnPath = airLoopImpl->airLoopHVACReturnPath();
+  const auto originalZoneSplitter = airLoop.zoneSplitter();
+  const auto originalZoneMixer = airLoop.zoneMixer();
+
+  AirLoopHVACZoneSplitter replacementZoneSplitter(model);
+  ASSERT_TRUE(replacementZoneSplitter.setName("A Replacement Zone Splitter"));
+  ASSERT_TRUE(replacementZoneSplitter.getImpl<detail::AirLoopHVACZoneSplitter_Impl>()->setInletNode(airLoop.demandInletNode()));
+  AirLoopHVACZoneMixer replacementZoneMixer(model);
+  ASSERT_TRUE(replacementZoneMixer.setName("A Replacement Zone Mixer"));
+  ASSERT_TRUE(replacementZoneMixer.getImpl<detail::AirLoopHVACZoneMixer_Impl>()->setOutletNode(airLoop.demandOutletNode()));
+
+  // The paths have already accepted the original connector rows when the
+  // AirLoop chooses its deterministic connector from the duplicate candidates.
+  detail::LoadContext context{model, SanitizationPolicy::Repair, SanitizationReport{}, {}};
+  supplyPath.getImpl<detail::AirLoopHVACSupplyPath_Impl>()->canonicalize(context);
+  returnPath.getImpl<detail::AirLoopHVACReturnPath_Impl>()->canonicalize(context);
+
+  EXPECT_NO_THROW(airLoopImpl->canonicalize(context));
+  EXPECT_EQ(0u, context.report.errorCount);
+  EXPECT_FALSE(model.getObject(originalZoneSplitter.handle()));
+  EXPECT_FALSE(model.getObject(originalZoneMixer.handle()));
+  ASSERT_EQ(1u, supplyPath.components().size());
+  ASSERT_EQ(1u, returnPath.components().size());
+  EXPECT_EQ(replacementZoneSplitter.cast<ModelObject>(), supplyPath.components().front());
+  EXPECT_EQ(replacementZoneMixer.cast<ModelObject>(), returnPath.components().front());
+}
+
+TEST_F(EPModelFixture, AirLoopHVAC_Canonicalize_SelectsRootSupplyConnectorAndReplacesWrongReturnConnectorAfterPathsVisited) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  auto airLoopImpl = airLoop.getImpl<detail::AirLoopHVAC_Impl>();
+  ASSERT_TRUE(airLoopImpl);
+
+  auto supplyPath = airLoopImpl->airLoopHVACSupplyPath();
+  auto returnPath = airLoopImpl->airLoopHVACReturnPath();
+  const auto canonicalZoneSplitter = airLoop.zoneSplitter();
+  const auto canonicalZoneMixer = airLoop.zoneMixer();
+
+  AirLoopHVACZoneSplitter wrongZoneSplitter(model);
+  AirLoopHVACZoneMixer wrongZoneMixer(model);
+  Node downstreamSplitterInlet(model);
+  ASSERT_TRUE(wrongZoneSplitter.getImpl<detail::AirLoopHVACZoneSplitter_Impl>()->setInletNode(downstreamSplitterInlet));
+  auto supplyPathImpl = supplyPath.getImpl<detail::AirLoopHVACSupplyPath_Impl>();
+  auto returnPathImpl = returnPath.getImpl<detail::AirLoopHVACReturnPath_Impl>();
+  ASSERT_TRUE(supplyPathImpl->removeComponent(canonicalZoneSplitter.cast<ModelObject>()));
+  ASSERT_TRUE(returnPathImpl->removeComponent(canonicalZoneMixer.cast<ModelObject>()));
+  ASSERT_TRUE(supplyPathImpl->addComponent(wrongZoneSplitter.cast<ModelObject>()));
+  ASSERT_TRUE(returnPathImpl->addComponent(wrongZoneMixer.cast<ModelObject>()));
+  ASSERT_TRUE(returnPathImpl->addComponent(canonicalZoneMixer.cast<ModelObject>()));
+
+  detail::LoadContext context{model, SanitizationPolicy::Repair, SanitizationReport{}, {}};
+  supplyPathImpl->canonicalize(context);
+  returnPathImpl->canonicalize(context);
+
+  EXPECT_NO_THROW(airLoopImpl->canonicalize(context));
+  EXPECT_EQ(0u, context.report.errorCount);
+  ASSERT_EQ(2u, supplyPath.components().size());
+  ASSERT_EQ(1u, returnPath.components().size());
+  EXPECT_EQ(canonicalZoneSplitter.cast<ModelObject>(), supplyPath.components()[0]);
+  EXPECT_EQ(wrongZoneSplitter.cast<ModelObject>(), supplyPath.components()[1]);
+  EXPECT_EQ(canonicalZoneSplitter, airLoop.zoneSplitter());
+  EXPECT_EQ(canonicalZoneMixer.cast<ModelObject>(), returnPath.components().front());
+}
+
+TEST_F(EPModelFixture, AirLoopHVAC_Canonicalize_PlacesReturnMixerLastAfterPathVisited) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  auto airLoopImpl = airLoop.getImpl<detail::AirLoopHVAC_Impl>();
+  ASSERT_TRUE(airLoopImpl);
+
+  auto returnPath = airLoopImpl->airLoopHVACReturnPath();
+  const auto zoneMixer = airLoop.zoneMixer();
+  AirLoopHVACReturnPlenum returnPlenum(model);
+  auto returnPathImpl = returnPath.getImpl<detail::AirLoopHVACReturnPath_Impl>();
+
+  auto group = returnPath.pushExtensibleGroup().optionalCast<openstudio::WorkspaceExtensibleGroup>();
+  ASSERT_TRUE(group);
+  ASSERT_TRUE(group->setString(openstudio::AirLoopHVAC_ReturnPathExtensibleFields::ComponentObjectType, returnPlenum.iddObject().name()));
+  ASSERT_TRUE(group->setPointer(openstudio::AirLoopHVAC_ReturnPathExtensibleFields::ComponentName, returnPlenum.handle()));
+  ASSERT_EQ(2u, returnPath.components().size());
+  EXPECT_EQ(zoneMixer.cast<ModelObject>(), returnPath.components().front());
+  EXPECT_EQ(returnPlenum.cast<ModelObject>(), returnPath.components().back());
+
+  detail::LoadContext context{model, SanitizationPolicy::Repair, SanitizationReport{}, {}};
+  returnPathImpl->canonicalize(context);
+
+  EXPECT_NO_THROW(airLoopImpl->canonicalize(context));
+  EXPECT_EQ(0u, context.report.errorCount);
+  ASSERT_EQ(2u, returnPath.components().size());
+  EXPECT_EQ(returnPlenum.cast<ModelObject>(), returnPath.components().front());
+  EXPECT_EQ(zoneMixer.cast<ModelObject>(), returnPath.components().back());
 }
 
 TEST_F(EPModelFixture, AirLoopHVAC_Canonicalize_RepairsDemandBranchCountMismatch) {

@@ -57,12 +57,6 @@ TEST_F(ModelFixture, CentralHeatPumpSystem_SettersGetters) {
   ASSERT_TRUE(central_hp_module.centralHeatPumpSystem());
   ASSERT_EQ(central_hp.handle(), central_hp_module.centralHeatPumpSystem()->handle());
 
-  // Return type: bool
-  // Only "SmartMixing" is valid
-  EXPECT_EQ("SmartMixing", central_hp.controlMethod());
-  ASSERT_TRUE(central_hp.setControlMethod("SmartMixing"));
-  ASSERT_EQ("SmartMixing", central_hp.controlMethod());
-
   // Ancillary power
   // Return type: bool
   ASSERT_TRUE(central_hp.setAncillaryPower(0.7));

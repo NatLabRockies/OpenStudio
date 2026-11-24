@@ -67,6 +67,8 @@ namespace model {
 
     double nominalTimeforCondensateRemovaltoBegin() const;
 
+    bool applyPartLoadFractiontoSpeedsGreaterthan1() const;
+
     bool applyLatentDegradationtoSpeedsGreaterthan1() const;
 
     std::string condenserType() const;
@@ -100,6 +102,8 @@ namespace model {
     bool setLatentCapacityTimeConstant(double latentCapacityTimeConstant);
 
     bool setNominalTimeforCondensateRemovaltoBegin(double nominalTimeforCondensateRemovaltoBegin);
+
+    bool setApplyPartLoadFractiontoSpeedsGreaterthan1(bool applyPartLoadFractiontoSpeedsGreaterthan1);
 
     bool setApplyLatentDegradationtoSpeedsGreaterthan1(bool applyLatentDegradationtoSpeedsGreaterthan1);
 

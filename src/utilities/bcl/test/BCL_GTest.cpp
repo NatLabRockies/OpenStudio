@@ -19,7 +19,7 @@ TEST_F(BCLFixture, LocalBCL_AuthKey) {
   EXPECT_TRUE(LocalBCL::instance().setProdAuthKey(defaultProdAuthKey));
   EXPECT_EQ(defaultProdAuthKey, LocalBCL::instance().prodAuthKey());
 
-  // Don't bother testing this since bcl7.development.nrel.gov is internal only
+  // Don't bother testing this since bcl7.development.nlr.gov is internal only
   //EXPECT_TRUE(LocalBCL::instance().setDevAuthKey(defaultDevAuthKey));
   //EXPECT_EQ(defaultDevAuthKey, LocalBCL::instance().devAuthKey());
 }
@@ -32,7 +32,7 @@ TEST_F(BCLFixture, RemoteBCLTest) {
   EXPECT_EQ(prodAuthKey, remoteBCL.prodAuthKey());
   EXPECT_EQ(remoteBCL.prodAuthKey(), remoteBCL.authKey());
 
-  // Don't bother testing this since bcl7.development.nrel.gov is internal only
+  // Don't bother testing this since bcl7.development.nlr.gov is internal only
   // set temporary development auth key
   //remoteBCL.setDevAuthKey(devAuthKey);
   //EXPECT_EQ(devAuthKey, remoteBCL.devAuthKey());
@@ -95,7 +95,7 @@ TEST_F(BCLFixture, RemoteBCLTest) {
   /// Download an individual component by uid and extract
   /// returns true if a download is started
   // TJC 2020-11-19 GetComponentByUID is already testing and dowloading component.
-  // https://bcl.nrel.gov/ has issues download some components. Until this behavior is fixed
+  // https://bcl.nlr.gov/ has issues download some components. Until this behavior is fixed
   // disable this download call below.
   // bool success = remoteBCL.downloadComponent(responses[1].uid());
   //ASSERT_TRUE(success);

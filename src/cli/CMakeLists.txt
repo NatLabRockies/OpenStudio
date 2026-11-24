@@ -38,6 +38,7 @@ target_link_libraries(openstudio
   openstudiolib
   openstudio_workflow
   CLI11::CLI11
+  httplib::httplib
 )
 
 if(BUILD_RUBY_BINDINGS)
@@ -401,6 +402,8 @@ if(BUILD_TESTING)
         COMMAND ${Python_EXECUTABLE} -m pytest --verbose --use-classic --os-cli-path $<TARGET_FILE:openstudio> "${CMAKE_CURRENT_SOURCE_DIR}/test/test_measure_manager.py"
         WORKING_DIRECTORY "${PROJECT_BINARY_DIR}/Testing/"
       )
+      # Both start a measure manager server; their free-port check races when run in parallel
+      set_tests_properties(OpenStudioCLI.test_measure_manager OpenStudioCLI.Classic.test_measure_manager PROPERTIES RESOURCE_LOCK "measure_manager_port")
     endif()
 
   else()

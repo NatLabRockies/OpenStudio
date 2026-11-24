@@ -32,11 +32,6 @@ namespace epmodel {
       bool addToNode(Node& node) override;
       bool addToTertiaryNode(Node& node) override;
 
-      std::vector<std::string> controlMethodValues() const;
-
-      std::string controlMethod() const;
-      bool setControlMethod(const std::string& controlMethod);
-
       double ancillaryPower() const;
       bool setAncillaryPower(double ancillaryPower);
 

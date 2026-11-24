@@ -71,6 +71,22 @@ namespace energyplus {
       mat.setVisibleAbsorptance(od);
     }
 
+    // Inside-face absorptance fields have no IDD default and inherit the exterior value when blank.
+    od = workspaceObject.getDouble(MaterialFields::ThermalAbsorptanceInsideFace);
+    if (od) {
+      mat.setThermalAbsorptanceInsideFace(*od);
+    }
+
+    od = workspaceObject.getDouble(MaterialFields::SolarAbsorptanceInsideFace);
+    if (od) {
+      mat.setSolarAbsorptanceInsideFace(*od);
+    }
+
+    od = workspaceObject.getDouble(MaterialFields::VisibleAbsorptanceInsideFace);
+    if (od) {
+      mat.setVisibleAbsorptanceInsideFace(*od);
+    }
+
     result = mat;
     return result;
   }

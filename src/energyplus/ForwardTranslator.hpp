@@ -179,6 +179,9 @@ namespace model {
   class DaylightingDeviceTubular;
   class DaylightingDeviceLightWell;
   class DaylightRedirectionDevice;
+  class DefaultConstructionSet;
+  class DefaultSurfaceConstructions;
+  class DefaultSubSurfaceConstructions;
   class DesignDay;
   class DesignSpecificationOutdoorAir;
   class DistrictCooling;
@@ -186,7 +189,9 @@ namespace model {
   class DistrictHeatingSteam;
   class Duct;
   class ElectricEquipment;
+  class ElectricEquipmentDefinition;
   class ElectricEquipmentITEAirCooled;
+  class ElectricEquipmentITEAirCooledDefinition;
   class ElectricLoadCenterDistribution;
   class ElectricLoadCenterInverterLookUpTable;
   class ElectricLoadCenterInverterSimple;
@@ -240,6 +245,7 @@ namespace model {
   class FoundationKivaSettings;
   class Gas;
   class GasEquipment;
+  class GasEquipmentDefinition;
   class GasMixture;
   class GeneratorMicroTurbine;
   class GeneratorFuelCell;
@@ -274,6 +280,7 @@ namespace model {
   class HeatPumpPlantLoopEIRCooling;
   class HeatPumpPlantLoopEIRHeating;
   class HotWaterEquipment;
+  class HotWaterEquipmentDefinition;
   class HumidifierSteamElectric;
   class HumidifierSteamGas;
   class IlluminanceMap;
@@ -286,6 +293,7 @@ namespace model {
   class LifeCycleCost;
   class LifeCycleCostParameters;
   class Lights;
+  class LightsDefinition;
   class Luminaire;
   class MaterialPropertyGlazingSpectralData;
   class MaterialPropertyMoisturePenetrationDepthSettings;
@@ -296,6 +304,7 @@ namespace model {
   class MeterCustomDecrement;
   class Node;
   class OtherEquipment;
+  class OtherEquipmentDefinition;
   class OutsideSurfaceConvectionAlgorithm;
   class OutputControlFiles;
   class OutputControlReportingTolerances;
@@ -318,6 +327,7 @@ namespace model {
   class OutputTableMonthly;
   class OutputTableSummaryReports;
   class People;
+  class PeopleDefinition;
   class PerformancePrecisionTradeoffs;
   class PhotovoltaicPerformanceEquivalentOneDiode;
   class PhotovoltaicPerformanceSimple;
@@ -440,6 +450,7 @@ namespace model {
   class SpaceVentilationDesignFlowRate;
   class SpaceType;
   class SteamEquipment;
+  class SteamEquipmentDefinition;
   class SubSurface;
   class Surface;
   class SurfaceControlMovableInsulation;
@@ -503,6 +514,8 @@ namespace model {
   class ZoneHVACUnitVentilator;
   class ZoneHVACWaterToAirHeatPump;
   class ZoneMixing;
+  class ZoneMRTCalculation;
+  class ComfortViewFactorAngles;
   class ZonePropertyUserViewFactorsBySurfaceName;
   class ZoneVentilationDesignFlowRate;
   class ZoneVentilationWindandStackOpenArea;
@@ -518,7 +531,7 @@ namespace energyplus {
     boost::optional<IdfObject> translateDesignSpecificationOutdoorAir(model::DesignSpecificationOutdoorAir& modelObject);
   };  // namespace detail
 
-#define ENERGYPLUS_VERSION "25.2"
+#define ENERGYPLUS_VERSION "26.2"
 
   class ENERGYPLUS_API ForwardTranslator
   {
@@ -579,6 +592,19 @@ namespace energyplus {
     /** If excludeSpaceTranslation, do usual combineSpaces(), etc. Otherwise, translate space objects.
    *  Use this at your own risks */
     void setExcludeSpaceTranslation(bool excludeSpaceTranslation);
+
+    /** If excludeSpaceLoadInstances is false, translate SpaceLoads (People, Lights, ElectricEquipment, etc)
+    * to their EnergyPlus ...:Definition / ...:Instance object pairs instead of the legacy combined objects.
+    *  Use this at your own risks */
+    void setExcludeSpaceLoadInstances(bool excludeSpaceLoadInstances);
+
+    /** If excludeConstructionAssignmentSets is false, translate DefaultConstructionSet/DefaultSurfaceConstructions/
+    * DefaultSubSurfaceConstructions to the EnergyPlus ConstructionAssignmentSet / SurfaceConstructionAssignments /
+    * SubSurfaceConstructionAssignments objects referenced by Space, instead of resolving and inlining the Construction
+    * Name directly on each Surface/SubSurface/InternalMass. Only takes effect when excludeSpaceTranslation is false
+    * (E+ Space objects are required to reference a ConstructionAssignmentSet).
+    *  Use this at your own risks */
+    void setExcludeConstructionAssignmentSets(bool excludeConstructionAssignmentSets);
 
     //@}
 
@@ -944,6 +970,14 @@ namespace energyplus {
 
     boost::optional<IdfObject> translateDaylightRedirectionDevice(model::DaylightRedirectionDevice& modelObject);
 
+    boost::optional<IdfObject> translateDefaultConstructionSet(model::DefaultConstructionSet& modelObject);
+    boost::optional<IdfObject> translateDefaultSurfaceConstructions(model::DefaultSurfaceConstructions& modelObject);
+    boost::optional<IdfObject> translateDefaultSubSurfaceConstructions(model::DefaultSubSurfaceConstructions& modelObject);
+    // When Space translation is excluded there is no E+ Space, so defaulted constructions would end up unresolved. This function hard-assigns
+    // constructions to all surfaces, subsurfaces and interior partitions in the model that have defaulted constructions, using the
+    // DefaultConstructionSet at the Space, SpaceType and BuildingStory level. Implemented in ForwardTranslateDefaultConstructionSet.cpp.
+    static void hardApplyConstructionsWhenSpaceTranslationOff(model::Model& model);
+
     boost::optional<IdfObject> translateDesignDay(model::DesignDay& modelObject);
 
     // Construct (or fetch if already created) a DesignSpecificationOutdoorAir (DSOA) or DSOA:SpaceList
@@ -964,8 +998,14 @@ namespace energyplus {
     boost::optional<IdfObject> translateDuct(model::Duct& modelObject);
 
     boost::optional<IdfObject> translateElectricEquipment(model::ElectricEquipment& modelObject);
+    boost::optional<IdfObject> translateElectricEquipmentLegacy(model::ElectricEquipment& modelObject);
+    boost::optional<IdfObject> translateElectricEquipmentInstance(model::ElectricEquipment& modelObject);
+    boost::optional<IdfObject> translateElectricEquipmentDefinition(model::ElectricEquipmentDefinition& modelObject);
 
     boost::optional<IdfObject> translateElectricEquipmentITEAirCooled(model::ElectricEquipmentITEAirCooled& modelObject);
+    boost::optional<IdfObject> translateElectricEquipmentITEAirCooledLegacy(model::ElectricEquipmentITEAirCooled& modelObject);
+    boost::optional<IdfObject> translateElectricEquipmentITEAirCooledInstance(model::ElectricEquipmentITEAirCooled& modelObject);
+    boost::optional<IdfObject> translateElectricEquipmentITEAirCooledDefinition(model::ElectricEquipmentITEAirCooledDefinition& modelObject);
 
     boost::optional<IdfObject> translateElectricLoadCenterDistribution(model::ElectricLoadCenterDistribution& modelObject);
 
@@ -1082,6 +1122,9 @@ namespace energyplus {
     boost::optional<IdfObject> translateGas(model::Gas& modelObject);
 
     boost::optional<IdfObject> translateGasEquipment(model::GasEquipment& modelObject);
+    boost::optional<IdfObject> translateGasEquipmentLegacy(model::GasEquipment& modelObject);
+    boost::optional<IdfObject> translateGasEquipmentInstance(model::GasEquipment& modelObject);
+    boost::optional<IdfObject> translateGasEquipmentDefinition(model::GasEquipmentDefinition& modelObject);
 
     boost::optional<IdfObject> translateGasMixture(model::GasMixture& modelObject);
 
@@ -1145,6 +1188,9 @@ namespace energyplus {
     boost::optional<IdfObject> translateHumidifierSteamGas(model::HumidifierSteamGas& modelObject);
 
     boost::optional<IdfObject> translateHotWaterEquipment(model::HotWaterEquipment& modelObject);
+    boost::optional<IdfObject> translateHotWaterEquipmentLegacy(model::HotWaterEquipment& modelObject);
+    boost::optional<IdfObject> translateHotWaterEquipmentInstance(model::HotWaterEquipment& modelObject);
+    boost::optional<IdfObject> translateHotWaterEquipmentDefinition(model::HotWaterEquipmentDefinition& modelObject);
 
     boost::optional<IdfObject> translateIlluminanceMap(model::IlluminanceMap& modelObject);
 
@@ -1165,6 +1211,9 @@ namespace energyplus {
     boost::optional<IdfObject> translateLifeCycleCostParameters(model::LifeCycleCostParameters& modelObject);
 
     boost::optional<IdfObject> translateLights(model::Lights& modelObject);
+    boost::optional<IdfObject> translateLightsLegacy(model::Lights& modelObject);
+    boost::optional<IdfObject> translateLightsInstance(model::Lights& modelObject);
+    boost::optional<IdfObject> translateLightsDefinition(model::LightsDefinition& modelObject);
 
     boost::optional<IdfObject> translateLuminaire(model::Luminaire& modelObject);
 
@@ -1186,6 +1235,9 @@ namespace energyplus {
     boost::optional<IdfObject> translateNode(model::Node& modelObject);
 
     boost::optional<IdfObject> translateOtherEquipment(model::OtherEquipment& modelObject);
+    boost::optional<IdfObject> translateOtherEquipmentLegacy(model::OtherEquipment& modelObject);
+    boost::optional<IdfObject> translateOtherEquipmentInstance(model::OtherEquipment& modelObject);
+    boost::optional<IdfObject> translateOtherEquipmentDefinition(model::OtherEquipmentDefinition& modelObject);
 
     boost::optional<IdfObject> translateOutsideSurfaceConvectionAlgorithm(model::OutsideSurfaceConvectionAlgorithm& modelObject);
 
@@ -1230,6 +1282,9 @@ namespace energyplus {
     boost::optional<IdfObject> translateOutputTableMonthly(model::OutputTableMonthly& modelObject);
 
     boost::optional<IdfObject> translatePeople(model::People& modelObject);
+    boost::optional<IdfObject> translatePeopleLegacy(model::People& modelObject);
+    boost::optional<IdfObject> translatePeopleInstance(model::People& modelObject);
+    boost::optional<IdfObject> translatePeopleDefinition(model::PeopleDefinition& modelObject);
 
     boost::optional<IdfObject> translatePerformancePrecisionTradeoffs(model::PerformancePrecisionTradeoffs& modelObject);
 
@@ -1483,6 +1538,9 @@ namespace energyplus {
     boost::optional<IdfObject> translateStandardOpaqueMaterial(model::StandardOpaqueMaterial& modelObject);
 
     boost::optional<IdfObject> translateSteamEquipment(model::SteamEquipment& modelObject);
+    boost::optional<IdfObject> translateSteamEquipmentLegacy(model::SteamEquipment& modelObject);
+    boost::optional<IdfObject> translateSteamEquipmentInstance(model::SteamEquipment& modelObject);
+    boost::optional<IdfObject> translateSteamEquipmentDefinition(model::SteamEquipmentDefinition& modelObject);
 
     boost::optional<IdfObject> translateSubSurface(model::SubSurface& modelObject);
 
@@ -1615,6 +1673,10 @@ namespace energyplus {
     boost::optional<IdfObject> translateZoneHVACWaterToAirHeatPump(model::ZoneHVACWaterToAirHeatPump& modelObject);
 
     boost::optional<IdfObject> translateZoneMixing(model::ZoneMixing& modelObject);
+
+    boost::optional<IdfObject> translateZoneMRTCalculation(model::ZoneMRTCalculation& modelObject);
+
+    boost::optional<IdfObject> translateComfortViewFactorAngles(model::ComfortViewFactorAngles& modelObject);
 
     boost::optional<IdfObject> translateZonePropertyUserViewFactorsBySurfaceName(model::ZonePropertyUserViewFactorsBySurfaceName& modelObject);
 

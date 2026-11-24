@@ -14,16 +14,16 @@
 #include "StraightComponent/Node.hpp"
 
 #include <utilities/core/Assert.hpp>
+#include <utilities/core/DeprecatedHelpers.hpp>
+#include <utilities/core/StringHelpers.hpp>
 #include <utilities/idd/CentralHeatPumpSystem_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
-#include <utilities/idd/IddFactory.hxx>
 
 namespace openstudio {
 namespace epmodel {
 
   CentralHeatPumpSystem::CentralHeatPumpSystem(const Model& model) : WaterToWaterComponent(CentralHeatPumpSystem::iddObjectType(), model) {
     // Keep required scalar fields populated for strict non-optional getters.
-    OS_ASSERT(setControlMethod("SmartMixing"));
     OS_ASSERT(setAncillaryPower(0.0));
   }
 
@@ -34,15 +34,18 @@ namespace epmodel {
   }
 
   std::vector<std::string> CentralHeatPumpSystem::controlMethodValues() {
-    return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), openstudio::CentralHeatPumpSystemFields::ControlMethod);
+    DEPRECATED_AT_MSG(3, 12, 0, "The Control Method field was removed from CentralHeatPumpSystem in EnergyPlus; SmartMixing is the only valid value.");
+    return {"SmartMixing"};
   }
 
   std::string CentralHeatPumpSystem::controlMethod() const {
-    return getImpl<detail::CentralHeatPumpSystem_Impl>()->controlMethod();
+    DEPRECATED_AT_MSG(3, 12, 0, "The Control Method field was removed from CentralHeatPumpSystem in EnergyPlus; this always returns SmartMixing.");
+    return "SmartMixing";
   }
 
   bool CentralHeatPumpSystem::setControlMethod(const std::string& controlMethod) {
-    return getImpl<detail::CentralHeatPumpSystem_Impl>()->setControlMethod(controlMethod);
+    DEPRECATED_AT_MSG(3, 12, 0, "The Control Method field was removed from CentralHeatPumpSystem in EnergyPlus; this accepts only SmartMixing.");
+    return istringEqual(controlMethod, "SmartMixing");
   }
 
   double CentralHeatPumpSystem::ancillaryPower() const {
@@ -83,20 +86,6 @@ namespace epmodel {
 namespace openstudio {
 namespace epmodel {
   namespace detail {
-
-    std::string CentralHeatPumpSystem_Impl::controlMethod() const {
-      const auto value = getString(openstudio::CentralHeatPumpSystemFields::ControlMethod, true);
-      OS_ASSERT(value);
-      return *value;
-    }
-
-    bool CentralHeatPumpSystem_Impl::setControlMethod(const std::string& controlMethod) {
-      return setString(openstudio::CentralHeatPumpSystemFields::ControlMethod, controlMethod);
-    }
-
-    std::vector<std::string> CentralHeatPumpSystem_Impl::controlMethodValues() const {
-      return openstudio::epmodel::CentralHeatPumpSystem::controlMethodValues();
-    }
 
     double CentralHeatPumpSystem_Impl::ancillaryPower() const {
       const auto value = getDouble(openstudio::CentralHeatPumpSystemFields::AncillaryPower, true);

@@ -394,6 +394,28 @@ TEST_F(EPModelFixture, CoilSystemCoolingWaterHeatExchangerAssisted_CanonicalizeR
   EXPECT_EQ(coolingCoilCount, model.getConcreteModelObjects<CoilCoolingWater>().size());
 }
 
+TEST_F(EPModelFixture, CoilSystemCoolingWaterHeatExchangerAssisted_AirLoopCanonicalizesBeforeUsingRequiredChildren) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  CoilSystemCoolingWaterHeatExchangerAssisted coilSystem(model);
+  auto supplyOutletNode = airLoop.supplyOutletNode();
+  ASSERT_TRUE(coilSystem.addToNode(supplyOutletNode));
+
+  ASSERT_TRUE(coilSystem.setPointer(openstudio::CoilSystem_Cooling_Water_HeatExchangerAssistedFields::HeatExchangerName, openstudio::Handle()));
+  ASSERT_TRUE(coilSystem.setPointer(openstudio::CoilSystem_Cooling_Water_HeatExchangerAssistedFields::CoolingCoilName, openstudio::Handle()));
+
+  // AirLoopHVAC is deliberately visited first. It must canonicalize the
+  // compound supply component before coolingCoil() consumes its required child.
+  detail::LoadContext context{model, SanitizationPolicy::Repair, SanitizationReport{}, {}};
+  auto airLoopImpl = airLoop.getImpl<detail::AirLoopHVAC_Impl>();
+  ASSERT_TRUE(airLoopImpl);
+  EXPECT_NO_THROW(airLoopImpl->canonicalize(context));
+
+  EXPECT_EQ(0u, context.report.errorCount);
+  EXPECT_TRUE(context.visited.contains(coilSystem.handle()));
+  EXPECT_NO_THROW(coilSystem.coolingCoil());
+}
+
 TEST_F(EPModelFixture, CoilSystemCoolingWaterHeatExchangerAssisted_InternalNodeRenamesSurviveCanonicalize) {
   Model model;
   AirLoopHVAC airLoop(model);

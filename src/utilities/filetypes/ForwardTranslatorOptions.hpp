@@ -78,6 +78,16 @@ class UTILITIES_API ForwardTranslatorOptions
   void setExcludeSpaceTranslation(bool excludeSpaceTranslation);
   void resetExcludeSpaceTranslation();
 
+  bool excludeSpaceLoadInstances() const;
+  bool isExcludeSpaceLoadInstancesDefaulted() const;
+  void setExcludeSpaceLoadInstances(bool excludeSpaceLoadInstances);
+  void resetExcludeSpaceLoadInstances();
+
+  bool excludeConstructionAssignmentSets() const;
+  bool isExcludeConstructionAssignmentSetsDefaulted() const;
+  void setExcludeConstructionAssignmentSets(bool excludeConstructionAssignmentSets);
+  void resetExcludeConstructionAssignmentSets();
+
   /* Any non-defaulted value from other is brought over */
   void overrideValuesWith(const ForwardTranslatorOptions& other);
 

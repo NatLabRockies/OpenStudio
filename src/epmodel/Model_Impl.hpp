@@ -50,6 +50,10 @@ namespace epmodel {
       virtual std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>
         createObject(const std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>& originalObjectImplPtr, bool keepHandle) override;
       virtual Workspace clone(bool keepHandles = false) const override;
+      /** Returns a Model holding copies of the objects in handles. Overridden so that the copies keep their concrete epmodel
+       *  impl types; Workspace::addObjects(std::vector<WorkspaceObject>) stages objects through this before copying them in. */
+      virtual Workspace cloneSubset(const std::vector<Handle>& handles, bool keepHandles = false,
+                                    StrictnessLevel level = StrictnessLevel::Draft) const override;
 
       openstudio::epmodel::Model model() const;
       boost::optional<openstudio::SqlFile> sqlFile() const;

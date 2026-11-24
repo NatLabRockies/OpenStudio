@@ -6,6 +6,7 @@
 #include "Model.hpp"
 #include "Model_Impl.hpp"
 
+#include <memory>
 #include <src/epmodel/embedded_files.hxx>
 
 #include <utilities/core/Compare.hpp>
@@ -659,6 +660,8 @@
 #include "Schedule/ScheduleCompact_Impl.hpp"
 #include "Schedule/ScheduleConstant.hpp"
 #include "Schedule/ScheduleConstant_Impl.hpp"
+#include "Schedule/ScheduleRule_Impl.hpp"
+#include "Schedule/ScheduleRuleset_Impl.hpp"
 #include "Schedule/ScheduleYear_Impl.hpp"
 #include "ScheduleBase/ScheduleDay_Impl.hpp"
 #include "ScheduleInterval/ScheduleFile_Impl.hpp"
@@ -1197,13 +1200,50 @@ namespace epmodel {
       detail::addLoadWarning(context, "Preserved multiple GlobalGeometryRules objects; exactly one is required.");
     }
 
-    // Fixed-point pass over all objects:
-    // 1. One-time execution per object handle is enforced via context.visited.
-    // 2. Order is intentionally not relied upon.
-    // 3. Newly created objects from canonicalizers are picked up in later passes.
+    // Canonicalization examines the raw Workspace object graph and, when the
+    // sanitization policy permits, converts it into the form required by the
+    // EPModel domain API. Loaded objects may initially have missing required
+    // children, incomplete relationships, or topology that cannot safely be
+    // accessed through higher-level EPModel methods. Canonicalizers repair those
+    // conditions by creating required objects and completing the relationships
+    // owned by each domain object.
+    //
+    // Canonicalization is a guarded graph traversal, not an ordered or
+    // fixed-point pass. Object discovery order is arbitrary. Each object is
+    // canonicalized at most once through the shared LoadContext. Because a
+    // canonicalizer may create additional objects, the top-level scan repeats
+    // only to discover objects that have not yet been visited; previously visited
+    // objects are not canonicalized again.
+    //
+    // Before an object has been canonicalized, code may inspect or modify its raw
+    // Workspace representation using operations such as getString() and
+    // setString(), but must not call domain methods that assume required children,
+    // relationships, or topology are complete. Before consuming such state from a
+    // related object, canonicalize that object through the shared context.
+    // The visited guard also breaks recursive cycles, so a canonicalizer must not
+    // consume domain state from an object that leads back to the object currently
+    // being canonicalized; the common relationship owner must complete that cycle.
+    //
+    // For example, AirLoopHVAC must canonicalize a
+    // CoilSystemCoolingWaterHeatExchangerAssisted before calling coolingCoil(),
+    // because that canonicalizer may need to create the required cooling coil.
+    // Conversely, AirLoopHVAC owns the relationships between its zone connectors
+    // and supply/return paths, so its canonicalizer must complete those
+    // relationships directly rather than relying on a path being canonicalized
+    // again later.
+    //
+    // A newly created object may be left for a later discovery scan when its
+    // canonical state is not needed immediately. Every canonicalizer must complete
+    // the relationships it owns before returning and must not depend on a later
+    // revisit to finish its work. A canonicalizer may also remove a duplicate that
+    // is still present in the current discovery snapshot, so disconnected snapshot
+    // entries must be skipped.
     while (true) {
       const auto visitedBefore = context.visited.size();
       for (const auto& object : this->objects()) {
+        if (!object.initialized()) {
+          continue;
+        }
         if (auto impl = object.getImpl<detail::ModelObject_Impl>()) {
           impl->canonicalize(context);
         }
@@ -1272,17 +1312,37 @@ namespace epmodel {
       }
     }
 
+    // copy constructor, used for clone
     Model_Impl::Model_Impl(const Model_Impl& other, bool keepHandles)
-      : Workspace_Impl(other, keepHandles),
-        m_sqlFile((other.m_sqlFile) ? std::shared_ptr<SqlFile>(new SqlFile(*other.m_sqlFile)) : other.m_sqlFile) {}
+      : Workspace_Impl(other, keepHandles), m_sqlFile((other.m_sqlFile) ? std::make_shared<SqlFile>(*other.m_sqlFile) : other.m_sqlFile) {
+      // TODO: add m_workflowJSON
+      // notice we are cloning the workflow and sqlfile too, if necessary
+      // careful not to call anything that calls shared_from_this here, this is not yet constructed
+    }
 
+    // copy constructor used for cloneSubset
     Model_Impl::Model_Impl(const Model_Impl& other, const std::vector<Handle>& hs, bool keepHandles, StrictnessLevel level)
-      : Workspace_Impl(other, hs, keepHandles, level),
-        m_sqlFile((other.m_sqlFile) ? std::shared_ptr<SqlFile>(new SqlFile(*other.m_sqlFile)) : other.m_sqlFile) {}
+      : Workspace_Impl(other, hs, keepHandles, level), m_sqlFile((other.m_sqlFile) ? std::make_shared<SqlFile>(*other.m_sqlFile) : other.m_sqlFile) {
+      // TODO: add m_workflowJSON
+      // notice we are cloning the workflow and sqlfile too, if necessary
+    }
 
     Workspace Model_Impl::clone(bool keepHandles) const {
+      // copy everything but objects
       std::shared_ptr<Model_Impl> cloneImpl(new Model_Impl(*this, keepHandles));
+      // clone objects
       createAndAddClonedObjects(model().getImpl<Model_Impl>(), cloneImpl, keepHandles);
+      // wrap impl and return
+      Model result(cloneImpl);
+      return result.cast<Workspace>();
+    }
+
+    Workspace Model_Impl::cloneSubset(const std::vector<Handle>& handles, bool keepHandles, StrictnessLevel level) const {
+      // copy everything but objects
+      std::shared_ptr<Model_Impl> cloneImpl(new Model_Impl(*this, handles, keepHandles, level));
+      // clone objects
+      createAndAddSubsetClonedObjects(model().getImpl<Model_Impl>(), cloneImpl, handles, keepHandles);
+      // wrap impl and return
       Model result(cloneImpl);
       return result.cast<Workspace>();
     }
@@ -1999,7 +2059,9 @@ namespace epmodel {
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::Schedule_File_Shading, ScheduleFileShading_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::Schedule_Week_Compact, ScheduleWeekCompact_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::Schedule_Week_Daily, ScheduleWeek_Impl);
+      REGISTER_NEW_CONSTRUCTOR(IddObjectType::Schedule_Week_Rule, ScheduleRule_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::Schedule_Year, ScheduleYear_Impl);
+      REGISTER_NEW_CONSTRUCTOR(IddObjectType::Schedule_Year_Rules, ScheduleRuleset_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::SetpointManager_Coldest, SetpointManagerColdest_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::SetpointManager_CondenserEnteringReset, SetpointManagerCondenserEnteringReset_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::SetpointManager_CondenserEnteringReset_Ideal, SetpointManagerCondenserEnteringResetIdeal_Impl);
@@ -2946,7 +3008,9 @@ namespace epmodel {
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::Schedule_File_Shading, ScheduleFileShading_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::Schedule_Week_Compact, ScheduleWeekCompact_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::Schedule_Week_Daily, ScheduleWeek_Impl);
+      REGISTER_COPY_CONSTRUCTOR(IddObjectType::Schedule_Week_Rule, ScheduleRule_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::Schedule_Year, ScheduleYear_Impl);
+      REGISTER_COPY_CONSTRUCTOR(IddObjectType::Schedule_Year_Rules, ScheduleRuleset_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::SetpointManager_Coldest, SetpointManagerColdest_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::SetpointManager_CondenserEnteringReset, SetpointManagerCondenserEnteringReset_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::SetpointManager_CondenserEnteringReset_Ideal, SetpointManagerCondenserEnteringResetIdeal_Impl);

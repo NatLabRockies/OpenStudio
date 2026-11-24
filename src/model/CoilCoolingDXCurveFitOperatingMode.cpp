@@ -141,6 +141,13 @@ namespace model {
       return value.get();
     }
 
+    bool CoilCoolingDXCurveFitOperatingMode_Impl::applyPartLoadFractiontoSpeedsGreaterthan1() const {
+      boost::optional<std::string> value =
+        getString(OS_Coil_Cooling_DX_CurveFit_OperatingModeFields::ApplyPartLoadFractiontoSpeedsGreaterthan1, true);
+      OS_ASSERT(value);
+      return openstudio::istringEqual(value.get(), "Yes");
+    }
+
     bool CoilCoolingDXCurveFitOperatingMode_Impl::applyLatentDegradationtoSpeedsGreaterthan1() const {
       boost::optional<std::string> value =
         getString(OS_Coil_Cooling_DX_CurveFit_OperatingModeFields::ApplyLatentDegradationtoSpeedsGreaterthan1, true);
@@ -254,6 +261,14 @@ namespace model {
       bool result =
         setDouble(OS_Coil_Cooling_DX_CurveFit_OperatingModeFields::NominalTimeforCondensateRemovaltoBegin, nominalTimeforCondensateRemovaltoBegin);
       return result;
+    }
+
+    bool CoilCoolingDXCurveFitOperatingMode_Impl::setApplyPartLoadFractiontoSpeedsGreaterthan1(bool applyPartLoadFractiontoSpeedsGreaterthan1) {
+      if (applyPartLoadFractiontoSpeedsGreaterthan1) {
+        return setString(OS_Coil_Cooling_DX_CurveFit_OperatingModeFields::ApplyPartLoadFractiontoSpeedsGreaterthan1, "Yes");
+      } else {
+        return setString(OS_Coil_Cooling_DX_CurveFit_OperatingModeFields::ApplyPartLoadFractiontoSpeedsGreaterthan1, "No");
+      }
     }
 
     bool CoilCoolingDXCurveFitOperatingMode_Impl::setApplyLatentDegradationtoSpeedsGreaterthan1(bool applyLatentDegradationtoSpeedsGreaterthan1) {
@@ -458,6 +473,7 @@ namespace model {
     setRatioofInitialMoistureEvaporationRateandSteadyStateLatentCapacity(0.0);
     setLatentCapacityTimeConstant(0.0);
     setNominalTimeforCondensateRemovaltoBegin(0.0);
+    setApplyPartLoadFractiontoSpeedsGreaterthan1(false);
     setApplyLatentDegradationtoSpeedsGreaterthan1(false);
     setCondenserType("AirCooled");
     autosizeNominalEvaporativeCondenserPumpPower();
@@ -509,6 +525,10 @@ namespace model {
 
   double CoilCoolingDXCurveFitOperatingMode::nominalTimeforCondensateRemovaltoBegin() const {
     return getImpl<detail::CoilCoolingDXCurveFitOperatingMode_Impl>()->nominalTimeforCondensateRemovaltoBegin();
+  }
+
+  bool CoilCoolingDXCurveFitOperatingMode::applyPartLoadFractiontoSpeedsGreaterthan1() const {
+    return getImpl<detail::CoilCoolingDXCurveFitOperatingMode_Impl>()->applyPartLoadFractiontoSpeedsGreaterthan1();
   }
 
   bool CoilCoolingDXCurveFitOperatingMode::applyLatentDegradationtoSpeedsGreaterthan1() const {
@@ -580,6 +600,11 @@ namespace model {
   bool CoilCoolingDXCurveFitOperatingMode::setNominalTimeforCondensateRemovaltoBegin(double nominalTimeforCondensateRemovaltoBegin) {
     return getImpl<detail::CoilCoolingDXCurveFitOperatingMode_Impl>()->setNominalTimeforCondensateRemovaltoBegin(
       nominalTimeforCondensateRemovaltoBegin);
+  }
+
+  bool CoilCoolingDXCurveFitOperatingMode::setApplyPartLoadFractiontoSpeedsGreaterthan1(bool applyPartLoadFractiontoSpeedsGreaterthan1) {
+    return getImpl<detail::CoilCoolingDXCurveFitOperatingMode_Impl>()->setApplyPartLoadFractiontoSpeedsGreaterthan1(
+      applyPartLoadFractiontoSpeedsGreaterthan1);
   }
 
   bool CoilCoolingDXCurveFitOperatingMode::setApplyLatentDegradationtoSpeedsGreaterthan1(bool applyLatentDegradationtoSpeedsGreaterthan1) {

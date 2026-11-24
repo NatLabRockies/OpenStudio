@@ -35,6 +35,12 @@ namespace detail {
 
     m_no_space_translation = DEFAULT_NO_SPACE_TRANSLATION;
     m_is_no_space_translation_defaulted = true;
+
+    m_no_space_load_instances = DEFAULT_NO_SPACE_LOAD_INSTANCES;
+    m_is_no_space_load_instances_defaulted = true;
+
+    m_no_construction_assignment_sets = DEFAULT_NO_CONSTRUCTION_ASSIGNMENT_SETS;
+    m_is_no_construction_assignment_sets_defaulted = true;
   }
 
   bool ForwardTranslatorOptions_Impl::keepRunControlSpecialDays() const {
@@ -163,6 +169,42 @@ namespace detail {
     m_is_no_space_translation_defaulted = true;
   }
 
+  bool ForwardTranslatorOptions_Impl::excludeSpaceLoadInstances() const {
+    return m_no_space_load_instances;
+  }
+
+  bool ForwardTranslatorOptions_Impl::isExcludeSpaceLoadInstancesDefaulted() const {
+    return m_is_no_space_load_instances_defaulted;
+  }
+
+  void ForwardTranslatorOptions_Impl::setExcludeSpaceLoadInstances(bool excludeSpaceLoadInstances) {
+    m_no_space_load_instances = excludeSpaceLoadInstances;
+    m_is_no_space_load_instances_defaulted = false;
+  }
+
+  void ForwardTranslatorOptions_Impl::resetExcludeSpaceLoadInstances() {
+    m_no_space_load_instances = DEFAULT_NO_SPACE_LOAD_INSTANCES;
+    m_is_no_space_load_instances_defaulted = true;
+  }
+
+  bool ForwardTranslatorOptions_Impl::excludeConstructionAssignmentSets() const {
+    return m_no_construction_assignment_sets;
+  }
+
+  bool ForwardTranslatorOptions_Impl::isExcludeConstructionAssignmentSetsDefaulted() const {
+    return m_is_no_construction_assignment_sets_defaulted;
+  }
+
+  void ForwardTranslatorOptions_Impl::setExcludeConstructionAssignmentSets(bool excludeConstructionAssignmentSets) {
+    m_no_construction_assignment_sets = excludeConstructionAssignmentSets;
+    m_is_no_construction_assignment_sets_defaulted = false;
+  }
+
+  void ForwardTranslatorOptions_Impl::resetExcludeConstructionAssignmentSets() {
+    m_no_construction_assignment_sets = DEFAULT_NO_CONSTRUCTION_ASSIGNMENT_SETS;
+    m_is_no_construction_assignment_sets_defaulted = true;
+  }
+
   void ForwardTranslatorOptions_Impl::overrideValuesWith(const ForwardTranslatorOptions& other) {
     if (!other.isKeepRunControlSpecialDaysDefaulted()) {
       setKeepRunControlSpecialDays(other.keepRunControlSpecialDays());
@@ -190,6 +232,14 @@ namespace detail {
 
     if (!other.isExcludeSpaceTranslationDefaulted()) {
       setExcludeSpaceTranslation(other.excludeSpaceTranslation());
+    }
+
+    if (!other.isExcludeSpaceLoadInstancesDefaulted()) {
+      setExcludeSpaceLoadInstances(other.excludeSpaceLoadInstances());
+    }
+
+    if (!other.isExcludeConstructionAssignmentSetsDefaulted()) {
+      setExcludeConstructionAssignmentSets(other.excludeConstructionAssignmentSets());
     }
   }
 
@@ -222,6 +272,14 @@ namespace detail {
 
     if (!m_is_no_space_translation_defaulted) {
       value["no_space_translation"] = m_no_space_translation;
+    }
+
+    if (!m_is_no_space_load_instances_defaulted) {
+      value["no_space_load_instances"] = m_no_space_load_instances;
+    }
+
+    if (!m_is_no_construction_assignment_sets_defaulted) {
+      value["no_construction_assignment_sets"] = m_no_construction_assignment_sets;
     }
 
     return value;
@@ -291,6 +349,12 @@ ForwardTranslatorOptions ForwardTranslatorOptions::fromJSON(const Json::Value& v
   }
   if (value.isMember("no_space_translation") && value["no_space_translation"].isBool()) {
     result.setExcludeSpaceTranslation(value["no_space_translation"].asBool());
+  }
+  if (value.isMember("no_space_load_instances") && value["no_space_load_instances"].isBool()) {
+    result.setExcludeSpaceLoadInstances(value["no_space_load_instances"].asBool());
+  }
+  if (value.isMember("no_construction_assignment_sets") && value["no_construction_assignment_sets"].isBool()) {
+    result.setExcludeConstructionAssignmentSets(value["no_construction_assignment_sets"].asBool());
   }
 
   return result;
@@ -416,6 +480,38 @@ void ForwardTranslatorOptions::resetExcludeSpaceTranslation() {
   m_impl->resetExcludeSpaceTranslation();
 }
 
+bool ForwardTranslatorOptions::isExcludeSpaceLoadInstancesDefaulted() const {
+  return m_impl->isExcludeSpaceLoadInstancesDefaulted();
+}
+
+bool ForwardTranslatorOptions::excludeSpaceLoadInstances() const {
+  return m_impl->excludeSpaceLoadInstances();
+}
+
+void ForwardTranslatorOptions::setExcludeSpaceLoadInstances(bool excludeSpaceLoadInstances) {
+  m_impl->setExcludeSpaceLoadInstances(excludeSpaceLoadInstances);
+}
+
+void ForwardTranslatorOptions::resetExcludeSpaceLoadInstances() {
+  m_impl->resetExcludeSpaceLoadInstances();
+}
+
+bool ForwardTranslatorOptions::isExcludeConstructionAssignmentSetsDefaulted() const {
+  return m_impl->isExcludeConstructionAssignmentSetsDefaulted();
+}
+
+bool ForwardTranslatorOptions::excludeConstructionAssignmentSets() const {
+  return m_impl->excludeConstructionAssignmentSets();
+}
+
+void ForwardTranslatorOptions::setExcludeConstructionAssignmentSets(bool excludeConstructionAssignmentSets) {
+  m_impl->setExcludeConstructionAssignmentSets(excludeConstructionAssignmentSets);
+}
+
+void ForwardTranslatorOptions::resetExcludeConstructionAssignmentSets() {
+  m_impl->resetExcludeConstructionAssignmentSets();
+}
+
 void ForwardTranslatorOptions::overrideValuesWith(const ForwardTranslatorOptions& other) {
   m_impl->overrideValuesWith(other);
 }
@@ -432,7 +528,9 @@ std::vector<ForwardTranslatorOptionKeyMethod> ForwardTranslatorOptions::forwardT
                                                         {"no_sqlite_output", "setExcludeSQliteOutputReport"},
                                                         {"no_html_output", "setExcludeHTMLOutputReport"},
                                                         {"no_variable_dictionary", "setExcludeVariableDictionary"},
-                                                        {"no_space_translation", "setExcludeSpaceTranslation"}}};
+                                                        {"no_space_translation", "setExcludeSpaceTranslation"},
+                                                        {"no_space_load_instances", "setExcludeSpaceLoadInstances"},
+                                                        {"no_construction_assignment_sets", "setExcludeConstructionAssignmentSets"}}};
 }
 
 std::ostream& operator<<(std::ostream& out, const ForwardTranslatorOptionKeyMethod& opt) {

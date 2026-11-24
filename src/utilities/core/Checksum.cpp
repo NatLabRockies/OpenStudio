@@ -5,6 +5,7 @@
 
 #include "Checksum.hpp"
 
+#include <algorithm>
 #include <sstream>
 
 #include <boost/crc.hpp>
