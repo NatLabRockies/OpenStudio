@@ -65,6 +65,16 @@ namespace detail {
     void setExcludeSpaceTranslation(bool excludeSpaceTranslation);
     void resetExcludeSpaceTranslation();
 
+    bool excludeSpaceLoadInstances() const;
+    bool isExcludeSpaceLoadInstancesDefaulted() const;
+    void setExcludeSpaceLoadInstances(bool excludeSpaceLoadInstances);
+    void resetExcludeSpaceLoadInstances();
+
+    bool excludeConstructionAssignmentSets() const;
+    bool isExcludeConstructionAssignmentSetsDefaulted() const;
+    void setExcludeConstructionAssignmentSets(bool excludeConstructionAssignmentSets);
+    void resetExcludeConstructionAssignmentSets();
+
     /* Any non-defaulted value from other is brought over */
     void overrideValuesWith(const ForwardTranslatorOptions& other);
 
@@ -79,6 +89,8 @@ namespace detail {
     static constexpr bool DEFAULT_NO_HTML_OUTPUT = false;
     static constexpr bool DEFAULT_NO_VARIABLE_DICTIONARY = false;
     static constexpr bool DEFAULT_NO_SPACE_TRANSLATION = false;  // At 3.4.1, this was changed to false.
+    static constexpr bool DEFAULT_NO_SPACE_LOAD_INSTANCES = false;
+    static constexpr bool DEFAULT_NO_CONSTRUCTION_ASSIGNMENT_SETS = false;
 
     bool m_runcontrolspecialdays = DEFAULT_RUNCONTROLSPECIALDAYS;
     bool m_is_runcontrolspecialdays_defaulted = true;
@@ -100,6 +112,12 @@ namespace detail {
 
     bool m_no_space_translation = DEFAULT_NO_SPACE_TRANSLATION;
     bool m_is_no_space_translation_defaulted = true;
+
+    bool m_no_space_load_instances = DEFAULT_NO_SPACE_LOAD_INSTANCES;
+    bool m_is_no_space_load_instances_defaulted = true;
+
+    bool m_no_construction_assignment_sets = DEFAULT_NO_CONSTRUCTION_ASSIGNMENT_SETS;
+    bool m_is_no_construction_assignment_sets_defaulted = true;
   };
 
 }  // namespace detail

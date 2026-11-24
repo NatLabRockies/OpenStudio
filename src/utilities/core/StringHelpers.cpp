@@ -141,7 +141,7 @@ unsigned numFractionalDigits(double value, unsigned numSigFigs) {
 
   value = std::fabs(value);
   int orderOfMagnitude = int(std::floor(std::log10(value)));  // 1683 => 3
-                                                    // 0.001683892 => -3
+                                                              // 0.001683892 => -3
   int figsBeforeDecimal = std::min(std::max(orderOfMagnitude + 1, 0), int(numSigFigs));
   OS_ASSERT(figsBeforeDecimal >= 0);
   OS_ASSERT(figsBeforeDecimal <= int(numSigFigs));
@@ -186,7 +186,7 @@ double toNumSigFigs(double value, unsigned numSigFigs) {
   bool negative = (value != absValue);
 
   double orderOfMagnitude = std::floor(std::log10(absValue));  // 1683 => 3
-                                                     // 0.001683892 => -3
+                                                               // 0.001683892 => -3
   //                             X.XXXXX             add more sig-figs
   double positioningPowerOfTen = -orderOfMagnitude + double(int(numSigFigs) - 1);
   // 1683, 2 sig-figs => 1683 * 10**-2 => 16.83

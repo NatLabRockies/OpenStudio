@@ -849,7 +849,7 @@ namespace contam {
     double Re = 30.0;            // Reynolds number of L-T transition
 
     double A = Ct / (0.6 * SQRT2);  // flow area
-    double D = std::sqrt(A);             // hydraulic diameter
+    double D = std::sqrt(A);        // hydraulic diameter
 
     // Re = rho * V * D / mu; F = rho * V * A; therefore
     F = MUAIR * Re * A / D;

@@ -52,6 +52,7 @@
 #include "../model/OutputMeter_Impl.hpp"
 #include "../model/OutputSQLite.hpp"
 #include "../model/OutputSQLite_Impl.hpp"
+#include "../model/DefaultConstructionSet.hpp"
 
 #include "../utilities/idf/Workspace.hpp"
 #include "../utilities/idf/IdfExtensibleGroup.hpp"
@@ -174,6 +175,14 @@ namespace energyplus {
 
   void ForwardTranslator::setExcludeSpaceTranslation(bool excludeSpaceTranslation) {
     m_forwardTranslatorOptions.setExcludeSpaceTranslation(excludeSpaceTranslation);
+  }
+
+  void ForwardTranslator::setExcludeSpaceLoadInstances(bool excludeSpaceLoadInstances) {
+    m_forwardTranslatorOptions.setExcludeSpaceLoadInstances(excludeSpaceLoadInstances);
+  }
+
+  void ForwardTranslator::setExcludeConstructionAssignmentSets(bool excludeConstructionAssignmentSets) {
+    m_forwardTranslatorOptions.setExcludeConstructionAssignmentSets(excludeConstructionAssignmentSets);
   }
 
   // #5510 - Sort by name first, then by reporting frequency
@@ -304,6 +313,17 @@ namespace energyplus {
         LOG(Warn, spaceLoad.briefDescription() << " is not associated with a Space or SpaceType, it will not be translated.");
         spaceLoad.remove();
       }
+    }
+
+    if (!m_forwardTranslatorOptions.excludeConstructionAssignmentSets()) {
+      if (m_forwardTranslatorOptions.excludeSpaceTranslation()) {
+        // When Space translation is excluded there is no E+ Space, so defaulted constructions would end up unresolved
+        hardApplyConstructionsWhenSpaceTranslationOff(model);
+      }
+
+      // TODO:  [ConstructionAssignmentSet purge] revisit whether I should purge or not
+      constexpr bool purge = false;
+      DefaultConstructionSet::collapseToSpaceAndBuilding(model, purge);
     }
 
     if (m_forwardTranslatorOptions.excludeSpaceTranslation()) {
@@ -1526,20 +1546,23 @@ namespace energyplus {
         break;
       }
       case openstudio::IddObjectType::OS_DefaultConstructionSet: {
-        // no-op
-        return retVal;
+        auto defaultConstructionSet = modelObject.cast<DefaultConstructionSet>();
+        retVal = translateDefaultConstructionSet(defaultConstructionSet);
+        break;
       }
       case openstudio::IddObjectType::OS_DefaultScheduleSet: {
         // no-op
         return retVal;
       }
       case openstudio::IddObjectType::OS_DefaultSurfaceConstructions: {
-        // no-op
-        return retVal;
+        auto defaultSurfaceConstructions = modelObject.cast<DefaultSurfaceConstructions>();
+        retVal = translateDefaultSurfaceConstructions(defaultSurfaceConstructions);
+        break;
       }
       case openstudio::IddObjectType::OS_DefaultSubSurfaceConstructions: {
-        // no-op
-        return retVal;
+        auto defaultSubSurfaceConstructions = modelObject.cast<DefaultSubSurfaceConstructions>();
+        retVal = translateDefaultSubSurfaceConstructions(defaultSubSurfaceConstructions);
+        break;
       }
       case openstudio::IddObjectType::OS_DesignSpecification_OutdoorAir: {
         LOG_AND_THROW("Shouldn't get there");
@@ -1575,7 +1598,8 @@ namespace energyplus {
         break;
       }
       case openstudio::IddObjectType::OS_ElectricEquipment_Definition: {
-        // no-op
+        auto definition = modelObject.cast<ElectricEquipmentDefinition>();
+        retVal = translateElectricEquipmentDefinition(definition);
         break;
       }
       case openstudio::IddObjectType::OS_ElectricEquipment_ITE_AirCooled: {
@@ -1584,7 +1608,8 @@ namespace energyplus {
         break;
       }
       case openstudio::IddObjectType::OS_ElectricEquipment_ITE_AirCooled_Definition: {
-        // no-op
+        auto definition = modelObject.cast<ElectricEquipmentITEAirCooledDefinition>();
+        retVal = translateElectricEquipmentITEAirCooledDefinition(definition);
         break;
       }
       case openstudio::IddObjectType::OS_ElectricLoadCenter_Distribution: {
@@ -2045,7 +2070,8 @@ namespace energyplus {
         break;
       }
       case openstudio::IddObjectType::OS_HotWaterEquipment_Definition: {
-        // no-op
+        auto definition = modelObject.cast<HotWaterEquipmentDefinition>();
+        retVal = translateHotWaterEquipmentDefinition(definition);
         break;
       }
       case openstudio::IddObjectType::OS_Humidifier_Steam_Electric: {
@@ -2069,7 +2095,8 @@ namespace energyplus {
         break;
       }
       case openstudio::IddObjectType::OS_GasEquipment_Definition: {
-        // no-op
+        auto definition = modelObject.cast<GasEquipmentDefinition>();
+        retVal = translateGasEquipmentDefinition(definition);
         break;
       }
       case openstudio::IddObjectType::OS_IlluminanceMap: {
@@ -2178,7 +2205,8 @@ namespace energyplus {
         break;
       }
       case openstudio::IddObjectType::OS_Lights_Definition: {
-        // no-op
+        auto definition = modelObject.cast<LightsDefinition>();
+        retVal = translateLightsDefinition(definition);
         break;
       }
       case openstudio::IddObjectType::OS_Luminaire: {
@@ -2275,7 +2303,8 @@ namespace energyplus {
         break;
       }
       case openstudio::IddObjectType::OS_OtherEquipment_Definition: {
-        //no-op
+        auto definition = modelObject.cast<OtherEquipmentDefinition>();
+        retVal = translateOtherEquipmentDefinition(definition);
         break;
       }
       case openstudio::IddObjectType::OS_PlantLoop: {
@@ -2454,7 +2483,8 @@ namespace energyplus {
         break;
       }
       case openstudio::IddObjectType::OS_People_Definition: {
-        // no-op
+        auto definition = modelObject.cast<PeopleDefinition>();
+        retVal = translatePeopleDefinition(definition);
         break;
       }
       case openstudio::IddObjectType::OS_PerformancePrecisionTradeoffs: {
@@ -2951,7 +2981,8 @@ namespace energyplus {
         break;
       }
       case openstudio::IddObjectType::OS_SteamEquipment_Definition: {
-        // no-op
+        auto definition = modelObject.cast<SteamEquipmentDefinition>();
+        retVal = translateSteamEquipmentDefinition(definition);
         break;
       }
       case openstudio::IddObjectType::OS_Surface: {
@@ -3348,6 +3379,16 @@ namespace energyplus {
         retVal = translateZoneMixing(mo);
         break;
       }
+      case openstudio::IddObjectType::OS_ComfortViewFactorAngles: {
+        auto mo = modelObject.cast<ComfortViewFactorAngles>();
+        retVal = translateComfortViewFactorAngles(mo);
+        break;
+      }
+      case openstudio::IddObjectType::OS_ZoneMRTCalculation: {
+        auto mo = modelObject.cast<ZoneMRTCalculation>();
+        retVal = translateZoneMRTCalculation(mo);
+        break;
+      }
       case openstudio::IddObjectType::OS_ZoneProperty_UserViewFactors_BySurfaceName: {
         auto mo = modelObject.cast<ZonePropertyUserViewFactorsBySurfaceName>();
         retVal = translateZonePropertyUserViewFactorsBySurfaceName(mo);
@@ -3731,9 +3772,11 @@ namespace energyplus {
       IddObjectType::OS_Construction_WindowDataFile,
       IddObjectType::OS_StandardsInformation_Construction,
 
+      // TODO: [ConstructionAssignmentSet purge] Probably not wanted, especially with purge = false in DefaultConstructionSet::collapseToSpaceAndBuilding
       IddObjectType::OS_DefaultSubSurfaceConstructions,
       IddObjectType::OS_DefaultSurfaceConstructions,
       IddObjectType::OS_DefaultConstructionSet,
+
       IddObjectType::OS_DefaultScheduleSet,
 
       // Translated by the object it references directly

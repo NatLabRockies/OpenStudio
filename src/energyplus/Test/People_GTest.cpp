@@ -16,9 +16,20 @@
 #include "../../model/People_Impl.hpp"
 #include "../../model/PeopleDefinition.hpp"
 #include "../../model/PeopleDefinition_Impl.hpp"
+#include "../../model/ComfortViewFactorAngles.hpp"
 #include "../../model/ScheduleConstant.hpp"
+#include "../../model/Surface.hpp"
+#include "../../model/SubSurface.hpp"
+#include "../../model/InternalMass.hpp"
+#include "../../model/InternalMassDefinition.hpp"
+
+#include "../../utilities/geometry/Point3d.hpp"
+#include "../../utilities/idf/IdfExtensibleGroup.hpp"
 
 #include <utilities/idd/People_FieldEnums.hxx>
+#include <utilities/idd/People_Instance_FieldEnums.hxx>
+#include <utilities/idd/People_Definition_FieldEnums.hxx>
+//#include <utilities/idd/BuildingSurface_Detailed_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
 
 #include <resources.hxx>
@@ -100,6 +111,7 @@ TEST_F(EnergyPlusFixture, ForwardTranslator_People) {
   EXPECT_TRUE(p.setHeatStressTemperatureThreshold(31.0));
 
   ForwardTranslator ft;
+  ft.setExcludeSpaceLoadInstances(true);  // Test targets the legacy People translation specifically
   Workspace workspace = ft.translateModel(m);
 
   std::vector<WorkspaceObject> peopleObjects = workspace.getObjectsByType(IddObjectType::People);
@@ -118,7 +130,7 @@ TEST_F(EnergyPlusFixture, ForwardTranslator_People) {
   EXPECT_EQ("ActivitySchedule", peopleObject.getString(PeopleFields::ActivityLevelScheduleName).get());
   EXPECT_EQ(3.6e-08, peopleObject.getDouble(PeopleFields::CarbonDioxideGenerationRate).get());
   EXPECT_EQ("Yes", peopleObject.getString(PeopleFields::EnableASHRAE55ComfortWarnings).get());
-  EXPECT_EQ("SurfaceWeighted", peopleObject.getString(PeopleFields::MeanRadiantTemperatureCalculationType).get());
+  EXPECT_EQ("EnclosureAveraged", peopleObject.getString(PeopleFields::MeanRadiantTemperatureCalculationType).get());
   EXPECT_TRUE(peopleObject.isEmpty(PeopleFields::SurfaceName_AngleFactorListName));
   EXPECT_EQ("WorkEfficiencySchedule", peopleObject.getString(PeopleFields::WorkEfficiencyScheduleName).get());
 
@@ -135,6 +147,339 @@ TEST_F(EnergyPlusFixture, ForwardTranslator_People) {
   EXPECT_EQ(31.0, peopleObject.getDouble(PeopleFields::HeatStressTemperatureThreshold).get());
 }
 
+TEST_F(EnergyPlusFixture, ForwardTranslator_People_Instance) {
+  Model m;
+
+  ThermalZone zone(m);
+
+  Space space(m);
+  space.setThermalZone(zone);
+
+  Point3dVector points{{0, 0, 0}, {1, 0, 0}, {1, 1, 0}};
+  Surface surface(points, m);
+  surface.setName("Radiant Surface");
+  EXPECT_TRUE(surface.setSpace(space));
+
+  PeopleDefinition pd(m);
+  EXPECT_TRUE(pd.setSpaceFloorAreaperPerson(10.0));
+  EXPECT_TRUE(pd.setThermalComfortModelType(0, "Fanger"));
+  EXPECT_TRUE(pd.setThermalComfortModelType(1, "Pierce"));
+  EXPECT_TRUE(pd.setFractionRadiant(0.35));
+  EXPECT_TRUE(pd.setSensibleHeatFraction(0.2));
+  EXPECT_TRUE(pd.setCarbonDioxideGenerationRate(3.6e-8));
+  EXPECT_TRUE(pd.setEnableASHRAE55ComfortWarnings(true));
+  EXPECT_TRUE(pd.setMeanRadiantTemperatureCalculationType("SurfaceWeighted"));
+
+  People p(pd);
+  EXPECT_TRUE(p.setSurfaceNameAngleFactorListName(surface));
+  EXPECT_TRUE(p.setSpace(space));
+
+  {
+    ScheduleConstant numPeopleSch(m);
+    numPeopleSch.setName("NumberofPeopleSchedule");
+    numPeopleSch.setValue(1);
+    EXPECT_TRUE(p.setNumberofPeopleSchedule(numPeopleSch));
+  }
+  {
+    ScheduleConstant activitySch(m);
+    activitySch.setName("ActivitySchedule");
+    activitySch.setValue(131.8);
+    EXPECT_TRUE(p.setActivityLevelSchedule(activitySch));
+  }
+  {
+
+    ScheduleConstant workEffSch(m);
+    workEffSch.setName("WorkEfficiencySchedule");
+    workEffSch.setValue(0.0);
+    EXPECT_TRUE(p.setWorkEfficiencySchedule(workEffSch));
+  }
+  {
+    ScheduleConstant cloSch(m);
+    cloSch.setName("ClothingInsulationSchedule");
+    cloSch.setValue(1.0);
+    EXPECT_TRUE(p.setClothingInsulationSchedule(cloSch));
+
+    ScheduleConstant cloSch2(m);
+    cloSch2.setName("CalculationMethodSchedule");
+    cloSch2.setValue(1.0);
+    EXPECT_TRUE(p.setClothingInsulationCalculationMethodSchedule(cloSch2));
+  }
+
+  {
+    ScheduleConstant airSch(m);
+    airSch.setName("AirVelocitySchedule");
+    airSch.setValue(0.137);
+    EXPECT_TRUE(p.setAirVelocitySchedule(airSch));
+  }
+
+  EXPECT_TRUE(p.setMultiplier(2));
+  {
+    ScheduleConstant ankleSch(m);
+    ankleSch.setName("AnkleLevelAirVelocitySchedule");
+    ankleSch.setValue(0.127);
+    EXPECT_TRUE(p.setAnkleLevelAirVelocitySchedule(ankleSch));
+  }
+
+  EXPECT_TRUE(p.setColdStressTemperatureThreshold(15.0));
+  EXPECT_TRUE(p.setHeatStressTemperatureThreshold(31.0));
+
+  ForwardTranslator ft;
+  ft.setExcludeSpaceLoadInstances(false);
+  Workspace workspace = ft.translateModel(m);
+  EXPECT_EQ(0, ft.errors().size());
+
+  // Legacy People object should not be translated at all
+  EXPECT_EQ(0u, workspace.getObjectsByType(IddObjectType::People).size());
+
+  std::vector<WorkspaceObject> definitionObjects = workspace.getObjectsByType(IddObjectType::People_Definition);
+  ASSERT_EQ(1u, definitionObjects.size());
+  auto& definitionObject = definitionObjects.front();
+
+  EXPECT_EQ(pd.nameString(), definitionObject.nameString());
+  EXPECT_EQ("Area/Person", definitionObject.getString(People_DefinitionFields::NumberofPeopleCalculationMethod).get());
+  EXPECT_TRUE(definitionObject.isEmpty(People_DefinitionFields::NumberofPeople));
+  EXPECT_TRUE(definitionObject.isEmpty(People_DefinitionFields::PeopleperFloorArea));
+  // Definition values are NOT multiplied
+  EXPECT_EQ(10.0, definitionObject.getDouble(People_DefinitionFields::FloorAreaperPerson).get());
+  EXPECT_EQ(0.35, definitionObject.getDouble(People_DefinitionFields::FractionRadiant).get());
+  EXPECT_EQ(0.2, definitionObject.getDouble(People_DefinitionFields::SensibleHeatFraction).get());
+  EXPECT_EQ(3.6e-08, definitionObject.getDouble(People_DefinitionFields::CarbonDioxideGenerationRate).get());
+  EXPECT_EQ("Yes", definitionObject.getString(People_DefinitionFields::EnableASHRAE55ComfortWarnings).get());
+  EXPECT_EQ("SurfaceWeighted", definitionObject.getString(People_DefinitionFields::MeanRadiantTemperatureCalculationType).get());
+  EXPECT_EQ("Fanger", definitionObject.getString(People_DefinitionFields::ThermalComfortModel1Type).get());
+  EXPECT_EQ("Pierce", definitionObject.getString(People_DefinitionFields::ThermalComfortModel2Type).get());
+
+  std::vector<WorkspaceObject> instanceObjects = workspace.getObjectsByType(IddObjectType::People_Instance);
+  ASSERT_EQ(1u, instanceObjects.size());
+  auto& instanceObject = instanceObjects.front();
+
+  EXPECT_EQ(p.nameString(), instanceObject.nameString());
+
+  boost::optional<WorkspaceObject> definitionTarget_ = instanceObject.getTarget(People_InstanceFields::PeopleDefinitionName);
+  ASSERT_TRUE(definitionTarget_);
+  EXPECT_EQ(definitionObject.handle(), definitionTarget_->handle());
+
+  EXPECT_EQ("Space 1", instanceObject.getString(People_InstanceFields::ZoneorZoneListorSpaceorSpaceListName).get());
+  EXPECT_EQ("NumberofPeopleSchedule", instanceObject.getString(People_InstanceFields::NumberofPeopleScheduleName).get());
+  EXPECT_EQ("ActivitySchedule", instanceObject.getString(People_InstanceFields::ActivityLevelScheduleName).get());
+  EXPECT_EQ("Radiant Surface", instanceObject.getString(People_InstanceFields::SurfaceName_AngleFactorListName).get());
+  EXPECT_EQ("WorkEfficiencySchedule", instanceObject.getString(People_InstanceFields::WorkEfficiencyScheduleName).get());
+
+  EXPECT_EQ("ClothingInsulationSchedule", instanceObject.getString(People_InstanceFields::ClothingInsulationCalculationMethod).get());
+  EXPECT_TRUE(instanceObject.isEmpty(People_InstanceFields::ClothingInsulationCalculationMethodScheduleName));
+  EXPECT_EQ("ClothingInsulationSchedule", instanceObject.getString(People_InstanceFields::ClothingInsulationScheduleName).get());
+
+  EXPECT_EQ("AirVelocitySchedule", instanceObject.getString(People_InstanceFields::AirVelocityScheduleName).get());
+  EXPECT_EQ(2.0, instanceObject.getDouble(People_InstanceFields::Multiplier).get());
+
+  EXPECT_EQ("AnkleLevelAirVelocitySchedule", instanceObject.getString(People_InstanceFields::AnkleLevelAirVelocityScheduleName).get());
+  EXPECT_EQ(15.0, instanceObject.getDouble(People_InstanceFields::ColdStressTemperatureThreshold).get());
+  EXPECT_EQ(31.0, instanceObject.getDouble(People_InstanceFields::HeatStressTemperatureThreshold).get());
+}
+
+TEST_F(EnergyPlusFixture, ForwardTranslator_People_AngleFactor) {
+  Model model;
+  ThermalZone zone(model);
+  Space space(model);
+  EXPECT_TRUE(space.setThermalZone(zone));
+
+  Point3dVector points{{0, 0, 0}, {1, 0, 0}, {1, 1, 0}};
+  Surface surface(points, model);
+  EXPECT_TRUE(surface.setSpace(space));
+
+  ComfortViewFactorAngles comfortViewFactorAngles(model);
+  comfortViewFactorAngles.setName("Angle Factors");
+  EXPECT_TRUE(comfortViewFactorAngles.addAngleFactor(surface, 1.0));
+
+  PeopleDefinition definition(model);
+  People people(definition);
+  EXPECT_TRUE(people.setSurfaceNameAngleFactorListName(comfortViewFactorAngles));
+  EXPECT_TRUE(people.setSpace(space));
+
+  ForwardTranslator forwardTranslator;
+  forwardTranslator.setExcludeSpaceLoadInstances(true);
+  Workspace workspace = forwardTranslator.translateModel(model);
+
+  const auto peopleObjects = workspace.getObjectsByType(IddObjectType::People);
+  ASSERT_EQ(1u, peopleObjects.size());
+  const auto& peopleObject = peopleObjects.front();
+  EXPECT_EQ("AngleFactor", peopleObject.getString(PeopleFields::MeanRadiantTemperatureCalculationType).get());
+  EXPECT_EQ("Angle Factors", peopleObject.getString(PeopleFields::SurfaceName_AngleFactorListName).get());
+
+  const auto angleFactorObjects = workspace.getObjectsByType(IddObjectType::ComfortViewFactorAngles);
+  ASSERT_EQ(1u, angleFactorObjects.size());
+  const auto& angleFactorObject = angleFactorObjects.front();
+  EXPECT_EQ("Angle Factors", angleFactorObject.nameString());
+  ASSERT_EQ(1u, angleFactorObject.numExtensibleGroups());
+  const auto group = angleFactorObject.extensibleGroups().front();
+  EXPECT_EQ(surface.nameString(), group.getString(0).get());
+  EXPECT_DOUBLE_EQ(1.0, group.getDouble(1).get());
+}
+
+TEST_F(EnergyPlusFixture, ForwardTranslator_People_SurfaceWeighted) {
+  Model model;
+  ThermalZone zone(model);
+  Space space(model);
+  EXPECT_TRUE(space.setThermalZone(zone));
+
+  Point3dVector points{{0, 0, 0}, {1, 0, 0}, {1, 1, 0}};
+  Surface surface(points, model);
+  surface.setName("Radiant Surface");
+  EXPECT_TRUE(surface.setSpace(space));
+
+  PeopleDefinition definition(model);
+  People people(definition);
+  EXPECT_TRUE(people.setSurfaceNameAngleFactorListName(surface));
+  EXPECT_TRUE(people.setSpace(space));
+
+  ForwardTranslator forwardTranslator;
+  forwardTranslator.setExcludeSpaceLoadInstances(true);
+  Workspace workspace = forwardTranslator.translateModel(model);
+
+  const auto peopleObjects = workspace.getObjectsByType(IddObjectType::People);
+  ASSERT_EQ(1u, peopleObjects.size());
+  const auto& peopleObject = peopleObjects.front();
+  EXPECT_EQ("SurfaceWeighted", peopleObject.getString(PeopleFields::MeanRadiantTemperatureCalculationType).get());
+  EXPECT_EQ("Radiant Surface", peopleObject.getString(PeopleFields::SurfaceName_AngleFactorListName).get());
+}
+
+TEST_F(EnergyPlusFixture, ForwardTranslator_People_SurfaceWeightedHeatTransferTargets) {
+  Model model;
+  ThermalZone zone(model);
+  Space space(model);
+  ASSERT_TRUE(space.setThermalZone(zone));
+
+  Point3dVector points{{0, 0, 0}, {1, 0, 0}, {1, 1, 0}};
+  Surface surface(points, model);
+  surface.setName("Radiant Surface");
+  ASSERT_TRUE(surface.setSpace(space));
+
+  SubSurface subSurface(points, model);
+  subSurface.setName("Radiant SubSurface");
+  ASSERT_TRUE(subSurface.setSurface(surface));
+
+  InternalMassDefinition internalMassDefinition(model);
+  InternalMass internalMass(internalMassDefinition);
+  internalMass.setName("Radiant Internal Mass");
+  ASSERT_TRUE(internalMass.setSpace(space));
+
+  for (const ModelObject& target : {ModelObject(surface), ModelObject(subSurface), ModelObject(internalMass)}) {
+    PeopleDefinition definition(model);
+    People people(definition);
+    ASSERT_TRUE(people.setSurfaceNameAngleFactorListName(target));
+    ASSERT_TRUE(people.setSpace(space));
+  }
+
+  ForwardTranslator forwardTranslator;
+  forwardTranslator.setExcludeSpaceLoadInstances(true);
+  Workspace workspace = forwardTranslator.translateModel(model);
+
+  const auto peopleObjects = workspace.getObjectsByType(IddObjectType::People);
+  ASSERT_EQ(3u, peopleObjects.size());
+  for (const auto& peopleObject : peopleObjects) {
+    EXPECT_EQ("SurfaceWeighted", peopleObject.getString(PeopleFields::MeanRadiantTemperatureCalculationType).get());
+    EXPECT_FALSE(peopleObject.isEmpty(PeopleFields::SurfaceName_AngleFactorListName));
+  }
+}
+
+TEST_F(EnergyPlusFixture, ForwardTranslator_People_MRTTypeFollowsSurfaceTarget) {
+  Model model;
+  ThermalZone zone(model);
+  Space space(model);
+  EXPECT_TRUE(space.setThermalZone(zone));
+
+  Point3dVector points{{0, 0, 0}, {1, 0, 0}, {1, 1, 0}};
+  Surface surface(points, model);
+  EXPECT_TRUE(surface.setSpace(space));
+
+  PeopleDefinition definition(model);
+  People people(definition);
+  EXPECT_TRUE(people.setSurfaceNameAngleFactorListName(surface));
+  EXPECT_TRUE(definition.setMeanRadiantTemperatureCalculationType("AngleFactor"));
+  EXPECT_TRUE(people.setSpace(space));
+
+  ForwardTranslator forwardTranslator;
+  forwardTranslator.setExcludeSpaceLoadInstances(true);
+  Workspace workspace = forwardTranslator.translateModel(model);
+
+  const auto peopleObjects = workspace.getObjectsByType(IddObjectType::People);
+  ASSERT_EQ(1u, peopleObjects.size());
+  EXPECT_EQ("SurfaceWeighted", peopleObjects.front().getString(PeopleFields::MeanRadiantTemperatureCalculationType).get());
+  EXPECT_EQ(surface.nameString(), peopleObjects.front().getString(PeopleFields::SurfaceName_AngleFactorListName).get());
+}
+
+TEST_F(EnergyPlusFixture, ForwardTranslator_People_Instance_MRTTypeFollowsSurfaceTarget) {
+  Model model;
+  ThermalZone zone(model);
+  Space space(model);
+  EXPECT_TRUE(space.setThermalZone(zone));
+
+  Point3dVector points{{0, 0, 0}, {1, 0, 0}, {1, 1, 0}};
+  Surface surface(points, model);
+  EXPECT_TRUE(surface.setSpace(space));
+
+  PeopleDefinition definition(model);
+  People people(definition);
+  EXPECT_TRUE(people.setSurfaceNameAngleFactorListName(surface));
+  EXPECT_TRUE(definition.setMeanRadiantTemperatureCalculationType("AngleFactor"));
+  EXPECT_TRUE(people.setSpace(space));
+
+  ForwardTranslator forwardTranslator;
+  forwardTranslator.setExcludeSpaceLoadInstances(false);
+  Workspace workspace = forwardTranslator.translateModel(model);
+
+  const auto definitionObjects = workspace.getObjectsByType(IddObjectType::People_Definition);
+  ASSERT_EQ(1u, definitionObjects.size());
+  EXPECT_EQ("SurfaceWeighted", definitionObjects.front().getString(People_DefinitionFields::MeanRadiantTemperatureCalculationType).get());
+
+  const auto instanceObjects = workspace.getObjectsByType(IddObjectType::People_Instance);
+  ASSERT_EQ(1u, instanceObjects.size());
+  EXPECT_EQ(surface.nameString(), instanceObjects.front().getString(People_InstanceFields::SurfaceName_AngleFactorListName).get());
+}
+
+TEST_F(EnergyPlusFixture, ForwardTranslator_People_MRTTypeWithoutTargetDefaultsToEnclosureAveraged) {
+  Model model;
+  ThermalZone zone(model);
+  Space space(model);
+  EXPECT_TRUE(space.setThermalZone(zone));
+
+  PeopleDefinition definition(model);
+  People people(definition);
+  EXPECT_TRUE(definition.setMeanRadiantTemperatureCalculationType("SurfaceWeighted"));
+  EXPECT_TRUE(people.setSpace(space));
+
+  ForwardTranslator forwardTranslator;
+  forwardTranslator.setExcludeSpaceLoadInstances(true);
+  Workspace workspace = forwardTranslator.translateModel(model);
+
+  const auto peopleObjects = workspace.getObjectsByType(IddObjectType::People);
+  ASSERT_EQ(1u, peopleObjects.size());
+  EXPECT_EQ("EnclosureAveraged", peopleObjects.front().getString(PeopleFields::MeanRadiantTemperatureCalculationType).get());
+  EXPECT_TRUE(peopleObjects.front().isEmpty(PeopleFields::SurfaceName_AngleFactorListName));
+}
+
+TEST_F(EnergyPlusFixture, ForwardTranslator_People_UntranslatedMRTTargetDefaultsToEnclosureAveraged) {
+  Model model;
+  ThermalZone zone(model);
+  Space space(model);
+  EXPECT_TRUE(space.setThermalZone(zone));
+
+  ComfortViewFactorAngles comfortViewFactorAngles(model);
+  PeopleDefinition definition(model);
+  People people(definition);
+  EXPECT_TRUE(people.setSurfaceNameAngleFactorListName(comfortViewFactorAngles));
+  EXPECT_TRUE(people.setSpace(space));
+
+  ForwardTranslator forwardTranslator;
+  forwardTranslator.setExcludeSpaceLoadInstances(true);
+  Workspace workspace = forwardTranslator.translateModel(model);
+
+  const auto peopleObjects = workspace.getObjectsByType(IddObjectType::People);
+  ASSERT_EQ(1u, peopleObjects.size());
+  EXPECT_EQ("EnclosureAveraged", peopleObjects.front().getString(PeopleFields::MeanRadiantTemperatureCalculationType).get());
+  EXPECT_TRUE(peopleObjects.front().isEmpty(PeopleFields::SurfaceName_AngleFactorListName));
+}
+
 TEST_F(EnergyPlusFixture, ReverseTranslator_People) {
 
   ReverseTranslator rt;
@@ -147,6 +492,10 @@ TEST_F(EnergyPlusFixture, ReverseTranslator_People) {
 
   OptionalWorkspaceObject _i_people = w.addObject(IdfObject(IddObjectType::People));
   ASSERT_TRUE(_i_people);
+
+  OptionalWorkspaceObject _i_comfortViewFactorAngles = w.addObject(IdfObject(IddObjectType::ComfortViewFactorAngles));
+  ASSERT_TRUE(_i_comfortViewFactorAngles);
+  _i_comfortViewFactorAngles->setName("Angle Factors");
 
   EXPECT_TRUE(_i_people->setPointer(PeopleFields::ZoneorZoneListorSpaceorSpaceListName, _i_zone->handle()));
 
@@ -169,8 +518,8 @@ TEST_F(EnergyPlusFixture, ReverseTranslator_People) {
   assignSchedule(PeopleFields::ActivityLevelScheduleName, "ActivitySchedule");
   EXPECT_TRUE(_i_people->setDouble(PeopleFields::CarbonDioxideGenerationRate, 3.6e-08));
   EXPECT_TRUE(_i_people->setString(PeopleFields::EnableASHRAE55ComfortWarnings, "Yes"));
-  EXPECT_TRUE(_i_people->setString(PeopleFields::MeanRadiantTemperatureCalculationType, "SurfaceWeighted"));
-  EXPECT_TRUE(_i_people->setString(PeopleFields::SurfaceName_AngleFactorListName, ""));
+  EXPECT_TRUE(_i_people->setString(PeopleFields::MeanRadiantTemperatureCalculationType, "AngleFactor"));
+  EXPECT_TRUE(_i_people->setPointer(PeopleFields::SurfaceName_AngleFactorListName, _i_comfortViewFactorAngles->handle()));
   assignSchedule(PeopleFields::WorkEfficiencyScheduleName, "WorkEfficiencySchedule");
   EXPECT_TRUE(_i_people->setString(PeopleFields::ClothingInsulationCalculationMethod, "ClothingInsulationSchedule"));
   EXPECT_TRUE(_i_people->setString(PeopleFields::ClothingInsulationCalculationMethodScheduleName, ""));
@@ -218,6 +567,10 @@ TEST_F(EnergyPlusFixture, ReverseTranslator_People) {
 
   auto pd = p.definition().cast<PeopleDefinition>();
   EXPECT_EQ("Area/Person", pd.numberofPeopleCalculationMethod());
+  EXPECT_EQ("AngleFactor", pd.meanRadiantTemperatureCalculationType());
+  auto mrtTarget = p.surfaceNameAngleFactorListName();
+  ASSERT_TRUE(mrtTarget);
+  EXPECT_EQ("Angle Factors", mrtTarget->nameString());
   EXPECT_FALSE(pd.numberofPeople());
   EXPECT_FALSE(pd.peopleperSpaceFloorArea());
   ASSERT_TRUE(pd.spaceFloorAreaperPerson());
@@ -227,7 +580,7 @@ TEST_F(EnergyPlusFixture, ReverseTranslator_People) {
   EXPECT_EQ(0.2, pd.sensibleHeatFraction().get());
   EXPECT_EQ(3.6e-08, pd.carbonDioxideGenerationRate());
   EXPECT_TRUE(pd.enableASHRAE55ComfortWarnings());
-  EXPECT_EQ("SurfaceWeighted", pd.meanRadiantTemperatureCalculationType());
+  EXPECT_EQ("AngleFactor", pd.meanRadiantTemperatureCalculationType());
 
   ASSERT_EQ(2, pd.numThermalComfortModelTypes());
   ASSERT_EQ(2, pd.numExtensibleGroups());

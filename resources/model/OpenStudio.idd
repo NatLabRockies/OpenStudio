@@ -1,4 +1,4 @@
-!IDD_Version 3.11.0
+!IDD_Version 3.12.0
 ! *****************************************************************************
 ! This file is the Input Data Dictionary (IDD) for OpenStudio Model.
 !
@@ -40,7 +40,7 @@ OS:Version,
        \required-field
   A2, \field Version Identifier
        \type alpha
-       \default 3.11.0
+       \default 3.12.0
   A3; \field Prerelease Identifier
        \type alpha
 
@@ -2233,11 +2233,29 @@ OS:Material,
        \minimum 0
        \maximum 1
        \default .7
-  N7; \field Visible Absorptance
+  N7, \field Visible Absorptance
        \type real
        \minimum 0
        \maximum 1
        \default .7
+  N8,  \field Thermal Absorptance Inside Face
+       \note When blank, this value is equal to the Thermal Absorptance field above.
+       \note When entered, the Thermal Absorptance field applies to the outside face and this field applies to the inside face.
+       \type real
+       \minimum> 0
+       \maximum 0.99999
+  N9,  \field Solar Absorptance Inside Face
+       \note When blank, this value is equal to the Solar Absorptance field above.
+       \note When entered, the Solar Absorptance field applies to the outside face and this field applies to the inside face.
+       \type real
+       \minimum 0
+       \maximum 1
+  N10; \field Visible Absorptance Inside Face
+       \note When blank, this value is equal to the Visible Absorptance field above.
+       \note When entered, the Visible Absorptance field applies to the outside face and this field applies to the inside face.
+       \type real
+       \minimum 0
+       \maximum 1
 
 OS:Material:AirGap,
        \memo Air Space in Opaque Construction
@@ -2305,11 +2323,29 @@ OS:Material:NoMass,
        \minimum 0
        \maximum 1
        \default .7
-  N4; \field Visible Absorptance
+  N4, \field Visible Absorptance
        \type real
        \minimum 0
        \maximum 1
        \default .7
+  N5, \field Thermal Absorptance Inside Face
+       \note When blank, this value is equal to the Thermal Absorptance field above.
+       \note When entered, the Thermal Absorptance field applies to the outside face and this field applies to the inside face.
+       \type real
+       \minimum> 0
+       \maximum 0.99999
+  N6, \field Solar Absorptance Inside Face
+       \note When blank, this value is equal to the Solar Absorptance field above.
+       \note When entered, the Solar Absorptance field applies to the outside face and this field applies to the inside face.
+       \type real
+       \minimum 0
+       \maximum 1
+  N7; \field Visible Absorptance Inside Face
+       \note When blank, this value is equal to the Visible Absorptance field above.
+       \note When entered, the Visible Absorptance field applies to the outside face and this field applies to the inside face.
+       \type real
+       \minimum 0
+       \maximum 1
 
 OS:Material:RoofVegetation,
        \memo EcoRoof model, plant layer plus soil layer
@@ -3935,6 +3971,27 @@ OS:People:Definition,
        \key AdaptiveCEN15251
        \key CoolingEffectASH55
        \key AnkleDraftASH55
+
+OS:ComfortViewFactorAngles,
+       \min-fields 4
+       \extensible:2
+  A1,  \field Handle
+       \type handle
+       \required-field
+  A2,  \field Name
+       \type alpha
+       \required-field
+       \reference AllHeatTranAngFacNames
+  A3,  \field Surface 1 Name
+       \type object-list
+       \object-list AllHeatTranSurfNames
+       \begin-extensible
+       \required-field
+  N1;  \field Angle Factor 1
+       \type real
+       \minimum 0.0
+       \maximum 1.0
+       \required-field
 
 OS:Lights:Definition,
        \min-fields 1
@@ -6815,6 +6872,37 @@ OS:ZoneProperty:UserViewFactors:BySurfaceName,
        \type real
        \maximum 1.0
 
+OS:ZoneMRTCalculation,
+       \min-fields 4
+       \memo Blends MRT values calculated for People instances into one Zone MRT.
+       \memo The weighting factors must sum to a value from 0.0 through 1.0.
+       \extensible:2 - repeat last two fields, remembering to remove ; from "inner" fields.
+       \memo Only one ZoneMRTCalculation object is allowed for each Zone.
+       \memo All referenced People instances must be in the named Zone and must select at least
+       \memo one Thermal Comfort Model Type.
+  A1,  \field Handle
+       \type handle
+       \required-field
+  A2,  \field Thermal Zone Name
+       \type object-list
+       \object-list ThermalZoneNames
+       \required-field
+       \note This field accepts a Zone name only, not a Space or SpaceList name.
+  A3,  \field People 1 Name
+       \begin-extensible
+       \type object-list
+       \object-list PeopleNames
+       \required-field
+       \note A People object assigned directly to a Space retains its input name.
+       \note A People object expanded across multiple Spaces must use an expanded instance name
+       \note formed as "<Space Name> <People Name>"; its original input name is not accepted.
+       \note People instances in automatically generated remainder Spaces are not supported.
+  N1;  \field MRT Weighting Factor 1
+       \type real
+       \minimum 0.0
+       \maximum 1.0
+       \required-field
+
 OS:SurfaceProperty:SurroundingSurfaces,
        \min-fields 9
        \memo This object defines a list of surrounding surfaces for an exterior surface.
@@ -7013,12 +7101,12 @@ OS:People,
        \type object-list
        \object-list ScheduleNames
   A7, \field Surface Name/Angle Factor List Name
-       \note optional (only required for thermal comfort runs)
+       \note optional (only required for runs of thermal comfort models: Fanger, Pierce, KSU, CoolingEffectASH55 and AnkleDraftASH55)
        \type object-list
        \object-list AllHeatTranAngFacNames
   A8, \field Work Efficiency Schedule Name
        \note units in schedule are 0.0 to 1.0
-       \note optional (only required for thermal comfort runs)
+       \note optional (only required for runs of thermal comfort models: Fanger, Pierce, KSU, CoolingEffectASH55 and AnkleDraftASH55)
        \type object-list
        \object-list ScheduleNames
   A9, \field Clothing Insulation Calculation Method
@@ -7033,12 +7121,12 @@ OS:People,
        \note a schedule value of 1 for the Scheduled method, and 2 for the DynamicClothingModelASHRAE55 method
   A11, \field Clothing Insulation Schedule Name
        \note use "Clo" from ASHRAE or Thermal Comfort guides
-       \note optional (only required for thermal comfort runs)
+       \note optional (only required for runs of thermal comfort models: Fanger, Pierce, KSU, CoolingEffectASH55 and AnkleDraftASH55)
        \type object-list
        \object-list ScheduleNames
   A12, \field Air Velocity Schedule Name
        \note units in the schedule are m/s
-       \note optional (only required for thermal comfort runs)
+       \note optional (only required for runs of thermal comfort models: Fanger, Pierce, KSU, CoolingEffectASH55 and AnkleDraftASH55)
        \type object-list
        \object-list ScheduleNames
   N1,  \field Multiplier
@@ -15948,31 +16036,27 @@ OS:CentralHeatPumpSystem,
        \type alpha
        \reference ConnectionObject
        \required-field
-  A3,  \field Control Method
-       \required-field
-       \type choice
-       \key SmartMixing
-  A4,  \field Cooling Loop Inlet Node Name
+  A3,  \field Cooling Loop Inlet Node Name
        \type object-list
        \required-field
        \object-list ConnectionNames
-  A5,  \field Cooling Loop Outlet Node Name
+  A4,  \field Cooling Loop Outlet Node Name
        \type object-list
        \required-field
        \object-list ConnectionNames
-  A6,  \field Source Loop Inlet Node Name
+  A5,  \field Source Loop Inlet Node Name
        \type object-list
        \required-field
        \object-list ConnectionNames
-  A7,  \field Source Loop Outlet Node Name
+  A6,  \field Source Loop Outlet Node Name
        \type object-list
        \required-field
        \object-list ConnectionNames
-  A8,  \field Heating Loop Inlet Node Name
+  A7,  \field Heating Loop Inlet Node Name
        \type object-list
        \required-field
        \object-list ConnectionNames
-  A9,  \field Heating Loop Outlet Node Name
+  A8,  \field Heating Loop Outlet Node Name
        \type object-list
        \required-field
        \object-list ConnectionNames
@@ -15981,11 +16065,11 @@ OS:CentralHeatPumpSystem,
        \type real
        \units W
        \minimum 0.0
-  A10, \field Ancillary Operation Schedule Name
+  A9,  \field Ancillary Operation Schedule Name
        \type object-list
        \object-list ScheduleNames
        \note This value from this schedule is multiplied times the Ancillary Power
-  A11; \field Chiller Heater Module List Name
+  A10; \field Chiller Heater Module List Name
        \required-field
        \type object-list
        \object-list ModelObjectLists
@@ -16094,25 +16178,20 @@ OS:ChillerHeaterPerformance:Electric:EIR,
        \type real
        \minimum 0.0
        \maximum 1.0
-  A4 , \field Condenser Type
-       \required-field
-       \type choice
-       \key AirCooled
-       \key WaterCooled
-  A5 , \field Cooling Mode Temperature Curve Condenser Water Independent Variable
+  A4 , \field Cooling Mode Temperature Curve Condenser Water Independent Variable
        \required-field
        \type choice
        \key EnteringCondenser
        \key LeavingCondenser
-  A6 , \field Cooling Mode Cooling Capacity Function of Temperature Curve Name
+  A5 , \field Cooling Mode Cooling Capacity Function of Temperature Curve Name
        \required-field
        \type object-list
        \object-list BivariateFunctions
-  A7 , \field Cooling Mode Electric Input to Cooling Output Ratio Function of Temperature Curve Name
+  A6 , \field Cooling Mode Electric Input to Cooling Output Ratio Function of Temperature Curve Name
        \required-field
        \type object-list
        \object-list BivariateFunctions
-  A8 , \field Cooling Mode Electric Input to Cooling Output Ratio Function of Part Load Ratio Curve Name
+  A7 , \field Cooling Mode Electric Input to Cooling Output Ratio Function of Part Load Ratio Curve Name
        \required-field
        \type object-list
        \object-list UnivariateFunctions
@@ -16121,20 +16200,20 @@ OS:ChillerHeaterPerformance:Electric:EIR,
        \required-field
        \type real
        \minimum> 0.0
-  A9 , \field Heating Mode Temperature Curve Condenser Water Independent Variable
+  A8 , \field Heating Mode Temperature Curve Condenser Water Independent Variable
        \required-field
        \type choice
        \key EnteringCondenser
        \key LeavingCondenser
-  A10, \field Heating Mode Cooling Capacity Function of Temperature Curve Name
+  A9 , \field Heating Mode Cooling Capacity Function of Temperature Curve Name
        \required-field
        \type object-list
        \object-list BivariateFunctions
-  A11, \field Heating Mode Electric Input to Cooling Output Ratio Function of Temperature Curve Name
+  A10, \field Heating Mode Electric Input to Cooling Output Ratio Function of Temperature Curve Name
        \required-field
        \type object-list
        \object-list BivariateFunctions
-  A12, \field Heating Mode Electric Input to Cooling Output Ratio Function of Part Load Ratio Curve Name
+  A11, \field Heating Mode Electric Input to Cooling Output Ratio Function of Part Load Ratio Curve Name
        \required-field
        \type object-list
        \object-list UnivariateFunctions
@@ -18131,8 +18210,8 @@ OS:Coil:Cooling:DX:CurveFit:Performance,
 OS:Coil:Cooling:DX:CurveFit:OperatingMode,
        \memo DX cooling coil performance for a single operating mode which may have one or more speeds.
        \extensible: 1
-       \min-fields 14
-       \max-fields 23
+       \min-fields 15
+       \max-fields 24
   A1, \field Handle
        \type handle
        \required-field
@@ -18202,12 +18281,17 @@ OS:Coil:Cooling:DX:CurveFit:OperatingMode,
        \minimum 0.0
        \maximum 3000.0
        \required-field
-  A3, \field Apply Latent Degradation to Speeds Greater than 1
+  A3, \field Apply Part Load Fraction to Speeds Greater than 1
        \type choice
        \key Yes
        \key No
        \required-field
-  A4, \field Condenser Type
+  A4, \field Apply Latent Degradation to Speeds Greater than 1
+       \type choice
+       \key Yes
+       \key No
+       \required-field
+  A5, \field Condenser Type
        \type choice
        \key AirCooled
        \key EvaporativelyCooled
@@ -18224,7 +18308,7 @@ OS:Coil:Cooling:DX:CurveFit:OperatingMode,
        \note Must be lower than or equal to the highest speed number.
        \note If blank, defaults to the highest speed number used.
        \type integer
-  A5; \field Speed 1
+  A6; \field Speed 1
        \type object-list
        \object-list DXCoolingSpeedNames
        \begin-extensible
