@@ -673,7 +673,7 @@ void EpwDesignCondition::assignExtremesData(std::span<const std::string> stringV
   setExtremeN50YearsMinDryBulb(stringValues[index(EpwDesignField::ExtremeN50YearsMinDryBulb)]);
   setExtremeN50YearsMaxDryBulb(stringValues[index(EpwDesignField::ExtremeN50YearsMaxDryBulb)]);
 
-  if (stringValues.size() >= 27) {
+  if (stringValues.size() > index(EpwDesignField::ExtremeN50YearsMaxWetBulb)) {
     setExtremeMeanMinWetBulb(stringValues[index(EpwDesignField::ExtremeMeanMinWetBulb)]);
     setExtremeMeanMaxWetBulb(stringValues[index(EpwDesignField::ExtremeMeanMaxWetBulb)]);
     setExtremeStdDevMinWetBulb(stringValues[index(EpwDesignField::ExtremeStdDevMinWetBulb)]);
