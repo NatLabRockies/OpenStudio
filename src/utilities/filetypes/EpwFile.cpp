@@ -5448,6 +5448,14 @@ bool EpwFile::parseDesignConditions(const std::string& line) {
   }
   const auto nDC = static_cast<size_t>(nDesignConditions);
 
+  // Number of fields per design condition, as found in the file (i.e. before EpwDesignCondition::fromDesignConditionsStrings
+  // restores a missing blank after the title):
+  //   * 68: 2009/2013, or 2021 with 15 Extremes (blank present)
+  //   * 67: 2017 with 15 Extremes (blank present), or 2025 with 15 Extremes (blank missing)
+  //   * 80: 2021/2025 with 27 Extremes (blank present)
+  //   * 79: 2017 with 27 Extremes (blank present), or 2025 with 27 Extremes (blank missing)
+  // fromDesignConditionsStrings accepts a missing blank for any vintage, but we intentionally do not accept the other blank-missing
+  // counts here (e.g. 66 for 2017 with 15 Extremes): those layouts have never been seen in the wild.
   size_t num_design_cond_fields = 68;
   if (split.size() == 2 + nDC * 80) {
     num_design_cond_fields = 80;
