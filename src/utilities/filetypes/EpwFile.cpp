@@ -5473,7 +5473,7 @@ bool EpwFile::parseDesignConditions(const std::string& line) {
   }
 
   if (nDC > 1) {
-    LOG(Warn, "Found " << nDC << " in the EPW file '" << m_path << "'");
+    LOG(Warn, "Found " << nDC << " design conditions in the EPW file '" << m_path << "'");
   }
 
   for (size_t j = 0; j < nDC; j++) {
