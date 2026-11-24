@@ -29,6 +29,9 @@
 #include "../../utilities/idf/IdfExtensibleGroup.hpp"
 #include "../../utilities/idf/IdfObject.hpp"
 #include "../../utilities/idf/Workspace.hpp"
+#include "../../utilities/core/Filesystem.hpp"
+#include "../../utilities/core/PathHelpers.hpp"
+#include "../../utilities/filetypes/WorkflowJSON.hpp"
 #include <utilities/idd/AirLoopHVAC_FieldEnums.hxx>
 #include <utilities/idd/Branch_FieldEnums.hxx>
 #include <utilities/idd/BranchList_FieldEnums.hxx>
@@ -267,4 +270,67 @@ TEST_F(EPModelFixture, Model_AddWorkspaceObjects_KeepsConcreteTypes) {
     EXPECT_EQ(2, model2.getConcreteModelObjects<ScheduleConstant>().size());
     EXPECT_EQ(1, model2.getConcreteModelObjects<ScheduleTypeLimits>().size());
   }
+}
+
+TEST_F(EPModelFixture, Model_WorkflowJSON) {
+  Model model;
+  EXPECT_FALSE(model.workflowJSON().seedFile());
+
+  openstudio::WorkflowJSON workflow;
+  EXPECT_TRUE(workflow.setSeedFile(openstudio::toPath("seed.idf")));
+  EXPECT_TRUE(model.setWorkflowJSON(workflow));
+  ASSERT_TRUE(model.workflowJSON().seedFile());
+  EXPECT_EQ(openstudio::toPath("seed.idf"), *model.workflowJSON().seedFile());
+
+  // clone carries the workflow
+  Model clone = model.clone();
+  ASSERT_TRUE(clone.workflowJSON().seedFile());
+  EXPECT_EQ(openstudio::toPath("seed.idf"), *clone.workflowJSON().seedFile());
+
+  model.resetWorkflowJSON();
+  EXPECT_FALSE(model.workflowJSON().seedFile());
+}
+
+TEST_F(EPModelFixture, Model_Load_WorkflowJSON) {
+  const auto dir = openstudio::tempDir() / openstudio::toPath("epmodel-workflow-" + openstudio::removeBraces(openstudio::createUUID()));
+  openstudio::filesystem::create_directories(dir);
+  const auto idfPath = dir / openstudio::toPath("in.idf");
+  const auto companionDir = openstudio::getCompanionFolder(idfPath);
+  openstudio::filesystem::create_directories(companionDir);
+
+  Model model;
+  ASSERT_TRUE(model.save(idfPath, true));
+
+  {
+    // No workflow.osw in the companion folder
+    auto loaded = Model::load(idfPath);
+    ASSERT_TRUE(loaded);
+    EXPECT_FALSE(loaded->workflowJSON().seedFile());
+
+    // Explicit workflow path that does not exist: fails
+    EXPECT_FALSE(Model::load(idfPath, dir / openstudio::toPath("missing.osw")));
+  }
+
+  openstudio::WorkflowJSON workflow;
+  EXPECT_TRUE(workflow.setSeedFile(openstudio::toPath("in.idf")));
+  ASSERT_TRUE(workflow.saveAs(companionDir / openstudio::toPath("workflow.osw")));
+  ASSERT_TRUE(workflow.saveAs(dir / openstudio::toPath("other.osw")));
+
+  {
+    // workflow.osw in the companion folder is picked up
+    auto loaded = Model::load(idfPath);
+    ASSERT_TRUE(loaded);
+    ASSERT_TRUE(loaded->workflowJSON().seedFile());
+    EXPECT_EQ(openstudio::toPath("in.idf"), *loaded->workflowJSON().seedFile());
+  }
+
+  {
+    // Explicit workflow path
+    auto loaded = Model::load(idfPath, dir / openstudio::toPath("other.osw"));
+    ASSERT_TRUE(loaded);
+    ASSERT_TRUE(loaded->workflowJSON().oswPath());
+    EXPECT_EQ(dir / openstudio::toPath("other.osw"), *loaded->workflowJSON().oswPath());
+  }
+
+  openstudio::filesystem::remove_all(dir);
 }

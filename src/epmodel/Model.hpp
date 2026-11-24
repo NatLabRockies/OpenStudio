@@ -16,6 +16,7 @@
 #include "../utilities/idf/WorkspaceObject_Impl.hpp"
 #include "../utilities/core/Compare.hpp"
 #include "../utilities/core/Logger.hpp"
+#include "../utilities/filetypes/WorkflowJSON.hpp"
 
 #include <string>
 #include <set>
@@ -85,7 +86,8 @@ namespace epmodel {
    * \par Important behavior
    * Loading and construction validate and repair persisted relationships according to the selected sanitization policy.
    * `clone()` copies the workspace, while transient wrappers are resolved by type and name rather than saved as
-   * independent EnergyPlus objects. SQL sizing results are attached through `setSqlFile()` when available.
+   * independent EnergyPlus objects. SQL sizing results are attached through `setSqlFile()` when available. The
+   * WorkflowJSON is attached through `setWorkflowJSON()`, or loaded from the IDF's companion folder by `load()`.
    *
    * \par OpenStudio Model API
    * This is the EPModel workspace/model type rather than a counterpart to `openstudio::model::Model`. It provides
@@ -102,7 +104,10 @@ namespace epmodel {
     explicit Model(const openstudio::IdfFile& idfFile);
     explicit Model(const openstudio::Workspace& workspace);
     Model clone(bool keepHandles = false) const;
+    /** Load Model from an IDF file, attempts to load WorkflowJSON from the standard companion folder path. */
     static boost::optional<Model> load(const openstudio::path& idfPath);
+    /** Load Model and WorkflowJSON from files, fails if either the IDF or the workflowJSON cannot be loaded. */
+    static boost::optional<Model> load(const openstudio::path& idfPath, const openstudio::path& workflowJSONPath);
     Schedule alwaysOnDiscreteSchedule() const;
     std::string alwaysOnDiscreteScheduleName() const;
     Schedule alwaysOnContinuousSchedule() const;
@@ -118,6 +123,9 @@ namespace epmodel {
     boost::optional<SqlFile> sqlFile() const;
     bool setSqlFile(const SqlFile& sqlFile);
     bool resetSqlFile();
+    WorkflowJSON workflowJSON() const;
+    bool setWorkflowJSON(const WorkflowJSON& workflowJSON);
+    void resetWorkflowJSON();
 
     virtual ~Model() override = default;
     Model(const Model& other) = default;

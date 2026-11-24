@@ -38,6 +38,7 @@ void OSWorkflow::runReportingMeasures() {
       if (auto p = runDirPath / "in.idf"; openstudio::filesystem::is_regular_file(p)) {
         LOG(Debug, "Attempting to load " << p << " as epmodel");
         epModel_ = std::make_unique<openstudio::epmodel::Model>(openstudio::workflow::util::loadEPModel(p));
+        epModel_->setWorkflowJSON(workflowJSON.clone());
       }
     }
     if (!workspace_) {

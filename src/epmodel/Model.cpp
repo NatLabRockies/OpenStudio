@@ -10,6 +10,7 @@
 #include <src/epmodel/embedded_files.hxx>
 
 #include <utilities/core/Compare.hpp>
+#include <utilities/core/PathHelpers.hpp>
 #include <utilities/math/FloatCompare.hpp>
 #include <utilities/idd/GlobalGeometryRules_FieldEnums.hxx>
 #include <utilities/idd/Refrigeration_Subcooler_FieldEnums.hxx>
@@ -1003,7 +1004,29 @@ namespace epmodel {
       return boost::none;
     }
 
-    return Model(*idfFile);
+    Model result(*idfFile);
+
+    // Load the workflow.osw in the model's companion folder
+    const openstudio::path workflowJSONPath = getCompanionFolder(idfPath) / toPath("workflow.osw");
+    if (openstudio::filesystem::exists(workflowJSONPath)) {
+      if (boost::optional<WorkflowJSON> workflowJSON_ = WorkflowJSON::load(workflowJSONPath)) {
+        result.setWorkflowJSON(*workflowJSON_);
+      }
+    }
+
+    return result;
+  }
+
+  boost::optional<Model> Model::load(const openstudio::path& idfPath, const openstudio::path& workflowJSONPath) {
+    boost::optional<Model> result = load(idfPath);
+    if (result) {
+      if (boost::optional<WorkflowJSON> workflowJSON_ = WorkflowJSON::load(workflowJSONPath)) {
+        result->setWorkflowJSON(*workflowJSON_);
+      } else {
+        result.reset();
+      }
+    }
+    return result;
   }
 
   bool Model::ensureRefrigerantProperties(const std::string& refrigerantType) const {
@@ -1124,6 +1147,18 @@ namespace epmodel {
 
   bool Model::resetSqlFile() {
     return getImpl<detail::Model_Impl>()->resetSqlFile();
+  }
+
+  WorkflowJSON Model::workflowJSON() const {
+    return getImpl<detail::Model_Impl>()->workflowJSON();
+  }
+
+  bool Model::setWorkflowJSON(const WorkflowJSON& workflowJSON) {
+    return getImpl<detail::Model_Impl>()->setWorkflowJSON(workflowJSON);
+  }
+
+  void Model::resetWorkflowJSON() {
+    getImpl<detail::Model_Impl>()->resetWorkflowJSON();
   }
 
   SanitizationReport Model::canonicalize(SanitizationPolicy policy) {
@@ -1314,16 +1349,18 @@ namespace epmodel {
 
     // copy constructor, used for clone
     Model_Impl::Model_Impl(const Model_Impl& other, bool keepHandles)
-      : Workspace_Impl(other, keepHandles), m_sqlFile((other.m_sqlFile) ? std::make_shared<SqlFile>(*other.m_sqlFile) : other.m_sqlFile) {
-      // TODO: add m_workflowJSON
+      : Workspace_Impl(other, keepHandles),
+        m_sqlFile((other.m_sqlFile) ? std::make_shared<SqlFile>(*other.m_sqlFile) : other.m_sqlFile),
+        m_workflowJSON(WorkflowJSON(other.m_workflowJSON)) {
       // notice we are cloning the workflow and sqlfile too, if necessary
       // careful not to call anything that calls shared_from_this here, this is not yet constructed
     }
 
     // copy constructor used for cloneSubset
     Model_Impl::Model_Impl(const Model_Impl& other, const std::vector<Handle>& hs, bool keepHandles, StrictnessLevel level)
-      : Workspace_Impl(other, hs, keepHandles, level), m_sqlFile((other.m_sqlFile) ? std::make_shared<SqlFile>(*other.m_sqlFile) : other.m_sqlFile) {
-      // TODO: add m_workflowJSON
+      : Workspace_Impl(other, hs, keepHandles, level),
+        m_sqlFile((other.m_sqlFile) ? std::make_shared<SqlFile>(*other.m_sqlFile) : other.m_sqlFile),
+        m_workflowJSON(WorkflowJSON(other.m_workflowJSON)) {
       // notice we are cloning the workflow and sqlfile too, if necessary
     }
 
@@ -1376,6 +1413,19 @@ namespace epmodel {
     bool Model_Impl::resetSqlFile() {
       m_sqlFile.reset();
       return true;
+    }
+
+    WorkflowJSON Model_Impl::workflowJSON() const {
+      return m_workflowJSON;
+    }
+
+    bool Model_Impl::setWorkflowJSON(const WorkflowJSON& workflowJSON) {
+      m_workflowJSON = workflowJSON;
+      return true;
+    }
+
+    void Model_Impl::resetWorkflowJSON() {
+      m_workflowJSON = WorkflowJSON();
     }
 
     std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>

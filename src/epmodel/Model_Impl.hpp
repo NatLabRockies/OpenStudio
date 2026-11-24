@@ -10,6 +10,7 @@
 #include "TestFailurePoint.hpp"
 
 #include "../utilities/core/Logger.hpp"
+#include "../utilities/filetypes/WorkflowJSON.hpp"
 #include "../utilities/idf/Workspace_Impl.hpp"
 
 #include <functional>
@@ -59,6 +60,9 @@ namespace epmodel {
       boost::optional<openstudio::SqlFile> sqlFile() const;
       bool setSqlFile(const openstudio::SqlFile& sqlFile);
       bool resetSqlFile();
+      WorkflowJSON workflowJSON() const;
+      bool setWorkflowJSON(const WorkflowJSON& workflowJSON);
+      void resetWorkflowJSON();
 
       using CopyConstructorFunction = std::function<std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
         Model_Impl*, const std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>&, bool)>;
@@ -88,6 +92,7 @@ namespace epmodel {
       friend bool testFailurePointReached(const Model& model, TestFailurePoint point);
 
       std::shared_ptr<openstudio::SqlFile> m_sqlFile;
+      WorkflowJSON m_workflowJSON;
       TestFailurePoint m_testFailurePoint = TestFailurePoint::None;
     };
 
