@@ -11,6 +11,8 @@
 
 #include <utilities/idd/IddEnums.hxx>
 
+#include <boost/optional.hpp>
+
 #include <memory>
 
 namespace openstudio {
@@ -19,6 +21,7 @@ class Transformation;
 
 namespace epmodel {
 
+  class ConstructionAssignmentSet;
   class Model;
 
   namespace detail {
@@ -34,7 +37,7 @@ namespace epmodel {
  * North-axis, terrain, loads-convergence limits, solar-distribution, maximum warmup days, and geometry fields map directly to the EnergyPlus object.
  *
  * \par OpenStudio Model API
- * The corresponding OpenStudio Model class is <code>openstudio::model::Building</code>.
+ * The corresponding OpenStudio Model class is <code>openstudio::model::Building</code>. <b>Renamed:</b> <code>defaultConstructionSet()</code>, <code>setDefaultConstructionSet()</code>, and <code>resetDefaultConstructionSet()</code> are <code>constructionAssignmentSet()</code>, <code>setConstructionAssignmentSet()</code>, and <code>resetConstructionAssignmentSet()</code>, matching the EnergyPlus field and the <code>ConstructionAssignmentSet</code> class that replaces <code>DefaultConstructionSet</code>.
  * <b>Not yet available:</b> Model's space/thermal-zone collections, space-load and standards relationships, building-level load helpers, and geometry convenience methods are not exposed by this wrapper.
  *
  * \par Known limitations
@@ -60,6 +63,11 @@ namespace epmodel {
 
     /// Returns the Transformation from the Building coordinate system to world coordinates.
     Transformation transformation() const;
+
+    /// Returns the ConstructionAssignmentSet used by surfaces that do not name a construction and whose Space has no set or a set that leaves the slot empty.
+    boost::optional<ConstructionAssignmentSet> constructionAssignmentSet() const;
+    bool setConstructionAssignmentSet(const ConstructionAssignmentSet& constructionAssignmentSet);
+    void resetConstructionAssignmentSet();
 
    protected:
     explicit Building(const Model& model);

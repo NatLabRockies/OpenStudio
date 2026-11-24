@@ -7,6 +7,8 @@
 #include "ParentObject/Building_Impl.hpp"
 
 #include "Model.hpp"
+#include "ResourceObject/ConstructionAssignmentSet.hpp"
+#include "ResourceObject/ConstructionAssignmentSet_Impl.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/geometry/Geometry.hpp>
@@ -46,6 +48,18 @@ namespace epmodel {
     return getImpl<detail::Building_Impl>()->transformation();
   }
 
+  boost::optional<ConstructionAssignmentSet> Building::constructionAssignmentSet() const {
+    return getImpl<detail::Building_Impl>()->constructionAssignmentSet();
+  }
+
+  bool Building::setConstructionAssignmentSet(const ConstructionAssignmentSet& constructionAssignmentSet) {
+    return getImpl<detail::Building_Impl>()->setConstructionAssignmentSet(constructionAssignmentSet);
+  }
+
+  void Building::resetConstructionAssignmentSet() {
+    getImpl<detail::Building_Impl>()->resetConstructionAssignmentSet();
+  }
+
 }  // namespace epmodel
 }  // namespace openstudio
 
@@ -74,6 +88,18 @@ namespace epmodel {
     Transformation Building_Impl::transformation() const {
       // rotate negative amount around the z axis, EnergyPlus defines rotation clockwise
       return Transformation::rotation(Vector3d(0, 0, 1), -degToRad(this->northAxis()));
+    }
+
+    boost::optional<ConstructionAssignmentSet> Building_Impl::constructionAssignmentSet() const {
+      return getObject<ModelObject>().getModelObjectTarget<ConstructionAssignmentSet>(openstudio::BuildingFields::ConstructionAssignmentSetName);
+    }
+
+    bool Building_Impl::setConstructionAssignmentSet(const ConstructionAssignmentSet& constructionAssignmentSet) {
+      return setPointer(openstudio::BuildingFields::ConstructionAssignmentSetName, constructionAssignmentSet.handle());
+    }
+
+    void Building_Impl::resetConstructionAssignmentSet() {
+      OS_ASSERT(setString(openstudio::BuildingFields::ConstructionAssignmentSetName, ""));
     }
 
   }  // namespace detail

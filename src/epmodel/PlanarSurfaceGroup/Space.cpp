@@ -13,6 +13,8 @@
 #include "PlanarSurface/Surface_Impl.hpp"
 #include "PlanarSurface/SubSurface.hpp"
 #include "PlanarSurface/SubSurface_Impl.hpp"
+#include "ResourceObject/ConstructionAssignmentSet.hpp"
+#include "ResourceObject/ConstructionAssignmentSet_Impl.hpp"
 #include "ResourceObject/DesignSpecificationOutdoorAir.hpp"
 #include "ResourceObject/DesignSpecificationOutdoorAir_Impl.hpp"
 #include "ModelObject/BuildingStory.hpp"
@@ -239,6 +241,18 @@ namespace epmodel {
 
   bool Space::setDesignSpecificationOutdoorAir(const DesignSpecificationOutdoorAir& designSpecificationOutdoorAir) {
     return getImpl<detail::Space_Impl>()->setDesignSpecificationOutdoorAir(designSpecificationOutdoorAir);
+  }
+
+  boost::optional<ConstructionAssignmentSet> Space::constructionAssignmentSet() const {
+    return getImpl<detail::Space_Impl>()->constructionAssignmentSet();
+  }
+
+  bool Space::setConstructionAssignmentSet(const ConstructionAssignmentSet& constructionAssignmentSet) {
+    return getImpl<detail::Space_Impl>()->setConstructionAssignmentSet(constructionAssignmentSet);
+  }
+
+  void Space::resetConstructionAssignmentSet() {
+    getImpl<detail::Space_Impl>()->resetConstructionAssignmentSet();
   }
 
   std::vector<Surface> Space::surfaces() const {
@@ -709,6 +723,18 @@ namespace epmodel {
       removeSpaceFromAllListsExcept(thisSpace, targetList.handle());
       syncAllAirLoopCMVEntries(model());
       return true;
+    }
+
+    boost::optional<ConstructionAssignmentSet> Space_Impl::constructionAssignmentSet() const {
+      return getObject<ModelObject>().getModelObjectTarget<ConstructionAssignmentSet>(openstudio::SpaceFields::ConstructionAssignmentSetName);
+    }
+
+    bool Space_Impl::setConstructionAssignmentSet(const ConstructionAssignmentSet& constructionAssignmentSet) {
+      return setPointer(openstudio::SpaceFields::ConstructionAssignmentSetName, constructionAssignmentSet.handle());
+    }
+
+    void Space_Impl::resetConstructionAssignmentSet() {
+      OS_ASSERT(setString(openstudio::SpaceFields::ConstructionAssignmentSetName, ""));
     }
 
     Polyhedron Space_Impl::polyhedron() const {

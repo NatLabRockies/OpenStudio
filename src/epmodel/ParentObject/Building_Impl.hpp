@@ -8,11 +8,15 @@
 
 #include "ModelObject_Impl.hpp"
 
+#include <boost/optional.hpp>
+
 namespace openstudio {
 
 class Transformation;
 
 namespace epmodel {
+
+  class ConstructionAssignmentSet;
 
   namespace detail {
 
@@ -28,6 +32,10 @@ namespace epmodel {
       void resetNorthAxis();
 
       Transformation transformation() const;
+
+      boost::optional<ConstructionAssignmentSet> constructionAssignmentSet() const;
+      bool setConstructionAssignmentSet(const ConstructionAssignmentSet& constructionAssignmentSet);
+      void resetConstructionAssignmentSet();
     };
 
   }  // namespace detail

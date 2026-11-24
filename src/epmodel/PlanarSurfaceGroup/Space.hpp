@@ -22,6 +22,7 @@ class Transformation;
 namespace epmodel {
 
   class BuildingStory;
+  class ConstructionAssignmentSet;
   class Model;
   class DesignSpecificationOutdoorAir;
   class Surface;
@@ -37,7 +38,7 @@ namespace epmodel {
    * \epobject{group-thermal-zone-description-geometry.html#space,Space}
    *
    * \par OpenStudio Model API
-   * The corresponding OpenStudio Model class is <code>openstudio::model::Space</code>. <b>Changed:</b> design-specification outdoor air is routed through <code>Sizing:Zone</code> and <code>DesignSpecification:OutdoorAir:SpaceList</code>, rather than an OS:Space field. EPModel stores ceiling height, volume, and floor area directly on <code>Space</code>.
+   * The corresponding OpenStudio Model class is <code>openstudio::model::Space</code>. <b>Changed:</b> design-specification outdoor air is routed through <code>Sizing:Zone</code> and <code>DesignSpecification:OutdoorAir:SpaceList</code>, rather than an OS:Space field. EPModel stores ceiling height, volume, and floor area directly on <code>Space</code>. <b>Renamed:</b> <code>defaultConstructionSet()</code>, <code>setDefaultConstructionSet()</code>, and <code>resetDefaultConstructionSet()</code> are <code>constructionAssignmentSet()</code>, <code>setConstructionAssignmentSet()</code>, and <code>resetConstructionAssignmentSet()</code>, matching the EnergyPlus field and the <code>ConstructionAssignmentSet</code> class that replaces <code>DefaultConstructionSet</code>.
    *
    * \par Known limitations
    * Surface assignment synchronizes redundant BuildingSurface Zone Name fields. Unzoned-space outdoor-air assignment uses an orphan space-list object.
@@ -87,6 +88,11 @@ namespace epmodel {
     void resetThermalZone();
     boost::optional<DesignSpecificationOutdoorAir> designSpecificationOutdoorAir() const;
     bool setDesignSpecificationOutdoorAir(const DesignSpecificationOutdoorAir& designSpecificationOutdoorAir);
+
+    /// Returns the ConstructionAssignmentSet used by this space's surfaces that do not name a construction. It takes precedence over the Building's set.
+    boost::optional<ConstructionAssignmentSet> constructionAssignmentSet() const;
+    bool setConstructionAssignmentSet(const ConstructionAssignmentSet& constructionAssignmentSet);
+    void resetConstructionAssignmentSet();
 
     /// Returns all \link Surface Surfaces \endlink in this space.
     std::vector<Surface> surfaces() const;

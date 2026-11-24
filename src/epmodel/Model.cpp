@@ -673,6 +673,9 @@
 #include "ResourceObject/ScheduleTypeLimits.hpp"
 #include "ResourceObject/ScheduleTypeLimits_Impl.hpp"
 #include "ResourceObject/ScheduleWeek_Impl.hpp"
+#include "ResourceObject/ConstructionAssignmentSet_Impl.hpp"
+#include "ResourceObject/SubSurfaceConstructionAssignments_Impl.hpp"
+#include "ResourceObject/SurfaceConstructionAssignments_Impl.hpp"
 #include "ResourceObject/SpaceType_Impl.hpp"
 #include "ResourceObject/TableIndependentVariable_Impl.hpp"
 #include "scaffolds/DemandManagerLights_Impl.hpp"
@@ -1676,6 +1679,7 @@ namespace epmodel {
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::Construction, Construction_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::ConstructionProperty_InternalHeatSource, ConstructionWithInternalSource_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::Construction_AirBoundary, ConstructionAirBoundary_Impl);
+      REGISTER_NEW_CONSTRUCTOR(IddObjectType::ConstructionAssignmentSet, ConstructionAssignmentSet_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::Construction_CfactorUndergroundWall, CFactorUndergroundWallConstruction_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::Construction_ComplexFenestrationState, ConstructionComplexFenestrationState_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::Construction_FfactorGroundFloor, FFactorGroundFloorConstruction_Impl);
@@ -2203,6 +2207,8 @@ namespace epmodel {
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::SpaceList, SpaceList_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::OS_BuildingStory, BuildingStory_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::SteamEquipment, SteamEquipment_Impl);
+      REGISTER_NEW_CONSTRUCTOR(IddObjectType::SubSurfaceConstructionAssignments, SubSurfaceConstructionAssignments_Impl);
+      REGISTER_NEW_CONSTRUCTOR(IddObjectType::SurfaceConstructionAssignments, SurfaceConstructionAssignments_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::SurfaceContaminantSourceAndSink_Generic_BoundaryLayerDiffusion,
                                SurfaceContaminantSourceAndSinkGenericBoundaryLayerDiffusion_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::SurfaceContaminantSourceAndSink_Generic_DepositionVelocitySink,
@@ -2618,6 +2624,7 @@ namespace epmodel {
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::Construction, Construction_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::ConstructionProperty_InternalHeatSource, ConstructionWithInternalSource_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::Construction_AirBoundary, ConstructionAirBoundary_Impl);
+      REGISTER_COPY_CONSTRUCTOR(IddObjectType::ConstructionAssignmentSet, ConstructionAssignmentSet_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::Construction_CfactorUndergroundWall, CFactorUndergroundWallConstruction_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::Construction_ComplexFenestrationState, ConstructionComplexFenestrationState_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::Construction_FfactorGroundFloor, FFactorGroundFloorConstruction_Impl);
@@ -3154,6 +3161,8 @@ namespace epmodel {
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::SpaceList, SpaceList_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::OS_BuildingStory, BuildingStory_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::SteamEquipment, SteamEquipment_Impl);
+      REGISTER_COPY_CONSTRUCTOR(IddObjectType::SubSurfaceConstructionAssignments, SubSurfaceConstructionAssignments_Impl);
+      REGISTER_COPY_CONSTRUCTOR(IddObjectType::SurfaceConstructionAssignments, SurfaceConstructionAssignments_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::SurfaceContaminantSourceAndSink_Generic_BoundaryLayerDiffusion,
                                 SurfaceContaminantSourceAndSinkGenericBoundaryLayerDiffusion_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::SurfaceContaminantSourceAndSink_Generic_DepositionVelocitySink,

@@ -967,6 +967,9 @@ set(${target_name}_src
   ResourceObject/CoilCoolingDXCurveFitSpeed.hpp
   ResourceObject/CoilCoolingDXCurveFitSpeed_Impl.hpp
   ResourceObject/CoilCoolingDXCurveFitSpeed.cpp
+  ResourceObject/ConstructionAssignmentSet.hpp
+  ResourceObject/ConstructionAssignmentSet_Impl.hpp
+  ResourceObject/ConstructionAssignmentSet.cpp
   ResourceObject/DesignSpecificationOutdoorAir.hpp
   ResourceObject/DesignSpecificationOutdoorAir_Impl.hpp
   ResourceObject/DesignSpecificationOutdoorAir.cpp
@@ -1001,6 +1004,12 @@ set(${target_name}_src
   ResourceObject/SpaceType.hpp
   ResourceObject/SpaceType_Impl.hpp
   ResourceObject/SpaceType.cpp
+  ResourceObject/SubSurfaceConstructionAssignments.hpp
+  ResourceObject/SubSurfaceConstructionAssignments_Impl.hpp
+  ResourceObject/SubSurfaceConstructionAssignments.cpp
+  ResourceObject/SurfaceConstructionAssignments.hpp
+  ResourceObject/SurfaceConstructionAssignments_Impl.hpp
+  ResourceObject/SurfaceConstructionAssignments.cpp
   ResourceObject/SurfacePropertyOtherSideCoefficients.hpp
   ResourceObject/SurfacePropertyOtherSideCoefficients_Impl.hpp
   ResourceObject/SurfacePropertyOtherSideCoefficients.cpp

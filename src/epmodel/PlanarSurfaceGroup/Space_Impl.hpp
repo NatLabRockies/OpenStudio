@@ -18,6 +18,7 @@ class Transformation;
 namespace epmodel {
 
   class BuildingStory;
+  class ConstructionAssignmentSet;
   class DesignSpecificationOutdoorAir;
   class Space;
   class ThermalZone;
@@ -59,6 +60,10 @@ namespace epmodel {
       void resetThermalZone();
       boost::optional<openstudio::epmodel::DesignSpecificationOutdoorAir> designSpecificationOutdoorAir() const;
       bool setDesignSpecificationOutdoorAir(const openstudio::epmodel::DesignSpecificationOutdoorAir& designSpecificationOutdoorAir);
+
+      boost::optional<ConstructionAssignmentSet> constructionAssignmentSet() const;
+      bool setConstructionAssignmentSet(const ConstructionAssignmentSet& constructionAssignmentSet);
+      void resetConstructionAssignmentSet();
 
       void doCanonicalize(LoadContext& context) override;
 

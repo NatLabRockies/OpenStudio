@@ -26,5 +26,8 @@ EPMODELOBJECT_WRAP(CoilCoolingDXCurveFitOperatingMode, <epmodel/ResourceObject/C
 EPMODELOBJECT_WRAP(CoilCoolingDXCurveFitSpeed, <epmodel/ResourceObject/CoilCoolingDXCurveFitSpeed.hpp>, 0, 1)
 EPMODELOBJECT_WRAP(HeatExchangerDesiccantBalancedFlowPerformanceDataType1, <epmodel/ResourceObject/HeatExchangerDesiccantBalancedFlowPerformanceDataType1.hpp>, 0, 1)
 EPMODELOBJECT_WRAP(MaterialPropertyGlazingSpectralData, <epmodel/ResourceObject/MaterialPropertyGlazingSpectralData.hpp>, 0, 1)
+EPMODELOBJECT_WRAP(SurfaceConstructionAssignments, <epmodel/ResourceObject/SurfaceConstructionAssignments.hpp>, 0, 1)
+EPMODELOBJECT_WRAP(SubSurfaceConstructionAssignments, <epmodel/ResourceObject/SubSurfaceConstructionAssignments.hpp>, 0, 1)
+EPMODELOBJECT_WRAP(ConstructionAssignmentSet, <epmodel/ResourceObject/ConstructionAssignmentSet.hpp>, 0, 1)
 
 #endif

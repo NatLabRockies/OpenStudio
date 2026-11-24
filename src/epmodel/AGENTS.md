@@ -238,7 +238,7 @@ missing EPModel methods.
 
 ## Build
 
-- Use `-j24` for local compilation and build commands during EPModel work;
+- Use `-j$(nproc)` for local compilation and build commands during EPModel work;
   otherwise follow the repository's normal build invocation.
 
 ## Review
