@@ -6,6 +6,7 @@
 #include "Model.hpp"
 #include "Model_Impl.hpp"
 
+#include <memory>
 #include <src/epmodel/embedded_files.hxx>
 
 #include <utilities/core/Compare.hpp>
@@ -1311,17 +1312,37 @@ namespace epmodel {
       }
     }
 
+    // copy constructor, used for clone
     Model_Impl::Model_Impl(const Model_Impl& other, bool keepHandles)
-      : Workspace_Impl(other, keepHandles),
-        m_sqlFile((other.m_sqlFile) ? std::shared_ptr<SqlFile>(new SqlFile(*other.m_sqlFile)) : other.m_sqlFile) {}
+      : Workspace_Impl(other, keepHandles), m_sqlFile((other.m_sqlFile) ? std::make_shared<SqlFile>(*other.m_sqlFile) : other.m_sqlFile) {
+      // TODO: add m_workflowJSON
+      // notice we are cloning the workflow and sqlfile too, if necessary
+      // careful not to call anything that calls shared_from_this here, this is not yet constructed
+    }
 
+    // copy constructor used for cloneSubset
     Model_Impl::Model_Impl(const Model_Impl& other, const std::vector<Handle>& hs, bool keepHandles, StrictnessLevel level)
-      : Workspace_Impl(other, hs, keepHandles, level),
-        m_sqlFile((other.m_sqlFile) ? std::shared_ptr<SqlFile>(new SqlFile(*other.m_sqlFile)) : other.m_sqlFile) {}
+      : Workspace_Impl(other, hs, keepHandles, level), m_sqlFile((other.m_sqlFile) ? std::make_shared<SqlFile>(*other.m_sqlFile) : other.m_sqlFile) {
+      // TODO: add m_workflowJSON
+      // notice we are cloning the workflow and sqlfile too, if necessary
+    }
 
     Workspace Model_Impl::clone(bool keepHandles) const {
+      // copy everything but objects
       std::shared_ptr<Model_Impl> cloneImpl(new Model_Impl(*this, keepHandles));
+      // clone objects
       createAndAddClonedObjects(model().getImpl<Model_Impl>(), cloneImpl, keepHandles);
+      // wrap impl and return
+      Model result(cloneImpl);
+      return result.cast<Workspace>();
+    }
+
+    Workspace Model_Impl::cloneSubset(const std::vector<Handle>& handles, bool keepHandles, StrictnessLevel level) const {
+      // copy everything but objects
+      std::shared_ptr<Model_Impl> cloneImpl(new Model_Impl(*this, handles, keepHandles, level));
+      // clone objects
+      createAndAddSubsetClonedObjects(model().getImpl<Model_Impl>(), cloneImpl, handles, keepHandles);
+      // wrap impl and return
       Model result(cloneImpl);
       return result.cast<Workspace>();
     }

@@ -20,6 +20,7 @@
 #include "../ModelObject/FluidPropertiesName.hpp"
 #include "../Model.hpp"
 #include "../ResourceObject/ScheduleTypeLimits.hpp"
+#include "../ResourceObject/ScheduleTypeLimits_Impl.hpp"
 #include "../StraightComponent/Node.hpp"
 #include "../Schedule/ScheduleConstant.hpp"
 #include "../Schedule/ScheduleConstant_Impl.hpp"
@@ -228,4 +229,42 @@ TEST_F(EPModelFixture, Model_Canonicalize_RepairsHierarchicalAirLoopBranchListBr
   auto repairedBranch = repairedBranchObject->optionalCast<Branch>();
   ASSERT_TRUE(repairedBranch);
   EXPECT_EQ(0u, repairedBranch->numExtensibleGroups());
+}
+
+// Workspace::addObjects(std::vector<WorkspaceObject>) stages the objects in Model_Impl::cloneSubset before copying them in.
+// The copies must keep their concrete epmodel types, and links between copied objects must point at the copies.
+TEST_F(EPModelFixture, Model_AddWorkspaceObjects_KeepsConcreteTypes) {
+  Model model;
+  ScheduleTypeLimits limits(model);
+  ScheduleConstant schedule(model);
+  ASSERT_TRUE(schedule.setScheduleTypeLimits(limits));
+
+  {
+    // Same model
+    const auto copies = model.addObjects(std::vector<openstudio::WorkspaceObject>{schedule});
+    ASSERT_EQ(1, copies.size());
+    auto copiedSchedule = copies.front().optionalCast<ScheduleConstant>();
+    ASSERT_TRUE(copiedSchedule);
+    EXPECT_NE(schedule, *copiedSchedule);
+    ASSERT_TRUE(copiedSchedule->scheduleTypeLimits());
+    EXPECT_EQ(limits, *copiedSchedule->scheduleTypeLimits());
+    EXPECT_EQ(2, model.getConcreteModelObjects<ScheduleConstant>().size());
+    EXPECT_EQ(1, model.getConcreteModelObjects<ScheduleTypeLimits>().size());
+  }
+
+  {
+    // Other, non-empty model
+    Model model2;
+    ScheduleConstant existingSchedule(model2);
+    const auto copies = model2.addObjects(std::vector<openstudio::WorkspaceObject>{schedule, limits});
+    ASSERT_EQ(2, copies.size());
+    auto copiedSchedule = copies[0].optionalCast<ScheduleConstant>();
+    auto copiedLimits = copies[1].optionalCast<ScheduleTypeLimits>();
+    ASSERT_TRUE(copiedSchedule);
+    ASSERT_TRUE(copiedLimits);
+    ASSERT_TRUE(copiedSchedule->scheduleTypeLimits());
+    EXPECT_EQ(*copiedLimits, *copiedSchedule->scheduleTypeLimits());
+    EXPECT_EQ(2, model2.getConcreteModelObjects<ScheduleConstant>().size());
+    EXPECT_EQ(1, model2.getConcreteModelObjects<ScheduleTypeLimits>().size());
+  }
 }
