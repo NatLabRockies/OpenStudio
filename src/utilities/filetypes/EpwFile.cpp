@@ -692,11 +692,16 @@ void EpwDesignCondition::assignExtremesData(std::span<const std::string> stringV
 boost::optional<EpwDesignCondition> EpwDesignCondition::fromDesignConditionsStrings(const std::vector<std::string>& inputStrings) {
   EpwDesignCondition dc;
 
-  std::vector<std::string> strings = inputStrings;
-  const bool missingBlankBeforeHeating = strings.size() > 1 && openstudio::istringEqual(strings[1], "Heating");
+  // Normalize records that omit the blank field after the title (e.g. 2025 TMYx); only copy when needed
+  const bool missingBlankBeforeHeating = inputStrings.size() > 1 && openstudio::istringEqual(inputStrings[1], "Heating");
+  std::vector<std::string> normalizedStrings;
   if (missingBlankBeforeHeating) {
-    strings.insert(strings.begin() + 1, "");
+    normalizedStrings.reserve(inputStrings.size() + 1);
+    normalizedStrings.push_back(inputStrings.front());
+    normalizedStrings.emplace_back();
+    normalizedStrings.insert(normalizedStrings.end(), std::next(inputStrings.begin()), inputStrings.end());
   }
+  const std::vector<std::string>& strings = missingBlankBeforeHeating ? normalizedStrings : inputStrings;
 
   const size_t num_strings = strings.size();
   if (num_strings != 67 && num_strings != 68 && num_strings != 79 && num_strings != 80) {
