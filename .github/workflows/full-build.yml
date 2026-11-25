@@ -681,6 +681,7 @@ jobs:
             max_jobs: 3
     env:
       MAX_BUILD_THREADS: ${{ matrix.max_jobs }}
+      CCACHE_DIR: ${{ github.workspace }}/.ccache
 
     permissions:
       # Needed permission to upload the release asset
@@ -709,14 +710,26 @@ jobs:
     - name: Git safe directory
       run: git config --global --add safe.directory '*'
 
-    - name: Setup ccache
-      uses: hendrikmuhs/ccache-action@v1.2
+    - name: Get base branch SHA
+      if: github.event_name == 'pull_request'
+      run: |
+        # github.event.pull_request.base.sha is the base at PR creation, not the current tip
+        BASE_SHA=$(git ls-remote "https://github.com/$GITHUB_REPOSITORY.git" "refs/heads/${{ github.base_ref }}" | cut -f1)
+        echo "BASE_SHA=$BASE_SHA" >> "$GITHUB_ENV"
+
+    - name: Restore ccache cache
+      id: ccache-restore
+      uses: actions/cache/restore@v6
       with:
-        key: ccache-${{ matrix.os }}-${{ matrix.platform }}
-        max-size: ${{ env.CCACHE_MAXSIZE }}
+        path: ${{ env.CCACHE_DIR }}
+        key: ccache-${{ matrix.os }}-${{ matrix.platform }}-pch=${{ env.ENABLE_PCH }}-${{ github.event_name == 'pull_request' && github.head_ref || github.sha }}
+        restore-keys: |
+          ccache-${{ matrix.os }}-${{ matrix.platform }}-pch=${{ env.ENABLE_PCH }}-${{ env.BASE_SHA }}
+          ccache-${{ matrix.os }}-${{ matrix.platform }}-pch=${{ env.ENABLE_PCH }}-
 
     - name: Restore Conan cache
-      uses: actions/cache@v6
+      id: conan-restore
+      uses: actions/cache/restore@v6
       with:
         path: ~/.conan2
         key: conan-${{ matrix.os }}-${{ matrix.platform }}-${{ hashFiles('conan.lock') }}
@@ -767,7 +780,7 @@ jobs:
         # The MACOSX_DEPLOYMENT_TARGET environment variable sets the default value for the CMAKE_OSX_DEPLOYMENT_TARGET variable.
         # We use cmake commands to build some subprojects, so setting it globally
         echo MACOSX_DEPLOYMENT_TARGET=${{ matrix.macos_dev_target }} >> $GITHUB_ENV
-        brew install ninja
+        brew install ninja ccache
 
     - name: Create Build Directory
       run: cmake -E make_directory ${{ env.OPENSTUDIO_BUILD }}
@@ -818,6 +831,18 @@ jobs:
           -s build_type=${{ env.BUILD_TYPE }} \
           -s os.version=${{ matrix.macos_dev_target }} \
           -o readline/*:with_library=termcap
+
+    - name: Clean Conan cache before saving
+      if: steps.conan-restore.outputs.cache-hit != 'true'
+      run: conan cache clean "*" --source --build --download --temp
+
+    - name: Save Conan cache
+      # Saved right after install (only when the lockfile changed) so a later build failure doesn't lose it
+      if: steps.conan-restore.outputs.cache-hit != 'true'
+      uses: actions/cache/save@v6
+      with:
+        path: ~/.conan2
+        key: ${{ steps.conan-restore.outputs.cache-primary-key }}
 
     - name: Locate Ruby
       run: |
@@ -883,8 +908,16 @@ jobs:
         build_exit=${PIPESTATUS[0]}
         kill $heartbeat_pid || true
         command -v ninja >/dev/null 2>&1 && ninja -d stats || true
+        command -v ccache >/dev/null 2>&1 && ccache -s || true
         if [ -f build.log ]; then tail -n 40 build.log; fi
         exit $build_exit
+
+    - name: Save ccache cache
+      if: always() && steps.ccache-restore.outputs.cache-hit != 'true'
+      uses: actions/cache/save@v6
+      with:
+        path: ${{ env.CCACHE_DIR }}
+        key: ${{ steps.ccache-restore.outputs.cache-primary-key }}
 
     - name: Wait for network stability
       if: always()
@@ -1301,7 +1334,8 @@ jobs:
         run: choco install ccache -y --no-progress
 
       - name: Restore Conan cache
-        uses: actions/cache@v6
+        id: conan-restore
+        uses: actions/cache/restore@v6
         with:
           path: ~/.conan2
           key: conan-${{ matrix.os }}-windows-${{ hashFiles('conan.lock') }}
@@ -1368,6 +1402,18 @@ jobs:
             -s build_type=${{ env.BUILD_TYPE }} `
             --lockfile-partial --lockfile-out=conan.lock
           git diff conan.lock
+
+      - name: Clean Conan cache before saving
+        if: steps.conan-restore.outputs.cache-hit != 'true'
+        run: conan cache clean "*" --source --build --download --temp
+
+      - name: Save Conan cache
+        # Saved right after install (only when the lockfile changed) so a later build failure doesn't lose it
+        if: steps.conan-restore.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v6
+        with:
+          path: ~/.conan2
+          key: ${{ steps.conan-restore.outputs.cache-primary-key }}
 
       - name: Locate Ruby
         run: |
