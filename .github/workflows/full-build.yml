@@ -231,25 +231,10 @@ jobs:
           config-install: ${{ matrix.platform == 'centos-9-x64' && 'developer/conan/config' || '' }}
           extra-args: ${{ matrix.platform == 'centos-9-x64' && '-pr:a glibc' || '' }}
 
-      - name: Locate Ruby
-        run: |
-          ruby_path=$(command -v ruby)
-          echo "SYSTEM_RUBY_PATH=$ruby_path" >> $GITHUB_ENV
-
-      - name: Locate Python
-        run: |
-          python_path=$(command -v python3)
-          echo "SYSTEM_PYTHON_PATH=$python_path" >> $GITHUB_ENV
-
       - name: Configure with CMake
         run: |
+          # Build type, testing, bindings, Python version/root and CPack generators all come from the conanfile.py preset
           cmake --preset conan-release \
-            -DCMAKE_BUILD_TYPE:STRING=${{ env.BUILD_TYPE }} \
-            -DBUILD_TESTING:BOOL=ON \
-            -DBUILD_PYTHON_BINDINGS:BOOL=ON \
-            -DPython_EXECUTABLE:FILEPATH="$SYSTEM_PYTHON_PATH" \
-            -DPYTHON_VERSION:STRING=${{ env.PYTHON_REQUIRED_VERSION }} \
-            -DSYSTEM_RUBY_EXECUTABLE="$SYSTEM_RUBY_PATH" \
             -DENABLE_PCH:BOOL=${{ env.ENABLE_PCH }} \
             -DCMAKE_JOB_POOL_LINK:STRING=console
 
@@ -685,39 +670,15 @@ jobs:
         # Same as jmarrec/conan-recipes upload_deps.yml, for the deps that have to be built from source (boost with recent clang)
         extra-args: -c tools.build:cxxflags="['-D_LIBCPP_ENABLE_CXX17_REMOVED_UNARY_BINARY_FUNCTION', '-Wno-enum-constexpr-conversion']"
 
-    - name: Locate Ruby
-      run: |
-        ruby_path=$(command -v ruby)
-        echo "SYSTEM_RUBY_PATH=$ruby_path" >> $GITHUB_ENV
-
-    - name: Locate Python
-      run: |
-        python_path=$(command -v python3)
-        echo "SYSTEM_PYTHON_PATH=$python_path" >> $GITHUB_ENV
-
     - name: Configure with CMake
-      working-directory: ${{ env.OPENSTUDIO_BUILD }}
       run: |
-        set -e
-        chmod +x ./conanbuild.sh
-        . ./conanbuild.sh
-        # Signing identity is passed to cpack only when the keychain exists (see Create packages)
-        cmake -G Ninja \
-          -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake \
-          -DCMAKE_CXX_FLAGS="-D_LIBCPP_ENABLE_CXX17_REMOVED_UNARY_BINARY_FUNCTION -Wno-enum-constexpr-conversion" \
-          -DENABLE_COVERAGE:BOOL=OFF \
-          -DCMAKE_OSX_DEPLOYMENT_TARGET:STRING=${{ matrix.macos_dev_target }} \
-          -DCMAKE_BUILD_TYPE:STRING=${{ env.BUILD_TYPE }} \
-          -DBUILD_TESTING:BOOL=ON \
-          -DCPACK_BINARY_TGZ:BOOL=ON \
-          -DCPACK_BINARY_IFW:BOOL=ON \
-          -DBUILD_PYTHON_BINDINGS:BOOL=ON \
-          -DBUILD_PYTHON_PIP_PACKAGE:BOOL=OFF \
-          -DPYTHON_VERSION:STRING=${{ env.PYTHON_REQUIRED_VERSION }} \
-          -DPython_ROOT_DIR:PATH="$(dirname $(dirname $SYSTEM_PYTHON_PATH))" \
+        # Build type, testing, bindings, Python version/root and CPack generators all come from the conanfile.py preset,
+        # the libc++ CXX flags from the tools.build:cxxflags conf (see Setup Conan), the deployment target from MACOSX_DEPLOYMENT_TARGET.
+        # ruby/test/CMakeLists.txt only looks in hardcoded locations (NO_DEFAULT_PATH, to avoid the conan ruby), not in setup-ruby's toolcache
+        cmake --preset conan-release \
+          -DSYSTEM_RUBY_EXECUTABLE:FILEPATH="$(command -v ruby)" \
           -DENABLE_PCH:BOOL=${{ env.ENABLE_PCH }} \
-          -DCMAKE_JOB_POOL_LINK:STRING=console \
-          ..
+          -DCMAKE_JOB_POOL_LINK:STRING=console
 
     - name: Show restored ccache stats
       shell: bash
@@ -1197,20 +1158,12 @@ jobs:
           build-type: ${{ env.BUILD_TYPE }}
           build-policy: ${{ contains(inputs.conan_build_all, matrix.platform) && '*' || 'missing' }}
 
-      - name: Locate Ruby
-        run: |
-          $rubyPath = (Get-Command ruby).Source
-          "SYSTEM_RUBY_PATH=$rubyPath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-
-      - name: Locate Python
-        run: |
-          $pythonPath = (Get-Command python).Source
-          "SYSTEM_PYTHON_PATH=$pythonPath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-
       - name: Configure with CMake
-        # From the source dir: that's where conan put the CMakeUserPresets.json. The preset brings the toolchain, Ninja, the build type and the CPack generators
+        # From the source dir: that's where conan put the CMakeUserPresets.json. Toolchain, Ninja, build type, testing, bindings, Python version/root and CPack generators all come from the conanfile.py preset
         run: |
-          & $env:ComSpec /c "call ${{ env.OPENSTUDIO_BUILD }}\conanbuild.bat && cmake --preset conan-release -DBUILD_TESTING:BOOL=ON -DBUILD_PYTHON_BINDINGS:BOOL=ON -DPython_EXECUTABLE:FILEPATH=`"$env:SYSTEM_PYTHON_PATH`" -DPYTHON_VERSION:STRING=${{ env.PYTHON_REQUIRED_VERSION }} -DSYSTEM_RUBY_EXECUTABLE=`"%SYSTEM_RUBY_PATH%`" -DENABLE_PCH:BOOL=${{ env.ENABLE_PCH }} -DCMAKE_JOB_POOL_LINK:STRING=console"
+          # ruby/test/CMakeLists.txt only looks in hardcoded locations (NO_DEFAULT_PATH, to avoid the conan ruby), not in setup-ruby's toolcache
+          $rubyExe = (Get-Command ruby).Source
+          & $env:ComSpec /c "call ${{ env.OPENSTUDIO_BUILD }}\conanbuild.bat && cmake --preset conan-release -DSYSTEM_RUBY_EXECUTABLE:FILEPATH=`"$rubyExe`" -DENABLE_PCH:BOOL=${{ env.ENABLE_PCH }} -DCMAKE_JOB_POOL_LINK:STRING=console"
 
       - name: Show restored ccache stats
         shell: bash
