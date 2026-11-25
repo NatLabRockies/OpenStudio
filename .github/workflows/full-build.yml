@@ -414,13 +414,6 @@ jobs:
           . ./conanbuild.sh
           cpack -C ${{ env.BUILD_TYPE }}
 
-      - name: Cleanup intermediate files
-        if: always()
-        working-directory: ${{ env.OPENSTUDIO_BUILD }}
-        run: |
-          find . -name "*.o" -type f -delete || true
-          df -h .
-
       - name: Upload DEB installer
         if: contains(matrix.cpack_generators, 'DEB')
         uses: actions/upload-artifact@v7
@@ -898,13 +891,6 @@ jobs:
             -D "CPACK_IFW_REPOGEN_EXECUTABLE=$repogen")
         fi
         cpack -C ${{ env.BUILD_TYPE }} "${SIGNING_ARGS[@]}"
-
-    - name: Cleanup intermediate files
-      if: always()
-      working-directory: ${{ env.OPENSTUDIO_BUILD }}
-      run: |
-        find . -name "*.o" -type f -delete || true
-        df -h .
 
     - name: Ad-hoc Sign Inner Installer (Fix "Killed" Error)
       if: ${{ success() && !cancelled() }}
@@ -1520,13 +1506,6 @@ jobs:
           Remove-Item $installerZip -Force
           Remove-Item $signedInstallerZip -Force
           Write-Host "Installer signed successfully."
-
-      - name: Cleanup intermediate files
-        if: always()
-        working-directory: ${{ env.OPENSTUDIO_BUILD }}
-        run: |
-          Get-ChildItem -Path . -Include "*.obj" -Recurse -Force | Remove-Item -Force -ErrorAction SilentlyContinue
-          Get-PSDrive C | Select-Object Used,Free
 
       - name: Upload Signed EXE installer
         uses: actions/upload-artifact@v7
