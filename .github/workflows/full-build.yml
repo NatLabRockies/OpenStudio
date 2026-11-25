@@ -95,7 +95,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     container:
       image: ${{ matrix.container_image }}
-      options: ${{ matrix.container_options }} --volume /mnt:/mnt
+      options: ${{ matrix.container_options }}
     strategy:
       fail-fast: false
       matrix:
@@ -149,9 +149,9 @@ jobs:
         shell: bash
     env:
       MAX_BUILD_THREADS: ${{ matrix.max_jobs }}
-      # Keep caches on /mnt (root partition is too small), and point both the tools and actions/cache at the real dirs: caching a symlink only archives the link (#5711)
-      CCACHE_DIR: /mnt/.ccache
-      CONAN_HOME: /mnt/.conan2
+      # $HOME in GHA containers. Explicit so the tools and actions/cache agree on the paths (#5711)
+      CCACHE_DIR: /github/home/.ccache
+      CONAN_HOME: /github/home/.conan2
 
     permissions:
       # Needed permission to upload the release asset
@@ -162,10 +162,12 @@ jobs:
         run: |
           echo "Enabling Swap..."
           # Create and enable 8GB swap file to prevent OOM kills
-          dd if=/dev/zero of=/mnt/swapfile_extra bs=1M count=8192 status=progress
-          chmod 600 /mnt/swapfile_extra
-          mkswap /mnt/swapfile_extra
-          swapon /mnt/swapfile_extra
+          # RUNNER_TEMP is bind-mounted from the host disk: swapon doesn't work on the container's overlayfs
+          SWAPFILE="$RUNNER_TEMP/swapfile_extra"
+          dd if=/dev/zero of="$SWAPFILE" bs=1M count=8192 status=progress
+          chmod 600 "$SWAPFILE"
+          mkswap "$SWAPFILE"
+          swapon "$SWAPFILE"
 
           echo
           echo "Memory and swap:"
