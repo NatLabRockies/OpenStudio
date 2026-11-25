@@ -203,15 +203,6 @@ jobs:
             ccache-${{ matrix.os }}-${{ matrix.platform }}-pch=${{ env.ENABLE_PCH }}-${{ env.BASE_SHA }}
             ccache-${{ matrix.os }}-${{ matrix.platform }}-pch=${{ env.ENABLE_PCH }}-
 
-      - name: Restore Conan cache
-        id: conan-restore
-        uses: actions/cache/restore@v6
-        with:
-          path: ${{ env.CONAN_HOME }}
-          key: conan-${{ matrix.os }}-${{ matrix.platform }}-${{ hashFiles('conan.lock') }}
-          restore-keys: |
-            conan-${{ matrix.os }}-${{ matrix.platform }}-
-
       - name: Prepare workspace
         run: |
 
@@ -227,49 +218,21 @@ jobs:
             echo "/usr/local/cmake/bin" >> $GITHUB_PATH
           fi
 
-      - name: Configure Conan remotes
-        run: |
-          conan remote remove conancenter || true
-          conan remote add conancenter https://center2.conan.io
-          conan remote remove nrel-v2 || true
-          conan remote add nrel-v2 https://conan.openstudio.net/artifactory/api/conan/conan-v2
-          if [ ! -f "$CONAN_HOME/profiles/default" ]; then
-            conan profile detect
-          fi
+      - name: Install Python dependencies
+        run: python -m pip install -r python/requirements.txt
 
-      - name: Add libc setting to Conan (CentOS)
-        # nrel-v2's gcc 14 binaries are built on ubuntu-24.04 with GLIBC 2.39 (AlmaLinux 9 has 2.34). Making the libc version part of the
-        # package_id means they never match, so we build from source (or pull the glibc 2.34 ones once uploaded to nrel-v2).
-        # See https://github.com/NatLabRockies/openstudio-cmake-tools/issues/6
-        if: matrix.platform == 'centos-9-x64'
-        run: |
-          conan config install developer/conan/config
-          conan profile show -pr:a glibc | grep "os.libc"
-          echo "CONAN_EXTRA_ARGS=-pr:a glibc" >> $GITHUB_ENV
-
-      - name: Conan install
-        env:
-          CONAN_BUILD_POLICY: ${{ contains(inputs.conan_build_all, matrix.platform) && '*' || 'missing' }}
-        run: |
-          conan install . \
-            --output-folder="${{ env.OPENSTUDIO_BUILD }}" \
-            --build="$CONAN_BUILD_POLICY" \
-            -c tools.cmake.cmaketoolchain:generator=Ninja \
-            -s compiler.cppstd=20 \
-            -s build_type=${{ env.BUILD_TYPE }} \
-            ${CONAN_EXTRA_ARGS:-}
-
-      - name: Clean Conan cache before saving
-        if: steps.conan-restore.outputs.cache-hit != 'true'
-        run: conan cache clean "*" --source --build --download --temp
-
-      - name: Save Conan cache
-        # Saved right after install (only when the lockfile changed) so a later build failure doesn't lose it
-        if: steps.conan-restore.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v6
+      - name: Setup Conan
+        uses: ./.github/actions/setup-conan
         with:
-          path: ${{ env.CONAN_HOME }}
-          key: ${{ steps.conan-restore.outputs.cache-primary-key }}
+          cache-key-prefix: conan-${{ matrix.os }}-${{ matrix.platform }}
+          build-folder: ${{ env.OPENSTUDIO_BUILD }}
+          build-type: ${{ env.BUILD_TYPE }}
+          build-policy: ${{ contains(inputs.conan_build_all, matrix.platform) && '*' || 'missing' }}
+          # nrel-v2's gcc 14 binaries are built on ubuntu-24.04 with GLIBC 2.39 (AlmaLinux 9 has 2.34). Making the libc version part of the
+          # package_id means they never match, so we build from source (or pull the glibc 2.34 ones once uploaded to nrel-v2).
+          # See https://github.com/NatLabRockies/openstudio-cmake-tools/issues/6
+          config-install: ${{ matrix.platform == 'centos-9-x64' && 'developer/conan/config' || '' }}
+          extra-args: ${{ matrix.platform == 'centos-9-x64' && '-pr:a glibc' || '' }}
 
       - name: Locate Ruby
         run: |
@@ -686,26 +649,13 @@ jobs:
           ccache-${{ matrix.os }}-${{ matrix.platform }}-pch=${{ env.ENABLE_PCH }}-${{ env.BASE_SHA }}
           ccache-${{ matrix.os }}-${{ matrix.platform }}-pch=${{ env.ENABLE_PCH }}-
 
-    - name: Restore Conan cache
-      id: conan-restore
-      uses: actions/cache/restore@v6
-      with:
-        path: ~/.conan2
-        key: conan-${{ matrix.os }}-${{ matrix.platform }}-${{ hashFiles('conan.lock') }}
-        restore-keys: |
-          conan-${{ matrix.os }}-${{ matrix.platform }}-
-
     - name: Set up Python ${{ env.PYTHON_REQUIRED_VERSION }}
       uses: actions/setup-python@v7
       with:
         python-version: ${{ env.PYTHON_REQUIRED_VERSION }}
 
     - name: Install Python dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install setuptools wheel
-        pip install -r python/requirements.txt
-        pip install conan
+      run: python -m pip install -r python/requirements.txt
 
     - name: Install Ruby
       uses: ruby/setup-ruby@v1
@@ -735,39 +685,15 @@ jobs:
     - name: Create Build Directory
       run: cmake -E make_directory ${{ env.OPENSTUDIO_BUILD }}
 
-    - name: Configure Conan remotes
-      run: |
-        conan remote remove nrel-v2 || true
-        conan remote add --index 0 nrel-v2 https://conan.openstudio.net/artifactory/api/conan/conan-v2
-        conan remote remove conancenter || true
-        conan remote add conancenter https://center2.conan.io
-        if [ ! -f "$HOME/.conan2/profiles/default" ]; then
-          conan profile detect
-        fi
-        conan config home
-
-    - name: Conan install
-      env:
-        CONAN_BUILD_POLICY: ${{ contains(inputs.conan_build_all, matrix.platform) && '*' || 'missing' }}
-      run: |
-        conan install . \
-          --output-folder=${{ env.OPENSTUDIO_BUILD }} \
-          --build="$CONAN_BUILD_POLICY" \
-          -c tools.cmake.cmaketoolchain:generator=Ninja \
-          -s compiler.cppstd=20 \
-          -s build_type=${{ env.BUILD_TYPE }}
-
-    - name: Clean Conan cache before saving
-      if: steps.conan-restore.outputs.cache-hit != 'true'
-      run: conan cache clean "*" --source --build --download --temp
-
-    - name: Save Conan cache
-      # Saved right after install (only when the lockfile changed) so a later build failure doesn't lose it
-      if: steps.conan-restore.outputs.cache-hit != 'true'
-      uses: actions/cache/save@v6
+    - name: Setup Conan
+      uses: ./.github/actions/setup-conan
       with:
-        path: ~/.conan2
-        key: ${{ steps.conan-restore.outputs.cache-primary-key }}
+        cache-key-prefix: conan-${{ matrix.os }}-${{ matrix.platform }}
+        build-folder: ${{ env.OPENSTUDIO_BUILD }}
+        build-type: ${{ env.BUILD_TYPE }}
+        build-policy: ${{ contains(inputs.conan_build_all, matrix.platform) && '*' || 'missing' }}
+        # Same as jmarrec/conan-recipes upload_deps.yml, for the deps that have to be built from source (boost with recent clang)
+        extra-args: -c tools.build:cxxflags="['-D_LIBCPP_ENABLE_CXX17_REMOVED_UNARY_BINARY_FUNCTION', '-Wno-enum-constexpr-conversion']"
 
     - name: Locate Ruby
       run: |
@@ -1258,15 +1184,6 @@ jobs:
         # Not sccache: it refuses to cache MSVC compiles using PCH (/Yc, /Fp), i.e. ~95% of them
         run: choco install ccache -y --no-progress
 
-      - name: Restore Conan cache
-        id: conan-restore
-        uses: actions/cache/restore@v6
-        with:
-          path: ~/.conan2
-          key: conan-${{ matrix.os }}-windows-${{ hashFiles('conan.lock') }}
-          restore-keys: |
-            conan-${{ matrix.os }}-windows-
-
       - name: Set up Python 3.12.2
         uses: actions/setup-python@v7
         with:
@@ -1274,13 +1191,7 @@ jobs:
           cache: 'pip'
 
       - name: Install Python dependencies
-        run: |
-          python -m pip install --upgrade pip setuptools wheel
-          python -m pip install -r python/requirements.txt
-
-      - name: Install Conan
-        run: |
-          python -m pip install conan
+        run: python -m pip install -r python/requirements.txt
 
       - name: Install Ruby
         uses: ruby/setup-ruby@v1
@@ -1295,49 +1206,13 @@ jobs:
       - name: Create Build Directory
         run: cmake -E make_directory ${{ env.OPENSTUDIO_BUILD }}
 
-      - name: Configure Conan remotes
-        run: |
-          conan remote remove nrel-v2
-          if ($LASTEXITCODE -ne 0) { $LASTEXITCODE = 0 }
-          conan remote add nrel-v2 https://conan.openstudio.net/artifactory/api/conan/conan-v2
-          if ($LASTEXITCODE -ne 0) { throw "Failed to add nrel-v2 remote" }
-          conan remote enable nrel-v2
-
-          conan remote remove conancenter
-          if ($LASTEXITCODE -ne 0) { $LASTEXITCODE = 0 }
-          conan remote add conancenter https://center2.conan.io
-          if ($LASTEXITCODE -ne 0) { throw "Failed to add conancenter remote" }
-          conan remote enable conancenter
-
-          if (-not (Test-Path "$env:USERPROFILE/.conan2/profiles/default")) {
-            conan profile detect
-          }
-          conan config home
-
-      - name: Conan install
-        env:
-          CONAN_BUILD_POLICY: ${{ contains(inputs.conan_build_all, matrix.platform) && '*' || 'missing' }}
-        run: |
-          conan install . `
-            --output-folder="${{ env.OPENSTUDIO_BUILD }}" `
-            --build="$env:CONAN_BUILD_POLICY" `
-            -c tools.cmake.cmaketoolchain:generator=Ninja `
-            -s compiler.cppstd=20 `
-            -s build_type=${{ env.BUILD_TYPE }} `
-            --lockfile-partial --lockfile-out=conan.lock
-          git diff conan.lock
-
-      - name: Clean Conan cache before saving
-        if: steps.conan-restore.outputs.cache-hit != 'true'
-        run: conan cache clean "*" --source --build --download --temp
-
-      - name: Save Conan cache
-        # Saved right after install (only when the lockfile changed) so a later build failure doesn't lose it
-        if: steps.conan-restore.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v6
+      - name: Setup Conan
+        uses: ./.github/actions/setup-conan
         with:
-          path: ~/.conan2
-          key: ${{ steps.conan-restore.outputs.cache-primary-key }}
+          cache-key-prefix: conan-${{ matrix.os }}-${{ matrix.platform }}
+          build-folder: ${{ env.OPENSTUDIO_BUILD }}
+          build-type: ${{ env.BUILD_TYPE }}
+          build-policy: ${{ contains(inputs.conan_build_all, matrix.platform) && '*' || 'missing' }}
 
       - name: Locate Ruby
         run: |

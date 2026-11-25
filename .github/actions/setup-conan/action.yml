@@ -1,0 +1,119 @@
+name: Setup Conan
+description: >
+  Restore the Conan cache, configure the remotes, run conan install, and save the cache right away when the lockfile changed
+  (so a later build or test failure doesn't lose it). Installs Conan with pip, so Python must already be set up.
+
+inputs:
+  cache-key-prefix:
+    description: "Cache key prefix, eg conan-<os>-<platform>. The hash of conan.lock is appended"
+    required: true
+  build-folder:
+    description: "Output folder for conan install"
+    default: build
+  build-type:
+    description: "CMake build type"
+    default: Release
+  build-policy:
+    description: "Value passed to conan install --build to specify what to build from source"
+    default: missing
+  config-install:
+    description: "Optional path passed to 'conan config install' (eg extra profiles)"
+    default: ""
+  extra-args:
+    description: "Extra arguments passed to conan install"
+    default: ""
+
+outputs:
+  cache-hit:
+    description: "Whether the Conan cache was restored from an exact key match"
+    value: ${{ steps.restore.outputs.cache-hit }}
+
+runs:
+  using: composite
+  steps:
+    - name: Restore Conan cache
+      id: restore
+      uses: actions/cache/restore@v6
+      with:
+        path: ${{ env.CONAN_HOME || '~/.conan2' }}
+        key: ${{ inputs.cache-key-prefix }}-${{ hashFiles('conan.lock') }}
+        restore-keys: |
+          ${{ inputs.cache-key-prefix }}-
+
+    - name: Install Conan
+      shell: bash
+      run: |
+        begin_group() { echo -e "::group::\033[93m$1\033[0m"; }
+
+        begin_group "Install Conan"
+        python -m pip install "conan>=2"
+        conan --version
+        echo "::endgroup::"
+
+    - name: Configure Conan
+      shell: bash
+      run: |
+        begin_group() { echo -e "::group::\033[93m$1\033[0m"; }
+
+        begin_group "Conan home"
+        conan config home
+        echo "::endgroup::"
+
+        begin_group "Default profile"
+        # Same default profile as jmarrec/conan-recipes upload_deps.yml, so the package IDs match what's on nrel-v2.
+        # It's used for both the host and build contexts.
+        conan profile detect --force --name default
+        CONAN_PROFILE_DEFAULT=$(conan profile path default)
+        # Mac has the BSD flavor of sed and MUST take a backup suffix
+        sed -i.bak 's/cppstd=.*$/cppstd=20/g' "$CONAN_PROFILE_DEFAULT"
+        sed -i.bak 's/build_type=.*$/build_type=${{ inputs.build-type }}/g' "$CONAN_PROFILE_DEFAULT"
+        # Windows only
+        sed -i.bak 's/compiler.runtime_type=.*$/compiler.runtime_type=${{ inputs.build-type }}/g' "$CONAN_PROFILE_DEFAULT"
+        rm -f "$CONAN_PROFILE_DEFAULT.bak"
+        conan profile show
+        echo "::endgroup::"
+
+        begin_group "Global.conf"
+        # Overwrite (not append): global.conf comes back with the restored cache
+        CONAN_GLOBAL_CONF="$(conan config home)/global.conf"
+        echo "core:non_interactive = True" > "$CONAN_GLOBAL_CONF"
+        echo "core.download:parallel = {{os.cpu_count() - 2}}" >> "$CONAN_GLOBAL_CONF"
+        cat "$CONAN_GLOBAL_CONF"
+        echo "::endgroup::"
+
+        begin_group "Remotes"
+        # nrel-v2 first: that's where our prebuilt binaries are
+        conan remote add --index 0 --force nrel-v2 https://conan.openstudio.net/artifactory/api/conan/conan-v2
+        conan remote list
+        echo "::endgroup::"
+
+        if [ -n "${{ inputs.config-install }}" ]; then
+          begin_group "Config install"
+          conan config install "${{ inputs.config-install }}"
+          echo "::endgroup::"
+        fi
+
+    - name: Conan install
+      shell: bash
+      run: |
+        begin_group() { echo -e "::group::\033[93m$1\033[0m"; }
+
+        begin_group "Conan install"
+        conan install . \
+          --output-folder="${{ inputs.build-folder }}" \
+          --build="${{ inputs.build-policy }}" \
+          -c tools.cmake.cmaketoolchain:generator=Ninja \
+          ${{ inputs.extra-args }}
+        echo "::endgroup::"
+
+    - name: Clean Conan cache before saving
+      if: steps.restore.outputs.cache-hit != 'true'
+      shell: bash
+      run: conan cache clean "*" --source --build --download --temp
+
+    - name: Save Conan cache
+      if: steps.restore.outputs.cache-hit != 'true'
+      uses: actions/cache/save@v6
+      with:
+        path: ${{ env.CONAN_HOME || '~/.conan2' }}
+        key: ${{ steps.restore.outputs.cache-primary-key }}
