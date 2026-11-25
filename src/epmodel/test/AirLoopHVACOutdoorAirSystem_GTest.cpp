@@ -10,9 +10,14 @@
 #include "../Loop/AirLoopHVAC.hpp"
 #include "../HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
 #include "../HVACComponent/AirLoopHVACOutdoorAirSystem_Impl.hpp"
+#include "../ModelObject/AirLoopHVACOutdoorAirSystemEquipmentList.hpp"
+#include "../ModelObject/AirLoopHVACOutdoorAirSystemEquipmentList_Impl.hpp"
+#include "../ModelObject/OutdoorAirMixer.hpp"
+#include "../ModelObject/OutdoorAirMixer_Impl.hpp"
 #include "../ParentObject/ControllerOutdoorAir.hpp"
 #include "../StraightComponent/FanConstantVolume.hpp"
 #include "../StraightComponent/Node.hpp"
+#include <utilities/idd/AirLoopHVAC_OutdoorAirSystem_FieldEnums.hxx>
 #include <utilities/idd/Controller_OutdoorAir_FieldEnums.hxx>
 #include <utilities/idd/OutdoorAir_NodeList_FieldEnums.hxx>
 #include <utilities/idd/OutdoorAir_Mixer_FieldEnums.hxx>
@@ -618,4 +623,53 @@ TEST_F(EPModelFixture, API_AirLoopHVACOutdoorAirSystem_InternalReliefNodeInserti
 
   EXPECT_EQ((std::vector<ModelObject>{hx.cast<ModelObject>()}), nonNodeObjects(oaSystem.oaComponents()));
   EXPECT_EQ((std::vector<ModelObject>{hx.cast<ModelObject>(), reliefFan.cast<ModelObject>()}), nonNodeObjects(oaSystem.reliefComponents()));
+}
+
+TEST_F(EPModelFixture, API_AirLoopHVACOutdoorAirSystem_EquipmentListFollowsAirflowOrder) {
+  // EnergyPlus simulates the OA equipment list in order and rejects a list that does not follow
+  // the airflow: OA-stream equipment (outdoors toward the mixer), then the mixer, then relief.
+  const auto idfPath = openstudio::tempDir() / openstudio::toPath("epmodel-oa-equipment-list-order.idf");
+  Model model;
+  AirLoopHVAC airLoop(model);
+  AirLoopHVACOutdoorAirSystem oaSystem(model);
+  ASSERT_TRUE(oaSystem.setName("Airflow Order OA System"));
+  auto supplyInletNode = airLoop.supplyInletNode();
+  ASSERT_TRUE(oaSystem.addToNode(supplyInletNode));
+
+  auto outboardOANode = oaSystem.outboardOANode();
+  auto outboardReliefNode = oaSystem.outboardReliefNode();
+  ASSERT_TRUE(outboardOANode);
+  ASSERT_TRUE(outboardReliefNode);
+
+  FanConstantVolume oaFan(model);
+  HeatExchangerAirToAirSensibleAndLatent hx(model);
+  FanConstantVolume reliefFan(model);
+  ASSERT_TRUE(oaFan.setName("OA Fan"));
+  ASSERT_TRUE(hx.setName("OA HX"));
+  ASSERT_TRUE(reliefFan.setName("Relief Fan"));
+  ASSERT_TRUE(oaFan.addToNode(*outboardOANode));
+  ASSERT_TRUE(hx.addToNode(*outboardOANode));
+  ASSERT_TRUE(reliefFan.addToNode(*outboardReliefNode));
+
+  auto expectAirflowOrder = [](const Model& m, const AirLoopHVACOutdoorAirSystem& system) {
+    const auto mixers = m.getConcreteModelObjects<OutdoorAirMixer>();
+    ASSERT_EQ(1u, mixers.size());
+    auto equipmentList = system.getModelObjectTarget<AirLoopHVACOutdoorAirSystemEquipmentList>(
+      openstudio::AirLoopHVAC_OutdoorAirSystemFields::OutdoorAirEquipmentListName);
+    ASSERT_TRUE(equipmentList);
+    std::vector<std::string> names;
+    for (const auto& equipment : equipmentList->equipment()) {
+      names.push_back(equipment.nameString());
+    }
+    EXPECT_EQ((std::vector<std::string>{"OA HX", "OA Fan", mixers.front().nameString(), "Relief Fan"}), names);
+  };
+
+  expectAirflowOrder(model, oaSystem);
+
+  ASSERT_TRUE(model.save(idfPath, true));
+  auto loadedModel = Model::load(idfPath);
+  ASSERT_TRUE(loadedModel);
+  auto loadedOASystem = loadedModel->getConcreteModelObjectByName<AirLoopHVACOutdoorAirSystem>("Airflow Order OA System");
+  ASSERT_TRUE(loadedOASystem);
+  expectAirflowOrder(*loadedModel, *loadedOASystem);
 }
