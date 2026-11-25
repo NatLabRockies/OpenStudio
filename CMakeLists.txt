@@ -415,6 +415,14 @@ endif()
 option(ENABLE_PCH "Enable Precompiled Headers" ON)
 mark_as_advanced(ENABLE_PCH)
 
+if(ENABLE_PCH AND CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  # Without this, Clang embeds a timestamp in the generated .pch, so its content hash differs
+  # on every build even when sources/headers are unchanged. ccache hashes that .pch content for
+  # both the direct-mode manifest and the preprocessor-mode result key, so every TU using
+  # -include-pch becomes a guaranteed cache miss. See ccache manual, "Precompiled Headers".
+  add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:SHELL:-Xclang -fno-pch-timestamp>")
+endif()
+
 option(USE_LTO "Use Link-Time-Optimization" OFF)
 
 if (USE_LTO)
