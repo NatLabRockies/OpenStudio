@@ -17,8 +17,9 @@
 #include <utilities/core/Logger.hpp>
 
 #include "../utilities/data/TimeSeries.hpp"
-#include "../model/YearDescription.hpp"
-#include "../model/YearDescription_Impl.hpp"
+// FIXME: re-enable once epmodel has its own YearDescription (see timeSeries()); must not include legacy src/model headers
+// #include "../model/YearDescription.hpp"
+// #include "../model/YearDescription_Impl.hpp"
 
 namespace openstudio {
 namespace epmodel {
@@ -187,21 +188,21 @@ namespace epmodel {
     DEPRECATED_AT_MSG(4, 0, 0, "Schedule:File is no longer 'translated'.");
     return false;
   }
-  
+
   bool ScheduleFile::isTranslateFileWithRelativePathDefaulted() const {
     DEPRECATED_AT_MSG(4, 0, 0, "Schedule:File is no longer 'translated'.");
     return false;
   }
-  
+
   bool ScheduleFile::setTranslateFileWithRelativePath(bool translateFileWithRelativePath) {
     DEPRECATED_AT_MSG(4, 0, 0, "Schedule:File is no longer 'translated'.");
     return false;
   }
-  
+
   void ScheduleFile::resetTranslateFileWithRelativePath() {
     DEPRECATED_AT_MSG(4, 0, 0, "Schedule:File is no longer 'translated'.");
   }
-  
+
   openstudio::path ScheduleFile::translatedFilePath() const {
     return getImpl<epmodel::detail::ScheduleFile_Impl>()->translatedFilePath();
   }
@@ -210,12 +211,12 @@ namespace epmodel {
     return getImpl<detail::ScheduleFile_Impl>()->timeSeries();
   }
 
-  boost::optional<ScheduleFile> ScheduleFile::fromTimeSeries(const openstudio::TimeSeries& timeSeries, Model& model) {
+  boost::optional<ScheduleFile> ScheduleFile::fromTimeSeries(const openstudio::TimeSeries& timeSeries, const Model& model) {
     boost::optional<ScheduleFile> result;
 
     boost::optional<openstudio::Time> intervalTime = timeSeries.intervalLength();
     if (intervalTime) {
-      result = ScheduleFile(model, 2); // FIXME: FT ScheduleFixedInterval wrote the dateTimes to file
+      result = ScheduleFile(model, 2);  // FIXME: FT ScheduleFixedInterval wrote the dateTimes to file
       const std::string name = result->nameString();
       openstudio::path filePath = toPath(name + ".csv");
 
@@ -239,7 +240,8 @@ namespace epmodel {
       ok &= result->getImpl<detail::ScheduleFile_Impl>()->setTimeSeries(timeSeries);
       OS_ASSERT(ok);
     } else {
-      LOG_FREE(Warn, "openstudio.epmodel.ScheduleFile", "Timeseries does not have an interval length defined, but ScheduleVariableInterval is deprecated");
+      LOG_FREE(Warn, "openstudio.epmodel.ScheduleFile",
+               "Timeseries does not have an interval length defined, but ScheduleVariableInterval is deprecated");
     }
 
     return result;
@@ -288,7 +290,9 @@ namespace epmodel {
       DateTimeVector dateTimes = result.dateTimes();
       DateTime lastDateTime = DateTime(Date(MonthOfYear::Dec, 31, year), openstudio::Time(0, 24));
       if (dateTimes.back() != lastDateTime) {
-        LOG_FREE(Warn, "openstudio.epmodel.ScheduleFile", "With " << minutesperItem << " minutes per item, last date time is " << dateTimes.back() << " for " << this->fileName() << " referenced by " << briefDescription());
+        LOG_FREE(Warn, "openstudio.epmodel.ScheduleFile",
+                 "With " << minutesperItem << " minutes per item, last date time is " << dateTimes.back() << " for " << this->fileName()
+                         << " referenced by " << briefDescription());
       }
 
       return result;
@@ -334,10 +338,12 @@ namespace epmodel {
       for (size_t pos = 0; const auto& value : values) {
         // Check validity, cannot be NaN, Inf, etc
         if (std::isinf(value)) {
-          LOG_FREE(Warn, "openstudio.epmodel.ScheduleFile", "There is Infinity on position " << pos << " in the timeSeries provided for " << briefDescription());
+          LOG_FREE(Warn, "openstudio.epmodel.ScheduleFile",
+                   "There is Infinity on position " << pos << " in the timeSeries provided for " << briefDescription());
           return false;
         } else if (std::isnan(value)) {
-          LOG_FREE(Warn, "openstudio.epmodel.ScheduleFile", "There is a NaN on position " << pos << " in the timeSeries provided for " << briefDescription());
+          LOG_FREE(Warn, "openstudio.epmodel.ScheduleFile",
+                   "There is a NaN on position " << pos << " in the timeSeries provided for " << briefDescription());
           return false;
         }
         ++pos;

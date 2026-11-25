@@ -80,7 +80,7 @@ TEST_F(EPModelFixture, ScheduleFile_AltCtor) {
   path p = resourcesPath() / toPath("model/schedulefile.csv");
   EXPECT_TRUE(exists(p));
 
-/*   path expectedDestDir;
+  /*   path expectedDestDir;
   std::vector<path> absoluteFilePaths = model.workflowJSON().absoluteFilePaths();
   if (absoluteFilePaths.empty()) {
     expectedDestDir = model.workflowJSON().absoluteRootDir();
@@ -95,7 +95,7 @@ TEST_F(EPModelFixture, ScheduleFile_AltCtor) {
 
   ScheduleFile schedule(model, openstudio::toString(p));
   EXPECT_EQ(1u, model.getConcreteModelObjects<ScheduleFile>().size());
-/*   EXPECT_EQ(1u, model.getConcreteModelObjects<ExternalFile>().size());
+  /*   EXPECT_EQ(1u, model.getConcreteModelObjects<ExternalFile>().size());
   ExternalFile externalfile = schedule.externalFile();
   EXPECT_EQ(1u, externalfile.scheduleFiles().size());
   EXPECT_EQ(openstudio::toString(p), externalfile.fileName());
@@ -118,7 +118,7 @@ TEST_F(EPModelFixture, ScheduleFile_AltCtor) {
 
   ScheduleFile schedule2(model, openstudio::toString(p));
   EXPECT_EQ(2u, model.getConcreteModelObjects<ScheduleFile>().size());
-/*   EXPECT_EQ(1u, model.getConcreteModelObjects<ExternalFile>().size());
+  /*   EXPECT_EQ(1u, model.getConcreteModelObjects<ExternalFile>().size());
   ExternalFile externalfile2 = schedule2.externalFile();
   EXPECT_EQ(2u, externalfile.scheduleFiles().size());
   EXPECT_EQ(externalfile.handle(), externalfile2.handle()); */
@@ -141,8 +141,19 @@ TEST_F(EPModelFixture, ScheduleFile_AltCtor) {
 TEST_F(EPModelFixture, ScheduleFile_ExtraSettersGetters) {
   Model model;
 
-  path p = toPath("resources/model/schedulefile.csv"); // relative path
-  EXPECT_TRUE(exists(p));
+  // A relative path resolves against the current working directory, which depends on how the test is launched
+  // (ctest runs from <build>/src/epmodel). Set it explicitly, and restore it when the test exits.
+  struct CurrentPathGuard
+  {
+    openstudio::path original = boost::filesystem::current_path();
+    ~CurrentPathGuard() {
+      boost::filesystem::current_path(original);
+    }
+  } currentPathGuard;
+  boost::filesystem::current_path(resourcesPath());
+
+  path p = toPath("model/schedulefile.csv");  // relative path
+  ASSERT_TRUE(exists(p));
 
   bool translateFileWithRelativePath = false;
   ScheduleFile schedule(model, openstudio::toString(p), 1, 0, translateFileWithRelativePath);
@@ -186,10 +197,12 @@ TEST_F(EPModelFixture, ScheduleFile_CheckCannotFindFile) {
   path p = resourcesPath() / toPath("model/schedulefile2.csv");
   EXPECT_FALSE(exists(p));
   EXPECT_THROW(ScheduleFile(model, openstudio::toString(p)), openstudio::Exception);
-  EXPECT_EQ(1, sink.logMessages().size());
+  EXPECT_EQ(1u, sink.logMessages().size());
   EXPECT_EQ("openstudio.epmodel.ScheduleFile", sink.logMessages().front().logChannel());
   EXPECT_TRUE(sink.logMessages().front().logMessage().find("Cannot find file") != std::string::npos);
-  EXPECT_TRUE(sink.logMessages().front().logMessage().find("resources/model/schedulefile2.csv\" for Object of type 'Schedule:File' and named 'Schedule File 1'") != std::string::npos);
+  EXPECT_TRUE(
+    sink.logMessages().front().logMessage().find("resources/model/schedulefile2.csv\" for Object of type 'Schedule:File' and named 'Schedule File 1'")
+    != std::string::npos);
 
   path p2 = resourcesPath() / toPath("model/schedulefile.csv");
   EXPECT_TRUE(exists(p2));
@@ -200,7 +213,7 @@ TEST_F(EPModelFixture, ScheduleFile_CheckCannotFindFile) {
   sink2.setLogLevel(Warn);
 
   EXPECT_EQ(p, schedule.translatedFilePath());
-  EXPECT_EQ(1, sink2.logMessages().size());
+  EXPECT_EQ(1u, sink2.logMessages().size());
   EXPECT_EQ("openstudio.epmodel.ScheduleFile", sink2.logMessages().front().logChannel());
   EXPECT_TRUE(sink2.logMessages().front().logMessage().find("Cannot find file") != std::string::npos);
   EXPECT_TRUE(sink2.logMessages().front().logMessage().find("resources/model/schedulefile2.csv\"") != std::string::npos);
@@ -253,7 +266,6 @@ TEST_F(EPModelFixture, ScheduleFile_fromTimeSeries_intervalLengthYes) {
   EXPECT_EQ(8760, schedule2->numberofHoursofData().get());
   EXPECT_EQ("Comma", schedule2->columnSeparator());
   EXPECT_FALSE(schedule2->interpolatetoTimestep());
-  ASSERT_TRUE(schedule2->minutesperItem());
   EXPECT_EQ(15, schedule2->minutesperItem());
   EXPECT_TRUE(schedule2->adjustScheduleforDaylightSavings());
 }
@@ -277,9 +289,10 @@ TEST_F(EPModelFixture, ScheduleFile_fromTimeSeries_intervalLengthNo) {
 
   boost::optional<ScheduleFile> schedule = ScheduleFile::fromTimeSeries(timeSeries, model);
   ASSERT_FALSE(schedule);
-  EXPECT_EQ(1, sink.logMessages().size());
+  EXPECT_EQ(1u, sink.logMessages().size());
   EXPECT_EQ("openstudio.epmodel.ScheduleFile", sink.logMessages().front().logChannel());
-  EXPECT_EQ("Timeseries does not have an interval length defined, but ScheduleVariableInterval is deprecated", sink.logMessages().front().logMessage());
+  EXPECT_EQ("Timeseries does not have an interval length defined, but ScheduleVariableInterval is deprecated",
+            sink.logMessages().front().logMessage());
 }
 
 TEST_F(EPModelFixture, ScheduleFile_timeSeries) {
@@ -289,17 +302,17 @@ TEST_F(EPModelFixture, ScheduleFile_timeSeries) {
   sink.setLogLevel(Warn);
 
   ScheduleFile schedule(model);
-  EXPECT_EQ(0, sink.logMessages().size());
+  EXPECT_EQ(0u, sink.logMessages().size());
 
   EXPECT_EQ("", schedule.fileName());
-  EXPECT_EQ(0, sink.logMessages().size());
+  EXPECT_EQ(0u, sink.logMessages().size());
   boost::optional<CSVFile> csvFile = schedule.csvFile();
   EXPECT_FALSE(csvFile);
-  EXPECT_EQ(1, sink.logMessages().size());
+  EXPECT_EQ(1u, sink.logMessages().size());
   EXPECT_EQ("openstudio.CSVFile", sink.logMessages()[0].logChannel());
   EXPECT_EQ("Path '' is not a CSVFile file", sink.logMessages()[0].logMessage());
   EXPECT_THROW(schedule.timeSeries(), openstudio::Exception);
-  EXPECT_EQ(3, sink.logMessages().size());
+  EXPECT_EQ(3u, sink.logMessages().size());
   EXPECT_EQ("openstudio.CSVFile", sink.logMessages()[1].logChannel());
   EXPECT_EQ("Path '' is not a CSVFile file", sink.logMessages()[1].logMessage());
   EXPECT_EQ("openstudio.epmodel.ScheduleFile", sink.logMessages()[2].logChannel());
@@ -326,8 +339,8 @@ TEST_F(EPModelFixture, ScheduleFile_timeSeries) {
   intervalLengthDouble = intervalTime->totalMinutes();
   EXPECT_EQ(intervalLengthDouble, schedule2.minutesperItem());
   dateTimes = timeSeries.dateTimes();
-  EXPECT_EQ(8760, dateTimes.size());
-  EXPECT_EQ(8760, timeSeries.values().size());
+  EXPECT_EQ(8760u, dateTimes.size());
+  EXPECT_EQ(8760u, timeSeries.values().size());
   firstReportDateTime = DateTime(Date(MonthOfYear::Jan, 1), openstudio::Time(0, 0, schedule2.minutesperItem()));
   EXPECT_EQ(firstReportDateTime, timeSeries.firstReportDateTime());
   firstDateTime = DateTime(Date(MonthOfYear::Jan, 1), openstudio::Time(0, 0, schedule2.minutesperItem()));
@@ -347,8 +360,8 @@ TEST_F(EPModelFixture, ScheduleFile_timeSeries) {
   intervalLengthDouble = intervalTime->totalMinutes();
   EXPECT_EQ(intervalLengthDouble, schedule2.minutesperItem());
   dateTimes = timeSeries.dateTimes();
-  EXPECT_EQ(8760, dateTimes.size());
-  EXPECT_EQ(8760, timeSeries.values().size());
+  EXPECT_EQ(8760u, dateTimes.size());
+  EXPECT_EQ(8760u, timeSeries.values().size());
   firstReportDateTime = DateTime(Date(MonthOfYear::Jan, 1), openstudio::Time(0, 0, schedule2.minutesperItem()));
   EXPECT_EQ(firstReportDateTime, timeSeries.firstReportDateTime());
   firstDateTime = DateTime(Date(MonthOfYear::Jan, 1), openstudio::Time(0, 0, schedule2.minutesperItem()));
@@ -365,15 +378,15 @@ TEST_F(EPModelFixture, ScheduleFile_timeSeries) {
 
   columnNumber = 3;
   schedule2.setColumnNumber(columnNumber);
-  schedule2.setMinutesperItem(15); // this trips the error checking
+  schedule2.setMinutesperItem(15);  // this trips the error checking
   timeSeries = schedule2.timeSeries();
   intervalTime = timeSeries.intervalLength();
   ASSERT_TRUE(intervalTime);
   intervalLengthDouble = intervalTime->totalMinutes();
   EXPECT_EQ(intervalLengthDouble, schedule2.minutesperItem());
   dateTimes = timeSeries.dateTimes();
-  EXPECT_EQ(8760, dateTimes.size());
-  EXPECT_EQ(8760, timeSeries.values().size());
+  EXPECT_EQ(8760u, dateTimes.size());
+  EXPECT_EQ(8760u, timeSeries.values().size());
   firstReportDateTime = DateTime(Date(MonthOfYear::Jan, 1), openstudio::Time(0, 0, schedule2.minutesperItem()));
   EXPECT_EQ(firstReportDateTime, timeSeries.firstReportDateTime());
   firstDateTime = DateTime(Date(MonthOfYear::Jan, 1), openstudio::Time(0, 0, schedule2.minutesperItem()));
@@ -385,10 +398,12 @@ TEST_F(EPModelFixture, ScheduleFile_timeSeries) {
   EXPECT_EQ(0.207618, timeSeries.values(0));
   EXPECT_EQ(0.62146, timeSeries.values(8759));
 
-  EXPECT_EQ(1, sink2.logMessages().size());
+  EXPECT_EQ(1u, sink2.logMessages().size());
   EXPECT_EQ("openstudio.epmodel.ScheduleFile", sink2.logMessages().front().logChannel());
   EXPECT_TRUE(sink2.logMessages().front().logMessage().find("With 15 minutes per item, last date time is 2009-Apr-02 06:00:00") != std::string::npos);
-  EXPECT_TRUE(sink2.logMessages().front().logMessage().find("resources/model/schedulefile.csv referenced by Object of type 'Schedule:File' and named 'Schedule File 2'") != std::string::npos);
+  EXPECT_TRUE(sink2.logMessages().front().logMessage().find(
+                "resources/model/schedulefile.csv referenced by Object of type 'Schedule:File' and named 'Schedule File 2'")
+              != std::string::npos);
 
   // TODO: try setting a leap year
 }

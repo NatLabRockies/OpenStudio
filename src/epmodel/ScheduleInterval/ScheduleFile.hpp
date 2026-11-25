@@ -58,8 +58,9 @@ namespace epmodel {
   {
    public:
     // explicit ScheduleFile(const ExternalFile& externalfile, int column = 1, int rowsToSkip = 0); // FIXME: how do we maintain this?
-    explicit ScheduleFile(const Model& model, int column = 1, int rowsToSkip = 0); // new ctor
-    explicit ScheduleFile(const Model& model, const openstudio::path& filePath, int column = 1, int rowsToSkip = 0, bool translateFileWithRelativePath = false); // old ctor
+    explicit ScheduleFile(const Model& model, int column = 1, int rowsToSkip = 0);  // new ctor
+    explicit ScheduleFile(const Model& model, const openstudio::path& filePath, int column = 1, int rowsToSkip = 0,
+                          bool translateFileWithRelativePath = false);  // old ctor
 
     virtual ~ScheduleFile() override = default;
     ScheduleFile(const ScheduleFile& other) = default;
@@ -107,7 +108,7 @@ namespace epmodel {
     void resetAdjustScheduleforDaylightSavings();
 
     openstudio::TimeSeries timeSeries() const;
-    static boost::optional<ScheduleFile> fromTimeSeries(const openstudio::TimeSeries& timeSeries, Model& model);
+    static boost::optional<ScheduleFile> fromTimeSeries(const openstudio::TimeSeries& timeSeries, const Model& model);
 
     // Extra setters/getters
     boost::optional<CSVFile> csvFile() const;
