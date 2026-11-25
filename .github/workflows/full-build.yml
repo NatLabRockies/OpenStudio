@@ -221,7 +221,6 @@ jobs:
           git config --global --add safe.directory '*'
 
           mkdir -p "$CCACHE_DIR" "$CONAN_HOME"
-          echo "Configured ccache:"; ccache -s | sed -n '1,10p'
 
       - name: Fix CMake Path (CentOS)
         if: matrix.platform == 'centos-9-x64'
@@ -299,6 +298,14 @@ jobs:
             -DENABLE_PCH:BOOL=${{ env.ENABLE_PCH }} \
             -DCMAKE_JOB_POOL_LINK:STRING=console
 
+      - name: Show restored ccache stats
+        shell: bash
+        run: |
+          # Stats live in the cache dir, so they come back with the restore: show them, then zero them for this run
+          ccache --show-stats -vv
+          ccache --zero-stats
+          ccache --show-config
+
       - name: Build with Ninja
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         run: |
@@ -317,6 +324,11 @@ jobs:
           kill $HB_PID || true
           ninja -d stats || true
           exit $BUILD_EXIT
+
+      - name: Show ccache stats
+        if: always()
+        shell: bash
+        run: ccache --show-stats -vv
 
       - name: Save ccache cache
         if: always() && steps.ccache-restore.outputs.cache-hit != 'true'
@@ -817,6 +829,14 @@ jobs:
           -DCMAKE_JOB_POOL_LINK:STRING=console \
           ..
 
+    - name: Show restored ccache stats
+      shell: bash
+      run: |
+        # Stats live in the cache dir, so they come back with the restore: show them, then zero them for this run
+        ccache --show-stats -vv
+        ccache --zero-stats
+        ccache --show-config
+
     - name: Build with Ninja
       working-directory: ${{ env.OPENSTUDIO_BUILD }}
       run: |
@@ -834,9 +854,13 @@ jobs:
         build_exit=${PIPESTATUS[0]}
         kill $heartbeat_pid || true
         ninja -d stats || true
-        ccache -s
         if [ -f build.log ]; then tail -n 40 build.log; fi
         exit $build_exit
+
+    - name: Show ccache stats
+      if: always()
+      shell: bash
+      run: ccache --show-stats -vv
 
     - name: Save ccache cache
       if: always() && steps.ccache-restore.outputs.cache-hit != 'true'
@@ -1359,11 +1383,18 @@ jobs:
         run: |
           & $env:ComSpec /c "call conanbuild.bat && cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE:STRING=${{ env.BUILD_TYPE }} -DBUILD_TESTING:BOOL=ON -DCPACK_GENERATOR:STRING=`"IFW;TGZ`" -DBUILD_PYTHON_BINDINGS:BOOL=ON -DBUILD_PYTHON_PIP_PACKAGE:BOOL=OFF -DPython_EXECUTABLE:FILEPATH=`"$env:SYSTEM_PYTHON_PATH`" -DPYTHON_VERSION:STRING=${{ env.PYTHON_REQUIRED_VERSION }} -DSYSTEM_RUBY_EXECUTABLE=`"%SYSTEM_RUBY_PATH%`" -DENABLE_PCH:BOOL=${{ env.ENABLE_PCH }} -DCMAKE_JOB_POOL_LINK:STRING=console .."
 
+      - name: Show restored ccache stats
+        shell: bash
+        run: |
+          # Stats live in the cache dir, so they come back with the restore: show them, then zero them for this run
+          ccache --show-stats -vv
+          ccache --zero-stats
+          ccache --show-config
+
       - name: Build with Ninja
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         shell: pwsh
         run: |
-          ccache -s
           # Use $env:ComSpec to ensure we call the Windows Command Prompt, not the MSYS2 cmd found in PATH
           & $env:ComSpec /c "call conanbuild.bat && cmake --build . --parallel ${{ matrix.max_jobs }} -- -d stats 2>&1" | Tee-Object -FilePath "build.log"
 
@@ -1372,7 +1403,11 @@ jobs:
             Write-Error "Build failed with exit code $LASTEXITCODE"
             exit $LASTEXITCODE
           }
-          ccache -s
+
+      - name: Show ccache stats
+        if: always()
+        shell: bash
+        run: ccache --show-stats -vv
 
       - name: Save ccache cache
         if: always() && steps.ccache-restore.outputs.cache-hit != 'true'
