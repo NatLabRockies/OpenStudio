@@ -277,6 +277,10 @@ jobs:
         run: |
           apt-get update || true
           apt-get install -y ca-certificates gnupg wget
+          if [ "${{ matrix.platform }}" = "ubuntu-2404-arm64" ]; then
+            # lld is needed to link the statically linked ruby module on aarch64 (GNU ld overflows R_AARCH64_CALL26)
+            apt-get install -y lld
+          fi
           wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | tee /etc/apt/trusted.gpg.d/kitware.gpg >/dev/null
           apt-get update
 

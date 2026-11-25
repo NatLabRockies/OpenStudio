@@ -417,11 +417,11 @@ namespace epmodel {
 
       std::vector<ModelObject> ordered;
 
+      // EnergyPlus simulates the list in order and requires it to follow the airflow: OA-stream
+      // equipment first (outdoors toward the mixer), then the OutdoorAir:Mixer, then relief-side
+      // equipment downstream of the mixer. walkOutdoorAirStream() already returns airflow order.
       std::set<Handle> seen;
       seen.insert(mixer.handle());
-      if (!omitMixer) {
-        ordered.push_back(mixer);
-      }
 
       for (const auto& object : oaPath) {
         if (object.optionalCast<Node>()) {
@@ -430,6 +430,9 @@ namespace epmodel {
         if (seen.insert(object.handle()).second) {
           ordered.push_back(object);
         }
+      }
+      if (!omitMixer) {
+        ordered.push_back(mixer);
       }
       for (const auto& object : reliefPath) {
         if (object.optionalCast<Node>() || object.optionalCast<openstudio::epmodel::AirToAirComponent>()) {

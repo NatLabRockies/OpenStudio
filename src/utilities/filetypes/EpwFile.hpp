@@ -210,6 +210,18 @@ OPENSTUDIO_ENUM(EpwDesignField,
   ((ExtremeN20YearsMaxDryBulb)(Extreme N20 Years Max Dry Bulb))
   ((ExtremeN50YearsMinDryBulb)(Extreme N50 Years Min Dry Bulb))
   ((ExtremeN50YearsMaxDryBulb)(Extreme N50 Years Max Dry Bulb))
+  ((ExtremeMeanMinWetBulb)(Extreme Mean Min Wet Bulb))
+  ((ExtremeMeanMaxWetBulb)(Extreme Mean Max Wet Bulb))
+  ((ExtremeStdDevMinWetBulb)(Extreme Std Dev Min Wet Bulb))
+  ((ExtremeStdDevMaxWetBulb)(Extreme Std Dev Max Wet Bulb))
+  ((ExtremeN5YearsMinWetBulb)(Extreme N5 Years Min Wet Bulb))
+  ((ExtremeN5YearsMaxWetBulb)(Extreme N5 Years Max Wet Bulb))
+  ((ExtremeN10YearsMinWetBulb)(Extreme N10 Years Min Wet Bulb))
+  ((ExtremeN10YearsMaxWetBulb)(Extreme N10 Years Max Wet Bulb))
+  ((ExtremeN20YearsMinWetBulb)(Extreme N20 Years Min Wet Bulb))
+  ((ExtremeN20YearsMaxWetBulb)(Extreme N20 Years Max Wet Bulb))
+  ((ExtremeN50YearsMinWetBulb)(Extreme N50 Years Min Wet Bulb))
+  ((ExtremeN50YearsMaxWetBulb)(Extreme N50 Years Max Wet Bulb))
 );
 // cppcheck-suppress [unknownMacro, syntaxError]
 OPENSTUDIO_ENUM(EpwDepthField,
@@ -697,6 +709,30 @@ class UTILITIES_API EpwDesignCondition
   boost::optional<double> extremeN50YearsMinDryBulb() const;
   /** Returns the extreme n=50 years maximum dry bulb temperature in degrees C */
   boost::optional<double> extremeN50YearsMaxDryBulb() const;
+  /** Returns the extreme mean minimum wet bulb temperature in degrees C */
+  boost::optional<double> extremeMeanMinWetBulb() const;
+  /** Returns the extreme mean maximum wet bulb temperature in degrees C */
+  boost::optional<double> extremeMeanMaxWetBulb() const;
+  /** Returns the extreme standard deviation minimum wet bulb temperature in degrees C */
+  boost::optional<double> extremeStdDevMinWetBulb() const;
+  /** Returns the extreme standard deviation maximum wet bulb temperature in degrees C */
+  boost::optional<double> extremeStdDevMaxWetBulb() const;
+  /** Returns the extreme n=5 years minimum wet bulb temperature in degrees C */
+  boost::optional<double> extremeN5YearsMinWetBulb() const;
+  /** Returns the extreme n=5 years maximum wet bulb temperature in degrees C */
+  boost::optional<double> extremeN5YearsMaxWetBulb() const;
+  /** Returns the extreme n=10 years minimum wet bulb temperature in degrees C */
+  boost::optional<double> extremeN10YearsMinWetBulb() const;
+  /** Returns the extreme n=10 years maximum wet bulb temperature in degrees C */
+  boost::optional<double> extremeN10YearsMaxWetBulb() const;
+  /** Returns the extreme n=20 years minimum wet bulb temperature in degrees C */
+  boost::optional<double> extremeN20YearsMinWetBulb() const;
+  /** Returns the extreme n=20 years maximum wet bulb temperature in degrees C */
+  boost::optional<double> extremeN20YearsMaxWetBulb() const;
+  /** Returns the extreme n=50 years minimum wet bulb temperature in degrees C */
+  boost::optional<double> extremeN50YearsMinWetBulb() const;
+  /** Returns the extreme n=50 years maximum wet bulb temperature in degrees C */
+  boost::optional<double> extremeN50YearsMaxWetBulb() const;
 
   ASHRAEHoFVintage ashraeHoFVersion() const;
 
@@ -837,6 +873,30 @@ class UTILITIES_API EpwDesignCondition
   void setExtremeN50YearsMinDryBulb(double extremeN50YearsMinDryBulb);
   bool setExtremeN50YearsMaxDryBulb(const std::string& extremeN50YearsMaxDryBulb);
   void setExtremeN50YearsMaxDryBulb(double extremeN50YearsMaxDryBulb);
+  bool setExtremeMeanMinWetBulb(const std::string& extremeMeanMinWetBulb);
+  void setExtremeMeanMinWetBulb(double extremeMeanMinWetBulb);
+  bool setExtremeMeanMaxWetBulb(const std::string& extremeMeanMaxWetBulb);
+  void setExtremeMeanMaxWetBulb(double extremeMeanMaxWetBulb);
+  bool setExtremeStdDevMinWetBulb(const std::string& extremeStdDevMinWetBulb);
+  void setExtremeStdDevMinWetBulb(double extremeStdDevMinWetBulb);
+  bool setExtremeStdDevMaxWetBulb(const std::string& extremeStdDevMaxWetBulb);
+  void setExtremeStdDevMaxWetBulb(double extremeStdDevMaxWetBulb);
+  bool setExtremeN5YearsMinWetBulb(const std::string& extremeN5YearsMinWetBulb);
+  void setExtremeN5YearsMinWetBulb(double extremeN5YearsMinWetBulb);
+  bool setExtremeN5YearsMaxWetBulb(const std::string& extremeN5YearsMaxWetBulb);
+  void setExtremeN5YearsMaxWetBulb(double extremeN5YearsMaxWetBulb);
+  bool setExtremeN10YearsMinWetBulb(const std::string& extremeN10YearsMinWetBulb);
+  void setExtremeN10YearsMinWetBulb(double extremeN10YearsMinWetBulb);
+  bool setExtremeN10YearsMaxWetBulb(const std::string& extremeN10YearsMaxWetBulb);
+  void setExtremeN10YearsMaxWetBulb(double extremeN10YearsMaxWetBulb);
+  bool setExtremeN20YearsMinWetBulb(const std::string& extremeN20YearsMinWetBulb);
+  void setExtremeN20YearsMinWetBulb(double extremeN20YearsMinWetBulb);
+  bool setExtremeN20YearsMaxWetBulb(const std::string& extremeN20YearsMaxWetBulb);
+  void setExtremeN20YearsMaxWetBulb(double extremeN20YearsMaxWetBulb);
+  bool setExtremeN50YearsMinWetBulb(const std::string& extremeN50YearsMinWetBulb);
+  void setExtremeN50YearsMinWetBulb(double extremeN50YearsMinWetBulb);
+  bool setExtremeN50YearsMaxWetBulb(const std::string& extremeN50YearsMaxWetBulb);
+  void setExtremeN50YearsMaxWetBulb(double extremeN50YearsMaxWetBulb);
 
  private:
   ASHRAEHoFVintage m_ashraeHoFVersion = ASHRAEHoFVintage::ASHRAE_2009;
@@ -908,6 +968,18 @@ class UTILITIES_API EpwDesignCondition
   boost::optional<double> m_extremeN20YearsMaxDryBulb;
   boost::optional<double> m_extremeN50YearsMinDryBulb;
   boost::optional<double> m_extremeN50YearsMaxDryBulb;
+  boost::optional<double> m_extremeMeanMinWetBulb;
+  boost::optional<double> m_extremeMeanMaxWetBulb;
+  boost::optional<double> m_extremeStdDevMinWetBulb;
+  boost::optional<double> m_extremeStdDevMaxWetBulb;
+  boost::optional<double> m_extremeN5YearsMinWetBulb;
+  boost::optional<double> m_extremeN5YearsMaxWetBulb;
+  boost::optional<double> m_extremeN10YearsMinWetBulb;
+  boost::optional<double> m_extremeN10YearsMaxWetBulb;
+  boost::optional<double> m_extremeN20YearsMinWetBulb;
+  boost::optional<double> m_extremeN20YearsMaxWetBulb;
+  boost::optional<double> m_extremeN50YearsMinWetBulb;
+  boost::optional<double> m_extremeN50YearsMaxWetBulb;
 };
 
 /** EpwGroundTemperatureDepth is one line from the EPW file. All floating point numbers are stored as strings,
