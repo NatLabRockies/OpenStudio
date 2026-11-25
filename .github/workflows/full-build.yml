@@ -707,18 +707,10 @@ jobs:
         restore-keys: |
           conan-${{ matrix.os }}-${{ matrix.platform }}-
 
-    - name: Remove python ${{ env.PYTHON_REQUIRED_VERSION }} from the toolcache
-      run: |
-        ls $RUNNER_TOOL_CACHE/Python || true
-        rm -Rf "$RUNNER_TOOL_CACHE/Python/${{ env.PYTHON_REQUIRED_VERSION }}"
-        rm -Rf "$RUNNER_TOOL_CACHE/Python/${{ env.PYTHON_REQUIRED_VERSION }}*/"
-
     - name: Set up Python ${{ env.PYTHON_REQUIRED_VERSION }}
-      id: setup-python
-      uses: jmarrec/setup-python@v5.4.0
+      uses: actions/setup-python@v7
       with:
         python-version: ${{ env.PYTHON_REQUIRED_VERSION }}
-        # check-latest: true # Force pick up the python I built instead of the (potential) toolcache one. I could also do `rm -Rf $RUNNER_TOOL_CACHE/Python/3.12.2` before this action
 
     - name: Install Python dependencies
       run: |
