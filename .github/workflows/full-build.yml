@@ -607,6 +607,14 @@ jobs:
     - name: Git safe directory
       run: git config --global --add safe.directory '*'
 
+    - name: Install System dependencies
+      shell: bash
+      run: |
+        # The MACOSX_DEPLOYMENT_TARGET environment variable sets the default value for the CMAKE_OSX_DEPLOYMENT_TARGET variable.
+        # We use cmake commands to build some subprojects, so setting it globally
+        echo MACOSX_DEPLOYMENT_TARGET=${{ matrix.macos_dev_target }} >> $GITHUB_ENV
+        brew install ninja ccache
+
     - name: Get base branch SHA
       if: github.event_name == 'pull_request'
       run: |
@@ -648,14 +656,6 @@ jobs:
         chmod +x *
         ./installerbase --version
         echo "$(pwd)" >> $GITHUB_PATH
-
-    - name: Install System dependencies
-      shell: bash
-      run: |
-        # The MACOSX_DEPLOYMENT_TARGET environment variable sets the default value for the CMAKE_OSX_DEPLOYMENT_TARGET variable.
-        # We use cmake commands to build some subprojects, so setting it globally
-        echo MACOSX_DEPLOYMENT_TARGET=${{ matrix.macos_dev_target }} >> $GITHUB_ENV
-        brew install ninja ccache
 
     - name: Create Build Directory
       run: cmake -E make_directory ${{ env.OPENSTUDIO_BUILD }}
@@ -1103,6 +1103,10 @@ jobs:
           if ($LASTEXITCODE) { exit 1 }
           ./.github/signing-client/Test-AssertAuthenticodeSigned.ps1
 
+      - name: Install ccache
+        # Not sccache: it refuses to cache MSVC compiles using PCH (/Yc, /Fp), i.e. ~95% of them
+        run: choco install ccache -y --no-progress
+
       - name: Get base branch SHA
         if: github.event_name == 'pull_request'
         shell: bash
@@ -1124,10 +1128,6 @@ jobs:
       - name: Prepare workspace
         run: |
           New-Item -ItemType Directory -Path "${{ env.OPENSTUDIO_BUILD }}" -Force
-
-      - name: Install ccache
-        # Not sccache: it refuses to cache MSVC compiles using PCH (/Yc, /Fp), i.e. ~95% of them
-        run: choco install ccache -y --no-progress
 
       - name: Set up Python 3.12.2
         uses: actions/setup-python@v7
