@@ -462,17 +462,6 @@ jobs:
           find . -name "*.o" -type f -delete || true
           df -h .
 
-      - name: Fail job on test failures
-        if: ${{ steps.ctest.outputs.exit_code != '0' }}
-        working-directory: ${{ env.OPENSTUDIO_BUILD }}
-        run: |
-          cat "${{ env.TEST_DASHBOARD_RELATIVE }}" || true
-          if [ -f Testing/Temporary/LastTestsFailed.log ]; then
-            echo; echo "Failed tests:"; cat Testing/Temporary/LastTestsFailed.log
-          fi
-          echo "::error::CTest suite failed with exit code ${{ steps.ctest.outputs.exit_code }}"
-          exit 1
-
       - name: Upload DEB installer
         if: contains(matrix.cpack_generators, 'DEB')
         uses: actions/upload-artifact@v7
@@ -503,6 +492,17 @@ jobs:
           name: OS-Installers-${{ matrix.platform }}-WHEEL-${{ github.sha }}
           path: ${{ env.OPENSTUDIO_BUILD }}/*.whl
           if-no-files-found: ignore
+
+      - name: Fail job on test failures
+        if: ${{ steps.ctest.outputs.exit_code != '0' }}
+        working-directory: ${{ env.OPENSTUDIO_BUILD }}
+        run: |
+          cat "${{ env.TEST_DASHBOARD_RELATIVE }}" || true
+          if [ -f Testing/Temporary/LastTestsFailed.log ]; then
+            echo; echo "Failed tests:"; cat Testing/Temporary/LastTestsFailed.log
+          fi
+          echo "::error::CTest suite failed with exit code ${{ steps.ctest.outputs.exit_code }}"
+          exit 1
 
   linux-publish:
     name: Publish Linux Artifacts
@@ -1166,6 +1166,7 @@ jobs:
         fi
         echo "::error::CTest suite failed with exit code ${{ steps.mac_ctest.outputs.exit_code }}"
         exit 1
+
   macos-publish:
     name: Publish MacOS Artifacts
     needs: [macos-build]
@@ -1674,17 +1675,6 @@ jobs:
           Get-ChildItem -Path . -Include "*.obj" -Recurse -Force | Remove-Item -Force -ErrorAction SilentlyContinue
           Get-PSDrive C | Select-Object Used,Free
 
-      - name: Fail job on test failures
-        if: ${{ steps.ctest.outputs.exit_code != '0' }}
-        working-directory: ${{ env.OPENSTUDIO_BUILD }}
-        run: |
-          Get-Content "${{ env.TEST_DASHBOARD_RELATIVE }}" -ErrorAction SilentlyContinue
-          if (Test-Path Testing/Temporary/LastTestsFailed.log) {
-            ""; "Failed tests:"; Get-Content Testing/Temporary/LastTestsFailed.log
-          }
-          echo "::error::CTest suite failed with exit code ${{ steps.ctest.outputs.exit_code }}"
-          exit 1
-
       - name: Upload Signed EXE installer
         uses: actions/upload-artifact@v7
         with:
@@ -1707,6 +1697,17 @@ jobs:
           name: OS-Installers-${{ matrix.platform }}-TGZ-${{ github.sha }}
           path: ${{ env.OPENSTUDIO_BUILD }}/_CPack_Packages/win64/TGZ/*.tar.gz
           if-no-files-found: ignore
+
+      - name: Fail job on test failures
+        if: ${{ steps.ctest.outputs.exit_code != '0' }}
+        working-directory: ${{ env.OPENSTUDIO_BUILD }}
+        run: |
+          Get-Content "${{ env.TEST_DASHBOARD_RELATIVE }}" -ErrorAction SilentlyContinue
+          if (Test-Path Testing/Temporary/LastTestsFailed.log) {
+            ""; "Failed tests:"; Get-Content Testing/Temporary/LastTestsFailed.log
+          }
+          echo "::error::CTest suite failed with exit code ${{ steps.ctest.outputs.exit_code }}"
+          exit 1
 
   windows-publish:
     name: Publish Windows Artifacts
