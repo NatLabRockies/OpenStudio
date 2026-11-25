@@ -268,14 +268,6 @@ jobs:
             conan profile detect
           fi
 
-      - name: Install CA Certificates
-        if: startsWith(matrix.platform, 'ubuntu')
-        run: |
-          apt-get update || true
-          apt-get install -y ca-certificates gnupg wget
-          wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | tee /etc/apt/trusted.gpg.d/kitware.gpg >/dev/null
-          apt-get update
-
       - name: Add libc setting to Conan (CentOS)
         # nrel-v2's gcc 14 binaries are built on ubuntu-24.04 with GLIBC 2.39 (AlmaLinux 9 has 2.34). Making the libc version part of the
         # package_id means they never match, so we build from source (or pull the glibc 2.34 ones once uploaded to nrel-v2).
