@@ -63,13 +63,18 @@ runs:
         # Same default profile as jmarrec/conan-recipes upload_deps.yml, so the package IDs match what's on nrel-v2.
         # It's used for both the host and build contexts.
         conan profile detect --force --name default
-        CONAN_PROFILE_DEFAULT=$(conan profile path default)
-        # Mac has the BSD flavor of sed and MUST take a backup suffix
-        sed -i.bak 's/cppstd=.*$/cppstd=20/g' "$CONAN_PROFILE_DEFAULT"
-        sed -i.bak 's/build_type=.*$/build_type=${{ inputs.build-type }}/g' "$CONAN_PROFILE_DEFAULT"
-        # Windows only
-        sed -i.bak 's/compiler.runtime_type=.*$/compiler.runtime_type=${{ inputs.build-type }}/g' "$CONAN_PROFILE_DEFAULT"
-        rm -f "$CONAN_PROFILE_DEFAULT.bak"
+        CONAN_PROFILES_DIR=$(dirname "$(conan profile path default)")
+        # On Windows, sed -i creates its temp file in the current directory (D: workspace) and fails to move it to the
+        # Conan home (C:): "Invalid cross-device link". So run the edits from the profiles directory, in a subshell.
+        (
+          cd "$CONAN_PROFILES_DIR"
+          # Mac has the BSD flavor of sed and MUST take a backup suffix
+          sed -i.bak 's/cppstd=.*$/cppstd=20/g' default
+          sed -i.bak 's/build_type=.*$/build_type=${{ inputs.build-type }}/g' default
+          # Windows only
+          sed -i.bak 's/compiler.runtime_type=.*$/compiler.runtime_type=${{ inputs.build-type }}/g' default
+          rm -f default.bak
+        )
         conan profile show
         echo "::endgroup::"
 
