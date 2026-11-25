@@ -231,29 +231,6 @@ jobs:
             echo "/usr/local/cmake/bin" >> $GITHUB_PATH
           fi
 
-      - name: Cache External Dependencies
-        uses: actions/cache@v6
-        with:
-          path: |
-            ${{ env.OPENSTUDIO_BUILD }}/EnergyPlus*.tar.gz
-            ${{ env.OPENSTUDIO_BUILD }}/EnergyPlus*.zip
-            ${{ env.OPENSTUDIO_BUILD }}/radiance*.tar.gz
-            ${{ env.OPENSTUDIO_BUILD }}/radiance*.zip
-            ${{ env.OPENSTUDIO_BUILD }}/openstudio*gems*.tar.gz
-          key: external-deps-${{ matrix.os }}-${{ hashFiles('conan.lock') }}
-          restore-keys: |
-            external-deps-${{ matrix.os }}-
-
-      - name: Restore Generated Embedded Files
-        uses: actions/cache@v6
-        with:
-          path: |
-            ${{ env.OPENSTUDIO_BUILD }}/src/*/embedded_files
-            ${{ env.OPENSTUDIO_BUILD }}/ruby/engine/embedded_files
-          key: embedded-files-${{ matrix.os }}-${{ hashFiles('resources/**', 'ruby/engine/**', 'src/airflow/**', 'src/energyplus/**', 'src/gbxml/**', 'src/isomodel/**', 'src/model/**', 'src/radiance/**', 'src/sdd/**', 'src/utilities/**') }}
-          restore-keys: |
-            embedded-files-${{ matrix.os }}-
-
       - name: Configure Conan remotes
         run: |
           conan remote remove conancenter || true
@@ -764,29 +741,6 @@ jobs:
 
     - name: Create Build Directory
       run: cmake -E make_directory ${{ env.OPENSTUDIO_BUILD }}
-
-    - name: Cache External Dependencies
-      uses: actions/cache@v6
-      with:
-        path: |
-          ${{ env.OPENSTUDIO_BUILD }}/EnergyPlus*.tar.gz
-          ${{ env.OPENSTUDIO_BUILD }}/EnergyPlus*.zip
-          ${{ env.OPENSTUDIO_BUILD }}/radiance*.tar.gz
-          ${{ env.OPENSTUDIO_BUILD }}/radiance*.zip
-          ${{ env.OPENSTUDIO_BUILD }}/openstudio*gems*.tar.gz
-        key: external-deps-${{ matrix.os }}-${{ hashFiles('conan.lock') }}
-        restore-keys: |
-          external-deps-${{ matrix.os }}-
-
-    - name: Restore Generated Embedded Files
-      uses: actions/cache@v6
-      with:
-        path: |
-          ${{ env.OPENSTUDIO_BUILD }}/src/*/embedded_files
-          ${{ env.OPENSTUDIO_BUILD }}/ruby/engine/embedded_files
-        key: embedded-files-${{ matrix.os }}-${{ hashFiles('resources/**', 'ruby/engine/**', 'src/airflow/**', 'src/energyplus/**', 'src/gbxml/**', 'src/isomodel/**', 'src/radiance/**', 'src/sdd/**', 'src/model/**', 'src/utilities/**') }}
-        restore-keys: |
-          embedded-files-${{ matrix.os }}-
 
     - name: Configure Conan remotes
       run: |
