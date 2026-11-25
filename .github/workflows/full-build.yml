@@ -755,9 +755,7 @@ jobs:
           --build="$CONAN_BUILD_POLICY" \
           -c tools.cmake.cmaketoolchain:generator=Ninja \
           -s compiler.cppstd=20 \
-          -s build_type=${{ env.BUILD_TYPE }} \
-          -s os.version=${{ matrix.macos_dev_target }} \
-          -o readline/*:with_library=termcap
+          -s build_type=${{ env.BUILD_TYPE }}
 
     - name: Clean Conan cache before saving
       if: steps.conan-restore.outputs.cache-hit != 'true'
