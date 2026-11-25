@@ -300,7 +300,7 @@ namespace epmodel {
         }
         if (cell.empty() || pos != cell.size()) {
           LOG_FREE_AND_THROW("openstudio.epmodel.ScheduleFile", "Non-numeric value '"
-                                                                  << values[i] << "' at row " << (i + 1) << ", column " << columnNumber << " of '"
+                                                                  << cell << "' at row " << (i + 1) << ", column " << columnNumber << " of '"
                                                                   << this->fileName() << "' referenced by " << briefDescription()
                                                                   << ". If the file has header rows, set Rows to Skip at Top (currently "
                                                                   << rowsToSkip << ") to the number of header rows.");
