@@ -85,9 +85,8 @@ env:
   CCACHE_MAXSIZE: "10G"
   CCACHE_DEPEND: "true"
   CCACHE_NOHASHDIR: "true"
-  SCCACHE_GHA_ENABLED: "false"
-  SCCACHE_DIR: "${{ github.workspace }}\\.sccache"
-  SCCACHE_CACHE_SIZE: "10G"
+  # mtime-based compiler check is unreliable across fresh runner VMs, where the compiler binary's mtime can differ even though its content doesn't
+  CCACHE_COMPILERCHECK: content
   ENABLE_PCH: ON
 
 jobs:
@@ -1253,6 +1252,7 @@ jobs:
         shell: pwsh
     env:
       MAX_BUILD_THREADS: ${{ matrix.max_jobs }}
+      CCACHE_DIR: ${{ github.workspace }}\.ccache
       RUBYOPT: "-Eutf-8:utf-8"
       PYTHONUTF8: "1"
     permissions:
@@ -1281,21 +1281,32 @@ jobs:
           if ($LASTEXITCODE) { exit 1 }
           ./.github/signing-client/Test-AssertAuthenticodeSigned.ps1
 
-      - name: Restore sccache cache
-        uses: actions/cache@v6
+      - name: Get base branch SHA
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          # github.event.pull_request.base.sha is the base at PR creation, not the current tip
+          BASE_SHA=$(git ls-remote "https://github.com/$GITHUB_REPOSITORY.git" "refs/heads/${{ github.base_ref }}" | cut -f1)
+          echo "BASE_SHA=$BASE_SHA" >> "$GITHUB_ENV"
+
+      - name: Restore ccache cache
+        id: ccache-restore
+        uses: actions/cache/restore@v6
         with:
-          path: ${{ github.workspace }}\.sccache
-          key: sccache-${{ matrix.os }}-${{ matrix.platform }}-${{ hashFiles('conan.lock') }}
+          path: ${{ env.CCACHE_DIR }}
+          key: ccache-${{ matrix.os }}-${{ matrix.platform }}-pch=${{ env.ENABLE_PCH }}-${{ github.event_name == 'pull_request' && github.head_ref || github.sha }}
           restore-keys: |
-            sccache-${{ matrix.os }}-${{ matrix.platform }}-
+            ccache-${{ matrix.os }}-${{ matrix.platform }}-pch=${{ env.ENABLE_PCH }}-${{ env.BASE_SHA }}
+            ccache-${{ matrix.os }}-${{ matrix.platform }}-pch=${{ env.ENABLE_PCH }}-
 
       - name: Prepare workspace
         run: |
           git config --global --add safe.directory "*"
           New-Item -ItemType Directory -Path "${{ env.OPENSTUDIO_BUILD }}" -Force
 
-      - name: Setup sccache
-        uses: Mozilla-Actions/sccache-action@v0.0.5
+      - name: Install ccache
+        # Not sccache: it refuses to cache MSVC compiles using PCH (/Yc, /Fp), i.e. ~95% of them
+        run: choco install ccache -y --no-progress
 
       - name: Restore Conan cache
         uses: actions/cache@v6
@@ -1382,14 +1393,14 @@ jobs:
       - name: Configure with CMake
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         run: |
-          $sccacheExe = (Get-Command sccache).Source
-          & $env:ComSpec /c "call conanbuild.bat && cmake -G Ninja -DCMAKE_C_COMPILER_LAUNCHER=`"$sccacheExe`" -DCMAKE_CXX_COMPILER_LAUNCHER=`"$sccacheExe`" -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE:STRING=${{ env.BUILD_TYPE }} -DBUILD_TESTING:BOOL=ON -DCPACK_GENERATOR:STRING=`"IFW;TGZ`" -DBUILD_PYTHON_BINDINGS:BOOL=ON -DBUILD_PYTHON_PIP_PACKAGE:BOOL=OFF -DPython_EXECUTABLE:FILEPATH=`"$env:SYSTEM_PYTHON_PATH`" -DPYTHON_VERSION:STRING=${{ env.PYTHON_REQUIRED_VERSION }} -DSYSTEM_RUBY_EXECUTABLE=`"%SYSTEM_RUBY_PATH%`" -DENABLE_PCH:BOOL=${{ env.ENABLE_PCH }} -DCMAKE_JOB_POOL_LINK:STRING=console `"../${{ env.OPENSTUDIO_SOURCE }}"`"
+          $ccacheExe = (Get-Command ccache).Source
+          & $env:ComSpec /c "call conanbuild.bat && cmake -G Ninja -DCMAKE_C_COMPILER_LAUNCHER=`"$ccacheExe`" -DCMAKE_CXX_COMPILER_LAUNCHER=`"$ccacheExe`" -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE:STRING=${{ env.BUILD_TYPE }} -DBUILD_TESTING:BOOL=ON -DCPACK_GENERATOR:STRING=`"IFW;TGZ`" -DBUILD_PYTHON_BINDINGS:BOOL=ON -DBUILD_PYTHON_PIP_PACKAGE:BOOL=OFF -DPython_EXECUTABLE:FILEPATH=`"$env:SYSTEM_PYTHON_PATH`" -DPYTHON_VERSION:STRING=${{ env.PYTHON_REQUIRED_VERSION }} -DSYSTEM_RUBY_EXECUTABLE=`"%SYSTEM_RUBY_PATH%`" -DENABLE_PCH:BOOL=${{ env.ENABLE_PCH }} -DCMAKE_JOB_POOL_LINK:STRING=console `"../${{ env.OPENSTUDIO_SOURCE }}"`"
 
       - name: Build with Ninja
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         shell: pwsh
         run: |
-          if (Get-Command sccache -ErrorAction SilentlyContinue) { sccache -s }
+          if (Get-Command ccache -ErrorAction SilentlyContinue) { ccache -s }
           # Use $env:ComSpec to ensure we call the Windows Command Prompt, not the MSYS2 cmd found in PATH
           & $env:ComSpec /c "call conanbuild.bat && cmake --build . --parallel ${{ matrix.max_jobs }} -- -d stats 2>&1" | Tee-Object -FilePath "build.log"
 
@@ -1398,7 +1409,14 @@ jobs:
             Write-Error "Build failed with exit code $LASTEXITCODE"
             exit $LASTEXITCODE
           }
-          if (Get-Command sccache -ErrorAction SilentlyContinue) { sccache -s }
+          if (Get-Command ccache -ErrorAction SilentlyContinue) { ccache -s }
+
+      - name: Save ccache cache
+        if: always() && steps.ccache-restore.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v6
+        with:
+          path: ${{ env.CCACHE_DIR }}
+          key: ${{ steps.ccache-restore.outputs.cache-primary-key }}
 
       - name: Wait for network stability
         if: always()
