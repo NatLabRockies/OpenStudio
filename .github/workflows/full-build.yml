@@ -337,6 +337,17 @@ jobs:
           path: ${{ env.CCACHE_DIR }}
           key: ${{ steps.ccache-restore.outputs.cache-primary-key }}
 
+      - name: Upload build diagnostics
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: build-diag-${{ matrix.platform }}-${{ github.sha }}
+          path: |
+            ${{ env.OPENSTUDIO_BUILD }}/build.log
+            ${{ env.OPENSTUDIO_BUILD }}/.ninja_log
+            ${{ env.OPENSTUDIO_BUILD }}/CTestTestfile.cmake
+          if-no-files-found: warn
+
       - name: Run CTest suite
         id: ctest
         continue-on-error: true
@@ -395,21 +406,6 @@ jobs:
           fi
 
           echo "exit_code=${overall_exit_code}" >> $GITHUB_OUTPUT
-
-      - name: Wait for network stability
-        if: always()
-        run: sleep 5
-
-      - name: Upload build diagnostics
-        if: always()
-        uses: actions/upload-artifact@v7
-        with:
-          name: build-diag-${{ matrix.platform }}-${{ github.sha }}
-          path: |
-            ${{ env.OPENSTUDIO_BUILD }}/build.log
-            ${{ env.OPENSTUDIO_BUILD }}/.ninja_log
-            ${{ env.OPENSTUDIO_BUILD }}/CTestTestfile.cmake
-          if-no-files-found: warn
 
       - name: Copy Testing tree with suffix
         if: always()
@@ -868,10 +864,6 @@ jobs:
       with:
         path: ${{ env.CCACHE_DIR }}
         key: ${{ steps.ccache-restore.outputs.cache-primary-key }}
-
-    - name: Wait for network stability
-      if: always()
-      run: sleep 5
 
     - name: Upload build diagnostics
       if: always()
@@ -1415,10 +1407,6 @@ jobs:
         with:
           path: ${{ env.CCACHE_DIR }}
           key: ${{ steps.ccache-restore.outputs.cache-primary-key }}
-
-      - name: Wait for network stability
-        if: always()
-        run: Start-Sleep -Seconds 5
 
       - name: Upload build diagnostics
         if: always()
