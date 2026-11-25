@@ -107,7 +107,6 @@ jobs:
             container_image: nrel/openstudio-cmake-tools:almalinux9-main
             container_options: "--privileged -u root"
             test_suffix: CentOS-9
-            pip_package: false
             docker_trigger: false
             upload_globs: |
               *.rpm
@@ -121,7 +120,6 @@ jobs:
             container_image: nrel/openstudio-cmake-tools:noble-main
             container_options: "--privileged -u root"
             test_suffix: Ubuntu-2404
-            pip_package: true
             docker_trigger: true
             upload_globs: |
               *.deb
@@ -135,7 +133,6 @@ jobs:
             container_image: nrel/openstudio-cmake-tools:noble-main
             container_options: "--privileged -u root"
             test_suffix: Ubuntu-2404-ARM64
-            pip_package: false
             docker_trigger: false
             upload_globs: |
               *.deb
@@ -291,7 +288,6 @@ jobs:
             -DBUILD_TESTING:BOOL=ON \
             -DCPACK_GENERATOR:STRING="${{ matrix.cpack_generators }}" \
             -DBUILD_PYTHON_BINDINGS:BOOL=ON \
-            -DBUILD_PYTHON_PIP_PACKAGE:BOOL=${{ matrix.pip_package }} \
             -DPython_EXECUTABLE:FILEPATH="$SYSTEM_PYTHON_PATH" \
             -DPYTHON_VERSION:STRING=${{ env.PYTHON_REQUIRED_VERSION }} \
             -DSYSTEM_RUBY_EXECUTABLE="$SYSTEM_RUBY_PATH" \
@@ -483,14 +479,6 @@ jobs:
         with:
           name: OS-Installers-${{ matrix.platform }}-TGZ-${{ github.sha }}
           path: ${{ env.OPENSTUDIO_BUILD }}/OpenStudio-*.tar.gz
-          if-no-files-found: ignore
-
-      - name: Upload WHEEL installer
-        if: matrix.pip_package
-        uses: actions/upload-artifact@v7
-        with:
-          name: OS-Installers-${{ matrix.platform }}-WHEEL-${{ github.sha }}
-          path: ${{ env.OPENSTUDIO_BUILD }}/*.whl
           if-no-files-found: ignore
 
       - name: Fail job on test failures
