@@ -218,16 +218,10 @@ jobs:
       - name: Prepare workspace
         run: |
 
-          # Git safe directory
-          if command -v git >/dev/null 2>&1; then
-            git config --global --add safe.directory '*'
-          fi
+          git config --global --add safe.directory '*'
 
           mkdir -p "$CCACHE_DIR" "$CONAN_HOME"
-          if command -v ccache >/dev/null 2>&1; then
-            ccache -M ${{ env.CCACHE_MAXSIZE }} || true
-            echo "Configured ccache:"; ccache -s | sed -n '1,10p'
-          fi
+          echo "Configured ccache:"; ccache -s | sed -n '1,10p'
 
       - name: Fix CMake Path (CentOS)
         if: matrix.platform == 'centos-9-x64'
@@ -316,14 +310,7 @@ jobs:
 
       - name: Configure with CMake
         run: |
-          # Use absolute path for ccache to avoid resolution issues in containers with symlinked build dirs
-          CCACHE_ARGS=()
-          if command -v ccache >/dev/null 2>&1; then
-            CCACHE_EXE=$(command -v ccache)
-            CCACHE_ARGS=("-DCMAKE_C_COMPILER_LAUNCHER=$CCACHE_EXE" "-DCMAKE_CXX_COMPILER_LAUNCHER=$CCACHE_EXE")
-          fi
           cmake --preset conan-release \
-            "${CCACHE_ARGS[@]}" \
             -DCMAKE_BUILD_TYPE:STRING=${{ env.BUILD_TYPE }} \
             -DBUILD_TESTING:BOOL=ON \
             -DCPACK_GENERATOR:STRING="${{ matrix.cpack_generators }}" \
@@ -351,7 +338,7 @@ jobs:
           cmake --build . --parallel ${{ matrix.max_jobs }} 2>&1 | tee build.log
           BUILD_EXIT=${PIPESTATUS[0]}
           kill $HB_PID || true
-          command -v ninja >/dev/null 2>&1 && ninja -d stats || true
+          ninja -d stats || true
           exit $BUILD_EXIT
 
       - name: Save ccache cache
@@ -853,16 +840,8 @@ jobs:
         set -e
         chmod +x ./conanbuild.sh
         . ./conanbuild.sh
-        # Use absolute path for ccache to avoid resolution issues in containers with symlinked build dirs
-        CCACHE_ARGS=()
-        if command -v ccache >/dev/null 2>&1; then
-          CCACHE_EXE=$(command -v ccache)
-          CCACHE_ARGS=("-DCMAKE_C_COMPILER_LAUNCHER=$CCACHE_EXE" "-DCMAKE_CXX_COMPILER_LAUNCHER=$CCACHE_EXE")
-        fi
-
         # Signing identity is passed to cpack only when the keychain exists (see Create packages)
         cmake -G Ninja \
-          "${CCACHE_ARGS[@]}" \
           -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake \
           -DCMAKE_CXX_FLAGS="-D_LIBCPP_ENABLE_CXX17_REMOVED_UNARY_BINARY_FUNCTION -Wno-enum-constexpr-conversion" \
           -DENABLE_COVERAGE:BOOL=OFF \
@@ -895,8 +874,8 @@ jobs:
         cmake --build . --parallel ${MAX_BUILD_THREADS} 2>&1 | tee build.log
         build_exit=${PIPESTATUS[0]}
         kill $heartbeat_pid || true
-        command -v ninja >/dev/null 2>&1 && ninja -d stats || true
-        command -v ccache >/dev/null 2>&1 && ccache -s || true
+        ninja -d stats || true
+        ccache -s
         if [ -f build.log ]; then tail -n 40 build.log; fi
         exit $build_exit
 
@@ -1314,7 +1293,6 @@ jobs:
 
       - name: Prepare workspace
         run: |
-          git config --global --add safe.directory "*"
           New-Item -ItemType Directory -Path "${{ env.OPENSTUDIO_BUILD }}" -Force
 
       - name: Install ccache
@@ -1415,14 +1393,13 @@ jobs:
       - name: Configure with CMake
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         run: |
-          $ccacheExe = (Get-Command ccache).Source
-          & $env:ComSpec /c "call conanbuild.bat && cmake -G Ninja -DCMAKE_C_COMPILER_LAUNCHER=`"$ccacheExe`" -DCMAKE_CXX_COMPILER_LAUNCHER=`"$ccacheExe`" -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE:STRING=${{ env.BUILD_TYPE }} -DBUILD_TESTING:BOOL=ON -DCPACK_GENERATOR:STRING=`"IFW;TGZ`" -DBUILD_PYTHON_BINDINGS:BOOL=ON -DBUILD_PYTHON_PIP_PACKAGE:BOOL=OFF -DPython_EXECUTABLE:FILEPATH=`"$env:SYSTEM_PYTHON_PATH`" -DPYTHON_VERSION:STRING=${{ env.PYTHON_REQUIRED_VERSION }} -DSYSTEM_RUBY_EXECUTABLE=`"%SYSTEM_RUBY_PATH%`" -DENABLE_PCH:BOOL=${{ env.ENABLE_PCH }} -DCMAKE_JOB_POOL_LINK:STRING=console .."
+          & $env:ComSpec /c "call conanbuild.bat && cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE:STRING=${{ env.BUILD_TYPE }} -DBUILD_TESTING:BOOL=ON -DCPACK_GENERATOR:STRING=`"IFW;TGZ`" -DBUILD_PYTHON_BINDINGS:BOOL=ON -DBUILD_PYTHON_PIP_PACKAGE:BOOL=OFF -DPython_EXECUTABLE:FILEPATH=`"$env:SYSTEM_PYTHON_PATH`" -DPYTHON_VERSION:STRING=${{ env.PYTHON_REQUIRED_VERSION }} -DSYSTEM_RUBY_EXECUTABLE=`"%SYSTEM_RUBY_PATH%`" -DENABLE_PCH:BOOL=${{ env.ENABLE_PCH }} -DCMAKE_JOB_POOL_LINK:STRING=console .."
 
       - name: Build with Ninja
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         shell: pwsh
         run: |
-          if (Get-Command ccache -ErrorAction SilentlyContinue) { ccache -s }
+          ccache -s
           # Use $env:ComSpec to ensure we call the Windows Command Prompt, not the MSYS2 cmd found in PATH
           & $env:ComSpec /c "call conanbuild.bat && cmake --build . --parallel ${{ matrix.max_jobs }} -- -d stats 2>&1" | Tee-Object -FilePath "build.log"
 
@@ -1431,7 +1408,7 @@ jobs:
             Write-Error "Build failed with exit code $LASTEXITCODE"
             exit $LASTEXITCODE
           }
-          if (Get-Command ccache -ErrorAction SilentlyContinue) { ccache -s }
+          ccache -s
 
       - name: Save ccache cache
         if: always() && steps.ccache-restore.outputs.cache-hit != 'true'
