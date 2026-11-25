@@ -26,7 +26,7 @@ namespace epmodel {
   /** \brief OutputSchedules.
    *
    * \par EnergyPlus object
-   * \epobject{input-for-output.html#outputschedules,Output:Schedules}.
+   * \epobject{group-reports.html#outputschedules,Output:Schedules}.
    *
    * \par OpenStudio Model API
    * The corresponding OpenStudio Model class is <code>openstudio::model::OutputSchedules</code>. The key-field setting maps directly to EnergyPlus. The object is unique within a model.

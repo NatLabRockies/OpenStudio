@@ -26,7 +26,7 @@ namespace epmodel {
   /** \brief OutputVariable.
    *
    * \par EnergyPlus object
-   * \epobject{input-for-output.html#outputvariable,Output:Variable}.
+   * \epobject{group-reports.html#outputvariable,Output:Variable}.
    *
    * \par OpenStudio Model API
    * The corresponding OpenStudio Model class is <code>openstudio::model::OutputVariable</code>. Key value, variable name, and reporting frequency are exposed. Model's schedule relationship and <code>exportToBCVTB()</code> setting are not available.

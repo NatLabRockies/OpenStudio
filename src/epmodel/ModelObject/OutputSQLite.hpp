@@ -26,7 +26,7 @@ namespace epmodel {
   /** \brief OutputSQLite.
    *
    * \par EnergyPlus object
-   * \epobject{input-for-output.html#outputsqlite,Output:SQLite}.
+   * \epobject{group-reports.html#outputsqlite,Output:SQLite}.
    *
    * \par OpenStudio Model API
    * The corresponding OpenStudio Model class is <code>openstudio::model::OutputSQLite</code>. The option type and tabular-unit-conversion settings map directly to EnergyPlus.

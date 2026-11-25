@@ -25,7 +25,7 @@ namespace epmodel {
   /** \brief Resets a temperature setpoint from a reference system node.
    *
    * \par EnergyPlus object
-   * <code>SetpointManager:SystemNodeReset:Temperature</code>
+   * \epobject{group-setpoint-managers.html#setpointmanagersystemnoderesettemperature,SetpointManager:SystemNodeReset:Temperature}
    *
    * \par OpenStudio Model API
    * The corresponding OpenStudio Model class is <code>openstudio::model::SetpointManagerSystemNodeResetTemperature</code>.

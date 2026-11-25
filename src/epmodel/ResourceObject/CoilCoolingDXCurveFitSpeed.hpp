@@ -24,7 +24,7 @@ namespace epmodel {
   /** \brief Defines one speed row for a curve-fit DX cooling operating mode.
    *
    * \par EnergyPlus object
-   * \epobject{group-coil-cooling-dx.html#coilcoolingdxcurvefitspeed,Coil:Cooling:DX:CurveFit:Speed}.
+   * \epobject{group-heating-and-cooling-coils.html#coilcoolingdxcurvefitspeed,Coil:Cooling:DX:CurveFit:Speed}.
    *
    * \par Important behavior
    * The object is an extensible speed row when attached to an operating mode.

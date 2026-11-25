@@ -25,7 +25,7 @@ namespace epmodel {
   /** \brief OutputControlFiles.
    *
    * \par EnergyPlus object
-   * \epobject{input-for-output.html#outputcontrolfiles,OutputControl:Files}.
+   * \epobject{group-reports.html#outputcontrolfiles,OutputControl:Files}.
    *
    * \par OpenStudio Model API
    * The corresponding OpenStudio Model class is <code>openstudio::model::OutputControlFiles</code>. The output switches map directly to EnergyPlus yes/no fields. EnergyPlus <code>OutputEND</code> is not configurable here and the Model translator writes <code>Yes</code>.

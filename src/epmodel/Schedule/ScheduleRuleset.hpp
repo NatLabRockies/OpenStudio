@@ -30,7 +30,7 @@ namespace epmodel {
   /** \brief Defines a default day schedule and special-day overrides for a year.
    *
    * \par EnergyPlus object
-   * \epobject{group-schedules.html#schedule-year-rules,Schedule:Year:Rules}
+   * \epobject{group-schedules.html#scheduleyearrules,Schedule:Year:Rules}
    *
    * \par OpenStudio Model API
    * The corresponding OpenStudio Model class is

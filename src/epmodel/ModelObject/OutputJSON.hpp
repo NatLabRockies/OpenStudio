@@ -26,7 +26,7 @@ namespace epmodel {
   /** \brief OutputJSON.
    *
    * \par EnergyPlus object
-   * \epobject{input-for-output.html#outputjson,Output:JSON}.
+   * \epobject{group-reports.html#outputjson,Output:JSON}.
    *
    * \par OpenStudio Model API
    * The corresponding OpenStudio Model class is <code>openstudio::model::OutputJSON</code>. The option type and output switches map directly to EnergyPlus.

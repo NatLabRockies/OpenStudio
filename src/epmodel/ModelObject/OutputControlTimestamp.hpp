@@ -25,7 +25,7 @@ namespace epmodel {
   /** \brief OutputControlTimestamp.
    *
    * \par EnergyPlus object
-   * \epobject{input-for-output.html#outputcontrol_timestamp,OutputControl:Timestamp}.
+   * \epobject{group-reports.html#outputcontrol_timestamp,OutputControl:Timestamp}.
    *
    * \par OpenStudio Model API
    * The corresponding OpenStudio Model class is <code>openstudio::model::OutputControlTimestamp</code>. The two boolean settings map to EnergyPlus yes/no fields. The EPModel setter is named <code>setISO8601Format()</code>.
