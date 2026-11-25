@@ -83,6 +83,18 @@ else()
     rubybindings
     ${ALL_RUBY_BINDING_TARGETS}
   )
+
+  # The statically linked ruby module is well over 128 MiB of .text. On aarch64 a direct call (R_AARCH64_CALL26) only reaches +/-128 MiB,
+  # and GNU ld fails with "relocation truncated to fit" instead of inserting long-branch veneers. lld inserts range-extension thunks.
+  if(NOT APPLE AND CMAKE_SYSTEM_PROCESSOR MATCHES "^(aarch64|arm64|ARM64)$")
+    find_program(LLD_LINKER ld.lld)
+    if(LLD_LINKER)
+      message(STATUS "Linking openstudio_rb with lld (${LLD_LINKER}) to avoid aarch64 branch range overflows")
+      target_link_options(openstudio_rb PRIVATE -fuse-ld=lld)
+    else()
+      message(WARNING "ld.lld not found: linking the ruby module on aarch64 with the default linker will likely fail with 'relocation truncated to fit'. Install lld.")
+    endif()
+  endif()
 endif()
 
 if (APPLE)
