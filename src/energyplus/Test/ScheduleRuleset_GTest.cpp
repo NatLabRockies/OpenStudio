@@ -480,7 +480,7 @@ TEST_F(EnergyPlusFixture, ForwardTranslator_ScheduleRuleset_SpecialDays) {
 
   for (const WorkspaceObject& scheduleWeekRule : scheduleWeekRules) {
     const int rulePriorityOrder = scheduleWeekRule.getInt(Schedule_Week_RuleFields::RulePriorityOrder).get();
-    if (rulePriorityOrder == 0) { // Weekends
+    if (rulePriorityOrder == 0) {  // Weekends
       EXPECT_EQ("Yes", scheduleWeekRule.getString(Schedule_Week_RuleFields::ApplySunday).get());
       EXPECT_EQ("No", scheduleWeekRule.getString(Schedule_Week_RuleFields::ApplyMonday).get());
       EXPECT_EQ("No", scheduleWeekRule.getString(Schedule_Week_RuleFields::ApplyTuesday).get());
@@ -489,7 +489,7 @@ TEST_F(EnergyPlusFixture, ForwardTranslator_ScheduleRuleset_SpecialDays) {
       EXPECT_EQ("No", scheduleWeekRule.getString(Schedule_Week_RuleFields::ApplyFriday).get());
       EXPECT_EQ("Yes", scheduleWeekRule.getString(Schedule_Week_RuleFields::ApplySaturday).get());
       EXPECT_EQ(weekendSchedule.nameString(), scheduleWeekRule.getString(Schedule_Week_RuleFields::DayScheduleName).get());
-    } else if (rulePriorityOrder == 1) { // Weekdays
+    } else if (rulePriorityOrder == 1) {  // Weekdays
       EXPECT_EQ("No", scheduleWeekRule.getString(Schedule_Week_RuleFields::ApplySunday).get());
       EXPECT_EQ("Yes", scheduleWeekRule.getString(Schedule_Week_RuleFields::ApplyMonday).get());
       EXPECT_EQ("Yes", scheduleWeekRule.getString(Schedule_Week_RuleFields::ApplyTuesday).get());

@@ -5447,8 +5447,8 @@ bool EpwFile::parseDesignConditions(const std::string& line) {
 
   int nDesignConditions = std::stoi(split[1]);
   if (nDesignConditions < 0) {
-    LOG(Warn, "Negative number of design conditions (" << nDesignConditions << ") in EPW file '" << m_path
-            << "'. Design conditions will not be parsed.");
+    LOG(Warn,
+        "Negative number of design conditions (" << nDesignConditions << ") in EPW file '" << m_path << "'. Design conditions will not be parsed.");
     return true;
   }
   const auto nDC = static_cast<size_t>(nDesignConditions);

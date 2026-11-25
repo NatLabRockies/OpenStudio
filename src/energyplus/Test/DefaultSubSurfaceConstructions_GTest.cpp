@@ -39,11 +39,9 @@ TEST_F(EnergyPlusFixture, ForwardTranslator_DefaultSubSurfaceConstructions) {
   Building building = m.getUniqueModelObject<Building>();
   EXPECT_TRUE(building.setDefaultConstructionSet(defaultConstructionSet));
 
-
   DefaultSubSurfaceConstructions defaultSubSurfaceConstructions(m);
   defaultSubSurfaceConstructions.setName("Exterior SubSurface Constructions");
   EXPECT_TRUE(defaultConstructionSet.setDefaultExteriorSubSurfaceConstructions(defaultSubSurfaceConstructions));
-
 
   Construction fixedWindowConstruction(m);
   fixedWindowConstruction.setName("Fixed Window Construction");
@@ -84,11 +82,14 @@ TEST_F(EnergyPlusFixture, ForwardTranslator_DefaultSubSurfaceConstructions) {
   const auto& idfObject = idfObjs.front();
   EXPECT_EQ(defaultSubSurfaceConstructions.nameString(), idfObject.nameString());
   EXPECT_EQ(fixedWindowConstruction.nameString(), idfObject.getString(SubSurfaceConstructionAssignmentsFields::FixedWindowConstructionName).get());
-  EXPECT_EQ(operableWindowConstruction.nameString(), idfObject.getString(SubSurfaceConstructionAssignmentsFields::OperableWindowConstructionName).get());
+  EXPECT_EQ(operableWindowConstruction.nameString(),
+            idfObject.getString(SubSurfaceConstructionAssignmentsFields::OperableWindowConstructionName).get());
   EXPECT_EQ(doorConstruction.nameString(), idfObject.getString(SubSurfaceConstructionAssignmentsFields::DoorConstructionName).get());
   EXPECT_EQ(glassDoorConstruction.nameString(), idfObject.getString(SubSurfaceConstructionAssignmentsFields::GlassDoorConstructionName).get());
   EXPECT_EQ(overheadDoorConstruction.nameString(), idfObject.getString(SubSurfaceConstructionAssignmentsFields::OverheadDoorConstructionName).get());
   EXPECT_EQ(skylightConstruction.nameString(), idfObject.getString(SubSurfaceConstructionAssignmentsFields::SkylightConstructionName).get());
-  EXPECT_EQ(tubularDaylightDomeConstruction.nameString(), idfObject.getString(SubSurfaceConstructionAssignmentsFields::TubularDaylightDomeConstructionName).get());
-  EXPECT_EQ(tubularDaylightDiffuserConstruction.nameString(), idfObject.getString(SubSurfaceConstructionAssignmentsFields::TubularDaylightDiffuserConstructionName).get());
+  EXPECT_EQ(tubularDaylightDomeConstruction.nameString(),
+            idfObject.getString(SubSurfaceConstructionAssignmentsFields::TubularDaylightDomeConstructionName).get());
+  EXPECT_EQ(tubularDaylightDiffuserConstruction.nameString(),
+            idfObject.getString(SubSurfaceConstructionAssignmentsFields::TubularDaylightDiffuserConstructionName).get());
 }

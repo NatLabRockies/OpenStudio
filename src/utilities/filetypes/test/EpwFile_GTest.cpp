@@ -1635,8 +1635,10 @@ TEST(Filetypes, EpwDesignCondition_WrongNumberOfSubFields_UnbalancedFields2) {
 TEST(Filetypes, EpwDesignCondition_HoF_2025) {
   const std::string line = "2025 ASHRAE Handbook -- Fundamentals - Chapter 14 Climatic Design Information,"
                            "Heating,1,-15.9,-13.5,-20.3,0.6,-15.4,-18.1,0.8,-12.7,14.1,-1.0,12.8,-0.4,4.4,260,0.573,"
-                           "Cooling,7,8.8,30.3,21.7,29.0,21.2,27.8,20.6,23.7,27.7,22.9,27.0,22.1,26.0,5.2,240,22.4,17.5,26.0,21.5,16.6,25.3,20.7,15.7,24.7,71.8,27.5,68.9,27.1,65.7,25.8,25.9,"
-                           "Extremes,11.7,10.3,9.1,-18.5,32.7,2.8,1.4,-20.6,33.7,-22.2,34.5,-23.8,35.2,-25.9,36.2,-19.0,24.7,2.7,0.9,-20.9,25.3,-22.5,25.9,-24.0,26.4,-26.0,27.1";
+                           "Cooling,7,8.8,30.3,21.7,29.0,21.2,27.8,20.6,23.7,27.7,22.9,27.0,22.1,26.0,5.2,240,22.4,17.5,26.0,21.5,16.6,25.3,20.7,15."
+                           "7,24.7,71.8,27.5,68.9,27.1,65.7,25.8,25.9,"
+                           "Extremes,11.7,10.3,9.1,-18.5,32.7,2.8,1.4,-20.6,33.7,-22.2,34.5,-23.8,35.2,-25.9,36.2,-19.0,24.7,2.7,0.9,-20.9,25.3,-22."
+                           "5,25.9,-24.0,26.4,-26.0,27.1";
   auto dc_ = EpwDesignCondition::fromDesignConditionsString(line);
   ASSERT_TRUE(dc_);
   const auto& dc = *dc_;
@@ -1731,14 +1733,16 @@ TEST(Filetypes, EpwDesignCondition_HoF_2025) {
   EXPECT_EQ(27.1, dc.extremeN50YearsMaxWetBulb().get());
 
   const std::string epw = "LOCATION,Buffalo,NY,USA,TMYx,725280,42.9406,-78.7322,-5.0,215.4\n"
-                          "DESIGN CONDITIONS,1," + line + "\n"
-                          "TYPICAL/EXTREME PERIODS,0\n"
-                          "GROUND TEMPERATURES,0\n"
-                          "HOLIDAYS/DAYLIGHT SAVINGS,No,0,0,0\n"
-                          "COMMENTS 1,\n"
-                          "COMMENTS 2,\n"
-                          "DATA PERIODS,1,1,Data,Wednesday,1/1,1/1\n"
-                          "2025,1,1,1,60\n";
+                          "DESIGN CONDITIONS,1,"
+                          + line
+                          + "\n"
+                            "TYPICAL/EXTREME PERIODS,0\n"
+                            "GROUND TEMPERATURES,0\n"
+                            "HOLIDAYS/DAYLIGHT SAVINGS,No,0,0,0\n"
+                            "COMMENTS 1,\n"
+                            "COMMENTS 2,\n"
+                            "DATA PERIODS,1,1,Data,Wednesday,1/1,1/1\n"
+                            "2025,1,1,1,60\n";
   auto epwFile = EpwFile::loadFromString(epw, false);
   ASSERT_TRUE(epwFile);
   ASSERT_EQ(1, epwFile->designConditions().size());
@@ -1748,8 +1752,10 @@ TEST(Filetypes, EpwDesignCondition_HoF_2025) {
 TEST(Filetypes, EpwDesignCondition_HoF_2025_Heuristics) {
   const std::string line = "This title does not include a year,"
                            "Heating,1,-15.9,-13.5,-20.3,0.6,-15.4,-18.1,0.8,-12.7,14.1,-1.0,12.8,-0.4,4.4,260,0.573,"
-                           "Cooling,7,8.8,30.3,21.7,29.0,21.2,27.8,20.6,23.7,27.7,22.9,27.0,22.1,26.0,5.2,240,22.4,17.5,26.0,21.5,16.6,25.3,20.7,15.7,24.7,71.8,27.5,68.9,27.1,65.7,25.8,25.9,"
-                           "Extremes,11.7,10.3,9.1,-18.5,32.7,2.8,1.4,-20.6,33.7,-22.2,34.5,-23.8,35.2,-25.9,36.2,-19.0,24.7,2.7,0.9,-20.9,25.3,-22.5,25.9,-24.0,26.4,-26.0,27.1";
+                           "Cooling,7,8.8,30.3,21.7,29.0,21.2,27.8,20.6,23.7,27.7,22.9,27.0,22.1,26.0,5.2,240,22.4,17.5,26.0,21.5,16.6,25.3,20.7,15."
+                           "7,24.7,71.8,27.5,68.9,27.1,65.7,25.8,25.9,"
+                           "Extremes,11.7,10.3,9.1,-18.5,32.7,2.8,1.4,-20.6,33.7,-22.2,34.5,-23.8,35.2,-25.9,36.2,-19.0,24.7,2.7,0.9,-20.9,25.3,-22."
+                           "5,25.9,-24.0,26.4,-26.0,27.1";
   auto dc_ = EpwDesignCondition::fromDesignConditionsString(line);
   ASSERT_TRUE(dc_);
   const auto& dc = *dc_;
@@ -1845,8 +1851,10 @@ TEST(Filetypes, EpwDesignCondition_HoF_2025_Heuristics) {
 TEST(Filetypes, EpwDesignCondition_HoF_2025_Heuristics_OverrideVersion) {
   const std::string line = "This title includes the 2009 version when it is not actually it,"
                            "Heating,1,-15.9,-13.5,-20.3,0.6,-15.4,-18.1,0.8,-12.7,14.1,-1.0,12.8,-0.4,4.4,260,0.573,"
-                           "Cooling,7,8.8,30.3,21.7,29.0,21.2,27.8,20.6,23.7,27.7,22.9,27.0,22.1,26.0,5.2,240,22.4,17.5,26.0,21.5,16.6,25.3,20.7,15.7,24.7,71.8,27.5,68.9,27.1,65.7,25.8,25.9,"
-                           "Extremes,11.7,10.3,9.1,-18.5,32.7,2.8,1.4,-20.6,33.7,-22.2,34.5,-23.8,35.2,-25.9,36.2,-19.0,24.7,2.7,0.9,-20.9,25.3,-22.5,25.9,-24.0,26.4,-26.0,27.1";
+                           "Cooling,7,8.8,30.3,21.7,29.0,21.2,27.8,20.6,23.7,27.7,22.9,27.0,22.1,26.0,5.2,240,22.4,17.5,26.0,21.5,16.6,25.3,20.7,15."
+                           "7,24.7,71.8,27.5,68.9,27.1,65.7,25.8,25.9,"
+                           "Extremes,11.7,10.3,9.1,-18.5,32.7,2.8,1.4,-20.6,33.7,-22.2,34.5,-23.8,35.2,-25.9,36.2,-19.0,24.7,2.7,0.9,-20.9,25.3,-22."
+                           "5,25.9,-24.0,26.4,-26.0,27.1";
   auto dc_ = EpwDesignCondition::fromDesignConditionsString(line);
   ASSERT_TRUE(dc_);
   const auto& dc = *dc_;
