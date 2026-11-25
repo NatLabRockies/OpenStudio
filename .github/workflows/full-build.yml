@@ -207,7 +207,8 @@ jobs:
             ccache-${{ matrix.os }}-${{ matrix.platform }}-pch=${{ env.ENABLE_PCH }}-
 
       - name: Restore Conan cache
-        uses: actions/cache@v6
+        id: conan-restore
+        uses: actions/cache/restore@v6
         with:
           path: ${{ env.CONAN_HOME }}
           key: conan-${{ matrix.os }}-${{ matrix.platform }}-${{ hashFiles('conan.lock') }}
@@ -298,6 +299,18 @@ jobs:
             -s compiler.cppstd=20 \
             -s build_type=${{ env.BUILD_TYPE }} \
             ${CONAN_EXTRA_ARGS:-}
+
+      - name: Clean Conan cache before saving
+        if: steps.conan-restore.outputs.cache-hit != 'true'
+        run: conan cache clean "*" --source --build --download --temp
+
+      - name: Save Conan cache
+        # Saved right after install (only when the lockfile changed) so a later build failure doesn't lose it
+        if: steps.conan-restore.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v6
+        with:
+          path: ${{ env.CONAN_HOME }}
+          key: ${{ steps.conan-restore.outputs.cache-primary-key }}
 
       - name: Locate Ruby
         run: |
