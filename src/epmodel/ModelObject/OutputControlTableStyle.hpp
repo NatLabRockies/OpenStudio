@@ -26,7 +26,7 @@ namespace epmodel {
   /** \brief OutputControlTableStyle.
    *
    * \par EnergyPlus object
-   * \epobject{outputcontrol-table-style.html#outputcontroltablestyle,OutputControl:Table:Style}.
+   * \epobject{outputcontroltablestyle.html#outputcontroltablestyle,OutputControl:Table:Style}.
    *
    * \par OpenStudio Model API
    * The corresponding OpenStudio Model class is <code>openstudio::model::OutputControlTableStyle</code>. The column-separator and unit-conversion fields map directly to EnergyPlus.

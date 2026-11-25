@@ -25,7 +25,7 @@ namespace epmodel {
   /** \brief OutputTableMonthly.
    *
    * \par EnergyPlus object
-   * \epobject{output-table-monthly.html#outputtablemonthly,Output:Table:Monthly}.
+   * \epobject{outputtablemonthly.html#outputtablemonthly,Output:Table:Monthly}.
    *
    * \par OpenStudio Model API
    * The corresponding OpenStudio Model class is <code>openstudio::model::OutputTableMonthly</code>. The digits-after-decimal setting is exposed. Model's extensible monthly-table row APIs are not available.

@@ -25,7 +25,7 @@ namespace epmodel {
   /** \brief OutputTableSummaryReports.
    *
    * \par EnergyPlus object
-   * \epobject{output-table-summaryreports.html#outputtablesummaryreports,Output:Table:SummaryReports}.
+   * \epobject{outputtablesummaryreports.html#outputtablesummaryreports,Output:Table:SummaryReports}.
    *
    * \par OpenStudio Model API
    * The corresponding OpenStudio Model class is <code>openstudio::model::OutputTableSummaryReports</code>. This object contains extensible report-name rows. EPModel exposes no public summary-report list mutation or query methods.

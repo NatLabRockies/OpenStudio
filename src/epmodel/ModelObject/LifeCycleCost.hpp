@@ -26,7 +26,7 @@ namespace epmodel {
   /** \brief LifeCycleCost.
    *
    * \par EnergyPlus object
-   * \epobject{lifecyclecost-recurringcosts.html#lifecyclecostrecurringcosts,LifeCycleCost:RecurringCosts}.
+   * \epobject{lifecyclecostrecurringcosts.html#lifecyclecostrecurringcosts,LifeCycleCost:RecurringCosts}.
    *
    * \par OpenStudio Model API
    * The corresponding OpenStudio Model class is <code>openstudio::model::LifeCycleCost</code>. The cost timing and category fields are exposed. Model-only item, item-type, cost-units, and cost-calculation helpers are not available.

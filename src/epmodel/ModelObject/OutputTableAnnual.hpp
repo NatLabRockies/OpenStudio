@@ -25,7 +25,7 @@ namespace epmodel {
   /** \brief OutputTableAnnual.
    *
    * \par EnergyPlus object
-   * \epobject{output-table-annual.html#outputtableannual,Output:Table:Annual}.
+   * \epobject{outputtableannual.html#outputtableannual,Output:Table:Annual}.
    *
    * \par OpenStudio Model API
    * The corresponding OpenStudio Model class is <code>openstudio::model::OutputTableAnnual</code>. The filter field is exposed; extensible annual-table rows are not managed by EPModel.
