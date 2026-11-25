@@ -434,7 +434,7 @@ jobs:
     name: Publish Linux Artifacts
     needs: [linux-build]
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == true || github.event.inputs.publish_to_s3 == 'true'
+    if: github.repository == 'NatLabRockies/OpenStudio' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == true || github.event.inputs.publish_to_s3 == 'true')
     steps:
       - name: Download all installers
         uses: actions/download-artifact@v8
@@ -543,7 +543,7 @@ jobs:
     if: (!inputs.jobs || contains(inputs.jobs, 'macos-build'))
     # Apple signing secrets live in the apple-signing environment, which only these refs may use.
     # Other refs (PRs, feature branches) get no environment and fall back to ad-hoc signing.
-    environment: ${{ (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v')) && 'apple-signing' || '' }}
+    environment: ${{ github.repository == 'NatLabRockies/OpenStudio' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v')) && 'apple-signing' || '' }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 720
     continue-on-error: ${{ matrix.allow_failure }}
@@ -791,8 +791,9 @@ jobs:
         echo "exit_code=${overall_exit_code}" >> $GITHUB_OUTPUT
 
     - name: Setup Keychain
-      # Same refs as macos-publish, so everything published to S3 is signed
-      if: success() && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == true || github.event.inputs.publish_to_s3 == 'true')
+      # Same refs as the job's environment: the Apple secrets are apple-signing environment secrets, which can only deploy to develop/master/v* tags.
+      # So a publish_to_s3 dispatch from another branch publishes an unsigned DMG instead of failing here.
+      if: success() && github.repository == 'NatLabRockies/OpenStudio' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v'))
       env:
         APPLE_CERT_DATA: ${{ secrets.APPLE_CERT_DATA }}
         APPLE_CERT_PASSWORD: ${{ secrets.APPLE_CERT_PASSWORD }}
@@ -1019,7 +1020,7 @@ jobs:
     name: Publish MacOS Artifacts
     needs: [macos-build]
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == true || github.event.inputs.publish_to_s3 == 'true'
+    if: github.repository == 'NatLabRockies/OpenStudio' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == true || github.event.inputs.publish_to_s3 == 'true')
     steps:
       - name: Download all installers
         uses: actions/download-artifact@v8
@@ -1323,21 +1324,21 @@ jobs:
 
       # CODE SIGNING SETUP
       - name: Setup Node.js
-        if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == true || github.event.inputs.publish_to_s3 == 'true'
+        if: github.repository == 'NatLabRockies/OpenStudio' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == true || github.event.inputs.publish_to_s3 == 'true')
         uses: actions/setup-node@v7
         with:
           node-version: "18"
 
 
       - name: Create .env file for Signing
-        if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == true || github.event.inputs.publish_to_s3 == 'true'
+        if: github.repository == 'NatLabRockies/OpenStudio' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == true || github.event.inputs.publish_to_s3 == 'true')
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         run: |
           echo "ACCESS_KEY=${{ secrets.AWS_SIGNING_ACCESS_KEY }}" >> .env
           echo "SECRET_KEY=${{ secrets.AWS_SIGNING_SECRET_KEY }}" >> .env
 
       - name: Code sign binaries
-        if: success() && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == true || github.event.inputs.publish_to_s3 == 'true')
+        if: success() && github.repository == 'NatLabRockies/OpenStudio' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == true || github.event.inputs.publish_to_s3 == 'true')
         # Caps a hung signing service; Invoke-SigningWithRetry.ps1 sizes its 3 attempts to fit inside this
         timeout-minutes: 60
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
@@ -1402,7 +1403,7 @@ jobs:
           & $env:ComSpec /c "call conanbuild.bat && cpack -C ${{ env.BUILD_TYPE }}"
 
       - name: Code sign installer
-        if: success() && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == true || github.event.inputs.publish_to_s3 == 'true')
+        if: success() && github.repository == 'NatLabRockies/OpenStudio' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == true || github.event.inputs.publish_to_s3 == 'true')
         # Caps a hung signing service; Invoke-SigningWithRetry.ps1 sizes its 3 attempts to fit inside this
         timeout-minutes: 60
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
@@ -1495,7 +1496,7 @@ jobs:
     name: Publish Windows Artifacts
     needs: [windows-build]
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == true || github.event.inputs.publish_to_s3 == 'true'
+    if: github.repository == 'NatLabRockies/OpenStudio' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == true || github.event.inputs.publish_to_s3 == 'true')
     steps:
       - name: Download all installers
         uses: actions/download-artifact@v8
