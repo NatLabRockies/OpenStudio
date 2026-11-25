@@ -854,11 +854,6 @@ jobs:
         python_path=$(command -v python3)
         echo "SYSTEM_PYTHON_PATH=$python_path" >> $GITHUB_ENV
 
-    - name: Install Documentation Dependencies (Mac)
-      run: |
-        brew install --cask basictex
-        echo "/Library/TeX/texbin" >> $GITHUB_PATH
-
     - name: Configure with CMake
       working-directory: ${{ env.OPENSTUDIO_BUILD }}
       run: |
