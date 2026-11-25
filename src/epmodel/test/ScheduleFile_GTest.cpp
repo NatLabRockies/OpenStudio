@@ -58,6 +58,11 @@ TEST_F(EPModelFixture, ScheduleFile_ScalarAccessors_RoundTrip) {
   EXPECT_TRUE(schedule.setMinutesperItem("30"));
   EXPECT_EQ(30, schedule.minutesperItem());
   EXPECT_FALSE(schedule.setMinutesperItem("BAD"));
+  EXPECT_FALSE(schedule.setMinutesperItem(7));  // within 1-60, but not evenly divisible into 60
+  EXPECT_FALSE(schedule.setMinutesperItem("7"));
+  EXPECT_FALSE(schedule.setMinutesperItem(0));
+  EXPECT_FALSE(schedule.setMinutesperItem(120));
+  EXPECT_EQ(30, schedule.minutesperItem());
   schedule.resetMinutesperItem();
   EXPECT_TRUE(schedule.isMinutesperItemDefaulted());
   EXPECT_EQ(60, schedule.minutesperItem());
@@ -293,6 +298,31 @@ TEST_F(EPModelFixture, ScheduleFile_fromTimeSeries_intervalLengthNo) {
   EXPECT_EQ("openstudio.epmodel.ScheduleFile", sink.logMessages().front().logChannel());
   EXPECT_EQ("Timeseries does not have an interval length defined, but ScheduleVariableInterval is deprecated",
             sink.logMessages().front().logMessage());
+}
+
+TEST_F(EPModelFixture, ScheduleFile_fromTimeSeries_invalidMinutesperItem) {
+  Model model;
+
+  StringStreamLogSink sink;
+  sink.setLogLevel(Warn);
+
+  // 7 minutes is a fixed interval, but not one of the Minutes per Item choices
+  Date startDate(MonthOfYear::Jan, 1);
+  Time intervalLength(0, 0, 7);
+  Vector values(8760 * 60 / 7);
+  for (unsigned i = 0; i < values.size(); ++i) {
+    values[i] = i % 24;
+  }
+
+  TimeSeries timeSeries(startDate, intervalLength, values, "");
+  ASSERT_TRUE(timeSeries.intervalLength());
+
+  boost::optional<ScheduleFile> schedule = ScheduleFile::fromTimeSeries(timeSeries, model);
+  EXPECT_FALSE(schedule);
+  EXPECT_EQ(0u, model.getConcreteModelObjects<ScheduleFile>().size());
+  ASSERT_EQ(1u, sink.logMessages().size());
+  EXPECT_EQ("openstudio.epmodel.ScheduleFile", sink.logMessages().front().logChannel());
+  EXPECT_NE(std::string::npos, sink.logMessages().front().logMessage().find("Invalid 'Minutes per Item' (=7), must be evenly divisible into 60"));
 }
 
 TEST_F(EPModelFixture, ScheduleFile_timeSeries) {

@@ -235,10 +235,13 @@ namespace epmodel {
       }
       OS_ASSERT(exists(filePath));
 
-      bool ok = true;
-      ok &= result->setFileName(toString(p));
-      ok &= result->getImpl<detail::ScheduleFile_Impl>()->setTimeSeries(timeSeries);
+      const bool ok = result->setFileName(toString(p));
       OS_ASSERT(ok);
+      if (!result->getImpl<detail::ScheduleFile_Impl>()->setTimeSeries(timeSeries)) {
+        // setTimeSeries logs why the time series was rejected
+        result->remove();
+        return boost::none;
+      }
     } else {
       LOG_FREE(Warn, "openstudio.epmodel.ScheduleFile",
                "Timeseries does not have an interval length defined, but ScheduleVariableInterval is deprecated");
@@ -349,8 +352,10 @@ namespace epmodel {
         ++pos;
       }
 
-      bool ok = true;
-      ok &= this->setMinutesperItem(intervalLength);
+      // Intervals that don't divide an hour evenly (e.g. 7 minutes) are rejected; setMinutesperItem logs why
+      if (!this->setMinutesperItem(intervalLength)) {
+        return false;
+      }
       // Do we actually need the following? They aren't required in the IDD.
       //ok &= this->setNumberofHoursofData(8760);
       //ok &= this->setColumnSeparator("Comma");
@@ -452,6 +457,13 @@ namespace epmodel {
     }
 
     bool ScheduleFile_Impl::setMinutesperItem(int minutesperItem) {
+      // The E+ IDD only enforces 1-60 and leaves "must be evenly divisible into 60" as a note; enforce it here,
+      // matching the choice keys (1, 2, 3, 4, 5, 6, 10, 12, 15, 20, 30, 60) of the legacy OS:Schedule:File
+      if (minutesperItem < 1 || minutesperItem > 60 || 60 % minutesperItem != 0) {
+        LOG_FREE(Warn, "openstudio.epmodel.ScheduleFile",
+                 "Invalid 'Minutes per Item' (=" << minutesperItem << "), must be evenly divisible into 60, for " << briefDescription());
+        return false;
+      }
       return setInt(openstudio::Schedule_FileFields::MinutesperItem, minutesperItem);
     }
 
