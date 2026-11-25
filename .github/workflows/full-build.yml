@@ -746,13 +746,12 @@ jobs:
         python -m pip install --upgrade pip
         pip install setuptools wheel
         pip install -r python/requirements.txt
-        pip install conan aqtinstall
+        pip install conan
 
     - name: Install Ruby
       uses: ruby/setup-ruby@v1
       with:
         ruby-version: '3.2.2'
-        bundler-cache: true
 
     - name: Set up Qt IFW
       run: |
@@ -1348,7 +1347,6 @@ jobs:
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: '3.2.2'
-          bundler-cache: true
 
       - name: Setup QtIFW 4.x
         uses: jmarrec/setup-qtifw@v1
