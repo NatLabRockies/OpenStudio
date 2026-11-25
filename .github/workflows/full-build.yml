@@ -111,7 +111,6 @@ jobs:
             upload_globs: |
               *.rpm
               *OpenStudio*x86_64.tar.gz
-            cpack_generators: "RPM;TGZ"
             max_jobs: 4
             exclude_regex: "BCLFixture.RemoteBCLMetaSearchTest"
           - platform: ubuntu-2404-x64
@@ -124,7 +123,6 @@ jobs:
             upload_globs: |
               *.deb
               *OpenStudio*x86_64.tar.gz
-            cpack_generators: "DEB;TGZ"
             max_jobs: 4
             exclude_regex: ""
           - platform: ubuntu-2404-arm64
@@ -137,7 +135,6 @@ jobs:
             upload_globs: |
               *.deb
               *OpenStudio*arm64.tar.gz
-            cpack_generators: "DEB;TGZ"
             max_jobs: 4
             # SqlFileFixture.AnnualTotalCosts needed until E+ itself disables ffp-contract on arm64 GCC
             exclude_regex: "SqlFileFixture.AnnualTotalCosts|OpenStudioCLI.*test_measure_manager"
@@ -249,7 +246,6 @@ jobs:
           cmake --preset conan-release \
             -DCMAKE_BUILD_TYPE:STRING=${{ env.BUILD_TYPE }} \
             -DBUILD_TESTING:BOOL=ON \
-            -DCPACK_GENERATOR:STRING="${{ matrix.cpack_generators }}" \
             -DBUILD_PYTHON_BINDINGS:BOOL=ON \
             -DPython_EXECUTABLE:FILEPATH="$SYSTEM_PYTHON_PATH" \
             -DPYTHON_VERSION:STRING=${{ env.PYTHON_REQUIRED_VERSION }} \
@@ -415,20 +411,21 @@ jobs:
           cpack -C ${{ env.BUILD_TYPE }}
 
       - name: Upload DEB installer
-        if: contains(matrix.cpack_generators, 'DEB')
+        # The generators come from the conanfile.py CMakePresets: DEB on Ubuntu, RPM on Red Hat-like
+        if: startsWith(matrix.platform, 'ubuntu')
         uses: actions/upload-artifact@v7
         with:
           name: OS-Installers-${{ matrix.platform }}-DEB-${{ github.sha }}
           path: ${{ env.OPENSTUDIO_BUILD }}/*.deb
-          if-no-files-found: ignore
+          if-no-files-found: error
 
       - name: Upload RPM installer
-        if: contains(matrix.cpack_generators, 'RPM')
+        if: startsWith(matrix.platform, 'centos')
         uses: actions/upload-artifact@v7
         with:
           name: OS-Installers-${{ matrix.platform }}-RPM-${{ github.sha }}
           path: ${{ env.OPENSTUDIO_BUILD }}/*.rpm
-          if-no-files-found: ignore
+          if-no-files-found: error
 
       - name: Upload TGZ installer
         uses: actions/upload-artifact@v7
@@ -1211,9 +1208,9 @@ jobs:
           "SYSTEM_PYTHON_PATH=$pythonPath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Configure with CMake
-        working-directory: ${{ env.OPENSTUDIO_BUILD }}
+        # From the source dir: that's where conan put the CMakeUserPresets.json. The preset brings the toolchain, Ninja, the build type and the CPack generators
         run: |
-          & $env:ComSpec /c "call conanbuild.bat && cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE:STRING=${{ env.BUILD_TYPE }} -DBUILD_TESTING:BOOL=ON -DCPACK_GENERATOR:STRING=`"IFW;TGZ`" -DBUILD_PYTHON_BINDINGS:BOOL=ON -DBUILD_PYTHON_PIP_PACKAGE:BOOL=OFF -DPython_EXECUTABLE:FILEPATH=`"$env:SYSTEM_PYTHON_PATH`" -DPYTHON_VERSION:STRING=${{ env.PYTHON_REQUIRED_VERSION }} -DSYSTEM_RUBY_EXECUTABLE=`"%SYSTEM_RUBY_PATH%`" -DENABLE_PCH:BOOL=${{ env.ENABLE_PCH }} -DCMAKE_JOB_POOL_LINK:STRING=console .."
+          & $env:ComSpec /c "call ${{ env.OPENSTUDIO_BUILD }}\conanbuild.bat && cmake --preset conan-release -DBUILD_TESTING:BOOL=ON -DBUILD_PYTHON_BINDINGS:BOOL=ON -DPython_EXECUTABLE:FILEPATH=`"$env:SYSTEM_PYTHON_PATH`" -DPYTHON_VERSION:STRING=${{ env.PYTHON_REQUIRED_VERSION }} -DSYSTEM_RUBY_EXECUTABLE=`"%SYSTEM_RUBY_PATH%`" -DENABLE_PCH:BOOL=${{ env.ENABLE_PCH }} -DCMAKE_JOB_POOL_LINK:STRING=console"
 
       - name: Show restored ccache stats
         shell: bash
