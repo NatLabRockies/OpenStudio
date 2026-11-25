@@ -16,6 +16,8 @@
 #include <utilities/core/DeprecatedHelpers.hpp>
 #include <utilities/core/Logger.hpp>
 
+#include <boost/algorithm/string/trim.hpp>
+
 #include "../utilities/data/TimeSeries.hpp"
 // FIXME: re-enable once epmodel has its own YearDescription (see timeSeries()); must not include legacy src/model headers
 // #include "../model/YearDescription.hpp"
@@ -268,12 +270,41 @@ namespace epmodel {
       }
       OS_ASSERT(csvFile);
 
-      int columnIndex = this->columnNumber() - 1;
-      std::vector<std::string> values = csvFile->getColumnAsStringVector(columnIndex);
+      // Column Number and Rows to Skip at Top are not tied to the referenced file, so they can disagree with it.
+      // Follow them as EnergyPlus would, but fail with a descriptive openstudio::Exception when the data can't be read.
+      const int columnNumber = this->columnNumber();
+      if (columnNumber < 1 || static_cast<unsigned>(columnNumber) > csvFile->numColumns()) {
+        LOG_FREE_AND_THROW("openstudio.epmodel.ScheduleFile", "Column Number (=" << columnNumber << ") is out of range for the "
+                                                                                 << csvFile->numColumns() << " column(s) of '" << this->fileName()
+                                                                                 << "' referenced by " << briefDescription());
+      }
+      const std::vector<std::string> values = csvFile->getColumnAsStringVector(columnNumber - 1);
+
       const int rowsToSkip = this->rowstoSkipatTop();
+      if (rowsToSkip < 0 || static_cast<size_t>(rowsToSkip) >= values.size()) {
+        LOG_FREE_AND_THROW("openstudio.epmodel.ScheduleFile", "Rows to Skip at Top (=" << rowsToSkip << ") leaves no data in the " << values.size()
+                                                                                       << " row(s) of '" << this->fileName() << "' referenced by "
+                                                                                       << briefDescription());
+      }
+
       Vector vectorValues(values.size() - rowsToSkip);
       for (size_t i = rowsToSkip; i < values.size(); ++i) {
-        double value = std::stod(values[i]);
+        // Tolerate surrounding whitespace (e.g. a trailing '\r' from a CRLF file), but require the whole cell to be numeric
+        const std::string cell = boost::algorithm::trim_copy(values[i]);
+        size_t pos = 0;
+        double value = 0.0;
+        try {
+          value = std::stod(cell, &pos);
+        } catch (const std::exception&) {
+          pos = 0;
+        }
+        if (cell.empty() || pos != cell.size()) {
+          LOG_FREE_AND_THROW("openstudio.epmodel.ScheduleFile", "Non-numeric value '"
+                                                                  << values[i] << "' at row " << (i + 1) << ", column " << columnNumber << " of '"
+                                                                  << this->fileName() << "' referenced by " << briefDescription()
+                                                                  << ". If the file has header rows, set Rows to Skip at Top (currently "
+                                                                  << rowsToSkip << ") to the number of header rows.");
+        }
         vectorValues[i - rowsToSkip] = value;
       }
 
@@ -295,7 +326,8 @@ namespace epmodel {
       if (dateTimes.back() != lastDateTime) {
         LOG_FREE(Warn, "openstudio.epmodel.ScheduleFile",
                  "With " << minutesperItem << " minutes per item, last date time is " << dateTimes.back() << " for " << this->fileName()
-                         << " referenced by " << briefDescription());
+                         << " referenced by " << briefDescription() << ". Check Minutes per Item and Rows to Skip at Top (currently " << rowsToSkip
+                         << ").");
       }
 
       return result;

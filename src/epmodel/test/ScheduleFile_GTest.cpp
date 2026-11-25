@@ -12,6 +12,8 @@
 #include "../../utilities/data/TimeSeries.hpp"
 #include "../../utilities/core/StringStreamLogSink.hpp"
 
+#include <fstream>
+
 using namespace openstudio;
 using namespace openstudio::epmodel;
 
@@ -436,4 +438,70 @@ TEST_F(EPModelFixture, ScheduleFile_timeSeries) {
               != std::string::npos);
 
   // TODO: try setting a leap year
+}
+
+TEST_F(EPModelFixture, ScheduleFile_timeSeries_InconsistentWithFile) {
+  // Column Number and Rows to Skip at Top can disagree with the referenced file; timeSeries() must fail descriptively
+  Model model;
+
+  path p = resourcesPath() / toPath("model/schedulefile.csv");  // header row + 8760 data rows, 3 columns
+  ASSERT_TRUE(exists(p));
+
+  auto expectThrowWith = [](const ScheduleFile& schedule, const std::string& expected) {
+    try {
+      schedule.timeSeries();
+      ADD_FAILURE() << "Expected timeSeries() to throw an openstudio::Exception containing: " << expected;
+    } catch (const openstudio::Exception& e) {
+      EXPECT_NE(std::string::npos, std::string(e.what()).find(expected)) << e.what();
+    } catch (const std::exception& e) {
+      ADD_FAILURE() << "Expected an openstudio::Exception, got: " << e.what();
+    }
+  };
+
+  // Header row present, but Rows to Skip at Top left at its default of 0
+  ScheduleFile schedule(model, openstudio::toString(p));
+  EXPECT_EQ(0, schedule.rowstoSkipatTop());
+  expectThrowWith(schedule, "Non-numeric value 'Hour' at row 1, column 1 of '");
+  expectThrowWith(schedule, "set Rows to Skip at Top (currently 0) to the number of header rows");
+
+  schedule.setColumnNumber(3);
+  expectThrowWith(schedule, "Non-numeric value 'Value 2' at row 1, column 3 of '");
+
+  // Rows to Skip at Top consistent with the file
+  schedule.setRowstoSkipatTop(1);
+  EXPECT_EQ(8760u, schedule.timeSeries().values().size());
+
+  // Rows to Skip at Top covering every row
+  schedule.setRowstoSkipatTop(8761);
+  expectThrowWith(schedule, "Rows to Skip at Top (=8761) leaves no data in the 8761 row(s) of '");
+  schedule.setRowstoSkipatTop(10000);
+  expectThrowWith(schedule, "Rows to Skip at Top (=10000) leaves no data in the 8761 row(s) of '");
+
+  // Column Number beyond the file's columns
+  schedule.setRowstoSkipatTop(1);
+  schedule.setColumnNumber(4);
+  expectThrowWith(schedule, "Column Number (=4) is out of range for the 3 column(s) of '");
+
+  // Too many rows skipped can't be detected as an error, but the partial-year warning points at it
+  {
+    StringStreamLogSink sink;
+    sink.setLogLevel(Warn);
+    schedule.setColumnNumber(2);
+    schedule.setRowstoSkipatTop(2);
+    EXPECT_EQ(8759u, schedule.timeSeries().values().size());
+    ASSERT_EQ(1u, sink.logMessages().size());
+    EXPECT_NE(std::string::npos, sink.logMessages().front().logMessage().find("Check Minutes per Item and Rows to Skip at Top (currently 2)."));
+  }
+
+  // Partially numeric cells are rejected rather than truncated; surrounding whitespace (e.g. CRLF) is tolerated
+  {
+    path csvPath = boost::filesystem::temp_directory_path() / boost::filesystem::unique_path("schedulefile-%%%%-%%%%.csv");
+    {
+      std::ofstream ofs(openstudio::toSystemFilename(csvPath), std::ios::binary);
+      ofs << "Value\r\n1.5\r\n 2.5 \r\n12abc\r\n";
+    }
+    ScheduleFile schedule2(model, openstudio::toString(csvPath), 1, 1);
+    expectThrowWith(schedule2, "Non-numeric value '12abc' at row 4, column 1 of '");
+    boost::filesystem::remove(csvPath);
+  }
 }
