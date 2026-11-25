@@ -189,13 +189,22 @@ jobs:
         with:
           fetch-depth: 1
 
+      - name: Get base branch SHA
+        if: github.event_name == 'pull_request'
+        run: |
+          # github.event.pull_request.base.sha is the base at PR creation, not the current tip
+          BASE_SHA=$(git ls-remote "https://github.com/$GITHUB_REPOSITORY.git" "refs/heads/${{ github.base_ref }}" | cut -f1)
+          echo "BASE_SHA=$BASE_SHA" >> "$GITHUB_ENV"
+
       - name: Restore ccache cache
-        uses: actions/cache@v6
+        id: ccache-restore
+        uses: actions/cache/restore@v6
         with:
           path: ${{ env.CCACHE_DIR }}
-          key: ccache-${{ matrix.os }}-${{ matrix.platform }}-${{ hashFiles('conan.lock') }}
+          key: ccache-${{ matrix.os }}-${{ matrix.platform }}-pch=${{ env.ENABLE_PCH }}-${{ github.event_name == 'pull_request' && github.head_ref || github.sha }}
           restore-keys: |
-            ccache-${{ matrix.os }}-${{ matrix.platform }}-
+            ccache-${{ matrix.os }}-${{ matrix.platform }}-pch=${{ env.ENABLE_PCH }}-${{ env.BASE_SHA }}
+            ccache-${{ matrix.os }}-${{ matrix.platform }}-pch=${{ env.ENABLE_PCH }}-
 
       - name: Restore Conan cache
         uses: actions/cache@v6
@@ -339,6 +348,13 @@ jobs:
           kill $HB_PID || true
           command -v ninja >/dev/null 2>&1 && ninja -d stats || true
           exit $BUILD_EXIT
+
+      - name: Save ccache cache
+        if: always() && steps.ccache-restore.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v6
+        with:
+          path: ${{ env.CCACHE_DIR }}
+          key: ${{ steps.ccache-restore.outputs.cache-primary-key }}
 
       - name: Run CTest suite
         id: ctest
