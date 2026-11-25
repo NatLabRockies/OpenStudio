@@ -456,7 +456,12 @@ jobs:
 
       - name: Fail job on test failures
         if: ${{ steps.ctest.outputs.exit_code != '0' }}
+        working-directory: ${{ env.OPENSTUDIO_BUILD }}
         run: |
+          cat "${{ env.TEST_DASHBOARD_RELATIVE }}" || true
+          if [ -f Testing/Temporary/LastTestsFailed.log ]; then
+            echo; echo "Failed tests:"; cat Testing/Temporary/LastTestsFailed.log
+          fi
           echo "::error::CTest suite failed with exit code ${{ steps.ctest.outputs.exit_code }}"
           exit 1
 
@@ -1137,7 +1142,12 @@ jobs:
 
     - name: Fail job on test failures
       if: ${{ steps.mac_ctest.outputs.exit_code != '0' }}
+      working-directory: ${{ env.OPENSTUDIO_BUILD }}
       run: |
+        cat "${{ env.TEST_DASHBOARD_RELATIVE }}" || true
+        if [ -f Testing/Temporary/LastTestsFailed.log ]; then
+          echo; echo "Failed tests:"; cat Testing/Temporary/LastTestsFailed.log
+        fi
         echo "::error::CTest suite failed with exit code ${{ steps.mac_ctest.outputs.exit_code }}"
         exit 1
   macos-publish:
@@ -1643,7 +1653,12 @@ jobs:
 
       - name: Fail job on test failures
         if: ${{ steps.ctest.outputs.exit_code != '0' }}
+        working-directory: ${{ env.OPENSTUDIO_BUILD }}
         run: |
+          Get-Content "${{ env.TEST_DASHBOARD_RELATIVE }}" -ErrorAction SilentlyContinue
+          if (Test-Path Testing/Temporary/LastTestsFailed.log) {
+            ""; "Failed tests:"; Get-Content Testing/Temporary/LastTestsFailed.log
+          }
           echo "::error::CTest suite failed with exit code ${{ steps.ctest.outputs.exit_code }}"
           exit 1
 
