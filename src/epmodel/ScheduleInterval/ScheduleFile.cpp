@@ -357,9 +357,6 @@ namespace epmodel {
 
       // check that first report is whole number of intervals from start date
       const DateTime firstReportDateTime = timeSeries.firstReportDateTime();
-      const DateTime startDateTime = timeSeries.startDateTime();
-      const Date startDate = startDateTime.date();
-
       const Time firstReportTime = firstReportDateTime.time();
 
       const double numIntervalsToFirstReportDouble = std::max(1.0, firstReportTime.totalMinutes() / intervalLengthDouble);
