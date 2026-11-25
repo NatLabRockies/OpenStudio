@@ -161,3 +161,6 @@ ae602de89105983bf762cf1e6afd33d63d81b4a6
 # [chore] Org and copyright year updates for OS 311 [David Goldwasser, 2026-01-05]
 7a409fb41f6b0602ef2a6a018c9b3d33934571af
 3c5a13b05d17ad83bca6ee84ca130b5c1c7f1dda
+
+# [chore] Commit clang-format autocorrects [Julien Marrec, 2026-11-25]
+50b8da4eadd3588e3c9bb8a0fdc25f79f0721699
