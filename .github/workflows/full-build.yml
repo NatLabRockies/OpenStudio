@@ -103,7 +103,6 @@ jobs:
       fail-fast: false
       matrix:
         platform: [centos-9-x64, ubuntu-2404-x64, ubuntu-2404-arm64]
-        # Optional per entry: max_jobs: N to limit the build and CTest parallelism (eg if a build runs out of memory). Default: the runner's cores
         include:
           - platform: centos-9-x64
             pretty: CentOS 9 (AlmaLinux) x64
@@ -258,8 +257,7 @@ jobs:
         shell: bash
         run: |
           # Run from the source dir, where CMakeUserPresets.json is. The preset carries the Conan build environment (SWIG_LIB, ...)
-          # Number of jobs: from the preset (the runner's cores), unless matrix.max_jobs is set
-          cmake --build --preset conan-release ${{ matrix.max_jobs && format('--parallel {0}', matrix.max_jobs) || '' }} 2>&1 | tee ${{ env.OPENSTUDIO_BUILD }}/build.log
+          cmake --build --preset conan-release 2>&1 | tee ${{ env.OPENSTUDIO_BUILD }}/build.log
           build_exit=${PIPESTATUS[0]}
           ninja -C ${{ env.OPENSTUDIO_BUILD }} -d stats || true
           exit $build_exit
@@ -312,11 +310,7 @@ jobs:
             ctest_command+=(-E "^($exclude_pattern)$")
           fi
 
-          # Number of jobs: the runner's cores, unless matrix.max_jobs is set
-          jobs="${{ matrix.max_jobs }}"
-          if [ -z "$jobs" ]; then
-            jobs=$(nproc 2>/dev/null || sysctl -n hw.logicalcpu)
-          fi
+          jobs=$(nproc 2>/dev/null || sysctl -n hw.logicalcpu)
 
           begin_group "Running tests..."
           echo "Running: ${ctest_command[@]} -j $jobs --output-junit Testing/Results.xml"
@@ -441,7 +435,6 @@ jobs:
       fail-fast: false
       matrix:
         platform: [macos-x64, macos-arm64]
-        # Optional per entry: max_jobs: N to limit the build and CTest parallelism (eg if a build runs out of memory). Default: the runner's cores
         include:
           - macos_dev_target: "12.1"
             platform: macos-x64
@@ -759,7 +752,6 @@ jobs:
       fail-fast: false
       matrix:
         platform: [windows-2022-x64]
-        # Optional per entry: max_jobs: N to limit the build and CTest parallelism (eg if a build runs out of memory). Default: the runner's cores
         include:
           - platform: windows-2022-x64
             pretty: Windows 2022 x64
@@ -852,8 +844,7 @@ jobs:
       - name: Build with Ninja
         run: |
           # $env:ComSpec, not cmd: see Configure with CMake
-          # Number of jobs: from the preset (the runner's cores), unless matrix.max_jobs is set
-          & $env:ComSpec /c "call ${{ env.OPENSTUDIO_BUILD }}\conanbuild.bat && cmake --build --preset conan-release ${{ matrix.max_jobs && format('--parallel {0}', matrix.max_jobs) || '' }} -- -d stats 2>&1" | Tee-Object -FilePath "${{ env.OPENSTUDIO_BUILD }}\build.log"
+          & $env:ComSpec /c "call ${{ env.OPENSTUDIO_BUILD }}\conanbuild.bat && cmake --build --preset conan-release -- -d stats 2>&1" | Tee-Object -FilePath "${{ env.OPENSTUDIO_BUILD }}\build.log"
           # The exit code of the cmd process, not Tee-Object's
           exit $LASTEXITCODE
 
