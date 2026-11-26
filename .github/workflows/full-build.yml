@@ -87,6 +87,7 @@ env:
   # mtime-based compiler check is unreliable across fresh runner VMs, where the compiler binary's mtime can differ even though its content doesn't
   CCACHE_COMPILERCHECK: content
   ENABLE_PCH: ON
+  NINJA_STATUS: "[%p][%f/%t | %es elapsed | %o objs/sec] "
   # Put [skip tests] in the commit message to skip the CTest steps (only on push: always false on pull requests)
   SKIP_TESTS: ${{ contains(github.event.head_commit.message, '[skip tests]') }}
 
@@ -252,7 +253,6 @@ jobs:
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         run: |
           . ./conanbuild.sh
-          export NINJA_STATUS="[%f/%t | %es elapsed | %o objs/sec]"
           # Start resource monitor (records RSS samples for later summary)
           echo "timestamp PID RSS_KB COMM" > mem_samples.log
           ( while true; do
@@ -697,13 +697,13 @@ jobs:
       working-directory: ${{ env.OPENSTUDIO_BUILD }}
       run: |
         . ./conanbuild.sh
-        export NINJA_STATUS="[%f/%t | %es elapsed | %o objs/sec]"
         while true; do
           sleep 300
           echo "[heartbeat] $(date -u +"%H:%M:%S")"
           if command -v top >/dev/null 2>&1; then top -l 1 -s 0 | grep PhysMem || true; fi
           df -h . | tail -1 | awk '{print "[disk] used=" $3 "/" $2 " (" $5 ")"}'
-          if command -v ps >/dev/null 2>&1; then ps -eo pid,pmem,rss,comm | sort -rn -k2 | head -n 5; fi
+          # BSD ps -m sorts by memory: no sort, which printed 'Broken pipe' when head closed the pipe
+          if command -v ps >/dev/null 2>&1; then ps -m -eo pid,pmem,rss,comm | head -n 6; fi
         done &
         heartbeat_pid=$!
         cmake --build . --parallel ${MAX_BUILD_THREADS} 2>&1 | tee build.log
