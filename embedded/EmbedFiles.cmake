@@ -73,9 +73,7 @@ function(embed_files FILES EMBEDDED_LOCATIONS CXX_OUTPUT_FILES)
   set(NUMFILES ${FILES_LENGTH})
 
   # ZIP_LISTS rather than list(GET ... ${i}), which re-parses the whole list every time: that was taking ~30s for the 6000+ ruby files
-  set(i -1)
   foreach(FILE EMBEDDED_LOCATION IN ZIP_LISTS FILES EMBEDDED_LOCATIONS)
-    math(EXPR i "${i} + 1")
 
     get_filename_component(BASE_PATH ${EMBEDDED_LOCATION} DIRECTORY)
     get_filename_component(BASE_FILENAME ${EMBEDDED_LOCATION} NAME_WE)
@@ -101,8 +99,8 @@ function(embed_files FILES EMBEDDED_LOCATIONS CXX_OUTPUT_FILES)
       set( EMBEDDED_LOCATION ":/${EMBEDDED_LOCATION}" )
     endif()
 
-    # One line per file for CreateEmbeddedSource: <infile>\t<outfile>\t<filenum>\t<embeddedname>
-    string(APPEND EMBED_LIST_CONTENT "${FILE}\t${EMBED_SOURCE_FILE}\t${i}\t${EMBEDDED_LOCATION}\n")
+    # One line per file for CreateEmbeddedSource: <infile>\t<outfile>\t<embeddedname>. The line index is the file number
+    string(APPEND EMBED_LIST_CONTENT "${FILE}\t${EMBED_SOURCE_FILE}\t${EMBEDDED_LOCATION}\n")
 
     string(APPEND EMBEDDED_FILE_INCLUDES "#include <${EMBED_SOURCE_FILE_REL_PATH}>\n")
   endforeach()

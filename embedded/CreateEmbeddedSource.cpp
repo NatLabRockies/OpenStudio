@@ -121,7 +121,7 @@ static int embedFile(const EmbeddedFile& file) {
 }
 
 // Usage: CreateEmbeddedSource <list_file>
-// Each line of the list file is: <infile>\t<outfile>\t<filenum>\t<embeddedname>
+// Each line of the list file is: <infile>\t<outfile>\t<embeddedname>, the line index is the file number
 // All files are processed in one go (on all cores), rather than one process per file
 int main(int argc, char* argv[]) {
   if (argc != 2) {
@@ -143,7 +143,7 @@ int main(int argc, char* argv[]) {
     }
     EmbeddedFile file;
     size_t start = 0;
-    for (auto* field : {&file.infile, &file.outfile, &file.filenum}) {
+    for (auto* field : {&file.infile, &file.outfile}) {
       const size_t tab = line.find('\t', start);
       if (tab == std::string::npos) {
         std::cerr << "Malformed line in '" << argv[1] << "': " << line << std::endl;
@@ -153,6 +153,7 @@ int main(int argc, char* argv[]) {
       start = tab + 1;
     }
     file.embeddedname = line.substr(start);
+    file.filenum = std::to_string(files.size());
     files.push_back(std::move(file));
   }
 
