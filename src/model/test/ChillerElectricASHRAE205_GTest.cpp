@@ -620,6 +620,7 @@ TEST_F(ModelFixture, ChillerElectricASHRAE205_Loops) {
 
 TEST_F(ModelFixture, ChillerElectricASHRAE205_NotCBORFile) {
   Model model;
+  setUniqueOswDir(model);
 
   openstudio::path p = resourcesPath() / toPath("model/7-7_Windows_Complete.osm");
   EXPECT_TRUE(exists(p));
@@ -632,17 +633,10 @@ TEST_F(ModelFixture, ChillerElectricASHRAE205_NotCBORFile) {
 
 TEST_F(ModelFixture, ChillerElectricASHRAE205_Clone) {
   Model m;
+  setUniqueOswDir(m);
 
   openstudio::path p = resourcesPath() / toPath("model/A205ExampleChiller.RS0001.a205.cbor");
   EXPECT_TRUE(exists(p));
-
-  // Work in a temp dir so we don't mess everything up when running tests in parallel
-  // Work in a temp dir so we don't mess everything up when running tests in parallel
-  openstudio::path expectedDestDir = openstudio::tempDir() / openstudio::toPath("ChillerElectricASHRAE205_Clone");
-  if (exists(expectedDestDir)) {
-    removeDirectory(expectedDestDir);
-  }
-  EXPECT_TRUE(m.workflowJSON().addFilePath(expectedDestDir));
 
   boost::optional<ExternalFile> representationFile = ExternalFile::getExternalFile(m, openstudio::toString(p));
   ASSERT_TRUE(representationFile);
@@ -657,6 +651,7 @@ TEST_F(ModelFixture, ChillerElectricASHRAE205_Clone) {
   {
     // Another model first, so we don't mess the original one
     Model m2;
+    setUniqueOswDir(m2, "_m2");
     auto ch2 = ch.clone(m2).cast<ChillerElectricASHRAE205>();
 
     ASSERT_EQ(1, m2.getConcreteModelObjects<ExternalFile>().size());

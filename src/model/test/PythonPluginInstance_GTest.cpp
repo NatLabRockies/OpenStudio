@@ -18,6 +18,7 @@ using namespace openstudio;
 
 TEST_F(ModelFixture, PythonPluginInstance) {
   Model model;
+  setUniqueOswDir(model);
   EXPECT_EQ(0u, model.getConcreteModelObjects<ExternalFile>().size());
   EXPECT_EQ(0u, model.getConcreteModelObjects<PythonPluginInstance>().size());
 
@@ -86,6 +87,7 @@ TEST_F(ModelFixture, PythonPluginInstance) {
 
 TEST_F(ModelFixture, PythonPluginInstance_NotPYFile) {
   Model model;
+  setUniqueOswDir(model);
 
   path p = resourcesPath() / toPath("model/7-7_Windows_Complete.osm");
   EXPECT_TRUE(exists(p));
@@ -98,6 +100,7 @@ TEST_F(ModelFixture, PythonPluginInstance_NotPYFile) {
 
 TEST_F(ModelFixture, PythonPluginInstance_ClassNameValidation) {
   Model model;
+  setUniqueOswDir(model);
 
   path p = resourcesPath() / toPath("model/PythonPluginThermochromicWindow.py");
   EXPECT_TRUE(exists(p));
