@@ -270,7 +270,8 @@ jobs:
 
       - &save_ccache
         name: Save ccache cache
-        if: always() && steps.ccache-restore.outputs.cache-hit != 'true'
+        # Still save when the build fails, but not when the run is cancelled: that would save a partial cache, which is then the newest one the restore-keys pick
+        if: ${{ !cancelled() && steps.ccache-restore.outputs.cache-hit != 'true' }}
         uses: actions/cache/save@v6
         with:
           path: ${{ env.CCACHE_DIR }}
