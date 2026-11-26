@@ -181,19 +181,23 @@ jobs:
           df -h || true
           echo
 
-      - name: Checkout repository
+      - &checkout
+        name: Checkout repository
         uses: actions/checkout@v7
         with:
           fetch-depth: 1
 
-      - name: Get base branch SHA
+      - &get_base_sha
+        name: Get base branch SHA
         if: github.event_name == 'pull_request'
+        shell: bash
         run: |
           # github.event.pull_request.base.sha is the base at PR creation, not the current tip
           BASE_SHA=$(git ls-remote "https://github.com/$GITHUB_REPOSITORY.git" "refs/heads/${{ github.base_ref }}" | cut -f1)
           echo "BASE_SHA=$BASE_SHA" >> "$GITHUB_ENV"
 
-      - name: Restore ccache cache
+      - &restore_ccache
+        name: Restore ccache cache
         id: ccache-restore
         uses: actions/cache/restore@v6
         with:
@@ -218,7 +222,9 @@ jobs:
             echo "/usr/local/cmake/bin" >> $GITHUB_PATH
           fi
 
-      - name: Install Python dependencies
+      - &install_python_deps
+        name: Install Python dependencies
+        shell: bash
         run: python -m pip install -r python/requirements.txt
 
       - name: Setup Conan
@@ -241,7 +247,8 @@ jobs:
             -DENABLE_PCH:BOOL=${{ env.ENABLE_PCH }} \
             -DCMAKE_JOB_POOL_LINK:STRING=console
 
-      - name: Show restored ccache stats
+      - &show_restored_ccache_stats
+        name: Show restored ccache stats
         shell: bash
         run: |
           # Stats live in the cache dir, so they come back with the restore: show them, then zero them for this run
@@ -267,19 +274,22 @@ jobs:
           ninja -d stats || true
           exit $BUILD_EXIT
 
-      - name: Show ccache stats
+      - &show_ccache_stats
+        name: Show ccache stats
         if: always()
         shell: bash
         run: ccache --show-stats -vv
 
-      - name: Save ccache cache
+      - &save_ccache
+        name: Save ccache cache
         if: always() && steps.ccache-restore.outputs.cache-hit != 'true'
         uses: actions/cache/save@v6
         with:
           path: ${{ env.CCACHE_DIR }}
           key: ${{ steps.ccache-restore.outputs.cache-primary-key }}
 
-      - name: Upload build diagnostics
+      - &upload_build_diagnostics
+        name: Upload build diagnostics
         if: always()
         uses: actions/upload-artifact@v7
         with:
@@ -362,7 +372,8 @@ jobs:
           fi
         continue-on-error: true
 
-      - name: Upload Testing artifact
+      - &upload_testing_artifact
+        name: Upload Testing artifact
         if: always() && env.SKIP_TESTS != 'true'
         uses: actions/upload-artifact@v7
         with:
@@ -568,10 +579,7 @@ jobs:
       contents: write
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v7
-      with:
-        fetch-depth: 1
+    - *checkout
 
     - name: Verify space
       shell: bash
@@ -598,30 +606,16 @@ jobs:
         echo MACOSX_DEPLOYMENT_TARGET=${{ matrix.macos_dev_target }} >> $GITHUB_ENV
         brew install ninja ccache
 
-    - name: Get base branch SHA
-      if: github.event_name == 'pull_request'
-      run: |
-        # github.event.pull_request.base.sha is the base at PR creation, not the current tip
-        BASE_SHA=$(git ls-remote "https://github.com/$GITHUB_REPOSITORY.git" "refs/heads/${{ github.base_ref }}" | cut -f1)
-        echo "BASE_SHA=$BASE_SHA" >> "$GITHUB_ENV"
+    - *get_base_sha
 
-    - name: Restore ccache cache
-      id: ccache-restore
-      uses: actions/cache/restore@v6
-      with:
-        path: ${{ env.CCACHE_DIR }}
-        key: ccache-${{ matrix.os }}-${{ matrix.platform }}-pch=${{ env.ENABLE_PCH }}-${{ github.event_name == 'pull_request' && github.head_ref || github.sha }}
-        restore-keys: |
-          ccache-${{ matrix.os }}-${{ matrix.platform }}-pch=${{ env.ENABLE_PCH }}-${{ env.BASE_SHA }}
-          ccache-${{ matrix.os }}-${{ matrix.platform }}-pch=${{ env.ENABLE_PCH }}-
+    - *restore_ccache
 
     - name: Set up Python ${{ env.PYTHON_REQUIRED_VERSION }}
       uses: actions/setup-python@v7
       with:
         python-version: ${{ env.PYTHON_REQUIRED_VERSION }}
 
-    - name: Install Python dependencies
-      run: python -m pip install -r python/requirements.txt
+    - *install_python_deps
 
     - name: Install Ruby
       uses: ruby/setup-ruby@v1
@@ -663,13 +657,7 @@ jobs:
           -DENABLE_PCH:BOOL=${{ env.ENABLE_PCH }} \
           -DCMAKE_JOB_POOL_LINK:STRING=console
 
-    - name: Show restored ccache stats
-      shell: bash
-      run: |
-        # Stats live in the cache dir, so they come back with the restore: show them, then zero them for this run
-        ccache --show-stats -vv
-        ccache --zero-stats
-        ccache --show-config
+    - *show_restored_ccache_stats
 
     - name: Build with Ninja
       working-directory: ${{ env.OPENSTUDIO_BUILD }}
@@ -691,30 +679,11 @@ jobs:
         if [ -f build.log ]; then tail -n 40 build.log; fi
         exit $build_exit
 
-    - name: Show ccache stats
-      if: always()
-      shell: bash
-      run: ccache --show-stats -vv
+    - *show_ccache_stats
 
-    - name: Save ccache cache
-      if: always() && steps.ccache-restore.outputs.cache-hit != 'true'
-      uses: actions/cache/save@v6
-      with:
-        path: ${{ env.CCACHE_DIR }}
-        key: ${{ steps.ccache-restore.outputs.cache-primary-key }}
+    - *save_ccache
 
-    - name: Upload build diagnostics
-      if: always()
-      uses: actions/upload-artifact@v7
-      with:
-        name: build-diag-${{ matrix.platform }}-${{ github.sha }}
-        path: |
-          ${{ env.OPENSTUDIO_BUILD }}/build.log
-          ${{ env.OPENSTUDIO_BUILD }}/.ninja_log
-          ${{ env.OPENSTUDIO_BUILD }}/CTestTestfile.cmake
-        if-no-files-found: warn
-        # .ninja_log is a hidden file, skipped by default
-        include-hidden-files: true
+    - *upload_build_diagnostics
 
     - name: Run CTest suite
       if: env.SKIP_TESTS != 'true'
@@ -935,14 +904,7 @@ jobs:
         fi
       continue-on-error: true
 
-    - name: Upload Testing artifact
-      if: always() && env.SKIP_TESTS != 'true'
-      uses: actions/upload-artifact@v7
-      with:
-        name: Testing-${{ matrix.platform }}-${{ github.sha }}
-        path: |
-          ${{ env.OPENSTUDIO_BUILD }}/Testing-${{ matrix.test_suffix }}/
-          ${{ env.OPENSTUDIO_BUILD }}/${{ env.TEST_DASHBOARD_RELATIVE }}
+    - *upload_testing_artifact
 
     - name: Determine installer path
       id: installer_path
@@ -1051,10 +1013,7 @@ jobs:
       contents: write
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v7
-        with:
-          fetch-depth: 1
+      - *checkout
 
       - name: Verify space
         run: |
@@ -1075,23 +1034,9 @@ jobs:
         # Not sccache: it refuses to cache MSVC compiles using PCH (/Yc, /Fp), i.e. ~95% of them
         run: choco install ccache -y --no-progress
 
-      - name: Get base branch SHA
-        if: github.event_name == 'pull_request'
-        shell: bash
-        run: |
-          # github.event.pull_request.base.sha is the base at PR creation, not the current tip
-          BASE_SHA=$(git ls-remote "https://github.com/$GITHUB_REPOSITORY.git" "refs/heads/${{ github.base_ref }}" | cut -f1)
-          echo "BASE_SHA=$BASE_SHA" >> "$GITHUB_ENV"
+      - *get_base_sha
 
-      - name: Restore ccache cache
-        id: ccache-restore
-        uses: actions/cache/restore@v6
-        with:
-          path: ${{ env.CCACHE_DIR }}
-          key: ccache-${{ matrix.os }}-${{ matrix.platform }}-pch=${{ env.ENABLE_PCH }}-${{ github.event_name == 'pull_request' && github.head_ref || github.sha }}
-          restore-keys: |
-            ccache-${{ matrix.os }}-${{ matrix.platform }}-pch=${{ env.ENABLE_PCH }}-${{ env.BASE_SHA }}
-            ccache-${{ matrix.os }}-${{ matrix.platform }}-pch=${{ env.ENABLE_PCH }}-
+      - *restore_ccache
 
       - name: Prepare workspace
         run: |
@@ -1103,8 +1048,7 @@ jobs:
           python-version: '3.12.2'
           cache: 'pip'
 
-      - name: Install Python dependencies
-        run: python -m pip install -r python/requirements.txt
+      - *install_python_deps
 
       - name: Install Ruby
         uses: ruby/setup-ruby@v1
@@ -1134,13 +1078,7 @@ jobs:
           $rubyExe = (Get-Command ruby).Source
           & $env:ComSpec /c "call ${{ env.OPENSTUDIO_BUILD }}\conanbuild.bat && cmake --preset conan-release -DSYSTEM_RUBY_EXECUTABLE:FILEPATH=`"$rubyExe`" -DENABLE_PCH:BOOL=${{ env.ENABLE_PCH }} -DCMAKE_JOB_POOL_LINK:STRING=console"
 
-      - name: Show restored ccache stats
-        shell: bash
-        run: |
-          # Stats live in the cache dir, so they come back with the restore: show them, then zero them for this run
-          ccache --show-stats -vv
-          ccache --zero-stats
-          ccache --show-config
+      - *show_restored_ccache_stats
 
       - name: Build with Ninja
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
@@ -1155,30 +1093,11 @@ jobs:
             exit $LASTEXITCODE
           }
 
-      - name: Show ccache stats
-        if: always()
-        shell: bash
-        run: ccache --show-stats -vv
+      - *show_ccache_stats
 
-      - name: Save ccache cache
-        if: always() && steps.ccache-restore.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v6
-        with:
-          path: ${{ env.CCACHE_DIR }}
-          key: ${{ steps.ccache-restore.outputs.cache-primary-key }}
+      - *save_ccache
 
-      - name: Upload build diagnostics
-        if: always()
-        uses: actions/upload-artifact@v7
-        with:
-          name: build-diag-${{ matrix.platform }}-${{ github.sha }}
-          path: |
-            ${{ env.OPENSTUDIO_BUILD }}/build.log
-            ${{ env.OPENSTUDIO_BUILD }}/.ninja_log
-            ${{ env.OPENSTUDIO_BUILD }}/CTestTestfile.cmake
-          if-no-files-found: warn
-          # .ninja_log is a hidden file, skipped by default
-          include-hidden-files: true
+      - *upload_build_diagnostics
 
       - name: Run CTest suite
         if: env.SKIP_TESTS != 'true'
@@ -1253,14 +1172,7 @@ jobs:
           }
         continue-on-error: true
 
-      - name: Upload Testing artifact
-        if: always() && env.SKIP_TESTS != 'true'
-        uses: actions/upload-artifact@v7
-        with:
-          name: Testing-${{ matrix.platform }}-${{ github.sha }}
-          path: |
-            ${{ env.OPENSTUDIO_BUILD }}/Testing-${{ matrix.test_suffix }}/
-            ${{ env.OPENSTUDIO_BUILD }}/${{ env.TEST_DASHBOARD_RELATIVE }}
+      - *upload_testing_artifact
 
       # CODE SIGNING SETUP
       - name: Setup Node.js
