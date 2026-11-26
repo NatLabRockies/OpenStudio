@@ -840,22 +840,17 @@ jobs:
         run: |
           # ruby/test/CMakeLists.txt only looks in hardcoded locations (NO_DEFAULT_PATH, to avoid the conan ruby), not in setup-ruby's toolcache
           $rubyExe = (Get-Command ruby).Source
+          # $env:ComSpec, not cmd: setup-ruby puts its MSYS2 usr/bin, which has a 'cmd' script, ahead in the PATH (that's also why we can't use conan's conanbuild.ps1)
           & $env:ComSpec /c "call ${{ env.OPENSTUDIO_BUILD }}\conanbuild.bat && cmake --preset conan-release -DSYSTEM_RUBY_EXECUTABLE:FILEPATH=`"$rubyExe`" -DENABLE_PCH:BOOL=${{ env.ENABLE_PCH }} -DCMAKE_JOB_POOL_LINK:STRING=console"
 
       - *show_restored_ccache_stats
 
       - name: Build with Ninja
-        working-directory: ${{ env.OPENSTUDIO_BUILD }}
-        shell: pwsh
         run: |
-          # Use $env:ComSpec to ensure we call the Windows Command Prompt, not the MSYS2 cmd found in PATH
-          & $env:ComSpec /c "call conanbuild.bat && cmake --build . --parallel ${{ matrix.max_jobs }} -- -d stats 2>&1" | Tee-Object -FilePath "build.log"
-
-          # Check the exit code of the cmd process, not Tee-Object
-          if ($LASTEXITCODE -ne 0) {
-            Write-Error "Build failed with exit code $LASTEXITCODE"
-            exit $LASTEXITCODE
-          }
+          # $env:ComSpec, not cmd: see Configure with CMake
+          & $env:ComSpec /c "call ${{ env.OPENSTUDIO_BUILD }}\conanbuild.bat && cmake --build --preset conan-release --parallel ${{ matrix.max_jobs }} -- -d stats 2>&1" | Tee-Object -FilePath "${{ env.OPENSTUDIO_BUILD }}\build.log"
+          # The exit code of the cmd process, not Tee-Object's
+          exit $LASTEXITCODE
 
       - *show_ccache_stats
 
@@ -877,7 +872,6 @@ jobs:
         uses: actions/setup-node@v7
         with:
           node-version: "18"
-
 
       - name: Create .env file for Signing
         if: github.repository == 'NatLabRockies/OpenStudio' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == true || github.event.inputs.publish_to_s3 == 'true')
