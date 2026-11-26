@@ -441,7 +441,7 @@ jobs:
       - name: Download all installers
         uses: actions/download-artifact@v8
         with:
-          pattern: OS-Installers-*
+          pattern: OS-Installers-{ubuntu,centos}-*
           merge-multiple: true
           path: installers
 
@@ -868,7 +868,7 @@ jobs:
       if: always()
       uses: actions/upload-artifact@v7
       with:
-        name: OS-IFW-${{ matrix.platform }}-${{ github.sha }}
+        name: OS-Installers-${{ matrix.platform }}-IFW-${{ github.sha }}
         path: ${{ steps.installer_path.outputs.path }}
         if-no-files-found: ignore
 
@@ -876,7 +876,7 @@ jobs:
       if: always()
       uses: actions/upload-artifact@v7
       with:
-        name: OS-TGZ-${{ matrix.platform }}-${{ github.sha }}
+        name: OS-Installers-${{ matrix.platform }}-TGZ-${{ github.sha }}
         path: ${{ env.OPENSTUDIO_BUILD }}/OpenStudio-*.tar.gz
         if-no-files-found: ignore
 
@@ -891,7 +891,7 @@ jobs:
       - name: Download all installers
         uses: actions/download-artifact@v8
         with:
-          pattern: OS-*-macos*
+          pattern: OS-Installers-macos-*
           merge-multiple: true
           path: installers
 
@@ -1214,7 +1214,7 @@ jobs:
       - name: Download all installers
         uses: actions/download-artifact@v8
         with:
-          pattern: OS-Installers-windows-2022-x64-*
+          pattern: OS-Installers-windows-*
           path: installers
 
       - name: Configure AWS credentials
