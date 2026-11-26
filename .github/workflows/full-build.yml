@@ -432,115 +432,6 @@ jobs:
           echo "::error::CTest suite failed with exit code ${{ steps.ctest.outputs.exit_code }}"
           exit 1
 
-  linux-publish:
-    name: Publish Linux Artifacts
-    needs: [linux-build]
-    runs-on: ubuntu-latest
-    if: &publish_if github.repository == 'NatLabRockies/OpenStudio' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == true || github.event.inputs.publish_to_s3 == 'true')
-    steps:
-      - name: Download all installers
-        uses: actions/download-artifact@v8
-        with:
-          pattern: OS-Installers-{ubuntu,centos}-*
-          merge-multiple: true
-          path: installers
-
-      - &configure_aws_credentials
-        name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v6
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION || 'us-west-2' }}
-
-      - name: Publish to S3
-        working-directory: installers
-        env:
-          S3_PREFIX: ${{ github.ref_type == 'tag' && format('releases/{0}', github.ref_name) || format('{0}', github.ref_name) }}
-        run: &s3_upload |
-          echo "Uploading artifacts to s3://${AWS_S3_BUCKET}/${S3_PREFIX}"
-          for file in *; do
-            [ -e "$file" ] || continue
-            [ -f "$file" ] || continue
-            filename=$(basename "$file")
-            key="${S3_PREFIX}/${filename}"
-            aws s3 cp "$file" "s3://${AWS_S3_BUCKET}/${key}" --acl public-read
-            if command -v md5sum >/dev/null 2>&1; then md5sum "$file"; else md5 "$file"; fi
-          done
-
-      - name: Trigger Docker Build
-        if: inputs.skip_docker_trigger != true && github.event.inputs.skip_docker_trigger != 'true'
-        working-directory: installers
-        env:
-          GH_TOKEN: ${{ secrets.DOCKER_OPENSTUDIO_PAT }}
-          BRANCH_NAME: ${{ github.ref_name }}
-          S3_PREFIX: ${{ github.ref_type == 'tag' && format('releases/{0}', github.ref_name) || format('{0}', github.ref_name) }}
-        run: |
-
-          # Find the 24.04 deb file locally
-          DEB_FILE=$(find . -name "*24.04*.deb" | head -n 1)
-          if [ -z "$DEB_FILE" ]; then
-            echo "::error::Could not find Ubuntu 24.04 deb file in installers directory"
-            ls -la
-            exit 1
-          fi
-
-          FILENAME=$(basename "$DEB_FILE")
-          echo "Found file: $FILENAME"
-
-          # Construct S3 URL
-          # Replace + with %2B
-          ENCODED_FILENAME=${FILENAME//+/%2B}
-          BINARY_URL="https://${AWS_S3_BUCKET}.s3.amazonaws.com/${S3_PREFIX}/${ENCODED_FILENAME}"
-          echo "Binary URL: $BINARY_URL"
-
-          # Parse version from filename
-          # Expected format: OpenStudio-<Version>-<Platform>.deb
-          if [[ "$FILENAME" =~ OpenStudio-(.+)-Ubuntu-24\.04.*\.deb ]]; then
-             OS_VERSION_FULL=${BASH_REMATCH[1]}
-          elif [[ "$FILENAME" =~ OpenStudio-(.+)-Linux.*\.deb ]]; then
-             OS_VERSION_FULL=${BASH_REMATCH[1]}
-          else
-             echo "::error::Could not parse version from filename: $FILENAME"
-             exit 1
-          fi
-
-          echo "Full Version: $OS_VERSION_FULL"
-
-          # Logic from Jenkins:
-          # Split by +
-          IFS='+' read -r VER_PART SHA_PART <<< "$OS_VERSION_FULL"
-
-          if [[ "$VER_PART" == *"-"* ]]; then
-             # 3.3.0-rc1 -> Ver: 3.3.0, Ext: rc1
-             IFS='-' read -r OS_VERSION OS_VERSION_EXT <<< "$VER_PART"
-          else
-             # 3.3.0+sha -> Ver: 3.3.0, Ext: sha
-             OS_VERSION="$VER_PART"
-             OS_VERSION_EXT="$SHA_PART"
-          fi
-
-          echo "OS Version: $OS_VERSION"
-          echo "OS Version Ext: $OS_VERSION_EXT"
-
-          # Docker Tag Logic
-          if [[ "$BRANCH_NAME" == "develop" ]]; then
-             DOCKER_IMAGE_TAG="develop"
-          else
-             DOCKER_IMAGE_TAG="${OS_VERSION}-${OS_VERSION_EXT}"
-          fi
-          echo "Docker Image Tag: $DOCKER_IMAGE_TAG"
-
-          # Trigger Workflow
-          echo "Triggering manual_update_develop workflow in NatLabRockies/docker-openstudio..."
-          gh workflow run 'manual_update_develop' \
-            --repo NatLabRockies/docker-openstudio \
-            --ref develop \
-            -f docker_image_tag="$DOCKER_IMAGE_TAG" \
-            -f os_installer_link="$BINARY_URL" \
-            -f os_version="$OS_VERSION" \
-            -f os_version_ext="$OS_VERSION_EXT"
-
   macos-build:
     name: Build Packages for ${{ matrix.pretty }}
     if: (!inputs.jobs || contains(inputs.jobs, 'macos-build'))
@@ -883,27 +774,6 @@ jobs:
 
     - *fail_on_test_failures
 
-  macos-publish:
-    name: Publish MacOS Artifacts
-    needs: [macos-build]
-    runs-on: ubuntu-latest
-    if: *publish_if
-    steps:
-      - name: Download all installers
-        uses: actions/download-artifact@v8
-        with:
-          pattern: OS-Installers-macos-*
-          merge-multiple: true
-          path: installers
-
-      - *configure_aws_credentials
-
-      - name: Publish to S3
-        working-directory: installers
-        env:
-          S3_PREFIX: ${{ github.ref_type == 'tag' && format('releases/{0}/signed', github.ref_name) || format('{0}/signed', github.ref_name) }}
-        run: *s3_upload
-
   windows-build:
     name: Build ${{ matrix.pretty }}
     if: (!inputs.jobs || contains(inputs.jobs, 'windows-build'))
@@ -1190,6 +1060,136 @@ jobs:
           if-no-files-found: ignore
 
       - *fail_on_test_failures
+
+  linux-publish:
+    name: Publish Linux Artifacts
+    needs: [linux-build]
+    runs-on: ubuntu-latest
+    if: &publish_if github.repository == 'NatLabRockies/OpenStudio' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == true || github.event.inputs.publish_to_s3 == 'true')
+    steps:
+      - name: Download all installers
+        uses: actions/download-artifact@v8
+        with:
+          pattern: OS-Installers-{ubuntu,centos}-*
+          merge-multiple: true
+          path: installers
+
+      - &configure_aws_credentials
+        name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION || 'us-west-2' }}
+
+      - name: Publish to S3
+        working-directory: installers
+        env:
+          S3_PREFIX: ${{ github.ref_type == 'tag' && format('releases/{0}', github.ref_name) || format('{0}', github.ref_name) }}
+        run: &s3_upload |
+          echo "Uploading artifacts to s3://${AWS_S3_BUCKET}/${S3_PREFIX}"
+          for file in *; do
+            [ -e "$file" ] || continue
+            [ -f "$file" ] || continue
+            filename=$(basename "$file")
+            key="${S3_PREFIX}/${filename}"
+            aws s3 cp "$file" "s3://${AWS_S3_BUCKET}/${key}" --acl public-read
+            if command -v md5sum >/dev/null 2>&1; then md5sum "$file"; else md5 "$file"; fi
+          done
+
+      - name: Trigger Docker Build
+        if: inputs.skip_docker_trigger != true && github.event.inputs.skip_docker_trigger != 'true'
+        working-directory: installers
+        env:
+          GH_TOKEN: ${{ secrets.DOCKER_OPENSTUDIO_PAT }}
+          BRANCH_NAME: ${{ github.ref_name }}
+          S3_PREFIX: ${{ github.ref_type == 'tag' && format('releases/{0}', github.ref_name) || format('{0}', github.ref_name) }}
+        run: |
+
+          # Find the 24.04 deb file locally
+          DEB_FILE=$(find . -name "*24.04*.deb" | head -n 1)
+          if [ -z "$DEB_FILE" ]; then
+            echo "::error::Could not find Ubuntu 24.04 deb file in installers directory"
+            ls -la
+            exit 1
+          fi
+
+          FILENAME=$(basename "$DEB_FILE")
+          echo "Found file: $FILENAME"
+
+          # Construct S3 URL
+          # Replace + with %2B
+          ENCODED_FILENAME=${FILENAME//+/%2B}
+          BINARY_URL="https://${AWS_S3_BUCKET}.s3.amazonaws.com/${S3_PREFIX}/${ENCODED_FILENAME}"
+          echo "Binary URL: $BINARY_URL"
+
+          # Parse version from filename
+          # Expected format: OpenStudio-<Version>-<Platform>.deb
+          if [[ "$FILENAME" =~ OpenStudio-(.+)-Ubuntu-24\.04.*\.deb ]]; then
+             OS_VERSION_FULL=${BASH_REMATCH[1]}
+          elif [[ "$FILENAME" =~ OpenStudio-(.+)-Linux.*\.deb ]]; then
+             OS_VERSION_FULL=${BASH_REMATCH[1]}
+          else
+             echo "::error::Could not parse version from filename: $FILENAME"
+             exit 1
+          fi
+
+          echo "Full Version: $OS_VERSION_FULL"
+
+          # Logic from Jenkins:
+          # Split by +
+          IFS='+' read -r VER_PART SHA_PART <<< "$OS_VERSION_FULL"
+
+          if [[ "$VER_PART" == *"-"* ]]; then
+             # 3.3.0-rc1 -> Ver: 3.3.0, Ext: rc1
+             IFS='-' read -r OS_VERSION OS_VERSION_EXT <<< "$VER_PART"
+          else
+             # 3.3.0+sha -> Ver: 3.3.0, Ext: sha
+             OS_VERSION="$VER_PART"
+             OS_VERSION_EXT="$SHA_PART"
+          fi
+
+          echo "OS Version: $OS_VERSION"
+          echo "OS Version Ext: $OS_VERSION_EXT"
+
+          # Docker Tag Logic
+          if [[ "$BRANCH_NAME" == "develop" ]]; then
+             DOCKER_IMAGE_TAG="develop"
+          else
+             DOCKER_IMAGE_TAG="${OS_VERSION}-${OS_VERSION_EXT}"
+          fi
+          echo "Docker Image Tag: $DOCKER_IMAGE_TAG"
+
+          # Trigger Workflow
+          echo "Triggering manual_update_develop workflow in NatLabRockies/docker-openstudio..."
+          gh workflow run 'manual_update_develop' \
+            --repo NatLabRockies/docker-openstudio \
+            --ref develop \
+            -f docker_image_tag="$DOCKER_IMAGE_TAG" \
+            -f os_installer_link="$BINARY_URL" \
+            -f os_version="$OS_VERSION" \
+            -f os_version_ext="$OS_VERSION_EXT"
+
+  macos-publish:
+    name: Publish MacOS Artifacts
+    needs: [macos-build]
+    runs-on: ubuntu-latest
+    if: *publish_if
+    steps:
+      - name: Download all installers
+        uses: actions/download-artifact@v8
+        with:
+          pattern: OS-Installers-macos-*
+          merge-multiple: true
+          path: installers
+
+      - *configure_aws_credentials
+
+      - name: Publish to S3
+        working-directory: installers
+        env:
+          S3_PREFIX: ${{ github.ref_type == 'tag' && format('releases/{0}/signed', github.ref_name) || format('{0}/signed', github.ref_name) }}
+        run: *s3_upload
 
   windows-publish:
     name: Publish Windows Artifacts
