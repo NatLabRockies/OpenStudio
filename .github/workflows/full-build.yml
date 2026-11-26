@@ -305,8 +305,6 @@ jobs:
           export CTEST_OUTPUT_ON_FAILURE=1
           exclude_pattern="${{ matrix.exclude_regex }}"
 
-          . ./conanbuild.sh
-
           ctest_command=(ctest -C ${{ env.BUILD_TYPE }})
           if [ -n "$exclude_pattern" ]; then
             ctest_command+=(-E "^($exclude_pattern)$")
@@ -1189,17 +1187,6 @@ jobs:
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         shell: pwsh
         run: |
-          $env_vars = & $env:ComSpec /c "call conanbuild.bat && set"
-          foreach ($line in $env_vars) {
-            if ($line -match '^(.*?)=(.*)$') {
-              $name = $matches[1]
-              $value = $matches[2]
-              if ($name -ne "" -and $name -notmatch "^=") {
-                [Environment]::SetEnvironmentVariable($name, $value, "Process")
-              }
-            }
-          }
-
           $overall_exit_code = 0
           $exclude_pattern = "${{ matrix.exclude_regex }}"
 
