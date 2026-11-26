@@ -342,17 +342,21 @@ jobs:
 
           echo "exit_code=${overall_exit_code}" >> $GITHUB_OUTPUT
 
-      - name: Copy Testing tree with suffix
+      - &copy_testing_tree
+        name: Copy Testing tree with suffix
         if: always() && env.SKIP_TESTS != 'true'
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
+        shell: bash
         run: |
           if [ -d "Testing" ]; then
             cp -r Testing "Testing-${{ matrix.test_suffix }}"
           fi
 
-      - name: Generate test summary
+      - &generate_test_summary
+        name: Generate test summary
         if: always() && env.SKIP_TESTS != 'true'
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
+        shell: bash
         run: |
 
           # Generate a simple markdown summary from CTest results
@@ -415,9 +419,11 @@ jobs:
           path: ${{ env.OPENSTUDIO_BUILD }}/OpenStudio-*.tar.gz
           if-no-files-found: ignore
 
-      - name: Fail job on test failures
+      - &fail_on_test_failures
+        name: Fail job on test failures
         if: env.SKIP_TESTS != 'true' && steps.ctest.outputs.exit_code != '0'
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
+        shell: bash
         run: |
           cat "${{ env.TEST_DASHBOARD_RELATIVE }}" || true
           if [ -f Testing/Temporary/LastTestsFailed.log ]; then
@@ -840,37 +846,9 @@ jobs:
           security delete-keychain "$KEYCHAIN_PATH" || true
         fi
 
-    - name: Copy Testing tree with suffix
-      if: always() && env.SKIP_TESTS != 'true'
-      working-directory: ${{ env.OPENSTUDIO_BUILD }}
-      run: |
-        if [ -d "Testing" ]; then
-          cp -r Testing "Testing-${{ matrix.test_suffix }}"
-        fi
+    - *copy_testing_tree
 
-    - name: Generate test summary
-      if: always() && env.SKIP_TESTS != 'true'
-      working-directory: ${{ env.OPENSTUDIO_BUILD }}
-      run: |
-
-        # Generate a simple markdown summary from CTest results
-        mkdir -p "$(dirname '${{ env.TEST_DASHBOARD_RELATIVE }}')"
-
-        echo "# OpenStudio Test Results - ${{ matrix.test_suffix }}" > "${{ env.TEST_DASHBOARD_RELATIVE }}"
-        echo "" >> "${{ env.TEST_DASHBOARD_RELATIVE }}"
-        echo "**Build:** \`${{ github.sha }}\`" >> "${{ env.TEST_DASHBOARD_RELATIVE }}"
-        echo "**Branch:** \`${{ github.ref_name }}\`" >> "${{ env.TEST_DASHBOARD_RELATIVE }}"
-        echo "**Platform:** ${{ matrix.pretty }}" >> "${{ env.TEST_DASHBOARD_RELATIVE }}"
-        echo "**Date:** $(date -u)" >> "${{ env.TEST_DASHBOARD_RELATIVE }}"
-        echo "" >> "${{ env.TEST_DASHBOARD_RELATIVE }}"
-
-        if [ -f Testing/Temporary/LastTest.log ]; then
-          echo "## Test Log (Last 50 lines)" >> "${{ env.TEST_DASHBOARD_RELATIVE }}"
-          echo '```' >> "${{ env.TEST_DASHBOARD_RELATIVE }}"
-          tail -50 Testing/Temporary/LastTest.log >> "${{ env.TEST_DASHBOARD_RELATIVE }}"
-          echo '```' >> "${{ env.TEST_DASHBOARD_RELATIVE }}"
-        fi
-      continue-on-error: true
+    - *generate_test_summary
 
     - *upload_testing_artifact
 
@@ -902,16 +880,7 @@ jobs:
         path: ${{ env.OPENSTUDIO_BUILD }}/OpenStudio-*.tar.gz
         if-no-files-found: ignore
 
-    - name: Fail job on test failures
-      if: env.SKIP_TESTS != 'true' && steps.ctest.outputs.exit_code != '0'
-      working-directory: ${{ env.OPENSTUDIO_BUILD }}
-      run: |
-        cat "${{ env.TEST_DASHBOARD_RELATIVE }}" || true
-        if [ -f Testing/Temporary/LastTestsFailed.log ]; then
-          echo; echo "Failed tests:"; cat Testing/Temporary/LastTestsFailed.log
-        fi
-        echo "::error::CTest suite failed with exit code ${{ steps.ctest.outputs.exit_code }}"
-        exit 1
+    - *fail_on_test_failures
 
   macos-publish:
     name: Publish MacOS Artifacts
@@ -1069,37 +1038,9 @@ jobs:
 
       - *run_ctest
 
-      - name: Copy Testing tree with suffix
-        if: always() && env.SKIP_TESTS != 'true'
-        working-directory: ${{ env.OPENSTUDIO_BUILD }}
-        run: |
-          if (Test-Path "Testing") {
-            Copy-Item -Path "Testing" -Destination "Testing-${{ matrix.test_suffix }}" -Recurse -Force
-          }
+      - *copy_testing_tree
 
-      - name: Generate test summary
-        if: always() && env.SKIP_TESTS != 'true'
-        working-directory: ${{ env.OPENSTUDIO_BUILD }}
-        run: |
-          $dashboardPath = "${{ env.TEST_DASHBOARD_RELATIVE }}"
-          $dashboardDir = Split-Path -Parent $dashboardPath
-          if (-not (Test-Path $dashboardDir)) { New-Item -ItemType Directory -Path $dashboardDir -Force }
-
-          "# OpenStudio Test Results - ${{ matrix.test_suffix }}" | Out-File -FilePath $dashboardPath -Encoding utf8
-          "" | Out-File -FilePath $dashboardPath -Encoding utf8 -Append
-          "**Build:** ``${{ github.sha }}``" | Out-File -FilePath $dashboardPath -Encoding utf8 -Append
-          "**Branch:** ``${{ github.ref_name }}``" | Out-File -FilePath $dashboardPath -Encoding utf8 -Append
-          "**Platform:** ${{ matrix.pretty }}" | Out-File -FilePath $dashboardPath -Encoding utf8 -Append
-          "**Date:** $(Get-Date -Format u)" | Out-File -FilePath $dashboardPath -Encoding utf8 -Append
-          "" | Out-File -FilePath $dashboardPath -Encoding utf8 -Append
-
-          if (Test-Path "Testing/Temporary/LastTest.log") {
-            "## Test Log (Last 50 lines)" | Out-File -FilePath $dashboardPath -Encoding utf8 -Append
-            '```' | Out-File -FilePath $dashboardPath -Encoding utf8 -Append
-            Get-Content "Testing/Temporary/LastTest.log" -Tail 50 | Out-File -FilePath $dashboardPath -Encoding utf8 -Append
-            '```' | Out-File -FilePath $dashboardPath -Encoding utf8 -Append
-          }
-        continue-on-error: true
+      - *generate_test_summary
 
       - *upload_testing_artifact
 
@@ -1262,16 +1203,7 @@ jobs:
           path: ${{ env.OPENSTUDIO_BUILD }}/_CPack_Packages/win64/TGZ/*.tar.gz
           if-no-files-found: ignore
 
-      - name: Fail job on test failures
-        if: env.SKIP_TESTS != 'true' && steps.ctest.outputs.exit_code != '0'
-        working-directory: ${{ env.OPENSTUDIO_BUILD }}
-        run: |
-          Get-Content "${{ env.TEST_DASHBOARD_RELATIVE }}" -ErrorAction SilentlyContinue
-          if (Test-Path Testing/Temporary/LastTestsFailed.log) {
-            ""; "Failed tests:"; Get-Content Testing/Temporary/LastTestsFailed.log
-          }
-          echo "::error::CTest suite failed with exit code ${{ steps.ctest.outputs.exit_code }}"
-          exit 1
+      - *fail_on_test_failures
 
   windows-publish:
     name: Publish Windows Artifacts
