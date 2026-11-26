@@ -287,6 +287,8 @@ jobs:
             ${{ env.OPENSTUDIO_BUILD }}/.ninja_log
             ${{ env.OPENSTUDIO_BUILD }}/CTestTestfile.cmake
           if-no-files-found: warn
+          # .ninja_log is a hidden file, skipped by default
+          include-hidden-files: true
 
       - name: Run CTest suite
         id: ctest
@@ -730,6 +732,8 @@ jobs:
           ${{ env.OPENSTUDIO_BUILD }}/.ninja_log
           ${{ env.OPENSTUDIO_BUILD }}/CTestTestfile.cmake
         if-no-files-found: warn
+        # .ninja_log is a hidden file, skipped by default
+        include-hidden-files: true
 
     - name: Run CTest suite
       id: mac_ctest
@@ -1091,7 +1095,8 @@ jobs:
 
       - name: Verify space
         run: |
-          Get-PSDrive C | Select-Object Used,Free
+          # Workspace, build and ccache are on D:, the Conan home on C:
+          Get-PSDrive C, D | Select-Object Name, @{n='UsedGB';e={[math]::Round($_.Used/1GB,1)}}, @{n='FreeGB';e={[math]::Round($_.Free/1GB,1)}}
           Get-CimInstance Win32_OperatingSystem | Select-Object TotalVisibleMemorySize,FreePhysicalMemory,TotalVirtualMemorySize,FreeVirtualMemory
 
       - name: Git safe directory
@@ -1209,6 +1214,8 @@ jobs:
             ${{ env.OPENSTUDIO_BUILD }}/.ninja_log
             ${{ env.OPENSTUDIO_BUILD }}/CTestTestfile.cmake
           if-no-files-found: warn
+          # .ninja_log is a hidden file, skipped by default
+          include-hidden-files: true
 
       - name: Run CTest suite
         id: ctest
