@@ -143,6 +143,12 @@ function(embed_files FILES EMBEDDED_LOCATIONS CXX_OUTPUT_FILES)
 
   set_source_files_properties(${EMBED_SOURCE_FILES} PROPERTIES HEADER_FILE_ONLY TRUE)
 
+  # Named targets to generate just the embedded files: eg 'ninja embedded_files' (all of them), or 'ninja embedded_files_src_utilities'
+  file(RELATIVE_PATH EMBED_TARGET_DIR "${PROJECT_BINARY_DIR}" "${CMAKE_CURRENT_BINARY_DIR}")
+  string(MAKE_C_IDENTIFIER "embedded_files_${EMBED_TARGET_DIR}" EMBED_TARGET)
+  add_custom_target(${EMBED_TARGET} DEPENDS ${EMBED_SOURCE_FILES})
+  add_dependencies(embedded_files ${EMBED_TARGET})
+
   if( NAMESPACE )
     set(BEGIN_NAMESPACE "namespace ${NAMESPACE} {")
     set(END_NAMESPACE "}")

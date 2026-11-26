@@ -1069,6 +1069,8 @@ else()
 endif()
 
 include("embedded/EmbedFiles.cmake")
+# Each embed_files() call adds its own embedded_files_<dir> target as a dependency of this one
+add_custom_target(embedded_files)
 add_subdirectory("embedded")
 if(BUILD_PAT)
   add_subdirectory("pat")
