@@ -81,7 +81,7 @@ TEST_F(gbXMLFixture, ForwardTranslator_exampleModel) {
   path p1 = resourcesPath() / openstudio::toPath("gbxml/exampleModel.osm");
   model.save(p1, true);
 
-  path p2 = resourcesPath() / openstudio::toPath("gbxml/exampleModel2.osm");
+  path p2 = resourcesPath() / openstudio::toPath("gbxml/exampleModel_reverseTranslated.osm");
   model2->save(p2, true);
 }
 
@@ -298,7 +298,7 @@ TEST_F(gbXMLFixture, ForwardTranslator_surfaceType_4001) {
   Model model = exampleModel();
 
   // Write out the XML
-  path p = resourcesPath() / openstudio::toPath("gbxml/exampleModel.xml");
+  path p = resourcesPath() / openstudio::toPath("gbxml/surfaceType_4001.xml");
 
   ForwardTranslator forwardTranslator;
   bool test = forwardTranslator.modelToGbXML(model, p);
@@ -891,7 +891,7 @@ TEST_F(gbXMLFixture, ForwardTranslator_IDs_Names) {
 TEST_F(gbXMLFixture, ForwardTranslator_exampleModelValid) {
   Model model = exampleModel();
 
-  path p = resourcesPath() / openstudio::toPath("gbxml/exampleModel.xml");
+  path p = resourcesPath() / openstudio::toPath("gbxml/exampleModelValid.xml");
 
   ForwardTranslator forwardTranslator;
   bool test = forwardTranslator.modelToGbXML(model, p);
@@ -913,7 +913,7 @@ TEST_F(gbXMLFixture, ForwardTranslator_exposedToSun) {
   Model model = exampleModel();
 
   // Write out the XML
-  path p = resourcesPath() / openstudio::toPath("gbxml/exampleModel.xml");
+  path p = resourcesPath() / openstudio::toPath("gbxml/exposedToSun.xml");
 
   ForwardTranslator forwardTranslator;
   bool test = forwardTranslator.modelToGbXML(model, p);
@@ -963,7 +963,7 @@ TEST_F(gbXMLFixture, ForwardTranslator_spaceVolume) {
     EXPECT_EQ(300.0, ospace1->volume());
 
     // Write out the XML
-    path p = resourcesPath() / openstudio::toPath("gbxml/exampleModel.xml");
+    path p = resourcesPath() / openstudio::toPath("gbxml/spaceVolume.xml");
 
     ForwardTranslator forwardTranslator;
     bool test = forwardTranslator.modelToGbXML(model, p);
@@ -1013,7 +1013,7 @@ TEST_F(gbXMLFixture, ForwardTranslator_spaceVolume) {
     EXPECT_EQ(305.0, ospace1->volume());
 
     // Write out the XML
-    path p = resourcesPath() / openstudio::toPath("gbxml/exampleModel.xml");
+    path p = resourcesPath() / openstudio::toPath("gbxml/spaceVolume.xml");
 
     ForwardTranslator forwardTranslator;
     bool test = forwardTranslator.modelToGbXML(model, p);
