@@ -87,9 +87,8 @@ void MeasureFixture::SetUpTestSuite() {
   logFile->setLogLevel(Info);
   openstudio::Logger::instance().standardOutLogger().disable();
 
-  // clear scratch
+  // Don't clear it: CTest runs each test in its own process, so this runs for every test, and would delete the files of tests running in parallel
   scratchDir = openstudio::getApplicationBuildDirectory() / openstudio::toPath("Testing/Temporary/measure");
-  openstudio::filesystem::remove_all(scratchDir);
   openstudio::filesystem::create_directories(scratchDir);
 }
 
