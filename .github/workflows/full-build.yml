@@ -87,6 +87,8 @@ env:
   # mtime-based compiler check is unreliable across fresh runner VMs, where the compiler binary's mtime can differ even though its content doesn't
   CCACHE_COMPILERCHECK: content
   ENABLE_PCH: ON
+  # Put [skip tests] in the commit message to skip the CTest steps (only on push: always false on pull requests)
+  SKIP_TESTS: ${{ contains(github.event.head_commit.message, '[skip tests]') }}
 
 jobs:
   linux-build:
@@ -291,6 +293,7 @@ jobs:
           include-hidden-files: true
 
       - name: Run CTest suite
+        if: env.SKIP_TESTS != 'true'
         id: ctest
         continue-on-error: true
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
@@ -350,7 +353,7 @@ jobs:
           echo "exit_code=${overall_exit_code}" >> $GITHUB_OUTPUT
 
       - name: Copy Testing tree with suffix
-        if: always()
+        if: always() && env.SKIP_TESTS != 'true'
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         run: |
           if [ -d "Testing" ]; then
@@ -358,7 +361,7 @@ jobs:
           fi
 
       - name: Generate test summary
-        if: always()
+        if: always() && env.SKIP_TESTS != 'true'
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         run: |
 
@@ -382,7 +385,7 @@ jobs:
         continue-on-error: true
 
       - name: Upload Testing artifact
-        if: always()
+        if: always() && env.SKIP_TESTS != 'true'
         uses: actions/upload-artifact@v7
         with:
           name: Testing-${{ matrix.platform }}-${{ github.sha }}
@@ -422,7 +425,7 @@ jobs:
           if-no-files-found: ignore
 
       - name: Fail job on test failures
-        if: ${{ steps.ctest.outputs.exit_code != '0' }}
+        if: env.SKIP_TESTS != 'true' && steps.ctest.outputs.exit_code != '0'
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         run: |
           cat "${{ env.TEST_DASHBOARD_RELATIVE }}" || true
@@ -736,6 +739,7 @@ jobs:
         include-hidden-files: true
 
     - name: Run CTest suite
+      if: env.SKIP_TESTS != 'true'
       id: mac_ctest
       working-directory: ${{ env.OPENSTUDIO_BUILD }}
       shell: bash
@@ -941,7 +945,7 @@ jobs:
         fi
 
     - name: Copy Testing tree with suffix
-      if: always()
+      if: always() && env.SKIP_TESTS != 'true'
       working-directory: ${{ env.OPENSTUDIO_BUILD }}
       run: |
         if [ -d "Testing" ]; then
@@ -949,7 +953,7 @@ jobs:
         fi
 
     - name: Generate test summary
-      if: always()
+      if: always() && env.SKIP_TESTS != 'true'
       working-directory: ${{ env.OPENSTUDIO_BUILD }}
       run: |
 
@@ -973,7 +977,7 @@ jobs:
       continue-on-error: true
 
     - name: Upload Testing artifact
-      if: always()
+      if: always() && env.SKIP_TESTS != 'true'
       uses: actions/upload-artifact@v7
       with:
         name: Testing-${{ matrix.platform }}-${{ github.sha }}
@@ -1010,7 +1014,7 @@ jobs:
         if-no-files-found: ignore
 
     - name: Fail job on test failures
-      if: ${{ steps.mac_ctest.outputs.exit_code != '0' }}
+      if: env.SKIP_TESTS != 'true' && steps.mac_ctest.outputs.exit_code != '0'
       working-directory: ${{ env.OPENSTUDIO_BUILD }}
       run: |
         cat "${{ env.TEST_DASHBOARD_RELATIVE }}" || true
@@ -1218,6 +1222,7 @@ jobs:
           include-hidden-files: true
 
       - name: Run CTest suite
+        if: env.SKIP_TESTS != 'true'
         id: ctest
         continue-on-error: true
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
@@ -1289,7 +1294,7 @@ jobs:
           "exit_code=$overall_exit_code" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
       - name: Copy Testing tree with suffix
-        if: always()
+        if: always() && env.SKIP_TESTS != 'true'
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         run: |
           if (Test-Path "Testing") {
@@ -1297,7 +1302,7 @@ jobs:
           }
 
       - name: Generate test summary
-        if: always()
+        if: always() && env.SKIP_TESTS != 'true'
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         run: |
           $dashboardPath = "${{ env.TEST_DASHBOARD_RELATIVE }}"
@@ -1321,7 +1326,7 @@ jobs:
         continue-on-error: true
 
       - name: Upload Testing artifact
-        if: always()
+        if: always() && env.SKIP_TESTS != 'true'
         uses: actions/upload-artifact@v7
         with:
           name: Testing-${{ matrix.platform }}-${{ github.sha }}
@@ -1489,7 +1494,7 @@ jobs:
           if-no-files-found: ignore
 
       - name: Fail job on test failures
-        if: ${{ steps.ctest.outputs.exit_code != '0' }}
+        if: env.SKIP_TESTS != 'true' && steps.ctest.outputs.exit_code != '0'
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         run: |
           Get-Content "${{ env.TEST_DASHBOARD_RELATIVE }}" -ErrorAction SilentlyContinue
