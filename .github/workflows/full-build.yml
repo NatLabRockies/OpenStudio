@@ -145,7 +145,6 @@ jobs:
       run:
         shell: bash
     env:
-      MAX_BUILD_THREADS: ${{ matrix.max_jobs }}
       # $HOME in GHA containers. Explicit so the tools and actions/cache agree on the paths (#5711)
       CCACHE_DIR: /github/home/.ccache
       CONAN_HOME: /github/home/.conan2
@@ -256,23 +255,15 @@ jobs:
           ccache --zero-stats
           ccache --show-config
 
-      - name: Build with Ninja
-        working-directory: ${{ env.OPENSTUDIO_BUILD }}
+      - &build_with_ninja
+        name: Build with Ninja
+        shell: bash
         run: |
-          . ./conanbuild.sh
-          # Start resource monitor (records RSS samples for later summary)
-          echo "timestamp PID RSS_KB COMM" > mem_samples.log
-          ( while true; do
-              sleep 60;
-              stamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ");
-              if command -v ps >/dev/null 2>&1; then ps -eo pid,rsz,comm --sort=-rsz | head -n 5 | awk -v s="$stamp" '{print s" "$1" "$2" "$3}' >> mem_samples.log; fi;
-            done ) &
-          HB_PID=$!
-          cmake --build . --parallel ${{ matrix.max_jobs }} 2>&1 | tee build.log
-          BUILD_EXIT=${PIPESTATUS[0]}
-          kill $HB_PID || true
-          ninja -d stats || true
-          exit $BUILD_EXIT
+          # Run from the source dir, where CMakeUserPresets.json is. The preset carries the Conan build environment (SWIG_LIB, ...)
+          cmake --build --preset conan-release --parallel ${{ matrix.max_jobs }} 2>&1 | tee ${{ env.OPENSTUDIO_BUILD }}/build.log
+          build_exit=${PIPESTATUS[0]}
+          ninja -C ${{ env.OPENSTUDIO_BUILD }} -d stats || true
+          exit $build_exit
 
       - &show_ccache_stats
         name: Show ccache stats
@@ -471,7 +462,6 @@ jobs:
             exclude_regex: ""
             max_jobs: 3
     env:
-      MAX_BUILD_THREADS: ${{ matrix.max_jobs }}
       CCACHE_DIR: ${{ github.workspace }}/.ccache
 
     permissions:
@@ -559,25 +549,7 @@ jobs:
 
     - *show_restored_ccache_stats
 
-    - name: Build with Ninja
-      working-directory: ${{ env.OPENSTUDIO_BUILD }}
-      run: |
-        . ./conanbuild.sh
-        while true; do
-          sleep 300
-          echo "[heartbeat] $(date -u +"%H:%M:%S")"
-          if command -v top >/dev/null 2>&1; then top -l 1 -s 0 | grep PhysMem || true; fi
-          df -h . | tail -1 | awk '{print "[disk] used=" $3 "/" $2 " (" $5 ")"}'
-          # BSD ps -m sorts by memory: no sort, which printed 'Broken pipe' when head closed the pipe
-          if command -v ps >/dev/null 2>&1; then ps -m -eo pid,pmem,rss,comm | head -n 6; fi
-        done &
-        heartbeat_pid=$!
-        cmake --build . --parallel ${MAX_BUILD_THREADS} 2>&1 | tee build.log
-        build_exit=${PIPESTATUS[0]}
-        kill $heartbeat_pid || true
-        ninja -d stats || true
-        if [ -f build.log ]; then tail -n 40 build.log; fi
-        exit $build_exit
+    - *build_with_ninja
 
     - *show_ccache_stats
 
@@ -798,7 +770,6 @@ jobs:
       run:
         shell: pwsh
     env:
-      MAX_BUILD_THREADS: ${{ matrix.max_jobs }}
       CCACHE_DIR: ${{ github.workspace }}\.ccache
       RUBYOPT: "-Eutf-8:utf-8"
       PYTHONUTF8: "1"
