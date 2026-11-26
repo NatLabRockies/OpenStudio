@@ -307,20 +307,20 @@ jobs:
 
           . ./conanbuild.sh
 
-          ctest_command=(ctest -C ${{ env.BUILD_TYPE }} -T test --no-compress-output)
+          ctest_command=(ctest -C ${{ env.BUILD_TYPE }})
           if [ -n "$exclude_pattern" ]; then
             ctest_command+=(-E "^($exclude_pattern)$")
           fi
 
           begin_group "Running tests..."
-          echo "Running: ${ctest_command[@]} -j ${{ matrix.max_jobs }}"
-          "${ctest_command[@]}" -j ${{ matrix.max_jobs }} || overall_exit_code=$?
+          echo "Running: ${ctest_command[@]} -j ${{ matrix.max_jobs }} --output-junit Testing/Results.xml"
+          "${ctest_command[@]}" -j ${{ matrix.max_jobs }} --output-junit Testing/Results.xml || overall_exit_code=$?
           echo "::endgroup::"
 
           if [ $overall_exit_code -ne 0 ]; then
             begin_group "Rerunning failing tests..."
-            echo "Running: ${ctest_command[@]} --rerun-failed --output-on-failure"
-            "${ctest_command[@]}" --rerun-failed --output-on-failure && overall_exit_code=0 || overall_exit_code=$?
+            echo "Running: ${ctest_command[@]} --rerun-failed --output-on-failure --output-junit Testing/Rerun.xml"
+            "${ctest_command[@]}" --rerun-failed --output-on-failure --output-junit Testing/Rerun.xml && overall_exit_code=0 || overall_exit_code=$?
             echo "::endgroup::"
           fi
 
@@ -728,20 +728,20 @@ jobs:
         export CTEST_OUTPUT_ON_FAILURE=1
         exclude_pattern="${{ matrix.exclude_regex }}"
 
-        ctest_command=(ctest -C ${{ env.BUILD_TYPE }} -T test --no-compress-output)
+        ctest_command=(ctest -C ${{ env.BUILD_TYPE }})
         if [ -n "$exclude_pattern" ]; then
           ctest_command+=(-E "^($exclude_pattern)$")
         fi
 
         begin_group "Running tests..."
-        echo "Running: ${ctest_command[@]} -j ${{ matrix.max_jobs }}"
-        "${ctest_command[@]}" -j ${{ matrix.max_jobs }} || overall_exit_code=$?
+        echo "Running: ${ctest_command[@]} -j ${{ matrix.max_jobs }} --output-junit Testing/Results.xml"
+        "${ctest_command[@]}" -j ${{ matrix.max_jobs }} --output-junit Testing/Results.xml || overall_exit_code=$?
         echo "::endgroup::"
 
         if [ $overall_exit_code -ne 0 ]; then
           begin_group "Rerunning failing tests..."
-          echo "Running: ${ctest_command[@]} --rerun-failed --output-on-failure"
-          "${ctest_command[@]}" --rerun-failed --output-on-failure && overall_exit_code=0 || overall_exit_code=$?
+          echo "Running: ${ctest_command[@]} --rerun-failed --output-on-failure --output-junit Testing/Rerun.xml"
+          "${ctest_command[@]}" --rerun-failed --output-on-failure --output-junit Testing/Rerun.xml && overall_exit_code=0 || overall_exit_code=$?
           echo "::endgroup::"
         fi
 
@@ -1195,22 +1195,22 @@ jobs:
 
           function begin_group($msg) { Write-Host "::group::$([char]27)[93m$msg$([char]27)[0m" }
 
-          $ctest_command = @("ctest", "-C", "${{ env.BUILD_TYPE }}", "-T", "test", "--no-compress-output")
+          $ctest_command = @("ctest", "-C", "${{ env.BUILD_TYPE }}")
 
           if (-not [string]::IsNullOrEmpty($exclude_pattern)) {
             $ctest_command += @("-E", "^($exclude_pattern)$")
           }
 
           begin_group "Running tests..."
-          Write-Host "Running: $($ctest_command -join ' ') -j ${{ matrix.max_jobs }}"
-          & $ctest_command[0] $ctest_command[1..($ctest_command.Length-1)] -j ${{ matrix.max_jobs }}
+          Write-Host "Running: $($ctest_command -join ' ') -j ${{ matrix.max_jobs }} --output-junit Testing/Results.xml"
+          & $ctest_command[0] $ctest_command[1..($ctest_command.Length-1)] -j ${{ matrix.max_jobs }} --output-junit Testing/Results.xml
           if ($LASTEXITCODE -ne 0) { $overall_exit_code = $LASTEXITCODE }
           Write-Host "::endgroup::"
 
           if ($overall_exit_code -ne 0) {
             begin_group "Rerunning failing tests..."
-            Write-Host "Running: $($ctest_command -join ' ') --rerun-failed --output-on-failure"
-            & $ctest_command[0] $ctest_command[1..($ctest_command.Length-1)] --rerun-failed --output-on-failure
+            Write-Host "Running: $($ctest_command -join ' ') --rerun-failed --output-on-failure --output-junit Testing/Rerun.xml"
+            & $ctest_command[0] $ctest_command[1..($ctest_command.Length-1)] --rerun-failed --output-on-failure --output-junit Testing/Rerun.xml
             if ($LASTEXITCODE -eq 0) { $overall_exit_code = 0 } else { $overall_exit_code = $LASTEXITCODE }
             Write-Host "::endgroup::"
           }
