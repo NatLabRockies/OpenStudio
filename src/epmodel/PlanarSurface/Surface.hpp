@@ -37,6 +37,8 @@ namespace epmodel {
    * Model surface-property and AirflowNetwork relationship methods. EPModel exposes vertices,
    * sub-surfaces, space/construction, adjacent-surface, and intersection operations alongside the scalar
    * BuildingSurface fields.
+   * <b>Changed:</b> <code>createAdjacentSurface()</code> returns nothing if the Surface already has an adjacent Surface, where Model
+   * creates another one and leaves the previous match unmatched.
    *
    * \par Known limitations
    * Surface-to-space assignment synchronizes the redundant EnergyPlus Zone Name; EnergyPlus geometry and adjacency rules constrain round-tripping.
@@ -119,7 +121,7 @@ namespace epmodel {
     boost::optional<SurfaceIntersection> computeIntersection(Surface& otherSurface);
 
     /** Creates an adjacent Surface in another Space, also create adjacent SubSurface objects if needed.
-      Returns the new Surface if created. */
+      Returns the new Surface if created, nothing if this Surface already has an adjacent Surface. */
     boost::optional<Surface> createAdjacentSurface(const Space& otherSpace);
 
     /** Returns true if the surface has outsideBoundaryCondition of Ground, GroundFCfactorMethod

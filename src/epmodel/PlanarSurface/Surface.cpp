@@ -6,6 +6,8 @@
 #include "PlanarSurface/Surface.hpp"
 #include "ConstructionBase/ConstructionBase.hpp"
 #include "ConstructionBase/ConstructionBase_Impl.hpp"
+#include "LayeredConstruction/Construction.hpp"
+#include "LayeredConstruction/Construction_Impl.hpp"
 #include "PlanarSurface/Surface_Impl.hpp"
 
 #include "Model.hpp"
@@ -26,7 +28,8 @@
 #include <utilities/idd/IddFactory.hxx>
 #include <utilities/idd/IddObject.hpp>
 #include <utilities/idf/IdfExtensibleGroup.hpp>
-#include <utility>
+
+#include <algorithm>
 #include <utility>
 
 namespace openstudio {
@@ -1030,21 +1033,32 @@ namespace epmodel {
         return boost::none;
       }
 
+      if (auto adjacentSurface_ = this->adjacentSurface()) {
+        LOG(Warn,
+            briefDescription() << " already has an adjacent Surface, " << adjacentSurface_->briefDescription() << ", not creating another one.");
+        return boost::none;
+      }
+
       Transformation thisSpaceT = space->transformation();
       Transformation otherSpaceT = otherSpace.transformation();
       Transformation transformation = otherSpaceT.inverse() * thisSpaceT;
 
       std::vector<Point3d> vertices = transformation * this->vertices();
-      std::reverse(vertices.begin(), vertices.end());
+      std::ranges::reverse(vertices);
 
       Model model = this->model();
 
       // Be careful not to call clone as you will get duplicate sub surfaces
       Surface otherSurface(vertices, model);
       otherSurface.setName(this->nameString() + " Reversed");
-      // otherSurface.resetConstruction();  // this will use surface's construction on export, TODO: do something better
+      // A construction named on this surface is reversed for the other side. A defaulted one is left to the ConstructionAssignmentSets,
+      // which resolve both sides
       if (auto c_ = this->construction(); c_ && !this->isConstructionDefaulted()) {
-        otherSurface.setConstruction(*c_);
+        if (auto construction_ = c_->optionalCast<Construction>()) {
+          otherSurface.setConstruction(construction_->reverseConstruction());
+        } else {
+          otherSurface.setConstruction(*c_);
+        }
       }
 
       std::string surfaceType = this->surfaceType();
@@ -1062,13 +1076,16 @@ namespace epmodel {
 
       for (SubSurface& subSurface : this->subSurfaces()) {
         vertices = transformation * subSurface.vertices();
-        std::reverse(vertices.begin(), vertices.end());
+        std::ranges::reverse(vertices);
 
         SubSurface otherSubSurface(vertices, model);
         otherSubSurface.setName(subSurface.nameString() + " Reversed");
-        // otherSubSurface.resetConstruction();  // this will use sub surface's construction on export, TODO: do something better
         if (auto c_ = subSurface.construction(); c_ && !subSurface.isConstructionDefaulted()) {
-          otherSubSurface.setConstruction(*c_);
+          if (auto construction_ = c_->optionalCast<Construction>()) {
+            otherSubSurface.setConstruction(construction_->reverseConstruction());
+          } else {
+            otherSubSurface.setConstruction(*c_);
+          }
         }
         otherSubSurface.setSubSurfaceType(subSurface.subSurfaceType());
         otherSubSurface.setSurface(otherSurface);
