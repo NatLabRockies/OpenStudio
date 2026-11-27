@@ -259,20 +259,24 @@ namespace epmodel {
     }
 
     boost::optional<ConstructionBase> SubSurface_Impl::construction() const {
-      auto result = getObject<openstudio::epmodel::SubSurface>().getModelObjectTarget<ConstructionBase>(
-        openstudio::FenestrationSurface_DetailedFields::ConstructionName);
-      if (result) {
-        if (auto adjacent = adjacentSubSurface()) {
-          auto adjacentConstruction =
-            adjacent->getImpl<SubSurface_Impl>()->getObject<openstudio::epmodel::SubSurface>().getModelObjectTarget<ConstructionBase>(
-              openstudio::FenestrationSurface_DetailedFields::ConstructionName);
-          if (adjacentConstruction && adjacentConstruction->handle() != result->handle()) {
-            LOG(Warn,
-                "SubSurface '" << nameString() << "' and its adjacent sub surface '" << adjacent->nameString() << "' have different constructions.");
-          }
-        }
+      auto adjacentSubSurface_ = adjacentSubSurface();
+      if (!adjacentSubSurface_) {
+        return PlanarSurface_Impl::construction();
       }
-      return result;
+      return resolveAdjacentConstruction(getObject<PlanarSurface>(), constructionWithSearchDistance(), *adjacentSubSurface_,
+                                         adjacentSubSurface_->constructionWithSearchDistance());
+    }
+
+    boost::optional<std::pair<ConstructionBase, int>> SubSurface_Impl::constructionWithSearchDistance() const {
+      if (auto construction_ = getObject<openstudio::epmodel::SubSurface>().getModelObjectTarget<ConstructionBase>(
+            openstudio::FenestrationSurface_DetailedFields::ConstructionName)) {
+        return std::make_pair(*construction_, 0);
+      }
+      return defaultConstructionWithSearchDistance();
+    }
+
+    bool SubSurface_Impl::isConstructionDefaulted() const {
+      return isEmpty(openstudio::FenestrationSurface_DetailedFields::ConstructionName);
     }
 
     bool SubSurface_Impl::setConstruction(const ConstructionBase& construction) {
@@ -415,8 +419,7 @@ namespace epmodel {
             // DLM: this surface could have been initialized to FixedWindow and get its construction
             // from the default construction set, this was the source of #1924
             boost::optional<ConstructionBase> construction = this->construction();
-            // NOTE: model/ check starts with !this->isConstructionDefaulted() but we can't default it right now
-            if (construction && construction->isFenestration()) {
+            if (!this->isConstructionDefaulted() && construction && construction->isFenestration()) {
               isGlassDoor = true;
             }
 

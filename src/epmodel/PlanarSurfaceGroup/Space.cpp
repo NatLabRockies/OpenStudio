@@ -15,6 +15,12 @@
 #include "PlanarSurface/SubSurface_Impl.hpp"
 #include "ResourceObject/ConstructionAssignmentSet.hpp"
 #include "ResourceObject/ConstructionAssignmentSet_Impl.hpp"
+#include "ConstructionBase/ConstructionBase.hpp"
+#include "ConstructionBase/ConstructionBase_Impl.hpp"
+#include "ParentObject/Building.hpp"
+#include "ParentObject/Building_Impl.hpp"
+#include "PlanarSurface/PlanarSurface.hpp"
+#include "PlanarSurface/PlanarSurface_Impl.hpp"
 #include "ResourceObject/DesignSpecificationOutdoorAir.hpp"
 #include "ResourceObject/DesignSpecificationOutdoorAir_Impl.hpp"
 #include "ModelObject/BuildingStory.hpp"
@@ -253,6 +259,14 @@ namespace epmodel {
 
   void Space::resetConstructionAssignmentSet() {
     getImpl<detail::Space_Impl>()->resetConstructionAssignmentSet();
+  }
+
+  boost::optional<ConstructionBase> Space::getDefaultConstruction(const PlanarSurface& planarSurface) const {
+    return getImpl<detail::Space_Impl>()->getDefaultConstruction(planarSurface);
+  }
+
+  boost::optional<std::pair<ConstructionBase, int>> Space::getDefaultConstructionWithSearchDistance(const PlanarSurface& planarSurface) const {
+    return getImpl<detail::Space_Impl>()->getDefaultConstructionWithSearchDistance(planarSurface);
   }
 
   std::vector<Surface> Space::surfaces() const {
@@ -735,6 +749,30 @@ namespace epmodel {
 
     void Space_Impl::resetConstructionAssignmentSet() {
       OS_ASSERT(setString(openstudio::SpaceFields::ConstructionAssignmentSetName, ""));
+    }
+
+    boost::optional<ConstructionBase> Space_Impl::getDefaultConstruction(const PlanarSurface& planarSurface) const {
+      if (auto cwsd_ = getDefaultConstructionWithSearchDistance(planarSurface)) {
+        return cwsd_->first;
+      }
+      return boost::none;
+    }
+
+    // Mirrors EnergyPlus' ConstructionAssignments::constructionWithSearchDistance, past the surface's own construction
+    boost::optional<std::pair<ConstructionBase, int>> Space_Impl::getDefaultConstructionWithSearchDistance(const PlanarSurface& planarSurface) const {
+      if (auto cas_ = constructionAssignmentSet()) {
+        if (auto construction_ = cas_->getDefaultConstruction(planarSurface)) {
+          return std::make_pair(*construction_, 1);
+        }
+      }
+      if (auto building_ = model().getOptionalUniqueModelObject<Building>()) {
+        if (auto cas_ = building_->constructionAssignmentSet()) {
+          if (auto construction_ = cas_->getDefaultConstruction(planarSurface)) {
+            return std::make_pair(*construction_, 2);
+          }
+        }
+      }
+      return boost::none;
     }
 
     Polyhedron Space_Impl::polyhedron() const {

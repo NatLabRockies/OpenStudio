@@ -65,6 +65,9 @@ namespace epmodel {
       bool setConstructionAssignmentSet(const ConstructionAssignmentSet& constructionAssignmentSet);
       void resetConstructionAssignmentSet();
 
+      boost::optional<ConstructionBase> getDefaultConstruction(const PlanarSurface& planarSurface) const;
+      boost::optional<std::pair<ConstructionBase, int>> getDefaultConstructionWithSearchDistance(const PlanarSurface& planarSurface) const;
+
       void doCanonicalize(LoadContext& context) override;
 
       std::vector<Surface> surfaces() const;

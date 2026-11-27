@@ -20,6 +20,7 @@ namespace epmodel {
 
   class ConstructionBase;
   class Model;
+  class PlanarSurface;
   class SubSurfaceConstructionAssignments;
   class SurfaceConstructionAssignments;
 
@@ -44,7 +45,11 @@ namespace epmodel {
    * <code>defaultExteriorSurfaceConstructions()</code> is <code>exteriorSurfaceConstructionAssignments()</code> and
    * <code>defaultInteriorSubSurfaceConstructions()</code> is <code>interiorSubSurfaceConstructionAssignments()</code>, with matching
    * setters and resets. They return <code>SurfaceConstructionAssignments</code> and <code>SubSurfaceConstructionAssignments</code>.
-   * <b>Not yet available:</b> <code>getDefaultConstruction()</code> and <code>collapseToSpaceAndBuilding()</code>.
+   * <b>Changed:</b> <code>getDefaultConstruction()</code> follows EnergyPlus' rules, which differ from Model's: OtherSideCoefficients
+   * surfaces use the exterior assignments; GroundFCfactorMethod and Foundation surfaces use the ground contact assignments;
+   * OtherSideConditionsModel surfaces use the interior assignments; sub-surfaces whose base surface is not Outdoors or
+   * OtherSideCoefficients use the interior sub-surface assignments.
+   * <b>Not yet available:</b> <code>collapseToSpaceAndBuilding()</code>.
    * <b>Removed:</b> <code>spaceShadingConstruction()</code>, <code>buildingShadingConstruction()</code>,
    * <code>siteShadingConstruction()</code> and their setters and resets. The EnergyPlus object has no shading slots, and EnergyPlus
    * shading surfaces have no construction field.
@@ -92,6 +97,17 @@ namespace epmodel {
     boost::optional<ConstructionBase> adiabaticSurfaceConstruction() const;
     bool setAdiabaticSurfaceConstruction(const ConstructionBase& construction);
     void resetAdiabaticSurfaceConstruction();
+
+    /** Returns the construction this set assigns to planarSurface, following EnergyPlus' rules, regardless of whether planarSurface
+     *  names a construction or whether its Space or the Building references this set.
+     *  - Surface: by Outside Boundary Condition, Outdoors and OtherSideCoefficients use the exterior assignments; Ground,
+     *    GroundFCfactorMethod and Foundation use the ground contact assignments; Adiabatic (or a Surface boundary condition pointing to
+     *    itself) uses the adiabatic surface construction; anything else (Surface, Zone, Space, OtherSideConditionsModel) uses the interior
+     *    assignments. Then by Surface Type: Floor, Wall, or Roof and Ceiling for the roof ceiling slot.
+     *  - SubSurface: exterior assignments if its base surface's Outside Boundary Condition is Outdoors or OtherSideCoefficients, interior
+     *    assignments otherwise, then by Surface Type. Window uses the fixed window slot.
+     *  - InteriorPartitionSurface: the interior partition construction. */
+    boost::optional<ConstructionBase> getDefaultConstruction(const PlanarSurface& planarSurface) const;
 
     /** Fills each empty slot of this set from other. Slots already set on this set are kept. When both sets reference different
      *  surface or sub-surface assignments for the same category, those are merged too; if this set's assignments object is also used

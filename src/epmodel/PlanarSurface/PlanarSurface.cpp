@@ -6,12 +6,21 @@
 #include "PlanarSurface/PlanarSurface.hpp"
 #include "PlanarSurface/PlanarSurface_Impl.hpp"
 #include "ConstructionBase/ConstructionBase.hpp"
+#include "ConstructionBase/ConstructionBase_Impl.hpp"
 
+#include "LayeredConstruction/LayeredConstruction.hpp"
+#include "LayeredConstruction/LayeredConstruction_Impl.hpp"
+#include "Material/Material.hpp"
 #include "Model.hpp"
 #include "ModelObject.hpp"
 #include "PlanarSurface/SubSurface.hpp"
 #include "PlanarSurface/SubSurface_Impl.hpp"
 #include "PlanarSurfaceGroup/Space.hpp"
+#include "PlanarSurfaceGroup/Space_Impl.hpp"
+#include "ParentObject/Building.hpp"
+#include "ParentObject/Building_Impl.hpp"
+#include "ResourceObject/ConstructionAssignmentSet.hpp"
+#include "ResourceObject/ConstructionAssignmentSet_Impl.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/Logger.hpp>
@@ -25,6 +34,8 @@
 #include <utilities/idf/IdfExtensibleGroup.hpp>
 
 #include <boost/math/constants/constants.hpp>
+
+#include <algorithm>
 
 namespace openstudio {
 namespace epmodel {
@@ -48,6 +59,14 @@ namespace epmodel {
 
   boost::optional<ConstructionBase> PlanarSurface::construction() const {
     return getImpl<detail::PlanarSurface_Impl>()->construction();
+  }
+
+  boost::optional<std::pair<ConstructionBase, int>> PlanarSurface::constructionWithSearchDistance() const {
+    return getImpl<detail::PlanarSurface_Impl>()->constructionWithSearchDistance();
+  }
+
+  bool PlanarSurface::isConstructionDefaulted() const {
+    return getImpl<detail::PlanarSurface_Impl>()->isConstructionDefaulted();
   }
 
   bool PlanarSurface::setConstruction(const ConstructionBase& construction) {
@@ -155,6 +174,74 @@ namespace epmodel {
 
       clearCachedVariables();
       return true;
+    }
+
+    boost::optional<ConstructionBase> PlanarSurface_Impl::construction() const {
+      if (auto cwsd_ = constructionWithSearchDistance()) {
+        return cwsd_->first;
+      }
+      return boost::none;
+    }
+
+    boost::optional<std::pair<ConstructionBase, int>> PlanarSurface_Impl::defaultConstructionWithSearchDistance() const {
+      const auto planarSurface = getObject<PlanarSurface>();
+      if (auto space_ = space()) {
+        return space_->getDefaultConstructionWithSearchDistance(planarSurface);
+      }
+      if (auto building_ = model().getOptionalUniqueModelObject<Building>()) {
+        if (auto cas_ = building_->constructionAssignmentSet()) {
+          if (auto construction_ = cas_->getDefaultConstruction(planarSurface)) {
+            return std::make_pair(*construction_, 2);
+          }
+        }
+      }
+      return boost::none;
+    }
+
+    boost::optional<ConstructionBase> PlanarSurface_Impl::resolveAdjacentConstruction(
+      const PlanarSurface& planarSurface, const boost::optional<std::pair<ConstructionBase, int>>& thisCWSD,
+      const PlanarSurface& adjacentPlanarSurface, const boost::optional<std::pair<ConstructionBase, int>>& adjacentCWSD) {
+      if (!thisCWSD) {
+        if (!adjacentCWSD) {
+          return boost::none;
+        }
+        // EnergyPlus uses the reverse of the adjacent construction
+        return adjacentCWSD->first;
+      }
+      if (!adjacentCWSD) {
+        return thisCWSD->first;
+      }
+
+      const ConstructionBase& thisConstruction = thisCWSD->first;
+      const ConstructionBase& adjacentConstruction = adjacentCWSD->first;
+      if (thisConstruction.handle() == adjacentConstruction.handle()) {
+        return thisConstruction;
+      }
+
+      // Different constructions that are already mirror-images of each other: each side keeps its own, regardless of search distance
+      auto thisLayered_ = thisConstruction.optionalCast<LayeredConstruction>();
+      auto adjacentLayered_ = adjacentConstruction.optionalCast<LayeredConstruction>();
+      if (thisLayered_ && adjacentLayered_) {
+        const auto thisLayers = thisLayered_->layers();
+        const auto adjacentLayers = adjacentLayered_->layers();
+        if (std::equal(thisLayers.begin(), thisLayers.end(), adjacentLayers.rbegin(), adjacentLayers.rend(),
+                       [](const Material& a, const Material& b) { return a.handle() == b.handle(); })) {
+          return thisConstruction;
+        }
+      }
+
+      if (thisCWSD->second < adjacentCWSD->second) {
+        return thisConstruction;
+      }
+      if (thisCWSD->second > adjacentCWSD->second) {
+        // EnergyPlus uses the reverse of the adjacent construction
+        return adjacentConstruction;
+      }
+
+      LOG(Warn, planarSurface.briefDescription() << " and its adjacent " << adjacentPlanarSurface.briefDescription()
+                                                 << " have different constructions with the same search distance, using '"
+                                                 << thisConstruction.nameString() << "'.");
+      return thisConstruction;
     }
 
     double PlanarSurface_Impl::grossArea() const {

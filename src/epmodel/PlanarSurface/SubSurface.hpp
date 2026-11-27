@@ -55,7 +55,6 @@ namespace epmodel {
 
     static std::vector<std::string> validSubSurfaceTypeValues();
 
-
     std::string subSurfaceType() const;
     bool isSubSurfaceTypeDefaulted() const;
     bool setSubSurfaceType(const std::string& subSurfaceType);

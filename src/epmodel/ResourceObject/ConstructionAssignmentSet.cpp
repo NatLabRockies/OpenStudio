@@ -9,12 +9,21 @@
 #include "ConstructionBase/ConstructionBase.hpp"
 #include "ConstructionBase/ConstructionBase_Impl.hpp"
 #include "Model.hpp"
+#include "PlanarSurface/InteriorPartitionSurface.hpp"
+#include "PlanarSurface/InteriorPartitionSurface_Impl.hpp"
+#include "PlanarSurface/PlanarSurface.hpp"
+#include "PlanarSurface/PlanarSurface_Impl.hpp"
+#include "PlanarSurface/SubSurface.hpp"
+#include "PlanarSurface/SubSurface_Impl.hpp"
+#include "PlanarSurface/Surface.hpp"
+#include "PlanarSurface/Surface_Impl.hpp"
 #include "ResourceObject/SubSurfaceConstructionAssignments.hpp"
 #include "ResourceObject/SubSurfaceConstructionAssignments_Impl.hpp"
 #include "ResourceObject/SurfaceConstructionAssignments.hpp"
 #include "ResourceObject/SurfaceConstructionAssignments_Impl.hpp"
 
 #include <utilities/core/Assert.hpp>
+#include <utilities/core/Compare.hpp>
 #include <utilities/idd/ConstructionAssignmentSet_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
 
@@ -115,6 +124,10 @@ namespace epmodel {
 
   void ConstructionAssignmentSet::resetAdiabaticSurfaceConstruction() {
     getImpl<detail::ConstructionAssignmentSet_Impl>()->resetAdiabaticSurfaceConstruction();
+  }
+
+  boost::optional<ConstructionBase> ConstructionAssignmentSet::getDefaultConstruction(const PlanarSurface& planarSurface) const {
+    return getImpl<detail::ConstructionAssignmentSet_Impl>()->getDefaultConstruction(planarSurface);
   }
 
   void ConstructionAssignmentSet::merge(const ConstructionAssignmentSet& other) {
@@ -227,6 +240,83 @@ namespace epmodel {
 
     void ConstructionAssignmentSet_Impl::resetAdiabaticSurfaceConstruction() {
       OS_ASSERT(setString(openstudio::ConstructionAssignmentSetFields::AdiabaticSurfaceConstructionName, ""));
+    }
+
+    // Mirrors EnergyPlus' ConstructionAssignmentSetData::getConstructionAssignment
+    boost::optional<ConstructionBase> ConstructionAssignmentSet_Impl::getDefaultConstruction(const PlanarSurface& planarSurface) const {
+      const auto isExterior = [](const std::string& obc) { return istringEqual("Outdoors", obc) || istringEqual("OtherSideCoefficients", obc); };
+
+      if (auto surface_ = planarSurface.optionalCast<Surface>()) {
+        const std::string obc = surface_->outsideBoundaryCondition();
+        boost::optional<SurfaceConstructionAssignments> surfaceConstructions_;
+        if (isExterior(obc)) {
+          surfaceConstructions_ = exteriorSurfaceConstructionAssignments();
+        } else if (istringEqual("Ground", obc) || istringEqual("GroundFCfactorMethod", obc) || istringEqual("Foundation", obc)) {
+          surfaceConstructions_ = groundContactSurfaceConstructionAssignments();
+        } else if (istringEqual("Adiabatic", obc)) {
+          return adiabaticSurfaceConstruction();
+        } else if (auto adjacentSurface_ = surface_->adjacentSurface(); adjacentSurface_ && adjacentSurface_->handle() == surface_->handle()) {
+          // EnergyPlus treats a surface that is its own Outside Boundary Condition Object as adiabatic
+          return adiabaticSurfaceConstruction();
+        } else {
+          surfaceConstructions_ = interiorSurfaceConstructionAssignments();
+        }
+
+        if (!surfaceConstructions_) {
+          return boost::none;
+        }
+        const std::string surfaceType = surface_->surfaceType();
+        if (istringEqual("Floor", surfaceType)) {
+          return surfaceConstructions_->floorConstruction();
+        }
+        if (Surface::isCeilingLike(surfaceType)) {
+          return surfaceConstructions_->roofCeilingConstruction();
+        }
+        return surfaceConstructions_->wallConstruction();
+      }
+
+      if (auto subSurface_ = planarSurface.optionalCast<SubSurface>()) {
+        if (!subSurface_->surface()) {
+          return boost::none;
+        }
+        auto subSurfaceConstructions_ = isExterior(subSurface_->outsideBoundaryCondition()) ? exteriorSubSurfaceConstructionAssignments()
+                                                                                            : interiorSubSurfaceConstructionAssignments();
+        if (!subSurfaceConstructions_) {
+          return boost::none;
+        }
+        const std::string subSurfaceType = subSurface_->subSurfaceType();
+        if (istringEqual("Window", subSurfaceType) || istringEqual("FixedWindow", subSurfaceType)) {
+          return subSurfaceConstructions_->fixedWindowConstruction();
+        }
+        if (istringEqual("OperableWindow", subSurfaceType)) {
+          return subSurfaceConstructions_->operableWindowConstruction();
+        }
+        if (istringEqual("Skylight", subSurfaceType)) {
+          return subSurfaceConstructions_->skylightConstruction();
+        }
+        if (istringEqual("Door", subSurfaceType)) {
+          return subSurfaceConstructions_->doorConstruction();
+        }
+        if (istringEqual("GlassDoor", subSurfaceType)) {
+          return subSurfaceConstructions_->glassDoorConstruction();
+        }
+        if (istringEqual("OverheadDoor", subSurfaceType)) {
+          return subSurfaceConstructions_->overheadDoorConstruction();
+        }
+        if (istringEqual("TubularDaylightDome", subSurfaceType)) {
+          return subSurfaceConstructions_->tubularDaylightDomeConstruction();
+        }
+        if (istringEqual("TubularDaylightDiffuser", subSurfaceType)) {
+          return subSurfaceConstructions_->tubularDaylightDiffuserConstruction();
+        }
+        return boost::none;
+      }
+
+      if (planarSurface.optionalCast<InteriorPartitionSurface>()) {
+        return interiorPartitionConstruction();
+      }
+
+      LOG_AND_THROW("Unknown planar surface: " << planarSurface.briefDescription());
     }
 
     void ConstructionAssignmentSet_Impl::merge(const ConstructionAssignmentSet& other) {

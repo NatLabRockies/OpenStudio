@@ -13,6 +13,7 @@
 #include <boost/optional.hpp>
 
 #include <memory>
+#include <utility>
 
 namespace openstudio {
 
@@ -38,6 +39,11 @@ namespace epmodel {
    * \par OpenStudio Model API
    * The corresponding OpenStudio Model base is `openstudio::model::PlanarSurface`; concrete subclasses provide
    * geometry, parent-space, and boundary-condition behavior.
+   * <b>Changed:</b> a defaulted construction is resolved the way EnergyPlus does it: from the Space's ConstructionAssignmentSet, then
+   * the Building's (Model also searches the SpaceType, BuildingStory, and Building SpaceType). <code>constructionWithSearchDistance()</code>
+   * therefore returns 0 (explicit), 1 (Space) or 2 (Building), where Model uses 0 to 5. When resolving against an adjacent surface,
+   * two different constructions with reversed layers are each kept regardless of search distance, where Model only checks this when
+   * the search distances are equal.
    *
    * \par Known limitations
    * EnergyPlus stores geometry differently for building, fenestration, and internal-mass objects, so concrete wrappers
@@ -71,7 +77,18 @@ namespace epmodel {
     /// Sets the vertices.
     bool setVertices(const std::vector<Point3d>& vertices);
 
+    /** Returns the construction EnergyPlus uses for this surface. That is the construction named on this surface if any, else the one
+     *  assigned by the ConstructionAssignmentSet of its Space, else by the Building's. For a Surface or SubSurface with an adjacent
+     *  surface, both sides are resolved together, as EnergyPlus does: see \ref constructionWithSearchDistance. */
     boost::optional<ConstructionBase> construction() const;
+
+    /** Returns this surface's own construction along with how far it was searched for: 0 if named on this surface, 1 if assigned by
+     *  its Space's ConstructionAssignmentSet, 2 if assigned by the Building's. The adjacent surface, if any, is not considered. */
+    boost::optional<std::pair<ConstructionBase, int>> constructionWithSearchDistance() const;
+
+    /// Returns true if this surface does not name a construction, i.e. it is assigned by a ConstructionAssignmentSet, if any.
+    bool isConstructionDefaulted() const;
+
     bool setConstruction(const ConstructionBase& construction);
     void resetConstruction();
 

@@ -432,19 +432,24 @@ namespace epmodel {
     }
 
     boost::optional<ConstructionBase> Surface_Impl::construction() const {
-      auto result = getObject<openstudio::epmodel::Surface>().getModelObjectTarget<ConstructionBase>(
-        openstudio::BuildingSurface_DetailedFields::ConstructionName);
-      if (result) {
-        if (auto adjacent = adjacentSurface()) {
-          auto adjacentConstruction =
-            adjacent->getImpl<Surface_Impl>()->getObject<openstudio::epmodel::Surface>().getModelObjectTarget<ConstructionBase>(
-              openstudio::BuildingSurface_DetailedFields::ConstructionName);
-          if (adjacentConstruction && adjacentConstruction->handle() != result->handle()) {
-            LOG(Warn, "Surface '" << nameString() << "' and its adjacent surface '" << adjacent->nameString() << "' have different constructions.");
-          }
-        }
+      auto adjacentSurface_ = adjacentSurface();
+      if (!adjacentSurface_) {
+        return PlanarSurface_Impl::construction();
       }
-      return result;
+      return resolveAdjacentConstruction(getObject<PlanarSurface>(), constructionWithSearchDistance(), *adjacentSurface_,
+                                         adjacentSurface_->constructionWithSearchDistance());
+    }
+
+    boost::optional<std::pair<ConstructionBase, int>> Surface_Impl::constructionWithSearchDistance() const {
+      if (auto construction_ = getObject<openstudio::epmodel::Surface>().getModelObjectTarget<ConstructionBase>(
+            openstudio::BuildingSurface_DetailedFields::ConstructionName)) {
+        return std::make_pair(*construction_, 0);
+      }
+      return defaultConstructionWithSearchDistance();
+    }
+
+    bool Surface_Impl::isConstructionDefaulted() const {
+      return isEmpty(openstudio::BuildingSurface_DetailedFields::ConstructionName);
     }
 
     bool Surface_Impl::setConstruction(const ConstructionBase& construction) {
@@ -1038,7 +1043,7 @@ namespace epmodel {
       Surface otherSurface(vertices, model);
       otherSurface.setName(this->nameString() + " Reversed");
       // otherSurface.resetConstruction();  // this will use surface's construction on export, TODO: do something better
-      if (auto c_ = this->construction()) {
+      if (auto c_ = this->construction(); c_ && !this->isConstructionDefaulted()) {
         otherSurface.setConstruction(*c_);
       }
 
@@ -1062,7 +1067,7 @@ namespace epmodel {
         SubSurface otherSubSurface(vertices, model);
         otherSubSurface.setName(subSurface.nameString() + " Reversed");
         // otherSubSurface.resetConstruction();  // this will use sub surface's construction on export, TODO: do something better
-        if (auto c_ = subSurface.construction()) {
+        if (auto c_ = subSurface.construction(); c_ && !subSurface.isConstructionDefaulted()) {
           otherSubSurface.setConstruction(*c_);
         }
         otherSubSurface.setSubSurfaceType(subSurface.subSurfaceType());

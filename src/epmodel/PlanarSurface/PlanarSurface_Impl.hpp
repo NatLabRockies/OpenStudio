@@ -15,6 +15,8 @@
 
 #include <boost/optional.hpp>
 
+#include <utility>
+
 namespace openstudio {
 
 class Surface3d;
@@ -48,7 +50,9 @@ namespace epmodel {
 
       virtual bool setVertices(const std::vector<Point3d>& vertices);
 
-      virtual boost::optional<ConstructionBase> construction() const = 0;
+      virtual boost::optional<ConstructionBase> construction() const;
+      virtual boost::optional<std::pair<ConstructionBase, int>> constructionWithSearchDistance() const = 0;
+      virtual bool isConstructionDefaulted() const = 0;
       virtual bool setConstruction(const ConstructionBase& construction) = 0;
       virtual void resetConstruction() = 0;
 
@@ -84,6 +88,19 @@ namespace epmodel {
 
       //@}
      protected:
+      /** Returns the construction assigned to this surface by the ConstructionAssignmentSet of its Space (search distance 1), else of
+       *  the Building (search distance 2). A surface without a Space only looks at the Building's set, as EnergyPlus puts it in its
+       *  zone's default Space. */
+      boost::optional<std::pair<ConstructionBase, int>> defaultConstructionWithSearchDistance() const;
+
+      /** Picks the construction of a surface from its own and its adjacent surface's constructionWithSearchDistance(), following
+       *  EnergyPlus' ConstructionAssignments::resolveConstructionWithSearchDistance. When the adjacent surface wins, its construction is
+       *  returned as is: EnergyPlus uses its reversed-layers copy instead, which may not exist in the model. */
+      static boost::optional<ConstructionBase> resolveAdjacentConstruction(const PlanarSurface& planarSurface,
+                                                                           const boost::optional<std::pair<ConstructionBase, int>>& thisCWSD,
+                                                                           const PlanarSurface& adjacentPlanarSurface,
+                                                                           const boost::optional<std::pair<ConstructionBase, int>>& adjacentCWSD);
+
       //private slots:
      private:
       void clearCachedVariables();

@@ -15,6 +15,7 @@ namespace epmodel {
 
   class ConstructionAssignmentSet;
   class ConstructionBase;
+  class PlanarSurface;
   class SubSurfaceConstructionAssignments;
   class SurfaceConstructionAssignments;
 
@@ -54,7 +55,12 @@ namespace epmodel {
       bool setAdiabaticSurfaceConstruction(const ConstructionBase& construction);
       void resetAdiabaticSurfaceConstruction();
 
+      boost::optional<ConstructionBase> getDefaultConstruction(const PlanarSurface& planarSurface) const;
+
       void merge(const ConstructionAssignmentSet& other);
+
+     private:
+      REGISTER_LOGGER("openstudio.epmodel.ConstructionAssignmentSet");
     };
 
   }  // namespace detail
