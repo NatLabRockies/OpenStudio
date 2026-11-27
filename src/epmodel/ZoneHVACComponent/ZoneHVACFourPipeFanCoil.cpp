@@ -9,6 +9,7 @@
 #include "HVACComponent.hpp"
 #include "HVACComponent/ThermalZone.hpp"
 #include "Loop/AirLoopHVAC.hpp"
+#include "Loop/AirLoopHVAC_Impl.hpp"
 #include "Model.hpp"
 #include "ModelObject.hpp"
 #include "ModelObject/ModelObject_Impl.hpp"
@@ -1174,6 +1175,13 @@ namespace epmodel {
       auto fanObject = thisObject.getModelObjectTarget<HVACComponent>(ZoneHVAC_FourPipeFanCoilFields::SupplyAirFanName);
       auto coolingObject = thisObject.getModelObjectTarget<HVACComponent>(ZoneHVAC_FourPipeFanCoilFields::CoolingCoilName);
       auto heatingObject = thisObject.getModelObjectTarget<HVACComponent>(ZoneHVAC_FourPipeFanCoilFields::HeatingCoilName);
+      if (context && (fanObject || coolingObject || heatingObject)) {
+        // fanObject->airLoopHVAC() walks every AirLoopHVAC's supply components via supplyOutletNodes(),
+        // which requires the canonical outlet NodeList. Discovery order is arbitrary, so canonicalize them first.
+        for (const auto& airLoop : model().getConcreteModelObjects<AirLoopHVAC>()) {
+          airLoop.getImpl<detail::ModelObject_Impl>()->canonicalize(*context);
+        }
+      }
       if (context && fanObject) {
         const auto owner = fanObject->containingHVACComponent();
         if ((owner && owner->handle() != thisObject.handle()) || fanObject->airLoopHVAC()) {
