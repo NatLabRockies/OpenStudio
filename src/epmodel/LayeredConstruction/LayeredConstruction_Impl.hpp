@@ -15,6 +15,7 @@
 namespace openstudio {
 namespace epmodel {
 
+  class LayeredConstruction;
   class Material;
 
   namespace detail {
@@ -39,6 +40,9 @@ namespace epmodel {
       /** Returns the number of non-null layers. */
       unsigned numLayers() const;
       std::vector<unsigned> getLayerIndices(const Material& material) const;
+      bool isSymmetric() const;
+      bool equalLayers(const LayeredConstruction& other) const;
+      bool reverseEqualLayers(const LayeredConstruction& other) const;
 
       bool isOpaque() const override;
       bool isFenestration() const override;

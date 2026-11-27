@@ -29,6 +29,9 @@
 
 #include <utilities/core/Assert.hpp>
 
+#include <algorithm>
+#include <ranges>
+
 namespace openstudio {
 namespace epmodel {
 
@@ -205,6 +208,24 @@ namespace epmodel {
         }
       }
       return result;
+    }
+
+    bool LayeredConstruction_Impl::isSymmetric() const {
+      const std::vector<Material> ls = layers();
+      return std::ranges::equal(ls, std::ranges::reverse_view(ls), [](const Material& a, const Material& b) { return a.handle() == b.handle(); });
+    }
+
+    bool LayeredConstruction_Impl::equalLayers(const LayeredConstruction& other) const {
+      const std::vector<Material> ls = layers();
+      const std::vector<Material> otherLs = other.layers();
+      return std::ranges::equal(ls, otherLs, [](const Material& a, const Material& b) { return a.handle() == b.handle(); });
+    }
+
+    bool LayeredConstruction_Impl::reverseEqualLayers(const LayeredConstruction& other) const {
+      const std::vector<Material> ls = layers();
+      const std::vector<Material> otherLs = other.layers();
+      return std::ranges::equal(ls, std::ranges::reverse_view(otherLs),
+                                [](const Material& a, const Material& b) { return a.handle() == b.handle(); });
     }
 
     bool LayeredConstruction_Impl::isOpaque() const {
@@ -459,6 +480,18 @@ namespace epmodel {
 
   std::vector<unsigned> LayeredConstruction::getLayerIndices(const Material& material) const {
     return getImpl<detail::LayeredConstruction_Impl>()->getLayerIndices(material);
+  }
+
+  bool LayeredConstruction::isSymmetric() const {
+    return getImpl<detail::LayeredConstruction_Impl>()->isSymmetric();
+  }
+
+  bool LayeredConstruction::equalLayers(const LayeredConstruction& other) const {
+    return getImpl<detail::LayeredConstruction_Impl>()->equalLayers(other);
+  }
+
+  bool LayeredConstruction::reverseEqualLayers(const LayeredConstruction& other) const {
+    return getImpl<detail::LayeredConstruction_Impl>()->reverseEqualLayers(other);
   }
 
   void LayeredConstruction::ensureUniqueLayers() {

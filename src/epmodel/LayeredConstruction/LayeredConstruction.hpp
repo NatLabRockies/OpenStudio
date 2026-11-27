@@ -33,9 +33,7 @@ namespace epmodel {
    * The corresponding OpenStudio Model class is
    * <code>openstudio::model::LayeredConstruction</code>. EPModel provides layer
    * lookup, mutation, validation, null-layer queries, and uniqueness handling;
-   * Model-only convenience methods such as <code>insulation()</code>,
-   * <code>isSymmetric()</code>, and <code>reverseEqualLayers()</code> are not
-   * available.
+   * the Model-only <code>insulation()</code> convenience method is not available.
    *
    * \par Known limitations
    * Layer validity depends on the concrete construction and EnergyPlus material
@@ -81,6 +79,15 @@ namespace epmodel {
     std::vector<unsigned> nullLayers() const;
     unsigned numLayers() const;
     std::vector<unsigned> getLayerIndices(const Material& material) const;
+
+    /** Returns true if the layers read the same in reverse order. A construction without layers is symmetric. */
+    bool isSymmetric() const;
+
+    /** Returns true if this construction has the same layers as the other one. */
+    bool equalLayers(const LayeredConstruction& other) const;
+
+    /** Returns true if this construction has the same layers as the other one, in reverse order. */
+    bool reverseEqualLayers(const LayeredConstruction& other) const;
 
     //@}
 

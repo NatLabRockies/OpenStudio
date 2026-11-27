@@ -10,7 +10,6 @@
 
 #include "LayeredConstruction/LayeredConstruction.hpp"
 #include "LayeredConstruction/LayeredConstruction_Impl.hpp"
-#include "Material/Material.hpp"
 #include "Model.hpp"
 #include "ModelObject.hpp"
 #include "PlanarSurface/SubSurface.hpp"
@@ -221,13 +220,8 @@ namespace epmodel {
       // Different constructions that are already mirror-images of each other: each side keeps its own, regardless of search distance
       auto thisLayered_ = thisConstruction.optionalCast<LayeredConstruction>();
       auto adjacentLayered_ = adjacentConstruction.optionalCast<LayeredConstruction>();
-      if (thisLayered_ && adjacentLayered_) {
-        const auto thisLayers = thisLayered_->layers();
-        const auto adjacentLayers = adjacentLayered_->layers();
-        if (std::equal(thisLayers.begin(), thisLayers.end(), adjacentLayers.rbegin(), adjacentLayers.rend(),
-                       [](const Material& a, const Material& b) { return a.handle() == b.handle(); })) {
-          return thisConstruction;
-        }
+      if (thisLayered_ && adjacentLayered_ && thisLayered_->reverseEqualLayers(*adjacentLayered_)) {
+        return thisConstruction;
       }
 
       if (thisCWSD->second < adjacentCWSD->second) {
