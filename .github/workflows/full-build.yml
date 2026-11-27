@@ -218,6 +218,12 @@ jobs:
             echo "/usr/local/cmake/bin" >> $GITHUB_PATH
           fi
 
+      - name: Install lld (Ubuntu ARM64)
+        if: matrix.platform == 'ubuntu-2404-arm64'
+        run: |
+          # lld is needed to link the statically linked ruby module on aarch64 (GNU ld overflows R_AARCH64_CALL26)
+          apt-get update && apt-get install -y lld
+
       - &install_python_deps
         name: Install Python dependencies
         shell: bash
