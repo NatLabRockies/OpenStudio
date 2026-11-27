@@ -1,6 +1,8 @@
 #ifndef UTILITIES_CSHARP_LANGUAGESPECIFIC_I
 #define UTILITIES_CSHARP_LANGUAGESPECIFIC_I
 
+%include <utilities/core/csharp/Utf8.i>
+
 %include <wchar.i>
 // Not implemented for this target: %include <cwstring.i>
 %include <std_wstring.i>

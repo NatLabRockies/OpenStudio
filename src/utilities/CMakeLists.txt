@@ -402,6 +402,8 @@ set(${target_name}_swig_src
   core/ruby/LanguageSpecific.i
   core/python/LanguageSpecific.i
   core/csharp/LanguageSpecific.i
+  core/csharp/Utf8.i
+  core/csharp/Utf16String.hpp
   filetypes/Filetypes.i
   geometry/Geometry.i
   time/Time.i
