@@ -7,6 +7,7 @@
 
 #include "../../utilities/idd/IddKey.hpp"
 #include "../../utilities/core/Finder.hpp"
+#include "../../utilities/filetypes/WorkflowJSON.hpp"
 
 #include <resources.hxx>
 
@@ -30,6 +31,13 @@ void ModelFixture::SetUpTestSuite() {
 
 void ModelFixture::TearDownTestSuite() {
   logFile->disable();
+}
+
+openstudio::path ModelFixture::setUniqueOswDir(openstudio::model::Model& model, const std::string& suffix) {
+  const auto* testInfo = ::testing::UnitTest::GetInstance()->current_test_info();
+  openstudio::path dir = openstudio::tempDir() / toPath(std::string(testInfo->name()) + suffix);
+  model.workflowJSON().setOswDir(dir);
+  return dir;
 }
 
 void ModelFixture::testBooleanIddField(const openstudio::IddField& iddField, const boost::optional<std::string>& defaultValue) {

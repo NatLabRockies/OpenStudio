@@ -136,7 +136,7 @@ namespace energyplus {
           group.setInt(Schedule_Week_RuleExtensibleFields::EndMonth, _endDate->monthOfYear().value());
           group.setInt(Schedule_Week_RuleExtensibleFields::EndDay, _endDate->dayOfMonth());
         }
-      } else { // SpecificDates
+      } else {  // SpecificDates
         for (const openstudio::Date& specificDate : scheduleRule.specificDates()) {
           IdfExtensibleGroup group = scheduleWeekRule.pushExtensibleGroup();
           group.setInt(Schedule_Week_RuleExtensibleFields::StartMonth, specificDate.monthOfYear().value());
@@ -146,7 +146,7 @@ namespace energyplus {
         }
       }
 
-       m_idfObjects.push_back(scheduleWeekRule);
+      m_idfObjects.push_back(scheduleWeekRule);
     }
 
     m_idfObjects.push_back(scheduleYearRules);

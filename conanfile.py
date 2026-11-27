@@ -87,13 +87,16 @@ class OpenStudioBuildRecipe(ConanFile):
         tc.cache_variables["CPACK_BINARY_TGZ"] = True
         tc.cache_variables["CPACK_BINARY_IFW"] = False
         tc.cache_variables["CPACK_BINARY_DEB"] = False
+        tc.cache_variables["CPACK_BINARY_RPM"] = False
         if self.settings.build_type == "Release":
             if is_apple_os(self) or self.settings.os == "Windows":
                 tc.cache_variables["CPACK_BINARY_IFW"] = True
+            elif Path("/etc/redhat-release").exists():
+                # Red Hat-like (CentOS, AlmaLinux, ...)
+                tc.cache_variables["CPACK_BINARY_RPM"] = True
             else:
                 tc.cache_variables["CPACK_BINARY_DEB"] = True
         tc.cache_variables["CPACK_BINARY_NSIS"] = False
-        tc.cache_variables["CPACK_BINARY_RPM"] = False
         tc.cache_variables["CPACK_BINARY_STGZ"] = False
         tc.cache_variables["CPACK_BINARY_TBZ2"] = False
         tc.cache_variables["CPACK_BINARY_TXZ"] = False

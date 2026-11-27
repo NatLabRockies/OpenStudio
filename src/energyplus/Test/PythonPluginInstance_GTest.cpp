@@ -37,6 +37,9 @@ using namespace openstudio;
 
 TEST_F(EnergyPlusFixture, ForwardTranslator_PythonPluginInstance) {
   Model model;
+  // Use a directory unique to this test: it deletes the destination dir below, which would otherwise be <current working directory>/files,
+  // shared with other tests that copy external files there (PythonPluginSearchPaths, ScheduleFileRelativePath) and may run in parallel
+  model.workflowJSON().setOswDir(openstudio::tempDir() / toPath("ForwardTranslator_PythonPluginInstance"));
 
   openstudio::path p = resourcesPath() / toPath("model/PythonPluginThermochromicWindow.py");
   ASSERT_TRUE(exists(p));

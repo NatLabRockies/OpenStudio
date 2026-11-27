@@ -3744,38 +3744,21 @@ namespace energyplus {
 
   void ForwardTranslator::translateConstructions(const model::Model& model) {
     std::vector<IddObjectType> iddObjectTypes{
-      IddObjectType::OS_MaterialProperty_GlazingSpectralData,
-      IddObjectType::OS_Material,
-      IddObjectType::OS_Material_AirGap,
-      IddObjectType::OS_Material_InfraredTransparent,
-      IddObjectType::OS_Material_NoMass,
-      IddObjectType::OS_Material_RoofVegetation,
+      IddObjectType::OS_MaterialProperty_GlazingSpectralData, IddObjectType::OS_Material, IddObjectType::OS_Material_AirGap,
+      IddObjectType::OS_Material_InfraredTransparent, IddObjectType::OS_Material_NoMass, IddObjectType::OS_Material_RoofVegetation,
 
-      IddObjectType::OS_WindowMaterial_Blind,
-      IddObjectType::OS_WindowMaterial_DaylightRedirectionDevice,
-      IddObjectType::OS_WindowMaterial_Gas,
-      IddObjectType::OS_WindowMaterial_GasMixture,
-      IddObjectType::OS_WindowMaterial_Glazing,
-      IddObjectType::OS_WindowMaterial_GlazingGroup_Thermochromic,
-      IddObjectType::OS_WindowMaterial_Glazing_RefractionExtinctionMethod,
-      IddObjectType::OS_WindowMaterial_Screen,
-      IddObjectType::OS_WindowMaterial_Shade,
-      IddObjectType::OS_WindowMaterial_SimpleGlazingSystem,
-      IddObjectType::OS_WindowProperty_FrameAndDivider,
-      IddObjectType::OS_ShadingControl,
+      IddObjectType::OS_WindowMaterial_Blind, IddObjectType::OS_WindowMaterial_DaylightRedirectionDevice, IddObjectType::OS_WindowMaterial_Gas,
+      IddObjectType::OS_WindowMaterial_GasMixture, IddObjectType::OS_WindowMaterial_Glazing,
+      IddObjectType::OS_WindowMaterial_GlazingGroup_Thermochromic, IddObjectType::OS_WindowMaterial_Glazing_RefractionExtinctionMethod,
+      IddObjectType::OS_WindowMaterial_Screen, IddObjectType::OS_WindowMaterial_Shade, IddObjectType::OS_WindowMaterial_SimpleGlazingSystem,
+      IddObjectType::OS_WindowProperty_FrameAndDivider, IddObjectType::OS_ShadingControl,
 
-      IddObjectType::OS_Construction,
-      IddObjectType::OS_Construction_AirBoundary,
-      IddObjectType::OS_Construction_CfactorUndergroundWall,
-      IddObjectType::OS_Construction_FfactorGroundFloor,
-      IddObjectType::OS_Construction_InternalSource,
-      IddObjectType::OS_Construction_WindowDataFile,
+      IddObjectType::OS_Construction, IddObjectType::OS_Construction_AirBoundary, IddObjectType::OS_Construction_CfactorUndergroundWall,
+      IddObjectType::OS_Construction_FfactorGroundFloor, IddObjectType::OS_Construction_InternalSource, IddObjectType::OS_Construction_WindowDataFile,
       IddObjectType::OS_StandardsInformation_Construction,
 
       // TODO: [ConstructionAssignmentSet purge] Probably not wanted, especially with purge = false in DefaultConstructionSet::collapseToSpaceAndBuilding
-      IddObjectType::OS_DefaultSubSurfaceConstructions,
-      IddObjectType::OS_DefaultSurfaceConstructions,
-      IddObjectType::OS_DefaultConstructionSet,
+      IddObjectType::OS_DefaultSubSurfaceConstructions, IddObjectType::OS_DefaultSurfaceConstructions, IddObjectType::OS_DefaultConstructionSet,
 
       IddObjectType::OS_DefaultScheduleSet,
 

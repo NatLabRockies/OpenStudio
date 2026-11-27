@@ -217,6 +217,7 @@ TEST_F(ModelFixture, Schedule_VariableInterval3) {
 
 TEST_F(ModelFixture, ScheduleFile) {
   Model model;
+  setUniqueOswDir(model);
   EXPECT_EQ(0u, model.getConcreteModelObjects<ExternalFile>().size());
   EXPECT_EQ(0u, model.getConcreteModelObjects<ScheduleFile>().size());
 
@@ -372,6 +373,7 @@ TEST_F(ModelFixture, ScheduleFile) {
 
 TEST_F(ModelFixture, ScheduleFileAltCtor) {
   Model model;
+  setUniqueOswDir(model);
   EXPECT_EQ(0u, model.getConcreteModelObjects<ExternalFile>().size());
   EXPECT_EQ(0u, model.getConcreteModelObjects<ScheduleFile>().size());
 

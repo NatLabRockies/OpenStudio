@@ -6,7 +6,7 @@ This module defines functions to embed some files as binary into the executable.
 
 .. command:: embed_files
 
-  This is the command responsible for calling CreateEmbeddedSource::
+  This is the command responsible for calling CreateEmbeddedSource (once, for all the files)::
 
     embed_files(<FILES> <EMBEDDED_LOCATIONS> <CXX_OUTPUT_FILES>)
 
@@ -72,9 +72,8 @@ function(embed_files FILES EMBEDDED_LOCATIONS CXX_OUTPUT_FILES)
   math(EXPR END "${FILES_LENGTH} - 1")
   set(NUMFILES ${FILES_LENGTH})
 
-  foreach(i RANGE ${END})
-    list(GET FILES ${i} FILE)
-    list(GET EMBEDDED_LOCATIONS ${i} EMBEDDED_LOCATION)
+  # ZIP_LISTS rather than list(GET ... ${i}), which re-parses the whole list every time: that was taking ~30s for the 6000+ ruby files
+  foreach(FILE EMBEDDED_LOCATION IN ZIP_LISTS FILES EMBEDDED_LOCATIONS)
 
     get_filename_component(BASE_PATH ${EMBEDDED_LOCATION} DIRECTORY)
     get_filename_component(BASE_FILENAME ${EMBEDDED_LOCATION} NAME_WE)
@@ -86,7 +85,6 @@ function(embed_files FILES EMBEDDED_LOCATIONS CXX_OUTPUT_FILES)
 
     # EMBED_SOURCE_FILE is the fully qualified path to a cxx file with the embedded data
     set(EMBED_SOURCE_FILE "${CMAKE_CURRENT_BINARY_DIR}/embedded_files/${BASE_PATH}/${BASE_FILENAME}${EXTENSION}.cxx")
-    set(EMBED_SOURCE_PATH "${CMAKE_CURRENT_BINARY_DIR}/embedded_files/${BASE_PATH}")
     file(RELATIVE_PATH EMBED_SOURCE_FILE_REL_PATH ${PROJECT_BINARY_DIR} ${EMBED_SOURCE_FILE})
     list(APPEND EMBED_SOURCE_FILES ${EMBED_SOURCE_FILE})
 
@@ -101,18 +99,30 @@ function(embed_files FILES EMBEDDED_LOCATIONS CXX_OUTPUT_FILES)
       set( EMBEDDED_LOCATION ":/${EMBEDDED_LOCATION}" )
     endif()
 
-    add_custom_command(OUTPUT ${EMBED_SOURCE_FILE}
-      COMMAND ${CMAKE_COMMAND} -E make_directory ${EMBED_SOURCE_PATH}
-      COMMAND CreateEmbeddedSource
-        ${FILE}
-        ${EMBED_SOURCE_FILE}
-        ${i}
-        ${EMBEDDED_LOCATION}
-        DEPENDS ${FILE}
-    )
+    # One line per file for CreateEmbeddedSource: <infile>\t<outfile>\t<embeddedname>. The line index is the file number
+    string(APPEND EMBED_LIST_CONTENT "${FILE}\t${EMBED_SOURCE_FILE}\t${EMBEDDED_LOCATION}\n")
 
-    set(EMBEDDED_FILE_INCLUDES "${EMBEDDED_FILE_INCLUDES}#include <${EMBED_SOURCE_FILE_REL_PATH}>\n")
+    string(APPEND EMBEDDED_FILE_INCLUDES "#include <${EMBED_SOURCE_FILE_REL_PATH}>\n")
   endforeach()
+
+  # A single command generates all the files (CreateEmbeddedSource uses all cores), rather than one command per file:
+  # thousands fewer build steps and processes. Changing one file regenerates all of them, but they're all included
+  # in the same embedded_files.cxx, which has to be recompiled anyway.
+  # Only rewrite the list when it changes, so that re-running CMake doesn't regenerate everything
+  set(EMBED_LIST_FILE "${CMAKE_CURRENT_BINARY_DIR}/embedded_files.list")
+  set(EXISTING_EMBED_LIST_CONTENT "")
+  if(EXISTS "${EMBED_LIST_FILE}")
+    file(READ "${EMBED_LIST_FILE}" EXISTING_EMBED_LIST_CONTENT)
+  endif()
+  if(NOT EMBED_LIST_CONTENT STREQUAL EXISTING_EMBED_LIST_CONTENT)
+    file(WRITE "${EMBED_LIST_FILE}" "${EMBED_LIST_CONTENT}")
+  endif()
+
+  add_custom_command(OUTPUT ${EMBED_SOURCE_FILES}
+    COMMAND CreateEmbeddedSource "${EMBED_LIST_FILE}"
+    DEPENDS ${FILES} "${EMBED_LIST_FILE}"
+    COMMENT "Generating ${NUMFILES} embedded files in ${CMAKE_CURRENT_BINARY_DIR}/embedded_files"
+  )
 
   # file names
   foreach (arg RANGE ${END})
@@ -142,6 +152,12 @@ function(embed_files FILES EMBEDDED_LOCATIONS CXX_OUTPUT_FILES)
   endforeach()
 
   set_source_files_properties(${EMBED_SOURCE_FILES} PROPERTIES HEADER_FILE_ONLY TRUE)
+
+  # Named targets to generate just the embedded files: eg 'ninja embedded_files' (all of them), or 'ninja embedded_files_src_utilities'
+  file(RELATIVE_PATH EMBED_TARGET_DIR "${PROJECT_BINARY_DIR}" "${CMAKE_CURRENT_BINARY_DIR}")
+  string(MAKE_C_IDENTIFIER "embedded_files_${EMBED_TARGET_DIR}" EMBED_TARGET)
+  add_custom_target(${EMBED_TARGET} DEPENDS ${EMBED_SOURCE_FILES})
+  add_dependencies(embedded_files ${EMBED_TARGET})
 
   if( NAMESPACE )
     set(BEGIN_NAMESPACE "namespace ${NAMESPACE} {")

@@ -9,6 +9,8 @@
 #include <string>
 #include <string_view>
 
+#include <utilities/UtilitiesAPI.hpp>
+
 // Support for Ninja on Windows (Ninja isn't multi-configuration while MSVC is)
 #cmakedefine NINJA
 
@@ -18,9 +20,9 @@ inline std::string openStudioVersion() {
 }
 
 // Includes prerelease tag if any, and build sha, eg: '3.0.0-rc1+baflkdhsia'
-inline std::string openStudioLongVersion() {
-  return "${OPENSTUDIO_LONG_VERSION}";
-}
+// The functions that return the build sha are defined in OpenStudio.cxx, so a new commit doesn't change this header
+// (included by many files and parsed by SWIG for every module) and only that one file needs to be rebuilt
+UTILITIES_API std::string openStudioLongVersion();
 
 inline std::string openStudioVersionMajor() {
   return "${PROJECT_VERSION_MAJOR}";
@@ -38,9 +40,7 @@ inline std::string openStudioVersionPrerelease() {
   return "${PROJECT_VERSION_PRERELEASE}";
 }
 
-inline std::string openStudioVersionBuildSHA() {
-  return "${PROJECT_VERSION_BUILD}";
-}
+UTILITIES_API std::string openStudioVersionBuildSHA();
 
 inline int energyPlusVersionMajor() {
   return ${ENERGYPLUS_VERSION_MAJOR};

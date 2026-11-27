@@ -38,6 +38,10 @@ class ModelFixture : public ::testing::Test
 
   bool testFuelTypeEquality(const std::vector<openstudio::FuelType>& expectedFuelTypes, const std::vector<openstudio::FuelType>& actualFuelTypes);
 
+  // Points the model's workflow to <tempDir>/<test name><suffix>, so that the files that ExternalFile copies
+  // (to <oswDir>/files) don't clash with other tests running in parallel: they'd all use <current working directory>/files otherwise
+  static openstudio::path setUniqueOswDir(openstudio::model::Model& model, const std::string& suffix = "");
+
   bool testAppGFuelTypeEquality(const std::vector<openstudio::AppGFuelType>& expectedAppGFuelTypes,
                                 const std::vector<openstudio::AppGFuelType>& actualAppGFuelTypes);
 

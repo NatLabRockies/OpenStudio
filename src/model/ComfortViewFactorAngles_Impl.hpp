@@ -41,9 +41,8 @@ namespace model {
 
      private:
       REGISTER_LOGGER("openstudio.model.ComfortViewFactorAngles");
-
     };
-  }
+  }  // namespace detail
 
 }  // namespace model
 }  // namespace openstudio

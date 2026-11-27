@@ -49,8 +49,7 @@ namespace energyplus {
       }
       const auto surfaceThermalZone = space ? space->thermalZone() : boost::none;
       if (!surfaceThermalZone || (thermalZone && (surfaceThermalZone->handle() != thermalZone->handle()))) {
-        LOG(Error, modelObject.briefDescription()
-                     << " has surfaces that are not all assigned to the same ThermalZone and will not be translated.");
+        LOG(Error, modelObject.briefDescription() << " has surfaces that are not all assigned to the same ThermalZone and will not be translated.");
         return boost::none;
       }
       thermalZone = surfaceThermalZone;

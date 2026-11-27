@@ -77,7 +77,7 @@ namespace model {
     }
 
     ComfortViewFactorAngles_Impl::ComfortViewFactorAngles_Impl(const openstudio::detail::WorkspaceObject_Impl& other, Model_Impl* model,
-                                                                 bool keepHandle)
+                                                               bool keepHandle)
       : ModelObject_Impl(other, model, keepHandle) {}
 
     ComfortViewFactorAngles_Impl::ComfortViewFactorAngles_Impl(const ComfortViewFactorAngles_Impl& other, Model_Impl* model, bool keepHandle)
@@ -120,7 +120,7 @@ namespace model {
     boost::optional<AngleFactor> ComfortViewFactorAngles_Impl::getAngleFactor(unsigned groupIndex) const {
       if (groupIndex >= numberofAngleFactors()) {
         LOG(Error, "Asked to get Angle Factor with index " << groupIndex << ", but " << briefDescription() << " has just " << numberofAngleFactors()
-                                                             << " angle factors.");
+                                                           << " angle factors.");
         return boost::none;
       }
 
@@ -156,8 +156,7 @@ namespace model {
 
       boost::optional<ThermalZone> thermalZone = space->thermalZone();
       if (!thermalZone) {
-        LOG(Error, "Cannot add " << surface.briefDescription() << " to " << briefDescription()
-                                  << " because it is not assigned to any ThermalZone.");
+        LOG(Error, "Cannot add " << surface.briefDescription() << " to " << briefDescription() << " because it is not assigned to any ThermalZone.");
         return result;
       }
 
@@ -166,9 +165,8 @@ namespace model {
         const auto existingThermalZone = existingSpace ? existingSpace->thermalZone() : boost::none;
         if (!existingThermalZone || (existingThermalZone->handle() != thermalZone->handle())) {
           LOG(Error, "Cannot add " << surface.briefDescription() << " to " << briefDescription() << " because it is assigned to ThermalZone '"
-                                    << thermalZone->nameString()
-                                    << "' instead of '"
-                                    << (existingThermalZone ? existingThermalZone->nameString() : "an unassigned ThermalZone") << "'.");
+                                   << thermalZone->nameString() << "' instead of '"
+                                   << (existingThermalZone ? existingThermalZone->nameString() : "an unassigned ThermalZone") << "'.");
           return result;
         }
       }
@@ -178,7 +176,7 @@ namespace model {
         boost::optional<AngleFactor> existingAngleFactor = getAngleFactor(existingIndex.get());
         OS_ASSERT(existingAngleFactor);
         LOG(Warn, "For " << briefDescription() << ", AngleFactor already exists, will be modified in place from " << existingAngleFactor.get()
-                          << " to " << angleFactor << ".");
+                         << " to " << angleFactor << ".");
       }
 
       double sum = angleFactor.angleFactor();
@@ -194,7 +192,7 @@ namespace model {
       constexpr double tolerance = 0.000001;
       if (sum > 1.0 + tolerance) {
         LOG(Error, "Cannot add an AngleFactor to " << briefDescription() << " because the Angle Factors would sum to " << sum
-                                                      << ", which is greater than 1.");
+                                                   << ", which is greater than 1.");
         return result;
       }
 

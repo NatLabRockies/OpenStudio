@@ -541,11 +541,11 @@ TEST_F(EnergyPlusFixture, ForwardTranslator_Surface_ExcludeSpaceTranslation_Sear
   };
 
   EXPECT_EQ(spaceTypeRoofConstruction.nameString(), surfaceConstructionName(roof1));  // SpaceType wins over the Story
-  EXPECT_EQ(storyWallConstruction.nameString(), surfaceConstructionName(wall));        // Falls through to the Story
-  EXPECT_EQ("", surfaceConstructionName(floor));                                       // Building SpaceType: left to E+
-  EXPECT_EQ(windowConstruction.nameString(), subSurfaceConstructionName(window));      // SubSurfaces are hard-assigned too
-  EXPECT_EQ("", subSurfaceConstructionName(door));                                     // Building: left to E+
-  EXPECT_EQ(storyRoofConstruction.nameString(), surfaceConstructionName(roof2));       // Defaulted SpaceType skipped
+  EXPECT_EQ(storyWallConstruction.nameString(), surfaceConstructionName(wall));       // Falls through to the Story
+  EXPECT_EQ("", surfaceConstructionName(floor));                                      // Building SpaceType: left to E+
+  EXPECT_EQ(windowConstruction.nameString(), subSurfaceConstructionName(window));     // SubSurfaces are hard-assigned too
+  EXPECT_EQ("", subSurfaceConstructionName(door));                                    // Building: left to E+
+  EXPECT_EQ(storyRoofConstruction.nameString(), surfaceConstructionName(roof2));      // Defaulted SpaceType skipped
 
   // The input model isn't touched
   for (const auto& surface : {roof1, wall, floor, roof2}) {

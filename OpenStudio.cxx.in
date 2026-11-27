@@ -1,0 +1,14 @@
+/***********************************************************************************************************************
+*  OpenStudio(R), Copyright (c) Alliance for Energy Innovation, LLC.
+*  See also https://openstudio.net/license
+***********************************************************************************************************************/
+
+#include <OpenStudio.hxx>
+
+std::string openStudioLongVersion() {
+  return "${OPENSTUDIO_LONG_VERSION}";
+}
+
+std::string openStudioVersionBuildSHA() {
+  return "${PROJECT_VERSION_BUILD}";
+}

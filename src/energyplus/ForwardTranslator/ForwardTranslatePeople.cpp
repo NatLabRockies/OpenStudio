@@ -125,39 +125,40 @@ namespace energyplus {
       if (target->optionalCast<Surface>() || target->optionalCast<SubSurface>() || target->optionalCast<InternalMass>()) {
         if (!istringEqual(mrtType, "SurfaceWeighted")) {
           LOG(Warn, modelObject.briefDescription() << " references " << target->briefDescription()
-                                                    << ", but its PeopleDefinition has Mean Radiant Temperature Calculation Type '" << mrtType
-                                                    << "'. Using 'SurfaceWeighted'.");
+                                                   << ", but its PeopleDefinition has Mean Radiant Temperature Calculation Type '" << mrtType
+                                                   << "'. Using 'SurfaceWeighted'.");
         }
         if (auto idfTarget = translateAndMapModelObject(*target)) {
           mrtType = "SurfaceWeighted";
           idfObject.setString(PeopleFields::SurfaceName_AngleFactorListName, idfTarget->nameString());
         } else {
           LOG(Warn, "Could not translate " << target->briefDescription() << " referenced by " << modelObject.briefDescription()
-                                            << "; using 'EnclosureAveraged' for Mean Radiant Temperature Calculation Type.");
+                                           << "; using 'EnclosureAveraged' for Mean Radiant Temperature Calculation Type.");
           mrtType = "EnclosureAveraged";
         }
       } else if (target->optionalCast<ComfortViewFactorAngles>()) {
         if (!istringEqual(mrtType, "AngleFactor")) {
           LOG(Warn, modelObject.briefDescription() << " references " << target->briefDescription()
-                                                    << ", but its PeopleDefinition has Mean Radiant Temperature Calculation Type '" << mrtType
-                                                    << "'. Using 'AngleFactor'.");
+                                                   << ", but its PeopleDefinition has Mean Radiant Temperature Calculation Type '" << mrtType
+                                                   << "'. Using 'AngleFactor'.");
         }
         if (auto idfTarget = translateAndMapModelObject(*target)) {
           mrtType = "AngleFactor";
           idfObject.setString(PeopleFields::SurfaceName_AngleFactorListName, idfTarget->nameString());
         } else {
           LOG(Warn, "Could not translate " << target->briefDescription() << " referenced by " << modelObject.briefDescription()
-                                            << "; using 'EnclosureAveraged' for Mean Radiant Temperature Calculation Type.");
+                                           << "; using 'EnclosureAveraged' for Mean Radiant Temperature Calculation Type.");
           mrtType = "EnclosureAveraged";
         }
       } else {
         LOG(Warn, modelObject.briefDescription() << " references unsupported Surface Name/Angle Factor List Name object "
-                                                  << target->briefDescription() << "; using 'EnclosureAveraged' for Mean Radiant Temperature Calculation Type.");
+                                                 << target->briefDescription()
+                                                 << "; using 'EnclosureAveraged' for Mean Radiant Temperature Calculation Type.");
         mrtType = "EnclosureAveraged";
       }
     } else if (!istringEqual(mrtType, "EnclosureAveraged")) {
       LOG(Warn, modelObject.briefDescription() << " has Mean Radiant Temperature Calculation Type '" << mrtType
-                                                << "' but no Surface Name/Angle Factor List Name; using 'EnclosureAveraged'.");
+                                               << "' but no Surface Name/Angle Factor List Name; using 'EnclosureAveraged'.");
       mrtType = "EnclosureAveraged";
     }
 
@@ -252,39 +253,40 @@ namespace energyplus {
       if (target->optionalCast<Surface>()) {
         if (!istringEqual(mrtType, "SurfaceWeighted")) {
           LOG(Warn, modelObject.briefDescription() << " references " << target->briefDescription()
-                                                    << ", but its PeopleDefinition has Mean Radiant Temperature Calculation Type '" << mrtType
-                                                    << "'. Using 'SurfaceWeighted'.");
+                                                   << ", but its PeopleDefinition has Mean Radiant Temperature Calculation Type '" << mrtType
+                                                   << "'. Using 'SurfaceWeighted'.");
         }
         if (auto idfTarget = translateAndMapModelObject(*target)) {
           mrtType = "SurfaceWeighted";
           idfObject.setString(People_InstanceFields::SurfaceName_AngleFactorListName, idfTarget->nameString());
         } else {
           LOG(Warn, "Could not translate " << target->briefDescription() << " referenced by " << modelObject.briefDescription()
-                                            << "; using 'EnclosureAveraged' for Mean Radiant Temperature Calculation Type.");
+                                           << "; using 'EnclosureAveraged' for Mean Radiant Temperature Calculation Type.");
           mrtType = "EnclosureAveraged";
         }
       } else if (target->optionalCast<ComfortViewFactorAngles>()) {
         if (!istringEqual(mrtType, "AngleFactor")) {
           LOG(Warn, modelObject.briefDescription() << " references " << target->briefDescription()
-                                                    << ", but its PeopleDefinition has Mean Radiant Temperature Calculation Type '" << mrtType
-                                                    << "'. Using 'AngleFactor'.");
+                                                   << ", but its PeopleDefinition has Mean Radiant Temperature Calculation Type '" << mrtType
+                                                   << "'. Using 'AngleFactor'.");
         }
         if (auto idfTarget = translateAndMapModelObject(*target)) {
           mrtType = "AngleFactor";
           idfObject.setString(People_InstanceFields::SurfaceName_AngleFactorListName, idfTarget->nameString());
         } else {
           LOG(Warn, "Could not translate " << target->briefDescription() << " referenced by " << modelObject.briefDescription()
-                                            << "; using 'EnclosureAveraged' for Mean Radiant Temperature Calculation Type.");
+                                           << "; using 'EnclosureAveraged' for Mean Radiant Temperature Calculation Type.");
           mrtType = "EnclosureAveraged";
         }
       } else {
         LOG(Warn, modelObject.briefDescription() << " references unsupported Surface Name/Angle Factor List Name object "
-                                                  << target->briefDescription() << "; using 'EnclosureAveraged' for Mean Radiant Temperature Calculation Type.");
+                                                 << target->briefDescription()
+                                                 << "; using 'EnclosureAveraged' for Mean Radiant Temperature Calculation Type.");
         mrtType = "EnclosureAveraged";
       }
     } else if (!istringEqual(mrtType, "EnclosureAveraged")) {
       LOG(Warn, modelObject.briefDescription() << " has Mean Radiant Temperature Calculation Type '" << mrtType
-                                                << "' but no Surface Name/Angle Factor List Name; using 'EnclosureAveraged'.");
+                                               << "' but no Surface Name/Angle Factor List Name; using 'EnclosureAveraged'.");
       mrtType = "EnclosureAveraged";
     }
 

@@ -3,9 +3,14 @@
 *  See also https://openstudio.net/license
 ***********************************************************************************************************************/
 
-#include <string>
+#include <algorithm>
+#include <atomic>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <string>
+#include <thread>
+#include <vector>
 
 #include <stdio.h>
 #include <assert.h>
@@ -21,15 +26,22 @@
 
 #define CHUNK 16384
 
-int main(int argc, char* argv[]) {
-  if (argc != 5) {
-    return 1;
-  }
+struct EmbeddedFile
+{
+  std::string infile;
+  std::string outfile;
+  std::string filenum;
+  std::string embeddedname;
+};
 
-  const auto* infile = argv[1];
-  auto* outfile = argv[2];
-  const auto* filenum = argv[3];
-  const auto* embeddedname = argv[4];
+static int embedFile(const EmbeddedFile& file) {
+  const auto* infile = file.infile.c_str();
+  const auto* outfile = file.outfile.c_str();
+  const auto* filenum = file.filenum.c_str();
+  const auto* embeddedname = file.embeddedname.c_str();
+
+  std::error_code ec;
+  std::filesystem::create_directories(std::filesystem::path(file.outfile).parent_path(), ec);
 
   z_stream strm;
   unsigned char in[CHUNK];
@@ -44,7 +56,7 @@ int main(int argc, char* argv[]) {
 
   FILE* source = fopen(infile, "rb");
   if (source == NULL) {
-    fputs("File error", stderr);
+    std::cerr << "Could not open '" << infile << "' for reading" << std::endl;
     return EXIT_FAILURE;
   }
 
@@ -106,4 +118,61 @@ int main(int argc, char* argv[]) {
   }
 
   return 0;
+}
+
+// Usage: CreateEmbeddedSource <list_file>
+// Each line of the list file is: <infile>\t<outfile>\t<embeddedname>, the line index is the file number
+// All files are processed in one go (on all cores), rather than one process per file
+int main(int argc, char* argv[]) {
+  if (argc != 2) {
+    std::cerr << "Usage: " << argv[0] << " <list_file>" << std::endl;
+    return EXIT_FAILURE;
+  }
+
+  std::ifstream list(argv[1]);
+  if (!list.is_open()) {
+    std::cerr << "Could not open '" << argv[1] << "' for reading" << std::endl;
+    return EXIT_FAILURE;
+  }
+
+  std::vector<EmbeddedFile> files;
+  std::string line;
+  while (std::getline(list, line)) {
+    if (line.empty()) {
+      continue;
+    }
+    EmbeddedFile file;
+    size_t start = 0;
+    for (auto* field : {&file.infile, &file.outfile}) {
+      const size_t tab = line.find('\t', start);
+      if (tab == std::string::npos) {
+        std::cerr << "Malformed line in '" << argv[1] << "': " << line << std::endl;
+        return EXIT_FAILURE;
+      }
+      *field = line.substr(start, tab - start);
+      start = tab + 1;
+    }
+    file.embeddedname = line.substr(start);
+    file.filenum = std::to_string(files.size());
+    files.push_back(std::move(file));
+  }
+
+  std::atomic<size_t> next{0};
+  std::atomic<bool> failed{false};
+  const unsigned nThreads = std::max(1U, std::thread::hardware_concurrency());
+  std::vector<std::thread> threads;
+  for (unsigned t = 0; t < nThreads; ++t) {
+    threads.emplace_back([&]() {
+      for (size_t i = next++; i < files.size(); i = next++) {
+        if (embedFile(files[i]) != 0) {
+          failed = true;
+        }
+      }
+    });
+  }
+  for (auto& thread : threads) {
+    thread.join();
+  }
+
+  return failed ? EXIT_FAILURE : 0;
 }

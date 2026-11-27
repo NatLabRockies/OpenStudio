@@ -11,6 +11,7 @@ include(xml/CMakeLists.txt)
 CONFIGURE_FILE_WITH_CHECKSUM("core/ApplicationPathHelpers.cxx.in" "${CMAKE_CURRENT_BINARY_DIR}/core/ApplicationPathHelpers.cxx")
 
 set(core_src
+  ${PROJECT_BINARY_DIR}/src/OpenStudio.cxx
   core/ApplicationPathHelpers.hpp
   ${CMAKE_CURRENT_BINARY_DIR}/core/ApplicationPathHelpers.cxx
   core/Assert.hpp
