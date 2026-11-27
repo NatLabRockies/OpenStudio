@@ -66,7 +66,7 @@ namespace epmodel {
       void resetConstructionAssignmentSet();
 
       boost::optional<ConstructionBase> getDefaultConstruction(const PlanarSurface& planarSurface) const;
-      boost::optional<std::pair<ConstructionBase, int>> getDefaultConstructionWithSearchDistance(const PlanarSurface& planarSurface) const;
+      boost::optional<ConstructionWithSearchDistance> getDefaultConstructionWithSearchDistance(const PlanarSurface& planarSurface) const;
 
       void doCanonicalize(LoadContext& context) override;
 

@@ -22,10 +22,8 @@
   }
 };
 
-// std::pair<ConstructionBase, int> is not wrapped
-%ignore openstudio::epmodel::PlanarSurface::constructionWithSearchDistance;
-
-EPMODELOBJECT_WRAP(PlanarSurface, <epmodel/PlanarSurface/PlanarSurface.hpp>, 0, 0)
+EPMODELOBJECT_WRAP(PlanarSurface, <epmodel/PlanarSurface/PlanarSurface.hpp>, 0, 0)  // also defines SearchDistanceType and ConstructionWithSearchDistance
+EPMODELOBJECT_TEMPLATES(ConstructionWithSearchDistance, 0)
 EPMODELOBJECT_WRAP(Surface, <epmodel/PlanarSurface/Surface.hpp>, 0, 1)  // also defines SurfaceIntersection
 EPMODELOBJECT_TEMPLATES(SurfaceIntersection, 0)
 EPMODELOBJECT_WRAP(SubSurface, <epmodel/PlanarSurface/SubSurface.hpp>, 0, 1)

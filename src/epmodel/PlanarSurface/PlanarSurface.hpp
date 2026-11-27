@@ -7,13 +7,15 @@
 #define EPMODEL_PLANARSURFACE_HPP
 
 #include "ParentObject/ParentObject.hpp"
+#include "ConstructionBase/ConstructionBase.hpp"
+
+#include "../utilities/core/Enum.hpp"
 
 #include "../utilities/idf/IdfObject.hpp"
 
 #include <boost/optional.hpp>
 
 #include <memory>
-#include <utility>
 
 namespace openstudio {
 
@@ -30,6 +32,43 @@ namespace epmodel {
     class PlanarSurface_Impl;
   }
 
+  // clang-format off
+
+  /** \class SearchDistanceType
+   *  \brief Where a PlanarSurface's construction comes from, as in EnergyPlus' ConstructionAssignments: Explicit if named on the
+   *  surface, Space if assigned by its Space's ConstructionAssignmentSet, Building if assigned by the Building's. A lower value takes
+   *  precedence when resolving a surface against its adjacent surface. Unlike Model, which also searches the SpaceType, BuildingStory and
+   *  Building SpaceType, EnergyPlus only has Space and Building sets.
+   *  \relates PlanarSurface */
+  OPENSTUDIO_ENUM(SearchDistanceType,
+    ((Explicit))
+    ((Space))
+    ((Building))
+  );
+
+  // clang-format on
+
+  /** \brief A construction along with where it was found.
+   *
+   * \par EnergyPlus object
+   * This has no EnergyPlus object. It mirrors EnergyPlus' <code>ConstructionWithSearchDistance</code>, used to resolve the
+   * construction of a surface from its ConstructionAssignmentSets.
+   *
+   * \par OpenStudio Model API
+   * There is no corresponding <code>openstudio::model</code> class: Model returns a
+   * <code>std::pair&lt;ConstructionBase, int&gt;</code> instead.
+   *
+   * \par Known limitations
+   * No known EPModel-specific limitations.
+   */
+  struct EPMODEL_API ConstructionWithSearchDistance
+  {
+    ConstructionWithSearchDistance(SearchDistanceType searchDistance, ConstructionBase construction);
+
+    SearchDistanceType searchDistance;
+    ConstructionBase construction;
+  };
+
   /** \brief Abstract base for planar geometry belonging to a surface group.
    *
    * \par EnergyPlus object
@@ -41,7 +80,8 @@ namespace epmodel {
    * geometry, parent-space, and boundary-condition behavior.
    * <b>Changed:</b> a defaulted construction is resolved the way EnergyPlus does it: from the Space's ConstructionAssignmentSet, then
    * the Building's (Model also searches the SpaceType, BuildingStory, and Building SpaceType). <code>constructionWithSearchDistance()</code>
-   * therefore returns 0 (explicit), 1 (Space) or 2 (Building), where Model uses 0 to 5. When resolving against an adjacent surface,
+   * therefore returns a ConstructionWithSearchDistance whose SearchDistanceType is Explicit, Space or Building, where Model returns
+   * a <code>std::pair&lt;ConstructionBase, int&gt;</code> with a search distance from 0 to 5. When resolving against an adjacent surface,
    * two different constructions with reversed layers are each kept regardless of search distance, where Model only checks this when
    * the search distances are equal.
    *
@@ -82,9 +122,9 @@ namespace epmodel {
      *  surface, both sides are resolved together, as EnergyPlus does: see \ref constructionWithSearchDistance. */
     boost::optional<ConstructionBase> construction() const;
 
-    /** Returns this surface's own construction along with how far it was searched for: 0 if named on this surface, 1 if assigned by
-     *  its Space's ConstructionAssignmentSet, 2 if assigned by the Building's. The adjacent surface, if any, is not considered. */
-    boost::optional<std::pair<ConstructionBase, int>> constructionWithSearchDistance() const;
+    /** Returns this surface's own construction along with where it was found: Explicit if named on this surface, Space if assigned by
+     *  its Space's ConstructionAssignmentSet, Building if assigned by the Building's. The adjacent surface, if any, is not considered. */
+    boost::optional<ConstructionWithSearchDistance> constructionWithSearchDistance() const;
 
     /// Returns true if this surface does not name a construction, i.e. it is assigned by a ConstructionAssignmentSet, if any.
     bool isConstructionDefaulted() const;

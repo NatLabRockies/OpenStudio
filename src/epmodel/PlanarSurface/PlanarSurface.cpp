@@ -35,9 +35,13 @@
 #include <boost/math/constants/constants.hpp>
 
 #include <algorithm>
+#include <utility>
 
 namespace openstudio {
 namespace epmodel {
+
+  ConstructionWithSearchDistance::ConstructionWithSearchDistance(SearchDistanceType searchDistance, ConstructionBase construction)
+    : searchDistance(std::move(searchDistance)), construction(std::move(construction)) {}
 
   PlanarSurface::PlanarSurface(IddObjectType type, const Model& model, bool fastName, bool isTransient)
     : ParentObject(type, model, fastName, isTransient) {}
@@ -60,7 +64,7 @@ namespace epmodel {
     return getImpl<detail::PlanarSurface_Impl>()->construction();
   }
 
-  boost::optional<std::pair<ConstructionBase, int>> PlanarSurface::constructionWithSearchDistance() const {
+  boost::optional<ConstructionWithSearchDistance> PlanarSurface::constructionWithSearchDistance() const {
     return getImpl<detail::PlanarSurface_Impl>()->constructionWithSearchDistance();
   }
 
@@ -177,12 +181,12 @@ namespace epmodel {
 
     boost::optional<ConstructionBase> PlanarSurface_Impl::construction() const {
       if (auto cwsd_ = constructionWithSearchDistance()) {
-        return cwsd_->first;
+        return cwsd_->construction;
       }
       return boost::none;
     }
 
-    boost::optional<std::pair<ConstructionBase, int>> PlanarSurface_Impl::defaultConstructionWithSearchDistance() const {
+    boost::optional<ConstructionWithSearchDistance> PlanarSurface_Impl::defaultConstructionWithSearchDistance() const {
       const auto planarSurface = getObject<PlanarSurface>();
       if (auto space_ = space()) {
         return space_->getDefaultConstructionWithSearchDistance(planarSurface);
@@ -190,7 +194,7 @@ namespace epmodel {
       if (auto building_ = model().getOptionalUniqueModelObject<Building>()) {
         if (auto cas_ = building_->constructionAssignmentSet()) {
           if (auto construction_ = cas_->getDefaultConstruction(planarSurface)) {
-            return std::make_pair(*construction_, 2);
+            return ConstructionWithSearchDistance{SearchDistanceType::Building, *construction_};
           }
         }
       }
@@ -198,21 +202,21 @@ namespace epmodel {
     }
 
     boost::optional<ConstructionBase> PlanarSurface_Impl::resolveAdjacentConstruction(
-      const PlanarSurface& planarSurface, const boost::optional<std::pair<ConstructionBase, int>>& thisCWSD,
-      const PlanarSurface& adjacentPlanarSurface, const boost::optional<std::pair<ConstructionBase, int>>& adjacentCWSD) {
+      const PlanarSurface& planarSurface, const boost::optional<ConstructionWithSearchDistance>& thisCWSD, const PlanarSurface& adjacentPlanarSurface,
+      const boost::optional<ConstructionWithSearchDistance>& adjacentCWSD) {
       if (!thisCWSD) {
         if (!adjacentCWSD) {
           return boost::none;
         }
         // EnergyPlus uses the reverse of the adjacent construction
-        return adjacentCWSD->first;
+        return adjacentCWSD->construction;
       }
       if (!adjacentCWSD) {
-        return thisCWSD->first;
+        return thisCWSD->construction;
       }
 
-      const ConstructionBase& thisConstruction = thisCWSD->first;
-      const ConstructionBase& adjacentConstruction = adjacentCWSD->first;
+      const ConstructionBase& thisConstruction = thisCWSD->construction;
+      const ConstructionBase& adjacentConstruction = adjacentCWSD->construction;
       if (thisConstruction.handle() == adjacentConstruction.handle()) {
         return thisConstruction;
       }
@@ -224,10 +228,10 @@ namespace epmodel {
         return thisConstruction;
       }
 
-      if (thisCWSD->second < adjacentCWSD->second) {
+      if (thisCWSD->searchDistance < adjacentCWSD->searchDistance) {
         return thisConstruction;
       }
-      if (thisCWSD->second > adjacentCWSD->second) {
+      if (thisCWSD->searchDistance > adjacentCWSD->searchDistance) {
         // EnergyPlus uses the reverse of the adjacent construction
         return adjacentConstruction;
       }

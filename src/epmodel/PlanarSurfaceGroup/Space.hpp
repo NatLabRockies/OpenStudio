@@ -13,7 +13,6 @@
 #include "../utilities/idd/IddEnums.hpp"
 
 #include <memory>
-#include <utility>
 
 namespace openstudio {
 
@@ -25,6 +24,7 @@ namespace epmodel {
   class BuildingStory;
   class ConstructionAssignmentSet;
   class ConstructionBase;
+  struct ConstructionWithSearchDistance;
   class Model;
   class DesignSpecificationOutdoorAir;
   class PlanarSurface;
@@ -101,8 +101,9 @@ namespace epmodel {
      *  ConstructionAssignmentSet::getDefaultConstruction. */
     boost::optional<ConstructionBase> getDefaultConstruction(const PlanarSurface& planarSurface) const;
 
-    /** Same as getDefaultConstruction, along with the search distance: 1 if assigned by this space's set, 2 if by the Building's. */
-    boost::optional<std::pair<ConstructionBase, int>> getDefaultConstructionWithSearchDistance(const PlanarSurface& planarSurface) const;
+    /** Same as getDefaultConstruction, along with where it was found: SearchDistanceType::Space if assigned by this space's set,
+     *  SearchDistanceType::Building if by the Building's. */
+    boost::optional<ConstructionWithSearchDistance> getDefaultConstructionWithSearchDistance(const PlanarSurface& planarSurface) const;
 
     /// Returns all \link Surface Surfaces \endlink in this space.
     std::vector<Surface> surfaces() const;

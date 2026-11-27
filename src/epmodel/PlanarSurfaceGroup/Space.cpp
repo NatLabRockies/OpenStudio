@@ -265,7 +265,7 @@ namespace epmodel {
     return getImpl<detail::Space_Impl>()->getDefaultConstruction(planarSurface);
   }
 
-  boost::optional<std::pair<ConstructionBase, int>> Space::getDefaultConstructionWithSearchDistance(const PlanarSurface& planarSurface) const {
+  boost::optional<ConstructionWithSearchDistance> Space::getDefaultConstructionWithSearchDistance(const PlanarSurface& planarSurface) const {
     return getImpl<detail::Space_Impl>()->getDefaultConstructionWithSearchDistance(planarSurface);
   }
 
@@ -753,22 +753,22 @@ namespace epmodel {
 
     boost::optional<ConstructionBase> Space_Impl::getDefaultConstruction(const PlanarSurface& planarSurface) const {
       if (auto cwsd_ = getDefaultConstructionWithSearchDistance(planarSurface)) {
-        return cwsd_->first;
+        return cwsd_->construction;
       }
       return boost::none;
     }
 
     // Mirrors EnergyPlus' ConstructionAssignments::constructionWithSearchDistance, past the surface's own construction
-    boost::optional<std::pair<ConstructionBase, int>> Space_Impl::getDefaultConstructionWithSearchDistance(const PlanarSurface& planarSurface) const {
+    boost::optional<ConstructionWithSearchDistance> Space_Impl::getDefaultConstructionWithSearchDistance(const PlanarSurface& planarSurface) const {
       if (auto cas_ = constructionAssignmentSet()) {
         if (auto construction_ = cas_->getDefaultConstruction(planarSurface)) {
-          return std::make_pair(*construction_, 1);
+          return ConstructionWithSearchDistance{SearchDistanceType::Space, *construction_};
         }
       }
       if (auto building_ = model().getOptionalUniqueModelObject<Building>()) {
         if (auto cas_ = building_->constructionAssignmentSet()) {
           if (auto construction_ = cas_->getDefaultConstruction(planarSurface)) {
-            return std::make_pair(*construction_, 2);
+            return ConstructionWithSearchDistance{SearchDistanceType::Building, *construction_};
           }
         }
       }

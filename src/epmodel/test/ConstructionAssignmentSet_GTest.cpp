@@ -608,8 +608,8 @@ TEST_F(EPModelFixture, ConstructionAssignmentSet_PlanarSurfaceConstruction_Searc
     EXPECT_EQ(buildingConstructions[i], *planarSurface.construction()) << planarSurface.briefDescription();
     auto cwsd_ = planarSurface.constructionWithSearchDistance();
     ASSERT_TRUE(cwsd_) << planarSurface.briefDescription();
-    EXPECT_EQ(buildingConstructions[i], cwsd_->first) << planarSurface.briefDescription();
-    EXPECT_EQ(2, cwsd_->second) << planarSurface.briefDescription();
+    EXPECT_EQ(buildingConstructions[i], cwsd_->construction) << planarSurface.briefDescription();
+    EXPECT_EQ(SearchDistanceType::Building, cwsd_->searchDistance.value()) << planarSurface.briefDescription();
   }
 
   // Space set with only the wall: search distance 1 for the wall, the others fall through to the Building's set
@@ -621,21 +621,21 @@ TEST_F(EPModelFixture, ConstructionAssignmentSet_PlanarSurfaceConstruction_Searc
   ASSERT_TRUE(space.setConstructionAssignmentSet(spaceSet));
 
   ASSERT_TRUE(surface.constructionWithSearchDistance());
-  EXPECT_EQ(spaceWall, surface.constructionWithSearchDistance()->first);
-  EXPECT_EQ(1, surface.constructionWithSearchDistance()->second);
+  EXPECT_EQ(spaceWall, surface.constructionWithSearchDistance()->construction);
+  EXPECT_EQ(SearchDistanceType::Space, surface.constructionWithSearchDistance()->searchDistance.value());
   ASSERT_TRUE(space.getDefaultConstruction(surface));
   EXPECT_EQ(spaceWall, *space.getDefaultConstruction(surface));
   ASSERT_TRUE(subSurface.constructionWithSearchDistance());
-  EXPECT_EQ(buildingWindow, subSurface.constructionWithSearchDistance()->first);
-  EXPECT_EQ(2, subSurface.constructionWithSearchDistance()->second);
+  EXPECT_EQ(buildingWindow, subSurface.constructionWithSearchDistance()->construction);
+  EXPECT_EQ(SearchDistanceType::Building, subSurface.constructionWithSearchDistance()->searchDistance.value());
 
   // Explicit construction: search distance 0
   auto explicitWall = namedConstruction(model, "Explicit Wall");
   ASSERT_TRUE(surface.setConstruction(explicitWall));
   EXPECT_FALSE(surface.isConstructionDefaulted());
   ASSERT_TRUE(surface.constructionWithSearchDistance());
-  EXPECT_EQ(explicitWall, surface.constructionWithSearchDistance()->first);
-  EXPECT_EQ(0, surface.constructionWithSearchDistance()->second);
+  EXPECT_EQ(explicitWall, surface.constructionWithSearchDistance()->construction);
+  EXPECT_EQ(SearchDistanceType::Explicit, surface.constructionWithSearchDistance()->searchDistance.value());
   ASSERT_TRUE(surface.construction());
   EXPECT_EQ(explicitWall, *surface.construction());
 
@@ -650,8 +650,8 @@ TEST_F(EPModelFixture, ConstructionAssignmentSet_PlanarSurfaceConstruction_Searc
   ASSERT_TRUE(spacelessSurface.setOutsideBoundaryCondition("Outdoors"));
   EXPECT_FALSE(spacelessSurface.space());
   ASSERT_TRUE(spacelessSurface.constructionWithSearchDistance());
-  EXPECT_EQ(buildingWall, spacelessSurface.constructionWithSearchDistance()->first);
-  EXPECT_EQ(2, spacelessSurface.constructionWithSearchDistance()->second);
+  EXPECT_EQ(buildingWall, spacelessSurface.constructionWithSearchDistance()->construction);
+  EXPECT_EQ(SearchDistanceType::Building, spacelessSurface.constructionWithSearchDistance()->searchDistance.value());
 }
 
 TEST_F(EPModelFixture, ConstructionAssignmentSet_PlanarSurfaceConstruction_AdjacentSurface) {
@@ -691,7 +691,7 @@ TEST_F(EPModelFixture, ConstructionAssignmentSet_PlanarSurfaceConstruction_Adjac
   // Both have one: the lower search distance wins, here the explicit one (0) over the Building's (2)
   ASSERT_TRUE(building.setConstructionAssignmentSet(buildingSet));
   ASSERT_TRUE(surface2.constructionWithSearchDistance());
-  EXPECT_EQ(buildingWall, surface2.constructionWithSearchDistance()->first);
+  EXPECT_EQ(buildingWall, surface2.constructionWithSearchDistance()->construction);
   ASSERT_TRUE(surface2.construction());
   EXPECT_EQ(explicitWall, *surface2.construction());
 
@@ -724,8 +724,8 @@ TEST_F(EPModelFixture, ConstructionAssignmentSet_PlanarSurfaceConstruction_Adjac
   ASSERT_TRUE(spaceWall.setLayers({inside, outside}));
   surface2.resetConstruction();
   ASSERT_TRUE(surface2.constructionWithSearchDistance());
-  EXPECT_EQ(spaceWall, surface2.constructionWithSearchDistance()->first);
-  EXPECT_EQ(1, surface2.constructionWithSearchDistance()->second);
+  EXPECT_EQ(spaceWall, surface2.constructionWithSearchDistance()->construction);
+  EXPECT_EQ(SearchDistanceType::Space, surface2.constructionWithSearchDistance()->searchDistance.value());
   ASSERT_TRUE(surface1.construction());
   EXPECT_EQ(explicitWall, *surface1.construction());
   ASSERT_TRUE(surface2.construction());

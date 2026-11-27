@@ -138,10 +138,10 @@ namespace epmodel {
       return surfaceArea().value_or(0.0);
     }
 
-    boost::optional<std::pair<ConstructionBase, int>> InteriorPartitionSurface_Impl::constructionWithSearchDistance() const {
+    boost::optional<ConstructionWithSearchDistance> InteriorPartitionSurface_Impl::constructionWithSearchDistance() const {
       if (auto construction_ =
             getObject<InteriorPartitionSurface>().getModelObjectTarget<ConstructionBase>(openstudio::InternalMassFields::ConstructionName)) {
-        return std::make_pair(*construction_, 0);
+        return ConstructionWithSearchDistance{SearchDistanceType::Explicit, *construction_};
       }
       return defaultConstructionWithSearchDistance();
     }

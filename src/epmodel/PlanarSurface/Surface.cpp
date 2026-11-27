@@ -443,10 +443,10 @@ namespace epmodel {
                                          adjacentSurface_->constructionWithSearchDistance());
     }
 
-    boost::optional<std::pair<ConstructionBase, int>> Surface_Impl::constructionWithSearchDistance() const {
+    boost::optional<ConstructionWithSearchDistance> Surface_Impl::constructionWithSearchDistance() const {
       if (auto construction_ = getObject<openstudio::epmodel::Surface>().getModelObjectTarget<ConstructionBase>(
             openstudio::BuildingSurface_DetailedFields::ConstructionName)) {
-        return std::make_pair(*construction_, 0);
+        return ConstructionWithSearchDistance{SearchDistanceType::Explicit, *construction_};
       }
       return defaultConstructionWithSearchDistance();
     }

@@ -16,9 +16,6 @@
 %}
 
 
-// std::pair<ConstructionBase, int> is not wrapped
-%ignore openstudio::epmodel::Space::getDefaultConstructionWithSearchDistance;
-
 EPMODELOBJECT_WRAP(PlanarSurfaceGroup, <epmodel/PlanarSurfaceGroup/PlanarSurfaceGroup.hpp>, 0, 0)
 EPMODELOBJECT_WRAP(Space, <epmodel/PlanarSurfaceGroup/Space.hpp>, 0, 1)
 

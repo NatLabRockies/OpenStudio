@@ -31,7 +31,7 @@ namespace epmodel {
       virtual bool setVertices(const std::vector<Point3d>& vertices) override;
 
       boost::optional<ConstructionBase> construction() const override;
-      boost::optional<std::pair<ConstructionBase, int>> constructionWithSearchDistance() const override;
+      boost::optional<ConstructionWithSearchDistance> constructionWithSearchDistance() const override;
       bool isConstructionDefaulted() const override;
       bool setConstruction(const ConstructionBase& construction) override;
       void resetConstruction() override;

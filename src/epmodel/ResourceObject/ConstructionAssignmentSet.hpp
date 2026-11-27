@@ -49,10 +49,10 @@ namespace epmodel {
    * surfaces use the exterior assignments; GroundFCfactorMethod and Foundation surfaces use the ground contact assignments;
    * OtherSideConditionsModel surfaces use the interior assignments; sub-surfaces whose base surface is not Outdoors or
    * OtherSideCoefficients use the interior sub-surface assignments.
-   * <b>Not yet available:</b> <code>collapseToSpaceAndBuilding()</code>.
    * <b>Removed:</b> <code>spaceShadingConstruction()</code>, <code>buildingShadingConstruction()</code>,
    * <code>siteShadingConstruction()</code> and their setters and resets. The EnergyPlus object has no shading slots, and EnergyPlus
-   * shading surfaces have no construction field.
+   * shading surfaces have no construction field. <code>collapseToSpaceAndBuilding()</code> is not needed either: it folds Model's
+   * SpaceType and BuildingStory sets into the Space and Building ones, and only Space and Building can reference a set here.
    *
    * \par Known limitations
    * Only Building and Space can reference a set. Model's SpaceType and BuildingStory assignments have no EnergyPlus equivalent.
