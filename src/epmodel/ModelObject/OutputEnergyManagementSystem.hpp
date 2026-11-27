@@ -26,7 +26,7 @@ namespace epmodel {
   /** \brief OutputEnergyManagementSystem.
    *
    * \par EnergyPlus object
-   * \epobject{input-for-output.html#outputenergymanagementsystem,Output:EnergyManagementSystem}.
+   * \epobject{group-reports.html#outputenergymanagementsystem,Output:EnergyManagementSystem}.
    *
    * \par OpenStudio Model API
    * The corresponding OpenStudio Model class is <code>openstudio::model::OutputEnergyManagementSystem</code>. The three reporting settings map directly to EnergyPlus. No additional EMS relationship API is exposed.

@@ -25,7 +25,7 @@ namespace epmodel {
   /** \brief OutputControlReportingTolerances.
    *
    * \par EnergyPlus object
-   * \epobject{input-for-output.html#outputcontrolreportingtolerances,OutputControl:ReportingTolerances}.
+   * \epobject{group-reports.html#outputcontrolreportingtolerances,OutputControl:ReportingTolerances}.
    *
    * \par OpenStudio Model API
    * The corresponding OpenStudio Model class is <code>openstudio::model::OutputControlReportingTolerances</code>. The two tolerance fields map directly to EnergyPlus.

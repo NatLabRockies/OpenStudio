@@ -26,7 +26,7 @@ namespace epmodel {
   /** \brief OutputControlResilienceSummaries.
    *
    * \par EnergyPlus object
-   * \epobject{input-for-output.html#OutputControlResilienceSummaries,OutputControl:ResilienceSummaries}.
+   * \epobject{group-reports.html#OutputControlResilienceSummaries,OutputControl:ResilienceSummaries}.
    *
    * \par OpenStudio Model API
    * The corresponding OpenStudio Model class is <code>openstudio::model::OutputControlResilienceSummaries</code>. The heat-index algorithm field and its valid-value helpers are exposed.

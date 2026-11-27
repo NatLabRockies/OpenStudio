@@ -29,7 +29,7 @@ namespace epmodel {
 /** \brief Defines the global economic assumptions for life-cycle cost analysis.
  *
  * \par EnergyPlus object
- * \epobject{lifecyclecost-parameters.html#lifecyclecostparameters,LifeCycleCost:Parameters}
+ * \epobject{lifecyclecostparameters.html#lifecyclecostparameters,LifeCycleCost:Parameters}
  *
  * \par Important behavior
  * Discounting, inflation, analysis-period, tax, electricity-cost, and constant-dollar fields are stored directly on the object.

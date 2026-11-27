@@ -27,7 +27,7 @@ namespace epmodel {
   /** \brief Represents a single-speed direct-expansion cooling coil.
    *
    * \par EnergyPlus object
-   * \epobject{group-coil-cooling-dx.html#coilcoolingdx,Coil:Cooling:DX}.
+   * \epobject{group-heating-and-cooling-coils.html#coilcoolingdx,Coil:Cooling:DX}.
    *
    * \par Important behavior
    * Condenser node fields and the persisted DX adapter are maintained when the coil is inserted into or moved within a supply branch.

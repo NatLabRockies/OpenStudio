@@ -14,6 +14,7 @@ from check_epmodel_docs import ROOT, expand_paths
 
 
 CMAKE = ROOT / "CMakeLists.txt"
+IO_REFERENCE_URL = "https://jmarrec-energyplus.readthedocs.io/v{version}/guides/input-output-reference/"
 SECTION_RE = re.compile(
     r"(?P<head>\\par EnergyPlus object\s*)(?P<body>.*?)(?=\n\s*\*\s*\\par |\*/)",
     re.DOTALL,
@@ -32,7 +33,7 @@ def energyplus_doc_version() -> str:
             raise RuntimeError(f"Cannot find {name} in {CMAKE}")
         return match.group(1)
 
-    return f"{value('ENERGYPLUS_VERSION_MAJOR')}-{value('ENERGYPLUS_VERSION_MINOR')}"
+    return f"{value('ENERGYPLUS_VERSION_MAJOR')}.{value('ENERGYPLUS_VERSION_MINOR')}.{value('ENERGYPLUS_VERSION_PATCH')}"
 
 
 class ObjectIndexParser(HTMLParser):
@@ -46,9 +47,15 @@ class ObjectIndexParser(HTMLParser):
         if tag != "a":
             return
         href = dict(attrs).get("href")
-        if href and "/input-output-reference/" in href:
-            self.current_href = href
-            self.current_text = []
+        if href is None:
+            return
+        if "/input-output-reference/" in href:
+            href = href.split("/input-output-reference/", 1)[1]
+        elif "://" in href or href.startswith(("/", "../")) or ".html#" not in href:
+            # Only keep links to another I/O Reference page and anchor (skips navigation links)
+            return
+        self.current_href = href
+        self.current_text = []
 
     def handle_data(self, data: str) -> None:
         if self.current_href is not None:
@@ -58,7 +65,7 @@ class ObjectIndexParser(HTMLParser):
         if tag != "a" or self.current_href is None:
             return
         name = html.unescape("".join(self.current_text)).strip()
-        target = self.current_href.split("/input-output-reference/", 1)[1]
+        target = self.current_href
         if name and target:
             self.links[name] = target
         self.current_href = None
@@ -66,12 +73,14 @@ class ObjectIndexParser(HTMLParser):
 
 
 def load_links(source: str | None, version: str) -> tuple[dict[str, str], str]:
-    url = f"https://bigladdersoftware.com/epx/docs/{version}/input-output-reference/object-index.html"
+    url = IO_REFERENCE_URL.format(version=version) + "object-index.html"
     if source:
         text = Path(source).read_text(encoding="utf-8")
         origin = str(Path(source))
     else:
-        with urllib.request.urlopen(url) as response:  # noqa: S310 - fixed HTTPS origin
+        # Read the Docs rejects urllib's default User-Agent
+        request = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (compatible; update_epmodel_energyplus_links)"})
+        with urllib.request.urlopen(request) as response:  # noqa: S310 - fixed HTTPS origin
             text = response.read().decode("utf-8")
         origin = url
 

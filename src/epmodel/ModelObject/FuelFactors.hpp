@@ -26,7 +26,7 @@ namespace epmodel {
   /** \brief Represents <code>FuelFactors</code>.
    *
    * \par EnergyPlus object
-   * \epobject{input-for-output.html#fuelfactors,FuelFactors}
+   * \epobject{group-reports.html#fuelfactors,FuelFactors}
    *
    * \par OpenStudio Model API
    * The corresponding OpenStudio Model class is <code>openstudio::model::FuelFactors</code>.

@@ -26,7 +26,7 @@ namespace epmodel {
   /** \brief OutputEnvironmentalImpactFactors.
    *
    * \par EnergyPlus object
-   * \epobject{input-for-output.html#outputenvironmentalimpactfactors,Output:EnvironmentalImpactFactors}.
+   * \epobject{group-reports.html#outputenvironmentalimpactfactors,Output:EnvironmentalImpactFactors}.
    *
    * \par OpenStudio Model API
    * The corresponding OpenStudio Model class is <code>openstudio::model::OutputEnvironmentalImpactFactors</code>. The reporting-frequency field maps directly to EnergyPlus.

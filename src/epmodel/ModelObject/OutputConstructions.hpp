@@ -25,7 +25,7 @@ namespace epmodel {
   /** \brief OutputConstructions.
    *
    * \par EnergyPlus object
-   * \epobject{input-for-output.html#outputconstructions,Output:Constructions}.
+   * \epobject{group-reports.html#outputconstructions,Output:Constructions}.
    *
    * \par OpenStudio Model API
    * The corresponding OpenStudio Model class is <code>openstudio::model::OutputConstructions</code>. The two report switches map directly to the EnergyPlus Details Type fields.

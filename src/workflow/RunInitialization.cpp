@@ -117,6 +117,11 @@ void OSWorkflow::runInitialization() {
     });
   }
 
+  // Same file-search context for the epmodel that ModelMeasures run against.
+  if (epModel_) {
+    epModel_->setWorkflowJSON(workflowJSON.clone());
+  }
+
   if (epModel_ && !m_post_process_only && !workflowJSON.runOptions()->fast()) {
     auto savePath = workflowJSON.absoluteRunDir() / "pre-model-measures.idf";
     detailedTimeBlock(loadedIDFSeed ? "Saving staged seed IDF to Run Dir" : "Saving staged translated seed IDF to Run Dir", [this, &savePath]() {

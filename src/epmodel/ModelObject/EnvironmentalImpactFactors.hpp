@@ -26,7 +26,7 @@ namespace epmodel {
   /** \brief Represents <code>EnvironmentalImpactFactors</code>.
    *
    * \par EnergyPlus object
-   * \epobject{input-for-output.html#environmentalimpactfactors,EnvironmentalImpactFactors}
+   * \epobject{group-reports.html#environmentalimpactfactors,EnvironmentalImpactFactors}
    *
    * \par OpenStudio Model API
    * The corresponding OpenStudio Model class is <code>openstudio::model::EnvironmentalImpactFactors</code>.

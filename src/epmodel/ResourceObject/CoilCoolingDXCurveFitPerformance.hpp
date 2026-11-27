@@ -27,7 +27,7 @@ namespace epmodel {
   /** \brief Defines the performance and operating-mode relationships for a curve-fit DX cooling coil.
    *
    * \par EnergyPlus object
-   * \epobject{group-coil-cooling-dx.html#coilcoolingdxcurvefitperformance,Coil:Cooling:DX:CurveFit:Performance}.
+   * \epobject{group-heating-and-cooling-coils.html#coilcoolingdxcurvefitperformance,Coil:Cooling:DX:CurveFit:Performance}.
    *
    * \par Important behavior
    * A newly created object and a loaded object with a blank basin-heater

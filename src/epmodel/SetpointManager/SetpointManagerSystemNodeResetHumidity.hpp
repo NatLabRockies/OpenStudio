@@ -25,7 +25,7 @@ namespace epmodel {
   /** \brief Resets a humidity-ratio setpoint from a reference system node.
    *
    * \par EnergyPlus object
-   * <code>SetpointManager:SystemNodeReset:Humidity</code>
+   * \epobject{group-setpoint-managers.html#setpointmanagersystemnoderesethumidity,SetpointManager:SystemNodeReset:Humidity}
    *
    * \par OpenStudio Model API
    * The corresponding OpenStudio Model class is <code>openstudio::model::SetpointManagerSystemNodeResetHumidity</code>.

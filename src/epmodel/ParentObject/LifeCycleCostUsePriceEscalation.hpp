@@ -26,7 +26,7 @@ namespace epmodel {
 /** \brief Defines resource-price escalation factors for life-cycle cost analysis.
  *
  * \par EnergyPlus object
- * \epobject{lifecyclecost-usepriceescalation.html#lifecyclecostusepriceescalation,LifeCycleCost:UsePriceEscalation}
+ * \epobject{lifecyclecostusepriceescalation.html#lifecyclecostusepriceescalation,LifeCycleCost:UsePriceEscalation}
  *
  * \par Important behavior
  * The resource, escalation start date, and year-by-year escalation values are stored in the object's extensible fields.
