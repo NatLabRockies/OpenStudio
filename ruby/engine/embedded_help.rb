@@ -11,6 +11,13 @@ module EmbeddedScripting
   def self.fileNames
     @@fileNames
   end
+
+  # OpenStudio.get_absolute_path of each name, computed once (lazily, OpenStudio.get_absolute_path isn't defined yet)
+  # Dir.glob used to call it on all the files, for every glob: ~20s for a single require 'minitest/autorun'
+  @@absoluteFileNames = nil
+  def self.absoluteFileNames
+    @@absoluteFileNames ||= @@fileNames.map { |name| OpenStudio.get_absolute_path(name).freeze }.freeze
+  end
 end
 
 
@@ -684,12 +691,11 @@ class Dir
         puts "absolute_pattern #{absolute_pattern}"
       end
 
-      EmbeddedScripting::fileNames.each do |name|
-        absolute_path = OpenStudio.get_absolute_path(name)
+      EmbeddedScripting::absoluteFileNames.each do |absolute_path|
         if base_has_embedded
           next unless absolute_path.start_with?(absolute_base)
           if debug
-            puts "name=#{name}, absolute_path=#{absolute_path}"
+            puts "absolute_path=#{absolute_path}"
             puts "absolute_path.start_with?(absolute_base)=#{absolute_path.start_with?(absolute_base)}"
           end
         end
@@ -698,7 +704,7 @@ class Dir
         # if File.fnmatch( absolute_pattern, absolute_path, File::FNM_EXTGLOB )
         if File.fnmatch(absolute_pattern, absolute_path, flags)
           #puts "#{absolute_path} is a match!"
-          result << absolute_path
+          result << absolute_path.dup # callers get their own (mutable) string, like before: not the cached one
         end
       end
 
