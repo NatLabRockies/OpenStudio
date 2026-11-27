@@ -11,6 +11,8 @@
 namespace openstudio {
 namespace epmodel {
 
+  class Construction;
+
   namespace detail {
 
     class EPMODEL_API Construction_Impl : public LayeredConstruction_Impl
@@ -18,6 +20,8 @@ namespace epmodel {
      public:
       using LayeredConstruction_Impl::LayeredConstruction_Impl;
       virtual ~Construction_Impl() override = default;
+
+      Construction reverseConstruction() const;
     };
 
   }  // namespace detail

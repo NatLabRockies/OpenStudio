@@ -28,9 +28,10 @@ namespace epmodel {
    *
    * \par OpenStudio Model API
    * The corresponding OpenStudio Model class is
-   * <code>openstudio::model::Construction</code>. EPModel exposes the inherited
-   * layer APIs, but Model's <code>reverseConstruction()</code> helper is not
-   * available.
+   * <code>openstudio::model::Construction</code>. <b>Not yet available:</b> the
+   * constructors taking a vector of OpaqueMaterial or FenestrationMaterial, or a
+   * ModelPartitionMaterial; construct from the Model and call
+   * <code>setLayers()</code> instead.
    *
    * \par Known limitations
    * Layer relationships must be managed through the inherited layer methods;
@@ -48,6 +49,10 @@ namespace epmodel {
     Construction& operator=(Construction&&) = default;
 
     static IddObjectType iddObjectType();
+
+    /** Searches the model for a layered construction with layers which are the reverse of this one.  Returns that construction
+     *  if found, creates one if not. */
+    Construction reverseConstruction() const;
 
    protected:
     using ImplType = detail::Construction_Impl;
