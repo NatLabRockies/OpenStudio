@@ -329,7 +329,8 @@ TEST_F(EPModelFixture, Model_Load_WorkflowJSON) {
     auto loaded = Model::load(idfPath, dir / openstudio::toPath("other.osw"));
     ASSERT_TRUE(loaded);
     ASSERT_TRUE(loaded->workflowJSON().oswPath());
-    EXPECT_EQ(dir / openstudio::toPath("other.osw"), *loaded->workflowJSON().oswPath());
+    // WorkflowJSON stores the canonical path: on macOS the temp dir is under /var, a symlink to /private/var
+    EXPECT_EQ(openstudio::filesystem::canonical(dir / openstudio::toPath("other.osw")), *loaded->workflowJSON().oswPath());
   }
 
   openstudio::filesystem::remove_all(dir);
