@@ -58,7 +58,7 @@ rbDefineBlockInd = strArray.length
 strArray.each_index {|i|
 
   # process last part of file, which includes rb_define calls
-  if strArray[i].index(/SWIGEXPORT void Init_/) != nil then
+  if !strArray[i].index(/SWIGEXPORT void Init_/).nil? then
     rbDefineBlockInd = i
 
     # simplify rb_define_class_under statement for derived classes
@@ -69,14 +69,14 @@ strArray.each_index {|i|
   end
 
   # process blocks that include rdoc comments, delete all others
-  if strArray[i].index(/Document-[\w]*: /) == nil then
+  if strArray[i].index(/Document-[\w]*: /).nil? then
     strArray[i] = ''
   else
     # change derived class documentation
     # get base class and delete from first line
     inheritanceDocRegex = /Document-class: ([\w:]*) < ([\w:]*)/
     ans = strArray[i].match(inheritanceDocRegex)
-    if ans != nil then
+    if !ans.nil? then
       # is derived class
       baseClassStr = ans[2]
       strArray[i].sub!(inheritanceDocRegex,'Document-class: \1')
@@ -102,12 +102,12 @@ strArray.each_index {|i|
     brokenBlock[1].each_line {|ln|
 
       # possible keeper lines
-      if (ln.match(/static VALUE/) != nil) ||
-         (ln.match(/_wrap_/) != nil) ||
-         (ln.match(/swig_class/) != nil) then
+      if !ln.match(/static VALUE/).nil? ||
+         !ln.match(/_wrap_/).nil? ||
+         !ln.match(/swig_class/).nil? then
         ln.sub!(" {","")                         # get rid of hanging open brackets
-        if ln.match(/__SWIG_\d+/) == nil         # not an overloaded function
-          if (lookingFor == '') || (ln.match(lookingFor) != nil)
+        if ln.match(/__SWIG_\d+/).nil?         # not an overloaded function
+          if (lookingFor == '') || !ln.match(lookingFor).nil?
             keepers << ln
           end
         else                                     # is an overloaded function
@@ -133,20 +133,20 @@ strArray.each_index {|i|
     lookingFor = ''
 
     # getters
-    if strArray[i].match(/Get value/) != nil
+    if !strArray[i].match(/Get value/).nil?
       lookingFor = "_get("
     end
 
     # setters
-    if strArray[i].match(/Set new value/) != nil
+    if !strArray[i].match(/Set new value/).nil?
       lookingFor = "_set("
     end
 
     # pair getters
-    if strArray[i].match(/Return the first element/) != nil
+    if !strArray[i].match(/Return the first element/).nil?
       lookingFor = "_get("
     end
-    if strArray[i].match(/Return the second element/) != nil
+    if !strArray[i].match(/Return the second element/).nil?
       lookingFor = "_get("
     end
 
@@ -157,7 +157,7 @@ strArray.each_index {|i|
     end
 
     ans = strArray[i].match(/Document-method: (?:\w+::)+(\w+\.\w+)/)
-    if ans != nil
+    if !ans.nil?
       lookingFor = "_" + ans[1].sub(/\./,"_") + lookingFor
     else
       next
@@ -181,7 +181,7 @@ strArray.each_index {|i|
       replace = false
       brokenBlock[1].each_line { |ln|
 
-        if (replace == false) && (ln.match(lookingFor) != nil)
+        if (replace == false) && !ln.match(lookingFor).nil?
           lnForOrphan = ln
           if first
             break
@@ -192,7 +192,7 @@ strArray.each_index {|i|
           end
         end
 
-        if ln.match(/\w/) != nil
+        if !ln.match(/\w/).nil?
           keepers << ln
           first = false
         end

@@ -271,7 +271,7 @@ class MeasureManager
       missing_fields = false
       begin
         missing_fields = result.missingRequiredFields
-      rescue
+      rescue StandardError
       end
 
       if file_updates || xml_updates || missing_fields || readme_out_of_date
@@ -356,7 +356,7 @@ class MeasureManager
       print_message("Loading measure info for '#{measure_dir}', '#{osm_path}'")
       begin
         result = OpenStudio::Measure.getInfo(measure, model, workspace)
-      rescue Exception => e
+      rescue StandardError => e
         result = OpenStudio::Measure::OSMeasureInfo.new(e.message)
       end
 
@@ -418,7 +418,7 @@ class MeasureManager
 
         result << arg
       end
-    rescue
+    rescue StandardError
       info = get_measure_info(measure_dir, measure, "", OpenStudio::Model::OptionalModel.new, OpenStudio::OptionalWorkspace.new)
       return get_arguments_from_measure_info(info)
     end
@@ -535,7 +535,7 @@ class MeasureManager
         out[:model_dependent] = output.modelDependent
         result[:outputs] << out
       end
-    rescue
+    rescue StandardError
     end
 
     attributes = []

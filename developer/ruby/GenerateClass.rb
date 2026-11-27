@@ -201,7 +201,7 @@ sourceFolders = m[1,(m.size-1)]
 
 defineString = String.new
 sourceFolders.each { |folder|
-  defineString += folder.upcase + "_" if folder != nil
+  defineString += folder.upcase + "_" if !folder.nil?
 }
 defineString += className.upcase
 hpp << "#ifndef " << defineString + "_HPP\n"

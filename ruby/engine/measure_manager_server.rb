@@ -86,7 +86,7 @@ class MeasureManagerServlet < WEBrick::HTTPServlet::AbstractServlet
         response.status = 400
       end
 
-    rescue Exception => e
+    rescue StandardError => e
       response.body = JSON.generate({:error=>e.message, :backtrace=>e.backtrace.inspect})
       response.status = 400
 
@@ -332,7 +332,7 @@ class MeasureManagerServlet < WEBrick::HTTPServlet::AbstractServlet
         response.status = 400
       end
 
-    rescue Exception => e
+    rescue StandardError => e
       response.body = JSON.generate({:error=>e.message, :backtrace=>e.backtrace.inspect})
       response.status = 400
 
